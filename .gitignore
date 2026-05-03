@@ -6,3 +6,6 @@ logs/
 uploads/
 *.db
 pif-dashboard.service
+
+# Xanther CLI config (contains API key)
+.xanther/
