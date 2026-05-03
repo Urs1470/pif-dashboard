@@ -1,0 +1,27 @@
+{
+  "name": "PIF Dashboard",
+  "short_name": "PIF",
+  "description": "Dashboard pentru management proiecte și task-uri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230f172a'/%3E%3Ccircle cx='96' cy='96' r='78' fill='none' stroke='%2338bdf8' stroke-width='6' opacity='0.4'/%3E%3Ccircle cx='96' cy='96' r='60' fill='%230d1f35'/%3E%3Cpath d='M111 42L66 102h36l-21 48L156 84h-42z' fill='%2338bdf8'/%3E%3Ccircle cx='96' cy='60' r='6' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='96' cy='132' r='6' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='60' cy='96' r='6' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='132' cy='96' r='6' fill='%2338bdf8' opacity='0.4'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%230f172a'/%3E%3Ccircle cx='256' cy='256' r='208' fill='none' stroke='%2338bdf8' stroke-width='12' opacity='0.4'/%3E%3Ccircle cx='256' cy='256' r='160' fill='%230d1f35'/%3E%3Cpath d='M296 112L176 272h96l-56 128L416 224h-112z' fill='%2338bdf8'/%3E%3Ccircle cx='256' cy='160' r='16' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='256' cy='352' r='16' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='160' cy='256' r='16' fill='%2338bdf8' opacity='0.4'/%3E%3Ccircle cx='352' cy='256' r='16' fill='%2338bdf8' opacity='0.4'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "ro",
+  "dir": "ltr"
+}

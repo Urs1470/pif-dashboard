@@ -1,0 +1,3180 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIF Dashboard</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2338bdf8' stroke-width='1' opacity='0.4'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%230d1f35'/%3E%3Cpath d='M18.5 7L11 17h6l-3.5 8L26 14h-7z' fill='%2338bdf8'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            /* Dark theme (default) */
+            --bg: #0a0e17;
+            --bg2: #111827;
+            --bg3: #1a2236;
+            --accent: #00d4ff;
+            --accent2: #7c3aed;
+            --accent3: #10b981;
+            --danger: #ef4444;
+            --warning: #eab308;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --border: #1e293b;
+            --pif-accent: #3b82f6;
+            --service-accent: #f97316;
+
+            /* Font sizes */
+            --font-h1: 2rem;
+            --font-h2: 1.5rem;
+            --font-h3: 1.25rem;
+            --font-h4: 1.1rem;
+            --font-body: 0.95rem;
+            --font-small: 0.85rem;
+            --font-tiny: 0.75rem;
+            --font-mono: 'Consolas', 'Monaco', monospace;
+
+            /* Spacing scale */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 212, 255, 0.1);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --bg2: #ffffff;
+            --bg3: #f1f5f9;
+            --accent: #0284c7;
+            --accent2: #7c3aed;
+            --accent3: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --text: #0f172a;
+            --text2: #475569;
+            --border: #e2e8f0;
+            --pif-accent: #2563eb;
+            --service-accent: #ea580c;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 20px rgba(2, 132, 199, 0.1);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            font-size: var(--font-body);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg2); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: var(--space-md); }
+
+        header {
+            margin-bottom: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-md);
+        }
+
+        .brand-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .brand-link:hover { opacity: 0.85; }
+
+        /* SVG Logo — theme-aware */
+        .logo-ring { fill:none; stroke:var(--accent); stroke-width:1.2; opacity:0.25; }
+        .logo-ring2 { fill:none; stroke:var(--accent); stroke-width:0.6; opacity:0.12; }
+        .logo-circle { fill:var(--bg2); stroke:var(--border); stroke-width:0.8; }
+        .bolt-main { fill:var(--accent); }
+        .bolt-glow { fill:var(--accent); opacity:0.3; }
+        .pif-text { font-family:system-ui,-apple-system,sans-serif; font-size:32px; font-weight:700; fill:var(--text); letter-spacing:4px; }
+        .dash-text { font-family:system-ui,-apple-system,sans-serif; font-size:11px; font-weight:500; fill:var(--text2); letter-spacing:3px; }
+        .logo-sep { stroke:var(--border); stroke-width:0.6; }
+        .dot { fill:var(--accent); }
+
+        h1 {
+            font-size: var(--font-h1);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-xs);
+        }
+
+        .subtitle { color: var(--text2); font-size: var(--font-small); }
+
+        .header-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            background: var(--bg2);
+        }
+        .theme-toggle:active {
+            transform: translateY(0);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            min-height: 100px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label { font-size: var(--font-small); color: var(--text2); margin-bottom: var(--space-xs); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); min-height: 1.8rem; }
+
+        .stat-card.danger .stat-value { color: var(--danger); }
+        .stat-card.success .stat-value { color: var(--accent3); }
+
+        /* Chart containers */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            min-height: 250px;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: var(--radius-md);
+            font-size: var(--font-tiny);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.in_lucru { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge.finalizat { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge.blocat { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge.in_așteptare { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+        .badge.pif { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge.service { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+        .badge.to_do { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge.done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+
+        /* Status icon badges */
+        .badge-icon { font-size: 0.7rem; }
+        .badge.in_lucru .badge-icon::before { content: '🔵'; }
+        .badge.finalizat .badge-icon::before { content: '✅'; }
+        .badge.blocat .badge-icon::before { content: '🔴'; }
+        .badge.in_așteptare .badge-icon::before { content: '🟠'; }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            align-items: center;
+        }
+
+        #search-proiecte {
+            height: 38px;
+            padding: 0 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: border-color 0.15s;
+        }
+        #search-proiecte:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Batch Action Bar */
+        .batch-action-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        #batch-selected-count {
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        #batch-action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .batch-action-bar .btn {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+        }
+
+        /* All inputs, selects, textareas share same styling */
+        input[type="text"],
+        input[type="date"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            font-size: var(--font-body);
+            font-family: inherit;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Custom select arrow */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        /* Custom checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--bg);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: var(--accent);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            min-height: 36px;
+            min-width: 80px;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--font-body);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-pif {
+            background: linear-gradient(135deg, var(--pif-accent), var(--accent));
+            color: #fff;
+        }
+
+        .btn-pif:hover {
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-service {
+            background: linear-gradient(135deg, var(--service-accent), #ea580c);
+            color: #fff;
+        }
+
+        .btn-service:hover {
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg3);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: var(--shadow-sm);
+            background: var(--bg2);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-success {
+            background: var(--accent3);
+            color: #000;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: var(--font-small);
+            min-height: auto;
+            min-width: auto;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg2);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        th {
+            background: var(--bg3);
+            color: var(--text2);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--space-md);
+            font-size: var(--font-small);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--border);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        tr:hover td { background: var(--bg3); }
+        tr:last-child td { border-bottom: none; }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .preview-container {
+            background: var(--bg2);
+            border-radius: var(--radius);
+            width: 90vw;
+            max-width: 1000px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+        #preview-content {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+        #preview-content iframe {
+            width: 100%;
+            height: 75vh;
+            border: none;
+        }
+        #preview-content img {
+            max-width: 100%;
+            max-height: 75vh;
+            display: block;
+            margin: auto;
+            padding: 16px;
+        }
+
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-overlay.active .modal { transform: scale(1); }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title { font-size: var(--font-h3); font-weight: 600; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text2);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+            background: var(--bg3);
+        }
+
+        .modal-body { padding: var(--space-md); }
+
+        /* Form */
+        .form-group { margin-bottom: var(--space-md); }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text2);
+            font-size: var(--font-small);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            font-size: var(--font-body);
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+
+        .radio-group { display: flex; gap: var(--space-md); }
+        .radio-group label { display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; }
+        .radio-group input[type="radio"] { width: auto; }
+
+        /* Project Type Selector */
+        .project-type-selector { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
+
+        .project-type-btn {
+            flex: 1;
+            padding: var(--space-md);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg);
+            color: var(--text2);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .project-type-btn:hover { border-color: var(--text2); }
+
+        .project-type-btn.selected.pif {
+            border-color: var(--pif-accent);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--pif-accent);
+        }
+
+        .project-type-btn.selected.service {
+            border-color: var(--service-accent);
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--service-accent);
+        }
+
+        .project-type-btn input { display: none; }
+        .project-type-btn .type-icon { font-size: 2rem; margin-bottom: var(--space-xs); }
+        .project-type-btn .type-label { font-weight: 600; }
+
+        /* Toast - improved with stacking and types */
+        .toast-container {
+            position: fixed;
+            bottom: var(--space-md);
+            right: var(--space-md);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--accent3);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            pointer-events: auto;
+            max-width: 350px;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #10b981; color: #fff; }
+        .toast.error { background: #ef4444; color: #fff; }
+        .toast.warning { background: #f97316; color: #fff; }
+        .toast.info { background: #3b82f6; color: #fff; }
+
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .toast-message { flex: 1; }
+
+        /* Skeleton Loaders - shimmer effect */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-md);
+        }
+
+        .skeleton-text { height: 1em; margin-bottom: 0.5em; }
+        .skeleton-text:last-child { width: 60%; }
+        .skeleton-title { height: 1.5em; width: 70%; margin-bottom: 0.75em; }
+        .skeleton-badge { height: 1.5em; width: 80px; }
+        .skeleton-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            min-height: 100px;
+        }
+        .skeleton-stat {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            min-height: 100px;
+        }
+        .skeleton-chart {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            height: 250px;
+        }
+
+        /* Keyboard Shortcuts Help Overlay */
+        .keyboard-help-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .keyboard-help-overlay.active { opacity: 1; visibility: visible; }
+
+        .keyboard-help-content {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .keyboard-help-title {
+            font-size: var(--font-h2);
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .keyboard-shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .keyboard-shortcut-row:last-child { border-bottom: none; }
+
+        .keyboard-shortcut-keys {
+            display: flex;
+            gap: 4px;
+        }
+
+        .keyboard-key {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: var(--font-small);
+            font-weight: 600;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .keyboard-shortcut-desc {
+            color: var(--text2);
+            font-size: var(--font-small);
+        }
+
+        /* Shortcut hints on buttons - desktop only */
+        .shortcut-hint {
+            font-size: 0.65rem;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+            font-family: var(--font-mono);
+        }
+
+        @media (max-width: 768px) {
+            .shortcut-hint { display: none; }
+        }
+
+        /* Progress bar for project completion */
+        .progress-container {
+            margin-top: var(--space-sm);
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-tiny);
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent3), var(--accent));
+            transition: width 0.3s ease;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Project Timeline (Gantt) */
+        .timeline-section {
+            margin-top: var(--space-lg);
+            padding: var(--space-md);
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .timeline-title {
+            font-size: var(--font-h4);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .timeline-container {
+            position: relative;
+            overflow-x: auto;
+            padding: var(--space-md) 0;
+        }
+
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            height: 36px;
+            margin-bottom: 4px;
+            position: relative;
+        }
+
+        .timeline-label {
+            width: 200px;
+            min-width: 200px;
+            font-size: var(--font-small);
+            padding-right: var(--space-md);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .timeline-bar-container {
+            flex: 1;
+            position: relative;
+            height: 24px;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: var(--font-tiny);
+            color: #fff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .timeline-bar:hover { opacity: 0.85; }
+        .timeline-bar.in_lucru { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .timeline-bar.finalizat { background: linear-gradient(90deg, #10b981, #34d399); }
+        .timeline-bar.blocat { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .timeline-bar.in_așteptare { background: linear-gradient(90deg, #f97316, #fb923c); }
+
+        .timeline-today {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #ef4444;
+            z-index: 10;
+        }
+
+        .timeline-today::before {
+            content: 'Astăzi';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-tiny);
+            color: #ef4444;
+            white-space: nowrap;
+        }
+
+        .timeline-scale {
+            display: flex;
+            margin-left: 200px;
+            margin-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 4px;
+        }
+
+        .timeline-scale-month {
+            flex: 1;
+            font-size: var(--font-tiny);
+            color: var(--text2);
+            text-align: center;
+        }
+
+        /* Export dropdown */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .export-dropdown-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            min-width: 180px;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            display: none;
+        }
+
+        .export-dropdown-content.active { display: block; }
+
+        .export-dropdown-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: var(--font-small);
+        }
+
+        .export-dropdown-item:hover { background: var(--bg3); }
+        .export-dropdown-item:first-child { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+        .export-dropdown-item:last-child { border-radius: 0 0 var(--radius-md) var(--radius-md); }
+
+        /* Main Tabs */
+        .main-tabs { display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; }
+        .main-tab { padding:10px 24px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text2); font-size:1rem; font-weight:500; cursor:pointer; transition:all 0.2s; margin-bottom:-1px; }
+        .main-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+
+        /* Global Tasks */
+        .gt-task-card {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            border-left: 4px solid;
+            min-height: 44px;
+        }
+        .gt-task-card.overdue { border-left-color: var(--danger); }
+        .gt-task-card.due-today { border-left-color: var(--warning); }
+        .gt-task-card.completed { opacity: 0.6; }
+        .gt-task-card.completed .gt-task-title { text-decoration: line-through; }
+
+        /* Archive Section */
+        .archive-section {
+            margin-top: 24px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .archive-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            background: var(--bg2);
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text2);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .archive-header:hover { background: var(--bg3); }
+        .badge-count {
+            background: var(--bg3);
+            color: var(--text2);
+            font-size: 0.78rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        #archive-body { padding: 12px 16px; }
+        .archive-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 6px;
+            opacity: 0.7;
+            background: var(--bg2);
+        }
+        .archive-item .archive-title {
+            flex: 1;
+            font-size: 0.9rem;
+            text-decoration: line-through;
+            color: var(--text2);
+        }
+        .archive-item .archive-meta {
+            font-size: 0.78rem;
+            color: var(--text2);
+            white-space: nowrap;
+        }
+
+        /* Project Views */
+        .project-detail { display: none; }
+        .project-detail.active { display: block; }
+
+        .project-list { display: block; }
+        .project-list.hidden { display: none; }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+            gap: var(--space-md);
+        }
+
+        .detail-title { font-size: var(--font-h2); font-weight: 700; margin-bottom: var(--space-xs); }
+        .detail-meta { color: var(--text2); font-size: var(--font-small); }
+
+        .detail-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .info-item {
+            background: var(--bg3);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .info-item .label {
+            font-size: var(--font-tiny);
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .info-item .value {
+            font-size: var(--font-body);
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: var(--font-h4);
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Todo Section */
+        .todo-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .todo-add-form {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            align-items: end;
+        }
+
+        .todo-list { max-height: 300px; overflow-y: auto; }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            border-left: 4px solid;
+            min-height: 44px;
+        }
+
+        .todo-item.priority-urgent { border-left-color: var(--danger); }
+        .todo-item.priority-normal { border-left-color: var(--warning); }
+        .todo-item.priority-minor { border-left-color: #6b7280; }
+        .todo-item.completed { opacity: 0.6; }
+        .todo-item.completed .todo-title { text-decoration: line-through; }
+
+        /* Phase 2c: Drag and Drop styles */
+        .todo-item.dragging { opacity: 0.5; background: var(--bg3); }
+        .todo-item.drag-over { border: 2px dashed var(--pif-accent); background: rgba(59, 130, 246, 0.1); }
+        .todo-item[draggable="true"] { cursor: grab; }
+        .todo-item[draggable="true"]:active { cursor: grabbing; }
+
+        .todo-checkbox { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; }
+        .todo-content { flex: 1; min-width: 0; }
+        .todo-title { font-weight: 500; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .todo-meta { font-size: var(--font-tiny); color: var(--text2); }
+
+        .todo-priority {
+            font-size: var(--font-tiny);
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .todo-priority.urgent { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .todo-priority.normal { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
+        .todo-priority.minor { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+
+        .todo-status {
+            font-size: var(--font-tiny);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .todo-status.to_do { background: rgba(59, 130, 246, 0.2); color: var(--pif-accent); }
+        .todo-status.in_lucru { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .todo-status.done { background: rgba(16, 185, 129, 0.2); color: var(--accent3); }
+
+        .todo-delete { opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+        .todo-item:hover .todo-delete { opacity: 1; }
+
+        /* Timer Section */
+        .timer-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            margin: var(--space-md) 0;
+            color: var(--accent);
+        }
+
+        .timer-controls { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; }
+
+        .timer-sessions { margin-top: var(--space-md); text-align: left; }
+
+        .timer-session {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            font-size: var(--font-small);
+        }
+
+        /* Attachments */
+        .attachments-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            text-align: center;
+            color: var(--text2);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: var(--space-md);
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .drop-zone-icon { font-size: 2rem; margin-bottom: var(--space-sm); }
+
+        .attachment-list { max-height: 300px; overflow-y: auto; }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+        }
+
+        .attachment-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .attachment-info { flex: 1; min-width: 0; }
+        .attachment-name { font-weight: 500; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .attachment-meta { font-size: var(--font-tiny); color: var(--text2); }
+        .attachment-actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
+
+        /* Attachment Subtabs */
+        .attachments-subtabs { display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:0; }
+        .att-tab-content { display:none; }
+        .att-tab-content.active { display:block; }
+
+        /* Email styles */
+        .email-item {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .email-item:hover { background: var(--bg3); }
+        .email-item.expanded { background: var(--bg3); }
+        .email-header { display: flex; justify-content: space-between; align-items: center; }
+        .email-subject { font-weight: 500; }
+        .email-meta { font-size: var(--font-tiny); color: var(--text2); margin-top: 2px; }
+        .email-content { display: none; margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); white-space: pre-wrap; }
+        .email-item.expanded .email-content { display: block; }
+
+        /* Checklist */
+        .checklist-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .checklist-section.pif-type { border-color: var(--pif-accent); }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: var(--space-md);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent3);
+            transition: width 0.3s;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            min-height: 44px;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checklist-content { flex: 1; min-width: 0; }
+        .checklist-title { font-weight: 500; margin-bottom: var(--space-xs); }
+        .checklist-notes { font-size: var(--font-small); color: var(--text2); }
+        .checklist-notes textarea {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-small);
+            resize: vertical;
+            min-height: 40px;
+            margin-top: var(--space-xs);
+        }
+
+        /* Before/After */
+        .before-after-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .before-section, .after-section {
+            background: var(--bg2);
+            border: 2px solid;
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+        }
+
+        .before-section { border-color: var(--service-accent); }
+        .after-section { border-color: var(--accent3); }
+
+        .before-section h4, .after-section h4 {
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .before-section h4 { color: var(--service-accent); }
+        .after-section h4 { color: var(--accent3); }
+
+        .before-section textarea, .after-section textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: var(--font-body);
+        }
+
+        /* Service Fields */
+        .service-fields {
+            background: var(--bg2);
+            border: 2px solid var(--service-accent);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .service-fields h4 { color: var(--service-accent); margin-bottom: var(--space-md); }
+
+        .client-confirmation {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            flex-wrap: wrap;
+        }
+
+        .client-confirmation input[type="checkbox"] { width: 20px; height: 20px; }
+        .client-confirmation input[type="text"] { flex: 1; min-width: 200px; }
+
+        /* Observations */
+        .observations-section {
+            background: var(--bg2);
+            border: 2px solid var(--pif-accent);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .observations-section h4 { color: var(--pif-accent); margin-bottom: var(--space-md); }
+
+        .observations-section textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: var(--font-body);
+        }
+
+        /* Journal */
+        .jurnal-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .jurnal-list { max-height: 300px; overflow-y: auto; margin-bottom: var(--space-md); }
+
+        .jurnal-item {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+        }
+
+        .jurnal-date { font-size: var(--font-tiny); color: var(--text2); margin-bottom: var(--space-xs); }
+        .jurnal-content { color: var(--text); }
+
+        .jurnal-form {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: var(--space-sm);
+            align-items: end;
+        }
+
+        .jurnal-form input[type="date"] { width: auto; }
+        .jurnal-form input[type="text"] { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: var(--radius-md); }
+
+        /* Back link */
+        .back-link {
+            color: var(--accent);
+            cursor: pointer;
+            margin-bottom: var(--space-md);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-weight: 500;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: var(--space-xl); color: var(--text2); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: var(--space-sm); }
+
+        /* Inline form */
+        .inline-form { display: none; }
+        .inline-form.active { display: block; }
+
+        /* Project form modal */
+        #new-project-form {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #new-project-form.active {
+            display: flex;
+        }
+        #new-project-form .modal-container {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        #new-project-form .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg2);
+            z-index: 1;
+        }
+        #new-project-form .modal-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        #new-project-form .modal-body {
+            padding: 20px;
+        }
+
+        /* Intervention list */
+        .intervention-list {
+            font-family: var(--font-mono);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .intervention-item {
+            padding: var(--space-sm) var(--space-md);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .intervention-item:last-child { border-bottom: none; }
+
+        .intervention-timestamp { font-size: var(--font-tiny); color: var(--text2); margin-bottom: var(--space-xs); }
+        .intervention-problem { color: var(--danger); margin-bottom: var(--space-xs); }
+        .intervention-action { color: var(--accent3); margin-bottom: var(--space-xs); }
+        .intervention-status { font-size: var(--font-small); }
+        .intervention-status.rezolvat { color: var(--accent3); }
+        .intervention-status.nerezolvat { color: var(--danger); }
+        .intervention-delete { position: absolute; top: 10px; right: 10px; opacity: 0; transition: opacity 0.2s; }
+        .intervention-item:hover .intervention-delete { opacity: 1; }
+
+        .new-intervention-form {
+            background: var(--bg3);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-md);
+        }
+
+        .new-intervention-form h4 { margin-bottom: var(--space-md); color: var(--text); }
+
+        /* PDF Header */
+        .pdf-header { display: none; }
+
+        /* Form actions */
+        .form-actions {
+            display: flex;
+            gap: var(--space-sm);
+            justify-content: flex-end;
+            margin-top: var(--space-md);
+        }
+
+        /* Detail body layout */
+        .detail-body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text2);
+            margin-bottom: 10px;
+        }
+
+        /* Quick Add Bar */
+        .quick-add-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg);
+            padding: 12px 0 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        .quick-add-main {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .quick-add-main input {
+            flex: 1;
+            height: 48px;
+            font-size: 1rem;
+            padding: 0 16px;
+            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            transition: border-color 0.15s;
+        }
+        .quick-add-main input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        #quick-add-btn {
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            padding: 0;
+            border-radius: var(--radius);
+            flex-shrink: 0;
+        }
+        .quick-add-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .quick-select {
+            height: 36px;
+            font-size: 0.85rem;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .quick-add-main input { height: 52px; font-size: 1rem; }
+            #quick-add-btn { width: 52px; height: 52px; }
+            .quick-select { height: 40px; font-size: 0.9rem; flex: 1; min-width: 100px; }
+        }
+
+        /* Print Styles */
+        @media print {
+            @page { size: A4; margin: 15mm; }
+
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                font-size: 11pt;
+                line-height: 1.4;
+            }
+
+            .container { max-width: 100%; padding: 0; }
+
+            /* Hide everything except service sheet */
+            .stats-bar,
+            .filters,
+            .back-link,
+            .detail-actions,
+            .new-intervention-form,
+            .todo-add-form,
+            .timer-controls,
+            .drop-zone,
+            .add-step-btn,
+            .attachment-actions,
+            .btn,
+            .modal-overlay,
+            .toast,
+            header,
+            .theme-toggle,
+            #new-project-form,
+            .todo-section,
+            .jurnal-section,
+            .timer-section,
+            .attachments-section,
+            .info-item:last-of-type {
+                display: none !important;
+            }
+
+            .project-detail { display: block !important; }
+            .project-list { display: none !important; }
+
+            .info-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .info-item {
+                background: #f5f5f5 !important;
+                border: 1px solid #ddd !important;
+                padding: 10px;
+                break-inside: avoid;
+            }
+
+            .before-after-section { display: block; }
+
+            .before-section, .after-section {
+                background: #f9f9f9 !important;
+                border: 1px solid #ddd !important;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+
+            .checklist-section,
+            .observations-section,
+            .service-fields {
+                background: #f9f9f9 !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: avoid;
+            }
+
+            .pdf-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #333;
+            }
+
+            .pdf-header h1 {
+                font-size: 18pt;
+                color: #000 !important;
+                -webkit-text-fill-color: #000 !important;
+            }
+
+            .pdf-header p { color: #666; }
+
+            /* Print footer */
+            .project-detail::after {
+                content: "Printat: " attr(data-print-date) " — " attr(data-project-name);
+                display: block;
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 1px solid #333;
+                font-size: 9pt;
+                color: #666;
+                text-align: center;
+            }
+
+            /* Ensure sections print properly */
+            .checklist-item,
+            .todo-item {
+                background: #f9f9f9 !important;
+                border: 1px solid #ddd !important;
+            }
+
+            textarea, input[type="text"] {
+                border: 1px solid #ddd !important;
+                background: transparent !important;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --font-h1: 1.75rem;
+                --font-h2: 1.35rem;
+                --font-h3: 1.15rem;
+            }
+
+            body { font-size: calc(var(--font-body) * 1.1); }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value { font-size: 2rem; }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters select,
+            .filters input,
+            .filters button {
+                width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .before-after-section {
+                grid-template-columns: 1fr;
+            }
+
+            .project-type-selector {
+                flex-direction: column;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .detail-header {
+                flex-direction: column;
+            }
+
+            .detail-actions {
+                width: 100%;
+            }
+
+            .detail-actions .btn {
+                flex: 1;
+            }
+
+            .todo-add-form {
+                grid-template-columns: 1fr;
+            }
+
+            .jurnal-form {
+                grid-template-columns: 1fr;
+            }
+
+            .client-confirmation {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .modal {
+                max-width: 95%;
+                margin: var(--space-sm);
+            }
+
+            /* Project form modal mobile */
+            #new-project-form { padding: 0; align-items: flex-end; }
+            #new-project-form .modal-container { max-width: 100%; max-height: 92vh; border-radius: var(--radius) var(--radius) 0 0; }
+        }
+    </style>
+
+    <style>
+/* ============ MOBILE BASE (max 768px) ============ */
+@media (max-width: 768px) {
+
+    /* Layout general */
+    body { font-size: 15px; }
+    .container, main, .app-wrapper { padding: 0 12px; }
+
+    /* Header */
+    header, .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+    }
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+    }
+    .header-actions button, .header-actions .btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    /* Main tabs */
+    .main-tabs {
+        gap: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .main-tab {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Stats bar */
+    .stats-bar, .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .stat-card {
+        padding: 10px 8px;
+        text-align: center;
+    }
+    .stat-value { font-size: 1.6rem; }
+    .stat-label { font-size: 0.72rem; }
+
+    /* Filtre — stack vertical */
+    .filters-bar, .filter-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .filters-bar select,
+    .filters-bar input,
+    .filter-row select,
+    .filter-row input,
+    #search-proiecte {
+        width: 100%;
+        height: 44px;
+        font-size: 15px;
+    }
+
+    /* Tabel proiecte → cards */
+    #projects-table-container table { display: none; }
+
+    /* Card view pentru proiecte pe mobil */
+    .projects-card-list { display: flex; flex-direction: column; gap: 10px; }
+    .project-card-mobile {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+    .project-card-mobile:active { border-color: var(--accent); }
+    .project-card-mobile .pcm-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+    .project-card-mobile .pcm-name {
+        font-weight: 600;
+        font-size: 1rem;
+        flex: 1;
+        margin-right: 8px;
+    }
+    .project-card-mobile .pcm-meta {
+        font-size: 0.82rem;
+        color: var(--text2);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    /* Detaliu proiect */
+    #project-detail-view { padding: 0; }
+    .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+    }
+    .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+    }
+    .detail-actions .btn {
+        flex: 1;
+        min-width: 100px;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 10px 8px;
+    }
+    .detail-grid, .info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Secțiuni detaliu — accordion pe mobil */
+    .detail-section {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+    .detail-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        cursor: pointer;
+        background: var(--bg2);
+        font-weight: 600;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    .detail-section-header::after { content: '▼'; font-size: 0.75rem; transition: transform 0.2s; }
+    .detail-section.collapsed .detail-section-header::after { transform: rotate(-90deg); }
+    .detail-section-body { padding: 14px 16px; }
+    .detail-section.collapsed .detail-section-body { display: none; }
+
+    /* Formulare */
+    .form-grid, .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .form-group label { font-size: 0.85rem; margin-bottom: 4px; display: block; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        height: 44px;
+        font-size: 15px;
+    }
+    .form-group textarea { height: auto; min-height: 100px; }
+    .form-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .form-actions .btn { width: 100%; height: 48px; font-size: 1rem; }
+
+    /* Todo / Tasks list */
+    .todo-item {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px;
+        min-height: 56px;
+    }
+    .todo-checkbox { width: 22px; height: 22px; }
+    .todo-title { font-size: 0.95rem; }
+    .todo-delete { margin-left: auto; }
+
+    /* Checklist */
+    .checklist-item { padding: 12px; min-height: 50px; }
+    .checklist-item input[type="checkbox"] { width: 20px; height: 20px; }
+
+    /* Timer */
+    .timer-display { font-size: 2.5rem; }
+    .timer-actions { display: flex; gap: 8px; }
+    .timer-actions .btn { flex: 1; height: 48px; }
+    .timer-session {
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.82rem;
+    }
+
+    /* Jurnal */
+    #jurnal-continut { min-height: 80px; font-size: 15px; }
+    .jurnal-item { padding: 12px; }
+    .jurnal-date { font-size: 0.85rem; }
+
+    /* Atașamente */
+    .attachment-item {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px;
+    }
+    .attachment-actions { margin-left: auto; display: flex; gap: 6px; }
+    .attachment-actions .btn { height: 40px; min-width: 40px; }
+
+    /* Before/After service */
+    #before-after-section {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Global tasks tab */
+    .global-task-item {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    /* Preview modal */
+    .preview-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    #preview-content iframe { height: calc(100vh - 60px); }
+
+    /* Buton înapoi prominent pe mobil */
+    .btn-back-mobile {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        width: 100%;
+    }
+}
+
+/* ============ TABLET (768px - 1024px) ============ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .stats-bar, .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .detail-grid, .info-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .filters-bar { flex-wrap: wrap; gap: 8px; }
+    .filters-bar select, .filters-bar input { min-width: 140px; }
+}
+
+/* ============ DESKTOP (ascunde elemente mobile-only) ============ */
+@media (min-width: 769px) {
+    .projects-card-list { display: none; }
+    #projects-table-container table { display: table; }
+    .btn-back-mobile { display: none; }
+    .detail-section-header { cursor: default; }
+    .detail-section-header::after { display: none; }
+    .detail-section.collapsed .detail-section-body { display: block; }
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="pdf-header">
+            <h1>FIȘĂ SERVICE</h1>
+            <p id="pdf-title"></p>
+        </div>
+
+        <header>
+            <a href="#" class="brand-link" onclick="goHome(); return false;" style="text-decoration:none; display:flex; align-items:center; cursor:pointer;">
+<svg width="440" height="68" viewBox="0 0 440 68" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="34" cy="34" r="28" class="logo-ring2"/>
+  <circle cx="34" cy="34" r="22" class="logo-ring"/>
+  <circle cx="34" cy="34" r="16" class="logo-circle"/>
+  <ellipse cx="34" cy="34" rx="7" ry="10" class="bolt-glow"/>
+  <path d="M38 18L28 34h8l-3 14 13-17h-7z" class="bolt-main"/>
+  <circle cx="34" cy="10" r="1" class="dot" opacity="0.4"/>
+  <circle cx="34" cy="58" r="1" class="dot" opacity="0.4"/>
+  <circle cx="10" cy="34" r="1" class="dot" opacity="0.4"/>
+  <circle cx="58" cy="34" r="1" class="dot" opacity="0.4"/>
+  <line x1="72" y1="12" x2="72" y2="56" class="logo-sep"/>
+  <text x="84" y="40" class="pif-text">IU</text>
+  <line x1="84" y1="47" x2="180" y2="47" class="logo-sep"/>
+  <text x="84" y="58" class="dash-text">DASHBOARD</text>
+  
+</svg>
+</a>
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+                <button class="btn btn-secondary" id="install-pwa-btn" onclick="installPWA()" style="display:none;" title="Instalează aplicația">📲 Instalează</button>
+                <button class="btn btn-secondary" id="undo-btn" onclick="undo()" style="display:none;" title="Anulează ultima acțiune">↩️ Undo</button>
+                <button class="btn btn-secondary" id="redo-btn" onclick="redo()" style="display:none;" title="Refă acțiunea">↪️ Redo</button>
+                <button class="btn btn-secondary" onclick="showKeyboardHelp()">⌨️ <span class="shortcut-hint">?</span></button>
+                <button class="btn btn-secondary" onclick="showClientList()">👥 Clienți</button>
+                <div class="export-dropdown">
+                    <button class="btn btn-secondary" onclick="toggleExportDropdown()">📥 Export Excel ▼</button>
+                    <div id="export-dropdown" class="export-dropdown-content">
+                        <div class="export-dropdown-item" onclick="exportExcel('projects')">📊 Proiecte</div>
+                        <div class="export-dropdown-item" onclick="exportExcel('tasks')">✅ Task-uri</div>
+                        <div class="export-dropdown-item" onclick="exportExcel('hours')">⏱️ Ore</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="exportBackup()">📥 Backup</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('restore-input').click()">📤 Restore</button>
+                <input type="file" id="restore-input" class="hidden-input" accept=".json" onchange="importBackup(event)">
+                <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+            </div>
+        </header>
+
+        <div class="main-tabs">
+            <button class="main-tab active" data-tab="acasa" onclick="switchTab('acasa')">🏠 Acasă</button>
+            <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')">✅ Taskuri Zilnice</button>
+            <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')">📋 Proiecte</button>
+            <button class="main-tab" data-tab="statistici" onclick="switchTab('statistici')">📊 Statistici</button>
+        </div>
+
+        <div id="tab-proiecte" class="tab-content">
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Proiecte în Lucru</div>
+                <div class="stat-value" id="stat-active">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-label">Total Proiecte</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+        </div>
+
+        <div id="project-list-view" class="project-list">
+            <div class="filters">
+                <input
+                    type="text"
+                    id="search-proiecte"
+                    placeholder="🔍 Caută proiect, client, echipament..."
+                    style="flex:2; min-width:200px;"
+                    autocomplete="off"
+                />
+                <select id="filter-status">
+                    <option value="">Toate Statusurile</option>
+                    <option value="in_lucru">În Lucru</option>
+                    <option value="finalizat">Finalizat</option>
+                    <option value="blocat">Blocat</option>
+                    <option value="in_așteptare">În Așteptare</option>
+                </select>
+                <select id="filter-type">
+                    <option value="">Toate Tipurile</option>
+                    <option value="PIF">PIF</option>
+                    <option value="Service">Service</option>
+                </select>
+                <select id="filter-producator">
+                    <option value="">Toți Producătorii</option>
+                    <option value="ABB">ABB</option>
+                    <option value="Siemens">Siemens</option>
+                    <option value="Altul">Altul</option>
+                </select>
+                <input type="date" id="filter-date-from" placeholder="De la">
+                <input type="date" id="filter-date-to" placeholder="Până la">
+                <button class="btn btn-secondary" id="batch-mode-btn" onclick="toggleBatchMode()">☑️ Mod Selectare</button>
+                <button class="btn btn-primary" onclick="showNewProjectForm()">+ Proiect Nou <span class="shortcut-hint">N</span></button>
+            </div>
+
+            <div id="projects-table-container">
+                <div id="projects-skeleton" class="hidden">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nume</th>
+                                <th>Client</th>
+                                <th>Tip</th>
+                                <th>Producător</th>
+                                <th>Status</th>
+                                <th>Data Start</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6"><div class="skeleton skeleton-text"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skeleton-text"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skeleton-text"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skeleton-text"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skeleton-text"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <table id="projects-table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">
+                                <input type="checkbox" id="batch-select-all" style="display:none;" onclick="selectAllProjects()">
+                            </th>
+                            <th class="sortable" data-col="nume">Nume ↕️</th>
+                            <th class="sortable" data-col="client">Client ↕️</th>
+                            <th>Tip</th>
+                            <th class="sortable" data-col="producator">Producător ↕️</th>
+                            <th class="sortable" data-col="status">Status ↕️</th>
+                            <th class="sortable" data-col="data_incepere">Data Start ↕️</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-tbody"></tbody>
+                </table>
+            </div>
+            <div id="empty-projects" class="empty-state">
+                <div class="empty-state-icon">📁</div>
+                <p>Nu există proiecte. Adaugă primul proiect!</p>
+            </div>
+            
+            <!-- Batch Action Bar -->
+            <div id="batch-action-bar" class="batch-action-bar" style="display:none;">
+                <span id="batch-selected-count">0 selectate</span>
+                <div id="batch-action-buttons" style="display:none; gap:8px;">
+                    <button class="btn btn-success btn-small" onclick="batchUpdateStatus('finalizat')">✅ Marchează Finalizat</button>
+                    <button class="btn btn-primary btn-small" onclick="batchUpdateStatus('in_lucru')">🔄 Marchează În Lucru</button>
+                    <button class="btn btn-danger btn-small" onclick="batchDeleteProjects()">🗑️ Șterge selectate</button>
+                </div>
+                <button class="btn btn-secondary btn-small" onclick="toggleBatchMode()">✕ Anulează</button>
+            </div>
+        </div>
+
+        <div id="project-detail-view" class="project-detail" data-print-date="" data-project-name="">
+            <div class="back-link" onclick="showProjectList()">← Înapoi la Lista Proiectelor</div>
+
+            <div class="detail-header">
+                <div>
+                    <h2 class="detail-title" id="detail-nume"></h2>
+                    <p class="detail-meta" id="detail-client"></p>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului">Editează proiect</button>
+                    <button class="btn btn-secondary" onclick="exportMarkdown()">Export Markdown</button>
+                    <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF">📄 PDF</button>
+                    <button class="btn btn-secondary" onclick="testTelegramNotification()" title="Trimite notificare de test">🔔 Notificare</button>
+                    <button class="btn btn-danger" onclick="deleteCurrentProject()">Șterge</button>
+                </div>
+            </div>
+
+            <!-- Service-specific fields -->
+            <div class="service-fields detail-section" id="service-fields">
+                <div class="detail-section-header">📋 Fișă Intervenție</div>
+                <div class="detail-section-body">
+                    <div class="client-confirmation">
+                        <input type="checkbox" id="detail-confirmat-client" onchange="saveServiceField('confirmat_client', this.checked ? 1 : 0)">
+                        <label for="detail-confirmat-client">Confirmat de client</label>
+                        <input type="text" id="detail-client-nume" placeholder="Nume client" onchange="saveServiceField('client_nume_confirmare', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Before/After sections (Service) -->
+            <div class="before-after-section" id="before-after-section">
+                <div class="before-section detail-section">
+                    <div class="detail-section-header">🔴 Constatări înainte de intervenție</div>
+                    <div class="detail-section-body">
+                        <div class="form-group">
+                            <label>Descriere Problemă / Constatări</label>
+                            <textarea id="service-before" placeholder="Descrieți simptomele, codul de eroare, comportamentul echipamentului..." onchange="saveServiceField('service_before', this.value)"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="after-section detail-section">
+                    <div class="detail-section-header">🟢 Acțiuni și rezultat</div>
+                    <div class="detail-section-body">
+                        <div class="form-group">
+                            <label>Acțiuni Efectuate / Rezultat</label>
+                            <textarea id="service-after" placeholder="Descrieți ce s-a făcut, piesele înlocuite, rezultatul final..." onchange="saveServiceField('service_after', this.value)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PIF observations section -->
+            <div class="observations-section detail-section" id="pif-observatii-section">
+                <div class="detail-section-header">📝 Observații Tehnice</div>
+                <div class="detail-section-body">
+                    <textarea id="pif-observatii" placeholder="Adăugați observații tehnice..." style="min-height:120px;max-height:200px;resize:vertical;" onchange="saveServiceField('observatii', this.value)"></textarea>
+                </div>
+            </div>
+
+            <!-- Todo List -->
+            <div class="todo-section detail-section" id="todo-section">
+                <div class="detail-section-header">📌 Todo List</div>
+                <div class="detail-section-body">
+                    <div class="todo-add-form">
+                        <div class="form-group" style="margin-bottom:0">
+                            <input type="text" id="todo-title" placeholder="Titlu task nou...">
+                        </div>
+                        <select id="todo-priority">
+                            <option value="normal">Normal</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="minor">Minor</option>
+                        </select>
+                        <select id="todo-status">
+                            <option value="to_do">To Do</option>
+                            <option value="in_lucru">În Lucru</option>
+                            <option value="done">Finalizat</option>
+                        </select>
+                        <button class="btn btn-primary btn-small" onclick="addTodo()">Adaugă</button>
+                    </div>
+                    <div class="todo-list" id="todo-list"></div>
+                </div>
+            </div>
+
+            <!-- Journal Section -->
+            <div class="jurnal-section detail-section" id="jurnal-section">
+                <div class="detail-section-header">📖 Jurnal de Lucru</div>
+                <div class="detail-section-body">
+                    <div class="jurnal-list" id="jurnal-list"></div>
+                    <div class="jurnal-form">
+                        <input type="date" id="jurnal-data">
+                        <input type="text" id="jurnal-continut" placeholder="Adaugă intrare jurnal...">
+                        <button class="btn btn-primary btn-small" onclick="addJurnalEntry()">Adaugă</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            <div class="attachments-section detail-section" id="attachments-section">
+                <div class="detail-section-header">📎 Atașamente</div>
+                <div class="detail-section-body">
+                    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                        <div class="drop-zone-icon">📁</div>
+                        <p>Trageți fișiere aici sau faceți click pentru a selecta</p>
+                        <p style="font-size: 0.8rem; margin-top: 5px;">Toate tipurile de fișiere acceptate</p>
+                    </div>
+                    <input type="file" id="file-input" class="hidden-input" accept="*" multiple onchange="handleFileUpload(event)">
+                    <div class="attachment-list" id="attachment-list"></div>
+                </div>
+            </div>
+
+            <!-- Checklist PIF -->
+            <div class="checklist-section detail-section" id="checklist-section" style="display:none;">
+                <div class="detail-section-header">📋 Checklist PIF</div>
+                <div class="detail-section-body">
+                    <div class="progress-bar" id="checklist-progress">
+                        <div class="progress-fill" id="checklist-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p id="checklist-progress-text" style="font-size: 0.85rem; color: var(--text2); margin-bottom: 12px;">0% completat</p>
+                    <div class="checklist-add-form" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="text" id="checklist-title" placeholder="Adaugă item nou..." style="flex: 1; min-height: 44px;">
+                        <button class="btn btn-primary btn-small" onclick="addChecklistItem()">+</button>
+                    </div>
+                    <div class="checklist-list" id="checklist-list"></div>
+                </div>
+            </div>
+
+            <!-- Equipment Section -->
+            <div class="echipamente-section detail-section" id="echipamente-section">
+                <div class="detail-section-header">⚙️ Echipamente</div>
+                <div class="detail-section-body">
+                    <div id="echipamente-list" class="echipamente-list"></div>
+                    <button class="btn btn-secondary btn-small" onclick="showAddEquipmentForm()" style="margin-top: 12px;">+ Adaugă Echipament</button>
+                </div>
+            </div>
+
+            <!-- Timer Section -->
+            <div class="timer-section detail-section" id="timer-section">
+                <div class="detail-section-header">⏱️ Timer</div>
+                <div class="detail-section-body">
+                    <div class="timer-display" id="timer-display">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-success" id="timer-start-btn" onclick="startTimer()">▶ Start</button>
+                        <button class="btn btn-danger" id="timer-stop-btn" onclick="stopTimer()" style="display:none;">⏹ Stop</button>
+                    </div>
+                    <div class="timer-total" id="timer-total" style="margin-top: 12px; font-size: 0.9rem; color: var(--text2);">
+                        Total: 0h 0m
+                    </div>
+                    <div class="timer-sessions" id="timer-sessions-list"></div>
+                </div>
+            </div>
+
+        </div>
+        </div>
+
+        <!-- HOME TAB -->
+        <div id="tab-acasa" class="tab-content active">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Total Proiecte</div>
+                    <div class="stat-value" id="home-stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">În Lucru</div>
+                    <div class="stat-value" id="home-stat-active">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Finalizate</div>
+                    <div class="stat-value" id="home-stat-finished">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ore Totale</div>
+                    <div class="stat-value" id="home-stat-hours">0h</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="showNewProjectForm()">+ Proiect Nou</button>
+                <button class="btn btn-secondary" onclick="quickAddTaskFromHome()">+ Task Rapid</button>
+            </div>
+
+            <h3 style="margin-bottom: 12px; color: var(--text);">Activitate Recenta</h3>
+            <div id="recent-activity-list" class="todo-list" style="max-height: 400px;">
+                <p style="color: var(--text2);">Se încarcă...</p>
+            </div>
+        </div>
+
+        <!-- STATISTICS TAB -->
+        <div id="tab-statistici" class="tab-content">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Total Proiecte</div>
+                    <div class="stat-value" id="stats-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">În Lucru</div>
+                    <div class="stat-value" id="stats-active">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Finalizate</div>
+                    <div class="stat-value" id="stats-finished">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ore Facturabile</div>
+                    <div class="stat-value" id="stats-hours">0h</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-top: 24px;">
+                <div class="stat-card" style="padding: 20px;">
+                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte după Status</h4>
+                    <div class="chart-container"><canvas id="chart-status"></canvas></div>
+                </div>
+                <div class="stat-card" style="padding: 20px;">
+                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte după Producător</h4>
+                    <div class="chart-container"><canvas id="chart-manufacturer"></canvas></div>
+                </div>
+                <div class="stat-card" style="padding: 20px;">
+                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte pe Lună</h4>
+                    <div class="chart-container"><canvas id="chart-monthly"></canvas></div>
+                </div>
+                <div class="stat-card" style="padding: 20px;">
+                    <h4 style="margin-bottom: 16px; color: var(--text);">Ore pe Proiect</h4>
+                    <div class="chart-container"><canvas id="chart-hours"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Project Timeline Section -->
+            <div class="timeline-section" id="timeline-section">
+                <div class="timeline-header">
+                    <div class="timeline-title">📅 Timeline Proiecte</div>
+                </div>
+                <div class="timeline-container" id="timeline-container">
+                    <div class="skeleton-chart" id="timeline-loading"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-taskuri" class="tab-content">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Total Task-uri Azi</div>
+                    <div class="stat-value" id="gt-stat-total">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Finalizate Azi</div>
+                    <div class="stat-value" id="gt-stat-finalizate">0</div>
+                </div>
+            </div>
+
+            <div class="quick-add-bar">
+                <div class="quick-add-main">
+                    <input
+                        type="text"
+                        id="quick-task-input"
+                        placeholder="Task nou... (Enter pentru a salva)"
+                        autocomplete="off"
+                        autocorrect="off"
+                    />
+                    <button class="btn btn-primary" onclick="quickAddTask()" id="quick-add-btn">+</button>
+                </div>
+                <div class="quick-add-options">
+                    <select id="quick-prioritate" class="quick-select">
+                        <option value="Normal">⚡️ Normal</option>
+                        <option value="Urgent">🔴 Urgent</option>
+                        <option value="Minor">⬇️ Minor</option>
+                    </select>
+                    <select id="quick-categorie" class="quick-select">
+                        <option value="General">📌 General</option>
+                        <option value="Birou">🏢 Birou</option>
+                        <option value="Teren">🔧 Teren</option>
+                        <option value="Administrativ">📋 Administrativ</option>
+                        <option value="Studiu">📚 Studiu</option>
+                    </select>
+                    <input type="date" id="quick-scadenta" class="quick-select" title="Data scadentă">
+                </div>
+            </div>
+
+            <div class="filters">
+                <select id="gt-filter-status">
+                    <option value="">Toate Statusurile</option>
+                    <option value="to_do">To Do</option>
+                    <option value="in_lucru">În Lucru</option>
+                    <option value="done">Finalizat</option>
+                </select>
+                <select id="gt-filter-prioritate">
+                    <option value="">Toate Prioritățile</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="normal">Normal</option>
+                    <option value="minor">Minor</option>
+                </select>
+                <select id="gt-filter-categorie">
+                    <option value="">Toate Categoriile</option>
+                    <option value="General">General</option>
+                    <option value="Birou">Birou</option>
+                    <option value="Teren">Teren</option>
+                    <option value="Administrativ">Administrativ</option>
+                    <option value="Studiu">Studiu</option>
+                </select>
+                <input type="text" id="gt-search" placeholder="Caută task...">
+            </div>
+
+            <div id="gt-task-list" class="todo-list" style="max-height: 500px;"></div>
+
+            <div class="archive-section">
+                <div class="archive-header" onclick="toggleArchive()">
+                    <span>✅ Taskuri finalizate</span>
+                    <span id="archive-count" class="badge-count">0</span>
+                    <span id="archive-chevron" style="margin-left:auto; font-size:0.8rem; color:var(--text2);">▼</span>
+                </div>
+                <div id="archive-body" style="display:none;">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+                        <button class="btn btn-small btn-danger" onclick="clearArchive()">
+                            Șterge tot
+                        </button>
+                    </div>
+                    <div id="archive-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirm-modal" onclick="if(event.target === this) closeConfirmModal()">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmare</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message"></p>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeConfirmModal()">Anulează</button>
+                    <button class="btn btn-danger" id="confirm-btn" onclick="confirmAction()">Șterge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="preview-modal">
+        <div class="preview-container">
+            <div class="preview-header">
+                <span id="preview-filename"></span>
+                <button class="btn btn-small" onclick="closePreview()">✕ Închide</button>
+            </div>
+            <div id="preview-content"></div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help Overlay -->
+    <div id="keyboard-help-overlay" class="keyboard-help-overlay" onclick="if(event.target === this) hideKeyboardHelp()">
+        <div class="keyboard-help-content" onclick="event.stopPropagation()">
+            <div class="keyboard-help-title">⌨️ Shortcut-uri</div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Proiect nou</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">N</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Caută</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">/</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Tab Acasă</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">1</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Tab Taskuri</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">2</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Tab Proiecte</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">3</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Tab Statistici</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">4</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Salvează formular</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">Ctrl</span><span class="keyboard-key">S</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Închide modal / înapoi</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">Esc</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Vezi shortcut-uri</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">?</span></div>
+            </div>
+            <div style="text-align: center; margin-top: 16px;">
+                <button class="btn btn-secondary" onclick="hideKeyboardHelp()">Închide</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Project form modal - global, works from any view -->
+    <div id="new-project-form" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="form-title">Proiect nou</h2>
+                <button class="btn btn-small" onclick="hideNewProjectForm()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form" onsubmit="saveProject(event)">
+                    <input type="hidden" id="project-id">
+
+                    <div class="form-group">
+                        <label>Pornește din Template</label>
+                        <select id="p-template" onchange="onTemplateChange()">
+                            <option value="">-- Fără template --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tip Proiect *</label>
+                        <div class="project-type-selector">
+                            <label class="project-type-btn pif" id="type-pif-btn">
+                                <input type="radio" name="project-type" value="PIF" id="type-pif" required>
+                                <div class="type-icon">🔧</div>
+                                <div class="type-label">PIF</div>
+                                <div class="type-desc">Punere în Funcțiune</div>
+                            </label>
+                            <label class="project-type-btn service" id="type-service-btn">
+                                <input type="radio" name="project-type" value="Service" id="type-service">
+                                <div class="type-icon">🔧</div>
+                                <div class="type-label">Service</div>
+                                <div class="type-desc">Intervenție Service</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nume Proiect *</label>
+                        <input type="text" id="p-nume" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Client *</label>
+                        <div class="client-autocomplete">
+                            <input type="text" id="p-client" required autocomplete="off" oninput="onClientSearch()" onfocus="onClientSearch()">
+                            <div id="client-dropdown" class="client-dropdown"></div>
+                        </div>
+                        <input type="hidden" id="p-client-id">
+                    </div>
+                    <div class="form-group">
+                        <label>Locație *</label>
+                        <input type="text" id="p-locatie" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nr. Comandă</label>
+                            <input type="text" id="p-nr-comanda">
+                        </div>
+                        <div class="form-group">
+                            <label>Nr. Contract</label>
+                            <input type="text" id="p-nr-contract">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="p-status">
+                                <option value="in_lucru">În Lucru</option>
+                                <option value="finalizat">Finalizat</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Producător</label>
+                            <select id="p-producator">
+                                <option value="ABB">ABB</option>
+                                <option value="Siemens">Siemens</option>
+                                <option value="Danfoss">Danfoss</option>
+                                <option value="Altul">Altul</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tip Echipament</label>
+                        <input type="text" id="p-tip" placeholder="ex: convertor frecvență, soft-starter, tablou electric">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data Start</label>
+                            <input type="date" id="p-data-start">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Estimată Finalizare</label>
+                            <input type="date" id="p-data-est">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observații</label>
+                        <textarea id="p-observatii"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="hideNewProjectForm()">Anulează</button>
+                        <button type="submit" class="btn btn-primary">Salvează</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden input styling -->
+    <style>
+        .hidden-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Client autocomplete */
+        .client-autocomplete {
+            position: relative;
+        }
+        .client-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+        .client-dropdown.active {
+            display: block;
+        }
+        .client-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+        .client-option:last-child {
+            border-bottom: none;
+        }
+        .client-option:hover {
+            background: var(--bg3);
+        }
+        .client-option.selected {
+            background: rgba(0, 212, 255, 0.1);
+        }
+        .client-option-name {
+            font-weight: 500;
+        }
+        .client-option-meta {
+            font-size: var(--font-tiny);
+            color: var(--text2);
+        }
+        .client-add-new {
+            color: var(--accent);
+            font-weight: 500;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-top: 1px solid var(--border);
+        }
+        .client-add-new:hover {
+            background: var(--bg3);
+        }
+
+        /* Equipment section */
+        .echipamente-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .echipament-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+        }
+        .echipament-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .echipament-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .echipament-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .echipament-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: var(--font-small);
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+        .echipament-meta span {
+            background: var(--bg3);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+        }
+        .echipament-params {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        .echipament-params-table {
+            width: 100%;
+            font-size: var(--font-small);
+        }
+        .echipament-params-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .echipament-params-table td:first-child {
+            font-weight: 500;
+            color: var(--accent);
+            width: 40%;
+        }
+        .echipament-expanded {
+            margin-top: 8px;
+        }
+        .echipament-toggle {
+            cursor: pointer;
+            color: var(--text2);
+            font-size: var(--font-small);
+        }
+        .echipament-toggle:hover {
+            color: var(--accent);
+        }
+
+        /* Equipment form */
+        .echipament-form {
+            background: var(--bg3);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .echipament-form .form-group {
+            margin-bottom: 12px;
+        }
+        .echipament-form-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        /* Client list modal */
+        .client-list-modal {
+            max-width: 800px;
+        }
+        .client-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+        .client-list-search {
+            flex: 1;
+            max-width: 300px;
+        }
+        .client-list-table {
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .client-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .client-list-item:hover {
+            background: var(--bg3);
+        }
+        .client-list-info {
+            flex: 1;
+        }
+        .client-list-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .client-list-details {
+            font-size: var(--font-small);
+            color: var(--text2);
+        }
+        .client-list-actions {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+
+    <style>
+    /* Mobile Bottom Navigation */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 1000;
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            min-width: 64px;
+            min-height: 48px;
+            justify-content: center;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--accent);
+        }
+
+        .bottom-nav-item:hover {
+            color: var(--accent);
+        }
+
+        .bottom-nav-icon {
+            font-size: 1.4rem;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: block;
+            }
+            body {
+                padding-bottom: 80px;
+            }
+            .container {
+                padding-bottom: 80px;
+            }
+        }
+
+        /* Larger touch targets */
+        .btn {
+            min-height: 48px;
+        }
+
+        input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+        }
+
+        .todo-item, .checklist-item, .gt-task-card {
+            min-height: 52px;
+            padding: 12px 16px;
+        }
+
+        /* Larger text inputs on mobile */
+        @media (max-width: 768px) {
+            input[type="text"],
+            input[type="date"],
+            input[type="password"],
+            input[type="number"],
+            select,
+            textarea {
+                min-height: 48px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .form-group textarea {
+                min-height: 100px;
+            }
+        }
+    </style>
+
+    <!-- Client List Modal -->
+    <div class="modal-overlay" id="client-list-modal">
+        <div class="modal client-list-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">👥 Clienți</h3>
+                <button class="modal-close" onclick="closeClientListModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="client-list-header">
+                    <input type="text" id="client-list-search" class="client-list-search" placeholder="Caută client..." oninput="filterClientList()">
+                    <button class="btn btn-primary btn-small" onclick="showAddClientForm()">+ Client Nou</button>
+                </div>
+                <div id="client-list-container" class="client-list-table"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div class="modal-overlay" id="add-client-modal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="add-client-title">Adaugă Client Nou</h3>
+                <button class="modal-close" onclick="closeAddClientModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-client-form" onsubmit="saveClient(event)">
+                    <input type="hidden" id="edit-client-id">
+                    <div class="form-group">
+                        <label>Nume *</label>
+                        <input type="text" id="client-nume" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Adresă</label>
+                        <input type="text" id="client-adresa">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Telefon</label>
+                            <input type="text" id="client-telefon">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="client-email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Principal</label>
+                        <input type="text" id="client-contact">
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <textarea id="client-note"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddClientModal()">Anulează</button>
+                        <button type="submit" class="btn btn-primary">Salvează</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script src="/static/app.js"></script>
+    <script>
+        document.getElementById('preview-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePreview();
+        });
+    </script>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottom-nav">
+        <div class="bottom-nav-inner">
+            <div class="bottom-nav-item" data-tab="acasa" onclick="switchTab('acasa')">
+                <span class="bottom-nav-icon">🏠</span>
+                <span>Acasă</span>
+            </div>
+            <div class="bottom-nav-item" data-tab="taskuri" onclick="switchTab('taskuri')">
+                <span class="bottom-nav-icon">✅</span>
+                <span>Taskuri</span>
+            </div>
+            <div class="bottom-nav-item" data-tab="proiecte" onclick="switchTab('proiecte')">
+                <span class="bottom-nav-icon">📋</span>
+                <span>Proiecte</span>
+            </div>
+            <div class="bottom-nav-item" data-tab="statistici" onclick="switchTab('statistici')">
+                <span class="bottom-nav-icon">📊</span>
+                <span>Statistici</span>
+            </div>
+        </div>
+    </nav>
+
+</body>
+</html>

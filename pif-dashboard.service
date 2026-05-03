@@ -1,0 +1,14 @@
+[Unit]
+Description=PIF Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=ionursu
+WorkingDirectory=/home/ionursu/Projects/pif-dashboard
+ExecStart=/home/ionursu/Projects/pif-dashboard/venv/bin/python app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
