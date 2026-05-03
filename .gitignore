@@ -1,11 +1,16 @@
+# Generated files
 venv/
 __pycache__/
 *.pyc
+*.pyo
+
+# Runtime files
 backups/
 logs/
 uploads/
 *.db
-pif-dashboard.service
+*.db-journal
 
-# Xanther CLI config (contains API key)
-.xanther/
+# System
+pif-dashboard.service
+.venv
