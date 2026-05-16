@@ -2144,10 +2144,13 @@ def get_manuals():
     return jsonify({'manuals': manuals})
 
 @app.route('/manuals/<path:filename>', methods=['GET'])
-@login_required
 def serve_manual(filename):
-    """Serve a PDF manual file"""
-    return send_file(os.path.join(MANUALS_DIR, filename))
+    """Serve a PDF manual file (no auth — public technical docs)"""
+    safe_name = os.path.basename(filename)
+    fpath = os.path.join(MANUALS_DIR, safe_name)
+    if not os.path.isfile(fpath):
+        return 'Manual not found', 404
+    return send_file(fpath)
 
 # ============ INIT DEFAULT TEMPLATES ============
 
