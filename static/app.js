@@ -1904,7 +1904,7 @@ async function loadDashboardHome() {
                 html += `
                     <div class="gt-task-card" onclick="showProjectDetail('${entry.proiect_id}')">
                         <span class="gt-task-title">${escapeHtml(entry.continut)}</span>
-                        <div class="todo-meta">${entry.data} • ${escapeHtml(entry.proiect_nume || '')}</div>
+                        <div class="todo-meta">${entry.data} • ${escapeHtml(entry.project_name || '')}</div>
                     </div>
                 `;
             });
