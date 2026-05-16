@@ -11,6 +11,10 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def close_db():
+    """No-op for compatibility — Flask closes connections automatically."""
+    pass
+
 # ============ PHASE 2c: DATABASE MIGRATIONS ============
 # Schema version history:
 # v1: Initial schema (proiecte, tasks, checklist_pif, jurnal, timer_sessions, atasamente, global_tasks)

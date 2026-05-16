@@ -23,10 +23,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from database import get_db, init_db, row_to_dict, close_db
-from blueprints.budget import budget_bp
+# from blueprints.budget import budget_bp  # not available in this repo
 
 app = Flask(__name__)
-app.register_blueprint(budget_bp)
+# app.register_blueprint(budget_bp)  # not available in this repo
 
 # Persistent secret key — supravietuieste restart-urilor
 SECRET_KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.secret_key')
