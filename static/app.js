@@ -1409,6 +1409,12 @@ function switchTab(tab) {
         headerActions.classList.toggle('project-tab-active', tab === 'proiecte');
     }
 
+    // Context-specific header buttons
+    const btnClienti = document.getElementById('header-btn-clienti');
+    const btnManuale = document.getElementById('header-btn-manuale');
+    if (btnClienti) btnClienti.style.display = (tab === 'proiecte') ? 'inline-flex' : 'none';
+    if (btnManuale) btnManuale.style.display = (tab === 'parametri') ? 'inline-flex' : 'none';
+
     if (tab === 'taskuri') {
         loadGlobalTasks();
         loadProjectTasks();

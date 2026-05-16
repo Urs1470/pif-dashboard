@@ -2288,8 +2288,8 @@
 </svg>
 </a>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="showManualsModal()" title="Deschide manualele">📖 Manuale</button>
-                <button class="btn btn-secondary" onclick="showClientList()" title="Listă clienți">👥 Clienți</button>
+                <button class="btn btn-secondary" id="header-btn-manuale" onclick="showManualsModal()" title="Deschide manualele" style="display:none;">📖 Manuale</button>
+                <button class="btn btn-secondary" id="header-btn-clienti" onclick="showClientList()" title="Listă clienți" style="display:none;">👥 Clienți</button>
                 <div class="export-dropdown">
                     <button class="btn btn-secondary" onclick="toggleExportDropdown(event)" title="Export Excel">📥 Export ▼</button>
                     <div id="export-dropdown" class="export-dropdown-content">
@@ -3285,7 +3285,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260528"></script>
+    <script src="/static/app.js?v=20260529"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
