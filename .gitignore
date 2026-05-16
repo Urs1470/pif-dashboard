@@ -14,3 +14,7 @@ uploads/
 # System
 pif-dashboard.service
 .venv
+
+# Secrets
+.secret_key
+.env
