@@ -2334,8 +2334,8 @@ def dashboard_home():
     
     # Recent journal
     cursor.execute("""
-        SELECT j.id, j.continut, j.created_at, p.nume as project_name
-        FROM jurnal j JOIN proiecte p        ON j.proiect_id = p.id
+        SELECT j.id, j.proiect_id, j.data, j.continut, j.created_at, p.nume as project_name
+        FROM jurnal j JOIN proiecte p ON j.proiect_id = p.id
         ORDER BY j.created_at DESC LIMIT 5
     """)
     recent_journal = [dict(r) for r in cursor.fetchall()]
