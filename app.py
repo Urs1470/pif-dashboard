@@ -5,6 +5,8 @@ import functools
 import time
 import logging
 import hashlib
+import hmac
+import subprocess
 
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -2298,6 +2300,60 @@ def dashboard_home():
         'todays_tasks': todays_tasks,
         'recent_journal': recent_journal
     })
+
+
+# ============ AUTO-DEPLOY WEBHOOK ============
+
+DEPLOY_SECRET_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.deploy_secret')
+
+def get_deploy_secret():
+    if os.path.exists(DEPLOY_SECRET_FILE):
+        with open(DEPLOY_SECRET_FILE, 'r') as f:
+            return f.read().strip()
+    return None
+
+@app.route('/webhook/deploy', methods=['POST'])
+def webhook_deploy():
+    secret = get_deploy_secret()
+    if not secret:
+        return 'Webhook not configured', 500
+
+    signature = request.headers.get('X-Hub-Signature-256', '')
+    if not signature.startswith('sha256='):
+        return 'Invalid signature', 403
+
+    expected = 'sha256=' + hmac.new(
+        secret.encode(), request.data, hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(signature, expected):
+        return 'Bad signature', 403
+
+    payload = request.get_json(silent=True) or {}
+    ref = payload.get('ref', '')
+    if ref != 'refs/heads/master':
+        return 'Not master branch, skipping', 200
+
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        result = subprocess.run(
+            ['git', 'pull', 'origin', 'master'],
+            cwd=project_dir, capture_output=True, text=True, timeout=30
+        )
+        logger.info(f"Auto-deploy git pull: {result.stdout.strip()}")
+        if result.returncode != 0:
+            logger.error(f"Auto-deploy git pull failed: {result.stderr}")
+            return f'Pull failed: {result.stderr}', 500
+    except Exception as e:
+        logger.error(f"Auto-deploy error: {e}")
+        return f'Deploy error: {e}', 500
+
+    subprocess.Popen(
+        ['sudo', 'systemctl', 'restart', 'pif-dashboard'],
+        cwd=project_dir
+    )
+
+    return 'Deploy triggered', 200
 
 
 if __name__ == '__main__':
