@@ -4,72 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIF Dashboard</title>
-    <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2338bdf8' stroke-width='1' opacity='0.4'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%230d1f35'/%3E%3Cpath d='M18.5 7L11 17h6l-3.5 8L26 14h-7z' fill='%2338bdf8'/%3E%3C/svg%3E">
-    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="/static/manifest.json?v=20260510d">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%230e1117'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%2358d1c9' stroke-width='1' opacity='0.3'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%23161b22'/%3E%3Cpath d='M18.5 7L11 17h6l-3.5 8L26 14h-7z' fill='%2358d1c9'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0e1117">
     <style>
         :root {
-            /* Dark theme (default) */
-            --bg: #0a0e17;
-            --bg2: #111827;
-            --bg3: #1a2236;
-            --accent: #00d4ff;
-            --accent2: #7c3aed;
-            --accent3: #10b981;
-            --danger: #ef4444;
-            --warning: #eab308;
-            --text: #e2e8f0;
-            --text2: #94a3b8;
-            --border: #1e293b;
-            --pif-accent: #3b82f6;
-            --service-accent: #f97316;
+            /* ═══ NORDIC CALM — Dark (default) ═══ */
+            --bg: #0e1117;
+            --bg2: #161b22;
+            --bg3: #1c2129;
+            --accent: #58d1c9;
+            --accent2: #9580ff;
+            --accent3: #6bdf8a;
+            --danger: #ff6b6b;
+            --warning: #ffd166;
+            --text: #e6edf3;
+            --text2: #7d8590;
+            --border: #21262d;
+            --pif-accent: #58d1c9;
+            --service-accent: #ffa657;
+
+            /* Font stack */
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
 
             /* Font sizes */
-            --font-h1: 2rem;
-            --font-h2: 1.5rem;
-            --font-h3: 1.25rem;
-            --font-h4: 1.1rem;
-            --font-body: 0.95rem;
-            --font-small: 0.85rem;
-            --font-tiny: 0.75rem;
-            --font-mono: 'Consolas', 'Monaco', monospace;
+            --font-h1: 1.75rem;
+            --font-h2: 1.35rem;
+            --font-h3: 1.15rem;
+            --font-h4: 1rem;
+            --font-body: 0.9rem;
+            --font-small: 0.8rem;
+            --font-tiny: 0.7rem;
 
-            /* Spacing scale */
+            /* Spacing */
             --space-xs: 4px;
             --space-sm: 8px;
             --space-md: 16px;
             --space-lg: 24px;
             --space-xl: 32px;
 
-            /* Border radius */
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
+            /* Radius — soft, rounded */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius: 10px;
 
-            /* Shadows */
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 20px rgba(0, 212, 255, 0.1);
-            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+            /* Shadows — subtle, diffused */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.25);
         }
 
         [data-theme="light"] {
-            --bg: #f8fafc;
+            --bg: #f6f8fa;
             --bg2: #ffffff;
-            --bg3: #f1f5f9;
-            --accent: #0284c7;
+            --bg3: #eef1f5;
+            --accent: #0d9488;
             --accent2: #7c3aed;
-            --accent3: #059669;
+            --accent3: #16a34a;
             --danger: #dc2626;
             --warning: #d97706;
-            --text: #0f172a;
-            --text2: #475569;
-            --border: #e2e8f0;
-            --pif-accent: #2563eb;
+            --text: #1f2937;
+            --text2: #6b7280;
+            --border: #d0d7de;
+            --pif-accent: #0d9488;
             --service-accent: #ea580c;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 20px rgba(2, 132, 199, 0.1);
-            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.06);
         }
 
         * {
@@ -79,17 +88,19 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-sans);
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             line-height: 1.6;
             font-size: var(--font-body);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg2); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text2); }
 
         :focus-visible {
@@ -118,24 +129,22 @@
         .brand-link:hover { opacity: 0.85; }
 
         /* SVG Logo — theme-aware */
-        .logo-ring { fill:none; stroke:var(--accent); stroke-width:1.2; opacity:0.25; }
-        .logo-ring2 { fill:none; stroke:var(--accent); stroke-width:0.6; opacity:0.12; }
+        .logo-ring { fill:none; stroke:var(--accent); stroke-width:1.2; opacity:0.2; }
+        .logo-ring2 { fill:none; stroke:var(--accent); stroke-width:0.6; opacity:0.1; }
         .logo-circle { fill:var(--bg2); stroke:var(--border); stroke-width:0.8; }
         .bolt-main { fill:var(--accent); }
-        .bolt-glow { fill:var(--accent); opacity:0.3; }
-        .pif-text { font-family:system-ui,-apple-system,sans-serif; font-size:32px; font-weight:700; fill:var(--text); letter-spacing:4px; }
-        .dash-text { font-family:system-ui,-apple-system,sans-serif; font-size:11px; font-weight:500; fill:var(--text2); letter-spacing:3px; }
+        .bolt-glow { fill:var(--accent); opacity:0.2; }
+        .pif-text { font-family:'Plus Jakarta Sans',system-ui,sans-serif; font-size:32px; font-weight:700; fill:var(--text); letter-spacing:4px; }
+        .dash-text { font-family:'Plus Jakarta Sans',system-ui,sans-serif; font-size:11px; font-weight:500; fill:var(--text2); letter-spacing:3px; }
         .logo-sep { stroke:var(--border); stroke-width:0.6; }
         .dot { fill:var(--accent); }
 
         h1 {
             font-size: var(--font-h1);
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text);
             margin-bottom: var(--space-xs);
+            letter-spacing: -0.02em;
         }
 
         .subtitle { color: var(--text2); font-size: var(--font-small); }
@@ -180,6 +189,8 @@
             padding: var(--space-md);
             min-height: 100px;
             transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow-card);
+            border-top: 2px solid var(--accent);
         }
 
         .stat-card:hover {
@@ -187,8 +198,8 @@
             box-shadow: var(--shadow-md);
         }
 
-        .stat-label { font-size: var(--font-small); color: var(--text2); margin-bottom: var(--space-xs); }
-        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); min-height: 1.8rem; }
+        .stat-label { font-size: var(--font-small); color: var(--text2); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); min-height: 1.8rem; letter-spacing: -0.02em; }
 
         .stat-card.danger .stat-value { color: var(--danger); }
         .stat-card.success .stat-value { color: var(--accent3); }
@@ -210,21 +221,22 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 8px;
-            border-radius: var(--radius-md);
+            padding: 3px 10px;
+            border-radius: 20px;
             font-size: var(--font-tiny);
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
 
-        .badge.in_lucru { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .badge.finalizat { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .badge.blocat { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .badge.in_așteptare { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .badge.pif { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .badge.service { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .badge.to_do { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .badge.done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge.in_lucru { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
+        .badge.finalizat { background: rgba(107, 223, 138, 0.12); color: #6bdf8a; }
+        .badge.blocat { background: rgba(255, 107, 107, 0.12); color: #ff6b6b; }
+        .badge.in_așteptare { background: rgba(255, 166, 87, 0.12); color: #ffa657; }
+        .badge.pif { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
+        .badge.service { background: rgba(255, 166, 87, 0.12); color: #ffa657; }
+        .badge.to_do { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
+        .badge.done { background: rgba(107, 223, 138, 0.12); color: #6bdf8a; }
 
         /* Status icon badges */
         .badge-icon { font-size: 0.7rem; }
@@ -377,13 +389,15 @@
             font-weight: 600;
             font-size: var(--font-body);
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.15s ease;
             border: none;
             font-family: inherit;
+            letter-spacing: -0.01em;
         }
 
         .btn:hover {
             transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn:active {
@@ -391,30 +405,30 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: #000;
+            background: var(--accent);
+            color: #0e1117;
         }
 
         .btn-primary:hover {
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            box-shadow: 0 4px 14px rgba(88, 209, 201, 0.25);
         }
 
         .btn-pif {
-            background: linear-gradient(135deg, var(--pif-accent), var(--accent));
-            color: #fff;
+            background: var(--pif-accent);
+            color: #0e1117;
         }
 
         .btn-pif:hover {
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 14px rgba(88, 209, 201, 0.25);
         }
 
         .btn-service {
-            background: linear-gradient(135deg, var(--service-accent), #ea580c);
-            color: #fff;
+            background: var(--service-accent);
+            color: #0e1117;
         }
 
         .btn-service:hover {
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 4px 14px rgba(255, 166, 87, 0.25);
         }
 
         .btn-secondary {
@@ -424,8 +438,8 @@
         }
 
         .btn-secondary:hover {
-            box-shadow: var(--shadow-sm);
             background: var(--bg2);
+            border-color: var(--text2);
         }
 
         .btn-danger {
@@ -434,16 +448,16 @@
         }
 
         .btn-danger:hover {
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 4px 14px rgba(255, 107, 107, 0.25);
         }
 
         .btn-success {
             background: var(--accent3);
-            color: #000;
+            color: #0e1117;
         }
 
         .btn-success:hover {
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 14px rgba(107, 223, 138, 0.25);
         }
 
         .btn-small {
@@ -460,6 +474,8 @@
             background: var(--bg2);
             border-radius: var(--radius-lg);
             overflow: hidden;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
         }
 
         th {
@@ -467,14 +483,14 @@
             color: var(--text2);
             font-weight: 600;
             text-align: left;
-            padding: var(--space-md);
+            padding: 12px var(--space-md);
             font-size: var(--font-small);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
         }
 
         td {
-            padding: var(--space-md);
+            padding: 12px var(--space-md);
             border-bottom: 1px solid var(--border);
             max-width: 200px;
             overflow: hidden;
@@ -550,12 +566,12 @@
             max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
-            transform: scale(0.9);
-            transition: transform 0.3s;
-            box-shadow: var(--shadow-lg);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.25s ease;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
         }
 
-        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-overlay.active .modal { transform: scale(1) translateY(0); }
 
         .modal-header {
             display: flex;
@@ -643,13 +659,13 @@
 
         .project-type-btn.selected.pif {
             border-color: var(--pif-accent);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(88, 209, 201, 0.08);
             color: var(--pif-accent);
         }
 
         .project-type-btn.selected.service {
             border-color: var(--service-accent);
-            background: rgba(249, 115, 22, 0.1);
+            background: rgba(255, 166, 87, 0.08);
             color: var(--service-accent);
         }
 
@@ -671,27 +687,28 @@
 
         .toast {
             background: var(--accent3);
-            color: #000;
+            color: #0e1117;
             padding: 12px 20px;
             border-radius: var(--radius-md);
             font-weight: 600;
             z-index: 2000;
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-            box-shadow: var(--shadow-md);
+            transition: opacity 0.25s, transform 0.25s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: var(--space-sm);
             pointer-events: auto;
             max-width: 350px;
+            font-size: var(--font-small);
         }
 
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background: #10b981; color: #fff; }
-        .toast.error { background: #ef4444; color: #fff; }
-        .toast.warning { background: #f97316; color: #fff; }
-        .toast.info { background: #3b82f6; color: #fff; }
+        .toast.success { background: #6bdf8a; color: #0e1117; }
+        .toast.error { background: #ff6b6b; color: #fff; }
+        .toast.warning { background: #ffa657; color: #0e1117; }
+        .toast.info { background: #58d1c9; color: #0e1117; }
 
         .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
         .toast-message { flex: 1; }
@@ -838,7 +855,7 @@
 
         .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent3), var(--accent));
+            background: linear-gradient(90deg, var(--accent), var(--accent3));
             transition: width 0.3s ease;
             border-radius: var(--radius-sm);
         }
@@ -914,10 +931,10 @@
         }
 
         .timeline-bar:hover { opacity: 0.85; }
-        .timeline-bar.in_lucru { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-        .timeline-bar.finalizat { background: linear-gradient(90deg, #10b981, #34d399); }
-        .timeline-bar.blocat { background: linear-gradient(90deg, #ef4444, #f87171); }
-        .timeline-bar.in_așteptare { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .timeline-bar.in_lucru { background: linear-gradient(90deg, #58d1c9, #7dd3d0); }
+        .timeline-bar.finalizat { background: linear-gradient(90deg, #6bdf8a, #8be8a0); }
+        .timeline-bar.blocat { background: linear-gradient(90deg, #ff6b6b, #ff8a8a); }
+        .timeline-bar.in_așteptare { background: linear-gradient(90deg, #ffa657, #ffbe7a); }
 
         .timeline-today {
             position: absolute;
@@ -987,9 +1004,10 @@
         .export-dropdown-item:last-child { border-radius: 0 0 var(--radius-md) var(--radius-md); }
 
         /* Main Tabs */
-        .main-tabs { display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; }
-        .main-tab { padding:10px 24px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text2); font-size:1rem; font-weight:500; cursor:pointer; transition:all 0.2s; margin-bottom:-1px; }
-        .main-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+        .main-tabs { display:flex; gap:2px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; }
+        .main-tab { padding:10px 22px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text2); font-size:0.88rem; font-weight:500; cursor:pointer; transition:all 0.15s; margin-bottom:-1px; font-family:var(--font-sans); letter-spacing:-0.01em; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+        .main-tab:hover { color:var(--text); background: var(--bg3); }
+        .main-tab.active { color:var(--accent); border-bottom-color:var(--accent); background: transparent; }
         .tab-content { display:none; }
         .tab-content.active { display:block; }
 
@@ -1069,6 +1087,7 @@
 
         .project-list { display: block; }
         .project-list.hidden { display: none; }
+        .hidden { display: none !important; }
 
         .detail-header {
             display: flex;
@@ -1159,7 +1178,7 @@
 
         /* Phase 2c: Drag and Drop styles */
         .todo-item.dragging { opacity: 0.5; background: var(--bg3); }
-        .todo-item.drag-over { border: 2px dashed var(--pif-accent); background: rgba(59, 130, 246, 0.1); }
+        .todo-item.drag-over { border: 2px dashed var(--pif-accent); background: rgba(88, 209, 201, 0.06); }
         .todo-item[draggable="true"] { cursor: grab; }
         .todo-item[draggable="true"]:active { cursor: grabbing; }
 
@@ -1177,9 +1196,9 @@
             flex-shrink: 0;
         }
 
-        .todo-priority.urgent { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .todo-priority.normal { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
-        .todo-priority.minor { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+        .todo-priority.urgent { background: rgba(255, 107, 107, 0.12); color: var(--danger); }
+        .todo-priority.normal { background: rgba(255, 209, 102, 0.12); color: var(--warning); }
+        .todo-priority.minor { background: rgba(125, 133, 144, 0.12); color: #7d8590; }
 
         .todo-status {
             font-size: var(--font-tiny);
@@ -1188,9 +1207,9 @@
             flex-shrink: 0;
         }
 
-        .todo-status.to_do { background: rgba(59, 130, 246, 0.2); color: var(--pif-accent); }
-        .todo-status.in_lucru { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
-        .todo-status.done { background: rgba(16, 185, 129, 0.2); color: var(--accent3); }
+        .todo-status.to_do { background: rgba(88, 209, 201, 0.12); color: var(--pif-accent); }
+        .todo-status.in_lucru { background: rgba(149, 128, 255, 0.12); color: #9580ff; }
+        .todo-status.done { background: rgba(107, 223, 138, 0.12); color: var(--accent3); }
 
         .todo-delete { opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
         .todo-item:hover .todo-delete { opacity: 1; }
@@ -1211,6 +1230,7 @@
             font-family: var(--font-mono);
             margin: var(--space-md) 0;
             color: var(--accent);
+            letter-spacing: -0.02em;
         }
 
         .timer-controls { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; }
@@ -1249,7 +1269,7 @@
 
         .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--accent);
-            background: rgba(0, 212, 255, 0.05);
+            background: rgba(88, 209, 201, 0.04);
         }
 
         .drop-zone-icon { font-size: 2rem; margin-bottom: var(--space-sm); }
@@ -2122,7 +2142,7 @@
 /* ============ DESKTOP (ascunde elemente mobile-only) ============ */
 @media (min-width: 769px) {
     .projects-card-list { display: none; }
-    #projects-table-container table { display: table; }
+    #projects-table-container #projects-table { display: table; }
     .btn-back-mobile { display: none; }
     .detail-section-header { cursor: default; }
     .detail-section-header::after { display: none; }
@@ -2131,6 +2151,15 @@
 </style>
 </head>
 <body>
+    <script>
+        // Redirect PWA standalone pe mobil → versiunea /m
+        if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+            const isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || window.innerWidth < 769;
+            if (isMobile && !window.location.pathname.startsWith('/m')) {
+                window.location.replace('/m');
+            }
+        }
+    </script>
     <div class="container">
         <div class="pdf-header">
             <h1>FIȘĂ SERVICE</h1>
@@ -2157,6 +2186,7 @@
 </svg>
 </a>
             <div class="header-actions">
+                <button class="btn btn-secondary" onclick="showManualsModal()">📖 Manuale</button>
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
                 <button class="btn btn-secondary" id="install-pwa-btn" onclick="installPWA()" style="display:none;" title="Instalează aplicația">📲 Instalează</button>
                 <button class="btn btn-secondary" id="undo-btn" onclick="undo()" style="display:none;" title="Anulează ultima acțiune">↩️ Undo</button>
@@ -2182,7 +2212,8 @@
             <button class="main-tab active" data-tab="acasa" onclick="switchTab('acasa')">🏠 Acasă</button>
             <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')">✅ Taskuri Zilnice</button>
             <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')">📋 Proiecte</button>
-            <button class="main-tab" data-tab="statistici" onclick="switchTab('statistici')">📊 Statistici</button>
+    
+            <button class="main-tab" data-tab="parametri" onclick="switchTab('parametri')">⚙️ Parametri</button>
         </div>
 
         <div id="tab-proiecte" class="tab-content">
@@ -2209,7 +2240,7 @@
                 <select id="filter-status">
                     <option value="">Toate Statusurile</option>
                     <option value="in_lucru">În Lucru</option>
-                    <option value="finalizat">Finalizat</option>
+                    <option value="finalizat">📦 Arhivă (finalizate)</option>
                     <option value="blocat">Blocat</option>
                     <option value="in_așteptare">În Așteptare</option>
                 </select>
@@ -2442,6 +2473,7 @@
 
         <!-- HOME TAB -->
         <div id="tab-acasa" class="tab-content active">
+            <div id="home-content">
             <div class="stats-bar">
                 <div class="stat-card">
                     <div class="stat-label">Total Proiecte</div>
@@ -2470,56 +2502,53 @@
             <div id="recent-activity-list" class="todo-list" style="max-height: 400px;">
                 <p style="color: var(--text2);">Se încarcă...</p>
             </div>
+            </div>
         </div>
 
-        <!-- STATISTICS TAB -->
-        <div id="tab-statistici" class="tab-content">
-            <div class="stats-bar">
-                <div class="stat-card">
-                    <div class="stat-label">Total Proiecte</div>
-                    <div class="stat-value" id="stats-total">0</div>
+
+
+        <!-- PARAMETRI TAB -->
+        <div id="tab-parametri" class="tab-content">
+            <div class="filters">
+                <select id="param-familie" onchange="loadParametri()" style="min-width: 200px;">
+                    <option value="">Toate Familii</option>
+                </select>
+                <input type="text" id="param-search" placeholder="Caută parametru sau descriere..." 
+                       style="flex: 1; max-width: 400px;" oninput="debounceLoadParametri()">
+                <span id="param-count" style="color: var(--text2); font-size: var(--font-small);"></span>
+            </div>
+            
+            <div id="parametri-table-container" style="overflow-x: auto;">
+                <table id="parametri-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Parametru</th>
+                            <th>Descriere</th>
+                            <th style="width: 100px;">Acces</th>
+                            <th style="width: 100px;">Tip Date</th>
+                            <th style="width: 100px;">Default</th>
+                            <th style="width: 80px;">Min</th>
+                            <th style="width: 80px;">Max</th>
+                            <th style="width: 80px;">Unitate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parametri-tbody"></tbody>
+                </table>
+                <div id="parametri-empty" style="display: none; padding: 40px; text-align: center; color: var(--text2);">
+                    Nu s-au găsit parametri
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">În Lucru</div>
-                    <div class="stat-value" id="stats-active">0</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-label">Finalizate</div>
-                    <div class="stat-value" id="stats-finished">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ore Facturabile</div>
-                    <div class="stat-value" id="stats-hours">0h</div>
+                <div id="parametri-loading" style="padding: 40px; text-align: center; color: var(--text2);">
+                    Se încarcă...
                 </div>
             </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-top: 24px;">
-                <div class="stat-card" style="padding: 20px;">
-                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte după Status</h4>
-                    <div class="chart-container"><canvas id="chart-status"></canvas></div>
-                </div>
-                <div class="stat-card" style="padding: 20px;">
-                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte după Producător</h4>
-                    <div class="chart-container"><canvas id="chart-manufacturer"></canvas></div>
-                </div>
-                <div class="stat-card" style="padding: 20px;">
-                    <h4 style="margin-bottom: 16px; color: var(--text);">Proiecte pe Lună</h4>
-                    <div class="chart-container"><canvas id="chart-monthly"></canvas></div>
-                </div>
-                <div class="stat-card" style="padding: 20px;">
-                    <h4 style="margin-bottom: 16px; color: var(--text);">Ore pe Proiect</h4>
-                    <div class="chart-container"><canvas id="chart-hours"></canvas></div>
-                </div>
-            </div>
-
-            <!-- Project Timeline Section -->
-            <div class="timeline-section" id="timeline-section">
-                <div class="timeline-header">
-                    <div class="timeline-title">📅 Timeline Proiecte</div>
-                </div>
-                <div class="timeline-container" id="timeline-container">
-                    <div class="skeleton-chart" id="timeline-loading"></div>
-                </div>
+            
+            <!-- Parameter detail panel -->
+            <div id="param-detail-panel" style="display: none; margin-top: 16px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2);"></div>
+            
+            <div id="parametri-pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding: 16px;">
+                <button class="btn btn-secondary btn-small" id="param-prev" onclick="parametriChangePage(-1)" disabled>◀</button>
+                <span id="param-page-info" style="color: var(--text2); font-size: var(--font-small);">Pagina 1</span>
+                <button class="btn btn-secondary btn-small" id="param-next" onclick="parametriChangePage(1)" disabled>▶</button>
             </div>
         </div>
 
@@ -2658,7 +2687,7 @@
                 <div class="keyboard-shortcut-keys"><span class="keyboard-key">3</span></div>
             </div>
             <div class="keyboard-shortcut-row">
-                <span class="keyboard-shortcut-desc">Tab Statistici</span>
+                <span class="keyboard-shortcut-desc">Tab Parametri</span>
                 <div class="keyboard-shortcut-keys"><span class="keyboard-key">4</span></div>
             </div>
             <div class="keyboard-shortcut-row">
@@ -3144,13 +3173,22 @@
         </div>
     </div>
 
+    <!-- Flatpickr datepicker -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260520"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
+        });
+        var tEditModal = document.getElementById('task-edit-modal');
+        if (tEditModal) tEditModal.addEventListener('click', function(e) {
+            if (e.target === this) closeTaskEditModal();
         });
     </script>
     
@@ -3169,12 +3207,80 @@
                 <span class="bottom-nav-icon">📋</span>
                 <span>Proiecte</span>
             </div>
-            <div class="bottom-nav-item" data-tab="statistici" onclick="switchTab('statistici')">
-                <span class="bottom-nav-icon">📊</span>
-                <span>Statistici</span>
+            <div class="bottom-nav-item" data-tab="parametri" onclick="switchTab('parametri')">
+                <span class="bottom-nav-icon">⚙️</span>
+                <span>Parametri</span>
             </div>
         </div>
     </nav>
+
+<!-- PARAM DETAIL MODAL -->
+<div class="modal-overlay" id="param-detail-modal">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                <span id="param-modal-code" style="font-family:monospace;color:var(--accent);font-size:1.1em;"></span>
+                <span id="param-modal-familie" style="font-size:0.7em;opacity:0.6;"></span>
+            </h3>
+            <button class="modal-close" onclick="closeParamModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px 20px;">
+            <h4 id="param-modal-name" style="margin:0 0 8px 0;color:var(--text);"></h4>
+            <p id="param-modal-descriere" style="margin:0 0 16px 0;color:var(--text2);font-size:0.9em;line-height:1.4;"></p>
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:16px;">
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Acces</div>
+                    <div id="param-modal-acces" style="font-weight:500;"></div>
+                </div>
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Tip Date</div>
+                    <div id="param-modal-tip"></div>
+                </div>
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Default</div>
+                    <div id="param-modal-default"></div>
+                </div>
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Unitate</div>
+                    <div id="param-modal-unitate"></div>
+                </div>
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Min</div>
+                    <div id="param-modal-min"></div>
+                </div>
+                <div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                    <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">Max</div>
+                    <div id="param-modal-max"></div>
+                </div>
+            </div>
+            <div id="param-modal-pagina-row" style="display:none;margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:6px;">
+                <span style="font-size:0.8em;color:var(--text2);">Pagina Manual:</span> <span id="param-modal-pagina" style="font-weight:500;"></span>
+            </div>
+            <div id="param-modal-interconn-row" style="display:none;margin-bottom:12px;padding:12px;background:rgba(116,212,165,0.08);border:1px solid var(--success);border-radius:6px;">
+                <strong>🔗 Interconexiuni:</strong>
+                <div id="param-modal-interconn" style="margin-top:4px;font-size:0.9em;"></div>
+            </div>
+            <div id="param-modal-explicatie-row" style="display:none;margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;">
+                <strong style="color:var(--accent);">Explicatie Tehnica:</strong>
+                <div id="param-modal-explicatie" style="margin-top:8px;font-size:0.9em;line-height:1.6;"></div>
+            </div>
+            <button id="param-manual-btn" class="btn btn-small" style="display:none;margin-top:12px;width:100%;" onclick="openParamManual()">Deschide Manual PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- MANUALS MODAL -->
+<div class="modal-overlay" id="manuals-modal">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Manuale PIF</h3>
+            <button class="modal-close" onclick="closeManualsModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px 20px;">
+            <div id="manuals-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

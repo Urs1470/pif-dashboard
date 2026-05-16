@@ -4,7 +4,8 @@ import json
 import functools
 import time
 import logging
-import requests
+import hashlib
+
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from io import BytesIO
@@ -21,11 +22,55 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-from database import get_db, init_db, row_to_dict
+from database import get_db, init_db, row_to_dict, close_db
+from blueprints.budget import budget_bp
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32))
+app.register_blueprint(budget_bp)
+
+# Persistent secret key — supravietuieste restart-urilor
+SECRET_KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.secret_key')
+
+def get_or_create_secret_key():
+    env_key = os.environ.get('SECRET_KEY')
+    if env_key:
+        return env_key.encode() if isinstance(env_key, str) else env_key
+    if os.path.exists(SECRET_KEY_FILE):
+        with open(SECRET_KEY_FILE, 'rb') as f:
+            return f.read()
+    key = os.urandom(32)
+    with open(SECRET_KEY_FILE, 'wb') as f:
+        f.write(key)
+    return key
+
+app.secret_key = get_or_create_secret_key()
 CORS(app)
+app.teardown_appcontext(close_db)
+
+# ============ VERSION HASH ============
+
+def file_hash(filepath):
+    """Returnează primele 8 caractere din SHA256 al fișierului."""
+    try:
+        with open(filepath, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()[:8]
+    except FileNotFoundError:
+        return 'dev'
+
+@app.context_processor
+def inject_version():
+    return {
+        'js_version': file_hash('static/mobile.js'),
+        'sw_version': file_hash('static/service-worker.js')
+    }
+
+# ============ SESSION CONFIG ============
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 # ============ PHASE 2a: STRUCTURED LOGGING ============
 LOGS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
@@ -106,8 +151,8 @@ def before_request_func():
         _startup_initialized = True
         logger.info("PIF Dashboard initialized")
 
-    # Apply rate limiting to all /api/* routes except login
-    if request.path.startswith('/api/') and request.path != '/api/login':
+    # Apply rate limiting to all /api/* routes except login and healthz
+    if request.path.startswith('/api/') and request.path not in ('/api/login', '/api/healthz'):
         if not check_rate_limit():
             logger.warning(f"Rate limit exceeded for IP: {request.remote_addr} on {request.path}")
             return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.', 'retry_after': RATE_WINDOW}), 429
@@ -125,80 +170,7 @@ def after_request_func(response):
 
 # ============ END PHASE 2a SETUP ============
 
-# ============ PHASE 2c: TELEGRAM NOTIFICATIONS ============
-TELEGRAM_BOT_TOKEN = os.environ.get('PIF_TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_CHAT_ID = os.environ.get('PIF_TELEGRAM_CHAT_ID', '')
-
-def send_telegram_message(message):
-    """Send message via Telegram bot"""
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        logger.warning("Telegram bot token or chat ID not configured")
-        return False
-    
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {
-            'chat_id': TELEGRAM_CHAT_ID,
-            'text': message,
-            'parse_mode': 'HTML'
-        }
-        response = requests.post(url, json=payload, timeout=10)
-        if response.status_code == 200:
-            logger.info(f"Telegram notification sent: {message[:50]}...")
-            return True
-        else:
-            logger.error(f"Telegram API error: {response.status_code} - {response.text}")
-            return False
-    except Exception as e:
-        logger.error(f"Failed to send Telegram message: {e}")
-        return False
-
-def notify_project_completed(project_name, project_id):
-    """Send notification when project is marked as completed"""
-    message = f"✅ <b>Proiect Finalizat</b>\n\n"
-    message += f"📁 {project_name}\n"
-    message += f"🆔 {project_id}\n"
-    message += f"🕐 {datetime.now().strftime('%d.%m.%Y %H:%M')}"
-    return send_telegram_message(message)
-
-def notify_deadline_approaching(project_name, project_id, deadline):
-    """Send notification when project deadline is within 48 hours"""
-    message = f"⏰ <b>Deadline Apropiat</b>\n\n"
-    message += f"📁 {project_name}\n"
-    message += f"🆔 {project_id}\n"
-    message += f"📅 Termen: {deadline}\n"
-    message += f"🕐 {datetime.now().strftime('%d.%m.%Y %H:%M')}"
-    return send_telegram_message(message)
-
-def check_deadline_notifications():
-    """Check all projects for approaching deadlines and send notifications"""
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    now = datetime.now()
-    deadline_threshold = now + timedelta(hours=48)
-    
-    cursor.execute('''
-        SELECT id, nume, deadline, notify_on_deadline 
-        FROM proiecte 
-        WHERE status != 'finalizat' 
-        AND deadline IS NOT NULL 
-        AND deadline != ''
-        AND notify_on_deadline = 1
-    ''')
-    
-    for row in cursor.fetchall():
-        try:
-            deadline_date = datetime.strptime(row['deadline'], '%Y-%m-%d')
-            if deadline_date <= deadline_threshold and deadline_date >= now:
-                notify_deadline_approaching(row['nume'], row['id'], row['deadline'])
-        except (ValueError, TypeError):
-            continue
-    
-    conn.close()
-
-
-# PIN configuration - use environment variable
+# PIN configuration
 def get_hashed_pin():
     """Get hashed PIN from environment variable"""
     pin = os.environ.get('PIF_DASHBOARD_PIN', 'pif2024')
@@ -212,25 +184,21 @@ def login_required(f):
     @functools.wraps(f)
     def decorated_function(*args, **kwargs):
         if 'authenticated' not in session:
-            return redirect(url_for('login'))
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Unauthorized'}), 401
+            return redirect(url_for('login_page'))
         return f(*args, **kwargs)
     return decorated_function
 
-# ============ TELEGRAM NOTIFICATIONS ============
+# ============ HEALTHCHECK ============
 
-@app.route('/api/notify/telegram', methods=['POST'])
-@login_required
-def test_telegram_notification():
-    """Test endpoint to send a Telegram notification"""
-    data = request.json or {}
-    message = data.get('message', 'Test from PIF Dashboard')
-    
-    if send_telegram_message(message):
-        return jsonify({'success': True, 'message': 'Notification sent'})
-    else:
-        return jsonify({'error': 'Failed to send notification. Check bot token and chat ID configuration.'}), 500
+@app.route('/api/healthz')
+def healthz():
+    """Ultra-light healthcheck pentru online/offline detection pe mobile.
+    Răspunde instant (sub 1ms) — fără DB, fără auth."""
+    return jsonify({'status': 'ok', 'timestamp': int(time.time())})
 
-# ============ END TELEGRAM NOTIFICATIONS ============
+# ============ END HEALTHCHECK ============
 
 # Serve the login page
 @app.route('/login')
@@ -257,6 +225,25 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login_page'))
+
+# Auto-login cu PIN hash (Remember Me)
+@app.route('/login-hash', methods=['POST'])
+def login_hash():
+    """Auto-login cu hash SHA-256 al PIN-ului (pentru 'Remember Me' pe mobil)."""
+    data = request.json
+    pin_hash = data.get('pin_hash', '')
+    if not pin_hash:
+        return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400
+    
+    # Get stored PIN (plaintext for hashing)
+    pin = os.environ.get('PIF_DASHBOARD_PIN', 'pif2024')
+    expected_hash = hashlib.sha256(pin.encode()).hexdigest()
+    
+    if pin_hash == expected_hash:
+        session['authenticated'] = True
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'error': 'Invalid hash'}), 401
 
 # Serve the frontend
 @app.route('/')
@@ -383,12 +370,11 @@ def update_proiect(project_id):
     
     now = datetime.now().isoformat()
     
-    # Get current project status for notification check
-    cursor.execute('SELECT status, nume, notify_on_complete FROM proiecte WHERE id = ?', (project_id,))
+    # Get current project status
+    cursor.execute('SELECT status, nume FROM proiecte WHERE id = ?', (project_id,))
     current = cursor.fetchone()
     old_status = current['status'] if current else None
     project_name = current['nume'] if current else ''
-    notify_on_complete = current['notify_on_complete'] if current else 1
     
     cursor.execute('''
         UPDATE proiecte SET
@@ -438,16 +424,8 @@ def update_proiect(project_id):
     ))
     
     conn.commit()
-    
-    # Phase 2c: Check if project was marked as completed
-    new_status = data.get('status')
-    if (old_status != 'finalizat' and new_status == 'finalizat' and notify_on_complete):
-        notify_project_completed(project_name, project_id)
-    
+
     conn.close()
-    
-    # Phase 2c: Check deadline notifications after update
-    check_deadline_notifications()
     
     logger.info(f"Project updated: {project_id}")
     return jsonify({'message': 'Project updated'})
@@ -696,7 +674,7 @@ def get_global_task(task_id):
 
     return jsonify(row_to_dict(row))
 
-@app.route('/api/global-tasks/<task_id>', methods=['PUT'])
+@app.route('/api/global-tasks/<task_id>', methods=['PUT', 'POST'])
 @login_required
 def update_global_task(task_id):
     data = request.json
@@ -865,6 +843,23 @@ def delete_jurnal_entry(entry_id):
     conn.commit()
     conn.close()
     return jsonify({'message': 'Jurnal entry deleted'})
+
+@app.route('/api/jurnal/all', methods=['GET'])
+@login_required
+def get_all_jurnal():
+    """Returnează toate intrările de jurnal cu numele proiectului."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT j.id, j.proiect_id, j.data, j.continut, j.created_at, p.nume as project_name
+        FROM jurnal j
+        JOIN proiecte p ON j.proiect_id = p.id
+        ORDER BY j.data DESC
+        LIMIT 200
+    ''')
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
 
 # ============ TIMER ============
 
@@ -2018,6 +2013,142 @@ def create_template_from_project(project_id):
     logger.info(f"Template created from project {project_id}: {template_id}")
     return jsonify({'id': template_id, 'message': 'Template created from project'}), 201
 
+# ============ PARAMETRI API ============
+
+@app.route('/api/parametri/familii', methods=['GET'])
+@login_required
+def get_parametri_familii():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT familie, COUNT(*) as count FROM parametri_master GROUP BY familie ORDER BY familie")
+    families = [{'familie': row['familie'], 'count': row['count']} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify({'families': families})
+
+@app.route('/api/parametri', methods=['GET'])
+@login_required
+def get_parametri():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    search = request.args.get('search', '')
+    familie = request.args.get('familie', '')
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 50, type=int)
+    offset = (page - 1) * limit
+    
+    # Build count query first
+    count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
+    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la FROM parametri_master WHERE 1=1"
+    params = []
+    
+    if search:
+        clause = " AND (parametru LIKE ? OR descriere LIKE ?)"
+        count_query += clause
+        query += clause
+        params.extend([f'%{search}%', f'%{search}%'])
+    
+    if familie:
+        clause = " AND familie = ?"
+        count_query += clause
+        query += clause
+        params.append(familie)
+    
+    # Get total count
+    cursor.execute(count_query, params)
+    total = cursor.fetchone()[0]
+    
+    # Get paginated results
+    query += " ORDER BY familie, parametru LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+    
+    cursor.execute(query, params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    
+    return jsonify({
+        'params': rows,
+        'total': total,
+        'page': page,
+        'limit': limit,
+        'totalPages': max(1, (total + limit - 1) // limit)
+    })
+
+# ============ BULK PARAMS (lightweight, for mobile cache) ============
+
+@app.route('/api/parametri/bulk', methods=['GET'])
+@login_required
+def get_parametri_bulk():
+    """Returnează toți parametrii FĂRĂ explicatie/interconexiuni/influenteaza (lightweight)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
+               valoare_default, valoare_default_str, min, max, unitate,
+               pagina, creat_la
+        FROM parametri_master
+        ORDER BY familie, parametru
+    ''')
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    
+    # Sanitize: JSON nu suportă Infinity/NaN — înlocuiește cu null
+    import math
+    for row in rows:
+        for key in ('min', 'max'):
+            if row.get(key) is not None:
+                try:
+                    v = float(row[key])
+                    if math.isinf(v) or math.isnan(v):
+                        row[key] = None
+                except (ValueError, TypeError):
+                    pass
+    
+    return jsonify(rows)
+
+@app.route('/api/parametri/<int:param_id>', methods=['GET'])
+@login_required
+def get_parametru_detail(param_id):
+    """Returnează detaliul complet al unui parametru (cu explicatie + interconexiuni)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM parametri_master WHERE id = ?', (param_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': 'Not found'}), 404
+    return jsonify(dict(row))
+
+# ============ MANUALS API ============
+
+MANUALS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'manuals')
+
+@app.route('/api/manuals', methods=['GET'])
+@login_required
+def get_manuals():
+    """List available PDF manuals with metadata"""
+    manuals = []
+    if os.path.isdir(MANUALS_DIR):
+        for fname in sorted(os.listdir(MANUALS_DIR)):
+            if fname.endswith('.pdf'):
+                fpath = os.path.join(MANUALS_DIR, fname)
+                size_kb = round(os.path.getsize(fpath) / 1024, 1)
+                # Derive family from filename
+                name_display = fname.replace('.pdf', '').replace('_', ' ')
+                manuals.append({
+                    'filename': fname,
+                    'name': name_display,
+                    'size_kb': size_kb,
+                    'url': f'/manuals/{fname}'
+                })
+    return jsonify({'manuals': manuals})
+
+@app.route('/manuals/<path:filename>', methods=['GET'])
+@login_required
+def serve_manual(filename):
+    """Serve a PDF manual file"""
+    return send_file(os.path.join(MANUALS_DIR, filename))
+
 # ============ INIT DEFAULT TEMPLATES ============
 
 def init_default_templates():
@@ -2065,6 +2196,106 @@ def init_default_templates():
         logger.info("Created default 'PIF Standard' template")
     
     conn.close()
+
+# ============ PWA ROUTES ============
+
+@app.route('/m')
+def mobile():
+    return render_template('mobile.html')
+
+@app.route('/service-worker.js')
+def service_worker():
+    return app.send_static_file('service-worker.js')
+
+# Make service worker available at root with correct header
+@app.after_request
+def add_sw_header(response):
+    if request.path == '/service-worker.js':
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Content-Type'] = 'application/javascript'
+    return response
+
+# ============ DASHBOARD HOME ============
+
+@app.route('/api/dashboard/home', methods=['GET'])
+@login_required
+def dashboard_home():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Active projects count
+    cursor.execute("SELECT COUNT(*) FROM proiecte WHERE status NOT IN ('finalizat', 'anulat')")
+    active_projects = cursor.fetchone()[0]
+    
+    # Weekly hours (last 7 days)
+    cursor.execute("""
+        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions 
+        WHERE start_time >= datetime('now', '-7 days')
+    """)
+    weekly_seconds = cursor.fetchone()[0]
+    weekly_hours = round(weekly_seconds / 3600, 1)
+    
+    # Urgent tasks
+    cursor.execute("""
+        SELECT id, titlu, prioritate FROM global_tasks
+        WHERE prioritate = 'Urgent' AND status != 'done'
+        ORDER BY created_at DESC LIMIT 5
+    """)
+    urgent_tasks = [dict(r) for r in cursor.fetchall()]
+    
+    # Upcoming deadlines (next 7 days)
+    cursor.execute("""
+        SELECT id, titlu, data_scadenta, prioritate FROM global_tasks
+        WHERE data_scadenta IS NOT NULL 
+        AND data_scadenta >= date('now')
+        AND data_scadenta <= date('now', '+7 days')
+        AND status != 'done'
+        ORDER BY data_scadenta LIMIT 5
+    """)
+    upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
+    
+    # Active timer
+    cursor.execute("""
+        SELECT ts.id, ts.proiect_id as project_id, ts.start_time, p.nume as project_name
+        FROM timer_sessions ts JOIN proiecte p ON ts.proiect_id = p.id
+        WHERE ts.stop_time IS NULL ORDER BY ts.start_time DESC LIMIT 1
+    """)
+    active_timer = cursor.fetchone()
+    if active_timer:
+        active_timer = dict(active_timer)
+    
+    # Today's tasks
+    cursor.execute("""
+        SELECT id, titlu, status, prioritate, categorie FROM global_tasks
+        WHERE date(created_at) = date('now') OR status = 'to_do'
+        ORDER BY 
+            CASE prioritate WHEN 'Urgent' THEN 0 WHEN 'Normal' THEN 1 ELSE 2 END,
+            created_at DESC LIMIT 5
+    """)
+    todays_tasks = [dict(r) for r in cursor.fetchall()]
+    
+    # Recent journal
+    cursor.execute("""
+        SELECT j.id, j.continut, j.created_at, p.nume as project_name
+        FROM jurnal j JOIN proiecte p        ON j.proiect_id = p.id
+        ORDER BY j.created_at DESC LIMIT 5
+    """)
+    recent_journal = [dict(r) for r in cursor.fetchall()]
+    
+    conn.close()
+    
+    return jsonify({
+        'stats': {
+            'active_projects': active_projects,
+            'weekly_hours': weekly_hours
+        },
+        'urgent_tasks': urgent_tasks,
+        'upcoming_deadlines': upcoming_deadlines,
+        'active_timer': active_timer,
+        'todays_tasks': todays_tasks,
+        'recent_journal': recent_journal
+    })
+
 
 if __name__ == '__main__':
     init_db()

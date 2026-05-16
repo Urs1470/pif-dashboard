@@ -1,10 +1,52 @@
 const API_BASE = '/api';
 
+// Toast system - moved to top to avoid TDZ
+const toastQueue = [];
+const MAX_TOASTS = 3;
+
 let currentProjectId = null;
 let confirmCallback = null;
+let parametriData = [];
+let currentParam = null;
 let sortCol = null;
 let sortDir = 0;
 let archiveVisible = false;
+let gtFilters = { status: '', prioritate: '', categorie: '', search: '' };
+let parametriFamilii = [];
+let parametriPage = 1;
+let parametriTotal = 0;
+let parametriLimit = 50;
+
+const NAV_ICONS = {
+    acasa: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="10" width="7" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="11" y="6" width="7" height="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <polyline points="1,11 10,3 19,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
+    </svg>`,
+
+    taskuri: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="16" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="2" y="9" width="10" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="2" y="15" width="7" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <polyline points="13,13 16,16 19,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
+    </svg>`,
+
+    proiecte: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="2" width="14" height="16" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="6" y1="7" x2="14" y2="7" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="6" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="1"/>
+        <line x1="6" y1="15" x2="10" y2="15" stroke="currentColor" stroke-width="1"/>
+        <rect x="7" y="0" width="6" height="4" fill="var(--bg)" stroke="currentColor" stroke-width="1.5"/>
+    </svg>`,
+
+    parametri: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="16" height="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="5" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1"/>
+        <line x1="5" y1="10" x2="12" y2="10" stroke="currentColor" stroke-width="1"/>
+        <line x1="10" y1="14" x2="10" y2="17" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="6" y1="17" x2="14" y2="17" stroke="currentColor" stroke-width="1.5"/>
+    </svg>`
+};
 
 // ============ API HELPERS ============
 
@@ -52,7 +94,7 @@ async function apiUpload(url, formData) {
 // ============ THEME MANAGEMENT ============
 
 function initTheme() {
-    const savedTheme = localStorage.getItem('pif-theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
 
     const themeToggle = document.getElementById('theme-toggle');
@@ -66,7 +108,7 @@ function toggleTheme() {
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('pif-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
 }
 
 function setTheme(theme) {
@@ -75,9 +117,26 @@ function setTheme(theme) {
 
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
-        themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     }
+}
+
+// ============ FLATPICKR ============
+
+function initFlatpickr(selector, options = {}) {
+    if (typeof flatpickr !== 'function') { console.warn('flatpickr not loaded'); return null; }
+    const defaults = { locale: 'ro', dateFormat: 'Y-m-d', allowInput: true, disableMobile: false, ...options };
+    return flatpickr(selector, defaults);
+}
+
+function initAllDatePickers() {
+    if (document.getElementById('quick-scadenta')) initFlatpickr('#quick-scadenta');
+    if (document.getElementById('p-data-start')) initFlatpickr('#p-data-start');
+    if (document.getElementById('p-data-est')) initFlatpickr('#p-data-est');
+    if (document.getElementById('jurnal-data')) initFlatpickr('#jurnal-data');
+    if (document.getElementById('filter-date-from')) initFlatpickr('#filter-date-from');
+    if (document.getElementById('filter-date-to')) initFlatpickr('#filter-date-to');
 }
 
 // ============ INITIALIZATION ============
@@ -119,6 +178,11 @@ async function initApp() {
     document.getElementById('gt-filter-categorie').addEventListener('change', () => { gtFilters.categorie = document.getElementById('gt-filter-categorie').value; debouncedGtLoad(); });
     document.getElementById('gt-search').addEventListener('input', () => { gtFilters.search = document.getElementById('gt-search').value; debouncedGtLoad(); });
 
+    // Project tasks filters
+    const debouncedPT = debounce(loadProjectTasks, 300);
+    document.getElementById('pt-filter-status')?.addEventListener('change', debouncedPT);
+    document.getElementById('pt-filter-prioritate')?.addEventListener('change', debouncedPT);
+
     initSortableHeaders();
 
     // Project form modal event handlers
@@ -128,6 +192,8 @@ async function initApp() {
 
     // Setup keyboard shortcuts
     setupKeyboardShortcuts();
+
+    initAllDatePickers();
 }
 
 // ============ KEYBOARD SHORTCUTS ============
@@ -145,7 +211,11 @@ function setupKeyboardShortcuts() {
                 else if (modal.id === 'confirm-modal') closeConfirmModal();
                 else if (modal.id === 'preview-modal') closePreview();
                 else if (modal.id === 'keyboard-help-overlay') hideKeyboardHelp();
+                else if (modal.id === 'param-detail-modal') closeParamModal();
+                else if (modal.id === 'task-edit-modal') closeTaskEditModal();
+                else if (modal.id === 'manuals-modal') closeManualsModal();
             }
+            closeParamModal();
             if (currentProjectId) {
                 showProjectList();
             }
@@ -182,11 +252,11 @@ function setupKeyboardShortcuts() {
             return;
         }
 
-        // 1-4 - Switch tabs
+        // 1-5 - Switch tabs
         if (e.key === '1') { switchTab('acasa'); return; }
         if (e.key === '2') { switchTab('taskuri'); return; }
         if (e.key === '3') { switchTab('proiecte'); return; }
-        if (e.key === '4') { switchTab('statistici'); return; }
+        if (e.key === '4') { switchTab('parametri'); return; }
 
         // Ctrl+S - Save (if modal is open)
         if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
@@ -210,26 +280,35 @@ function hideKeyboardHelp() {
 
 // ============ EXPORT EXCEL ============
 
-function toggleExportDropdown() {
-    const dropdown = document.getElementById('export-dropdown');
+function toggleExportDropdown(event, dropdownId) {
+    if (!dropdownId) dropdownId = 'export-dropdown';
+    const dropdown = document.getElementById(dropdownId);
     if (dropdown) {
         dropdown.classList.toggle('active');
     }
+    // Close other dropdowns
+    document.querySelectorAll('.export-dropdown-content.active').forEach(d => {
+        if (d.id !== dropdownId) d.classList.remove('active');
+    });
+    if (event) event.stopPropagation();
 }
 
 function exportExcel(type) {
-    toggleExportDropdown();
+    const dropdown = document.getElementById('export-dropdown');
+    if (dropdown) dropdown.classList.remove('active');
     window.open(`${API_BASE}/export/excel?type=${type}`, '_blank');
     showToast(`Export ${type} descărcat!`, 'success');
 }
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('export-dropdown');
-    const exportBtn = document.querySelector('.export-dropdown');
-    if (dropdown && exportBtn && !exportBtn.contains(e.target)) {
-        dropdown.classList.remove('active');
-    }
+    document.querySelectorAll('.export-dropdown-content.active').forEach(dropdown => {
+        const dropdownId = dropdown.id;
+        const btn = document.querySelector(`[onclick*="${dropdownId}"], [onclick*="toggleExportDropdown(event, '${dropdownId}')"]`);
+        if (btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
 });
 
 function initSortableHeaders() {
@@ -275,7 +354,7 @@ async function loadProjects() {
     // Show skeleton, hide table
     const skeleton = document.getElementById('projects-skeleton');
     const table = document.getElementById('projects-table');
-    if (skeleton) skeleton.classList.remove('hidden');
+    if (skeleton) skeleton.style.display = 'block';
     if (table) table.style.display = 'none';
 
     try {
@@ -310,7 +389,7 @@ async function loadProjects() {
     } finally {
         // Hide skeleton after load
         setTimeout(() => {
-            if (skeleton) skeleton.classList.add('hidden');
+            if (skeleton) skeleton.style.display = 'none';
             if (table) table.style.display = 'table';
         }, 300);
     }
@@ -389,6 +468,9 @@ function showNewProjectForm() {
     document.getElementById('form-title').textContent = 'Proiect nou';
     document.getElementById('jurnal-data').value = new Date().toISOString().split('T')[0];
     document.getElementById('new-project-form').classList.add('active');
+    initTemplateSelector();
+    loadClientList();
+    setTimeout(() => { initFlatpickr('#p-data-start'); initFlatpickr('#p-data-est'); }, 50);
 }
 
 function hideNewProjectForm() {
@@ -457,12 +539,28 @@ async function showProjectDetail(projectId) {
         const detailView = document.getElementById('project-detail-view');
         detailView.setAttribute('data-print-date', new Date().toLocaleDateString('ro-RO'));
         detailView.setAttribute('data-project-name', project.nume);
+        detailView.setAttribute('data-tip', project.tip || 'PIF');
 
         // Show/hide sections based on type
         const isPIF = project.tip === 'PIF';
         const isService = project.tip === 'Service';
-        document.getElementById('pif-observatii-section').style.display = isPIF ? 'block' : 'none';
-        document.getElementById('before-after-section').style.display = isService ? 'grid' : 'none';
+
+        // PIF sections
+        const pifObs = document.getElementById('pif-observatii-section');
+        const checklist = document.getElementById('checklist-section');
+        if (pifObs) pifObs.style.display = isPIF ? 'block' : 'none';
+        if (checklist) checklist.style.display = isPIF ? 'block' : 'none';
+
+        // Service sections
+        const beforeAfter = document.getElementById('before-after-section');
+        if (beforeAfter) beforeAfter.style.display = isService ? 'grid' : 'none';
+
+        // Common sections
+        const timerJurnal = document.getElementById('timer-jurnal-section');
+        const atasamente = document.getElementById('attachments-section');
+        if (timerJurnal) timerJurnal.style.display = 'block';
+        if (atasamente) atasamente.style.display = 'block';
+
         const toHide = ['service-fields', 'observations-section'];
         toHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
@@ -482,18 +580,20 @@ async function showProjectDetail(projectId) {
         // Show/hide checklist section (only for PIF)
         document.getElementById('checklist-section').style.display = isPIF ? 'block' : 'none';
 
-        // Load related data
+        // Load related data (including equipment)
         await Promise.all([
             loadTodos(projectId),
             loadJurnal(projectId),
             loadAttachments(projectId),
-            isPIF ? loadChecklist(projectId) : Promise.resolve(),
-            loadTimerSessions(projectId)
+            isPIF ? loadChecklist(projectId) : Promise.resolve()
         ]);
+        await loadEchipamente(projectId);
 
         // Switch views
         document.getElementById('project-list-view').classList.add('hidden');
         document.getElementById('project-detail-view').classList.add('active');
+
+        setTimeout(() => { initFlatpickr('#todo-scadenta'); initFlatpickr('#jurnal-data'); }, 50);
 
     } catch (e) {
         console.error('Failed to load project:', e);
@@ -579,6 +679,22 @@ async function deleteCurrentProject() {
     });
 }
 
+async function duplicateCurrentProject() {
+    if (!currentProjectId) return;
+
+    const newName = prompt('Introduceți numele pentru proiectul duplicat:', '');
+    if (newName === null) return;  // User cancelled
+
+    try {
+        const result = await apiPost(`/proiecte/${currentProjectId}/duplicate`, { nume: newName });
+        showToast('Proiect duplicat!');
+        showProjectDetail(result.id);
+    } catch (e) {
+        console.error('Failed to duplicate project:', e);
+        showToast('Eroare la duplicarea proiectului', true);
+    }
+}
+
 async function saveServiceField(field, value) {
     if (!currentProjectId) return;
 
@@ -598,33 +714,49 @@ let draggedTaskId = null;
 async function loadTodos(projectId) {
     try {
         const tasks = await apiGet(`/proiecte/${projectId}/tasks`);
-        renderTodos(tasks);
-    } catch (e) {
-        console.error('Failed to load tasks:', e);
-    }
+        const filterStatus = document.getElementById('todo-filter-status')?.value || '';
+        const filterPrioritate = document.getElementById('todo-filter-prioritate')?.value || '';
+        const sortBy = document.getElementById('todo-sort')?.value || 'prioritate';
+        let filtered = tasks;
+        if (filterStatus) filtered = filtered.filter(t => t.status === filterStatus);
+        if (filterPrioritate) filtered = filtered.filter(t => t.prioritate === filterPrioritate);
+        const priorityOrder = { 'Urgent': 0, 'Normal': 1, 'Minor': 2 };
+        const statusOrder = { 'to_do': 0, 'in_lucru': 1, 'done': 2 };
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'prioritate': return (priorityOrder[a.prioritate] ?? 1) - (priorityOrder[b.prioritate] ?? 1);
+                case 'scadenta': if (!a.data_scadenta) return 1; if (!b.data_scadenta) return -1; return a.data_scadenta.localeCompare(b.data_scadenta);
+                case 'status': return (statusOrder[a.status] ?? 0) - (statusOrder[b.status] ?? 0);
+                case 'creat': return new Date(b.created_at) - new Date(a.created_at);
+                default: return 0;
+            }
+        });
+        renderTodos(filtered);
+    } catch (e) { console.error('Failed to load tasks:', e); }
 }
 
 function renderTodos(tasks) {
     const container = document.getElementById('todo-list');
 
     if (!tasks.length) {
-        container.innerHTML = '<p style="color: var(--text2);">Nu există task-uri.</p>';
+        container.innerHTML = '<p style="color: var(--text2); font-size:0.85rem; font-family:\'Courier New\',monospace;">Nu există task-uri.</p>';
         return;
     }
 
     container.innerHTML = tasks.map(task => `
-        <div class="todo-item priority-${task.prioritate || 'normal'} ${task.status === 'done' ? 'completed' : ''}" 
-             draggable="true" 
-             data-task-id="${task.id}"
-             data-ordine="${task.ordine || 0}">
-            <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onchange="toggleTodo('${task.id}', this.checked)">
+        <div class="todo-item priority-${(task.prioritate||'normal').toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
+            onclick="openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" style="cursor:pointer;">
+            <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''}
+                onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
             <div class="todo-content">
                 <div class="todo-title">${escapeHtml(task.titlu)}</div>
-                <div class="todo-meta">${task.data_scadenta ? '📅 ' + task.data_scadenta : ''}</div>
+                <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
+                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);">📅 ${task.data_scadenta}</span>` : ''}
+                </div>
             </div>
-            <span class="todo-priority ${task.prioritate || 'normal'}">${task.prioritate || 'normal'}</span>
-            <span class="todo-status ${task.status}">${getStatusLabel(task.status)}</span>
-            <button class="btn btn-small btn-danger todo-delete" onclick="deleteTodo('${task.id}')">×</button>
+            <span class="todo-priority ${(task.prioritate||'normal').toLowerCase()}">${task.prioritate || 'Normal'}</span>
+            <span class="todo-status ${task.status}">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
+            <button class="btn btn-small btn-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')">×</button>
         </div>
     `).join('');
 
@@ -721,23 +853,22 @@ async function handleDrop(e) {
 async function addTodo() {
     const titlu = document.getElementById('todo-title').value.trim();
     if (!titlu) return;
-
     const prioritate = document.getElementById('todo-priority').value;
-    const status = document.getElementById('todo-status').value;
-
+    const data_scadenta = document.getElementById('todo-scadenta').value || '';
     try {
-        await apiPost(`/proiecte/${currentProjectId}/tasks`, {
-            titlu,
-            prioritate,
-            status
-        });
-
+        const result = await apiPost(`/proiecte/${currentProjectId}/tasks`, { titlu, prioritate, status: 'to_do', data_scadenta });
         document.getElementById('todo-title').value = '';
+        document.getElementById('todo-scadenta').value = '';
+        const fp = document.getElementById('todo-scadenta')._flatpickr;
+        if (fp) fp.clear();
         loadTodos(currentProjectId);
-        showToast('Task adăugat!');
+        // Only show success toast if we got a valid result
+        if (result !== null) {
+            showToast('Task adăugat!');
+        }
     } catch (e) {
-        console.error('Failed to add todo:', e);
-        showToast('Eroare la adăugarea task-ului', true);
+        console.error('addTodo failed:', e);
+        showToast('Eroare la adăugarea taskului', true);
     }
 }
 
@@ -762,32 +893,81 @@ async function deleteTodo(taskId) {
     }
 }
 
+// ============ TASK EDIT MODAL ============
+
+let taskEditFlatpickr = null;
+
+function openTaskEditModal(task) {
+    document.getElementById('task-edit-id').value = task.id;
+    document.getElementById('task-edit-titlu').value = task.titlu || '';
+    document.getElementById('task-edit-status').value = task.status || 'to_do';
+    selectTaskPriority(task.prioritate || 'Normal');
+    document.getElementById('task-edit-modal').classList.add('active');
+    setTimeout(() => {
+        if (taskEditFlatpickr) taskEditFlatpickr.destroy();
+        taskEditFlatpickr = initFlatpickr('#task-modal-scadenta');
+        if (task.data_scadenta) taskEditFlatpickr.setDate(task.data_scadenta); else taskEditFlatpickr.clear();
+    }, 50);
+}
+
+function closeTaskEditModal() {
+    document.getElementById('task-edit-modal').classList.remove('active');
+    if (taskEditFlatpickr) { taskEditFlatpickr.destroy(); taskEditFlatpickr = null; }
+}
+
+function selectTaskPriority(val) {
+    document.getElementById('task-edit-prioritate').value = val;
+    document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.val === val));
+}
+
+async function saveTaskEdit() {
+    const id = document.getElementById('task-edit-id').value;
+    const titlu = document.getElementById('task-edit-titlu').value.trim();
+    const prioritate = document.getElementById('task-edit-prioritate').value;
+    const status = document.getElementById('task-edit-status').value;
+    const data_scadenta = document.getElementById('task-modal-scadenta').value || '';
+    if (!titlu) { showToast('Titlul nu poate fi gol', true); return; }
+    try {
+        await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta, data_finalizare: status === 'done' ? new Date().toISOString() : '' });
+        closeTaskEditModal();
+        loadTodos(currentProjectId);
+        showToast('Task actualizat!');
+    } catch (e) { showToast('Eroare la salvare', true); }
+}
+
+var tEditModal = document.getElementById('task-edit-modal');
+if (tEditModal) tEditModal.addEventListener('click', function(e) { if (e.target === this) closeTaskEditModal(); });
+
 // ============ JURNAL ============
 
 async function loadJurnal(projectId) {
     try {
-        const entries = await apiGet(`/proiecte/${projectId}/jurnal`);
-        renderJurnal(entries);
+        const [jurnalEntries, timerData] = await Promise.all([
+            apiGet(`/proiecte/${projectId}/jurnal`),
+            apiGet(`/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 }))
+        ]);
+        
+        const container = document.getElementById('timer-sessions');
+        let html = renderTimerSessions(timerData.sessions, timerData.total_secunde);
+        
+        // Add journal entries
+        if (jurnalEntries.length > 0) {
+            html += jurnalEntries.map(entry => `
+                <div class="jurnal-item" style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);">
+                    <div>
+                        <span>📝</span>
+                        <span style="color:var(--text2); font-size:0.8rem; margin-right:8px;">${entry.data}</span>
+                        <span>${escapeHtml(entry.continut)}</span>
+                    </div>
+                    <button class="btn btn-small btn-danger" onclick="deleteJurnalEntry('${entry.id}')" style="padding:2px 8px; font-size:0.7rem;">×</button>
+                </div>
+            `).join('');
+        }
+        
+        container.innerHTML = html || '<p style="color:var(--text2);">Nu există activități.</p>';
     } catch (e) {
         console.error('Failed to load jurnal:', e);
     }
-}
-
-function renderJurnal(entries) {
-    const container = document.getElementById('jurnal-list');
-
-    if (!entries.length) {
-        container.innerHTML = '<p style="color: var(--text2);">Nu există intrări în jurnal.</p>';
-        return;
-    }
-
-    container.innerHTML = entries.map(entry => `
-        <div class="jurnal-item">
-            <div class="jurnal-date">${entry.data}</div>
-            <div class="jurnal-content">${escapeHtml(entry.continut)}</div>
-            <button class="btn btn-small btn-danger" onclick="deleteJurnalEntry('${entry.id}')" style="margin-top: 5px;">Șterge</button>
-        </div>
-    `).join('');
 }
 
 async function addJurnalEntry() {
@@ -1000,6 +1180,7 @@ async function exportMarkdown() {
         md += `client: ${project.client || ''}\n`;
         md += `locatie: ${project.locatie || ''}\n`;
         md += `echipament_principal: ${project.echipament_principal || ''}\n`;
+        md += `data_export: ${today}\n`;
         if (isPIF) {
             md += `data_incepere: ${project.data_incepere || ''}\n`;
             md += `deadline: ${project.deadline || ''}\n`;
@@ -1092,7 +1273,9 @@ async function exportMarkdown() {
         }
 
         // FOOTER
-        md += `---\n*Exportat din PIF Dashboard — ${today}*\n`;
+        md += `\n---\n\n`;
+        md += `> *Document generat automat din PIF Dashboard*  \n`;
+        md += `> *Data export: ${today} | Inginer: Ion Ursu*\n`;
 
         // DOWNLOAD
         const filename = project.cod_proiect
@@ -1126,7 +1309,7 @@ async function exportCurrentProjectPDF() {
         // Use window.open for PDF download via API
         const response = await fetch(`${API_BASE}/export/pdf?project_id=${currentProjectId}`, {
             method: 'GET',
-            headers: { ...getHeaders() }
+            headers: { 'Accept': 'application/pdf' }
         });
 
         if (!response.ok) {
@@ -1157,6 +1340,15 @@ async function exportCurrentProjectPDF() {
     }
 }
 
+function exportClientPDF() {
+    const clientName = prompt('Introduceți numele clientului:');
+    if (!clientName || !clientName.trim()) {
+        return;
+    }
+    const encodedName = encodeURIComponent(clientName.trim());
+    window.open(`${API_BASE}/export/pdf/client/${encodedName}`, '_blank');
+}
+
 // ============ PHASE 2c: TELEGRAM NOTIFICATIONS ============
 
 async function testTelegramNotification() {
@@ -1169,7 +1361,7 @@ async function testTelegramNotification() {
         const project = await apiGet(`/proiecte/${currentProjectId}`);
         const response = await fetch(`${API_BASE}/notify/telegram`, {
             method: 'POST',
-            headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: `🔔 Test din PIF Dashboard\n📁 Proiect: ${project.nume}\n🆔 ${project.id}\n🕐 ${new Date().toLocaleString('ro-RO')}`
             })
@@ -1189,21 +1381,37 @@ async function testTelegramNotification() {
 
 // ============ GLOBAL TASKS ============
 
-let gtFilters = { status: '', prioritate: '', categorie: '', search: '' };
-
 function switchTab(tab) {
     document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelector(`.main-tab[data-tab="${tab}"]`).classList.add('active');
     document.getElementById(`tab-${tab}`).classList.add('active');
 
+    // Hide project detail view when switching tabs
+    const detailView = document.getElementById('project-detail-view');
+    if (detailView) detailView.classList.remove('active');
+    // Show project list when going back to projects tab
+    if (tab === 'proiecte') {
+        const tableContainer = document.getElementById('projects-table-container');
+        const emptyState = document.getElementById('empty-projects');
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'block';
+    }
+
     // Update bottom nav active state
     document.querySelectorAll('.bottom-nav-item').forEach(item => {
         item.classList.toggle('active', item.getAttribute('data-tab') === tab);
     });
 
+    // Toggle projects-only header elements
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        headerActions.classList.toggle('project-tab-active', tab === 'proiecte');
+    }
+
     if (tab === 'taskuri') {
         loadGlobalTasks();
+        loadProjectTasks();
         setTimeout(() => document.getElementById('quick-task-input')?.focus(), 100);
     }
     if (tab === 'proiecte') {
@@ -1211,17 +1419,22 @@ function switchTab(tab) {
         updateStats();
     }
     if (tab === 'acasa') {
-        updateHomeStats();
-        loadRecentActivity();
+        loadDashboardHome();
     }
-    if (tab === 'statistici') {
-        loadExtendedStats();
+    if (tab === 'parametri') {
+        // Initialize parametri tab if families not loaded yet
+        if (parametriFamilii.length === 0) {
+            loadParametriFamilii();
+            parametriPage = 1;
+            loadParametri();
+        }
+        // Nu resetăm pagina dacă tabul a mai fost vizitat
     }
 }
 
 async function loadGlobalTasks() {
     try {
-        let url = '/global-tasks?';
+        let url = '/api/global-tasks?';
         if (gtFilters.status) url += `status=${gtFilters.status}&`;
         if (gtFilters.prioritate) url += `prioritate=${gtFilters.prioritate}&`;
         if (gtFilters.categorie) url += `categorie=${gtFilters.categorie}&`;
@@ -1231,7 +1444,7 @@ async function loadGlobalTasks() {
         updateGtStats(tasks);
 
         // Update archive count
-        const archived = await apiGet('/global-tasks?arhiva=true');
+        const archived = await apiGet('/api/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = archived.length;
     } catch (e) {
         console.error('Failed to load global tasks:', e);
@@ -1293,7 +1506,10 @@ function renderGlobalTasks(tasks) {
                 <div class="todo-content">
                     <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
-                    <div class="todo-meta">${task.data_scadenta ? '📅 ' + task.data_scadenta : ''} ${task.categorie ? ' | ' + task.categorie : ''}</div>
+                    <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">
+                    ${task.categorie && task.categorie !== 'General' ? `<span style="font-size:0.72rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'Courier New',monospace;">${escapeHtml(task.categorie)}</span>` : ''}
+                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);">📅 ${task.data_scadenta}</span>` : ''}
+                </div>
                 </div>
                 <span class="todo-priority ${task.prioritate || 'normal'}">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status ${task.status}">${getStatusLabel(task.status)}</span>
@@ -1304,15 +1520,60 @@ function renderGlobalTasks(tasks) {
     }).join('');
 }
 
+async function loadProjectTasks() {
+    const status = document.getElementById('pt-filter-status')?.value || 'to_do,in_lucru';
+    const prioritate = document.getElementById('pt-filter-prioritate')?.value || '';
+    try {
+        let url = '/api/global-tasks?';
+        if (status) url += `status=${status}&`;
+        if (prioritate) url += `prioritate=${prioritate}&`;
+        const tasks = await apiGet(url);
+        renderProjectTasks(tasks);
+    } catch (e) { console.error('Load project tasks error:', e); }
+}
+
+function renderProjectTasks(tasks) {
+    const container = document.getElementById('project-tasks-list');
+    if (!tasks || tasks.length === 0) {
+        container.innerHTML = `<p style="color:var(--text2); font-size:0.85rem; font-family:'Courier New',monospace;">Niciun task activ în proiecte.</p>`;
+        return;
+    }
+    const priorityOrder = { 'Urgent': 0, 'Normal': 1, 'Minor': 2 };
+    tasks.sort((a, b) => (priorityOrder[a.prioritate] ?? 1) - (priorityOrder[b.prioritate] ?? 1));
+    container.innerHTML = tasks.map(t => `
+        <div class="gt-task-card ${t.status === 'done' ? 'completed' : ''}" style="border-left:3px solid ${t.proiect_tip === 'PIF' ? 'var(--c3)' : 'var(--c1)'};">
+            <input type="checkbox" class="todo-checkbox" ${t.status === 'done' ? 'checked' : ''} onchange="toggleProjectTaskGlobal('${t.id}', this.checked)">
+            <div class="todo-content">
+                <div class="gt-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
+                <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <span style="color:var(--accent); font-weight:600;">${escapeHtml(t.proiect_nume || '-')}</span>
+                    <span class="badge">${t.proiect_tip || 'PIF'}</span>
+                    ${t.data_scadenta ? `<span>📅 ${t.data_scadenta}</span>` : ''}
+                    ${t.proiect_client ? `<span>👤 ${escapeHtml(t.proiect_client)}</span>` : ''}
+                </div>
+            </div>
+            <span class="todo-priority ${(t.prioritate||'normal').toLowerCase()}">${t.prioritate || 'Normal'}</span>
+            <button class="btn btn-small btn-secondary" onclick="showProjectDetail('${t.proiect_id}')" title="Deschide proiectul">→</button>
+        </div>
+    `).join('');
+}
+
+async function toggleProjectTaskGlobal(taskId, checked) {
+    try {
+        await apiPut(`/tasks/${taskId}`, { status: checked ? 'done' : 'to_do', data_finalizare: checked ? new Date().toISOString() : '' });
+        await loadProjectTasks();
+    } catch (e) { console.error('Toggle project task error:', e); }
+}
+
 async function toggleGtTask(taskId, checked) {
     try {
-        await apiPut(`/global-tasks/${taskId}`, {
+        await apiPut(`/api/global-tasks/${taskId}`, {
             status: checked ? 'done' : 'to_do',
             data_finalizare: checked ? new Date().toISOString() : ''
         });
         await loadGlobalTasks();
         // Update archive badge count
-        const archived = await apiGet('/global-tasks?arhiva=true');
+        const archived = await apiGet('/api/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = archived.length;
         if (archiveVisible) renderArchive(archived);
     } catch (e) {
@@ -1322,23 +1583,89 @@ async function toggleGtTask(taskId, checked) {
 
 async function editGtTask(taskId) {
     try {
-        const task = await apiGet(`/global-tasks/${taskId}`);
+        const task = await apiGet(`/api/global-tasks/${taskId}`);
+
+        // Populate quick-add bar with task data
         const input = document.getElementById('quick-task-input');
         input.value = task.titlu || '';
-        document.getElementById('quick-prioritate').value = task.prioritate || 'medie';
-        document.getElementById('quick-categorie').value = task.categorie || '';
-        document.getElementById('quick-scadenta').value = task.data_scadenta || '';
+        document.getElementById('quick-prioritate').value = task.prioritate || 'Normal';
+        document.getElementById('quick-categorie').value = task.categorie || 'General';
+
+        // Set scadenta via Flatpickr if available
+        const fp = document.getElementById('quick-scadenta')?._flatpickr;
+        if (fp) {
+            task.data_scadenta ? fp.setDate(task.data_scadenta) : fp.clear();
+        } else {
+            document.getElementById('quick-scadenta').value = task.data_scadenta || '';
+        }
+
+        // Override quick add to do PUT instead of POST
+        const quickAddBtn = document.getElementById('quick-add-btn');
+        const originalLabel = quickAddBtn.textContent;
+        quickAddBtn.textContent = '✓ Salvează';
+        quickAddBtn.style.background = 'var(--c3)';
+
+        // Replace quickAddTask temporarily
+        const tempHandler = async function() {
+            const titlu = input.value.trim();
+            if (!titlu) { input.focus(); return; }
+
+            input.disabled = true;
+            quickAddBtn.textContent = '...';
+
+            try {
+                await apiPut(`/api/global-tasks/${taskId}`, {
+                    titlu,
+                    prioritate: document.getElementById('quick-prioritate').value,
+                    categorie: document.getElementById('quick-categorie').value,
+                    data_scadenta: document.getElementById('quick-scadenta').value || ''
+                });
+                input.value = '';
+                document.getElementById('quick-scadenta').value = '';
+                if (fp) fp.clear();
+                await loadGlobalTasks();
+                showToast('Task actualizat!');
+            } catch (e) {
+                showToast('Eroare la actualizarea taskului', true);
+            } finally {
+                // Restore quick add bar
+                input.disabled = false;
+                quickAddBtn.textContent = originalLabel;
+                quickAddBtn.style.background = '';
+                quickAddBtn.onclick = quickAddTask;
+                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
+            }
+        };
+
+        quickAddBtn.onclick = tempHandler;
+
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                input.value = '';
+                quickAddBtn.textContent = originalLabel;
+                quickAddBtn.style.background = '';
+                quickAddBtn.onclick = quickAddTask;
+                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                tempHandler();
+                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
+            }
+        };
+
+        document.getElementById('quick-task-input').addEventListener('keydown', escHandler);
         input.focus();
-        await apiDelete(`/global-tasks/${taskId}`);
-        await loadGlobalTasks();
+
     } catch (e) {
         console.error('Failed to edit global task:', e);
+        showToast('Eroare la editarea taskului', true);
     }
 }
 
 async function deleteGtTask(taskId) {
     try {
-        await apiDelete(`/global-tasks/${taskId}`);
+        await apiDelete(`/api/global-tasks/${taskId}`);
         loadGlobalTasks();
         showToast('Task șters!');
     } catch (e) {
@@ -1357,8 +1684,16 @@ function toggleArchive() {
 
 async function loadArchive() {
     try {
-        const tasks = await apiGet('/global-tasks?arhiva=true');
+        const tasks = await apiGet('/api/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = tasks.length;
+        renderArchive(tasks);
+    } catch (e) { console.error('Failed to load archive:', e); }
+}
+
+async function emptyArchive() {
+    try {
+        const tasks = await apiGet('/api/global-tasks?arhiva=true');
+        await Promise.all(tasks.map(t => apiDelete(`/api/global-tasks/${t.id}`)));
         renderArchive(tasks);
     } catch (e) {
         console.error('Failed to load archive:', e);
@@ -1383,7 +1718,7 @@ function renderArchive(tasks) {
 
 async function restoreTask(taskId) {
     try {
-        await apiPut(`/global-tasks/${taskId}`, { status: 'to_do', data_finalizare: '' });
+        await apiPut(`/api/global-tasks/${taskId}`, { status: 'to_do', data_finalizare: '' });
         await loadGlobalTasks();
         if (archiveVisible) await loadArchive();
         showToast('Task redeschis!');
@@ -1395,8 +1730,8 @@ async function restoreTask(taskId) {
 async function clearArchive() {
     if (!confirm('Ștergi definitiv toate taskurile finalizate?')) return;
     try {
-        const tasks = await apiGet('/global-tasks?arhiva=true');
-        await Promise.all(tasks.map(t => apiDelete(`/global-tasks/${t.id}`)));
+        const tasks = await apiGet('/api/global-tasks?arhiva=true');
+        await Promise.all(tasks.map(t => apiDelete(`/api/global-tasks/${t.id}`)));
         await loadArchive();
         showToast('Arhivă curățată!');
     } catch (e) {
@@ -1419,7 +1754,7 @@ async function quickAddTask() {
     document.getElementById('quick-add-btn').textContent = '✓';
 
     try {
-        await apiPost('/global-tasks', {
+        await apiPost('/api/global-tasks', {
             titlu, prioritate, categorie,
             data_scadenta: scadenta || '',
             status: 'to_do'
@@ -1454,6 +1789,140 @@ async function logout() {
 
 // ============ HOME PAGE ============
 
+async function loadDashboardHome() {
+    try {
+        const data = await apiGet('/dashboard/home');
+        const container = document.getElementById('home-content');
+        if (!container) return;
+
+        const { urgent_tasks, upcoming_deadlines, recent_journal, active_timer, todays_tasks, stats } = data;
+
+        let html = '';
+
+        // Stats bar
+        html += `
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Proiecte Active</div>
+                    <div class="stat-value" id="home-stat-active">${stats.active_projects}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ore Săptămâna</div>
+                    <div class="stat-value" id="home-stat-hours-dynamic">${stats.weekly_hours}h</div>
+                </div>
+            </div>
+        `;
+
+        // Active timer section
+        if (active_timer) {
+            const startTime = new Date(active_timer.start_time);
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            const hours = Math.floor(elapsed / 3600);
+            const minutes = Math.floor((elapsed % 3600) / 60);
+            const elapsedStr = `${hours}h ${minutes}m`;
+            html += `
+                <div style="margin-bottom:24px;padding:14px 16px;border:1px solid var(--accent);border-radius:var(--radius-md);background:rgba(116,212,165,0.05);">
+                    <div style="font-size:.9rem;font-weight:600;color:var(--accent);margin-bottom:8px;">⏱ Timer Activ</div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:1.2rem;color:var(--accent);">▶</span>
+                        <div style="flex:1;">
+                            <div style="font-family:'Courier New',monospace;font-weight:600;color:var(--text);">${escapeHtml(active_timer.proiect_nume)}</div>
+                            <div style="font-size:.8rem;color:var(--text2);">${elapsedStr} • Începere: ${startTime.toLocaleTimeString('ro-RO')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Urgent tasks
+        html += `<div style="margin-bottom:24px;">`;
+        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">⚠️ Task-uri Urgente</h3>`;
+        if (urgent_tasks.length === 0) {
+            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio sarcină urgentă</div>`;
+        } else {
+            html += `<div class="todo-list">`;
+            urgent_tasks.forEach(task => {
+                html += `
+                    <div class="gt-task-card" onclick="showProjectDetail('${task.proiect_id}')">
+                        <span class="gt-task-title">${escapeHtml(task.titlu)}</span>
+                        <div class="todo-meta">${escapeHtml(task.proiect_nume || '')} ${task.data_scadenta ? '• ' + task.data_scadenta : ''}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        html += `</div>`;
+
+        // Upcoming deadlines
+        html += `<div style="margin-bottom:24px;">`;
+        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">📅 Deadline-uri Următoare (7 zile)</h3>`;
+        if (upcoming_deadlines.length === 0) {
+            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Niciun deadline în următoarele 7 zile</div>`;
+        } else {
+            html += `<div class="todo-list">`;
+            upcoming_deadlines.forEach(proj => {
+                html += `
+                    <div class="gt-task-card" onclick="showProjectDetail('${proj.id}')">
+                        <span class="gt-task-title">${escapeHtml(proj.nume)}</span>
+                        <div class="todo-meta">${escapeHtml(proj.client || '')} • <strong style="color:var(--warning);">${proj.deadline}</strong></div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        html += `</div>`;
+
+        // Today's global tasks
+        html += `<div style="margin-bottom:24px;">`;
+        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">✅ Task-uri Globale</h3>`;
+        if (todays_tasks.length === 0) {
+            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio sarcină globală activă</div>`;
+        } else {
+            html += `<div class="todo-list">`;
+            todays_tasks.forEach(task => {
+                const priorityStyle = task.prioritate === 'Urgent' ? 'color:var(--accent);' : '';
+                html += `
+                    <div class="gt-task-card">
+                        <span class="gt-task-title" style="${priorityStyle}">${escapeHtml(task.titlu)}</span>
+                        <div class="todo-meta">${task.categorie && task.categorie !== 'General' ? escapeHtml(task.categorie) + ' • ' : ''}${task.data_scadenta || ''}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        html += `</div>`;
+
+        // Recent journal entries
+        html += `<div style="margin-bottom:24px;">`;
+        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">📝 Jurnal Recent</h3>`;
+        if (recent_journal.length === 0) {
+            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio intrare în jurnal</div>`;
+        } else {
+            html += `<div class="todo-list">`;
+            recent_journal.forEach(entry => {
+                html += `
+                    <div class="gt-task-card" onclick="showProjectDetail('${entry.proiect_id}')">
+                        <span class="gt-task-title">${escapeHtml(entry.continut)}</span>
+                        <div class="todo-meta">${entry.data} • ${escapeHtml(entry.proiect_nume || '')}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        html += `</div>`;
+
+        container.innerHTML = html;
+
+    } catch (e) {
+        console.error('Failed to load dashboard home:', e);
+        const container = document.getElementById('home-content');
+        if (container) {
+            container.innerHTML = `<div style="color:var(--text2);padding:20px;text-align:center;">Eroare la încărcarea datelor.</div>`;
+        }
+    }
+}
+
 async function updateHomeStats() {
     try {
         const [stats, extStats] = await Promise.all([
@@ -1461,9 +1930,10 @@ async function updateHomeStats() {
             apiGet('/stats/extended')
         ]);
         document.getElementById('home-stat-total').textContent = stats.total || 0;
-        document.getElementById('home-stat-active').textContent = stats.active || 0;
-        document.getElementById('home-stat-finished').textContent = stats.finished || 0;
-        document.getElementById('home-stat-hours').textContent = (extStats.total_billable_hours || 0) + 'h';
+        var el = document.getElementById('home-stat-active');
+        if (el) el.textContent = stats.active || 0;
+        var el2 = document.getElementById('home-stat-hours-dynamic');
+        if (el2) el2.textContent = (extStats.total_billable_hours || 0) + 'h';
     } catch (e) {
         console.error('Failed to load home stats:', e);
     }
@@ -1479,7 +1949,7 @@ async function loadRecentActivity() {
         
         // Get recent tasks completed today
         const today = new Date().toISOString().split('T')[0];
-        const tasks = await apiGet('/global-tasks?arhiva=true');
+        const tasks = await apiGet('/api/global-tasks?arhiva=true');
         const recentTasks = tasks.filter(t => t.data_finalizare && t.data_finalizare.startsWith(today)).slice(0, 5);
         
         // Build activity list
@@ -1635,29 +2105,28 @@ async function loadTimerSessions(projectId) {
 }
 
 function renderTimerSessions(sessions, totalSeconds) {
-    const container = document.getElementById('timer-sessions-list');
-    const totalEl = document.getElementById('timer-total');
-    
+    const container = document.getElementById('timer-sessions');
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
-    totalEl.textContent = `Total: ${hours}h ${minutes}m`;
-    
+
+    let html = '';
     if (!sessions || sessions.length === 0) {
-        container.innerHTML = '<p style="color: var(--text2); font-size: 0.85rem;">Nu există sesiuni timer.</p>';
-        return;
-    }
-    
-    container.innerHTML = sessions.map(s => `
-        <div class="timer-session">
-            <div>
-                <span style="font-weight: 500;">${formatTimerDuration(s.durata_secunde)}</span>
-                <span style="color: var(--text2); font-size: 0.8rem; margin-left: 8px;">
-                    ${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}
-                </span>
+        html = '<p style="color: var(--text2); font-size: 0.85rem;">Nu există sesiuni timer.</p>';
+    } else {
+        html = sessions.map(s => `
+            <div class="timer-session" style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);">
+                <div>
+                    <span>⏱</span>
+                    <span style="font-weight:500;">${formatTimerDuration(s.durata_secunde)}</span>
+                    <span style="color:var(--text2); font-size:0.8rem; margin-left:8px;">
+                        ${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}
+                    </span>
+                </div>
+                <button class="btn btn-small btn-danger" onclick="deleteTimerSession('${s.id}')" style="padding:2px 8px; font-size:0.7rem;">×</button>
             </div>
-            <button class="btn btn-small btn-danger" onclick="deleteTimerSession('${s.id}')">×</button>
-        </div>
-    `).join('');
+        `).join('');
+    }
+    return html;
 }
 
 function formatTimerDuration(seconds) {
@@ -1672,21 +2141,21 @@ function formatTimerDuration(seconds) {
 
 async function startTimer() {
     if (!currentProjectId) return;
-    
+
     try {
         const data = await apiPost(`/proiecte/${currentProjectId}/timer/start`, {});
         activeSessionId = data.id;
-        
-        document.getElementById('timer-start-btn').style.display = 'none';
-        document.getElementById('timer-stop-btn').style.display = 'inline-flex';
-        
+
+        document.getElementById('timer-start').style.display = 'none';
+        document.getElementById('timer-stop').style.display = 'inline-flex';
+
         // Start interval to update display
         const startTime = new Date(data.start_time);
         timerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             document.getElementById('timer-display').textContent = formatTime(elapsed);
         }, 1000);
-        
+
         showToast('Timer pornit!');
     } catch (e) {
         console.error('Failed to start timer:', e);
@@ -1696,25 +2165,51 @@ async function startTimer() {
 
 async function stopTimer() {
     if (!currentProjectId) return;
-    
+
     try {
         const data = await apiPost(`/proiecte/${currentProjectId}/timer/stop`, {});
-        
+
         if (timerInterval) {
             clearInterval(timerInterval);
             timerInterval = null;
         }
-        
+
         document.getElementById('timer-display').textContent = '00:00:00';
-        document.getElementById('timer-start-btn').style.display = 'inline-flex';
-        document.getElementById('timer-stop-btn').style.display = 'none';
-        
+        document.getElementById('timer-start').style.display = 'inline-flex';
+        document.getElementById('timer-stop').style.display = 'none';
+
         loadTimerSessions(currentProjectId);
         showToast('Timer oprit!');
     } catch (e) {
         console.error('Failed to stop timer:', e);
         showToast('Eroare la oprirea timer-ului', true);
     }
+}
+
+async function stopTimerWithNote() {
+    if (!currentProjectId) return;
+    const titlu = document.getElementById('timer-titlu').value.trim() || 'Activitate';
+    const note  = document.getElementById('timer-note').value.trim();
+    try {
+        await apiPost(`/proiecte/${currentProjectId}/timer/stop-with-note`, { titlu, note });
+        document.getElementById('timer-titlu').value = '';
+        document.getElementById('timer-note').value  = '';
+        stopTimerUI();
+        await Promise.all([loadTimerSessions(currentProjectId), loadJurnal(currentProjectId)]);
+        showToast('Activitate salvată în jurnal!');
+    } catch (e) { console.error('Stop timer error:', e); showToast('Eroare la oprirea timerului', true); }
+}
+
+function stopTimerUI() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    document.getElementById('timer-display').textContent = '00:00:00';
+    const startBtn = document.getElementById('timer-start');
+    const stopBtn = document.getElementById('timer-stop');
+    if (startBtn) startBtn.style.display = 'inline-flex';
+    if (stopBtn) stopBtn.style.display = 'none';
 }
 
 async function deleteTimerSession(sessionId) {
@@ -1734,9 +2229,174 @@ function formatTime(seconds) {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// ============ EXTENDED STATS & CHARTS ============
+// ============ SVG CHARTS (pure SVG, no Chart.js dependency) ============
 
-let charts = {};
+function cssVar(name) {
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue(name).trim();
+}
+
+function svgEl(tag, attrs = {}) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+}
+
+function makeSVG(width, height) {
+    return svgEl('svg', {
+        viewBox: `0 0 ${width} ${height}`,
+        xmlns: 'http://www.w3.org/2000/svg',
+        'aria-hidden': 'true'
+    });
+}
+
+function svgEmptyState(message) {
+    return `<div style="text-align:center; padding:24px 16px;
+        color:var(--chart-text);
+        font-family:'Courier New',monospace; font-size:0.82rem;
+        opacity:0.6;">
+        [ — ] ${message}
+    </div>`;
+}
+
+function renderDonutChart(containerId, data, labels) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const colors = [cssVar('--c1'), cssVar('--c2'), cssVar('--c3'), cssVar('--c4'), cssVar('--c5')];
+    const textColor = cssVar('--chart-text');
+    const bgColor = cssVar('--chart-bg') || cssVar('--bg2') || '#0e1117';
+    if (!data || data.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
+    const W = 280, H = 280, cx = 100, cy = 130, R = 85, r = 52;
+    const total = data.reduce((a, b) => a + b, 0);
+    const svg = makeSVG(W, H);
+    svg.appendChild(svgEl('circle', { cx, cy, r: R, fill: 'none', stroke: cssVar('--chart-grid') || 'rgba(138,122,90,0.15)', 'stroke-width': '1' }));
+    let angle = -Math.PI / 2;
+    data.forEach((val, i) => {
+        const slice = (val / total) * 2 * Math.PI;
+        const x1 = cx + R * Math.cos(angle), y1 = cy + R * Math.sin(angle);
+        const x2 = cx + R * Math.cos(angle + slice), y2 = cy + R * Math.sin(angle + slice);
+        const x3 = cx + r * Math.cos(angle + slice), y3 = cy + r * Math.sin(angle + slice);
+        const x4 = cx + r * Math.cos(angle), y4 = cy + r * Math.sin(angle);
+        const large = slice > Math.PI ? 1 : 0;
+        svg.appendChild(svgEl('path', {
+            d: `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${r} ${r} 0 ${large} 0 ${x4} ${y4} Z`,
+            fill: colors[i % colors.length], stroke: bgColor, 'stroke-width': '2'
+        }));
+        angle += slice;
+    });
+    const totalText = svgEl('text', { x: cx, y: cy - 6, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '22', 'font-weight': '700' });
+    totalText.textContent = total; svg.appendChild(totalText);
+    const totalLabel = svgEl('text', { x: cx, y: cy + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', opacity: '0.7' });
+    totalLabel.textContent = 'TOTAL'; svg.appendChild(totalLabel);
+    const legendX = 210, legendStartY = 60;
+    labels.forEach((label, i) => {
+        const ly = legendStartY + i * 28;
+        svg.appendChild(svgEl('rect', { x: legendX, y: ly - 9, width: 12, height: 12, rx: '2', fill: colors[i % colors.length] }));
+        const t = svgEl('text', { x: legendX + 18, y: ly + 1, fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '11' });
+        t.textContent = `${label} (${data[i]})`; svg.appendChild(t);
+    });
+    container.innerHTML = ''; container.appendChild(svg);
+}
+
+function renderBarChart(containerId, labels, values, colorIndex = 0) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!values || values.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
+    const colors = [cssVar('--c1'), cssVar('--c2'), cssVar('--c3'), cssVar('--c4'), cssVar('--c5')];
+    const textColor = cssVar('--chart-text');
+    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
+    const W = 380, H = 200, padL = 30, padR = 10, padT = 15, padB = 45;
+    const chartW = W - padL - padR, chartH = H - padT - padB;
+    const maxVal = Math.max(...values, 1);
+    const barW = Math.min(40, (chartW / values.length) * 0.6);
+    const gap = chartW / values.length;
+    const svg = makeSVG(W, H);
+    [0, 0.25, 0.5, 0.75, 1].forEach(fraction => {
+        const y = padT + chartH * (1 - fraction);
+        svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': fraction === 0 ? 'none' : '3,3' }));
+        if (fraction > 0) {
+            const t = svgEl('text', { x: padL - 4, y: y + 3, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
+            t.textContent = Math.round(maxVal * fraction); svg.appendChild(t);
+        }
+    });
+    values.forEach((val, i) => {
+        const barH = (val / maxVal) * chartH;
+        const x = padL + gap * i + gap / 2 - barW / 2, y = padT + chartH - barH;
+        svg.appendChild(svgEl('rect', { x, y, width: barW, height: Math.max(barH, 1), rx: '2', fill: colors[(colorIndex + i) % colors.length] }));
+        const valT = svgEl('text', { x: x + barW / 2, y: y - 4, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', 'font-weight': '600' });
+        valT.textContent = val; svg.appendChild(valT);
+        const labelT = svgEl('text', { x: x + barW / 2, y: H - padB + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
+        labelT.textContent = labels[i].length > 8 ? labels[i].substring(0, 7) + '…' : labels[i]; svg.appendChild(labelT);
+    });
+    container.innerHTML = ''; container.appendChild(svg);
+}
+
+function renderLineChart(containerId, labels, values) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!values || values.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
+    const accentColor = cssVar('--c1');
+    const textColor = cssVar('--chart-text');
+    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
+    const fillColor = accentColor + '22';
+    const W = 380, H = 200, padL = 30, padR = 15, padT = 15, padB = 40;
+    const chartW = W - padL - padR, chartH = H - padT - padB;
+    const maxVal = Math.max(...values, 1);
+    const stepX = chartW / (values.length - 1 || 1);
+    const svg = makeSVG(W, H);
+    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+        const y = padT + chartH * (1 - f);
+        svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': f === 0 ? 'none' : '3,3' }));
+        if (f > 0) { const t = svgEl('text', { x: padL - 4, y: y + 3, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' }); t.textContent = Math.round(maxVal * f); svg.appendChild(t); }
+    });
+    const pts = values.map((v, i) => ({ x: padL + i * stepX, y: padT + chartH - (v / maxVal) * chartH }));
+    const fillPath = ['M', pts[0].x, padT + chartH];
+    pts.forEach(p => fillPath.push('L', p.x, p.y));
+    fillPath.push('L', pts[pts.length - 1].x, padT + chartH, 'Z');
+    svg.appendChild(svgEl('path', { d: fillPath.join(' '), fill: fillColor, stroke: 'none' }));
+    const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+    svg.appendChild(svgEl('path', { d: linePath, fill: 'none', stroke: accentColor, 'stroke-width': '2', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    pts.forEach((p, i) => {
+        svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: '3.5', fill: accentColor, stroke: cssVar('--chart-bg') || cssVar('--bg') || '#0e1117', 'stroke-width': '1.5' }));
+        const t = svgEl('text', { x: p.x, y: H - padB + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
+        t.textContent = labels[i].length > 7 ? labels[i].substring(2) : labels[i]; svg.appendChild(t);
+    });
+    container.innerHTML = ''; container.appendChild(svg);
+}
+
+function renderHBarChart(containerId, labels, values) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!values || values.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:32px 16px; color:var(--chart-text); font-family:'Courier New',monospace; font-size:0.85rem;"><div style="font-size:1.4rem; margin-bottom:8px; opacity:0.4;">[ 0h ]</div>nicio sesiune timer înregistrată</div>`;
+        return;
+    }
+    const accentColor = cssVar('--c2');
+    const textColor = cssVar('--chart-text');
+    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
+    const rowH = 28, padL = 130, padR = 50, padT = 10, padB = 10;
+    const maxVal = Math.max(...values, 1);
+    const chartW = 380 - padL - padR;
+    const H = padT + padB + values.length * rowH;
+    const svg = makeSVG(380, H);
+    values.forEach((val, i) => {
+        const y = padT + i * rowH, barW = (val / maxVal) * chartW;
+        if (i % 2 === 0) svg.appendChild(svgEl('rect', { x: 0, y, width: 380, height: rowH, fill: gridColor, opacity: '0.4' }));
+        const labelT = svgEl('text', { x: padL - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
+        labelT.textContent = labels[i].length > 18 ? labels[i].substring(0, 17) + '…' : labels[i]; svg.appendChild(labelT);
+        svg.appendChild(svgEl('rect', { x: padL, y: y + 5, width: Math.max(barW, 2), height: rowH - 10, rx: '2', fill: accentColor }));
+        const valT = svgEl('text', { x: padL + barW + 6, y: y + rowH / 2 + 4, fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', 'font-weight': '600' });
+        valT.textContent = val + 'h'; svg.appendChild(valT);
+    });
+    container.innerHTML = ''; container.appendChild(svg);
+}
+
+function initCharts(data) {
+    renderDonutChart('chart-status', (data.by_status || []).map(s => s.count), (data.by_status || []).map(s => getStatusLabel(s.status)));
+    renderBarChart('chart-manufacturer', (data.by_manufacturer || []).map(m => m.producator || 'Altul'), (data.by_manufacturer || []).map(m => m.count), 0);
+    renderLineChart('chart-monthly', (data.by_month || []).map(m => m.month), (data.by_month || []).map(m => m.count));
+    renderHBarChart('chart-hours', (data.hours_per_project || []).map(h => h.nume), (data.hours_per_project || []).map(h => h.hours));
+}
 
 async function loadExtendedStats() {
     try {
@@ -1763,177 +2423,63 @@ async function loadExtendedStats() {
     }
 }
 
-function initCharts(data) {
-    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const textColor = theme === 'dark' ? '#e2e8f0' : '#0f172a';
-    const gridColor = theme === 'dark' ? '#1e293b' : '#e2e8f0';
-    
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: { color: textColor }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: textColor },
-                grid: { color: gridColor }
-            },
-            y: {
-                ticks: { color: textColor },
-                grid: { color: gridColor }
-            }
-        }
-    };
-    
-    // Status Pie Chart
-    const statusCtx = document.getElementById('chart-status');
-    if (charts.status) charts.status.destroy();
-    if (data.by_status && data.by_status.length > 0) {
-        charts.status = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: data.by_status.map(s => getStatusLabel(s.status)),
-                datasets: [{
-                    data: data.by_status.map(s => s.count),
-                    backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#8b5cf6', '#ef4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: textColor }
-                    }
-                }
-            }
-        });
-    }
-    
-    // Manufacturer Bar Chart
-    const mfrCtx = document.getElementById('chart-manufacturer');
-    if (charts.manufacturer) charts.manufacturer.destroy();
-    if (data.by_manufacturer && data.by_manufacturer.length > 0) {
-        charts.manufacturer = new Chart(mfrCtx, {
-            type: 'bar',
-            data: {
-                labels: data.by_manufacturer.map(m => m.producator),
-                datasets: [{
-                    label: 'Proiecte',
-                    data: data.by_manufacturer.map(m => m.count),
-                    backgroundColor: '#00d4ff'
-                }]
-            },
-            options: chartOptions
-        });
-    }
-    
-    // Monthly Line Chart
-    const monthlyCtx = document.getElementById('chart-monthly');
-    if (charts.monthly) charts.monthly.destroy();
-    if (data.by_month && data.by_month.length > 0) {
-        charts.monthly = new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: data.by_month.map(m => m.month),
-                datasets: [{
-                    label: 'Proiecte',
-                    data: data.by_month.map(m => m.count),
-                    borderColor: '#00d4ff',
-                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: chartOptions
-        });
-    } else {
-        // Show empty state
-        const ctx = monthlyCtx.getContext('2d');
-        ctx.fillStyle = textColor;
-        ctx.font = '14px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Nu există date pentru ultimele 12 luni', monthlyCtx.width / 2, monthlyCtx.height / 2);
-    }
-    
-    // Hours Bar Chart
-    const hoursCtx = document.getElementById('chart-hours');
-    if (charts.hours) charts.hours.destroy();
-    if (data.hours_per_project && data.hours_per_project.length > 0) {
-        charts.hours = new Chart(hoursCtx, {
-            type: 'bar',
-            data: {
-                labels: data.hours_per_project.map(h => h.nume.substring(0, 15) + (h.nume.length > 15 ? '...' : '')),
-                datasets: [{
-                    label: 'Ore',
-                    data: data.hours_per_project.map(h => h.hours),
-                    backgroundColor: '#10b981'
-                }]
-            },
-            options: {
-                ...chartOptions,
-                indexAxis: 'y'
-            }
-        });
-    } else {
-        const ctx = hoursCtx.getContext('2d');
-        ctx.fillStyle = textColor;
-        ctx.font = '14px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Nu există sesiuni timer', hoursCtx.width / 2, hoursCtx.height / 2);
-    }
-}
-
 // ============ TIMELINE ============
 
 function renderTimeline(projects) {
     const container = document.getElementById('timeline-container');
-    if (!container || !projects || projects.length === 0) return;
-
-    const withDates = projects.filter(p => p.data_incepere || p.deadline);
-    if (withDates.length === 0) {
-        container.innerHTML = '<p style="color:var(--text2);padding:20px;">Nu există proiecte cu date.</p>';
-        return;
-    }
-
+    if (!container) return;
+    const withDates = (projects || []).filter(p => p.data_incepere || p.deadline);
+    if (withDates.length === 0) { container.innerHTML = svgEmptyState('Nu există proiecte cu date definite'); return; }
     const today = new Date();
-    let minDate = new Date(today);
-    let maxDate = new Date(today);
+    let minDate = new Date(today.getTime() - 60 * 86400000);
+    let maxDate = new Date(today.getTime() + 60 * 86400000);
     withDates.forEach(p => {
         if (p.data_incepere) { const d = new Date(p.data_incepere); if (d < minDate) minDate = d; }
         if (p.deadline) { const d = new Date(p.deadline); if (d > maxDate) maxDate = d; }
     });
-    minDate = new Date(Math.min(minDate.getTime(), today.getTime() - 90 * 24 * 60 * 60 * 1000));
-    maxDate = new Date(Math.max(maxDate.getTime(), today.getTime() + 30 * 24 * 60 * 60 * 1000));
-
-    let html = '';
-    withDates.forEach(p => {
+    const totalRange = maxDate - minDate;
+    const statusColors = { in_lucru: cssVar('--c3'), finalizat: cssVar('--c2'), in_asteptare: cssVar('--c1') };
+    const textColor = cssVar('--chart-text');
+    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
+    const accentColor = cssVar('--c1');
+    const rowH = 32, padL = 160, padR = 16, padT = 8, padB = 24;
+    const W = 800, chartW = W - padL - padR;
+    const H = padT + padB + withDates.length * rowH;
+    const svg = makeSVG(W, H);
+    const cursor = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    while (cursor <= maxDate) {
+        const x = padL + ((cursor - minDate) / totalRange) * chartW;
+        svg.appendChild(svgEl('line', { x1: x, y1: padT, x2: x, y2: H - padB, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': '3,4' }));
+        const t = svgEl('text', { x, y: H - 6, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
+        t.textContent = cursor.toLocaleDateString('ro-RO', { month: 'short', year: '2-digit' }); svg.appendChild(t);
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+    withDates.forEach((p, i) => {
+        const y = padT + i * rowH;
         const start = p.data_incepere ? new Date(p.data_incepere) : minDate;
         const end = p.deadline ? new Date(p.deadline) : maxDate;
-        const totalRange = maxDate - minDate;
-        const left = Math.max(0, ((start - minDate) / totalRange) * 100);
-        const width = Math.min(100 - left, ((end - start) / totalRange) * 100);
-        const status = p.status || 'in_lucru';
-        const statusColors = { in_lucru: '#3b82f6', finalizat: '#10b981', blocat: '#ef4444', in_asteptare: '#f97316' };
-        const color = statusColors[status] || '#3b82f6';
-        html += `<div class="timeline-row">
-            <div class="timeline-label" title="${escapeHtml(p.nume)}">${escapeHtml(p.nume.substring(0,30))}${p.nume.length>30?'…':''}</div>
-            <div class="timeline-bar-container">
-                <div class="timeline-bar ${status}" style="left:${left}%;width:${Math.max(width,3)}%;background:${color}" 
-                     onclick="showProjectDetail('${p.id}')" title="${escapeHtml(p.nume)}">
-                    ${escapeHtml(p.nume.substring(0,20))}${p.nume.length>20?'…':''}
-                </div>
-            </div>
-        </div>`;
+        const left = Math.max(0, ((start - minDate) / totalRange) * chartW);
+        const width = Math.min(chartW - left, Math.max(6, ((end - start) / totalRange) * chartW));
+        const color = statusColors[p.status] || cssVar('--c3');
+        if (i % 2 === 0) svg.appendChild(svgEl('rect', { x: 0, y, width: W, height: rowH, fill: gridColor, opacity: '0.3' }));
+        const labelT = svgEl('text', { x: padL - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
+        labelT.textContent = p.nume.length > 22 ? p.nume.substring(0, 21) + '…' : p.nume; svg.appendChild(labelT);
+        const barG = svgEl('g', { style: 'cursor:pointer' });
+        barG.addEventListener('click', () => { if (typeof showProjectDetail === 'function') showProjectDetail(p.id); });
+        barG.appendChild(svgEl('rect', { x: padL + left, y: y + 6, width, height: rowH - 12, rx: '3', fill: color, opacity: '0.85' }));
+        if (width > 40) {
+            const barT = svgEl('text', { x: padL + left + 6, y: y + rowH / 2 + 4, fill: '#fff', 'font-family': "'Courier New', monospace", 'font-size': '9', opacity: '0.9' });
+            barT.textContent = p.nume.length > Math.floor(width / 6.5) ? p.nume.substring(0, Math.floor(width / 6.5) - 1) + '…' : p.nume; barG.appendChild(barT);
+        }
+        const title = svgEl('title');
+        title.textContent = `${p.nume}\n${p.data_incepere || '?'} → ${p.deadline || '?'}\nStatus: ${getStatusLabel(p.status)}`; barG.appendChild(title);
+        svg.appendChild(barG);
     });
-
-    const todayPos = ((today - minDate) / (maxDate - minDate)) * 100;
-    html += `<div class="timeline-today" style="left:${todayPos}%"></div>`;
-    container.innerHTML = html;
+    const todayX = padL + ((today - minDate) / totalRange) * chartW;
+    svg.appendChild(svgEl('line', { x1: todayX, y1: padT, x2: todayX, y2: H - padB, stroke: accentColor, 'stroke-width': '1.5', 'stroke-dasharray': '4,3', opacity: '0.8' }));
+    const todayT = svgEl('text', { x: todayX + 4, y: padT + 10, fill: accentColor, 'font-family': "'Courier New', monospace", 'font-size': '9', 'font-weight': '600' });
+    todayT.textContent = 'azi'; svg.appendChild(todayT);
+    container.innerHTML = ''; container.appendChild(svg);
 }
 
 // ============ SWIPE TO COMPLETE (Mobile) ============
@@ -1990,9 +2536,6 @@ function getStatusLabel(status) {
     };
     return labels[status] || status;
 }
-
-const toastQueue = [];
-const MAX_TOASTS = 3;
 
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
@@ -2107,7 +2650,7 @@ function initAccordions() {
 
 // ============ CLIENTI (CLIENT DATABASE) ============
 
-let clientListCache = [];
+var clientListCache = [];
 
 async function loadClientList() {
     try {
@@ -2366,13 +2909,25 @@ async function onTemplateChange() {
 async function loadEchipamente(projectId) {
     try {
         const echipamente = await apiGet(`/proiecte/${projectId}/echipamente`);
-        renderEchipamente(echipamente);
+        
+        // Load param descriptions for each unique manufacturer
+        const producatori = [...new Set(echipamente.map(e => e.producator).filter(p => p && p !== 'Altul'))];
+        const descLookup = {};
+        await Promise.all(producatori.map(async (prod) => {
+            try {
+                const params = await apiGet(`/parametri/by-producator/${prod}`);
+                descLookup[prod] = {};
+                params.forEach(p => { descLookup[prod][p.parametru] = p.descriere_scurta || ''; });
+            } catch (err) { descLookup[prod] = {}; }
+        }));
+        
+        renderEchipamente(echipamente, descLookup);
     } catch (e) {
         console.error('Failed to load echipamente:', e);
     }
 }
 
-function renderEchipamente(echipamente) {
+function renderEchipamente(echipamente, descLookup) {
     const container = document.getElementById('echipamente-list');
     
     if (!echipamente || echipamente.length === 0) {
@@ -2387,9 +2942,12 @@ function renderEchipamente(echipamente) {
         } catch (err) {}
         
         const hasParams = Object.keys(params).length > 0;
-        const paramsRows = Object.entries(params).map(([key, value]) => 
-            `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(value)}</td></tr>`
-        ).join('');
+        const lookup = descLookup[e.producator] || {};
+        const paramsRows = Object.entries(params).map(([key, value]) => {
+            const desc = lookup[key] || '';
+            const shortDesc = desc ? extractParamName(desc) : '-';
+            return `<tr><td style="font-weight:600;color:var(--accent);font-family:'Courier New',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'Courier New',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
+        }).join('');
         
         return `
             <div class="echipament-card">
@@ -2410,7 +2968,8 @@ function renderEchipamente(echipamente) {
                         <div class="echipament-toggle" onclick="toggleEchipamentParams(this)">▼ Parametri</div>
                         <div class="echipament-expanded" style="display: none;">
                             <table class="echipament-params-table">
-                                ${paramsRows}
+                                <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
+                                <tbody>${paramsRows}</tbody>
                             </table>
                         </div>
                     </div>
@@ -2431,8 +2990,106 @@ function toggleEchipamentParams(element) {
     }
 }
 
+let availableParams = [];
+let currentEchipamentId = null;
+let currentParams = {};
+
+async function loadParamsForProducator(producator) {
+    if (!producator || producator === 'Altul') { availableParams = []; return; }
+    try { availableParams = await apiGet(`/parametri/by-producator/${producator}`); } catch (e) { availableParams = []; }
+}
+
+function filterParamSuggestions(query) {
+    const suggestions = document.getElementById('param-suggestions');
+    if (!query || query.length < 2) { suggestions.style.display = 'none'; return; }
+    const q = query.toLowerCase();
+    const filtered = availableParams.filter(p => (p.parametru && p.parametru.toLowerCase().includes(q)) || (p.descriere_scurta && p.descriere_scurta.toLowerCase().includes(q))).slice(0, 15);
+    if (filtered.length === 0) { suggestions.style.display = 'none'; return; }
+    suggestions.innerHTML = filtered.map(p => `<div onclick="selectParam('${escapeHtml(p.parametru)}', '${escapeHtml(p.descriere_scurta || '')}', '${p.valoare_default_str || p.valoare_default || ''}')" style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-family:'Courier New',monospace; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><div><span style="color:var(--accent); font-weight:600;">${escapeHtml(p.parametru)}</span><span style="color:var(--text2); margin-left:8px; font-size:0.78rem;">${escapeHtml(p.descriere_scurta ? p.descriere_scurta.substring(0, 50) + (p.descriere_scurta.length > 50 ? '…' : '') : '')}</span></div><span style="color:var(--text2); font-size:0.78rem; flex-shrink:0; margin-left:8px;">${p.familie || ''}${p.unitate ? ' | ' + p.unitate : ''}</span></div>`).join('');
+    suggestions.style.display = 'block';
+}
+
+function selectParam(code, description, defaultValue) {
+    document.getElementById('param-suggestions').style.display = 'none';
+    document.getElementById('param-search-input').value = '';
+    openParamValueInput(code, description, defaultValue);
+}
+
+function openParamValueInput(code, description, defaultValue) {
+    const existing = currentParams[code];
+    const value = existing !== undefined ? existing : defaultValue;
+    const tempId = 'param-input-' + code.replace(/\./g, '_');
+    if (document.getElementById(tempId)) return;
+    const list = document.getElementById('current-params-list');
+    const div = document.createElement('div');
+    div.id = tempId;
+    div.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:6px;';
+    div.innerHTML = `<span style="font-family:'Courier New',monospace; font-size:0.85rem; color:var(--accent); min-width:60px;">${escapeHtml(code)}</span><span style="font-size:0.78rem; color:var(--text2); flex:1;">${escapeHtml(description.substring(0, 40))}${description.length > 40 ? '…' : ''}</span><input type="text" id="pval-${code.replace(/\./g, '_')}" value="${escapeHtml(String(value))}" style="width:100px; height:32px; padding:0 8px; font-family:'Courier New',monospace; font-size:0.85rem; text-align:right;" placeholder="Valoare"><button class="btn btn-small btn-primary" onclick="confirmParamValue('${code}', '${escapeHtml(description)}')" style="height:32px; padding:0 10px;">✓</button><button class="btn btn-small btn-secondary" onclick="document.getElementById('${tempId}').remove()" style="height:32px; padding:0 10px;">✗</button>`;
+    list.appendChild(div);
+    document.getElementById(`pval-${code.replace(/\./g, '_')}`)?.focus();
+}
+
+function confirmParamValue(code, description) {
+    const input = document.getElementById(`pval-${code.replace(/\./g, '_')}`);
+    if (!input) return;
+    const value = input.value.trim();
+    if (!value) return;
+    currentParams[code] = value;
+    renderCurrentParams();
+    document.getElementById('param-input-' + code.replace(/\./g, '_'))?.remove();
+}
+
+function renderCurrentParams() {
+    const list = document.getElementById('current-params-list');
+    const entries = Object.entries(currentParams);
+    if (entries.length === 0) { list.innerHTML = `<p style="color:var(--text2); font-size:0.82rem; font-family:'Courier New',monospace; padding:8px 0;">Niciun parametru setat.</p>`; return; }
+
+    const lookupDesc = (code) => {
+        const p = availableParams.find(ap => ap.parametru === code);
+        if (p && p.descriere_scurta) {
+            const name = typeof extractParamName === 'function' ? extractParamName(p.descriere_scurta) : p.descriere_scurta;
+            return name.length > 35 ? name.substring(0, 32) + '…' : name;
+        }
+        return '—';
+    };
+
+    const header = `<div style="display:flex; gap:8px; align-items:center; padding:4px 10px; font-family:'Courier New',monospace; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); border-bottom:1px solid var(--border); margin-bottom:4px;">
+        <span style="min-width:65px;">Cod</span>
+        <span style="flex:2;">Descriere</span>
+        <span style="min-width:70px; text-align:right;">Valoare</span>
+        <span style="width:58px;"></span>
+    </div>`;
+
+    const rows = entries.map(([code, value]) => {
+        const desc = lookupDesc(code);
+        const param = availableParams.find(ap => ap.parametru === code);
+        return `<div style="display:flex; gap:8px; align-items:center; padding:5px 10px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:3px; background:var(--bg3); font-family:'Courier New',monospace; font-size:0.8rem;">
+            <span style="color:var(--accent); font-weight:600; min-width:65px;">${escapeHtml(code)}</span>
+            <span style="flex:2; color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(param?.descriere || desc)}">${escapeHtml(desc)}</span>
+            <span style="min-width:70px; text-align:right; color:var(--text); font-weight:600;">${escapeHtml(String(value))}</span>
+            <button class="btn btn-small btn-secondary" onclick="editParamValue('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Editează">✏️</button>
+            <button class="btn btn-small btn-danger" onclick="deleteParam('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Șterge">×</button>
+        </div>`;
+    }).join('');
+
+    list.innerHTML = header + rows;
+}
+
+function editParamValue(code) { const param = availableParams.find(p => p.parametru === code); openParamValueInput(code, param?.descriere || '', currentParams[code] || ''); }
+function deleteParam(code) { delete currentParams[code]; renderCurrentParams(); }
+
+async function openEditEchipament(echipamentId) {
+    currentEchipamentId = echipamentId;
+    try { const eq = await apiGet(`/echipamente/${echipamentId}`); currentParams = eq.params || {}; await loadParamsForProducator(eq.producator); renderCurrentParams(); } catch (e) { console.error('Load echipament error:', e); }
+}
+
 function showAddEquipmentForm() {
     if (!currentProjectId) return;
+    
+    // Reset state for new equipment
+    currentParams = {};
+    availableParams = [];
+    currentEchipamentId = null;
     
     // Remove existing form if any
     const existingForm = document.querySelector('.echipament-form');
@@ -2448,7 +3105,7 @@ function showAddEquipmentForm() {
             </div>
             <div class="form-group">
                 <label>Producător</label>
-                <select id="eq-producator">
+                <select id="eq-producator" onchange="onProducatorChange()">
                     <option value="ABB">ABB</option>
                     <option value="Siemens">Siemens</option>
                     <option value="Danfoss">Danfoss</option>
@@ -2467,11 +3124,33 @@ function showAddEquipmentForm() {
                 </div>
             </div>
             <div class="form-group">
-                <label>Parametri (pXXXX=valoare, unul pe linie)</label>
-                <textarea id="eq-params" rows="4" placeholder="p100=50Hz
-p101=0
-p102=100
-..."></textarea>
+                <label>📋 Încarcă Template Parametri</label>
+                <select id="eq-template" onchange="loadParamTemplate()">
+                    <option value="">-- Selectează familie --</option>
+                    <option value="ACS880">ABB ACS880</option>
+                    <option value="SINAMICS_G120">Siemens SINAMICS G120</option>
+                    <option value="FC302">Danfoss FC302</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📋 Copiază din Proiectul...</label>
+                <select id="eq-copy-project" onchange="loadEquipmentFromProject()">
+                    <option value="">-- Selectează proiect --</option>
+                </select>
+                <div id="eq-copy-equipment-container" style="display:none; margin-top:8px;">
+                    <select id="eq-copy-equipment">
+                        <option value="">-- Selectează echipament --</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Parameter search from database -->
+            <div id="echipament-params-section" style="margin-top:16px;">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:8px;">Caută și adaugă parametri din baza de date</div>
+                <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                    <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'Courier New',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                </div>
+                <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
+                <div id="current-params-list"></div>
             </div>
             <div class="echipament-form-actions">
                 <button type="button" class="btn btn-secondary btn-small" onclick="hideEchipamentForm()">Anulează</button>
@@ -2480,11 +3159,281 @@ p102=100
         </div>
     `;
     container.insertAdjacentHTML('beforeend', formHtml);
+    
+    // Populate projects dropdown for copy function
+    populateProjectsForCopy();
+    
+    // Initialize empty params display
+    renderCurrentParams();
+}
+
+// Populate projects dropdown for copying equipment
+async function populateProjectsForCopy() {
+    const select = document.getElementById('eq-copy-project');
+    if (!select) return;
+    
+    try {
+        const projects = await apiGet('/proiecte');
+        // Filter out current project and build options
+        const options = projects
+            .filter(p => p.id !== currentProjectId)
+            .map(p => `<option value="${p.id}">${escapeHtml(p.nume)}</option>`)
+            .join('');
+        
+        select.innerHTML = '<option value="">-- Selectează proiect --</option>' + options;
+    } catch (e) {
+        console.error('Failed to load projects for copy:', e);
+    }
+}
+
+// Load equipment from selected project
+async function loadEquipmentFromProject() {
+    const projectSelect = document.getElementById('eq-copy-project');
+    const equipmentContainer = document.getElementById('eq-copy-equipment-container');
+    const equipmentSelect = document.getElementById('eq-copy-equipment');
+    
+    if (!projectSelect || !equipmentContainer || !equipmentSelect) return;
+    
+    const projectId = projectSelect.value;
+    
+    if (!projectId) {
+        equipmentContainer.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const data = await apiGet(`/proiecte/${projectId}/echipamente/export`);
+        
+        if (data.equipment && data.equipment.length > 0) {
+            const options = data.equipment
+                .map(eq => `<option value="${eq.id}">${escapeHtml(eq.nume)} (${eq.producator} ${eq.model})</option>`)
+                .join('');
+            equipmentSelect.innerHTML = '<option value="">-- Selectează echipament --</option>' + options;
+            equipmentContainer.style.display = 'block';
+            
+            // Add onchange to auto-fill params when equipment is selected
+            equipmentSelect.onchange = () => fillParamsFromEquipment(projectId, equipmentSelect.value);
+        } else {
+            equipmentSelect.innerHTML = '<option value="">Nu există echipamente</option>';
+            equipmentContainer.style.display = 'block';
+        }
+    } catch (e) {
+        console.error('Failed to load equipment from project:', e);
+        equipmentContainer.style.display = 'none';
+    }
+}
+
+// Fill form fields from selected equipment
+async function fillParamsFromEquipment(projectId, equipmentId) {
+    if (!projectId || !equipmentId) return;
+    
+    try {
+        const data = await apiGet(`/proiecte/${projectId}/echipamente/export`);
+        const eq = data.equipment.find(e => e.id === equipmentId);
+        
+        if (eq) {
+            // Fill basic fields
+            document.getElementById('eq-nume').value = eq.nume || '';
+            document.getElementById('eq-model').value = eq.model || '';
+            document.getElementById('eq-serial').value = eq.serial_number || '';
+            
+            // Set producer if matches
+            const producatorSelect = document.getElementById('eq-producator');
+            if (producatorSelect) {
+                for (let opt of producatorSelect.options) {
+                    if (opt.value.toLowerCase() === (eq.producator || '').toLowerCase()) {
+                        producatorSelect.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            
+            // Fill parameters
+            if (eq.params) {
+                currentParams = { ...eq.params };
+                renderCurrentParams();
+            }
+            
+            showToast(`Parametri copiați din ${eq.nume}`, false);
+        }
+    } catch (e) {
+        console.error('Failed to fill params from equipment:', e);
+    }
 }
 
 function hideEchipamentForm() {
     const form = document.querySelector('.echipament-form');
     if (form) form.remove();
+}
+
+// Auto-select template based on producator selection
+function onProducatorChange() {
+    const producator = document.getElementById('eq-producator')?.value;
+    const templateSelect = document.getElementById('eq-template');
+    
+    // Auto-select template
+    if (producator && templateSelect) {
+        const familyMap = { 'ABB': 'ACS880', 'Siemens': 'SINAMICS_G120', 'Danfoss': 'FC302' };
+        const family = familyMap[producator];
+        if (family) {
+            for (let opt of templateSelect.options) {
+                if (opt.value === family) { templateSelect.value = family; break; }
+            }
+        } else {
+            templateSelect.value = '';
+        }
+    }
+    
+    // Load available parameters from DB for this manufacturer
+    if (producator && producator !== 'Altul') {
+        loadParamsForProducator(producator);
+    } else {
+        availableParams = [];
+    }
+    
+    // Reset current params
+    currentParams = {};
+    renderCurrentParams();
+}
+
+// Load parameter template for selected drive family
+async function loadParamTemplate() {
+    const familie = document.getElementById('eq-template')?.value;
+    if (!familie) return;
+    
+    try {
+        const response = await fetch(`/api/parametri-templates?familie=${encodeURIComponent(familie)}`);
+        if (!response.ok) throw new Error('Failed to load template');
+        
+        const data = await response.json();
+        if (data.parameters && data.parameters.length > 0) {
+            // Check if currentParams already has content
+            const hasExistingParams = Object.keys(currentParams).length > 0;
+            
+            if (hasExistingParams) {
+                if (!confirm('Dorești să înlocuiești parametrii existenți sau să adaugi la cei existenți?')) {
+                    // Append mode
+                    data.parameters.forEach(p => {
+                        const val = p.valoare_default || '';
+                        const unit = p.unitate && p.unitate !== '-' ? ` ${p.unitate}` : '';
+                        currentParams[p.parametru] = `${val}${unit}`;
+                    });
+                } else {
+                    // Replace mode
+                    currentParams = {};
+                    data.parameters.forEach(p => {
+                        const val = p.valoare_default || '';
+                        const unit = p.unitate && p.unitate !== '-' ? ` ${p.unitate}` : '';
+                        currentParams[p.parametru] = `${val}${unit}`;
+                    });
+                }
+            } else {
+                // No existing params, just load
+                data.parameters.forEach(p => {
+                    const val = p.valoare_default || '';
+                    const unit = p.unitate && p.unitate !== '-' ? ` ${p.unitate}` : '';
+                    currentParams[p.parametru] = `${val}${unit}`;
+                });
+            }
+            renderCurrentParams();
+            showToast(`Template ${familie} încărcat!`);
+        }
+    } catch (e) {
+        console.error('Failed to load param template:', e);
+        showToast('Eroare la încărcarea template-ului', true);
+    }
+}
+
+// ============ PIF-MANUALS SEARCH ============
+
+function togglePifSearch() {
+    const input = document.getElementById('pif-manual-search');
+    if (input.style.display === 'none') {
+        input.style.display = 'inline-block';
+        input.focus();
+    } else {
+        input.style.display = 'none';
+        input.value = '';
+    }
+}
+
+async function searchPifManual() {
+    const query = document.getElementById('pif-manual-search')?.value?.trim();
+    if (!query) {
+        showToast('Introdu un termen de căutare', true);
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/pif-manuals/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                showToast('Index pif-manuals nu este disponibil', true);
+            } else {
+                throw new Error('Search failed');
+            }
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.count === 0) {
+            showToast(`Nu s-au găsit rezultate pentru "${query}"`, true);
+            return;
+        }
+        
+        // Show results in a modal
+        showPifManualResults(data);
+    } catch (e) {
+        console.error('Pif-manuals search error:', e);
+        showToast('Eroare la căutarea în pif-manuals', true);
+    }
+}
+
+function showPifManualResults(data) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('pif-manual-modal');
+    if (existingModal) existingModal.remove();
+    
+    const resultsHtml = data.results.map(r => `
+        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg2); border-radius: 8px;">
+            <div style="font-weight: 600; color: var(--text); margin-bottom: 8px;">
+                ${r.fault_code ? '🔧 ' : r.parameter ? '⚙️ ' : '📖 '}
+                ${escapeHtml(r.title)}
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text2); margin-bottom: 8px;">
+                ${r.fault_code ? `Cod fault: <b>${r.fault_code}</b>` : ''}
+                ${r.parameter ? `Parametru: <b>${r.parameter}</b>` : ''}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text2); background: var(--bg3); padding: 8px; border-radius: 4px;">
+                ...${escapeHtml(r.snippet)}...
+            </div>
+        </div>
+    `).join('');
+    
+    const modalHtml = `
+        <div class="modal-overlay" id="pif-manual-modal" onclick="if(event.target === this) closePifManualModal()">
+            <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>📖 Rezultate Căutare: "${escapeHtml(data.query)}"</h2>
+                    <button class="modal-close" onclick="closePifManualModal()">✕</button>
+                </div>
+                <div style="padding: 16px;">
+                    <div style="margin-bottom: 12px; color: var(--text2);">
+                        S-au găsit <b>${data.count}</b> rezultate
+                    </div>
+                    ${resultsHtml}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closePifManualModal() {
+    const modal = document.getElementById('pif-manual-modal');
+    if (modal) modal.remove();
 }
 
 let editingEchipamentId = null;
@@ -2500,12 +3449,18 @@ async function editEchipament(echipamentId) {
         
         const container = document.getElementById('echipamente-list');
         
-        // Convert params_json back to text format
-        let paramsText = '';
+        // Load current params from equipment
+        currentParams = {};
         try {
-            const params = JSON.parse(eq.params_json || '{}');
-            paramsText = Object.entries(params).map(([k, v]) => `${k}=${v}`).join('\n');
+            currentParams = JSON.parse(eq.params_json || '{}');
         } catch (err) {}
+        
+        // Load available params for this manufacturer
+        if (eq.producator && eq.producator !== 'Altul') {
+            await loadParamsForProducator(eq.producator);
+        } else {
+            availableParams = [];
+        }
         
         const formHtml = `
             <div class="echipament-form" id="echipament-form-container">
@@ -2516,7 +3471,7 @@ async function editEchipament(echipamentId) {
                 </div>
                 <div class="form-group">
                     <label>Producător</label>
-                    <select id="eq-producator">
+                    <select id="eq-producator" onchange="onProducatorChange()">
                         <option value="ABB" ${eq.producator === 'ABB' ? 'selected' : ''}>ABB</option>
                         <option value="Siemens" ${eq.producator === 'Siemens' ? 'selected' : ''}>Siemens</option>
                         <option value="Danfoss" ${eq.producator === 'Danfoss' ? 'selected' : ''}>Danfoss</option>
@@ -2534,9 +3489,14 @@ async function editEchipament(echipamentId) {
                         <input type="text" id="eq-serial" value="${escapeHtml(eq.serial_number || '')}">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Parametri (pXXXX=valoare, unul pe linie)</label>
-                    <textarea id="eq-params" rows="4">${escapeHtml(paramsText)}</textarea>
+                <!-- Parameter search from database -->
+                <div id="echipament-params-section" style="margin-top:16px;">
+                    <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:8px;">Caută și adaugă parametri din baza de date</div>
+                    <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                        <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'Courier New',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                    </div>
+                    <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
+                    <div id="current-params-list"></div>
                 </div>
                 <div class="echipament-form-actions">
                     <button type="button" class="btn btn-secondary btn-small" onclick="hideEchipamentForm()">Anulează</button>
@@ -2545,6 +3505,13 @@ async function editEchipament(echipamentId) {
             </div>
         `;
         container.insertAdjacentHTML('beforeend', formHtml);
+        
+        // Render the loaded params and reset search UI
+        renderCurrentParams();
+        const searchInput = document.getElementById('param-search-input');
+        if (searchInput) searchInput.value = '';
+        const suggestions = document.getElementById('param-suggestions');
+        if (suggestions) suggestions.style.display = 'none';
     } catch (e) {
         console.error('Failed to load echipament:', e);
         showToast('Eroare la încărcarea echipamentului', true);
@@ -2563,7 +3530,7 @@ async function saveEchipament() {
         producator: document.getElementById('eq-producator').value,
         model: document.getElementById('eq-model').value,
         serial_number: document.getElementById('eq-serial').value,
-        params_text: document.getElementById('eq-params').value
+        params_json: JSON.stringify(currentParams)
     };
     
     try {
@@ -2596,23 +3563,6 @@ async function deleteEchipament(echipamentId) {
         }
     });
 }
-
-// ============ PROJECT DETAIL - LOAD EQUIPMENT ============
-
-// Override showProjectDetail to also load equipment
-const originalShowProjectDetail = showProjectDetail;
-showProjectDetail = async function(projectId) {
-    await originalShowProjectDetail(projectId);
-    await loadEchipamente(projectId);
-};
-
-// Initialize template selector when showing new project form
-const originalShowNewProjectForm = showNewProjectForm;
-showNewProjectForm = async function() {
-    originalShowNewProjectForm();
-    await initTemplateSelector();
-    await loadClientList();
-};
 
 // ============ BATCH OPERATIONS ============
 
@@ -2767,18 +3717,18 @@ async function undo() {
     
     try {
         if (action.type === 'task_toggle') {
-            await apiPut(`/global-tasks/${action.taskId}`, {
+            await apiPut(`/api/global-tasks/${action.taskId}`, {
                 status: action.previousState.status,
                 data_finalizare: action.previousState.data_finalizare || ''
             });
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'task_delete') {
             // Recreate the deleted task
-            await apiPost('/global-tasks', action.previousState);
+            await apiPost('/api/global-tasks', action.previousState);
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'task_create') {
             // Delete the created task
-            await apiDelete(`/global-tasks/${action.taskId}`);
+            await apiDelete(`/api/global-tasks/${action.taskId}`);
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'checklist_toggle') {
             await apiPut(`/proiecte/${action.projectId}/checklist/${action.itemId}`, {
@@ -2803,18 +3753,18 @@ async function redo() {
     
     try {
         if (action.type === 'task_toggle') {
-            await apiPut(`/global-tasks/${action.taskId}`, {
+            await apiPut(`/api/global-tasks/${action.taskId}`, {
                 status: action.newState.status,
                 data_finalizare: action.newState.data_finalizare || ''
             });
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'task_delete') {
             // Delete the task again
-            await apiDelete(`/global-tasks/${action.taskId}`);
+            await apiDelete(`/api/global-tasks/${action.taskId}`);
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'task_create') {
             // Recreate the task
-            await apiPost('/global-tasks', action.newState);
+            await apiPost('/api/global-tasks', action.newState);
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'checklist_toggle') {
             await apiPut(`/proiecte/${action.projectId}/checklist/${action.itemId}`, {
@@ -2837,7 +3787,7 @@ const originalToggleGtTask = toggleGtTask;
 toggleGtTask = async function(taskId, checked) {
     // Get current task state before toggle for undo
     try {
-        const task = await apiGet(`/global-tasks/${taskId}`);
+        const task = await apiGet(`/api/global-tasks/${taskId}`);
         const previousState = {
             status: task.status,
             data_finalizare: task.data_finalizare
@@ -2865,7 +3815,7 @@ const originalDeleteGtTask = deleteGtTask;
 deleteGtTask = async function(taskId) {
     // Get task data before delete for undo
     try {
-        const task = await apiGet(`/global-tasks/${taskId}`);
+        const task = await apiGet(`/api/global-tasks/${taskId}`);
         if (task) {
             pushUndo({
                 type: 'task_delete',
@@ -2902,7 +3852,7 @@ quickAddTask = async function() {
     // The undo will still work by matching title
     setTimeout(async () => {
         try {
-            const tasks = await apiGet('/global-tasks');
+            const tasks = await apiGet('/api/global-tasks');
             const created = tasks.find(t => t.titlu === titlu && t.status === 'to_do');
             if (created) {
                 // Remove the auto-pushed undo and replace with correct one
@@ -2920,6 +3870,386 @@ quickAddTask = async function() {
     }, 100);
 };
 
+// ============ PARAMETRI MASTER BROWSER ============
+
+const debounceLoadParametri = debounce(loadParametri, 300);
+
+async function loadParametriFamilii() {
+    try {
+        const data = await apiGet('/parametri/familii');
+        parametriFamilii = data.families;
+        const select = document.getElementById('param-familie');
+        // Keep "Toate Familii" as first option
+        select.innerHTML = '<option value="">Toate Familii</option>';
+        data.families.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.familie;
+            opt.textContent = `${f.familie} (${f.count})`;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error('Failed to load parametri families:', e);
+    }
+}
+
+async function loadParametri() {
+    const familie = document.getElementById('param-familie').value;
+    const search = document.getElementById('param-search').value.trim();
+    
+    // Show loading
+    document.getElementById('parametri-loading').style.display = 'block';
+    document.getElementById('parametri-table').style.display = 'none';
+    document.getElementById('parametri-empty').style.display = 'none';
+    
+    try {
+        let url = `/parametri?page=${parametriPage}&limit=${parametriLimit}`;
+        if (familie) url += `&familie=${encodeURIComponent(familie)}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        const data = await apiGet(url);
+        parametriTotal = data.total;
+        
+        // Update count
+        document.getElementById('param-count').textContent = 
+            `Total: ${data.total} parametri`;
+        
+        renderParametri(data.params);
+        updateParametriPagination(data);
+        
+    } catch (e) {
+        console.error('Failed to load parametri:', e);
+        showToast('Eroare la încărcarea parametrilor', true);
+    }
+}
+
+function renderParametri(params) {
+    const tbody = document.getElementById('parametri-tbody');
+    const table = document.getElementById('parametri-table');
+    const empty = document.getElementById('parametri-empty');
+    const loading = document.getElementById('parametri-loading');
+    
+    loading.style.display = 'none';
+    
+    if (params.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+    }
+    
+    table.style.display = 'table';
+    empty.style.display = 'none';
+    
+    window._currentParametriParams = params;
+    parametriData = params;
+    tbody.innerHTML = params.map((p, i) => `
+        <tr class="param-row" onclick="openParamModal(parametriData[${i}])" title="Click pentru detalii">
+            <td style="font-weight: 600; color: var(--accent);">${escapeHtml(p.parametru)}</td>
+            <td><span class="param-name">${escapeHtml(extractParamName(p.descriere_scurta))}</span></td>
+            <td><span class="badge" style="font-size: 0.7rem;">${escapeHtml(p.acces || '-')}</span></td>
+            <td style="font-size: var(--font-small); color: var(--text2);">${escapeHtml(p.tip_date || '-')}</td>
+            <td style="font-size: var(--font-small);">${formatParamValue(p.valoare_default, p.valoare_default_str)}</td>
+            <td style="font-size: var(--font-small); color: var(--text2);">${p.min != null ? p.min : '-'}</td>
+            <td style="font-size: var(--font-small); color: var(--text2);">${p.max != null ? p.max : '-'}</td>
+            <td style="font-size: var(--font-small); color: var(--text2);">${escapeHtml(p.unitate || '-')}</td>
+        </tr>
+    `).join('');
+}
+
+function extractParamName(descriere) {
+    if (!descriere) return '-';
+    const words = descriere.trim().split(/\s+/);
+    let nameEnd = Math.min(words.length, 4);
+    for (let i = 2; i < Math.min(words.length, 6); i++) {
+        const word = words[i];
+        if (/^(Scaled|Received|Selects|Specifies|Sets|Defines|Controls|Enables|Disables|Shows|Indicates|Returns|Contains|Used|When|If|The|A|An)$/i.test(word)) {
+            nameEnd = i;
+            break;
+        }
+    }
+    return words.slice(0, nameEnd).join(' ');
+}
+
+function formatParamValue(def, defStr) {
+    if (defStr !== null && defStr !== undefined && defStr !== '') {
+        return escapeHtml(defStr);
+    }
+    if (def !== null && def !== undefined) {
+        return def;
+    }
+    return '-';
+}
+
+function updateParametriPagination(data) {
+    const prevBtn = document.getElementById('param-prev');
+    const nextBtn = document.getElementById('param-next');
+    const pageInfo = document.getElementById('param-page-info');
+    
+    prevBtn.disabled = data.page <= 1;
+    nextBtn.disabled = data.page >= data.totalPages;
+    pageInfo.textContent = `Pagina ${data.page} din ${data.totalPages} (${data.total} rezultate)`;
+}
+
+function parametriChangePage(delta) {
+    parametriPage += delta;
+    if (parametriPage < 1) parametriPage = 1;
+    loadParametri();
+}
+
+function showParametruDetail(index) {
+    const params = window._currentParametriParams;
+    if (!params || index >= params.length) return;
+    
+    const p = params[index];
+    const panel = document.getElementById('param-detail-panel');
+    
+    // Highlight selected row
+    document.querySelectorAll('#parametri-tbody tr').forEach((tr, i) => {
+        tr.classList.toggle('selected-row', i === index);
+    });
+    
+    panel.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+                <span style="font-size: 1.2rem; font-weight: 700; color: var(--accent);">${escapeHtml(p.parametru)}</span>
+                <span style="font-size: var(--font-small); color: var(--text2); margin-left: 8px;">${escapeHtml(p.familie || '')}</span>
+            </div>
+            <button onclick="document.getElementById('param-detail-panel').style.display='none'" 
+                    style="background: none; border: 1px solid var(--border); color: var(--text2); cursor: pointer; padding: 4px 10px; border-radius: 4px; font-size: 1rem;">✕</button>
+        </div>
+        <div style="margin-bottom: 12px; color: var(--text); line-height: 1.6; white-space: pre-wrap;">${escapeHtml(p.descriere_scurta || 'Fără descriere')}</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: var(--font-small);">
+            <div><span style="color: var(--text2);">Acces:</span> <span style="color: var(--text);">${escapeHtml(p.acces || '-')}</span></div>
+            <div><span style="color: var(--text2);">Tip date:</span> <span style="color: var(--text);">${escapeHtml(p.tip_date || '-')}</span></div>
+            <div><span style="color: var(--text2);">Default:</span> <span style="color: var(--accent); font-weight: 600;">${formatParamValue(p.valoare_default, p.valoare_default_str)}</span></div>
+            <div><span style="color: var(--text2);">Unitate:</span> <span style="color: var(--text);">${escapeHtml(p.unitate || '-')}</span></div>
+            <div><span style="color: var(--text2);">Min:</span> <span style="color: var(--text);">${p.min != null ? p.min : '-'}</span></div>
+            <div><span style="color: var(--text2);">Max:</span> <span style="color: var(--text);">${p.max != null ? p.max : '-'}</span></div>
+            <div><span style="color: var(--text2);">Pagină manual:</span> <span style="color: var(--text);">${p.pagina || '-'}</span></div>
+            <div><span style="color: var(--text2);">Categorie:</span> <span style="color: var(--text);">${escapeHtml(p.categorie || '-')}</span></div>
+        </div>
+    `;
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ============ PARAM MODAL ============
+
+function openParamModal(param) {
+    if (!param) return;
+    currentParam = param;
+    document.getElementById('param-modal-code').textContent = param.parametru || '-';
+    document.getElementById('param-modal-familie').textContent = param.familie || '';
+    document.getElementById('param-modal-name').textContent = extractParamName(param.descriere);
+    document.getElementById('param-modal-descriere').textContent = param.descriere || '-';
+    document.getElementById('param-modal-acces').textContent = param.acces || '-';
+    document.getElementById('param-modal-tip').textContent = param.tip_date || '-';
+    const def = param.valoare_default_str || (param.valoare_default !== null && param.valoare_default !== undefined ? param.valoare_default : '-');
+    document.getElementById('param-modal-default').textContent = def;
+    document.getElementById('param-modal-unitate').textContent = param.unitate || '-';
+    document.getElementById('param-modal-min').textContent = param.min !== null && param.min !== undefined ? param.min : '-';
+    document.getElementById('param-modal-max').textContent = param.max !== null && param.max !== undefined ? param.max : '-';
+    const paginaRow = document.getElementById('param-modal-pagina-row');
+    if (param.pagina) {
+        document.getElementById('param-modal-pagina').textContent = param.pagina;
+        paginaRow.style.display = 'block';
+    } else {
+        paginaRow.style.display = 'none';
+    }
+
+    // Interconexiuni — ascunse (Ion vrea doar explicație + influențe, 10 Mai 2026)
+    const interconnRow = document.getElementById('param-modal-interconn-row');
+    if (interconnRow) interconnRow.style.display = 'none';
+
+    // Influențe — ascunde temporar până la fetch
+    const inflRow = document.getElementById('param-modal-influenteaza-row');
+    if (inflRow) inflRow.style.display = 'none';
+
+    // Show manual button if family has a known manual
+    const manualBtn = document.getElementById('param-manual-btn');
+    const familie = param.familie || '';
+    const manualMap = {
+        'ACS880': 'ACS880_Primary_Firmware_Manual.pdf',
+        'ACS580': 'ACS580_Firmware_Manual.pdf',
+        'ACS380': 'ACS580_Firmware_Manual.pdf',
+        'ACS180': 'ACS580_Firmware_Manual.pdf',
+        'SINAMICS_G120': 'SINAMICS_G120_List_Manual.pdf',
+        'SINAMICS_G120C': 'SINAMICS_G120_List_Manual.pdf',
+        'SINAMICS_S120': 'SINAMICS_S120_S150_List_Manual.pdf',
+        'SINAMICS_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
+        'SINAMICS_S120_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
+        'SINAMICS_G130_G150': 'SINAMICS_G120_List_Manual.pdf',
+        'Danfoss_VLT_FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+        'FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+        'FC301': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+        'FC202': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+        'Lenze_i550': 'Lenze_i550_Manual.pdf',
+        'i550': 'Lenze_i550_Manual.pdf',
+        'Lenze_i950': 'Lenze_i950_Manual.pdf',
+        'i650': 'Lenze_i950_Manual.pdf',
+        'i950': 'Lenze_i950_Manual.pdf',
+    };
+    _currentParamManual = manualMap[familie] || null;
+    if (_currentParamManual) {
+        manualBtn.style.display = 'block';
+    } else {
+        manualBtn.style.display = 'none';
+    }
+
+    document.getElementById('param-detail-modal').classList.add('active');
+
+    // Fetch detaliu complet pentru explicatie + influenteaza
+    const paramId = param.id || param.parametru;
+    fetch('/api/parametri/' + encodeURIComponent(paramId))
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function(detail) {
+            // Merge detail into currentParam
+            if (currentParam) Object.assign(currentParam, detail);
+            // Explicatie
+            const explicatieRow = document.getElementById('param-modal-explicatie-row');
+            const explicatieDiv = document.getElementById('param-modal-explicatie');
+            if (detail.explicatie && detail.explicatie.trim().length > 0) {
+                explicatieDiv.innerHTML = detail.explicatie;
+                explicatieRow.style.display = 'block';
+            } else {
+                explicatieRow.style.display = 'none';
+            }
+            // Influenteaza
+            if (detail.influenteaza) {
+                renderInfluenteazaDesktop(detail);
+            }
+        })
+        .catch(function() {});
+}
+
+function closeParamModal() {
+    document.getElementById('param-detail-modal').classList.remove('active');
+    currentParam = null;
+}
+
+// Helper: randare influențe desktop — creează/actualizează div-ul
+function renderInfluenteazaDesktop(param) {
+    const modal = document.getElementById('param-detail-modal');
+    if (!modal) return;
+    
+    // Găsește sau creează elementul
+    let row = document.getElementById('param-modal-influenteaza-row');
+    if (!row) {
+        // Creează dinamic dacă nu există în HTML
+        const explicatieRow = document.getElementById('param-modal-explicatie-row');
+        row = document.createElement('div');
+        row.id = 'param-modal-influenteaza-row';
+        row.style.cssText = 'display:none;margin-top:8px;padding:12px;background:rgba(116,212,165,0.08);border:1px solid var(--success);border-radius:6px;';
+        row.innerHTML = '<strong>📡 Influențează:</strong><div id="param-modal-influenteaza" style="margin-top:4px;font-size:0.9em;"></div>';
+        if (explicatieRow && explicatieRow.parentNode) {
+            explicatieRow.parentNode.insertBefore(row, explicatieRow);
+        } else {
+            modal.appendChild(row);
+        }
+    }
+    const div = document.getElementById('param-modal-influenteaza');
+    if (!div) return;
+    
+    const tryRender = (data) => {
+        if (!data || data === '[]' || data === 'null' || data === '') {
+            row.style.display = 'none';
+            return;
+        }
+        let arr;
+        try {
+            arr = typeof data === 'string' ? JSON.parse(data) : data;
+        } catch { row.style.display = 'none'; return; }
+        if (!Array.isArray(arr) || arr.length === 0) { row.style.display = 'none'; return; }
+        div.innerHTML = arr.map(obj => {
+            const pname = typeof obj === 'string' ? obj : (obj.parametru || '?');
+            const efect = typeof obj === 'string' ? '' : (obj.efect || '');
+            const tip = typeof obj === 'string' ? '' : (obj.tip || '');
+            const tipTag = tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${tip}]</span>` : '';
+            const efectText = efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${efect}</div>` : '';
+            return `<div style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid var(--success);">
+                <span style="font-family:monospace;font-weight:bold;color:var(--success);">${pname}</span>${tipTag}
+                ${efectText}
+            </div>`;
+        }).join('');
+        row.style.display = 'block';
+    };
+    
+    tryRender(param.influenteaza);
+}
+
+function copyParamCode() {
+    if (!currentParam) return;
+    navigator.clipboard.writeText(currentParam.parametru || '').then(() => {
+        showToast('Cod copiat: ' + currentParam.parametru);
+    });
+}
+
+var el = document.getElementById('param-detail-modal');
+if (el) el.addEventListener('click', function(e) {
+    if (e.target === this) closeParamModal();
+});
+
+// ============ MANUALS MODAL ============
+const MANUAL_LABELS = {
+    'ACS880_Primary_Firmware_Manual.pdf': 'ABB ACS880 — Primary Firmware Manual',
+    'ACS580_Firmware_Manual.pdf': 'ABB ACS580 — Firmware Manual',
+    'SINAMICS_G120_List_Manual.pdf': 'Siemens SINAMICS G120 — List Manual',
+    'SINAMICS_S120_S150_List_Manual.pdf': 'Siemens SINAMICS S120/S150 — List Manual',
+    'Danfoss_VLT_FC302_Programming_Guide.pdf': 'Danfoss VLT FC302 — Programming Guide',
+    'Lenze_i550_Manual.pdf': 'Lenze i550 — Manual',
+    'Lenze_i950_Manual.pdf': 'Lenze i950 — Project Planning Manual',
+};
+
+function showManualsModal() {
+    const list = document.getElementById('manuals-list');
+    list.innerHTML = '<div style="color:var(--text2);font-size:0.9rem;text-align:center;padding:20px;">Se încarcă...</div>';
+    document.getElementById('manuals-modal').classList.add('active');
+    fetch('/api/manuals')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.manuals || data.manuals.length === 0) {
+                list.innerHTML = '<div style="color:var(--text2);font-size:0.9rem;text-align:center;">Niciun manual găsit.</div>';
+                return;
+            }
+            list.innerHTML = '';
+            data.manuals.forEach(fn => {
+                const label = MANUAL_LABELS[fn] || fn.replace(/_/g, ' ').replace('.pdf', '');
+                const size = '';
+                const a = document.createElement('a');
+                a.href = '#';
+                a.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);text-decoration:none;transition:background 0.15s;';
+                a.innerHTML = `<span style="font-size:1.4rem;">📄</span><span style="flex:1;font-size:0.9rem;">${escapeHtml(label)}</span><span style="font-size:0.75rem;color:var(--text2);">PDF</span>`;
+                a.onclick = (e) => { e.preventDefault(); window.open('/manuals/' + encodeURIComponent(fn), '_blank'); };
+                a.onmouseenter = () => { a.style.background = 'var(--hover)'; };
+                a.onmouseleave = () => { a.style.background = 'var(--bg2)'; };
+                list.appendChild(a);
+            });
+        })
+        .catch(() => {
+            list.innerHTML = '<div style="color:var(--danger);font-size:0.9rem;">Eroare la încărcarea manualelor.</div>';
+        });
+}
+
+function closeManualsModal() {
+    document.getElementById('manuals-modal').classList.remove('active');
+}
+
+var el = document.getElementById('manuals-modal');
+if (el) el.addEventListener('click', function(e) {
+    if (e.target === this) closeManualsModal();
+});
+
+let _currentParamManual = null;
+
+function openParamManual() {
+    if (_currentParamManual) {
+        var url = '/manuals/' + encodeURIComponent(_currentParamManual);
+        if (currentParam && currentParam.pagina) {
+            url += '#page=' + currentParam.pagina;
+        }
+        window.open(url, '_blank');
+    }
+}
+
 // ============ PWA / OFFLINE SUPPORT ============
 
 let deferredPrompt = null;
@@ -2927,9 +4257,21 @@ let deferredPrompt = null;
 function initPWA() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/static/service-worker.js')
+            navigator.serviceWorker.register('/service-worker.js')
                 .then(registration => {
                     console.log('SW registered:', registration.scope);
+                    // Auto-update: when new SW found, skip waiting + reload
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                newWorker.postMessage('skipWaiting');
+                                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                                    window.location.reload();
+                                });
+                            }
+                        });
+                    });
                 })
                 .catch(error => {
                     console.error('SW registration failed:', error);
