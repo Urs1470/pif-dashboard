@@ -131,6 +131,13 @@ function initFlatpickr(selector, options = {}) {
 }
 
 function initAllDatePickers() {
+    // Reflect prio select value on the element for color theming
+    document.querySelectorAll('.prio-select').forEach(sel => {
+        const sync = () => sel.setAttribute('data-value', sel.value);
+        sync();
+        sel.addEventListener('change', sync);
+    });
+
     if (document.getElementById('quick-scadenta')) initFlatpickr('#quick-scadenta');
     if (document.getElementById('p-data-start')) initFlatpickr('#p-data-start');
     if (document.getElementById('p-data-est')) initFlatpickr('#p-data-est');

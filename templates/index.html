@@ -87,6 +87,9 @@
             box-sizing: border-box;
         }
 
+        :root { color-scheme: dark; }
+        :root[data-theme="light"] { color-scheme: light; }
+
         body {
             font-family: var(--font-sans);
             background: var(--bg);
@@ -1840,7 +1843,11 @@
             background: var(--bg2);
             color: var(--text);
             cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
         }
+        .prio-select[data-value="Urgent"] { border-color: var(--danger); color: var(--danger); }
+        .prio-select[data-value="Normal"] { border-color: var(--warning); color: var(--warning); }
+        .prio-select[data-value="Minor"] { border-color: var(--text2); color: var(--text2); }
 
         @media (max-width: 768px) {
             .quick-add-main input { height: 52px; font-size: 1rem; }
@@ -2407,8 +2414,8 @@
                     <option value="Siemens">Siemens</option>
                     <option value="Altul">Altul</option>
                 </select>
-                <input type="date" id="filter-date-from" placeholder="De la">
-                <input type="date" id="filter-date-to" placeholder="Până la">
+                <input type="text" id="filter-date-from" placeholder="De la" readonly>
+                <input type="text" id="filter-date-to" placeholder="Până la" readonly>
                 <button class="btn btn-secondary" id="batch-mode-btn" onclick="toggleBatchMode()"><i data-lucide="check-square"></i> Mod Selectare</button>
                 <button class="btn btn-primary" onclick="showNewProjectForm()"><i data-lucide="plus"></i> Proiect Nou <span class="shortcut-hint">N</span></button>
             </div>
@@ -2775,10 +2782,10 @@
                     <button class="btn btn-primary" onclick="quickAddTask()" id="quick-add-btn">+</button>
                 </div>
                 <div class="quick-add-options">
-                    <select id="quick-prioritate" class="quick-select">
-                        <option value="Normal">Normal</option>
-                        <option value="Urgent">Urgent</option>
-                        <option value="Minor">Minor</option>
+                    <select id="quick-prioritate" class="quick-select prio-select">
+                        <option value="Normal">● Normal</option>
+                        <option value="Urgent">▲ Urgent</option>
+                        <option value="Minor">▼ Minor</option>
                     </select>
                     <select id="quick-categorie" class="quick-select">
                         <option value="General">General</option>
@@ -2787,7 +2794,7 @@
                         <option value="Administrativ">Administrativ</option>
                         <option value="Studiu">Studiu</option>
                     </select>
-                    <input type="date" id="quick-scadenta" class="quick-select" title="Data scadentă">
+                    <input type="text" id="quick-scadenta" class="quick-select" placeholder="Data scadentă" title="Data scadentă" readonly>
                 </div>
             </div>
 
@@ -3385,7 +3392,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260534"></script>
+    <script src="/static/app.js?v=20260535"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
