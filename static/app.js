@@ -1830,6 +1830,29 @@ async function logout() {
 
 // ============ HOME PAGE ============
 
+function _greetingRO() {
+    const h = new Date().getHours();
+    if (h < 5)  return 'Bună seara';
+    if (h < 12) return 'Bună dimineața';
+    if (h < 18) return 'Bună ziua';
+    return 'Bună seara';
+}
+function _fmtDateRO(d = new Date()) {
+    return d.toLocaleDateString('ro-RO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+function _shortDateRO(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('ro-RO', { day:'numeric', month:'short' });
+}
+function _elapsed(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 async function loadDashboardHome() {
     try {
         const data = await apiGet('/dashboard/home');
@@ -1838,126 +1861,215 @@ async function loadDashboardHome() {
 
         const { urgent_tasks, upcoming_deadlines, recent_journal, active_timer, todays_tasks, stats } = data;
 
-        let html = '';
-
-        // Stats bar
-        html += `
-            <div class="stats-bar">
-                <div class="stat-card">
-                    <div class="stat-label">Proiecte Active</div>
-                    <div class="stat-value" id="home-stat-active">${stats.active_projects}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ore Săptămâna</div>
-                    <div class="stat-value" id="home-stat-hours-dynamic">${stats.weekly_hours}h</div>
+        // — Page head with greeting —
+        let html = `
+            <div class="page-head">
+                <div>
+                    <div class="page-title">${_greetingRO()}, Ion <span class="page-greet">— iată ziua ta</span></div>
+                    <div class="page-subtitle">${_fmtDateRO()}</div>
                 </div>
             </div>
         `;
 
-        // Active timer section (full-width)
+        // — 4-stat bar —
+        const delta = stats.weekly_delta || 0;
+        const deltaStr = delta === 0 ? 'la fel ca săptămâna trecută'
+            : delta > 0 ? `<b class="up">+${delta}h</b> față de săpt. trecută`
+            : `<b class="down">${delta}h</b> față de săpt. trecută`;
+
+        html += `
+            <div class="home-stats">
+                <div class="h-stat">
+                    <div class="h-stat-row">
+                        <span class="h-stat-label">Proiecte Active</span>
+                        <span class="h-stat-ico"><i data-lucide="folder-kanban"></i></span>
+                    </div>
+                    <div class="h-stat-value accent">${stats.active_projects}</div>
+                    <div class="h-stat-delta">din <b>${stats.total_projects ?? '—'}</b> total</div>
+                </div>
+                <div class="h-stat warn">
+                    <div class="h-stat-row">
+                        <span class="h-stat-label">Task-uri Urgente</span>
+                        <span class="h-stat-ico"><i data-lucide="alert-triangle"></i></span>
+                    </div>
+                    <div class="h-stat-value warn">${stats.urgent_count ?? urgent_tasks.length}</div>
+                    <div class="h-stat-delta">${(stats.urgent_count ?? urgent_tasks.length) > 0 ? 'scadență apropiată' : 'fără urgențe'}</div>
+                </div>
+                <div class="h-stat success">
+                    <div class="h-stat-row">
+                        <span class="h-stat-label">Ore Săptămâna</span>
+                        <span class="h-stat-ico"><i data-lucide="clock"></i></span>
+                    </div>
+                    <div class="h-stat-value success">${stats.weekly_hours}<span style="font-size:14px;color:var(--text2);">h</span></div>
+                    <div class="h-stat-delta">${deltaStr}</div>
+                </div>
+                <div class="h-stat violet">
+                    <div class="h-stat-row">
+                        <span class="h-stat-label">Deadline-uri</span>
+                        <span class="h-stat-ico"><i data-lucide="calendar-clock"></i></span>
+                    </div>
+                    <div class="h-stat-value violet">${stats.deadline_count ?? upcoming_deadlines.length}</div>
+                    <div class="h-stat-delta">în următoarele 7 zile</div>
+                </div>
+            </div>
+        `;
+
+        // — Active timer banner —
         if (active_timer) {
             const startTime = new Date(active_timer.start_time);
-            const now = new Date();
-            const elapsed = Math.floor((now - startTime) / 1000);
-            const hours = Math.floor(elapsed / 3600);
-            const minutes = Math.floor((elapsed % 3600) / 60);
-            const elapsedStr = `${hours}h ${minutes}m`;
+            const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
             html += `
-                <div class="home-section home-section-timer">
-                    <div class="home-section-title" style="color:var(--accent);"><i data-lucide="timer"></i> Timer Activ</div>
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <span style="color:var(--accent);display:inline-flex;"><i data-lucide="play" style="width:22px;height:22px;"></i></span>
-                        <div style="flex:1;">
-                            <div style="font-family:'Courier New',monospace;font-weight:600;color:var(--text);">${escapeHtml(active_timer.proiect_nume)}</div>
-                            <div style="font-size:.8rem;color:var(--text2);">${elapsedStr} • Începere: ${startTime.toLocaleTimeString('ro-RO')}</div>
+                <div class="h-timer">
+                    <div class="h-timer-dot"></div>
+                    <div class="h-timer-meta">
+                        <div class="h-timer-title">
+                            ${escapeHtml(active_timer.project_name || active_timer.proiect_nume || 'Proiect')}
+                            <span class="h-timer-tag">Activ</span>
                         </div>
+                        <div class="h-timer-sub">Pornit la ${startTime.toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
+                    <div class="h-timer-elapsed" id="home-timer-elapsed" data-start="${active_timer.start_time}">${_elapsed(elapsedSec)}</div>
                 </div>
             `;
         }
 
+        // — Card grid —
         html += `<div class="home-grid">`;
 
-        // Urgent tasks
-        html += `<div class="home-section">`;
-        html += `<div class="home-section-title"><i data-lucide="alert-triangle"></i> Task-uri Urgente</div>`;
-        if (urgent_tasks.length === 0) {
-            html += `<div class="home-empty">Nicio sarcină urgentă</div>`;
+        // Card 1: Urgent
+        html += `
+            <div class="h-card">
+                <div class="h-card-head">
+                    <span class="h-card-ico danger"><i data-lucide="alert-triangle"></i></span>
+                    <span class="h-card-title">Task-uri Urgente</span>
+                    <span class="h-card-count">${urgent_tasks.length}</span>
+                </div>
+                <div class="h-card-body">
+        `;
+        if (!urgent_tasks.length) {
+            html += `<div class="h-empty">Nicio sarcină urgentă</div>`;
         } else {
-            html += `<div class="todo-list">`;
-            urgent_tasks.forEach(task => {
+            urgent_tasks.forEach(t => {
+                const proj = t.proiect_nume ? escapeHtml(t.proiect_nume) : '—';
+                const date = t.data_scadenta ? `<span><i data-lucide="calendar"></i> ${t.data_scadenta}</span>` : '';
+                const onclick = t.proiect_id ? `onclick="showProjectDetail('${t.proiect_id}')"` : '';
                 html += `
-                    <div class="gt-task-card" onclick="showProjectDetail('${task.proiect_id}')">
-                        <span class="gt-task-title">${escapeHtml(task.titlu)}</span>
-                        <div class="todo-meta">${escapeHtml(task.proiect_nume || '')} ${task.data_scadenta ? '• ' + task.data_scadenta : ''}</div>
+                    <div class="h-row" ${onclick}>
+                        <span class="h-row-dot urgent"></span>
+                        <div class="h-row-content">
+                            <div class="h-row-title">${escapeHtml(t.titlu)}</div>
+                            <div class="h-row-meta"><span>${proj}</span>${date ? '<span>•</span>' + date : ''}</div>
+                        </div>
+                        <span class="h-row-badge urgent">Urgent</span>
                     </div>
                 `;
             });
-            html += `</div>`;
         }
-        html += `</div>`;
+        html += `</div></div>`;
 
-        // Upcoming deadlines
-        html += `<div class="home-section">`;
-        html += `<div class="home-section-title"><i data-lucide="calendar-clock"></i> Deadline-uri Următoare (7 zile)</div>`;
-        if (upcoming_deadlines.length === 0) {
-            html += `<div class="home-empty">Niciun deadline în următoarele 7 zile</div>`;
+        // Card 2: Deadlines
+        html += `
+            <div class="h-card">
+                <div class="h-card-head">
+                    <span class="h-card-ico violet"><i data-lucide="calendar-clock"></i></span>
+                    <span class="h-card-title">Deadline-uri Următoare</span>
+                    <span class="h-card-count">${upcoming_deadlines.length}</span>
+                </div>
+                <div class="h-card-body">
+        `;
+        if (!upcoming_deadlines.length) {
+            html += `<div class="h-empty">Niciun deadline în 7 zile</div>`;
         } else {
-            html += `<div class="todo-list">`;
-            upcoming_deadlines.forEach(proj => {
+            upcoming_deadlines.forEach(p => {
                 html += `
-                    <div class="gt-task-card" onclick="showProjectDetail('${proj.id}')">
-                        <span class="gt-task-title">${escapeHtml(proj.nume)}</span>
-                        <div class="todo-meta">${escapeHtml(proj.client || '')} • <strong style="color:var(--warning);">${proj.deadline}</strong></div>
+                    <div class="h-row" onclick="showProjectDetail('${p.id}')">
+                        <span class="h-row-dot due"></span>
+                        <div class="h-row-content">
+                            <div class="h-row-title">${escapeHtml(p.nume)}</div>
+                            <div class="h-row-meta"><span>${escapeHtml(p.client || '—')}</span></div>
+                        </div>
+                        <span class="h-row-date">${_shortDateRO(p.deadline)}</span>
                     </div>
                 `;
             });
-            html += `</div>`;
         }
-        html += `</div>`;
+        html += `</div></div>`;
 
-        // Today's global tasks
-        html += `<div class="home-section">`;
-        html += `<div class="home-section-title"><i data-lucide="list-checks"></i> Task-uri Globale</div>`;
-        if (todays_tasks.length === 0) {
-            html += `<div class="home-empty">Nicio sarcină globală activă</div>`;
+        // Card 3: Tasks Globale
+        html += `
+            <div class="h-card">
+                <div class="h-card-head">
+                    <span class="h-card-ico"><i data-lucide="list-checks"></i></span>
+                    <span class="h-card-title">Task-uri Globale</span>
+                    <span class="h-card-count">${todays_tasks.length}</span>
+                </div>
+                <div class="h-card-body">
+        `;
+        if (!todays_tasks.length) {
+            html += `<div class="h-empty">Nicio sarcină globală activă</div>`;
         } else {
-            html += `<div class="todo-list">`;
-            todays_tasks.forEach(task => {
-                const priorityStyle = task.prioritate === 'Urgent' ? 'color:var(--accent);' : '';
+            todays_tasks.forEach(t => {
+                const prio = (t.prioritate || 'Normal');
+                const prioCls = prio.toLowerCase();
                 html += `
-                    <div class="gt-task-card">
-                        <span class="gt-task-title" style="${priorityStyle}">${escapeHtml(task.titlu)}</span>
-                        <div class="todo-meta">${task.categorie && task.categorie !== 'General' ? escapeHtml(task.categorie) + ' • ' : ''}${task.data_scadenta || ''}</div>
+                    <div class="h-row">
+                        <span class="h-row-dot ${prioCls}"></span>
+                        <div class="h-row-content">
+                            <div class="h-row-title">${escapeHtml(t.titlu)}</div>
+                            <div class="h-row-meta"><span>${escapeHtml(t.categorie || 'General')}</span></div>
+                        </div>
+                        <span class="h-row-badge ${prioCls}">${prio}</span>
                     </div>
                 `;
             });
-            html += `</div>`;
         }
-        html += `</div>`;
+        html += `</div></div>`;
 
-        // Recent journal entries
-        html += `<div class="home-section">`;
-        html += `<div class="home-section-title"><i data-lucide="notebook-pen"></i> Jurnal Recent</div>`;
-        if (recent_journal.length === 0) {
-            html += `<div class="home-empty">Nicio intrare în jurnal</div>`;
+        // Card 4: Jurnal Recent
+        html += `
+            <div class="h-card">
+                <div class="h-card-head">
+                    <span class="h-card-ico warning"><i data-lucide="notebook-pen"></i></span>
+                    <span class="h-card-title">Jurnal Recent</span>
+                    <span class="h-card-count">${recent_journal.length}</span>
+                </div>
+                <div class="h-card-body">
+        `;
+        if (!recent_journal.length) {
+            html += `<div class="h-empty">Nicio intrare în jurnal</div>`;
         } else {
-            html += `<div class="todo-list">`;
-            recent_journal.forEach(entry => {
+            recent_journal.forEach(e => {
                 html += `
-                    <div class="gt-task-card" onclick="showProjectDetail('${entry.proiect_id}')">
-                        <span class="gt-task-title">${escapeHtml(entry.continut)}</span>
-                        <div class="todo-meta">${entry.data} • ${escapeHtml(entry.project_name || '')}</div>
+                    <div class="h-row" onclick="showProjectDetail('${e.proiect_id}')">
+                        <span class="h-row-dot neutral"></span>
+                        <div class="h-row-content">
+                            <div class="h-row-title">${escapeHtml(e.continut)}</div>
+                            <div class="h-row-meta">
+                                <span>${escapeHtml(e.project_name || '')}</span>
+                                <span>•</span>
+                                <span><i data-lucide="calendar"></i> ${_shortDateRO(e.data)}</span>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
-            html += `</div>`;
         }
-        html += `</div>`;
+        html += `</div></div>`;
 
         html += `</div>`;
 
         container.innerHTML = html;
+
+        // Live timer update on home page
+        if (active_timer) {
+            if (window._homeTimerInterval) clearInterval(window._homeTimerInterval);
+            window._homeTimerInterval = setInterval(() => {
+                const el = document.getElementById('home-timer-elapsed');
+                if (!el) { clearInterval(window._homeTimerInterval); return; }
+                const start = new Date(el.dataset.start);
+                el.textContent = _elapsed(Math.floor((Date.now() - start) / 1000));
+            }, 1000);
+        }
 
     } catch (e) {
         console.error('Failed to load dashboard home:', e);

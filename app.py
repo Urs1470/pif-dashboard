@@ -2309,33 +2309,52 @@ def dashboard_home():
     # Active projects count
     cursor.execute("SELECT COUNT(*) FROM proiecte WHERE status NOT IN ('finalizat', 'anulat')")
     active_projects = cursor.fetchone()[0]
-    
+
+    # Total projects
+    cursor.execute("SELECT COUNT(*) FROM proiecte")
+    total_projects = cursor.fetchone()[0]
+
     # Weekly hours (last 7 days)
     cursor.execute("""
-        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions 
+        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions
         WHERE start_time >= datetime('now', '-7 days')
     """)
     weekly_seconds = cursor.fetchone()[0]
     weekly_hours = round(weekly_seconds / 3600, 1)
-    
-    # Urgent tasks
+
+    # Hours previous 7-day window for delta
     cursor.execute("""
-        SELECT id, titlu, prioritate FROM global_tasks
-        WHERE prioritate = 'Urgent' AND status != 'done'
-        ORDER BY created_at DESC LIMIT 5
+        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions
+        WHERE start_time >= datetime('now', '-14 days')
+          AND start_time < datetime('now', '-7 days')
+    """)
+    prev_weekly_hours = round(cursor.fetchone()[0] / 3600, 1)
+    weekly_delta = round(weekly_hours - prev_weekly_hours, 1)
+
+    # Urgent tasks with project context
+    cursor.execute("""
+        SELECT gt.id, gt.titlu, gt.prioritate, gt.data_scadenta, gt.categorie,
+               gt.proiect_id, p.nume as proiect_nume
+        FROM global_tasks gt
+        LEFT JOIN proiecte p ON gt.proiect_id = p.id
+        WHERE gt.prioritate = 'Urgent' AND gt.status != 'done'
+        ORDER BY gt.data_scadenta IS NULL, gt.data_scadenta, gt.created_at DESC LIMIT 5
     """)
     urgent_tasks = [dict(r) for r in cursor.fetchall()]
-    
-    # Upcoming deadlines (next 7 days)
+    urgent_count = len(urgent_tasks)
+
+    # Upcoming project deadlines (next 7 days) — based on project data_estimata_finalizare
     cursor.execute("""
-        SELECT id, titlu, data_scadenta, prioritate FROM global_tasks
-        WHERE data_scadenta IS NOT NULL 
-        AND data_scadenta >= date('now')
-        AND data_scadenta <= date('now', '+7 days')
-        AND status != 'done'
-        ORDER BY data_scadenta LIMIT 5
+        SELECT id, nume, client, data_estimata_finalizare as deadline
+        FROM proiecte
+        WHERE data_estimata_finalizare IS NOT NULL
+          AND data_estimata_finalizare >= date('now')
+          AND data_estimata_finalizare <= date('now', '+7 days')
+          AND status NOT IN ('finalizat', 'anulat')
+        ORDER BY data_estimata_finalizare LIMIT 5
     """)
     upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
+    deadline_count = len(upcoming_deadlines)
     
     # Active timer
     cursor.execute("""
@@ -2370,7 +2389,11 @@ def dashboard_home():
     return jsonify({
         'stats': {
             'active_projects': active_projects,
-            'weekly_hours': weekly_hours
+            'total_projects': total_projects,
+            'weekly_hours': weekly_hours,
+            'weekly_delta': weekly_delta,
+            'urgent_count': urgent_count,
+            'deadline_count': deadline_count
         },
         'urgent_tasks': urgent_tasks,
         'upcoming_deadlines': upcoming_deadlines,

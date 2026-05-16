@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<title>PIF Dashboard — Design Mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:        #0a0d12;
+    --bg-elev1:  #11161e;
+    --bg-elev2:  #161c26;
+    --bg-elev3:  #1d2530;
+    --line:      #232b38;
+    --line-soft: #1a212c;
+    --text:      #e8edf5;
+    --text-mut:  #8590a0;
+    --text-dim:  #5a6473;
+    --accent:    #58d1c9;
+    --accent-soft: rgba(88,209,201,0.10);
+    --accent-ring: rgba(88,209,201,0.25);
+    --danger:    #f97066;
+    --danger-soft: rgba(249,112,102,0.12);
+    --warning:   #f5b14d;
+    --warning-soft: rgba(245,177,77,0.12);
+    --success:   #66d19e;
+    --success-soft: rgba(102,209,158,0.12);
+    --violet:    #8b87ff;
+    --violet-soft: rgba(139,135,255,0.12);
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow:    0 4px 16px rgba(0,0,0,.30);
+    --shadow-lg: 0 12px 36px rgba(0,0,0,.40);
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 36px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
+  }
+
+  /* Subtle ambient backdrop */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(800px 400px at 15% -5%, rgba(88,209,201,0.06), transparent 60%),
+      radial-gradient(900px 500px at 85% 0%, rgba(139,135,255,0.05), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px 40px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 12px 0;
+    margin-bottom: 8px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 700; font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #43a89f);
+    display: grid; place-items: center;
+    color: #0a1311;
+    box-shadow: 0 0 0 1px var(--line), 0 8px 24px rgba(88,209,201,0.18);
+  }
+  .brand-mark i { width: 18px; height: 18px; stroke-width: 2.5; }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .brand-text small { font-size: 9px; letter-spacing: 0.22em; color: var(--text-mut); font-weight: 500; }
+
+  .nav { display: flex; gap: 2px; flex: 1; justify-content: center; }
+  .nav-tab {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: transparent; border: 0;
+    color: var(--text-mut);
+    font-size: 13.5px; font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg-elev1); }
+  .nav-tab.active {
+    color: var(--text);
+    background: var(--bg-elev2);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .nav-tab i { width: 15px; height: 15px; }
+
+  .actions { display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-mut);
+    cursor: pointer;
+    display: inline-grid; place-items: center;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--bg-elev1); color: var(--text); border-color: var(--bg-elev3); }
+  .icon-btn i { width: 16px; height: 16px; }
+
+  .btn-logout {
+    height: 36px; padding: 0 14px;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 8px;
+    font-weight: 500; font-size: 13px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn-logout:hover { background: var(--danger); color: #fff; }
+  .btn-logout i { width: 15px; height: 15px; }
+
+  /* PAGE TITLE */
+  .page-head {
+    display: flex; align-items: end; justify-content: space-between;
+    margin: 28px 0 18px;
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    font-size: 13px; color: var(--text-mut);
+    margin-top: 4px;
+  }
+  .page-greet { font-weight: 400; color: var(--text-mut); }
+
+  /* STATS BAR */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--bg-elev1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: var(--accent);
+  }
+  .stat.warn::before { background: var(--warning); }
+  .stat.success::before { background: var(--success); }
+  .stat.violet::before { background: var(--violet); }
+  .stat-row { display: flex; align-items: center; justify-content: space-between; }
+  .stat-label {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-mut); font-weight: 600;
+  }
+  .stat-ico { color: var(--text-dim); display: inline-flex; }
+  .stat-ico i { width: 14px; height: 14px; }
+  .stat-value {
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.02em; color: var(--text);
+    font-feature-settings: "tnum";
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.warn { color: var(--warning); }
+  .stat-value.success { color: var(--success); }
+  .stat-value.violet { color: var(--violet); }
+  .stat-delta { font-size: 11px; color: var(--text-mut); }
+  .stat-delta b { color: var(--success); }
+
+  /* ACTIVE TIMER */
+  .timer-card {
+    display: flex; align-items: center; gap: 14px;
+    background:
+      linear-gradient(90deg, var(--accent-soft), transparent 70%),
+      var(--bg-elev1);
+    border: 1px solid var(--accent-ring);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 0 1px rgba(88,209,201,0.05);
+  }
+  .timer-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft), 0 0 14px var(--accent);
+    animation: pulse 1.8s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(88,209,201,0.45), 0 0 14px var(--accent); }
+    70%  { box-shadow: 0 0 0 8px rgba(88,209,201,0); 0 0 14px var(--accent); }
+    100% { box-shadow: 0 0 0 0 rgba(88,209,201,0); }
+  }
+  .timer-meta { flex: 1; }
+  .timer-title {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .timer-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .timer-sub { font-size: 12px; color: var(--text-mut); margin-top: 2px; }
+  .timer-elapsed {
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+    font-size: 22px; color: var(--accent); letter-spacing: -0.01em;
+    font-feature-settings: "tnum";
+  }
+  .timer-stop {
+    height: 34px; padding: 0 14px;
+    background: var(--danger); color: #fff; border: 0;
+    border-radius: 8px; cursor: pointer;
+    font-weight: 600; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit;
+  }
+  .timer-stop i { width: 13px; height: 13px; fill: currentColor; }
+  .timer-stop:hover { background: #ee5e54; }
+
+  /* CARD GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--bg-elev1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover { border-color: var(--bg-elev3); }
+
+  .card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .card-head .card-ico {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .card-head .card-ico i { width: 15px; height: 15px; }
+  .card .danger { background: var(--danger-soft); color: var(--danger); }
+  .card .warning { background: var(--warning-soft); color: var(--warning); }
+  .card .violet { background: var(--violet-soft); color: var(--violet); }
+  .card-title { font-size: 13.5px; font-weight: 600; flex: 1; }
+  .card-count {
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--bg-elev2); color: var(--text-mut);
+    border: 1px solid var(--line);
+  }
+  .card-body { padding: 8px 10px 10px; }
+
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .row:hover { background: var(--bg-elev2); }
+  .row + .row { margin-top: 2px; }
+
+  .row-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .row-dot.urgent  { background: var(--danger); box-shadow: 0 0 8px rgba(249,112,102,0.6); }
+  .row-dot.normal  { background: var(--warning); }
+  .row-dot.minor   { background: var(--text-dim); }
+  .row-dot.due     { background: var(--violet); }
+
+  .row-content { flex: 1; min-width: 0; }
+  .row-title {
+    font-size: 13.5px; font-weight: 500; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .row-meta {
+    font-size: 11.5px; color: var(--text-mut); margin-top: 2px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .row-meta i { width: 11px; height: 11px; }
+
+  .row-badge {
+    font-size: 10.5px; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .row-badge.urgent  { background: var(--danger-soft);  color: var(--danger); }
+  .row-badge.normal  { background: var(--warning-soft); color: var(--warning); }
+  .row-badge.minor   { background: var(--bg-elev3);     color: var(--text-mut); }
+  .row-badge.deadline{ background: var(--violet-soft);  color: var(--violet); }
+
+  .row-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-mut);
+  }
+
+  .empty {
+    color: var(--text-dim);
+    font-size: 12.5px;
+    text-align: center;
+    padding: 22px 8px;
+    font-style: italic;
+  }
+
+  /* HORIZONTAL FOOTER NOTE */
+  .footer-note {
+    text-align: center; margin-top: 36px;
+    font-size: 11.5px; color: var(--text-dim);
+  }
+  .footer-note kbd {
+    background: var(--bg-elev2); border: 1px solid var(--line);
+    padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; color: var(--text-mut);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark"><i data-lucide="zap"></i></div>
+      <div class="brand-text">
+        <span>IU</span>
+        <small>DASHBOARD</small>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-tab active"><i data-lucide="home"></i> Acasă</button>
+      <button class="nav-tab"><i data-lucide="check-square"></i> Taskuri</button>
+      <button class="nav-tab"><i data-lucide="folder-kanban"></i> Proiecte</button>
+      <button class="nav-tab"><i data-lucide="sliders-horizontal"></i> Parametri</button>
+      <button class="nav-tab"><i data-lucide="settings"></i> Administrativ</button>
+    </nav>
+
+    <div class="actions">
+      <button class="icon-btn" title="Schimbă tema"><i data-lucide="moon"></i></button>
+      <button class="icon-btn" title="Shortcut-uri"><i data-lucide="help-circle"></i></button>
+      <button class="btn-logout"><i data-lucide="log-out"></i> Logout</button>
+    </div>
+  </header>
+
+  <!-- PAGE HEAD -->
+  <div class="page-head">
+    <div>
+      <div class="page-title">Bună dimineața, Ion <span class="page-greet">— iată ziua ta</span></div>
+      <div class="page-subtitle">Duminică, 17 mai 2026</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-row">
+        <span class="stat-label">Proiecte Active</span>
+        <span class="stat-ico"><i data-lucide="folder-kanban"></i></span>
+      </div>
+      <div class="stat-value accent">5</div>
+      <div class="stat-delta">din <b>7</b> total</div>
+    </div>
+    <div class="stat warn">
+      <div class="stat-row">
+        <span class="stat-label">Task-uri Urgente</span>
+        <span class="stat-ico"><i data-lucide="alert-triangle"></i></span>
+      </div>
+      <div class="stat-value warn">2</div>
+      <div class="stat-delta">scadență apropiată</div>
+    </div>
+    <div class="stat success">
+      <div class="stat-row">
+        <span class="stat-label">Ore Săptămâna</span>
+        <span class="stat-ico"><i data-lucide="clock"></i></span>
+      </div>
+      <div class="stat-value success">12.5<span style="font-size:14px;color:var(--text-mut);">h</span></div>
+      <div class="stat-delta"><b>+3.2h</b> față de săptămâna trecută</div>
+    </div>
+    <div class="stat violet">
+      <div class="stat-row">
+        <span class="stat-label">Deadline-uri</span>
+        <span class="stat-ico"><i data-lucide="calendar-clock"></i></span>
+      </div>
+      <div class="stat-value violet">3</div>
+      <div class="stat-delta">în următoarele 7 zile</div>
+    </div>
+  </div>
+
+  <!-- ACTIVE TIMER -->
+  <div class="timer-card">
+    <div class="timer-dot"></div>
+    <div class="timer-meta">
+      <div class="timer-title">
+        ACS880 Multidrive — Calibrare PID
+        <span class="timer-tag">Activ</span>
+      </div>
+      <div class="timer-sub">Pornit la 09:14 • Client: IMSAT</div>
+    </div>
+    <div class="timer-elapsed">01:23:45</div>
+    <button class="timer-stop"><i data-lucide="square"></i> Stop</button>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-ico danger"><i data-lucide="alert-triangle"></i></span>
+        <span class="card-title">Task-uri Urgente</span>
+        <span class="card-count">2</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <span class="row-dot urgent"></span>
+          <div class="row-content">
+            <div class="row-title">Configurare comunicație Modbus pentru convertoarele Lenze</div>
+            <div class="row-meta">
+              <span>250656E — Lucrări electrice</span>
+              <span>•</span>
+              <span><i data-lucide="calendar"></i> 2026-05-18</span>
+            </div>
+          </div>
+          <span class="row-badge urgent">Urgent</span>
+        </div>
+        <div class="row">
+          <span class="row-dot urgent"></span>
+          <div class="row-content">
+            <div class="row-title">Fix avarie alimentare Anfeed ACS880</div>
+            <div class="row-meta">
+              <span>25_020 — Anfeed</span>
+              <span>•</span>
+              <span><i data-lucide="calendar"></i> 2026-05-19</span>
+            </div>
+          </div>
+          <span class="row-badge urgent">Urgent</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-ico violet"><i data-lucide="calendar-clock"></i></span>
+        <span class="card-title">Deadline-uri Următoare</span>
+        <span class="card-count">3</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <span class="row-dot due"></span>
+          <div class="row-content">
+            <div class="row-title">ABB ACS880 Multidrive — Predare finală</div>
+            <div class="row-meta"><span>IMSAT</span></div>
+          </div>
+          <span class="row-date">20 mai</span>
+        </div>
+        <div class="row">
+          <span class="row-dot due"></span>
+          <div class="row-content">
+            <div class="row-title">25_041 Danfoss Continental — Documentație</div>
+            <div class="row-meta"><span>Continental</span></div>
+          </div>
+          <span class="row-date">22 mai</span>
+        </div>
+        <div class="row">
+          <span class="row-dot due"></span>
+          <div class="row-content">
+            <div class="row-title">Test Project — Punere în funcțiune</div>
+            <div class="row-meta"><span>—</span></div>
+          </div>
+          <span class="row-date">23 mai</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-ico"><i data-lucide="list-checks"></i></span>
+        <span class="card-title">Task-uri Globale</span>
+        <span class="card-count">2</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <span class="row-dot normal"></span>
+          <div class="row-content">
+            <div class="row-title">Revizuit pagina cu parametri</div>
+            <div class="row-meta"><span>General</span></div>
+          </div>
+          <span class="row-badge normal">Normal</span>
+        </div>
+        <div class="row">
+          <span class="row-dot minor"></span>
+          <div class="row-content">
+            <div class="row-title">Curățare backup-uri vechi</div>
+            <div class="row-meta"><span>Administrativ</span></div>
+          </div>
+          <span class="row-badge minor">Minor</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-ico warning"><i data-lucide="notebook-pen"></i></span>
+        <span class="card-title">Jurnal Recent</span>
+        <span class="card-count">3</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <span class="row-dot" style="background:var(--text-dim);"></span>
+          <div class="row-content">
+            <div class="row-title">[Documentare] Recapitulare săptămânală — 1.2h</div>
+            <div class="row-meta">
+              <span>Test Project</span>
+              <span>•</span>
+              <span><i data-lucide="calendar"></i> 17 mai</span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-dot" style="background:var(--text-dim);"></span>
+          <div class="row-content">
+            <div class="row-title">[Calibrare] PID buclă viteză — 0.8h</div>
+            <div class="row-meta">
+              <span>ABB ACS880</span>
+              <span>•</span>
+              <span><i data-lucide="calendar"></i> 17 mai</span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-dot" style="background:var(--text-dim);"></span>
+          <div class="row-content">
+            <div class="row-title">[Teste] Comunicație Profinet — 2.1h</div>
+            <div class="row-meta">
+              <span>25_020 Anfeed</span>
+              <span>•</span>
+              <span><i data-lucide="calendar"></i> 16 mai</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    Apasă <kbd>1</kbd> · <kbd>2</kbd> · <kbd>3</kbd> · <kbd>4</kbd> · <kbd>5</kbd> ca să schimbi tabul · <kbd>?</kbd> shortcut-uri
+  </div>
+
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>
