@@ -2776,16 +2776,16 @@
                 </div>
                 <div class="quick-add-options">
                     <select id="quick-prioritate" class="quick-select">
-                        <option value="Normal">⚡️ Normal</option>
-                        <option value="Urgent">🔴 Urgent</option>
-                        <option value="Minor">⬇️ Minor</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Minor">Minor</option>
                     </select>
                     <select id="quick-categorie" class="quick-select">
-                        <option value="General">📌 General</option>
-                        <option value="Birou">🏢 Birou</option>
-                        <option value="Teren">🔧 Teren</option>
-                        <option value="Administrativ">📋 Administrativ</option>
-                        <option value="Studiu">📚 Studiu</option>
+                        <option value="General">General</option>
+                        <option value="Birou">Birou</option>
+                        <option value="Teren">Teren</option>
+                        <option value="Administrativ">Administrativ</option>
+                        <option value="Studiu">Studiu</option>
                     </select>
                     <input type="date" id="quick-scadenta" class="quick-select" title="Data scadentă">
                 </div>
@@ -2819,15 +2819,13 @@
 
             <div class="archive-section">
                 <div class="archive-header" onclick="toggleArchive()">
-                    <span>✅ Taskuri finalizate</span>
+                    <span><i data-lucide="check-circle-2"></i> Taskuri finalizate</span>
                     <span id="archive-count" class="badge-count">0</span>
-                    <span id="archive-chevron" style="margin-left:auto; font-size:0.8rem; color:var(--text2);">▼</span>
+                    <span id="archive-chevron" style="margin-left:auto; color:var(--text2); display:inline-flex;"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i></span>
                 </div>
                 <div id="archive-body" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-                        <button class="btn btn-small btn-danger" onclick="clearArchive()">
-                            Șterge tot
-                        </button>
+                        <button class="btn btn-small btn-danger" onclick="clearArchive()"><i data-lucide="trash-2"></i> Șterge tot</button>
                     </div>
                     <div id="archive-list"></div>
                 </div>
@@ -3387,7 +3385,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260533"></script>
+    <script src="/static/app.js?v=20260534"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
