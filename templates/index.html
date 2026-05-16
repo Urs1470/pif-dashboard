@@ -269,29 +269,40 @@
         }
 
         .stat-card {
-            background: var(--bg2);
+            background: var(--bg-elev1);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius);
             padding: 14px 18px;
             min-height: 72px;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            box-shadow: var(--shadow-card);
-            border-top: 2px solid var(--accent);
+            transition: border-color 0.15s;
+            position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            gap: 6px;
         }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+        .stat-card::before {
+            content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 2px; background: var(--accent);
         }
+        .stat-card.success::before { background: var(--success); }
+        .stat-card.warning::before { background: var(--warning); }
+        .stat-card.danger::before  { background: var(--danger); }
+        .stat-card.violet::before  { background: var(--violet); }
+        .stat-card:hover { border-color: var(--bg-elev3); }
 
-        .stat-label { font-size: var(--font-small); color: var(--text2); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
-        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); min-height: 1.8rem; letter-spacing: -0.02em; }
+        .stat-label { font-size: 10.5px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+        .stat-value {
+            font-size: 26px; font-weight: 700; color: var(--accent);
+            letter-spacing: -0.02em; font-family: var(--font-mono);
+            font-feature-settings: "tnum";
+        }
 
         .stat-card.danger .stat-value { color: var(--danger); }
-        .stat-card.success .stat-value { color: var(--accent3); }
+        .stat-card.success .stat-value { color: var(--success); }
+        .stat-card.warning .stat-value { color: var(--warning); }
+        .stat-card.violet .stat-value  { color: var(--violet); }
 
         /* ═══ HOME — Mockup-driven layout ═══ */
         .page-head {
@@ -543,38 +554,46 @@
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: var(--font-tiny);
+            gap: 5px;
+            padding: 2px 9px;
+            border-radius: 999px;
+            font-size: 10.5px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.05em;
+        }
+        .badge::before {
+            content: ""; width: 5px; height: 5px; border-radius: 50%;
+            background: currentColor; opacity: 0.9;
         }
 
-        .badge.in_lucru { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
-        .badge.finalizat { background: rgba(107, 223, 138, 0.12); color: #6bdf8a; }
-        .badge.blocat { background: rgba(255, 107, 107, 0.12); color: #ff6b6b; }
-        .badge.in_așteptare { background: rgba(255, 166, 87, 0.12); color: #ffa657; }
-        .badge.pif { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
-        .badge.service { background: rgba(255, 166, 87, 0.12); color: #ffa657; }
-        .badge.to_do { background: rgba(88, 209, 201, 0.12); color: #58d1c9; }
-        .badge.done { background: rgba(107, 223, 138, 0.12); color: #6bdf8a; }
+        .badge.in_lucru   { background: var(--accent-soft);  color: var(--accent); }
+        .badge.finalizat  { background: var(--success-soft); color: var(--success); }
+        .badge.blocat     { background: var(--danger-soft);  color: var(--danger); }
+        .badge.in_așteptare { background: var(--warning-soft); color: var(--warning); }
+        .badge.pif        { background: var(--accent-soft);  color: var(--accent); }
+        .badge.service    { background: var(--warning-soft); color: var(--warning); }
+        .badge.to_do      { background: var(--bg-elev3);     color: var(--text2); }
+        .badge.done       { background: var(--success-soft); color: var(--success); }
 
-        /* Status icon badges */
-        .badge-icon { font-size: 0.7rem; }
-        .badge.in_lucru .badge-icon::before { content: '🔵'; }
-        .badge.finalizat .badge-icon::before { content: '✅'; }
-        .badge.blocat .badge-icon::before { content: '🔴'; }
-        .badge.in_așteptare .badge-icon::before { content: '🟠'; }
+        /* Legacy badge-icon spans — hidden, replaced by ::before dot above */
+        .badge-icon { display: none; }
 
         /* Filters */
         .filters {
             display: flex;
             flex-wrap: wrap;
-            gap: var(--space-md);
+            gap: 10px;
             margin-bottom: var(--space-md);
             align-items: center;
+            padding: 12px;
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .filters input, .filters select {
+            background: var(--bg);
+            border: 1px solid var(--border);
         }
 
         #search-proiecte {
@@ -794,40 +813,40 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--bg2);
+            background: var(--bg-elev1);
             border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: var(--shadow-card);
             border: 1px solid var(--border);
         }
 
         th {
-            background: var(--bg3);
+            background: var(--bg-elev2);
             color: var(--text2);
             font-weight: 600;
             text-align: left;
-            padding: 12px var(--space-md);
-            font-size: var(--font-small);
+            padding: 11px 14px;
+            font-size: 10.5px;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--border);
         }
 
         td {
-            padding: 12px var(--space-md);
-            border-bottom: 1px solid var(--border);
-            max-width: 200px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line-soft);
+            max-width: 240px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-size: 13px;
         }
 
-        tr:hover td { background: var(--bg3); }
+        tbody tr { transition: background 0.12s; }
+        tbody tr:hover td { background: var(--bg-elev2); }
         tr:last-child td { border-bottom: none; }
 
-        .clickable-row {
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+        .clickable-row { cursor: pointer; }
+        .clickable-row:hover td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 
         /* Modal */
         .modal-overlay {
@@ -3546,7 +3565,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260536"></script>
+    <script src="/static/app.js?v=20260537"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
