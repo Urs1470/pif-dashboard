@@ -202,8 +202,9 @@ async function initApp() {
         });
     });
 
-    // Set today's date for jurnal
-    document.getElementById('jurnal-data').value = new Date().toISOString().split('T')[0];
+    // Set today's date for jurnal (element may not exist after journal form was removed)
+    const jurnalDataEl = document.getElementById('jurnal-data');
+    if (jurnalDataEl) jurnalDataEl.value = new Date().toISOString().split('T')[0];
 
     // Global tasks filters
     const debouncedGtLoad = debounce(() => loadGlobalTasks(), 300);
