@@ -174,6 +174,48 @@
             transform: translateY(0);
         }
 
+        /* Compact icon button (no text) */
+        .btn-icon {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, background 0.15s;
+        }
+        .btn-icon:hover { transform: translateY(-1px); background: var(--bg2); }
+
+        /* Outline danger style (Logout) */
+        .btn-danger-outline {
+            background: transparent;
+            border: 1px solid var(--danger, #f97066);
+            color: var(--danger, #f97066);
+            padding: 0 14px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn-danger-outline:hover { background: var(--danger, #f97066); color: #fff; }
+
+        /* Subtle visual divider in header */
+        .header-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 4px;
+            align-self: center;
+        }
+
         /* Stats Bar */
         .stats-bar {
             display: grid;
@@ -203,6 +245,56 @@
 
         .stat-card.danger .stat-value { color: var(--danger); }
         .stat-card.success .stat-value { color: var(--accent3); }
+
+        /* Home grid layout — 2 column on wide, 1 column on narrow */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .home-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md) var(--space-md) var(--space-sm);
+            box-shadow: var(--shadow-card);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .home-section:hover { border-color: var(--bg3); box-shadow: var(--shadow-md); }
+
+        .home-section-timer {
+            background: linear-gradient(to right, rgba(88,209,201,0.08), var(--bg2) 40%);
+            border-color: var(--accent);
+            margin-bottom: var(--space-md);
+        }
+
+        .home-section-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .home-empty {
+            color: var(--text2);
+            font-size: 0.9rem;
+            font-style: italic;
+            padding: var(--space-sm) 0;
+            text-align: center;
+        }
+
+        .home-section .gt-task-card {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+        }
+        .home-section .gt-task-card:last-child { margin-bottom: 0; }
 
         /* Chart containers */
         .chart-container {
@@ -2186,25 +2278,33 @@
 </svg>
 </a>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="showManualsModal()">📖 Manuale</button>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
-                <button class="btn btn-secondary" id="install-pwa-btn" onclick="installPWA()" style="display:none;" title="Instalează aplicația">📲 Instalează</button>
-                <button class="btn btn-secondary" id="undo-btn" onclick="undo()" style="display:none;" title="Anulează ultima acțiune">↩️ Undo</button>
-                <button class="btn btn-secondary" id="redo-btn" onclick="redo()" style="display:none;" title="Refă acțiunea">↪️ Redo</button>
-                <button class="btn btn-secondary" onclick="showKeyboardHelp()">⌨️ <span class="shortcut-hint">?</span></button>
-                <button class="btn btn-secondary" onclick="showClientList()">👥 Clienți</button>
+                <button class="btn btn-secondary" onclick="showManualsModal()" title="Deschide manualele">📖 Manuale</button>
+                <button class="btn btn-secondary" onclick="showClientList()" title="Listă clienți">👥 Clienți</button>
                 <div class="export-dropdown">
-                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event)">📥 Export Excel ▼</button>
+                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event)" title="Export Excel">📥 Export ▼</button>
                     <div id="export-dropdown" class="export-dropdown-content">
                         <div class="export-dropdown-item" onclick="exportExcel('projects')">📊 Proiecte</div>
                         <div class="export-dropdown-item" onclick="exportExcel('tasks')">✅ Task-uri</div>
                         <div class="export-dropdown-item" onclick="exportExcel('hours')">⏱️ Ore</div>
                     </div>
                 </div>
-                <button class="btn btn-secondary" onclick="exportBackup()">📥 Backup</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('restore-input').click()">📤 Restore</button>
+                <div class="export-dropdown">
+                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event, 'backup-dropdown')" title="Backup / Restore">💾 Backup ▼</button>
+                    <div id="backup-dropdown" class="export-dropdown-content">
+                        <div class="export-dropdown-item" onclick="exportBackup()">⬇️ Descarcă backup</div>
+                        <div class="export-dropdown-item" onclick="document.getElementById('restore-input').click()">⬆️ Restaurează backup</div>
+                    </div>
+                </div>
                 <input type="file" id="restore-input" class="hidden-input" accept=".json" onchange="importBackup(event)">
-                <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+
+                <span class="header-divider"></span>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema">🌙</button>
+                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)">⌨️</button>
+                <button class="btn btn-icon" id="install-pwa-btn" onclick="installPWA()" style="display:none;" title="Instalează aplicația">📲</button>
+                <button class="btn btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo">↩️</button>
+                <button class="btn btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo">↪️</button>
+                <button class="btn btn-danger-outline" onclick="logout()" title="Deconectează-te">🚪 Logout</button>
             </div>
         </header>
 
@@ -3176,7 +3276,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260526"></script>
+    <script src="/static/app.js?v=20260527"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

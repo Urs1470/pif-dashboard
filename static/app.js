@@ -1813,7 +1813,7 @@ async function loadDashboardHome() {
             </div>
         `;
 
-        // Active timer section
+        // Active timer section (full-width)
         if (active_timer) {
             const startTime = new Date(active_timer.start_time);
             const now = new Date();
@@ -1822,10 +1822,10 @@ async function loadDashboardHome() {
             const minutes = Math.floor((elapsed % 3600) / 60);
             const elapsedStr = `${hours}h ${minutes}m`;
             html += `
-                <div style="margin-bottom:24px;padding:14px 16px;border:1px solid var(--accent);border-radius:var(--radius-md);background:rgba(116,212,165,0.05);">
-                    <div style="font-size:.9rem;font-weight:600;color:var(--accent);margin-bottom:8px;">⏱ Timer Activ</div>
+                <div class="home-section home-section-timer">
+                    <div class="home-section-title" style="color:var(--accent);">⏱ Timer Activ</div>
                     <div style="display:flex;align-items:center;gap:12px;">
-                        <span style="font-size:1.2rem;color:var(--accent);">▶</span>
+                        <span style="font-size:1.4rem;color:var(--accent);">▶</span>
                         <div style="flex:1;">
                             <div style="font-family:'Courier New',monospace;font-weight:600;color:var(--text);">${escapeHtml(active_timer.proiect_nume)}</div>
                             <div style="font-size:.8rem;color:var(--text2);">${elapsedStr} • Începere: ${startTime.toLocaleTimeString('ro-RO')}</div>
@@ -1835,11 +1835,13 @@ async function loadDashboardHome() {
             `;
         }
 
+        html += `<div class="home-grid">`;
+
         // Urgent tasks
-        html += `<div style="margin-bottom:24px;">`;
-        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">⚠️ Task-uri Urgente</h3>`;
+        html += `<div class="home-section">`;
+        html += `<div class="home-section-title">⚠️ Task-uri Urgente</div>`;
         if (urgent_tasks.length === 0) {
-            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio sarcină urgentă</div>`;
+            html += `<div class="home-empty">Nicio sarcină urgentă</div>`;
         } else {
             html += `<div class="todo-list">`;
             urgent_tasks.forEach(task => {
@@ -1855,10 +1857,10 @@ async function loadDashboardHome() {
         html += `</div>`;
 
         // Upcoming deadlines
-        html += `<div style="margin-bottom:24px;">`;
-        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">📅 Deadline-uri Următoare (7 zile)</h3>`;
+        html += `<div class="home-section">`;
+        html += `<div class="home-section-title">📅 Deadline-uri Următoare (7 zile)</div>`;
         if (upcoming_deadlines.length === 0) {
-            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Niciun deadline în următoarele 7 zile</div>`;
+            html += `<div class="home-empty">Niciun deadline în următoarele 7 zile</div>`;
         } else {
             html += `<div class="todo-list">`;
             upcoming_deadlines.forEach(proj => {
@@ -1874,10 +1876,10 @@ async function loadDashboardHome() {
         html += `</div>`;
 
         // Today's global tasks
-        html += `<div style="margin-bottom:24px;">`;
-        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">✅ Task-uri Globale</h3>`;
+        html += `<div class="home-section">`;
+        html += `<div class="home-section-title">✅ Task-uri Globale</div>`;
         if (todays_tasks.length === 0) {
-            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio sarcină globală activă</div>`;
+            html += `<div class="home-empty">Nicio sarcină globală activă</div>`;
         } else {
             html += `<div class="todo-list">`;
             todays_tasks.forEach(task => {
@@ -1894,10 +1896,10 @@ async function loadDashboardHome() {
         html += `</div>`;
 
         // Recent journal entries
-        html += `<div style="margin-bottom:24px;">`;
-        html += `<h3 style="color:var(--text);margin:0 0 10px 0;font-size:.95rem;font-weight:600;">📝 Jurnal Recent</h3>`;
+        html += `<div class="home-section">`;
+        html += `<div class="home-section-title">📝 Jurnal Recent</div>`;
         if (recent_journal.length === 0) {
-            html += `<div style="color:var(--text2);font-size:.9rem;font-style:italic;padding:8px 0;">Nicio intrare în jurnal</div>`;
+            html += `<div class="home-empty">Nicio intrare în jurnal</div>`;
         } else {
             html += `<div class="todo-list">`;
             recent_journal.forEach(entry => {
@@ -1910,6 +1912,8 @@ async function loadDashboardHome() {
             });
             html += `</div>`;
         }
+        html += `</div>`;
+
         html += `</div>`;
 
         container.innerHTML = html;
