@@ -228,11 +228,14 @@
             background: var(--bg2);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: var(--space-md);
-            min-height: 100px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 14px 18px;
+            min-height: 72px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             box-shadow: var(--shadow-card);
             border-top: 2px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .stat-card:hover {
@@ -1112,8 +1115,15 @@
             background: var(--bg);
             border-radius: var(--radius-md);
             margin-bottom: var(--space-sm);
-            border-left: 4px solid;
+            border-left: 3px solid var(--border);
             min-height: 44px;
+            transition: background 0.15s, border-left-color 0.15s, transform 0.15s;
+        }
+        .gt-task-card[onclick] { cursor: pointer; }
+        .gt-task-card[onclick]:hover {
+            background: var(--bg3);
+            border-left-color: var(--accent);
+            transform: translateX(2px);
         }
         .gt-task-card.overdue { border-left-color: var(--danger); }
         .gt-task-card.due-today { border-left-color: var(--warning); }
@@ -2300,7 +2310,7 @@
                 <span class="header-divider"></span>
 
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema">🌙</button>
-                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)">⌨️</button>
+                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><span style="font-weight:700;">?</span></button>
                 <button class="btn btn-icon" id="install-pwa-btn" onclick="installPWA()" style="display:none;" title="Instalează aplicația">📲</button>
                 <button class="btn btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo">↩️</button>
                 <button class="btn btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo">↪️</button>
@@ -3276,7 +3286,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260527"></script>
+    <script src="/static/app.js?v=20260528"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
