@@ -2343,15 +2343,15 @@ def dashboard_home():
     urgent_tasks = [dict(r) for r in cursor.fetchall()]
     urgent_count = len(urgent_tasks)
 
-    # Upcoming project deadlines (next 7 days) — based on project data_estimata_finalizare
+    # Upcoming project deadlines (next 7 days)
     cursor.execute("""
-        SELECT id, nume, client, data_estimata_finalizare as deadline
+        SELECT id, nume, client, deadline
         FROM proiecte
-        WHERE data_estimata_finalizare IS NOT NULL
-          AND data_estimata_finalizare >= date('now')
-          AND data_estimata_finalizare <= date('now', '+7 days')
+        WHERE deadline IS NOT NULL
+          AND deadline >= date('now')
+          AND deadline <= date('now', '+7 days')
           AND status NOT IN ('finalizat', 'anulat')
-        ORDER BY data_estimata_finalizare LIMIT 5
+        ORDER BY deadline LIMIT 5
     """)
     upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
     deadline_count = len(upcoming_deadlines)
