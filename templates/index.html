@@ -152,6 +152,32 @@
         .header-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 
         /* Theme Toggle */
+        /* Lucide icons — consistent stroke and sizing across the app */
+        [data-lucide], .lucide {
+            width: 1em;
+            height: 1em;
+            stroke-width: 1.75;
+            flex-shrink: 0;
+            vertical-align: -0.15em;
+        }
+        .btn [data-lucide], .btn .lucide,
+        .main-tab [data-lucide], .main-tab .lucide {
+            width: 16px; height: 16px;
+            margin-right: 6px;
+        }
+        .btn-icon [data-lucide], .btn-icon .lucide,
+        .theme-toggle [data-lucide], .theme-toggle .lucide {
+            width: 18px; height: 18px;
+            margin: 0;
+        }
+        .admin-icon [data-lucide], .admin-icon .lucide {
+            width: 22px; height: 22px;
+        }
+        .home-section-title [data-lucide], .home-section-title .lucide {
+            width: 18px; height: 18px;
+            color: var(--accent);
+        }
+
         .theme-toggle,
         .btn-icon {
             background: transparent;
@@ -2323,24 +2349,23 @@
 </svg>
 </a>
             <div class="header-actions">
-                <button class="btn btn-secondary" id="header-btn-manuale" onclick="showManualsModal()" title="Deschide manualele" style="display:none;">📖 Manuale</button>
-                <button class="btn btn-secondary" id="header-btn-clienti" onclick="showClientList()" title="Listă clienți" style="display:none;">👥 Clienți</button>
+                <button class="btn btn-secondary" id="header-btn-manuale" onclick="showManualsModal()" title="Deschide manualele" style="display:none;"><i data-lucide="book-open"></i> Manuale</button>
+                <button class="btn btn-secondary" id="header-btn-clienti" onclick="showClientList()" title="Listă clienți" style="display:none;"><i data-lucide="users"></i> Clienți</button>
 
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema">🌙</button>
-                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><span style="font-weight:700;">?</span></button>
-                <button class="btn btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo">↩️</button>
-                <button class="btn btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo">↪️</button>
-                <button class="btn btn-danger-outline" onclick="logout()" title="Deconectează-te">🚪 Logout</button>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema"><i data-lucide="moon"></i></button>
+                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><i data-lucide="help-circle"></i></button>
+                <button class="btn btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo"><i data-lucide="undo-2"></i></button>
+                <button class="btn btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo"><i data-lucide="redo-2"></i></button>
+                <button class="btn btn-danger-outline" onclick="logout()" title="Deconectează-te"><i data-lucide="log-out"></i> Logout</button>
             </div>
         </header>
 
         <div class="main-tabs">
-            <button class="main-tab active" data-tab="acasa" onclick="switchTab('acasa')">🏠 Acasă</button>
-            <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')">✅ Taskuri Zilnice</button>
-            <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')">📋 Proiecte</button>
-    
-            <button class="main-tab" data-tab="parametri" onclick="switchTab('parametri')">⚙️ Parametri</button>
-            <button class="main-tab" data-tab="admin" onclick="switchTab('admin')">🛠️ Administrativ</button>
+            <button class="main-tab active" data-tab="acasa" onclick="switchTab('acasa')"><i data-lucide="home"></i> Acasă</button>
+            <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')"><i data-lucide="check-square"></i> Taskuri Zilnice</button>
+            <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')"><i data-lucide="folder-kanban"></i> Proiecte</button>
+            <button class="main-tab" data-tab="parametri" onclick="switchTab('parametri')"><i data-lucide="sliders-horizontal"></i> Parametri</button>
+            <button class="main-tab" data-tab="admin" onclick="switchTab('admin')"><i data-lucide="settings"></i> Administrativ</button>
         </div>
 
         <div id="tab-proiecte" class="tab-content">
@@ -2384,8 +2409,8 @@
                 </select>
                 <input type="date" id="filter-date-from" placeholder="De la">
                 <input type="date" id="filter-date-to" placeholder="Până la">
-                <button class="btn btn-secondary" id="batch-mode-btn" onclick="toggleBatchMode()">☑️ Mod Selectare</button>
-                <button class="btn btn-primary" onclick="showNewProjectForm()">+ Proiect Nou <span class="shortcut-hint">N</span></button>
+                <button class="btn btn-secondary" id="batch-mode-btn" onclick="toggleBatchMode()"><i data-lucide="check-square"></i> Mod Selectare</button>
+                <button class="btn btn-primary" onclick="showNewProjectForm()"><i data-lucide="plus"></i> Proiect Nou <span class="shortcut-hint">N</span></button>
             </div>
 
             <div id="projects-table-container">
@@ -2453,16 +2478,16 @@
                     <p class="detail-meta" id="detail-client"></p>
                 </div>
                 <div class="detail-actions">
-                    <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului">Editează proiect</button>
-                    <button class="btn btn-secondary" onclick="exportMarkdown()">Export Markdown</button>
-                    <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF">📄 PDF</button>
-                    <button class="btn btn-danger" onclick="deleteCurrentProject()">Șterge</button>
+                    <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului"><i data-lucide="pencil"></i> Editează proiect</button>
+                    <button class="btn btn-secondary" onclick="exportMarkdown()"><i data-lucide="file-down"></i> Export Markdown</button>
+                    <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF"><i data-lucide="file-text"></i> PDF</button>
+                    <button class="btn btn-danger" onclick="deleteCurrentProject()"><i data-lucide="trash-2"></i> Șterge</button>
                 </div>
             </div>
 
             <!-- Service-specific fields -->
             <div class="service-fields detail-section" id="service-fields">
-                <div class="detail-section-header">📋 Fișă Intervenție</div>
+                <div class="detail-section-header"><i data-lucide="clipboard-list"></i> Fișă Intervenție</div>
                 <div class="detail-section-body">
                     <div class="client-confirmation">
                         <input type="checkbox" id="detail-confirmat-client" onchange="saveServiceField('confirmat_client', this.checked ? 1 : 0)">
@@ -2475,7 +2500,7 @@
             <!-- Before/After sections (Service) -->
             <div class="before-after-section" id="before-after-section">
                 <div class="before-section detail-section">
-                    <div class="detail-section-header">🔴 Constatări înainte de intervenție</div>
+                    <div class="detail-section-header"><i data-lucide="alert-circle"></i> Constatări înainte de intervenție</div>
                     <div class="detail-section-body">
                         <div class="form-group">
                             <label>Descriere Problemă / Constatări</label>
@@ -2484,7 +2509,7 @@
                     </div>
                 </div>
                 <div class="after-section detail-section">
-                    <div class="detail-section-header">🟢 Acțiuni și rezultat</div>
+                    <div class="detail-section-header"><i data-lucide="check-circle-2"></i> Acțiuni și rezultat</div>
                     <div class="detail-section-body">
                         <div class="form-group">
                             <label>Acțiuni Efectuate / Rezultat</label>
@@ -2496,7 +2521,7 @@
 
             <!-- PIF observations section -->
             <div class="observations-section detail-section" id="pif-observatii-section">
-                <div class="detail-section-header">📝 Observații Tehnice</div>
+                <div class="detail-section-header"><i data-lucide="file-text"></i> Observații Tehnice</div>
                 <div class="detail-section-body">
                     <textarea id="pif-observatii" placeholder="Adăugați observații tehnice..." style="min-height:120px;max-height:200px;resize:vertical;" onchange="saveServiceField('observatii', this.value)"></textarea>
                 </div>
@@ -2504,7 +2529,7 @@
 
             <!-- Todo List -->
             <div class="todo-section detail-section" id="todo-section">
-                <div class="detail-section-header">📌 Todo List</div>
+                <div class="detail-section-header"><i data-lucide="list-todo"></i> Todo List</div>
                 <div class="detail-section-body">
                     <div class="todo-add-form">
                         <div class="form-group" style="margin-bottom:0">
@@ -2529,7 +2554,7 @@
             <!-- Journal Section -->
             <!-- Attachments -->
             <div class="attachments-section detail-section" id="attachments-section">
-                <div class="detail-section-header">📎 Atașamente</div>
+                <div class="detail-section-header"><i data-lucide="paperclip"></i> Atașamente</div>
                 <div class="detail-section-body">
                     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
                         <div class="drop-zone-icon">📁</div>
@@ -2543,7 +2568,7 @@
 
             <!-- Checklist PIF -->
             <div class="checklist-section detail-section" id="checklist-section" style="display:none;">
-                <div class="detail-section-header">📋 Checklist PIF</div>
+                <div class="detail-section-header"><i data-lucide="clipboard-check"></i> Checklist PIF</div>
                 <div class="detail-section-body">
                     <div class="progress-bar" id="checklist-progress">
                         <div class="progress-fill" id="checklist-progress-fill" style="width: 0%"></div>
@@ -2559,7 +2584,7 @@
 
             <!-- Equipment Section -->
             <div class="echipamente-section detail-section" id="echipamente-section">
-                <div class="detail-section-header">⚙️ Echipamente</div>
+                <div class="detail-section-header"><i data-lucide="cpu"></i> Echipamente</div>
                 <div class="detail-section-body">
                     <div id="echipamente-list" class="echipamente-list"></div>
                     <button class="btn btn-secondary btn-small" onclick="showAddEquipmentForm()" style="margin-top: 12px;">+ Adaugă Echipament</button>
@@ -2568,12 +2593,12 @@
 
             <!-- Timer Section -->
             <div class="timer-section detail-section" id="timer-section">
-                <div class="detail-section-header">⏱️ Timer</div>
+                <div class="detail-section-header"><i data-lucide="timer"></i> Timer</div>
                 <div class="detail-section-body">
                     <div class="timer-display" id="timer-display">00:00:00</div>
                     <div class="timer-controls">
-                        <button class="btn btn-success" id="timer-start" onclick="startTimer()">▶ Start</button>
-                        <button class="btn btn-danger" id="timer-stop" onclick="showStopTimerForm()" style="display:none;">⏹ Stop</button>
+                        <button class="btn btn-success" id="timer-start" onclick="startTimer()"><i data-lucide="play"></i> Start</button>
+                        <button class="btn btn-danger" id="timer-stop" onclick="showStopTimerForm()" style="display:none;"><i data-lucide="square"></i> Stop</button>
                     </div>
                     <div class="timer-stop-form" id="timer-stop-form" style="display:none; margin-top: 12px;">
                         <input type="text" id="timer-titlu" placeholder="Ce ai lucrat?" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
@@ -2677,24 +2702,24 @@
         <div id="tab-admin" class="tab-content">
             <div class="admin-grid">
                 <div class="admin-section">
-                    <div class="admin-section-title">📥 Export Date</div>
+                    <div class="admin-section-title"><i data-lucide="download"></i> Export Date</div>
                     <div class="admin-section-body">
                         <button class="admin-action-btn" onclick="exportExcel('projects')">
-                            <span class="admin-icon">📊</span>
+                            <span class="admin-icon"><i data-lucide="folder-kanban"></i></span>
                             <div>
                                 <div class="admin-action-title">Proiecte</div>
                                 <div class="admin-action-desc">Toate proiectele în format Excel</div>
                             </div>
                         </button>
                         <button class="admin-action-btn" onclick="exportExcel('tasks')">
-                            <span class="admin-icon">✅</span>
+                            <span class="admin-icon"><i data-lucide="list-checks"></i></span>
                             <div>
                                 <div class="admin-action-title">Task-uri</div>
                                 <div class="admin-action-desc">Toate task-urile în format Excel</div>
                             </div>
                         </button>
                         <button class="admin-action-btn" onclick="exportExcel('hours')">
-                            <span class="admin-icon">⏱️</span>
+                            <span class="admin-icon"><i data-lucide="clock"></i></span>
                             <div>
                                 <div class="admin-action-title">Ore</div>
                                 <div class="admin-action-desc">Raport ore lucrate pe proiecte</div>
@@ -2704,17 +2729,17 @@
                 </div>
 
                 <div class="admin-section">
-                    <div class="admin-section-title">💾 Backup &amp; Restore</div>
+                    <div class="admin-section-title"><i data-lucide="database"></i> Backup &amp; Restore</div>
                     <div class="admin-section-body">
                         <button class="admin-action-btn" onclick="exportBackup()">
-                            <span class="admin-icon">⬇️</span>
+                            <span class="admin-icon"><i data-lucide="hard-drive-download"></i></span>
                             <div>
                                 <div class="admin-action-title">Descarcă backup</div>
                                 <div class="admin-action-desc">Toate datele într-un fișier JSON</div>
                             </div>
                         </button>
                         <button class="admin-action-btn admin-action-btn-warning" onclick="document.getElementById('admin-restore-input').click()">
-                            <span class="admin-icon">⬆️</span>
+                            <span class="admin-icon"><i data-lucide="hard-drive-upload"></i></span>
                             <div>
                                 <div class="admin-action-title">Restaurează backup</div>
                                 <div class="admin-action-desc">Suprascrie datele cu un backup JSON</div>
@@ -3359,7 +3384,10 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260530"></script>
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <script src="/static/app.js?v=20260531"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
@@ -3374,20 +3402,24 @@
     <nav class="bottom-nav" id="bottom-nav">
         <div class="bottom-nav-inner">
             <div class="bottom-nav-item" data-tab="acasa" onclick="switchTab('acasa')">
-                <span class="bottom-nav-icon">🏠</span>
+                <span class="bottom-nav-icon"><i data-lucide="home"></i></span>
                 <span>Acasă</span>
             </div>
             <div class="bottom-nav-item" data-tab="taskuri" onclick="switchTab('taskuri')">
-                <span class="bottom-nav-icon">✅</span>
+                <span class="bottom-nav-icon"><i data-lucide="check-square"></i></span>
                 <span>Taskuri</span>
             </div>
             <div class="bottom-nav-item" data-tab="proiecte" onclick="switchTab('proiecte')">
-                <span class="bottom-nav-icon">📋</span>
+                <span class="bottom-nav-icon"><i data-lucide="folder-kanban"></i></span>
                 <span>Proiecte</span>
             </div>
             <div class="bottom-nav-item" data-tab="parametri" onclick="switchTab('parametri')">
-                <span class="bottom-nav-icon">⚙️</span>
+                <span class="bottom-nav-icon"><i data-lucide="sliders-horizontal"></i></span>
                 <span>Parametri</span>
+            </div>
+            <div class="bottom-nav-item" data-tab="admin" onclick="switchTab('admin')">
+                <span class="bottom-nav-icon"><i data-lucide="settings"></i></span>
+                <span>Admin</span>
             </div>
         </div>
     </nav>

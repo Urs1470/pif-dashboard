@@ -141,7 +141,15 @@ function initAllDatePickers() {
 
 // ============ INITIALIZATION ============
 
+// Render all data-lucide icons currently in the DOM. Safe to call multiple times.
+function refreshIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        try { window.lucide.createIcons(); } catch (e) { /* noop */ }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    refreshIcons();
     initApp();
 });
 
@@ -1416,6 +1424,8 @@ function switchTab(tab) {
     if (btnClienti) btnClienti.style.display = (tab === 'proiecte') ? 'inline-flex' : 'none';
     if (btnManuale) btnManuale.style.display = (tab === 'parametri') ? 'inline-flex' : 'none';
 
+    setTimeout(refreshIcons, 50);
+
     if (tab === 'taskuri') {
         loadGlobalTasks();
         loadProjectTasks();
@@ -1924,6 +1934,7 @@ async function loadDashboardHome() {
         html += `</div>`;
 
         container.innerHTML = html;
+        refreshIcons();
 
     } catch (e) {
         console.error('Failed to load dashboard home:', e);
