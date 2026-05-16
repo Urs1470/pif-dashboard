@@ -2194,7 +2194,7 @@
                 <button class="btn btn-secondary" onclick="showKeyboardHelp()">⌨️ <span class="shortcut-hint">?</span></button>
                 <button class="btn btn-secondary" onclick="showClientList()">👥 Clienți</button>
                 <div class="export-dropdown">
-                    <button class="btn btn-secondary" onclick="toggleExportDropdown()">📥 Export Excel ▼</button>
+                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event)">📥 Export Excel ▼</button>
                     <div id="export-dropdown" class="export-dropdown-content">
                         <div class="export-dropdown-item" onclick="exportExcel('projects')">📊 Proiecte</div>
                         <div class="export-dropdown-item" onclick="exportExcel('tasks')">✅ Task-uri</div>
@@ -2329,7 +2329,6 @@
                     <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului">Editează proiect</button>
                     <button class="btn btn-secondary" onclick="exportMarkdown()">Export Markdown</button>
                     <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF">📄 PDF</button>
-                    <button class="btn btn-secondary" onclick="testTelegramNotification()" title="Trimite notificare de test">🔔 Notificare</button>
                     <button class="btn btn-danger" onclick="deleteCurrentProject()">Șterge</button>
                 </div>
             </div>
@@ -3177,7 +3176,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260525"></script>
+    <script src="/static/app.js?v=20260526"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
