@@ -257,6 +257,7 @@ function setupKeyboardShortcuts() {
         if (e.key === '2') { switchTab('taskuri'); return; }
         if (e.key === '3') { switchTab('proiecte'); return; }
         if (e.key === '4') { switchTab('parametri'); return; }
+        if (e.key === '5') { switchTab('admin'); return; }
 
         // Ctrl+S - Save (if modal is open)
         if (e.key === 's' && (e.ctrlKey || e.metaKey)) {

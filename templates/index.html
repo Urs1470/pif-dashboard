@@ -299,6 +299,58 @@
         }
         .home-section .gt-task-card:last-child { margin-bottom: 0; }
 
+        /* Admin tab layout */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: var(--space-md);
+        }
+        .admin-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            box-shadow: var(--shadow-card);
+        }
+        .admin-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-section-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .admin-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s, border-color 0.15s, transform 0.15s;
+            font-family: inherit;
+        }
+        .admin-action-btn:hover {
+            background: var(--bg3);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .admin-action-btn-warning:hover {
+            border-color: var(--warning, #f0b400);
+        }
+        .admin-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .admin-action-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+        .admin-action-desc { font-size: 0.8rem; color: var(--text2); }
+
         /* Chart containers */
         .chart-container {
             position: relative;
@@ -2290,24 +2342,6 @@
             <div class="header-actions">
                 <button class="btn btn-secondary" id="header-btn-manuale" onclick="showManualsModal()" title="Deschide manualele" style="display:none;">📖 Manuale</button>
                 <button class="btn btn-secondary" id="header-btn-clienti" onclick="showClientList()" title="Listă clienți" style="display:none;">👥 Clienți</button>
-                <div class="export-dropdown">
-                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event)" title="Export Excel">📥 Export ▼</button>
-                    <div id="export-dropdown" class="export-dropdown-content">
-                        <div class="export-dropdown-item" onclick="exportExcel('projects')">📊 Proiecte</div>
-                        <div class="export-dropdown-item" onclick="exportExcel('tasks')">✅ Task-uri</div>
-                        <div class="export-dropdown-item" onclick="exportExcel('hours')">⏱️ Ore</div>
-                    </div>
-                </div>
-                <div class="export-dropdown">
-                    <button class="btn btn-secondary" onclick="toggleExportDropdown(event, 'backup-dropdown')" title="Backup / Restore">💾 Backup ▼</button>
-                    <div id="backup-dropdown" class="export-dropdown-content">
-                        <div class="export-dropdown-item" onclick="exportBackup()">⬇️ Descarcă backup</div>
-                        <div class="export-dropdown-item" onclick="document.getElementById('restore-input').click()">⬆️ Restaurează backup</div>
-                    </div>
-                </div>
-                <input type="file" id="restore-input" class="hidden-input" accept=".json" onchange="importBackup(event)">
-
-                <span class="header-divider"></span>
 
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema">🌙</button>
                 <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><span style="font-weight:700;">?</span></button>
@@ -2323,6 +2357,7 @@
             <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')">📋 Proiecte</button>
     
             <button class="main-tab" data-tab="parametri" onclick="switchTab('parametri')">⚙️ Parametri</button>
+            <button class="main-tab" data-tab="admin" onclick="switchTab('admin')">🛠️ Administrativ</button>
         </div>
 
         <div id="tab-proiecte" class="tab-content">
@@ -2656,6 +2691,58 @@
             </div>
         </div>
 
+        <div id="tab-admin" class="tab-content">
+            <div class="admin-grid">
+                <div class="admin-section">
+                    <div class="admin-section-title">📥 Export Date</div>
+                    <div class="admin-section-body">
+                        <button class="admin-action-btn" onclick="exportExcel('projects')">
+                            <span class="admin-icon">📊</span>
+                            <div>
+                                <div class="admin-action-title">Proiecte</div>
+                                <div class="admin-action-desc">Toate proiectele în format Excel</div>
+                            </div>
+                        </button>
+                        <button class="admin-action-btn" onclick="exportExcel('tasks')">
+                            <span class="admin-icon">✅</span>
+                            <div>
+                                <div class="admin-action-title">Task-uri</div>
+                                <div class="admin-action-desc">Toate task-urile în format Excel</div>
+                            </div>
+                        </button>
+                        <button class="admin-action-btn" onclick="exportExcel('hours')">
+                            <span class="admin-icon">⏱️</span>
+                            <div>
+                                <div class="admin-action-title">Ore</div>
+                                <div class="admin-action-desc">Raport ore lucrate pe proiecte</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-title">💾 Backup &amp; Restore</div>
+                    <div class="admin-section-body">
+                        <button class="admin-action-btn" onclick="exportBackup()">
+                            <span class="admin-icon">⬇️</span>
+                            <div>
+                                <div class="admin-action-title">Descarcă backup</div>
+                                <div class="admin-action-desc">Toate datele într-un fișier JSON</div>
+                            </div>
+                        </button>
+                        <button class="admin-action-btn admin-action-btn-warning" onclick="document.getElementById('admin-restore-input').click()">
+                            <span class="admin-icon">⬆️</span>
+                            <div>
+                                <div class="admin-action-title">Restaurează backup</div>
+                                <div class="admin-action-desc">Suprascrie datele cu un backup JSON</div>
+                            </div>
+                        </button>
+                        <input type="file" id="admin-restore-input" class="hidden-input" accept=".json" onchange="importBackup(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-taskuri" class="tab-content">
             <div class="stats-bar">
                 <div class="stat-card">
@@ -2793,6 +2880,10 @@
             <div class="keyboard-shortcut-row">
                 <span class="keyboard-shortcut-desc">Tab Parametri</span>
                 <div class="keyboard-shortcut-keys"><span class="keyboard-key">4</span></div>
+            </div>
+            <div class="keyboard-shortcut-row">
+                <span class="keyboard-shortcut-desc">Tab Administrativ</span>
+                <div class="keyboard-shortcut-keys"><span class="keyboard-key">5</span></div>
             </div>
             <div class="keyboard-shortcut-row">
                 <span class="keyboard-shortcut-desc">Salvează formular</span>
@@ -3285,7 +3376,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="/static/app.js?v=20260529"></script>
+    <script src="/static/app.js?v=20260530"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
