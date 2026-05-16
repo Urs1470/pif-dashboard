@@ -919,6 +919,59 @@ def stop_timer(project_id):
     
     return jsonify({'id': session['id'], 'stop_time': now, 'durata_secunde': duration})
 
+@app.route('/api/proiecte/<project_id>/timer/stop-with-note', methods=['POST'])
+@login_required
+def stop_timer_with_note(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    now = datetime.now().isoformat()
+
+    cursor.execute('''
+        SELECT * FROM timer_sessions
+        WHERE proiect_id = ? AND stop_time IS NULL
+        ORDER BY start_time DESC LIMIT 1
+    ''', (project_id,))
+    timer_session = cursor.fetchone()
+
+    if timer_session is None:
+        conn.close()
+        return jsonify({'error': 'No active timer session'}), 404
+
+    start_time = datetime.fromisoformat(timer_session['start_time'])
+    stop_time = datetime.fromisoformat(now)
+    duration = int((stop_time - start_time).total_seconds())
+
+    cursor.execute('''
+        UPDATE timer_sessions
+        SET stop_time = ?, durata_secunde = ?
+        WHERE id = ?
+    ''', (now, duration, timer_session['id']))
+
+    data = request.json or {}
+    titlu = data.get('titlu', 'Activitate')
+    note = data.get('note', '')
+
+    hours = duration / 3600
+    continut = f"[{titlu}] {note} — {hours:.1f}h ({duration // 60}min)".strip()
+
+    entry_id = generate_uuid()
+    cursor.execute('''
+        INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (entry_id, project_id, now[:10], continut, now))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        'timer_id': timer_session['id'],
+        'jurnal_id': entry_id,
+        'durata_secunde': duration,
+        'continut': continut
+    })
+
+
 @app.route('/api/timer/<session_id>', methods=['DELETE'])
 @login_required
 def delete_timer_session(session_id):

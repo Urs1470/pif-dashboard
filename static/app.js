@@ -2186,6 +2186,11 @@ async function stopTimer() {
     }
 }
 
+function showStopTimerForm() {
+    document.getElementById('timer-stop-form').style.display = 'block';
+    document.getElementById('timer-titlu').focus();
+}
+
 async function stopTimerWithNote() {
     if (!currentProjectId) return;
     const titlu = document.getElementById('timer-titlu').value.trim() || 'Activitate';
@@ -2206,6 +2211,7 @@ function stopTimerUI() {
         timerInterval = null;
     }
     document.getElementById('timer-display').textContent = '00:00:00';
+    document.getElementById('timer-stop-form').style.display = 'none';
     const startBtn = document.getElementById('timer-start');
     const stopBtn = document.getElementById('timer-stop');
     if (startBtn) startBtn.style.display = 'inline-flex';

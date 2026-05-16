@@ -2458,8 +2458,16 @@
                 <div class="detail-section-body">
                     <div class="timer-display" id="timer-display">00:00:00</div>
                     <div class="timer-controls">
-                        <button class="btn btn-success" id="timer-start-btn" onclick="startTimer()">▶ Start</button>
-                        <button class="btn btn-danger" id="timer-stop-btn" onclick="stopTimer()" style="display:none;">⏹ Stop</button>
+                        <button class="btn btn-success" id="timer-start" onclick="startTimer()">▶ Start</button>
+                        <button class="btn btn-danger" id="timer-stop" onclick="showStopTimerForm()" style="display:none;">⏹ Stop</button>
+                    </div>
+                    <div class="timer-stop-form" id="timer-stop-form" style="display:none; margin-top: 12px;">
+                        <input type="text" id="timer-titlu" placeholder="Ce ai lucrat?" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                        <input type="text" id="timer-note" placeholder="Detalii (opțional)" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-primary btn-small" onclick="stopTimerWithNote()">Salvează activitate</button>
+                            <button class="btn btn-secondary btn-small" onclick="stopTimer()">Stop fără notă</button>
+                        </div>
                     </div>
                     <div class="timer-total" id="timer-total" style="margin-top: 12px; font-size: 0.9rem; color: var(--text2);">
                         Total: 0h 0m
