@@ -11,7 +11,7 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-def close_db():
+def close_db(exc=None):
     """No-op for compatibility — Flask closes connections automatically."""
     pass
 
