@@ -1840,9 +1840,9 @@ async function loadDashboardHome() {
             const elapsedStr = `${hours}h ${minutes}m`;
             html += `
                 <div class="home-section home-section-timer">
-                    <div class="home-section-title" style="color:var(--accent);">⏱ Timer Activ</div>
+                    <div class="home-section-title" style="color:var(--accent);"><i data-lucide="timer"></i> Timer Activ</div>
                     <div style="display:flex;align-items:center;gap:12px;">
-                        <span style="font-size:1.4rem;color:var(--accent);">▶</span>
+                        <span style="color:var(--accent);display:inline-flex;"><i data-lucide="play" style="width:22px;height:22px;"></i></span>
                         <div style="flex:1;">
                             <div style="font-family:'Courier New',monospace;font-weight:600;color:var(--text);">${escapeHtml(active_timer.proiect_nume)}</div>
                             <div style="font-size:.8rem;color:var(--text2);">${elapsedStr} • Începere: ${startTime.toLocaleTimeString('ro-RO')}</div>
@@ -1856,7 +1856,7 @@ async function loadDashboardHome() {
 
         // Urgent tasks
         html += `<div class="home-section">`;
-        html += `<div class="home-section-title">⚠️ Task-uri Urgente</div>`;
+        html += `<div class="home-section-title"><i data-lucide="alert-triangle"></i> Task-uri Urgente</div>`;
         if (urgent_tasks.length === 0) {
             html += `<div class="home-empty">Nicio sarcină urgentă</div>`;
         } else {
@@ -1875,7 +1875,7 @@ async function loadDashboardHome() {
 
         // Upcoming deadlines
         html += `<div class="home-section">`;
-        html += `<div class="home-section-title">📅 Deadline-uri Următoare (7 zile)</div>`;
+        html += `<div class="home-section-title"><i data-lucide="calendar-clock"></i> Deadline-uri Următoare (7 zile)</div>`;
         if (upcoming_deadlines.length === 0) {
             html += `<div class="home-empty">Niciun deadline în următoarele 7 zile</div>`;
         } else {
@@ -1894,7 +1894,7 @@ async function loadDashboardHome() {
 
         // Today's global tasks
         html += `<div class="home-section">`;
-        html += `<div class="home-section-title">✅ Task-uri Globale</div>`;
+        html += `<div class="home-section-title"><i data-lucide="list-checks"></i> Task-uri Globale</div>`;
         if (todays_tasks.length === 0) {
             html += `<div class="home-empty">Nicio sarcină globală activă</div>`;
         } else {
@@ -1914,7 +1914,7 @@ async function loadDashboardHome() {
 
         // Recent journal entries
         html += `<div class="home-section">`;
-        html += `<div class="home-section-title">📝 Jurnal Recent</div>`;
+        html += `<div class="home-section-title"><i data-lucide="notebook-pen"></i> Jurnal Recent</div>`;
         if (recent_journal.length === 0) {
             html += `<div class="home-empty">Nicio intrare în jurnal</div>`;
         } else {
