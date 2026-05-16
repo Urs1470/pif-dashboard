@@ -117,7 +117,7 @@ function setTheme(theme) {
 
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
-        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggle.innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
         themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     }
 }
@@ -148,8 +148,27 @@ function refreshIcons() {
     }
 }
 
+// MutationObserver to auto-render lucide icons inserted via innerHTML.
+// Debounced to coalesce bursts of mutations.
+let _iconRefreshTimer = null;
+function scheduleIconRefresh() {
+    if (_iconRefreshTimer) return;
+    _iconRefreshTimer = setTimeout(() => { _iconRefreshTimer = null; refreshIcons(); }, 30);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     refreshIcons();
+    const obs = new MutationObserver(muts => {
+        for (const m of muts) {
+            for (const n of m.addedNodes) {
+                if (n.nodeType === 1 && (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]'))) {
+                    scheduleIconRefresh();
+                    return;
+                }
+            }
+        }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
     initApp();
 });
 
@@ -460,10 +479,10 @@ function renderProjects(projects) {
                     <span class="badge ${p.status}">${getStatusLabel(p.status)}</span>
                 </div>
                 <div class="pcm-meta">
-                    <span>👤 ${escapeHtml(p.client || '-')}</span>
+                    <span><i data-lucide="user"></i> ${escapeHtml(p.client || '-')}</span>
                     <span class="badge ${(p.tip||'pif').toLowerCase()}">${p.tip||'PIF'}</span>
-                    <span>⚙️ ${escapeHtml(p.producator || '-')}</span>
-                    ${p.data_incepere ? `<span>📅 ${p.data_incepere}</span>` : ''}
+                    <span><i data-lucide="cpu"></i> ${escapeHtml(p.producator || '-')}</span>
+                    ${p.data_incepere ? `<span><i data-lucide="calendar"></i> ${p.data_incepere}</span>` : ''}
                 </div>
             </div>
         `).join('');
@@ -760,7 +779,7 @@ function renderTodos(tasks) {
             <div class="todo-content">
                 <div class="todo-title">${escapeHtml(task.titlu)}</div>
                 <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);">📅 ${task.data_scadenta}</span>` : ''}
+                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
                 </div>
             </div>
             <span class="todo-priority ${(task.prioritate||'normal').toLowerCase()}">${task.prioritate || 'Normal'}</span>
@@ -1025,26 +1044,26 @@ function renderAttachments(attachments) {
     }
 
     const icons = {
-        'PDF': '📄',
-        'IMG': '🖼️',
-        'EMAIL': '✉️',
-        'DOC': '📝',
-        'XLS': '📊',
-        'ZIP': '🗜️',
-        'ALT': '📎'
+        'PDF': 'file-text',
+        'IMG': 'image',
+        'EMAIL': 'mail',
+        'DOC': 'file-edit',
+        'XLS': 'file-spreadsheet',
+        'ZIP': 'file-archive',
+        'ALT': 'paperclip'
     };
 
     container.innerHTML = attachments.map(att => `
         <div class="attachment-item">
-            <div class="attachment-icon">${icons[att.tip_fisier] || '📎'}</div>
+            <div class="attachment-icon"><i data-lucide="${icons[att.tip_fisier] || 'paperclip'}"></i></div>
             <div class="attachment-info">
                 <div class="attachment-name">${escapeHtml(att.nume_fisier)}</div>
                 <div class="attachment-meta">${formatFileSize(att.dimensiune)} - ${att.data}</div>
             </div>
             <div class="attachment-actions">
-                ${att.tip_fisier === 'PDF' || att.tip_fisier === 'IMG' ? `<button class="btn btn-small btn-secondary" onclick="openPreview('${att.id}', '${escapeHtml(att.nume_fisier)}', '${att.tip_fisier}')">👁 Preview</button>` : ''}
-                <button class="btn btn-small btn-secondary" onclick="downloadAttachment('${att.id}')">⬇️ Download</button>
-                <button class="btn btn-small btn-danger" onclick="deleteAttachment('${att.id}')">× Șterge</button>
+                ${att.tip_fisier === 'PDF' || att.tip_fisier === 'IMG' ? `<button class="btn btn-small btn-secondary" onclick="openPreview('${att.id}', '${escapeHtml(att.nume_fisier)}', '${att.tip_fisier}')"><i data-lucide="eye"></i> Preview</button>` : ''}
+                <button class="btn btn-small btn-secondary" onclick="downloadAttachment('${att.id}')"><i data-lucide="download"></i> Download</button>
+                <button class="btn btn-small btn-danger" onclick="deleteAttachment('${att.id}')"><i data-lucide="x"></i> Șterge</button>
             </div>
         </div>
     `).join('');
@@ -1247,7 +1266,7 @@ async function exportMarkdown() {
                 md += `#### To Do\n`;
                 pending.forEach(t => {
                     const emoji = prioEmoji[t.prioritate] || '';
-                    const scadenta = t.data_scadenta ? ` 📅 ${t.data_scadenta}` : '';
+                    const scadenta = t.data_scadenta ? ` <i data-lucide="calendar" style="display:inline;width:12px;height:12px;vertical-align:-2px;"></i> ${t.data_scadenta}` : '';
                     md += `- [ ] ${t.titlu} ${emoji}${scadenta}\n`;
                 });
                 md += `\n`;
@@ -1424,8 +1443,6 @@ function switchTab(tab) {
     if (btnClienti) btnClienti.style.display = (tab === 'proiecte') ? 'inline-flex' : 'none';
     if (btnManuale) btnManuale.style.display = (tab === 'parametri') ? 'inline-flex' : 'none';
 
-    setTimeout(refreshIcons, 50);
-
     if (tab === 'taskuri') {
         loadGlobalTasks();
         loadProjectTasks();
@@ -1525,12 +1542,12 @@ function renderGlobalTasks(tasks) {
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
                     <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">
                     ${task.categorie && task.categorie !== 'General' ? `<span style="font-size:0.72rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'Courier New',monospace;">${escapeHtml(task.categorie)}</span>` : ''}
-                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);">📅 ${task.data_scadenta}</span>` : ''}
+                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
                 </div>
                 </div>
                 <span class="todo-priority ${task.prioritate || 'normal'}">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status ${task.status}">${getStatusLabel(task.status)}</span>
-                <button class="btn btn-small btn-secondary" onclick="editGtTask('${task.id}')">✏️</button>
+                <button class="btn btn-small btn-secondary" onclick="editGtTask('${task.id}')" title="Editează"><i data-lucide="pencil"></i></button>
                 <button class="btn btn-small btn-danger" onclick="deleteGtTask('${task.id}')">×</button>
             </div>
         `;
@@ -1565,7 +1582,7 @@ function renderProjectTasks(tasks) {
                 <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap;">
                     <span style="color:var(--accent); font-weight:600;">${escapeHtml(t.proiect_nume || '-')}</span>
                     <span class="badge">${t.proiect_tip || 'PIF'}</span>
-                    ${t.data_scadenta ? `<span>📅 ${t.data_scadenta}</span>` : ''}
+                    ${t.data_scadenta ? `<span><i data-lucide="calendar"></i> ${t.data_scadenta}</span>` : ''}
                     ${t.proiect_client ? `<span>👤 ${escapeHtml(t.proiect_client)}</span>` : ''}
                 </div>
             </div>
@@ -1727,7 +1744,7 @@ function renderArchive(tasks) {
         <div class="archive-item">
             <span class="archive-title">${escapeHtml(t.titlu)}</span>
             <span class="archive-meta">${t.categorie || ''} · ${t.data_finalizare ? t.data_finalizare.split('T')[0] : ''}</span>
-            <button class="btn btn-small btn-secondary" onclick="restoreTask('${t.id}')" title="Redeschide task">↩️</button>
+            <button class="btn btn-small btn-secondary" onclick="restoreTask('${t.id}')" title="Redeschide task"><i data-lucide="undo-2"></i></button>
             <button class="btn btn-small btn-danger" onclick="deleteGtTask('${t.id}')" title="Șterge definitiv">×</button>
         </div>
     `).join('');
@@ -1934,7 +1951,6 @@ async function loadDashboardHome() {
         html += `</div>`;
 
         container.innerHTML = html;
-        refreshIcons();
 
     } catch (e) {
         console.error('Failed to load dashboard home:', e);
@@ -2798,7 +2814,7 @@ function renderClientList(clients) {
                 </div>
             </div>
             <div class="client-list-actions">
-                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editClientFromList('${c.id}')">✏️</button>
+                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editClientFromList('${c.id}')" title="Editează"><i data-lucide="pencil"></i></button>
                 <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); deleteClientFromList('${c.id}')">×</button>
             </div>
         </div>
@@ -2982,7 +2998,7 @@ function renderEchipamente(echipamente, descLookup) {
                 <div class="echipament-header">
                     <span class="echipament-name">${escapeHtml(e.nume)}</span>
                     <div class="echipament-actions">
-                        <button class="btn btn-small btn-secondary" onclick="editEchipament('${e.id}')">✏️</button>
+                        <button class="btn btn-small btn-secondary" onclick="editEchipament('${e.id}')" title="Editează"><i data-lucide="pencil"></i></button>
                         <button class="btn btn-small btn-danger" onclick="deleteEchipament('${e.id}')">×</button>
                     </div>
                 </div>
@@ -3095,7 +3111,7 @@ function renderCurrentParams() {
             <span style="color:var(--accent); font-weight:600; min-width:65px;">${escapeHtml(code)}</span>
             <span style="flex:2; color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(param?.descriere || desc)}">${escapeHtml(desc)}</span>
             <span style="min-width:70px; text-align:right; color:var(--text); font-weight:600;">${escapeHtml(String(value))}</span>
-            <button class="btn btn-small btn-secondary" onclick="editParamValue('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Editează">✏️</button>
+            <button class="btn btn-small btn-secondary" onclick="editParamValue('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Editează"><i data-lucide="pencil"></i></button>
             <button class="btn btn-small btn-danger" onclick="deleteParam('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Șterge">×</button>
         </div>`;
     }).join('');
@@ -3426,7 +3442,7 @@ function showPifManualResults(data) {
     const resultsHtml = data.results.map(r => `
         <div style="margin-bottom: 16px; padding: 12px; background: var(--bg2); border-radius: 8px;">
             <div style="font-weight: 600; color: var(--text); margin-bottom: 8px;">
-                ${r.fault_code ? '🔧 ' : r.parameter ? '⚙️ ' : '📖 '}
+                <i data-lucide="${r.fault_code ? 'wrench' : r.parameter ? 'sliders-horizontal' : 'book-open'}" style="display:inline-block;vertical-align:-2px;"></i>
                 ${escapeHtml(r.title)}
             </div>
             <div style="font-size: 0.85rem; color: var(--text2); margin-bottom: 8px;">
@@ -3443,7 +3459,7 @@ function showPifManualResults(data) {
         <div class="modal-overlay" id="pif-manual-modal" onclick="if(event.target === this) closePifManualModal()">
             <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
                 <div class="modal-header">
-                    <h2>📖 Rezultate Căutare: "${escapeHtml(data.query)}"</h2>
+                    <h2><i data-lucide="book-open"></i> Rezultate Căutare: "${escapeHtml(data.query)}"</h2>
                     <button class="modal-close" onclick="closePifManualModal()">✕</button>
                 </div>
                 <div style="padding: 16px;">
@@ -4246,7 +4262,7 @@ function showManualsModal() {
                 const a = document.createElement('a');
                 a.href = '#';
                 a.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);text-decoration:none;transition:background 0.15s;';
-                a.innerHTML = `<span style="font-size:1.4rem;">📄</span><span style="flex:1;font-size:0.9rem;">${escapeHtml(label)}</span><span style="font-size:0.75rem;color:var(--text2);">${sizeText}</span>`;
+                a.innerHTML = `<span style="display:inline-flex;color:var(--accent);"><i data-lucide="file-text" style="width:22px;height:22px;"></i></span><span style="flex:1;font-size:0.9rem;">${escapeHtml(label)}</span><span style="font-size:0.75rem;color:var(--text2);">${sizeText}</span>`;
                 a.onclick = (e) => { e.preventDefault(); window.open('/manuals/' + encodeURIComponent(filename), '_blank'); };
                 a.onmouseenter = () => { a.style.background = 'var(--hover)'; };
                 a.onmouseleave = () => { a.style.background = 'var(--bg2)'; };
