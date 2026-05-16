@@ -947,7 +947,7 @@ async function loadJurnal(projectId) {
             apiGet(`/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 }))
         ]);
         
-        const container = document.getElementById('timer-sessions');
+        const container = document.getElementById('timer-sessions-list');
         let html = renderTimerSessions(timerData.sessions, timerData.total_secunde);
         
         // Add journal entries
@@ -2105,7 +2105,7 @@ async function loadTimerSessions(projectId) {
 }
 
 function renderTimerSessions(sessions, totalSeconds) {
-    const container = document.getElementById('timer-sessions');
+    const container = document.getElementById('timer-sessions-list');
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
 
