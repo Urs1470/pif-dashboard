@@ -2161,6 +2161,31 @@ def get_parametri_bulk():
     
     return jsonify(rows)
 
+PRODUCATOR_FAMILII = {
+    'ABB': ['ACS580', 'ACS880'],
+    'Danfoss': ['Danfoss_VLT_FC302'],
+    'Lenze': ['Lenze_i550', 'Lenze_i950'],
+    'Siemens': ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'],
+}
+
+@app.route('/api/parametri/by-producator/<producator>', methods=['GET'])
+@login_required
+def get_parametri_by_producator(producator):
+    """Returnează parametrii pentru toate familiile unui producător."""
+    familii = PRODUCATOR_FAMILII.get(producator, [])
+    if not familii:
+        return jsonify([])
+    conn = get_db()
+    cursor = conn.cursor()
+    placeholders = ','.join('?' * len(familii))
+    cursor.execute(
+        f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master WHERE familie IN ({placeholders})',
+        familii
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
 @app.route('/api/parametri/<int:param_id>', methods=['GET'])
 @login_required
 def get_parametru_detail(param_id):

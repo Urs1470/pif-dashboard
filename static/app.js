@@ -1434,7 +1434,7 @@ function switchTab(tab) {
 
 async function loadGlobalTasks() {
     try {
-        let url = '/api/global-tasks?';
+        let url = '/global-tasks?';
         if (gtFilters.status) url += `status=${gtFilters.status}&`;
         if (gtFilters.prioritate) url += `prioritate=${gtFilters.prioritate}&`;
         if (gtFilters.categorie) url += `categorie=${gtFilters.categorie}&`;
@@ -1444,7 +1444,7 @@ async function loadGlobalTasks() {
         updateGtStats(tasks);
 
         // Update archive count
-        const archived = await apiGet('/api/global-tasks?arhiva=true');
+        const archived = await apiGet('/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = archived.length;
     } catch (e) {
         console.error('Failed to load global tasks:', e);
@@ -1524,7 +1524,7 @@ async function loadProjectTasks() {
     const status = document.getElementById('pt-filter-status')?.value || 'to_do,in_lucru';
     const prioritate = document.getElementById('pt-filter-prioritate')?.value || '';
     try {
-        let url = '/api/global-tasks?';
+        let url = '/global-tasks?';
         if (status) url += `status=${status}&`;
         if (prioritate) url += `prioritate=${prioritate}&`;
         const tasks = await apiGet(url);
@@ -1567,13 +1567,13 @@ async function toggleProjectTaskGlobal(taskId, checked) {
 
 async function toggleGtTask(taskId, checked) {
     try {
-        await apiPut(`/api/global-tasks/${taskId}`, {
+        await apiPut(`/global-tasks/${taskId}`, {
             status: checked ? 'done' : 'to_do',
             data_finalizare: checked ? new Date().toISOString() : ''
         });
         await loadGlobalTasks();
         // Update archive badge count
-        const archived = await apiGet('/api/global-tasks?arhiva=true');
+        const archived = await apiGet('/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = archived.length;
         if (archiveVisible) renderArchive(archived);
     } catch (e) {
@@ -1583,7 +1583,7 @@ async function toggleGtTask(taskId, checked) {
 
 async function editGtTask(taskId) {
     try {
-        const task = await apiGet(`/api/global-tasks/${taskId}`);
+        const task = await apiGet(`/global-tasks/${taskId}`);
 
         // Populate quick-add bar with task data
         const input = document.getElementById('quick-task-input');
@@ -1614,7 +1614,7 @@ async function editGtTask(taskId) {
             quickAddBtn.textContent = '...';
 
             try {
-                await apiPut(`/api/global-tasks/${taskId}`, {
+                await apiPut(`/global-tasks/${taskId}`, {
                     titlu,
                     prioritate: document.getElementById('quick-prioritate').value,
                     categorie: document.getElementById('quick-categorie').value,
@@ -1665,7 +1665,7 @@ async function editGtTask(taskId) {
 
 async function deleteGtTask(taskId) {
     try {
-        await apiDelete(`/api/global-tasks/${taskId}`);
+        await apiDelete(`/global-tasks/${taskId}`);
         loadGlobalTasks();
         showToast('Task șters!');
     } catch (e) {
@@ -1684,7 +1684,7 @@ function toggleArchive() {
 
 async function loadArchive() {
     try {
-        const tasks = await apiGet('/api/global-tasks?arhiva=true');
+        const tasks = await apiGet('/global-tasks?arhiva=true');
         document.getElementById('archive-count').textContent = tasks.length;
         renderArchive(tasks);
     } catch (e) { console.error('Failed to load archive:', e); }
@@ -1692,8 +1692,8 @@ async function loadArchive() {
 
 async function emptyArchive() {
     try {
-        const tasks = await apiGet('/api/global-tasks?arhiva=true');
-        await Promise.all(tasks.map(t => apiDelete(`/api/global-tasks/${t.id}`)));
+        const tasks = await apiGet('/global-tasks?arhiva=true');
+        await Promise.all(tasks.map(t => apiDelete(`/global-tasks/${t.id}`)));
         renderArchive(tasks);
     } catch (e) {
         console.error('Failed to load archive:', e);
@@ -1718,7 +1718,7 @@ function renderArchive(tasks) {
 
 async function restoreTask(taskId) {
     try {
-        await apiPut(`/api/global-tasks/${taskId}`, { status: 'to_do', data_finalizare: '' });
+        await apiPut(`/global-tasks/${taskId}`, { status: 'to_do', data_finalizare: '' });
         await loadGlobalTasks();
         if (archiveVisible) await loadArchive();
         showToast('Task redeschis!');
@@ -1730,8 +1730,8 @@ async function restoreTask(taskId) {
 async function clearArchive() {
     if (!confirm('Ștergi definitiv toate taskurile finalizate?')) return;
     try {
-        const tasks = await apiGet('/api/global-tasks?arhiva=true');
-        await Promise.all(tasks.map(t => apiDelete(`/api/global-tasks/${t.id}`)));
+        const tasks = await apiGet('/global-tasks?arhiva=true');
+        await Promise.all(tasks.map(t => apiDelete(`/global-tasks/${t.id}`)));
         await loadArchive();
         showToast('Arhivă curățată!');
     } catch (e) {
@@ -1754,7 +1754,7 @@ async function quickAddTask() {
     document.getElementById('quick-add-btn').textContent = '✓';
 
     try {
-        await apiPost('/api/global-tasks', {
+        await apiPost('/global-tasks', {
             titlu, prioritate, categorie,
             data_scadenta: scadenta || '',
             status: 'to_do'
@@ -1949,7 +1949,7 @@ async function loadRecentActivity() {
         
         // Get recent tasks completed today
         const today = new Date().toISOString().split('T')[0];
-        const tasks = await apiGet('/api/global-tasks?arhiva=true');
+        const tasks = await apiGet('/global-tasks?arhiva=true');
         const recentTasks = tasks.filter(t => t.data_finalizare && t.data_finalizare.startsWith(today)).slice(0, 5);
         
         // Build activity list
@@ -3723,18 +3723,18 @@ async function undo() {
     
     try {
         if (action.type === 'task_toggle') {
-            await apiPut(`/api/global-tasks/${action.taskId}`, {
+            await apiPut(`/global-tasks/${action.taskId}`, {
                 status: action.previousState.status,
                 data_finalizare: action.previousState.data_finalizare || ''
             });
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'task_delete') {
             // Recreate the deleted task
-            await apiPost('/api/global-tasks', action.previousState);
+            await apiPost('/global-tasks', action.previousState);
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'task_create') {
             // Delete the created task
-            await apiDelete(`/api/global-tasks/${action.taskId}`);
+            await apiDelete(`/global-tasks/${action.taskId}`);
             showToast(`Acțiune anulată: ${action.description}`);
         } else if (action.type === 'checklist_toggle') {
             await apiPut(`/proiecte/${action.projectId}/checklist/${action.itemId}`, {
@@ -3759,18 +3759,18 @@ async function redo() {
     
     try {
         if (action.type === 'task_toggle') {
-            await apiPut(`/api/global-tasks/${action.taskId}`, {
+            await apiPut(`/global-tasks/${action.taskId}`, {
                 status: action.newState.status,
                 data_finalizare: action.newState.data_finalizare || ''
             });
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'task_delete') {
             // Delete the task again
-            await apiDelete(`/api/global-tasks/${action.taskId}`);
+            await apiDelete(`/global-tasks/${action.taskId}`);
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'task_create') {
             // Recreate the task
-            await apiPost('/api/global-tasks', action.newState);
+            await apiPost('/global-tasks', action.newState);
             showToast(`Acțiune refăcută: ${action.description}`);
         } else if (action.type === 'checklist_toggle') {
             await apiPut(`/proiecte/${action.projectId}/checklist/${action.itemId}`, {
@@ -3793,7 +3793,7 @@ const originalToggleGtTask = toggleGtTask;
 toggleGtTask = async function(taskId, checked) {
     // Get current task state before toggle for undo
     try {
-        const task = await apiGet(`/api/global-tasks/${taskId}`);
+        const task = await apiGet(`/global-tasks/${taskId}`);
         const previousState = {
             status: task.status,
             data_finalizare: task.data_finalizare
@@ -3821,7 +3821,7 @@ const originalDeleteGtTask = deleteGtTask;
 deleteGtTask = async function(taskId) {
     // Get task data before delete for undo
     try {
-        const task = await apiGet(`/api/global-tasks/${taskId}`);
+        const task = await apiGet(`/global-tasks/${taskId}`);
         if (task) {
             pushUndo({
                 type: 'task_delete',
@@ -3858,7 +3858,7 @@ quickAddTask = async function() {
     // The undo will still work by matching title
     setTimeout(async () => {
         try {
-            const tasks = await apiGet('/api/global-tasks');
+            const tasks = await apiGet('/global-tasks');
             const created = tasks.find(t => t.titlu === titlu && t.status === 'to_do');
             if (created) {
                 // Remove the auto-pushed undo and replace with correct one
@@ -4217,14 +4217,15 @@ function showManualsModal() {
                 return;
             }
             list.innerHTML = '';
-            data.manuals.forEach(fn => {
-                const label = MANUAL_LABELS[fn] || fn.replace(/_/g, ' ').replace('.pdf', '');
-                const size = '';
+            data.manuals.forEach(m => {
+                const filename = m.filename || m;
+                const label = (typeof MANUAL_LABELS !== 'undefined' && MANUAL_LABELS[filename]) || m.name || filename.replace(/_/g, ' ').replace('.pdf', '');
+                const sizeText = m.size_kb ? `${(m.size_kb / 1024).toFixed(1)} MB` : 'PDF';
                 const a = document.createElement('a');
                 a.href = '#';
                 a.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);text-decoration:none;transition:background 0.15s;';
-                a.innerHTML = `<span style="font-size:1.4rem;">📄</span><span style="flex:1;font-size:0.9rem;">${escapeHtml(label)}</span><span style="font-size:0.75rem;color:var(--text2);">PDF</span>`;
-                a.onclick = (e) => { e.preventDefault(); window.open('/manuals/' + encodeURIComponent(fn), '_blank'); };
+                a.innerHTML = `<span style="font-size:1.4rem;">📄</span><span style="flex:1;font-size:0.9rem;">${escapeHtml(label)}</span><span style="font-size:0.75rem;color:var(--text2);">${sizeText}</span>`;
+                a.onclick = (e) => { e.preventDefault(); window.open('/manuals/' + encodeURIComponent(filename), '_blank'); };
                 a.onmouseenter = () => { a.style.background = 'var(--hover)'; };
                 a.onmouseleave = () => { a.style.background = 'var(--bg2)'; };
                 list.appendChild(a);
