@@ -689,7 +689,11 @@
         <button class="modal-close" id="close-param-modal">×</button>
       </div>
       <div class="modal-body">
-        <div class="mpm-row"><span class="mpm-label">Cod:</span> <span id="mpm-code" style="font-weight:bold; color:var(--accent);">-</span></div>
+        <div class="mpm-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="mpm-label">Cod:</span>
+          <span id="mpm-code" style="font-weight:bold; color:var(--accent); font-family:'JetBrains Mono',monospace;">-</span>
+          <button onclick="copyMobileParamCode()" aria-label="Copiază cod" style="margin-left:auto; background:var(--bg-elev2); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:11px; color:var(--text-secondary); cursor:pointer; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="copy" style="width:13px;height:13px;"></i> <span id="mpm-copy-label">Copiază</span></button>
+        </div>
         <div class="mpm-row"><span class="mpm-label">Familia:</span> <span id="mpm-familie">-</span></div>
         <div class="mpm-row"><span class="mpm-label">Nume:</span> <span id="mpm-name">-</span></div>
         <div class="mpm-row" style="margin-top:12px;"><span class="mpm-label">Descriere:</span> <span id="mpm-descriere">-</span></div>

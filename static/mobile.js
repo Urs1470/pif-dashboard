@@ -1112,10 +1112,42 @@ function extractParamName(descriere) {
   return words.slice(0, nameEnd).join(' ');
 }
 
+// Copy current param code to clipboard, show transient feedback in the modal.
+async function copyMobileParamCode() {
+  const codeEl = document.getElementById('mpm-code');
+  const labelEl = document.getElementById('mpm-copy-label');
+  if (!codeEl) return;
+  const code = (codeEl.textContent || '').trim();
+  if (!code || code === '-') return;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      // Fallback: temporary textarea
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    if ('vibrate' in navigator) navigator.vibrate(20);
+    if (labelEl) {
+      const prev = labelEl.textContent;
+      labelEl.textContent = 'Copiat';
+      setTimeout(() => { if (labelEl) labelEl.textContent = prev; }, 1200);
+    }
+  } catch (e) {
+    console.error('Copy failed:', e);
+  }
+}
+
 function openMobileParamModal(param) {
   const modal = document.getElementById('param-modal-mobile');
   if (!modal) return;
-  
+
   const cod = param.cod || param.parametru;
   modal.querySelector('#mpm-code').textContent = cod || '-';
   modal.querySelector('#mpm-familie').textContent = param.familie || '';
@@ -1769,21 +1801,25 @@ async function loadMobileEquipment(projectId) {
     const items = await apiGet(`/api/proiecte/${projectId}/echipamente`);
 
     el.innerHTML = `
-      <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">🔧 Echipamente</div>
-      <button onclick="showMobileEquipmentForm('${projectId}')" class="modal-btn" style="margin-bottom:12px;">+ Adaugă echipament</button>
+      <div style="font-size:14px;font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:6px;"><i data-lucide="wrench" style="color:var(--accent);"></i> Echipamente</div>
+      <button onclick="showMobileEquipmentForm('${projectId}')" class="modal-btn" style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="plus"></i> Adaugă echipament</button>
       ${(items || []).map(eq => {
         let params = {};
         try { params = JSON.parse(eq.params_json || '{}'); } catch {}
         const paramEntries = Object.entries(params);
+        const eqJson = JSON.stringify(eq).replace(/"/g, '&quot;');
         return `
           <div class="detail-section" style="margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:start;">
-              <div>
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+              <div style="flex:1;min-width:0;">
                 <div style="font-weight:600;font-size:14px;">${escapeHtml(eq.nume || '-')}</div>
                 <div style="font-size:12px;color:var(--text-secondary);">${escapeHtml(eq.producator || '')} · ${escapeHtml(eq.model || '')}</div>
                 ${eq.serial_number ? `<div style="font-size:11px;color:var(--text-secondary);">S/N: ${escapeHtml(eq.serial_number)}</div>` : ''}
               </div>
-              <button onclick="deleteMobileEquipment('${eq.id}','${projectId}')" style="background:none;border:none;color:var(--error);font-size:14px;cursor:pointer;padding:4px;">×</button>
+              <div style="display:flex;gap:4px;flex-shrink:0;">
+                <button onclick='editMobileEquipment(${eqJson}, "${projectId}")' aria-label="Editează" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="pencil" style="width:16px;height:16px;"></i></button>
+                <button onclick="deleteMobileEquipment('${eq.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+              </div>
             </div>
             ${paramEntries.length > 0 ? `
               <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
@@ -1804,37 +1840,49 @@ async function loadMobileEquipment(projectId) {
   } catch (e) { el.innerHTML = ''; }
 }
 
-function showMobileEquipmentForm(projectId) {
-  const modal = document.getElementById('note-modal');
-  const titleEl = modal.querySelector('.modal-title');
-  titleEl.textContent = 'Echipament nou';
+function editMobileEquipment(eq, projectId) {
+  // Pre-fill modal with existing equipment data
+  showMobileEquipmentForm(projectId, eq);
+}
 
+function showMobileEquipmentForm(projectId, eq = null) {
+  const modal = document.getElementById('note-modal');
   const content = modal.querySelector('.modal-content');
   const originalContent = content.innerHTML;
+  const isEdit = !!eq;
+
+  // Build params text from eq.params_json if editing
+  let paramsText = '';
+  if (isEdit) {
+    try {
+      const obj = typeof eq.params_json === 'string' ? JSON.parse(eq.params_json || '{}') : (eq.params_json || {});
+      paramsText = Object.entries(obj).map(([k, v]) => `${k} = ${v}`).join('\n');
+    } catch {}
+  }
+
+  const producator = isEdit ? (eq.producator || 'Altul') : 'ABB';
+  const producatori = ['ABB', 'Siemens', 'Danfoss', 'Lenze', 'Altul'];
+
   content.innerHTML = `
     <div class="modal-header">
-      <span class="modal-title">Echipament nou</span>
-      <button class="modal-close" onclick="document.getElementById('note-modal').classList.remove('active')">×</button>
+      <span class="modal-title">${isEdit ? 'Editează echipament' : 'Echipament nou'}</span>
+      <button class="modal-close" onclick="restoreAndCloseModal()">×</button>
     </div>
-    <input type="text" id="eq-nume" placeholder="Nume echipament" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
+    <input type="text" id="eq-nume" placeholder="Nume echipament" value="${escapeHtml(isEdit ? (eq.nume || '') : '')}" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
     <select id="eq-producator" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
-      <option value="ABB">ABB</option>
-      <option value="Siemens">Siemens</option>
-      <option value="Danfoss">Danfoss</option>
-      <option value="Lenze">Lenze</option>
-      <option value="Altul">Altul</option>
+      ${producatori.map(p => `<option value="${p}" ${p === producator ? 'selected' : ''}>${p}</option>`).join('')}
     </select>
-    <input type="text" id="eq-model" placeholder="Model" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
-    <input type="text" id="eq-serial" placeholder="Serial Number" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
-    <textarea id="eq-params" placeholder="Parametri (un par=val pe linie)&#10;p0304 = 400&#10;p0305 = 5.6" style="width:100%;min-height:100px;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:monospace;margin-bottom:8px;"></textarea>
-    <button onclick="saveMobileEquipment('${projectId}')" class="modal-btn">Salvează</button>
+    <input type="text" id="eq-model" placeholder="Model" value="${escapeHtml(isEdit ? (eq.model || '') : '')}" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
+    <input type="text" id="eq-serial" placeholder="Serial Number" value="${escapeHtml(isEdit ? (eq.serial_number || '') : '')}" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
+    <textarea id="eq-params" placeholder="Parametri (un par=val pe linie)&#10;p0304 = 400&#10;p0305 = 5.6" style="width:100%;min-height:100px;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:'JetBrains Mono',monospace;margin-bottom:8px;">${escapeHtml(paramsText)}</textarea>
+    <button onclick="saveMobileEquipment('${projectId}', ${isEdit ? `'${eq.id}'` : 'null'})" class="modal-btn">${isEdit ? 'Salvează' : 'Creează'}</button>
   `;
 
   modal._originalContent = originalContent;
   modal.classList.add('active');
 }
 
-async function saveMobileEquipment(projectId) {
+async function saveMobileEquipment(projectId, eqId) {
   const data = {
     nume: document.getElementById('eq-nume').value.trim(),
     producator: document.getElementById('eq-producator').value,
@@ -1842,14 +1890,15 @@ async function saveMobileEquipment(projectId) {
     serial_number: document.getElementById('eq-serial').value.trim(),
     params_text: document.getElementById('eq-params').value
   };
-  if (!data.nume) return;
-  await apiPost(`/api/proiecte/${projectId}/echipamente`, data);
+  if (!data.nume) { alert('Numele e obligatoriu'); return; }
 
-  const modal = document.getElementById('note-modal');
-  if (modal._originalContent) {
-    modal.querySelector('.modal-content').innerHTML = modal._originalContent;
+  if (eqId && eqId !== 'null') {
+    await apiPut(`/api/echipamente/${eqId}`, data);
+  } else {
+    await apiPost(`/api/proiecte/${projectId}/echipamente`, data);
   }
-  modal.classList.remove('active');
+
+  restoreAndCloseModal();
   loadMobileEquipment(projectId);
 }
 
