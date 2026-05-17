@@ -2485,12 +2485,8 @@ def init_default_templates():
 # ============ PWA ROUTES ============
 
 @app.route('/m')
-@login_required
 def mobile():
-    # Serve the same UI as desktop but mark it as the mobile PWA shell so
-    # the template swaps the manifest (scope=/m, start_url=/m). All behavior
-    # comes from app.js — single source of truth for desktop + mobile.
-    return render_template('index.html', is_mobile_pwa=True)
+    return render_template('mobile.html')
 
 @app.route('/service-worker.js')
 def service_worker():

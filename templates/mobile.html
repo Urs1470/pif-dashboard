@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0d12">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PIF Mobile">
+  <meta name="description" content="PIF Dashboard Mobile - Proiecte, Note, Parametri">
+  <title>PIF Mobile</title>
+  <link rel="manifest" href="/static/manifest.json?v=20260510d">
+  <style id="boot-screen">
+    /* Hide both screens until JS decides which to show */
+    #login-screen { display: none !important; }
+    #app { display: none !important; }
+    
+    /* Show a minimal loading indicator instead */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 24px;
+      height: 24px;
+      margin: -12px 0 0 -12px;
+      border: 3px solid var(--border, #232b38);
+      border-top-color: var(--accent, #58d1c9);
+      border-radius: 50%;
+      animation: boot-spin 0.6s linear infinite;
+      z-index: 9999;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg, #0a0d12);
+      z-index: 9998;
+    }
+    @keyframes boot-spin { to { transform: rotate(360deg); } }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230a0d12'/%3E%3Cpath d='M19 4L10 17h7l-4 11 13-14h-8z' fill='%2358d1c9'/%3E%3Cpath d='M2 23 C4 23 5 20 7 20 C9 20 10 26 12 26' fill='none' stroke='%2358d1c9' stroke-width='1.5' stroke-linecap='round' opacity='0.7'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Backgrounds */
+      --bg: #0a0d12;
+      --bg-elev1: #11161e;
+      --bg-elev2: #161c26;
+      --bg-elev3: #1d2530;
+      --surface: #11161e;
+      --hover: #161c26;
+
+      /* Accents */
+      --accent: #58d1c9;
+      --accent-soft: rgba(88,209,201,0.10);
+      --accent-ring: rgba(88,209,201,0.25);
+      --violet: #8b87ff;
+      --violet-soft: rgba(139,135,255,0.12);
+
+      /* Semantic */
+      --success: #66d19e;
+      --success-soft: rgba(102,209,158,0.12);
+      --danger: #f97066;
+      --danger-soft: rgba(249,112,102,0.12);
+      --warning: #f5b14d;
+      --warning-soft: rgba(245,177,77,0.12);
+      --error: #f97066;
+      --pif-accent: #58d1c9;
+      --service-accent: #f5b14d;
+
+      /* Text */
+      --text: #e8edf5;
+      --text-secondary: #8590a0;
+      --text-dim: #5a6473;
+      --text2: #8590a0;
+
+      /* Lines */
+      --border: #232b38;
+      --line-soft: #1a212c;
+      --chart-text: #8590a0;
+    }
+    [data-theme="light"] {
+      --bg: #f5f7fb;
+      --bg-elev1: #ffffff;
+      --bg-elev2: #f1f4f9;
+      --bg-elev3: #e6ebf2;
+      --surface: #ffffff;
+      --hover: #eef1f5;
+      --accent: #0d9488;
+      --accent-soft: rgba(13,148,136,0.10);
+      --accent-ring: rgba(13,148,136,0.25);
+      --violet: #7c3aed;
+      --violet-soft: rgba(124,58,237,0.10);
+      --success: #16a34a;
+      --success-soft: rgba(22,163,74,0.10);
+      --danger: #dc2626;
+      --danger-soft: rgba(220,38,38,0.10);
+      --warning: #d97706;
+      --warning-soft: rgba(217,119,6,0.10);
+      --error: #dc2626;
+      --pif-accent: #0d9488;
+      --service-accent: #d97706;
+      --text: #1f2937;
+      --text-secondary: #5a6473;
+      --text-dim: #94a3b8;
+      --text2: #5a6473;
+      --border: #dbe1ea;
+      --line-soft: #eef1f6;
+      --chart-text: #5a6473;
+    }
+    html, body, .project-name, .note-project, .param-code, h1, h2, h3, .modal-title, .back-btn, #header h1 {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+    }
+    .project-client, .note-preview, .note-full, .note-date, .param-default, .param-desc, .detail-label, .detail-value, .nav-tab {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-size: 13px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+    html, body {
+      height: 100%;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Login Screen */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 24px;
+    }
+    #login-screen h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+    #login-screen p {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+    #pin-input {
+      width: 200px;
+      padding: 16px;
+      font-size: 24px;
+      text-align: center;
+      letter-spacing: 8px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    #pin-input:focus { outline: none; border-color: var(--accent); }
+    #login-btn {
+      width: 200px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      min-height: 56px;
+    }
+    #login-btn:active { opacity: 0.8; }
+    /* App Container */
+    #app {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+    }
+    /* Header */
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      min-height: 56px;
+    }
+    #header h1 { font-size: 18px; font-weight: 600; }
+    #sync-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--bg);
+    }
+    #sync-status.online { color: var(--success); }
+    #sync-status.offline { color: var(--error); }
+    /* Tab Content */
+    #content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+    /* Tab Views */
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+    /* Bottom Navigation */
+    #bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      height: 64px;
+    }
+    .nav-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+      cursor: pointer;
+      min-height: 56px;
+      border: none;
+      background: none;
+    }
+    .nav-tab.active { color: var(--accent); }
+    .nav-tab-icon { font-size: 20px; line-height: 1; }
+    /* Project Cards */
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      min-height: 80px;
+    }
+    .project-card:active { background: var(--border); }
+    .project-name { font-weight: 600; margin-bottom: 4px; }
+    .project-client { font-size: 14px; color: var(--text-secondary); }
+    .project-status {
+      display: inline-block;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+    .status-in_lucru { background: var(--accent-soft); color: var(--accent); }
+    .status-finalizat { background: var(--success-soft); color: var(--success); }
+    .status-in_asteptare { background: var(--warning-soft); color: var(--warning); }
+    /* Notes List */
+    .note-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .note-item:active { background: var(--border); }
+    .note-project { font-size: 12px; color: var(--accent); margin-bottom: 4px; }
+    .note-preview { font-size: 14px; color: var(--text-secondary); }
+    .note-date { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+    .note-full { display: none; white-space: pre-wrap; }
+    .note-item.expanded .note-preview { display: none; }
+    .note-item.expanded .note-full { display: block; }
+    /* Parameters */
+    .param-search {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .param-search:focus { outline: none; border-color: var(--accent); }
+    .family-select {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .param-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .param-item:active { background: var(--border); }
+    .param-code { font-weight: 600; color: var(--accent); }
+    .param-default { font-size: 14px; color: var(--text-secondary); }
+    .param-desc { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+    .param-detail {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .param-item.expanded .param-detail { display: block; }
+    /* v4 explanation format */
+    .param-explanation { font-family: 'JetBrains Mono', 'Consolas', monospace !important; font-size: 13px; }
+    .param-explanation .param-header { font-size: 15px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .param-explanation .param-manual { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; padding: 6px 10px; background: var(--bg); border-radius: 8px; line-height: 1.4; border-left: 3px solid var(--accent); }
+    .param-explanation .param-section { margin-bottom: 6px; padding: 6px 10px; background: var(--bg); border-radius: 8px; font-size: 13px; line-height: 1.45; border-left: 2px solid var(--border); }
+    .param-explanation .param-section strong { color: var(--accent); }
+    /* FAB */
+    .fab {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 28px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .fab:active { transform: scale(0.95); }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .mpm-row { margin-bottom: 6px; font-size: 14px; }
+    .mpm-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .mpm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: 13px; }
+    .modal textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      font-size: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      resize: vertical;
+      font-family: inherit;
+    }
+    .modal textarea:focus { outline: none; border-color: var(--accent); }
+    .modal select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      margin: 12px 0;
+    }
+    .modal select:focus { outline: none; border-color: var(--accent); }
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 12px;
+      min-height: 48px;
+    }
+    .modal-btn:active { opacity: 0.8; }
+    /* Project Detail */
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      padding: 8px 0;
+      background: none;
+      border: none;
+    }
+    .detail-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .detail-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .detail-value { font-size: 16px; }
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+    /* Loading */
+    .loading { text-align: center; padding: 24px; color: var(--text-secondary); }
+    /* Utility */
+    .hidden { display: none !important; }
+    /* More menu items */
+    .more-item {
+      width: 100%; padding: 14px 16px; font-size: 15px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); text-align: left;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+    .more-item:active { background: var(--border); }
+    /* Task filter buttons */
+    .gt-filter {
+      padding: 6px 12px; font-size: 12px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+    .gt-filter.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Lucide icon defaults for mobile */
+    [data-lucide], .lucide {
+      width: 20px; height: 20px;
+      stroke-width: 1.75;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .nav-tab [data-lucide] { width: 22px; height: 22px; }
+    .gt-filter [data-lucide] { width: 14px; height: 14px; }
+    .more-item [data-lucide] { width: 18px; height: 18px; margin-right: 6px; vertical-align: -3px; }
+    .modal-section-icon [data-lucide] { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <h1>PIF Mobile</h1>
+    <p>Dashboard pentru proiecte PIF</p>
+    <input type="password" id="pin-input" placeholder="••••••" maxlength="20" autocomplete="current-password" inputmode="text">
+    <div style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="remember-me" style="width:18px; height:18px;">
+      <label for="remember-me" style="font-size:14px; color:var(--text-secondary);">Ține-mă autentificat</label>
+    </div>
+    <button id="login-btn">Intră</button>
+    <p id="login-error" style="color: var(--error); margin-top: 16px; display: none;">PIN incorect</p>
+  </div>
+
+  <!-- App -->
+  <div id="app">
+    <header id="header">
+      <h1 style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif; font-size:16px;">&gt;pif_mobile</h1>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="theme-toggle-mobile" aria-label="Schimbă tema" style="background:none; border:none; color:var(--accent); cursor:pointer; padding:8px; min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;"><i data-lucide="moon"></i></button>
+        <button onclick="window.location.href='/logout'" aria-label="Ieșire" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:8px; min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;"><i data-lucide="log-out"></i></button>
+        <button id="force-refresh" aria-label="Sincronizează" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:8px; min-height:44px; min-width:44px; opacity:0.5; display:flex; align-items:center; justify-content:center;" title="Force refresh (șterge cache)"><i data-lucide="refresh-cw"></i></button>
+        <span id="sync-status" class="online" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> verificare...</span>
+      </div>
+    </header>
+
+    <!-- Global fast search -->
+    <div id="global-search" style="padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--border);">
+      <input type="text" id="quick-search"
+             placeholder="Caută parametru (ex: p1300)"
+             autocomplete="off" inputmode="search"
+             style="width:100%; padding:10px 14px; font-size:15px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Plus Jakarta Sans',-apple-system,sans-serif;">
+    </div>
+
+    <main id="content">
+      <!-- Tab 0: Home Dashboard -->
+      <div id="tab-home" class="tab-view active">
+        <div id="home-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;"></div>
+        <div id="home-active-timer"></div>
+        <div id="home-urgent-tasks"></div>
+        <div id="home-deadlines"></div>
+        <div id="home-recent-journal"></div>
+      </div>
+
+      <!-- Tab 1: Projects -->
+      <div id="tab-projects" class="tab-view">
+        <div id="projects-list"></div>
+      </div>
+
+      <!-- Tab 2: Tasks -->
+      <div id="tab-tasks" class="tab-view">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input type="text" id="quick-task-mobile" placeholder="Task nou..."
+            style="flex:1;padding:12px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+          <button onclick="quickAddMobileTask()" style="padding:12px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:600;">+</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;">
+          <button class="gt-filter active" data-filter="all" onclick="filterMobileTasks('all')">Toate</button>
+          <button class="gt-filter" data-filter="Urgent" onclick="filterMobileTasks('Urgent')"><i data-lucide="alert-circle"></i> Urgent</button>
+          <button class="gt-filter" data-filter="Normal" onclick="filterMobileTasks('Normal')">Normal</button>
+          <button class="gt-filter" data-filter="archive" onclick="filterMobileTasks('archive')"><i data-lucide="archive"></i> Arhivă</button>
+        </div>
+        <div id="mobile-tasks-list"></div>
+      </div>
+
+      <!-- Tab 3: Parameters -->
+      <div id="tab-params" class="tab-view">
+        <div id="params-sync-status" onclick="syncParamsToLocal()" style="font-size:12px;padding:6px 10px;margin-bottom:8px;border-radius:6px;text-align:center;cursor:pointer;opacity:0.85;background:var(--bg-elev2);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="circle" style="color:var(--danger);"></i> Cache gol — tap pentru sync</div>
+        <button id="manual-sync-btn" onclick="syncParamsToLocal()" style="width:100%;padding:10px;margin-bottom:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="refresh-cw"></i> Sincronizează parametri acum</button>
+        <input type="search" class="param-search" id="param-search" placeholder="Caută parametru...">
+        <select class="family-select" id="family-select">
+          <option value="">Toate familiile</option>
+        </select>
+        <div id="params-list"></div>
+      </div>
+
+      <!-- Tab 4: Manuals -->
+      <div id="tab-manuals" class="tab-view">
+        <div id="manuals-list"></div>
+      </div>
+
+      <!-- Tab: Stats (from More menu) -->
+      <div id="tab-stats" class="tab-view">
+        <div id="stats-content"></div>
+      </div>
+
+      <!-- Tab: Clients (from More menu) -->
+      <div id="tab-clients" class="tab-view">
+        <input type="text" id="client-search" placeholder="Caută client..."
+          style="width:100%;padding:12px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:12px;">
+        <button onclick="openClientModal()" class="modal-btn" style="margin-bottom:12px;">+ Client nou</button>
+        <div id="clients-list"></div>
+      </div>
+
+      <!-- Tab: Export (from More menu) -->
+      <div id="tab-export" class="tab-view">
+        <div style="font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px;"><i data-lucide="hard-drive-download" style="color:var(--accent);"></i> Export &amp; Backup</div>
+        <button onclick="window.open('/api/export/excel?type=projects','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-spreadsheet"></i> Export proiecte (Excel)</button>
+        <button onclick="window.open('/api/export/excel?type=tasks','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-spreadsheet"></i> Export taskuri (Excel)</button>
+        <button onclick="window.open('/api/export/excel?type=hours','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-spreadsheet"></i> Export ore (Excel)</button>
+        <button onclick="window.open('/api/export/pdf/all','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-text"></i> Export toate proiectele (PDF)</button>
+        <button onclick="mobileBackupJSON()" class="more-item" style="margin-bottom:8px;"><i data-lucide="save"></i> Backup JSON (download)</button>
+      </div>
+
+      <!-- Tab: Notes (from More menu) -->
+      <div id="tab-notes" class="tab-view">
+        <div id="notes-list"></div>
+      </div>
+
+      <!-- Project Detail View -->
+      <div id="project-detail" class="tab-view">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <button class="back-btn" id="back-to-projects">← Înapoi</button>
+          <div style="display:flex; gap:8px;">
+            <button onclick="editMobileProject()" aria-label="Editează" style="background:none;border:none;cursor:pointer;padding:10px;min-height:44px;min-width:44px;color:var(--text);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="pencil"></i></button>
+            <button onclick="exportMobileProjectPDF()" aria-label="Export PDF" style="background:none;border:none;cursor:pointer;padding:10px;min-height:44px;min-width:44px;color:var(--text);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="file-text"></i></button>
+            <button onclick="deleteMobileProject()" aria-label="Șterge" style="background:none;border:none;cursor:pointer;padding:10px;min-height:44px;min-width:44px;color:var(--danger);display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2"></i></button>
+          </div>
+        </div>
+        <div id="project-info"></div>
+        <div id="mobile-timer-section"></div>
+        <div id="mobile-checklist-section"></div>
+        <div id="mobile-tasks-section"></div>
+        <div id="mobile-journal-section"></div>
+        <div id="mobile-attachments-section"></div>
+        <div id="mobile-equipment-section"></div>
+        <div id="mobile-observations-section"></div>
+        <div id="mobile-service-section"></div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav">
+      <button class="nav-tab active" data-tab="home">
+        <span class="nav-tab-icon"><i data-lucide="home"></i></span><span>Acasă</span>
+      </button>
+      <button class="nav-tab" data-tab="projects">
+        <span class="nav-tab-icon"><i data-lucide="folder-kanban"></i></span><span>Proiecte</span>
+      </button>
+      <button class="nav-tab" data-tab="tasks">
+        <span class="nav-tab-icon"><i data-lucide="check-square"></i></span><span>Taskuri</span>
+      </button>
+      <button class="nav-tab" data-tab="params">
+        <span class="nav-tab-icon"><i data-lucide="sliders-horizontal"></i></span><span>Parametri</span>
+      </button>
+      <button class="nav-tab" data-tab="more">
+        <span class="nav-tab-icon"><i data-lucide="menu"></i></span><span>Mai mult</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- FAB for Notes -->
+  <button class="fab hidden" id="notes-fab">+</button>
+
+  <!-- FAB for Projects -->
+  <button class="fab hidden" id="projects-fab" onclick="openProjectFormModal()">+</button>
+
+  <!-- More menu overlay -->
+  <div id="more-menu" class="modal">
+    <div class="modal-content" style="max-width:320px;">
+      <div class="modal-header">
+        <span class="modal-title">Mai mult</span>
+        <button class="modal-close" onclick="closeMoreMenu()">×</button>
+      </div>
+      <div id="more-menu-items" style="display:flex; flex-direction:column; gap:8px;">
+        <button class="more-item" onclick="closeMoreMenu(); showTab('notes')"><i data-lucide="notebook-pen"></i> Notițe / Jurnal</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('manuals')"><i data-lucide="book-open"></i> Manuale</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('stats')"><i data-lucide="bar-chart-3"></i> Statistici</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('clients')"><i data-lucide="users"></i> Clienți</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('export')"><i data-lucide="hard-drive-download"></i> Export / Backup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Note Modal -->
+  <div class="modal" id="note-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Notiță nouă</span>
+        <button class="modal-close" id="close-note-modal">×</button>
+      </div>
+      <textarea id="note-content" placeholder="Scrie notița..."></textarea>
+      <select id="note-project-select">
+        <option value="">Proiect (opțional)</option>
+      </select>
+      <button class="modal-btn" id="save-note">Salvează</button>
+    </div>
+  </div>
+
+  <!-- Parameter Detail Modal -->
+  <div class="modal" id="param-modal-mobile">
+    <div class="modal-content" style="max-height:80vh; overflow-y:auto;">
+      <div class="modal-header">
+        <span class="modal-title" id="param-modal-title">Detalii parametru</span>
+        <button class="modal-close" id="close-param-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="mpm-row"><span class="mpm-label">Cod:</span> <span id="mpm-code" style="font-weight:bold; color:var(--accent);">-</span></div>
+        <div class="mpm-row"><span class="mpm-label">Familia:</span> <span id="mpm-familie">-</span></div>
+        <div class="mpm-row"><span class="mpm-label">Nume:</span> <span id="mpm-name">-</span></div>
+        <div class="mpm-row" style="margin-top:12px;"><span class="mpm-label">Descriere:</span> <span id="mpm-descriere">-</span></div>
+        <div class="mpm-grid">
+          <div><span class="mpm-label">Acces:</span> <span id="mpm-acces">-</span></div>
+          <div><span class="mpm-label">Tip:</span> <span id="mpm-tip">-</span></div>
+          <div><span class="mpm-label">Default:</span> <span id="mpm-default">-</span></div>
+          <div><span class="mpm-label">Unitate:</span> <span id="mpm-unitate">-</span></div>
+          <div><span class="mpm-label">Min:</span> <span id="mpm-min">-</span></div>
+          <div><span class="mpm-label">Max:</span> <span id="mpm-max">-</span></div>
+        </div>
+        <div id="mpm-explicatie-row" style="display:none; margin-top:12px; padding:12px; background:var(--bg-elev2); border:1px solid var(--border); border-radius:8px;">
+          <strong class="modal-section-icon"><i data-lucide="book-open"></i> Explicație:</strong>
+          <div id="mpm-explicatie" style="margin-top:4px; font-size:0.9em;"></div>
+        </div>
+        <div id="mpm-interconex-row" style="display:none; margin-top:8px; padding:12px; background:var(--accent-soft); border:1px solid var(--accent); border-radius:8px;">
+          <strong class="modal-section-icon"><i data-lucide="link-2"></i> Interconexiuni:</strong>
+          <div id="mpm-interconex" style="margin-top:4px; font-size:0.9em;"></div>
+        </div>
+        <div id="mpm-influenteaza-row" style="display:none; margin-top:8px; padding:12px; background:var(--success-soft); border:1px solid var(--success); border-radius:8px;">
+          <strong class="modal-section-icon"><i data-lucide="radio-tower"></i> Influențează:</strong>
+          <div id="mpm-influenteaza" style="margin-top:4px; font-size:0.9em;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SW registration moved to mobile.js -->
+
+  <script src="/static/mobile.js?v={{ js_version }}"></script>
+  <script>
+    // Render Lucide icons after mobile.js loads + on every render via MutationObserver
+    (function() {
+      let _rendering = false;
+      function renderIcons() {
+        if (_rendering || !window.lucide) return;
+        _rendering = true;
+        try { window.lucide.createIcons(); } catch (e) {}
+        setTimeout(() => { _rendering = false; }, 0);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderIcons);
+      } else {
+        renderIcons();
+      }
+      // Watch for new <i data-lucide> placeholders injected by mobile.js
+      const obs = new MutationObserver(muts => {
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType === 1 && (n.matches?.('[data-lucide]') || n.querySelector?.('[data-lucide]'))) {
+              renderIcons();
+              return;
+            }
+          }
+        }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+
+      // Update mobile theme toggle icon
+      const themeBtn = document.getElementById('theme-toggle-mobile');
+      if (themeBtn) {
+        const updateThemeIcon = () => {
+          const t = document.documentElement.getAttribute('data-theme');
+          themeBtn.innerHTML = '<i data-lucide="' + (t === 'light' ? 'sun' : 'moon') + '"></i>';
+          renderIcons();
+        };
+        updateThemeIcon();
+        themeBtn.addEventListener('click', () => setTimeout(updateThemeIcon, 0));
+      }
+    })();
+  </script>
+</body>
+</html>
