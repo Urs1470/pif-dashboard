@@ -149,6 +149,8 @@ function enhanceSelect(select) {
         }
         const selOpt = select.options[select.selectedIndex];
         labelEl.textContent = selOpt ? selOpt.textContent : '';
+        // Mirror selected value on the wrapper for value-aware CSS (e.g. priority color)
+        wrap.setAttribute('data-value', select.value);
     };
 
     const open = () => { wrap.classList.add('open'); document.addEventListener('mousedown', onDocClick, true); };
@@ -714,6 +716,12 @@ async function saveProject(event) {
 
 async function showProjectDetail(projectId) {
     currentProjectId = projectId;
+
+    // If invoked from another tab (Acasa cards), switch to Proiecte first so detail view is visible
+    const proiecteTab = document.getElementById('tab-proiecte');
+    if (proiecteTab && !proiecteTab.classList.contains('active')) {
+        switchTab('proiecte');
+    }
 
     try {
         const project = await apiGet(`/proiecte/${projectId}`);

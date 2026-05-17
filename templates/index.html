@@ -709,6 +709,41 @@
         [data-theme="light"] .flatpickr-day.selected,
         [data-theme="light"] .flatpickr-day.selected:hover { color: #fff !important; }
 
+        /* Light theme — flatpickr full overrides (the imported dark.css would otherwise show as midnight blue on light bg) */
+        [data-theme="light"] .flatpickr-calendar {
+            background: #ffffff !important;
+            border-color: var(--border) !important;
+        }
+        [data-theme="light"] .flatpickr-months,
+        [data-theme="light"] .flatpickr-weekdays,
+        [data-theme="light"] .flatpickr-weekdaycontainer,
+        [data-theme="light"] .flatpickr-innerContainer,
+        [data-theme="light"] .flatpickr-rContainer,
+        [data-theme="light"] .flatpickr-days,
+        [data-theme="light"] .dayContainer {
+            background: #ffffff !important;
+        }
+        [data-theme="light"] .flatpickr-current-month .cur-month,
+        [data-theme="light"] .flatpickr-current-month input.cur-year { color: var(--text) !important; }
+        [data-theme="light"] .flatpickr-weekday { color: var(--text2) !important; }
+        [data-theme="light"] .flatpickr-day { color: var(--text) !important; background: transparent !important; }
+        [data-theme="light"] .flatpickr-day:hover { background: var(--bg-elev2) !important; }
+        [data-theme="light"] .flatpickr-day.prevMonthDay,
+        [data-theme="light"] .flatpickr-day.nextMonthDay { color: var(--text-dim) !important; }
+        [data-theme="light"] .flatpickr-prev-month svg,
+        [data-theme="light"] .flatpickr-next-month svg { fill: var(--text2) !important; }
+        [data-theme="light"] .flatpickr-prev-month:hover svg,
+        [data-theme="light"] .flatpickr-next-month:hover svg { fill: var(--accent) !important; }
+        [data-theme="light"] .numInputWrapper:hover { background: var(--bg-elev2) !important; }
+        [data-theme="light"] .numInputWrapper span.arrowUp:after { border-bottom-color: var(--text2) !important; }
+        [data-theme="light"] .numInputWrapper span.arrowDown:after { border-top-color: var(--text2) !important; }
+
+        /* Parameter detail modal — hide redundant header/manual blocks (already shown in modal header) */
+        #param-modal-explicatie .param-header,
+        #param-modal-explicatie .param-manual { display: none; }
+        #param-modal-explicatie .param-section { margin-bottom: 8px; }
+        #param-modal-explicatie .param-section:last-child { margin-bottom: 0; }
+
         /* Filters */
         .filters {
             display: flex;
@@ -2163,6 +2198,11 @@
         .prio-select[data-value="Normal"] { border-color: var(--warning); color: var(--warning); }
         .prio-select[data-value="Minor"] { border-color: var(--text2); color: var(--text2); }
 
+        /* Mirror priority color onto the custom-dropdown wrapper trigger */
+        #cs-quick-prioritate[data-value="Urgent"] .cs-trigger { border-color: var(--danger); color: var(--danger); }
+        #cs-quick-prioritate[data-value="Normal"] .cs-trigger { border-color: var(--warning); color: var(--warning); }
+        #cs-quick-prioritate[data-value="Minor"]  .cs-trigger { border-color: var(--text2); color: var(--text2); }
+
         @media (max-width: 768px) {
             .quick-add-main input { height: 52px; font-size: 1rem; }
             #quick-add-btn { width: 52px; height: 52px; }
@@ -2663,9 +2703,9 @@
                 <button class="btn btn-secondary" id="header-btn-clienti" onclick="showClientList()" title="Listă clienți" style="display:none;"><i data-lucide="users"></i> Clienți</button>
 
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Schimbă tema"><i data-lucide="moon"></i></button>
-                <button class="btn btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><i data-lucide="help-circle"></i></button>
-                <button class="btn btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo"><i data-lucide="undo-2"></i></button>
-                <button class="btn btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo"><i data-lucide="redo-2"></i></button>
+                <button class="btn-icon" onclick="showKeyboardHelp()" title="Shortcut-uri (?)"><i data-lucide="help-circle"></i></button>
+                <button class="btn-icon" id="undo-btn" onclick="undo()" style="display:none;" title="Undo"><i data-lucide="undo-2"></i></button>
+                <button class="btn-icon" id="redo-btn" onclick="redo()" style="display:none;" title="Redo"><i data-lucide="redo-2"></i></button>
                 <button class="btn btn-danger-outline" onclick="logout()" title="Deconectează-te"><i data-lucide="log-out"></i> Logout</button>
             </div>
         </header>
@@ -3085,12 +3125,12 @@
                     <button class="btn btn-primary" onclick="quickAddTask()" id="quick-add-btn">+</button>
                 </div>
                 <div class="quick-add-options">
-                    <select id="quick-prioritate" class="quick-select prio-select">
+                    <select id="quick-prioritate" class="quick-select prio-select cs-enhance">
                         <option value="Normal">● Normal</option>
                         <option value="Urgent">▲ Urgent</option>
                         <option value="Minor">▼ Minor</option>
                     </select>
-                    <select id="quick-categorie" class="quick-select">
+                    <select id="quick-categorie" class="quick-select cs-enhance">
                         <option value="General">General</option>
                         <option value="Birou">Birou</option>
                         <option value="Teren">Teren</option>
@@ -3696,7 +3736,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260540"></script>
+    <script src="/static/app.js?v=20260541"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
