@@ -457,6 +457,65 @@ label.field-label {
 }
 .modal-btn.primary:hover { filter: brightness(1.08); }
 
+/* ============ PROFIL GRID ============ */
+.profil-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+/* ============ AUDIT MODAL ============ */
+.audit-modal { max-width: 640px; }
+.audit-body { max-height: 60vh; overflow-y: auto; margin-bottom: 1rem; }
+.audit-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-mid);
+  font-size: 0.85rem;
+}
+.audit-empty.audit-error { color: var(--danger); }
+.audit-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.audit-item {
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.audit-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+.audit-when { color: var(--text-dim); font-size: 0.72rem; }
+.audit-field { color: var(--accent); font-weight: 500; font-size: 0.78rem; }
+.audit-diff {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-mid);
+  flex-wrap: wrap;
+}
+.audit-diff .lucide { width: 12px; height: 12px; color: var(--text-dim); flex-shrink: 0; }
+.audit-old {
+  background: var(--danger-soft);
+  color: var(--danger);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.audit-new {
+  background: var(--success-soft);
+  color: var(--success);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ============ UTILS ============ */
 .tag {
   display: inline-flex; align-items: center; gap: 0.25rem;

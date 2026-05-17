@@ -10,15 +10,16 @@ budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / 'static' / 'budget'
 
+AUDIT_VALUE_MAX = 200
+AUDIT_MAX_CHANGES_PER_SAVE = 60
+
 
 def _get_db():
-    """Get DB connection using Flask app context."""
     from database import get_db as _get
     return _get()
 
 
 def login_required(f):
-    """Decorator: require PIN authentication."""
     from functools import wraps
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -26,6 +27,31 @@ def login_required(f):
             return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return decorated
+
+
+def _trunc(v):
+    if v is None:
+        return None
+    s = v if isinstance(v, str) else json.dumps(v, ensure_ascii=False)
+    return s if len(s) <= AUDIT_VALUE_MAX else s[:AUDIT_VALUE_MAX] + '…'
+
+
+def diff_state(old, new, path=''):
+    """Yield (path, old, new) tuples for every leaf change between two JSON-like values."""
+    if old == new:
+        return
+    if isinstance(old, dict) and isinstance(new, dict):
+        for k in sorted(set(old.keys()) | set(new.keys())):
+            sub = f"{path}.{k}" if path else k
+            yield from diff_state(old.get(k), new.get(k), sub)
+    elif isinstance(old, list) and isinstance(new, list):
+        if len(old) == len(new):
+            for i, (a, b) in enumerate(zip(old, new)):
+                yield from diff_state(a, b, f"{path}[{i}]")
+        else:
+            yield (path or '(root)', _trunc(old), _trunc(new))
+    else:
+        yield (path or '(root)', _trunc(old), _trunc(new))
 
 
 @budget_bp.route('/')
@@ -64,12 +90,13 @@ def set_state():
 
     db = _get_db()
     now = datetime.now().isoformat()
-    data_json = json.dumps(payload['data'], ensure_ascii=False)
+    new_data = payload['data']
+    data_json = json.dumps(new_data, ensure_ascii=False)
 
     prev = db.execute(
         "SELECT data FROM budget_state WHERE user = 'ion'"
     ).fetchone()
-    old_value = prev['data'] if prev else None
+    old_data = json.loads(prev['data']) if prev and prev['data'] else None
 
     db.execute("""
         INSERT INTO budget_state(user, data, updated)
@@ -77,13 +104,24 @@ def set_state():
         ON CONFLICT(user) DO UPDATE SET data = excluded.data, updated = excluded.updated
     """, (data_json, now))
 
-    if old_value != data_json:
+    if old_data is None:
         db.execute("""
             INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-            VALUES(?, 'ion', 'update_state', 'full_state', ?, ?)
-        """, (now,
-              old_value[:200] if old_value else None,
-              data_json[:200]))
+            VALUES(?, 'ion', 'init', NULL, NULL, ?)
+        """, (now, _trunc(new_data)))
+    else:
+        changes = list(diff_state(old_data, new_data))
+        for path, old_val, new_val in changes[:AUDIT_MAX_CHANGES_PER_SAVE]:
+            db.execute("""
+                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                VALUES(?, 'ion', 'update', ?, ?, ?)
+            """, (now, path, old_val, new_val))
+        if len(changes) > AUDIT_MAX_CHANGES_PER_SAVE:
+            extra = len(changes) - AUDIT_MAX_CHANGES_PER_SAVE
+            db.execute("""
+                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                VALUES(?, 'ion', 'update', '(truncated)', ?, NULL)
+            """, (now, f"{extra} schimbari suplimentare omise"))
 
     db.commit()
     return jsonify({'ok': True, 'updated': now})
@@ -95,7 +133,7 @@ def get_audit():
     limit = min(int(request.args.get('limit', 50)), 500)
     db = _get_db()
     rows = db.execute("""
-        SELECT ts, action, field FROM budget_audit
-        WHERE user = 'ion' ORDER BY ts DESC LIMIT ?
+        SELECT ts, action, field, old_value, new_value FROM budget_audit
+        WHERE user = 'ion' ORDER BY ts DESC, id DESC LIMIT ?
     """, (limit,)).fetchall()
     return jsonify([dict(r) for r in rows])
