@@ -967,6 +967,42 @@
             box-shadow: 0 4px 14px rgba(107, 223, 138, 0.25);
         }
 
+        /* Compact icon-only delete (used in list rows for jurnal, timer sessions, attachments, etc.) */
+        .btn-small.btn-danger,
+        .btn-row-delete {
+            background: transparent !important;
+            color: var(--text2);
+            border: 1px solid transparent;
+            min-width: 28px !important;
+            width: 28px;
+            height: 28px;
+            padding: 0 !important;
+            border-radius: 6px;
+            opacity: 0.6;
+            transition: opacity 0.12s, background 0.12s, color 0.12s, border-color 0.12s;
+            box-shadow: none !important;
+        }
+        .btn-small.btn-danger:hover,
+        .btn-row-delete:hover {
+            background: var(--danger-soft) !important;
+            color: var(--danger);
+            border-color: transparent;
+            opacity: 1;
+        }
+        .btn-small.btn-danger [data-lucide], .btn-small.btn-danger .lucide,
+        .btn-row-delete [data-lucide], .btn-row-delete .lucide {
+            width: 14px; height: 14px; margin: 0;
+        }
+        /* The row-level delete fades in on row hover (cleaner default state) */
+        .gt-task-card .btn-small.btn-danger,
+        .jurnal-item .btn-small.btn-danger,
+        .timer-session-item .btn-small.btn-danger,
+        .attachment-item .btn-small.btn-danger { opacity: 0.4; }
+        .gt-task-card:hover .btn-small.btn-danger,
+        .jurnal-item:hover .btn-small.btn-danger,
+        .timer-session-item:hover .btn-small.btn-danger,
+        .attachment-item:hover .btn-small.btn-danger { opacity: 1; }
+
         .btn-small {
             padding: 6px 12px;
             font-size: var(--font-small);
@@ -2539,25 +2575,32 @@
 
     /* Secțiuni detaliu — accordion pe mobil */
     .detail-section {
+        background: var(--bg-elev1);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        margin-bottom: 10px;
+        border-radius: var(--radius-lg);
+        margin-bottom: 14px;
         overflow: hidden;
+        transition: border-color 0.15s;
     }
+    .detail-section:hover { border-color: var(--bg-elev3); }
     .detail-section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 16px;
+        gap: 10px;
+        padding: 14px 18px;
         cursor: pointer;
-        background: var(--bg2);
+        background: var(--bg-elev1);
         font-weight: 600;
+        font-size: 13.5px;
         user-select: none;
         -webkit-user-select: none;
+        border-bottom: 1px solid var(--line-soft);
     }
-    .detail-section-header::after { content: '▼'; font-size: 0.75rem; transition: transform 0.2s; }
+    .detail-section-header [data-lucide], .detail-section-header .lucide { color: var(--accent); width: 18px; height: 18px; }
+    .detail-section-header::after { content: '▼'; font-size: 0.75rem; transition: transform 0.2s; color: var(--text2); margin-left: auto; }
     .detail-section.collapsed .detail-section-header::after { transform: rotate(-90deg); }
-    .detail-section-body { padding: 14px 16px; }
+    .detail-section-body { padding: 14px 18px; }
     .detail-section.collapsed .detail-section-body { display: none; }
 
     /* Formulare */
@@ -3736,7 +3779,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260541"></script>
+    <script src="/static/app.js?v=20260542"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

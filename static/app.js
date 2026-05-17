@@ -61,11 +61,17 @@ const _API_CACHE_TTL = 60_000;  // 60s — stale entries still served, then refr
 function _cacheKey(url) { return url; }
 
 function _invalidateCache(url) {
-    // Invalidate any cached GET that starts with this base resource.
-    // e.g. POST /proiecte -> wipe /proiecte and /proiecte/* and /dashboard/home
-    const root = url.split('?')[0].split('/').slice(0, 2).join('/'); // '/proiecte'
+    // Invalidate cached GETs related to the mutated resource.
+    // Direct match on the URL root (e.g. /proiecte -> /proiecte, /proiecte/123, /proiecte/123/jurnal),
+    // PLUS any nested resource of the same type (e.g. DELETE /jurnal/abc invalidates /proiecte/{any}/jurnal).
+    const path = url.split('?')[0];
+    const root = '/' + (path.split('/')[1] || ''); // '/jurnal'
     for (const k of _apiCache.keys()) {
-        if (k.startsWith(root) || k.startsWith('/dashboard/')) _apiCache.delete(k);
+        if (
+            k.startsWith(root) ||                       // /jurnal*
+            k.includes(root) ||                         // /proiecte/X/jurnal*
+            k.startsWith('/dashboard/')                 // dashboards depend on most resources
+        ) _apiCache.delete(k);
     }
 }
 
@@ -951,7 +957,7 @@ function renderTodos(tasks) {
             </div>
             <span class="todo-priority ${(task.prioritate||'normal').toLowerCase()}">${task.prioritate || 'Normal'}</span>
             <span class="todo-status ${task.status}">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
-            <button class="btn btn-small btn-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')">×</button>
+            <button class="btn btn-small btn-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="x"></i></button>
         </div>
     `).join('');
 
@@ -1154,7 +1160,7 @@ async function loadJurnal(projectId) {
                         <span style="color:var(--text2); font-size:0.8rem; margin-right:8px;">${entry.data}</span>
                         <span>${escapeHtml(entry.continut)}</span>
                     </div>
-                    <button class="btn btn-small btn-danger" onclick="deleteJurnalEntry('${entry.id}')" style="padding:2px 8px; font-size:0.7rem;">×</button>
+                    <button class="btn btn-small btn-danger" onclick="deleteJurnalEntry('${entry.id}')" title="Șterge"><i data-lucide="x"></i></button>
                 </div>
             `).join('');
         }
@@ -1715,7 +1721,7 @@ function renderGlobalTasks(tasks) {
                 <span class="todo-priority ${task.prioritate || 'normal'}">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status ${task.status}">${getStatusLabel(task.status)}</span>
                 <button class="btn btn-small btn-secondary" onclick="editGtTask('${task.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                <button class="btn btn-small btn-danger" onclick="deleteGtTask('${task.id}')">×</button>
+                <button class="btn btn-small btn-danger" onclick="deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="x"></i></button>
             </div>
         `;
     }).join('');
@@ -1912,7 +1918,7 @@ function renderArchive(tasks) {
             <span class="archive-title">${escapeHtml(t.titlu)}</span>
             <span class="archive-meta">${t.categorie || ''} · ${t.data_finalizare ? t.data_finalizare.split('T')[0] : ''}</span>
             <button class="btn btn-small btn-secondary" onclick="restoreTask('${t.id}')" title="Redeschide task"><i data-lucide="undo-2"></i></button>
-            <button class="btn btn-small btn-danger" onclick="deleteGtTask('${t.id}')" title="Șterge definitiv">×</button>
+            <button class="btn btn-small btn-danger" onclick="deleteGtTask('${t.id}')" title="Șterge definitiv"><i data-lucide="x"></i></button>
         </div>
     `).join('');
 }
@@ -2362,7 +2368,7 @@ function renderChecklist(items) {
                 <div class="checklist-title" style="${item.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(item.titlu)}</div>
                 ${item.note ? `<div class="checklist-notes">${escapeHtml(item.note)}</div>` : ''}
             </div>
-            <button class="btn btn-small btn-danger" onclick="deleteChecklistItem('${item.id}')">×</button>
+            <button class="btn btn-small btn-danger" onclick="deleteChecklistItem('${item.id}')" title="Șterge"><i data-lucide="x"></i></button>
         </div>
     `).join('');
 }
@@ -2439,7 +2445,7 @@ function renderTimerSessions(sessions, totalSeconds) {
                         ${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}
                     </span>
                 </div>
-                <button class="btn btn-small btn-danger" onclick="deleteTimerSession('${s.id}')" style="padding:2px 8px; font-size:0.7rem;">×</button>
+                <button class="btn btn-small btn-danger" onclick="deleteTimerSession('${s.id}')" title="Șterge"><i data-lucide="x"></i></button>
             </div>
         `).join('');
     }
@@ -3094,7 +3100,7 @@ function renderClientList(clients) {
             </div>
             <div class="client-list-actions">
                 <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editClientFromList('${c.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); deleteClientFromList('${c.id}')">×</button>
+                <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); deleteClientFromList('${c.id}')" title="Șterge"><i data-lucide="x"></i></button>
             </div>
         </div>
     `).join('');
@@ -3278,7 +3284,7 @@ function renderEchipamente(echipamente, descLookup) {
                     <span class="echipament-name">${escapeHtml(e.nume)}</span>
                     <div class="echipament-actions">
                         <button class="btn btn-small btn-secondary" onclick="editEchipament('${e.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                        <button class="btn btn-small btn-danger" onclick="deleteEchipament('${e.id}')">×</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteEchipament('${e.id}')" title="Șterge"><i data-lucide="x"></i></button>
                     </div>
                 </div>
                 <div class="echipament-meta">
@@ -3391,7 +3397,7 @@ function renderCurrentParams() {
             <span style="flex:2; color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(param?.descriere || desc)}">${escapeHtml(desc)}</span>
             <span style="min-width:70px; text-align:right; color:var(--text); font-weight:600;">${escapeHtml(String(value))}</span>
             <button class="btn btn-small btn-secondary" onclick="editParamValue('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Editează"><i data-lucide="pencil"></i></button>
-            <button class="btn btn-small btn-danger" onclick="deleteParam('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Șterge">×</button>
+            <button class="btn btn-small btn-danger" onclick="deleteParam('${code}')" title="Șterge"><i data-lucide="x"></i></button>
         </div>`;
     }).join('');
 
