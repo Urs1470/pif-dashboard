@@ -205,26 +205,41 @@ function initAllDatePickers() {
 // ============ INITIALIZATION ============
 
 // Render all data-lucide icons currently in the DOM. Safe to call multiple times.
+// Guarded with a re-entry flag so the MutationObserver below doesn't loop on
+// the SVGs Lucide itself inserts (which still carry the data-lucide attribute).
+let _iconsRendering = false;
 function refreshIcons() {
+    if (_iconsRendering) return;
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        _iconsRendering = true;
         try { window.lucide.createIcons(); } catch (e) { /* noop */ }
+        // release on next tick so the resulting mutations don't re-enter
+        setTimeout(() => { _iconsRendering = false; }, 0);
     }
 }
 
-// MutationObserver to auto-render lucide icons inserted via innerHTML.
-// Debounced to coalesce bursts of mutations.
 let _iconRefreshTimer = null;
 function scheduleIconRefresh() {
-    if (_iconRefreshTimer) return;
+    if (_iconsRendering || _iconRefreshTimer) return;
     _iconRefreshTimer = setTimeout(() => { _iconRefreshTimer = null; refreshIcons(); }, 30);
+}
+
+// Check if a node tree contains an UN-RENDERED <i data-lucide="...">
+// (we only need to refresh when raw placeholders appear, not when Lucide's own
+// SVGs get inserted — those also carry data-lucide but are already rendered)
+function _hasUnrenderedLucide(node) {
+    if (node.nodeType !== 1) return false;
+    if (node.tagName === 'I' && node.hasAttribute('data-lucide')) return true;
+    return node.querySelector?.('i[data-lucide]') != null;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     refreshIcons();
     const obs = new MutationObserver(muts => {
+        if (_iconsRendering) return;
         for (const m of muts) {
             for (const n of m.addedNodes) {
-                if (n.nodeType === 1 && (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]'))) {
+                if (_hasUnrenderedLucide(n)) {
                     scheduleIconRefresh();
                     return;
                 }
