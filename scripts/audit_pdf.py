@@ -36,7 +36,7 @@ FAMILIE_PDF_MAP = {
     'Lenze_i550':          {'pdf': 'Lenze_i550_Manual.pdf',              'parser': 'lenze'},
     'Lenze_i950':          {'pdf': 'Lenze_i950_Manual.pdf',              'parser': 'lenze'},
     'SINAMICS_G120':       {'pdf': 'SINAMICS_G120_List_Manual.pdf',      'parser': 'siemens'},
-    'SINAMICS_G130_G150':  {'pdf': 'SINAMICS_S120_S150_List_Manual.pdf', 'parser': 'siemens'},
+    'SINAMICS_G130_G150':  {'pdf': 'SINAMICS_G130_G150_List_Manual.pdf', 'parser': 'siemens'},
     'SINAMICS_S120_S150':  {'pdf': 'SINAMICS_S120_S150_List_Manual.pdf', 'parser': 'siemens'},
 }
 
