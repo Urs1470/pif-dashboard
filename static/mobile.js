@@ -1300,20 +1300,58 @@ async function saveNote() {
 
 // ============ Dashboard Home (FAZA 2) ============
 
+// Greeting helpers — port from desktop app.js for mobile parity.
+function _greetingMobile() {
+  const h = new Date().getHours();
+  if (h < 5) return 'Noapte bună';
+  if (h < 12) return 'Bună dimineața';
+  if (h < 18) return 'Bună ziua';
+  return 'Bună seara';
+}
+function _fmtDateMobile(d = new Date()) {
+  const zile = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
+  const luni = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie',
+                'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+  return `${zile[d.getDay()]}, ${d.getDate()} ${luni[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 async function loadDashboardHome() {
   try {
     const data = await apiGet('/api/dashboard/home');
     if (!data) return;
+    const s = data.stats || data;  // tolerate both shapes
 
-    // Stats cards
+    // Greeting
+    const greetEl = document.getElementById('home-greeting');
+    if (greetEl) {
+      greetEl.innerHTML = `
+        <div style="font-size:20px; font-weight:600; color:var(--text);">${_greetingMobile()}, Ion</div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${_fmtDateMobile()}</div>
+      `;
+    }
+
+    // 4 stats color-coded, same scheme as desktop:
+    //   total projects (violet), active projects (accent),
+    //   weekly hours (success) + delta, urgent tasks (danger)
+    const delta = (s.weekly_delta != null)
+      ? (s.weekly_delta >= 0 ? `+${s.weekly_delta}h` : `${s.weekly_delta}h`)
+      : '';
     document.getElementById('home-stats').innerHTML = `
-      <div class="detail-section" style="text-align:center;">
-        <div style="font-size:28px; font-weight:600; color:var(--accent);">${data.stats.active_projects}</div>
-        <div class="detail-label">Proiecte active</div>
+      <div class="detail-section" style="text-align:center; padding:12px;">
+        <div style="font-size:24px; font-weight:600; color:var(--violet); font-family:'JetBrains Mono',monospace;">${s.total_projects ?? 0}</div>
+        <div class="detail-label">Total proiecte</div>
       </div>
-      <div class="detail-section" style="text-align:center;">
-        <div style="font-size:28px; font-weight:600; color:var(--accent);">${data.stats.weekly_hours}</div>
-        <div class="detail-label">Ore (7 zile)</div>
+      <div class="detail-section" style="text-align:center; padding:12px;">
+        <div style="font-size:24px; font-weight:600; color:var(--accent); font-family:'JetBrains Mono',monospace;">${s.active_projects ?? 0}</div>
+        <div class="detail-label">Active</div>
+      </div>
+      <div class="detail-section" style="text-align:center; padding:12px;">
+        <div style="font-size:24px; font-weight:600; color:var(--success); font-family:'JetBrains Mono',monospace;">${s.weekly_hours ?? 0}</div>
+        <div class="detail-label">Ore (7 zile)${delta ? ` <span style="color:var(--text-dim);">${delta}</span>` : ''}</div>
+      </div>
+      <div class="detail-section" style="text-align:center; padding:12px;">
+        <div style="font-size:24px; font-weight:600; color:var(--danger); font-family:'JetBrains Mono',monospace;">${s.urgent_count ?? 0}</div>
+        <div class="detail-label">Taskuri urgente</div>
       </div>
     `;
 
@@ -1327,7 +1365,7 @@ async function loadDashboardHome() {
           <div style="font-size:12px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:4px;"><i data-lucide="timer" style="width:14px;height:14px;"></i> TIMER ACTIV</div>
           <div style="font-size:16px; margin-top:4px;">${escapeHtml(data.active_timer.project_name)}</div>
           <div style="font-size:20px; font-weight:600; color:var(--accent); margin-top:4px;" id="home-timer-display">${formatDuration(elapsed)}</div>
-          <button onclick="stopTimerFromHome('${data.active_timer.project_id}')" class="modal-btn" style="margin-top:8px; background:var(--error);">⏹ Oprește timer</button>
+          <button onclick="stopTimerFromHome('${data.active_timer.project_id}')" class="modal-btn" style="margin-top:8px; background:var(--danger); display:flex; align-items:center; justify-content:center; gap:6px;"><i data-lucide="square"></i> Oprește timer</button>
         </div>
       `;
       // Live counter
@@ -1359,7 +1397,7 @@ async function loadDashboardHome() {
     const deadlineEl = document.getElementById('home-deadlines');
     if (data.upcoming_deadlines && data.upcoming_deadlines.length > 0) {
       deadlineEl.innerHTML = `
-        <div style="font-size:14px; font-weight:600; margin:16px 0 8px;">📅 Deadline-uri (7 zile)</div>
+        <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="calendar-clock" style="color:var(--warning);"></i> Deadline-uri (7 zile)</div>
         ${data.upcoming_deadlines.map(t => `
           <div class="note-item" style="padding:12px;">
             <div style="font-size:14px;">${escapeHtml(t.titlu)}</div>

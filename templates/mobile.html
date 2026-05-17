@@ -211,7 +211,9 @@
       flex: 1;
       overflow-y: auto;
       padding: 16px;
-      padding-bottom: 80px;
+      /* Generous bottom space so bottom-nav never covers the last element.
+         64px nav + 16px gap + safe-area for iOS notch. */
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     }
     /* Tab Views */
     .tab-view { display: none; }
@@ -226,6 +228,8 @@
       background: var(--surface);
       border-top: 1px solid var(--border);
       height: 64px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      box-sizing: content-box;
     }
     .nav-tab {
       flex: 1;
@@ -531,11 +535,12 @@
     <main id="content">
       <!-- Tab 0: Home Dashboard -->
       <div id="tab-home" class="tab-view active">
-        <div id="home-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;"></div>
-        <div id="home-active-timer"></div>
-        <div id="home-urgent-tasks"></div>
-        <div id="home-deadlines"></div>
-        <div id="home-recent-journal"></div>
+        <div id="home-greeting" style="margin-bottom:16px;"></div>
+        <div id="home-stats" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px;"></div>
+        <div id="home-active-timer" style="margin-bottom:12px;"></div>
+        <div id="home-urgent-tasks" style="margin-bottom:12px;"></div>
+        <div id="home-deadlines" style="margin-bottom:12px;"></div>
+        <div id="home-recent-journal" style="margin-bottom:12px;"></div>
       </div>
 
       <!-- Tab 1: Projects -->
@@ -614,14 +619,20 @@
           </div>
         </div>
         <div id="project-info"></div>
-        <div id="mobile-timer-section"></div>
-        <div id="mobile-checklist-section"></div>
-        <div id="mobile-tasks-section"></div>
-        <div id="mobile-journal-section"></div>
-        <div id="mobile-attachments-section"></div>
-        <div id="mobile-equipment-section"></div>
+        <!-- Order mirrors desktop:
+             PIF     : Observatii > Todo > Timer & Jurnal > Checklist > Echipamente > Atasamente
+             Service : Service Info + Before/After > Todo > Timer & Jurnal > Echipamente > Atasamente
+             For PIF the service-section stays empty (hidden by JS); for Service the
+             observations-section + checklist stay empty. Either way the visible flow
+             matches the desktop section order. -->
         <div id="mobile-observations-section"></div>
         <div id="mobile-service-section"></div>
+        <div id="mobile-tasks-section"></div>
+        <div id="mobile-timer-section"></div>
+        <div id="mobile-journal-section"></div>
+        <div id="mobile-checklist-section"></div>
+        <div id="mobile-equipment-section"></div>
+        <div id="mobile-attachments-section"></div>
       </div>
     </main>
 
