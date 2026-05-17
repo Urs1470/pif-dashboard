@@ -166,6 +166,11 @@ Apoi diagnostichează în pace.
 - **`new project form crash` pe desktop** — `#jurnal-data` a fost șters dintr-o iterație anterioară. Codul care îl mai referă trebuie `if (jd) jd.value = ...`. Pattern: guard pe `getElementById` în tot codul care toucheză DOM-ul Acasă.
 - **Cloudflare Tunnel poate cădea independent** — 1033 error apare când `cloudflared` e jos pe server. NU e cod-related. Ion îl restart-ează: `sudo systemctl restart cloudflared`.
 - **PIN-ul** default e `pif2024`. NU păstra PIN-ul în niciun fișier committed.
+- **Webhook auto-deploy crapă tăcut dacă ai modificări locale ne-comitate pe server** — pe laptop-server, dacă tu (Hermes) ai un fișier modificat dar ne-commit-uit (ex: `scripts/audit_pdf.py` în lucru), `git pull` refuză să suprascrie și webhook-ul returnează 500. Toate push-urile ulterioare ale lui Claude se acumulează pe GitHub fără să ajungă pe server. **Regulă**: păstrează worktree-ul de pe server CURAT. Înainte de orice sesiune de lucru pe scripts/audit, fie commit + push WIP, fie `git stash`. Verifică:
+  ```bash
+  cd ~/Projects/pif-dashboard && git status
+  ```
+  Trebuie să fie `nothing to commit, working tree clean` între sesiuni.
 
 ---
 
