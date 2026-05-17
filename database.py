@@ -20,8 +20,9 @@ def close_db(exc=None):
 # v1: Initial schema (proiecte, tasks, checklist_pif, jurnal, timer_sessions, atasamente, global_tasks)
 # v2: Added clienti, echipamente, project_templates tables
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
+# v4: Added budget_state, budget_audit tables for Budget Tracker
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -144,20 +145,56 @@ def migrate_v2_to_v3():
     conn.close()
     print("Migration v2->v3 completed: Added ordine to tasks, notify_on_complete/deadline to proiecte")
 
+def migrate_v3_to_v4():
+    """Migration from v3 to v4: Add budget_state, budget_audit tables for Budget Tracker"""
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS budget_state (
+            user TEXT PRIMARY KEY,
+            data TEXT NOT NULL,
+            updated TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS budget_audit (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts TEXT NOT NULL,
+            user TEXT NOT NULL,
+            action TEXT NOT NULL,
+            field TEXT,
+            old_value TEXT,
+            new_value TEXT
+        )
+    ''')
+
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_budget_audit_user_ts ON budget_audit(user, ts DESC)')
+
+    conn.commit()
+    conn.close()
+    print("Migration v3->v4 completed: Added budget_state, budget_audit tables")
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
-    
+
     if current_version < 2:
         migrate_v1_to_v2()
         set_schema_version(2)
         current_version = 2
-    
+
     if current_version < 3:
         migrate_v2_to_v3()
         set_schema_version(3)
         current_version = 3
-    
+
+    if current_version < 4:
+        migrate_v3_to_v4()
+        set_schema_version(4)
+        current_version = 4
+
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
@@ -321,6 +358,26 @@ def init_db():
         )
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS budget_state (
+            user TEXT PRIMARY KEY,
+            data TEXT NOT NULL,
+            updated TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS budget_audit (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts TEXT NOT NULL,
+            user TEXT NOT NULL,
+            action TEXT NOT NULL,
+            field TEXT,
+            old_value TEXT,
+            new_value TEXT
+        )
+    ''')
+
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
@@ -335,10 +392,11 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_budget_audit_user_ts ON budget_audit(user, ts DESC)')
 
     conn.commit()
     conn.close()
-    
+
     # Run migrations after init to ensure schema is up to date
     run_migrations()
 
