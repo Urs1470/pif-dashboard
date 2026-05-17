@@ -2981,18 +2981,27 @@
                 </div>
             </div>
 
-            <!-- Journal Section -->
-            <!-- Attachments -->
-            <div class="attachments-section detail-section" id="attachments-section">
-                <div class="detail-section-header"><i data-lucide="paperclip"></i> Atașamente</div>
+            <!-- Timer + Jurnal Section -->
+            <div class="timer-section detail-section" id="timer-section">
+                <div class="detail-section-header"><i data-lucide="timer"></i> Timer &amp; Jurnal</div>
                 <div class="detail-section-body">
-                    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-                        <div class="drop-zone-icon"><i data-lucide="folder-up"></i></div>
-                        <p>Trageți fișiere aici sau faceți click pentru a selecta</p>
-                        <p style="font-size: 0.8rem; margin-top: 5px;">Toate tipurile de fișiere acceptate</p>
+                    <div class="timer-display" id="timer-display">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-success" id="timer-start" onclick="startTimer()"><i data-lucide="play"></i> Start</button>
+                        <button class="btn btn-danger" id="timer-stop" onclick="showStopTimerForm()" style="display:none;"><i data-lucide="square"></i> Stop</button>
                     </div>
-                    <input type="file" id="file-input" class="hidden-input" accept="*" multiple onchange="handleFileUpload(event)">
-                    <div class="attachment-list" id="attachment-list"></div>
+                    <div class="timer-stop-form" id="timer-stop-form" style="display:none; margin-top: 12px;">
+                        <input type="text" id="timer-titlu" placeholder="Ce ai lucrat?" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                        <input type="text" id="timer-note" placeholder="Detalii (opțional)" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-primary btn-small" onclick="stopTimerWithNote()">Salvează activitate</button>
+                            <button class="btn btn-secondary btn-small" onclick="stopTimer()">Stop fără notă</button>
+                        </div>
+                    </div>
+                    <div class="timer-total" id="timer-total" style="margin-top: 12px; font-size: 0.9rem; color: var(--text2);">
+                        Total: 0h 0m
+                    </div>
+                    <div class="timer-sessions" id="timer-sessions-list"></div>
                 </div>
             </div>
 
@@ -3021,27 +3030,17 @@
                 </div>
             </div>
 
-            <!-- Timer Section -->
-            <div class="timer-section detail-section" id="timer-section">
-                <div class="detail-section-header"><i data-lucide="timer"></i> Timer</div>
+            <!-- Attachments (last) -->
+            <div class="attachments-section detail-section" id="attachments-section">
+                <div class="detail-section-header"><i data-lucide="paperclip"></i> Atașamente</div>
                 <div class="detail-section-body">
-                    <div class="timer-display" id="timer-display">00:00:00</div>
-                    <div class="timer-controls">
-                        <button class="btn btn-success" id="timer-start" onclick="startTimer()"><i data-lucide="play"></i> Start</button>
-                        <button class="btn btn-danger" id="timer-stop" onclick="showStopTimerForm()" style="display:none;"><i data-lucide="square"></i> Stop</button>
+                    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                        <div class="drop-zone-icon"><i data-lucide="folder-up"></i></div>
+                        <p>Trageți fișiere aici sau faceți click pentru a selecta</p>
+                        <p style="font-size: 0.8rem; margin-top: 5px;">Toate tipurile de fișiere acceptate</p>
                     </div>
-                    <div class="timer-stop-form" id="timer-stop-form" style="display:none; margin-top: 12px;">
-                        <input type="text" id="timer-titlu" placeholder="Ce ai lucrat?" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
-                        <input type="text" id="timer-note" placeholder="Detalii (opțional)" style="width:100%; margin-bottom:8px; padding:8px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg); color:var(--text);">
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-primary btn-small" onclick="stopTimerWithNote()">Salvează activitate</button>
-                            <button class="btn btn-secondary btn-small" onclick="stopTimer()">Stop fără notă</button>
-                        </div>
-                    </div>
-                    <div class="timer-total" id="timer-total" style="margin-top: 12px; font-size: 0.9rem; color: var(--text2);">
-                        Total: 0h 0m
-                    </div>
-                    <div class="timer-sessions" id="timer-sessions-list"></div>
+                    <input type="file" id="file-input" class="hidden-input" accept="*" multiple onchange="handleFileUpload(event)">
+                    <div class="attachment-list" id="attachment-list"></div>
                 </div>
             </div>
 
@@ -3354,7 +3353,7 @@
 
                     <div class="form-group">
                         <label>Pornește din Template</label>
-                        <select id="p-template" onchange="onTemplateChange()">
+                        <select id="p-template" class="cs-enhance" onchange="onTemplateChange()">
                             <option value="">-- Fără template --</option>
                         </select>
                     </div>
@@ -3406,17 +3405,20 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Status</label>
-                            <select id="p-status">
+                            <select id="p-status" class="cs-enhance">
                                 <option value="in_lucru">În Lucru</option>
+                                <option value="blocat">Blocat</option>
+                                <option value="in_așteptare">În Așteptare</option>
                                 <option value="finalizat">Finalizat</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Producător</label>
-                            <select id="p-producator">
+                            <select id="p-producator" class="cs-enhance">
                                 <option value="ABB">ABB</option>
                                 <option value="Siemens">Siemens</option>
                                 <option value="Danfoss">Danfoss</option>
+                                <option value="Lenze">Lenze</option>
                                 <option value="Altul">Altul</option>
                             </select>
                         </div>
@@ -3428,11 +3430,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Data Start</label>
-                            <input type="date" id="p-data-start">
+                            <input type="text" id="p-data-start" placeholder="Selectează data" readonly>
                         </div>
                         <div class="form-group">
                             <label>Data Estimată Finalizare</label>
-                            <input type="date" id="p-data-est">
+                            <input type="text" id="p-data-est" placeholder="Selectează data" readonly>
                         </div>
                     </div>
                     <div class="form-group">
@@ -3816,7 +3818,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260544"></script>
+    <script src="/static/app.js?v=20260545"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

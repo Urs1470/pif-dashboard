@@ -699,7 +699,8 @@ function showNewProjectForm() {
     document.getElementById('project-form').reset();
     document.querySelectorAll('.project-type-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('form-title').textContent = 'Proiect nou';
-    document.getElementById('jurnal-data').value = new Date().toISOString().split('T')[0];
+    const jd = document.getElementById('jurnal-data');
+    if (jd) jd.value = new Date().toISOString().split('T')[0];
     document.getElementById('new-project-form').classList.add('active');
     initTemplateSelector();
     loadClientList();
