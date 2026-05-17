@@ -2,9 +2,9 @@
 
 ## Cine face ce
 
-- **Ion** — single user al PIF Dashboard, owner repo, owner laptop-server care expune `https://pif.iupif.org` prin Cloudflare Tunnel.
-- **Claude (în Claude Code, sesiunile lui Ion)** — face majoritatea modificărilor UI/UX, commit + push direct în repo. Auto-deploy aduce schimbările pe Pi/laptop-server în ~5–10s.
-- **Hermes (tu)** — vii la nevoie pentru task-uri grele cu costuri mari de tokeni: audit DB față de PDF, batch LLM pe explicații parametri, sarcini care necesită rulare locală cu API key separat.
+- **Ion** — single user al PIF Dashboard, owner repo, owner laptop-server care expune `https://pif.iupif.org` prin Cloudflare Tunnel. Git identity `Urs1470 <Urs1470@users.noreply.github.com>` (GitHub login).
+- **Claude (în Claude Code, pe Windows-ul lui Ion, `D:\Projects\pif-dashboard`)** — face majoritatea modificărilor UI/UX, commit + push direct în repo de pe laptopul lui Ion. Auto-deploy webhook aduce schimbările pe laptop-server în ~5–10s.
+- **Hermes (tu, MiniMax-M2.7-highspeed via gateway, user system `ion-ursu` pe laptop-server)** — rulezi LOCAL pe laptop-server, în același folder `/home/ion-ursu/Projects/pif-dashboard` ca aplicația. Faci sarcini grele cu costuri mari de tokeni: audit DB față de PDF, batch LLM pe explicații parametri. Git identity `Hermes <hermes@pif.iupif.org>`, SSH key `github_pif`.
 
 Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfane** pe vreuna din mașini.
 
@@ -13,8 +13,10 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
 ## Stack și topologie
 
 - **Repo**: `https://github.com/Urs1470/pif-dashboard` (private)
-- **Worktree local Ion**: `D:\Projects\pif-dashboard`
-- **Laptop-server**: rulează `pif-dashboard.service` (systemd), expus prin `cloudflared` la `https://pif.iupif.org/`
+- **Worktree local Ion (Windows)**: `D:\Projects\pif-dashboard` — Claude lucrează aici
+- **Laptop-server (Linux)**: `/home/ion-ursu/Projects/pif-dashboard` — Hermes lucrează aici **și** aplicația rulează din același folder
+- **Service**: `pif-dashboard.service` (systemd, user `ion-ursu`), expus prin `cloudflared.service` la `https://pif.iupif.org/`
+- **DB**: `/home/ion-ursu/Projects/pif-dashboard/pif_dashboard.db` (~41MB, **nu în repo**). Backup-uri în `backups/` și `backup-pre-budget-update/` — manuale sau via `backup_db.py`. Niciun cron automat.
 - **Backend**: Flask + SQLite single-process, auth PIN (`pif2024` default, `PIF_DASHBOARD_PIN` env var override)
 - **Frontend**:
   - Desktop: `templates/index.html` + `static/app.js`
@@ -22,7 +24,8 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
   - Manifest separat: `static/manifest.json` (desktop, scope `/`) și `static/manifest-mobile.json` (`/m`)
 - **Login**: `templates/login.html` (același pentru ambele)
 - **Service worker**: `static/service-worker.js` — bump `CACHE_NAME`/`STATIC_CACHE`/`API_CACHE` versions când livrezi static assets noi
-- **Auto-deploy**: webhook GitHub → `git pull && systemctl restart pif-dashboard`. Există un `.deploy_secret` pe server, **NU îl pune în repo**.
+- **Auto-deploy**: endpoint `POST /webhook/deploy` în `app.py` (~linia 2616). Verifică `X-Hub-Signature-256` față de secret-ul din `.deploy_secret`, rulează `git pull origin master`, apoi `sudo systemctl restart pif-dashboard`. **NU pune `.deploy_secret` în repo.**
+  - **Failure mode cunoscut**: dacă worktree-ul de pe server e dirty când webhook-ul lovește, `git pull` eșuează și endpoint-ul returnează 500. Push-urile ulterioare se acumulează pe GitHub fără să ajungă pe server. GitHub NU retrimite automat — trebuie pull manual sau redelivery din `Settings → Webhooks → Recent Deliveries`.
 
 ---
 
@@ -34,15 +37,11 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
 2. **Push imediat după modificare** — nu lăsa modificări locale ne-pushe-uite. Cu cât stai mai mult, cu atât crește riscul ca Claude să facă altă modificare suprapusă.
 3. **NU edita direct pe Pi/laptop-server fără să commit-i în repo** — auto-deploy următor va suprascrie. Asta s-a întâmplat deja: `mobile.html` și `mobile.js` au trăit doar pe server săptămâni la rând și au fost recuperate dintr-un backup Telegram când Claude a vrut să le aducă în repo.
 4. **Toate fișierele live trebuie să existe în repo**. Nu lăsa nimic orfan.
-5. **Commit messages fără diacritice** (PowerShell se incurcă la `-m` cu `@'...'@`). Co-author obligatoriu:
+5. **Commit messages fără diacritice** (PowerShell se incurcă la `-m` cu `@'...'@`). Author-ul tău e deja `Hermes <hermes@pif.iupif.org>` din git config local — Ion vede direct în istoric pe `git log` cine a făcut commit-ul. Co-author opțional dacă vrei să marchezi colaborarea:
    ```
    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
    ```
-   Sau dacă ești Hermes:
-   ```
-   Co-Authored-By: Hermes <noreply@anthropic.com>
-   ```
-   Așa Ion vede în istoric cine a făcut ce.
+   Claude folosește pattern-ul invers — author Ion (`Urs1470`), co-author Claude.
 
 ### B. Domeniu — cine atinge ce
 
@@ -134,11 +133,11 @@ După modificare:
 
 ```bash
 git add <file>
-git commit -m "Hermes: <ce ai făcut, fără diacritice>
-
-Co-Authored-By: Hermes <noreply@anthropic.com>"
+git commit -m "<scope>: <ce ai facut, fara diacritice>"
 git push
 ```
+
+(Author va fi automat `Hermes <hermes@pif.iupif.org>` din git config local. Nu te masquerade-uia ca Claude/Ion.)
 
 Verifică pe live că nu ai spart nimic:
 
