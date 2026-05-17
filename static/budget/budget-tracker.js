@@ -153,6 +153,87 @@ function refreshIcons() {
   try { lucide.createIcons(); } finally { _iconsRendering = false; }
 }
 
+// --- Custom select (cs-enhance pattern from PIF Dashboard) ---
+function enhanceSelect(select) {
+  if (!select || select.dataset.csInit === '1') return;
+  select.dataset.csInit = '1';
+  select.style.display = 'none';
+
+  var wrap = document.createElement('div');
+  wrap.className = 'cs';
+
+  var trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'cs-trigger';
+  trigger.innerHTML = '<span class="cs-trigger-label"></span>' +
+    '<svg class="cs-trigger-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+  var menu = document.createElement('div');
+  menu.className = 'cs-menu';
+  var labelEl = trigger.querySelector('.cs-trigger-label');
+
+  function sync() {
+    menu.innerHTML = '';
+    for (var i = 0; i < select.options.length; i++) {
+      (function(opt) {
+        var item = document.createElement('div');
+        item.className = 'cs-option' + (opt.value === select.value ? ' selected' : '');
+        item.textContent = opt.textContent;
+        item.dataset.value = opt.value;
+        item.addEventListener('click', function() {
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          close();
+        });
+        menu.appendChild(item);
+      })(select.options[i]);
+    }
+    var sel = select.options[select.selectedIndex];
+    labelEl.textContent = sel ? sel.textContent : '';
+    wrap.setAttribute('data-value', select.value);
+  }
+  function open() { wrap.classList.add('open'); document.addEventListener('mousedown', onDocClick, true); }
+  function close() { wrap.classList.remove('open'); document.removeEventListener('mousedown', onDocClick, true); }
+  function onDocClick(e) { if (!wrap.contains(e.target)) close(); }
+
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    wrap.classList.contains('open') ? close() : open();
+  });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+  select.addEventListener('change', sync);
+
+  select.parentNode.insertBefore(wrap, select);
+  wrap.appendChild(trigger);
+  wrap.appendChild(menu);
+  wrap.appendChild(select);
+  sync();
+}
+
+function enhanceAllSelects() {
+  document.querySelectorAll('select.cs-enhance:not([data-cs-init])').forEach(enhanceSelect);
+}
+
+// --- Flatpickr ---
+function initAllFlatpickrs() {
+  if (typeof flatpickr !== 'function') return;
+  document.querySelectorAll('input.fp-date:not([data-fp-init])').forEach(function(el) {
+    el.dataset.fpInit = '1';
+    flatpickr(el, {
+      locale: 'ro',
+      dateFormat: 'Y-m-d',
+      allowInput: true,
+      disableMobile: true
+    });
+  });
+}
+
+function applyEnhancements() {
+  refreshIcons();
+  enhanceAllSelects();
+  initAllFlatpickrs();
+}
+
 // --- Theme toggle ---
 function toggleTheme() {
   var cur = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
@@ -484,7 +565,7 @@ function renderFondUrgenta() {
     html += '<td class="num"><input type="number" class="input num w-28" value="' + f.suma + '" onchange="updateFond(' + f.id + ', \'suma\', this.value)"></td>';
     html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + f.dobanda + '" onchange="updateFond(' + f.id + ', \'dobanda\', this.value)"></td>';
     html += '<td class="num accent">' + formatRON(dobAnuala) + '</td>';
-    html += '<td><select class="select" onchange="updateFond(' + f.id + ', \'lichid\', this.value)">';
+    html += '<td><select class="select cs-enhance" onchange="updateFond(' + f.id + ', \'lichid\', this.value)">';
     ['Da', 'Nu', 'Parțial'].forEach(function(opt) {
       html += '<option value="' + opt + '"' + (f.lichid === opt ? ' selected' : '') + '>' + opt + '</option>';
     });
@@ -520,20 +601,20 @@ function renderFondUrgenta() {
     var dobCistigata = suma * dobPct / 100;
     var total = suma + dobCistigata;
     html += '<tr>';
-    html += '<td><select class="select" onchange="updateTezaur(' + t.id + ', \'emisiune\', this.value)">';
+    html += '<td><select class="select cs-enhance" onchange="updateTezaur(' + t.id + ', \'emisiune\', this.value)">';
     ['Tezaur 1 an','Tezaur 3 ani','Tezaur 5 ani','Fidelis RON','Fidelis EUR'].forEach(function(opt) {
       html += '<option value="' + opt + '"' + (t.emisiune === opt ? ' selected' : '') + '>' + opt + '</option>';
     });
     html += '</select></td>';
-    html += '<td><input type="date" class="input w-32" value="' + esc(t.dataSubscriere || '') + '" onchange="updateTezaur(' + t.id + ', \'dataSubscriere\', this.value)"></td>';
+    html += '<td><input type="text" class="input fp-date w-32" value="' + esc(t.dataSubscriere || '') + '" placeholder="YYYY-MM-DD" onchange="updateTezaur(' + t.id + ', \'dataSubscriere\', this.value)"></td>';
     html += '<td class="num"><input type="number" class="input num w-28" value="' + t.suma + '" onchange="updateTezaur(' + t.id + ', \'suma\', this.value)"></td>';
     html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + t.dobanda + '" onchange="updateTezaur(' + t.id + ', \'dobanda\', this.value)"></td>';
-    html += '<td><select class="select" onchange="updateTezaur(' + t.id + ', \'maturitate\', this.value)">';
+    html += '<td><select class="select cs-enhance" onchange="updateTezaur(' + t.id + ', \'maturitate\', this.value)">';
     ['1 an','3 ani','5 ani'].forEach(function(opt) {
       html += '<option value="' + opt + '"' + (t.maturitate === opt ? ' selected' : '') + '>' + opt + '</option>';
     });
     html += '</select></td>';
-    html += '<td><input type="date" class="input w-32" value="' + esc(t.dataScadenta || '') + '" onchange="updateTezaur(' + t.id + ', \'dataScadenta\', this.value)"></td>';
+    html += '<td><input type="text" class="input fp-date w-32" value="' + esc(t.dataScadenta || '') + '" placeholder="YYYY-MM-DD" onchange="updateTezaur(' + t.id + ', \'dataScadenta\', this.value)"></td>';
     html += '<td class="num accent">' + formatRON(dobCistigata) + '</td>';
     html += '<td class="num accent">' + formatRON(total) + '</td>';
     html += '<td><button class="btn-del" onclick="removeTezaur(' + t.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
@@ -797,7 +878,7 @@ function render() {
   html += '</div>';
 
   document.getElementById('app').innerHTML = html;
-  refreshIcons();
+  applyEnhancements();
 }
 
 function switchTab(tabId) {
