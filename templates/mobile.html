@@ -211,9 +211,8 @@
       flex: 1;
       overflow-y: auto;
       padding: 16px;
-      /* Generous bottom space so bottom-nav never covers the last element.
-         64px nav + safe-area for iOS notch + 60px breathing room (matches FAB). */
-      padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+      /* Bottom-nav is 64px; add safe-area for iOS notch + a bit of breathing room. */
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     }
     /* Producer picker cards on Parametri tab */
     .mppc-card {
@@ -573,6 +572,7 @@
 
       <!-- Tab 1: Projects -->
       <div id="tab-projects" class="tab-view">
+        <button onclick="openProjectFormModal()" class="modal-btn" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;"><i data-lucide="plus"></i> Proiect nou</button>
         <div id="projects-list"></div>
       </div>
 
@@ -647,6 +647,7 @@
 
       <!-- Tab: Notes (from More menu) -->
       <div id="tab-notes" class="tab-view">
+        <button onclick="openNoteModal()" class="modal-btn" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;"><i data-lucide="plus"></i> Notiță nouă</button>
         <div id="notes-list"></div>
       </div>
 
@@ -698,11 +699,9 @@
     </nav>
   </div>
 
-  <!-- FAB for Notes -->
-  <button class="fab hidden" id="notes-fab">+</button>
+  <!-- FAB removed: inline "Proiect nou" / "Notita noua" buttons are
+       placed at the top of their respective tabs instead. -->
 
-  <!-- FAB for Projects -->
-  <button class="fab hidden" id="projects-fab" onclick="openProjectFormModal()">+</button>
 
   <!-- More menu overlay -->
   <div id="more-menu" class="modal">

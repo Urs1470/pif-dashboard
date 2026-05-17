@@ -1585,11 +1585,6 @@ function showTab(tab) {
     case 'more': openMoreMenu(); break;
   }
 
-  // FAB visibility
-  const fab = document.getElementById('notes-fab');
-  fab.classList.toggle('hidden', tab !== 'notes');
-  const projectsFab = document.getElementById('projects-fab');
-  if (projectsFab) projectsFab.classList.toggle('hidden', tab !== 'projects');
 }
 
 function openMoreMenu() {
@@ -2673,11 +2668,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('back-to-projects').addEventListener('click', () => {
     currentProject = null;
     showTab('projects');
-  });
-  
-  // FAB for notes
-  document.getElementById('notes-fab').addEventListener('click', () => {
-    openNoteModal();
   });
   
   // Note modal
