@@ -212,9 +212,45 @@
       overflow-y: auto;
       padding: 16px;
       /* Generous bottom space so bottom-nav never covers the last element.
-         64px nav + 16px gap + safe-area for iOS notch. */
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+         64px nav + safe-area for iOS notch + 60px breathing room (matches FAB). */
+      padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
     }
+    /* Producer picker cards on Parametri tab */
+    .mppc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      transition: all 0.15s;
+      color: var(--text);
+    }
+    .mppc-card:active { background: var(--hover); border-color: var(--accent); }
+    .mppc-card [data-lucide] { width: 28px; height: 28px; color: var(--accent); }
+    .mppc-name { font-size: 15px; font-weight: 600; }
+    .mppc-meta { font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+    .mppc-families { font-size: 11px; color: var(--text-dim); }
+    /* Family mini-tabs on Parametri step 2 */
+    .mpmt {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 16px;
+      background: var(--bg-elev2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mpmt.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+    .mpmt .count { opacity: 0.7; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
     /* Tab Views */
     .tab-view { display: none; }
     .tab-view.active { display: block; }
@@ -524,14 +560,6 @@
       </div>
     </header>
 
-    <!-- Global fast search -->
-    <div id="global-search" style="padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--border);">
-      <input type="text" id="quick-search"
-             placeholder="Caută parametru (ex: p1300)"
-             autocomplete="off" inputmode="search"
-             style="width:100%; padding:10px 14px; font-size:15px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Plus Jakarta Sans',-apple-system,sans-serif;">
-    </div>
-
     <main id="content">
       <!-- Tab 0: Home Dashboard -->
       <div id="tab-home" class="tab-view active">
@@ -568,11 +596,25 @@
       <div id="tab-params" class="tab-view">
         <div id="params-sync-status" onclick="syncParamsToLocal()" style="font-size:12px;padding:6px 10px;margin-bottom:8px;border-radius:6px;text-align:center;cursor:pointer;opacity:0.85;background:var(--bg-elev2);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="circle" style="color:var(--danger);"></i> Cache gol — tap pentru sync</div>
         <button id="manual-sync-btn" onclick="syncParamsToLocal()" style="width:100%;padding:10px;margin-bottom:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="refresh-cw"></i> Sincronizează parametri acum</button>
-        <input type="search" class="param-search" id="param-search" placeholder="Caută parametru...">
-        <select class="family-select" id="family-select">
-          <option value="">Toate familiile</option>
-        </select>
-        <div id="params-list"></div>
+
+        <!-- Step 1: producer picker (cards) -->
+        <div id="mobile-param-step-producator">
+          <div style="font-size:13px; color:var(--text-secondary); margin:8px 0 12px;">Alege producătorul</div>
+          <div id="mobile-param-producator-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;"></div>
+        </div>
+
+        <!-- Step 2: family mini-tabs + search + list -->
+        <div id="mobile-param-step-list" style="display:none;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <button onclick="mobileParamBackToProducator()" aria-label="Înapoi la producători" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; font-size:13px;"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i> <span id="mobile-param-breadcrumb">Producători</span></button>
+          </div>
+          <div id="mobile-param-mini-tabs" style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;"></div>
+          <input type="search" class="param-search" id="param-search" placeholder="Caută parametru..." style="margin-bottom:12px;">
+          <select class="family-select" id="family-select" style="display:none;">
+            <option value="">Toate familiile</option>
+          </select>
+          <div id="params-list"></div>
+        </div>
       </div>
 
       <!-- Tab 4: Manuals -->

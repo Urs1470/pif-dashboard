@@ -1019,60 +1019,170 @@ async function loadNotes() {
   }
 }
 
+// ============ Parametri tab: producer→family drill-down (parity with desktop) ============
+
+const PARAM_PRODUCATORI_MOBILE = {
+  'ABB':     { icon: 'cpu', families: ['ACS580', 'ACS880'],                                                 label: 'ABB' },
+  'Siemens': { icon: 'cpu', families: ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'],        label: 'Siemens' },
+  'Danfoss': { icon: 'cpu', families: ['Danfoss_VLT_FC302'],                                                label: 'Danfoss' },
+  'Lenze':   { icon: 'cpu', families: ['Lenze_i550', 'Lenze_i950'],                                         label: 'Lenze' },
+};
+let _mobileParamSelectedProducator = null;
+let _mobileParamSelectedFamilie = null;
+let _mobileParamFamilieCounts = {};
+let _mobileParamsAll = null;  // cached for filtering
+
 async function loadParameters() {
-  const listEl = document.getElementById('params-list');
-  listEl.innerHTML = '<div class="loading">Se încarcă...</div>';
-  
   try {
     let allParams = await getCachedParams();
     const storedVersion = parseInt(localStorage.getItem('params_db_version') || '0');
-    
+
     if (!allParams || allParams.length === 0 || storedVersion !== DB_VERSION) {
       if (_isOnline) {
-        listEl.innerHTML = '<div class="loading">Se sincronizează...</div>';
+        const listEl = document.getElementById('params-list');
+        if (listEl) listEl.innerHTML = '<div class="loading">Se sincronizează...</div>';
         const ok = await syncParamsToLocal();
-        if (ok) {
-          allParams = await getCachedParams();
-        }
+        if (ok) allParams = await getCachedParams();
       }
     }
-    
+
+    const stepProducator = document.getElementById('mobile-param-step-producator');
+    const stepList       = document.getElementById('mobile-param-step-list');
+    const gridEl         = document.getElementById('mobile-param-producator-grid');
+
     if (!allParams || allParams.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="wifi-off"></i></div>Fără conexiune. Conectează-te pentru a sincroniza parametrii.</div>';
+      if (stepProducator) stepProducator.style.display = 'none';
+      if (stepList) stepList.style.display = 'block';
+      const listEl = document.getElementById('params-list');
+      if (listEl) listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="wifi-off"></i></div>Fără conexiune. Conectează-te pentru a sincroniza parametrii.</div>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
       return;
     }
-    
-    // Populate family filter
+
+    _mobileParamsAll = allParams;
+
+    // Family counts: { 'ACS580': 1337, ... }
+    _mobileParamFamilieCounts = {};
+    for (const p of allParams) {
+      const f = p.familie;
+      if (!f) continue;
+      _mobileParamFamilieCounts[f] = (_mobileParamFamilieCounts[f] || 0) + 1;
+    }
+
+    // Keep hidden select in sync so any legacy code reading it still works
     try {
-      const families = [...new Set(allParams.map(p => p.familie))].sort();
       const select = document.getElementById('family-select');
-      select.innerHTML = '<option value="all">Toate familiile</option>';
-      families.forEach(f => { select.innerHTML += '<option value="'+f+'">'+f+'</option>'; });
-    } catch(e) { console.error('family dropdown:', e); }
-    
-    // Render
-    renderParameters(allParams);
+      if (select) {
+        const families = Object.keys(_mobileParamFamilieCounts).sort();
+        select.innerHTML = '<option value="all">Toate familiile</option>';
+        families.forEach(f => { select.innerHTML += '<option value="'+f+'">'+f+'</option>'; });
+      }
+    } catch (e) {}
+
+    // Show step 1 by default; if a producer was already selected this session, keep it
+    if (_mobileParamSelectedProducator) {
+      mobileParamSelectProducator(_mobileParamSelectedProducator);
+    } else {
+      if (stepProducator) stepProducator.style.display = 'block';
+      if (stepList) stepList.style.display = 'none';
+      renderMobileProducatorPicker();
+    }
+
     updateSyncStatus();
-    
-    // Search
+
+    // Wire search input once
     const searchEl = document.getElementById('param-search');
-    const familyEl = document.getElementById('family-select');
-    let timer;
-    searchEl.oninput = function() {
-      clearTimeout(timer);
-      timer = setTimeout(async function() {
-        const results = await searchParamsLocal(searchEl.value, familyEl.value);
-        renderParameters(results);
-      }, 200);
-    };
-    familyEl.onchange = async function() {
-      const results = await searchParamsLocal(searchEl.value, familyEl.value);
-      renderParameters(results);
-    };
-    
+    if (searchEl && !searchEl._wired) {
+      let timer;
+      searchEl.oninput = function() {
+        clearTimeout(timer);
+        timer = setTimeout(async function() {
+          const familieFilter = _mobileParamSelectedFamilie || 'all';
+          const results = await searchParamsLocal(searchEl.value, familieFilter);
+          renderParameters(results);
+        }, 200);
+      };
+      searchEl._wired = true;
+    }
   } catch (e) {
-    listEl.innerHTML = '<div class="empty-state">⚠️ Eroare: ' + (e.message || 'necunoscută') + '</div>';
+    const listEl = document.getElementById('params-list');
+    if (listEl) listEl.innerHTML = '<div class="empty-state"><i data-lucide="alert-triangle" style="color:var(--warning);"></i> Eroare: ' + (e.message || 'necunoscută') + '</div>';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (_e) {}
   }
+}
+
+function renderMobileProducatorPicker() {
+  const grid = document.getElementById('mobile-param-producator-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(PARAM_PRODUCATORI_MOBILE).map(([key, info]) => {
+    const total = info.families.reduce((s, f) => s + (_mobileParamFamilieCounts[f] || 0), 0);
+    const familiesLabel = info.families.map(f => f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '')).join(' · ');
+    return `
+      <button class="mppc-card" onclick="mobileParamSelectProducator('${key}')">
+        <i data-lucide="${info.icon}"></i>
+        <div class="mppc-name">${info.label}</div>
+        <div class="mppc-meta">${total.toLocaleString('ro-RO')} parametri</div>
+        <div class="mppc-families">${familiesLabel}</div>
+      </button>
+    `;
+  }).join('');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+function mobileParamSelectProducator(producator) {
+  const info = PARAM_PRODUCATORI_MOBILE[producator];
+  if (!info) return;
+  _mobileParamSelectedProducator = producator;
+
+  const stepProducator = document.getElementById('mobile-param-step-producator');
+  const stepList       = document.getElementById('mobile-param-step-list');
+  if (stepProducator) stepProducator.style.display = 'none';
+  if (stepList) stepList.style.display = 'block';
+
+  const breadcrumb = document.getElementById('mobile-param-breadcrumb');
+  if (breadcrumb) breadcrumb.textContent = info.label;
+
+  // Mini-tabs per family
+  const tabsEl = document.getElementById('mobile-param-mini-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = info.families.map(f => {
+      const count = _mobileParamFamilieCounts[f] || 0;
+      const label = f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '');
+      return `<button class="mpmt" data-familie="${f}" onclick="mobileParamSelectFamilie('${f}')">${label}<span class="count">${count.toLocaleString('ro-RO')}</span></button>`;
+    }).join('');
+  }
+
+  // Auto-select first family
+  if (info.families.length > 0) mobileParamSelectFamilie(info.families[0]);
+}
+
+async function mobileParamSelectFamilie(familie) {
+  _mobileParamSelectedFamilie = familie;
+  // Update active mini-tab
+  document.querySelectorAll('.mpmt').forEach(t => {
+    t.classList.toggle('active', t.dataset.familie === familie);
+  });
+  // Sync hidden select for legacy code paths
+  const hidden = document.getElementById('family-select');
+  if (hidden) hidden.value = familie;
+  // Filter params for this family using the existing search helper
+  const searchEl = document.getElementById('param-search');
+  const q = searchEl ? searchEl.value : '';
+  const results = await searchParamsLocal(q, familie);
+  renderParameters(results);
+}
+
+function mobileParamBackToProducator() {
+  _mobileParamSelectedProducator = null;
+  _mobileParamSelectedFamilie = null;
+  const stepProducator = document.getElementById('mobile-param-step-producator');
+  const stepList       = document.getElementById('mobile-param-step-list');
+  if (stepList) stepList.style.display = 'none';
+  if (stepProducator) stepProducator.style.display = 'block';
+  // Clear search input so next entry to a family starts fresh
+  const searchEl = document.getElementById('param-search');
+  if (searchEl) searchEl.value = '';
+  renderMobileProducatorPicker();
 }
 
 function renderParameters(params) {
@@ -2551,20 +2661,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('login-btn').click();
     }
   });
-  
-  // Quick search handler
-  const quickSearch = document.getElementById('quick-search');
-  if (quickSearch) {
-    let qsTimer;
-    quickSearch.addEventListener('focus', () => showTab('params'));
-    quickSearch.addEventListener('input', () => {
-      clearTimeout(qsTimer);
-      qsTimer = setTimeout(async () => {
-        const results = await searchParamsLocal(quickSearch.value, 'all');
-        renderParameters(results);
-      }, 200);
-    });
-  }
   
   // Bottom navigation
   document.querySelectorAll('.nav-tab').forEach(tab => {
