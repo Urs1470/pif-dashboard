@@ -1,0 +1,32 @@
+{
+  "name": "PIF Mobile",
+  "short_name": "PIF",
+  "description": "PIF Dashboard \u2014 versiune mobil\u0103",
+  "start_url": "/m",
+  "scope": "/m",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1200'/%3E%3Cpath d='M114 38L60 108h42l-24 46 96-80h-54z' fill='%23f5a623'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%231a1200'/%3E%3Cpath d='M304 102L160 288h112l-64 122 256-214h-144z' fill='%23f5a623'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "lang": "ro",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}
