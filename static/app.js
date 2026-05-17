@@ -595,24 +595,62 @@ function renderProjects(projects) {
     const emptyState = document.getElementById('empty-projects');
     const tableContainer = document.getElementById('projects-table-container');
 
-    // Sort if needed
-    if (sortCol && sortDir > 0) {
-        projects.sort((a, b) => {
-            let valA = a[sortCol] || '';
-            let valB = b[sortCol] || '';
-            if (typeof valA === 'string') valA = valA.toLowerCase();
-            if (typeof valB === 'string') valB = valB.toLowerCase();
-            let cmp = 0;
-            if (valA < valB) cmp = -1;
-            else if (valA > valB) cmp = 1;
-            return sortDir === 2 ? -cmp : cmp;
-        });
+    // Sort
+    const _sort = (arr) => {
+        if (sortCol && sortDir > 0) {
+            arr.sort((a, b) => {
+                let valA = a[sortCol] || '';
+                let valB = b[sortCol] || '';
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                let cmp = 0;
+                if (valA < valB) cmp = -1;
+                else if (valA > valB) cmp = 1;
+                return sortDir === 2 ? -cmp : cmp;
+            });
+        }
+        return arr;
+    };
+
+    // Split into active and archived (finalized).
+    // When user explicitly filters by status, archive is hidden.
+    const statusFilter = document.getElementById('filter-status')?.value || '';
+    const activeProjects = _sort(projects.filter(p => p.status !== 'finalizat'));
+    const archivedProjects = _sort(projects.filter(p => p.status === 'finalizat'));
+
+    // Archive section
+    const archSection = document.getElementById('projects-archive-section');
+    const archTbody = document.getElementById('projects-archive-tbody');
+    const archCount = document.getElementById('projects-archive-count');
+    if (archSection && archTbody) {
+        if (archivedProjects.length > 0 && !statusFilter) {
+            archSection.style.display = 'block';
+            archCount.textContent = archivedProjects.length;
+            archTbody.innerHTML = archivedProjects.map(p => `
+                <tr class="clickable-row" onclick="showProjectDetail('${p.id}')" title="${escapeHtml(p.nume)}">
+                    <td title="${escapeHtml(p.nume)}">${escapeHtml(p.nume)}</td>
+                    <td title="${escapeHtml(p.client || '')}">${escapeHtml(p.client || '-')}</td>
+                    <td><span class="badge ${(p.tip || 'pif').toLowerCase()}">${p.tip || 'PIF'}</span></td>
+                    <td title="${escapeHtml(p.producator || '')}">${escapeHtml(p.producator || '-')}</td>
+                    <td>${p.data_finalizare || p.data_incepere || '-'}</td>
+                </tr>
+            `).join('');
+        } else {
+            archSection.style.display = 'none';
+        }
     }
 
-    if (projects.length === 0) {
+    if (activeProjects.length === 0) {
         tableContainer.style.display = 'none';
-        emptyState.style.display = 'block';
-    } else {
+        emptyState.style.display = archivedProjects.length === 0 ? 'block' : 'none';
+        // Mobile card list — clear it
+        const mc = document.getElementById('projects-card-list');
+        if (mc) mc.innerHTML = '';
+        return;
+    }
+
+    {
+        const projects = activeProjects;
         tableContainer.style.display = 'block';
         emptyState.style.display = 'none';
 
@@ -1887,6 +1925,15 @@ function toggleArchive() {
     document.getElementById('archive-body').style.display = archiveVisible ? 'block' : 'none';
     document.getElementById('archive-chevron').textContent = archiveVisible ? '▲' : '▼';
     if (archiveVisible) loadArchive();
+}
+
+let _projectsArchiveOpen = false;
+function toggleProjectsArchive() {
+    _projectsArchiveOpen = !_projectsArchiveOpen;
+    const body = document.getElementById('projects-archive-body');
+    const chev = document.getElementById('projects-archive-chevron');
+    if (body) body.style.display = _projectsArchiveOpen ? 'block' : 'none';
+    if (chev) chev.style.transform = _projectsArchiveOpen ? 'rotate(180deg)' : '';
 }
 
 async function loadArchive() {
