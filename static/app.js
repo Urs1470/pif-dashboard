@@ -1668,13 +1668,9 @@ function switchTab(tab) {
         loadDashboardHome();
     }
     if (tab === 'parametri') {
-        // Initialize parametri tab if families not loaded yet
-        if (parametriFamilii.length === 0) {
-            loadParametriFamilii();
-            parametriPage = 1;
-            loadParametri();
-        }
-        // Nu resetăm pagina dacă tabul a mai fost vizitat
+        // Always load families to refresh counts; cache makes this near-instant.
+        // Don't auto-load parametri — user picks producator then family first.
+        loadParametriFamilii();
     }
 }
 
@@ -4255,22 +4251,111 @@ quickAddTask = async function() {
 
 const debounceLoadParametri = debounce(loadParametri, 300);
 
+// Map manufacturer -> their families (mirrors PRODUCATOR_FAMILII on the server)
+const PARAM_PRODUCATORI = {
+    'ABB':     { icon: 'cpu',  families: ['ACS580', 'ACS880'], label: 'ABB' },
+    'Siemens': { icon: 'cpu',  families: ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'], label: 'Siemens' },
+    'Danfoss': { icon: 'cpu',  families: ['Danfoss_VLT_FC302'], label: 'Danfoss' },
+    'Lenze':   { icon: 'cpu',  families: ['Lenze_i550', 'Lenze_i950'], label: 'Lenze' },
+};
+
+let _paramSelectedProducator = null;
+let _paramFamilieCounts = {};  // { 'ACS580': 1337, ... }
+
 async function loadParametriFamilii() {
     try {
         const data = await apiGet('/parametri/familii');
         parametriFamilii = data.families;
+        _paramFamilieCounts = {};
+        data.families.forEach(f => { _paramFamilieCounts[f.familie] = f.count; });
+
+        // Keep the hidden select in sync (used by loadParametri for the filter)
         const select = document.getElementById('param-familie');
-        // Keep "Toate Familii" as first option
-        select.innerHTML = '<option value="">Toate Familii</option>';
-        data.families.forEach(f => {
-            const opt = document.createElement('option');
-            opt.value = f.familie;
-            opt.textContent = `${f.familie} (${f.count})`;
-            select.appendChild(opt);
-        });
+        if (select) {
+            select.innerHTML = '<option value="">Toate Familii</option>';
+            data.families.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.familie;
+                opt.textContent = `${f.familie} (${f.count})`;
+                select.appendChild(opt);
+            });
+        }
+
+        renderProducatorPicker();
     } catch (e) {
         console.error('Failed to load parametri families:', e);
     }
+}
+
+function renderProducatorPicker() {
+    const grid = document.getElementById('param-producator-grid');
+    if (!grid) return;
+    grid.innerHTML = Object.entries(PARAM_PRODUCATORI).map(([key, info]) => {
+        const totalCount = info.families.reduce((sum, f) => sum + (_paramFamilieCounts[f] || 0), 0);
+        const familiesLabel = info.families
+            .map(f => f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, ''))
+            .join(' · ');
+        return `
+            <button class="param-producator-card ${key.toLowerCase()}" onclick="paramSelectProducator('${key}')">
+                <span class="ppc-icon"><i data-lucide="${info.icon}"></i></span>
+                <div class="ppc-body">
+                    <div class="ppc-name">${info.label}</div>
+                    <div class="ppc-meta">${totalCount.toLocaleString('ro-RO')} parametri</div>
+                    <div class="ppc-families">${familiesLabel}</div>
+                </div>
+            </button>
+        `;
+    }).join('');
+}
+
+function paramSelectProducator(producator) {
+    const info = PARAM_PRODUCATORI[producator];
+    if (!info) return;
+    _paramSelectedProducator = producator;
+
+    document.getElementById('param-step-producator').style.display = 'none';
+    document.getElementById('param-step-list').style.display = 'block';
+    document.getElementById('param-breadcrumb-producator').textContent = info.label;
+
+    // Build family mini-tabs
+    const tabsEl = document.getElementById('param-mini-tabs');
+    tabsEl.innerHTML = info.families.map(f => {
+        const count = _paramFamilieCounts[f] || 0;
+        const label = f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '');
+        return `<button class="param-mini-tab" data-familie="${f}" onclick="paramSelectFamilie('${f}')">${label}<span class="count">${count.toLocaleString('ro-RO')}</span></button>`;
+    }).join('');
+
+    // Auto-select the first family
+    if (info.families.length > 0) paramSelectFamilie(info.families[0]);
+}
+
+function paramSelectFamilie(familie) {
+    // Update active tab
+    document.querySelectorAll('.param-mini-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.familie === familie);
+    });
+
+    // Set hidden select value and reload parametri
+    const select = document.getElementById('param-familie');
+    if (select) select.value = familie;
+
+    // Reveal filters + table containers (hidden initially)
+    document.getElementById('param-filters').style.display = 'flex';
+    document.getElementById('parametri-table-container').style.display = 'block';
+    document.getElementById('param-family-empty').style.display = 'none';
+    document.getElementById('parametri-pagination').style.display = 'flex';
+
+    parametriPage = 1;
+    loadParametri();
+}
+
+function paramBackToProducator() {
+    _paramSelectedProducator = null;
+    document.getElementById('param-step-list').style.display = 'none';
+    document.getElementById('param-step-producator').style.display = 'block';
+    // Reset hidden select
+    const select = document.getElementById('param-familie');
+    if (select) select.value = '';
 }
 
 async function loadParametri() {
