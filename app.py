@@ -2348,16 +2348,7 @@ def parametri_audit():
         'samples': dupes,
     }
 
-    # 8. Lipsă unitate când titlul sugerează una
-    # Caut "Hz" "V" "A" "kW" "%" "rpm" "ms" "s" "°C" în descriere fără unitate setată
-    cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
-        {where + (' AND ' if where else ' WHERE ')}
-        (unitate IS NULL OR TRIM(unitate)='')
-        AND descriere_scurta REGEXP '(Hz|kHz|kW|rpm|°C|%)'
-        LIMIT 30
-    ''', params)
-    # SQLite nu are REGEXP by default — fallback la LIKE simple
+    # 8. Lipsă unitate când titlul sugerează una (SQLite n-are REGEXP, folosim LIKE)
     cursor.execute(f'''
         SELECT id, parametru, descriere_scurta, familie FROM parametri_master
         {where + (' AND ' if where else ' WHERE ')}
