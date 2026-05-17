@@ -2013,6 +2013,7 @@ function _shortDateRO(iso) {
     return d.toLocaleDateString('ro-RO', { day:'numeric', month:'short' });
 }
 function _elapsed(seconds) {
+    seconds = Math.max(0, Math.floor(seconds)); // never show negative time (handles clock drift)
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
@@ -2472,8 +2473,10 @@ async function startTimer() {
         document.getElementById('timer-start').style.display = 'none';
         document.getElementById('timer-stop').style.display = 'inline-flex';
 
-        // Start interval to update display
-        const startTime = new Date(data.start_time);
+        // Start interval to update display.
+        // Use LOCAL Date.now() instead of server's start_time to avoid clock drift between Pi and client.
+        // Server-side stop_timer computes the real duration from its own clock.
+        const startTime = Date.now();
         timerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             document.getElementById('timer-display').textContent = formatTime(elapsed);
@@ -2552,6 +2555,7 @@ async function deleteTimerSession(sessionId) {
 }
 
 function formatTime(seconds) {
+    seconds = Math.max(0, Math.floor(seconds)); // never render negative time
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
