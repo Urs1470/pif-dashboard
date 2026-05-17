@@ -867,7 +867,7 @@ async function loadMobileTimer(projectId) {
     const sessions = data.sessions || [];
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin-bottom:8px;">⏱️ Timp lucrat: ${totalH}h</div>
+      <div style="font-size:14px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="timer" style="color:var(--accent);"></i> Timp lucrat: ${totalH}h</div>
       ${sessions.length > 0 ? `
         <div style="font-size:12px; color:var(--text-secondary);">
           ${sessions.slice(0, 5).map(s => {
@@ -1324,7 +1324,7 @@ async function loadDashboardHome() {
       const elapsed = Math.floor((Date.now() - start.getTime()) / 1000);
       timerEl.innerHTML = `
         <div class="detail-section" style="border-left:3px solid var(--success);">
-          <div style="font-size:12px; color:var(--success); font-weight:600;">⏱️ TIMER ACTIV</div>
+          <div style="font-size:12px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:4px;"><i data-lucide="timer" style="width:14px;height:14px;"></i> TIMER ACTIV</div>
           <div style="font-size:16px; margin-top:4px;">${escapeHtml(data.active_timer.project_name)}</div>
           <div style="font-size:20px; font-weight:600; color:var(--accent); margin-top:4px;" id="home-timer-display">${formatDuration(elapsed)}</div>
           <button onclick="stopTimerFromHome('${data.active_timer.project_id}')" class="modal-btn" style="margin-top:8px; background:var(--error);">⏹ Oprește timer</button>
@@ -1538,7 +1538,7 @@ async function loadMobileTimer(projectId) {
     const activeSession = sessions.find(s => !s.stop_time);
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin:16px 0 8px;">⏱️ Timer · ${totalH}h total</div>
+      <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="timer" style="color:var(--accent);"></i> Timer · ${totalH}h total</div>
       ${activeSession ? `
         <div class="detail-section" style="border-left:3px solid var(--success);">
           <div style="font-size:13px; color:var(--success);">Timer activ</div>
@@ -1546,7 +1546,7 @@ async function loadMobileTimer(projectId) {
           <button onclick="stopMobileTimer('${projectId}')" class="modal-btn" style="background:var(--error);">⏹ Oprește</button>
         </div>
       ` : `
-        <button onclick="startMobileTimer('${projectId}')" class="modal-btn" style="margin-bottom:12px;">▶️ Pornește timer</button>
+        <button onclick="startMobileTimer('${projectId}')" class="modal-btn" style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="play"></i> Pornește timer</button>
       `}
       ${sessions.filter(s => s.stop_time).slice(0, 5).map(s => `
         <div style="display:flex; justify-content:space-between; padding:8px 12px; font-size:12px; color:var(--text-secondary); border-bottom:1px solid var(--border);">
@@ -1659,7 +1659,7 @@ async function loadMobileProjectTasks(projectId) {
     if (!tasks) { el.innerHTML = ''; return; }
 
     el.innerHTML = `
-      <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📌 Todo List</div>
+      <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-todo" style="color:var(--accent);"></i> Todo List</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <input type="text" id="new-project-task" placeholder="Task nou..."
           style="flex:1;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
@@ -1749,7 +1749,7 @@ async function loadMobileAttachments(projectId) {
     const attachments = await apiGet(`/api/proiecte/${projectId}/atasamente`);
 
     el.innerHTML = `
-      <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📎 Atașamente</div>
+      <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paperclip" style="color:var(--accent);"></i> Atașamente</div>
       <label style="display:block;padding:12px;text-align:center;background:var(--surface);border:2px dashed var(--border);border-radius:8px;cursor:pointer;margin-bottom:12px;color:var(--text-secondary);">
         <i data-lucide="paperclip"></i> Adaugă fișier
         <input type="file" id="mobile-file-upload" onchange="uploadMobileFile('${projectId}')" style="display:none;">
@@ -2449,18 +2449,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   
-  // Theme toggle (mobile)
+  // Theme toggle (mobile) — Lucide moon/sun icons.
   const themeToggleMobile = document.getElementById('theme-toggle-mobile');
   if (themeToggleMobile) {
+    const setThemeIcon = (t) => {
+      themeToggleMobile.innerHTML = '<i data-lucide="' + (t === 'light' ? 'sun' : 'moon') + '"></i>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    };
     const currentTheme = localStorage.getItem('theme') || 'dark';
-    themeToggleMobile.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    setThemeIcon(currentTheme);
     themeToggleMobile.addEventListener('click', () => {
       const html = document.documentElement;
       const current = html.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
-      themeToggleMobile.textContent = next === 'dark' ? '🌙' : '☀️';
+      setThemeIcon(next);
     });
   }
   
