@@ -2186,6 +2186,217 @@ def get_parametri_by_producator(producator):
     conn.close()
     return jsonify([dict(r) for r in rows])
 
+@app.route('/api/parametri/audit', methods=['GET'])
+@login_required
+def parametri_audit():
+    """Audit raport calitate DB parametri_master.
+    Detectează anomalii grupate pe categorii, cu sample-uri.
+    Optional: ?familie=ACS580 restricționează la o familie.
+    """
+    import re
+    familie_filter = request.args.get('familie', '').strip()
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Build WHERE for optional familie scope
+    where = ''
+    params = []
+    if familie_filter:
+        where = ' WHERE familie = ?'
+        params = [familie_filter]
+
+    # Total count
+    cursor.execute(f'SELECT COUNT(*) FROM parametri_master{where}', params)
+    total = cursor.fetchone()[0]
+
+    # Per-familie breakdown
+    cursor.execute(f'''
+        SELECT familie, COUNT(*) as total,
+            SUM(CASE WHEN descriere_scurta IS NULL OR TRIM(descriere_scurta)='' THEN 1 ELSE 0 END) as missing_desc,
+            SUM(CASE WHEN explicatie IS NULL OR TRIM(explicatie)='' THEN 1 ELSE 0 END) as missing_explicatie,
+            SUM(CASE WHEN pagina IS NULL THEN 1 ELSE 0 END) as missing_pagina,
+            SUM(CASE WHEN unitate IS NULL OR TRIM(unitate)='' THEN 1 ELSE 0 END) as missing_unitate,
+            SUM(CASE WHEN acces IS NULL OR TRIM(acces)='' THEN 1 ELSE 0 END) as missing_acces
+        FROM parametri_master{where}
+        GROUP BY familie ORDER BY familie
+    ''', params)
+    per_familie = [dict(r) for r in cursor.fetchall()]
+
+    issues = {}
+
+    # 1. Missing descriere_scurta
+    cursor.execute(f'''
+        SELECT id, parametru, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (descriere_scurta IS NULL OR TRIM(descriere_scurta)='')
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (descriere_scurta IS NULL OR TRIM(descriere_scurta)='')
+    ''', params)
+    issues['missing_descriere_scurta'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Parametri fără descriere scurtă',
+        'severity': 'high',
+        'samples': rows,
+    }
+
+    # 2. Descriere_scurta foarte scurtă (probabil placeholder)
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10
+    ''', params)
+    issues['short_descriere'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Descriere foarte scurtă (≤10 caractere)',
+        'severity': 'medium',
+        'samples': rows,
+    }
+
+    # 3. Descriere = parametru (placeholder evident)
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) = TRIM(parametru)
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) = TRIM(parametru)
+    ''', params)
+    issues['descriere_equals_code'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Descriere = codul parametrului (placeholder)',
+        'severity': 'high',
+        'samples': rows,
+    }
+
+    # 4. Lipsă explicație tehnică
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (explicatie IS NULL OR TRIM(explicatie)='')
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (explicatie IS NULL OR TRIM(explicatie)='')
+    ''', params)
+    issues['missing_explicatie'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Fără explicație tehnică detaliată',
+        'severity': 'medium',
+        'samples': rows,
+    }
+
+    # 5. Lipsă pagină manual
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} pagina IS NULL
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} pagina IS NULL
+    ''', params)
+    issues['missing_pagina'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Fără referință la pagina manualului',
+        'severity': 'medium',
+        'samples': rows,
+    }
+
+    # 6. Cod parametru suspect (doar numere sau prea scurt)
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
+    ''', params)
+    issues['suspect_code'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Cod parametru suspect (prea scurt sau format neașteptat)',
+        'severity': 'low',
+        'samples': rows,
+    }
+
+    # 7. Descrieri identice la 5+ parametri (probabil placeholder)
+    cursor.execute(f'''
+        SELECT descriere_scurta, COUNT(*) as cnt
+        FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) != ''
+        GROUP BY descriere_scurta HAVING cnt >= 5
+        ORDER BY cnt DESC LIMIT 20
+    ''', params)
+    dupes = [dict(r) for r in cursor.fetchall()]
+    issues['duplicate_descrieri'] = {
+        'count': sum(d['cnt'] for d in dupes),
+        'label': 'Descrieri duplicate (5+ parametri cu același text)',
+        'severity': 'medium',
+        'samples': dupes,
+    }
+
+    # 8. Lipsă unitate când titlul sugerează una
+    # Caut "Hz" "V" "A" "kW" "%" "rpm" "ms" "s" "°C" în descriere fără unitate setată
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')}
+        (unitate IS NULL OR TRIM(unitate)='')
+        AND descriere_scurta REGEXP '(Hz|kHz|kW|rpm|°C|%)'
+        LIMIT 30
+    ''', params)
+    # SQLite nu are REGEXP by default — fallback la LIKE simple
+    cursor.execute(f'''
+        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')}
+        (unitate IS NULL OR TRIM(unitate)='')
+        AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
+        LIMIT 30
+    ''', params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM parametri_master
+        {where + (' AND ' if where else ' WHERE ')}
+        (unitate IS NULL OR TRIM(unitate)='')
+        AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
+    ''', params)
+    issues['missing_unitate_suggested'] = {
+        'count': cursor.fetchone()[0],
+        'label': 'Lipsă unitate când descrierea sugerează una',
+        'severity': 'low',
+        'samples': rows,
+    }
+
+    conn.close()
+
+    # Health score: cât din total NU are probleme grave (missing desc + descriere=code + missing explicatie)
+    severe_count = (
+        issues['missing_descriere_scurta']['count'] +
+        issues['descriere_equals_code']['count']
+    )
+    health_pct = round(100 * (total - severe_count) / total, 1) if total else 0
+
+    return jsonify({
+        'total': total,
+        'familie_filter': familie_filter or None,
+        'health_pct': health_pct,
+        'per_familie': per_familie,
+        'issues': issues,
+    })
+
+
 @app.route('/api/parametri/<int:param_id>', methods=['GET'])
 @login_required
 def get_parametru_detail(param_id):
