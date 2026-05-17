@@ -317,7 +317,9 @@ async function updateOnlineStatus() {
   _isOnline = online;
   _onlineRetryCount = online ? 0 : _onlineRetryCount + 1;
 
-  statusEl.textContent = online ? '🟢 online' : '🔴 offline';
+  statusEl.innerHTML = online
+    ? '<i data-lucide="circle-check" style="width:12px;height:12px;color:var(--success);"></i> online'
+    : '<i data-lucide="circle-x" style="width:12px;height:12px;color:var(--danger);"></i> offline';
   statusEl.className = online ? 'online' : 'offline';
   _onlineCheckPending = false;
 }
@@ -447,7 +449,7 @@ async function syncParamsToLocal() {
     console.log('[Sync] === START syncParamsToLocal ===');
     
     try {
-        if (statusEl) statusEl.textContent = '🔄 Sincronizare parametri...';
+        if (statusEl) statusEl.innerHTML = '<i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Sincronizare parametri...';
         
         // Pas 1: Fetch bulk
         console.log('[Sync] Fetching /api/parametri/bulk ...');
@@ -539,7 +541,7 @@ async function syncParamsToLocal() {
         localStorage.setItem('params_db_version', DB_VERSION.toString());
         
         console.log('[Sync] ✅ SUCCESS:', count, 'parametri cached');
-        if (statusEl) statusEl.textContent = '🟢 ' + count.toLocaleString() + ' parametri · synced';
+        if (statusEl) statusEl.innerHTML = '<i data-lucide="circle-check" style="width:12px;height:12px;color:var(--success);"></i> ' + count.toLocaleString() + ' parametri · synced';
         
         updateSyncStatus();
         populateFamilyDropdown();
@@ -559,10 +561,10 @@ function updateSyncStatus() {
   const count = localStorage.getItem('params_count');
   const lastSync = localStorage.getItem('params_last_sync');
   if (!count || count === '0') {
-    el.textContent = '🔴 Cache gol — tap pentru sync';
+    el.innerHTML = '<i data-lucide="circle" style="width:12px;height:12px;color:var(--danger);"></i> Cache gol — tap pentru sync';
   } else {
     const ago = lastSync ? timeSince(parseInt(lastSync)) : 'necunoscut';
-    el.textContent = '🟢 ' + parseInt(count).toLocaleString() + ' parametri · ' + ago;
+    el.innerHTML = '<i data-lucide="circle-check" style="width:12px;height:12px;color:var(--success);"></i> ' + parseInt(count).toLocaleString() + ' parametri · ' + ago;
   }
 }
 
@@ -678,14 +680,14 @@ async function loadProjects() {
     console.error('Load projects error:', e);
     projectsCache = await dbGetAll('projects_cache');
     if (projectsCache.length > 0) renderProjects(projectsCache);
-    else listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div>Nu există proiecte</div>';
+    else listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="folder-open"></i></div>Nu există proiecte</div>';
   }
 }
 
 function renderProjects(projects) {
   const listEl = document.getElementById('projects-list');
   if (!projects || projects.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div>Nu există proiecte</div>';
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="folder-open"></i></div>Nu există proiecte</div>';
     return;
   }
   
@@ -700,13 +702,13 @@ function renderProjects(projects) {
         Activ (${active.length})
       </button>
       <button class="gt-filter ${isArchive ? 'active' : ''}" onclick="switchProjectFilter('archive')">
-        📦 Arhivă (${archived.length})
+        <i data-lucide="archive" style="width:14px;height:14px;vertical-align:-2px;"></i> Arhivă (${archived.length})
       </button>
     </div>
   `;
   
   if (displayList.length === 0) {
-    html += `<div class="empty-state"><div class="empty-state-icon">${isArchive ? '📦' : '📁'}</div>${isArchive ? 'Niciun proiect finalizat' : 'Niciun proiect activ'}</div>`;
+    html += `<div class="empty-state"><div class="empty-state-icon"><i data-lucide="${isArchive ? 'archive' : 'folder-open'}"></i></div>${isArchive ? 'Niciun proiect finalizat' : 'Niciun proiect activ'}</div>`;
   } else {
     html += displayList.map(p => `
       <div class="project-card" data-id="${p.id}">
@@ -826,7 +828,7 @@ async function loadMobileChecklist(projectId) {
     const pct = Math.round((completed / total) * 100);
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin-bottom:8px;">✅ Checklist PIF (${completed}/${total})</div>
+      <div style="font-size:14px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF (${completed}/${total})</div>
       <div style="background:var(--border); border-radius:4px; height:6px; margin-bottom:12px;">
         <div style="background:var(--success); height:100%; border-radius:4px; width:${pct}%; transition:width 0.3s;"></div>
       </div>
@@ -888,7 +890,7 @@ async function loadMobileEquipment(projectId) {
     if (!items || items.length === 0) { el.innerHTML = ''; return; }
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin-bottom:8px;">🔧 Echipamente (${items.length})</div>
+      <div style="font-size:14px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="wrench" style="color:var(--accent);"></i> Echipamente (${items.length})</div>
       ${items.map(eq => {
         let paramsCount = 0;
         try { paramsCount = Object.keys(JSON.parse(eq.params_json || '{}')).length; } catch {}
@@ -997,7 +999,7 @@ async function loadNotes() {
     allNotes = notes;
     notes.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     if (notes.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div>Nu există notițe</div>';
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="notebook"></i></div>Nu există notițe</div>';
       return;
     }
     listEl.innerHTML = notes.map(n => `
@@ -1036,7 +1038,7 @@ async function loadParameters() {
     }
     
     if (!allParams || allParams.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📡</div>Fără conexiune. Conectează-te pentru a sincroniza parametrii.</div>';
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="wifi-off"></i></div>Fără conexiune. Conectează-te pentru a sincroniza parametrii.</div>';
       return;
     }
     
@@ -1077,7 +1079,7 @@ function renderParameters(params) {
   const listEl = document.getElementById('params-list');
 
   if (!Array.isArray(params) || params.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚙️</div>Nu există parametri</div>';
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="sliders-horizontal"></i></div>Nu există parametri</div>';
     return;
   }
 
@@ -1344,7 +1346,7 @@ async function loadDashboardHome() {
     const urgentEl = document.getElementById('home-urgent-tasks');
     if (data.urgent_tasks && data.urgent_tasks.length > 0) {
       urgentEl.innerHTML = `
-        <div style="font-size:14px; font-weight:600; margin-bottom:8px;">🔴 Task-uri urgente</div>
+        <div style="font-size:14px; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="alert-circle" style="color:var(--danger);"></i> Task-uri urgente</div>
         ${data.urgent_tasks.map(t => `
           <div class="note-item" style="border-left:3px solid var(--error); padding:12px;">
             <div style="font-size:14px;">${escapeHtml(t.titlu)}</div>
@@ -1371,7 +1373,7 @@ async function loadDashboardHome() {
     const journalEl = document.getElementById('home-recent-journal');
     if (data.recent_journal && data.recent_journal.length > 0) {
       journalEl.innerHTML = `
-        <div style="font-size:14px; font-weight:600; margin:16px 0 8px;">📖 Jurnal recent</div>
+        <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="notebook-pen" style="color:var(--accent);"></i> Jurnal recent</div>
         ${data.recent_journal.map(j => `
           <div class="note-item" style="padding:12px;">
             <div class="note-project">${escapeHtml(j.project_name)}</div>
@@ -1593,7 +1595,7 @@ async function loadMobileChecklist(projectId) {
     const items = await apiGet(`/api/proiecte/${projectId}/checklist`);
     if (!items || items.length === 0) {
       el.innerHTML = `
-        <div style="font-size:14px; font-weight:600; margin:16px 0 8px;">✅ Checklist PIF</div>
+        <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF</div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
           <input type="text" id="new-checklist-item" placeholder="Item nou..."
             style="flex:1;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
@@ -1608,7 +1610,7 @@ async function loadMobileChecklist(projectId) {
     const pct = Math.round((completed / total) * 100);
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin:16px 0 8px;">✅ Checklist PIF (${completed}/${total})</div>
+      <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF (${completed}/${total})</div>
       <div style="background:var(--border);border-radius:4px;height:6px;margin-bottom:12px;">
         <div style="background:var(--success);height:100%;border-radius:4px;width:${pct}%;transition:width 0.3s;"></div>
       </div>
@@ -1703,7 +1705,7 @@ async function loadMobileJournal(projectId) {
     const entries = await apiGet(`/api/proiecte/${projectId}/jurnal`);
 
     el.innerHTML = `
-      <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📖 Jurnal de lucru</div>
+      <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="notebook-pen" style="color:var(--accent);"></i> Jurnal de lucru</div>
       <div style="margin-bottom:12px;">
         <textarea id="new-journal-entry" placeholder="Adaugă intrare..."
           style="width:100%;min-height:60px;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:inherit;"></textarea>
@@ -1749,21 +1751,21 @@ async function loadMobileAttachments(projectId) {
     el.innerHTML = `
       <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📎 Atașamente</div>
       <label style="display:block;padding:12px;text-align:center;background:var(--surface);border:2px dashed var(--border);border-radius:8px;cursor:pointer;margin-bottom:12px;color:var(--text-secondary);">
-        📁 Adaugă fișier
+        <i data-lucide="paperclip"></i> Adaugă fișier
         <input type="file" id="mobile-file-upload" onchange="uploadMobileFile('${projectId}')" style="display:none;">
       </label>
       ${(attachments || []).map(a => {
-        const icon = {'PDF':'📄','IMG':'🖼️','DOC':'📝','XLS':'📊','EMAIL':'📧','ZIP':'📦'}[a.tip_fisier] || '📁';
-        const size = a.dimensiune ? (a.dimensiune / 1024).toFixed(0) + ' KB' : '';
+        const iconName = {'PDF':'file-text','IMG':'image','DOC':'file-text','XLS':'file-spreadsheet','EMAIL':'mail','ZIP':'archive'}[a.tip_fisier] || 'file';
+        const size = formatFileSize(a.dimensiune);
         return `
           <div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:4px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-            <span style="font-size:20px;">${icon}</span>
+            <span style="color:var(--accent);display:inline-flex;align-items:center;"><i data-lucide="${iconName}"></i></span>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(a.nume_fisier)}</div>
               <div style="font-size:11px;color:var(--text-secondary);">${size}</div>
             </div>
-            <a href="/api/atasamente/${a.id}/download" target="_blank" style="color:var(--accent);font-size:18px;text-decoration:none;padding:8px;">↓</a>
-            <button onclick="deleteMobileAttachment('${a.id}','${projectId}')" style="background:none;border:none;color:var(--error);font-size:16px;cursor:pointer;padding:4px;">×</button>
+            <a href="/api/atasamente/${a.id}/download" target="_blank" aria-label="Descarcă" style="color:var(--accent);text-decoration:none;padding:8px;display:inline-flex;align-items:center;"><i data-lucide="download"></i></a>
+            <button onclick="deleteMobileAttachment('${a.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
           </div>
         `;
       }).join('')}
@@ -1914,7 +1916,7 @@ async function loadMobileObservations(project) {
   if (!project.observatii && !project.observatii?.trim()) { el.innerHTML = ''; return; }
 
   el.innerHTML = `
-    <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📝 Observații tehnice</div>
+    <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="message-square-text" style="color:var(--accent);"></i> Observații tehnice</div>
     <textarea id="obs-textarea" style="width:100%;min-height:80px;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.observatii || '')}</textarea>
     <button onclick="saveMobileObservations()" class="modal-btn" style="margin-top:4px;">Salvează</button>
   `;
@@ -1933,13 +1935,13 @@ async function loadMobileServiceFields(project) {
   if (project.tip !== 'Service') { el.innerHTML = ''; return; }
 
   el.innerHTML = `
-    <div style="font-size:14px;font-weight:600;margin:16px 0 8px;">📋 Fișă intervenție</div>
+    <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="clipboard-list" style="color:var(--accent);"></i> Fișă intervenție</div>
     <div class="detail-section" style="border-left:3px solid var(--error);margin-bottom:8px;">
-      <div style="font-size:12px;color:var(--error);font-weight:600;margin-bottom:4px;">🔴 Constatări</div>
+      <div style="font-size:12px;color:var(--danger);font-weight:600;margin-bottom:4px; display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> Constatări</div>
       <textarea id="service-before" style="width:100%;min-height:60px;padding:8px;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.service_before || '')}</textarea>
     </div>
     <div class="detail-section" style="border-left:3px solid var(--success);">
-      <div style="font-size:12px;color:var(--success);font-weight:600;margin-bottom:4px;">🟢 Acțiuni</div>
+      <div style="font-size:12px;color:var(--success);font-weight:600;margin-bottom:4px; display:flex; align-items:center; gap:4px;"><i data-lucide="circle-check" style="width:12px;height:12px;"></i> Acțiuni</div>
       <textarea id="service-after" style="width:100%;min-height:60px;padding:8px;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.service_after || '')}</textarea>
     </div>
     <button onclick="saveMobileServiceFields()" class="modal-btn" style="margin-top:4px;">Salvează</button>
@@ -2097,7 +2099,7 @@ async function loadMobileTasks() {
     filtered.sort((a, b) => (priorityOrder[a.prioritate] ?? 1) - (priorityOrder[b.prioritate] ?? 1));
 
     if (filtered.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div>Niciun task</div>';
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="check-square"></i></div>Niciun task</div>';
       return;
     }
 
@@ -2162,7 +2164,7 @@ function editMobileTask(taskId) {
       <textarea id="et-descriere" placeholder="Descriere (opțional)"
         style="width:100%;min-height:60px;padding:10px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:inherit;margin-bottom:8px;">${escapeHtml(task.descriere || '')}</textarea>
       <select id="et-prioritate" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
-        <option value="Urgent" ${task.prioritate==='Urgent'?'selected':''}>🔴 Urgent</option>
+        <option value="Urgent" ${task.prioritate==='Urgent'?'selected':''}>Urgent</option>
         <option value="Normal" ${task.prioritate==='Normal'?'selected':''}>Normal</option>
         <option value="Minor" ${task.prioritate==='Minor'?'selected':''}>Minor</option>
       </select>
@@ -2204,12 +2206,12 @@ async function loadManuals() {
   try {
     const data = await apiGet('/api/manuals');
     if (!data || !data.manuals || data.manuals.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div>Niciun manual disponibil</div>';
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="book-open"></i></div>Niciun manual disponibil</div>';
       return;
     }
     listEl.innerHTML = data.manuals.map(m => `
       <div class="note-item" style="cursor:pointer;" onclick="window.open('${m.url}', '_blank')">
-        <div style="font-size:18px; margin-right:12px;">📄</div>
+        <div style="margin-right:12px;color:var(--accent);display:inline-flex;align-items:center;"><i data-lucide="file-text"></i></div>
         <div style="flex:1;">
           <div style="font-family:'Courier New',monospace; font-size:14px; font-weight:600;">${escapeHtml(m.name)}</div>
           <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${m.size_kb} KB</div>
@@ -2233,7 +2235,7 @@ async function loadMobileClients() {
     const url = search ? `/api/clienti?search=${encodeURIComponent(search)}` : '/api/clienti';
     const clients = await apiGet(url);
     if (!clients || clients.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div>Niciun client</div>';
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="users"></i></div>Niciun client</div>';
       return;
     }
     listEl.innerHTML = clients.map(c => `
@@ -2310,7 +2312,7 @@ async function loadMobileStats() {
     if (!data) return;
 
     el.innerHTML = `
-      <div style="font-size:16px;font-weight:600;margin-bottom:16px;">📊 Statistici</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:16px; display:flex; align-items:center; gap:6px;"><i data-lucide="bar-chart-3" style="color:var(--accent);"></i> Statistici</div>
 
       <div style="font-size:14px;font-weight:600;margin:12px 0 8px;">Proiecte după status</div>
       ${(data.by_status || []).map(s => `
@@ -2368,6 +2370,17 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Human-readable file size: 512 B, 12.4 KB, 4.7 MB, 1.2 GB
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  const n = Number(bytes);
+  if (!isFinite(n) || n < 0) return '';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB';
+  if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  return (n / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
 }
 
 function debounce(fn, ms) {
