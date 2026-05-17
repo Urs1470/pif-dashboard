@@ -141,7 +141,10 @@ def parse_lenze(pdf_path):
 
 def parse_siemens(pdf_path):
     """
-    SINAMICS: parameters as `pNNNNN[N]` or `rNNNNN` followed by name.
+    SINAMICS list manuals: each parameter block starts with `pNNNNN[idx] Name / Abbrev`
+    and the immediately following line contains "Access level:" (sometimes preceded by
+    a hardware tag like CU240E-2 or PM240). That structural follow-line is unique to
+    real parameter definitions, so use it as a confirmation gate.
     """
     try:
         import pdfplumber
@@ -150,20 +153,33 @@ def parse_siemens(pdf_path):
         sys.exit(2)
 
     out = {}
-    pat = re.compile(r'^\s*([pr]\d{1,5}(?:\[\d+\])?)\s+([A-Z][A-Za-z0-9 ,\-/()&%.+_]{2,80})')
+    # Code can carry array notation [0...n] or bit-range .0...14 — both stripped from key
+    code_re = re.compile(r'^\s*([pr]\d{4,5})(?:\[[^\]]+\])?(?:\.\d+(?:\.{2,3}\d+)?)?\s+([^\n]+?)\s*$')
+    access_re = re.compile(r'Access\s*level\s*:', re.IGNORECASE)
+    prefix_re = re.compile(r'^(?:[CB][IO](?:/[CB][IO])?\s*:\s*)+')
+    abbrev_re = re.compile(r'\s*/\s*\S+\s*$')
 
     with pdfplumber.open(pdf_path) as pdf:
         for pno, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ''
-            for line in text.split('\n'):
-                m = pat.match(line)
-                if m:
-                    code = m.group(1)
-                    name = m.group(2).strip()
-                    if len(name) < 4:
-                        continue
-                    if code not in out:
-                        out[code] = {'name': name, 'page': pno}
+            lines = text.split('\n')
+            for i, line in enumerate(lines):
+                m = code_re.match(line)
+                if not m:
+                    continue
+                # Confirm: one of next 4 lines contains "Access level:"
+                lookahead = ' '.join(lines[i + 1:i + 5])
+                if not access_re.search(lookahead):
+                    continue
+                code = m.group(1)
+                name = m.group(2).strip()
+                name = prefix_re.sub('', name)
+                name = abbrev_re.sub('', name)
+                name = name.strip()
+                if len(name) < 3:
+                    continue
+                if code not in out:
+                    out[code] = {'name': name, 'page': pno}
     return out
 
 
