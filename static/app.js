@@ -108,6 +108,75 @@ async function apiGet(url, { fresh = false } = {}) {
 // Prefetch helper for adjacent tabs (fire and forget)
 function apiPrefetch(url) { apiGet(url).catch(() => {}); }
 
+// ═══════ Custom Select dropdowns (replace native popup on dark theme) ═══════
+// Enhances <select class="cs-enhance">…</select>. Hides the real select,
+// builds a button + popup menu styled with our palette. Two-way sync:
+//  - clicking an option sets select.value and dispatches a `change` event
+//  - external changes to select.value can be propagated via select.dispatchEvent(new Event('change'))
+function enhanceSelect(select) {
+    if (!select || select.dataset.csInit === '1') return;
+    select.dataset.csInit = '1';
+    select.style.display = 'none';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cs';
+    if (select.id) wrap.id = 'cs-' + select.id;
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cs-trigger';
+    trigger.innerHTML = `<span class="cs-trigger-label"></span>` +
+        `<svg class="cs-trigger-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+    const menu = document.createElement('div');
+    menu.className = 'cs-menu';
+
+    const labelEl = trigger.querySelector('.cs-trigger-label');
+
+    const syncFromSelect = () => {
+        menu.innerHTML = '';
+        for (const opt of select.options) {
+            const item = document.createElement('div');
+            item.className = 'cs-option' + (opt.value === select.value ? ' selected' : '');
+            item.textContent = opt.textContent;
+            item.dataset.value = opt.value;
+            item.addEventListener('click', () => {
+                select.value = opt.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                close();
+            });
+            menu.appendChild(item);
+        }
+        const selOpt = select.options[select.selectedIndex];
+        labelEl.textContent = selOpt ? selOpt.textContent : '';
+    };
+
+    const open = () => { wrap.classList.add('open'); document.addEventListener('mousedown', onDocClick, true); };
+    const close = () => { wrap.classList.remove('open'); document.removeEventListener('mousedown', onDocClick, true); };
+    const onDocClick = (e) => { if (!wrap.contains(e.target)) close(); };
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        wrap.classList.contains('open') ? close() : open();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+    // Watch external changes to select (e.g., filter reset)
+    select.addEventListener('change', syncFromSelect);
+    // Watch attribute/option changes
+    new MutationObserver(syncFromSelect).observe(select, { childList: true, attributes: true, attributeFilter: ['value'] });
+
+    select.parentNode.insertBefore(wrap, select);
+    wrap.appendChild(trigger);
+    wrap.appendChild(menu);
+    wrap.appendChild(select);
+    syncFromSelect();
+}
+
+function enhanceAllSelects() {
+    document.querySelectorAll('select.cs-enhance:not([data-cs-init])').forEach(enhanceSelect);
+}
+
 async function apiPost(url, data) {
     const res = await fetch(API_BASE + url, {
         method: 'POST',
@@ -193,6 +262,8 @@ function initAllDatePickers() {
         sync();
         sel.addEventListener('change', sync);
     });
+
+    enhanceAllSelects();
 
     if (document.getElementById('quick-scadenta')) initFlatpickr('#quick-scadenta');
     if (document.getElementById('p-data-start')) initFlatpickr('#p-data-start');

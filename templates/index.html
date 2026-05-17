@@ -610,6 +610,105 @@
         /* Legacy badge-icon spans — hidden, replaced by ::before dot above */
         .badge-icon { display: none; }
 
+        /* ═══ Custom Select (replaces native <select> popup) ═══ */
+        .cs { position: relative; display: inline-block; min-width: 140px; }
+        .cs-trigger {
+            width: 100%;
+            display: inline-flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+            height: 36px;
+            padding: 0 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            text-align: left;
+        }
+        .cs-trigger:hover { border-color: var(--text-dim, var(--text2)); }
+        .cs.open .cs-trigger { border-color: var(--accent); background: var(--bg-elev2); }
+        .cs-trigger-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cs-trigger-caret {
+            width: 14px; height: 14px;
+            color: var(--text2);
+            transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+        .cs.open .cs-trigger-caret { transform: rotate(180deg); }
+        .cs-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 100%;
+            max-height: 280px; overflow-y: auto;
+            background: var(--bg-elev2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            padding: 4px;
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transform: translateY(-4px);
+            transition: opacity 0.12s, transform 0.12s, visibility 0.12s;
+        }
+        .cs.open .cs-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .cs-option {
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.1s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .cs-option:hover { background: var(--bg-elev3); }
+        .cs-option.selected { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+        .cs-option.selected::after {
+            content: "✓"; margin-left: auto; font-weight: 700;
+        }
+
+        /* Flatpickr — palette overrides */
+        .flatpickr-calendar {
+            background: var(--bg-elev2) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            box-shadow: var(--shadow-lg) !important;
+        }
+        .flatpickr-calendar.arrowTop:before,
+        .flatpickr-calendar.arrowTop:after { display: none; }
+        .flatpickr-months { padding: 8px 0 4px; }
+        .flatpickr-months .flatpickr-month { color: var(--text) !important; height: 36px; }
+        .flatpickr-current-month .cur-month,
+        .flatpickr-current-month input.cur-year { color: var(--text) !important; font-weight: 600 !important; font-family: inherit !important; }
+        .flatpickr-weekday { color: var(--text2) !important; font-weight: 600 !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: 0.05em; }
+        .flatpickr-day {
+            color: var(--text) !important;
+            border-radius: 8px !important;
+            font-weight: 500;
+            transition: background 0.12s;
+        }
+        .flatpickr-day:hover { background: var(--bg-elev3) !important; border-color: transparent !important; }
+        .flatpickr-day.today {
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            font-weight: 700;
+        }
+        .flatpickr-day.selected, .flatpickr-day.selected:hover {
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: #0a1311 !important;
+            font-weight: 700;
+        }
+        .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--text-dim) !important; }
+        .flatpickr-day.disabled, .flatpickr-day.disabled:hover { color: var(--text-dim) !important; opacity: 0.4; }
+        .flatpickr-prev-month, .flatpickr-next-month { fill: var(--text2) !important; padding: 8px !important; }
+        .flatpickr-prev-month:hover, .flatpickr-next-month:hover { fill: var(--accent) !important; }
+        [data-theme="light"] .flatpickr-day.selected,
+        [data-theme="light"] .flatpickr-day.selected:hover { color: #fff !important; }
+
         /* Filters */
         .filters {
             display: flex;
@@ -2600,19 +2699,19 @@
                     style="flex:2; min-width:200px;"
                     autocomplete="off"
                 />
-                <select id="filter-status">
+                <select id="filter-status" class="cs-enhance">
                     <option value="">Toate Statusurile</option>
                     <option value="in_lucru">În Lucru</option>
-                    <option value="finalizat">📦 Arhivă (finalizate)</option>
+                    <option value="finalizat">Arhivă (finalizate)</option>
                     <option value="blocat">Blocat</option>
                     <option value="in_așteptare">În Așteptare</option>
                 </select>
-                <select id="filter-type">
+                <select id="filter-type" class="cs-enhance">
                     <option value="">Toate Tipurile</option>
                     <option value="PIF">PIF</option>
                     <option value="Service">Service</option>
                 </select>
-                <select id="filter-producator">
+                <select id="filter-producator" class="cs-enhance">
                     <option value="">Toți Producătorii</option>
                     <option value="ABB">ABB</option>
                     <option value="Siemens">Siemens</option>
@@ -2868,7 +2967,7 @@
         <!-- PARAMETRI TAB -->
         <div id="tab-parametri" class="tab-content">
             <div class="filters">
-                <select id="param-familie" onchange="loadParametri()" style="min-width: 200px;">
+                <select id="param-familie" class="cs-enhance" onchange="loadParametri()" style="min-width: 200px;">
                     <option value="">Toate Familii</option>
                 </select>
                 <input type="text" id="param-search" placeholder="Caută parametru sau descriere..." 
@@ -3003,19 +3102,19 @@
             </div>
 
             <div class="filters">
-                <select id="gt-filter-status">
+                <select id="gt-filter-status" class="cs-enhance">
                     <option value="">Toate Statusurile</option>
                     <option value="to_do">To Do</option>
                     <option value="in_lucru">În Lucru</option>
                     <option value="done">Finalizat</option>
                 </select>
-                <select id="gt-filter-prioritate">
+                <select id="gt-filter-prioritate" class="cs-enhance">
                     <option value="">Toate Prioritățile</option>
                     <option value="urgent">Urgent</option>
                     <option value="normal">Normal</option>
                     <option value="minor">Minor</option>
                 </select>
-                <select id="gt-filter-categorie">
+                <select id="gt-filter-categorie" class="cs-enhance">
                     <option value="">Toate Categoriile</option>
                     <option value="General">General</option>
                     <option value="Birou">Birou</option>
@@ -3585,8 +3684,9 @@
         </div>
     </div>
 
-    <!-- Flatpickr datepicker -->
+    <!-- Flatpickr datepicker (dark theme) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/themes/dark.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
 
@@ -3596,7 +3696,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260539"></script>
+    <script src="/static/app.js?v=20260540"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
