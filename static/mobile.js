@@ -603,13 +603,22 @@ async function searchParamsAPI(query) {
 function filterParams(allParams, query, familyFilter) {
   const q = (query || '').toLowerCase().trim();
   let results = allParams;
-  
+
   if (familyFilter && familyFilter !== 'all') {
     results = results.filter(p => p.familie === familyFilter);
   }
-  
+
+  // Natural ASC sort by code is the default. Use { numeric: true } so
+  // "01.2" comes before "01.10" instead of after.
+  const natural = (a, b) => {
+    const aCod = (a.cod || a.parametru || '').toLowerCase();
+    const bCod = (b.cod || b.parametru || '').toLowerCase();
+    return aCod.localeCompare(bCod, 'ro', { numeric: true, sensitivity: 'base' });
+  };
+
   if (q) {
     results = results.filter(p => p._search.includes(q));
+    // Search results: exact match first, then prefix matches, then natural.
     results.sort((a, b) => {
       const aCod = (a.cod || '').toLowerCase();
       const bCod = (b.cod || '').toLowerCase();
@@ -617,10 +626,12 @@ function filterParams(allParams, query, familyFilter) {
       if (bCod === q && aCod !== q) return 1;
       if (aCod.startsWith(q) && !bCod.startsWith(q)) return -1;
       if (bCod.startsWith(q) && !aCod.startsWith(q)) return 1;
-      return aCod.localeCompare(bCod);
+      return natural(a, b);
     });
+  } else {
+    results = results.slice().sort(natural);
   }
-  
+
   return results.slice(0, 50);
 }
 
