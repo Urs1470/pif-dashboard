@@ -50,11 +50,63 @@ const NAV_ICONS = {
 
 // ============ API HELPERS ============
 
-async function apiGet(url) {
+// ─── Tiny request cache with stale-while-revalidate ───
+// - First call: fetches, stores result
+// - Subsequent calls within TTL: returns cached instantly, kicks off background refresh
+// - Mutations (POST/PUT/DELETE) invalidate by URL prefix match (see _invalidateCache)
+const _apiCache = new Map();   // url -> { data, ts }
+const _apiInflight = new Map(); // url -> Promise (dedupe parallel requests)
+const _API_CACHE_TTL = 60_000;  // 60s — stale entries still served, then refreshed
+
+function _cacheKey(url) { return url; }
+
+function _invalidateCache(url) {
+    // Invalidate any cached GET that starts with this base resource.
+    // e.g. POST /proiecte -> wipe /proiecte and /proiecte/* and /dashboard/home
+    const root = url.split('?')[0].split('/').slice(0, 2).join('/'); // '/proiecte'
+    for (const k of _apiCache.keys()) {
+        if (k.startsWith(root) || k.startsWith('/dashboard/')) _apiCache.delete(k);
+    }
+}
+
+async function _doFetch(url) {
     const res = await fetch(API_BASE + url);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();
 }
+
+async function apiGet(url, { fresh = false } = {}) {
+    const key = _cacheKey(url);
+    const cached = _apiCache.get(key);
+    const now = Date.now();
+
+    if (!fresh && cached) {
+        // Serve cached, refresh in background if stale-ish (>15s old)
+        if (now - cached.ts > 15_000 && !_apiInflight.has(key)) {
+            const p = _doFetch(url).then(data => {
+                _apiCache.set(key, { data, ts: Date.now() });
+                _apiInflight.delete(key);
+                return data;
+            }).catch(() => _apiInflight.delete(key));
+            _apiInflight.set(key, p);
+        }
+        return cached.data;
+    }
+
+    // Dedupe parallel callers for same URL
+    if (_apiInflight.has(key)) return _apiInflight.get(key);
+
+    const p = _doFetch(url).then(data => {
+        _apiCache.set(key, { data, ts: Date.now() });
+        _apiInflight.delete(key);
+        return data;
+    }).catch(e => { _apiInflight.delete(key); throw e; });
+    _apiInflight.set(key, p);
+    return p;
+}
+
+// Prefetch helper for adjacent tabs (fire and forget)
+function apiPrefetch(url) { apiGet(url).catch(() => {}); }
 
 async function apiPost(url, data) {
     const res = await fetch(API_BASE + url, {
@@ -63,6 +115,7 @@ async function apiPost(url, data) {
         body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
+    _invalidateCache(url);
     return res.json();
 }
 
@@ -73,12 +126,14 @@ async function apiPut(url, data) {
         body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
+    _invalidateCache(url);
     return res.json();
 }
 
 async function apiDelete(url) {
     const res = await fetch(API_BASE + url, { method: 'DELETE' });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
+    _invalidateCache(url);
     return res.json();
 }
 
@@ -88,6 +143,7 @@ async function apiUpload(url, formData) {
         body: formData
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
+    _invalidateCache(url);
     return res.json();
 }
 
@@ -182,6 +238,15 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initApp() {
     initTheme();
     switchTab('acasa');
+
+    // Warm cache for other tabs in the background — after Home renders
+    setTimeout(() => {
+        apiPrefetch('/proiecte');
+        apiPrefetch('/global-tasks');
+        apiPrefetch('/parametri');
+        apiPrefetch('/clienti');
+        apiPrefetch('/parametri/familii');
+    }, 800);
 
     // Setup filter listeners with debounce
     const debouncedLoad = debounce(loadProjects, 300);
