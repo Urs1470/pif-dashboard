@@ -1649,3 +1649,208 @@
 2026-05-19 02:37:30,818  INFO        -> rewrite: Activeaza modul de depanare pentru adaptorul de fieldbus A (FBA A). Afiseaza dat
 2026-05-19 02:37:30,919  INFO      15652 50.14 (ACS580)  existing_len=1632  qc=rewrite
 2026-05-19 02:37:43,197  INFO        -> rewrite: Afiseaza valoarea bruta (nemodificata) a referintei REF1 primita de la master-ul
+2026-05-19 02:37:45,676  INFO        Committed + pushed
+2026-05-19 02:37:45,776  INFO      15653 50.15 (ACS580)  existing_len=1711  qc=rewrite
+2026-05-19 02:37:52,956  INFO        -> rewrite: Afiseaza valoarea bruta (nemodificata) a referintei REF2 primita de la masterul 
+2026-05-19 02:37:53,057  INFO      15654 50.17 (ACS580)  existing_len=1796  qc=rewrite
+2026-05-19 02:37:58,999  INFO        -> rewrite: Afiseaza valoarea bruta (nemodificata) a variabilei actuale ACT1 primita de la a
+2026-05-19 02:37:59,100  INFO      15655 50.18 (ACS580)  existing_len=1290  qc=rewrite
+2026-05-19 02:38:05,235  INFO        -> rewrite: Afiseaza valoarea actuala bruta (nemodificata) ACT2 transmisa de adaptorul de fi
+2026-05-19 02:38:05,335  INFO      15656 51.26 (ACS580)  existing_len=1306  qc=rewrite
+2026-05-19 02:38:12,156  INFO        -> rewrite: Acest parametru este un parametru de tip passthrough pentru adaptorul de comunic
+2026-05-19 02:38:12,256  INFO      15657 51.28 (ACS580)  existing_len=1348  qc=rewrite
+2026-05-19 02:38:18,483  INFO        -> rewrite: Afiseaza versiunea tabelei de parametri pentru adapterul fieldbus. Este un param
+2026-05-19 02:38:18,584  INFO      15658 51.29 (ACS580)  existing_len=1296  qc=rewrite
+2026-05-19 02:38:23,746  INFO        -> rewrite: Afiseaza codul tipului de drive din modulul adaptor de fieldbus. Este un paramet
+2026-05-19 02:38:23,847  INFO      15659 51.30 (ACS580)  existing_len=1284  qc=rewrite
+2026-05-19 02:38:34,206  INFO        -> rewrite: Afiseaza versiunea fisierului de mapare pentru modulul adaptor de fieldbus (FBA 
+2026-05-19 02:38:34,307  INFO      15660 51.33 (ACS580)  existing_len=1344  qc=rewrite
+2026-05-19 02:38:40,331  INFO        -> rewrite: Afiseaza versiunea programului de aplicatie al adaptorului fieldbus. Este un par
+2026-05-19 02:38:40,432  INFO      15661 52.01 (ACS580)  existing_len=1468  qc=rewrite
+2026-05-19 02:38:47,482  INFO        -> rewrite: Selecteaza ce data este transferata de la adaptorul fieldbus catre actionare pri
+2026-05-19 02:38:47,583  INFO      15662 52.12 (ACS580)  existing_len=1429  qc=rewrite
+2026-05-19 02:38:52,942  INFO        -> rewrite: Defineste registrul de date de intrare 12 de la adaptorul de fieldbus A. Acest p
+2026-05-19 02:38:53,043  INFO      15663 53.01 (ACS580)  existing_len=1464  qc=rewrite
+2026-05-19 02:39:01,095  INFO        -> rewrite: Selecteaza sursa datelor care vor fi transferate din actionare catre reteaua fie
+2026-05-19 02:39:01,196  INFO      15664 53.12 (ACS580)  existing_len=1445  qc=rewrite
+2026-05-19 02:39:08,068  INFO        -> rewrite: Parametrul 53.12 defineste continutul registrului de iesire 12 pentru Fieldbus A
+2026-05-19 02:39:08,168  INFO      15665 58.02 (ACS580)  existing_len=1479  qc=rewrite
+2026-05-19 02:39:19,252  INFO        -> rewrite: Afiseaza identificatorul protocolului de comunicatie si numarul de revizie. Prim
+2026-05-19 02:39:19,352  INFO      15666 58.08 (ACS580)  existing_len=1181  qc=rewrite
+2026-05-19 02:39:25,707  INFO        -> rewrite: Afiseaza un contor cu numarul de pachete valide receptionate de convertizor. Est
+2026-05-19 02:39:25,808  INFO      15667 58.09 (ACS580)  existing_len=1182  qc=rewrite
+2026-05-19 02:39:32,233  INFO        -> rewrite: Afiseaza un contor cu numarul de pachete valide transmise de convertizor. Este u
+2026-05-19 02:39:32,334  INFO      15668 58.10 (ACS580)  existing_len=1219  qc=rewrite
+2026-05-19 02:39:39,254  INFO        -> rewrite: Afiseaza numarul total de pachete valide receptionate de convertizor pe reteaua 
+2026-05-19 02:39:39,355  INFO      15669 58.12 (ACS580)  existing_len=1203  qc=rewrite
+2026-05-19 02:39:45,585  INFO        -> rewrite: Afiseaza numarul de pachete receptionate cu eroare CRC pe comunicatia seriala Mo
+2026-05-19 02:39:45,685  INFO      15670 58.17 (ACS580)  existing_len=1131  qc=rewrite
+2026-05-19 02:39:54,064  INFO        -> rewrite: Defineste intarzierea minima de raspuns in comunicatia seriala. Adauga un delay 
+2026-05-19 02:39:54,165  INFO      15671 58.27 (ACS580)  existing_len=1084  qc=rewrite
+2026-05-19 02:40:00,759  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 2 receptionate prin fieldbus-ul integrat
+2026-05-19 02:40:00,859  INFO      15672 58.28 (ACS580)  existing_len=1280  qc=rewrite
+2026-05-19 02:40:11,418  INFO        -> rewrite: Seteaza tipul valorii actuale 1 transmise prin fieldbus-ul integrat. Optiunile i
+2026-05-19 02:40:11,518  INFO      15673 58.29 (ACS580)  existing_len=1057  qc=rewrite
+2026-05-19 02:40:19,488  INFO        -> rewrite: Defineste tipul de date pentru valoarea actuala 2 transmisa prin fieldbus embedd
+2026-05-19 02:40:19,589  INFO      15674 58.31 (ACS580)  existing_len=1185  qc=rewrite
+2026-05-19 02:40:26,814  INFO        -> rewrite: Defineste sursa valorii actuale 1 pentru comunicatia prin fieldbus integrat. Sel
+2026-05-19 02:40:26,915  INFO      15675 58.32 (ACS580)  existing_len=1142  qc=rewrite
+2026-05-19 02:40:33,359  INFO        -> rewrite: Defineste sursa semnalului pentru valoarea actuala 2 in comunicatia EFB. Cand 58
+2026-05-19 02:40:33,460  INFO      15676 58.34 (ACS580)  existing_len=1240  qc=rewrite
+2026-05-19 02:40:49,034  INFO        -> rewrite: Defineste ordinea registrelor de 16 biti care alcatuiesc parametrii de 32 biti i
+2026-05-19 02:40:49,135  INFO      15677 58.101 (ACS580)  existing_len=1324  qc=rewrite
+2026-05-19 02:40:56,367  INFO        -> rewrite: Defineste adresa din convertizor pe care masterul Modbus o citeste sau scrie. Ac
+2026-05-19 02:40:56,467  INFO      15678 58.102 (ACS580)  existing_len=1188  qc=rewrite
+2026-05-19 02:41:01,344  INFO        -> rewrite: Defineste adresa registru Modbus din drive care va fi citita sau scrisa de maste
+2026-05-19 02:41:01,444  INFO      15679 58.103 (ACS580)  existing_len=1169  qc=rewrite
+2026-05-19 02:41:09,903  INFO        -> rewrite: Defineste adresa din convertizor pe care master-ul Modbus o acceseaza pentru al 
+2026-05-19 02:41:10,004  INFO      15680 58.104 (ACS580)  existing_len=1164  qc=rewrite
+2026-05-19 02:41:15,107  INFO        -> rewrite: Defineste adresa din convertizor la care master-ul Modbus citeste sau scrie date
+2026-05-19 02:41:15,207  INFO      15681 58.105 (ACS580)  existing_len=1192  qc=rewrite
+2026-05-19 02:41:24,904  INFO        -> rewrite: Definește adresa registrului din convertizor care poate fi accesata prin protoco
+2026-05-19 02:41:25,005  INFO      15682 58.106 (ACS580)  existing_len=1128  qc=rewrite
+2026-05-19 02:41:35,773  INFO        -> rewrite: Defineste adresa din invertor care va fi accesata de master-ul Modbus. Mapeaza o
+2026-05-19 02:41:35,874  INFO      15683 58.107 (ACS580)  existing_len=1118  qc=rewrite
+2026-05-19 02:41:48,669  INFO        -> rewrite: Selectorul parametrului pentru registrul Modbus 400007. Permite configurarea cei
+2026-05-19 02:41:48,770  INFO      15684 58.114 (ACS580)  existing_len=1188  qc=rewrite
+2026-05-19 02:41:59,716  INFO        -> rewrite: Selecteaza parametrul intern VFD care va fi accesibil prin registrul Modbus 4000
+2026-05-19 02:41:59,817  INFO      15685 71.02 (ACS580)  existing_len=1097  qc=rewrite
+2026-05-19 02:42:10,669  INFO        -> rewrite: Afiseaza valoarea actuala a feedback-ului pentru controlul PID de proces. Acest 
+2026-05-19 02:42:10,769  INFO      15686 71.03 (ACS580)  existing_len=1086  qc=rewrite
+2026-05-19 02:42:24,123  INFO        -> rewrite: Afiseaza valoarea actuala a setpoint-ului pentru functia PID de proces. Acest pa
+2026-05-19 02:42:24,224  INFO      15687 71.04 (ACS580)  existing_len=1135  qc=rewrite
+2026-05-19 02:42:29,320  INFO        -> rewrite: Afiseaza deviatia actuala a procesului PID, calculata ca diferenta dintre valoar
+2026-05-19 02:42:29,423  INFO      15688 71.06 (ACS580)  existing_len=1105  qc=rewrite
+2026-05-19 02:42:38,885  INFO        -> rewrite: Afiseaza informatii de stare despre controlul PID extern al procesului. Fiecare 
+2026-05-19 02:42:38,986  INFO      15689 71.07 (ACS580)  existing_len=1297  qc=rewrite
+2026-05-19 02:42:46,680  INFO        -> rewrite: Selecteaza modul de functionare al functiei PID pentru controlul procesului. Ace
+2026-05-19 02:42:46,780  INFO      15690 71.08 (ACS580)  existing_len=1413  qc=rewrite
+2026-05-19 02:42:55,131  INFO        -> rewrite: Defineste sursa semnalului de feedback pentru procesul PID. Trimite la parametru
+2026-05-19 02:42:55,232  INFO      15691 71.11 (ACS580)  existing_len=1367  qc=rewrite
+2026-05-19 02:43:05,854  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului de feedback. Valoarea 0 in
+2026-05-19 02:43:05,954  INFO      15692 71.14 (ACS580)  existing_len=1685  qc=rewrite
+2026-05-19 02:43:18,004  INFO        -> rewrite: Defineste valoarea de referinta scalata pentru semnalul de intrare. Impreuna cu 
+2026-05-19 02:43:18,104  INFO      15693 71.15 (ACS580)  existing_len=1563  qc=rewrite
+2026-05-19 02:43:25,630  INFO        -> rewrite: Seteaza factorul de scala pentru iesirea analogica a convertizorului. Valoarea d
+2026-05-19 02:43:25,730  INFO      15694 71.16 (ACS580)  existing_len=1513  qc=rewrite
+2026-05-19 02:43:31,334  INFO        -> rewrite: Selecteaza sursa pentru referinta de setpoint 1. Valoarea implicita este intrare
+2026-05-19 02:43:31,435  INFO      15695 71.19 (ACS580)  existing_len=1465  qc=rewrite
+2026-05-19 02:43:44,377  INFO        -> rewrite: Afiseaza valoarea setpoint-ului intern curent selectat pentru Set 1. Valoarea es
+2026-05-19 02:43:44,477  INFO      15696 71.21 (ACS580)  existing_len=1384  qc=rewrite
+2026-05-19 02:43:52,749  INFO        -> rewrite: Seteaza prima valoare de referinta interna pentru controlul PID. Aceasta valoare
+2026-05-19 02:43:52,850  INFO      15697 71.22 (ACS580)  existing_len=1343  qc=rewrite
+2026-05-19 02:44:02,147  WARNING     Bad categorie 'PID' for 71.22, retry
+2026-05-19 02:44:13,409  INFO        -> rewrite: Defineste valoarea celui de-al doilea setpoint intern pentru bucla de control PI
+2026-05-19 02:44:13,510  INFO      15698 71.23 (ACS580)  existing_len=1368  qc=rewrite
+2026-05-19 02:44:23,398  INFO        -> rewrite: Seteaza valoarea punctului de consemn intern 3 pentru bucla PID. Valoarea este u
+2026-05-19 02:44:23,499  INFO      15699 71.26 (ACS580)  existing_len=1552  qc=rewrite
+2026-05-19 02:44:36,157  WARNING     Bad categorie 'PID' for 71.26, retry
+2026-05-19 02:44:48,413  INFO        -> rewrite: Defineste valoarea minima pentru setpoint-ul PID din grupul 2 de parametri. Func
+2026-05-19 02:44:48,514  INFO      15700 71.27 (ACS580)  existing_len=1108  qc=rewrite
+2026-05-19 02:44:58,812  INFO        -> rewrite: Defineste valoarea maxima absoluta a setpoint-ului pentru Setul 1 de parametri P
+2026-05-19 02:44:58,913  INFO      15701 71.31 (ACS580)  existing_len=1257  qc=rewrite
+2026-05-19 02:45:11,079  INFO        -> rewrite: Acest parametru activeaza inversarea semnalului de deviatie pentru bucla PID Set
+2026-05-19 02:45:11,180  INFO      15702 71.32 (ACS580)  existing_len=1141  qc=rewrite
+2026-05-19 02:45:21,435  WARNING     Bad categorie 'Control' for 71.32, retry
+2026-05-19 02:45:35,344  INFO        -> rewrite: Acest parametru copiaza valoarea gain-ului din parametrul 40.32 Set 1 gain. Este
+2026-05-19 02:45:35,445  INFO      15703 71.33 (ACS580)  existing_len=1146  qc=rewrite
+2026-05-19 02:45:43,114  WARNING     Bad categorie 'Altol' for 71.33, retry
+2026-05-19 02:45:52,277  INFO        -> rewrite: Defineste timpul de integrare pentru bucla PID Set 2. Timpul de integrare contro
+2026-05-19 02:45:52,378  INFO      15704 71.34 (ACS580)  existing_len=1141  qc=rewrite
+2026-05-19 02:46:02,917  INFO        -> rewrite: Seteaza timpul derivativ pentru Setul 2 al regulatorului PID. Acest parametru co
+2026-05-19 02:46:03,018  INFO      15705 71.35 (ACS580)  existing_len=1157  qc=rewrite
+2026-05-19 02:46:13,926  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru actiunea derivativa in bucla PID. F
+2026-05-19 02:46:14,026  INFO      15706 71.36 (ACS580)  existing_len=1154  qc=rewrite
+2026-05-19 02:46:19,546  INFO        -> rewrite: Defineste valoarea minima a iesirii pentru acest set de parametri. Setarea trebu
+2026-05-19 02:46:19,647  INFO      15707 71.37 (ACS580)  existing_len=1151  qc=rewrite
+2026-05-19 02:46:32,273  INFO        -> rewrite: Defineste valoarea maxima a iesirii pentru aceasta functie. Setarea limiteaza se
+2026-05-19 02:46:32,374  INFO      15708 71.38 (ACS580)  existing_len=1186  qc=rewrite
+2026-05-19 02:46:44,243  INFO        -> rewrite: Blocheaza iesirea VFD-ului la frecventa curenta. Cand este activata, iesirea ram
+2026-05-19 02:46:44,343  INFO      15709 71.39 (ACS580)  existing_len=1271  qc=rewrite
+2026-05-19 02:46:53,394  INFO        -> rewrite: Defineste zona moarta in jurul punctului de referinta unde nu se produce nicio a
+2026-05-19 02:46:53,495  INFO      15710 71.40 (ACS580)  existing_len=1193  qc=rewrite
+2026-05-19 02:46:58,354  INFO        -> rewrite: Defineste intarzierea pentru functia deadband (banda moarta). Dupa ce semnalul i
+2026-05-19 02:46:58,455  INFO      15711 71.58 (ACS580)  existing_len=1295  qc=rewrite
+2026-05-19 02:47:07,062  INFO        -> rewrite: Activeaza functia de preventie a cresterii termenului de integrare PID extins. I
+2026-05-19 02:47:07,162  INFO      15712 71.59 (ACS580)  existing_len=1143  qc=rewrite
+2026-05-19 02:47:17,979  INFO        -> rewrite: Activeaza preventia scaderii termenului de integrare PID pentru controlul extern
+2026-05-19 02:47:18,080  INFO      15713 71.62 (ACS580)  existing_len=1106  qc=rewrite
+2026-05-19 02:47:27,162  INFO        -> rewrite: Stabileste punctul de referinta intern pentru controlerul PID. Valoarea minima e
+2026-05-19 02:47:27,262  INFO      15714 71.79 (ACS580)  existing_len=1109  qc=rewrite
+2026-05-19 02:47:32,135  INFO        -> rewrite: Defineste unitatea de masura pentru controlerul PID extern. Aceasta unitate este
+2026-05-19 02:47:32,236  INFO      15715 76.74 (ACS580)  existing_len=1447  qc=rewrite
+2026-05-19 02:47:43,988  INFO        -> rewrite: Selecteaza care motoare participa la functia de schimbare automata. Cand este se
+2026-05-19 02:47:44,088  INFO      15716 76.02 (ACS580)  existing_len=1177  qc=rewrite
+2026-05-19 02:47:55,297  INFO        -> rewrite: Afiseaza starea sistemului PFC (control pompa multifunctionala) sub forma de tex
+2026-05-19 02:47:55,398  INFO      15717 76.11 (ACS580)  existing_len=1040  qc=rewrite
+2026-05-19 02:48:00,244  INFO        -> rewrite: Afiseaza starea curenta a pompei 1. Este un parametru de diagnosticare care arat
+2026-05-19 02:48:00,344  INFO      15718 76.12 (ACS580)  existing_len=1006  qc=rewrite
+2026-05-19 02:48:08,865  INFO        -> rewrite: Registru de stare pentru pompa 2. Afiseaza informatii despre functionarea pompei
+2026-05-19 02:48:08,966  INFO      15719 76.13 (ACS580)  existing_len=1023  qc=rewrite
+2026-05-19 02:48:14,480  INFO        -> rewrite: Afiseaza starea de functionare a pompei 3. Valoarea indica diverse stari de oper
+2026-05-19 02:48:14,581  INFO      15720 76.14 (ACS580)  existing_len=1018  qc=rewrite
+2026-05-19 02:48:22,655  INFO        -> rewrite: Parametru de stare doar pentru citire care afiseaza starea curenta a pompei 4. V
+2026-05-19 02:48:22,756  INFO      15721 76.15 (ACS580)  existing_len=1040  qc=rewrite
+2026-05-19 02:48:31,080  INFO        -> rewrite: Afiseaza starea pompei numarul 5 intr-un sistem de control multi-pompa. Formatul
+2026-05-19 02:48:31,181  INFO      15722 76.16 (ACS580)  existing_len=1013  qc=rewrite
+2026-05-19 02:48:37,617  INFO        -> rewrite: Reprezinta starea pompei 6 intr-un sistem de control multi-pompa. Afiseaza bitii
+2026-05-19 02:48:37,718  INFO      15723 76.26 (ACS580)  existing_len=1030  qc=rewrite
+2026-05-19 02:48:44,739  INFO        -> rewrite: Seteaza numarul minim de motoare care trebuie sa functioneze simultan. Utilizat 
+2026-05-19 02:48:44,840  INFO      15724 76.57 (ACS580)  existing_len=1093  qc=rewrite
+2026-05-19 02:48:54,397  INFO        -> rewrite: Defineste timpul de mentinere a vitezei inainte de conectarea motorului auxiliar
+2026-05-19 02:48:54,497  INFO      15725 76.58 (ACS580)  existing_len=1074  qc=rewrite
+2026-05-19 02:49:04,163  INFO        -> rewrite: Defineste timpul de asteptare in secunde inainte de oprirea motorului auxiliar i
+2026-05-19 02:49:04,264  INFO      15726 76.60 (ACS580)  existing_len=1180  qc=rewrite
+2026-05-19 02:49:10,799  INFO        -> rewrite: Defineste timpul de accelerare pentru motorul principal in regimul PFC (Power Fa
+2026-05-19 02:49:10,899  INFO      15727 76.61 (ACS580)  existing_len=1132  qc=rewrite
+2026-05-19 02:49:23,828  INFO        -> rewrite: Seteaza timpul de decelerare pentru viteza motorului in aplicatii PFC. Defineste
+2026-05-19 02:49:23,928  INFO      15728 76.95 (ACS580)  existing_len=1549  qc=rewrite
+2026-05-19 02:49:29,459  INFO        -> rewrite: Defineste daca pompele cu pornire directa sunt pornite si oprite automat in func
+2026-05-19 02:49:29,560  INFO      15729 77.11 (ACS580)  existing_len=1594  qc=rewrite
+2026-05-19 02:49:34,848  INFO        -> rewrite: Contorizeaza timpul total de functionare pompa 1, masurat in ore. Poate fi setat
+2026-05-19 02:49:34,949  INFO      15730 77.14 (ACS580)  existing_len=1010  qc=rewrite
+2026-05-19 02:49:40,381  INFO        -> rewrite: Afiseaza timpul cumulat de functionare pentru pompa 4, masurat in ore. Este un p
+2026-05-19 02:49:40,481  INFO      15731 77.12 (ACS580)  existing_len=1095  qc=rewrite
+2026-05-19 02:49:45,735  INFO        -> rewrite: Contorizeaza timpul total de functionare al pompei 2 in ore. Valoarea se actuali
+2026-05-19 02:49:45,836  INFO      15732 77.13 (ACS580)  existing_len=1013  qc=rewrite
+2026-05-19 02:49:53,212  INFO        -> rewrite: Afiseaza timpul total de functionare pompa 3 in ore. Valoarea creste continuu in
+2026-05-19 02:49:53,312  INFO      15733 77.15 (ACS580)  existing_len=991  qc=rewrite
+2026-05-19 02:49:59,681  INFO        -> rewrite: Afiseaza timpul total de functionare al pompei 5 in ore. Este un indicator de st
+2026-05-19 02:49:59,782  INFO      15734 77.16 (ACS580)  existing_len=961  qc=rewrite
+2026-05-19 02:50:10,270  INFO        -> rewrite: Afiseaza timpul total de functionare acumulat pentru Pompa 6, masurat in ore. Fu
+2026-05-19 02:50:10,371  INFO      15735 81.35 (ACS580)  existing_len=1183  qc=rewrite
+2026-05-19 02:50:23,147  INFO        -> rewrite: Defineste numarul de pompe sau grupul de presiune utilizat pentru configurarea c
+2026-05-19 02:50:23,247  INFO      15736 81.36 (ACS580)  existing_len=1132  qc=rewrite
+2026-05-19 02:50:34,219  INFO        -> rewrite: Selecteaza sursa semnalului de presiune a gazului care este utilizat ca feedback
+2026-05-19 02:50:34,320  INFO      15737 81.37 (ACS580)  existing_len=1030  qc=rewrite
+2026-05-19 02:50:48,359  INFO        -> rewrite: Defineste unitatea de masura pentru afisarea presiunii gazului refrigerant selec
+2026-05-19 02:50:48,460  INFO      15738 81.38 (ACS580)  existing_len=1138  qc=rewrite
+2026-05-19 02:50:56,372  INFO        -> rewrite: Defineste coeficientul A din ecuatia Antoine pentru calculul presiunii de vapori
+2026-05-19 02:50:56,473  INFO      15739 81.39 (ACS580)  existing_len=1057  qc=rewrite
+2026-05-19 02:51:01,635  INFO        -> rewrite: Defineste coeficientul B din ecuatia Antoine pentru calculul presiunii vaporilor
+2026-05-19 02:51:01,736  INFO      15740 81.40 (ACS580)  existing_len=1060  qc=rewrite
+2026-05-19 02:51:08,479  INFO        -> rewrite: Defineste coeficientul C din ecuatia Antoine pentru calculul presiunii vaporilor
+2026-05-19 02:51:08,580  INFO      15741 81.41 (ACS580)  existing_len=1438  qc=rewrite
+2026-05-19 02:51:19,346  INFO        -> rewrite: Defineste pragul minim al presiunii gazului sau agentului frigorific. Acest para
+2026-05-19 02:51:19,446  INFO      15742 81.42 (ACS580)  existing_len=1398  qc=rewrite
+2026-05-19 02:51:30,668  INFO        -> rewrite: Acest parametru afiseaza o valoare numerica care este protejata la scriere si ac
+2026-05-19 02:51:30,769  INFO      15743 82.51 (ACS580)  existing_len=1250  qc=rewrite
+2026-05-19 02:51:37,972  INFO        -> rewrite: Selecteaza tipurile de defectiuni de protectie pompa care vor fi resetate automa
+2026-05-19 02:51:38,073  INFO      15744 82.52 (ACS580)  existing_len=1227  qc=rewrite
+2026-05-19 02:51:44,292  INFO        -> rewrite: Defineste timpul de asteptare dupa oprirea pompei inainte ca aceasta sa poata fi
+2026-05-19 02:51:44,393  INFO      15745 83.01 (ACS580)  existing_len=1067  qc=rewrite
+2026-05-19 02:51:50,928  INFO        -> rewrite: Afiseaza starea curenta a functiei de curatare a pompei. Valoarea afisata indica
+2026-05-19 02:51:51,028  INFO      15746 83.02 (ACS580)  existing_len=1088  qc=rewrite
+2026-05-19 02:51:58,429  INFO        -> rewrite: Afiseaza progresul curateniei automate a pompei sub forma de procentaj. Valoarea
+2026-05-19 02:51:58,529  INFO      15747 83.10 (ACS580)  existing_len=1205  qc=rewrite
+2026-05-19 02:52:10,751  INFO        -> rewrite: Activeaza functia de curatare automata a pompei. In timpul curatarii, pompa func
+2026-05-19 02:52:10,852  INFO      15748 83.12 (ACS580)  existing_len=1248  qc=rewrite
+2026-05-19 02:52:20,747  INFO        -> rewrite: Activeaza manual functia de curatare a pompei. Cand acest parametru este setat, 
+2026-05-19 02:52:20,848  INFO      15749 83.15 (ACS580)  existing_len=1359  qc=rewrite
+2026-05-19 02:52:27,432  INFO        -> rewrite: Defineste intervalul de timp constant intre ciclurile de curatare automate. Valo
+2026-05-19 02:52:27,532  INFO      15750 83.35 (ACS580)  existing_len=1302  qc=rewrite
+2026-05-19 02:52:36,905  INFO        -> rewrite: Activeaza functia de monitorizare a numarului de cicluri de curatare. Cand numar
+2026-05-19 02:52:37,006  INFO      15751 83.36 (ACS580)  existing_len=1222  qc=rewrite
+2026-05-19 02:52:47,913  INFO        -> rewrite: Defineste durata pentru functia de monitorizare a ciclului de curatare. Timpul e
+2026-05-19 02:52:48,014  INFO      15752 83.37 (ACS580)  existing_len=1258  qc=rewrite
+2026-05-19 02:52:55,666  INFO        -> rewrite: Defineste numarul maxim de cicluri de curatare permise pentru functia de curatar
