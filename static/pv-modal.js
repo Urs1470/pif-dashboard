@@ -549,3 +549,313 @@
     }
   };
 })();
+
+/* ===================== PV PIF (modal separat) ===================== */
+(function () {
+  if (window.__pvPifModalInjected) return;
+  window.__pvPifModalInjected = true;
+
+  // CSS-ul de baza e injectat de prima IIFE (pv-modal-overlay, pv-modal, etc.).
+  // Adaug doar tweak-uri pentru variant PIF (accent violet).
+  const css = `
+    .pv-pif-overlay { position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      display: none; padding: 24px; }
+    .pv-pif-overlay.active { display: grid; place-items: center; }
+    .pv-pif-overlay .pv-modal { width: 100%; max-width: 920px; max-height: calc(100vh - 48px);
+      background: var(--bg-elev1); border: 1px solid var(--line);
+      border-radius: 18px; box-shadow: 0 12px 36px rgba(0,0,0,.45);
+      display: flex; flex-direction: column; overflow: hidden; color: var(--text); }
+    .pv-pif-overlay .pv-mh-ico {
+      background: var(--violet-soft, rgba(139,135,255,0.12)) !important;
+      color: var(--violet, #8b87ff) !important; }
+    .pv-pif-overlay .pv-preview {
+      background: linear-gradient(90deg, var(--violet-soft, rgba(139,135,255,0.12)), transparent 70%) !important;
+      border-color: rgba(139,135,255,0.25) !important; }
+    .pv-pif-overlay .pv-preview .pv-l { color: var(--violet, #8b87ff) !important; }
+    .pv-pif-overlay .pv-preview .pv-v b { color: var(--violet, #8b87ff) !important; }
+    .pv-pif-overlay .pv-preview [data-lucide] { color: var(--violet, #8b87ff) !important; }
+    .pv-pif-overlay .pv-fld input:focus,
+    .pv-pif-overlay .pv-fld textarea:focus,
+    .pv-pif-overlay .pv-fld select:focus {
+      border-color: var(--violet, #8b87ff) !important;
+      box-shadow: 0 0 0 3px rgba(139,135,255,0.18) !important; }
+    .pv-pif-overlay .pv-btn-primary {
+      background: var(--violet, #8b87ff) !important; color: #0a0a1d !important;
+      border-color: var(--violet, #8b87ff) !important; }
+    .pv-pif-overlay .pv-btn-primary:hover { background: #a39ffd !important; }
+    .pv-pif-dates { background: var(--bg-elev2); border: 1px solid var(--line);
+      border-radius: 8px; padding: 8px; }
+    .pv-pif-dates .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .pv-pif-dates .row:last-of-type { margin-bottom: 0; }
+    .pv-pif-dates .row input { flex: 1; background: var(--bg-elev1);
+      border: 1px solid var(--line); color: var(--text);
+      border-radius: 6px; padding: 7px 10px; font-size: 13px;
+      font-family: 'JetBrains Mono', monospace; }
+    .pv-pif-dates .row .del { width: 30px; border: 1px solid var(--line);
+      background: transparent; color: var(--text-mut); border-radius: 6px;
+      cursor: pointer; display: grid; place-items: center; }
+    .pv-pif-dates .row .del:hover { color: var(--danger); border-color: var(--danger);
+      background: var(--danger-soft); }
+    .pv-pif-dates .row .del [data-lucide] { width: 13px; height: 13px; }
+    .pv-pif-add-date { margin-top: 4px; display: inline-flex; align-items: center;
+      gap: 6px; padding: 6px 12px;
+      background: var(--violet-soft, rgba(139,135,255,0.12));
+      color: var(--violet, #8b87ff);
+      border: 1px solid rgba(139,135,255,0.25); border-radius: 7px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .pv-pif-add-date [data-lucide] { width: 13px; height: 13px; }
+  `;
+  const styleEl = document.createElement('style');
+  styleEl.textContent = css;
+  document.head.appendChild(styleEl);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pv-pif-overlay';
+  overlay.id = 'pv-pif-modal';
+  overlay.innerHTML = `
+    <div class="pv-modal" role="dialog" aria-modal="true">
+      <div class="pv-mh">
+        <div class="pv-mh-ico"><i data-lucide="badge-check"></i></div>
+        <div>
+          <div class="pv-mh-title">Generează Proces Verbal de Recepție PIF</div>
+          <div class="pv-mh-sub">DOCX bazat pe template — header / footer / formatare păstrate</div>
+        </div>
+        <button class="pv-mh-close" data-pif-close><i data-lucide="x"></i></button>
+      </div>
+      <div class="pv-body">
+        <div class="pv-preview">
+          <i data-lucide="hash"></i>
+          <div>
+            <div class="pv-l">Număr proces verbal</div>
+            <div class="pv-v" id="pif-nr-preview">Nr. 1 / <b>...</b> / data <b>...</b></div>
+          </div>
+        </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head">
+            <div class="pv-sec-title">Date din proiect (auto)</div>
+            <span class="pv-sec-hint"><i data-lucide="info"></i>Editabile în proiect</span>
+          </div>
+          <div class="pv-auto">
+            <div class="row"><span class="k">Beneficiar</span><span class="v" id="pif-a-client">—</span></div>
+            <div class="row"><span class="k">Obiectiv</span><span class="v" id="pif-a-obiectiv">—</span></div>
+            <div class="row full"><span class="k">Comanda / contract</span><span class="v code" id="pif-a-comanda">—</span></div>
+          </div>
+        </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head"><div class="pv-sec-title">Detalii recepție</div></div>
+          <div class="pv-form">
+            <div class="pv-fld">
+              <label>Cod proiect <span class="opt">ex. 250592E_C1</span></label>
+              <input type="text" id="pif-cod" class="mono" placeholder="250592E_xx">
+            </div>
+            <div class="pv-fld">
+              <label>Data PV (semnare)</label>
+              <input type="text" id="pif-data" class="mono" placeholder="DD.MM.YYYY">
+            </div>
+            <div class="pv-fld">
+              <label>Data convocării comisiei</label>
+              <input type="text" id="pif-conv" class="mono" placeholder="DD.MM.YYYY">
+            </div>
+            <div class="pv-fld">
+              <label>Data desfășurării activității</label>
+              <input type="text" id="pif-desf" class="mono" placeholder="DD.MM.YYYY">
+            </div>
+            <div class="pv-fld full">
+              <label>Datele efectuării probelor tehnologice</label>
+              <div class="pv-pif-dates">
+                <div id="pif-dates-rows"></div>
+                <button class="pv-pif-add-date" id="pif-add-date" type="button"><i data-lucide="plus"></i>Adaugă dată</button>
+              </div>
+              <span class="help" style="font-size:11px;color:var(--text-dim);">Generează: "În zilele X și Y au fost efectuate probele..."</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head"><div class="pv-sec-title">Anexe și file</div></div>
+          <div class="pv-form">
+            <div class="pv-fld">
+              <label>Nr. file proces verbal</label>
+              <input type="number" id="pif-file" class="mono" value="2" min="1">
+            </div>
+            <div class="pv-fld">
+              <label>Nr. anexe</label>
+              <input type="number" id="pif-anexe" class="mono" value="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head">
+            <div class="pv-sec-title">Alte constatări (punctul 3)</div>
+            <span class="pv-sec-hint"><i data-lucide="info"></i>Pre-populat din "Observații" proiect</span>
+          </div>
+          <div class="pv-form">
+            <div class="pv-fld full">
+              <textarea id="pif-constatari" style="min-height:140px;"
+                placeholder="Detalii activități realizate, echipamente puse în funcțiune, teste validate..."></textarea>
+              <span class="help" style="font-size:11px;color:var(--text-dim);">Fiecare linie devine paragraf în PV</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head"><div class="pv-sec-title">Semnături</div></div>
+          <div class="pv-form">
+            <div class="pv-fld">
+              <label>Reprezentant Beneficiar</label>
+              <input type="text" id="pif-rep-client" placeholder="Ing. Nume Prenume">
+            </div>
+            <div class="pv-fld">
+              <label>Reprezentant Electroglobal</label>
+              <input type="text" id="pif-rep-eg" value="Ing. Ion Ursu">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pv-foot">
+        <div class="meta"><i data-lucide="shield-check"></i>Header, footer și formatarea template-ului se păstrează</div>
+        <div class="acts">
+          <button class="pv-btn pv-btn-secondary" data-pif-close><i data-lucide="x"></i>Anulează</button>
+          <button class="pv-btn pv-btn-primary" id="pif-generate"><i data-lucide="download"></i>Generează DOCX</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function $(sel) { return overlay.querySelector(sel); }
+  function rerenderIcons() { if (window.lucide) lucide.createIcons(); }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function todayDDMMYYYY() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  }
+  function close() { overlay.classList.remove('active'); }
+
+  function addDateRow(value) {
+    const tbody = $('#pif-dates-rows');
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <input class="mono" type="text" value="${escapeHtml(value || '')}" placeholder="DD.MM.YYYY">
+      <button class="del" type="button" title="Șterge"><i data-lucide="trash-2"></i></button>
+    `;
+    tbody.appendChild(row);
+    row.querySelector('.del').onclick = () => row.remove();
+    rerenderIcons();
+  }
+
+  function collectDates() {
+    const inputs = overlay.querySelectorAll('#pif-dates-rows input');
+    return Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+  }
+
+  function updatePreview() {
+    const cod = ($('#pif-cod').value || '...').trim() || '...';
+    const data = ($('#pif-data').value || '...').trim() || '...';
+    $('#pif-nr-preview').innerHTML =
+      `Nr. 1 / <b>${escapeHtml(cod)}</b> / data <b>${escapeHtml(data)}</b>`;
+  }
+
+  overlay.querySelectorAll('[data-pif-close]').forEach(b => b.onclick = close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  $('#pif-add-date').onclick = () => addDateRow('');
+  ['#pif-cod', '#pif-data'].forEach(s => $(s).oninput = updatePreview);
+
+  $('#pif-generate').onclick = async function () {
+    const btn = this;
+    btn.disabled = true;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2"></i>Se generează...';
+    rerenderIcons();
+    try {
+      const body = {
+        cod_proiect: $('#pif-cod').value.trim(),
+        data_pv: $('#pif-data').value.trim(),
+        data_convocare: $('#pif-conv').value.trim(),
+        data_desfasurare: $('#pif-desf').value.trim(),
+        date_probe: collectDates(),
+        nr_file: parseInt($('#pif-file').value || '2', 10),
+        nr_anexe: parseInt($('#pif-anexe').value || '0', 10),
+        constatari: $('#pif-constatari').value,
+        rep_client: $('#pif-rep-client').value.trim(),
+        rep_eg: $('#pif-rep-eg').value.trim() || 'Ing. Ion Ursu',
+      };
+      const projectId = overlay.dataset.projectId;
+      const res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'same-origin',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get('content-disposition') || '';
+      let filename = `PV_PIF_${body.cod_proiect || 'PV'}.docx`;
+      const m = cd.match(/filename="?([^";]+)"?/);
+      if (m) filename = m[1];
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      if (window.showToast) showToast('PV PIF generat cu succes');
+      close();
+    } catch (e) {
+      console.error('PV PIF generate failed:', e);
+      if (window.showToast) showToast('Eroare: ' + e.message, true);
+      else alert('Eroare la generarea PV PIF: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      rerenderIcons();
+    }
+  };
+
+  window.openPvPifModal = async function (projectId) {
+    overlay.dataset.projectId = projectId;
+    const today = todayDDMMYYYY();
+    $('#pif-cod').value = '';
+    $('#pif-data').value = today;
+    $('#pif-conv').value = today;
+    $('#pif-desf').value = today;
+    $('#pif-file').value = '2';
+    $('#pif-anexe').value = '0';
+    $('#pif-constatari').value = '';
+    $('#pif-rep-client').value = '';
+    $('#pif-rep-eg').value = 'Ing. Ion Ursu';
+    $('#pif-dates-rows').innerHTML = '';
+    addDateRow(today);
+    updatePreview();
+    overlay.classList.add('active');
+    rerenderIcons();
+
+    try {
+      const res = await fetch(`/api/proiecte/${projectId}/pv/pif/preview`, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const p = data.proiect || {};
+      $('#pif-a-client').textContent = p.client || '—';
+      $('#pif-a-obiectiv').textContent = p.nume || '—';
+      const combo = [p.nr_comanda, p.nr_contract].filter(Boolean).join(' / ');
+      $('#pif-a-comanda').textContent = combo || '—';
+      if (p.cod_proiect) { $('#pif-cod').value = p.cod_proiect; updatePreview(); }
+      if (p.observatii) $('#pif-constatari').value = p.observatii;
+    } catch (e) {
+      console.error('PV PIF preview failed:', e);
+      if (window.showToast) showToast('Eroare preview: ' + e.message, true);
+    }
+  };
+})();

@@ -799,7 +799,14 @@ async function showProjectDetail(projectId) {
 
         // BEGIN: PV (owned by spawned-pv session)
         const pvBtn = document.getElementById('btn-genereaza-pv');
-        if (pvBtn) pvBtn.style.display = isService ? 'inline-flex' : 'none';
+        if (pvBtn) {
+            const supportsPv = isService || isPIF;
+            pvBtn.style.display = supportsPv ? 'inline-flex' : 'none';
+            window.__pvDispatch = function (pid) {
+                if (isService && window.openPvServiceModal) return openPvServiceModal(pid);
+                if (isPIF && window.openPvPifModal) return openPvPifModal(pid);
+            };
+        }
         // END: PV
 
         // Common sections

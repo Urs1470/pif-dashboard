@@ -2867,6 +2867,69 @@ def pv_service_generate(project_id):
     )
 
 
+@app.route('/api/proiecte/<project_id>/pv/pif/preview', methods=['GET'])
+@login_required
+def pv_pif_preview(project_id):
+    """Returneaza datele auto-populate pentru modalul PV PIF."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row is None:
+        return jsonify({'error': 'Project not found'}), 404
+    return jsonify({'proiect': row_to_dict(row)})
+
+
+@app.route('/api/proiecte/<project_id>/pv/pif/generate', methods=['POST'])
+@login_required
+def pv_pif_generate(project_id):
+    """Genereaza DOCX PV PIF si returneaza ca download."""
+    try:
+        from services.pv_generator import generate_pv_pif
+    except Exception as e:
+        logger.error(f"PV PIF generator import failed: {e}")
+        return jsonify({'error': f'Generator indisponibil: {e}'}), 500
+
+    data = request.json or {}
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row is None:
+        return jsonify({'error': 'Project not found'}), 404
+    project = row_to_dict(row)
+
+    form_data = {
+        'cod_proiect': data.get('cod_proiect', '').strip(),
+        'data_pv': data.get('data_pv', datetime.now().strftime('%d.%m.%Y')),
+        'data_convocare': data.get('data_convocare', ''),
+        'data_desfasurare': data.get('data_desfasurare', ''),
+        'date_probe': data.get('date_probe', []),
+        'nr_file': data.get('nr_file', 2),
+        'nr_anexe': data.get('nr_anexe', 0),
+        'constatari': data.get('constatari', ''),
+        'rep_client': data.get('rep_client', ''),
+        'rep_eg': data.get('rep_eg') or 'Ing. Ion Ursu',
+    }
+
+    try:
+        docx_bytes = generate_pv_pif(project, form_data)
+    except Exception as e:
+        logger.exception("PV PIF generate failed")
+        return jsonify({'error': f'Eroare generare: {e}'}), 500
+
+    cod = form_data['cod_proiect'] or 'PV'
+    filename = f"PV_PIF_{cod}_{form_data['data_pv'].replace('.', '-')}.docx"
+    return send_file(
+        BytesIO(docx_bytes),
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
 if __name__ == '__main__':
     init_db()
     init_default_templates()

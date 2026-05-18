@@ -1616,16 +1616,26 @@ async function showProjectDetail(projectId) {
 
   // BEGIN: PV (owned by spawned-pv session)
   const isServiceProj = (p.tip === 'Service');
-  const pvButtonHtml = isServiceProj ? `
+  const isPifProj = (p.tip === 'PIF');
+  let pvButtonHtml = '';
+  if (isServiceProj || isPifProj) {
+    const callExpr = isServiceProj
+      ? `if(window.openPvServiceModal) openPvServiceModal('${p.id}')`
+      : `if(window.openPvPifModal) openPvPifModal('${p.id}')`;
+    const tone = isPifProj
+      ? 'background:var(--violet-soft, rgba(139,135,255,0.12)); color:var(--violet, #8b87ff); border-color:rgba(139,135,255,0.25);'
+      : 'background:var(--accent-soft); color:var(--accent); border-color:var(--accent-ring);';
+    pvButtonHtml = `
       <div style="margin-top:12px;">
-        <button onclick="if(window.openPvServiceModal) openPvServiceModal('${p.id}')"
+        <button onclick="${callExpr}"
                 style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px;
-                       background:var(--accent-soft); color:var(--accent);
-                       border:1px solid var(--accent-ring); border-radius:8px;
+                       ${tone}
+                       border-width:1px; border-style:solid; border-radius:8px;
                        font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">
           <i data-lucide="file-output" style="width:14px; height:14px;"></i> Generează PV
         </button>
-      </div>` : '';
+      </div>`;
+  }
   // END: PV
   infoEl.innerHTML = `
     <div style="margin-bottom:16px;">

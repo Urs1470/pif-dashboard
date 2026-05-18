@@ -659,5 +659,187 @@ def _apply_block(paragraphs, lines):
             anchor = wrap
 
 
+def _format_date_list(dates):
+    """['01.10.2026','22.10.2026'] -> '01.10.2026 si 22.10.2026'; lista lunga: ',' + ultima 'si'."""
+    ds = [d.strip() for d in dates if d and d.strip()]
+    if not ds:
+        return ''
+    if len(ds) == 1:
+        return ds[0]
+    if len(ds) == 2:
+        return f"{ds[0]} si {ds[1]}"
+    return ', '.join(ds[:-1]) + f" si {ds[-1]}"
+
+
+def _build_pif_signature_table(doc, client_name, rep_client, rep_eg):
+    """
+    Tabel 1x2, fara chenar:
+      Cell A: Beneficiar <CLIENT>  (bold)
+              [3 linii goale]
+              Ing. <rep_client>
+      Cell B: Electroglobal SA  (bold)
+              [3 linii goale]
+              Ing. <rep_eg>
+    """
+    table = doc.add_table(rows=1, cols=2)
+    table.autofit = False
+
+    pairs = [
+        (f"Beneficiar {client_name}".strip(), rep_client or ''),
+        ("Electroglobal SA", rep_eg or 'Ing. Ion Ursu'),
+    ]
+    for cell_idx, (firma, rep) in enumerate(pairs):
+        cell = table.rows[0].cells[cell_idx]
+        cell.text = ''
+        p1 = cell.paragraphs[0]
+        p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p1.add_run(firma)
+        r.bold = True
+        r.font.size = Pt(11)
+        r.font.name = 'Calibri'
+        for _ in range(3):
+            cell.add_paragraph().alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p2 = cell.add_paragraph()
+        p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r2 = p2.add_run(rep)
+        r2.font.size = Pt(10)
+        r2.font.name = 'Calibri'
+        _set_cell_borders(cell, sides=())
+        _set_cell_width(cell, 8.0)
+    return table
+
+
 def generate_pv_pif(proiect, form_data):
-    raise NotImplementedError("PV PIF generator - dupa validare service")
+    """
+    proiect: dict din tabela proiecte (client, nume, nr_comanda, nr_contract, observatii, ...)
+    form_data: dict cu cheile:
+        cod_proiect, data_pv (DD.MM.YYYY),
+        data_convocare, data_desfasurare (DD.MM.YYYY),
+        date_probe: [DD.MM.YYYY, ...]
+        nr_file (int, default 2), nr_anexe (int, default 0),
+        constatari (str multi-linie, fiecare linie = paragraph),
+        rep_client (str), rep_eg (str default 'Ing. Ion Ursu')
+    """
+    doc = Document(PIF_TEMPLATE)
+
+    client = (proiect.get('client') or '').strip()
+    obiectiv = (proiect.get('nume') or '').strip()
+    nr_comanda = (proiect.get('nr_comanda') or '').strip()
+    nr_contract = (proiect.get('nr_contract') or '').strip()
+    comanda_contract = nr_contract or nr_comanda or ''
+    if nr_comanda and nr_contract and nr_comanda != nr_contract:
+        comanda_contract = f"{nr_comanda} / {nr_contract}"
+
+    cod = form_data.get('cod_proiect', '').strip()
+    data_pv = form_data.get('data_pv', datetime.now().strftime('%d.%m.%Y')).strip()
+    data_conv = (form_data.get('data_convocare') or data_pv).strip()
+    data_desf = (form_data.get('data_desfasurare') or data_conv).strip()
+    date_probe = form_data.get('date_probe') or []
+    probe_str = _format_date_list(date_probe) or data_desf
+    nr_file = str(form_data.get('nr_file') or 2)
+    nr_anexe = str(form_data.get('nr_anexe') or 0)
+    constatari = (form_data.get('constatari') or '').strip()
+    rep_client = (form_data.get('rep_client') or '').strip()
+    rep_eg = (form_data.get('rep_eg') or 'Ing. Ion Ursu').strip()
+
+    # Tabelul gol din header (1x2) — il las cum e
+    # Iterez paragrafele si modific cele care matcheaza
+    constatari_anchor = None  # paragraph dupa care vor fi inserate paragrafele de constatari
+
+    for p in list(doc.paragraphs):
+        txt = _para_text(p).strip()
+
+        # Nr proces verbal
+        if re.match(r'^Nr\.\s*\d+/.*data', txt, re.IGNORECASE):
+            _set_paragraph_text(p, f"Nr. 1/{cod}/ data {data_pv}")
+            continue
+        # Beneficiar
+        if txt.startswith('Beneficiar:'):
+            _set_paragraph_text(p, f"Beneficiar: {client}")
+            continue
+        # Obiectivul de investitii
+        if txt.startswith('Obiectivul de investi') or txt.startswith('Obiectivul de invest'):
+            _set_paragraph_text(p, f"Obiectivul de investitii: {obiectiv}")
+            continue
+        # Comanda/contract
+        if txt.startswith('Comanda/contract') or txt.startswith('Comanda /contract') or txt.startswith('Comanda / contract'):
+            _set_paragraph_text(p, f"Comanda/contract nr: {comanda_contract}")
+            continue
+        # Comisia de receptie convocata...
+        if 'Comisia de rece' in txt and 'convocat' in txt:
+            _set_paragraph_text(
+                p,
+                f"Comisia de receptie convocata la data de {data_conv}: si-a desfasurat activitatea in data de {data_desf}."
+            )
+            continue
+        # Punct 2: zilele cu probe tehnologice
+        if txt.startswith('2.') and 'probele tehnologice' in txt:
+            _set_paragraph_text(
+                p,
+                f"2. In zilele {probe_str} au fost efectuate probele tehnologice ale utilajelor si "
+                f"instalatiilor aferente capacitatii pentru exploatarea normala a instalatiilor si "
+                f"utilajelor tehnologice si asigurarea calitatii produselor, conform documentatiei "
+                f"tehnico-economice."
+            )
+            continue
+        # Punct 3: alte constatari (header)
+        if txt.startswith('3.') and 'Alte constat' in txt:
+            _set_paragraph_text(p, '3. Alte constatari:')
+            constatari_anchor = p
+            continue
+        # Linii din vechile constatari (pana la "III. Concluzii" sau "Concluzii")
+        if constatari_anchor is not None and txt:
+            if txt.startswith('III.') or txt.startswith('Concluzii') or 'Pe baza constat' in txt:
+                constatari_anchor = '__done__'  # marcheaza ca am terminat
+                continue
+            if constatari_anchor != '__done__':
+                # sterge linia veche
+                _delete_paragraph(p)
+                continue
+
+        # "Prezentul proces-verbal care contine X file si Y anexe..."
+        if txt.startswith('Prezentul proces') and 'file' in txt:
+            _set_paragraph_text(
+                p,
+                f"Prezentul proces-verbal care contine {nr_file} file si {nr_anexe} anexe numerotate, "
+                f"cu un total de {nr_file} file care fac parte integranta din cuprinsul lui, a fost "
+                f"incheiat astazi, {data_pv}, in 2 exemplare originale."
+            )
+            continue
+
+    # Insereaza paragrafele de constatari dupa header-ul "3. Alte constatari:"
+    if constatari and constatari != '__done__':
+        # caut din nou anchor-ul (poate fi __done__ acum)
+        for p in doc.paragraphs:
+            if _para_text(p).strip().startswith('3.') and 'Alte constat' in _para_text(p):
+                constatari_anchor = p
+                break
+        if constatari_anchor and constatari_anchor != '__done__':
+            from docx.text.paragraph import Paragraph as DocxParagraph
+            anchor_p = constatari_anchor._p
+            lines = [l.strip() for l in constatari.splitlines() if l.strip()]
+            for line in lines:
+                new_p = deepcopy(anchor_p)
+                for t in new_p.iter(qn('w:t')):
+                    t.text = ''
+                # remove pPr formatting that might force "3. Alte constatari" style
+                anchor_p.addnext(new_p)
+                wrap = DocxParagraph(new_p, constatari_anchor._parent)
+                _set_paragraph_text(wrap, line)
+                anchor_p = new_p
+
+    # ---- Semnaturi: inlocuim tabelul existent cu unul nou ----
+    old_sig = None
+    for tbl in doc.tables:
+        joined = ' '.join(c.text for row in tbl.rows for c in row.cells).lower()
+        if 'beneficiar' in joined and 'electroglobal' in joined:
+            old_sig = tbl
+            break
+    if old_sig is not None:
+        parent, idx = _remove_table(old_sig)
+        sig_table = _build_pif_signature_table(doc, client, rep_client, rep_eg)
+        _move_table_to_position(sig_table, parent, idx)
+
+    out = BytesIO()
+    doc.save(out)
+    return out.getvalue()
