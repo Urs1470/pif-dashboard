@@ -63,14 +63,16 @@ function _cacheKey(url) { return url; }
 function _invalidateCache(url) {
     // Invalidate cached GETs related to the mutated resource.
     // Direct match on the URL root (e.g. /proiecte -> /proiecte, /proiecte/123, /proiecte/123/jurnal),
-    // PLUS any nested resource of the same type (e.g. DELETE /jurnal/abc invalidates /proiecte/{any}/jurnal).
+    // PLUS any nested resource of the same type (e.g. DELETE /jurnal/abc invalidates /proiecte/{any}/jurnal),
+    // PLUS aggregate endpoints (/stats, /dashboard/*) that summarize over everything.
     const path = url.split('?')[0];
     const root = '/' + (path.split('/')[1] || ''); // '/jurnal'
     for (const k of _apiCache.keys()) {
         if (
             k.startsWith(root) ||                       // /jurnal*
             k.includes(root) ||                         // /proiecte/X/jurnal*
-            k.startsWith('/dashboard/')                 // dashboards depend on most resources
+            k.startsWith('/dashboard/') ||              // dashboards depend on most resources
+            k.startsWith('/stats')                      // stat counters re-aggregate from every mutation
         ) _apiCache.delete(k);
     }
 }
@@ -1091,18 +1093,21 @@ async function handleDrop(e) {
 }
 
 async function addTodo() {
-    const titlu = document.getElementById('todo-title').value.trim();
+    const titleEl = document.getElementById('todo-title');
+    const titlu = (titleEl?.value || '').trim();
     if (!titlu) return;
-    const prioritate = document.getElementById('todo-priority').value;
-    const data_scadenta = document.getElementById('todo-scadenta').value || '';
+    const prioritate = document.getElementById('todo-priority')?.value || 'normal';
+    const status = document.getElementById('todo-status')?.value || 'to_do';
+    const scadentaEl = document.getElementById('todo-scadenta');
+    const data_scadenta = (scadentaEl?.value || '').trim();
     try {
-        const result = await apiPost(`/proiecte/${currentProjectId}/tasks`, { titlu, prioritate, status: 'to_do', data_scadenta });
-        document.getElementById('todo-title').value = '';
-        document.getElementById('todo-scadenta').value = '';
-        const fp = document.getElementById('todo-scadenta')._flatpickr;
-        if (fp) fp.clear();
+        const result = await apiPost(`/proiecte/${currentProjectId}/tasks`, { titlu, prioritate, status, data_scadenta });
+        if (titleEl) titleEl.value = '';
+        if (scadentaEl) {
+            scadentaEl.value = '';
+            if (scadentaEl._flatpickr) scadentaEl._flatpickr.clear();
+        }
         loadTodos(currentProjectId);
-        // Only show success toast if we got a valid result
         if (result !== null) {
             showToast('Task adăugat!');
         }
@@ -1632,10 +1637,22 @@ function switchTab(tab) {
     if (detailView) detailView.classList.remove('active');
     // Show project list when going back to projects tab
     if (tab === 'proiecte') {
+        // Critical: project-list-view gets `hidden` added in showProjectDetail().
+        // Without removing it here the list stays invisible after viewing a detail
+        // and switching tabs, forcing a page refresh to recover.
+        const listView = document.getElementById('project-list-view');
+        if (listView) listView.classList.remove('hidden');
+        currentProjectId = null;
+
         const tableContainer = document.getElementById('projects-table-container');
-        const emptyState = document.getElementById('empty-projects');
         if (tableContainer) tableContainer.style.display = 'block';
-        if (emptyState) emptyState.style.display = 'block';
+        // empty-state visibility is owned by renderProjects() — do not force it here.
+
+        // Re-fetch in case data changed while viewing the detail. apiGet uses
+        // stale-while-revalidate so the cached list shows instantly while a fresh
+        // copy lands in the background.
+        loadProjects();
+        updateStats();
     }
 
     // Update bottom nav active state

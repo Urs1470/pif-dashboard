@@ -3077,16 +3077,17 @@
                         <div class="form-group" style="margin-bottom:0">
                             <input type="text" id="todo-title" placeholder="Titlu task nou...">
                         </div>
-                        <select id="todo-priority">
+                        <select id="todo-priority" class="cs-enhance">
                             <option value="normal">Normal</option>
                             <option value="urgent">Urgent</option>
                             <option value="minor">Minor</option>
                         </select>
-                        <select id="todo-status">
+                        <select id="todo-status" class="cs-enhance">
                             <option value="to_do">To Do</option>
                             <option value="in_lucru">În Lucru</option>
                             <option value="done">Finalizat</option>
                         </select>
+                        <input type="text" id="todo-scadenta" placeholder="Termen (zz.ll.aaaa)" autocomplete="off">
                         <button class="btn btn-primary btn-small" onclick="addTodo()">Adaugă</button>
                     </div>
                     <div class="todo-list" id="todo-list"></div>
