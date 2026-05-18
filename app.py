@@ -1962,25 +1962,28 @@ def delete_echipament(echipament_id):
 # ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
 
 def _familie_from_echipament(producator: str, model: str) -> str:
-    """Mapeaza producator+model la familie pentru join cu parametri_master."""
+    """Mapeaza producator+model la familie pentru join cu parametri_master.
+
+    Numele familiilor in DB (validat cu scripts/audit_pdf.py FAMILIES):
+        ACS580, ACS880, Danfoss_VLT_FC302, Lenze_i550, Lenze_i950,
+        SINAMICS_G120, SINAMICS_G130_G150, SINAMICS_S120_S150
+    """
     producator = (producator or '').strip()
     model = (model or '').strip()
     p_low = producator.lower()
     m_low = model.lower()
     if 'danfoss' in p_low:
-        return 'FC302'
+        return 'Danfoss_VLT_FC302'
     if 'abb' in p_low:
         if '880' in m_low: return 'ACS880'
-        if '580' in m_low: return 'ACS580'
         return 'ACS580'
     if 'siemens' in p_low:
-        if 's120' in m_low or 's150' in m_low: return 'S120_S150'
-        if 'g130' in m_low or 'g150' in m_low: return 'G130_G150'
-        if 'g120' in m_low: return 'G120'
-        return 'G120'
+        if 's120' in m_low or 's150' in m_low: return 'SINAMICS_S120_S150'
+        if 'g130' in m_low or 'g150' in m_low: return 'SINAMICS_G130_G150'
+        return 'SINAMICS_G120'
     if 'lenze' in p_low:
-        if '950' in m_low: return 'i950'
-        return 'i550'
+        if '950' in m_low: return 'Lenze_i950'
+        return 'Lenze_i550'
     return ''
 
 
@@ -2010,18 +2013,14 @@ def preview_import_params():
 
     try:
         raw = upload.read()
-        try:
-            content = raw.decode('utf-8')
-        except UnicodeDecodeError:
-            content = raw.decode('latin-1', errors='replace')
     except Exception as e:
         logger.exception("Eroare citire fisier import params")
         return jsonify({'error': f'Eroare citire fisier: {e}'}), 400
 
-    detected, parsed = parse_for_producator(producator, content)
+    detected, parsed = parse_for_producator(producator, raw, upload.filename or '')
     if detected is None or parsed is None:
         return jsonify({
-            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss.'
+            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss, Lenze, Siemens.'
         }), 400
 
     # Imbogateste cu descriere_scurta din parametri_master

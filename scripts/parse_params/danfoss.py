@@ -57,8 +57,10 @@ def _is_data_line(line: str) -> bool:
     return bool(_DATA_LINE_RE.match(line))
 
 
-def parse(content: str) -> List[Dict]:
+def parse(content, filename: str = '') -> List[Dict]:
     """Parseaza continutul si returneaza lista de parametri unificati.
+
+    Accepta atat string cat si bytes (pentru compatibilitate cu router-ul comun).
 
     Returneaza:
         [
@@ -76,6 +78,12 @@ def parse(content: str) -> List[Dict]:
         ]
     Ordonat dupa db_id (grupa, parametru, subindex).
     """
+    if isinstance(content, (bytes, bytearray)):
+        try:
+            content = content.decode('utf-8')
+        except UnicodeDecodeError:
+            content = content.decode('latin-1', errors='replace')
+
     # Grupeaza intrari brute dupa db_id
     grouped: Dict[str, Dict] = {}
     for raw_line in content.splitlines():
