@@ -6,7 +6,7 @@ var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
 var LUNI_COUNT = 8;
-const CHELTUIELI_VARIABILE = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte'];
+var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte'];
 
 // Generate 8 months starting from "YYYY-MM"; returns {keys, labels}
 function generateLuni(startMonth) {
@@ -30,6 +30,18 @@ function refreshLuni() {
   var cfg = generateLuni(sm);
   LUNI_KEYS = cfg.keys;
   LUNI = cfg.labels;
+}
+
+// Ensure d.categoriiVar exists as [{id,label}]; seed from default constant if missing
+function migrateCategoriiVar(data) {
+  if (!data) return;
+  if (Array.isArray(data.categoriiVar) && data.categoriiVar.length > 0 && typeof data.categoriiVar[0] === 'object') return;
+  // Accept legacy "array of strings" too
+  if (Array.isArray(data.categoriiVar) && data.categoriiVar.length > 0 && typeof data.categoriiVar[0] === 'string') {
+    data.categoriiVar = data.categoriiVar.map(function(s, i) { return { id: i + 1, label: s }; });
+    return;
+  }
+  data.categoriiVar = CHELTUIELI_VARIABILE_DEFAULT.map(function(s, i) { return { id: i + 1, label: s }; });
 }
 
 // Convert legacy cheltuieliFixe object {chirie, rataCredit} to array of {id,label,suma}
@@ -86,6 +98,16 @@ var DATI_INITIALE = {
   cheltuieliFixe: [
     { id: 1, label: 'Chirie', suma: 2000 },
     { id: 2, label: 'Rată credit + asig.', suma: 1934 },
+  ],
+  categoriiVar: [
+    { id: 1, label: 'Alimente' },
+    { id: 2, label: 'Facturi' },
+    { id: 3, label: 'Transport' },
+    { id: 4, label: 'Sănătate' },
+    { id: 5, label: 'Îmbrăcăminte' },
+    { id: 6, label: 'Divertisment' },
+    { id: 7, label: 'Abonamente' },
+    { id: 8, label: 'Alte' },
   ],
   credit: {
     suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1787, asigurare: 147,
@@ -149,6 +171,7 @@ async function loadData() {
       if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
       migrateCheltuieliFixe(state.data);
+      migrateCategoriiVar(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -461,6 +484,62 @@ function removeCheltuialaFixa(id) {
   render();
 }
 
+function addCategorie() {
+  if (!Array.isArray(state.data.categoriiVar)) state.data.categoriiVar = [];
+  state.data.categoriiVar.push({ id: getNextId(state.data.categoriiVar), label: '' });
+  saveData();
+  render();
+}
+function updateCategorie(id, newLabel) {
+  if (!Array.isArray(state.data.categoriiVar)) return;
+  var old;
+  state.data.categoriiVar = state.data.categoriiVar.map(function(c) {
+    if (c.id !== id) return c;
+    old = c.label;
+    return { id: c.id, label: newLabel };
+  });
+  // Rename data keys across all months so existing numbers stick to the renamed category
+  if (old && newLabel && old !== newLabel && state.data.cheltuieli) {
+    Object.keys(state.data.cheltuieli).forEach(function(luna) {
+      var m = state.data.cheltuieli[luna];
+      if (m && m[old] !== undefined) {
+        m[newLabel] = m[old];
+        delete m[old];
+      }
+    });
+  }
+  saveData();
+  render();
+}
+async function removeCategorie(id) {
+  var cat = (state.data.categoriiVar || []).filter(function(c) { return c.id === id; })[0];
+  if (!cat) return;
+  // Check if any month has data for this category
+  var hasData = false;
+  Object.keys(state.data.cheltuieli || {}).forEach(function(luna) {
+    var m = state.data.cheltuieli[luna];
+    if (m && m[cat.label] != null && parseRON(m[cat.label]) !== 0) hasData = true;
+  });
+  if (hasData) {
+    var alsoDelete = await showConfirm({
+      title: 'Șterge categoria "' + cat.label + '"',
+      body: 'Există sume introduse pentru această categorie. Le ștergi și pe ele, sau le păstrezi (orfan) în date?',
+      okLabel: 'Șterge tot',
+      cancelLabel: 'Păstrează sumele',
+      icon: 'trash-2'
+    });
+    if (alsoDelete) {
+      Object.keys(state.data.cheltuieli).forEach(function(luna) {
+        var m = state.data.cheltuieli[luna];
+        if (m && m[cat.label] !== undefined) delete m[cat.label];
+      });
+    }
+  }
+  state.data.categoriiVar = state.data.categoriiVar.filter(function(c) { return c.id !== id; });
+  saveData();
+  render();
+}
+
 // ====================================================================
 // CALCULATIONS
 // ====================================================================
@@ -482,11 +561,13 @@ function calcMediiCheltuieli(d) {
   var totalFixe = fixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var variabile = LUNI_KEYS.map(function(l) { return d.cheltuieli[l] || {}; });
   var count = variabile.filter(function(v) { return Object.values(v).some(function(x) { return x > 0; }); }).length || 1;
-  var result = { fixe: fixe, totalFixe: totalFixe, variabile: {} };
+  var cats = Array.isArray(d.categoriiVar) ? d.categoriiVar : [];
+  var result = { fixe: fixe, totalFixe: totalFixe, variabile: {}, categorii: cats };
   var totalVar = 0;
-  CHELTUIELI_VARIABILE.forEach(function(cat) {
-    result.variabile[cat] = variabile.reduce(function(s, v) { return s + (v[cat] || 0); }, 0) / count;
-    totalVar += result.variabile[cat];
+  cats.forEach(function(c) {
+    var label = c.label || '';
+    result.variabile[label] = variabile.reduce(function(s, v) { return s + (v[label] || 0); }, 0) / count;
+    totalVar += result.variabile[label];
   });
   result.total = totalFixe + totalVar;
   return result;
@@ -564,8 +645,8 @@ function renderBugetLunar() {
   if (mediiC.fixe.length > 0) {
     html += '<div class="stat-row" style="border-top:1px dashed var(--border); padding-top:0.5rem; margin-top:0.25rem;"><span class="text-mid">Total fixe</span><span class="stat-val danger">' + formatRON(mediiC.totalFixe) + '</span></div>';
   }
-  CHELTUIELI_VARIABILE.forEach(function(cat) {
-    html += '<div class="stat-row"><span>' + esc(cat) + '</span><span class="stat-val danger">' + formatRON(mediiC.variabile[cat] || 0) + '</span></div>';
+  (mediiC.categorii || []).forEach(function(c) {
+    html += '<div class="stat-row"><span>' + esc(c.label) + '</span><span class="stat-val danger">' + formatRON(mediiC.variabile[c.label] || 0) + '</span></div>';
   });
   html += '<div class="stat-row total"><span>Total</span><span class="stat-val danger">' + formatRON(mediiC.total) + ' RON</span></div>';
   html += '</div>';
@@ -626,6 +707,35 @@ function renderBugetLunar() {
     var totalFixe = d.cheltuieliFixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
     html += '</tbody><tfoot><tr><td>Total cheltuieli fixe</td><td class="num">' + formatRON(totalFixe) + '</td><td></td></tr></tfoot>';
     html += '</table></div>';
+  }
+  html += '</div></div>';
+
+  // CATEGORII CHELTUIELI VARIABILE PANEL
+  html += '<div class="section">';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="tag"></i> Categorii cheltuieli variabile</div>';
+  html += '  <button class="btn-add" onclick="addCategorie()"><i data-lucide="plus"></i> Adaugă categorie</button>';
+  html += '</div>';
+  html += '<div class="panel">';
+  if (!d.categoriiVar || d.categoriiVar.length === 0) {
+    html += '<div class="audit-empty">Nicio categorie. Apasă "Adaugă" pentru a defini categorii (Alimente, Facturi, Cadouri, etc.).</div>';
+  } else {
+    html += '<div class="table-wrap"><table>';
+    html += '<thead><tr><th>Denumire categorie</th><th class="num">Total mediu / lună</th><th></th></tr></thead><tbody>';
+    var medii = calcMediiCheltuieli(d);
+    d.categoriiVar.forEach(function(c) {
+      var avg = medii.variabile[c.label] || 0;
+      html += '<tr>';
+      html += '<td><input type="text" class="input w-full" value="' + esc(c.label || '') + '" placeholder="Ex: Cadouri, Masina..." onchange="updateCategorie(' + c.id + ', this.value)"></td>';
+      html += '<td class="num mono text-mid">' + formatRON(avg) + '</td>';
+      html += '<td><button class="btn-del" onclick="removeCategorie(' + c.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div class="info-box" style="margin-top:0.85rem;">';
+    html += '<i data-lucide="info"></i>';
+    html += '<div>Categoriile apar ca rânduri în tabelul "Cheltuieli lunare". La ștergerea unei categorii primești opțiunea să păstrezi sau să elimini și sumele introduse pentru ea.</div>';
+    html += '</div>';
   }
   html += '</div></div>';
 
@@ -1034,11 +1144,13 @@ function renderVenituri() {
     html += '</tr>';
   });
 
-  CHELTUIELI_VARIABILE.forEach(function(cat) {
-    html += '<tr><td class="muted">' + esc(cat) + '</td>';
+  (d.categoriiVar || []).forEach(function(c) {
+    var label = c.label || '';
+    var labelAttr = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    html += '<tr><td class="muted">' + esc(label) + '</td>';
     LUNI_KEYS.forEach(function(l) {
-      var val = (d.cheltuieli[l] || {})[cat] || '';
-      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateCheltuiala(\'' + l + '\', \'' + esc(cat) + '\', this.value)"></td>';
+      var val = (d.cheltuieli[l] || {})[label] || '';
+      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateCheltuiala(\'' + l + '\', \'' + labelAttr + '\', this.value)"></td>';
     });
     html += '</tr>';
   });
@@ -1167,8 +1279,9 @@ function exportCSV() {
   (d.cheltuieliFixe || []).forEach(function(f) {
     lines.push((f.label || '').replace(/,/g, ' ') + ',' + LUNI.map(function() { return f.suma; }).join(','));
   });
-  CHELTUIELI_VARIABILE.forEach(function(cat) {
-    lines.push(cat + ',' + LUNI_KEYS.map(function(l) { return (d.cheltuieli[l] || {})[cat] || 0; }).join(','));
+  (d.categoriiVar || []).forEach(function(c) {
+    var label = c.label || '';
+    lines.push(label.replace(/,/g, ' ') + ',' + LUNI_KEYS.map(function(l) { return (d.cheltuieli[l] || {})[label] || 0; }).join(','));
   });
 
   lines.push('');
