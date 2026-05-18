@@ -3639,6 +3639,13 @@ function renderEchipamente(echipamente, descLookup) {
             return `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
         }).join('');
 
+        const expandedBody = hasParams
+            ? `<table class="echipament-params-table">
+                    <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
+                    <tbody>${paramsRows}</tbody>
+                </table>`
+            : `<div style="color:var(--text2); font-size:0.85rem; padding:8px 0;">Niciun parametru salvat. Click pe <i data-lucide="pencil" style="width:12px;height:12px;vertical-align:-1px;"></i> pentru a edita.</div>`;
+
         return `
             <div class="echipament-card is-clickable" onclick="toggleEchipamentCard(this, event)">
                 <div class="echipament-header">
@@ -3653,16 +3660,11 @@ function renderEchipamente(echipamente, descLookup) {
                     ${e.model ? `<span>${escapeHtml(e.model)}</span>` : ''}
                     ${e.serial_number ? `<span>S/N: ${escapeHtml(e.serial_number)}</span>` : ''}
                     ${hasParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${paramCount} parametri</span>` : ''}
-                    <span class="echipament-chevron" style="margin-left:auto; color:var(--text-dim); transition:transform 0.15s;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
+                    <span class="echipament-chevron" style="margin-left:auto; color:var(--text-dim); transition:transform 0.15s; display:inline-flex;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
                 </div>
-                ${hasParams ? `
-                    <div class="echipament-expanded" style="display: none;">
-                        <table class="echipament-params-table">
-                            <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
-                            <tbody>${paramsRows}</tbody>
-                        </table>
-                    </div>
-                ` : ''}
+                <div class="echipament-expanded" style="display: none;">
+                    ${expandedBody}
+                </div>
             </div>
         `;
     }).join('');
@@ -3670,13 +3672,15 @@ function renderEchipamente(echipamente, descLookup) {
 }
 
 function toggleEchipamentCard(card, ev) {
+    if (!card) return;
     const expanded = card.querySelector('.echipament-expanded');
     const chevron = card.querySelector('.echipament-chevron');
-    if (!expanded) return;
-    const isOpen = expanded.style.display !== 'none';
-    expanded.style.display = isOpen ? 'none' : 'block';
-    if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    card.classList.toggle('is-open', !isOpen);
+    if (expanded) {
+        const isOpen = expanded.style.display !== 'none';
+        expanded.style.display = isOpen ? 'none' : 'block';
+        if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        card.classList.toggle('is-open', !isOpen);
+    }
 }
 
 let availableParams = [];
