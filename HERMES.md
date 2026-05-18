@@ -1,4 +1,19 @@
-# Pentru Hermes — context, reguli, anti-coliziune
+# Pentru agenții care lucrează la PIF Dashboard (Claude paralele + Hermes)
+
+> Document de briefing pentru ORICE agent care vine în repo. Citește-l până la capăt
+> înainte de prima modificare. Audiența principală:
+>
+> - **Sesiunile Claude spawned** ce rulează în paralel pe laptop-ul Windows al lui Ion
+>   în `D:/Projects/pif-dashboard` (PV generation, Import parametri, Equipment card,
+>   Budget, etc.). Toate au identity git `Urs1470 <Urs1470@users.noreply.github.com>`.
+> - **Claude main** — sesiunea principală a lui Ion, tot pe Windows, aceeași identity.
+> - **Hermes** — agent MiniMax pe laptop-server `/home/ion-ursu/Projects/pif-dashboard`,
+>   identity `Hermes <hermes@pif.iupif.org>`.
+>
+> Coliziunile de tip "lost work" pe `templates/`, `static/` apar **între sesiuni Claude
+> paralele** care comit pe același worktree Windows cu aceeași identity. Hermes e
+> izolat fizic pe alt host și are propria identity; coliziunea cu el e doar la
+> nivel de webhook deploy (vezi gotcha-urile la final).
 
 ## Cine face ce
 
