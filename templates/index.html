@@ -683,6 +683,112 @@
             flex-direction: column;
             gap: 10px;
         }
+        /* Admin tab — stats + breakdown + audit + maintenance widgets */
+        .admin-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .admin-stat {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--c, var(--accent));
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+        }
+        .admin-stat-label {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .admin-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--c, var(--accent));
+            margin-top: 4px;
+            letter-spacing: -0.02em;
+        }
+        .admin-mini-label {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .admin-breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .admin-breakdown-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .admin-breakdown-name { min-width: 90px; color: var(--text); font-family: var(--font-mono); font-size: 0.78rem; }
+        .admin-breakdown-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--line-soft);
+        }
+        .admin-breakdown-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--violet));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .admin-breakdown-count {
+            min-width: 36px;
+            text-align: right;
+            font-family: var(--font-mono);
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+        .admin-audit-result {
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            display: none;
+            font-size: 0.86rem;
+        }
+        .admin-audit-result.show { display: block; }
+        .admin-audit-health {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .admin-audit-health-pct {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+        }
+        .admin-audit-issues {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 6px;
+        }
+        .admin-audit-issue {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: var(--bg-elev2);
+            border-radius: 6px;
+            font-size: 0.78rem;
+        }
+        .admin-audit-issue .num { font-family: var(--font-mono); font-weight: 600; color: var(--warning); }
+        .admin-audit-issue .num.zero { color: var(--success); }
         .admin-action-btn {
             display: flex;
             align-items: center;
@@ -3679,29 +3785,78 @@
         </div>
 
         <div id="tab-admin" class="tab-content">
+            <!-- Top stats — Ion vede o singura privire toate cifrele importante -->
+            <div id="admin-stats" class="admin-stats-row">
+                <div class="admin-stat" style="--c: var(--violet);">
+                    <div class="admin-stat-label">Total proiecte</div>
+                    <div class="admin-stat-value" id="adm-stat-total">—</div>
+                </div>
+                <div class="admin-stat" style="--c: var(--accent);">
+                    <div class="admin-stat-label">Active</div>
+                    <div class="admin-stat-value" id="adm-stat-active">—</div>
+                </div>
+                <div class="admin-stat" style="--c: var(--success);">
+                    <div class="admin-stat-label">Finalizate</div>
+                    <div class="admin-stat-value" id="adm-stat-finished">—</div>
+                </div>
+                <div class="admin-stat" style="--c: var(--warning);">
+                    <div class="admin-stat-label">Ore lucrate (total)</div>
+                    <div class="admin-stat-value" id="adm-stat-hours">—</div>
+                </div>
+                <div class="admin-stat" style="--c: var(--danger);">
+                    <div class="admin-stat-label">Taskuri urgente</div>
+                    <div class="admin-stat-value" id="adm-stat-urgent">—</div>
+                </div>
+                <div class="admin-stat" style="--c: var(--accent);">
+                    <div class="admin-stat-label">Parametri în DB</div>
+                    <div class="admin-stat-value" id="adm-stat-params">—</div>
+                </div>
+            </div>
+
             <div class="admin-grid">
+                <div class="admin-section">
+                    <div class="admin-section-title"><i data-lucide="bar-chart-3"></i> Breakdown</div>
+                    <div class="admin-section-body" style="display:flex; flex-direction:column; gap:14px;">
+                        <div>
+                            <div class="admin-mini-label">După producător</div>
+                            <div id="adm-breakdown-producator" class="admin-breakdown-list"></div>
+                        </div>
+                        <div>
+                            <div class="admin-mini-label">După status</div>
+                            <div id="adm-breakdown-status" class="admin-breakdown-list"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="admin-section">
                     <div class="admin-section-title"><i data-lucide="download"></i> Export Date</div>
                     <div class="admin-section-body">
                         <button class="admin-action-btn" onclick="exportExcel('projects')">
                             <span class="admin-icon"><i data-lucide="folder-kanban"></i></span>
                             <div>
-                                <div class="admin-action-title">Proiecte</div>
-                                <div class="admin-action-desc">Toate proiectele în format Excel</div>
+                                <div class="admin-action-title">Proiecte (Excel)</div>
+                                <div class="admin-action-desc">Toate proiectele cu metadata</div>
                             </div>
                         </button>
                         <button class="admin-action-btn" onclick="exportExcel('tasks')">
                             <span class="admin-icon"><i data-lucide="list-checks"></i></span>
                             <div>
-                                <div class="admin-action-title">Task-uri</div>
-                                <div class="admin-action-desc">Toate task-urile în format Excel</div>
+                                <div class="admin-action-title">Task-uri (Excel)</div>
+                                <div class="admin-action-desc">Toate task-urile, sortate</div>
                             </div>
                         </button>
                         <button class="admin-action-btn" onclick="exportExcel('hours')">
                             <span class="admin-icon"><i data-lucide="clock"></i></span>
                             <div>
-                                <div class="admin-action-title">Ore</div>
-                                <div class="admin-action-desc">Raport ore lucrate pe proiecte</div>
+                                <div class="admin-action-title">Ore lucrate (Excel)</div>
+                                <div class="admin-action-desc">Raport per proiect</div>
+                            </div>
+                        </button>
+                        <button class="admin-action-btn" onclick="window.open('/api/export/pdf/all', '_blank')">
+                            <span class="admin-icon"><i data-lucide="file-text"></i></span>
+                            <div>
+                                <div class="admin-action-title">Toate proiectele (PDF)</div>
+                                <div class="admin-action-desc">Rapoart consolidat</div>
                             </div>
                         </button>
                     </div>
@@ -3713,8 +3868,8 @@
                         <button class="admin-action-btn" onclick="exportBackup()">
                             <span class="admin-icon"><i data-lucide="hard-drive-download"></i></span>
                             <div>
-                                <div class="admin-action-title">Descarcă backup</div>
-                                <div class="admin-action-desc">Toate datele într-un fișier JSON</div>
+                                <div class="admin-action-title">Descarcă backup JSON</div>
+                                <div class="admin-action-desc">Toate datele într-un fișier</div>
                             </div>
                         </button>
                         <button class="admin-action-btn admin-action-btn-warning" onclick="document.getElementById('admin-restore-input').click()">
@@ -3725,6 +3880,40 @@
                             </div>
                         </button>
                         <input type="file" id="admin-restore-input" class="hidden-input" accept=".json" onchange="importBackup(event)">
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-title"><i data-lucide="shield-check"></i> Audit DB parametri</div>
+                    <div class="admin-section-body">
+                        <button class="admin-action-btn" onclick="runParamAudit()">
+                            <span class="admin-icon"><i data-lucide="search-check"></i></span>
+                            <div>
+                                <div class="admin-action-title">Rulează audit</div>
+                                <div class="admin-action-desc">Verifică DB parametri vs PDF</div>
+                            </div>
+                        </button>
+                        <div id="adm-audit-result" class="admin-audit-result"></div>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-title"><i data-lucide="wrench"></i> Întreținere</div>
+                    <div class="admin-section-body">
+                        <button class="admin-action-btn" onclick="clearLocalCache()">
+                            <span class="admin-icon"><i data-lucide="trash"></i></span>
+                            <div>
+                                <div class="admin-action-title">Curăță cache local</div>
+                                <div class="admin-action-desc">localStorage + IndexedDB + SW</div>
+                            </div>
+                        </button>
+                        <button class="admin-action-btn" onclick="forceSWUpdate()">
+                            <span class="admin-icon"><i data-lucide="refresh-cw"></i></span>
+                            <div>
+                                <div class="admin-action-title">Forțează update SW</div>
+                                <div class="admin-action-desc">Reîncarcă service worker</div>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>

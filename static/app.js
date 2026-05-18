@@ -1973,6 +1973,151 @@ function switchTab(tab) {
         // Don't auto-load parametri — user picks producator then family first.
         loadParametriFamilii();
     }
+    if (tab === 'admin') {
+        loadAdminPanel();
+    }
+}
+
+// ============ ADMIN PANEL ============
+// Loads on-demand when user enters tab-admin. Pulls /stats, /stats/extended,
+// /parametri (count) and renders all 6 stat cards + breakdown lists.
+
+async function loadAdminPanel() {
+    try {
+        const [stats, ext, paramCount] = await Promise.all([
+            apiGet('/stats').catch(() => null),
+            apiGet('/stats/extended').catch(() => null),
+            apiGet('/parametri?limit=1').catch(() => null)  // we only care about response shape
+        ]);
+
+        // Top stats
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        if (stats) {
+            set('adm-stat-total', stats.total ?? '—');
+            set('adm-stat-active', stats.active ?? '—');
+            set('adm-stat-finished', stats.finished ?? '—');
+        }
+        if (ext) {
+            const h = ext.total_billable_hours ?? ext.total_hours ?? 0;
+            set('adm-stat-hours', `${Math.round(h)}h`);
+            set('adm-stat-urgent', (ext.urgent_count ?? 0));
+        }
+
+        // Param count from dashboard endpoint (returns total + parametri)
+        try {
+            const audit = await apiGet('/parametri/audit');
+            set('adm-stat-params', (audit.total ?? 0).toLocaleString('ro-RO'));
+        } catch {}
+
+        // Breakdown lists
+        if (ext) {
+            renderAdminBreakdown('adm-breakdown-producator', ext.by_manufacturer || [], 'producator');
+            renderAdminBreakdown('adm-breakdown-status', ext.by_status || [], 'status', _statusLabel);
+        }
+
+        if (window.lucide) try { window.lucide.createIcons(); } catch {}
+    } catch (e) {
+        console.error('loadAdminPanel failed:', e);
+    }
+}
+
+function _statusLabel(s) {
+    return ({ in_lucru: 'În Lucru', finalizat: 'Finalizat', in_asteptare: 'În Așteptare', blocat: 'Blocat' })[s] || s || '—';
+}
+
+function renderAdminBreakdown(containerId, rows, field, labelFn) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!rows || rows.length === 0) {
+        el.innerHTML = '<div style="font-size:0.78rem;color:var(--text-dim);font-style:italic;">Niciun rezultat</div>';
+        return;
+    }
+    const max = rows.reduce((m, r) => Math.max(m, r.count || 0), 0) || 1;
+    el.innerHTML = rows.map(r => {
+        const label = labelFn ? labelFn(r[field]) : (r[field] || '—');
+        const pct = Math.round(((r.count || 0) / max) * 100);
+        return `
+            <div class="admin-breakdown-row">
+                <span class="admin-breakdown-name">${escapeHtml(label)}</span>
+                <div class="admin-breakdown-bar"><div class="admin-breakdown-bar-fill" style="width:${pct}%"></div></div>
+                <span class="admin-breakdown-count">${r.count || 0}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+async function runParamAudit() {
+    const el = document.getElementById('adm-audit-result');
+    if (!el) return;
+    el.classList.add('show');
+    el.innerHTML = '<div style="color:var(--text-dim);">Rulează audit...</div>';
+    try {
+        const r = await apiGet('/parametri/audit');
+        const issues = r.issues || {};
+        const health = r.health_pct ?? r.health ?? null;
+        const healthColor = health == null ? 'var(--text-dim)' : (health >= 95 ? 'var(--success)' : health >= 80 ? 'var(--warning)' : 'var(--danger)');
+
+        const issueItems = Object.entries(issues).map(([key, val]) => {
+            const num = val.count ?? val.total ?? 0;
+            const label = val.label || key;
+            return `
+                <div class="admin-audit-issue">
+                    <span>${escapeHtml(label)}</span>
+                    <span class="num ${num === 0 ? 'zero' : ''}">${num.toLocaleString('ro-RO')}</span>
+                </div>`;
+        }).join('');
+
+        el.innerHTML = `
+            <div class="admin-audit-health" style="color:${healthColor}">
+                <i data-lucide="${health == null ? 'help-circle' : health >= 95 ? 'shield-check' : 'shield-alert'}"></i>
+                <span class="admin-audit-health-pct">${health != null ? health + '%' : 'n/a'}</span>
+                <span style="color:var(--text2); font-weight:normal; font-size:0.85rem;">
+                    Sănătate DB — ${r.total ? r.total.toLocaleString('ro-RO') + ' parametri' : '—'}
+                </span>
+            </div>
+            <div class="admin-audit-issues">${issueItems}</div>
+        `;
+        if (window.lucide) try { window.lucide.createIcons(); } catch {}
+    } catch (e) {
+        el.innerHTML = `<div style="color:var(--danger);">Audit eșuat: ${escapeHtml(e.message || String(e))}</div>`;
+    }
+}
+
+async function clearLocalCache() {
+    if (!confirm('Curăță tot cache-ul local? Asta șterge localStorage, IndexedDB și SW cache. La următorul reload datele se vor descărca din nou.')) return;
+    try {
+        // localStorage
+        try { localStorage.clear(); } catch {}
+        // IndexedDB — drop any database named pif-*
+        try {
+            const dbs = await (indexedDB.databases ? indexedDB.databases() : Promise.resolve([]));
+            for (const d of dbs) { if (d.name && d.name.startsWith('pif')) indexedDB.deleteDatabase(d.name); }
+        } catch {}
+        // SW caches
+        try {
+            const keys = await caches.keys();
+            for (const k of keys) if (k.startsWith('pif')) await caches.delete(k);
+        } catch {}
+        // Tell SW to skip waiting
+        try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg && reg.waiting) reg.waiting.postMessage('skipWaiting');
+        } catch {}
+        showToast('Cache curățat. Reîncarcă pagina (Ctrl+Shift+R).');
+    } catch (e) {
+        showToast('Eroare la curățarea cache-ului', true);
+    }
+}
+
+async function forceSWUpdate() {
+    try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) { showToast('Niciun service worker activ'); return; }
+        await reg.update();
+        showToast('Service worker actualizat. Reîncarcă pagina.');
+    } catch (e) {
+        showToast('Eroare la update SW', true);
+    }
 }
 
 async function loadGlobalTasks() {
