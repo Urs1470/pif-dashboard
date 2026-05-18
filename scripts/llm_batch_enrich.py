@@ -57,6 +57,11 @@ def parse_batch_response(text, count):
     results = [{"explicatie": "", "influenteaza": "", "categorie": ""} for _ in range(count)]
     # Split by lone '/' separator
     blocks = re.split(r'\n/\n', text.strip())
+    received = len(blocks)
+    if received < count:
+        # Pad with empty results for missing ones
+        for _ in range(count - received):
+            blocks.append("")
     for i, block in enumerate(blocks[:count]):
         for line in block.split("\n"):
             line = line.strip()
@@ -136,6 +141,72 @@ def batch_llm_call(client, system, user, rows, field, logger):
         return [], {"input_tokens": 0, "output_tokens": 0}, str(e)
 
 
+def user_prompt(row, existing_val, field):
+    parts = [
+        f"Parameter: {row['parametru']}",
+        f"Short desc: {row['descriere_scurta'] or 'n/a'}",
+        f"Desc: {row['descriere'] or 'n/a'}",
+    ]
+    if row.get("valoare_default_str"):
+        parts.append(f"Default: {row['valoare_default_str']}")
+    if row.get("min") is not None:
+        parts.append(f"Min: {row['min']}")
+    if row.get("max") is not None:
+        parts.append(f"Max: {row['max']}")
+    if row.get("unitate"):
+        parts.append(f"Unitate: {row['unitate']}")
+    return " | ".join(parts)
+
+
+def single_llm_call(client, system, user, row, field, logger):
+    """Single param LLM call with retry."""
+    for attempt in range(3):
+        try:
+            resp = client.messages.create(
+                model="MiniMax-M2.7-highspeed",
+                max_tokens=8000,
+                system=[{"type": "text", "text": system}],
+                messages=[{"role": "user", "content": user}],
+            )
+            text = "".join(
+                b.text for b in resp.content
+                if hasattr(b, "text") and b.text
+            )
+            usage = {
+                "input_tokens": resp.usage.input_tokens,
+                "output_tokens": resp.usage.output_tokens,
+            }
+            result = parse_single_response(text)
+            result["categorie"] = result["categorie"].replace("IO", "I/O") if result.get("categorie") else ""
+            if not result.get("explicatie") or not result.get("categorie"):
+                logger.warning(f"  Incomplete response for {row['parametru']}: retry {attempt+1}/3")
+                time.sleep(1 * (attempt + 1))
+                continue
+            if result.get("categorie") not in CATEGORII:
+                logger.warning(f"  Bad categorie '{result.get('categorie')}' for {row['parametru']}, retry")
+                time.sleep(1 * (attempt + 1))
+                continue
+            return result, usage, None
+        except Exception as e:
+            logger.error(f"  Error {row['parametru']}: {e}")
+            time.sleep(2 * (attempt + 1))
+    return {}, {"input_tokens": 0, "output_tokens": 0}, "error"
+
+
+def parse_single_response(text):
+    """Parse 3-line prefix format into dict."""
+    result = {"explicatie": "", "influenteaza": "", "categorie": ""}
+    for line in text.split("\n"):
+        line = line.strip()
+        if line.startswith("EXPLICATIE:"):
+            result["explicatie"] = line[12:].strip()
+        elif line.startswith("INFLUENTEAZA:"):
+            result["influenteaza"] = line[14:].strip()
+        elif line.startswith("CATEGORIE:"):
+            result["categorie"] = line[11:].strip()
+    return result
+
+
 def get_rows(familie, field):
     conn = sqlite3.connect("pif_dashboard.db")
     conn.row_factory = sqlite3.Row
@@ -209,10 +280,10 @@ def main():
     ap.add_argument("--familie", default="ALL")
     ap.add_argument("--field", required=True,
                     choices=["explicatie", "influenteaza", "categorie"])
-    ap.add_argument("--batch-size", type=int, default=10)
+    ap.add_argument("--batch-size", type=int, default=1)  # default 1 = single
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--log", default="scripts/llm_batch.log")
+    ap.add_argument("--log", default="scripts/llm_single.log")
     args = ap.parse_args()
 
     lg = setup_log(args.log)
@@ -222,8 +293,7 @@ def main():
     total = 0
     cost = 0.0
     decisions = {"keep": 0, "rewrite": 0, "new": 0, "error": 0}
-    batch_rows = []
-    batch_count = 0
+    commit_counter = 0
 
     for row in get_rows(args.familie, args.field):
         pid = row["id"]
@@ -231,72 +301,55 @@ def main():
         existing_val = row.get(args.field)
         qc = quality_check(pcode, existing_val, args.field)
 
-        if qc == "keep":
-            decisions["keep"] += 1
+        lg.info(f"{pid} {pcode} ({row['familie']})  existing_len={len(str(existing_val)) if existing_val else 0}  qc={qc}")
+
+        if args.dry_run:
+            result_test = {
+                "explicatie": "[DRY] " + str(existing_val or "")[:60],
+                "influenteaza": "",
+                "categorie": "Diagnostic",
+            }
+            lg.info(f"  DRY: {json.dumps(result_test, ensure_ascii=False)}")
             total += 1
             continue
 
-        batch_rows.append((pid, pcode, row, qc))
-        batch_count += 1
+        if qc == "keep":
+            decisions["keep"] += 1
+            lg.info(f"  -> keep (existing OK)")
+            total += 1
+            continue
 
-        if len(batch_rows) >= args.batch_size:
-            lg.info(f"  Batch of {len(batch_rows)} params...")
-            system = SYSTEM_BASE + FEW_SHOT
-            user = batch_user_prompt([r[2] for r in batch_rows], args.field)
-
-            results, usage, err = batch_llm_call(client, system, user, [r[2] for r in batch_rows], args.field, lg)
-            cost_batch = (usage["input_tokens"] or 0) * 0.000001 + (usage["output_tokens"] or 0) * 0.000003
-            cost += cost_batch
-
-            if err:
-                decisions["error"] += len(batch_rows)
-                lg.warning(f"  Batch error: {err}")
-            else:
-                for i, (pid, pcode, row, qc) in enumerate(batch_rows):
-                    result = results[i] if i < len(results) else {}
-                    new_val = result.get(args.field, "")
-                    if new_val:
-                        if qc == "rewrite":
-                            decisions["rewrite"] += 1
-                        else:
-                            decisions["new"] += 1
-                        write_row(pid, args.field, new_val, lg)
-                    else:
-                        decisions["error"] += 1
-                    total += 1
-
-            lg.info(f"  Batch done: {len(batch_rows)} params, cost={cost_batch:.4f}, total_cost={cost:.4f}")
-            batch_rows = []
-
-            time.sleep(0.5)
-
-        if args.limit and total >= args.limit:
-            break
-
-    # Final partial batch
-    if batch_rows and not args.dry_run:
-        lg.info(f"  Final batch of {len(batch_rows)} params...")
         system = SYSTEM_BASE + FEW_SHOT
-        user = batch_user_prompt([r[2] for r in batch_rows], args.field)
-        results, usage, err = batch_llm_call(client, system, user, [r[2] for r in batch_rows], args.field, lg)
-        cost_batch = (usage["input_tokens"] or 0) * 0.000001 + (usage["output_tokens"] or 0) * 0.000003
-        cost += cost_batch
-        if not err:
-            for i, (pid, pcode, row, qc) in enumerate(batch_rows):
-                result = results[i] if i < len(results) else {}
-                new_val = result.get(args.field, "")
-                if new_val:
-                    if qc == "rewrite":
-                        decisions["rewrite"] += 1
-                    else:
-                        decisions["new"] += 1
-                    write_row(pid, args.field, new_val, lg)
-                else:
-                    decisions["error"] += 1
-                total += 1
+        user = user_prompt(row, existing_val, args.field)
+        result, usage, err = single_llm_call(client, system, user, row, args.field, lg)
 
-    if not args.dry_run:
-        git_commit(total, args.familie, args.field, decisions, cost, lg)
+        if err:
+            decisions["error"] += 1
+            total += 1
+            continue
+
+        new_val = result.get(args.field, "")
+        if new_val:
+            if qc == "rewrite":
+                decisions["rewrite"] += 1
+            else:
+                decisions["new"] += 1
+            write_row(pid, args.field, new_val, lg)
+        else:
+            decisions["error"] += 1
+        total += 1
+        cost += (usage["input_tokens"] or 0) * 0.000001 + (usage["output_tokens"] or 0) * 0.000003
+        lg.info(f"  -> {qc}: {str(new_val)[:80]}")
+
+        commit_counter += 1
+        if commit_counter >= 100:
+            git_commit(commit_counter, args.familie, args.field, decisions, cost, lg)
+            commit_counter = 0
+
+        time.sleep(0.1)
+
+    if commit_counter > 0 and not args.dry_run:
+        git_commit(commit_counter, args.familie, args.field, decisions, cost, lg)
 
     lg.info(f"DONE: total={total} {decisions} cost=${cost:.4f}")
 

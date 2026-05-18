@@ -1,0 +1,8 @@
+2026-05-19 00:27:25,313  INFO      START: ACS580/explicatie  batch_size=1  dry=False
+2026-05-19 00:27:25,902  INFO      14799 76.01 (ACS580)  existing_len=145  qc=keep
+2026-05-19 00:27:25,903  INFO        -> keep (existing OK)
+2026-05-19 00:27:25,903  INFO      14800 15.54 (ACS580)  existing_len=181  qc=keep
+2026-05-19 00:27:25,903  INFO        -> keep (existing OK)
+2026-05-19 00:27:25,903  INFO      14801 71.01 (ACS580)  existing_len=168  qc=keep
+2026-05-19 00:27:25,903  INFO        -> keep (existing OK)
+2026-05-19 00:27:25,903  INFO      14802 22.28 (ACS580)  existing_len=846  qc=rewrite
