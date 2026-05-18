@@ -1,0 +1,6 @@
+2026-05-19 00:21:33,313  INFO      START: ACS580/explicatie  batch_size=10  dry=True
+2026-05-19 00:21:33,897  INFO        Batch of 10 params...
+2026-05-19 00:22:02,941  INFO        Batch done: 10 params, cost=0.0067, total_cost=0.0067
+2026-05-19 00:22:03,442  INFO        Batch of 10 params...
+2026-05-19 00:22:24,524  INFO        Batch done: 10 params, cost=0.0044, total_cost=0.0111
+2026-05-19 00:22:25,025  INFO      DONE: total=21 {'keep': 1, 'rewrite': 2, 'new': 0, 'error': 18} cost=$0.0111
