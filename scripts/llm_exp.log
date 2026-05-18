@@ -1034,3 +1034,204 @@
 2026-05-19 01:48:33,032  INFO        -> rewrite: Defineste castigul controllerului pentru functia de control "Rush" care gestione
 2026-05-19 01:48:33,133  INFO      15345 26.82 (ACS580)  existing_len=1156  qc=rewrite
 2026-05-19 01:48:42,892  INFO        -> rewrite: Seteaza timpul de integrare pentru controlerul de franare rapida. Un timp mai sc
+2026-05-19 01:48:45,217  INFO        Committed + pushed
+2026-05-19 01:48:45,318  INFO      15346 28.01 (ACS580)  existing_len=1349  qc=rewrite
+2026-05-19 01:48:54,427  INFO        -> rewrite: Afiseaza valoarea referintei de frecventa care este aplicata inainte de rampa de
+2026-05-19 01:48:54,528  INFO      15347 28.24 (ACS580)  existing_len=1267  qc=rewrite
+2026-05-19 01:49:04,446  INFO        -> rewrite: Selecteaza sursa de control pentru activarea frecventelor constante. Bit 0 = act
+2026-05-19 01:49:04,546  INFO      15348 28.29 (ACS580)  existing_len=1050  qc=rewrite
+2026-05-19 01:49:13,434  INFO        -> rewrite: Seteaza valoarea frecventei constante 4 in Hz. Poate fi selectata ca referinta d
+2026-05-19 01:49:13,535  INFO      15349 28.30 (ACS580)  existing_len=1017  qc=rewrite
+2026-05-19 01:49:20,228  INFO        -> rewrite: Seteaza valoarea pentru frecventa constanta 5, una dintre frecventele presetate 
+2026-05-19 01:49:20,329  INFO      15350 28.31 (ACS580)  existing_len=1063  qc=rewrite
+2026-05-19 01:49:32,108  INFO        -> rewrite: Defineste frecventa constanta 6 pentru functionare la turatie fixa. Valoarea imp
+2026-05-19 01:49:32,209  INFO      15351 28.32 (ACS580)  existing_len=1090  qc=rewrite
+2026-05-19 01:49:44,001  INFO        -> rewrite: Defineste valoarea frecventei constante presetate numarul 7. Poate fi selectata 
+2026-05-19 01:49:44,101  INFO      15352 28.43 (ACS580)  existing_len=1101  qc=rewrite
+2026-05-19 01:49:51,353  INFO        -> rewrite: Defineste frecventa de referinta pentru functia de jogging 2 in hertzi. Valoarea
+2026-05-19 01:49:51,453  INFO      15353 28.51 (ACS580)  existing_len=1330  qc=rewrite
+2026-05-19 01:50:03,635  INFO        -> rewrite: Activeaza sau dezactiveaza functia de frecvente critice. Cand este activata, con
+2026-05-19 01:50:03,735  INFO      15354 28.52 (ACS580)  existing_len=1172  qc=rewrite
+2026-05-19 01:50:09,648  INFO        -> rewrite: Defineste limita inferioara pentru frecventa critica 1. Impreuna cu 28.51 formea
+2026-05-19 01:50:09,749  INFO      15355 28.53 (ACS580)  existing_len=1162  qc=rewrite
+2026-05-19 01:50:21,220  INFO        -> rewrite: Seteaza limita superioara a benzii de frecventa critica 1 pe care convertizorul 
+2026-05-19 01:50:21,321  INFO      15356 28.54 (ACS580)  existing_len=1145  qc=rewrite
+2026-05-19 01:50:29,957  INFO        -> rewrite: Defineste limita inferioara pentru banda de frecventa critica 2. VFD-ul va sari 
+2026-05-19 01:50:30,058  INFO      15357 28.55 (ACS580)  existing_len=1141  qc=rewrite
+2026-05-19 01:50:38,969  INFO        -> rewrite: Defineste limita superioara a benzii de frecventa critica 2. Aceasta functie per
+2026-05-19 01:50:39,070  INFO      15358 28.56 (ACS580)  existing_len=1132  qc=rewrite
+2026-05-19 01:50:48,536  INFO        -> rewrite: Defineste limita inferioara pentru frecventa critica 3. Aceasta functie permite 
+2026-05-19 01:50:48,636  INFO      15359 28.76 (ACS580)  existing_len=1161  qc=rewrite
+2026-05-19 01:50:58,901  INFO        -> rewrite: Selecteaza o sursa care forteaza referinta de frecventa la zero. Cand intrarea e
+2026-05-19 01:50:59,002  INFO      15360 28.97 (ACS580)  existing_len=1169  qc=rewrite
+2026-05-19 01:51:06,919  INFO        -> rewrite: Afiseaza referinta de frecventa efectiva dupa aplicarea tuturor corectiilor si f
+2026-05-19 01:51:07,020  INFO      15361 30.01 (ACS580)  existing_len=1091  qc=rewrite
+2026-05-19 01:51:12,857  INFO        -> rewrite: Afiseaza cuvantul de stare al limitelor. Fiecare bit reprezinta o conditie de li
+2026-05-19 01:51:12,957  INFO      15362 30.26 (ACS580)  existing_len=1252  qc=rewrite
+2026-05-19 01:51:21,285  INFO        -> rewrite: Defineste puterea maxima permisa pe care invertorul o furnizeaza motorului in re
+2026-05-19 01:51:21,386  INFO      15363 30.27 (ACS580)  existing_len=1293  qc=rewrite
+2026-05-19 01:51:34,060  INFO        -> rewrite: Seteaza puterea maxima permisa in modul regenerativ, cand motorul actioneaza ca 
+2026-05-19 01:51:34,160  INFO      15364 30.15 (ACS580)  existing_len=1342  qc=rewrite
+2026-05-19 01:51:45,823  INFO        -> rewrite: Defineste o limita temporara de curent pentru faza de pornire a motorului. Cand 
+2026-05-19 01:51:45,924  INFO      15365 30.16 (ACS580)  existing_len=1390  qc=rewrite
+2026-05-19 01:51:54,380  INFO        -> rewrite: Seteaza curentul maxim permis in timpul pornirii motorului. Cand este activata d
+2026-05-19 01:51:54,481  INFO      15366 30.18 (ACS580)  existing_len=1382  qc=rewrite
+2026-05-19 01:52:00,337  INFO        -> rewrite: Selecteaza sursa care comuta intre doua limite diferite de cuplu. Poate fi setat
+2026-05-19 01:52:00,437  INFO      15367 30.23 (ACS580)  existing_len=1274  qc=rewrite
+2026-05-19 01:52:09,764  INFO        -> rewrite: Defineste limita minima a cuplului motorului exprimata in procente din cuplul no
+2026-05-19 01:52:09,865  INFO      15368 30.35 (ACS580)  existing_len=1329  qc=rewrite
+2026-05-19 01:52:20,008  INFO        -> rewrite: Activeaza sau dezactiveaza limitarea curentului de iesire bazata pe temperatura 
+2026-05-19 01:52:20,109  INFO      15369 30.36 (ACS580)  existing_len=1285  qc=rewrite
+2026-05-19 01:52:29,685  INFO        -> rewrite: Selecteaza sursa digitala care comuta intre doua seturi de limite de viteza. Can
+2026-05-19 01:52:29,785  INFO      15370 30.37 (ACS580)  existing_len=1317  qc=rewrite
+2026-05-19 01:52:41,680  INFO        -> rewrite: Selecteaza sursa de unde vine referinta pentru viteza minima a drive-ului. Optiu
+2026-05-19 01:52:41,781  INFO      15371 30.38 (ACS580)  existing_len=1321  qc=rewrite
+2026-05-19 01:52:51,188  INFO        -> rewrite: Defineste sursa pentru limita maxima de viteza a motorului. Poate fi selectata d
+2026-05-19 01:52:51,289  INFO      15372 30.39 (ACS580)  existing_len=1313  qc=rewrite
+2026-05-19 01:52:57,988  INFO        -> rewrite: Defineste cum reactioneaza invertorul cand un bit din cuvantul de limite 1 (30.0
+2026-05-19 01:52:58,088  INFO      15373 30.40 (ACS580)  existing_len=1190  qc=rewrite
+2026-05-19 01:53:07,550  INFO        -> rewrite: Defineste intervalul de timp in secunde cat o conditie de avertizare trebuie sa 
+2026-05-19 01:53:07,651  INFO      15374 30.41 (ACS580)  existing_len=1371  qc=rewrite
+2026-05-19 01:53:13,971  INFO        -> rewrite: Defineste daca se genereaza un mesaj de avertizare cand anumite conditii de limi
+2026-05-19 01:53:14,072  INFO      15375 30.42 (ACS580)  existing_len=1357  qc=rewrite
+2026-05-19 01:53:22,765  INFO        -> rewrite: Selecteaza care biti din cuvantul de stare motor 30.02 declanseaza o avertizare 
+2026-05-19 01:53:22,866  INFO      15377 31.10 (ACS580)  existing_len=1538  qc=rewrite
+2026-05-19 01:53:34,415  INFO        -> rewrite: Defineste tipul evenimentului extern 5 care declanseaza o reactie din partea VFD
+2026-05-19 01:53:34,516  INFO      15378 31.13 (ACS580)  existing_len=1699  qc=rewrite
+2026-05-19 01:53:42,628  INFO        -> rewrite: Defineste tipul de defect care poate fi resetat automat. Fiecare bit al acestui 
+2026-05-19 01:53:42,729  INFO      15379 31.19 (ACS580)  existing_len=1698  qc=rewrite
+2026-05-19 01:53:51,092  INFO        -> rewrite: Selecteaza reactia drive-ului la pierderea unei faze a motorului. Cand este seta
+2026-05-19 01:53:51,192  INFO      15380 31.20 (ACS580)  existing_len=1741  qc=rewrite
+2026-05-19 01:54:02,560  INFO        -> rewrite: Selecteaza modul de reactie al convertizorului la detectarea unei defectiuni de 
+2026-05-19 01:54:02,660  INFO      15381 31.21 (ACS580)  existing_len=1732  qc=rewrite
+2026-05-19 01:54:11,164  INFO        -> rewrite: Seteaza reactia convertizorului la pierderea unei faze de alimentare. Optiunea F
+2026-05-19 01:54:11,265  INFO      15382 31.23 (ACS580)  existing_len=1236  qc=rewrite
+2026-05-19 01:54:21,519  INFO        -> rewrite: Defineste modul de reactie al convertizorului la detectarea unor conexiuni elect
+2026-05-19 01:54:21,622  INFO      15383 31.31 (ACS580)  existing_len=1287  qc=rewrite
+2026-05-19 01:54:26,814  INFO        -> rewrite: Seteaza pragul de frecventa la care VFD-ul declanseaza o eroare (trip). Function
+2026-05-19 01:54:26,915  INFO      15384 31.54 (ACS580)  existing_len=1731  qc=rewrite
+2026-05-19 01:54:38,070  INFO        -> rewrite: Defineste modul de oprire a motorului cand apare o eroare care nu blocheaza func
+2026-05-19 01:54:38,170  INFO      15385 32.08 (ACS580)  existing_len=1631  qc=rewrite
+2026-05-19 01:54:47,718  INFO        -> rewrite: Defineste constanta de timp a filtrului pentru semnalul monitorizat de functia d
+2026-05-19 01:54:47,819  INFO      15387 32.15 (ACS580)  existing_len=1698  qc=rewrite
+2026-05-19 01:54:56,057  INFO        -> rewrite: Selecteaza modul de functionare pentru functia de supraveghere 2. Functia monito
+2026-05-19 01:54:56,158  INFO      15388 32.21 (ACS580)  existing_len=1257  qc=rewrite
+2026-05-19 01:55:06,158  INFO        -> rewrite: Defineste histereza pentru semnalul supervisat de functia de supraveghere 2. His
+2026-05-19 01:55:06,259  INFO      15389 32.16 (ACS580)  existing_len=1757  qc=rewrite
+2026-05-19 01:55:11,417  INFO        -> rewrite: Defineste ce actiune executa variatorul cand conditia de supradetejare 2 este in
+2026-05-19 01:55:11,517  INFO      15390 32.17 (ACS580)  existing_len=1253  qc=rewrite
+2026-05-19 01:55:19,981  INFO        -> rewrite: Selecteaza semnalul care va fi monitorizat de functia de supraveghere 2. Poate f
+2026-05-19 01:55:20,082  INFO      15391 32.18 (ACS580)  existing_len=1205  qc=rewrite
+2026-05-19 01:55:27,938  INFO        -> rewrite: Defineste constanta de timp pentru filtrul semnalului monitorizat de functia de 
+2026-05-19 01:55:28,038  INFO      15392 32.19 (ACS580)  existing_len=1183  qc=rewrite
+2026-05-19 01:55:35,712  INFO        -> rewrite: Defineste pragul minim pentru functia de supraveghere a semnalului 2. Când valoa
+2026-05-19 01:55:35,813  INFO      15393 32.20 (ACS580)  existing_len=1153  qc=rewrite
+2026-05-19 01:55:42,319  INFO        -> rewrite: Defineste pragul superior pentru supervisarea semnalului 2. Când semnalul monito
+2026-05-19 01:55:42,420  INFO      15394 32.28 (ACS580)  existing_len=1223  qc=rewrite
+2026-05-19 01:55:51,355  INFO        -> rewrite: Defineste constanta de timp a filtrului pentru semnalul monitorizat de functia d
+2026-05-19 01:55:51,456  INFO      15395 32.35 (ACS580)  existing_len=1451  qc=rewrite
+2026-05-19 01:55:57,606  INFO        -> rewrite: Activeaza functia de supraveghere a semnalului 4, care monitorizeaza o intrare a
+2026-05-19 01:55:57,707  INFO      15396 32.41 (ACS580)  existing_len=1076  qc=rewrite
+2026-05-19 01:56:05,881  INFO        -> rewrite: Defineste histereza pentru semnalul monitorizat de functia de supervisie 4. Hist
+2026-05-19 01:56:05,982  INFO      15397 32.36 (ACS580)  existing_len=1225  qc=rewrite
+2026-05-19 01:56:15,291  INFO        -> rewrite: Selecteaza ce actiune intreprinde convertizorul cand limita de supraveghere 4 es
+2026-05-19 01:56:15,392  INFO      15398 32.37 (ACS580)  existing_len=1155  qc=rewrite
+2026-05-19 01:56:23,769  INFO        -> rewrite: Seteaza semnalul care va fi monitorizat de functia de supervisie 4. Poate fi sel
+2026-05-19 01:56:23,869  INFO      15399 32.38 (ACS580)  existing_len=1115  qc=rewrite
+2026-05-19 01:56:35,775  INFO        -> rewrite: Defineste constanta de timp a filtrului pentru semnalul monitorizat de supervisi
+2026-05-19 01:56:35,876  INFO      15400 32.39 (ACS580)  existing_len=1088  qc=rewrite
+2026-05-19 01:56:41,420  INFO        -> rewrite: Defineste pragul minim pentru supravegherea semnalului 4. Când valoarea supraveg
+2026-05-19 01:56:41,521  INFO      15401 32.40 (ACS580)  existing_len=1073  qc=rewrite
+2026-05-19 01:56:52,380  INFO        -> rewrite: Defineste limita superioara pentru supravegherea semnalului 4. Când valoarea sem
+2026-05-19 01:56:52,480  INFO      15402 32.45 (ACS580)  existing_len=1331  qc=rewrite
+2026-05-19 01:57:02,936  INFO        -> rewrite: Selecteaza sursa si modul de functionare pentru functia de supraveghere 5. Permi
+2026-05-19 01:57:03,037  INFO      15403 32.51 (ACS580)  existing_len=1263  qc=rewrite
+2026-05-19 01:57:09,764  INFO        -> rewrite: Defineste histerezisul pentru semnalul monitorizat de functia de supervisie 5. H
+2026-05-19 01:57:09,865  INFO      15404 32.46 (ACS580)  existing_len=1249  qc=rewrite
+2026-05-19 01:57:21,551  INFO        -> rewrite: Configureaza ce actiune executa drive-ul cand semnalul de supervizare 5 iese din
+2026-05-19 01:57:21,652  INFO      15405 32.47 (ACS580)  existing_len=1252  qc=rewrite
+2026-05-19 01:57:33,324  INFO        -> rewrite: Selecteaza semnalul care va fi monitorizat de functia de supervisare 5. Semnalul
+2026-05-19 01:57:33,425  INFO      15406 32.48 (ACS580)  existing_len=1133  qc=rewrite
+2026-05-19 01:57:40,201  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul semnalului monitorizat de supervisia 5.
+2026-05-19 01:57:40,302  INFO      15407 32.49 (ACS580)  existing_len=1116  qc=rewrite
+2026-05-19 01:57:48,971  INFO        -> rewrite: Defineste limita inferioara pentru supervisarea semnalului 5. Cand valoarea semn
+2026-05-19 01:57:49,071  INFO      15408 32.50 (ACS580)  existing_len=1148  qc=rewrite
+2026-05-19 01:57:58,858  INFO        -> rewrite: Defineste limita superioara pentru functia de supraveghere 5 a semnalului. Cand 
+2026-05-19 01:57:58,959  INFO      15409 32.61 (ACS580)  existing_len=1255  qc=rewrite
+2026-05-19 01:58:07,599  INFO        -> rewrite: Defineste histerezisul pentru semnalul monitorizat de functia de supraveghere 6.
+2026-05-19 01:58:07,700  INFO      15410 32.56 (ACS580)  existing_len=1238  qc=rewrite
+2026-05-19 01:58:17,047  INFO        -> rewrite: Defineste actiunea care va fi declansata cand conditia de supervisie 6 este inde
+2026-05-19 01:58:17,148  INFO      15411 32.57 (ACS580)  existing_len=1257  qc=rewrite
+2026-05-19 01:58:28,603  INFO        -> rewrite: Selecteaza tipul de semnal care va fi supravegheat de functia de supervisie. Opt
+2026-05-19 01:58:28,704  INFO      15412 32.59 (ACS580)  existing_len=1247  qc=rewrite
+2026-05-19 01:58:37,602  INFO        -> rewrite: Defineste limita inferioara pentru functia de supraveghere 6. Cand semnalul moni
+2026-05-19 01:58:37,703  INFO      15413 32.60 (ACS580)  existing_len=1212  qc=rewrite
+2026-05-19 01:58:49,104  INFO        -> rewrite: Defineste limita superioara pentru functia de supraveghere a semnalului 6. Cand 
+2026-05-19 01:58:49,205  INFO      15414 34.04 (ACS580)  existing_len=1384  qc=rewrite
+2026-05-19 01:58:54,814  INFO        -> rewrite: Afiseaza starea curenta a sezonului activ (1-4), a zilei exceptie si a programul
+2026-05-19 01:58:54,914  INFO      15415 34.10 (ACS580)  existing_len=1315  qc=rewrite
+2026-05-19 01:59:07,794  INFO        -> rewrite: Selecteaza sursa semnalului de validare pentru functiile temporizate. Cand semna
+2026-05-19 01:59:07,895  INFO      15416 34.14 (ACS580)  existing_len=1138  qc=rewrite
+2026-05-19 01:59:16,245  INFO        -> rewrite: Configureaza functionarea Timerului 2. Functioneaza similar cu Timer 1 (34.11). 
+2026-05-19 01:59:16,346  INFO      15417 34.15 (ACS580)  existing_len=1013  qc=rewrite
+2026-05-19 01:59:23,223  INFO        -> rewrite: Seteaza ora de start pentru timerul 2 in format HH:MM:SS. Folosit pentru program
+2026-05-19 01:59:23,323  INFO      15418 34.16 (ACS580)  existing_len=1378  qc=rewrite
+2026-05-19 01:59:28,617  INFO        -> rewrite: Seteaza durata Timer 2 in zile si ore/minute. Functioneaza similar cu Timer 1 di
+2026-05-19 01:59:28,718  INFO      15419 34.17 (ACS580)  existing_len=1682  qc=rewrite
+2026-05-19 01:59:38,651  INFO        -> rewrite: Configureaza Timer 3 pentru generarea de intarzieri sau semnale ciclice. Functio
+2026-05-19 01:59:38,752  INFO      15420 34.18 (ACS580)  existing_len=1615  qc=rewrite
+2026-05-19 01:59:49,603  INFO        -> rewrite: Seteaza ora de pornire pentru Timer 3 in format ore:minute:secunde. Cand ceasul 
+2026-05-19 01:59:49,703  INFO      15421 34.19 (ACS580)  existing_len=1626  qc=rewrite
+2026-05-19 01:59:55,853  INFO        -> rewrite: Seteaza durata timerului 3 in ore si minute. Functioneaza identic cu timerul 1 d
+2026-05-19 01:59:55,953  INFO      15422 34.20 (ACS580)  existing_len=1316  qc=rewrite
+2026-05-19 02:00:03,911  INFO        -> rewrite: Configureaza Timer 4 pentru functii de intarziere sau temporizare in aplicatie. 
+2026-05-19 02:00:04,012  INFO      15423 34.21 (ACS580)  existing_len=1265  qc=rewrite
+2026-05-19 02:00:15,318  INFO        -> rewrite: Seteaza ora de start pentru Timer 4 in format HH:MM:SS. Functioneaza impreuna cu
+2026-05-19 02:00:15,419  INFO      15424 34.22 (ACS580)  existing_len=1291  qc=rewrite
+2026-05-19 02:00:30,433  INFO        -> rewrite: Seteaza durata de functionare pentru Timer 4. Formatul este zi-ore:minute (00 00
+2026-05-19 02:00:30,534  INFO      15425 34.23 (ACS580)  existing_len=1350  qc=rewrite
+2026-05-19 02:00:36,945  INFO        -> rewrite: Configureaza temporizatorul 5 pentru controlul unei iesiri digitale. Functioneaz
+2026-05-19 02:00:37,046  INFO      15426 34.24 (ACS580)  existing_len=1149  qc=rewrite
+2026-05-19 02:00:43,373  INFO        -> rewrite: Seteaza ora de start pentru timer 5 in format ore:minute:secunde. Functioneaza i
+2026-05-19 02:00:43,474  INFO      15427 34.25 (ACS580)  existing_len=1169  qc=rewrite
+2026-05-19 02:00:56,585  INFO        -> rewrite: Seteaza durata timerului 5 sub forma de zile si ore-minute-secunde. Functioneaza
+2026-05-19 02:00:56,685  INFO      15428 34.26 (ACS580)  existing_len=1227  qc=rewrite
+2026-05-19 02:01:07,290  INFO        -> rewrite: Configureaza Timer 6 pentru functii de temporizare in logica de control. Functio
+2026-05-19 02:01:07,391  INFO      15429 34.27 (ACS580)  existing_len=1201  qc=rewrite
+2026-05-19 02:01:22,850  INFO        -> rewrite: Seteaza ora de start pentru Timer 6 in format ore:minute:secunde. Cand ajunge la
+2026-05-19 02:01:22,951  INFO      15430 34.28 (ACS580)  existing_len=1177  qc=rewrite
+2026-05-19 02:01:32,411  INFO        -> rewrite: Defineste durata timerului 6 exprimata in zile si ore. Functionarea este identic
+2026-05-19 02:01:32,511  INFO      15431 34.29 (ACS580)  existing_len=1254  qc=rewrite
+2026-05-19 02:01:43,909  INFO        -> rewrite: Reprezinta al saptelea timer functional. Utilizeaza aceeasi structura de configu
+2026-05-19 02:01:44,009  INFO      15432 34.30 (ACS580)  existing_len=1186  qc=rewrite
+2026-05-19 02:01:52,854  INFO        -> rewrite: Seteaza ora de pornire pentru Timer 7 in format ore:minute:secunde. Face parte d
+2026-05-19 02:01:52,955  INFO      15433 34.31 (ACS580)  existing_len=1238  qc=rewrite
+2026-05-19 02:01:58,988  INFO        -> rewrite: Seteaza durata timerului 7 in ore, minute si secunde. Functioneaza similar cu ti
+2026-05-19 02:01:59,090  INFO      15434 34.32 (ACS580)  existing_len=1414  qc=rewrite
+2026-05-19 02:02:08,891  INFO        -> rewrite: Timer 8 este configurat identic cu Timer 1 (34.11). Contine aceeasi structura de
+2026-05-19 02:02:08,992  INFO      15436 34.34 (ACS580)  existing_len=1267  qc=rewrite
+2026-05-19 02:02:17,793  INFO        -> rewrite: Seteaza durata pentru Timer 8. Acest parametru defineste intervalul de timp in s
+2026-05-19 02:02:17,894  INFO      15437 34.35 (ACS580)  existing_len=1282  qc=rewrite
+2026-05-19 02:02:26,834  INFO        -> rewrite: Reprezinta configuratia pentru Timer 9, identica cu structura Timer 1 din 34.11.
+2026-05-19 02:02:26,935  INFO      15438 34.36 (ACS580)  existing_len=1311  qc=rewrite
+2026-05-19 02:02:39,389  INFO        -> rewrite: Seteaza ora de start pentru Timer 9. Functioneaza similar cu Timer 1 descris in 
+2026-05-19 02:02:39,489  INFO      15439 34.37 (ACS580)  existing_len=1266  qc=rewrite
+2026-05-19 02:02:50,078  INFO        -> rewrite: Seteaza durata timer-ului 9 in format ore:minute. Valoarea implicita 00:00:00 in
+2026-05-19 02:02:50,179  INFO      15440 34.38 (ACS580)  existing_len=1252  qc=rewrite
+2026-05-19 02:02:54,878  INFO        -> rewrite: Configureaza functia timer 10. Timerele sunt folosite pentru functii de temporiz
+2026-05-19 02:02:54,979  INFO      15441 34.39 (ACS580)  existing_len=1242  qc=rewrite
+2026-05-19 02:03:04,421  INFO        -> rewrite: Seteaza ora de pornire pentru Timer 10. Functioneaza impreuna cu Timer 10 stop t
+2026-05-19 02:03:04,521  INFO      15442 34.40 (ACS580)  existing_len=1352  qc=rewrite
+2026-05-19 02:03:14,009  INFO        -> rewrite: Seteaza durata timerului 10. Functioneaza similar cu timerul 1 conform explicati
+2026-05-19 02:03:14,110  INFO      15443 34.41 (ACS580)  existing_len=1092  qc=rewrite
+2026-05-19 02:03:27,970  INFO        -> rewrite: Timer 11 este al unsprezecelea temporizator programabil din invertor. Configurat
+2026-05-19 02:03:28,070  INFO      15444 34.43 (ACS580)  existing_len=1052  qc=rewrite
+2026-05-19 02:03:37,670  INFO        -> rewrite: Defineste durata timerului 11 in ore si minute. Timerul 11 este utilizat pentru 
+2026-05-19 02:03:37,771  INFO      15445 34.60 (ACS580)  existing_len=1260  qc=rewrite
+2026-05-19 02:03:49,838  INFO        -> rewrite: Defineste data de inceput a sezonului 1 in format dd.mm. Aceasta functie este ut
+2026-05-19 02:03:49,938  INFO      15446 34.61 (ACS580)  existing_len=1250  qc=rewrite
+2026-05-19 02:04:02,669  INFO        -> rewrite: Defineste data de inceput a sezonului 2 pentru functiile de planificare calendar
+2026-05-19 02:04:02,770  INFO      15447 34.62 (ACS580)  existing_len=1231  qc=rewrite
+2026-05-19 02:04:09,243  INFO        -> rewrite: Defineste data de inceput a sezonului 3 pentru functionare programata. Folosit i
+2026-05-19 02:04:09,343  INFO      15449 34.70 (ACS580)  existing_len=1367  qc=rewrite
+2026-05-19 02:04:22,466  INFO        -> rewrite: Definește numărul de excepții active în sistemul de monitorizare. Valoarea setat
