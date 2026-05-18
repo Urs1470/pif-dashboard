@@ -192,6 +192,10 @@ def call_llm(client, system, user, row, field, logger):
                 "output_tokens": resp.usage.output_tokens,
             }
 
+            # Normalize IO -> I/O before validation
+            if result.get("categorie"):
+                result["categorie"] = result["categorie"].replace("IO", "I/O")
+
             # Validate: need both explicatie and categorie
             if not result.get("explicatie") or not result.get("categorie"):
                 logger.warning(
