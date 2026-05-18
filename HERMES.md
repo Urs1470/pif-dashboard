@@ -43,18 +43,58 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
    ```
    Claude folosește pattern-ul invers — author Ion (`Urs1470`), co-author Claude.
 
-### B. Domeniu — cine atinge ce
+### B. Domeniu — cine atinge ce (CRITIC, citit cu atenție)
 
-| Zonă | Owner principal |
+**Cele 3+ sesiuni rulează paralel pe același worktree.** A se vedea commit `245cf33` ("Restore PV button + pv-modal.js include in index.html (lost in 3e01a8a)") — un caz real de suprascriere între sesiuni. Protocolul mai jos previne asta.
+
+#### Domain map
+
+| Zonă | Owner |
 |---|---|
-| `templates/`, `static/app.js`, `static/mobile.js`, `static/service-worker.js`, `static/budget/*` | **Claude** (UI/UX, design system) |
-| `app.py` (rute API), `database.py` (migrații), `blueprints/*` | **Claude** dacă e UI-driven, **Hermes** dacă e infra/data |
-| `scripts/audit_pdf.py`, `scripts/audit_reports/*` | **Hermes** |
-| Improvements LLM pe `parametri_master` (descrieri, explicații, interconexiuni) | **Hermes** (folosește API key-ul tău) |
+| **PV generation**: `services/pv_generator.py`, `static/pv-modal.js`, `templates/pv/*.docx`, secțiunea PV din `app.py` | **Spawned-PV session** |
+| **Import parametri**: `scripts/parse_params/*.py`, endpoint `/api/echipamente/<id>/import-params` în `app.py` | **Spawned-Import session** |
+| **Audit PDF**: `scripts/audit_pdf.py`, `scripts/audit_reports/*`, parsers nestate | **Hermes** |
+| **LLM batch** pe `parametri_master` (descrieri, explicații) | **Hermes** |
+| **UI bugs, Sprint refactor general**: `templates/index.html`, `templates/mobile.html`, `static/app.js`, `static/mobile.js`, `static/service-worker.js`, `templates/login.html` | **Claude main session** |
+| **Budget app**: `static/budget/*`, `blueprints/budget.py` | **Spawned-Budget session** (când există) |
+| `database.py` migrații | session-ul care introduce schema (anunță prin commit message clar) |
 | Manuale PDF în `manuals/` | **Hermes** (descarcă, validează) |
-| Memory files Ion (`~/.claude/projects/.../memory/*.md`) | **NU atinge** — sunt locale lui Ion |
+| Memory files Ion (`~/.claude/projects/.../memory/*.md`) | **NU atinge** — locale Ion |
 
-Dacă găsești un bug în zona "Claude" și e mic (typo, bug de o linie), corectează-l cu commit message care explică clar `Hermes fix: ...`. Dacă e mai mare, lasă-l într-un fișier `HERMES_FOUND_BUGS.md` la root și anunță Ion să-l direcționeze.
+#### Reguli shared files (`templates/index.html`, `static/app.js`, `templates/mobile.html`, `static/mobile.js`)
+
+Aceste 4 fișiere sunt **shared**. Mai multe sesiuni au nevoie să adauge integrări UI mici (un buton, un include de script, un handler).
+
+**Protocol obligatoriu pentru modificări pe shared files:**
+
+1. **Înainte de fiecare push:**
+   ```bash
+   git fetch origin master
+   git pull --rebase origin master
+   ```
+   Dacă rebase-ul produce conflict pe shared files, **STOP**, citește ce a făcut sesiunea concurentă, integrează manual, retestează.
+
+2. **Marker pentru integrări spawned sessions**: când spawned session adaugă o secțiune mică în index.html / mobile.html / app.js / mobile.js, **wrappuiește cu comentarii de ownership**:
+   ```html
+   <!-- BEGIN: PV (owned by spawned-pv session) -->
+   <button onclick="openPvModal()">Generează PV</button>
+   <script src="/static/pv-modal.js"></script>
+   <!-- END: PV -->
+   ```
+   ```js
+   // BEGIN: import-params (owned by spawned-import session)
+   function openImportParamsModal() { ... }
+   // END: import-params
+   ```
+   Claude main session **NU șterge** secțiuni marcate ca owned de altă sesiune fără să discute cu Ion.
+
+3. **Commit size**: modificările spawned sessions pe shared files să fie **mici și rapide** (un commit per integrare, push imediat). Cu cât stai mai mult cu modificări shared ne-pushed, cu atât crește riscul ca alt agent să facă push peste.
+
+4. **Frequency check**: dacă un agent observă commit-uri masive pe shared files de la altă sesiune în ultimele 5 minute, așteaptă 30s + face git pull înainte să continue.
+
+#### Bug-uri găsite în domain altcuiva
+
+Dacă găsești un bug în zona "Claude" și e mic (typo, bug de o linie), corectează-l cu commit message clar `<scope> fix: ...`. Dacă e mai mare, **NU atingi shared files** — lasă într-un fișier `FOUND_BUGS.md` la root și anunță Ion.
 
 ### C. Design system — neapărat respectă
 
@@ -121,23 +161,27 @@ Aplicația are deja paletă, fonturi și pattern-uri stabilite. **NU introduce s
 Înainte să faci orice modificare:
 
 ```bash
-cd D:/Projects/pif-dashboard
-git pull
+cd ~/Projects/pif-dashboard            # /home/ion-ursu/... pe server
+git fetch origin master
+git pull --rebase origin master
 git log --oneline -10
-git status
+git status                              # trebuie clean
 ```
 
-Dacă vezi commit-uri Claude foarte recente (ultimele ore), citește-le rapid ca să știi ce a atins. Dacă fișierul pe care vrei să-l modifici a fost atins de Claude azi, **citește-l înainte de a-l rescrie** — Claude probabil a introdus o convenție nouă pe care trebuie să o respecți.
+Dacă vezi commit-uri Claude / spawned sessions foarte recente (ultimele ore), citește-le rapid ca să știi ce a atins. Dacă fișierul pe care vrei să-l modifici a fost atins recent, **citește-l înainte de a-l rescrie** — convențiile pot fi nou-introduse.
 
-După modificare:
+**Înainte de fiecare push** (obligatoriu pe shared files):
 
 ```bash
-git add <file>
-git commit -m "<scope>: <ce ai facut, fara diacritice>"
-git push
+git fetch origin master
+git pull --rebase origin master
+# Rezolvă orice conflict de aici, NU forța push.
+git push origin master
 ```
 
-(Author va fi automat `Hermes <hermes@pif.iupif.org>` din git config local. Nu te masquerade-uia ca Claude/Ion.)
+Author va fi automat `Hermes <hermes@pif.iupif.org>` din git config local. **Nu te masquerade-uia** ca Claude/Ion.
+
+Commit messages: fără diacritice, scope clar (`<scope>: <ce ai facut>`).
 
 Verifică pe live că nu ai spart nimic:
 
