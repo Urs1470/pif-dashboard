@@ -3288,7 +3288,9 @@
                     <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului"><i data-lucide="pencil"></i> Editează proiect</button>
                     <button class="btn btn-secondary" onclick="exportMarkdown()"><i data-lucide="file-down"></i> Export Markdown</button>
                     <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF"><i data-lucide="file-text"></i> PDF</button>
+                    <!-- BEGIN: PV (owned by spawned-pv session) -->
                     <button class="btn btn-secondary pv-trigger" id="btn-genereaza-pv" onclick="if(window.openPvServiceModal) openPvServiceModal(currentProjectId)" title="Generează proces verbal Word"><i data-lucide="file-output"></i> Generează PV</button>
+                    <!-- END: PV -->
                     <button class="btn btn-danger" onclick="deleteCurrentProject()"><i data-lucide="trash-2"></i> Șterge</button>
                 </div>
             </div>
@@ -4264,7 +4266,9 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <script src="/static/app.js?v=20260518d"></script>
+    <!-- BEGIN: PV (owned by spawned-pv session) -->
     <script src="/static/pv-modal.js?v=20260518c"></script>
+    <!-- END: PV -->
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

@@ -797,6 +797,11 @@ async function showProjectDetail(projectId) {
         const beforeAfter = document.getElementById('before-after-section');
         if (beforeAfter) beforeAfter.style.display = isService ? 'grid' : 'none';
 
+        // BEGIN: PV (owned by spawned-pv session)
+        const pvBtn = document.getElementById('btn-genereaza-pv');
+        if (pvBtn) pvBtn.style.display = isService ? 'inline-flex' : 'none';
+        // END: PV
+
         // Common sections
         const timerJurnal = document.getElementById('timer-jurnal-section');
         const atasamente = document.getElementById('attachments-section');
