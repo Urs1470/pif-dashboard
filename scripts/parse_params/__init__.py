@@ -18,12 +18,14 @@ Fiecare parser primeste bytes raw + filename si returneaza lista de dict-uri:
 from .danfoss import parse as parse_danfoss
 from .lenze import parse as parse_lenze
 from .siemens import parse as parse_siemens
+from .abb import parse as parse_abb
 
 
 PARSERS = {
     'Danfoss': parse_danfoss,
     'Lenze': parse_lenze,
     'Siemens': parse_siemens,
+    'ABB': parse_abb,
 }
 
 

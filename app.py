@@ -742,24 +742,29 @@ def create_checklist_item(project_id):
     data = request.json
     conn = get_db()
     cursor = conn.cursor()
-    
+
     item_id = data.get('id') or generate_uuid()
-    
+    cat_id = data.get('categorie_id')
+    # Accept '' / 'null' / 0 as "no category" -> NULL
+    if cat_id in ('', 'null', 0, '0'):
+        cat_id = None
+
     cursor.execute('''
-        INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', (
         item_id,
         project_id,
         data.get('titlu', ''),
         data.get('completed', 0),
         data.get('note', ''),
-        data.get('ordine', 0)
+        data.get('ordine', 0),
+        cat_id
     ))
-    
+
     conn.commit()
     conn.close()
-    
+
     return jsonify({'id': item_id}), 201
 
 @app.route('/api/checklist/<item_id>', methods=['PUT'])
@@ -768,25 +773,50 @@ def update_checklist_item(item_id):
     data = request.json
     conn = get_db()
     cursor = conn.cursor()
-    
-    cursor.execute('''
-        UPDATE checklist_pif SET
-            titlu = COALESCE(?, titlu),
-            completed = COALESCE(?, completed),
-            note = COALESCE(?, note),
-            ordine = COALESCE(?, ordine)
-        WHERE id = ?
-    ''', (
-        data.get('titlu'),
-        data.get('completed'),
-        data.get('note'),
-        data.get('ordine'),
-        item_id
-    ))
-    
+
+    # categorie_id needs an explicit "no value" sentinel so 'UNSET' means "do not touch"
+    # while None / 0 means "clear category".
+    cat_present = 'categorie_id' in data
+    cat_id = data.get('categorie_id')
+    if cat_id in ('', 'null', 0, '0'):
+        cat_id = None
+
+    if cat_present:
+        cursor.execute('''
+            UPDATE checklist_pif SET
+                titlu = COALESCE(?, titlu),
+                completed = COALESCE(?, completed),
+                note = COALESCE(?, note),
+                ordine = COALESCE(?, ordine),
+                categorie_id = ?
+            WHERE id = ?
+        ''', (
+            data.get('titlu'),
+            data.get('completed'),
+            data.get('note'),
+            data.get('ordine'),
+            cat_id,
+            item_id
+        ))
+    else:
+        cursor.execute('''
+            UPDATE checklist_pif SET
+                titlu = COALESCE(?, titlu),
+                completed = COALESCE(?, completed),
+                note = COALESCE(?, note),
+                ordine = COALESCE(?, ordine)
+            WHERE id = ?
+        ''', (
+            data.get('titlu'),
+            data.get('completed'),
+            data.get('note'),
+            data.get('ordine'),
+            item_id
+        ))
+
     conn.commit()
     conn.close()
-    
+
     return jsonify({'message': 'Checklist item updated'})
 
 @app.route('/api/checklist/<item_id>', methods=['DELETE'])
@@ -798,6 +828,74 @@ def delete_checklist_item(item_id):
     conn.commit()
     conn.close()
     return jsonify({'message': 'Checklist item deleted'})
+
+# ============ CHECKLIST CATEGORII (per-project dynamic) ============
+
+@app.route('/api/proiecte/<project_id>/checklist-categorii', methods=['GET'])
+@login_required
+def list_checklist_categorii(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, proiect_id, nume, ordine, created_at FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine, id', (project_id,))
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+@app.route('/api/proiecte/<project_id>/checklist-categorii', methods=['POST'])
+@login_required
+def create_checklist_categorie(project_id):
+    data = request.json or {}
+    nume = (data.get('nume') or '').strip()
+    if not nume:
+        return jsonify({'error': 'Nume required'}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM checklist_categorii WHERE proiect_id = ?', (project_id,))
+    next_ordine = cursor.fetchone()[0]
+    cursor.execute(
+        'INSERT INTO checklist_categorii(proiect_id, nume, ordine, created_at) VALUES (?, ?, ?, ?)',
+        (project_id, nume, next_ordine, datetime.now().isoformat())
+    )
+    new_id = cursor.lastrowid
+    conn.commit()
+    cursor.execute('SELECT id, proiect_id, nume, ordine, created_at FROM checklist_categorii WHERE id = ?', (new_id,))
+    row = dict(cursor.fetchone())
+    conn.close()
+    return jsonify(row), 201
+
+@app.route('/api/checklist-categorii/<int:cat_id>', methods=['PUT'])
+@login_required
+def update_checklist_categorie(cat_id):
+    data = request.json or {}
+    conn = get_db()
+    cursor = conn.cursor()
+    if 'nume' in data:
+        nume = (data.get('nume') or '').strip()
+        if not nume:
+            return jsonify({'error': 'Nume required'}), 400
+        cursor.execute('UPDATE checklist_categorii SET nume = ? WHERE id = ?', (nume, cat_id))
+    if 'ordine' in data:
+        cursor.execute('UPDATE checklist_categorii SET ordine = ? WHERE id = ?', (int(data['ordine']), cat_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+@app.route('/api/checklist-categorii/<int:cat_id>', methods=['DELETE'])
+@login_required
+def delete_checklist_categorie(cat_id):
+    # ?move=1 (default) -> orphan the items into "Fara categorie".
+    # ?move=0           -> hard delete the items together with the category.
+    move = request.args.get('move', '1') == '1'
+    conn = get_db()
+    cursor = conn.cursor()
+    if move:
+        cursor.execute('UPDATE checklist_pif SET categorie_id = NULL WHERE categorie_id = ?', (cat_id,))
+    else:
+        cursor.execute('DELETE FROM checklist_pif WHERE categorie_id = ?', (cat_id,))
+    cursor.execute('DELETE FROM checklist_categorii WHERE id = ?', (cat_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True, 'moved': move})
 
 # ============ JURNAL ============
 
@@ -2020,7 +2118,7 @@ def preview_import_params():
     detected, parsed = parse_for_producator(producator, raw, upload.filename or '')
     if detected is None or parsed is None:
         return jsonify({
-            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss, Lenze, Siemens.'
+            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss, Lenze, Siemens, ABB.'
         }), 400
 
     # Imbogateste cu descriere_scurta din parametri_master

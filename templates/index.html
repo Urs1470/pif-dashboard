@@ -2171,6 +2171,134 @@
 
         .checklist-content { flex: 1; min-width: 0; }
         .checklist-title { font-weight: 500; margin-bottom: var(--space-xs); }
+
+        /* === Checklist categorii dinamice === */
+        .checklist-cat {
+            background: var(--bg-elev2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .checklist-cat.uncategorized { background: var(--bg-elev1); }
+        .checklist-cat.uncategorized .checklist-cat-name { color: var(--text-dim); font-style: italic; }
+        .checklist-cat-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.12s;
+        }
+        .checklist-cat-head:hover { background: var(--bg-elev3); }
+        .cat-chevron { color: var(--text2); transition: transform 0.2s; display: inline-flex; }
+        .cat-chevron [data-lucide] { width: 16px; height: 16px; }
+        .checklist-cat.collapsed .cat-chevron { transform: rotate(-90deg); }
+        .checklist-cat-name { flex: 1; font-weight: 600; font-size: 0.92rem; color: var(--text); }
+        .checklist-cat-progress {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            background: var(--bg-elev3);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .checklist-cat-progress.done { background: var(--success-soft); color: var(--success); }
+        .checklist-cat-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+        .checklist-cat-head:hover .checklist-cat-actions { opacity: 1; }
+        .checklist-cat-actions .cat-action {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .checklist-cat-actions .cat-action:hover { background: var(--bg-elev1); color: var(--text); }
+        .checklist-cat-actions .cat-action.danger:hover { background: var(--danger-soft); color: var(--danger); }
+        .checklist-cat-actions .cat-action [data-lucide] { width: 14px; height: 14px; }
+        .checklist-cat-body { padding: 0 14px 12px; border-top: 1px solid var(--line-soft); }
+        .checklist-cat.collapsed .checklist-cat-body { display: none; }
+        .checklist-cat-empty {
+            padding: 8px 6px;
+            color: var(--text-dim);
+            font-style: italic;
+            font-size: 0.82rem;
+        }
+        /* Item in checklist (kept slim — old .checklist-item rules still apply but
+           we tighten padding here). */
+        .checklist-cat-body .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 6px;
+            border-radius: 6px;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--line-soft);
+            background: transparent;
+        }
+        .checklist-cat-body .checklist-item:last-of-type { border-bottom: none; }
+        .checklist-cat-body .checklist-item:hover { background: var(--bg-elev3); }
+        .checklist-cat-body .checklist-item.done .checklist-title { text-decoration: line-through; opacity: 0.55; }
+        .checklist-cat-body .checklist-title {
+            flex: 1;
+            margin-bottom: 0;
+            font-size: 0.88rem;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        .checklist-add-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 0 6px;
+        }
+        .checklist-add-row input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 10px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .checklist-add-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-ring); }
+        .checklist-add-row button {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 6px;
+            padding: 0 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            min-width: 40px;
+            justify-content: center;
+        }
+        .checklist-add-row button [data-lucide] { width: 14px; height: 14px; }
+        .btn-add-cat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--accent-soft) !important;
+            border: 1px solid var(--accent-ring) !important;
+            color: var(--accent) !important;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .btn-add-cat:hover { background: var(--accent) !important; color: var(--bg) !important; }
+        .btn-add-cat [data-lucide] { width: 14px; height: 14px; }
         .checklist-notes { font-size: var(--font-small); color: var(--text2); }
         .checklist-notes textarea {
             width: 100%;
@@ -3404,16 +3532,14 @@
 
             <!-- Checklist PIF -->
             <div class="checklist-section detail-section" id="checklist-section" style="display:none;">
-                <div class="detail-section-header"><i data-lucide="clipboard-check"></i> Checklist PIF</div>
+                <div class="detail-section-header"><i data-lucide="list-checks"></i> Checklist PIF</div>
                 <div class="detail-section-body">
                     <div class="progress-bar" id="checklist-progress">
                         <div class="progress-fill" id="checklist-progress-fill" style="width: 0%"></div>
                     </div>
                     <p id="checklist-progress-text" style="font-size: 0.85rem; color: var(--text2); margin-bottom: 12px;">0% completat</p>
-                    <div class="checklist-add-form" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                        <input type="text" id="checklist-title" placeholder="Adaugă item nou..." style="flex: 1; min-height: 44px;">
-                        <button class="btn btn-primary btn-small" onclick="addChecklistItem()">+</button>
-                    </div>
+                    <!-- Items now live grouped per category. Add input is rendered
+                         inline inside each category by app.js renderChecklist. -->
                     <div class="checklist-list" id="checklist-list"></div>
                 </div>
             </div>
@@ -4265,7 +4391,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260518d"></script>
+    <script src="/static/app.js?v=20260518e"></script>
     <!-- BEGIN: PV (owned by spawned-pv session) -->
     <script src="/static/pv-modal.js?v=20260518d-pif"></script>
     <!-- END: PV -->

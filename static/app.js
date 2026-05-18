@@ -2582,62 +2582,193 @@ function quickAddTaskFromHome() {
 
 // ============ CHECKLIST PIF ============
 
+// ============ CHECKLIST PIF cu CATEGORII DINAMICE ============
+// Fiecare proiect are propriile categorii (per-project, NOT global).
+// Item-urile orfane (categorie_id NULL) intra in bucket-ul virtual "Fara categorie".
+
 async function loadChecklist(projectId) {
     try {
-        const items = await apiGet(`/proiecte/${projectId}/checklist`);
-        renderChecklist(items);
+        const [items, categorii] = await Promise.all([
+            apiGet(`/proiecte/${projectId}/checklist`),
+            apiGet(`/proiecte/${projectId}/checklist-categorii`).catch(() => [])
+        ]);
+        renderChecklist(items || [], categorii || []);
     } catch (e) {
         console.error('Failed to load checklist:', e);
     }
 }
 
-function renderChecklist(items) {
+// Cache collapsed state per project in localStorage.
+function _checklistCollapsedKey(projectId) { return `pif:checklist:collapsed:${projectId}`; }
+function _getChecklistCollapsed(projectId) {
+    try { return new Set(JSON.parse(localStorage.getItem(_checklistCollapsedKey(projectId)) || '[]')); }
+    catch { return new Set(); }
+}
+function _setChecklistCollapsed(projectId, set) {
+    try { localStorage.setItem(_checklistCollapsedKey(projectId), JSON.stringify([...set])); } catch {}
+}
+
+function toggleChecklistCategoryCollapse(catKey) {
+    const projectId = currentProjectId;
+    if (!projectId) return;
+    const collapsed = _getChecklistCollapsed(projectId);
+    if (collapsed.has(catKey)) collapsed.delete(catKey);
+    else collapsed.add(catKey);
+    _setChecklistCollapsed(projectId, collapsed);
+    const el = document.querySelector(`.checklist-cat[data-cat-key="${catKey}"]`);
+    if (el) el.classList.toggle('collapsed');
+}
+
+function renderChecklist(items, categorii) {
     const container = document.getElementById('checklist-list');
     const progressFill = document.getElementById('checklist-progress-fill');
     const progressText = document.getElementById('checklist-progress-text');
-    
-    if (!items || items.length === 0) {
-        container.innerHTML = '<p style="color: var(--text2);">Nu există item-uri în checklist.</p>';
-        progressFill.style.width = '0%';
-        progressText.textContent = '0% completat';
-        return;
+    if (!container) return;
+
+    const total = items.length;
+    const done = items.filter(i => i.completed).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    if (progressFill) progressFill.style.width = pct + '%';
+    if (progressText) progressText.textContent = `${pct}% completat (${done}/${total})`;
+
+    const collapsed = _getChecklistCollapsed(currentProjectId);
+
+    // Group items by categorie_id (null -> bucket "0")
+    const byCat = new Map();
+    for (const it of items) {
+        const key = it.categorie_id != null ? String(it.categorie_id) : '0';
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key).push(it);
     }
-    
-    const completed = items.filter(i => i.completed).length;
-    const percent = Math.round((completed / items.length) * 100);
-    
-    progressFill.style.width = percent + '%';
-    progressText.textContent = `${percent}% completat (${completed}/${items.length})`;
-    
-    container.innerHTML = items.map(item => `
-        <div class="checklist-item">
-            <input type="checkbox" ${item.completed ? 'checked' : ''} 
-                   onchange="toggleChecklistItem('${item.id}', this.checked)">
-            <div class="checklist-content">
-                <div class="checklist-title" style="${item.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(item.titlu)}</div>
-                ${item.note ? `<div class="checklist-notes">${escapeHtml(item.note)}</div>` : ''}
-            </div>
-            <button class="btn btn-small btn-danger" onclick="deleteChecklistItem('${item.id}')" title="Șterge"><i data-lucide="x"></i></button>
+
+    // Build render order: user categories in their `ordine`, then "Fara categorie" bucket at the end.
+    const orderedCats = [...categorii].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0));
+    const uncategorizedItems = byCat.get('0') || [];
+
+    const blocks = [];
+    blocks.push(`
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+            <button class="btn btn-secondary btn-add-cat" onclick="addChecklistCategory()"><i data-lucide="folder-plus"></i> Categorie nouă</button>
         </div>
-    `).join('');
+    `);
+
+    for (const cat of orderedCats) {
+        const its = byCat.get(String(cat.id)) || [];
+        blocks.push(_renderChecklistCatBlock(cat, its, collapsed));
+    }
+    // "Fara categorie" — mereu vizibil pentru a aluneca items adăugate fără categorie.
+    blocks.push(_renderChecklistCatBlock({ id: 0, nume: 'Fără categorie' }, uncategorizedItems, collapsed, true));
+
+    container.innerHTML = blocks.join('');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 }
 
-async function addChecklistItem() {
-    const title = document.getElementById('checklist-title').value.trim();
+function _renderChecklistCatBlock(cat, items, collapsed, isUncategorized = false) {
+    const catKey = String(cat.id);
+    const isCollapsed = collapsed.has(catKey);
+    const total = items.length;
+    const done = items.filter(i => i.completed).length;
+    const progressClass = (total > 0 && done === total) ? 'done' : '';
+    const progressText = total > 0 ? `${done}/${total}` : '0/0';
+
+    const actions = isUncategorized ? '' : `
+        <div class="checklist-cat-actions">
+            <button class="cat-action" onclick="event.stopPropagation(); renameChecklistCategory(${cat.id})" title="Redenumește"><i data-lucide="pencil"></i></button>
+            <button class="cat-action danger" onclick="event.stopPropagation(); deleteChecklistCategory(${cat.id}, '${escapeHtml(cat.nume).replace(/'/g, "\\'")}')" title="Șterge categorie"><i data-lucide="trash-2"></i></button>
+        </div>`;
+
+    const rows = items.map(it => `
+        <div class="checklist-item ${it.completed ? 'done' : ''}">
+            <input type="checkbox" ${it.completed ? 'checked' : ''}
+                   onchange="toggleChecklistItem('${it.id}', this.checked)">
+            <span class="checklist-title">${escapeHtml(it.titlu || '')}</span>
+            <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteChecklistItem('${it.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>
+    `).join('') || `<div class="checklist-cat-empty">Niciun item în această categorie.</div>`;
+
+    const addRow = `
+        <div class="checklist-add-row">
+            <input type="text" placeholder="${isUncategorized ? 'Adaugă item fără categorie...' : 'Adaugă item...'}"
+                   onkeydown="if(event.key==='Enter') addChecklistItem(${isUncategorized ? 'null' : cat.id})">
+            <button class="btn btn-primary btn-small" onclick="addChecklistItem(${isUncategorized ? 'null' : cat.id})"><i data-lucide="plus"></i></button>
+        </div>
+    `;
+
+    return `
+        <div class="checklist-cat ${isCollapsed ? 'collapsed' : ''} ${isUncategorized ? 'uncategorized' : ''}" data-cat-key="${catKey}">
+            <div class="checklist-cat-head" onclick="toggleChecklistCategoryCollapse('${catKey}')">
+                <span class="cat-chevron"><i data-lucide="chevron-down"></i></span>
+                <span class="checklist-cat-name">${escapeHtml(cat.nume)}</span>
+                <span class="checklist-cat-progress ${progressClass}">${progressText}</span>
+                ${actions}
+            </div>
+            <div class="checklist-cat-body">
+                ${rows}
+                ${addRow}
+            </div>
+        </div>
+    `;
+}
+
+async function addChecklistCategory() {
+    if (!currentProjectId) return;
+    const nume = prompt('Numele categoriei (ex: Verificări mecanice):');
+    if (!nume || !nume.trim()) return;
+    try {
+        await apiPost(`/proiecte/${currentProjectId}/checklist-categorii`, { nume: nume.trim() });
+        showToast('Categorie creată!');
+        loadChecklist(currentProjectId);
+    } catch (e) {
+        console.error('Failed to add category:', e);
+        showToast('Eroare la creare', true);
+    }
+}
+
+async function renameChecklistCategory(catId) {
+    if (!currentProjectId) return;
+    const current = document.querySelector(`.checklist-cat[data-cat-key="${catId}"] .checklist-cat-name`)?.textContent || '';
+    const newName = prompt('Noul nume:', current);
+    if (!newName || !newName.trim() || newName.trim() === current) return;
+    try {
+        await apiPut(`/checklist-categorii/${catId}`, { nume: newName.trim() });
+        loadChecklist(currentProjectId);
+    } catch (e) {
+        showToast('Eroare la redenumire', true);
+    }
+}
+
+async function deleteChecklistCategory(catId, catName) {
+    if (!currentProjectId) return;
+    const choice = confirm(`Ștergi categoria "${catName}"?\n\nOK = mută items la "Fără categorie"\nAnulează = NU se șterge\n\n(Dacă vrei să ștergi item-urile complet, folosește butonul × pe fiecare apoi pe categorie.)`);
+    if (!choice) return;
+    try {
+        await apiDelete(`/checklist-categorii/${catId}?move=1`);
+        loadChecklist(currentProjectId);
+        showToast('Categorie ștearsă, items mutate la "Fără categorie"');
+    } catch (e) {
+        showToast('Eroare la ștergere', true);
+    }
+}
+
+async function addChecklistItem(categorieId) {
+    // Find the input inside the matching category's add-row
+    const catKey = categorieId == null ? '0' : String(categorieId);
+    const root = document.querySelector(`.checklist-cat[data-cat-key="${catKey}"] .checklist-add-row input`);
+    const title = (root?.value || '').trim();
     if (!title || !currentProjectId) return;
-    
+
     try {
         await apiPost(`/proiecte/${currentProjectId}/checklist`, {
             titlu: title,
             completed: 0,
-            ordine: 0
+            ordine: 0,
+            categorie_id: categorieId
         });
-        document.getElementById('checklist-title').value = '';
+        if (root) root.value = '';
         loadChecklist(currentProjectId);
-        showToast('Item adăugat!');
     } catch (e) {
         console.error('Failed to add checklist item:', e);
-        showToast('Eroare la adăugarea item-ului', true);
+        showToast('Eroare la adăugare', true);
     }
 }
 
@@ -3698,7 +3829,7 @@ function showAddEquipmentForm() {
                     <button type="button" class="btn btn-secondary btn-small" onclick="triggerImportParams()" title="Import parametri din export softul producătorului (Danfoss .txt etc)">
                         <i data-lucide="file-up"></i> Import din fișier
                     </button>
-                    <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv" onchange="onImportParamsFileSelected(event)">
+                    <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv,.dcparamsbak" onchange="onImportParamsFileSelected(event)">
                 </div>
                 <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
                 <div id="current-params-list"></div>
@@ -3957,7 +4088,7 @@ async function editEchipament(echipamentId) {
                         <button type="button" class="btn btn-secondary btn-small" onclick="triggerImportParams()" title="Import parametri din export softul producătorului (Danfoss .txt etc)">
                             <i data-lucide="file-up"></i> Import din fișier
                         </button>
-                        <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv" onchange="onImportParamsFileSelected(event)">
+                        <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv,.dcparamsbak" onchange="onImportParamsFileSelected(event)">
                     </div>
                     <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
                     <div id="current-params-list"></div>
