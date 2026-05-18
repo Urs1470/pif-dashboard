@@ -2263,6 +2263,52 @@ def create_template_from_project(project_id):
 
 # ============ ADMIN: DB DOWNLOAD / UPLOAD ============
 
+@app.route('/admin/db-upload', methods=['GET'])
+@login_required
+def admin_db_upload_page():
+    """Minimal HTML form for uploading a local DB file."""
+    return '''<!doctype html>
+<html><head><meta charset="utf-8"><title>DB upload</title>
+<style>
+body{background:#0a0d12;color:#e3e8ef;font-family:system-ui,sans-serif;
+     max-width:560px;margin:60px auto;padding:0 24px}
+h1{font-size:20px;margin:0 0 16px}
+.box{background:#161c26;border:1px solid #232a36;border-radius:10px;padding:24px}
+input[type=file]{margin:16px 0;color:#e3e8ef}
+button{background:#58d1c9;color:#0a0d12;border:0;padding:10px 18px;
+       border-radius:8px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.note{color:#9aa4b2;font-size:13px;margin-top:14px}
+pre{background:#0a0d12;border:1px solid #232a36;border-radius:6px;
+    padding:10px;font-size:12px;overflow:auto;max-height:280px}
+.ok{color:#66d19e}.err{color:#f97066}
+</style></head>
+<body><div class="box">
+<h1>Upload DB SQLite</h1>
+<form id="f">
+<input type="file" name="db" accept=".db" required>
+<br><button id="submit" type="submit">Upload (inlocuieste DB serverului)</button>
+</form>
+<div class="note">DB-ul curent va fi salvat in <code>backups/</code> automat inainte de inlocuire.</div>
+<pre id="out"></pre>
+</div>
+<script>
+const f=document.getElementById('f'),btn=document.getElementById('submit'),out=document.getElementById('out');
+f.addEventListener('submit',async e=>{
+  e.preventDefault();btn.disabled=true;out.textContent='Uploading...';
+  const fd=new FormData(f);
+  try{
+    const r=await fetch('/api/admin/db-upload',{method:'POST',body:fd});
+    const j=await r.json();
+    out.textContent=JSON.stringify(j,null,2);
+    out.className=r.ok?'ok':'err';
+  }catch(err){out.textContent=err.message;out.className='err';}
+  btn.disabled=false;
+});
+</script>
+</body></html>'''
+
+
 @app.route('/api/admin/db-upload', methods=['POST'])
 @login_required
 def admin_db_upload():
