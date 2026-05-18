@@ -184,9 +184,10 @@ Aplicația are deja paletă, fonturi și pattern-uri stabilite. **NU introduce s
 
 Câmpurile LLM-only sunt încă goale/incomplete:
 - `explicatie` — text comissioner în română (cel mai important)
-- `interconexiuni` — alți params legați (cu cod referință)
-- `influenteaza` — params influențați direct
+- `influenteaza` — params influențați direct (cu cod referință)
 - `categorie` — grupare tematică (poate fi inferată)
+
+Notă: `interconexiuni` a fost DROP-uit (schema v6, mai 2026).
 
 **Strategie ACCURACY-FIRST** (Ion explicit: "cat mai accurate, nu conteaza costul"):
 
@@ -197,14 +198,14 @@ Câmpurile LLM-only sunt încă goale/incomplete:
    - 3-5 few-shot exemple de explicații bune
 3. **Sequential**, nu Batch API — accuracy iterativă peste cost-saving.
 4. **Multi-pass**:
-   - Pass 1: scrie `explicatie` + `interconexiuni` + `influenteaza` + `categorie`
+   - Pass 1: scrie `explicatie` + `influenteaza` + `categorie`
    - Pass 2 (sample 5-10%): self-review per param să verifici că nu sunt halucinații
 5. **Stil**: română fără diacritice (convenția Ion), max 2-3 propoziții, commissioner-friendly.
    Exemplu bun: `"Defineste viteza minima a motorului. Setare critica daca aplicatia cere reverse — pune negativ. Vezi 30.12 pentru limita superioara."`
 6. **Skip rule**: dacă `explicatie` deja există și e > 50 chars text natural (nu placeholder), skip cu review minim.
 7. **Sources**: folosește `descriere` (deja PDF-extracted) + manualul complet `manuals/<familie>.pdf` ca context. NU genera info care nu-i derivable din descriere + manual.
 
-**NU atinge**: `parametru`, `descriere_scurta`, `descriere`, `acces`, `tip_date`, `valoare_default_str`, `min`, `max`, `unitate`, `pagina` — TOATE sunt PDF-derived și validate.
+**NU atinge**: `parametru`, `descriere_scurta`, `descriere`, `acces`, `tip_date`, `valoare_default_str`, `min`, `max`, `unitate`, `pagina` — TOATE sunt PDF-derived și validate. `interconexiuni` a fost drop-uit din schema (v6).
 
 **Cost estimat**: ~$50-100 cu cache agresiv pentru toate ~14k params, fără cache ~$200+. Folosește cache.
 

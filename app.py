@@ -2594,7 +2594,7 @@ def get_parametri():
 @app.route('/api/parametri/bulk', methods=['GET'])
 @login_required
 def get_parametri_bulk():
-    """Returnează toți parametrii FĂRĂ explicatie/interconexiuni/influenteaza (lightweight)."""
+    """Returnează toți parametrii FĂRĂ explicatie/influenteaza (lightweight)."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -2851,7 +2851,7 @@ def parametri_audit():
 @app.route('/api/parametri/<int:param_id>', methods=['GET'])
 @login_required
 def get_parametru_detail(param_id):
-    """Returnează detaliul complet al unui parametru (cu explicatie + interconexiuni)."""
+    """Returnează detaliul complet al unui parametru (cu explicatie + influenteaza)."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM parametri_master WHERE id = ?', (param_id,))

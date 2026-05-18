@@ -24,7 +24,7 @@ def close_db(exc=None):
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -212,6 +212,24 @@ def migrate_v4_to_v5():
     conn.close()
     print("Migration v4->v5 completed: Added checklist_categorii + categorie_id column")
 
+
+def migrate_v5_to_v6():
+    """Remove unused `interconexiuni` column from parametri_master.
+    Requires SQLite 3.35+ (March 2021) for ALTER TABLE DROP COLUMN.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(parametri_master)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'interconexiuni' in cols:
+        cursor.execute('ALTER TABLE parametri_master DROP COLUMN interconexiuni')
+        conn.commit()
+        print("Migration v5->v6: dropped parametri_master.interconexiuni")
+    else:
+        print("Migration v5->v6: interconexiuni already absent")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -235,6 +253,11 @@ def run_migrations():
         migrate_v4_to_v5()
         set_schema_version(5)
         current_version = 5
+
+    if current_version < 6:
+        migrate_v5_to_v6()
+        set_schema_version(6)
+        current_version = 6
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
