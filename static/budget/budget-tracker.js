@@ -32,6 +32,22 @@ function refreshLuni() {
   LUNI = cfg.labels;
 }
 
+// Convert legacy cheltuieliFixe object {chirie, rataCredit} to array of {id,label,suma}
+function migrateCheltuieliFixe(data) {
+  if (!data) return;
+  if (Array.isArray(data.cheltuieliFixe)) return;
+  var arr = [];
+  var nextId = 1;
+  if (data.cheltuieliFixe && typeof data.cheltuieliFixe === 'object') {
+    if (data.cheltuieliFixe.chirie != null) arr.push({ id: nextId++, label: 'Chirie', suma: data.cheltuieliFixe.chirie });
+    if (data.cheltuieliFixe.rataCredit != null) arr.push({ id: nextId++, label: 'Rată credit + asig.', suma: data.cheltuieliFixe.rataCredit });
+  }
+  if (arr.length === 0) {
+    arr = cloneObj(DATI_INITIALE.cheltuieliFixe);
+  }
+  data.cheltuieliFixe = arr;
+}
+
 // Convert legacy keys (mai/iun/etc) → YYYY-MM. Called once at load.
 function migrateLegacyMonthKeys(data) {
   if (!data) return data;
@@ -67,7 +83,10 @@ function esc(s) {
 // --- Date inițiale Ion ---
 var DATI_INITIALE = {
   profil: { nume: 'Ion', salariuNet: 7000, bonusMedie: 2000, startMonth: '2026-05' },
-  cheltuieliFixe: { chirie: 2000, rataCredit: 1934 },
+  cheltuieliFixe: [
+    { id: 1, label: 'Chirie', suma: 2000 },
+    { id: 2, label: 'Rată credit + asig.', suma: 1934 },
+  ],
   credit: {
     suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1787, asigurare: 147,
     durata: 60, comisionRambursare: 1, dataStart: '2026-05', soldActual: 84450
@@ -129,9 +148,7 @@ async function loadData() {
       if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
       if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
-      if (!state.data.cheltuieliFixe) state.data.cheltuieliFixe = cloneObj(DATI_INITIALE.cheltuieliFixe);
-      if (state.data.cheltuieliFixe.chirie == null) state.data.cheltuieliFixe.chirie = DATI_INITIALE.cheltuieliFixe.chirie;
-      if (state.data.cheltuieliFixe.rataCredit == null) state.data.cheltuieliFixe.rataCredit = DATI_INITIALE.cheltuieliFixe.rataCredit;
+      migrateCheltuieliFixe(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -420,9 +437,26 @@ function updateProfil(field, value) {
   saveData();
   render();
 }
-function updateCheltuialaFixa(field, value) {
-  if (!state.data.cheltuieliFixe) state.data.cheltuieliFixe = cloneObj(DATI_INITIALE.cheltuieliFixe);
-  state.data.cheltuieliFixe[field] = parseRON(value);
+function updateCheltuialaFixa(id, field, value) {
+  if (!Array.isArray(state.data.cheltuieliFixe)) state.data.cheltuieliFixe = cloneObj(DATI_INITIALE.cheltuieliFixe);
+  state.data.cheltuieliFixe = state.data.cheltuieliFixe.map(function(f) {
+    if (f.id !== id) return f;
+    var u = cloneObj(f);
+    if (field === 'suma') u.suma = parseRON(value);
+    else u[field] = value;
+    return u;
+  });
+  saveData();
+  render();
+}
+function addCheltuialaFixa() {
+  if (!Array.isArray(state.data.cheltuieliFixe)) state.data.cheltuieliFixe = [];
+  state.data.cheltuieliFixe.push({ id: getNextId(state.data.cheltuieliFixe), label: '', suma: 0 });
+  saveData();
+  render();
+}
+function removeCheltuialaFixa(id) {
+  state.data.cheltuieliFixe = state.data.cheltuieliFixe.filter(function(f) { return f.id !== id; });
   saveData();
   render();
 }
@@ -444,16 +478,17 @@ function calcMediiVenituri(d) {
 }
 
 function calcMediiCheltuieli(d) {
-  var fixe = d.cheltuieliFixe;
+  var fixe = Array.isArray(d.cheltuieliFixe) ? d.cheltuieliFixe : [];
+  var totalFixe = fixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var variabile = LUNI_KEYS.map(function(l) { return d.cheltuieli[l] || {}; });
   var count = variabile.filter(function(v) { return Object.values(v).some(function(x) { return x > 0; }); }).length || 1;
-  var result = { chirie: fixe.chirie, rataCredit: fixe.rataCredit };
+  var result = { fixe: fixe, totalFixe: totalFixe, variabile: {} };
   var totalVar = 0;
   CHELTUIELI_VARIABILE.forEach(function(cat) {
-    result[cat] = variabile.reduce(function(s, v) { return s + (v[cat] || 0); }, 0) / count;
-    totalVar += result[cat];
+    result.variabile[cat] = variabile.reduce(function(s, v) { return s + (v[cat] || 0); }, 0) / count;
+    totalVar += result.variabile[cat];
   });
-  result.total = fixe.chirie + fixe.rataCredit + totalVar;
+  result.total = totalFixe + totalVar;
   return result;
 }
 
@@ -523,10 +558,14 @@ function renderBugetLunar() {
   // Cheltuieli panel
   html += '<div class="panel">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="receipt"></i> Cheltuieli medii</div></div>';
-  html += '<div class="stat-row"><span>Chirie</span><span class="stat-val danger">' + formatRON(mediiC.chirie) + '</span></div>';
-  html += '<div class="stat-row"><span>Rată credit</span><span class="stat-val danger">' + formatRON(mediiC.rataCredit) + '</span></div>';
+  mediiC.fixe.forEach(function(f) {
+    html += '<div class="stat-row"><span>' + esc(f.label) + '</span><span class="stat-val danger">' + formatRON(f.suma) + '</span></div>';
+  });
+  if (mediiC.fixe.length > 0) {
+    html += '<div class="stat-row" style="border-top:1px dashed var(--border); padding-top:0.5rem; margin-top:0.25rem;"><span class="text-mid">Total fixe</span><span class="stat-val danger">' + formatRON(mediiC.totalFixe) + '</span></div>';
+  }
   CHELTUIELI_VARIABILE.forEach(function(cat) {
-    html += '<div class="stat-row"><span>' + esc(cat) + '</span><span class="stat-val danger">' + formatRON(mediiC[cat] || 0) + '</span></div>';
+    html += '<div class="stat-row"><span>' + esc(cat) + '</span><span class="stat-val danger">' + formatRON(mediiC.variabile[cat] || 0) + '</span></div>';
   });
   html += '<div class="stat-row total"><span>Total</span><span class="stat-val danger">' + formatRON(mediiC.total) + ' RON</span></div>';
   html += '</div>';
@@ -546,7 +585,7 @@ function renderBugetLunar() {
 
   // PROFIL PANEL (editable)
   html += '<div class="section" style="margin-top:1.5rem;">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="settings"></i> Profil & cheltuieli fixe</div></div>';
+  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="settings"></i> Profil</div></div>';
   html += '<div class="panel">';
   html += '<div class="profil-grid">';
   html += '  <div class="field"><label class="field-label">Nume</label>';
@@ -555,11 +594,7 @@ function renderBugetLunar() {
   html += '    <input type="number" class="input num w-full" value="' + (d.profil.salariuNet || 0) + '" onchange="updateProfil(\'salariuNet\', this.value)"></div>';
   html += '  <div class="field"><label class="field-label">Bonus mediu (RON)</label>';
   html += '    <input type="number" class="input num w-full" value="' + (d.profil.bonusMedie || 0) + '" onchange="updateProfil(\'bonusMedie\', this.value)"></div>';
-  html += '  <div class="field"><label class="field-label">Chirie (RON / lună)</label>';
-  html += '    <input type="number" class="input num w-full" value="' + (d.cheltuieliFixe.chirie || 0) + '" onchange="updateCheltuialaFixa(\'chirie\', this.value)"></div>';
-  html += '  <div class="field"><label class="field-label">Rată credit + asig. (RON / lună)</label>';
-  html += '    <input type="number" class="input num w-full" value="' + (d.cheltuieliFixe.rataCredit || 0) + '" onchange="updateCheltuialaFixa(\'rataCredit\', this.value)"></div>';
-  html += '  <div class="field"><label class="field-label">Lună start buget (YYYY-MM)</label>';
+  html += '  <div class="field"><label class="field-label">Lună start buget</label>';
   html += startMonthPicker(d.profil.startMonth || '2026-05');
   html += '  </div>';
   html += '</div>';
@@ -567,6 +602,31 @@ function renderBugetLunar() {
   html += '<i data-lucide="info"></i>';
   html += '<div>Bugetul afișează 8 luni consecutive începând cu luna selectată. Modificarea acestei date va recalcula etichetele coloanelor.</div>';
   html += '</div>';
+  html += '</div></div>';
+
+  // CHELTUIELI FIXE PANEL (editable list)
+  html += '<div class="section">';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="repeat"></i> Cheltuieli fixe lunare</div>';
+  html += '  <button class="btn-add" onclick="addCheltuialaFixa()"><i data-lucide="plus"></i> Adaugă</button>';
+  html += '</div>';
+  html += '<div class="panel">';
+  if (!d.cheltuieliFixe || d.cheltuieliFixe.length === 0) {
+    html += '<div class="audit-empty">Nicio cheltuială fixă. Apasă "Adaugă" pentru a introduce chirie, abonamente, rate, etc.</div>';
+  } else {
+    html += '<div class="table-wrap"><table>';
+    html += '<thead><tr><th>Denumire</th><th class="num">Sumă (RON / lună)</th><th></th></tr></thead><tbody>';
+    d.cheltuieliFixe.forEach(function(f) {
+      html += '<tr>';
+      html += '<td><input type="text" class="input w-full" value="' + esc(f.label || '') + '" placeholder="Ex: Netflix, Card credit..." onchange="updateCheltuialaFixa(' + f.id + ', \'label\', this.value)"></td>';
+      html += '<td class="num"><input type="number" class="input num w-28" value="' + (f.suma || 0) + '" onchange="updateCheltuialaFixa(' + f.id + ', \'suma\', this.value)"></td>';
+      html += '<td><button class="btn-del" onclick="removeCheltuialaFixa(' + f.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
+      html += '</tr>';
+    });
+    var totalFixe = d.cheltuieliFixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
+    html += '</tbody><tfoot><tr><td>Total cheltuieli fixe</td><td class="num">' + formatRON(totalFixe) + '</td><td></td></tr></tfoot>';
+    html += '</table></div>';
+  }
   html += '</div></div>';
 
   return html;
@@ -968,12 +1028,11 @@ function renderVenituri() {
   LUNI.forEach(function(l) { html += '<th class="num">' + l + '</th>'; });
   html += '</tr></thead><tbody>';
 
-  html += '<tr class="fixed"><td>Chirie</td>';
-  LUNI.forEach(function() { html += '<td class="num neg">' + formatRON(d.cheltuieliFixe.chirie) + '</td>'; });
-  html += '</tr>';
-  html += '<tr class="fixed"><td>Rată credit + asig.</td>';
-  LUNI.forEach(function() { html += '<td class="num neg">' + formatRON(d.cheltuieliFixe.rataCredit) + '</td>'; });
-  html += '</tr>';
+  (d.cheltuieliFixe || []).forEach(function(f) {
+    html += '<tr class="fixed"><td>' + esc(f.label || '—') + '</td>';
+    LUNI.forEach(function() { html += '<td class="num neg">' + formatRON(f.suma) + '</td>'; });
+    html += '</tr>';
+  });
 
   CHELTUIELI_VARIABILE.forEach(function(cat) {
     html += '<tr><td class="muted">' + esc(cat) + '</td>';
@@ -984,9 +1043,10 @@ function renderVenituri() {
     html += '</tr>';
   });
 
+  var totalFixeLunare = (d.cheltuieliFixe || []).reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var totalsC = LUNI_KEYS.map(function(l) {
     var c = d.cheltuieli[l] || {};
-    return d.cheltuieliFixe.chirie + d.cheltuieliFixe.rataCredit + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
+    return totalFixeLunare + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
   });
   html += '<tr class="total danger"><td>Total cheltuieli</td>';
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
@@ -1104,8 +1164,9 @@ function exportCSV() {
   lines.push('');
   lines.push('CHELTUIELI');
   lines.push('Categorie,' + LUNI.join(','));
-  lines.push('Chirie,' + LUNI.map(function() { return d.cheltuieliFixe.chirie; }).join(','));
-  lines.push('Rata credit,' + LUNI.map(function() { return d.cheltuieliFixe.rataCredit; }).join(','));
+  (d.cheltuieliFixe || []).forEach(function(f) {
+    lines.push((f.label || '').replace(/,/g, ' ') + ',' + LUNI.map(function() { return f.suma; }).join(','));
+  });
   CHELTUIELI_VARIABILE.forEach(function(cat) {
     lines.push(cat + ',' + LUNI_KEYS.map(function(l) { return (d.cheltuieli[l] || {})[cat] || 0; }).join(','));
   });
