@@ -651,6 +651,118 @@
     .mobile-tasks-divider::before, .mobile-tasks-divider::after {
       content: ''; flex: 1; height: 1px; background: var(--line-soft);
     }
+
+    /* === Mobile checklist cu categorii === */
+    .mob-checklist-cat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .mob-checklist-cat.uncategorized { background: var(--bg-elev1); }
+    .mob-checklist-cat.uncategorized .mob-cat-name { color: var(--text-dim); font-style: italic; }
+    .mob-cat-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mob-cat-chevron { width: 16px; height: 16px; color: var(--text-secondary); transition: transform 0.2s; flex-shrink: 0; }
+    .mob-checklist-cat.collapsed .mob-cat-chevron { transform: rotate(-90deg); }
+    .mob-cat-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+    .mob-cat-progress {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: var(--bg-elev2);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .mob-cat-progress.done { background: var(--success-soft); color: var(--success); }
+    .mob-cat-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .mob-cat-actions button {
+      width: 30px; height: 30px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mob-cat-actions button [data-lucide] { width: 14px; height: 14px; }
+    .mob-cat-body { padding: 0 12px 10px; border-top: 1px solid var(--line-soft); }
+    .mob-checklist-cat.collapsed .mob-cat-body { display: none; }
+    .mob-cat-empty { padding: 8px 6px; color: var(--text-dim); font-style: italic; font-size: 12px; }
+    .mob-checklist-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .mob-checklist-item:last-of-type { border-bottom: none; }
+    .mob-checklist-item input[type=checkbox] {
+      width: 20px; height: 20px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mob-checklist-item.done .mob-ci-text { text-decoration: line-through; opacity: 0.55; }
+    .mob-ci-text { flex: 1; font-size: 13px; color: var(--text); }
+    .mob-ci-del {
+      width: 30px; height: 30px;
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      border-radius: 6px;
+      opacity: 0.55;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mob-ci-del [data-lucide] { width: 15px; height: 15px; }
+    .mob-cat-addrow { display: flex; gap: 6px; margin-top: 8px; padding: 0 6px; }
+    .mob-cat-addrow input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .mob-cat-addrow input:focus { border-color: var(--accent); }
+    .mob-cat-addrow button {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .mob-cat-addrow button [data-lucide] { width: 16px; height: 16px; }
+    .mob-add-cat-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .mob-add-cat-btn [data-lucide] { width: 14px; height: 14px; }
   </style>
 </head>
 <body>

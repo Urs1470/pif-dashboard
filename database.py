@@ -18,11 +18,13 @@ def close_db(exc=None):
 # ============ PHASE 2c: DATABASE MIGRATIONS ============
 # Schema version history:
 # v1: Initial schema (proiecte, tasks, checklist_pif, jurnal, timer_sessions, atasamente, global_tasks)
+# v5: Added checklist_categorii table (per-project dynamic categories for checklist_pif)
+#     + nullable categorie_id column on checklist_pif
 # v2: Added clienti, echipamente, project_templates tables
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -176,6 +178,40 @@ def migrate_v3_to_v4():
     conn.close()
     print("Migration v3->v4 completed: Added budget_state, budget_audit tables")
 
+def migrate_v4_to_v5():
+    """v4 -> v5: per-project dynamic checklist categories.
+
+    Adds a new table `checklist_categorii(id, proiect_id, nume, ordine, created_at)`
+    and a nullable `categorie_id` column on the existing `checklist_pif` table.
+    Legacy items keep categorie_id = NULL and surface in a virtual "Fara categorie"
+    bucket on the client. Migration is idempotent — running it twice is a no-op.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS checklist_categorii (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            proiect_id TEXT NOT NULL,
+            nume TEXT NOT NULL,
+            ordine INTEGER DEFAULT 0,
+            created_at TEXT
+        )
+    ''')
+
+    # Add nullable FK column on checklist_pif if it does not exist already.
+    cursor.execute("PRAGMA table_info(checklist_pif)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'categorie_id' not in cols:
+        cursor.execute("ALTER TABLE checklist_pif ADD COLUMN categorie_id INTEGER")
+
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_categorii_proiect ON checklist_categorii(proiect_id, ordine)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_pif_categorie ON checklist_pif(categorie_id)')
+
+    conn.commit()
+    conn.close()
+    print("Migration v4->v5 completed: Added checklist_categorii + categorie_id column")
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -194,6 +230,11 @@ def run_migrations():
         migrate_v3_to_v4()
         set_schema_version(4)
         current_version = 4
+
+    if current_version < 5:
+        migrate_v4_to_v5()
+        set_schema_version(5)
+        current_version = 5
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -354,6 +395,16 @@ def init_db():
             tip TEXT DEFAULT 'PIF',
             default_checklist_json TEXT,
             default_tasks_json TEXT,
+            created_at TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS checklist_categorii (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            proiect_id TEXT NOT NULL,
+            nume TEXT NOT NULL,
+            ordine INTEGER DEFAULT 0,
             created_at TEXT
         )
     ''')

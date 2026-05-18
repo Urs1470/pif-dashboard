@@ -1747,48 +1747,129 @@ async function deleteMobileTimerSession(sessionId, projectId) {
   loadMobileTimer(projectId);
 }
 
-// 3.4 Checklist PIF
+// 3.4 Checklist PIF cu categorii dinamice (parity cu desktop)
+function _mobileChecklistCollapsedKey(projectId) { return `pif-mobile:checklist-collapsed:${projectId}`; }
+function _getMobileChecklistCollapsed(projectId) {
+  try { return new Set(JSON.parse(localStorage.getItem(_mobileChecklistCollapsedKey(projectId)) || '[]')); }
+  catch { return new Set(); }
+}
+function _setMobileChecklistCollapsed(projectId, set) {
+  try { localStorage.setItem(_mobileChecklistCollapsedKey(projectId), JSON.stringify([...set])); } catch {}
+}
+
+function toggleMobileChecklistCat(catKey, projectId) {
+  const collapsed = _getMobileChecklistCollapsed(projectId);
+  if (collapsed.has(catKey)) collapsed.delete(catKey);
+  else collapsed.add(catKey);
+  _setMobileChecklistCollapsed(projectId, collapsed);
+  const el = document.querySelector(`.mob-checklist-cat[data-cat-key="${catKey}"]`);
+  if (el) el.classList.toggle('collapsed');
+}
+
 async function loadMobileChecklist(projectId) {
   const el = document.getElementById('mobile-checklist-section');
+  if (!el) return;
   try {
-    const items = await apiGet(`/api/proiecte/${projectId}/checklist`);
-    if (!items || items.length === 0) {
-      el.innerHTML = `
-        <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF</div>
-        <div style="display:flex; gap:8px; margin-bottom:8px;">
-          <input type="text" id="new-checklist-item" placeholder="Item nou..."
-            style="flex:1;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
-          <button onclick="addMobileChecklistItem('${projectId}')" style="padding:10px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:600;">+</button>
-        </div>
-      `;
-      return;
-    }
+    const [items, categorii] = await Promise.all([
+      apiGet(`/api/proiecte/${projectId}/checklist`),
+      apiGet(`/api/proiecte/${projectId}/checklist-categorii`).catch(() => [])
+    ]);
 
-    const completed = items.filter(i => i.completed).length;
-    const total = items.length;
-    const pct = Math.round((completed / total) * 100);
+    const total = (items || []).length;
+    const done = (items || []).filter(i => i.completed).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const collapsed = _getMobileChecklistCollapsed(projectId);
+
+    const byCat = new Map();
+    for (const it of (items || [])) {
+      const key = it.categorie_id != null ? String(it.categorie_id) : '0';
+      if (!byCat.has(key)) byCat.set(key, []);
+      byCat.get(key).push(it);
+    }
+    const orderedCats = [...(categorii || [])].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0));
+    const uncategorized = byCat.get('0') || [];
+
+    const renderCatBlock = (cat, its, isUncategorized = false) => {
+      const catKey = String(cat.id);
+      const isCollapsed = collapsed.has(catKey);
+      const catDone = its.filter(i => i.completed).length;
+      const progressTxt = its.length > 0 ? `${catDone}/${its.length}` : '0/0';
+      const isFullDone = its.length > 0 && catDone === its.length;
+      const actions = isUncategorized ? '' : `
+        <div class="mob-cat-actions">
+          <button onclick="event.stopPropagation(); renameMobileChecklistCat(${cat.id}, '${projectId}')" aria-label="Redenumește"><i data-lucide="pencil"></i></button>
+          <button onclick="event.stopPropagation(); deleteMobileChecklistCat(${cat.id}, '${escapeHtml(cat.nume).replace(/'/g, "\\'")}', '${projectId}')" aria-label="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>`;
+      const rows = its.map(it => `
+        <div class="mob-checklist-item ${it.completed ? 'done' : ''}">
+          <input type="checkbox" ${it.completed ? 'checked' : ''}
+            onchange="toggleMobileChecklist('${it.id}',this.checked,'${projectId}')">
+          <span class="mob-ci-text">${escapeHtml(it.titlu || '')}</span>
+          <button onclick="deleteMobileChecklistItem('${it.id}','${projectId}')" class="mob-ci-del" aria-label="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>
+      `).join('') || `<div class="mob-cat-empty">Niciun item.</div>`;
+      const addRow = `
+        <div class="mob-cat-addrow">
+          <input type="text" placeholder="${isUncategorized ? 'Item fără categorie...' : 'Item nou...'}"
+                 onkeydown="if(event.key==='Enter') addMobileChecklistItem('${projectId}', ${isUncategorized ? 'null' : cat.id})">
+          <button onclick="addMobileChecklistItem('${projectId}', ${isUncategorized ? 'null' : cat.id})"><i data-lucide="plus"></i></button>
+        </div>`;
+      return `
+        <div class="mob-checklist-cat ${isCollapsed ? 'collapsed' : ''} ${isUncategorized ? 'uncategorized' : ''}" data-cat-key="${catKey}">
+          <div class="mob-cat-head" onclick="toggleMobileChecklistCat('${catKey}', '${projectId}')">
+            <i data-lucide="chevron-down" class="mob-cat-chevron"></i>
+            <span class="mob-cat-name">${escapeHtml(cat.nume)}</span>
+            <span class="mob-cat-progress ${isFullDone ? 'done' : ''}">${progressTxt}</span>
+            ${actions}
+          </div>
+          <div class="mob-cat-body">
+            ${rows}
+            ${addRow}
+          </div>
+        </div>`;
+    };
 
     el.innerHTML = `
-      <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF (${completed}/${total})</div>
+      <div style="font-size:14px; font-weight:600; margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-checks" style="color:var(--accent);"></i> Checklist PIF (${done}/${total})</div>
       <div style="background:var(--border);border-radius:4px;height:6px;margin-bottom:12px;">
-        <div style="background:var(--success);height:100%;border-radius:4px;width:${pct}%;transition:width 0.3s;"></div>
+        <div style="background:linear-gradient(90deg, var(--accent), var(--success));height:100%;border-radius:4px;width:${pct}%;transition:width 0.3s;"></div>
       </div>
-      ${items.map(item => `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:4px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-          <input type="checkbox" ${item.completed ? 'checked' : ''}
-            onchange="toggleMobileChecklist('${item.id}',this.checked,'${projectId}')"
-            style="width:20px;height:20px;accent-color:var(--success);flex-shrink:0;">
-          <span style="font-size:13px;flex:1;${item.completed ? 'text-decoration:line-through;opacity:0.5;' : ''}">${escapeHtml(item.titlu)}</span>
-          <button onclick="deleteMobileChecklistItem('${item.id}','${projectId}')" style="background:none;border:none;color:var(--error);font-size:16px;cursor:pointer;padding:4px;">×</button>
-        </div>
-      `).join('')}
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <input type="text" id="new-checklist-item" placeholder="Item nou..."
-          style="flex:1;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
-        <button onclick="addMobileChecklistItem('${projectId}')" style="padding:10px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:600;">+</button>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+        <button onclick="addMobileChecklistCat('${projectId}')" class="mob-add-cat-btn"><i data-lucide="folder-plus"></i> Categorie</button>
       </div>
+      ${orderedCats.map(c => renderCatBlock(c, byCat.get(String(c.id)) || [])).join('')}
+      ${renderCatBlock({ id: 0, nume: 'Fără categorie' }, uncategorized, true)}
     `;
-  } catch (e) { el.innerHTML = ''; }
+  } catch (e) { el.innerHTML = ''; console.error('loadMobileChecklist failed:', e); }
+}
+
+async function addMobileChecklistCat(projectId) {
+  const nume = prompt('Numele categoriei:');
+  if (!nume || !nume.trim()) return;
+  try {
+    await apiPost(`/api/proiecte/${projectId}/checklist-categorii`, { nume: nume.trim() });
+    if ('vibrate' in navigator) navigator.vibrate(20);
+    loadMobileChecklist(projectId);
+  } catch (e) { alert('Eroare la creare'); }
+}
+
+async function renameMobileChecklistCat(catId, projectId) {
+  const current = document.querySelector(`.mob-checklist-cat[data-cat-key="${catId}"] .mob-cat-name`)?.textContent || '';
+  const newName = prompt('Noul nume:', current);
+  if (!newName || !newName.trim() || newName.trim() === current) return;
+  try {
+    await apiPut(`/api/checklist-categorii/${catId}`, { nume: newName.trim() });
+    loadMobileChecklist(projectId);
+  } catch (e) { alert('Eroare'); }
+}
+
+async function deleteMobileChecklistCat(catId, catName, projectId) {
+  if (!confirm(`Ștergi categoria "${catName}"? Items-urile vor fi mutate la "Fără categorie".`)) return;
+  try {
+    await apiDelete(`/api/checklist-categorii/${catId}?move=1`);
+    if ('vibrate' in navigator) navigator.vibrate(20);
+    loadMobileChecklist(projectId);
+  } catch (e) { alert('Eroare'); }
 }
 
 async function toggleMobileChecklist(itemId, checked, projectId) {
@@ -1796,12 +1877,13 @@ async function toggleMobileChecklist(itemId, checked, projectId) {
   loadMobileChecklist(projectId);
 }
 
-async function addMobileChecklistItem(projectId) {
-  const input = document.getElementById('new-checklist-item');
-  const titlu = input.value.trim();
+async function addMobileChecklistItem(projectId, categorieId = null) {
+  const catKey = categorieId == null ? '0' : String(categorieId);
+  const root = document.querySelector(`.mob-checklist-cat[data-cat-key="${catKey}"] .mob-cat-addrow input`);
+  const titlu = (root?.value || '').trim();
   if (!titlu) return;
-  await apiPost(`/api/proiecte/${projectId}/checklist`, { titlu, ordine: 999 });
-  input.value = '';
+  await apiPost(`/api/proiecte/${projectId}/checklist`, { titlu, ordine: 999, categorie_id: categorieId });
+  if (root) root.value = '';
   loadMobileChecklist(projectId);
 }
 
