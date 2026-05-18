@@ -819,6 +819,9 @@ async function showProjectDetail(projectId) {
             document.getElementById('pif-observatii').value = project.observatii || '';
         }
 
+        // Render long-text preview cards now that hidden textareas hold values.
+        renderAllLongTextPreviews();
+
         // Show/hide checklist section (only for PIF)
         document.getElementById('checklist-section').style.display = isPIF ? 'block' : 'none';
 
@@ -949,6 +952,169 @@ async function saveServiceField(field, value) {
     }
 }
 
+// ============ LONG-TEXT EDITOR MODAL ============
+// Used by PIF Observatii, Service Constatari inainte, Service Actiuni & rezultat.
+// One DOM modal serves all three fields. State of the field-in-edit is held on the
+// modal element so multiple openings are stateless from the caller's perspective.
+
+let _longTextActiveField = null;  // current hidden textarea id being edited
+
+function _ltmFieldByPreview(previewEl) {
+    // Walk back to the surrounding form-group / body to find the matching hidden textarea
+    let scope = previewEl.closest('.detail-section-body, .form-group') || previewEl.parentElement;
+    return scope ? scope.querySelector('textarea[hidden]') : null;
+}
+
+function renderLongTextPreview(textareaId) {
+    const ta = document.getElementById(textareaId);
+    if (!ta) return;
+    // Find the matching preview div: assume it lives in the same form-group/body
+    const scope = ta.closest('.form-group, .detail-section-body') || ta.parentElement;
+    const preview = scope?.querySelector('.long-text-preview');
+    if (!preview) return;
+    const text = ta.value || '';
+    preview.textContent = text;
+    preview.classList.toggle('is-empty', !text.trim());
+    // Update char counter if present
+    const counter = scope?.querySelector('[data-count-for="' + textareaId + '"]');
+    if (counter) counter.textContent = text.length + ' caractere';
+}
+
+function renderAllLongTextPreviews() {
+    ['service-before', 'service-after', 'pif-observatii'].forEach(renderLongTextPreview);
+}
+
+function openLongTextEditor(fieldId, title, iconName) {
+    const ta = document.getElementById(fieldId);
+    if (!ta) return;
+    _longTextActiveField = fieldId;
+
+    const modal = document.getElementById('long-text-modal');
+    document.getElementById('ltm-title-text').textContent = title || 'Editor';
+    const iconEl = document.getElementById('ltm-title-icon');
+    if (iconEl && iconName) iconEl.setAttribute('data-lucide', iconName);
+
+    const editor = document.getElementById('ltm-textarea');
+    editor.value = ta.value || '';
+    _ltmUpdateCounter();
+
+    modal.classList.add('active');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    setTimeout(() => editor.focus(), 50);
+
+    // Wire counter + Ctrl+B/I shortcuts once per open
+    editor.oninput = _ltmUpdateCounter;
+    editor.onkeydown = (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); ltmWrap('**', '**'); }
+        else if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); ltmWrap('*', '*'); }
+        else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveLongText(); }
+        else if (e.key === 'Escape') { e.preventDefault(); closeLongTextEditor(); }
+    };
+}
+
+function closeLongTextEditor() {
+    const modal = document.getElementById('long-text-modal');
+    modal.classList.remove('active');
+    _longTextActiveField = null;
+}
+
+async function saveLongText() {
+    if (!_longTextActiveField) return;
+    const ta = document.getElementById(_longTextActiveField);
+    const editor = document.getElementById('ltm-textarea');
+    if (!ta || !editor) return;
+    const value = editor.value;
+    ta.value = value;
+    // Map hidden textarea id -> backend field name
+    const backendField = (_longTextActiveField === 'pif-observatii') ? 'observatii' : _longTextActiveField.replace('-', '_');
+    await saveServiceField(backendField, value);
+    renderLongTextPreview(_longTextActiveField);
+    closeLongTextEditor();
+}
+
+async function copyLongTextContent() {
+    const editor = document.getElementById('ltm-textarea');
+    if (!editor) return;
+    const text = editor.value || '';
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            editor.select();
+            document.execCommand('copy');
+            editor.setSelectionRange(editor.selectionStart, editor.selectionStart);
+        }
+        showToast('Copiat în clipboard');
+    } catch (e) {
+        console.error('Copy failed:', e);
+        showToast('Eroare la copiere', true);
+    }
+}
+
+function _ltmUpdateCounter() {
+    const editor = document.getElementById('ltm-textarea');
+    const counter = document.getElementById('ltm-counter');
+    if (editor && counter) counter.textContent = (editor.value || '').length + ' caractere';
+}
+
+// Toolbar helpers — operate on the active selection in the editor textarea.
+function ltmWrap(open, close) {
+    const ta = document.getElementById('ltm-textarea');
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end);
+    const replacement = open + (selected || 'text') + close;
+    ta.setRangeText(replacement, start, end, 'select');
+    // If no selection, place caret inside the wrap (after `open`, length of "text")
+    if (!selected) ta.setSelectionRange(start + open.length, start + open.length + 'text'.length);
+    ta.focus();
+    _ltmUpdateCounter();
+}
+
+function ltmPrefixLines(prefix) {
+    const ta = document.getElementById('ltm-textarea');
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const before = ta.value.substring(0, start);
+    const selected = ta.value.substring(start, end) || '\n';
+    const after = ta.value.substring(end);
+    const prefixed = selected.split('\n').map(l => prefix + l).join('\n');
+    ta.value = before + prefixed + after;
+    ta.setSelectionRange(start, start + prefixed.length);
+    ta.focus();
+    _ltmUpdateCounter();
+}
+
+function ltmInsertDate() {
+    const ta = document.getElementById('ltm-textarea');
+    if (!ta) return;
+    const d = new Date();
+    const iso = d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const text = iso + ' ';
+    ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, 'end');
+    ta.focus();
+    _ltmUpdateCounter();
+}
+
+function ltmInsertSeparator() {
+    const ta = document.getElementById('ltm-textarea');
+    if (!ta) return;
+    const insert = '\n---\n';
+    ta.setRangeText(insert, ta.selectionStart, ta.selectionEnd, 'end');
+    ta.focus();
+    _ltmUpdateCounter();
+}
+
+// Close on backdrop click
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('long-text-modal');
+    if (modal && modal.classList.contains('active') && e.target === modal) {
+        closeLongTextEditor();
+    }
+});
+
 // ============ TASKS / TODOS ============
 
 let draggedTaskId = null;
@@ -981,12 +1147,21 @@ function renderTodos(tasks) {
     const container = document.getElementById('todo-list');
 
     if (!tasks.length) {
-        container.innerHTML = '<p style="color: var(--text2); font-size:0.85rem; font-family:\'Courier New\',monospace;">Nu există task-uri.</p>';
+        container.innerHTML = '<p style="color: var(--text2); font-size:0.85rem;">Nu există task-uri.</p>';
         return;
     }
 
-    container.innerHTML = tasks.map(task => `
-        <div class="todo-item priority-${(task.prioritate||'normal').toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
+    // Split active vs done — Ion wants them grouped, not mixed.
+    const active = tasks.filter(t => t.status !== 'done');
+    const done = tasks.filter(t => t.status === 'done');
+    // Done sorted by completion (or update) DESC so the latest finalised one floats on top.
+    done.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''));
+
+    const renderOne = (task) => {
+        const prioRaw = task.prioritate || 'Normal';
+        const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
+        return `
+        <div class="todo-item priority-${prioRaw.toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
             onclick="openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" style="cursor:pointer;">
             <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''}
                 onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
@@ -996,11 +1171,19 @@ function renderTodos(tasks) {
                     ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
                 </div>
             </div>
-            <span class="todo-priority ${(task.prioritate||'normal').toLowerCase()}">${task.prioritate || 'Normal'}</span>
-            <span class="todo-status ${task.status}">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
-            <button class="btn btn-small btn-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="x"></i></button>
-        </div>
-    `).join('');
+            <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
+            <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
+            <button class="btn btn-icon btn-ghost btn-ghost-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>`;
+    };
+
+    let html = active.map(renderOne).join('');
+    if (done.length > 0) {
+        html += `<div class="todo-divider"><span>Finalizate (${done.length})</span></div>`;
+        html += done.map(renderOne).join('');
+    }
+    container.innerHTML = html;
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 
     // Add drag-and-drop event listeners
     initTaskDragDrop();
@@ -1191,25 +1374,54 @@ async function loadJurnal(projectId) {
             apiGet(`/proiecte/${projectId}/jurnal`),
             apiGet(`/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 }))
         ]);
-        
-        const container = document.getElementById('timer-sessions-list');
-        let html = renderTimerSessions(timerData.sessions, timerData.total_secunde);
-        
-        // Add journal entries
-        if (jurnalEntries.length > 0) {
-            html += jurnalEntries.map(entry => `
-                <div class="jurnal-item" style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);">
-                    <div>
-                        <span>📝</span>
-                        <span style="color:var(--text2); font-size:0.8rem; margin-right:8px;">${entry.data}</span>
-                        <span>${escapeHtml(entry.continut)}</span>
-                    </div>
-                    <button class="btn btn-small btn-danger" onclick="deleteJurnalEntry('${entry.id}')" title="Șterge"><i data-lucide="x"></i></button>
-                </div>
-            `).join('');
+
+        const sessions = (timerData.sessions || []).slice();
+
+        // "Stop with note" creates BOTH a timer session and a jurnal entry within the
+        // same transaction. Without dedupe both show up in the history, which Ion does
+        // not want. Match each jurnal entry to a session whose end_time is within
+        // ~2 minutes; the matched session is then hidden from the timer list, while
+        // the jurnal entry inherits its duration badge.
+        const matched = new Set();
+        for (const j of jurnalEntries) {
+            const jTime = new Date(j.created_at || j.data || 0).getTime();
+            if (!jTime) continue;
+            const found = sessions.find(s => {
+                if (matched.has(s.id)) return false;
+                if (!s.end_time) return false;
+                const sEnd = new Date(s.end_time).getTime();
+                return Math.abs(jTime - sEnd) < 2 * 60 * 1000;
+            });
+            if (found) {
+                matched.add(found.id);
+                j._duration_secunde = found.durata_secunde;
+                j._session_id = found.id;
+            }
         }
-        
+        const unmatchedSessions = sessions.filter(s => !matched.has(s.id));
+
+        const container = document.getElementById('timer-sessions-list');
+        let html = renderTimerSessions(unmatchedSessions, timerData.total_secunde);
+
+        // Journal entries, with duration badge when they originate from a timer-with-note.
+        if (jurnalEntries.length > 0) {
+            html += jurnalEntries.map(entry => {
+                const durBadge = entry._duration_secunde
+                    ? `<span class="jurnal-duration"><i data-lucide="timer"></i> ${formatTimerDuration(entry._duration_secunde)}</span>`
+                    : '';
+                return `
+                <div class="jurnal-item">
+                    <i data-lucide="notebook-pen" class="jurnal-icon"></i>
+                    <span class="jurnal-date">${entry.data || ''}</span>
+                    ${durBadge}
+                    <span class="jurnal-text">${escapeHtml(entry.continut || '')}</span>
+                    <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteJurnalEntry('${entry.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+                </div>`;
+            }).join('');
+        }
+
         container.innerHTML = html || '<p style="color:var(--text2);">Nu există activități.</p>';
+        if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
     } catch (e) {
         console.error('Failed to load jurnal:', e);
     }
@@ -1255,6 +1467,12 @@ async function loadAttachments(projectId) {
 function renderAttachments(attachments) {
     const container = document.getElementById('attachment-list');
 
+    // "Download all" CTA — only meaningful with 2+ files. Lives above the list so it
+    // never collides with per-row actions.
+    const downloadAllBar = (attachments.length >= 2)
+        ? `<div class="attachment-bulk-bar"><button class="btn btn-small btn-secondary" onclick="downloadAllAttachments()" title="Descarcă toate atașamentele"><i data-lucide="download-cloud"></i> Descarcă tot (${attachments.length})</button></div>`
+        : '';
+
     if (!attachments.length) {
         container.innerHTML = '<p style="color: var(--text2);">Nu există atașamente.</p>';
         return;
@@ -1270,20 +1488,49 @@ function renderAttachments(attachments) {
         'ALT': 'paperclip'
     };
 
-    container.innerHTML = attachments.map(att => `
+    // Per-row actions are now icon-only with title tooltips. Solves the overlap on
+    // narrow containers where the labels "Preview / Download / Sterge" used to wrap
+    // onto each other.
+    container.innerHTML = downloadAllBar + attachments.map(att => `
         <div class="attachment-item">
             <div class="attachment-icon"><i data-lucide="${icons[att.tip_fisier] || 'paperclip'}"></i></div>
             <div class="attachment-info">
                 <div class="attachment-name">${escapeHtml(att.nume_fisier)}</div>
-                <div class="attachment-meta">${formatFileSize(att.dimensiune)} - ${att.data}</div>
+                <div class="attachment-meta">${formatFileSize(att.dimensiune)} · ${att.data || ''}</div>
             </div>
             <div class="attachment-actions">
-                ${att.tip_fisier === 'PDF' || att.tip_fisier === 'IMG' ? `<button class="btn btn-small btn-secondary" onclick="openPreview('${att.id}', '${escapeHtml(att.nume_fisier)}', '${att.tip_fisier}')"><i data-lucide="eye"></i> Preview</button>` : ''}
-                <button class="btn btn-small btn-secondary" onclick="downloadAttachment('${att.id}')"><i data-lucide="download"></i> Download</button>
-                <button class="btn btn-small btn-danger" onclick="deleteAttachment('${att.id}')"><i data-lucide="x"></i> Șterge</button>
+                ${att.tip_fisier === 'PDF' || att.tip_fisier === 'IMG' ? `<button class="btn btn-icon btn-secondary" title="Previzualizare" onclick="openPreview('${att.id}', '${escapeHtml(att.nume_fisier)}', '${att.tip_fisier}')"><i data-lucide="eye"></i></button>` : ''}
+                <button class="btn btn-icon btn-secondary" title="Descarcă" onclick="downloadAttachment('${att.id}')"><i data-lucide="download"></i></button>
+                <button class="btn btn-icon btn-danger" title="Șterge" onclick="deleteAttachment('${att.id}')"><i data-lucide="trash-2"></i></button>
             </div>
         </div>
     `).join('');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// Trigger sequential downloads of every attachment of the current project.
+// Browsers throttle parallel downloads so we space them out by ~250ms.
+async function downloadAllAttachments() {
+    if (!currentProjectId) return;
+    try {
+        const attachments = await apiGet(`/proiecte/${currentProjectId}/atasamente`);
+        if (!attachments || !attachments.length) return;
+        showToast(`Descarc ${attachments.length} fișiere...`);
+        for (let i = 0; i < attachments.length; i++) {
+            const att = attachments[i];
+            const a = document.createElement('a');
+            a.href = `${API_BASE}/atasamente/${att.id}/download`;
+            a.download = att.nume_fisier || '';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            await new Promise(r => setTimeout(r, 250));
+        }
+    } catch (e) {
+        console.error('downloadAllAttachments failed:', e);
+        showToast('Eroare la descărcare', true);
+    }
 }
 
 function openPreview(attachmentId, filename, tipFisier) {
@@ -1770,13 +2017,55 @@ function renderGlobalTasks(tasks) {
                     ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
                 </div>
                 </div>
-                <span class="todo-priority ${task.prioritate || 'normal'}">${task.prioritate || 'Normal'}</span>
-                <span class="todo-status ${task.status}">${getStatusLabel(task.status)}</span>
-                <button class="btn btn-small btn-secondary" onclick="editGtTask('${task.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                <button class="btn btn-small btn-danger" onclick="deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="x"></i></button>
+                <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
+                <span class="todo-status cyclable ${task.status}" onclick="cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
+                <button class="btn btn-icon btn-ghost" onclick="editGtTask('${task.id}')" title="Editează"><i data-lucide="pencil"></i></button>
+                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
             </div>
         `;
     }).join('');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// Cycle helpers: click on the priority/status pill rotates through values
+// without opening a modal. Used by global tasks AND project todos.
+const _PRIO_CYCLE = ['Normal', 'Minor', 'Urgent'];
+const _STATUS_CYCLE = ['to_do', 'in_lucru', 'done'];
+
+async function cycleGtPriority(taskId, current) {
+    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
+    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
+    try {
+        await apiPut(`/global-tasks/${taskId}`, { prioritate: next });
+        loadGlobalTasks();
+    } catch (e) { showToast('Eroare la schimbarea priorității', true); }
+}
+
+async function cycleGtStatus(taskId, current) {
+    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
+    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
+    try {
+        await apiPut(`/global-tasks/${taskId}`, { status: next });
+        loadGlobalTasks();
+    } catch (e) { showToast('Eroare la schimbarea statusului', true); }
+}
+
+async function cycleTodoPriority(taskId, current) {
+    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
+    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
+    try {
+        await apiPut(`/tasks/${taskId}`, { prioritate: next.toLowerCase() });
+        if (currentProjectId) loadTodos(currentProjectId);
+    } catch (e) { showToast('Eroare', true); }
+}
+
+async function cycleTodoStatus(taskId, current) {
+    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
+    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
+    try {
+        await apiPut(`/tasks/${taskId}`, { status: next });
+        if (currentProjectId) loadTodos(currentProjectId);
+    } catch (e) { showToast('Eroare', true); }
 }
 
 async function loadProjectTasks() {
@@ -1974,14 +2263,21 @@ function renderArchive(tasks) {
         container.innerHTML = '<p style="color:var(--text2); font-size:0.9rem; text-align:center; padding:16px 0;">Niciun task finalizat.</p>';
         return;
     }
+    // Most-recently finalised first.
+    tasks = tasks.slice().sort((a, b) => {
+        const aDate = a.data_finalizare || a.updated_at || a.created_at || '';
+        const bDate = b.data_finalizare || b.updated_at || b.created_at || '';
+        return bDate.localeCompare(aDate);
+    });
     container.innerHTML = tasks.map(t => `
         <div class="archive-item">
             <span class="archive-title">${escapeHtml(t.titlu)}</span>
             <span class="archive-meta">${t.categorie || ''} · ${t.data_finalizare ? t.data_finalizare.split('T')[0] : ''}</span>
-            <button class="btn btn-small btn-secondary" onclick="restoreTask('${t.id}')" title="Redeschide task"><i data-lucide="undo-2"></i></button>
-            <button class="btn btn-small btn-danger" onclick="deleteGtTask('${t.id}')" title="Șterge definitiv"><i data-lucide="x"></i></button>
+            <button class="btn btn-icon btn-ghost" onclick="restoreTask('${t.id}')" title="Redeschide task"><i data-lucide="undo-2"></i></button>
+            <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteGtTask('${t.id}')" title="Șterge definitiv"><i data-lucide="trash-2"></i></button>
         </div>
     `).join('');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 }
 
 async function restoreTask(taskId) {
@@ -2499,15 +2795,12 @@ function renderTimerSessions(sessions, totalSeconds) {
         html = '<p style="color: var(--text2); font-size: 0.85rem;">Nu există sesiuni timer.</p>';
     } else {
         html = sessions.map(s => `
-            <div class="timer-session" style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);">
-                <div>
-                    <span>⏱</span>
-                    <span style="font-weight:500;">${formatTimerDuration(s.durata_secunde)}</span>
-                    <span style="color:var(--text2); font-size:0.8rem; margin-left:8px;">
-                        ${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}
-                    </span>
-                </div>
-                <button class="btn btn-small btn-danger" onclick="deleteTimerSession('${s.id}')" title="Șterge"><i data-lucide="x"></i></button>
+            <div class="timer-session">
+                <i data-lucide="timer" class="jurnal-icon"></i>
+                <span class="jurnal-duration-plain">${formatTimerDuration(s.durata_secunde)}</span>
+                <span class="jurnal-date">${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}</span>
+                <span class="jurnal-text" style="color:var(--text-dim); font-style:italic;">Timer fără notă</span>
+                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteTimerSession('${s.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
             </div>
         `).join('');
     }

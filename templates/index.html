@@ -1863,13 +1863,27 @@
             display: flex;
             align-items: center;
             gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
+            /* Tighter padding so a list of 10+ tasks does not become a wall of whitespace. */
+            padding: 6px 12px;
             background: var(--bg);
             border-radius: var(--radius-md);
-            margin-bottom: var(--space-sm);
+            margin-bottom: 4px;
             border-left: 4px solid;
-            min-height: 44px;
+            min-height: 36px;
         }
+        /* Divider between active and finalised tasks within a project. */
+        .todo-divider {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 4px 4px;
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .todo-divider::before, .todo-divider::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
 
         .todo-item.priority-urgent { border-left-color: var(--danger); }
         .todo-item.priority-normal { border-left-color: var(--warning); }
@@ -1888,29 +1902,111 @@
         .todo-title { font-weight: 500; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .todo-meta { font-size: var(--font-tiny); color: var(--text2); }
 
-        .todo-priority {
-            font-size: var(--font-tiny);
+        /* Priority + status pills.
+           Fixed min-width keeps them aligned vertically regardless of the current
+           value (Normal/Minor/Urgent and To Do/In Lucru/Finalizat have different
+           widths and used to jitter). Both are also click-cyclable. */
+        .todo-priority, .todo-status {
+            font-size: 0.7rem;
             font-weight: 600;
-            padding: 2px 6px;
-            border-radius: var(--radius-sm);
+            padding: 3px 10px;
+            border-radius: 20px;
             text-transform: uppercase;
+            letter-spacing: 0.03em;
             flex-shrink: 0;
+            min-width: 78px;
+            text-align: center;
+            font-family: var(--font-mono);
+            user-select: none;
         }
+        .todo-priority.cyclable, .todo-status.cyclable {
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.15s;
+        }
+        .todo-priority.cyclable:hover, .todo-status.cyclable:hover { filter: brightness(1.2); transform: scale(1.04); }
 
-        .todo-priority.urgent { background: rgba(255, 107, 107, 0.12); color: var(--danger); }
-        .todo-priority.normal { background: rgba(255, 209, 102, 0.12); color: var(--warning); }
-        .todo-priority.minor { background: rgba(125, 133, 144, 0.12); color: #7d8590; }
+        .todo-priority.urgent, .todo-priority.Urgent { background: var(--danger-soft); color: var(--danger); }
+        .todo-priority.normal, .todo-priority.Normal { background: var(--warning-soft); color: var(--warning); }
+        .todo-priority.minor, .todo-priority.Minor { background: rgba(125, 133, 144, 0.16); color: var(--text-dim); }
 
-        .todo-status {
-            font-size: var(--font-tiny);
+        .todo-status.to_do { background: var(--accent-soft); color: var(--accent); }
+        .todo-status.in_lucru { background: var(--violet-soft); color: var(--violet); }
+        .todo-status.done { background: var(--success-soft); color: var(--success); }
+
+        /* Ghost icon button: low-key edit/delete actions inside a task row.
+           Hidden visual weight by default, full opacity on row hover. */
+        .btn.btn-ghost {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text2);
+            opacity: 0.5;
+            transition: all 0.12s;
+        }
+        .btn.btn-ghost:hover { background: var(--bg-elev2); color: var(--text); opacity: 1; }
+        .btn.btn-ghost.btn-ghost-danger:hover { background: var(--danger-soft); color: var(--danger); }
+        .gt-task-card:hover .btn-ghost, .todo-item:hover .btn-ghost, .archive-item:hover .btn-ghost { opacity: 1; }
+
+        /* "Sterge tot" arhiva: text used to overflow on certain widths. Set explicit
+           padding + don't shrink. */
+        .archive-clear-btn {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            color: var(--danger);
+            border-color: var(--danger-soft);
+        }
+        .archive-clear-btn:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+        .archive-clear-btn [data-lucide] { width: 14px; height: 14px; flex-shrink: 0; }
+
+        /* Jurnal / Timer history rows — unified styling. */
+        .jurnal-item, .timer-session {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--line-soft);
+            min-height: 34px;
+        }
+        .jurnal-item:last-child, .timer-session:last-child { border-bottom: none; }
+        .jurnal-item:hover, .timer-session:hover { background: var(--bg-elev2); }
+        .jurnal-icon { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; }
+        .jurnal-date {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            flex-shrink: 0;
+            min-width: 90px;
+        }
+        .jurnal-duration {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
             padding: 2px 8px;
-            border-radius: var(--radius-sm);
+            border-radius: 12px;
             flex-shrink: 0;
         }
-
-        .todo-status.to_do { background: rgba(88, 209, 201, 0.12); color: var(--pif-accent); }
-        .todo-status.in_lucru { background: rgba(149, 128, 255, 0.12); color: #9580ff; }
-        .todo-status.done { background: rgba(107, 223, 138, 0.12); color: var(--accent3); }
+        .jurnal-duration [data-lucide] { width: 12px; height: 12px; }
+        .jurnal-duration-plain {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .jurnal-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         .todo-delete { opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
         .todo-item:hover .todo-delete { opacity: 1; }
@@ -1976,6 +2072,20 @@
         .drop-zone-icon { font-size: 2rem; margin-bottom: var(--space-sm); }
 
         .attachment-list { max-height: 300px; overflow-y: auto; }
+        .attachment-bulk-bar { margin-bottom: 8px; display: flex; justify-content: flex-end; }
+        .attachment-bulk-bar .btn { display: inline-flex; align-items: center; gap: 6px; }
+        /* Icon-only action buttons: 32x32, no text wrap. Used on attachment actions and elsewhere. */
+        .btn.btn-icon {
+            width: 32px;
+            min-width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn.btn-icon [data-lucide], .btn.btn-icon .lucide { width: 16px; height: 16px; }
 
         .attachment-item {
             display: flex;
@@ -2149,6 +2259,161 @@
             padding: var(--space-md);
             margin-bottom: var(--space-md);
         }
+
+        /* Long-text preview + edit modal pattern.
+           Used for: PIF Observatii, Service Constatari inainte, Service Actiuni si rezultat.
+           Preview card shows the first ~6 lines; click opens a full-screen-ish modal with
+           toolbar + textarea + Save/Cancel/Copy. */
+        .long-text-preview {
+            width: 100%;
+            min-height: 80px;
+            max-height: 180px;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .long-text-preview:hover { border-color: var(--accent); background: var(--bg-elev2); }
+        .long-text-preview:empty::before,
+        .long-text-preview.is-empty::before {
+            content: attr(data-placeholder);
+            color: var(--text-dim);
+            font-style: italic;
+        }
+        .long-text-preview::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0 0;
+            height: 24px;
+            background: linear-gradient(to bottom, transparent, var(--bg));
+            pointer-events: none;
+        }
+        .long-text-edit-hint {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            font-family: var(--font-mono);
+        }
+        .long-text-edit-hint .lucide { width: 12px; height: 12px; vertical-align: -2px; }
+
+        /* The editor modal */
+        #long-text-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 8, 12, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        #long-text-modal.active { display: flex; }
+        #long-text-modal .ltm-card {
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 860px;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        }
+        #long-text-modal .ltm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        #long-text-modal .ltm-title { font-size: 1rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        #long-text-modal .ltm-title .lucide { color: var(--accent); }
+        #long-text-modal .ltm-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #long-text-modal .ltm-close:hover { background: var(--bg-elev2); color: var(--text); }
+        #long-text-modal .ltm-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--line-soft);
+            flex-wrap: wrap;
+        }
+        #long-text-modal .ltm-tool {
+            background: var(--bg-elev2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            transition: all 0.12s;
+        }
+        #long-text-modal .ltm-tool:hover { border-color: var(--accent); color: var(--accent); }
+        #long-text-modal .ltm-tool .lucide { width: 14px; height: 14px; }
+        #long-text-modal .ltm-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            min-height: 320px;
+        }
+        #long-text-modal #ltm-textarea {
+            flex: 1;
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            resize: none;
+            outline: none;
+            min-height: 280px;
+        }
+        #long-text-modal #ltm-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+        #long-text-modal .ltm-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid var(--border);
+        }
+        #long-text-modal .ltm-counter {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        #long-text-modal .ltm-actions { display: flex; gap: 8px; }
+        #long-text-modal .ltm-actions .btn { padding: 8px 16px; }
 
         .observations-section h4 { color: var(--pif-accent); margin-bottom: var(--space-md); }
 
@@ -3045,8 +3310,13 @@
                     <div class="detail-section-header"><i data-lucide="alert-circle"></i> Constatări înainte de intervenție</div>
                     <div class="detail-section-body">
                         <div class="form-group">
-                            <label>Descriere Problemă / Constatări</label>
-                            <textarea id="service-before" placeholder="Descrieți simptomele, codul de eroare, comportamentul echipamentului..." onchange="saveServiceField('service_before', this.value)"></textarea>
+                            <textarea id="service-before" hidden></textarea>
+                            <div class="long-text-preview" data-placeholder="Click aici pentru a adăuga constatări — simptome, cod eroare, comportament echipament..."
+                                 onclick="openLongTextEditor('service-before', 'Constatări înainte de intervenție', 'alert-circle')"></div>
+                            <div class="long-text-edit-hint">
+                                <span><i data-lucide="mouse-pointer-click"></i> Click pentru editare</span>
+                                <span data-count-for="service-before">0 caractere</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3054,8 +3324,13 @@
                     <div class="detail-section-header"><i data-lucide="check-circle-2"></i> Acțiuni și rezultat</div>
                     <div class="detail-section-body">
                         <div class="form-group">
-                            <label>Acțiuni Efectuate / Rezultat</label>
-                            <textarea id="service-after" placeholder="Descrieți ce s-a făcut, piesele înlocuite, rezultatul final..." onchange="saveServiceField('service_after', this.value)"></textarea>
+                            <textarea id="service-after" hidden></textarea>
+                            <div class="long-text-preview" data-placeholder="Click aici pentru a adăuga acțiunile efectuate și rezultatul final..."
+                                 onclick="openLongTextEditor('service-after', 'Acțiuni și rezultat', 'check-circle-2')"></div>
+                            <div class="long-text-edit-hint">
+                                <span><i data-lucide="mouse-pointer-click"></i> Click pentru editare</span>
+                                <span data-count-for="service-after">0 caractere</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3065,7 +3340,13 @@
             <div class="observations-section detail-section" id="pif-observatii-section">
                 <div class="detail-section-header"><i data-lucide="file-text"></i> Observații Tehnice</div>
                 <div class="detail-section-body">
-                    <textarea id="pif-observatii" placeholder="Adăugați observații tehnice..." style="min-height:120px;max-height:200px;resize:vertical;" onchange="saveServiceField('observatii', this.value)"></textarea>
+                    <textarea id="pif-observatii" hidden></textarea>
+                    <div class="long-text-preview" data-placeholder="Click aici pentru a adăuga observații tehnice — listă acțiuni, măsurători, decizii..."
+                         onclick="openLongTextEditor('pif-observatii', 'Observații Tehnice', 'file-text')"></div>
+                    <div class="long-text-edit-hint">
+                        <span><i data-lucide="mouse-pointer-click"></i> Click pentru editare</span>
+                        <span data-count-for="pif-observatii">0 caractere</span>
+                    </div>
                 </div>
             </div>
 
@@ -3394,7 +3675,7 @@
                 </div>
                 <div id="archive-body" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-                        <button class="btn btn-small btn-danger" onclick="clearArchive()"><i data-lucide="trash-2"></i> Șterge tot</button>
+                        <button class="btn btn-secondary archive-clear-btn" onclick="clearArchive()" title="Șterge toate taskurile finalizate"><i data-lucide="trash-2"></i> <span>Șterge tot</span></button>
                     </div>
                     <div id="archive-list"></div>
                 </div>
@@ -4059,6 +4340,40 @@
         </div>
         <div class="modal-body" style="padding:16px 20px;">
             <div id="manuals-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Universal long-text editor modal (Observatii / Constatari / Actiuni). -->
+<div id="long-text-modal" role="dialog" aria-modal="true">
+    <div class="ltm-card">
+        <div class="ltm-header">
+            <div class="ltm-title">
+                <i data-lucide="file-text" id="ltm-title-icon"></i>
+                <span id="ltm-title-text">Editor</span>
+            </div>
+            <button class="ltm-close" onclick="closeLongTextEditor()" aria-label="Închide">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="ltm-toolbar">
+            <button class="ltm-tool" onclick="ltmWrap('**', '**')" title="Bold (Ctrl+B)"><i data-lucide="bold"></i>Bold</button>
+            <button class="ltm-tool" onclick="ltmWrap('*', '*')" title="Italic (Ctrl+I)"><i data-lucide="italic"></i>Italic</button>
+            <button class="ltm-tool" onclick="ltmPrefixLines('- ')" title="Listă cu puncte"><i data-lucide="list"></i>Listă</button>
+            <button class="ltm-tool" onclick="ltmPrefixLines('1. ')" title="Listă numerotată"><i data-lucide="list-ordered"></i>Numerotată</button>
+            <button class="ltm-tool" onclick="ltmInsertDate()" title="Inserează data curentă"><i data-lucide="calendar"></i>Data</button>
+            <button class="ltm-tool" onclick="ltmInsertSeparator()" title="Linie separator"><i data-lucide="minus"></i>Separator</button>
+        </div>
+        <div class="ltm-body">
+            <textarea id="ltm-textarea" spellcheck="false" placeholder="Scrie aici..."></textarea>
+        </div>
+        <div class="ltm-footer">
+            <span class="ltm-counter" id="ltm-counter">0 caractere</span>
+            <div class="ltm-actions">
+                <button class="btn btn-secondary" onclick="copyLongTextContent()"><i data-lucide="copy"></i> Copiază</button>
+                <button class="btn btn-secondary" onclick="closeLongTextEditor()"><i data-lucide="x"></i> Anulează</button>
+                <button class="btn btn-primary" onclick="saveLongText()"><i data-lucide="check"></i> Salvează</button>
+            </div>
         </div>
     </div>
 </div>
