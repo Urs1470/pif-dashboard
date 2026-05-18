@@ -1235,3 +1235,207 @@
 2026-05-19 02:04:09,243  INFO        -> rewrite: Defineste data de inceput a sezonului 3 pentru functionare programata. Folosit i
 2026-05-19 02:04:09,343  INFO      15449 34.70 (ACS580)  existing_len=1367  qc=rewrite
 2026-05-19 02:04:22,466  INFO        -> rewrite: Definește numărul de excepții active în sistemul de monitorizare. Valoarea setat
+2026-05-19 02:04:24,942  INFO        Committed + pushed
+2026-05-19 02:04:25,043  INFO      15450 34.72 (ACS580)  existing_len=1337  qc=rewrite
+2026-05-19 02:04:31,755  INFO        -> rewrite: Defineste data de inceput a perioadei de exceptie. Perioadele de exceptie sunt f
+2026-05-19 02:04:31,855  INFO      15451 34.73 (ACS580)  existing_len=1352  qc=rewrite
+2026-05-19 02:04:42,466  INFO        -> rewrite: Defineste durata perioadei de exceptie in zile. Perioada de exceptie permite fun
+2026-05-19 02:04:42,566  INFO      15452 34.74 (ACS580)  existing_len=1044  qc=rewrite
+2026-05-19 02:04:55,813  WARNING     Bad categorie 'Altol' for 34.74, retry
+2026-05-19 02:05:09,964  INFO        -> rewrite: Seteaza data de inceput pentru Exception 2 (eveniment exceptional 2). Formatul e
+2026-05-19 02:05:10,065  INFO      15453 34.75 (ACS580)  existing_len=1022  qc=rewrite
+2026-05-19 02:05:16,539  INFO        -> rewrite: Seteaza durata in zile pentru exceptia 2 din programarea temporizata. Functionea
+2026-05-19 02:05:16,640  INFO      15454 34.76 (ACS580)  existing_len=1014  qc=rewrite
+2026-05-19 02:05:25,732  INFO        -> rewrite: Seteaza data de incepere pentru Exceptia 3 (modul de functionare special). Exper
+2026-05-19 02:05:25,833  INFO      15455 34.77 (ACS580)  existing_len=1193  qc=rewrite
+2026-05-19 02:05:37,738  INFO        -> rewrite: Defineste durata Exception 3 in zile. Valoarea 0 dezactiveaza Exception 3. Funct
+2026-05-19 02:05:37,839  INFO      15456 34.78 (ACS580)  existing_len=1317  qc=rewrite
+2026-05-19 02:05:45,055  INFO        -> rewrite: Defineste data pentru ziua de exceptie 4. Zilele de exceptie sunt zile speciale 
+2026-05-19 02:05:45,155  INFO      15457 34.79 (ACS580)  existing_len=1149  qc=rewrite
+2026-05-19 02:05:53,010  INFO        -> rewrite: Defineste a cincea zi de exceptie pentru programarea calendaristica. O zi de exc
+2026-05-19 02:05:53,110  INFO      15458 34.80 (ACS580)  existing_len=1142  qc=rewrite
+2026-05-19 02:06:04,704  INFO        -> rewrite: Defineste data pentru ziua de exceptie 6 in sistemul de programare saptamanala. 
+2026-05-19 02:06:04,805  INFO      15459 34.81 (ACS580)  existing_len=1216  qc=rewrite
+2026-05-19 02:06:14,311  INFO        -> rewrite: Defineste ziua de exceptie 7 pentru programarea calendaristica. Functioneaza sim
+2026-05-19 02:06:14,411  INFO      15460 34.82 (ACS580)  existing_len=1381  qc=rewrite
+2026-05-19 02:06:28,552  INFO        -> rewrite: Defineste a 8-a zi de exceptie in programul saptamanal. Zilele de exceptie sunt 
+2026-05-19 02:06:28,652  INFO      15461 34.84 (ACS580)  existing_len=1348  qc=rewrite
+2026-05-19 02:06:41,861  INFO        -> rewrite: Defineste ziua de exceptie 10 pentru programare. Zilele de exceptie permit funct
+2026-05-19 02:06:41,961  INFO      15462 34.85 (ACS580)  existing_len=1328  qc=rewrite
+2026-05-19 02:06:51,181  INFO        -> rewrite: Defineste ziua 11 ca exceptie in calendarul de programare. Cand este setata, ace
+2026-05-19 02:06:51,281  INFO      15463 34.86 (ACS580)  existing_len=1349  qc=rewrite
+2026-05-19 02:07:01,697  INFO        -> rewrite: Defineste ziua de exceptie 12 pentru programarea calendarului. Valoarea este in 
+2026-05-19 02:07:01,798  INFO      15464 34.87 (ACS580)  existing_len=1363  qc=rewrite
+2026-05-19 02:07:12,074  INFO        -> rewrite: Defineste ziua de exceptie 13 in calendarul de programare. Cand aceasta zi este 
+2026-05-19 02:07:12,174  INFO      15465 34.88 (ACS580)  existing_len=1345  qc=rewrite
+2026-05-19 02:07:21,610  INFO        -> rewrite: Defineste ziua exceptionala numarul 14 pentru programarea temporizatorului. Form
+2026-05-19 02:07:21,711  INFO      15466 34.89 (ACS580)  existing_len=1363  qc=rewrite
+2026-05-19 02:07:31,309  INFO        -> rewrite: Seteaza ziua exceptata 15 pentru programarea temporizata. Aceasta zi speciala es
+2026-05-19 02:07:31,410  INFO      15467 34.90 (ACS580)  existing_len=1395  qc=rewrite
+2026-05-19 02:07:40,130  INFO        -> rewrite: Defineste ziua de exceptie 16 pentru programarea functionarii. Setarea 01.01 rep
+2026-05-19 02:07:40,231  INFO      15468 34.110 (ACS580)  existing_len=1342  qc=rewrite
+2026-05-19 02:07:47,436  INFO        -> rewrite: Defineste durata functiei de boost pentru temporizatoarele combinate. Valoarea 0
+2026-05-19 02:07:47,537  INFO      15469 35.01 (ACS580)  existing_len=1408  qc=rewrite
+2026-05-19 02:07:52,869  INFO        -> rewrite: Afiseaza temperatura estimata a motorului calculata de variator pe baza curentul
+2026-05-19 02:07:52,970  INFO      15470 35.02 (ACS580)  existing_len=1453  qc=rewrite
+2026-05-19 02:08:01,249  INFO        -> rewrite: Afiseaza temperatura masurata de la senzorul configurat in 35.01. Valoarea este 
+2026-05-19 02:08:01,350  INFO      15471 35.50 (ACS580)  existing_len=1474  qc=rewrite
+2026-05-19 02:08:13,540  INFO        -> rewrite: Defineste temperatura ambianta a mediului in care functioneaza motorul. Aceasta 
+2026-05-19 02:08:13,641  INFO      15472 35.13 (ACS580)  existing_len=1482  qc=rewrite
+2026-05-19 02:08:20,042  INFO        -> rewrite: Defineste pragul de temperatura pentru avertizare termica. Cand senzorul detecte
+2026-05-19 02:08:20,143  INFO      15473 35.14 (ACS580)  existing_len=1257  qc=rewrite
+2026-05-19 02:08:26,442  INFO        -> rewrite: Defineste care intrare analogica este folosita pentru senzorul de temperatura 1.
+2026-05-19 02:08:26,542  INFO      15474 35.22 (ACS580)  existing_len=1460  qc=rewrite
+2026-05-19 02:08:35,335  INFO        -> rewrite: Seteaza pragul maxim de temperatura pentru functia de supraveghere 2. Cand senzo
+2026-05-19 02:08:35,435  INFO      15475 35.23 (ACS580)  existing_len=1505  qc=rewrite
+2026-05-19 02:08:42,367  INFO        -> rewrite: Defineste pragul de avertizare pentru temperatura 2 masurata de senzorul PTC. Ca
+2026-05-19 02:08:42,468  INFO      15476 35.24 (ACS580)  existing_len=1313  qc=rewrite
+2026-05-19 02:08:50,150  INFO        -> rewrite: Selecteaza intrarea analogica utilizata pentru masurarea temperaturii 2. Trebuie
+2026-05-19 02:08:50,250  INFO      15477 35.52 (ACS580)  existing_len=1282  qc=rewrite
+2026-05-19 02:08:58,386  INFO        -> rewrite: Defineste sarcina motorului la viteza zero ca procent din sarcina nominala. Impr
+2026-05-19 02:08:58,487  INFO      15478 35.54 (ACS580)  existing_len=1483  qc=rewrite
+2026-05-19 02:09:10,846  INFO        -> rewrite: Defineste temperatura nominala de functionare a motorului sau timpul de function
+2026-05-19 02:09:10,947  INFO      15479 36.01 (ACS580)  existing_len=1517  qc=rewrite
+2026-05-19 02:09:22,406  INFO        -> rewrite: Selecteaza semnalul care va fi monitorizat de peak value logger. Logger-ul inreg
+2026-05-19 02:09:22,507  INFO      15480 36.02 (ACS580)  existing_len=1419  qc=rewrite
+2026-05-19 02:09:29,779  INFO        -> rewrite: Seteaza timpul de filtrare pentru registrul de valori de varf. Cu cat valoarea e
+2026-05-19 02:09:29,880  INFO      15481 36.10 (ACS580)  existing_len=1571  qc=rewrite
+2026-05-19 02:09:37,609  INFO        -> rewrite: Afiseaza valoarea de varf inregistrata de logger-ul de valori de varf. Aceasta v
+2026-05-19 02:09:37,709  INFO      15482 36.11 (ACS580)  existing_len=1115  qc=rewrite
+2026-05-19 02:09:47,411  INFO        -> rewrite: Inregistreaza data la care a fost inregistrata valoarea de varf a parametrului m
+2026-05-19 02:09:47,511  INFO      15483 36.12 (ACS580)  existing_len=1049  qc=rewrite
+2026-05-19 02:09:54,746  INFO        -> rewrite: Inregistreaza ora la care a fost atinsa valoarea de varf a marimii monitorizate 
+2026-05-19 02:09:54,846  INFO      15484 36.13 (ACS580)  existing_len=1147  qc=rewrite
+2026-05-19 02:10:00,452  INFO        -> rewrite: Afiseaza valoarea curentului motor in momentul in care a fost inregistrata valoa
+2026-05-19 02:10:00,553  INFO      15485 36.14 (ACS580)  existing_len=1217  qc=rewrite
+2026-05-19 02:10:07,925  INFO        -> rewrite: Tensiunea curenta in circuitul intermediar DC al convertizorului de frecventa. A
+2026-05-19 02:10:08,026  INFO      15486 36.15 (ACS580)  existing_len=1174  qc=rewrite
+2026-05-19 02:10:13,338  INFO        -> rewrite: Afiseaza viteza motorului in rpm in momentul in care a fost inregistrata valoare
+2026-05-19 02:10:13,438  INFO      15487 36.16 (ACS580)  existing_len=1188  qc=rewrite
+2026-05-19 02:10:22,009  INFO        -> rewrite: Afiseaza data la care logger-ul de valori de varf a fost ultimul data resetat. E
+2026-05-19 02:10:22,110  INFO      15488 36.17 (ACS580)  existing_len=1201  qc=rewrite
+2026-05-19 02:10:32,061  INFO        -> rewrite: Inregistreaza data si ora la care a fost resetat loggerul de valori de varf (PVL
+2026-05-19 02:10:32,162  INFO      15489 37.02 (ACS580)  existing_len=1455  qc=rewrite
+2026-05-19 02:10:41,426  INFO        -> rewrite: Selecteaza semnalul care va fi monitorizat de functia ULC (supraveghere sub sarc
+2026-05-19 02:10:41,527  INFO      15490 37.03 (ACS580)  existing_len=1545  qc=rewrite
+2026-05-19 02:10:50,738  INFO        -> rewrite: Selecteaza modul in care convertizorul reactioneaza cand curentul depaseste valo
+2026-05-19 02:10:50,839  INFO      15491 37.41 (ACS580)  existing_len=1331  qc=rewrite
+2026-05-19 02:11:01,220  INFO        -> rewrite: Defineste timpul pentru care semnalul monitorizat trebuie sa ramana in zona de s
+2026-05-19 02:11:01,321  INFO      15492 37.42 (ACS580)  existing_len=1371  qc=rewrite
+2026-05-19 02:11:09,635  INFO        -> rewrite: Defineste timpul pentru care semnalul monitorizat trebuie sa ramana sub pragul d
+2026-05-19 02:11:09,735  INFO      15493 37.11 (ACS580)  existing_len=1512  qc=rewrite
+2026-05-19 02:11:19,866  INFO        -> rewrite: Defineste primul punct de viteza de pe axa X pentru tabelul ULC (User Load Curve
+2026-05-19 02:11:19,967  INFO      15494 37.12 (ACS580)  existing_len=1267  qc=rewrite
+2026-05-19 02:11:29,628  INFO        -> rewrite: Defineste al doilea punct de viteza in tabelul curbei de sarcina utilizator (ULC
+2026-05-19 02:11:29,729  INFO      15495 37.13 (ACS580)  existing_len=1236  qc=rewrite
+2026-05-19 02:11:32,458  INFO        -> rewrite: Defineste al treilea punct de viteza din tabelul ULC (User Logic Control). Repre
+2026-05-19 02:11:32,558  INFO      15496 37.14 (ACS580)  existing_len=1295  qc=rewrite
+2026-05-19 02:11:41,085  INFO        -> rewrite: Defineste al patrulea punct de viteza in tabela ULC pentru control in trepte al 
+2026-05-19 02:11:41,186  INFO      15497 37.15 (ACS580)  existing_len=1456  qc=rewrite
+2026-05-19 02:11:49,496  INFO        -> rewrite: Defineste al cincilea punct de viteza in tabelul de viteze definit de utilizator
+2026-05-19 02:11:49,597  INFO      15498 37.16 (ACS580)  existing_len=1464  qc=rewrite
+2026-05-19 02:11:59,410  INFO        -> rewrite: Defineste primul punct de frecventa de pe axa X a curbei de sarcina utilizator (
+2026-05-19 02:11:59,511  INFO      15499 37.18 (ACS580)  existing_len=1291  qc=rewrite
+2026-05-19 02:12:08,729  INFO        -> rewrite: Defineste al treilea punct de frecventa din curba personalizata V/Hz. Se utilize
+2026-05-19 02:12:08,829  INFO      15500 37.19 (ACS580)  existing_len=1223  qc=rewrite
+2026-05-19 02:12:18,681  INFO        -> rewrite: Defineste al patrulea punct de frecventa in curba utilizator definita (ULC). Ace
+2026-05-19 02:12:18,782  INFO      15501 37.20 (ACS580)  existing_len=1290  qc=rewrite
+2026-05-19 02:12:27,412  INFO        -> rewrite: Defineste al cincilea punct de frecventa din curba V/F multi-punct. Valoarea neg
+2026-05-19 02:12:27,513  INFO      15502 37.21 (ACS580)  existing_len=1323  qc=rewrite
+2026-05-19 02:12:39,043  INFO        -> rewrite: Defineste primul punct de pe axa Y al curbei de subtirgere in 5 puncte. Valoarea
+2026-05-19 02:12:39,144  INFO      15503 37.22 (ACS580)  existing_len=1250  qc=rewrite
+2026-05-19 02:12:48,153  INFO        -> rewrite: Defineste al doilea punct al curbei de subincarcare motor. Impreuna cu 37.21 for
+2026-05-19 02:12:48,254  INFO      15504 37.23 (ACS580)  existing_len=1280  qc=rewrite
+2026-05-19 02:12:59,624  INFO        -> rewrite: Defineste al treilea punct al curbei de underload personalizate. Aceasta curba s
+2026-05-19 02:12:59,725  INFO      15505 37.24 (ACS580)  existing_len=1289  qc=rewrite
+2026-05-19 02:13:05,832  INFO        -> rewrite: Defineste cel de-al patrulea punct de sub sarcina pentru protectia impotriva fun
+2026-05-19 02:13:05,932  INFO      15506 37.25 (ACS580)  existing_len=1162  qc=rewrite
+2026-05-19 02:13:21,188  INFO        -> rewrite: Defineste valoarea cuplului pentru cel de-al cincilea punct al curbei de detecti
+2026-05-19 02:13:21,289  INFO      15507 37.31 (ACS580)  existing_len=1338  qc=rewrite
+2026-05-19 02:13:31,264  INFO        -> rewrite: Defineste primul punct de pe axa Y intr-o curba de sarcina personalizata cu 5 pu
+2026-05-19 02:13:31,365  INFO      15508 37.32 (ACS580)  existing_len=1185  qc=rewrite
+2026-05-19 02:13:41,333  INFO        -> rewrite: Defineste al doilea punct al curbei de suprasarcina definite de utilizator (ULC)
+2026-05-19 02:13:41,434  INFO      15510 37.35 (ACS580)  existing_len=1215  qc=rewrite
+2026-05-19 02:13:49,810  INFO        -> rewrite: Defineste al cincilea punct de suprasarcina in curba de sarcina definita de util
+2026-05-19 02:13:49,910  INFO      15511 37.04 (ACS580)  existing_len=1608  qc=rewrite
+2026-05-19 02:13:57,594  INFO        -> rewrite: Selecteaza reactia drive-ului cand sarcina motorului scade sub pragul de subtens
+2026-05-19 02:13:57,695  INFO      15512 40.18 (ACS580)  existing_len=1223  qc=rewrite
+2026-05-19 02:14:07,585  INFO        -> rewrite: Selecteaza sursa pentru setpoint-ul 1 in bucla de control de proces. Permite ale
+2026-05-19 02:14:07,686  INFO      15513 40.06 (ACS580)  existing_len=1155  qc=rewrite
+2026-05-19 02:14:17,524  INFO        -> rewrite: Afiseaza informatii de stare despre controlul PID de proces cum ar fi daca PID-u
+2026-05-19 02:14:17,624  INFO      15514 40.91 (ACS580)  existing_len=1503  qc=rewrite
+2026-05-19 02:14:25,688  INFO        -> rewrite: Parametru de stocare pentru receptionarea valorii de feedback din proces, utiliz
+2026-05-19 02:14:25,789  INFO      15515 81.30 (ACS580)  existing_len=1024  qc=rewrite
+2026-05-19 02:14:32,266  INFO        -> rewrite: Afiseaza temperatura calculata a gazului refrigerent. Este un parametru doar pen
+2026-05-19 02:14:32,367  INFO      15516 40.10 (ACS580)  existing_len=1187  qc=rewrite
+2026-05-19 02:14:43,354  INFO        -> rewrite: Defineste sursa si modul de calcul al feedback-ului de proces pentru Set 1. Poat
+2026-05-19 02:14:43,454  INFO      15517 40.15 (ACS580)  existing_len=1174  qc=rewrite
+2026-05-19 02:14:54,531  INFO        -> rewrite: Seteaza factorul de scalare pentru iesirea analogica a PID Set 1. Permite calibr
+2026-05-19 02:14:54,632  INFO      15518 40.92 (ACS580)  existing_len=1538  qc=rewrite
+2026-05-19 02:15:05,317  INFO        -> rewrite: Parametru de stocare a valorii de referinta pentru proces. Poate fi scris de un 
+2026-05-19 02:15:05,418  INFO      15519 40.21 (ACS580)  existing_len=1169  qc=rewrite
+2026-05-19 02:15:16,573  INFO        -> rewrite: Seteaza valoarea referintei interne pentru procesul PID din Set 1. Aceasta valoa
+2026-05-19 02:15:16,674  INFO      15520 40.22 (ACS580)  existing_len=1138  qc=rewrite
+2026-05-19 02:15:26,788  INFO        -> rewrite: Defineste al doilea punct de referinta intern pentru procesul PID din Set 1. Ace
+2026-05-19 02:15:26,888  INFO      15521 40.23 (ACS580)  existing_len=1148  qc=rewrite
+2026-05-19 02:15:35,783  INFO        -> rewrite: Seteaza valoarea interna pentru referinta de proces setpoint 3 in cadrul grupulu
+2026-05-19 02:15:35,884  INFO      15522 40.24 (ACS580)  existing_len=1173  qc=rewrite
+2026-05-19 02:15:43,401  WARNING     Bad categorie 'PID' for 40.24, retry
+2026-05-19 02:15:54,897  INFO        -> rewrite: Seteaza valoarea referintei interne pentru procesul PID in Set 1. Aceasta valoar
+2026-05-19 02:15:54,997  INFO      15523 40.27 (ACS580)  existing_len=1150  qc=rewrite
+2026-05-19 02:16:07,599  INFO        -> rewrite: Defineste limita superioara pentru referinta de proces a controllerului PID. Imp
+2026-05-19 02:16:07,700  INFO      15524 40.30 (ACS580)  existing_len=1265  qc=rewrite
+2026-05-19 02:16:16,565  INFO        -> rewrite: Defineste sursa care poate ingheta valoarea setpoint-ului curent. Cand intrarea 
+2026-05-19 02:16:16,666  INFO      15525 40.38 (ACS580)  existing_len=1336  qc=rewrite
+2026-05-19 02:16:27,435  INFO        -> rewrite: Defineste sursa de semnal care activeaza functia de inghetare a iesirilor din Se
+2026-05-19 02:16:27,536  INFO      15526 40.39 (ACS580)  existing_len=1448  qc=rewrite
+2026-05-19 02:16:36,041  INFO        -> rewrite: Defineste o zona morta in jurul referintei pentru bucla PID 1. Cand variabila de
+2026-05-19 02:16:36,141  INFO      15527 40.40 (ACS580)  existing_len=1558  qc=rewrite
+2026-05-19 02:16:46,723  INFO        -> rewrite: Seteaza timpul de intarziere pentru banda moarta a setului 1. Dupa ce variabila 
+2026-05-19 02:16:46,824  INFO      15528 40.51 (ACS580)  existing_len=1509  qc=rewrite
+2026-05-19 02:16:56,171  INFO        -> rewrite: Activeaza functia de ajustare fina (trim) a referintei de viteza. Modifica incre
+2026-05-19 02:16:56,272  INFO      15529 40.52 (ACS580)  existing_len=1477  qc=rewrite
+2026-05-19 02:17:07,142  INFO        -> rewrite: Controleaza daca functia de ajustare (trim) este activa pentru corectarea viteze
+2026-05-19 02:17:07,242  INFO      15531 40.57 (ACS580)  existing_len=1441  qc=rewrite
+2026-05-19 02:17:17,245  INFO        -> rewrite: Selecteaza sursa care comuta intre setul PID 1 si setul PID 2 pentru controlul p
+2026-05-19 02:17:17,345  INFO      15532 40.58 (ACS580)  existing_len=1487  qc=rewrite
+2026-05-19 02:17:34,233  INFO        -> rewrite: Activeaza preventia cresterii termenului de integrare PID. Cand este selectata, 
+2026-05-19 02:17:34,333  INFO      15533 40.59 (ACS580)  existing_len=1400  qc=rewrite
+2026-05-19 02:17:47,238  INFO        -> rewrite: Activeaza functia de preventie a scaderii termenului integral PID. Cand este act
+2026-05-19 02:17:47,339  INFO      15534 40.60 (ACS580)  existing_len=1543  qc=rewrite
+2026-05-19 02:17:53,244  INFO        -> rewrite: Activeaza sau dezactiveaza controlul PID pentru proces. Poate fi setat mereu act
+2026-05-19 02:17:53,345  INFO      15535 40.62 (ACS580)  existing_len=1417  qc=rewrite
+2026-05-19 02:18:02,064  INFO        -> rewrite: Afiseaza valoarea curenta a punctului de referinta intern pentru bucla PID. Aces
+2026-05-19 02:18:02,165  INFO      15536 40.65 (ACS580)  existing_len=1537  qc=rewrite
+2026-05-19 02:18:06,317  INFO        -> rewrite: Activeaza conectarea automata a functiei de compensare PID (trim). Când este act
+2026-05-19 02:18:06,417  INFO      15537 40.79 (ACS580)  existing_len=1423  qc=rewrite
+2026-05-19 02:18:10,271  INFO        -> rewrite: Defineste unitatea de masura pentru referinta PID set 1. Valoarea implicita este
+2026-05-19 02:18:10,373  INFO      15538 40.80 (ACS580)  existing_len=1298  qc=rewrite
+2026-05-19 02:18:20,636  WARNING     Bad categorie 'Control proces' for 40.80, retry
+2026-05-19 02:18:33,150  INFO        -> rewrite: Seteaza sursa pentru valoarea minima a iesirii PID Set 1. Defineste punctul de p
+2026-05-19 02:18:33,251  INFO      15539 40.81 (ACS580)  existing_len=1318  qc=rewrite
+2026-05-19 02:18:43,526  INFO        -> rewrite: Selecteaza sursa de referinta pentru iesirea maxima a regulatorului PID set 1. A
+2026-05-19 02:18:43,627  INFO      15540 40.89 (ACS580)  existing_len=1418  qc=rewrite
+2026-05-19 02:18:53,502  INFO        -> rewrite: Defineste un multiplicator pentru valoarea setpointului 1 intr-o functie sau blo
+2026-05-19 02:18:53,603  INFO      15541 40.90 (ACS580)  existing_len=1392  qc=rewrite
+2026-05-19 02:19:06,089  INFO        -> rewrite: Defineste multiplicatorul cu care este scalat rezultatul functiei de feedback di
+2026-05-19 02:19:06,190  INFO      15542 40.96 (ACS580)  existing_len=1448  qc=rewrite
+2026-05-19 02:19:16,155  INFO        -> rewrite: Afiseaza valoarea curenta a controllerului PID de proces ca procent din semnalul
+2026-05-19 02:19:16,255  INFO      15543 40.98 (ACS580)  existing_len=1168  qc=rewrite
+2026-05-19 02:19:27,169  INFO        -> rewrite: Afiseaza valoarea semnalului proces scalata in procente fata de referinta din 40
+2026-05-19 02:19:27,269  INFO      15544 40.99 (ACS580)  existing_len=1223  qc=rewrite
+2026-05-19 02:19:37,590  INFO        -> rewrite: Afiseaza semnalul PID de proces scalat in procente, derivat din valoarea paramet
+2026-05-19 02:19:37,691  INFO      15545 41.09 (ACS580)  existing_len=1174  qc=rewrite
+2026-05-19 02:19:43,659  INFO        -> rewrite: Defineste sursa pentru feedback 2 in Set 2 al controllerului PID. Functioneaza s
+2026-05-19 02:19:43,760  INFO      15546 41.10 (ACS580)  existing_len=1277  qc=rewrite
+2026-05-19 02:19:53,355  INFO        -> rewrite: Selecteaza sursa semnalului de feedback pentru Setul 2 de control. Functioneaza 
+2026-05-19 02:19:53,456  INFO      15547 41.11 (ACS580)  existing_len=1314  qc=rewrite
+2026-05-19 02:20:05,210  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul semnalului de feedback in Set 2 PID. Fi
+2026-05-19 02:20:05,311  INFO      15548 41.14 (ACS580)  existing_len=1201  qc=rewrite
+2026-05-19 02:20:15,578  INFO        -> rewrite: Seteaza valoarea de referinta pentru al doilea set de parametri PID. Functioneaz
+2026-05-19 02:20:15,679  INFO      15549 41.15 (ACS580)  existing_len=1120  qc=rewrite
+2026-05-19 02:20:26,255  INFO        -> rewrite: Defineste scala iesirii analogice pentru setul 2. Stabileste limitele semnalului
+2026-05-19 02:20:26,355  INFO      15550 41.17 (ACS580)  existing_len=1230  qc=rewrite
+2026-05-19 02:20:32,560  INFO        -> rewrite: Seteaza sursa pentru setpoint-ul 2 in cadrul Setului 2 de parametri. Functioneaz
+2026-05-19 02:20:32,661  INFO      15551 41.18 (ACS580)  existing_len=1230  qc=rewrite
+2026-05-19 02:20:41,138  INFO        -> rewrite: Defineste valoarea setpoint 2 pentru functia de selectare multi-setpoint. Poate 
