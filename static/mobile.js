@@ -1633,6 +1633,7 @@ async function showProjectDetail(projectId) {
   const p = project;
   const infoEl = document.getElementById('project-info');
 
+  const isServiceProj = (p.tip === 'Service');
   infoEl.innerHTML = `
     <div style="margin-bottom:16px;">
       <div style="font-size:18px; font-weight:600;">${escapeHtml(p.nume || '-')}</div>
@@ -1640,6 +1641,16 @@ async function showProjectDetail(projectId) {
         <span class="project-status status-${p.status || 'in_lucru'}">${getStatusLabel(p.status)}</span>
         <span style="font-size:12px; color:var(--text-secondary); margin-left:8px;">${escapeHtml(p.tip || 'PIF')}</span>
       </div>
+      ${isServiceProj ? `
+      <div style="margin-top:12px;">
+        <button onclick="if(window.openPvServiceModal) openPvServiceModal('${p.id}')"
+                style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px;
+                       background:var(--accent-soft); color:var(--accent);
+                       border:1px solid var(--accent-ring); border-radius:8px;
+                       font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">
+          <i data-lucide="file-output" style="width:14px; height:14px;"></i> Generează PV
+        </button>
+      </div>` : ''}
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
       ${infoField('Client', p.client)}

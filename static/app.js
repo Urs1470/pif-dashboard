@@ -797,6 +797,10 @@ async function showProjectDetail(projectId) {
         const beforeAfter = document.getElementById('before-after-section');
         if (beforeAfter) beforeAfter.style.display = isService ? 'grid' : 'none';
 
+        // PV Service button — vizibil doar pe proiecte Service
+        const pvBtn = document.getElementById('btn-genereaza-pv');
+        if (pvBtn) pvBtn.style.display = isService ? 'inline-flex' : 'none';
+
         // Common sections
         const timerJurnal = document.getElementById('timer-jurnal-section');
         const atasamente = document.getElementById('attachments-section');

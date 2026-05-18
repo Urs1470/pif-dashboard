@@ -26,6 +26,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from database import get_db, init_db, row_to_dict, close_db
 from blueprints.budget import budget_bp
+from scripts.parse_params import parse_for_producator
 
 app = Flask(__name__)
 app.register_blueprint(budget_bp)
@@ -1958,6 +1959,99 @@ def delete_echipament(echipament_id):
     logger.info(f"Equipment deleted: {echipament_id}")
     return jsonify({'message': 'Equipment deleted'})
 
+# ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
+
+def _familie_from_echipament(producator: str, model: str) -> str:
+    """Mapeaza producator+model la familie pentru join cu parametri_master."""
+    producator = (producator or '').strip()
+    model = (model or '').strip()
+    p_low = producator.lower()
+    m_low = model.lower()
+    if 'danfoss' in p_low:
+        return 'FC302'
+    if 'abb' in p_low:
+        if '880' in m_low: return 'ACS880'
+        if '580' in m_low: return 'ACS580'
+        return 'ACS580'
+    if 'siemens' in p_low:
+        if 's120' in m_low or 's150' in m_low: return 'S120_S150'
+        if 'g130' in m_low or 'g150' in m_low: return 'G130_G150'
+        if 'g120' in m_low: return 'G120'
+        return 'G120'
+    if 'lenze' in p_low:
+        if '950' in m_low: return 'i950'
+        return 'i550'
+    return ''
+
+
+@app.route('/api/import-params/preview', methods=['POST'])
+@login_required
+def preview_import_params():
+    """Parseaza un export de parametri modificati (producator software) si returneaza preview.
+
+    Form fields:
+      file: fisierul exportat (text Danfoss .txt, in viitor PDF Lenze/Siemens)
+      producator: numele producatorului (Danfoss, Lenze, Siemens, ABB)
+      model: optional, pentru determinarea familiei (ACS580 vs ACS880 etc)
+
+    Preview-ul nu modifica DB. Persistarea se face prin PUT /api/echipamente/<id>
+    cu params_json deja merge-uit pe client.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Fisier lipsa (field "file")'}), 400
+    upload = request.files['file']
+    if not upload.filename:
+        return jsonify({'error': 'Fisier gol'}), 400
+
+    producator = (request.form.get('producator') or '').strip()
+    model = (request.form.get('model') or '').strip()
+    if not producator:
+        return jsonify({'error': 'producator lipsa'}), 400
+
+    try:
+        raw = upload.read()
+        try:
+            content = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            content = raw.decode('latin-1', errors='replace')
+    except Exception as e:
+        logger.exception("Eroare citire fisier import params")
+        return jsonify({'error': f'Eroare citire fisier: {e}'}), 400
+
+    detected, parsed = parse_for_producator(producator, content)
+    if detected is None or parsed is None:
+        return jsonify({
+            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss.'
+        }), 400
+
+    # Imbogateste cu descriere_scurta din parametri_master
+    familie = _familie_from_echipament(producator, model)
+    if familie and parsed:
+        conn = get_db()
+        cursor = conn.cursor()
+        codes = [p['db_id'] for p in parsed]
+        placeholders = ','.join('?' * len(codes))
+        cursor.execute(
+            f'SELECT parametru, descriere_scurta FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
+            [familie] + codes
+        )
+        desc_map = {r['parametru']: r['descriere_scurta'] for r in cursor.fetchall()}
+        conn.close()
+        for p in parsed:
+            ds = desc_map.get(p['db_id'])
+            if ds:
+                p['descriere_db'] = ds
+
+    return jsonify({
+        'producator_detected': detected,
+        'familie': familie,
+        'filename': upload.filename,
+        'count': len(parsed),
+        'conflicts': sum(1 for p in parsed if p.get('conflict')),
+        'params': parsed,
+    })
+
+
 # ============ PHASE 2a: PROJECT TEMPLATES CRUD ============
 
 @app.route('/api/templates', methods=['GET'])
@@ -2690,6 +2784,87 @@ def webhook_deploy():
     )
 
     return 'Deploy triggered', 200
+
+
+# ============ PV (Proces Verbal) generation ============
+
+@app.route('/api/proiecte/<project_id>/pv/service/preview', methods=['GET'])
+@login_required
+def pv_service_preview(project_id):
+    """Returneaza datele auto-populate pentru modalul PV Service: project + echipamente."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    row = cursor.fetchone()
+    if row is None:
+        conn.close()
+        return jsonify({'error': 'Project not found'}), 404
+    project = row_to_dict(row)
+    cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at ASC', (project_id,))
+    echipamente = [row_to_dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({'proiect': project, 'echipamente': echipamente})
+
+
+@app.route('/api/proiecte/<project_id>/pv/service/generate', methods=['POST'])
+@login_required
+def pv_service_generate(project_id):
+    """Genereaza DOCX PV Service si returneaza ca download."""
+    try:
+        from services.pv_generator import generate_pv_service
+    except Exception as e:
+        logger.error(f"PV generator import failed: {e}")
+        return jsonify({'error': f'Generator indisponibil: {e}'}), 500
+
+    data = request.json or {}
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    row = cursor.fetchone()
+    if row is None:
+        conn.close()
+        return jsonify({'error': 'Project not found'}), 404
+    project = row_to_dict(row)
+
+    echipament = None
+    echipament_id = data.get('echipament_id')
+    if echipament_id:
+        cursor.execute('SELECT * FROM echipamente WHERE id = ? AND proiect_id = ?', (echipament_id, project_id))
+        e_row = cursor.fetchone()
+        if e_row:
+            echipament = row_to_dict(e_row)
+    if echipament is None:
+        # fallback: primul echipament
+        cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at ASC LIMIT 1', (project_id,))
+        e_row = cursor.fetchone()
+        if e_row:
+            echipament = row_to_dict(e_row)
+    conn.close()
+
+    form_data = {
+        'cod_proiect': data.get('cod_proiect', '').strip(),
+        'data_pv': data.get('data_pv', datetime.now().strftime('%d.%m.%Y')),
+        'denumire_comanda': data.get('denumire_comanda', '').strip(),
+        'observatii': data.get('observatii', ''),
+        'nota_facturare': data.get('nota_facturare', ''),
+        'reprezentant_eg': data.get('reprezentant_eg') or 'Ion Ursu',
+        'ore': data.get('ore', []),
+    }
+
+    try:
+        docx_bytes = generate_pv_service(project, echipament, form_data)
+    except Exception as e:
+        logger.exception("PV Service generate failed")
+        return jsonify({'error': f'Eroare generare: {e}'}), 500
+
+    cod = form_data['cod_proiect'] or 'PV'
+    filename = f"PV_Service_{cod}_{form_data['data_pv'].replace('.', '-')}.docx"
+    return send_file(
+        BytesIO(docx_bytes),
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        as_attachment=True,
+        download_name=filename,
+    )
 
 
 if __name__ == '__main__':
