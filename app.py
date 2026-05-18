@@ -2068,6 +2068,41 @@ def create_template_from_project(project_id):
     logger.info(f"Template created from project {project_id}: {template_id}")
     return jsonify({'id': template_id, 'message': 'Template created from project'}), 201
 
+# ============ ADMIN: DB DOWNLOAD ============
+
+@app.route('/api/admin/db-dump', methods=['GET'])
+@login_required
+def admin_db_dump():
+    """Stream o copie consistenta a DB-ului SQLite pentru audit local.
+    Foloseste sqlite3 backup API ca sa nu blocheze scrieri concurente.
+    """
+    import tempfile
+    import sqlite3 as _sql3
+    from database import DATABASE_PATH
+
+    if not os.path.exists(DATABASE_PATH):
+        return jsonify({'error': 'DB not found on server'}), 404
+
+    # Hot backup la un fisier temporar (safe vs WAL)
+    tmp = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+    tmp.close()
+    src = _sql3.connect(DATABASE_PATH)
+    dst = _sql3.connect(tmp.name)
+    try:
+        src.backup(dst)
+    finally:
+        dst.close()
+        src.close()
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    return send_file(
+        tmp.name,
+        as_attachment=True,
+        download_name=f'pif_dashboard_{timestamp}.db',
+        mimetype='application/octet-stream',
+    )
+
+
 # ============ PARAMETRI API ============
 
 @app.route('/api/parametri/familii', methods=['GET'])

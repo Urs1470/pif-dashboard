@@ -25,7 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MANUALS_DIR = ROOT / 'manuals'
-DB_PATH = ROOT / 'database.db'  # fallback; --db CLI flag overrides
+DB_PATH = ROOT / 'pif_dashboard.db'  # fallback; --db CLI flag overrides
 REPORTS_DIR = ROOT / 'scripts' / 'audit_reports'
 
 # Map familie → fișier PDF + parser type
