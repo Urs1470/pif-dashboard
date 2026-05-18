@@ -3962,6 +3962,15 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             padding: 12px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .echipament-card.is-clickable { cursor: pointer; }
+        .echipament-card.is-clickable:hover {
+            border-color: var(--accent-ring);
+            background: var(--bg-elev1);
+        }
+        .echipament-card.is-open {
+            border-color: var(--accent);
         }
         .echipament-header {
             display: flex;
@@ -4253,7 +4262,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260518a"></script>
+    <script src="/static/app.js?v=20260518b"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

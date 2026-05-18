@@ -2042,35 +2042,45 @@ async function loadMobileEquipment(projectId) {
         const paramEntries = Object.entries(params);
         const eqJson = JSON.stringify(eq).replace(/"/g, '&quot;');
         return `
-          <div class="detail-section" style="margin-bottom:8px;">
+          <div class="detail-section eq-card" data-eq-id="${escapeHtml(eq.id)}" style="margin-bottom:8px; cursor:pointer;" onclick="toggleMobileEquipmentCard(this, event)">
             <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:600;font-size:14px;">${escapeHtml(eq.nume || '-')}</div>
                 <div style="font-size:12px;color:var(--text-secondary);">${escapeHtml(eq.producator || '')} · ${escapeHtml(eq.model || '')}</div>
                 ${eq.serial_number ? `<div style="font-size:11px;color:var(--text-secondary);">S/N: ${escapeHtml(eq.serial_number)}</div>` : ''}
+                ${paramEntries.length > 0 ? `<div style="font-size:11px;color:var(--accent);margin-top:3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="sliders-horizontal" style="width:11px;height:11px;"></i> ${paramEntries.length} parametri</div>` : ''}
               </div>
-              <div style="display:flex;gap:4px;flex-shrink:0;">
-                <button onclick='editMobileEquipment(${eqJson}, "${projectId}")' aria-label="Editează" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="pencil" style="width:16px;height:16px;"></i></button>
-                <button onclick="deleteMobileEquipment('${eq.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+              <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;" onclick="event.stopPropagation()">
+                <button onclick='event.stopPropagation(); editMobileEquipment(${eqJson}, "${projectId}")' aria-label="Editează" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="pencil" style="width:16px;height:16px;"></i></button>
+                <button onclick="event.stopPropagation(); deleteMobileEquipment('${eq.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+                ${paramEntries.length > 0 ? `<i data-lucide="chevron-down" class="eq-chevron" style="width:16px;height:16px;color:var(--text-dim);transition:transform 0.15s;"></i>` : ''}
               </div>
             </div>
             ${paramEntries.length > 0 ? `
-              <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                <div style="font-size:11px;color:var(--accent);margin-bottom:4px;">${paramEntries.length} parametri</div>
-                ${paramEntries.slice(0, 10).map(([k, v]) => `
-                  <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;">
-                    <span style="color:var(--accent);font-family:monospace;">${escapeHtml(k)}</span>
-                    <span>${escapeHtml(v)}</span>
+              <div class="eq-expanded" style="display:none; margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                ${paramEntries.map(([k, v]) => `
+                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--line-soft);gap:8px;">
+                    <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;flex-shrink:0;">${escapeHtml(k)}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;text-align:right;word-break:break-word;">${escapeHtml(v)}</span>
                   </div>
                 `).join('')}
-                ${paramEntries.length > 10 ? `<div style="font-size:11px;opacity:0.5;">+${paramEntries.length - 10} mai mult</div>` : ''}
               </div>
             ` : ''}
           </div>
         `;
       }).join('')}
     `;
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
   } catch (e) { el.innerHTML = ''; }
+}
+
+function toggleMobileEquipmentCard(card, ev) {
+  const expanded = card.querySelector('.eq-expanded');
+  const chevron = card.querySelector('.eq-chevron');
+  if (!expanded) return;
+  const isOpen = expanded.style.display !== 'none';
+  expanded.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
 function editMobileEquipment(eq, projectId) {

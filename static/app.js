@@ -3629,54 +3629,54 @@ function renderEchipamente(echipamente, descLookup) {
         try {
             params = JSON.parse(e.params_json || '{}');
         } catch (err) {}
-        
-        const hasParams = Object.keys(params).length > 0;
+
+        const paramCount = Object.keys(params).length;
+        const hasParams = paramCount > 0;
         const lookup = descLookup[e.producator] || {};
         const paramsRows = Object.entries(params).map(([key, value]) => {
             const desc = lookup[key] || '';
             const shortDesc = desc ? extractParamName(desc) : '-';
-            return `<tr><td style="font-weight:600;color:var(--accent);font-family:'Courier New',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'Courier New',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
+            return `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
         }).join('');
-        
+
         return `
-            <div class="echipament-card">
+            <div class="echipament-card is-clickable" onclick="toggleEchipamentCard(this, event)">
                 <div class="echipament-header">
                     <span class="echipament-name">${escapeHtml(e.nume)}</span>
-                    <div class="echipament-actions">
-                        <button class="btn btn-small btn-secondary" onclick="editEchipament('${e.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                        <button class="btn btn-small btn-danger" onclick="deleteEchipament('${e.id}')" title="Șterge"><i data-lucide="x"></i></button>
+                    <div class="echipament-actions" onclick="event.stopPropagation()">
+                        <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editEchipament('${e.id}')" title="Editează"><i data-lucide="pencil"></i></button>
+                        <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); deleteEchipament('${e.id}')" title="Șterge"><i data-lucide="x"></i></button>
                     </div>
                 </div>
                 <div class="echipament-meta">
                     ${e.producator ? `<span>${escapeHtml(e.producator)}</span>` : ''}
                     ${e.model ? `<span>${escapeHtml(e.model)}</span>` : ''}
                     ${e.serial_number ? `<span>S/N: ${escapeHtml(e.serial_number)}</span>` : ''}
+                    ${hasParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${paramCount} parametri</span>` : ''}
+                    <span class="echipament-chevron" style="margin-left:auto; color:var(--text-dim); transition:transform 0.15s;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
                 </div>
                 ${hasParams ? `
-                    <div class="echipament-params">
-                        <div class="echipament-toggle" onclick="toggleEchipamentParams(this)">▼ Parametri</div>
-                        <div class="echipament-expanded" style="display: none;">
-                            <table class="echipament-params-table">
-                                <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
-                                <tbody>${paramsRows}</tbody>
-                            </table>
-                        </div>
+                    <div class="echipament-expanded" style="display: none;">
+                        <table class="echipament-params-table">
+                            <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
+                            <tbody>${paramsRows}</tbody>
+                        </table>
                     </div>
                 ` : ''}
             </div>
         `;
     }).join('');
+    if (window.lucide) lucide.createIcons();
 }
 
-function toggleEchipamentParams(element) {
-    const expanded = element.nextElementSibling;
-    if (expanded.style.display === 'none') {
-        expanded.style.display = 'block';
-        element.textContent = '▲ Ascunde parametri';
-    } else {
-        expanded.style.display = 'none';
-        element.textContent = '▼ Parametri';
-    }
+function toggleEchipamentCard(card, ev) {
+    const expanded = card.querySelector('.echipament-expanded');
+    const chevron = card.querySelector('.echipament-chevron');
+    if (!expanded) return;
+    const isOpen = expanded.style.display !== 'none';
+    expanded.style.display = isOpen ? 'none' : 'block';
+    if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    card.classList.toggle('is-open', !isOpen);
 }
 
 let availableParams = [];
