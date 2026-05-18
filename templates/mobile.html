@@ -531,6 +531,126 @@
     .modal-section-icon [data-lucide] { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; color: var(--accent); }
     .empty-state-icon { font-size: 0; }
     .empty-state-icon [data-lucide], .empty-state-icon svg { width: 48px; height: 48px; stroke-width: 1.5; color: var(--text-dim); }
+    /* Mobile long-text preview cards (click to edit). */
+    .mlt-preview {
+      width: 100%;
+      min-height: 64px;
+      max-height: 140px;
+      overflow: hidden;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      cursor: pointer;
+      position: relative;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+    }
+    .mlt-preview.is-empty { color: var(--text-dim); font-style: italic; }
+    .mlt-preview:active { background: var(--bg-elev2); border-color: var(--accent); }
+    .mlt-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mlt-hint [data-lucide] { width: 11px; height: 11px; }
+    /* Toolbar buttons inside the editor modal. */
+    .mlt-tool {
+      background: var(--bg-elev2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      min-height: 32px;
+    }
+    .mlt-tool [data-lucide] { width: 14px; height: 14px; }
+    .mlt-tool:active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+    /* Mobile task row — same priority/status pills as desktop, click-cyclable. */
+    .mobile-task-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+    .mobile-task-check {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mobile-task-body { flex: 1; min-width: 0; cursor: pointer; }
+    .mobile-task-title { font-size: 14px; }
+    .mobile-task-title.done { text-decoration: line-through; opacity: 0.55; }
+    .mobile-task-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .mobile-task-del {
+      width: 32px; height: 32px;
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0.55;
+    }
+    .mobile-task-del [data-lucide] { width: 16px; height: 16px; }
+    .mobile-task-row:active .mobile-task-del { opacity: 1; }
+
+    /* Priority + status pills on mobile, fixed width so they align vertically across rows. */
+    .todo-priority, .todo-status {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+      min-width: 68px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      user-select: none;
+    }
+    .todo-priority.cyclable, .todo-status.cyclable { cursor: pointer; transition: filter 0.12s; }
+    .todo-priority.cyclable:active, .todo-status.cyclable:active { filter: brightness(1.2); }
+
+    .todo-priority.urgent, .todo-priority.Urgent { background: var(--danger-soft); color: var(--danger); }
+    .todo-priority.normal, .todo-priority.Normal { background: var(--warning-soft); color: var(--warning); }
+    .todo-priority.minor, .todo-priority.Minor { background: rgba(125, 133, 144, 0.16); color: var(--text-dim); }
+    .todo-status.to_do { background: var(--accent-soft); color: var(--accent); }
+    .todo-status.in_lucru { background: var(--violet-soft); color: var(--violet); }
+    .todo-status.done { background: var(--success-soft); color: var(--success); }
+    .mobile-tasks-divider {
+      display: flex; align-items: center; gap: 8px;
+      margin: 12px 4px 6px;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .mobile-tasks-divider::before, .mobile-tasks-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--line-soft);
+    }
   </style>
 </head>
 <body>
@@ -771,6 +891,59 @@
           <strong class="modal-section-icon"><i data-lucide="radio-tower"></i> Influențează:</strong>
           <div id="mpm-influenteaza" style="margin-top:4px; font-size:0.9em;"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal long-text editor modal (mobile). Used for PIF Observatii,
+       Service Constatari, Service Actiuni. -->
+  <div class="modal" id="mobile-long-text-modal">
+    <div class="modal-content" style="max-width:560px; max-height:92vh; display:flex; flex-direction:column; padding:0;">
+      <div class="modal-header" style="padding:14px 16px; border-bottom:1px solid var(--border);">
+        <span class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          <i data-lucide="file-text" id="mlt-title-icon" style="color:var(--accent);"></i>
+          <span id="mlt-title-text">Editor</span>
+        </span>
+        <button class="modal-close" onclick="closeMobileLongTextEditor()">×</button>
+      </div>
+      <div style="padding:8px 12px; border-bottom:1px solid var(--line-soft); display:flex; gap:4px; flex-wrap:wrap;">
+        <button class="mlt-tool" onclick="mltWrap('**', '**')"><i data-lucide="bold"></i></button>
+        <button class="mlt-tool" onclick="mltWrap('*', '*')"><i data-lucide="italic"></i></button>
+        <button class="mlt-tool" onclick="mltPrefixLines('- ')"><i data-lucide="list"></i></button>
+        <button class="mlt-tool" onclick="mltPrefixLines('1. ')"><i data-lucide="list-ordered"></i></button>
+        <button class="mlt-tool" onclick="mltInsertDate()"><i data-lucide="calendar"></i></button>
+      </div>
+      <div style="flex:1; padding:12px; min-height:0;">
+        <textarea id="mlt-textarea" placeholder="Scrie aici..."
+                  style="width:100%; height:100%; min-height:240px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Plus Jakarta Sans',-apple-system,sans-serif; font-size:14px; line-height:1.5; resize:none; outline:none;"></textarea>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-top:1px solid var(--border); gap:8px;">
+        <span id="mlt-counter" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim);">0 caractere</span>
+        <div style="display:flex; gap:6px;">
+          <button onclick="copyMobileLongText()" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:8px 12px; font-size:13px; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="copy"></i> <span id="mlt-copy-label">Copiază</span></button>
+          <button onclick="closeMobileLongTextEditor()" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:8px 12px; font-size:13px;">Anulează</button>
+          <button onclick="saveMobileLongText()" class="modal-btn" style="background:var(--accent); color:var(--bg); padding:8px 14px; font-size:13px; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check"></i> Salvează</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile import parametri modal -->
+  <div class="modal" id="mobile-import-modal">
+    <div class="modal-content" style="max-width:560px; max-height:92vh; width:96vw; display:flex; flex-direction:column; padding:0;">
+      <div class="modal-header" style="padding:14px 16px; border-bottom:1px solid var(--border);">
+        <span class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          <i data-lucide="file-up" style="color:var(--accent);"></i>
+          <span>Import parametri</span>
+        </span>
+        <button class="modal-close" onclick="closeMobileImportModal()">×</button>
+      </div>
+      <div id="mobile-import-body" style="flex:1; overflow-y:auto; padding:12px;">
+        <!-- populated dynamically -->
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; padding:10px 12px; border-top:1px solid var(--border);">
+        <button onclick="closeMobileImportModal()" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:8px 12px; font-size:13px;">Anulează</button>
+        <button onclick="applyMobileImportedParams()" class="modal-btn" style="background:var(--accent); color:var(--bg); padding:8px 14px; font-size:13px; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check"></i> Importă</button>
       </div>
     </div>
   </div>

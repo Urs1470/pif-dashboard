@@ -1697,7 +1697,7 @@ async function loadMobileTimer(projectId) {
         <div class="detail-section" style="border-left:3px solid var(--success);">
           <div style="font-size:13px; color:var(--success);">Timer activ</div>
           <div id="mobile-timer-live" style="font-size:24px; font-weight:600; color:var(--accent); margin:8px 0;"></div>
-          <button onclick="stopMobileTimer('${projectId}')" class="modal-btn" style="background:var(--error);">⏹ Oprește</button>
+          <button onclick="stopMobileTimer('${projectId}')" class="modal-btn" style="background:var(--danger);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="square"></i> Oprește</button>
         </div>
       ` : `
         <button onclick="startMobileTimer('${projectId}')" class="modal-btn" style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="play"></i> Pornește timer</button>
@@ -1812,6 +1812,36 @@ async function loadMobileProjectTasks(projectId) {
     const tasks = await apiGet(`/api/proiecte/${projectId}/tasks`);
     if (!tasks) { el.innerHTML = ''; return; }
 
+    // Separate active vs finalised — Ion wants them grouped, not mixed.
+    const active = tasks.filter(t => t.status !== 'done');
+    const done = tasks.filter(t => t.status === 'done');
+    done.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''));
+
+    const renderRow = (t) => {
+      const prioRaw = t.prioritate || 'Normal';
+      const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
+      const statusClass = t.status || 'to_do';
+      const statusLabel = ({ to_do: 'To Do', in_lucru: 'În Lucru', done: 'Finalizat' })[statusClass] || statusClass;
+      return `
+        <div class="mobile-task-row">
+          <input type="checkbox" ${t.status === 'done' ? 'checked' : ''} class="mobile-task-check"
+            onchange="toggleMobileProjectTask('${t.id}',this.checked,'${projectId}')">
+          <div class="mobile-task-body">
+            <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
+            ${t.data_scadenta ? `<div class="mobile-task-meta"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ${t.data_scadenta}</div>` : ''}
+          </div>
+          <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleMobileTodoPriority('${t.id}', '${prioCap}', '${projectId}')">${prioCap}</span>
+          <span class="todo-status cyclable ${statusClass}" onclick="event.stopPropagation(); cycleMobileTodoStatus('${t.id}', '${statusClass}', '${projectId}')">${statusLabel}</span>
+          <button onclick="deleteMobileProjectTask('${t.id}','${projectId}')" class="mobile-task-del" aria-label="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>`;
+    };
+
+    let listHtml = active.map(renderRow).join('');
+    if (done.length > 0) {
+      listHtml += `<div class="mobile-tasks-divider"><span>Finalizate (${done.length})</span></div>`;
+      listHtml += done.map(renderRow).join('');
+    }
+
     el.innerHTML = `
       <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="list-todo" style="color:var(--accent);"></i> Todo List</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
@@ -1819,18 +1849,29 @@ async function loadMobileProjectTasks(projectId) {
           style="flex:1;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
         <button onclick="addMobileProjectTask('${projectId}')" style="padding:10px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:600;">+</button>
       </div>
-      ${tasks.map(t => `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:4px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-          <input type="checkbox" ${t.status === 'done' ? 'checked' : ''}
-            onchange="toggleMobileProjectTask('${t.id}',this.checked,'${projectId}')"
-            style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;">
-          <span style="font-size:13px;flex:1;${t.status === 'done' ? 'text-decoration:line-through;opacity:0.5;' : ''}">${escapeHtml(t.titlu)}</span>
-          <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--border);color:var(--text-secondary);">${t.prioritate || 'normal'}</span>
-          <button onclick="deleteMobileProjectTask('${t.id}','${projectId}')" style="background:none;border:none;color:var(--error);font-size:16px;cursor:pointer;padding:4px;">×</button>
-        </div>
-      `).join('')}
+      ${listHtml}
     `;
   } catch (e) { el.innerHTML = ''; }
+}
+
+async function cycleMobileTodoPriority(taskId, current, projectId) {
+  const idx = _MOBILE_PRIO_CYCLE.indexOf(current || 'Normal');
+  const next = _MOBILE_PRIO_CYCLE[(idx + 1) % _MOBILE_PRIO_CYCLE.length];
+  try {
+    await apiPut(`/api/tasks/${taskId}`, { prioritate: next.toLowerCase() });
+    if ('vibrate' in navigator) navigator.vibrate(15);
+    loadMobileProjectTasks(projectId);
+  } catch (e) {}
+}
+
+async function cycleMobileTodoStatus(taskId, current, projectId) {
+  const idx = _MOBILE_STATUS_CYCLE.indexOf(current || 'to_do');
+  const next = _MOBILE_STATUS_CYCLE[(idx + 1) % _MOBILE_STATUS_CYCLE.length];
+  try {
+    await apiPut(`/api/tasks/${taskId}`, { status: next });
+    if ('vibrate' in navigator) navigator.vibrate(15);
+    loadMobileProjectTasks(projectId);
+  } catch (e) {}
 }
 
 async function addMobileProjectTask(projectId) {
@@ -1901,6 +1942,11 @@ async function loadMobileAttachments(projectId) {
   const el = document.getElementById('mobile-attachments-section');
   try {
     const attachments = await apiGet(`/api/proiecte/${projectId}/atasamente`);
+    const count = (attachments || []).length;
+
+    const downloadAllBar = (count >= 2)
+      ? `<button onclick="downloadAllMobileAttachments('${projectId}')" class="modal-btn" style="margin-bottom:8px; background:var(--bg-elev2); color:var(--text); display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px; padding:8px 12px;"><i data-lucide="download-cloud"></i> Descarcă tot (${count})</button>`
+      : '';
 
     el.innerHTML = `
       <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paperclip" style="color:var(--accent);"></i> Atașamente</div>
@@ -1908,23 +1954,43 @@ async function loadMobileAttachments(projectId) {
         <i data-lucide="paperclip"></i> Adaugă fișier
         <input type="file" id="mobile-file-upload" onchange="uploadMobileFile('${projectId}')" style="display:none;">
       </label>
+      ${downloadAllBar}
       ${(attachments || []).map(a => {
         const iconName = {'PDF':'file-text','IMG':'image','DOC':'file-text','XLS':'file-spreadsheet','EMAIL':'mail','ZIP':'archive'}[a.tip_fisier] || 'file';
         const size = formatFileSize(a.dimensiune);
         return `
-          <div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:4px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
-            <span style="color:var(--accent);display:inline-flex;align-items:center;"><i data-lucide="${iconName}"></i></span>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px;margin-bottom:4px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
+            <span style="color:var(--accent);display:inline-flex;align-items:center;flex-shrink:0;"><i data-lucide="${iconName}"></i></span>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(a.nume_fisier)}</div>
               <div style="font-size:11px;color:var(--text-secondary);">${size}</div>
             </div>
-            <a href="/api/atasamente/${a.id}/download" target="_blank" aria-label="Descarcă" style="color:var(--accent);text-decoration:none;padding:8px;display:inline-flex;align-items:center;"><i data-lucide="download"></i></a>
-            <button onclick="deleteMobileAttachment('${a.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
+            <a href="/api/atasamente/${a.id}/download" target="_blank" aria-label="Descarcă" style="width:32px;height:32px;flex-shrink:0;border-radius:6px;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="download" style="width:16px;height:16px;"></i></a>
+            <button onclick="deleteMobileAttachment('${a.id}','${projectId}')" aria-label="Șterge" style="width:32px;height:32px;flex-shrink:0;border-radius:6px;background:none;border:none;color:var(--danger);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
           </div>
         `;
       }).join('')}
     `;
   } catch (e) { el.innerHTML = ''; }
+}
+
+// Sequential downloads on mobile, same pattern as desktop.
+async function downloadAllMobileAttachments(projectId) {
+  try {
+    const attachments = await apiGet(`/api/proiecte/${projectId}/atasamente`);
+    if (!attachments || !attachments.length) return;
+    for (let i = 0; i < attachments.length; i++) {
+      const a = document.createElement('a');
+      a.href = `/api/atasamente/${attachments[i].id}/download`;
+      a.download = attachments[i].nume_fisier || '';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      await new Promise(r => setTimeout(r, 250));
+    }
+    if ('vibrate' in navigator) navigator.vibrate(30);
+  } catch (e) { console.error('downloadAllMobileAttachments failed:', e); }
 }
 
 async function uploadMobileFile(projectId) {
@@ -2030,12 +2096,15 @@ function showMobileEquipmentForm(projectId, eq = null) {
     </select>
     <input type="text" id="eq-model" placeholder="Model" value="${escapeHtml(isEdit ? (eq.model || '') : '')}" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
     <input type="text" id="eq-serial" placeholder="Serial Number" value="${escapeHtml(isEdit ? (eq.serial_number || '') : '')}" style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
+    <button type="button" onclick="triggerMobileImportParams()" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:10px 12px; font-size:13px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px; width:100%; justify-content:center;"><i data-lucide="file-up"></i> Import parametri din fișier</button>
+    <input type="file" id="mobile-import-file" accept=".txt,.pdf,.csv" style="display:none;" onchange="onMobileImportFileSelected(event)">
     <textarea id="eq-params" placeholder="Parametri (un par=val pe linie)&#10;p0304 = 400&#10;p0305 = 5.6" style="width:100%;min-height:100px;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:'JetBrains Mono',monospace;margin-bottom:8px;">${escapeHtml(paramsText)}</textarea>
     <button onclick="saveMobileEquipment('${projectId}', ${isEdit ? `'${eq.id}'` : 'null'})" class="modal-btn">${isEdit ? 'Salvează' : 'Creează'}</button>
   `;
 
   modal._originalContent = originalContent;
   modal.classList.add('active');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 }
 
 async function saveMobileEquipment(projectId, eqId) {
@@ -2064,23 +2133,177 @@ async function deleteMobileEquipment(eqId, projectId) {
   loadMobileEquipment(projectId);
 }
 
+// ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR (mobile) ============
+
+let _mobileImportPreview = null;
+
+function triggerMobileImportParams() {
+  const producator = document.getElementById('eq-producator')?.value || '';
+  if (!producator || producator === 'Altul') {
+    alert('Selectează mai întâi un producător (Danfoss, ABB, Siemens, Lenze)');
+    return;
+  }
+  const input = document.getElementById('mobile-import-file');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+async function onMobileImportFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const producator = document.getElementById('eq-producator')?.value || '';
+  const model = document.getElementById('eq-model')?.value || '';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('producator', producator);
+  formData.append('model', model);
+
+  try {
+    const res = await fetch('/api/import-params/preview', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Eroare la parsare');
+      return;
+    }
+    _mobileImportPreview = data;
+    showMobileImportModal(data);
+  } catch (e) {
+    console.error('Mobile import preview failed:', e);
+    alert('Eroare la parsare fișier');
+  }
+}
+
+function showMobileImportModal(data) {
+  const modal = document.getElementById('mobile-import-modal');
+  const body = document.getElementById('mobile-import-body');
+  if (!modal || !body) return;
+
+  const params = data.params || [];
+  const rows = params.map((p, idx) => {
+    const denumire = p.descriere_db || p.name || '';
+    const conflictBadge = p.conflict
+      ? `<span style="color:var(--warning); font-size:11px; margin-left:4px;"><i data-lucide="alert-triangle" style="width:11px;height:11px;vertical-align:-1px;"></i> conflict</span>`
+      : '';
+    const valueRow = p.conflict
+      ? `<select class="mimp-value-select" data-idx="${idx}" style="margin-top:4px; padding:6px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px; width:100%;">
+            ${Object.entries(p.per_setup).map(([s, v]) => `<option value="${escapeHtml(v)}"${v === p.value ? ' selected' : ''}>S${escapeHtml(s)}: ${escapeHtml(v)}</option>`).join('')}
+         </select>`
+      : `<span style="font-family:'JetBrains Mono',monospace; color:var(--text);">${escapeHtml(p.value)}</span>`;
+
+    return `
+      <label data-idx="${idx}" style="display:flex; gap:10px; align-items:flex-start; padding:10px 8px; border-bottom:1px solid var(--line-soft); cursor:pointer;">
+        <input type="checkbox" class="mimp-check" data-idx="${idx}" checked style="margin-top:3px; width:18px; height:18px; accent-color:var(--accent);">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;">
+            <span style="font-family:'JetBrains Mono',monospace; color:var(--accent); font-weight:600;">${escapeHtml(p.db_id)}</span>
+            <span style="font-size:12px; color:var(--text-secondary);">${escapeHtml(denumire)}</span>
+            ${conflictBadge}
+          </div>
+          <div style="margin-top:4px;">${valueRow}</div>
+          <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">default: ${escapeHtml(p.default || '-')}</div>
+        </div>
+      </label>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom:10px; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:8px; font-size:12px; color:var(--text-secondary);">
+      <div><strong>${escapeHtml(data.producator_detected || '')}</strong> · familie <span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(data.familie || '-')}</span></div>
+      <div style="margin-top:4px;">${data.count} parametri${data.conflicts ? ` · <span style="color:var(--warning);">${data.conflicts} conflicte</span>` : ''}</div>
+    </div>
+    <div style="display:flex; gap:6px; margin-bottom:8px;">
+      <button onclick="toggleAllMobileImport(true)" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:6px 10px; font-size:12px; flex:1;">Toate</button>
+      <button onclick="toggleAllMobileImport(false)" class="modal-btn" style="background:var(--bg-elev2); color:var(--text); padding:6px 10px; font-size:12px; flex:1;">Niciunul</button>
+    </div>
+    <div>${rows || '<div style="text-align:center; padding:20px; color:var(--text-secondary);">Niciun parametru găsit.</div>'}</div>
+  `;
+
+  modal.classList.add('active');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+function toggleAllMobileImport(checked) {
+  document.querySelectorAll('.mimp-check').forEach(cb => cb.checked = checked);
+}
+
+function applyMobileImportedParams() {
+  if (!_mobileImportPreview) return;
+  const params = _mobileImportPreview.params || [];
+  const ta = document.getElementById('eq-params');
+  if (!ta) { closeMobileImportModal(); return; }
+
+  const existing = {};
+  ta.value.split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) {
+      const k = line.slice(0, idx).trim();
+      const v = line.slice(idx + 1).trim();
+      if (k) existing[k] = v;
+    }
+  });
+
+  let added = 0, overridden = 0;
+  document.querySelectorAll('.mimp-check').forEach(cb => {
+    if (!cb.checked) return;
+    const idx = parseInt(cb.dataset.idx, 10);
+    const p = params[idx];
+    if (!p) return;
+    let value = p.value;
+    const sel = document.querySelector(`.mimp-value-select[data-idx="${idx}"]`);
+    if (sel) value = sel.value;
+    if (Object.prototype.hasOwnProperty.call(existing, p.db_id)) overridden++;
+    else added++;
+    existing[p.db_id] = String(value);
+  });
+
+  ta.value = Object.entries(existing).map(([k, v]) => `${k} = ${v}`).join('\n');
+  closeMobileImportModal();
+  const msg = overridden
+    ? `Import: +${added} adăugați, ${overridden} suprascriși`
+    : `Import: +${added} parametri`;
+  if ('vibrate' in navigator) navigator.vibrate(30);
+  // Toast minimal
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg-elev3);border:1px solid var(--accent);color:var(--text);padding:10px 16px;border-radius:8px;z-index:200;font-size:13px;';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function closeMobileImportModal() {
+  const modal = document.getElementById('mobile-import-modal');
+  if (modal) modal.classList.remove('active');
+  _mobileImportPreview = null;
+}
+
+// Long-text editor on mobile: preview card -> modal with toolbar.
+// Backing values live on `currentProject` until the user saves through the modal.
+function _renderLongTextPreviewMobile(value, placeholder) {
+  const text = (value || '').trim();
+  if (!text) {
+    return `<div class="mlt-preview is-empty">${escapeHtml(placeholder)}</div>`;
+  }
+  // Truncate visually via CSS (-webkit-line-clamp). Pre-wrap preserves new lines.
+  return `<div class="mlt-preview">${escapeHtml(text)}</div>`;
+}
+
 // 3.9 Observations
 async function loadMobileObservations(project) {
   const el = document.getElementById('mobile-observations-section');
-  if (!project.observatii && !project.observatii?.trim()) { el.innerHTML = ''; return; }
+  if (project.tip !== 'PIF') { el.innerHTML = ''; return; }
+
+  const preview = _renderLongTextPreviewMobile(project.observatii, 'Click pentru a adăuga observații tehnice — listă acțiuni, măsurători, decizii...');
 
   el.innerHTML = `
     <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="message-square-text" style="color:var(--accent);"></i> Observații tehnice</div>
-    <textarea id="obs-textarea" style="width:100%;min-height:80px;padding:10px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.observatii || '')}</textarea>
-    <button onclick="saveMobileObservations()" class="modal-btn" style="margin-top:4px;">Salvează</button>
+    <div onclick="openMobileLongTextEditor('observatii', 'Observații tehnice', 'message-square-text')">
+      ${preview}
+    </div>
+    <div class="mlt-hint"><i data-lucide="mouse-pointer-click"></i> Click pentru editare</div>
   `;
-}
-
-async function saveMobileObservations() {
-  if (!currentProject) return;
-  const text = document.getElementById('obs-textarea').value;
-  await apiPut(`/api/proiecte/${currentProject.id}`, { observatii: text });
-  if ('vibrate' in navigator) navigator.vibrate(30);
 }
 
 // 3.10 Service fields
@@ -2088,27 +2311,156 @@ async function loadMobileServiceFields(project) {
   const el = document.getElementById('mobile-service-section');
   if (project.tip !== 'Service') { el.innerHTML = ''; return; }
 
+  const beforePreview = _renderLongTextPreviewMobile(project.service_before, 'Click pentru constatări — simptome, cod eroare, comportament echipament...');
+  const afterPreview = _renderLongTextPreviewMobile(project.service_after, 'Click pentru acțiuni efectuate și rezultat final...');
+
   el.innerHTML = `
     <div style="font-size:14px;font-weight:600;margin:16px 0 8px; display:flex; align-items:center; gap:6px;"><i data-lucide="clipboard-list" style="color:var(--accent);"></i> Fișă intervenție</div>
-    <div class="detail-section" style="border-left:3px solid var(--error);margin-bottom:8px;">
-      <div style="font-size:12px;color:var(--danger);font-weight:600;margin-bottom:4px; display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> Constatări</div>
-      <textarea id="service-before" style="width:100%;min-height:60px;padding:8px;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.service_before || '')}</textarea>
+    <div class="detail-section" style="border-left:3px solid var(--danger);margin-bottom:8px;padding:10px;">
+      <div style="font-size:12px;color:var(--danger);font-weight:600;margin-bottom:6px; display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> Constatări</div>
+      <div onclick="openMobileLongTextEditor('service_before', 'Constatări înainte de intervenție', 'alert-circle')">
+        ${beforePreview}
+      </div>
+      <div class="mlt-hint"><i data-lucide="mouse-pointer-click"></i> Click pentru editare</div>
     </div>
-    <div class="detail-section" style="border-left:3px solid var(--success);">
-      <div style="font-size:12px;color:var(--success);font-weight:600;margin-bottom:4px; display:flex; align-items:center; gap:4px;"><i data-lucide="circle-check" style="width:12px;height:12px;"></i> Acțiuni</div>
-      <textarea id="service-after" style="width:100%;min-height:60px;padding:8px;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);resize:vertical;font-family:inherit;">${escapeHtml(project.service_after || '')}</textarea>
+    <div class="detail-section" style="border-left:3px solid var(--success);padding:10px;">
+      <div style="font-size:12px;color:var(--success);font-weight:600;margin-bottom:6px; display:flex; align-items:center; gap:4px;"><i data-lucide="circle-check" style="width:12px;height:12px;"></i> Acțiuni</div>
+      <div onclick="openMobileLongTextEditor('service_after', 'Acțiuni și rezultat', 'circle-check')">
+        ${afterPreview}
+      </div>
+      <div class="mlt-hint"><i data-lucide="mouse-pointer-click"></i> Click pentru editare</div>
     </div>
-    <button onclick="saveMobileServiceFields()" class="modal-btn" style="margin-top:4px;">Salvează</button>
   `;
 }
 
-async function saveMobileServiceFields() {
+// ============ Long-text editor (mobile) ============
+let _mltActiveField = null;
+
+function openMobileLongTextEditor(fieldName, title, iconName) {
   if (!currentProject) return;
-  await apiPut(`/api/proiecte/${currentProject.id}`, {
-    service_before: document.getElementById('service-before').value,
-    service_after: document.getElementById('service-after').value
-  });
-  if ('vibrate' in navigator) navigator.vibrate(30);
+  _mltActiveField = fieldName;
+
+  const value = currentProject[fieldName] || '';
+  const modal = document.getElementById('mobile-long-text-modal');
+  if (!modal) {
+    console.error('mobile-long-text-modal not in DOM');
+    return;
+  }
+  document.getElementById('mlt-title-text').textContent = title;
+  const iconEl = document.getElementById('mlt-title-icon');
+  if (iconEl && iconName) iconEl.setAttribute('data-lucide', iconName);
+
+  const ta = document.getElementById('mlt-textarea');
+  ta.value = value;
+  _mltUpdateCounter();
+  ta.oninput = _mltUpdateCounter;
+
+  modal.classList.add('active');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+  setTimeout(() => ta.focus(), 50);
+}
+
+function closeMobileLongTextEditor() {
+  const modal = document.getElementById('mobile-long-text-modal');
+  if (modal) modal.classList.remove('active');
+  _mltActiveField = null;
+}
+
+async function saveMobileLongText() {
+  if (!_mltActiveField || !currentProject) { closeMobileLongTextEditor(); return; }
+  const ta = document.getElementById('mlt-textarea');
+  const value = ta.value;
+  try {
+    await apiPut(`/api/proiecte/${currentProject.id}`, { [_mltActiveField]: value });
+    currentProject[_mltActiveField] = value;
+    if ('vibrate' in navigator) navigator.vibrate(30);
+    closeMobileLongTextEditor();
+    // Re-render the matching section so the preview reflects the new value.
+    if (_mltActiveField === 'observatii') loadMobileObservations(currentProject);
+    else if (_mltActiveField === 'service_before' || _mltActiveField === 'service_after') loadMobileServiceFields(currentProject);
+  } catch (e) {
+    console.error('Save long text failed:', e);
+    alert('Eroare la salvare');
+  }
+}
+
+async function copyMobileLongText() {
+  const ta = document.getElementById('mlt-textarea');
+  if (!ta) return;
+  const text = ta.value || '';
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      ta.select(); document.execCommand('copy'); ta.setSelectionRange(0, 0);
+    }
+    if ('vibrate' in navigator) navigator.vibrate(20);
+    const btn = document.getElementById('mlt-copy-label');
+    if (btn) { const prev = btn.textContent; btn.textContent = 'Copiat'; setTimeout(() => { btn.textContent = prev; }, 1200); }
+  } catch (e) { console.error('Copy failed:', e); }
+}
+
+function _mltUpdateCounter() {
+  const ta = document.getElementById('mlt-textarea');
+  const c = document.getElementById('mlt-counter');
+  if (ta && c) c.textContent = (ta.value || '').length + ' caractere';
+}
+
+function mltWrap(open, close) {
+  const ta = document.getElementById('mlt-textarea');
+  if (!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.substring(s, e);
+  const repl = open + (sel || 'text') + close;
+  ta.setRangeText(repl, s, e, 'select');
+  if (!sel) ta.setSelectionRange(s + open.length, s + open.length + 'text'.length);
+  ta.focus();
+  _mltUpdateCounter();
+}
+function mltPrefixLines(prefix) {
+  const ta = document.getElementById('mlt-textarea');
+  if (!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const before = ta.value.substring(0, s);
+  const sel = ta.value.substring(s, e) || '\n';
+  const after = ta.value.substring(e);
+  const prefixed = sel.split('\n').map(l => prefix + l).join('\n');
+  ta.value = before + prefixed + after;
+  ta.setSelectionRange(s, s + prefixed.length);
+  ta.focus();
+  _mltUpdateCounter();
+}
+function mltInsertDate() {
+  const ta = document.getElementById('mlt-textarea');
+  if (!ta) return;
+  const txt = new Date().toLocaleDateString('ro-RO', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' ';
+  ta.setRangeText(txt, ta.selectionStart, ta.selectionEnd, 'end');
+  ta.focus();
+  _mltUpdateCounter();
+}
+
+// Click-to-cycle priority / status on mobile tasks. Mirrors the desktop helpers.
+const _MOBILE_PRIO_CYCLE = ['Normal', 'Minor', 'Urgent'];
+const _MOBILE_STATUS_CYCLE = ['to_do', 'in_lucru', 'done'];
+
+async function cycleMobileGtPriority(taskId, current) {
+  const idx = _MOBILE_PRIO_CYCLE.indexOf(current || 'Normal');
+  const next = _MOBILE_PRIO_CYCLE[(idx + 1) % _MOBILE_PRIO_CYCLE.length];
+  try {
+    await apiPut(`/api/global-tasks/${taskId}`, { prioritate: next });
+    if ('vibrate' in navigator) navigator.vibrate(15);
+    loadMobileTasks();
+  } catch (e) {}
+}
+
+async function cycleMobileGtStatus(taskId, current) {
+  const idx = _MOBILE_STATUS_CYCLE.indexOf(current || 'to_do');
+  const next = _MOBILE_STATUS_CYCLE[(idx + 1) % _MOBILE_STATUS_CYCLE.length];
+  try {
+    await apiPut(`/api/global-tasks/${taskId}`, { status: next });
+    if ('vibrate' in navigator) navigator.vibrate(15);
+    loadMobileTasks();
+  } catch (e) {}
 }
 
 // 3.11 Project CRUD
@@ -2257,21 +2609,26 @@ async function loadMobileTasks() {
       return;
     }
 
-    listEl.innerHTML = filtered.map(t => `
-      <div class="note-item" style="display:flex;align-items:center;gap:10px;padding:12px;">
+    listEl.innerHTML = filtered.map(t => {
+      const prio = t.prioritate || 'Normal';
+      const prioClass = prio.toLowerCase();
+      const statusClass = t.status || 'to_do';
+      const statusLabel = ({ to_do: 'To Do', in_lucru: 'În Lucru', done: 'Finalizat' })[statusClass] || statusClass;
+      return `
+      <div class="mobile-task-row">
         <input type="checkbox" ${t.status === 'done' ? 'checked' : ''}
-          onchange="toggleMobileTask('${t.id}', this.checked)"
-          style="width:22px;height:22px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;">
-        <div style="flex:1;min-width:0;" onclick="editMobileTask('${t.id}')">
-          <div style="font-size:14px;${t.status === 'done' ? 'text-decoration:line-through;opacity:0.5;' : ''}">${escapeHtml(t.titlu)}</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">
-            ${t.categorie || ''}${t.data_scadenta ? ' · 📅 ' + t.data_scadenta : ''}
-          </div>
+          onchange="toggleMobileTask('${t.id}', this.checked)" class="mobile-task-check">
+        <div class="mobile-task-body" onclick="editMobileTask('${t.id}')">
+          <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
+          ${(t.categorie || t.data_scadenta) ? `<div class="mobile-task-meta">
+            ${t.categorie ? escapeHtml(t.categorie) : ''}${t.data_scadenta ? ' · <i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + t.data_scadenta : ''}
+          </div>` : ''}
         </div>
-        <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${t.prioritate==='Urgent'?'rgba(239,68,68,0.2)':'var(--border)'};color:${t.prioritate==='Urgent'?'var(--error)':'var(--text-secondary)'};">${t.prioritate || 'Normal'}</span>
-        <button onclick="deleteMobileGlobalTask('${t.id}')" style="background:none;border:none;color:var(--error);font-size:14px;cursor:pointer;padding:4px;">×</button>
-      </div>
-    `).join('');
+        <span class="todo-priority cyclable ${prioClass}" onclick="event.stopPropagation(); cycleMobileGtPriority('${t.id}', '${prio}')">${prio}</span>
+        <span class="todo-status cyclable ${statusClass}" onclick="event.stopPropagation(); cycleMobileGtStatus('${t.id}', '${statusClass}')">${statusLabel}</span>
+        <button onclick="event.stopPropagation(); deleteMobileGlobalTask('${t.id}')" class="mobile-task-del" aria-label="Șterge"><i data-lucide="trash-2"></i></button>
+      </div>`;
+    }).join('');
   } catch (e) {
     listEl.innerHTML = '<div class="empty-state">Eroare la încărcarea taskurilor</div>';
   }
