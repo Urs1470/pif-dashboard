@@ -1626,20 +1626,32 @@ async function exportMarkdown() {
     if (!currentProjectId) return;
 
     try {
-        const [project, tasks, jurnal, attachments] = await Promise.all([
+        const [project, tasks, jurnal, attachments, timer, checklist, checklistCat, echipamente] = await Promise.all([
             apiGet(`/proiecte/${currentProjectId}`),
             apiGet(`/proiecte/${currentProjectId}/tasks`),
             apiGet(`/proiecte/${currentProjectId}/jurnal`),
-            apiGet(`/proiecte/${currentProjectId}/atasamente`)
+            apiGet(`/proiecte/${currentProjectId}/atasamente`),
+            apiGet(`/proiecte/${currentProjectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 })),
+            apiGet(`/proiecte/${currentProjectId}/checklist`).catch(() => []),
+            apiGet(`/proiecte/${currentProjectId}/checklist-categorii`).catch(() => []),
+            apiGet(`/proiecte/${currentProjectId}/echipamente`).catch(() => [])
         ]);
 
         const isPIF = project.tip === 'PIF';
         const isService = project.tip === 'Service';
         const today = new Date().toISOString().split('T')[0];
 
+        const fmtHours = (s) => {
+            if (!s) return '0h';
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        };
+        const escMd = (txt) => (txt || '').replace(/\|/g, '\\|');
+
         let md = '';
 
-        // FRONTMATTER YAML
+        // FRONTMATTER YAML (Obsidian-compatible)
         md += `---\n`;
         md += `tags:\n`;
         if (isPIF) md += `  - proiect\n  - pif\n`;
@@ -1657,99 +1669,174 @@ async function exportMarkdown() {
         if (isService) md += `data_crearii: ${project.data_crearii || today}\n`;
         md += `status: ${project.status || 'activ'}\n`;
         if (project.cod_proiect) md += `cod_proiect: ${project.cod_proiect}\n`;
+        md += `total_ore_lucrate: ${fmtHours(timer.total_secunde)}\n`;
         md += `---\n\n`;
 
         // TITLU
         md += isPIF
-            ? `# PIF: ${project.nume}\n\n`
-            : `# Service: ${project.nume}\n\n`;
+            ? `# PIF — ${project.nume}\n\n`
+            : `# Service — ${project.nume}\n\n`;
 
-        // DETALII ADMINISTRATIVE
-        md += `### 1. Detalii Administrative\n`;
-        if (project.pm) md += `- **PM:** ${project.pm}\n`;
-        if (project.nr_comanda) md += `- **Nr. Comandă:** ${project.nr_comanda}\n`;
-        if (project.nr_contract) md += `- **Nr. Contract:** ${project.nr_contract}\n`;
-        if (project.folder_server) md += `- **Folder Server/Cloud:** ${project.folder_server}\n`;
-        if (project.cod_proiect) md += `- **Cod proiect:** ${project.cod_proiect}\n`;
+        let section = 1;
+
+        // 1. DETALII ADMINISTRATIVE — un tabel curat în loc de bullet list
+        md += `## ${section++}. Detalii administrative\n\n`;
+        md += `| Câmp | Valoare |\n|---|---|\n`;
+        md += `| Client | ${escMd(project.client) || '—'} |\n`;
+        md += `| Locație | ${escMd(project.locatie) || '—'} |\n`;
+        md += `| Producător | ${escMd(project.producator) || '—'} |\n`;
+        md += `| Echipament principal | ${escMd(project.echipament_principal) || '—'} |\n`;
+        if (project.pm) md += `| Project Manager | ${escMd(project.pm)} |\n`;
+        if (project.nr_comanda) md += `| Nr. Comandă | ${escMd(project.nr_comanda)} |\n`;
+        if (project.nr_contract) md += `| Nr. Contract | ${escMd(project.nr_contract)} |\n`;
+        if (project.cod_proiect) md += `| Cod proiect | ${escMd(project.cod_proiect)} |\n`;
+        if (project.folder_server) md += `| Folder server | ${escMd(project.folder_server)} |\n`;
+        md += `| Status | ${escMd(project.status) || 'activ'} |\n`;
+        md += `| Total ore lucrate | ${fmtHours(timer.total_secunde)} |\n`;
         md += `\n`;
 
-        // SECȚIUNI PIF
+        // 2. CONȚINUT TEHNIC (PIF: Observații / Service: Constatări + Acțiuni)
         if (isPIF && project.observatii) {
-            md += `### 2. Observații Tehnice\n`;
-            md += `${project.observatii}\n\n`;
+            md += `## ${section++}. Observații tehnice\n\n${project.observatii}\n\n`;
         }
-
-        // SECȚIUNI SERVICE
         if (isService) {
-            md += `### 2. Fișă Intervenție\n\n`;
+            md += `## ${section++}. Fișă intervenție\n\n`;
             if (project.service_before) {
-                md += `#### Constatări înainte de intervenție\n`;
-                md += `${project.service_before}\n\n`;
+                md += `### Constatări înainte de intervenție\n\n${project.service_before}\n\n`;
             }
             if (project.service_after) {
-                md += `#### Acțiuni și rezultat\n`;
-                md += `${project.service_after}\n\n`;
+                md += `### Acțiuni efectuate și rezultat\n\n${project.service_after}\n\n`;
             }
         }
 
-        // LISTA TASK-URI
+        // 3. CHECKLIST PIF (only when project is PIF and there are items)
+        if (isPIF && checklist.length > 0) {
+            md += `## ${section++}. Checklist PIF\n\n`;
+            // Group by category
+            const byCat = new Map();
+            for (const it of checklist) {
+                const key = it.categorie_id != null ? String(it.categorie_id) : '0';
+                if (!byCat.has(key)) byCat.set(key, []);
+                byCat.get(key).push(it);
+            }
+            const ordered = [...checklistCat].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0));
+            const renderItems = (its) => its.map(it => `- [${it.completed ? 'x' : ' '}] ${escMd(it.titlu)}`).join('\n');
+            for (const cat of ordered) {
+                const its = byCat.get(String(cat.id)) || [];
+                if (!its.length) continue;
+                const done = its.filter(i => i.completed).length;
+                md += `### ${escMd(cat.nume)} (${done}/${its.length})\n\n${renderItems(its)}\n\n`;
+            }
+            const uncategorized = byCat.get('0') || [];
+            if (uncategorized.length) {
+                const done = uncategorized.filter(i => i.completed).length;
+                md += `### Fără categorie (${done}/${uncategorized.length})\n\n${renderItems(uncategorized)}\n\n`;
+            }
+        }
+
+        // 4. LISTA TASK-URI
         if (tasks.length > 0) {
-            md += `### 3. LISTA TASK-URI\n`;
-            const priorityOrder = { 'Urgent': 0, 'Normal': 1, 'Minor': 2 };
-            const prioEmoji = { 'Urgent': '⏫', 'Normal': '🔼', 'Minor': '⏬' };
+            md += `## ${section++}. Listă taskuri\n\n`;
+            const prioOrder = { 'Urgent': 0, 'Normal': 1, 'Minor': 2 };
+            const prioBadge = { 'Urgent': '[Urgent]', 'Normal': '[Normal]', 'Minor': '[Minor]' };
             const sorted = [...tasks].sort((a, b) =>
-                (priorityOrder[a.prioritate] ?? 1) - (priorityOrder[b.prioritate] ?? 1));
+                (prioOrder[a.prioritate] ?? 1) - (prioOrder[b.prioritate] ?? 1));
 
             const pending = sorted.filter(t => t.status !== 'done');
             const done = sorted.filter(t => t.status === 'done');
 
             if (pending.length > 0) {
-                md += `#### To Do\n`;
+                md += `### To Do\n\n`;
                 pending.forEach(t => {
-                    const emoji = prioEmoji[t.prioritate] || '';
-                    const scadenta = t.data_scadenta ? ` <i data-lucide="calendar" style="display:inline;width:12px;height:12px;vertical-align:-2px;"></i> ${t.data_scadenta}` : '';
-                    md += `- [ ] ${t.titlu} ${emoji}${scadenta}\n`;
+                    const badge = prioBadge[t.prioritate] || '[Normal]';
+                    const term = t.data_scadenta ? ` · termen ${t.data_scadenta}` : '';
+                    md += `- [ ] ${escMd(t.titlu)} ${badge}${term}\n`;
                 });
                 md += `\n`;
             }
             if (done.length > 0) {
-                md += `#### Finalizate\n`;
+                md += `### Finalizate\n\n`;
                 done.forEach(t => {
-                    const emoji = prioEmoji[t.prioritate] || '';
-                    const finalizat = t.data_finalizare
-                        ? ` ✅ ${t.data_finalizare.split('T')[0]}` : ' ✅';
-                    md += `- [x] ${t.titlu} ${emoji}${finalizat}\n`;
+                    const badge = prioBadge[t.prioritate] || '[Normal]';
+                    const finalizat = t.data_finalizare ? ` · finalizat ${t.data_finalizare.split('T')[0]}` : '';
+                    md += `- [x] ${escMd(t.titlu)} ${badge}${finalizat}\n`;
                 });
                 md += `\n`;
             }
         }
 
-        // JURNAL DE LUCRU
-        if (jurnal.length > 0) {
-            md += `### 4. JURNAL DE LUCRU\n`;
-            [...jurnal].reverse().forEach(entry => {
-                md += `**${entry.data}**:\n${entry.continut}\n\n`;
+        // 5. ECHIPAMENTE
+        if (echipamente && echipamente.length > 0) {
+            md += `## ${section++}. Echipamente\n\n`;
+            md += `| # | Nume | Producător | Model | Serie | Parametri |\n|---|---|---|---|---|---|\n`;
+            echipamente.forEach((eq, idx) => {
+                let params = {};
+                try { params = typeof eq.params_json === 'string' ? JSON.parse(eq.params_json || '{}') : (eq.params_json || {}); } catch {}
+                const paramCount = Object.keys(params).length;
+                md += `| ${idx + 1} | ${escMd(eq.nume) || '—'} | ${escMd(eq.producator) || '—'} | ${escMd(eq.model) || '—'} | ${escMd(eq.serial_number) || '—'} | ${paramCount} |\n`;
+            });
+            md += `\n`;
+            // Detalii params per echipament — anexă
+            echipamente.forEach((eq, idx) => {
+                let params = {};
+                try { params = typeof eq.params_json === 'string' ? JSON.parse(eq.params_json || '{}') : (eq.params_json || {}); } catch {}
+                const entries = Object.entries(params);
+                if (entries.length === 0) return;
+                md += `### Echipament #${idx + 1} — ${escMd(eq.nume)} · parametri modificați\n\n`;
+                md += `| Cod | Valoare |\n|---|---|\n`;
+                entries.forEach(([k, v]) => { md += `| \`${k}\` | ${escMd(String(v))} |\n`; });
+                md += `\n`;
             });
         }
 
-        // ATAȘAMENTE
+        // 6. JURNAL DE LUCRU + TIMER SESSIONS UNIFICATE
+        if (jurnal.length > 0 || (timer.sessions && timer.sessions.length > 0)) {
+            md += `## ${section++}. Jurnal de lucru\n\n`;
+            // Match each jurnal entry to a timer session within ~2 min of its end (dedupe).
+            const sessions = (timer.sessions || []).slice();
+            const matched = new Set();
+            for (const j of jurnal) {
+                const jt = new Date(j.created_at || j.data || 0).getTime();
+                if (!jt) continue;
+                const found = sessions.find(s => {
+                    if (matched.has(s.id) || !s.end_time) return false;
+                    return Math.abs(jt - new Date(s.end_time).getTime()) < 2 * 60 * 1000;
+                });
+                if (found) { matched.add(found.id); j._duration_secunde = found.durata_secunde; }
+            }
+            [...jurnal].reverse().forEach(entry => {
+                const durSuffix = entry._duration_secunde ? ` · ${fmtHours(entry._duration_secunde)}` : '';
+                md += `### ${entry.data || ''}${durSuffix}\n\n${entry.continut || ''}\n\n`;
+            });
+            const unmatched = sessions.filter(s => !matched.has(s.id) && s.end_time);
+            if (unmatched.length > 0) {
+                md += `### Sesiuni timer fără notă\n\n`;
+                unmatched.forEach(s => {
+                    const date = s.start_time ? s.start_time.substring(0, 10) : '';
+                    md += `- ${date} · ${fmtHours(s.durata_secunde)}\n`;
+                });
+                md += `\n`;
+            }
+        }
+
+        // 7. ATAȘAMENTE
         if (attachments.length > 0) {
-            md += `### 5. Atașamente\n`;
+            md += `## ${section++}. Atașamente\n\n`;
+            md += `| Fișier | Tip | Mărime | Adăugat |\n|---|---|---|---|\n`;
             attachments.forEach(att => {
-                md += `- ${att.nume_fisier} (${att.tip_fisier}, ${formatFileSize(att.dimensiune)}, ${att.data})\n`;
+                md += `| ${escMd(att.nume_fisier)} | ${escMd(att.tip_fisier)} | ${formatFileSize(att.dimensiune)} | ${escMd(att.data) || '—'} |\n`;
             });
             md += `\n`;
         }
 
         // FOOTER
         md += `\n---\n\n`;
-        md += `> *Document generat automat din PIF Dashboard*  \n`;
-        md += `> *Data export: ${today} | Inginer: Ion Ursu*\n`;
+        md += `*Document generat automat din PIF Dashboard · ${today} · Ion Ursu*\n`;
 
         // DOWNLOAD
         const filename = project.cod_proiect
-            ? `${project.cod_proiect}_${project.nume.replace(/[^a-z0-9]/gi, '_')}.md`
-            : `${project.nume.replace(/[^a-z0-9]/gi, '_')}.md`;
+            ? `${project.cod_proiect}_${(project.nume || 'proiect').replace(/[^a-z0-9]/gi, '_')}.md`
+            : `${(project.nume || 'proiect').replace(/[^a-z0-9]/gi, '_')}.md`;
 
         const blob = new Blob([md], { type: 'text/markdown; charset=utf-8' });
         const url = URL.createObjectURL(blob);

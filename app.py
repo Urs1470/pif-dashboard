@@ -1468,152 +1468,289 @@ def export_pdf():
     # Get equipment
     cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ?', (project_id,))
     echipamente = [row_to_dict(row) for row in cursor.fetchall()]
-    
+
     # Get timer sessions
     cursor.execute('SELECT * FROM timer_sessions WHERE proiect_id = ?', (project_id,))
     timer_sessions = [row_to_dict(row) for row in cursor.fetchall()]
-    
+
+    # Get checklist categories (v5+)
+    try:
+        cursor.execute('SELECT id, nume, ordine FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine, id', (project_id,))
+        checklist_cat = [row_to_dict(row) for row in cursor.fetchall()]
+    except sqlite3.OperationalError:
+        checklist_cat = []  # Pre-v5 schema fallback
+
     conn.close()
-    
+
     # Calculate total hours
     total_seconds = sum(ts['durata_secunde'] or 0 for ts in timer_sessions)
     total_hours = total_seconds / 3600
-    
+    total_h = int(total_hours)
+    total_m = int((total_seconds % 3600) / 60)
+    total_hours_label = f"{total_h}h {total_m}m" if total_h > 0 else f"{total_m}m"
+
     # Status mapping
-    status_map = {'in_lucru': 'În Lucru', 'finalizat': 'Finalizat', 'blocat': 'Blocat', 'in_așteptare': 'În Așteptare'}
-    task_status_map = {'to_do': 'To Do', 'in_lucru': 'În Lucru', 'done': 'Finalizat'}
-    
+    status_map = {'in_lucru': 'In Lucru', 'finalizat': 'Finalizat', 'blocat': 'Blocat',
+                  'in_asteptare': 'In Asteptare', 'in_așteptare': 'In Asteptare'}
+    task_status_map = {'to_do': 'To Do', 'in_lucru': 'In Lucru', 'done': 'Finalizat'}
+
+    # PIF design palette (matches the web UI tokens 1:1)
+    PIF_BG = colors.HexColor('#11161e')
+    PIF_ACCENT = colors.HexColor('#58d1c9')
+    PIF_ACCENT_SOFT = colors.HexColor('#1d3835')
+    PIF_TEXT = colors.HexColor('#1f2937')
+    PIF_TEXT_DIM = colors.HexColor('#5a6473')
+    PIF_LINE = colors.HexColor('#dbe1ea')
+    PIF_SUCCESS = colors.HexColor('#16a34a')
+    PIF_DANGER = colors.HexColor('#dc2626')
+    PIF_WARNING = colors.HexColor('#d97706')
+
     # Create PDF
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
-    
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=2*cm, bottomMargin=2*cm,
+        title=f"PIF Report — {project_dict.get('nume', '')}",
+        author='PIF Dashboard'
+    )
+
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, spaceAfter=20, alignment=TA_CENTER)
-    heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'], fontSize=12, spaceBefore=15, spaceAfter=10)
-    normal_style = styles['Normal']
-    
+    title_style = ParagraphStyle(
+        'PIFTitle', parent=styles['Heading1'],
+        fontSize=18, leading=22, spaceAfter=4,
+        textColor=PIF_BG, alignment=TA_LEFT, fontName='Helvetica-Bold')
+    subtitle_style = ParagraphStyle(
+        'PIFSubtitle', parent=styles['Normal'],
+        fontSize=10, leading=14, textColor=PIF_TEXT_DIM, spaceAfter=18, fontName='Helvetica')
+    heading_style = ParagraphStyle(
+        'PIFHeading', parent=styles['Heading2'],
+        fontSize=12, leading=16, spaceBefore=14, spaceAfter=8,
+        textColor=PIF_ACCENT, fontName='Helvetica-Bold')
+    subheading_style = ParagraphStyle(
+        'PIFSubHeading', parent=styles['Heading3'],
+        fontSize=10.5, leading=14, spaceBefore=8, spaceAfter=4,
+        textColor=PIF_BG, fontName='Helvetica-Bold')
+    normal_style = ParagraphStyle(
+        'PIFNormal', parent=styles['Normal'],
+        fontSize=9.5, leading=14, textColor=PIF_TEXT, fontName='Helvetica')
+    small_style = ParagraphStyle(
+        'PIFSmall', parent=styles['Normal'],
+        fontSize=8, leading=11, textColor=PIF_TEXT_DIM, fontName='Helvetica')
+
     elements = []
-    
-    # Header
-    elements.append(Paragraph(f"Raport Proiect: {project_dict.get('nume', '')}", title_style))
-    elements.append(Spacer(1, 10))
-    
-    # Project Info Table
+
+    # Header band — accent strip + title
+    is_pif = (project_dict.get('tip') == 'PIF')
+    tip_label = 'PIF' if is_pif else 'Service'
+    elements.append(Paragraph(f"<font color='#58d1c9'>{tip_label}</font> — {project_dict.get('nume', '')}", title_style))
+    meta_bits = []
+    if project_dict.get('client'): meta_bits.append(project_dict['client'])
+    if project_dict.get('locatie'): meta_bits.append(project_dict['locatie'])
+    meta_bits.append(f"export {datetime.now().strftime('%d.%m.%Y')}")
+    elements.append(Paragraph(' · '.join(meta_bits), subtitle_style))
+
+    # 1. Detalii Administrative
+    elements.append(Paragraph("1. Detalii administrative", heading_style))
     project_info = [
-        ['Client:', project_dict.get('client', '-')],
-        ['Tip:', project_dict.get('tip', '-')],
-        ['Producător:', project_dict.get('producator', '-')],
-        ['Status:', status_map.get(project_dict.get('status', ''), project_dict.get('status', '-'))],
-        ['Data Începere:', project_dict.get('data_incepere', '-')],
-        ['Deadline:', project_dict.get('deadline', '-')],
-        ['Locație:', project_dict.get('locatie', '-')],
-        ['Nr. Comandă:', project_dict.get('nr_comanda', '-')],
-        ['Nr. Contract:', project_dict.get('nr_contract', '-')],
+        ['Client', project_dict.get('client') or '-'],
+        ['Locație', project_dict.get('locatie') or '-'],
+        ['Producător', project_dict.get('producator') or '-'],
+        ['Echipament principal', project_dict.get('echipament_principal') or '-'],
+        ['Status', status_map.get(project_dict.get('status', ''), project_dict.get('status', '-'))],
+        ['Data începere', project_dict.get('data_incepere') or '-'],
+        ['Deadline', project_dict.get('deadline') or '-'],
+        ['PM', project_dict.get('pm') or '-'],
+        ['Nr. comandă', project_dict.get('nr_comanda') or '-'],
+        ['Nr. contract', project_dict.get('nr_contract') or '-'],
+        ['Cod proiect', project_dict.get('cod_proiect') or '-'],
+        ['Total ore lucrate', total_hours_label],
     ]
-    
-    info_table = Table(project_info, colWidths=[5*cm, 10*cm])
+    info_table = Table(project_info, colWidths=[4.5*cm, 11*cm])
     info_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TEXTCOLOR', (0, 0), (0, -1), PIF_TEXT_DIM),
+        ('TEXTCOLOR', (1, 0), (1, -1), PIF_TEXT),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('LINEBELOW', (0, 0), (-1, -2), 0.3, PIF_LINE),
     ]))
     elements.append(info_table)
-    elements.append(Spacer(1, 20))
-    
-    # Equipment Section
-    if echipamente:
-        elements.append(Paragraph("Echipamente", heading_style))
-        equip_data = [['Nume', 'Producător', 'Model', 'Serial Number']]
-        for eq in echipamente:
-            equip_data.append([
-                eq.get('nume', '-'),
-                eq.get('producator', '-'),
-                eq.get('model', '-'),
-                eq.get('serial_number', '-')
-            ])
-        equip_table = Table(equip_data, colWidths=[5*cm, 4*cm, 4*cm, 3*cm])
-        equip_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ]))
-        elements.append(equip_table)
-        elements.append(Spacer(1, 15))
-    
-    # Tasks Section
+    elements.append(Spacer(1, 10))
+
+    # 2. Conținut tehnic (PIF observații / Service before+after)
+    if is_pif and project_dict.get('observatii'):
+        elements.append(Paragraph("2. Observații tehnice", heading_style))
+        elements.append(Paragraph(project_dict['observatii'].replace('\n', '<br/>'), normal_style))
+        elements.append(Spacer(1, 6))
+    if not is_pif and (project_dict.get('service_before') or project_dict.get('service_after')):
+        elements.append(Paragraph("2. Fișă intervenție", heading_style))
+        if project_dict.get('service_before'):
+            elements.append(Paragraph("Constatări înainte de intervenție", subheading_style))
+            elements.append(Paragraph(project_dict['service_before'].replace('\n', '<br/>'), normal_style))
+            elements.append(Spacer(1, 4))
+        if project_dict.get('service_after'):
+            elements.append(Paragraph("Acțiuni efectuate și rezultat", subheading_style))
+            elements.append(Paragraph(project_dict['service_after'].replace('\n', '<br/>'), normal_style))
+            elements.append(Spacer(1, 4))
+
+    # 3. Checklist PIF cu categorii
+    if is_pif and checklist:
+        elements.append(Paragraph("3. Checklist PIF", heading_style))
+        # Group by category
+        by_cat = {}
+        for it in checklist:
+            key = str(it.get('categorie_id')) if it.get('categorie_id') is not None else '0'
+            by_cat.setdefault(key, []).append(it)
+        ordered = sorted(checklist_cat, key=lambda c: (c.get('ordine') or 0))
+
+        def _render_cat_block(cat_name, items):
+            done = sum(1 for i in items if i.get('completed'))
+            elements.append(Paragraph(f"{cat_name} ({done}/{len(items)})", subheading_style))
+            rows = [['', 'Item']]
+            for it in items:
+                mark = '✓' if it.get('completed') else '○'
+                rows.append([mark, it.get('titlu', '-')])
+            t = Table(rows, colWidths=[0.7*cm, 14*cm])
+            t.setStyle(TableStyle([
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('TEXTCOLOR', (0, 0), (-1, 0), PIF_TEXT_DIM),
+                ('LINEBELOW', (0, 0), (-1, 0), 0.5, PIF_ACCENT),
+                ('LINEBELOW', (0, 1), (-1, -1), 0.25, PIF_LINE),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('TEXTCOLOR', (0, 1), (0, -1), PIF_SUCCESS),
+                ('FONTSIZE', (0, 1), (0, -1), 12),
+            ]))
+            elements.append(t)
+            elements.append(Spacer(1, 6))
+
+        for cat in ordered:
+            its = by_cat.get(str(cat['id']), [])
+            if its:
+                _render_cat_block(cat.get('nume', '?'), its)
+        uncategorized = by_cat.get('0', [])
+        if uncategorized:
+            _render_cat_block('Fără categorie', uncategorized)
+
+    # 4. Tasks
     if tasks:
-        elements.append(Paragraph("Task-uri", heading_style))
-        task_data = [['#', 'Titlu', 'Status', 'Prioritate']]
-        for i, task in enumerate(tasks, 1):
+        section_n = 4 if is_pif and checklist else 3
+        elements.append(Paragraph(f"{section_n}. Listă taskuri", heading_style))
+        task_data = [['#', 'Titlu', 'Status', 'Prioritate', 'Termen']]
+        for i, t in enumerate(tasks, 1):
             task_data.append([
                 str(i),
-                task.get('titlu', '-'),
-                task_status_map.get(task.get('status', ''), task.get('status', '-')),
-                task.get('prioritate', '-').capitalize()
+                t.get('titlu', '-'),
+                task_status_map.get(t.get('status', ''), t.get('status', '-')),
+                (t.get('prioritate') or 'Normal').capitalize(),
+                t.get('data_scadenta') or '-',
             ])
-        task_table = Table(task_data, colWidths=[1*cm, 10*cm, 3*cm, 2*cm])
+        task_table = Table(task_data, colWidths=[0.8*cm, 8.5*cm, 2.2*cm, 1.8*cm, 2.2*cm])
         task_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
+            ('BACKGROUND', (0, 0), (-1, 0), PIF_ACCENT),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.25, PIF_LINE),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+            ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
         ]))
         elements.append(task_table)
-        elements.append(Spacer(1, 15))
-    
-    # Checklist Section
-    if checklist:
-        elements.append(Paragraph("Checklist PIF", heading_style))
-        check_data = [['✓', 'Titlu', 'Completat']]
-        for item in checklist:
-            check_mark = '✓' if item.get('completed') else '○'
-            check_data.append([
-                check_mark,
-                item.get('titlu', '-'),
-                'Da' if item.get('completed') else 'Nu'
+        elements.append(Spacer(1, 10))
+
+    # 5. Echipamente
+    if echipamente:
+        section_n = 5 if is_pif and checklist else 4
+        elements.append(Paragraph(f"{section_n}. Echipamente", heading_style))
+        equip_data = [['Nume', 'Producător', 'Model', 'Serial']]
+        for eq in echipamente:
+            equip_data.append([
+                eq.get('nume') or '-',
+                eq.get('producator') or '-',
+                eq.get('model') or '-',
+                eq.get('serial_number') or '-',
             ])
-        check_table = Table(check_data, colWidths=[1.5*cm, 12*cm, 2.5*cm])
-        check_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
+        equip_table = Table(equip_data, colWidths=[5*cm, 3.5*cm, 4*cm, 3*cm])
+        equip_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), PIF_ACCENT),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 0), (-1, -1), 8.5),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.25, PIF_LINE),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
         ]))
-        elements.append(check_table)
-        elements.append(Spacer(1, 15))
-    
-    # Journal Section
-    if jurnal:
-        elements.append(Paragraph("Jurnal de Lucru", heading_style))
-        for entry in jurnal[:20]:  # Limit to 20 entries
-            elements.append(Paragraph(f"<b>{entry.get('data', '-')}</b>: {entry.get('continut', '-')}", normal_style))
-        elements.append(Spacer(1, 15))
-    
-    # Timer Summary
-    elements.append(Paragraph("Timer Summary", heading_style))
-    elements.append(Paragraph(f"Total ore lucrate: {total_hours:.2f} ore", normal_style))
-    
+        elements.append(equip_table)
+        elements.append(Spacer(1, 10))
+
+    # 6. Jurnal de lucru (with timer dedupe by ±2 min match on end_time)
+    if jurnal or timer_sessions:
+        section_n = 6 if is_pif and checklist else 5
+        elements.append(Paragraph(f"{section_n}. Jurnal de lucru", heading_style))
+        # Match each jurnal entry to a session with matching end_time within 2 min.
+        sessions = list(timer_sessions)
+        matched = set()
+        for j in jurnal:
+            jt_raw = j.get('created_at') or j.get('data')
+            try: jt = datetime.fromisoformat(jt_raw).timestamp() if jt_raw else 0
+            except: jt = 0
+            if jt:
+                for s in sessions:
+                    if s['id'] in matched: continue
+                    et_raw = s.get('end_time')
+                    if not et_raw: continue
+                    try: et = datetime.fromisoformat(et_raw).timestamp()
+                    except: continue
+                    if abs(jt - et) < 120:
+                        matched.add(s['id'])
+                        j['_dur'] = s.get('durata_secunde') or 0
+                        break
+        for entry in sorted(jurnal, key=lambda e: e.get('data') or '', reverse=False)[-30:]:
+            dur = entry.get('_dur')
+            dur_suffix = ''
+            if dur:
+                dh = int(dur // 3600); dm = int((dur % 3600) // 60)
+                dur_suffix = f" · <font color='#58d1c9'>{dh}h {dm}m</font>" if dh > 0 else f" · <font color='#58d1c9'>{dm}m</font>"
+            elements.append(Paragraph(f"<b>{entry.get('data', '-')}</b>{dur_suffix}", subheading_style))
+            content = (entry.get('continut') or '').replace('\n', '<br/>')
+            elements.append(Paragraph(content, normal_style))
+            elements.append(Spacer(1, 4))
+        # Timer fără notă
+        unmatched = [s for s in sessions if s['id'] not in matched and s.get('end_time')]
+        if unmatched:
+            elements.append(Paragraph("Sesiuni timer fără notă", subheading_style))
+            for s in unmatched[:20]:
+                dur = s.get('durata_secunde') or 0
+                dh = int(dur // 3600); dm = int((dur % 3600) // 60)
+                date = (s.get('start_time') or '')[:10]
+                elements.append(Paragraph(f"{date} · {dh}h {dm}m" if dh > 0 else f"{date} · {dm}m", small_style))
+
+    # Footer
+    elements.append(Spacer(1, 16))
+    elements.append(Paragraph(
+        f"<font color='#5a6473'>Document generat automat din PIF Dashboard · {datetime.now().strftime('%d.%m.%Y %H:%M')} · Ion Ursu</font>",
+        small_style))
+
     # Build PDF
     doc.build(elements)
-    
+
     buffer.seek(0)
-    filename = f"pif_report_{project_dict.get('nume', 'project').replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    safe_name = (project_dict.get('nume', 'project') or 'project').replace(' ', '_').replace('/', '_')
+    if project_dict.get('cod_proiect'):
+        filename = f"{project_dict['cod_proiect']}_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    else:
+        filename = f"pif_report_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
     logger.info(f"PDF export: {filename}")
-    
+
     return send_file(
         buffer,
         mimetype='application/pdf',
