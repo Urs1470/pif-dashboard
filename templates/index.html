@@ -3288,7 +3288,6 @@
                     <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului"><i data-lucide="pencil"></i> Editează proiect</button>
                     <button class="btn btn-secondary" onclick="exportMarkdown()"><i data-lucide="file-down"></i> Export Markdown</button>
                     <button class="btn btn-secondary" onclick="exportCurrentProjectPDF()" title="Exportă în PDF"><i data-lucide="file-text"></i> PDF</button>
-                    <button class="btn btn-secondary pv-trigger" id="btn-genereaza-pv" onclick="if(window.openPvServiceModal) openPvServiceModal(currentProjectId)" title="Generează proces verbal Word"><i data-lucide="file-output"></i> Generează PV</button>
                     <button class="btn btn-danger" onclick="deleteCurrentProject()"><i data-lucide="trash-2"></i> Șterge</button>
                 </div>
             </div>
@@ -3707,6 +3706,20 @@
                 <button class="btn btn-small" onclick="closePreview()"><i data-lucide="x"></i> Închide</button>
             </div>
             <div id="preview-content"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="import-params-modal" onclick="if(event.target === this) closeImportParamsModal()">
+        <div class="modal" style="max-width: 920px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="file-up"></i> Import parametri din export
+                </h3>
+                <button class="modal-close" onclick="closeImportParamsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="import-params-body">
+                <!-- populated dynamically -->
+            </div>
         </div>
     </div>
 
@@ -4240,8 +4253,7 @@
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="/static/app.js?v=20260546"></script>
-    <script src="/static/pv-modal.js?v=20260518a"></script>
+    <script src="/static/app.js?v=20260518a"></script>
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();

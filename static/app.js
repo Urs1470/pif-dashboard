@@ -797,10 +797,6 @@ async function showProjectDetail(projectId) {
         const beforeAfter = document.getElementById('before-after-section');
         if (beforeAfter) beforeAfter.style.display = isService ? 'grid' : 'none';
 
-        // PV Service button — vizibil doar pe proiecte Service
-        const pvBtn = document.getElementById('btn-genereaza-pv');
-        if (pvBtn) pvBtn.style.display = isService ? 'inline-flex' : 'none';
-
         // Common sections
         const timerJurnal = document.getElementById('timer-jurnal-section');
         const atasamente = document.getElementById('attachments-section');
@@ -2034,7 +2030,9 @@ function renderGlobalTasks(tasks) {
 // Cycle helpers: click on the priority/status pill rotates through values
 // without opening a modal. Used by global tasks AND project todos.
 const _PRIO_CYCLE = ['Normal', 'Minor', 'Urgent'];
-const _STATUS_CYCLE = ['to_do', 'in_lucru', 'done'];
+// Status cycle does NOT include 'done' — to mark a task finalised use the
+// checkbox. The status pill only toggles between active states (To Do <-> In Lucru).
+const _STATUS_CYCLE = ['to_do', 'in_lucru'];
 
 async function cycleGtPriority(taskId, current) {
     const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
@@ -3837,8 +3835,12 @@ function showAddEquipmentForm() {
             <!-- Parameter search from database -->
             <div id="echipament-params-section" style="margin-top:16px;">
                 <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:8px;">Caută și adaugă parametri din baza de date</div>
-                <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-                    <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'Courier New',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                    <button type="button" class="btn btn-secondary btn-small" onclick="triggerImportParams()" title="Import parametri din export softul producătorului (Danfoss .txt etc)">
+                        <i data-lucide="file-up"></i> Import din fișier
+                    </button>
+                    <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv" onchange="onImportParamsFileSelected(event)">
                 </div>
                 <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
                 <div id="current-params-list"></div>
@@ -3850,12 +3852,13 @@ function showAddEquipmentForm() {
         </div>
     `;
     container.insertAdjacentHTML('beforeend', formHtml);
-    
+
     // Populate projects dropdown for copy function
     populateProjectsForCopy();
-    
+
     // Initialize empty params display
     renderCurrentParams();
+    if (window.lucide) lucide.createIcons();
 }
 
 // Populate projects dropdown for copying equipment
@@ -4183,8 +4186,12 @@ async function editEchipament(echipamentId) {
                 <!-- Parameter search from database -->
                 <div id="echipament-params-section" style="margin-top:16px;">
                     <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:8px;">Caută și adaugă parametri din baza de date</div>
-                    <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-                        <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'Courier New',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                    <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center;">
+                        <input type="text" id="param-search-input" placeholder="Caută parametru (ex: p1120, Speed ref...)" style="flex:1; height:38px; padding:0 12px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text);" oninput="filterParamSuggestions(this.value)">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="triggerImportParams()" title="Import parametri din export softul producătorului (Danfoss .txt etc)">
+                            <i data-lucide="file-up"></i> Import din fișier
+                        </button>
+                        <input type="file" id="import-params-file" style="display:none" accept=".txt,.pdf,.csv" onchange="onImportParamsFileSelected(event)">
                     </div>
                     <div id="param-suggestions" style="display:none; max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg2); margin-bottom:10px;"></div>
                     <div id="current-params-list"></div>
@@ -4253,6 +4260,164 @@ async function deleteEchipament(echipamentId) {
             showToast('Eroare la ștergerea echipamentului', true);
         }
     });
+}
+
+// ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
+
+let _importParamsPreview = null;
+
+function triggerImportParams() {
+    const producator = document.getElementById('eq-producator')?.value || '';
+    if (!producator || producator === 'Altul') {
+        showToast('Selectează mai întâi un producător (Danfoss, ABB, Siemens, Lenze)', true);
+        return;
+    }
+    const input = document.getElementById('import-params-file');
+    if (input) {
+        input.value = '';
+        input.click();
+    }
+}
+
+async function onImportParamsFileSelected(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const producator = document.getElementById('eq-producator')?.value || '';
+    const model = document.getElementById('eq-model')?.value || '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('producator', producator);
+    formData.append('model', model);
+
+    showToast(`Se parsează ${file.name}...`);
+    try {
+        const data = await apiUpload('/import-params/preview', formData);
+        _importParamsPreview = data;
+        showImportParamsModal(data);
+    } catch (e) {
+        console.error('Import params preview failed:', e);
+        let msg = 'Eroare la parsare';
+        try {
+            const res = await fetch(API_BASE + '/import-params/preview', { method: 'POST', body: formData });
+            const j = await res.json();
+            if (j && j.error) msg = j.error;
+        } catch (_) {}
+        showToast(msg, true);
+    }
+}
+
+function showImportParamsModal(data) {
+    const modal = document.getElementById('import-params-modal');
+    const body = document.getElementById('import-params-body');
+    if (!modal || !body) return;
+
+    const params = data.params || [];
+    const rows = params.map((p, idx) => {
+        const conflictBadge = p.conflict
+            ? `<span title="Valori diferite pe Setup-uri: ${escapeHtml(JSON.stringify(p.per_setup))}" style="display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border-radius:4px; background:rgba(245,177,77,0.15); color:var(--warning); font-size:0.7rem;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> conflict</span>`
+            : '';
+        const setupsBadge = p.setups && p.setups.length
+            ? `<span style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim);">S${p.setups.join(',')}</span>`
+            : '';
+        const denumire = p.descriere_db || p.name || '';
+        const existing = (typeof p.existing_value !== 'undefined')
+            ? `<span title="Valoare existentă: ${escapeHtml(p.existing_value)}" style="margin-left:6px; color:var(--violet); font-size:0.7rem;">override</span>`
+            : '';
+        const valueSelector = p.conflict
+            ? `<select class="cs-enhance imp-value-select" data-idx="${idx}" style="width:100%; font-family:'JetBrains Mono',monospace;">${
+                Object.entries(p.per_setup).map(([s, v]) =>
+                    `<option value="${escapeHtml(v)}"${v === p.value ? ' selected' : ''}>S${escapeHtml(s)}: ${escapeHtml(v)}</option>`
+                ).join('')
+              }</select>`
+            : `<span class="imp-value-display" data-idx="${idx}" style="font-family:'JetBrains Mono',monospace;">${escapeHtml(p.value)}</span>`;
+        return `
+            <tr data-idx="${idx}">
+                <td style="text-align:center;"><input type="checkbox" class="imp-check" data-idx="${idx}" checked></td>
+                <td style="font-family:'JetBrains Mono',monospace; color:var(--accent);">${escapeHtml(p.db_id)}</td>
+                <td>${escapeHtml(denumire)} ${conflictBadge}</td>
+                <td>${valueSelector}</td>
+                <td style="font-family:'JetBrains Mono',monospace; color:var(--text-dim); font-size:0.8rem;">${escapeHtml(p.default || '')}</td>
+                <td>${setupsBadge} ${existing}</td>
+            </tr>`;
+    }).join('');
+
+    body.innerHTML = `
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Producător:</span> <strong>${escapeHtml(data.producator_detected || '')}</strong></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Familie:</span> <span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(data.familie || '-')}</span></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Parametri:</span> <strong>${data.count}</strong></div>
+            ${data.conflicts ? `<div style="color:var(--warning);"><i data-lucide="alert-triangle" style="width:14px; height:14px; vertical-align:-2px;"></i> ${data.conflicts} conflicte între Setup-uri</div>` : ''}
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportParams(true)"><i data-lucide="check-square"></i> Toate</button>
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportParams(false)"><i data-lucide="square"></i> Niciunul</button>
+        </div>
+        <div style="max-height:55vh; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius);">
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead style="position:sticky; top:0; background:var(--bg-elev2); z-index:1;">
+                    <tr style="text-align:left;">
+                        <th style="padding:8px; width:36px; border-bottom:1px solid var(--border);"></th>
+                        <th style="padding:8px; border-bottom:1px solid var(--border);">Cod</th>
+                        <th style="padding:8px; border-bottom:1px solid var(--border);">Denumire</th>
+                        <th style="padding:8px; border-bottom:1px solid var(--border); width:200px;">Valoare</th>
+                        <th style="padding:8px; border-bottom:1px solid var(--border);">Default</th>
+                        <th style="padding:8px; border-bottom:1px solid var(--border);">Note</th>
+                    </tr>
+                </thead>
+                <tbody id="import-params-tbody">
+                    ${rows || '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit parametri în fișier.</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+            <button type="button" class="btn btn-secondary btn-small" onclick="closeImportParamsModal()">Anulează</button>
+            <button type="button" class="btn btn-primary btn-small" onclick="applyImportedParams()"><i data-lucide="check"></i> Importă selectați</button>
+        </div>
+    `;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+    if (typeof enhanceAllSelects === 'function') enhanceAllSelects();
+}
+
+function toggleAllImportParams(checked) {
+    document.querySelectorAll('.imp-check').forEach(cb => cb.checked = checked);
+}
+
+function applyImportedParams() {
+    if (!_importParamsPreview) return;
+    const params = _importParamsPreview.params || [];
+    let added = 0, overridden = 0;
+    document.querySelectorAll('.imp-check').forEach(cb => {
+        if (!cb.checked) return;
+        const idx = parseInt(cb.dataset.idx, 10);
+        const p = params[idx];
+        if (!p) return;
+        let value = p.value;
+        const sel = document.querySelector(`.imp-value-select[data-idx="${idx}"]`);
+        if (sel) value = sel.value;
+        if (typeof currentParams === 'object' && currentParams !== null) {
+            if (Object.prototype.hasOwnProperty.call(currentParams, p.db_id)) overridden++;
+            else added++;
+            currentParams[p.db_id] = String(value);
+        }
+    });
+    closeImportParamsModal();
+    if (typeof renderCurrentParams === 'function') renderCurrentParams();
+    const msg = overridden
+        ? `${added} parametri adăugați, ${overridden} suprascriși`
+        : `${added} parametri adăugați`;
+    showToast(msg);
+}
+
+function closeImportParamsModal() {
+    const modal = document.getElementById('import-params-modal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+    _importParamsPreview = null;
 }
 
 // ============ BATCH OPERATIONS ============

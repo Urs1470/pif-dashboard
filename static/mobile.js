@@ -2451,8 +2451,9 @@ function mltInsertDate() {
 }
 
 // Click-to-cycle priority / status on mobile tasks. Mirrors the desktop helpers.
+// Status cycle skips 'done' — checkbox owns the finalised state.
 const _MOBILE_PRIO_CYCLE = ['Normal', 'Minor', 'Urgent'];
-const _MOBILE_STATUS_CYCLE = ['to_do', 'in_lucru', 'done'];
+const _MOBILE_STATUS_CYCLE = ['to_do', 'in_lucru'];
 
 async function cycleMobileGtPriority(taskId, current) {
   const idx = _MOBILE_PRIO_CYCLE.indexOf(current || 'Normal');
