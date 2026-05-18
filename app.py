@@ -70,6 +70,8 @@ def inject_version():
 # ============ SESSION CONFIG ============
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+# Allow large uploads for /api/admin/db-upload (DB ~40 MB now, may grow)
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB
 
 @app.before_request
 def make_session_permanent():
@@ -2259,7 +2261,56 @@ def create_template_from_project(project_id):
     logger.info(f"Template created from project {project_id}: {template_id}")
     return jsonify({'id': template_id, 'message': 'Template created from project'}), 201
 
-# ============ ADMIN: DB DOWNLOAD ============
+# ============ ADMIN: DB DOWNLOAD / UPLOAD ============
+
+@app.route('/api/admin/db-upload', methods=['POST'])
+@login_required
+def admin_db_upload():
+    """Replace the server SQLite DB with an uploaded copy.
+    Expects a multipart form field named 'db' with a .db file.
+    Validates SQLite header, backs up the existing DB, then atomic-replaces it.
+    """
+    import shutil
+    import tempfile
+    from database import DATABASE_PATH
+
+    if 'db' not in request.files:
+        return jsonify({'error': "missing form field 'db'"}), 400
+    f = request.files['db']
+    if not f or f.filename == '':
+        return jsonify({'error': 'empty file'}), 400
+
+    dir_name = os.path.dirname(DATABASE_PATH) or '.'
+    fd, tmp_path = tempfile.mkstemp(prefix='dbupload_', suffix='.db', dir=dir_name)
+    os.close(fd)
+    try:
+        f.save(tmp_path)
+        with open(tmp_path, 'rb') as fh:
+            magic = fh.read(16)
+        if not magic.startswith(b'SQLite format 3'):
+            os.unlink(tmp_path)
+            return jsonify({'error': 'not a valid SQLite database'}), 400
+
+        backups_dir = os.path.join(dir_name, 'backups')
+        os.makedirs(backups_dir, exist_ok=True)
+        stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(backups_dir, f'pif_dashboard_pre_upload_{stamp}.db')
+        if os.path.exists(DATABASE_PATH):
+            shutil.copy2(DATABASE_PATH, backup_path)
+
+        os.replace(tmp_path, DATABASE_PATH)
+
+        return jsonify({
+            'status': 'ok',
+            'backup': backup_path,
+            'replaced': DATABASE_PATH,
+            'size': os.path.getsize(DATABASE_PATH),
+        })
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/admin/db-dump', methods=['GET'])
 @login_required

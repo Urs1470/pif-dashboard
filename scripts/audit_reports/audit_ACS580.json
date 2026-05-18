@@ -1,0 +1,45 @@
+{
+  "producator": "?",
+  "familie": "ACS580",
+  "pdf_file": "ACS580_Firmware_Manual.pdf",
+  "totals": {
+    "db_count": 1273,
+    "pdf_count": 1273,
+    "in_db_not_pdf": 0,
+    "in_pdf_not_db": 0,
+    "name_mismatch": 0,
+    "page_fix_needed": 0,
+    "field_diff_count": {
+      "descriere": 0,
+      "acces": 0,
+      "tip_date": 0,
+      "valoare_default_str": 0,
+      "min": 0,
+      "max": 0,
+      "unitate": 0
+    },
+    "field_missing_db": {
+      "descriere": 0,
+      "acces": 0,
+      "tip_date": 0,
+      "valoare_default_str": 0,
+      "min": 0,
+      "max": 0,
+      "unitate": 0
+    }
+  },
+  "samples": {
+    "in_db_not_pdf": [],
+    "in_pdf_not_db": [],
+    "name_mismatch": [],
+    "field_diff": {
+      "descriere": [],
+      "acces": [],
+      "tip_date": [],
+      "valoare_default_str": [],
+      "min": [],
+      "max": [],
+      "unitate": []
+    }
+  }
+}

@@ -666,6 +666,75 @@ def apply_pagini_fix(db_path, updates):
     return affected
 
 
+def _to_float(s):
+    """Best-effort string -> float; return None on failure."""
+    if s is None:
+        return None
+    s = str(s).strip()
+    if not s or s == '-':
+        return None
+    # Strip common suffix like "h", "b", "%" used in Siemens hex/bin notation
+    if s.endswith('h') and re.fullmatch(r'[0-9A-Fa-f]+h', s):
+        try:
+            return float(int(s[:-1], 16))
+        except ValueError:
+            return None
+    s2 = s.replace(',', '.').rstrip('%')
+    try:
+        return float(s2)
+    except ValueError:
+        return None
+
+
+def apply_delete_orphans(db_path, ids):
+    """Delete rows by id list. Returns number of rows actually removed."""
+    if not ids:
+        return 0
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    cur.executemany('DELETE FROM parametri_master WHERE id = ?', [(i,) for i in ids])
+    conn.commit()
+    affected = cur.rowcount
+    conn.close()
+    return affected
+
+
+def apply_insert_new(db_path, familie, new_params):
+    """Bulk INSERT params not yet in DB. new_params: list of (code, pdf_dict)."""
+    if not new_params:
+        return 0
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    rows = []
+    for code, p in new_params:
+        rows.append((
+            familie,
+            code,
+            p.get('description') or '',
+            p.get('access') or '',
+            p.get('data_type') or '',
+            _to_float(p.get('default')),
+            p.get('default') or '',
+            _to_float(p.get('min')),
+            _to_float(p.get('max')),
+            p.get('unit') or '',
+            p.get('page'),
+            code if code.startswith('0x') else '',  # cod_hex (Lenze only)
+            p.get('name') or '',
+        ))
+    cur.executemany('''
+        INSERT OR IGNORE INTO parametri_master
+            (familie, parametru, descriere, acces, tip_date,
+             valoare_default, valoare_default_str, min, max, unitate,
+             pagina, cod_hex, descriere_scurta)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', rows)
+    conn.commit()
+    affected = cur.rowcount
+    conn.close()
+    return affected
+
+
 def apply_all_fields(db_path, updates):
     """updates: list of (id, dict_of_pdf_fields) — overwrite all non-empty PDF-derived fields.
     Only updates DB columns where the PDF value is non-empty (avoid clobbering with blanks).
@@ -696,7 +765,9 @@ def apply_all_fields(db_path, updates):
 
 # ---------- Audit logic ----------
 
-def audit_familie(producator, familie, db_path, apply_pagini=False, apply_all=False):
+def audit_familie(producator, familie, db_path,
+                  apply_pagini=False, apply_all=False,
+                  delete_orphans=False, insert_new=False):
     info = FAMILIE_PDF_MAP.get(familie)
     if not info:
         return {'error': f'No PDF mapping for familie={familie}'}
@@ -717,9 +788,10 @@ def audit_familie(producator, familie, db_path, apply_pagini=False, apply_all=Fa
     in_db_not_pdf = []
     name_mismatch = []
     page_fix = []
-    field_diffs = {f: [] for f in ['descriere', 'acces', 'tip_date',
-                                    'valoare_default_str', 'min', 'max', 'unitate']}
-    field_missing = {f: 0 for f in field_diffs}  # DB lipsește dar PDF are
+    diff_field_names = ['descriere', 'acces', 'tip_date', 'valoare_default_str', 'min', 'max', 'unitate']
+    field_diff_samples = {f: [] for f in diff_field_names}
+    field_diff_count = {f: 0 for f in diff_field_names}
+    field_missing = {f: 0 for f in diff_field_names}  # DB lipsește dar PDF are
     full_field_updates = []  # for --apply-all
 
     for code, dbp in db_codes.items():
@@ -754,8 +826,9 @@ def audit_familie(producator, familie, db_path, apply_pagini=False, apply_all=Fa
                 field_missing[db_col] += 1
                 continue
             if normalize(str(db_val)) != normalize(str(pdf_val)):
-                if len(field_diffs[db_col]) < 50:
-                    field_diffs[db_col].append({
+                field_diff_count[db_col] += 1
+                if len(field_diff_samples[db_col]) < 50:
+                    field_diff_samples[db_col].append({
                         'id': dbp['id'], 'code': code,
                         'db': str(db_val)[:120], 'pdf': str(pdf_val)[:120],
                     })
@@ -783,14 +856,14 @@ def audit_familie(producator, familie, db_path, apply_pagini=False, apply_all=Fa
             'in_pdf_not_db': len(in_pdf_not_db),
             'name_mismatch': len(name_mismatch),
             'page_fix_needed': len(page_fix),
-            'field_diff_count': {k: len(v) for k, v in field_diffs.items()},
-            'field_missing_db': field_missing,  # DB blank but PDF has value
+            'field_diff_count': field_diff_count,  # real total of diffs
+            'field_missing_db': field_missing,     # DB blank but PDF has value
         },
         'samples': {
             'in_db_not_pdf': in_db_not_pdf[:50],
             'in_pdf_not_db': in_pdf_not_db[:50],
             'name_mismatch': name_mismatch[:50],
-            'field_diff': field_diffs,
+            'field_diff': field_diff_samples,
         },
     }
 
@@ -804,6 +877,19 @@ def audit_familie(producator, familie, db_path, apply_pagini=False, apply_all=Fa
         report['all_fields_applied'] = affected
         print(f'[{familie}] Applied {affected} full-field updates to DB', file=sys.stderr)
 
+    if delete_orphans and in_db_not_pdf:
+        ids = [r['id'] for r in in_db_not_pdf]
+        affected = apply_delete_orphans(db_path, ids)
+        report['orphans_deleted'] = affected
+        print(f'[{familie}] Deleted {affected} orphan rows from DB', file=sys.stderr)
+
+    if insert_new and in_pdf_not_db:
+        new_pairs = [(item['code'], pdf_params[item['code']]) for item in in_pdf_not_db
+                     if item['code'] in pdf_params]
+        affected = apply_insert_new(db_path, familie, new_pairs)
+        report['new_params_inserted'] = affected
+        print(f'[{familie}] Inserted {affected} new params from PDF', file=sys.stderr)
+
     return report
 
 
@@ -815,6 +901,10 @@ def main():
     ap.add_argument('--apply-pagini', action='store_true', help='Update DB with real page numbers from PDF')
     ap.add_argument('--apply-all', action='store_true',
                     help='Update DB with ALL fields from PDF (description, type, default, min/max, unit, page)')
+    ap.add_argument('--delete-orphans', action='store_true',
+                    help='Delete rows in DB that are not in PDF (in_db_not_pdf). USE WITH CAUTION.')
+    ap.add_argument('--insert-new', action='store_true',
+                    help='Bulk INSERT params present in PDF but missing from DB.')
     ap.add_argument('--db', default=str(DB_PATH), help='Path to SQLite DB')
     args = ap.parse_args()
 
@@ -843,7 +933,8 @@ def main():
     summary = []
     for fam in families_to_run:
         rep = audit_familie(args.producator or '?', fam, args.db,
-                             apply_pagini=args.apply_pagini, apply_all=args.apply_all)
+                             apply_pagini=args.apply_pagini, apply_all=args.apply_all,
+                             delete_orphans=args.delete_orphans, insert_new=args.insert_new)
         out_file = REPORTS_DIR / f'audit_{fam}.json'
         with open(out_file, 'w', encoding='utf-8') as f:
             json.dump(rep, f, indent=2, ensure_ascii=False)
