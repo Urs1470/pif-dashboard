@@ -1,0 +1,200 @@
+2026-05-18 19:41:12,527  INFO      START: ACS580/explicatie  dry=True
+2026-05-18 19:41:13,125  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
+2026-05-18 19:41:17,858  ERROR       Error 76.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:41:24,780  ERROR       Error 76.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:41:36,277  ERROR       Error 76.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:41:42,452  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:41:42,452  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite
+2026-05-18 19:41:46,694  ERROR       Error 15.54: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:41:52,180  ERROR       Error 15.54: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:00,467  ERROR       Error 15.54: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:06,468  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:42:06,468  INFO      14801 71.01 (ACS580)  existing_len=787  qc=rewrite
+2026-05-18 19:42:10,913  ERROR       Error 71.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:18,092  ERROR       Error 71.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:27,726  ERROR       Error 71.01: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:33,727  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:42:33,727  INFO      14802 22.28 (ACS580)  existing_len=846  qc=rewrite
+2026-05-18 19:42:41,410  ERROR       Error 22.28: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:48,469  ERROR       Error 22.28: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:42:58,053  ERROR       Error 22.28: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:04,053  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:43:04,054  INFO      14803 31.08 (ACS580)  existing_len=813  qc=rewrite
+2026-05-18 19:43:11,685  ERROR       Error 31.08: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:18,953  ERROR       Error 31.08: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:28,869  ERROR       Error 31.08: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:34,869  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:43:34,870  INFO      14804 32.25 (ACS580)  existing_len=903  qc=rewrite
+2026-05-18 19:43:41,458  ERROR       Error 32.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:50,345  ERROR       Error 32.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:43:58,263  ERROR       Error 32.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:04,263  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:44:04,264  INFO      14805 34.33 (ACS580)  existing_len=854  qc=rewrite
+2026-05-18 19:44:09,847  ERROR       Error 34.33: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:18,028  ERROR       Error 34.33: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:25,245  ERROR       Error 34.33: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:31,245  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:44:31,245  INFO      14806 01.61 (ACS580)  existing_len=1164  qc=rewrite
+2026-05-18 19:44:38,559  ERROR       Error 01.61: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:45,547  ERROR       Error 01.61: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:44:55,169  ERROR       Error 01.61: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:01,169  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:45:01,170  INFO      14807 07.25 (ACS580)  existing_len=774  qc=rewrite
+2026-05-18 19:45:05,757  ERROR       Error 07.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:11,180  ERROR       Error 07.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:19,569  ERROR       Error 07.25: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:25,569  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:45:25,569  INFO      14808 15.12 (ACS580)  existing_len=834  qc=rewrite
+2026-05-18 19:45:34,357  ERROR       Error 15.12: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:42,742  ERROR       Error 15.12: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:51,062  ERROR       Error 15.12: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:45:57,062  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:45:57,062  INFO      14809 34.63 (ACS580)  existing_len=783  qc=rewrite
+2026-05-18 19:46:01,469  ERROR       Error 34.63: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:46:08,424  ERROR       Error 34.63: 'ThinkingBlock' object has no attribute 'text'
+2026-05-18 19:47:00,020  INFO      START: ACS580/explicatie  dry=True
+2026-05-18 19:47:00,616  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
+2026-05-18 19:47:10,263  ERROR       Error 76.01: name 'usage' is not defined
+2026-05-18 19:47:16,394  ERROR       Error 76.01: name 'usage' is not defined
+2026-05-18 19:47:28,928  ERROR       Error 76.01: name 'usage' is not defined
+2026-05-18 19:47:34,928  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:47:34,929  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite
+2026-05-18 19:47:43,398  ERROR       Error 15.54: name 'usage' is not defined
+2026-05-18 19:47:50,770  ERROR       Error 15.54: name 'usage' is not defined
+2026-05-18 19:48:02,291  ERROR       Error 15.54: name 'usage' is not defined
+2026-05-18 19:48:08,292  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:48:08,292  INFO      14801 71.01 (ACS580)  existing_len=787  qc=rewrite
+2026-05-18 19:48:14,377  ERROR       Error 71.01: name 'usage' is not defined
+2026-05-18 19:48:25,543  ERROR       Error 71.01: name 'text' is not defined
+2026-05-18 19:48:32,571  ERROR       Error 71.01: name 'usage' is not defined
+2026-05-18 19:48:38,572  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:48:38,572  INFO      14802 22.28 (ACS580)  existing_len=846  qc=rewrite
+2026-05-18 19:48:44,261  ERROR       Error 22.28: name 'usage' is not defined
+2026-05-18 19:48:50,010  ERROR       Error 22.28: name 'text' is not defined
+2026-05-18 19:50:32,907  INFO      START: ACS580/explicatie  dry=True
+2026-05-18 19:50:33,495  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
+2026-05-18 19:50:39,178  INFO        DRY: {"explicatie": "Afiseaza starea de functionare a motoarelor PFC (Pumps/Fans/Compressors). Bit 0 = PFC activ, bitii 1-3 indica numarul de motoare in functionare. Folosit pentru monitorizare in timp real si diagnosticare sistem multi-pump.", "decision": "rewrite"}
+2026-05-18 19:50:39,178  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite
+2026-05-18 19:50:47,763  INFO        DRY: {"explicatie": "Valoarea fortata pentru intrarea analogica AI3 care inlocuieste citirea reala in timpul testelor. Cand fortarea este activa prin 15.40, convertizorul foloseste valoarea din 15.54 in locul semnalului real de la senzor. Util pentru verificarea functionarii fara conexiune fizica la senzor.", "decision": "rewrite"}
+2026-05-18 19:50:47,763  INFO      14801 71.01 (ACS580)  existing_len=787  qc=rewrite
+2026-05-18 19:50:54,601  INFO        DRY: {"explicatie": "Valoarea actuala a procesului masurata de senzor pentru bucla PID externa. Este read-only - atunci cand sursa de feedback (AI1, AI2) este configurata, valoarea apare automat. Vezi 40.01 pentru format si scala.", "decision": "rewrite"}
+2026-05-18 19:50:54,602  INFO      DONE: total=3 {'keep': 0, 'rewrite': 0, 'new': 0, 'error': 0} cost=$0.0000
+2026-05-18 19:51:00,869  INFO      START: ACS580/explicatie  dry=True
+2026-05-18 19:51:01,456  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
+2026-05-18 19:51:07,699  INFO        DRY: {"explicatie": "Afiseaza starea de functionare a motoarelor PFC (Pumps/Fans/Compressors). Bit 0 indica PFC activ/opus, iar bitii 1-3 specifica numarul de motoare in functionare. Valoarea 0 inseamna PFC oprit, 1 inseamna PFC activ, iar valori peste 100 indica stare multi-pompa.", "decision": "rewrite"}
+2026-05-18 19:51:07,699  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite
+2026-05-18 19:51:13,473  INFO        DRY: {"explicatie": "Valoare fortata care inlocuieste citirea reala a intrarii analogice AI3. Cand bitul corespunzator din 15.40 este 1, aceasta valoare este folosita in locul semnalului real — util pentru testare si commissioning fara semnal disponibil.", "decision": "rewrite"}
+2026-05-18 19:51:13,473  INFO      14801 71.01 (ACS580)  existing_len=787  qc=rewrite
+2026-05-18 19:51:17,979  INFO        DRY: {"explicatie": "Valoarea actuala masurata a procesului controlat de bucla PID externa. Acest parametru citeste semnalul de la senzor (debit, presiune, nivel) si este folosit pentru calculul erorii in bucla de reglare Ext PID. Vezi parametrul 40.01 pentru formatul si domeniul valorii.", "decision": "rewrite"}
+2026-05-18 19:51:17,979  INFO      14802 22.28 (ACS580)  existing_len=846  qc=rewrite
+2026-05-18 19:51:22,689  INFO        DRY: {"explicatie": "Defineste cea de-a treia viteza constanta presetata in rpm. Valoarea implicita este 900 rpm dar poate fi negativa pentru rotire in sens invers. Selectata prin intrari digitale sau fieldbus in functie de configurarea schemei de control.", "decision": "rewrite"}
+2026-05-18 19:51:22,690  INFO      14803 31.08 (ACS580)  existing_len=813  qc=rewrite
+2026-05-18 19:51:29,548  INFO        DRY: {"explicatie": "Defineste tipul evenimentului extern 4 — Fault sau Warning. La Fault convertizorul se opreste si afiseaza cod de eroare, la Warning functionarea continua cu alarma vizuala. Evenimentul este activat prin bitul dedicat din 31.09.", "decision": "rewrite"}
+2026-05-18 19:51:29,548  INFO      14804 32.25 (ACS580)  existing_len=903  qc=rewrite
+2026-05-18 19:51:35,632  INFO        DRY: {"explicatie": "Selecteaza modul de functionare pentru supervizarea semnalului 3. Semnalul selectat este comparat cu limitele definite in 32.29/32.30. Modurile hysteresis, falling si rising ofera imunitate la zgomot. Depasirea limitelor genereaza avertizare A8B2 sau defectiune 80B2.", "decision": "rewrite"}
+2026-05-18 19:51:35,632  INFO      14805 34.33 (ACS580)  existing_len=854  qc=rewrite
+2026-05-18 19:51:39,870  WARNING     No JSON from 34.33, retry 1/3
+2026-05-18 19:51:44,834  INFO        DRY: {"explicatie": "Seteaza ora de pornire pentru Timer 8 in format HH:MM:SS. Functioneaza identic cu 34.12 Timer 1 start time — vezi acolo pentru detalii complete despre functionare si mod de setare.", "decision": "rewrite"}
+2026-05-18 19:51:44,834  INFO      14806 01.61 (ACS580)  existing_len=1164  qc=rewrite
+2026-05-18 19:51:52,691  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:51:52,691  INFO      14807 07.25 (ACS580)  existing_len=774  qc=rewrite
+2026-05-18 19:51:55,939  WARNING     No JSON from 07.25, retry 1/3
+2026-05-18 19:52:00,195  INFO        DRY: {"explicatie": "Afiseaza primele cinci caractere ASCII ale numelui pachetului de customizare incarcat pe drive. Este un camp read-only — poate fi modificat doar prin incarcarea unui nou pachet de customizare. Folosit pentru identificare si audit in mentenanta.", "decision": "rewrite"}
+2026-05-18 19:52:00,195  INFO      14808 15.12 (ACS580)  existing_len=834  qc=rewrite
+2026-05-18 19:52:06,597  INFO        DRY: {"explicatie": "Defineste intarzierea la dezactivare pentru releul de iesire RO5. Dupa ce semnalul de comanda devine 0, contactul ramane inchis pentru durata setata inainte de deschidere. Folosit pentru eliminarea phenomenului de bouncing la contactoare sau pentru temporizari in scheme de secventiere.", "decision": "rewrite"}
+2026-05-18 19:52:06,597  INFO      14809 34.63 (ACS580)  existing_len=783  qc=rewrite
+2026-05-18 19:52:11,228  INFO        DRY: {"explicatie": "Defineste data de inceput a sezonului 4 in format dd.mm. Se utilizeaza pentru controlul adaptiv pe anotimpuri — incalzire, racire, irigatii. Datele sezonelor trebuie sa fie in ordine crescatoare: S1 < S2 < S3 < S4.", "decision": "rewrite"}
+2026-05-18 19:52:11,228  INFO      14810 37.33 (ACS580)  existing_len=808  qc=rewrite
+2026-05-18 19:52:16,051  INFO        DRY: {"explicatie": "Defineste al treilea punct pe curba de sarcina definita de utilizator (User Load Curve). Valoarea este exprimata in procente fata de cuplul nominal — 300% inseamna de trei ori cuplul nominal. Depasirea curbei ULC configureata prin acest punct poate declansa avertizare sau defect, in functie de setarile din grupul 37.01.", "decision": "rewrite"}
+2026-05-18 19:52:16,051  INFO      14811 51.32 (ACS580)  existing_len=672  qc=rewrite
+2026-05-18 19:52:19,762  INFO        DRY: {"explicatie": "Afiseaza versiunea firmware-ului aplicatiei pentru fieldbus adapter A. Este read-only si nu influenteaza functionarea convertizorului. Folosit pentru debugging si confirmarea versiunii de protocol instalate.", "decision": "rewrite"}
+2026-05-18 19:52:19,762  INFO      14812 86.17 (ACS580)  existing_len=800  qc=rewrite
+2026-05-18 19:52:28,150  INFO        DRY: {"explicatie": "Defineste pasul de frecventa in Hz cu care drive-ul creste referinta atunci cand detecteaza cavitatie. Ajuta pompa sa iasa din conditii de cavitatie prin cresterea treptata a turatiei. Valoarea trebuie ajustata in functie de caracteristica hidraulica a sistemului.", "decision": "rewrite"}
+2026-05-18 19:52:28,150  INFO      14832 99.04 (ACS580)  existing_len=1459  qc=rewrite
+2026-05-18 19:52:36,532  INFO        DRY: {"explicatie": "99.04 defineste modul de control al motorului. Modul scalar mentine raportul constant intre tensiune si frecventa, fiind ideal pentru aplicatii simple precum pompe si ventilatoare. Modul vectorial ofera control precis al cuplului si raspuns dinamic superior fara encoder.", "decision": "rewrite"}
+2026-05-18 19:52:36,532  INFO      14833 30.11 (ACS580)  existing_len=1506  qc=rewrite
+2026-05-18 19:52:41,024  WARNING     No JSON from 30.11, retry 1/3
+2026-05-18 19:52:46,835  INFO        DRY: {"explicatie": "Defineste limita inferioara a domeniului de viteza al motorului, in ambele sensuri de rotatie. Valoarea poate fi negativa pentru a permite functionarea in directia inversa, sau zero pentru a bloca reversul — util la pompe sau conveiere unidirectionale. Referinta de viteza este marginita automat intre 30.11 si 30.12 de catre firmware.", "decision": "rewrite"}
+2026-05-18 19:52:46,835  INFO      14834 30.12 (ACS580)  existing_len=1242  qc=rewrite
+2026-05-18 19:52:51,692  INFO        DRY: {"explicatie": "Defineste viteza maxima a motorului, implicit egala cu turatia nominala inscrisa pe placuta de identificare. Aceasta valoare serveste ca referinta pentru rampele de accelerare/decelerare si stabileste frecventa maxima de iesire a convertizorului. Procedura de ID Run normal (30.11 = Normal) necesita ca motorul sa atinga 100% din aceasta viteza pentru o identificare corecta a parametrilor.", "decision": "rewrite"}
+2026-05-18 19:52:51,692  INFO      14835 30.17 (ACS580)  existing_len=1577  qc=rewrite
+2026-05-18 19:52:57,234  WARNING     No JSON from 30.17, retry 1/3
+2026-05-18 19:53:03,154  WARNING     No JSON from 30.17, retry 2/3
+2026-05-18 19:53:13,387  INFO        DRY: {"explicatie": "Seteaza limita curentului maxim de iesire al convertizorului, exprimata in amperi. Valoarea este limitata superior de curentul maxim hardware (IHD) al convertizorului. Protejeaza atat convertizorul cat si motorul impotriva curentilor excesivi care ar genera incalzire proporcionala cu patratul curentului.", "decision": "rewrite"}
+2026-05-18 19:53:13,388  INFO      14836 30.20 (ACS580)  existing_len=1633  qc=rewrite
+2026-05-18 19:53:19,767  INFO        DRY: {"explicatie": "Seteaza cuplul maxim de iesire ca procent din cuplul nominal motor (99.08). Limiteaza cuplul in mod de control viteza pentru protectia transmisiei mecanice. Valoarea >50% permite activarea functiei de limitare cuplu — vezi si 30.24 pentru cuplul maxim 2.", "decision": "rewrite"}
+2026-05-18 19:53:19,767  INFO      14837 30.24 (ACS580)  existing_len=1337  qc=rewrite
+2026-05-18 19:53:24,887  WARNING     No JSON from 30.24, retry 1/3
+2026-05-18 19:53:31,636  INFO        DRY: {"explicatie": "Defineste limita cuplului maxim 2 in procente din cuplul nominal al motorului. Valoarea default este 300% — ofera rezerva suficienta pentru aplicatii solicitante. Selectat prin parametrul 30.18 cand setul 2 este activ.", "decision": "rewrite"}
+2026-05-18 19:53:31,636  INFO      DONE: total=20 {'keep': 0, 'rewrite': 0, 'new': 0, 'error': 0} cost=$0.0000
+2026-05-18 19:53:37,669  INFO      START: ACS580/explicatie  dry=True
+2026-05-18 19:53:38,266  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
+2026-05-18 19:53:42,311  INFO        DRY: {"explicatie": "Bitmask ce indica starea sistemului PFC. Bit 0 = PFC activ, bitii 1-3 = numarul de motoare in functiune. Valoare 0 = oprit, 1 = activ, peste 100 = stare multi-pompa.", "decision": "rewrite"}
+2026-05-18 19:53:42,311  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite
+2026-05-18 19:53:48,228  WARNING     No JSON from 15.54, retry 1/3
+2026-05-18 19:53:53,765  INFO        DRY: {"explicatie": "Valoare fortata care inlocuieste citirea reala a intrarii analogice AI3 in timpul testelor. Cand bitul AI3 din p15.40 este activat, valoarea din acest parametru este transmisa drive-ului in locul semnalului real de la intrarea analogica.", "decision": "rewrite"}
+2026-05-18 19:53:53,765  INFO      14801 71.01 (ACS580)  existing_len=787  qc=rewrite
+2026-05-18 19:53:58,862  INFO        DRY: {"explicatie": "Afiseaza valoarea actuala a procesului masurata de senzor si aplicata la bucla PID externa. Reprezinta marimea reglata (presiune, debit, nivel) care este comparata cu referinta pentru calculul erorii. Parametru read-only - valoarea vine automat de la intrarea analogica sau alta sursa configurata.", "decision": "rewrite"}
+2026-05-18 19:53:58,862  INFO      14802 22.28 (ACS580)  existing_len=846  qc=rewrite
+2026-05-18 19:54:03,457  WARNING     No JSON from 22.28, retry 1/3
+2026-05-18 19:54:08,700  WARNING     No JSON from 22.28, retry 2/3
+2026-05-18 19:54:20,098  WARNING     No JSON from 22.28, retry 3/3
+2026-05-18 19:54:23,098  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:54:23,099  INFO      14803 31.08 (ACS580)  existing_len=813  qc=rewrite
+2026-05-18 19:54:28,749  INFO        DRY: {"explicatie": "Defineste tipul evenimentului extern 4 — Fault sau Warning. La Fault, convertizorul se opreste si afiseaza codul de eroare; la Warning, functionarea continua cu alarma. Evenimentul este activat de bitul din 31.09 si este utilizat pentru interlock-uri externe precum niveluri de rezervor sau presiune minima.", "decision": "rewrite"}
+2026-05-18 19:54:28,750  INFO      14804 32.25 (ACS580)  existing_len=903  qc=rewrite
+2026-05-18 19:54:33,458  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:54:33,458  INFO      14805 34.33 (ACS580)  existing_len=854  qc=rewrite
+2026-05-18 19:54:37,672  INFO        DRY: {"explicatie": "Seteaza ora de pornire pentru Timer 8. Functioneaza impreuna cu p34.34 (stop time) si p34.35 (durata) pentru a defini fereastra de timp activa. Vezi p34.12 Timer 1 start time pentru logica completa de configurare.", "decision": "rewrite"}
+2026-05-18 19:54:37,672  INFO      14806 01.61 (ACS580)  existing_len=1164  qc=rewrite
+2026-05-18 19:54:42,579  INFO        DRY: {"explicatie": "Afiseaza viteza reala a motorului in rpm ca valoare absoluta, fara semn. Este calculata din frecventa de iesire si alunecarea motorului, actualizata in timp real la fiecare ciclu de control. Folosita pentru monitorizare si ca feedback pentru bucla de reglare viteza PID.", "decision": "rewrite"}
+2026-05-18 19:54:42,579  INFO      14807 07.25 (ACS580)  existing_len=774  qc=rewrite
+2026-05-18 19:54:45,424  INFO        DRY: {"explicatie": "Stocheaza primele cinci caractere ASCII ale numelui pachetului de customizare incarcat pe drive. Folosit pentru identificare si audit — nu afecteaza functionarea. Modificarea se face doar prin incarcarea unui nou pachet de customizare.", "decision": "rewrite"}
+2026-05-18 19:54:45,424  INFO      14808 15.12 (ACS580)  existing_len=834  qc=rewrite
+2026-05-18 19:54:50,459  WARNING     No JSON from 15.12, retry 1/3
+2026-05-18 19:54:58,592  INFO        DRY: {"explicatie": "Seteaza intarzierea la dezactivare pentru iesirea releu RO5. Dupa ce semnalul de comanda devine 0, contactul ramane inchis pentru durata definita de acest parametru, apoi se deschide. Folosit pentru evitarea comutatiilor rapide sau temporizari in schema de interlock.", "decision": "rewrite"}
+2026-05-18 19:54:58,592  INFO      14809 34.63 (ACS580)  existing_len=783  qc=rewrite
+2026-05-18 19:55:01,910  INFO        DRY: {"explicatie": "Defineste data de inceput a sezonului 4 in format dd.mm. Datele sezonelor trebuie ordonate crescator: S1 < S2 < S3 < S4, altfel se genereaza warning. Folosit pentru adaptarea programului de functionare la anotimpuri.", "decision": "rewrite"}
+2026-05-18 19:55:01,911  INFO      14810 37.33 (ACS580)  existing_len=808  qc=rewrite
+2026-05-18 19:55:06,683  INFO        DRY: {"explicatie": "Defineste al treilea punct pe curba de sarcina definita de utilizator (User Load Curve - ULC). Acest punct stabileste limita de cuplu procentuala la o anumita turatie. Functionarea peste curba declanseaza warning sau fault in functie de setarile din grupul 37.01.", "decision": "rewrite"}
+2026-05-18 19:55:06,683  INFO      14811 51.32 (ACS580)  existing_len=672  qc=rewrite
+2026-05-18 19:55:10,836  INFO        DRY: {"explicatie": "Afiseaza versiunea firmware-ului aplicatiei pentru fieldbus adapter A. Este read-only si nu influenteaza functionarea convertizorului. Util pentru debugging si confirmarea versiunii de comunicare.", "decision": "rewrite"}
+2026-05-18 19:55:10,837  INFO      14812 86.17 (ACS580)  existing_len=800  qc=rewrite
+2026-05-18 19:55:18,654  INFO        DRY: {"explicatie": "Defineste pasul de frecventa cu care convertizorul creste referinta atunci cand se detecteaza cavitatie. Valoarea in Hz controleaza cat de mult creste frecventa la fiecare increment. Vezi p86.20 pentru configurarea functiei de cavitatie.", "decision": "rewrite"}
+2026-05-18 19:55:18,654  INFO      14832 99.04 (ACS580)  existing_len=1459  qc=rewrite
+2026-05-18 19:55:25,055  INFO        DRY: {"explicatie": "Defineste modul de control al motorului. Modul scalar (V/f) mentine raportul constant intre tensiune si frecventa, fiind potrivit pentru aplicatii simple precum pompe si ventilatoare. Modul vectorial ofera control precis al vitezei si cuplului fara encoder prin calculul continuu al fluxului magnetic.", "decision": "rewrite"}
+2026-05-18 19:55:25,055  INFO      14833 30.11 (ACS580)  existing_len=1506  qc=rewrite
+2026-05-18 19:55:31,877  INFO        DRY: {"explicatie": "", "decision": "rewrite"}
+2026-05-18 19:55:31,877  INFO      14834 30.12 (ACS580)  existing_len=1242  qc=rewrite
+2026-05-18 19:55:36,263  INFO        DRY: {"explicatie": "Defineste viteza maxima permisa a motorului. Default = viteza nominala (procedura ID Run normal necesita operare la 100% din aceasta valoare). Firmware-ul foloseste 30.12 ca referinta pentru rampele de accelerare/decelerare si pentru calculul frecventei maxime de iesire.", "decision": "rewrite"}
+2026-05-18 19:55:36,263  INFO      14835 30.17 (ACS580)  existing_len=1577  qc=rewrite
+2026-05-18 19:55:41,169  WARNING     No JSON from 30.17, retry 1/3
+2026-05-18 19:55:49,404  INFO        DRY: {"explicatie": "Seteaza curentul maxim de iesire al convertizorului ca procent din curentul nominal motor. Protejeaza convertizorul si motorul impotriva curentilor excesivi care genereaza caldura I²R. La atingerea limitei, regulatorul de curent intervine reducand tensiunea de iesire. Vezi si 99.06 pentru curentul nominal.", "decision": "rewrite"}
+2026-05-18 19:55:49,404  INFO      14836 30.20 (ACS580)  existing_len=1633  qc=rewrite
+2026-05-18 19:55:57,637  WARNING     No JSON from 30.20, retry 1/3
+2026-05-18 19:56:04,168  INFO        DRY: {"explicatie": "Seteaza cuplul maxim de iesire al convertizorului ca procent din cuplul nominal al motorului. Cand cuplul calculat de estimatorul de flux depaseste aceasta valoare, convertizorul reduce tensiunea de iesire sau frecventa pentru a mentine cuplul sub limita. Esential pentru protectia echipamentului mecanic — previne deteriorarea transmisiilor, curelelor si cuplajelor.", "decision": "rewrite"}
+2026-05-18 19:56:04,168  INFO      14837 30.24 (ACS580)  existing_len=1337  qc=rewrite
+2026-05-18 19:56:11,011  INFO        DRY: {"explicatie": "Seteaza limita superioara a cuplului pentru setul 2, in procente din cuplul nominal al motorului. Selecteaza care set de limite este activ prin 30.18 — daca setul 2 este selectat, aceasta valoare limiteaza cuplul furnizat de convertizor. Verifica ca semnalele de validare Run enable (20.12), Enable start (20.19) si Enable to rotate (20.22) sunt active pentru ca regulatorul de cuplu sa functioneze corect.", "decision": "rewrite"}
+2026-05-18 19:56:11,012  INFO      DONE: total=20 {'keep': 0, 'rewrite': 0, 'new': 0, 'error': 0} cost=$0.0000
+2026-05-18 21:26:39,609  INFO      START: ALL/categorie  dry=False
+2026-05-18 21:26:40,211  INFO      14799 76.01 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:26:48,706  INFO        -> new: Diagnostic
+2026-05-18 21:26:48,756  INFO      14800 15.54 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:26:57,835  WARNING     Bad categorie 'IO' for 15.54, retry
+2026-05-18 21:27:04,311  WARNING     Bad categorie 'IO' for 15.54, retry
+2026-05-18 21:27:11,849  WARNING     Bad categorie 'IO' for 15.54, retry
+2026-05-18 21:27:14,849  INFO      14801 71.01 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:27:26,600  INFO        -> new: Diagnostic
+2026-05-18 21:27:26,650  INFO      14802 22.28 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:27:34,779  INFO        -> new: Motor
+2026-05-18 21:27:34,830  INFO      14803 31.08 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:27:44,200  INFO        -> new: Protectii
+2026-05-18 21:27:44,251  INFO      14804 32.25 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:27:55,453  INFO        -> new: Diagnostic
+2026-05-18 21:27:55,503  INFO      14805 34.33 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:28:05,539  WARNING     Bad categorie 'IO' for 34.33, retry
+2026-05-18 21:28:11,836  INFO        -> new: Altul
+2026-05-18 21:28:11,887  INFO      14806 01.61 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:28:17,429  INFO        -> new: Diagnostic
+2026-05-18 21:28:17,480  INFO      14807 07.25 (ACS580)  existing_len=0  qc=new
+2026-05-18 21:28:26,924  INFO        -> new: Altul
