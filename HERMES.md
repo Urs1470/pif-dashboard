@@ -182,8 +182,8 @@ Aplicația are deja paletă, fonturi și pattern-uri stabilite. **NU introduce s
 
 **Singurul rest în DB** (TASK-UL TĂU):
 
-Câmpurile LLM-only sunt încă goale/incomplete:
-- `explicatie` — text comissioner în română (cel mai important)
+Câmpurile LLM-only — atât cele goale CÂT ȘI cele existente trebuie reverificate:
+- `explicatie` — text comissioner în română (cel mai important). **REVERIFICĂ și pe cele deja populate** — multe sunt placeholder, LLM vechi, sau pur și simplu greșite. Daca explicatia existentă nu reflectă corect descrierea PDF-derived, REGENEREAZĂ.
 - `influenteaza` — params influențați direct (cu cod referință)
 - `categorie` — grupare tematică (poate fi inferată)
 
@@ -202,12 +202,16 @@ Notă: `interconexiuni` a fost DROP-uit (schema v6, mai 2026).
    - Pass 2 (sample 5-10%): self-review per param să verifici că nu sunt halucinații
 5. **Stil**: română fără diacritice (convenția Ion), max 2-3 propoziții, commissioner-friendly.
    Exemplu bun: `"Defineste viteza minima a motorului. Setare critica daca aplicatia cere reverse — pune negativ. Vezi 30.12 pentru limita superioara."`
-6. **Skip rule**: dacă `explicatie` deja există și e > 50 chars text natural (nu placeholder), skip cu review minim.
+6. **NU skip-ui valori existente** — verifică TOATE 14.743 params. Pentru cei cu `explicatie` deja populată:
+   - Compară semantic cu `descriere` PDF-derived
+   - Dacă explicatia existentă o reflectă corect și e în stilul cerut (RO fără diacritice, 2-3 propoziții, commissioner-friendly): păstrează, marchează `decision=keep` în log
+   - Dacă explicatia e placeholder, generic, în engleză, are diacritice, sau e factual greșită: REGENEREAZĂ, marchează `decision=rewrite`
+   - În caz incert, rescrie. Accuracy peste păstrare istorică.
 7. **Sources**: folosește `descriere` (deja PDF-extracted) + manualul complet `manuals/<familie>.pdf` ca context. NU genera info care nu-i derivable din descriere + manual.
 
 **NU atinge**: `parametru`, `descriere_scurta`, `descriere`, `acces`, `tip_date`, `valoare_default_str`, `min`, `max`, `unitate`, `pagina` — TOATE sunt PDF-derived și validate. `interconexiuni` a fost drop-uit din schema (v6).
 
-**Cost estimat**: ~$50-100 cu cache agresiv pentru toate ~14k params, fără cache ~$200+. Folosește cache.
+**Cost estimat**: ~$80-150 cu cache agresiv pentru toate ~14k params x 3 câmpuri, cu reverificare totală (nu skip). Fără cache ~$300+. Folosește cache.
 
 **Pas concret**:
 1. `git pull` — ai cod-ul nou + audit_reports JSON ca referință
