@@ -163,11 +163,57 @@ Aplicația are deja paletă, fonturi și pattern-uri stabilite. **NU introduce s
 - ~15.274 parametri în `parametri_master`. Calitatea descrierilor inconsistentă — asta e job-ul tău LLM.
 - 7 familii: ABB (ACS580, ACS880), Siemens (G120, G130_G150, S120_S150), Danfoss (FC302), Lenze (i550, i950)
 
-### Audit parametri (status la 2026-05-18)
-- `scripts/audit_pdf.py` — script de validare DB vs PDF
-- ABB ACS580: pilot rulat cu success. Parser-ul a fost îmbunătățit (split la double-space, BAD_NAME_PATTERNS, look-ahead pe definiție). Mismatch 554 → 455.
-- **Pending de la tine**: rulează `--all` pentru toate familiile (Danfoss/Lenze/Siemens), validează parserele pentru fiecare format (Danfoss `NN-NN`, Lenze `0xXXXXX`, Siemens `pNNNNN`), apoi `--apply-pagini` ca să fixezi paginile PDF în DB.
-- **După audit**: batch LLM Haiku pe descrieri lipsă/proaste. Folosește API key-ul tău, raportează costul.
+### Audit parametri (status la 2026-05-18 sesiunea seara, Claude Opus 4.6)
+
+**Audit-ul PDF e COMPLET** (run local pe `D:\Projects\pif-dashboard` cu Python 3.12):
+
+- 8 PDF-uri oficiale înlocuite în `manuals/` (Lenze i550 era greșit — hardware overview vs commissioning).
+- Toate cele 4 parsere (ABB/Danfoss/Lenze/Siemens) rescrise cu full-field extraction:
+  - **Siemens** (G120/G130/S120): pdfplumber + Access-level gate, coverage 99-100% desc/type
+  - **Lenze** (i550/i950): pdfplumber `extract_tables()` + fallback linear
+  - **Danfoss** (FC302): pdfplumber tabular 3-cell layout
+  - **ABB** (ACS580/ACS880): **pymupdf** (fitz) word-level cu auto-detect column boundaries (pdfplumber lipea cuvintele pe ACS880)
+- `audit_pdf.py` extins cu `--apply-all`, `--delete-orphans`, `--insert-new`. Toate cele 4 acțiuni rulate local:
+  - Update masiv: 6092 descriere + 4604 acces + 2915 tip + 1825 default + 446 unitate + 8459 pagini
+  - Șters: 4127 rows orfane (DB had but PDF didn't)
+  - Inserat: 4398 params noi (PDF had but DB didn't) — Lenze i950 cel mai mare gap (+1360)
+- DB local final: **14743 params**, toate cele 7 câmpuri sincronizate cu PDF, zero diff-uri funcționale.
+- DB-ul updated transferat la server prin `/admin/db-upload` (endpoint nou).
+
+**Singurul rest în DB** (TASK-UL TĂU):
+
+Câmpurile LLM-only sunt încă goale/incomplete:
+- `explicatie` — text comissioner în română (cel mai important)
+- `interconexiuni` — alți params legați (cu cod referință)
+- `influenteaza` — params influențați direct
+- `categorie` — grupare tematică (poate fi inferată)
+
+**Strategie ACCURACY-FIRST** (Ion explicit: "cat mai accurate, nu conteaza costul"):
+
+1. **Model**: Sonnet 4.7 (sau echivalent best). NU Haiku.
+2. **Prompt caching**: 1 system prompt cached per (producator, familie) cu:
+   - rol "ești inginer commissioning convertizoare"
+   - extracte din manual ca context (doar secțiunile relevante familiei)
+   - 3-5 few-shot exemple de explicații bune
+3. **Sequential**, nu Batch API — accuracy iterativă peste cost-saving.
+4. **Multi-pass**:
+   - Pass 1: scrie `explicatie` + `interconexiuni` + `influenteaza` + `categorie`
+   - Pass 2 (sample 5-10%): self-review per param să verifici că nu sunt halucinații
+5. **Stil**: română fără diacritice (convenția Ion), max 2-3 propoziții, commissioner-friendly.
+   Exemplu bun: `"Defineste viteza minima a motorului. Setare critica daca aplicatia cere reverse — pune negativ. Vezi 30.12 pentru limita superioara."`
+6. **Skip rule**: dacă `explicatie` deja există și e > 50 chars text natural (nu placeholder), skip cu review minim.
+7. **Sources**: folosește `descriere` (deja PDF-extracted) + manualul complet `manuals/<familie>.pdf` ca context. NU genera info care nu-i derivable din descriere + manual.
+
+**NU atinge**: `parametru`, `descriere_scurta`, `descriere`, `acces`, `tip_date`, `valoare_default_str`, `min`, `max`, `unitate`, `pagina` — TOATE sunt PDF-derived și validate.
+
+**Cost estimat**: ~$50-100 cu cache agresiv pentru toate ~14k params, fără cache ~$200+. Folosește cache.
+
+**Pas concret**:
+1. `git pull` — ai cod-ul nou + audit_reports JSON ca referință
+2. Verifică DB live (`/api/admin/db-dump`) are 14743 params
+3. Implementează `scripts/llm_enrich.py` cu argparse `--familie X` + `--field explicatie|...` + resume
+4. Test pe 20 params din ACS580 cu sample review manual înainte de scale
+5. Update memory `MEMORY.md` la final cu count populat per câmp.
 
 ---
 
