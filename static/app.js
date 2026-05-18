@@ -929,21 +929,6 @@ async function deleteCurrentProject() {
     });
 }
 
-async function duplicateCurrentProject() {
-    if (!currentProjectId) return;
-
-    const newName = prompt('Introduceți numele pentru proiectul duplicat:', '');
-    if (newName === null) return;  // User cancelled
-
-    try {
-        const result = await apiPost(`/proiecte/${currentProjectId}/duplicate`, { nume: newName });
-        showToast('Proiect duplicat!');
-        showProjectDetail(result.id);
-    } catch (e) {
-        console.error('Failed to duplicate project:', e);
-        showToast('Eroare la duplicarea proiectului', true);
-    }
-}
 
 async function saveServiceField(field, value) {
     if (!currentProjectId) return;
@@ -963,12 +948,6 @@ async function saveServiceField(field, value) {
 // modal element so multiple openings are stateless from the caller's perspective.
 
 let _longTextActiveField = null;  // current hidden textarea id being edited
-
-function _ltmFieldByPreview(previewEl) {
-    // Walk back to the surrounding form-group / body to find the matching hidden textarea
-    let scope = previewEl.closest('.detail-section-body, .form-group') || previewEl.parentElement;
-    return scope ? scope.querySelector('textarea[hidden]') : null;
-}
 
 function renderLongTextPreview(textareaId) {
     const ta = document.getElementById(textareaId);
@@ -1353,20 +1332,6 @@ function selectTaskPriority(val) {
     document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.val === val));
 }
 
-async function saveTaskEdit() {
-    const id = document.getElementById('task-edit-id').value;
-    const titlu = document.getElementById('task-edit-titlu').value.trim();
-    const prioritate = document.getElementById('task-edit-prioritate').value;
-    const status = document.getElementById('task-edit-status').value;
-    const data_scadenta = document.getElementById('task-modal-scadenta').value || '';
-    if (!titlu) { showToast('Titlul nu poate fi gol', true); return; }
-    try {
-        await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta, data_finalizare: status === 'done' ? new Date().toISOString() : '' });
-        closeTaskEditModal();
-        loadTodos(currentProjectId);
-        showToast('Task actualizat!');
-    } catch (e) { showToast('Eroare la salvare', true); }
-}
 
 var tEditModal = document.getElementById('task-edit-modal');
 if (tEditModal) tEditModal.addEventListener('click', function(e) { if (e.target === this) closeTaskEditModal(); });
@@ -1848,33 +1813,6 @@ function exportClientPDF() {
 
 // ============ PHASE 2c: TELEGRAM NOTIFICATIONS ============
 
-async function testTelegramNotification() {
-    if (!currentProjectId) {
-        showToast('Niciun proiect selectat', true);
-        return;
-    }
-
-    try {
-        const project = await apiGet(`/proiecte/${currentProjectId}`);
-        const response = await fetch(`${API_BASE}/notify/telegram`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: `🔔 Test din PIF Dashboard\n📁 Proiect: ${project.nume}\n🆔 ${project.id}\n🕐 ${new Date().toLocaleString('ro-RO')}`
-            })
-        });
-
-        if (response.ok) {
-            showToast('Notificare trimisă!');
-        } else {
-            const data = await response.json();
-            showToast(data.error || 'Eroare la trimiterea notificării', true);
-        }
-    } catch (e) {
-        console.error('Telegram notification failed:', e);
-        showToast('Eroare la trimiterea notificării', true);
-    }
-}
 
 // ============ GLOBAL TASKS ============
 
@@ -2627,67 +2565,6 @@ async function updateHomeStats() {
     }
 }
 
-async function loadRecentActivity() {
-    try {
-        const container = document.getElementById('recent-activity-list');
-        
-        // Get recent projects
-        const projects = await apiGet('/proiecte');
-        const recentProjects = projects.slice(0, 5);
-        
-        // Get recent tasks completed today
-        const today = new Date().toISOString().split('T')[0];
-        const tasks = await apiGet('/global-tasks?arhiva=true');
-        const recentTasks = tasks.filter(t => t.data_finalizare && t.data_finalizare.startsWith(today)).slice(0, 5);
-        
-        // Build activity list
-        const activities = [];
-        
-        recentProjects.forEach(p => {
-            activities.push({
-                type: 'project',
-                icon: p.tip === 'PIF' ? '🔧' : '🔧',
-                title: `Proiect nou: ${p.nume}`,
-                meta: `${p.client || ''} • ${p.status === 'finalizat' ? 'Finalizat' : 'În lucru'}`,
-                time: p.created_at
-            });
-        });
-        
-        recentTasks.forEach(t => {
-            activities.push({
-                type: 'task',
-                icon: '✅',
-                title: `Task finalizat: ${t.titlu}`,
-                meta: t.categorie || 'General',
-                time: t.data_finalizare
-            });
-        });
-        
-        // Sort by time (newest first)
-        activities.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
-        
-        if (activities.length === 0) {
-            container.innerHTML = '<p style="color: var(--text2);">Nicio activitate recentă.</p>';
-            return;
-        }
-        
-        container.innerHTML = activities.slice(0, 5).map(a => `
-            <div class="gt-task-card" style="border-left-color: var(--accent);">
-                <span style="font-size: 1.2rem;">${a.icon}</span>
-                <div class="todo-content">
-                    <div class="gt-task-title">${escapeHtml(a.title)}</div>
-                    <div class="todo-meta">${a.meta}</div>
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (e) {
-        console.error('Failed to load recent activity:', e);
-        document.getElementById('recent-activity-list').innerHTML = 
-            '<p style="color: var(--text2);">Eroare la încărcarea activității.</p>';
-    }
-}
-
 function quickAddTaskFromHome() {
     switchTab('taskuri');
     setTimeout(() => {
@@ -3092,30 +2969,6 @@ function initCharts(data) {
     renderHBarChart('chart-hours', (data.hours_per_project || []).map(h => h.nume), (data.hours_per_project || []).map(h => h.hours));
 }
 
-async function loadExtendedStats() {
-    try {
-        const [stats, extStats, projects] = await Promise.all([
-            apiGet('/stats'),
-            apiGet('/stats/extended'),
-            apiGet('/proiecte?limit=100')
-        ]);
-
-        // Update stat cards
-        document.getElementById('stats-total').textContent = stats.total || 0;
-        document.getElementById('stats-active').textContent = stats.active || 0;
-        document.getElementById('stats-finished').textContent = stats.finished || 0;
-        document.getElementById('stats-hours').textContent = (extStats.total_billable_hours || 0) + 'h';
-
-        // Initialize or update charts
-        initCharts(extStats);
-
-        // Load timeline
-        renderTimeline(projects);
-
-    } catch (e) {
-        console.error('Failed to load extended stats:', e);
-    }
-}
 
 // ============ TIMELINE ============
 
@@ -3417,12 +3270,6 @@ async function addNewClientFromAutocomplete(name) {
     } catch (e) {
         console.error('Failed to add client:', e);
     }
-}
-
-function hideClientDropdown() {
-    setTimeout(() => {
-        document.getElementById('client-dropdown').classList.remove('active');
-    }, 200);
 }
 
 // Close dropdown when clicking outside
@@ -3776,11 +3623,6 @@ function renderCurrentParams() {
 function editParamValue(code) { const param = availableParams.find(p => p.parametru === code); openParamValueInput(code, param?.descriere || '', currentParams[code] || ''); }
 function deleteParam(code) { delete currentParams[code]; renderCurrentParams(); }
 
-async function openEditEchipament(echipamentId) {
-    currentEchipamentId = echipamentId;
-    try { const eq = await apiGet(`/echipamente/${echipamentId}`); currentParams = eq.params || {}; await loadParamsForProducator(eq.producator); renderCurrentParams(); } catch (e) { console.error('Load echipament error:', e); }
-}
-
 function showAddEquipmentForm() {
     if (!currentProjectId) return;
     
@@ -4045,98 +3887,6 @@ async function loadParamTemplate() {
         console.error('Failed to load param template:', e);
         showToast('Eroare la încărcarea template-ului', true);
     }
-}
-
-// ============ PIF-MANUALS SEARCH ============
-
-function togglePifSearch() {
-    const input = document.getElementById('pif-manual-search');
-    if (input.style.display === 'none') {
-        input.style.display = 'inline-block';
-        input.focus();
-    } else {
-        input.style.display = 'none';
-        input.value = '';
-    }
-}
-
-async function searchPifManual() {
-    const query = document.getElementById('pif-manual-search')?.value?.trim();
-    if (!query) {
-        showToast('Introdu un termen de căutare', true);
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/pif-manuals/search?q=${encodeURIComponent(query)}`);
-        if (!response.ok) {
-            if (response.status === 404) {
-                showToast('Index pif-manuals nu este disponibil', true);
-            } else {
-                throw new Error('Search failed');
-            }
-            return;
-        }
-        
-        const data = await response.json();
-        
-        if (data.count === 0) {
-            showToast(`Nu s-au găsit rezultate pentru "${query}"`, true);
-            return;
-        }
-        
-        // Show results in a modal
-        showPifManualResults(data);
-    } catch (e) {
-        console.error('Pif-manuals search error:', e);
-        showToast('Eroare la căutarea în pif-manuals', true);
-    }
-}
-
-function showPifManualResults(data) {
-    // Remove existing modal if any
-    const existingModal = document.getElementById('pif-manual-modal');
-    if (existingModal) existingModal.remove();
-    
-    const resultsHtml = data.results.map(r => `
-        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg2); border-radius: 8px;">
-            <div style="font-weight: 600; color: var(--text); margin-bottom: 8px;">
-                <i data-lucide="${r.fault_code ? 'wrench' : r.parameter ? 'sliders-horizontal' : 'book-open'}" style="display:inline-block;vertical-align:-2px;"></i>
-                ${escapeHtml(r.title)}
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text2); margin-bottom: 8px;">
-                ${r.fault_code ? `Cod fault: <b>${r.fault_code}</b>` : ''}
-                ${r.parameter ? `Parametru: <b>${r.parameter}</b>` : ''}
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text2); background: var(--bg3); padding: 8px; border-radius: 4px;">
-                ...${escapeHtml(r.snippet)}...
-            </div>
-        </div>
-    `).join('');
-    
-    const modalHtml = `
-        <div class="modal-overlay" id="pif-manual-modal" onclick="if(event.target === this) closePifManualModal()">
-            <div class="modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                <div class="modal-header">
-                    <h2><i data-lucide="book-open"></i> Rezultate Căutare: "${escapeHtml(data.query)}"</h2>
-                    <button class="modal-close" onclick="closePifManualModal()">✕</button>
-                </div>
-                <div style="padding: 16px;">
-                    <div style="margin-bottom: 12px; color: var(--text2);">
-                        S-au găsit <b>${data.count}</b> rezultate
-                    </div>
-                    ${resultsHtml}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-function closePifManualModal() {
-    const modal = document.getElementById('pif-manual-modal');
-    if (modal) modal.remove();
 }
 
 let editingEchipamentId = null;

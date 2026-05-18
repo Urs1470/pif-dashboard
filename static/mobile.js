@@ -93,15 +93,6 @@ function idbGetAll(database, storeName) {
   });
 }
 
-function idbPut(database, storeName, obj) {
-  return new Promise((resolve, reject) => {
-    const tx = database.transaction(storeName, 'readwrite');
-    const request = tx.objectStore(storeName).put(obj);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
 function idbClear(database, storeName) {
   return new Promise((resolve, reject) => {
     if (!database.objectStoreNames.contains(storeName)) return resolve();
@@ -138,16 +129,6 @@ async function dbPut(storeName, data) {
     const store = tx.objectStore(storeName);
     const request = store.put(data);
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function dbDelete(storeName, key) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, 'readwrite');
-    const store = tx.objectStore(storeName);
-    const request = store.delete(key);
-    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
 }
