@@ -1533,7 +1533,7 @@ async function loadJurnal(projectId) {
                     ? `<span class="jurnal-duration"><i data-lucide="timer"></i> ${formatTimerDuration(entry._duration_secunde)}</span>`
                     : '';
                 return `
-                <div class="jurnal-item">
+                <div class="jurnal-item jurnal-enter">
                     <i data-lucide="notebook-pen" class="jurnal-icon"></i>
                     <span class="jurnal-date">${entry.data || ''}</span>
                     ${durBadge}
@@ -3276,25 +3276,19 @@ async function loadTimerSessions(projectId) {
 }
 
 function renderTimerSessions(sessions, totalSeconds) {
-    const container = document.getElementById('timer-sessions-list');
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-    let html = '';
-    if (!sessions || sessions.length === 0) {
-        html = '<p style="color: var(--text2); font-size: 0.85rem;">Nu există sesiuni timer.</p>';
-    } else {
-        html = sessions.map(s => `
-            <div class="timer-session">
-                <i data-lucide="timer" class="jurnal-icon"></i>
-                <span class="jurnal-duration-plain">${formatTimerDuration(s.durata_secunde)}</span>
-                <span class="jurnal-date">${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}</span>
-                <span class="jurnal-text" style="color:var(--text-dim); font-style:italic;">Timer fără notă</span>
-                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteTimerSession('${s.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
-            </div>
-        `).join('');
-    }
-    return html;
+    // Return '' when there are no bare timer sessions — the caller (loadJurnal)
+    // already shows a unified fallback if both this AND the journal are empty.
+    // Don't claim "Nu există sesiuni timer" when journal entries cover them.
+    if (!sessions || sessions.length === 0) return '';
+    return sessions.map(s => `
+        <div class="timer-session jurnal-enter">
+            <i data-lucide="timer" class="jurnal-icon"></i>
+            <span class="jurnal-duration-plain">${formatTimerDuration(s.durata_secunde)}</span>
+            <span class="jurnal-date">${s.start_time ? new Date(s.start_time).toLocaleDateString('ro-RO') : ''}</span>
+            <span class="jurnal-text" style="color:var(--text-dim); font-style:italic;">Timer fără notă</span>
+            <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteTimerSession('${s.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+        </div>
+    `).join('');
 }
 
 function formatTimerDuration(seconds) {

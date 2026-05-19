@@ -2151,9 +2151,16 @@
             padding: 8px 12px;
             border-bottom: 1px solid var(--line-soft);
             min-height: 34px;
+            transition: background 0.15s;
         }
         .jurnal-item:last-child, .timer-session:last-child { border-bottom: none; }
         .jurnal-item:hover, .timer-session:hover { background: var(--bg-elev2); }
+        /* Smooth fade + slide-in for newly inserted timer/jurnal rows. */
+        @keyframes jurnal-enter-anim {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .jurnal-enter { animation: jurnal-enter-anim 0.22s ease-out both; }
         .jurnal-icon { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; }
         .jurnal-date {
             font-family: var(--font-mono);
