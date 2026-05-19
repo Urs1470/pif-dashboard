@@ -24,7 +24,7 @@ def close_db(exc=None):
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -230,6 +230,23 @@ def migrate_v5_to_v6():
     conn.close()
 
 
+def migrate_v6_to_v7():
+    """Add `pdf_extra` JSON column to parametri_master for value enums,
+    notes, dependencies, examples, formulae extracted from PDF manuals.
+    Format: see HERMES.md / audit_pdf.py for schema."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(parametri_master)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'pdf_extra' not in cols:
+        cursor.execute('ALTER TABLE parametri_master ADD COLUMN pdf_extra TEXT')
+        conn.commit()
+        print("Migration v6->v7: added parametri_master.pdf_extra")
+    else:
+        print("Migration v6->v7: pdf_extra already present")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -258,6 +275,11 @@ def run_migrations():
         migrate_v5_to_v6()
         set_schema_version(6)
         current_version = 6
+
+    if current_version < 7:
+        migrate_v6_to_v7()
+        set_schema_version(7)
+        current_version = 7
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")

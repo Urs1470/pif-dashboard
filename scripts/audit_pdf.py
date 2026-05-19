@@ -72,15 +72,17 @@ def parse_abb(pdf_path):
     code_re = re.compile(r'^\d{1,3}\.\d{1,3}(?:\.\d{1,3})?$')
     type_token_re = re.compile(r'^(?:u?int\d+|real\d+|bool|enum|hex|string)$', re.IGNORECASE)
     range_re = re.compile(r'^([+-]?[\d.,]+)\s*\.{2,3}\s*([+-]?[\d.,]+)\s*([A-Za-z°%/]+)?', re.IGNORECASE)
+    enum_re = re.compile(r'^(\d+)\s*=\s*(.+?)\s*$')
+    warning_re = re.compile(r'^WARNING!?\s*$', re.IGNORECASE)
+    note_label_re = re.compile(r'^(Note|Notice|Example|Caution|Recommendation)\s*:\s*(.*)$', re.IGNORECASE)
 
     doc = fitz.open(pdf_path)
     try:
         for pno in range(doc.page_count):
             page = doc.load_page(pno)
-            words = page.get_text("words")  # (x0,y0,x1,y1,word,block,line,word_no)
+            words = page.get_text("words")
             if not words:
                 continue
-            # Group by y-row (tolerance 3 px)
             rows = {}
             for w in words:
                 x0, y0, _, _, txt, *_ = w
@@ -88,7 +90,7 @@ def parse_abb(pdf_path):
                 rows.setdefault(key, []).append((x0, txt))
             sorted_keys = sorted(rows.keys())
 
-            # Auto-detect column boundaries from the page header "No. | Name | Description | Def/Type"
+            # Auto-detect column boundaries from the page header
             x_name = 60
             x_desc = 128
             x_deftype = 300
@@ -106,6 +108,8 @@ def parse_abb(pdf_path):
                             x_deftype = int(x) - 3
                     break
 
+            # Identify all param header rows
+            param_starts = []  # list of (row_idx, code)
             for ri, ykey in enumerate(sorted_keys):
                 row = sorted(rows[ykey], key=lambda t: t[0])
                 if not row:
@@ -113,59 +117,168 @@ def parse_abb(pdf_path):
                 first_x, first_tok = row[0]
                 if first_x >= x_name or not code_re.match(first_tok):
                     continue
-                code = first_tok
-                if code in out:
-                    continue
+                param_starts.append((ri, first_tok))
 
-                # Slice tokens by x column using detected boundaries
-                name_toks = [t for x, t in row if x_name <= x < x_desc]
-                desc_toks = [t for x, t in row if x_desc <= x < x_deftype]
-                deftype_toks = [t for x, t in row if x >= x_deftype]
+            # For each param, walk its rows up to the next param header
+            for idx, (ri, code) in enumerate(param_starts):
+                end_ri = param_starts[idx + 1][0] if idx + 1 < len(param_starts) else len(sorted_keys)
+
+                header_row = sorted(rows[sorted_keys[ri]], key=lambda t: t[0])
+                name_toks = [t for x, t in header_row if x_name <= x < x_desc]
+                deftype_first = [t for x, t in header_row if x >= x_deftype]
 
                 name = ' '.join(name_toks).strip()
-                description = ' '.join(desc_toks).strip()
-                deftype = ' '.join(deftype_toks).strip()
+                if len(name) < 3:
+                    continue
 
-                # default + type extraction from right col: usually "VAL [;VAL] unit / type"
+                # Collect description lines + side-sections by walking inner rows.
+                # Default/Type comes ONLY from the header row's right column — later
+                # rows' right column tokens are typically value keys or FbEq scales.
+                desc_parts = []
+                deftype_parts = list(deftype_first)
+                min_val = max_val = ''
+                unit = ''
+                warnings = []
+                notes = []
+                examples = []
+                cautions = []
+                recommendations = []
+                values = []
+                current_section = 'desc'  # what we're currently appending to
+
+                # Header row's own description tokens
+                head_desc = ' '.join(t for x, t in header_row if x_desc <= x < x_deftype).strip()
+                if head_desc:
+                    desc_parts.append(head_desc)
+
+                range_found = False
+                for rj in range(ri + 1, end_ri):
+                    sub = sorted(rows[sorted_keys[rj]], key=lambda t: t[0])
+                    if not sub:
+                        continue
+                    # Tokens grouped by x-column
+                    left_toks = [t for x, t in sub if x < x_name]      # range row min/max
+                    name_continuation = [t for x, t in sub if x_name <= x < x_desc]
+                    body_toks = [t for x, t in sub if x_desc <= x < x_deftype]
+                    right_toks = [t for x, t in sub if x >= x_deftype]
+                    body_str = ' '.join(body_toks).strip()
+                    full_left = ' '.join((t for x, t in sub if x < x_desc)).strip()
+
+                    # Range row detection: tokens in name column form "min ... max unit"
+                    # Check if the leftmost text matches range pattern
+                    if not range_found and (name_continuation or left_toks):
+                        candidate = ' '.join((name_continuation or left_toks)).strip()
+                        rm = range_re.match(candidate)
+                        if rm:
+                            min_val = rm.group(1)
+                            max_val = rm.group(2)
+                            unit = unit or (rm.group(3) or '')
+                            range_found = True
+                            continue
+                        # Range token might be split across two y-rows: "0.00..." line and "rpm" line
+                        # Skip detection here; pattern below handles "0.00 ...10000.00 rpm" inline.
+
+                    # Detect enum line: "1 = Scalar" form
+                    if name_continuation and not body_toks:
+                        em = enum_re.match(' '.join(name_continuation))
+                        if em:
+                            values.append({'key': em.group(1), 'label': em.group(2)})
+                            current_section = 'values'
+                            continue
+
+                    # Detect section labels within description body
+                    if body_str:
+                        if warning_re.match(body_str):
+                            current_section = 'warning'
+                            warnings.append('')
+                            continue
+                        nm = note_label_re.match(body_str)
+                        if nm:
+                            label = nm.group(1).lower()
+                            content = nm.group(2).strip()
+                            if label == 'note':
+                                notes.append(content)
+                                current_section = 'note'
+                            elif label == 'notice':
+                                notes.append(content)
+                                current_section = 'notice'
+                            elif label == 'example':
+                                examples.append(content)
+                                current_section = 'example'
+                            elif label == 'caution':
+                                cautions.append(content)
+                                current_section = 'caution'
+                            elif label == 'recommendation':
+                                recommendations.append(content)
+                                current_section = 'recommendation'
+                            continue
+                        # Append to whatever section we're in
+                        if current_section == 'desc':
+                            desc_parts.append(body_str)
+                        elif current_section == 'warning' and warnings:
+                            warnings[-1] = (warnings[-1] + ' ' + body_str).strip()
+                        elif current_section in ('note', 'notice') and notes:
+                            notes[-1] = (notes[-1] + ' ' + body_str).strip()
+                        elif current_section == 'example' and examples:
+                            examples[-1] = (examples[-1] + ' ' + body_str).strip()
+                        elif current_section == 'caution' and cautions:
+                            cautions[-1] = (cautions[-1] + ' ' + body_str).strip()
+                        elif current_section == 'recommendation' and recommendations:
+                            recommendations[-1] = (recommendations[-1] + ' ' + body_str).strip()
+                        elif current_section == 'values' and values:
+                            # Values can wrap onto next line
+                            values[-1]['label'] = (values[-1]['label'] + ' ' + body_str).strip()
+
+                    # NOTE: do NOT accumulate right_toks from inner rows — those are
+                    # value-key + FbEq scale columns, not the parameter's own default.
+
+                description = ' '.join(desc_parts).strip()
+                deftype = ' '.join(deftype_parts).strip()
+
                 default_val = ''
                 data_type = ''
-                unit = ''
                 if deftype:
-                    # type token is typically the last alphabetic word matching enum/uint16/etc.
                     parts = deftype.replace('/', ' ').split()
                     for tok in reversed(parts):
                         if type_token_re.match(tok):
                             data_type = tok
                             break
-                    # Reconstruct without type token for default/unit
                     rest = ' '.join(p for p in parts if not type_token_re.match(p)).strip()
-                    # Unit is usually last alphabetic token after the numeric value
                     rm = re.match(r'^(.+?)\s+([A-Za-z°%/]+)$', rest)
                     if rm:
                         default_val = rm.group(1).strip()
-                        unit = rm.group(2)
+                        if not unit:
+                            unit = rm.group(2)
                     else:
                         default_val = rest
 
-                # Range row: look at next row groups for "MIN ... MAX UNIT" at x ~ Name col
-                min_val = max_val = ''
-                for rj in range(ri + 1, min(ri + 8, len(sorted_keys))):
-                    sub = sorted(rows[sorted_keys[rj]], key=lambda t: t[0])
-                    if sub and code_re.match(sub[0][1]) and sub[0][0] < x_name:
-                        break
-                    range_toks = [t for x, t in sub if x_name - 10 <= x < x_deftype]
-                    if not range_toks:
-                        continue
-                    rstr = ' '.join(range_toks)
-                    rm = range_re.search(rstr)
-                    if rm:
-                        min_val = rm.group(1)
-                        max_val = rm.group(2)
-                        if not unit and rm.group(3):
-                            unit = rm.group(3)
-                        break
+                pdf_extra = {}
+                if values:
+                    pdf_extra['values'] = values
+                if warnings:
+                    pdf_extra['warnings'] = [w for w in warnings if w]
+                if notes:
+                    pdf_extra['notes'] = notes
+                if examples:
+                    pdf_extra['examples'] = examples
+                if cautions:
+                    pdf_extra['cautions'] = cautions
+                if recommendations:
+                    pdf_extra['recommendations'] = recommendations
 
-                if len(name) < 3:
+                # Score: prefer entries with real range row + longer description.
+                # When the same code appears in multiple places (TOC, cross-ref,
+                # primary definition), the primary one wins.
+                score = len(description)
+                if min_val or max_val:
+                    score += 500
+                if pdf_extra:
+                    score += 200
+                if data_type:
+                    score += 100
+
+                existing = out.get(code)
+                if existing and existing.get('_score', 0) >= score:
                     continue
 
                 out[code] = {
@@ -178,9 +291,14 @@ def parse_abb(pdf_path):
                     'min': min_val,
                     'max': max_val,
                     'unit': unit,
+                    'pdf_extra': pdf_extra if pdf_extra else None,
+                    '_score': score,
                 }
     finally:
         doc.close()
+    # Strip the internal scoring key before returning
+    for v in out.values():
+        v.pop('_score', None)
     return out
 
 
@@ -243,7 +361,7 @@ def parse_danfoss(pdf_path):
                         out[code] = {
                             'name': name, 'page': pno, 'description': '',
                             'access': '', 'data_type': ptype, 'default': '',
-                            'min': '', 'max': '', 'unit': '',
+                            'min': '', 'max': '', 'unit': '', 'pdf_extra': None,
                         }
                     continue
 
@@ -274,17 +392,49 @@ def parse_danfoss(pdf_path):
 
                 description = desc_cell.replace('\n', ' ').strip()
 
+                # For Option type, harvest ALL data rows of this table as values
+                pdf_extra = {}
+                if ptype == 'Option':
+                    values = []
+                    for ri in range(2, len(t)):
+                        row = t[ri]
+                        if not row:
+                            continue
+                        cells = [clean(c) for c in row]
+                        # Typical Option row: ['[0]', 'Label', 'Description']
+                        # Sometimes ['', 'Label', 'Description'] if key empty
+                        key = cells[0].strip('[]') if cells and cells[0] else ''
+                        label_parts = []
+                        if len(cells) > 1 and cells[1]:
+                            label_parts.append(cells[1])
+                        if len(cells) > 2 and cells[2]:
+                            label_parts.append(cells[2])
+                        label = ' '.join(label_parts).strip()
+                        if key and label:
+                            values.append({'key': key, 'label': label})
+                    if values:
+                        pdf_extra['values'] = values
+
+                # Detect NOTICE boxes in description text
+                if 'NOTICE' in description:
+                    notice_parts = re.findall(r'NOTICE\s+(.+?)(?:\s+NOTICE|\s*$)', description)
+                    if notice_parts:
+                        pdf_extra['notices'] = [p.strip() for p in notice_parts]
+                        # Remove NOTICE blocks from main description
+                        description = re.sub(r'\s*NOTICE\s+.+?(?=\s+NOTICE|\s*$)', '', description).strip()
+
                 if code not in out:
                     out[code] = {
                         'name': name,
                         'page': pno,
                         'description': description,
                         'access': '',
-                        'data_type': ptype,  # Range or Option
+                        'data_type': ptype,
                         'default': default_val,
                         'min': min_val,
                         'max': max_val,
                         'unit': unit,
+                        'pdf_extra': pdf_extra if pdf_extra else None,
                     }
 
         # Fallback: text-linear pass for any param not caught by the table extractor
@@ -304,7 +454,7 @@ def parse_danfoss(pdf_path):
                 out[code] = {
                     'name': name, 'page': pno, 'description': '',
                     'access': '', 'data_type': '', 'default': '',
-                    'min': '', 'max': '', 'unit': '',
+                    'min': '', 'max': '', 'unit': '', 'pdf_extra': None,
                 }
     return out
 
@@ -395,6 +545,30 @@ def parse_lenze(pdf_path):
                     description = info_cell.replace('\n', ' ').strip()
                     if len(name) < 2:
                         continue
+
+                    # Build pdf_extra from Lenze conventions:
+                    #   - Bullet-list values inside `info_cell`: lines starting with "•"
+                    #   - "Note!" / "Notes:" inline blocks
+                    #   - "Associated event ID:" entries
+                    pdf_extra = {}
+                    info_lines = [ln.strip() for ln in info_cell.split('\n') if ln.strip()]
+                    bullets = [ln.lstrip('•').strip() for ln in info_lines if ln.startswith('•')]
+                    if bullets:
+                        # Values typically formatted "key: label" or just plain entries
+                        values = []
+                        for b in bullets:
+                            vm = re.match(r'^(\d+|0x[0-9A-Fa-f]+)\s*[:=]?\s*(.+)$', b)
+                            if vm:
+                                values.append({'key': vm.group(1), 'label': vm.group(2).strip()})
+                        if values:
+                            pdf_extra['values'] = values
+                        else:
+                            pdf_extra['bullets'] = bullets
+
+                    notes_match = re.search(r'Notes?!?\s*[:.]?\s*(.+?)$', info_cell, re.IGNORECASE)
+                    if notes_match:
+                        pdf_extra.setdefault('notes', []).append(notes_match.group(1).strip())
+
                     if code not in out:
                         out[code] = {
                             'name': name,
@@ -406,6 +580,7 @@ def parse_lenze(pdf_path):
                             'min': min_val,
                             'max': max_val,
                             'unit': unit,
+                            'pdf_extra': pdf_extra if pdf_extra else None,
                         }
 
         # Fallback: catch params that pdfplumber didn't recognise as tables
@@ -444,6 +619,7 @@ def parse_lenze(pdf_path):
                     'min': '',
                     'max': '',
                     'unit': '',
+                    'pdf_extra': None,
                 }
     return out
 
@@ -482,10 +658,22 @@ def parse_siemens(pdf_path):
     # Value-row tokens: number-or-dash optionally followed by [unit]
     val_token_re = re.compile(r'^(?:-|[+-]?\d[\d.,eE+\-]*(?:%|°[CF])?|0+[xb]?[0-9A-Fa-f]+[bh]?|FFFFh|[0-9A-Fa-f]+h)$')
     desc_re = re.compile(r'^Description\s*:\s*(.*)$', re.IGNORECASE)
-    field_break_re = re.compile(
-        r'^\s*(?:Dependency|Notice|Note|Recommend\.|Recommendation|Caution|WARNING|Refer to|Bit field|Value|P-Group|Calculated|Can be changed|Scaling|Dyn\. index|Units group|Unit selection|Func\. diagram|Expert list|Not for motor)\s*:',
+    field_section_re = re.compile(
+        r'^\s*(Description|Value|Dependency|Notice|Note|Recommend(?:ation|\.)?|Caution|WARNING|Refer to|Bit field|Example|Examples|Formula)\s*:\s*(.*)$',
         re.IGNORECASE
     )
+    # Field sections that mark a structural break (used when extracting description, etc.)
+    field_break_re = re.compile(
+        r'^\s*(?:Dependency|Notice|Note|Recommend\.|Recommendation|Caution|WARNING|Refer to|Bit field|Value|Example|Examples|Formula|P-Group|Calculated|Can be changed|Scaling|Dyn\. index|Units group|Unit selection|Func\. diagram|Expert list|Not for motor)\s*:',
+        re.IGNORECASE
+    )
+    # Footer line bleeding into descriptions on Siemens manuals
+    footer_re = re.compile(
+        r'(?:Siemens\s*AG|All\s*Rights\s*Reserved|SINAMICS\s*[A-Z\d/]+|List\s*Manual|©|6SL\d+-)',
+        re.IGNORECASE
+    )
+    value_row_re = re.compile(r'^\s*([\-+]?\d+(?:\.\d+)?|0x[0-9A-Fa-f]+|[A-Z]+)\s*:\s*(.+?)\s*$')
+    refer_codes_re = re.compile(r'[pr]\d{3,5}(?:\[\d+\])?|[A-Z]\d{3,5}')
     prefix_re = re.compile(r'^(?:[CB][IO](?:/[CB][IO])?\s*:\s*)+')
     abbrev_re = re.compile(r'\s*/\s*\S+\s*$')
 
@@ -584,24 +772,76 @@ def parse_siemens(pdf_path):
                         break
                 break
 
-        # Description: capture from "Description:" until next field-break or next param header
-        description = ''
-        for j in range(access_idx, min(access_idx + 30, n)):
-            dm = desc_re.match(all_pages[j][1])
-            if dm:
-                parts = [dm.group(1).strip()]
-                for k in range(j + 1, min(j + 20, n)):
-                    nxt = all_pages[k][1]
-                    if code_re.match(nxt):  # next param header
-                        break
-                    if field_break_re.match(nxt):  # next field section
-                        break
-                    if min_max_header_re.match(nxt):
-                        break
-                    if nxt.strip():
-                        parts.append(nxt.strip())
-                description = ' '.join(parts).strip()
+        # Walk forward from access_idx, segmenting into sections.
+        # End-of-block markers: next param header, or having seen all expected sections
+        # and hit a hardware re-declaration. We cap at 80 lines as safety.
+        sections = {}  # name -> list of text lines
+        current_section = None
+        block_end = min(access_idx + 80, n)
+        for j in range(access_idx, block_end):
+            ln = all_pages[j][1]
+            if code_re.match(ln) and j > access_idx + 2:
+                # Next parameter starts here
+                block_end = j
                 break
+            # Skip footer bleed lines (Siemens "© Siemens AG..." etc.)
+            if footer_re.search(ln):
+                current_section = None  # stop appending until next labeled section
+                continue
+            # Hardware re-tag rows like "PM230" / "CU240E-2" with no colon: ignore
+            if min_max_header_re.match(ln):
+                current_section = None
+                continue
+            fm = field_section_re.match(ln)
+            if fm:
+                current_section = fm.group(1).lower().rstrip('.')
+                # Normalise variants
+                if current_section in ('recommend', 'recommendation'):
+                    current_section = 'recommendation'
+                elif current_section in ('examples',):
+                    current_section = 'example'
+                sections.setdefault(current_section, []).append(fm.group(2).strip())
+                continue
+            if current_section is None:
+                continue
+            stripped = ln.strip()
+            if not stripped:
+                continue
+            sections[current_section].append(stripped)
+
+        # Build pdf_extra structure
+        description = ' '.join(sections.get('description', [])).strip()
+        pdf_extra = {}
+
+        # values: parse "key: label" rows from Value section
+        if 'value' in sections:
+            values = []
+            current_label = None
+            for raw in sections['value']:
+                vm = value_row_re.match(raw)
+                if vm:
+                    if current_label and values:
+                        # finalise previous accumulated label
+                        pass
+                    values.append({'key': vm.group(1), 'label': vm.group(2)})
+                else:
+                    if values:
+                        values[-1]['label'] = (values[-1]['label'] + ' ' + raw).strip()
+            if values:
+                pdf_extra['values'] = values
+
+        for key in ('dependency', 'notice', 'note', 'recommendation', 'caution', 'warning', 'bit field', 'example', 'formula'):
+            if key in sections:
+                txt = ' '.join(sections[key]).strip()
+                if txt:
+                    pdf_extra[key.replace(' ', '_')] = txt
+
+        # Refer to: extract comma-separated codes
+        if 'refer to' in sections:
+            refs_text = ' '.join(sections['refer to'])
+            codes = list(dict.fromkeys(refer_codes_re.findall(refs_text)))
+            if codes:
+                pdf_extra['refer_to'] = codes
 
         if code not in out:
             out[code] = {
@@ -614,6 +854,7 @@ def parse_siemens(pdf_path):
                 'min': min_val,
                 'max': max_val,
                 'unit': unit,
+                'pdf_extra': pdf_extra if pdf_extra else None,
             }
         i = access_idx + 1
     return out
@@ -625,7 +866,7 @@ PARSERS = {'abb': parse_abb, 'danfoss': parse_danfoss, 'lenze': parse_lenze, 'si
 # ---------- DB ----------
 
 DB_FIELDS = ['descriere_scurta', 'descriere', 'acces', 'tip_date',
-             'valoare_default_str', 'min', 'max', 'unitate', 'pagina']
+             'valoare_default_str', 'min', 'max', 'unitate', 'pagina', 'pdf_extra']
 
 PDF_TO_DB = {
     'name': 'descriere_scurta',
@@ -637,6 +878,7 @@ PDF_TO_DB = {
     'max': 'max',
     'unit': 'unitate',
     'page': 'pagina',
+    'pdf_extra': 'pdf_extra',  # JSON serialized
 }
 
 
@@ -707,6 +949,8 @@ def apply_insert_new(db_path, familie, new_params):
     cur = conn.cursor()
     rows = []
     for code, p in new_params:
+        extra = p.get('pdf_extra')
+        extra_json = json.dumps(extra, ensure_ascii=False) if extra else None
         rows.append((
             familie,
             code,
@@ -719,15 +963,16 @@ def apply_insert_new(db_path, familie, new_params):
             _to_float(p.get('max')),
             p.get('unit') or '',
             p.get('page'),
-            code if code.startswith('0x') else '',  # cod_hex (Lenze only)
+            code if code.startswith('0x') else '',
             p.get('name') or '',
+            extra_json,
         ))
     cur.executemany('''
         INSERT OR IGNORE INTO parametri_master
             (familie, parametru, descriere, acces, tip_date,
              valoare_default, valoare_default_str, min, max, unitate,
-             pagina, cod_hex, descriere_scurta)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             pagina, cod_hex, descriere_scurta, pdf_extra)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', rows)
     conn.commit()
     affected = cur.rowcount
@@ -738,6 +983,7 @@ def apply_insert_new(db_path, familie, new_params):
 def apply_all_fields(db_path, updates):
     """updates: list of (id, dict_of_pdf_fields) — overwrite all non-empty PDF-derived fields.
     Only updates DB columns where the PDF value is non-empty (avoid clobbering with blanks).
+    `pdf_extra` is serialized to JSON before writing.
     """
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -747,8 +993,10 @@ def apply_all_fields(db_path, updates):
         params = []
         for pdf_key, db_col in PDF_TO_DB.items():
             v = fields.get(pdf_key)
-            if v in (None, ''):
+            if v in (None, '') or v == {}:
                 continue
+            if pdf_key == 'pdf_extra':
+                v = json.dumps(v, ensure_ascii=False)
             set_parts.append(f'{db_col} = ?')
             params.append(v)
         if not set_parts:
@@ -788,7 +1036,8 @@ def audit_familie(producator, familie, db_path,
     in_db_not_pdf = []
     name_mismatch = []
     page_fix = []
-    diff_field_names = ['descriere', 'acces', 'tip_date', 'valoare_default_str', 'min', 'max', 'unitate']
+    diff_field_names = ['descriere', 'acces', 'tip_date', 'valoare_default_str',
+                        'min', 'max', 'unitate', 'pdf_extra']
     field_diff_samples = {f: [] for f in diff_field_names}
     field_diff_count = {f: 0 for f in diff_field_names}
     field_missing = {f: 0 for f in diff_field_names}  # DB lipsește dar PDF are
@@ -818,7 +1067,13 @@ def audit_familie(producator, familie, db_path,
         for pdf_key, db_col in PDF_TO_DB.items():
             if db_col in ('descriere_scurta', 'pagina'):
                 continue
-            pdf_val = (pdfp.get(pdf_key) or '').strip() if isinstance(pdfp.get(pdf_key), str) else pdfp.get(pdf_key)
+            raw = pdfp.get(pdf_key)
+            if isinstance(raw, dict):
+                pdf_val = json.dumps(raw, ensure_ascii=False) if raw else ''
+            elif isinstance(raw, str):
+                pdf_val = raw.strip()
+            else:
+                pdf_val = raw
             if not pdf_val:
                 continue
             db_val = dbp.get(db_col)
@@ -905,6 +1160,9 @@ def main():
                     help='Delete rows in DB that are not in PDF (in_db_not_pdf). USE WITH CAUTION.')
     ap.add_argument('--insert-new', action='store_true',
                     help='Bulk INSERT params present in PDF but missing from DB.')
+    ap.add_argument('--reextract', action='store_true',
+                    help='Wipe descriere + pdf_extra columns then repopulate from PDF '
+                         '(equivalent to UPDATE SET descriere=NULL, pdf_extra=NULL before --apply-all).')
     ap.add_argument('--db', default=str(DB_PATH), help='Path to SQLite DB')
     args = ap.parse_args()
 
@@ -929,6 +1187,24 @@ def main():
     else:
         ap.print_help()
         sys.exit(0)
+
+    # --reextract: wipe descriere + pdf_extra columns first (for the families in scope)
+    if args.reextract:
+        conn = sqlite3.connect(args.db)
+        cur = conn.cursor()
+        placeholders = ','.join('?' * len(families_to_run))
+        cur.execute(
+            f"UPDATE parametri_master SET descriere = NULL, pdf_extra = NULL "
+            f"WHERE familie IN ({placeholders})",
+            families_to_run
+        )
+        wiped = cur.rowcount
+        conn.commit()
+        conn.close()
+        print(f'[reextract] Wiped descriere+pdf_extra on {wiped} rows '
+              f'across {len(families_to_run)} families', file=sys.stderr)
+        # Force --apply-all so the audit re-populates them
+        args.apply_all = True
 
     summary = []
     for fam in families_to_run:

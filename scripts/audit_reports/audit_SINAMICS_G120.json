@@ -14,18 +14,20 @@
       "acces": 0,
       "tip_date": 0,
       "valoare_default_str": 0,
-      "min": 674,
-      "max": 674,
-      "unitate": 0
+      "min": 669,
+      "max": 672,
+      "unitate": 0,
+      "pdf_extra": 0
     },
     "field_missing_db": {
-      "descriere": 0,
+      "descriere": 1461,
       "acces": 0,
       "tip_date": 0,
       "valoare_default_str": 0,
       "min": 0,
-      "max": 3,
-      "unitate": 0
+      "max": 0,
+      "unitate": 0,
+      "pdf_extra": 1063
     }
   },
   "samples": {
@@ -641,7 +643,9 @@
           "pdf": "13"
         }
       ],
-      "unitate": []
+      "unitate": [],
+      "pdf_extra": []
     }
-  }
+  },
+  "all_fields_applied": 1461
 }

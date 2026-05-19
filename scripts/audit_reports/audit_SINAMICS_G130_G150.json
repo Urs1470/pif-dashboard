@@ -16,16 +16,18 @@
       "valoare_default_str": 0,
       "min": 879,
       "max": 898,
-      "unitate": 0
+      "unitate": 0,
+      "pdf_extra": 0
     },
     "field_missing_db": {
-      "descriere": 0,
+      "descriere": 2065,
       "acces": 0,
       "tip_date": 0,
       "valoare_default_str": 0,
       "min": 15,
       "max": 23,
-      "unitate": 0
+      "unitate": 0,
+      "pdf_extra": 1660
     }
   },
   "samples": {
@@ -641,7 +643,9 @@
           "pdf": "62"
         }
       ],
-      "unitate": []
+      "unitate": [],
+      "pdf_extra": []
     }
-  }
+  },
+  "all_fields_applied": 2096
 }

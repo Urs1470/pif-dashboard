@@ -7,39 +7,580 @@
     "pdf_count": 1273,
     "in_db_not_pdf": 0,
     "in_pdf_not_db": 0,
-    "name_mismatch": 0,
-    "page_fix_needed": 0,
+    "name_mismatch": 34,
+    "page_fix_needed": 78,
     "field_diff_count": {
       "descriere": 0,
       "acces": 0,
       "tip_date": 0,
-      "valoare_default_str": 0,
+      "valoare_default_str": 55,
       "min": 0,
       "max": 0,
-      "unitate": 0
+      "unitate": 5,
+      "pdf_extra": 0
     },
     "field_missing_db": {
-      "descriere": 0,
+      "descriere": 1273,
       "acces": 0,
       "tip_date": 0,
-      "valoare_default_str": 0,
-      "min": 0,
-      "max": 0,
-      "unitate": 0
+      "valoare_default_str": 11,
+      "min": 1,
+      "max": 1,
+      "unitate": 15,
+      "pdf_extra": 192
     }
   },
   "samples": {
     "in_db_not_pdf": [],
     "in_pdf_not_db": [],
-    "name_mismatch": [],
+    "name_mismatch": [
+      {
+        "id": 14832,
+        "code": "99.04",
+        "db_name": "control 1 = Scalar",
+        "pdf_name": "Motor control mode"
+      },
+      {
+        "id": 14859,
+        "code": "22.11",
+        "db_name": "speed ref1 1 = AI1",
+        "pdf_name": "Ext1 speed ref1"
+      },
+      {
+        "id": 14860,
+        "code": "20.01",
+        "db_name": "commands 2 = In1",
+        "pdf_name": "Ext1 commands"
+      },
+      {
+        "id": 14861,
+        "code": "19.11",
+        "db_name": "0 = EXT1",
+        "pdf_name": "Ext1/Ext2 selection"
+      },
+      {
+        "id": 14862,
+        "code": "28.15",
+        "db_name": "Ext1 frequency",
+        "pdf_name": "Ext2 frequency ref1"
+      },
+      {
+        "id": 14863,
+        "code": "22.18",
+        "db_name": "speed ref1 0 = Zero",
+        "pdf_name": "Ext2 speed ref1"
+      },
+      {
+        "id": 14864,
+        "code": "20.06",
+        "db_name": "commands 0 = Not",
+        "pdf_name": "Ext2 commands"
+      },
+      {
+        "id": 14865,
+        "code": "20.08",
+        "db_name": "in1 source 0 = Always",
+        "pdf_name": "Ext2 in1 source"
+      },
+      {
+        "id": 14866,
+        "code": "20.09",
+        "db_name": "in2 source 0 = Always",
+        "pdf_name": "Ext2 in2 source"
+      },
+      {
+        "id": 14869,
+        "code": "22.21",
+        "db_name": "speed 1",
+        "pdf_name": "Constant speed"
+      },
+      {
+        "id": 14881,
+        "code": "20.12",
+        "db_name": "enable 1 1 = Selected",
+        "pdf_name": "Run enable 1"
+      },
+      {
+        "id": 14928,
+        "code": "76.21",
+        "db_name": "0 = Off",
+        "pdf_name": "Multipump"
+      },
+      {
+        "id": 14929,
+        "code": "76.25",
+        "db_name": "of motors 1",
+        "pdf_name": "Number of motors"
+      },
+      {
+        "id": 14930,
+        "code": "76.27",
+        "db_name": "number of 1",
+        "pdf_name": "Max number of"
+      },
+      {
+        "id": 15040,
+        "code": "19.14",
+        "db_name": "control mode 1 = Speed",
+        "pdf_name": "Ext2 control mode"
+      },
+      {
+        "id": 15041,
+        "code": "20.03",
+        "db_name": "in1 source 2 = DI1",
+        "pdf_name": "Ext1 in1 source"
+      },
+      {
+        "id": 15042,
+        "code": "20.04",
+        "db_name": "in2 source 3 = DI2",
+        "pdf_name": "Ext1 in2 source"
+      },
+      {
+        "id": 15043,
+        "code": "20.05",
+        "db_name": "in3 source 0 = Always",
+        "pdf_name": "Ext1 in3 source"
+      },
+      {
+        "id": 15044,
+        "code": "22.22",
+        "db_name": "speed 4 = DI3",
+        "pdf_name": "Constant speed"
+      },
+      {
+        "id": 15045,
+        "code": "22.23",
+        "db_name": "speed 5 = DI4",
+        "pdf_name": "Constant speed"
+      },
+      {
+        "id": 15056,
+        "code": "20.28",
+        "db_name": "to local action",
+        "pdf_name": "Remote to local"
+      },
+      {
+        "id": 15063,
+        "code": "28.13",
+        "db_name": "Ext1 frequency",
+        "pdf_name": "act"
+      },
+      {
+        "id": 15097,
+        "code": "25.33",
+        "db_name": "(or the signal",
+        "pdf_name": "Speed controller"
+      },
+      {
+        "id": 15135,
+        "code": "21.18",
+        "db_name": "restart time and",
+        "pdf_name": "Auto restart time"
+      },
+      {
+        "id": 15227,
+        "code": "23.01",
+        "db_name": "Speed ref ramp",
+        "pdf_name": "> > >"
+      },
+      {
+        "id": 15263,
+        "code": "13.12",
+        "db_name": "source 3 = Output",
+        "pdf_name": "AO1 source"
+      },
+      {
+        "id": 15673,
+        "code": "58.29",
+        "db_name": "EFB act2 type",
+        "pdf_name": "act2 type. See"
+      },
+      {
+        "id": 15735,
+        "code": "81.35",
+        "db_name": "### 81.41 and",
+        "pdf_name": "Refrigerant gas"
+      },
+      {
+        "id": 15742,
+        "code": "81.42",
+        "db_name": "are write-protected",
+        "pdf_name": "Gas pressure"
+      },
+      {
+        "id": 16719,
+        "code": "12.20",
+        "db_name": "scaled at AI1 50.000",
+        "pdf_name": "AI1 scaled at AI1"
+      },
+      {
+        "id": 16731,
+        "code": "13.18",
+        "db_name": "source max 50.0",
+        "pdf_name": "AO1 source max"
+      },
+      {
+        "id": 22443,
+        "code": "10.24",
+        "db_name": "source 2 = Ready",
+        "pdf_name": "RO1 source"
+      },
+      {
+        "id": 22444,
+        "code": "10.27",
+        "db_name": "source 7 = Running",
+        "pdf_name": "RO2 source"
+      },
+      {
+        "id": 22445,
+        "code": "10.30",
+        "db_name": "source 15 =",
+        "pdf_name": "RO3 source"
+      }
+    ],
     "field_diff": {
       "descriere": [],
       "acces": [],
       "tip_date": [],
-      "valoare_default_str": [],
+      "valoare_default_str": [
+        {
+          "id": 14832,
+          "code": "99.04",
+          "db": "1 =",
+          "pdf": "Scalar"
+        },
+        {
+          "id": 14834,
+          "code": "30.12",
+          "db": "the motor",
+          "pdf": "1500.00 rpm;"
+        },
+        {
+          "id": 14858,
+          "code": "28.11",
+          "db": "PID 1 = AI1",
+          "pdf": "AI1"
+        },
+        {
+          "id": 14859,
+          "code": "22.11",
+          "db": "1 = AI1",
+          "pdf": "Control"
+        },
+        {
+          "id": 14860,
+          "code": "20.01",
+          "db": "5 = In1P Start;",
+          "pdf": "In1 Start; In2"
+        },
+        {
+          "id": 14861,
+          "code": "19.11",
+          "db": "0 = EXT1",
+          "pdf": "EXT1"
+        },
+        {
+          "id": 14862,
+          "code": "28.15",
+          "db": "Zero 0 =",
+          "pdf": "Zero"
+        },
+        {
+          "id": 14863,
+          "code": "22.18",
+          "db": "0 =",
+          "pdf": "Zero"
+        },
+        {
+          "id": 14864,
+          "code": "20.06",
+          "db": "0 =",
+          "pdf": "Not"
+        },
+        {
+          "id": 14865,
+          "code": "20.08",
+          "db": "off 0 = Always",
+          "pdf": "Always"
+        },
+        {
+          "id": 14866,
+          "code": "20.09",
+          "db": "off 0 = Always",
+          "pdf": "Always"
+        },
+        {
+          "id": 14868,
+          "code": "28.21",
+          "db": "1",
+          "pdf": "0001b"
+        },
+        {
+          "id": 14869,
+          "code": "22.21",
+          "db": "1",
+          "pdf": "0001b"
+        },
+        {
+          "id": 14881,
+          "code": "20.12",
+          "db": "1 =",
+          "pdf": "Selected"
+        },
+        {
+          "id": 14896,
+          "code": "23.11",
+          "db": "0 = Acc",
+          "pdf": "DI5"
+        },
+        {
+          "id": 14897,
+          "code": "28.71",
+          "db": "0 = Acc",
+          "pdf": "DI5"
+        },
+        {
+          "id": 14907,
+          "code": "40.07",
+          "db": "when 0 =",
+          "pdf": "Off"
+        },
+        {
+          "id": 14913,
+          "code": "40.03",
+          "db": "in parameter 40.56",
+          "pdf": "-"
+        },
+        {
+          "id": 14914,
+          "code": "40.16",
+          "db": "AI1 11 = AI1",
+          "pdf": "AI1"
+        },
+        {
+          "id": 14916,
+          "code": "40.08",
+          "db": "percent 9 = AI2",
+          "pdf": "AI2"
+        },
+        {
+          "id": 14928,
+          "code": "76.21",
+          "db": "0 =",
+          "pdf": "Off"
+        },
+        {
+          "id": 14974,
+          "code": "58.06",
+          "db": "Enabled",
+          "pdf": "of the"
+        },
+        {
+          "id": 15037,
+          "code": "40.20",
+          "db": "0 =",
+          "pdf": "Not"
+        },
+        {
+          "id": 15038,
+          "code": "40.19",
+          "db": "0 =",
+          "pdf": "Not"
+        },
+        {
+          "id": 15040,
+          "code": "19.14",
+          "db": "1 =",
+          "pdf": "Speed"
+        },
+        {
+          "id": 15041,
+          "code": "20.03",
+          "db": "2 = DI1",
+          "pdf": "DI1"
+        },
+        {
+          "id": 15042,
+          "code": "20.04",
+          "db": "off 3 = DI2",
+          "pdf": "DI2"
+        },
+        {
+          "id": 15043,
+          "code": "20.05",
+          "db": "off 4 = DI3",
+          "pdf": "Always"
+        },
+        {
+          "id": 15044,
+          "code": "22.22",
+          "db": "5 = DI4",
+          "pdf": "DI3"
+        },
+        {
+          "id": 15045,
+          "code": "22.23",
+          "db": "off 6 = DI5",
+          "pdf": "DI4"
+        },
+        {
+          "id": 15046,
+          "code": "22.71",
+          "db": "Disabled 0 =",
+          "pdf": "Disabled"
+        },
+        {
+          "id": 15047,
+          "code": "22.73",
+          "db": "Not used 0 = Not",
+          "pdf": "Not"
+        },
+        {
+          "id": 15048,
+          "code": "22.74",
+          "db": "Not used 0 = Not",
+          "pdf": "Not"
+        },
+        {
+          "id": 15049,
+          "code": "26.11",
+          "db": "Zero 0 =",
+          "pdf": "Zero"
+        },
+        {
+          "id": 15050,
+          "code": "28.22",
+          "db": "5 = DI4",
+          "pdf": "DI3"
+        },
+        {
+          "id": 15051,
+          "code": "28.23",
+          "db": "off 6 = DI5",
+          "pdf": "DI4"
+        },
+        {
+          "id": 15052,
+          "code": "40.17",
+          "db": "0 =",
+          "pdf": "Not"
+        },
+        {
+          "id": 15056,
+          "code": "20.28",
+          "db": "action (page",
+          "pdf": "Keep"
+        },
+        {
+          "id": 15058,
+          "code": "22.12",
+          "db": "act",
+          "pdf": "Zero"
+        },
+        {
+          "id": 15135,
+          "code": "21.18",
+          "db": "will continue.",
+          "pdf": "10.0"
+        },
+        {
+          "id": 15154,
+          "code": "96.71",
+          "db": "475).",
+          "pdf": "0h"
+        },
+        {
+          "id": 15263,
+          "code": "13.12",
+          "db": "3 =",
+          "pdf": "Output"
+        },
+        {
+          "id": 15418,
+          "code": "34.16",
+          "db": "00 00:00",
+          "pdf": "1 = 1"
+        },
+        {
+          "id": 15421,
+          "code": "34.19",
+          "db": "00 00:00",
+          "pdf": "1 = 1"
+        },
+        {
+          "id": 15424,
+          "code": "34.22",
+          "db": "00 00:00",
+          "pdf": "1 = 1"
+        },
+        {
+          "id": 15558,
+          "code": "41.27",
+          "db": "200000.00",
+          "pdf": "100 = 1"
+        },
+        {
+          "id": 15671,
+          "code": "58.27",
+          "db": "Torque",
+          "pdf": "type"
+        },
+        {
+          "id": 15699,
+          "code": "71.26",
+          "db": "0.00",
+          "pdf": "100 = 1"
+        },
+        {
+          "id": 15700,
+          "code": "71.27",
+          "db": "200000.00",
+          "pdf": "100 = 1"
+        },
+        {
+          "id": 15735,
+          "code": "81.35",
+          "db": "a pressure-",
+          "pdf": "Not"
+        }
+      ],
       "min": [],
       "max": [],
-      "unitate": []
+      "unitate": [
+        {
+          "id": 14859,
+          "code": "22.11",
+          "db": "scaled",
+          "pdf": "panel"
+        },
+        {
+          "id": 14864,
+          "code": "20.06",
+          "db": "Not",
+          "pdf": "selected"
+        },
+        {
+          "id": 15037,
+          "code": "40.20",
+          "db": "Not",
+          "pdf": "selected"
+        },
+        {
+          "id": 15038,
+          "code": "40.19",
+          "db": "Not",
+          "pdf": "selected"
+        },
+        {
+          "id": 15052,
+          "code": "40.17",
+          "db": "Not",
+          "pdf": "selected"
+        }
+      ],
+      "pdf_extra": []
     }
-  }
+  },
+  "all_fields_applied": 1273
 }
