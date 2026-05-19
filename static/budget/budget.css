@@ -533,6 +533,30 @@ label.field-label {
 .text-mid { color: var(--text-mid); }
 .text-dim { color: var(--text-dim); }
 
+/* ============ FIXED-EXPENSE PAID MARKER ============ */
+td.paid {
+  background: var(--success-soft) !important;
+  position: relative;
+  color: var(--success) !important;
+}
+td.paid::after {
+  content: '✓';
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  color: var(--success);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+td.fix-cell { cursor: pointer; transition: background 0.12s; }
+td.fix-cell:hover { background: var(--bg-elev2) !important; }
+td.fix-cell.paid:hover { background: var(--success-soft) !important; filter: brightness(1.1); }
+
+/* Delta-vs-mean cells: bottom edge bar for outliers */
+td.over-mean { box-shadow: inset 0 -2px 0 var(--danger); }
+td.under-mean { box-shadow: inset 0 -2px 0 var(--success); }
+
 /* ============ CHARTS ============ */
 .chart-card {
   background: var(--bg-elev1);

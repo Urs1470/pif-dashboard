@@ -676,7 +676,20 @@ function updateCheltuialaFixa(id, field, value) {
 }
 function addCheltuialaFixa() {
   if (!Array.isArray(state.data.cheltuieliFixe)) state.data.cheltuieliFixe = [];
-  state.data.cheltuieliFixe.push({ id: getNextId(state.data.cheltuieliFixe), label: '', suma: 0 });
+  state.data.cheltuieliFixe.push({ id: getNextId(state.data.cheltuieliFixe), label: '', suma: 0, platit: {} });
+  saveData();
+  render();
+}
+function toggleCheltuialaFixaPaid(id, lunaKey) {
+  if (!Array.isArray(state.data.cheltuieliFixe)) return;
+  state.data.cheltuieliFixe = state.data.cheltuieliFixe.map(function(f) {
+    if (f.id !== id) return f;
+    var u = cloneObj(f);
+    if (!u.platit) u.platit = {};
+    u.platit[lunaKey] = !u.platit[lunaKey];
+    if (!u.platit[lunaKey]) delete u.platit[lunaKey];
+    return u;
+  });
   saveData();
   render();
 }
@@ -1824,7 +1837,14 @@ function renderVenituri() {
 
   // Cheltuieli
   html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="receipt"></i> Cheltuieli lunare</div></div>';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="receipt"></i> Cheltuieli lunare</div>';
+  html += '  <div style="display:flex;gap:0.6rem;font-size:0.7rem;color:var(--text-dim);align-items:center;">';
+  html += '    <span><i data-lucide="mouse-pointer-click" style="width:11px;height:11px;vertical-align:-1px;"></i> click pe o sumă fixă = marchează plătit</span>';
+  html += '    <span style="display:inline-flex;align-items:center;gap:0.2rem;"><span style="width:14px;height:6px;border-radius:1px;background:var(--danger);"></span>+20% peste medie</span>';
+  html += '    <span style="display:inline-flex;align-items:center;gap:0.2rem;"><span style="width:14px;height:6px;border-radius:1px;background:var(--success);"></span>-20% sub medie</span>';
+  html += '  </div>';
+  html += '</div>';
   html += '<div class="panel">';
   html += '<div class="table-wrap"><table>';
   html += '<thead><tr><th>Categorie</th>';
@@ -1835,7 +1855,8 @@ function renderVenituri() {
     html += '<tr class="fixed"><td>' + esc(f.label || '—') + '</td>';
     LUNI_KEYS.forEach(function(lk) {
       if (cheltuialaFixaActiva(f, lk)) {
-        html += '<td class="num neg">' + formatRON(f.suma) + '</td>';
+        var paid = !!(f.platit && f.platit[lk]);
+        html += '<td class="num neg fix-cell' + (paid ? ' paid' : '') + '" onclick="toggleCheltuialaFixaPaid(' + f.id + ', \'' + lk + '\')" title="' + (paid ? 'Plătit — click ca să anulezi' : 'Click pentru a marca plătit') + '">' + formatRON(f.suma) + '</td>';
       } else {
         html += '<td class="num text-dim">—</td>';
       }
@@ -1846,10 +1867,19 @@ function renderVenituri() {
   (d.categoriiVar || []).forEach(function(c) {
     var label = c.label || '';
     var labelAttr = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    // Precompute mean over months that have a positive value, for outlier marking
+    var vals = LUNI_KEYS.map(function(x) { return (d.cheltuieli[x] || {})[label] || 0; });
+    var posVals = vals.filter(function(v) { return v > 0; });
+    var meanAll = posVals.length ? posVals.reduce(function(s, v) { return s + v; }, 0) / posVals.length : 0;
     html += '<tr><td class="muted">' + esc(label) + '</td>';
-    LUNI_KEYS.forEach(function(l) {
-      var val = (d.cheltuieli[l] || {})[label] || '';
-      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateCheltuiala(\'' + l + '\', \'' + labelAttr + '\', this.value)"></td>';
+    LUNI_KEYS.forEach(function(l, idx) {
+      var val = vals[idx];
+      var deltaClass = '';
+      if (val > 0 && meanAll > 0) {
+        if (val > meanAll * 1.2) deltaClass = ' over-mean';
+        else if (val < meanAll * 0.8) deltaClass = ' under-mean';
+      }
+      html += '<td class="num' + deltaClass + '"><input type="number" class="input num w-20" value="' + (val || '') + '" onchange="updateCheltuiala(\'' + l + '\', \'' + labelAttr + '\', this.value)"></td>';
     });
     html += '</tr>';
   });
