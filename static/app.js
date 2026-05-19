@@ -1538,7 +1538,7 @@ async function loadJurnal(projectId) {
                     <span class="jurnal-date">${entry.data || ''}</span>
                     ${durBadge}
                     <span class="jurnal-text">${escapeHtml(entry.continut || '')}</span>
-                    <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteJurnalEntry('${entry.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+                    <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteJurnalEntry('${entry.id}', ${entry._session_id ? `'${entry._session_id}'` : 'null'})" title="Șterge"><i data-lucide="trash-2"></i></button>
                 </div>`;
             }).join('');
         }
@@ -1567,9 +1567,14 @@ async function addJurnalEntry() {
     }
 }
 
-async function deleteJurnalEntry(entryId) {
+async function deleteJurnalEntry(entryId, pairedSessionId) {
     try {
-        await apiDelete(`/jurnal/${entryId}`);
+        // Delete the paired timer_session too (stop-with-note creates both).
+        // Frontend belt-and-suspenders even though the backend now cascades —
+        // covers servers running the old code and pre-fix orphan rows.
+        const calls = [apiDelete(`/jurnal/${entryId}`)];
+        if (pairedSessionId) calls.push(apiDelete(`/timer/${pairedSessionId}`).catch(() => {}));
+        await Promise.all(calls);
         loadJurnal(currentProjectId);
     } catch (e) {
         console.error('Failed to delete jurnal entry:', e);
