@@ -1994,6 +1994,11 @@
             justify-content: center;
         }
         .todo-add-form .btn-icon-sm [data-lucide] { width: 16px; height: 16px; }
+        /* Custom selects inside the add-task form must obey their grid column
+           (default .cs has min-width: 140px, overflowing the 105px slot and
+           pushing the + button into the date input). */
+        .todo-add-form .cs { min-width: 0; width: 100%; display: block; }
+        .todo-add-form .cs-trigger { height: 32px; min-height: 32px; font-size: 0.82rem; padding: 0 10px; border-radius: 6px; }
 
         .todo-list { max-height: 300px; overflow-y: auto; }
 
