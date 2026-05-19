@@ -61,6 +61,17 @@ function totalFixeLuna(d, lunaKey) {
   }, 0);
 }
 
+// Ensure d.emisiuniTezaur exists as [{id,label}]
+function migrateEmisiuniTezaur(data) {
+  if (!data) return;
+  if (Array.isArray(data.emisiuniTezaur) && data.emisiuniTezaur.length > 0 && typeof data.emisiuniTezaur[0] === 'object') return;
+  if (Array.isArray(data.emisiuniTezaur) && data.emisiuniTezaur.length > 0 && typeof data.emisiuniTezaur[0] === 'string') {
+    data.emisiuniTezaur = data.emisiuniTezaur.map(function(s, i) { return { id: i + 1, label: s }; });
+    return;
+  }
+  data.emisiuniTezaur = cloneObj(DATI_INITIALE.emisiuniTezaur);
+}
+
 // Ensure d.categoriiVenit exists; migrate legacy bonuri/bonus/diurna keys to labels
 function migrateCategoriiVenit(data) {
   if (!data) return;
@@ -165,6 +176,13 @@ var DATI_INITIALE = {
     { id: 3, label: 'Diurnă' },
     { id: 4, label: 'Alte venituri' },
   ],
+  emisiuniTezaur: [
+    { id: 1, label: 'Tezaur 1 an' },
+    { id: 2, label: 'Tezaur 3 ani' },
+    { id: 3, label: 'Tezaur 5 ani' },
+    { id: 4, label: 'Fidelis RON' },
+    { id: 5, label: 'Fidelis EUR' },
+  ],
   credit: {
     suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1787, asigurare: 147,
     durata: 60, comisionRambursare: 1, dataStart: '2026-05', soldActual: 84450
@@ -230,6 +248,7 @@ async function loadData() {
       migrateCheltuieliFixe(state.data);
       migrateCategoriiVar(state.data);
       migrateCategoriiVenit(state.data);
+      migrateEmisiuniTezaur(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -588,6 +607,27 @@ function updateCategorie(id, newLabel) {
   saveData();
   render();
 }
+function addEmisiune() {
+  if (!Array.isArray(state.data.emisiuniTezaur)) state.data.emisiuniTezaur = [];
+  state.data.emisiuniTezaur.push({ id: getNextId(state.data.emisiuniTezaur), label: '' });
+  saveData();
+  render();
+}
+function updateEmisiune(id, newLabel) {
+  if (!Array.isArray(state.data.emisiuniTezaur)) return;
+  state.data.emisiuniTezaur = state.data.emisiuniTezaur.map(function(e) {
+    if (e.id !== id) return e;
+    return { id: e.id, label: newLabel };
+  });
+  saveData();
+  render();
+}
+function removeEmisiune(id) {
+  state.data.emisiuniTezaur = (state.data.emisiuniTezaur || []).filter(function(e) { return e.id !== id; });
+  saveData();
+  render();
+}
+
 function addCategorieVenit() {
   if (!Array.isArray(state.data.categoriiVenit)) state.data.categoriiVenit = [];
   state.data.categoriiVenit.push({ id: getNextId(state.data.categoriiVenit), label: '' });
@@ -914,6 +954,32 @@ function renderBugetLunar() {
   }
   html += '</div></div>';
 
+  // EMISIUNI TEZAUR PANEL
+  html += '<div class="section">';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="coins"></i> Emisiuni Tezaur disponibile</div>';
+  html += '  <button class="btn-add" onclick="addEmisiune()"><i data-lucide="plus"></i> Adaugă emisiune</button>';
+  html += '</div>';
+  html += '<div class="panel">';
+  if (!d.emisiuniTezaur || d.emisiuniTezaur.length === 0) {
+    html += '<div class="audit-empty">Nicio emisiune. Apasă "Adaugă" pentru a defini emisiuni vizibile în dropdown-ul Tezaur.</div>';
+  } else {
+    html += '<div class="table-wrap"><table>';
+    html += '<thead><tr><th>Denumire emisiune</th><th></th></tr></thead><tbody>';
+    d.emisiuniTezaur.forEach(function(e) {
+      html += '<tr>';
+      html += '<td><input type="text" class="input w-full" value="' + esc(e.label || '') + '" placeholder="Ex: Tezaur 1 an, Fidelis EUR..." onchange="updateEmisiune(' + e.id + ', this.value)"></td>';
+      html += '<td><button class="btn-del" onclick="removeEmisiune(' + e.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div class="info-box" style="margin-top:0.85rem;">';
+    html += '<i data-lucide="info"></i>';
+    html += '<div>Lista apare în dropdown-ul "Emisiune" din tabul Fond urgență → Titluri Tezaur. Subscrierile existente păstrează emisiunea inițială chiar dacă o ștergi din listă.</div>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+
   return html;
 }
 
@@ -1139,9 +1205,11 @@ function renderFondUrgenta() {
     var dobCistigata = suma * dobPct / 100;
     var total = suma + dobCistigata;
     html += '<tr>';
+    var emisiuniList = (d.emisiuniTezaur || []).map(function(e) { return e.label; });
+    if (t.emisiune && emisiuniList.indexOf(t.emisiune) < 0) emisiuniList.unshift(t.emisiune);
     html += '<td><select class="select cs-enhance" onchange="updateTezaur(' + t.id + ', \'emisiune\', this.value)">';
-    ['Tezaur 1 an','Tezaur 3 ani','Tezaur 5 ani','Fidelis RON','Fidelis EUR'].forEach(function(opt) {
-      html += '<option value="' + opt + '"' + (t.emisiune === opt ? ' selected' : '') + '>' + opt + '</option>';
+    emisiuniList.forEach(function(opt) {
+      html += '<option value="' + esc(opt) + '"' + (t.emisiune === opt ? ' selected' : '') + '>' + esc(opt) + '</option>';
     });
     html += '</select></td>';
     html += '<td><input type="text" class="input fp-date w-32" value="' + esc(t.dataSubscriere || '') + '" placeholder="YYYY-MM-DD" onchange="updateTezaur(' + t.id + ', \'dataSubscriere\', this.value)"></td>';
@@ -1437,30 +1505,107 @@ function switchTab(tabId) {
 // ====================================================================
 // EXPORT CSV
 // ====================================================================
-function exportCSV() {
+async function exportCSV() {
+  await showExportModal();
+}
+
+function showExportModal() {
+  return new Promise(function(resolve) {
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    var optsHTML = '';
+    LUNI_KEYS.forEach(function(k, i) {
+      optsHTML += '<option value="' + k + '">' + esc(LUNI[i]) + ' (' + k + ')</option>';
+    });
+    overlay.innerHTML =
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:480px;">' +
+      '  <div class="modal-title"><i data-lucide="download"></i> Export CSV</div>' +
+      '  <div class="modal-body">' +
+      '    <div class="field"><label class="field-label"><input type="radio" name="exp-mode" value="total" checked> Export complet (toate ' + LUNI_KEYS.length + ' luni vizibile)</label></div>' +
+      '    <div class="field"><label class="field-label"><input type="radio" name="exp-mode" value="range"> Export pe perioadă</label></div>' +
+      '    <div id="range-fields" style="display:flex;gap:0.5rem;opacity:0.4;pointer-events:none;">' +
+      '      <div class="field" style="flex:1;"><label class="field-label">De la</label><select id="exp-from" class="select w-full">' + optsHTML + '</select></div>' +
+      '      <div class="field" style="flex:1;"><label class="field-label">Până la</label><select id="exp-to" class="select w-full">' + optsHTML + '</select></div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="modal-actions">' +
+      '    <button class="modal-btn" data-act="cancel">Anulează</button>' +
+      '    <button class="modal-btn primary" data-act="ok">Descarcă</button>' +
+      '  </div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    refreshIcons();
+    var toSel = overlay.querySelector('#exp-to');
+    if (toSel) toSel.value = LUNI_KEYS[LUNI_KEYS.length - 1];
+    var radios = overlay.querySelectorAll('input[name="exp-mode"]');
+    var rangeFields = overlay.querySelector('#range-fields');
+    radios.forEach(function(r) {
+      r.addEventListener('change', function() {
+        if (overlay.querySelector('input[name="exp-mode"]:checked').value === 'range') {
+          rangeFields.style.opacity = 1;
+          rangeFields.style.pointerEvents = 'auto';
+        } else {
+          rangeFields.style.opacity = 0.4;
+          rangeFields.style.pointerEvents = 'none';
+        }
+      });
+    });
+
+    function close(val) {
+      document.body.removeChild(overlay);
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(false); }
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) return close(false);
+      var act = e.target.closest('[data-act]');
+      if (!act) return;
+      if (act.dataset.act === 'cancel') return close(false);
+      var mode = overlay.querySelector('input[name="exp-mode"]:checked').value;
+      var keys = LUNI_KEYS.slice();
+      var labels = LUNI.slice();
+      if (mode === 'range') {
+        var from = overlay.querySelector('#exp-from').value;
+        var to = overlay.querySelector('#exp-to').value;
+        if (from > to) { var tmp = from; from = to; to = tmp; }
+        var newKeys = [], newLabels = [];
+        LUNI_KEYS.forEach(function(k, i) { if (k >= from && k <= to) { newKeys.push(k); newLabels.push(LUNI[i]); } });
+        keys = newKeys; labels = newLabels;
+      }
+      if (keys.length === 0) { alert('Interval gol — alege alte luni.'); return; }
+      generateAndDownloadCSV(keys, labels);
+      close(true);
+    });
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+function generateAndDownloadCSV(keys, labels) {
   var d = state.data;
   var lines = [];
-  lines.push('Budget Tracker - Ion - Export CSV');
+  var range = labels.length === LUNI.length ? 'total' : (keys[0] + ' → ' + keys[keys.length - 1]);
+  lines.push('Budget Tracker - ' + (d.profil.nume || 'Ion') + ' - Export ' + range);
 
   lines.push('');
   lines.push('VENITURI');
-  lines.push('Categorie,' + LUNI.join(','));
-  lines.push('Salariu net,' + LUNI.map(function() { return d.profil.salariuNet || 0; }).join(','));
+  lines.push('Categorie,' + labels.join(','));
+  lines.push('Salariu net,' + labels.map(function() { return d.profil.salariuNet || 0; }).join(','));
   (d.categoriiVenit || []).forEach(function(c) {
     var label = c.label || '';
-    lines.push(label.replace(/,/g, ' ') + ',' + LUNI_KEYS.map(function(l) { return (d.venituri[l] || {})[label] || 0; }).join(','));
+    lines.push(label.replace(/,/g, ' ') + ',' + keys.map(function(l) { return (d.venituri[l] || {})[label] || 0; }).join(','));
   });
 
   lines.push('');
   lines.push('CHELTUIELI');
-  lines.push('Categorie,' + LUNI.join(','));
+  lines.push('Categorie,' + labels.join(','));
   (d.cheltuieliFixe || []).forEach(function(f) {
-    var row = LUNI_KEYS.map(function(lk) { return cheltuialaFixaActiva(f, lk) ? (f.suma || 0) : 0; }).join(',');
+    var row = keys.map(function(lk) { return cheltuialaFixaActiva(f, lk) ? (f.suma || 0) : 0; }).join(',');
     lines.push((f.label || '').replace(/,/g, ' ') + ',' + row);
   });
   (d.categoriiVar || []).forEach(function(c) {
     var label = c.label || '';
-    lines.push(label.replace(/,/g, ' ') + ',' + LUNI_KEYS.map(function(l) { return (d.cheltuieli[l] || {})[label] || 0; }).join(','));
+    lines.push(label.replace(/,/g, ' ') + ',' + keys.map(function(l) { return (d.cheltuieli[l] || {})[label] || 0; }).join(','));
   });
 
   lines.push('');
@@ -1481,7 +1626,8 @@ function exportCSV() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = 'budget-tracker-ion.csv';
+  var suffix = (labels.length === LUNI.length) ? 'total' : (keys[0] + '_' + keys[keys.length - 1]);
+  a.download = 'budget-tracker-' + ((d.profil.nume || 'ion').toLowerCase()) + '-' + suffix + '.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
