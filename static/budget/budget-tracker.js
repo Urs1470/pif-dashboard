@@ -35,6 +35,27 @@ function refreshLuni() {
   LUNI = cfg.labels;
 }
 
+// Ensure d.categoriiVenit exists; migrate legacy bonuri/bonus/diurna keys to labels
+function migrateCategoriiVenit(data) {
+  if (!data) return;
+  var seed = function() {
+    data.categoriiVenit = cloneObj(DATI_INITIALE.categoriiVenit);
+  };
+  if (!Array.isArray(data.categoriiVenit) || data.categoriiVenit.length === 0) seed();
+  // Rename legacy keys in venituri buckets
+  var mapping = { bonuri: 'Bonuri masă', bonus: 'Bonus', diurna: 'Diurnă' };
+  Object.keys(data.venituri || {}).forEach(function(luna) {
+    var v = data.venituri[luna];
+    if (!v || typeof v !== 'object') return;
+    Object.keys(mapping).forEach(function(oldKey) {
+      if (v[oldKey] !== undefined) {
+        if (v[mapping[oldKey]] === undefined) v[mapping[oldKey]] = v[oldKey];
+        delete v[oldKey];
+      }
+    });
+  });
+}
+
 // Ensure d.categoriiVar exists as [{id,label}]; seed from default constant if missing
 function migrateCategoriiVar(data) {
   if (!data) return;
@@ -112,6 +133,12 @@ var DATI_INITIALE = {
     { id: 7, label: 'Abonamente' },
     { id: 8, label: 'Alte' },
   ],
+  categoriiVenit: [
+    { id: 1, label: 'Bonuri masă' },
+    { id: 2, label: 'Bonus' },
+    { id: 3, label: 'Diurnă' },
+    { id: 4, label: 'Alte venituri' },
+  ],
   credit: {
     suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1787, asigurare: 147,
     durata: 60, comisionRambursare: 1, dataStart: '2026-05', soldActual: 84450
@@ -127,7 +154,7 @@ var DATI_INITIALE = {
     '2026-05': { fondUrgenta: 14000, tezaur: 5000, buffer: 3450, soldCredit: 84450 },
   },
   venituri: {
-    '2026-05': { bonuri: 360, bonus: 1750, diurna: 1200 },
+    '2026-05': { 'Bonuri masă': 360, 'Bonus': 1750, 'Diurnă': 1200 },
     '2026-06': {}, '2026-07': {}, '2026-08': {}, '2026-09': {}, '2026-10': {}, '2026-11': {}, '2026-12': {}
   },
   cheltuieli: {
@@ -176,6 +203,7 @@ async function loadData() {
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
       migrateCheltuieliFixe(state.data);
       migrateCategoriiVar(state.data);
+      migrateCategoriiVenit(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -525,6 +553,60 @@ function updateCategorie(id, newLabel) {
   saveData();
   render();
 }
+function addCategorieVenit() {
+  if (!Array.isArray(state.data.categoriiVenit)) state.data.categoriiVenit = [];
+  state.data.categoriiVenit.push({ id: getNextId(state.data.categoriiVenit), label: '' });
+  saveData();
+  render();
+}
+function updateCategorieVenit(id, newLabel) {
+  if (!Array.isArray(state.data.categoriiVenit)) return;
+  var old;
+  state.data.categoriiVenit = state.data.categoriiVenit.map(function(c) {
+    if (c.id !== id) return c;
+    old = c.label;
+    return { id: c.id, label: newLabel };
+  });
+  if (old && newLabel && old !== newLabel && state.data.venituri) {
+    Object.keys(state.data.venituri).forEach(function(luna) {
+      var m = state.data.venituri[luna];
+      if (m && m[old] !== undefined) {
+        m[newLabel] = m[old];
+        delete m[old];
+      }
+    });
+  }
+  saveData();
+  render();
+}
+async function removeCategorieVenit(id) {
+  var cat = (state.data.categoriiVenit || []).filter(function(c) { return c.id === id; })[0];
+  if (!cat) return;
+  var hasData = false;
+  Object.keys(state.data.venituri || {}).forEach(function(luna) {
+    var m = state.data.venituri[luna];
+    if (m && m[cat.label] != null && parseRON(m[cat.label]) !== 0) hasData = true;
+  });
+  if (hasData) {
+    var alsoDelete = await showConfirm({
+      title: 'Șterge categoria "' + cat.label + '"',
+      body: 'Există sume introduse pentru această categorie de venit. Le ștergi sau le păstrezi orfan în date?',
+      okLabel: 'Șterge tot',
+      cancelLabel: 'Păstrează sumele',
+      icon: 'trash-2'
+    });
+    if (alsoDelete) {
+      Object.keys(state.data.venituri).forEach(function(luna) {
+        var m = state.data.venituri[luna];
+        if (m && m[cat.label] !== undefined) delete m[cat.label];
+      });
+    }
+  }
+  state.data.categoriiVenit = state.data.categoriiVenit.filter(function(c) { return c.id !== id; });
+  saveData();
+  render();
+}
+
 async function removeCategorie(id) {
   var cat = (state.data.categoriiVar || []).filter(function(c) { return c.id === id; })[0];
   if (!cat) return;
@@ -558,16 +640,21 @@ async function removeCategorie(id) {
 // CALCULATIONS
 // ====================================================================
 function calcMediiVenituri(d) {
+  var cats = Array.isArray(d.categoriiVenit) ? d.categoriiVenit : [];
   var luniCuDate = LUNI_KEYS.filter(function(l) {
     var v = d.venituri[l] || {};
-    return (v.bonuri > 0 || v.bonus > 0 || v.diurna > 0);
+    return cats.some(function(c) { return (v[c.label] || 0) > 0; });
   });
   var count = luniCuDate.length || 1;
-  var bonuri = luniCuDate.reduce(function(s, l) { return s + ((d.venituri[l] || {}).bonuri || 0); }, 0) / count;
-  var bonus = luniCuDate.reduce(function(s, l) { return s + ((d.venituri[l] || {}).bonus || 0); }, 0) / count;
-  var diurna = luniCuDate.reduce(function(s, l) { return s + ((d.venituri[l] || {}).diurna || 0); }, 0) / count;
+  var variabile = {};
+  var totalVar = 0;
+  cats.forEach(function(c) {
+    var sum = luniCuDate.reduce(function(s, l) { return s + ((d.venituri[l] || {})[c.label] || 0); }, 0) / count;
+    variabile[c.label] = sum;
+    totalVar += sum;
+  });
   var salariuNet = (d.profil && d.profil.salariuNet) ? d.profil.salariuNet : DATI_INITIALE.profil.salariuNet;
-  return { salariu: salariuNet, bonuri: bonuri, bonus: bonus, diurna: diurna, total: salariuNet + bonuri + bonus + diurna };
+  return { salariu: salariuNet, variabile: variabile, categorii: cats, total: salariuNet + totalVar };
 }
 
 function calcMediiCheltuieli(d) {
@@ -627,7 +714,7 @@ function renderBugetLunar() {
   html += '<div class="section">';
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-up"></i> Sumar lunar (medii)</div></div>';
   html += '<div class="stat-grid">';
-  html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + bonuri + bonus + diurnă', '');
+  html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + ' + ((mediiV.categorii || []).length) + ' categorii', '');
   html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Fixe + variabile', 'danger');
   html += statCard(surplus >= 0 ? 'piggy-bank' : 'alert-triangle', 'Surplus lunar', (surplus >= 0 ? '+' : '') + formatRON(surplus), surplus >= 0 ? 'Disponibil pentru economii' : 'Deficit lunar', surplus >= 0 ? 'success' : 'danger');
   html += statCard('shield',       'Fond urgență',    formatRON(totalFond),     d.fondUrgenta.length + ' conturi', 'violet');
@@ -644,9 +731,9 @@ function renderBugetLunar() {
   html += '<div class="panel">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="coins"></i> Venituri medii</div></div>';
   html += '<div class="stat-row"><span>Salariu net</span><span class="stat-val">' + formatRON(mediiV.salariu) + '</span></div>';
-  html += '<div class="stat-row"><span>Bonuri masă</span><span class="stat-val">' + formatRON(mediiV.bonuri) + '</span></div>';
-  html += '<div class="stat-row"><span>Bonus</span><span class="stat-val">' + formatRON(mediiV.bonus) + '</span></div>';
-  html += '<div class="stat-row"><span>Diurnă</span><span class="stat-val">' + formatRON(mediiV.diurna) + '</span></div>';
+  (mediiV.categorii || []).forEach(function(c) {
+    html += '<div class="stat-row"><span>' + esc(c.label) + '</span><span class="stat-val">' + formatRON(mediiV.variabile[c.label] || 0) + '</span></div>';
+  });
   html += '<div class="stat-row total"><span>Total</span><span class="stat-val">' + formatRON(mediiV.total) + ' RON</span></div>';
   html += '</div>';
 
@@ -751,6 +838,35 @@ function renderBugetLunar() {
     html += '<div class="info-box" style="margin-top:0.85rem;">';
     html += '<i data-lucide="info"></i>';
     html += '<div>Categoriile apar ca rânduri în tabelul "Cheltuieli lunare". La ștergerea unei categorii primești opțiunea să păstrezi sau să elimini și sumele introduse pentru ea.</div>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+
+  // CATEGORII VENITURI PANEL
+  html += '<div class="section">';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="trending-up"></i> Categorii venituri</div>';
+  html += '  <button class="btn-add" onclick="addCategorieVenit()"><i data-lucide="plus"></i> Adaugă categorie</button>';
+  html += '</div>';
+  html += '<div class="panel">';
+  if (!d.categoriiVenit || d.categoriiVenit.length === 0) {
+    html += '<div class="audit-empty">Nicio categorie. Salariul net fix din Profil rămâne separat — aici adaugi bonusuri, bonuri masă, diurnă, alte venituri.</div>';
+  } else {
+    html += '<div class="table-wrap"><table>';
+    html += '<thead><tr><th>Denumire categorie</th><th class="num">Total mediu / lună</th><th></th></tr></thead><tbody>';
+    var mediiVen = calcMediiVenituri(d);
+    d.categoriiVenit.forEach(function(c) {
+      var avg = mediiVen.variabile[c.label] || 0;
+      html += '<tr>';
+      html += '<td><input type="text" class="input w-full" value="' + esc(c.label || '') + '" placeholder="Ex: Bonus, Diurna, Cadou..." onchange="updateCategorieVenit(' + c.id + ', this.value)"></td>';
+      html += '<td class="num mono text-mid">' + formatRON(avg) + '</td>';
+      html += '<td><button class="btn-del" onclick="removeCategorieVenit(' + c.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div class="info-box" style="margin-top:0.85rem;">';
+    html += '<i data-lucide="info"></i>';
+    html += '<div>Salariul net fix vine din câmpul din "Profil". Categoriile de aici se completează lunar în tabul Venituri (ex: bonusuri variabile, comisioane, cadouri).</div>';
     html += '</div>';
   }
   html += '</div></div>';
@@ -1121,23 +1237,20 @@ function renderVenituri() {
   LUNI.forEach(function() { html += '<td class="num accent">' + formatRON(salariu) + '</td>'; });
   html += '</tr>';
 
-  var cats = [
-    { key: 'bonuri', label: 'Bonuri masă' },
-    { key: 'bonus', label: 'Bonus' },
-    { key: 'diurna', label: 'Diurnă' },
-  ];
-  cats.forEach(function(c) {
-    html += '<tr><td class="muted">' + c.label + '</td>';
+  (d.categoriiVenit || []).forEach(function(c) {
+    var label = c.label || '';
+    var labelAttr = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    html += '<tr><td class="muted">' + esc(label) + '</td>';
     LUNI_KEYS.forEach(function(l) {
-      var val = (d.venituri[l] || {})[c.key] || '';
-      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateVenit(\'' + l + '\', \'' + c.key + '\', this.value)"></td>';
+      var val = (d.venituri[l] || {})[label] || '';
+      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateVenit(\'' + l + '\', \'' + labelAttr + '\', this.value)"></td>';
     });
     html += '</tr>';
   });
 
   var totalsV = LUNI_KEYS.map(function(l) {
     var v = d.venituri[l] || {};
-    return salariu + (v.bonuri || 0) + (v.bonus || 0) + (v.diurna || 0);
+    return (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, salariu);
   });
   html += '<tr class="total"><td>Total venituri</td>';
   totalsV.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
@@ -1285,9 +1398,10 @@ function exportCSV() {
   lines.push('VENITURI');
   lines.push('Categorie,' + LUNI.join(','));
   lines.push('Salariu net,' + LUNI.map(function() { return d.profil.salariuNet || 0; }).join(','));
-  lines.push('Bonuri de masa,' + LUNI_KEYS.map(function(l) { return (d.venituri[l] || {}).bonuri || 0; }).join(','));
-  lines.push('Bonus,' + LUNI_KEYS.map(function(l) { return (d.venituri[l] || {}).bonus || 0; }).join(','));
-  lines.push('Diurna,' + LUNI_KEYS.map(function(l) { return (d.venituri[l] || {}).diurna || 0; }).join(','));
+  (d.categoriiVenit || []).forEach(function(c) {
+    var label = c.label || '';
+    lines.push(label.replace(/,/g, ' ') + ',' + LUNI_KEYS.map(function(l) { return (d.venituri[l] || {})[label] || 0; }).join(','));
+  });
 
   lines.push('');
   lines.push('CHELTUIELI');
