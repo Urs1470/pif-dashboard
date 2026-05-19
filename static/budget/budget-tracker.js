@@ -35,6 +35,32 @@ function refreshLuni() {
   LUNI = cfg.labels;
 }
 
+// Months between two "YYYY-MM" strings (b - a). Negative if b before a.
+function diffMonths(a, b) {
+  if (!a || !b) return 0;
+  var ap = String(a).split('-'); var bp = String(b).split('-');
+  return (parseInt(bp[0], 10) - parseInt(ap[0], 10)) * 12 + (parseInt(bp[1], 10) - parseInt(ap[1], 10));
+}
+
+// True if recurring fixed-expense item is active in given month key
+function cheltuialaFixaActiva(item, lunaKey) {
+  if (!item) return false;
+  var start = item.startMonth || (state.data.profil && state.data.profil.startMonth) || '2026-05';
+  var diff = diffMonths(start, lunaKey);
+  if (diff < 0) return false;
+  var luni = parseInt(item.luni, 10);
+  if (!luni || luni <= 0) return true; // perpetual
+  return diff < luni;
+}
+
+// Sum of fixed-expense items active in given month key
+function totalFixeLuna(d, lunaKey) {
+  return (d.cheltuieliFixe || []).reduce(function(s, f) {
+    if (!cheltuialaFixaActiva(f, lunaKey)) return s;
+    return s + (parseRON(f.suma) || 0);
+  }, 0);
+}
+
 // Ensure d.categoriiVenit exists; migrate legacy bonuri/bonus/diurna keys to labels
 function migrateCategoriiVenit(data) {
   if (!data) return;
@@ -507,8 +533,17 @@ function updateCheltuialaFixa(id, field, value) {
   state.data.cheltuieliFixe = state.data.cheltuieliFixe.map(function(f) {
     if (f.id !== id) return f;
     var u = cloneObj(f);
-    if (field === 'suma') u.suma = parseRON(value);
-    else u[field] = value;
+    if (field === 'suma') {
+      u.suma = parseRON(value);
+    } else if (field === 'luni') {
+      var n = parseInt(value, 10);
+      u.luni = (isNaN(n) || n <= 0) ? null : Math.min(600, n);
+    } else if (field === 'startMonth') {
+      // Validate YYYY-MM, else keep previous
+      if (/^\d{4}-(0[1-9]|1[0-2])$/.test(String(value || ''))) u.startMonth = value;
+    } else {
+      u[field] = value;
+    }
     return u;
   });
   saveData();
@@ -659,7 +694,8 @@ function calcMediiVenituri(d) {
 
 function calcMediiCheltuieli(d) {
   var fixe = Array.isArray(d.cheltuieliFixe) ? d.cheltuieliFixe : [];
-  var totalFixe = fixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
+  // Average fixed = mean of monthly totals over visible months (respects start/luni windows)
+  var totalFixe = LUNI_KEYS.length ? (LUNI_KEYS.reduce(function(s, l) { return s + totalFixeLuna(d, l); }, 0) / LUNI_KEYS.length) : 0;
   var variabile = LUNI_KEYS.map(function(l) { return d.cheltuieli[l] || {}; });
   var count = variabile.filter(function(v) { return Object.values(v).some(function(x) { return x > 0; }); }).length || 1;
   var cats = Array.isArray(d.categoriiVar) ? d.categoriiVar : [];
@@ -799,16 +835,23 @@ function renderBugetLunar() {
     html += '<div class="audit-empty">Nicio cheltuială fixă. Apasă "Adaugă" pentru a introduce chirie, abonamente, rate, etc.</div>';
   } else {
     html += '<div class="table-wrap"><table>';
-    html += '<thead><tr><th>Denumire</th><th class="num">Sumă (RON / lună)</th><th></th></tr></thead><tbody>';
+    html += '<thead><tr><th>Denumire</th><th class="num">Sumă RON/lună</th><th>Start</th><th class="num">Luni (gol = perpetual)</th><th class="num">Total perioadă</th><th></th></tr></thead><tbody>';
+    var defaultStart = (d.profil && d.profil.startMonth) || '2026-05';
     d.cheltuieliFixe.forEach(function(f) {
+      var start = f.startMonth || defaultStart;
+      var luni = parseInt(f.luni, 10) || 0;
+      var perioada = luni > 0 ? (parseRON(f.suma) || 0) * luni : null;
       html += '<tr>';
       html += '<td><input type="text" class="input w-full" value="' + esc(f.label || '') + '" placeholder="Ex: Netflix, Card credit..." onchange="updateCheltuialaFixa(' + f.id + ', \'label\', this.value)"></td>';
       html += '<td class="num"><input type="number" class="input num w-28" value="' + (f.suma || 0) + '" onchange="updateCheltuialaFixa(' + f.id + ', \'suma\', this.value)"></td>';
+      html += '<td><input type="text" class="input mono" style="width:90px;" value="' + esc(start) + '" placeholder="YYYY-MM" pattern="\\d{4}-\\d{2}" onchange="updateCheltuialaFixa(' + f.id + ', \'startMonth\', this.value)"></td>';
+      html += '<td class="num"><input type="number" min="0" max="600" class="input num w-20" value="' + (luni || '') + '" placeholder="∞" onchange="updateCheltuialaFixa(' + f.id + ', \'luni\', this.value)"></td>';
+      html += '<td class="num mono text-mid">' + (perioada != null ? formatRON(perioada) : '—') + '</td>';
       html += '<td><button class="btn-del" onclick="removeCheltuialaFixa(' + f.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
       html += '</tr>';
     });
-    var totalFixe = d.cheltuieliFixe.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
-    html += '</tbody><tfoot><tr><td>Total cheltuieli fixe</td><td class="num">' + formatRON(totalFixe) + '</td><td></td></tr></tfoot>';
+    var totalFixeNow = LUNI_KEYS.length > 0 ? totalFixeLuna(d, LUNI_KEYS[0]) : 0;
+    html += '</tbody><tfoot><tr><td>Total fixe în prima lună vizibilă (' + (LUNI[0] || '') + ')</td><td class="num">' + formatRON(totalFixeNow) + '</td><td colspan="4"></td></tr></tfoot>';
     html += '</table></div>';
   }
   html += '</div></div>';
@@ -1269,7 +1312,13 @@ function renderVenituri() {
 
   (d.cheltuieliFixe || []).forEach(function(f) {
     html += '<tr class="fixed"><td>' + esc(f.label || '—') + '</td>';
-    LUNI.forEach(function() { html += '<td class="num neg">' + formatRON(f.suma) + '</td>'; });
+    LUNI_KEYS.forEach(function(lk) {
+      if (cheltuialaFixaActiva(f, lk)) {
+        html += '<td class="num neg">' + formatRON(f.suma) + '</td>';
+      } else {
+        html += '<td class="num text-dim">—</td>';
+      }
+    });
     html += '</tr>';
   });
 
@@ -1284,10 +1333,9 @@ function renderVenituri() {
     html += '</tr>';
   });
 
-  var totalFixeLunare = (d.cheltuieliFixe || []).reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var totalsC = LUNI_KEYS.map(function(l) {
     var c = d.cheltuieli[l] || {};
-    return totalFixeLunare + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
+    return totalFixeLuna(d, l) + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
   });
   html += '<tr class="total danger"><td>Total cheltuieli</td>';
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
@@ -1407,7 +1455,8 @@ function exportCSV() {
   lines.push('CHELTUIELI');
   lines.push('Categorie,' + LUNI.join(','));
   (d.cheltuieliFixe || []).forEach(function(f) {
-    lines.push((f.label || '').replace(/,/g, ' ') + ',' + LUNI.map(function() { return f.suma; }).join(','));
+    var row = LUNI_KEYS.map(function(lk) { return cheltuialaFixaActiva(f, lk) ? (f.suma || 0) : 0; }).join(',');
+    lines.push((f.label || '').replace(/,/g, ' ') + ',' + row);
   });
   (d.categoriiVar || []).forEach(function(c) {
     var label = c.label || '';
