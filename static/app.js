@@ -962,6 +962,31 @@ let _longTextActiveField = null;  // current hidden textarea id being edited
 function renderLongTextPreview(textareaId) {
     const ta = document.getElementById(textareaId);
     if (!ta) return;
+    const scope = ta.closest('.form-group, .detail-section-body') || ta.parentElement;
+    const preview = scope?.querySelector('.long-text-preview');
+    if (!preview) return;
+    const raw = ta.value || '';
+    // Render HTML if stored as such, otherwise wrap plain text in paragraphs so
+    // line breaks survive visually inside the preview card.
+    if (raw.trim() === '') {
+        preview.textContent = '';
+        preview.classList.add('is-empty');
+    } else {
+        preview.innerHTML = _looksLikeHtml(raw) ? raw : _plainToHtml(raw);
+        preview.classList.remove('is-empty');
+    }
+    const counter = scope?.querySelector('[data-count-for="' + textareaId + '"]');
+    if (counter) {
+        // Char count based on visible text, not HTML markup
+        const tmp = document.createElement('div');
+        tmp.innerHTML = raw;
+        counter.textContent = (tmp.innerText || '').length + ' caractere';
+    }
+    return;
+}
+function _renderLongTextPreviewOldBody(textareaId) {
+    const ta = document.getElementById(textareaId);
+    if (!ta) return;
     // Find the matching preview div: assume it lives in the same form-group/body
     const scope = ta.closest('.form-group, .detail-section-body') || ta.parentElement;
     const preview = scope?.querySelector('.long-text-preview');
@@ -978,6 +1003,16 @@ function renderAllLongTextPreviews() {
     ['service-before', 'service-after', 'pif-observatii'].forEach(renderLongTextPreview);
 }
 
+// Detect whether the stored value is HTML or plain text. Older entries are plain.
+function _looksLikeHtml(s) { return /<\/?(p|br|div|h[1-6]|ul|ol|li|strong|b|em|i|u|a|hr|blockquote)\b/i.test(s || ''); }
+function _plainToHtml(s) {
+    return (s || '').split(/\n\n+/).map(p => {
+        const lines = p.replace(/\r/g, '').replace(/\n/g, '<br>');
+        return `<p>${lines}</p>`;
+    }).join('');
+}
+function _escAttr(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
 function openLongTextEditor(fieldId, title, iconName) {
     const ta = document.getElementById(fieldId);
     if (!ta) return;
@@ -988,20 +1023,18 @@ function openLongTextEditor(fieldId, title, iconName) {
     const iconEl = document.getElementById('ltm-title-icon');
     if (iconEl && iconName) iconEl.setAttribute('data-lucide', iconName);
 
-    const editor = document.getElementById('ltm-textarea');
-    editor.value = ta.value || '';
+    const editor = document.getElementById('ltm-editor');
+    const raw = ta.value || '';
+    editor.innerHTML = _looksLikeHtml(raw) ? raw : _plainToHtml(raw);
     _ltmUpdateCounter();
 
     modal.classList.add('active');
     if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
     setTimeout(() => editor.focus(), 50);
 
-    // Wire counter + Ctrl+B/I shortcuts once per open
     editor.oninput = _ltmUpdateCounter;
     editor.onkeydown = (e) => {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); ltmWrap('**', '**'); }
-        else if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); ltmWrap('*', '*'); }
-        else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveLongText(); }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveLongText(); }
         else if (e.key === 'Escape') { e.preventDefault(); closeLongTextEditor(); }
     };
 }
@@ -1015,11 +1048,11 @@ function closeLongTextEditor() {
 async function saveLongText() {
     if (!_longTextActiveField) return;
     const ta = document.getElementById(_longTextActiveField);
-    const editor = document.getElementById('ltm-textarea');
+    const editor = document.getElementById('ltm-editor');
     if (!ta || !editor) return;
-    const value = editor.value;
+    // Save the inner HTML — render as HTML on preview cards.
+    const value = (editor.innerHTML || '').trim();
     ta.value = value;
-    // Map hidden textarea id -> backend field name
     const backendField = (_longTextActiveField === 'pif-observatii') ? 'observatii' : _longTextActiveField.replace('-', '_');
     await saveServiceField(backendField, value);
     renderLongTextPreview(_longTextActiveField);
@@ -1027,16 +1060,20 @@ async function saveLongText() {
 }
 
 async function copyLongTextContent() {
-    const editor = document.getElementById('ltm-textarea');
+    const editor = document.getElementById('ltm-editor');
     if (!editor) return;
-    const text = editor.value || '';
+    // Copy plain text version of the editor content for cross-app pasting.
+    const text = editor.innerText || '';
     try {
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
         } else {
-            editor.select();
+            const tmp = document.createElement('textarea');
+            tmp.value = text;
+            document.body.appendChild(tmp);
+            tmp.select();
             document.execCommand('copy');
-            editor.setSelectionRange(editor.selectionStart, editor.selectionStart);
+            tmp.remove();
         }
         showToast('Copiat în clipboard');
     } catch (e) {
@@ -1046,59 +1083,35 @@ async function copyLongTextContent() {
 }
 
 function _ltmUpdateCounter() {
-    const editor = document.getElementById('ltm-textarea');
+    const editor = document.getElementById('ltm-editor');
     const counter = document.getElementById('ltm-counter');
-    if (editor && counter) counter.textContent = (editor.value || '').length + ' caractere';
+    if (editor && counter) counter.textContent = (editor.innerText || '').length + ' caractere';
 }
 
-// Toolbar helpers — operate on the active selection in the editor textarea.
-function ltmWrap(open, close) {
-    const ta = document.getElementById('ltm-textarea');
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const selected = ta.value.substring(start, end);
-    const replacement = open + (selected || 'text') + close;
-    ta.setRangeText(replacement, start, end, 'select');
-    // If no selection, place caret inside the wrap (after `open`, length of "text")
-    if (!selected) ta.setSelectionRange(start + open.length, start + open.length + 'text'.length);
-    ta.focus();
+// WYSIWYG toolbar — uses document.execCommand which works in all browsers
+// for contenteditable elements (deprecated in spec but still supported).
+function ltmExec(cmd, value) {
+    const editor = document.getElementById('ltm-editor');
+    if (!editor) return;
+    editor.focus();
+    try { document.execCommand(cmd, false, value || null); } catch (e) {}
     _ltmUpdateCounter();
 }
-
-function ltmPrefixLines(prefix) {
-    const ta = document.getElementById('ltm-textarea');
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const before = ta.value.substring(0, start);
-    const selected = ta.value.substring(start, end) || '\n';
-    const after = ta.value.substring(end);
-    const prefixed = selected.split('\n').map(l => prefix + l).join('\n');
-    ta.value = before + prefixed + after;
-    ta.setSelectionRange(start, start + prefixed.length);
-    ta.focus();
-    _ltmUpdateCounter();
+function ltmFormatBlock(tag) {
+    // Firefox needs <h1>, Chrome accepts both h1 and H1
+    ltmExec('formatBlock', tag);
 }
-
+function ltmInsertLink() {
+    const url = prompt('URL-ul link-ului:');
+    if (!url) return;
+    ltmExec('createLink', url);
+}
 function ltmInsertDate() {
-    const ta = document.getElementById('ltm-textarea');
-    if (!ta) return;
-    const d = new Date();
-    const iso = d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const text = iso + ' ';
-    ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, 'end');
-    ta.focus();
-    _ltmUpdateCounter();
+    const d = new Date().toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    ltmExec('insertText', d + ' ');
 }
-
 function ltmInsertSeparator() {
-    const ta = document.getElementById('ltm-textarea');
-    if (!ta) return;
-    const insert = '\n---\n';
-    ta.setRangeText(insert, ta.selectionStart, ta.selectionEnd, 'end');
-    ta.focus();
-    _ltmUpdateCounter();
+    ltmExec('insertHTML', '<hr>');
 }
 
 // Close on backdrop click
@@ -2815,8 +2828,12 @@ async function loadDashboardHome() {
             todays_tasks.forEach(t => {
                 const prio = (t.prioritate || 'Normal');
                 const prioCls = prio.toLowerCase();
+                // Click pe task global: dacă are proiect, du-te acolo; altfel deschide tab Taskuri.
+                const onclickAttr = t.proiect_id
+                    ? `onclick="showProjectDetail('${t.proiect_id}')"`
+                    : `onclick="switchTab('taskuri')"`;
                 html += `
-                    <div class="h-row">
+                    <div class="h-row" ${onclickAttr}>
                         <span class="h-row-dot ${prioCls}"></span>
                         <div class="h-row-content">
                             <div class="h-row-title">${escapeHtml(t.titlu)}</div>
@@ -4144,20 +4161,24 @@ function deleteParam(code) { delete currentParams[code]; renderCurrentParams(); 
 
 function showAddEquipmentForm() {
     if (!currentProjectId) return;
-    
+
     // Reset state for new equipment
     currentParams = {};
     availableParams = [];
     currentEchipamentId = null;
-    
-    // Remove existing form if any
-    const existingForm = document.querySelector('.echipament-form');
-    if (existingForm) existingForm.remove();
-    
-    const container = document.getElementById('echipamente-list');
+
+    // Remove existing form/overlay if any
+    document.querySelectorAll('.echipament-form-overlay, .echipament-form').forEach(el => el.remove());
+
     const formHtml = `
+      <div class="modal-overlay echipament-form-overlay active" onclick="if(event.target === this) hideEchipamentForm()">
+        <div class="modal" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
+          <div class="modal-header">
+            <h3 class="modal-title"><i data-lucide="cpu"></i> Echipament nou</h3>
+            <button class="modal-close" onclick="hideEchipamentForm()">&times;</button>
+          </div>
+          <div class="modal-body">
         <div class="echipament-form" id="echipament-form-container">
-            <h4 style="margin-bottom: 12px; color: var(--text);">Adaugă Echipament Nou</h4>
             <div class="form-group">
                 <label>Nume Echipament *</label>
                 <input type="text" id="eq-nume" placeholder="ex: Convertizor de Frecvență" required>
@@ -4220,8 +4241,13 @@ function showAddEquipmentForm() {
                 <button type="button" class="btn btn-primary btn-small" onclick="saveEchipament()">Salvează</button>
             </div>
         </div>
+          </div>
+        </div>
+      </div>
     `;
-    container.insertAdjacentHTML('beforeend', formHtml);
+    document.body.insertAdjacentHTML('beforeend', formHtml);
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    setTimeout(() => enhanceAllSelects && enhanceAllSelects(), 50);
 
     // Populate projects dropdown for copy function
     populateProjectsForCopy();
@@ -4326,8 +4352,7 @@ async function fillParamsFromEquipment(projectId, equipmentId) {
 }
 
 function hideEchipamentForm() {
-    const form = document.querySelector('.echipament-form');
-    if (form) form.remove();
+    document.querySelectorAll('.echipament-form-overlay, .echipament-form').forEach(el => el.remove());
 }
 
 // Auto-select template based on producator selection
@@ -4416,27 +4441,30 @@ async function editEchipament(echipamentId) {
         editingEchipamentId = echipamentId;
         
         // Remove existing form if any
-        const existingForm = document.querySelector('.echipament-form');
-        if (existingForm) existingForm.remove();
-        
-        const container = document.getElementById('echipamente-list');
-        
+        document.querySelectorAll('.echipament-form-overlay, .echipament-form').forEach(el => el.remove());
+
         // Load current params from equipment
         currentParams = {};
         try {
             currentParams = JSON.parse(eq.params_json || '{}');
         } catch (err) {}
-        
+
         // Load available params for this manufacturer
         if (eq.producator && eq.producator !== 'Altul') {
             await loadParamsForProducator(eq.producator);
         } else {
             availableParams = [];
         }
-        
+
         const formHtml = `
+          <div class="modal-overlay echipament-form-overlay active" onclick="if(event.target === this) hideEchipamentForm()">
+            <div class="modal" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
+              <div class="modal-header">
+                <h3 class="modal-title"><i data-lucide="pencil"></i> Editează echipament</h3>
+                <button class="modal-close" onclick="hideEchipamentForm()">&times;</button>
+              </div>
+              <div class="modal-body">
             <div class="echipament-form" id="echipament-form-container">
-                <h4 style="margin-bottom: 12px; color: var(--text);">Editează Echipament</h4>
                 <div class="form-group">
                     <label>Nume Echipament *</label>
                     <input type="text" id="eq-nume" value="${escapeHtml(eq.nume || '')}" required>
@@ -4479,8 +4507,13 @@ async function editEchipament(echipamentId) {
                     <button type="button" class="btn btn-primary btn-small" onclick="saveEchipament()">Salvează</button>
                 </div>
             </div>
+              </div>
+            </div>
+          </div>
         `;
-        container.insertAdjacentHTML('beforeend', formHtml);
+        document.body.insertAdjacentHTML('beforeend', formHtml);
+        if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+        setTimeout(() => enhanceAllSelects && enhanceAllSelects(), 50);
         
         // Render the loaded params and reset search UI
         renderCurrentParams();

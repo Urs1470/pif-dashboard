@@ -2544,7 +2544,7 @@
         .long-text-preview {
             width: 100%;
             min-height: 80px;
-            max-height: 180px;
+            max-height: 220px;
             overflow: hidden;
             position: relative;
             background: var(--bg);
@@ -2554,11 +2554,16 @@
             color: var(--text);
             font-family: inherit;
             font-size: 0.92rem;
-            line-height: 1.5;
-            white-space: pre-wrap;
+            line-height: 1.55;
             cursor: pointer;
             transition: border-color 0.15s, background 0.15s;
         }
+        .long-text-preview p { margin: 4px 0; }
+        .long-text-preview h1, .long-text-preview h2 { color: var(--accent); font-size: 1.05rem; margin: 8px 0 4px; font-weight: 700; }
+        .long-text-preview h3 { color: var(--text); font-size: 0.98rem; margin: 6px 0 3px; font-weight: 600; }
+        .long-text-preview ul, .long-text-preview ol { padding-left: 22px; margin: 4px 0; }
+        .long-text-preview a { color: var(--accent); text-decoration: underline; }
+        .long-text-preview hr { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
         .long-text-preview:hover { border-color: var(--accent); background: var(--bg-elev2); }
         .long-text-preview:empty::before,
         .long-text-preview.is-empty::before {
@@ -2602,13 +2607,60 @@
             background: var(--bg-elev1);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 860px;
-            max-height: 92vh;
+            /* 95% of viewport — Ion wants generous editing space. */
+            width: 95vw;
+            height: 95vh;
+            max-width: 1600px;
+            max-height: 1200px;
             display: flex;
             flex-direction: column;
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
         }
+        #long-text-modal .ltm-tool-group { display: inline-flex; gap: 2px; }
+        #long-text-modal .ltm-divider {
+            width: 1px;
+            background: var(--line-soft);
+            margin: 4px 8px;
+            align-self: stretch;
+        }
+        #long-text-modal .ltm-tool {
+            min-width: 32px;
+            min-height: 32px;
+            padding: 4px 8px;
+            justify-content: center;
+        }
+        #long-text-modal #ltm-editor {
+            flex: 1;
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            line-height: 1.65;
+            outline: none;
+            overflow-y: auto;
+            min-height: 280px;
+        }
+        #long-text-modal #ltm-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+        #long-text-modal #ltm-editor:empty::before {
+            content: attr(data-placeholder);
+            color: var(--text-dim);
+            font-style: italic;
+            pointer-events: none;
+        }
+        #long-text-modal #ltm-editor h1, #long-text-modal #ltm-editor h2 { color: var(--accent); margin: 14px 0 8px; font-weight: 700; }
+        #long-text-modal #ltm-editor h1 { font-size: 1.5rem; }
+        #long-text-modal #ltm-editor h2 { font-size: 1.25rem; }
+        #long-text-modal #ltm-editor h3 { color: var(--text); margin: 12px 0 6px; font-size: 1.05rem; font-weight: 600; }
+        #long-text-modal #ltm-editor p { margin: 6px 0; }
+        #long-text-modal #ltm-editor ul, #long-text-modal #ltm-editor ol { padding-left: 26px; margin: 6px 0; }
+        #long-text-modal #ltm-editor li { margin: 3px 0; }
+        #long-text-modal #ltm-editor a { color: var(--accent); text-decoration: underline; }
+        #long-text-modal #ltm-editor hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+        #long-text-modal #ltm-editor blockquote { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text2); margin: 8px 0; background: var(--bg-elev2); }
         #long-text-modal .ltm-header {
             display: flex;
             justify-content: space-between;
@@ -4795,7 +4847,7 @@
     </div>
 </div>
 
-<!-- Universal long-text editor modal (Observatii / Constatari / Actiuni). -->
+<!-- Universal long-text WYSIWYG editor modal (Observatii / Constatari / Actiuni). -->
 <div id="long-text-modal" role="dialog" aria-modal="true">
     <div class="ltm-card">
         <div class="ltm-header">
@@ -4808,15 +4860,40 @@
             </button>
         </div>
         <div class="ltm-toolbar">
-            <button class="ltm-tool" onclick="ltmWrap('**', '**')" title="Bold (Ctrl+B)"><i data-lucide="bold"></i>Bold</button>
-            <button class="ltm-tool" onclick="ltmWrap('*', '*')" title="Italic (Ctrl+I)"><i data-lucide="italic"></i>Italic</button>
-            <button class="ltm-tool" onclick="ltmPrefixLines('- ')" title="Listă cu puncte"><i data-lucide="list"></i>Listă</button>
-            <button class="ltm-tool" onclick="ltmPrefixLines('1. ')" title="Listă numerotată"><i data-lucide="list-ordered"></i>Numerotată</button>
-            <button class="ltm-tool" onclick="ltmInsertDate()" title="Inserează data curentă"><i data-lucide="calendar"></i>Data</button>
-            <button class="ltm-tool" onclick="ltmInsertSeparator()" title="Linie separator"><i data-lucide="minus"></i>Separator</button>
+            <div class="ltm-tool-group">
+                <button class="ltm-tool" onclick="ltmExec('bold')" title="Bold (Ctrl+B)"><i data-lucide="bold"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('italic')" title="Italic (Ctrl+I)"><i data-lucide="italic"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('underline')" title="Subliniat (Ctrl+U)"><i data-lucide="underline"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('strikeThrough')" title="Tăiat"><i data-lucide="strikethrough"></i></button>
+            </div>
+            <span class="ltm-divider"></span>
+            <div class="ltm-tool-group">
+                <button class="ltm-tool" onclick="ltmFormatBlock('h2')" title="Titlu mare"><i data-lucide="heading-1"></i></button>
+                <button class="ltm-tool" onclick="ltmFormatBlock('h3')" title="Titlu mic"><i data-lucide="heading-2"></i></button>
+                <button class="ltm-tool" onclick="ltmFormatBlock('p')" title="Paragraf"><i data-lucide="pilcrow"></i></button>
+            </div>
+            <span class="ltm-divider"></span>
+            <div class="ltm-tool-group">
+                <button class="ltm-tool" onclick="ltmExec('insertUnorderedList')" title="Listă cu puncte"><i data-lucide="list"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('insertOrderedList')" title="Listă numerotată"><i data-lucide="list-ordered"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('outdent')" title="Diminuează indentarea"><i data-lucide="outdent"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('indent')" title="Mărește indentarea"><i data-lucide="indent"></i></button>
+            </div>
+            <span class="ltm-divider"></span>
+            <div class="ltm-tool-group">
+                <button class="ltm-tool" onclick="ltmInsertLink()" title="Link"><i data-lucide="link"></i></button>
+                <button class="ltm-tool" onclick="ltmInsertDate()" title="Data curentă"><i data-lucide="calendar"></i></button>
+                <button class="ltm-tool" onclick="ltmInsertSeparator()" title="Linie separator"><i data-lucide="minus"></i></button>
+            </div>
+            <span class="ltm-divider"></span>
+            <div class="ltm-tool-group">
+                <button class="ltm-tool" onclick="ltmExec('removeFormat')" title="Curăță formatare"><i data-lucide="eraser"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('undo')" title="Undo (Ctrl+Z)"><i data-lucide="undo-2"></i></button>
+                <button class="ltm-tool" onclick="ltmExec('redo')" title="Redo (Ctrl+Y)"><i data-lucide="redo-2"></i></button>
+            </div>
         </div>
         <div class="ltm-body">
-            <textarea id="ltm-textarea" spellcheck="false" placeholder="Scrie aici..."></textarea>
+            <div id="ltm-editor" contenteditable="true" spellcheck="true" data-placeholder="Scrie aici..."></div>
         </div>
         <div class="ltm-footer">
             <span class="ltm-counter" id="ltm-counter">0 caractere</span>
