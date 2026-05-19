@@ -2860,3 +2860,205 @@
 2026-05-19 04:06:50,727  INFO        -> rewrite: Activeaza fortarea selectiei intrarii analogice pentru modulul de extensie FAIO-
 2026-05-19 04:06:50,828  INFO      2261 16.23 (ACS880)  existing_len=992  qc=rewrite
 2026-05-19 04:07:03,873  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea intrarii digitale DI3. Dupa ce semnalul 
+2026-05-19 04:07:06,830  INFO        Committed + pushed
+2026-05-19 04:07:06,930  INFO      2262 16.27 (ACS880)  existing_len=985  qc=rewrite
+2026-05-19 04:07:15,488  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice 1 (AI1) de pe modulul de extensie
+2026-05-19 04:07:15,589  INFO      2264 16.28 (ACS880)  existing_len=1039  qc=rewrite
+2026-05-19 04:07:22,575  INFO        -> rewrite: Permite fortarea unei valori simulate pe intrarea analogica 1 a modulului FAIO-0
+2026-05-19 04:07:22,676  INFO      2265 16.31 (ACS880)  existing_len=1120  qc=rewrite
+2026-05-19 04:07:29,735  INFO        -> rewrite: Afiseaza starea releelor de iesire de pe modulul FDIO-01. Valoarea este o combin
+2026-05-19 04:07:29,836  INFO      2266 16.32 (ACS880)  existing_len=1052  qc=rewrite
+2026-05-19 04:07:39,757  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul analogic al intrarii AI1 de pe modulul 
+2026-05-19 04:07:39,857  INFO      2267 16.35 (ACS880)  existing_len=1138  qc=rewrite
+2026-05-19 04:07:44,928  INFO        -> rewrite: Seteaza intarzierea la activare pentru releul de iesire 1 (RO1). Dupa primirea c
+2026-05-19 04:07:45,028  INFO      2268 16.36 (ACS880)  existing_len=1053  qc=rewrite
+2026-05-19 04:07:56,827  INFO        -> rewrite: Seteaza intarzierea opririi releului 1 (RO1) dupa ce semnalul de comanda devine 
+2026-05-19 04:07:56,928  INFO      2269 16.38 (ACS880)  existing_len=997  qc=rewrite
+2026-05-19 04:08:07,880  INFO        -> rewrite: Seteaza intarzierea la activare pentru releul de iesire RO2. Dupa indeplinirea c
+2026-05-19 04:08:07,981  INFO      2270 16.39 (ACS880)  existing_len=948  qc=rewrite
+2026-05-19 04:08:17,991  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea releului de iesire 2 (RO2). Dupa indepli
+2026-05-19 04:08:18,092  INFO      2271 16.43 (ACS880)  existing_len=1039  qc=rewrite
+2026-05-19 04:08:28,545  INFO        -> rewrite: Permite fortarea manuala a valorii pentru intrarea analogica AI2 in scopuri de t
+2026-05-19 04:08:28,646  INFO      2272 16.46 (ACS880)  existing_len=1007  qc=rewrite
+2026-05-19 04:08:35,889  INFO        -> rewrite: Seteaza timpul de filtrare pentru intrarea analogica AI2. O valoare mai mare ofe
+2026-05-19 04:08:35,989  INFO      2273 16.47 (ACS880)  existing_len=955  qc=rewrite
+2026-05-19 04:08:43,504  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica 2. O valoare mai
+2026-05-19 04:08:43,605  INFO      2274 16.50 (ACS880)  existing_len=1007  qc=rewrite
+2026-05-19 04:08:54,648  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2 de la modulul de extensie FAI
+2026-05-19 04:08:54,748  INFO      2275 16.51 (ACS880)  existing_len=898  qc=rewrite
+2026-05-19 04:09:10,049  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2 atunci cand modulul de extens
+2026-05-19 04:09:10,149  INFO      2276 16.58 (ACS880)  existing_len=871  qc=rewrite
+2026-05-19 04:09:20,007  INFO        -> rewrite: Permite fortarea unei valori analogice pe intrarea AI3 pentru teste si diagnosti
+2026-05-19 04:09:20,107  INFO      2277 16.61 (ACS880)  existing_len=846  qc=rewrite
+2026-05-19 04:09:30,148  INFO        -> rewrite: Seteaza timpul de filtrare pentru intrarea analogica AI3 de pe modulul FIO-11. V
+2026-05-19 04:09:30,249  INFO      2278 16.62 (ACS880)  existing_len=793  qc=rewrite
+2026-05-19 04:09:41,092  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica AI3. Un filtru m
+2026-05-19 04:09:41,192  INFO      2279 16.65 (ACS880)  existing_len=785  qc=rewrite
+2026-05-19 04:09:55,917  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 dupa aplicarea scalei si offs
+2026-05-19 04:09:56,018  INFO      2280 16.66 (ACS880)  existing_len=780  qc=rewrite
+2026-05-19 04:10:01,099  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3. Valoarea este calculata in f
+2026-05-19 04:10:01,200  INFO      2281 16.71 (ACS880)  existing_len=1013  qc=rewrite
+2026-05-19 04:10:06,560  INFO        -> rewrite: Permite fortarea iesirii analogice la o valoare specifica indiferent de function
+2026-05-19 04:10:06,660  INFO      2282 16.78 (ACS880)  existing_len=937  qc=rewrite
+2026-05-19 04:10:20,599  INFO        -> rewrite: Seteaza valoarea fortata pentru AO1 cand modulul 3 este de tip FIO-11. Fortarea 
+2026-05-19 04:10:20,700  INFO      2283 16.79 (ACS880)  existing_len=987  qc=rewrite
+2026-05-19 04:10:34,980  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica 1 (AO1). Un timp 
+2026-05-19 04:10:35,080  INFO      2284 16.80 (ACS880)  existing_len=896  qc=rewrite
+2026-05-19 04:10:44,098  INFO        -> rewrite: Defineste valoarea minima a sursei pentru iesirea analogica AO1. Acest parametru
+2026-05-19 04:10:44,199  INFO      2285 16.81 (ACS880)  existing_len=775  qc=rewrite
+2026-05-19 04:10:50,363  INFO        -> rewrite: Seteaza valoarea maxima pentru iesirea analogica 1 (AO1) cand modulul de extensi
+2026-05-19 04:10:50,464  INFO      2286 16.82 (ACS880)  existing_len=755  qc=rewrite
+2026-05-19 04:11:00,321  INFO        -> rewrite: Afiseaza valoarea curenta a iesirii analogice AO1 in unitati fizice (mA sau V). 
+2026-05-19 04:11:00,422  INFO      2287 16.83 (ACS880)  existing_len=816  qc=rewrite
+2026-05-19 04:11:06,234  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice AO1. Este un parametru de diagnost
+2026-05-19 04:11:06,335  INFO      2288 16.88 (ACS880)  existing_len=722  qc=rewrite
+2026-05-19 04:11:16,775  INFO        -> rewrite: Forteaza manual valoarea de iesire pe analogica AO2. Folosit pentru testare, dep
+2026-05-19 04:11:16,876  INFO      2289 16.89 (ACS880)  existing_len=676  qc=rewrite
+2026-05-19 04:11:25,132  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica AO2. O valoare ma
+2026-05-19 04:11:25,233  INFO      2290 16.90 (ACS880)  existing_len=647  qc=rewrite
+2026-05-19 04:11:34,419  INFO        -> rewrite: Seteaza valoarea minima de scalare pentru iesirea analogica 2. Acest parametru d
+2026-05-19 04:11:34,520  INFO      2291 16.91 (ACS880)  existing_len=667  qc=rewrite
+2026-05-19 04:11:44,170  INFO        -> rewrite: Seteaza valoarea maxima pentru sursa selectata la iesirea analogica AO2. Valoare
+2026-05-19 04:11:44,271  INFO      2292 16.92 (ACS880)  existing_len=671  qc=rewrite
+2026-05-19 04:11:53,501  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice AO2 in mA. Parametrul este vizibil
+2026-05-19 04:11:53,602  INFO      2293 16.93 (ACS880)  existing_len=646  qc=rewrite
+2026-05-19 04:12:00,053  INFO        -> rewrite: Seteaza valoarea de iesire pentru AO2 cand sursa de semnal este activa. Afiseaza
+2026-05-19 04:12:00,154  INFO      2294 19.11 (ACS880)  existing_len=1040  qc=rewrite
+2026-05-19 04:12:10,760  INFO        -> rewrite: Selecteaza intrarea digitala folosita pentru comutarea intre setarile de control
+2026-05-19 04:12:10,861  INFO      2295 19.12 (ACS880)  existing_len=1100  qc=rewrite
+2026-05-19 04:12:16,215  WARNING     Bad categorie 'Control' for 19.12, retry
+2026-05-19 04:12:30,029  INFO        -> rewrite: Selecteaza modul de operare pentru locatia de control extern 1 (Ext1). Valoarea 
+2026-05-19 04:12:30,130  INFO      2296 19.16 (ACS880)  existing_len=910  qc=rewrite
+2026-05-19 04:12:39,789  INFO        -> rewrite: Defineste modul de operare pentru controlul local de pe panoul VFD. Modul Speed 
+2026-05-19 04:12:39,890  INFO      2297 19.20 (ACS880)  existing_len=1084  qc=rewrite
+2026-05-19 04:12:45,811  INFO        -> rewrite: Selecteaza tipul referintei pentru controlul scalar al motorului. Modul Rpm sete
+2026-05-19 04:12:45,912  INFO      2302 20.11 (ACS880)  existing_len=990  qc=rewrite
+2026-05-19 04:13:01,070  INFO        -> rewrite: Defineste modul de opriri a motorului cand semnalul Run Enable este dezactivat. 
+2026-05-19 04:13:01,171  INFO      2303 20.12 (ACS880)  existing_len=965  qc=rewrite
+2026-05-19 04:13:09,232  INFO        -> rewrite: Defineste sursa semnalului de enable pentru pornire. DIIL = intrare digitala de 
+2026-05-19 04:13:09,333  INFO      2304 20.29 (ACS880)  existing_len=1047  qc=rewrite
+2026-05-19 04:13:18,715  INFO        -> rewrite: Defineste tipul de trigger pentru semnalul de start in modul de control local. M
+2026-05-19 04:13:18,816  INFO      2305 20.30 (ACS880)  existing_len=953  qc=rewrite
+2026-05-19 04:13:29,184  INFO        -> rewrite: Defineste semnalul sau combinatia de semnale care permit invertorului sa comute 
+2026-05-19 04:13:29,285  INFO      2315 21.11 (ACS880)  existing_len=1008  qc=rewrite
+2026-05-19 04:13:38,251  INFO        -> rewrite: Defineste durata pentru care VFD-ul mentine campul magnetic dupa oprirea motorul
+2026-05-19 04:13:38,352  INFO      2316 21.12 (ACS880)  existing_len=1028  qc=rewrite
+2026-05-19 04:13:51,173  INFO        -> rewrite: Activeaza curentul de magnetizare continua a motorului pentru functia de injecti
+2026-05-19 04:13:51,274  INFO      2317 21.13 (ACS880)  existing_len=958  qc=rewrite
+2026-05-19 04:14:02,182  INFO        -> rewrite: Selecteaza modul de realizare a autophasing-ului, procedeu automat de identifica
+2026-05-19 04:14:02,283  INFO      2318 21.18 (ACS880)  existing_len=1022  qc=rewrite
+2026-05-19 04:14:13,864  INFO        -> rewrite: Seteaza intervalul de timp pe care variatorul îl asteapta înainte de a încerca r
+2026-05-19 04:14:13,965  INFO      2319 21.19 (ACS880)  existing_len=984  qc=rewrite
+2026-05-19 04:14:26,352  INFO        -> rewrite: Selecteaza functia de pornire a motorului in modul de control scalar. Modul Norm
+2026-05-19 04:14:26,452  INFO      2320 21.20 (ACS880)  existing_len=1079  qc=rewrite
+2026-05-19 04:14:34,555  INFO        -> rewrite: Seteaza timpul de rampa pentru fortele (cuplul) in modul de actionare follower c
+2026-05-19 04:14:34,656  INFO      2321 22.11 (ACS880)  existing_len=945  qc=rewrite
+2026-05-19 04:14:44,006  INFO        -> rewrite: Selecteaza sursa pentru referinta de viteza 1. Optiunile tipice includ AI1 (intr
+2026-05-19 04:14:44,106  INFO      2322 22.14 (ACS880)  existing_len=795  qc=rewrite
+2026-05-19 04:14:50,646  INFO        -> rewrite: Selecteaza care referinta de viteza este activa. Cand valoarea este 1, referinta
+2026-05-19 04:14:50,747  INFO      2323 22.82 (ACS880)  existing_len=758  qc=rewrite
+2026-05-19 04:14:57,656  INFO        -> rewrite: Afiseaza valoarea actuala a sursei de referinta de viteza 2. Este un parametru d
+2026-05-19 04:14:57,757  INFO      2324 22.13 (ACS880)  existing_len=1002  qc=rewrite
+2026-05-19 04:15:05,953  INFO        -> rewrite: Selecteaza functia matematica aplicata referintei de viteza 1. Optiunile includ:
+2026-05-19 04:15:06,053  INFO      2325 22.16 (ACS880)  existing_len=1022  qc=rewrite
+2026-05-19 04:15:16,684  INFO        -> rewrite: Defineste un factor de scalare pentru referinta de viteza selectata. Inmulteste 
+2026-05-19 04:15:16,785  INFO      2326 22.21 (ACS880)  existing_len=1060  qc=rewrite
+2026-05-19 04:15:27,716  INFO        -> rewrite: Selecteaza vitezele constante activate prin configurare binara. Bitul 0 = Packed
+2026-05-19 04:15:27,817  INFO      2327 22.26 (ACS880)  existing_len=1005  qc=rewrite
+2026-05-19 04:15:38,541  INFO        -> rewrite: Defineste valoarea primei viteze constante presetate pentru motor. Viteza este e
+2026-05-19 04:15:38,641  INFO      2329 22.27 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:15:51,932  INFO        -> rewrite: Seteaza valoarea vitezei constante in rpm pentru functia de referinta fixa. Valo
+2026-05-19 04:15:52,032  INFO      2330 22.28 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:16:03,298  INFO        -> rewrite: Defineste valoarea unei viteze constante prestabilite in rpm. Poate fi selectata
+2026-05-19 04:16:03,399  INFO      2331 22.29 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:16:15,854  INFO        -> rewrite: Seteaza valoarea vitezei constante 4 in rpm. Poate fi selectata prin intrare dig
+2026-05-19 04:16:15,955  INFO      2332 22.30 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:16:28,091  INFO        -> rewrite: Seteaza valoarea constantei de viteza 5 in rpm. Aceasta valoare poate fi selecta
+2026-05-19 04:16:28,192  INFO      2333 22.31 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:16:38,612  INFO        -> rewrite: Seteaza o viteza constanta fixa a motorului in rotatii pe minut. Valoarea poate 
+2026-05-19 04:16:38,713  INFO      2334 22.32 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 04:16:48,408  INFO        -> rewrite: Seteaza valoarea vitezei constante a motorului in rpm. Poate fi pozitiva pentru 
+2026-05-19 04:16:48,508  INFO      2335 22.41 (ACS880)  existing_len=999  qc=rewrite
+2026-05-19 04:17:00,342  INFO        -> rewrite: Defineste valoarea de referinta de viteza sigura care este utilizata in caz de e
+2026-05-19 04:17:00,443  INFO      2336 22.42 (ACS880)  existing_len=961  qc=rewrite
+2026-05-19 04:17:11,331  INFO        -> rewrite: Defineste viteza de referinta pentru functia de jogging 1. Valoarea este in rpm 
+2026-05-19 04:17:11,431  INFO      2337 22.43 (ACS880)  existing_len=961  qc=rewrite
+2026-05-19 04:17:22,764  INFO        -> rewrite: Defineste referinta de viteza pentru functia de jogging 2. Valoarea este in rpm 
+2026-05-19 04:17:22,865  INFO      2338 22.51 (ACS880)  existing_len=967  qc=rewrite
+2026-05-19 04:17:30,973  INFO        -> rewrite: Activeaza sau dezactiveaza functia de viteze critice. Cand este activata, VFD-ul
+2026-05-19 04:17:31,074  INFO      2339 22.52 (ACS880)  existing_len=967  qc=rewrite
+2026-05-19 04:17:37,890  INFO        -> rewrite: Defineste limita inferioara a vitezei critice pentru gama 1. Impreuna cu 22.53 f
+2026-05-19 04:17:37,990  INFO      2340 22.53 (ACS880)  existing_len=969  qc=rewrite
+2026-05-19 04:17:44,142  INFO        -> rewrite: Defineste limita superioara a gamei de viteze critice 1. Vitezele critice sunt f
+2026-05-19 04:17:44,243  INFO      2341 22.54 (ACS880)  existing_len=967  qc=rewrite
+2026-05-19 04:17:52,320  INFO        -> rewrite: Defineste limita inferioara pentru al doilea interval de viteze critice ale moto
+2026-05-19 04:17:52,421  INFO      2342 22.55 (ACS880)  existing_len=969  qc=rewrite
+2026-05-19 04:18:02,727  INFO        -> rewrite: Defineste limita superioara pentru al doilea interval de viteza critica a motoru
+2026-05-19 04:18:02,828  INFO      2343 22.56 (ACS880)  existing_len=967  qc=rewrite
+2026-05-19 04:18:17,488  INFO        -> rewrite: Defineste limita inferioara a celei de-a treia game de viteze critice. Viteze cr
+2026-05-19 04:18:17,588  INFO      2344 22.57 (ACS880)  existing_len=969  qc=rewrite
+2026-05-19 04:18:28,055  INFO        -> rewrite: Defineste limita superioara pentru zona de viteza critica 3. Impreuna cu limita 
+2026-05-19 04:18:28,156  INFO      2345 22.71 (ACS880)  existing_len=981  qc=rewrite
+2026-05-19 04:18:38,639  INFO        -> rewrite: Activeaza functia de potentiometru motor pentru control manual al vitezei. Modul
+2026-05-19 04:18:38,740  INFO      2346 22.72 (ACS880)  existing_len=998  qc=rewrite
+2026-05-19 04:18:51,826  INFO        -> rewrite: Defineste valoarea initiala (punctul de pornire) pentru functia motorpotentiomet
+2026-05-19 04:18:51,927  INFO      2347 22.75 (ACS880)  existing_len=975  qc=rewrite
+2026-05-19 04:18:57,788  INFO        -> rewrite: Defineste rata de schimbare a potentiometrului motor. Aceasta controleaza cat de
+2026-05-19 04:18:57,889  INFO      2348 22.76 (ACS880)  existing_len=977  qc=rewrite
+2026-05-19 04:19:10,951  INFO        -> rewrite: Defineste limita inferioara pentru functia de potentiometru motor, care memoreaz
+2026-05-19 04:19:11,051  INFO      2349 22.77 (ACS880)  existing_len=977  qc=rewrite
+2026-05-19 04:19:20,981  INFO        -> rewrite: Defineste valoarea maxima a potentiometrului motor, o functie virtuala de referi
+2026-05-19 04:19:21,081  INFO      2351 23.12 (ACS880)  existing_len=1041  qc=rewrite
+2026-05-19 04:19:27,408  INFO        -> rewrite: Defineste timpul necesar motorului pentru a accelera de la frecventa minima la f
+2026-05-19 04:19:27,509  INFO      2352 23.13 (ACS880)  existing_len=2547  qc=rewrite
+2026-05-19 04:19:33,286  INFO        -> rewrite: Defineste timpul necesar motorului pentru a decelera de la viteza maxima pana la
+2026-05-19 04:19:33,387  INFO      2353 23.14 (ACS880)  existing_len=949  qc=rewrite
+2026-05-19 04:19:42,431  INFO        -> rewrite: Defineste timpul necesar motorului pentru a accelera de la frecventa minima la f
+2026-05-19 04:19:42,531  INFO      2354 23.15 (ACS880)  existing_len=949  qc=rewrite
+2026-05-19 04:19:49,162  INFO        -> rewrite: Defineste timpul de decelerare 2 pentru oprirea motorului. Reprezinta durata in 
+2026-05-19 04:19:49,262  INFO      2355 23.16 (ACS880)  existing_len=991  qc=rewrite
+2026-05-19 04:19:57,057  INFO        -> rewrite: Defineste timpul de forma al rampei de accelerare 1. Valoarea 0 inseamna rampa l
+2026-05-19 04:19:57,157  INFO      2356 23.17 (ACS880)  existing_len=985  qc=rewrite
+2026-05-19 04:20:07,865  INFO        -> rewrite: Defineste forma partii finale a rampei de accelerare 2. O valoare pozitiva creea
+2026-05-19 04:20:07,965  INFO      2357 23.18 (ACS880)  existing_len=795  qc=rewrite
+2026-05-19 04:20:16,789  INFO        -> rewrite: Defineste timpul de forma al rampei de decelerare 1, care controleaza cat de lin
+2026-05-19 04:20:16,890  INFO      2358 23.19 (ACS880)  existing_len=789  qc=rewrite
+2026-05-19 04:20:31,485  INFO        -> rewrite: Defineste timpul de forma pentru portiunea finala a rampei de decelerare. Cand e
+2026-05-19 04:20:31,586  INFO      2359 23.20 (ACS880)  existing_len=729  qc=rewrite
+2026-05-19 04:20:38,550  INFO        -> rewrite: Defineste timpul de accelerare pentru functia de jogging. Valoarea reprezinta du
+2026-05-19 04:20:38,651  INFO      2360 23.21 (ACS880)  existing_len=729  qc=rewrite
+2026-05-19 04:20:46,752  INFO        -> rewrite: Defineste timpul de decelerare pentru functia de jogging. Acest parametru seteaz
+2026-05-19 04:20:46,853  INFO      2361 23.23 (ACS880)  existing_len=814  qc=rewrite
+2026-05-19 04:20:53,068  INFO        -> rewrite: Defineste timpul de decelerare in cazul opririi de urgenta. Cand functia de stop
+2026-05-19 04:20:53,169  INFO      2362 23.27 (ACS880)  existing_len=683  qc=rewrite
+2026-05-19 04:21:03,876  INFO        -> rewrite: Defineste referinta pentru echilibrarea rampei de viteza. Este utilizata in apli
+2026-05-19 04:21:03,978  INFO      2363 23.29 (ACS880)  existing_len=755  qc=rewrite
+2026-05-19 04:21:15,966  INFO        -> rewrite: Defineste rata de modificare a referintei de viteza. Valoarea in milisecunde con
+2026-05-19 04:21:16,066  INFO      2364 23.40 (ACS880)  existing_len=770  qc=rewrite
+2026-05-19 04:21:26,855  INFO        -> rewrite: Selecteaza sursa semnalului de corectie a vitezei pentru un follower (motor secu
+2026-05-19 04:21:26,956  INFO      2365 24.11 (ACS880)  existing_len=811  qc=rewrite
+2026-05-19 04:21:40,177  INFO        -> rewrite: Defineste o corectie aditionala care se aduna la referinta principala de viteza 
+2026-05-19 04:21:40,278  INFO      2366 24.12 (ACS880)  existing_len=733  qc=rewrite
+2026-05-19 04:21:53,301  INFO        -> rewrite: Seteaza constanta de timp a filtrului trece-jos pentru eroarea de viteza. Valori
+2026-05-19 04:21:53,402  INFO      2367 24.13 (ACS880)  existing_len=714  qc=rewrite
+2026-05-19 04:22:02,894  INFO        -> rewrite: Activeaza sau dezactiveaza filtrul de frecventa de rezonanta pentru viteza motor
+2026-05-19 04:22:02,995  INFO      2368 24.14 (ACS880)  existing_len=706  qc=rewrite
+2026-05-19 04:22:11,429  INFO        -> rewrite: Seteaza frecventa de pornire pentru banda de evitare a rezonantei mecanice. Când
+2026-05-19 04:22:11,530  INFO      2369 24.15 (ACS880)  existing_len=686  qc=rewrite
+2026-05-19 04:22:27,370  INFO        -> rewrite: Defineste coeficientul de amortizare pentru functia setata in parametrul 24.14. 
+2026-05-19 04:22:27,470  INFO      2370 24.16 (ACS880)  existing_len=698  qc=rewrite
+2026-05-19 04:22:40,324  INFO        -> rewrite: Defineste frecventa polului pentru detectarea rezonantei mecanice a sistemului. 
+2026-05-19 04:22:40,424  INFO      2371 24.17 (ACS880)  existing_len=703  qc=rewrite
+2026-05-19 04:22:49,851  INFO        -> rewrite: Defineste coeficientul de amortizare pentru functia selectata in parametrul 24.1
+2026-05-19 04:22:49,952  INFO      2372 24.41 (ACS880)  existing_len=725  qc=rewrite
+2026-05-19 04:22:59,271  INFO        -> rewrite: Activeaza functia de monitorizare a erorii de viteza a motorului. Când este acti
+2026-05-19 04:22:59,371  INFO      2373 24.42 (ACS880)  existing_len=678  qc=rewrite
+2026-05-19 04:23:10,642  INFO        -> rewrite: Activeaza sau dezactiveaza controlul cu fereastra de eroare de viteza. Cand este
+2026-05-19 04:23:10,743  INFO      2374 24.43 (ACS880)  existing_len=656  qc=rewrite
+2026-05-19 04:23:27,365  INFO        -> rewrite: Defineste limita superioara a ferestrei de eroare de viteza in rpm. Cand diferen
+2026-05-19 04:23:27,465  INFO      2375 24.44 (ACS880)  existing_len=719  qc=rewrite
+2026-05-19 04:23:35,955  INFO        -> rewrite: Seteaza limita superioara a vitezei motorului in rpm. Valoarea 0 dezactiveaza fu
+2026-05-19 04:23:36,056  INFO      2376 24.46 (ACS880)  existing_len=668  qc=rewrite
+2026-05-19 04:23:47,506  INFO        -> rewrite: Defineste un pas suplimentar de eroare de viteza care este adaugat la calculul e
+2026-05-19 04:23:47,606  INFO      2385 25.15 (ACS880)  existing_len=699  qc=rewrite
+2026-05-19 04:23:58,370  INFO        -> rewrite: Defineste castigul proportional al controllerului de viteza PI. Valori mari imbu
