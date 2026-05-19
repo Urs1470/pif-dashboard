@@ -25,7 +25,9 @@
       backdrop-filter: blur(6px);
       display: none; padding: 24px;
     }
-    .pv-modal-overlay.active { display: grid; place-items: center; }
+    .pv-modal-overlay.active { display: grid; place-items: center; overflow: hidden; }
+    body.pv-modal-open { overflow: hidden !important; }
+    .pv-body { overscroll-behavior: contain; }
     .pv-modal {
       width: 100%; max-width: 920px; max-height: calc(100vh - 48px);
       background: var(--bg-elev1, #11161e);
@@ -292,13 +294,11 @@
         </div>
 
         <div class="pv-sec">
-          <div class="pv-sec-head"><div class="pv-sec-title">Semnătură</div></div>
-          <div class="pv-form">
-            <div class="pv-fld">
-              <label>Reprezentant Electroglobal</label>
-              <input type="text" id="pv-rep-eg" value="Ion Ursu">
-            </div>
+          <div class="pv-sec-head">
+            <div class="pv-sec-title">Ingineri (max. 3)</div>
+            <span class="pv-sec-hint"><i data-lucide="info"></i>Numele apar în tabelul de ingineri din PV</span>
           </div>
+          <div class="pv-form" id="pv-ingineri-rows"></div>
         </div>
       </div>
 
@@ -416,6 +416,76 @@
 
   function close() {
     overlay.classList.remove('active');
+    document.body.classList.remove('pv-modal-open');
+  }
+
+  // Ingineri: array de inputs, 1..3
+  function renderIngineri(values) {
+    const tbody = $('#pv-ingineri-rows');
+    tbody.innerHTML = '';
+    const list = (values && values.length) ? values : ['Ion Ursu'];
+    list.slice(0, 3).forEach((nume, idx) => addInginerRow(nume, idx === 0));
+    updateInginerAddButton();
+  }
+  function addInginerRow(value, isFirst) {
+    const tbody = $('#pv-ingineri-rows');
+    const wrap = document.createElement('div');
+    wrap.className = 'pv-fld';
+    wrap.innerHTML = `
+      <label>Inginer ${tbody.children.length + 1}${isFirst ? ' <span class="opt">primary</span>' : ''}</label>
+      <div style="display:flex;gap:6px;">
+        <input type="text" class="pv-inginer-input" value="${escapeHtml(value || '')}" placeholder="Nume Prenume" style="flex:1;">
+        <button type="button" class="pv-inginer-del" title="Sterge"
+                style="width:32px;border:1px solid var(--line);background:transparent;color:var(--text-mut);border-radius:8px;cursor:pointer;display:grid;place-items:center;">
+          <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+    `;
+    wrap.querySelector('.pv-inginer-del').onclick = () => {
+      wrap.remove();
+      renumberIngineri();
+      updateInginerAddButton();
+      rerenderIcons();
+    };
+    tbody.appendChild(wrap);
+    rerenderIcons();
+  }
+  function renumberIngineri() {
+    const rows = overlay.querySelectorAll('#pv-ingineri-rows .pv-fld');
+    rows.forEach((r, i) => {
+      const lbl = r.querySelector('label');
+      if (lbl) lbl.innerHTML = `Inginer ${i + 1}${i === 0 ? ' <span class="opt">primary</span>' : ''}`;
+    });
+  }
+  function updateInginerAddButton() {
+    let btn = overlay.querySelector('#pv-add-inginer');
+    const tbody = $('#pv-ingineri-rows');
+    const count = tbody.querySelectorAll('.pv-fld').length;
+    if (count < 3) {
+      if (!btn) {
+        const wrap = document.createElement('div');
+        wrap.className = 'pv-fld full';
+        wrap.innerHTML = `
+          <button id="pv-add-inginer" type="button" class="pv-add">
+            <i data-lucide="plus"></i>Adaugă inginer
+          </button>
+        `;
+        tbody.appendChild(wrap);
+        wrap.querySelector('#pv-add-inginer').onclick = () => {
+          wrap.remove();
+          addInginerRow('', false);
+          renumberIngineri();
+          updateInginerAddButton();
+        };
+        rerenderIcons();
+      }
+    } else if (btn) {
+      btn.closest('.pv-fld').remove();
+    }
+  }
+  function collectIngineri() {
+    return Array.from(overlay.querySelectorAll('.pv-inginer-input'))
+      .map(i => i.value.trim()).filter(Boolean);
   }
 
   // Bind static elements
@@ -436,6 +506,7 @@
     btn.innerHTML = '<i data-lucide="loader-2"></i>Se generează...';
     rerenderIcons();
     try {
+      const ingineri = collectIngineri();
       const body = {
         echipament_id: $('#pv-echipament').value || null,
         cod_proiect: $('#pv-cod').value.trim(),
@@ -443,7 +514,8 @@
         denumire_comanda: $('#pv-denumire').value.trim(),
         observatii: $('#pv-observatii').value,
         nota_facturare: $('#pv-nota-fact').value,
-        reprezentant_eg: $('#pv-rep-eg').value.trim() || 'Ion Ursu',
+        reprezentant_eg: ingineri[0] || 'Ion Ursu',  // backward compat
+        ingineri: ingineri,
         ore: collectRows(),
       };
       const projectId = overlay.dataset.projectId;
@@ -489,13 +561,14 @@
     $('#pv-denumire').value = '';
     $('#pv-observatii').value = '';
     $('#pv-nota-fact').value = '';
-    $('#pv-rep-eg').value = 'Ion Ursu';
     $('#pv-data').value = todayDDMMYYYY();
     $('#pv-rows').innerHTML = '';
     rowSeq = 0;
     addRow({ tip: 'TD' });
+    renderIngineri(['Ion Ursu']);
 
     overlay.classList.add('active');
+    document.body.classList.add('pv-modal-open');
     rerenderIcons();
 
     try {
@@ -737,7 +810,10 @@
     const d = new Date();
     return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
   }
-  function close() { overlay.classList.remove('active'); }
+  function close() {
+    overlay.classList.remove('active');
+    document.body.classList.remove('pv-modal-open');
+  }
 
   function addDateRow(value) {
     const tbody = $('#pif-dates-rows');
@@ -840,6 +916,7 @@
     addDateRow(today);
     updatePreview();
     overlay.classList.add('active');
+    document.body.classList.add('pv-modal-open');
     rerenderIcons();
 
     try {

@@ -347,8 +347,16 @@ def _build_legend_table(doc):
     return table
 
 
-def _build_ingineri_table(doc, nume_inginer):
-    """Tabel 2 randuri x 3 coloane: header Inginer 1/2/3 + nume pe primul."""
+def _build_ingineri_table(doc, ingineri):
+    """
+    Tabel 2 randuri x 3 coloane: header Inginer 1/2/3 + nume pe coloanele
+    corespunzatoare. `ingineri` poate fi string (backward compat — 1 nume)
+    sau lista de pana la 3 nume.
+    """
+    if isinstance(ingineri, str):
+        ingineri = [ingineri] if ingineri.strip() else []
+    ingineri = [n.strip() for n in (ingineri or []) if n and n.strip()][:3]
+
     table = doc.add_table(rows=2, cols=3)
     table.autofit = False
     _apply_grid_borders(table)
@@ -360,10 +368,11 @@ def _build_ingineri_table(doc, nume_inginer):
                        valign=WD_ALIGN_VERTICAL.CENTER)
         _set_cell_shading(table.rows[0].cells[i], 'F2F2F2')
 
-    _set_cell_text(table.rows[1].cells[0], nume_inginer, size=10,
-                   align=WD_ALIGN_PARAGRAPH.CENTER, valign=WD_ALIGN_VERTICAL.CENTER)
-    _set_cell_text(table.rows[1].cells[1], '', size=10)
-    _set_cell_text(table.rows[1].cells[2], '', size=10)
+    for i in range(3):
+        nume = ingineri[i] if i < len(ingineri) else ''
+        _set_cell_text(table.rows[1].cells[i], nume, size=10,
+                       align=WD_ALIGN_PARAGRAPH.CENTER,
+                       valign=WD_ALIGN_VERTICAL.CENTER)
 
     for row in table.rows:
         for i in range(3):
@@ -442,6 +451,7 @@ def generate_pv_service(proiect, echipament, form_data):
     observatii = (form_data.get('observatii') or '').strip()
     nota_fact = (form_data.get('nota_facturare') or '').strip()
     rep_eg = (form_data.get('reprezentant_eg') or 'Ion Ursu').strip()
+    ingineri = form_data.get('ingineri') or ([rep_eg] if rep_eg else ['Ion Ursu'])
     ore = form_data.get('ore') or []
 
     nr_comanda_text = f"{cod} {denumire}" if denumire else cod
@@ -548,7 +558,7 @@ def generate_pv_service(proiect, echipament, form_data):
     # Build tabele noi la finalul docului, apoi le mut la pozitiile vechi
     hours_table = _build_hours_table(doc, ore, luna_pv)
     legend_table = _build_legend_table(doc)
-    ingineri_table = _build_ingineri_table(doc, rep_eg)
+    ingineri_table = _build_ingineri_table(doc, ingineri)
 
     # Spacing paragraph empty intre tabelul ore si legenda
     # Si intre legenda si ingineri

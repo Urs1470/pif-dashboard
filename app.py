@@ -3109,6 +3109,24 @@ def webhook_deploy():
         logger.error(f"Auto-deploy error: {e}")
         return f'Deploy error: {e}', 500
 
+    # Install dependintele noi din requirements.txt daca exista venv
+    # (previne "no module X" cand un commit aduce dependinte noi)
+    venv_pip = os.path.join(project_dir, 'venv', 'bin', 'pip')
+    req_file = os.path.join(project_dir, 'requirements.txt')
+    if os.path.exists(venv_pip) and os.path.exists(req_file):
+        try:
+            pip_result = subprocess.run(
+                [venv_pip, 'install', '-r', req_file, '--quiet'],
+                cwd=project_dir, capture_output=True, text=True, timeout=120
+            )
+            if pip_result.returncode != 0:
+                logger.error(f"Auto-deploy pip install failed: {pip_result.stderr}")
+                # nu blocam restart-ul — poate codul nou nu are dependinte noi
+            else:
+                logger.info("Auto-deploy pip install OK")
+        except Exception as e:
+            logger.error(f"Auto-deploy pip install error: {e}")
+
     subprocess.Popen(
         ['sudo', 'systemctl', 'restart', 'pif-dashboard'],
         cwd=project_dir
@@ -3179,6 +3197,7 @@ def pv_service_generate(project_id):
         'observatii': data.get('observatii', ''),
         'nota_facturare': data.get('nota_facturare', ''),
         'reprezentant_eg': data.get('reprezentant_eg') or 'Ion Ursu',
+        'ingineri': data.get('ingineri') or [],
         'ore': data.get('ore', []),
     }
 
