@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 15120,
+    "familie": "ACS580",
+    "parametru": "86.31",
+    "descriere_scurta": "Cavitation threshold",
+    "GENERATED": {
+      "explicatie": "Parametru de sensibilitate pentru detectia cavitatiei pompei. O valoare mai mare necesita o intensitate mai ridicata a cavitatiei inainte de declansare. Se ajusteaza la punerea in functiune pentru evitarea alarmelor false.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15121,
+    "familie": "ACS580",
+    "parametru": "96.16",
+    "descriere_scurta": "Unit selection",
+    "GENERATED": {
+      "explicatie": "Selecteaza unitatile de masura pentru putere (kW/hp), temperatura (°C/°F) si cuplu (Nm/lbft). Afecteaza afisarea si interpretarea valorilor in toti parametrii relevanti.",
+      "influenteaza": "01.10,01.17,01.30",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15122,
+    "familie": "ACS580",
+    "parametru": "21.41",
+    "descriere_scurta": "Minimum run time",
+    "GENERATED": {
+      "explicatie": "Defineste timpul minim de functionare pentru protectia ciclului scurt al compresorului. Compresorul nu poate fi oprit inainte de expirarea acestui timp (cu exceptia opririi de urgenta). Valoarea 0 dezactiveaza functia.",
+      "influenteaza": "21.40",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15123,
+    "familie": "ACS580",
+    "parametru": "21.40",
+    "descriere_scurta": "Restart delay",
+    "GENERATED": {
+      "explicatie": "Defineste intarzierea minima de repornire pentru protectia ciclului scurt al compresorului. Nu se aplica la prima pornire dupa alimentarea variatorului. Valoarea 0 dezactiveaza functia.",
+      "influenteaza": "21.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15124,
+    "familie": "ACS580",
+    "parametru": "21.01",
+    "descriere_scurta": "Start mode",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de pornire a motorului in control vector: Fast DC (premagnetizare automata 200ms-2s), Const time (timp fix din 21.02) sau Automatic (include flying start si autorestartare). Nu poate fi modificat in functionare.",
+      "influenteaza": "21.02,21.11,99.04",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15125,
+    "familie": "ACS580",
+    "parametru": "21.19",
+    "descriere_scurta": "Scalar start mode",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de pornire in control scalar: Normal (pornire directa), Const time (premagnetizare fixa 21.02) sau Automatic (flying start - detecteaza motorul in rotatie). Nu poate fi modificat in functionare.",
+      "influenteaza": "21.02,99.04",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15126,
+    "familie": "ACS580",
+    "parametru": "21.02",
+    "descriere_scurta": "Magnetization time",
+    "GENERATED": {
+      "explicatie": "Durata de premagnetizare activa cand 21.01 sau 21.19 = Const time. Orientativ: <1kW→50-100ms, 1-10kW→100-200ms, 10-200kW→200-1000ms. Nu poate fi modificat in functionare.",
+      "influenteaza": "21.01,21.19",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15127,
+    "familie": "ACS580",
+    "parametru": "21.11",
+    "descriere_scurta": "Post magnetization",
+    "GENERATED": {
+      "explicatie": "Durata in secunde cat variatorul mentine curentul de magnetizare (21.10) dupa oprire. Util pentru franare DC sau mentinerea cuplului inainte de aplicarea franei mecanice. Valoarea 0 dezactiveaza functia.",
+      "influenteaza": "21.10,21.08",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15128,
+    "familie": "ACS580",
+    "parametru": "21.15",
+    "descriere_scurta": "Pre-heating time",
+    "GENERATED": {
+      "explicatie": "Intarzierea in secunde dupa care incepe incalzirea de mentinere a motorului dupa oprire. Previne condensul in motoarele stationate in medii cu umiditate ridicata.",
+      "influenteaza": "21.10",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15129,
+    "familie": "ACS580",
+    "parametru": "97.02",
+    "descriere_scurta": "Minimum switching",
+    "GENERATED": {
+      "explicatie": "Defineste frecventa minima de comutatie admisa. La apropierea de limita termica, frecventa scade automat pana la aceasta valoare; dupa care se limiteaza curentul de iesire pentru a mentine temperatura sub limita.",
+      "influenteaza": "97.01,05.11",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15130,
+    "familie": "ACS580",
+    "parametru": "31.30",
+    "descriere_scurta": "Overspeed trip",
+    "GENERATED": {
+      "explicatie": "Marja de viteza deasupra 30.12 (sau sub 30.11) la care variatorul declanseaza pe defect 7310 Overspeed. Ex: 30.12=1420 rpm si 31.30=300 rpm → declanseaza la 1720 rpm. Activ numai in control vector.",
+      "influenteaza": "30.11,30.12,24.02",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15131,
+    "familie": "ACS580",
+    "parametru": "20.27",
+    "descriere_scurta": "Jogging 2 start",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa de activare a functiei jogging 2 (necesita 20.25 Jogging enable activ). Jog 2 poate fi activat si prin fieldbus independent de 20.25. Activ numai in control vector.",
+      "influenteaza": "20.25,20.26,22.42,22.43",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15132,
+    "familie": "ACS580",
+    "parametru": "20.26",
+    "descriere_scurta": "Jogging 1 start",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa de activare a functiei jogging 1 (necesita 20.25 Jogging enable activ). Daca ambele jog 1 si 2 sunt active, cel activat primul are prioritate. Activ numai in control vector.",
+      "influenteaza": "20.25,20.27,22.42,22.43",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15133,
+    "familie": "ACS580",
+    "parametru": "06.01",
+    "descriere_scurta": "Main control word",
+    "GENERATED": {
+      "explicatie": "Afiseaza semnalele de control agregate din toate sursele active (DI, fieldbus, program adaptiv). Cuvantul de control principal conform IEC 61800-7 (Off1/2/3, Run, Ramp hold, Reset, Inching). Parametru read-only.",
+      "influenteaza": "06.11,50.12",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15134,
+    "familie": "ACS580",
+    "parametru": "21.32",
+    "descriere_scurta": "Speed comp stop",
+    "GENERATED": {
+      "explicatie": "Defineste pragul de viteza (in % din viteza nominala) sub care functia Speed Compensated Stop este dezactivata. Sub acest prag variatorul opreste dupa rampa normala.",
+      "influenteaza": "21.03,99.09",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15135,
+    "familie": "ACS580",
+    "parametru": "21.18",
+    "descriere_scurta": "Auto restart time",
+    "GENERATED": {
+      "explicatie": "Durata maxima a intreruperii de alimentare dupa care variatorul incearca autorestartarea. Activ numai cand 95.04 = External 24V. Valoarea 0 dezactiveaza autorestartarea. Include si timpul de preincarcare DC.",
+      "influenteaza": "21.34,95.04",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15136,
+    "familie": "ACS580",
+    "parametru": "21.34",
+    "descriere_scurta": "Force auto restart",
+    "GENERATED": {
+      "explicatie": "Forteaza autorestartarea indiferent de durata intreruperii (ignora 21.18). Activ numai cand 95.04 = External 24V. Variatorul nu declanseaza pe subtensiune cat timp semnalul de start este prezent.",
+      "influenteaza": "21.18,95.04",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15137,
+    "familie": "ACS580",
+    "parametru": "30.31",
+    "descriere_scurta": "Undervoltage",
+    "GENERATED": {
+      "explicatie": "Activeaza controlerul de subtensiune al barei DC. La caderea tensiunii de alimentare, controlerul reduce cuplul motor astfel incat inerecia sarcinii mentine bara DC incarcata, evitand declansarea prematura.",
+      "influenteaza": "30.30",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15138,
+    "familie": "ACS580",
+    "parametru": "95.01",
+    "descriere_scurta": "Supply voltage",
+    "GENERATED": {
+      "explicatie": "Selecteaza gama de tensiune a retelei de alimentare. Afecteaza valorile nominale de curent si limitele de control ale tensiunii DC (supratensiune, activare chopper de franare). Setarea incorecta poate cauza comportament periculos.",
+      "influenteaza": "95.02,95.03,30.30,30.31",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15139,
+    "familie": "ACS580",
+    "parametru": "95.03",
+    "descriere_scurta": "Estimated AC",
+    "GENERATED": {
+      "explicatie": "Tensiunea AC de alimentare estimata la fiecare pornire, pe baza vitezei de crestere a tensiunii DC la preincarcare. Parametru read-only.",
+      "influenteaza": "95.01,95.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15140,
+    "familie": "ACS580",
+    "parametru": "95.02",
+    "descriere_scurta": "Adaptive voltage",
+    "GENERATED": {
+      "explicatie": "Activeaza limitele adaptative de tensiune, utile cand se foloseste un redresor IGBT cu tensiune DC ridicata sau cand tensiunea de alimentare AC este mare. Limitele se calculeaza pe baza tensiunii DC la sfarsitul preincarcarii.",
+      "influenteaza": "95.01,95.03,30.30,30.31",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15141,
+    "familie": "ACS580",
+    "parametru": "30.30",
+    "descriere_scurta": "Overvoltage control",
+    "GENERATED": {
+      "explicatie": "Activeaza controlerul de supratensiune al barei DC. La franarea sarcinilor inertiale, reduce automat cuplul de franare pentru a preveni depasirea limitei de supratensiune. Se dezactiveaza daca exista chopper de franare.",
+      "influenteaza": "30.31,95.01",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15142,
+    "familie": "ACS580",
+    "parametru": "31.33",
+    "descriere_scurta": "Emergency ramp",
+    "GENERATED": {
+      "explicatie": "Daca 31.32=0%: defineste timpul maxim pentru oprirea de urgenta Off1/Off3. Daca 31.32 != 0%: defineste intarzierea de activare a supravegherii. La depasire: defect 73B0 Emergency ramp failed.",
+      "influenteaza": "31.32,21.04,23.11,23.23",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15143,
+    "familie": "ACS580",
+    "parametru": "31.32",
+    "descriere_scurta": "Emergency ramp",
+    "GENERATED": {
+      "explicatie": "Devierea maxima admisa de la rata de decelerare asteptata in oprirea de urgenta. La 0% se supravegheaza doar timpul maxim din 31.33. La != 0% se compara decelerarea reala cu cea calculata din rampele de urgenta.",
+      "influenteaza": "31.33,21.04,23.11,23.23,24.02",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15144,
+    "familie": "ACS580",
+    "parametru": "35.51",
+    "descriere_scurta": "Motor load curve",
+    "GENERATED": {
+      "explicatie": "Defineste sarcina termica maxima admisa a motorului in % din curentul nominal (99.06). Curba este folosita de modelul termic pentru estimarea temperaturii. Trebuie ajustata daca temperatura ambianta difera de 35.50.",
+      "influenteaza": "35.52,35.53,35.05,35.56,99.06,35.50",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15145,
+    "familie": "ACS580",
+    "parametru": "35.53",
+    "descriere_scurta": "Break point",
+    "GENERATED": {
+      "explicatie": "Frecventa de pauza a curbei de sarcina motor in Hz. Deasupra acestei frecvente curba ramane la 35.51 (Motor load curve); sub aceasta frecventa scade spre 35.52 (Zero speed load).",
+      "influenteaza": "35.51,35.52,35.05",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15146,
+    "familie": "ACS580",
+    "parametru": "35.05",
+    "descriere_scurta": "Motor overload",
+    "GENERATED": {
+      "explicatie": "Nivelul de suprasarcina motor in % din limita de defect. La 88% se genereaza avertizarea A783, la 100% se declanseaza defectul 7122 Motor overload. Parametru read-only.",
+      "influenteaza": "35.51,35.52,35.53,35.56,35.57",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15147,
+    "familie": "ACS580",
+    "parametru": "35.56",
+    "descriere_scurta": "Motor overload",
+    "GENERATED": {
+      "explicatie": "Selecteaza actiunea la suprasarcina motor: No action, Warning A783 la 88% (35.05) sau Warning si Fault 7122 la 100%. Se bazeaza pe modelul termic definit de curba 35.51-35.53.",
+      "influenteaza": "35.05,35.51,35.57",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15148,
+    "familie": "ACS580",
+    "parametru": "35.57",
+    "descriere_scurta": "Motor overload",
+    "GENERATED": {
+      "explicatie": "Defineste clasa de protectie la suprasarcina conform IEC 60947-4-1: 5, 10, 20 sau 30. Clasa defineste timpul de declansare la curent de 7.2 ori limita (ex. clasa 20 = 20 secunde).",
+      "influenteaza": "35.05,35.56",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15149,
+    "familie": "ACS580",
+    "parametru": "31.35",
+    "descriere_scurta": "Main fan fault",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la detectarea problemei ventilatorului principal de racire (numai carcasele R6+). Optiuni: Fault 5080, Warning A581 sau No action.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15150,
+    "familie": "ACS580",
+    "parametru": "31.36",
+    "descriere_scurta": "Aux fan fault",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la detectarea problemei ventilatorului auxiliar. Defectul/avertizarea este suprimat 2 minute dupa pornire, util la punerea in functiune fara capacul frontal.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15151,
+    "familie": "ACS580",
+    "parametru": "01.55",
+    "descriere_scurta": "Inverter GWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata prin variator in GWh (ambele directii), resetabila de pe panou (3s Reset). Resetarea oricaruia din 01.55-01.58 reseteaza toate cele patru contoare.",
+      "influenteaza": "01.56,01.57,01.58",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15152,
+    "familie": "ACS580",
+    "parametru": "01.58",
+    "descriere_scurta": "Cumulative inverter",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata prin variator in kWh (ambele directii), resetabila de pe panou (3s Reset). Resetarea oricaruia din 01.55-01.58 reseteaza toate cele patru contoare.",
+      "influenteaza": "01.55,01.56,01.57",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15153,
+    "familie": "ACS580",
+    "parametru": "96.69",
+    "descriere_scurta": "Actual checksumB",
+    "GENERATED": {
+      "explicatie": "Suma de control actuala B a configuratiei parametrilor. Include grupele de parametri editabili (exclude date motor, fieldbus, energie). Utila pentru verificarea integritatii configuratiei.",
+      "influenteaza": "96.54,96.55,96.71,96.72",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15154,
+    "familie": "ACS580",
+    "parametru": "96.71",
+    "descriere_scurta": "Approved",
+    "GENERATED": {
+      "explicatie": "Suma de control A aprobata (referinta). Se compara cu suma actuala A pentru verificarea integritatii configuratiei parametrilor.",
+      "influenteaza": "96.54,96.55,96.69,96.72",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15155,
+    "familie": "ACS580",
+    "parametru": "96.72",
+    "descriere_scurta": "Approved",
+    "GENERATED": {
+      "explicatie": "Suma de control B aprobata (referinta). Se compara cu suma actuala B (96.69) pentru verificarea integritatii configuratiei parametrilor.",
+      "influenteaza": "96.54,96.55,96.69,96.71",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15156,
+    "familie": "ACS580",
+    "parametru": "96.02",
+    "descriere_scurta": "Pass code",
+    "GENERATED": {
+      "explicatie": "Codul de acces pentru activarea nivelurilor suplimentare sau configurarea blocarii utilizatorului. Codul 358 comuta blocarea parametrilor; codul user lock implicit este 10000000 (trebuie schimbat pentru securitate).",
+      "influenteaza": "96.03,96.100,96.101,96.102",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15157,
+    "familie": "ACS580",
+    "parametru": "96.100",
+    "descriere_scurta": "Change user pass",
+    "GENERATED": {
+      "explicatie": "Permite schimbarea codului de acces al utilizatorului cand blocarea este deschisa. Noul cod trebuie confirmat in 96.101. Vizibil numai cand blocarea utilizatorului este deschisa.",
+      "influenteaza": "96.101,96.102,96.02",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15158,
+    "familie": "ACS580",
+    "parametru": "96.101",
+    "descriere_scurta": "Confirm user pass",
+    "GENERATED": {
+      "explicatie": "Confirma noul cod de acces al utilizatorului introdus in 96.100. Vizibil numai cand blocarea utilizatorului este deschisa.",
+      "influenteaza": "96.100,96.02",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15159,
+    "familie": "ACS580",
+    "parametru": "96.102",
+    "descriere_scurta": "User lock",
+    "GENERATED": {
+      "explicatie": "Selecteaza functionalitatile blocate de user lock: niveluri de acces ABB/OEM, blocare parametri, incarcare fisiere, backup, program adaptiv. Modificarile se aplica la inchiderea blocarii.",
+      "influenteaza": "96.02,96.03",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15160,
+    "familie": "ACS580",
+    "parametru": "96.08",
+    "descriere_scurta": "Control board boot",
+    "GENERATED": {
+      "explicatie": "Reporneste unitatea de control fara a intrerupe alimentarea completa a variatorului. Valoarea revine automat la 0 dupa repornire.",
+      "influenteaza": "96.02",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15161,
+    "familie": "ACS580",
+    "parametru": "96.03",
+    "descriere_scurta": "Access level status",
+    "GENERATED": {
+      "explicatie": "Afiseaza nivelurile de acces activate de codurile introduse in 96.02: standard, service, ABB, OEM1/2/3. Parametru read-only.",
+      "influenteaza": "96.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15162,
+    "familie": "ACS580",
+    "parametru": "95.15",
+    "descriere_scurta": "Special HW",
+    "GENERATED": {
+      "explicatie": "Cuvant de configurare hardware pentru setari speciale: motor ABB EX (limiteaza frecventa de comutatie la 2.65 kHz) sau filtru sinusoidal ABB la iesire (limiteaza la 3 kHz).",
+      "influenteaza": "97.01,97.02",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15163,
+    "familie": "ACS580",
+    "parametru": "01.02",
+    "descriere_scurta": "Motor speed",
+    "GENERATED": {
+      "explicatie": "Viteza estimata a motorului in rpm. Filtru definit prin 46.11. Parametru read-only; similar cu 01.01 Motor speed used.",
+      "influenteaza": "46.11,01.01",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15164,
+    "familie": "ACS580",
+    "parametru": "01.03",
+    "descriere_scurta": "Motor speed %",
+    "GENERATED": {
+      "explicatie": "Viteza motorului in procente din viteza sincrona. Parametru read-only.",
+      "influenteaza": "01.01,01.62",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15165,
+    "familie": "ACS580",
+    "parametru": "01.08",
+    "descriere_scurta": "Motor current % of",
+    "GENERATED": {
+      "explicatie": "Curentul motor in procente din curentul nominal al motorului (99.06). Parametru read-only.",
+      "influenteaza": "99.06,01.07,01.09",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15166,
+    "familie": "ACS580",
+    "parametru": "01.09",
+    "descriere_scurta": "Motor current % of",
+    "GENERATED": {
+      "explicatie": "Curentul motor in procente din curentul nominal al variatorului. Parametru read-only.",
+      "influenteaza": "01.07,01.08",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15167,
+    "familie": "ACS580",
+    "parametru": "01.13",
+    "descriere_scurta": "Output voltage",
+    "GENERATED": {
+      "explicatie": "Tensiunea motor calculata in V AC. Parametru read-only.",
+      "influenteaza": "01.06",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15168,
+    "familie": "ACS580",
+    "parametru": "01.15",
+    "descriere_scurta": "Output power % of",
+    "GENERATED": {
+      "explicatie": "Puterea de iesire in procente din puterea nominala a motorului. Parametru read-only.",
+      "influenteaza": "01.17,01.65,01.66",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15169,
+    "familie": "ACS580",
+    "parametru": "01.18",
+    "descriere_scurta": "Inverter GWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata prin variator in GWh (ambele directii), neresetabila. Contor permanent pentru istoricul dispozitivului.",
+      "influenteaza": "01.19,01.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15170,
+    "familie": "ACS580",
+    "parametru": "01.19",
+    "descriere_scurta": "Inverter MWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata in MWh, neresetabila. La fiecare depasire (rollover), 01.18 este incrementat. Parametru read-only.",
+      "influenteaza": "01.18,01.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15171,
+    "familie": "ACS580",
+    "parametru": "01.20",
+    "descriere_scurta": "Inverter kWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata in kWh, neresetabila. La fiecare depasire, 01.19 este incrementat. Parametru read-only.",
+      "influenteaza": "01.18,01.19",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15172,
+    "familie": "ACS580",
+    "parametru": "01.24",
+    "descriere_scurta": "Flux actual %",
+    "GENERATED": {
+      "explicatie": "Referinta de flux utilizata in procente din fluxul nominal al motorului. Parametru read-only; util pentru diagnosticarea controlului de flux si a optimizatorului de energie (45.11).",
+      "influenteaza": "45.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15173,
+    "familie": "ACS580",
+    "parametru": "01.30",
+    "descriere_scurta": "Nominal torque",
+    "GENERATED": {
+      "explicatie": "Valoarea cuplului corespunzatoare la 100% (cuplul nominal). Copiata din 99.12 daca este introdus, altfel calculata din datele motor. Afecteaza scala afisata de 01.10.",
+      "influenteaza": "99.12,01.10,96.16",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15174,
+    "familie": "ACS580",
+    "parametru": "01.31",
+    "descriere_scurta": "Ambient",
+    "GENERATED": {
+      "explicatie": "Temperatura ambianta a variatorului in °C sau °F. Parametru read-only; disponibil numai pentru carcasele R6 sau mai mari.",
+      "influenteaza": "35.50",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15175,
+    "familie": "ACS580",
+    "parametru": "01.54",
+    "descriere_scurta": "Cumulative inverter",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata prin variator in kWh, neresetabila. Contor permanent complementar seriei 01.18-01.20. Parametru read-only.",
+      "influenteaza": "01.18,01.19,01.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15176,
+    "familie": "ACS580",
+    "parametru": "01.56",
+    "descriere_scurta": "Inverter MWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata in MWh, resetabila de pe panou (3s Reset). La fiecare depasire, 01.55 este incrementat. Resetarea unuia din 01.55-01.58 reseteaza toti contoarele.",
+      "influenteaza": "01.55,01.57,01.58",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15177,
+    "familie": "ACS580",
+    "parametru": "01.57",
+    "descriere_scurta": "Inverter kWh",
+    "GENERATED": {
+      "explicatie": "Energia totala tranzitata in kWh, resetabila de pe panou (3s Reset). La fiecare depasire, 01.56 este incrementat. Resetarea unuia din 01.55-01.58 reseteaza toti contoarele.",
+      "influenteaza": "01.55,01.56,01.58",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15179,
+    "familie": "ACS580",
+    "parametru": "01.62",
+    "descriere_scurta": "Abs motor speed %",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a vitezei motor in procente (01.03). Parametru read-only.",
+      "influenteaza": "01.03",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15180,
+    "familie": "ACS580",
+    "parametru": "01.63",
+    "descriere_scurta": "Abs output",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a frecventei de iesire (01.06). Parametru read-only.",
+      "influenteaza": "01.06",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15181,
+    "familie": "ACS580",
+    "parametru": "01.64",
+    "descriere_scurta": "Abs motor torque",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a cuplului motor (01.10). Parametru read-only.",
+      "influenteaza": "01.10",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15182,
+    "familie": "ACS580",
+    "parametru": "01.65",
+    "descriere_scurta": "Abs output power",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a puterii de iesire (01.14). Parametru read-only.",
+      "influenteaza": "01.14",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15183,
+    "familie": "ACS580",
+    "parametru": "01.66",
+    "descriere_scurta": "Abs output",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a puterii de iesire in procente din puterea nominala a motorului (01.15). Parametru read-only.",
+      "influenteaza": "01.15",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15184,
+    "familie": "ACS580",
+    "parametru": "01.68",
+    "descriere_scurta": "Abs motor shaft",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a puterii la arborele motor (01.17). Parametru read-only.",
+      "influenteaza": "01.17",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15185,
+    "familie": "ACS580",
+    "parametru": "03.01",
+    "descriere_scurta": "Panel reference",
+    "GENERATED": {
+      "explicatie": "Referinta 1 introdusa de la panoul de control sau Drive Composer PC tool. Activa cand variatorul este in control local. Parametru read-only.",
+      "influenteaza": "19.17,22.11,28.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15187,
+    "familie": "ACS580",
+    "parametru": "03.10",
+    "descriere_scurta": "EFB reference 2",
+    "GENERATED": {
+      "explicatie": "Referinta 2 scalata primita prin interfata EFB (Embedded Fieldbus). Parametru read-only; valoarea este procesata conform scalarii configurate pentru fieldbus incorporat.",
+      "influenteaza": "03.09,58.14",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 15188,
+    "familie": "ACS580",
+    "parametru": "04.01",
+    "descriere_scurta": "Tripping fault",
+    "GENERATED": {
+      "explicatie": "Codul primului defect activ care a cauzat declansearea curenta. Parametru read-only.",
+      "influenteaza": "04.02,04.03,04.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15189,
+    "familie": "ACS580",
+    "parametru": "04.02",
+    "descriere_scurta": "Active fault 2",
+    "GENERATED": {
+      "explicatie": "Codul celui de-al doilea defect activ simultan. Parametru read-only.",
+      "influenteaza": "04.01,04.03",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15190,
+    "familie": "ACS580",
+    "parametru": "04.03",
+    "descriere_scurta": "Active fault 3",
+    "GENERATED": {
+      "explicatie": "Codul celui de-al treilea defect activ simultan. Parametru read-only.",
+      "influenteaza": "04.01,04.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15191,
+    "familie": "ACS580",
+    "parametru": "04.06",
+    "descriere_scurta": "Active warning 1",
+    "GENERATED": {
+      "explicatie": "Codul primei avertizari active. Parametru read-only.",
+      "influenteaza": "04.07,04.08",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15192,
+    "familie": "ACS580",
+    "parametru": "04.07",
+    "descriere_scurta": "Active warning 2",
+    "GENERATED": {
+      "explicatie": "Codul celei de-a doua avertizari active. Parametru read-only.",
+      "influenteaza": "04.06,04.08",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15193,
+    "familie": "ACS580",
+    "parametru": "04.08",
+    "descriere_scurta": "Active warning 3",
+    "GENERATED": {
+      "explicatie": "Codul celei de-a treia avertizari active. Parametru read-only.",
+      "influenteaza": "04.06,04.07",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15194,
+    "familie": "ACS580",
+    "parametru": "04.11",
+    "descriere_scurta": "Latest fault",
+    "GENERATED": {
+      "explicatie": "Codul primului defect stocat (inactiv). Parametru read-only util pentru diagnosticarea post-avarie.",
+      "influenteaza": "04.01,96.51",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15195,
+    "familie": "ACS580",
+    "parametru": "04.40",
+    "descriere_scurta": "Event word 1",
+    "GENERATED": {
+      "explicatie": "Cuvant de stare definit de utilizator care colecteaza statusul evenimentelor selectate in 04.41-04.71. Fiecare bit reflecta statusul unui eveniment specific selectat de utilizator. Parametru read-only.",
+      "influenteaza": "04.41,04.43,04.45,04.47,04.49,04.51,04.53,04.55,04.57,04.59,04.61,04.63,04.67,04.69,04.71",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15196,
+    "familie": "ACS580",
+    "parametru": "04.41",
+    "descriere_scurta": "Event word 1 bit 0",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului (defect/avertizare) reflectat in bitul 0 al 04.40. Implicit: 0x2310 (supracurent).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15197,
+    "familie": "ACS580",
+    "parametru": "04.43",
+    "descriere_scurta": "Event word 1 bit 1",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 1 al 04.40. Implicit: 0x3210 (supratensiune DC).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15198,
+    "familie": "ACS580",
+    "parametru": "04.45",
+    "descriere_scurta": "Event word 1 bit 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 2 al 04.40. Implicit: 0x4310 (temperatura excesiva).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15199,
+    "familie": "ACS580",
+    "parametru": "04.47",
+    "descriere_scurta": "Event word 1 bit 3",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 3 al 04.40. Implicit: 0x2340 (scurtcircuit).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15200,
+    "familie": "ACS580",
+    "parametru": "04.49",
+    "descriere_scurta": "Event word 1 bit 4",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 4 al 04.40. Implicit: 0x0000 (neatribuit).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15201,
+    "familie": "ACS580",
+    "parametru": "04.51",
+    "descriere_scurta": "Event word 1 bit 5",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 5 al 04.40. Implicit: 0x3220 (subtensiune DC).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15202,
+    "familie": "ACS580",
+    "parametru": "04.53",
+    "descriere_scurta": "Event word 1 bit 6",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 6 al 04.40. Implicit: 0x80A0 (supraveghere AI).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15203,
+    "familie": "ACS580",
+    "parametru": "04.55",
+    "descriere_scurta": "Event word 1 bit 7",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 7 al 04.40. Implicit: 0x0000 (neatribuit).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15204,
+    "familie": "ACS580",
+    "parametru": "04.57",
+    "descriere_scurta": "Event word 1 bit 8",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 8 al 04.40. Implicit: 0x7122 (suprasarcina motor).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15205,
+    "familie": "ACS580",
+    "parametru": "04.59",
+    "descriere_scurta": "Event word 1 bit 9",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 9 al 04.40. Implicit: 0x7081 (pierdere panou control).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15206,
+    "familie": "ACS580",
+    "parametru": "04.61",
+    "descriere_scurta": "Event word 1 bit 10",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 10 al 04.40. Implicit: 0xFF61 (defect ID run).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15207,
+    "familie": "ACS580",
+    "parametru": "04.63",
+    "descriere_scurta": "Event word 1 bit 11",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 11 al 04.40. Implicit: 0x7121 (blocare motor stall).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15208,
+    "familie": "ACS580",
+    "parametru": "04.67",
+    "descriere_scurta": "Event word 1 bit 13",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 13 al 04.40. Implicit: 0x9081 (eveniment extern 1).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15209,
+    "familie": "ACS580",
+    "parametru": "04.69",
+    "descriere_scurta": "Event word 1 bit 14",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 14 al 04.40. Implicit: 0x9082 (eveniment extern 2).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15210,
+    "familie": "ACS580",
+    "parametru": "04.71",
+    "descriere_scurta": "Event word 1 bit 15",
+    "GENERATED": {
+      "explicatie": "Selecteaza codul hex al evenimentului reflectat in bitul 15 al 04.40. Implicit: 0x2330 (defect la pamant).",
+      "influenteaza": "04.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15211,
+    "familie": "ACS580",
+    "parametru": "05.02",
+    "descriere_scurta": "Run-time counter",
+    "GENERATED": {
+      "explicatie": "Contor de functionare al motorului in zile intregi. Avanseaza cat timp inverterul moduleaza. Parametru read-only.",
+      "influenteaza": "05.03",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15212,
+    "familie": "ACS580",
+    "parametru": "05.03",
+    "descriere_scurta": "Hours run",
+    "GENERATED": {
+      "explicatie": "Ore de functionare: $t[h] = 24 \\cdot d + f$, unde d sunt zilele din 05.02 si f este fractia de zi. Parametru read-only.",
+      "influenteaza": "05.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15213,
+    "familie": "ACS580",
+    "parametru": "05.04",
+    "descriere_scurta": "Fan on-time",
+    "GENERATED": {
+      "explicatie": "Durata totala de functionare a ventilatorului de racire, resetabila de pe panou (3s Reset). Util pentru planificarea mentenantei preventive a ventilatorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15214,
+    "familie": "ACS580",
+    "parametru": "05.08",
+    "descriere_scurta": "Cabinet",
+    "GENERATED": {
+      "explicatie": "Temperatura in interiorul dulapului electric, disponibila numai pentru ACS580-07 cabinet drives (carcasele R6+). Activata prin bitul 6 al 95.21. Parametru read-only.",
+      "influenteaza": "95.21",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15215,
+    "familie": "ACS580",
+    "parametru": "05.10",
+    "descriere_scurta": "Control board",
+    "GENERATED": {
+      "explicatie": "Temperatura masurata a unitatii de control in °C sau °F. Parametru read-only.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15216,
+    "familie": "ACS580",
+    "parametru": "05.11",
+    "descriere_scurta": "Inverter",
+    "GENERATED": {
+      "explicatie": "Temperatura estimata a variatorului in % din limita de defect. La apropierea de 100%, frecventa de comutatie si curentul de iesire se reduc automat. Parametru read-only.",
+      "influenteaza": "97.01,97.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15217,
+    "familie": "ACS580",
+    "parametru": "05.21",
+    "descriere_scurta": "Diagnostic word 2",
+    "GENERATED": {
+      "explicatie": "Cuvant de diagnosticare 2: indica defecte de temperatura externa (4981 External temperature, 4982 Safe motor temperature). Parametru read-only.",
+      "influenteaza": "05.22",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15218,
+    "familie": "ACS580",
+    "parametru": "05.22",
+    "descriere_scurta": "Diagnostic word 3",
+    "GENERATED": {
+      "explicatie": "Cuvant de diagnosticare 3: indica activitatea pulsului kWh si daca ventilatorul se invarte deasupra vitezei de ralanti. Parametru read-only.",
+      "influenteaza": "05.21",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15219,
+    "familie": "ACS580",
+    "parametru": "05.80",
+    "descriere_scurta": "Motor speed at fault",
+    "GENERATED": {
+      "explicatie": "Viteza motor (24.02) la momentul aparitiei ultimului defect, in rpm. Parametru read-only util pentru analiza post-avarie.",
+      "influenteaza": "24.02,05.81",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15220,
+    "familie": "ACS580",
+    "parametru": "24.02",
+    "descriere_scurta": "Used speed",
+    "GENERATED": {
+      "explicatie": "Feedback-ul de viteza utilizat de regulatorul de viteza pentru calculul erorii. Afiseaza viteza reala care controleaza bucla de reglare. Parametru read-only.",
+      "influenteaza": "25.02,25.03,31.30,30.11,30.12",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15221,
+    "familie": "ACS580",
+    "parametru": "05.81",
+    "descriere_scurta": "Output frequency at",
+    "GENERATED": {
+      "explicatie": "Frecventa de iesire (01.06) la momentul aparitiei ultimului defect. Parametru read-only util pentru analiza post-avarie.",
+      "influenteaza": "01.06,05.80",
+      "categorie": "Diagnostic"
+    }
+  }
+]
