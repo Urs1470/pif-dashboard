@@ -1,0 +1,802 @@
+[
+  {
+    "id": 15434,
+    "parametru": "34.32",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 8",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15436,
+    "parametru": "34.34",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 8 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15437,
+    "parametru": "34.35",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 9",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15438,
+    "parametru": "34.36",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 9 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15439,
+    "parametru": "34.37",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 9 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15440,
+    "parametru": "34.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 10",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15441,
+    "parametru": "34.39",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 10 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15442,
+    "parametru": "34.40",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 10 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15443,
+    "parametru": "34.41",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 11",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15444,
+    "parametru": "34.43",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 11 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15445,
+    "parametru": "34.60",
+    "familie": "ACS580",
+    "descriere_scurta": "Season 1 start date",
+    "descriere": "Defines the start date of season 1 in format dd.mm, where dd is the number of the day and mm is the number of the month. The season changes at midnight. One season can be active at a time. Timers are started on exception days even if they are not inside the active season. The season start dates (1…4) must be given in increasing order to use all seasons. The default value is interpreted that the season is not configured. If the season start dates are not in increasing order and the value is something else than the default value, a season configuration warning is given. Season start date.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15446,
+    "parametru": "34.61",
+    "familie": "ACS580",
+    "descriere_scurta": "Season 2 start date",
+    "descriere": "Defines the start date of season 2. See 34.60 Season 1 start date.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15447,
+    "parametru": "34.62",
+    "familie": "ACS580",
+    "descriere_scurta": "Season 3 start date",
+    "descriere": "Defines the start date of season 3. See 34.60 Season 1 start date.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15449,
+    "parametru": "34.70",
+    "familie": "ACS580",
+    "descriere_scurta": "Number of active",
+    "descriere": "Defines how many of the exceptions are active by specifying the last active one. All preceding exceptions are active. Exceptions 1…3 are periods (duration can be defined) and exceptions 4…16 are days (duration is always 24 hours).",
+    "pdf_extra": "{\"examples\": [\"If the value is 4, exceptions 1…4 are active, and exceptions 5…16 are not active. Number of active exception periods or days.\"]}"
+  },
+  {
+    "id": 15450,
+    "parametru": "34.72",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 1 start",
+    "descriere": "Defines the start date of the exception period in format dd.mm, where dd is the number of the day and mm is the number of the month. The timer started on an exception day is always stopped at 23:59:59 even if it has duration left. The same date can be configured to be holiday and workday. The date is active if any of exception days are active. Start date of exception period 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15451,
+    "parametru": "34.73",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 1 length",
+    "descriere": "Defines the length of the exception period in days. Exception period is handled the same as a number of consecutive exception days. Length of exception period 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15452,
+    "parametru": "34.74",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 2 start",
+    "descriere": "See 34.72 Exception 1 start.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15453,
+    "parametru": "34.75",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 2 length",
+    "descriere": "See 34.73 Exception 1 length.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15454,
+    "parametru": "34.76",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 3 start",
+    "descriere": "See 34.72 Exception 1 start.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15455,
+    "parametru": "34.77",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception 3 length",
+    "descriere": "See 34.73 Exception 1 length.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15456,
+    "parametru": "34.78",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 4",
+    "descriere": "Defines the date of exception day 4. Start date of exception day 4. The timer started on an exception day is always stopped at 23:59:59 even if it has duration left.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15457,
+    "parametru": "34.79",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 5",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15458,
+    "parametru": "34.80",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 6",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15459,
+    "parametru": "34.81",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 7",
+    "descriere": "See 34.79 Exception day 4",
+    "pdf_extra": null
+  },
+  {
+    "id": 15460,
+    "parametru": "34.82",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 8",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15461,
+    "parametru": "34.84",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 10",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15462,
+    "parametru": "34.85",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 11",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15463,
+    "parametru": "34.86",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 12",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15464,
+    "parametru": "34.87",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 13",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15465,
+    "parametru": "34.88",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 14",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15466,
+    "parametru": "34.89",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 15",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15467,
+    "parametru": "34.90",
+    "familie": "ACS580",
+    "descriere_scurta": "Exception day 16",
+    "descriere": "See 34.79 Exception day 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15468,
+    "parametru": "34.110",
+    "familie": "ACS580",
+    "descriere_scurta": "Boost time function",
+    "descriere": "Defines which combined timers (that is, timers that are connected to the combined timers) are activated with the extra time function. Description 1 0 = Inactive. 1 = Active. 2 0 = Inactive. 1 = Active. 3 0 = Inactive. 1 = Active. Combined timers including the extra timer.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15469,
+    "parametru": "35.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Motor estimated",
+    "descriere": "Displays the motor temperature as estimated by the internal motor thermal protection model (see parameters 35.50…35.55). The unit is selected by parameter 96.16 Unit selection. This parameter is read-only. Estimated motor temperature.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15470,
+    "parametru": "35.02",
+    "familie": "ACS580",
+    "descriere_scurta": "Measured",
+    "descriere": "Displays the temperature received through the source defined by parameter 35.11 Temperature 1 source. The unit is selected by parameter 96.16 Unit selection. Notes: • With a PTC sensor, the unit is ohms. • With a PTC sensor connected DI6, the value shown is not a valid measurement. Either 0 ohm (normal temperature) or the value of parameter 35.12 Temperature 1 fault limit (excessive temperature) is shown. This parameter is read-only. Measured temperature 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15471,
+    "parametru": "35.50",
+    "familie": "ACS580",
+    "descriere_scurta": "Motor ambient",
+    "descriere": "Defines the ambient temperature of the motor for the motor thermal protection model. The unit is selected by parameter 96.16 Unit selection. The motor thermal protection model estimates the motor temperature on the basis of parameters 35.50…35.55. The motor temperature increases if it operates in the region above the load curve, and decreases if it operates in the region below the load curve. WARNING! The model cannot protect the motor if the motor does not cool properly because of dust, dirt, etc. Ambient temperature.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15472,
+    "parametru": "35.13",
+    "familie": "ACS580",
+    "descriere_scurta": "Temperature 1",
+    "descriere": "Defines the warning limit for temperature supervision function 1. When measured temperature 1 exceeds the limit, warning A491 External temperature 1 is generated. The unit is selected by parameter 96.16 Unit selection. Notes: • With a PTC sensor, the unit is ohms. • With a PTC sensor, changing the value of this parameter has no effect on fault generation. When PTC is over the triggering threshold of the CMOD-02 (see the Hardware manual of the drive), the drive trips on the fault and when PTC has decreased below recovery threshold of the CMOD-02 (see the Hardware manual of the drive), the fault can be reset manually. Warning limit for temperature monitoring function 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15473,
+    "parametru": "35.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Temperature 1 AI",
+    "descriere": "Specifies the analog input when the setting of 35.11 Temperature 1 source requires measurement through an analog input. None. Analog input AI1 on the control unit. Analog input AI2 on the control unit. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15474,
+    "parametru": "35.22",
+    "familie": "ACS580",
+    "descriere_scurta": "Temperature 2 fault",
+    "descriere": "Defines the fault limit for temperature supervision function 2. When measured temperature 1 exceeds the limit, the drive trips on fault 4982 External temperature 2. The unit is selected by parameter 96.16 Unit selection. Notes: • With a PTC sensor, the unit is ohms. With a PTC sensor, changing the value of this parameter has no effect on fault generation. When PTC is over the triggering threshold of the CMOD-02 (see the Hardware manual of the drive), the drive trips on the fault and when PTC has decreased below recovery threshold of the CMOD-02 (see the Hardware manual of the drive), the fault can be reset manually. Fault limit for temperature monitoring function 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15475,
+    "parametru": "35.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Temperature 2",
+    "descriere": "Defines the warning limit for temperature supervision function 2. When measured temperature 1 exceeds the limit, warning A492 External temperature 2 is generated. The unit is selected by parameter 96.16 Unit selection. Notes: • With a PTC sensor, the unit is ohms. • With a PTC sensor, changing the value of this parameter has no effect on fault generation. When PTC is over the triggering threshold of the CMOD-02 (see the Hardware manual of the drive), the drive trips on the fault and when PTC has decreased below recovery threshold of the CMOD-02 (see the Hardware manual of the drive), the fault can be reset manually. Warning limit for temperature monitoring function 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15476,
+    "parametru": "35.24",
+    "familie": "ACS580",
+    "descriere_scurta": "Temperature 2 AI",
+    "descriere": "Specifies the analog input when the setting of 35.11 Temperature 1 source requires measurement through an analog input. None. Analog input AI1 on the control unit. Analog input AI2 on the control unit. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15477,
+    "parametru": "35.52",
+    "familie": "ACS580",
+    "descriere_scurta": "Zero speed load",
+    "descriere": "Defines the motor load curve together with parameters 35.51 Motor load curve and 35.53 Break point. Defines the maximum motor load at zero speed of the load curve. A higher value can be used if the motor has an external motor fan to boost the cooling. See the motor manufacturer's recommendations. See parameter 35.51 Motor load curve. Zero speed load for the motor load curve.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15478,
+    "parametru": "35.54",
+    "familie": "ACS580",
+    "descriere_scurta": "Motor nominal",
+    "descriere": "Defines the temperature rise of the motor above ambient when the motor is loaded with nominal current. See the motor manufacturer's recommendations. The unit is selected by parameter 96.16 Unit selection. Temperature rise Ambient temperature Time Temperature rise.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15479,
+    "parametru": "36.01",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL signal source",
+    "descriere": "Selects the signal to be monitored by the peak value logger. The signal is filtered using the filtering time specified by parameter 36.02 PVL filter time. The peak value is stored, along with other pre-selected signals at the time, into parameters 36.10…36.15. The peak value logger can be reset using parameter 36.09 Reset loggers. The logger is also reset whenever the signal source is changed. The date and time of the last reset are stored into parameters 36.16 and 36.17 respectively. None (peak value logger disabled). 01.01 Motor speed used (page 223). 01.06 Output frequency (page 223). 01.07 Motor current (page 223). 01.10 Motor torque (page 223). 01.11 DC voltage (page 223). 01.14 Output power (page 224). 23.01 Speed ref ramp input (page 314). 23.02 Speed ref ramp output (page 315). 24.01 Used speed reference (page 319). 26.02 Torque reference used (page 326). 28.02 Frequency ref ramp output (page 330). 40.01 Process PID output actual (page 396). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15480,
+    "parametru": "36.02",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL filter time",
+    "descriere": "Peak value logger filtering time. See parameter 36.01 PVL signal source. Peak value logger filtering time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15481,
+    "parametru": "36.10",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL peak value",
+    "descriere": "Peak value recorded by the peak value logger. Peak value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15482,
+    "parametru": "36.11",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL peak date",
+    "descriere": "The date on which the peak value was recorded. Peak occurrence date.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15483,
+    "parametru": "36.12",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL peak time",
+    "descriere": "The time at which the peak value was recorded. Peak occurrence time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15484,
+    "parametru": "36.13",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL current at peak",
+    "descriere": "Motor current at the moment the peak value was recorded. Motor current at peak.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15485,
+    "parametru": "36.14",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL DC voltage at",
+    "descriere": "Voltage in the intermediate DC circuit of the drive at the moment the peak value was recorded. DC voltage at peak.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15486,
+    "parametru": "36.15",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL speed at peak",
+    "descriere": "Motor speed at the moment the peak value was recorded. Motor speed at peak.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15487,
+    "parametru": "36.16",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL reset date",
+    "descriere": "The date on which the peak value logger was last reset. Last reset date of the peak value logger.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15488,
+    "parametru": "36.17",
+    "familie": "ACS580",
+    "descriere_scurta": "PVL reset time",
+    "descriere": "The time at which the peak value logger was last reset. Last reset time of the peak value logger.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15489,
+    "parametru": "37.02",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC supervision",
+    "descriere": "Selects the signal to be monitored. The function compares the absolute value of the signal against the load curve. No signal selected (monitoring disabled). 01.03 Motor speed % (page 223). 01.08 Motor current % of motor nom (page 223). 01.10 Motor torque (page 223). 01.15 Output power % of motor nom (page 224). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15490,
+    "parametru": "37.03",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC overload",
+    "descriere": "Selects how the drive reacts if the absolute value of the monitored signal stays continuously above the overload curve for longer than the value of 37.41 ULC overload timer. No action taken. The drive generates a warning (A8BE ULC overload warning). The drive trips on 8002 ULC overload fault. The drive generates a warning (A8BE ULC overload warning) if the signal stays continuously above the overload curve for half of the time defined by parameter 37.41 ULC overload timer. The drive trips on 8002 ULC overload fault if the signal stays continuously above the overload curve for a time defined by parameter 37.41 ULC overload timer.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15491,
+    "parametru": "37.41",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC overload timer",
+    "descriere": "Defines the time for which the monitored signal must continuously stay above the overload curve before the drive takes the action selected by 37.03 ULC overload actions. Overload timer.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15492,
+    "parametru": "37.42",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the time for which the monitored signal must continuously stay below the underload curve before the drive takes the action selected by 37.04 ULC underload actions. Underload timer. Parameter values for process PID control. The drive output can be controlled by the process PID. When the process PID control is enabled, the drive controls the process feedback to the reference value. Two different parameter sets can be defined for the process PID. One parameter set is in use at a time. The first set is made up of parameters 40.07…40.90 the second set is defined by the parameters in group 41 Process PID set 2. The binary source that defines which set is used is selected by parameter 40.57 PID set1/set2 selection. See also the control chain diagrams on pages 627 and 628. To set the PID customer unit, select Menu - Primary settings - PID - Unit on the control panel.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15493,
+    "parametru": "37.11",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC speed table",
+    "descriere": "Defines the first of the five speed points on the X-axis of the user load curve. Speed points are used if parameter 99.04 Motor control mode is set to Vector or if 99.04 Motor control mode is set to Scalar and the reference unit is rpm. The five points must be in order from lowest to highest. The points are defined as positive values, but the range is symmetrically effective also in the negative direction. The monitoring is not active outside these two areas. Speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15494,
+    "parametru": "37.12",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC speed table",
+    "descriere": "Defines the second speed point. See parameter 37.11 ULC speed table point 1. Speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15495,
+    "parametru": "37.13",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC speed table",
+    "descriere": "Defines the third speed point. See parameter 37.11 ULC speed table point 1. Speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15496,
+    "parametru": "37.14",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC speed table",
+    "descriere": "Defines the fourth speed point. See parameter 37.11 ULC speed table point 1. Speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15497,
+    "parametru": "37.15",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC speed table",
+    "descriere": "Defines the fifth speed point. See parameter 37.11 ULC speed table point 1. Speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15498,
+    "parametru": "37.16",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC frequency",
+    "descriere": "Defines the first of the five frequency points on the X-axis of the user load curve. Frequency points are used if parameter 99.04 Motor control mode is set to Scalar and the reference unit is Hz. The five points must be in order from lowest to highest. The points are defined as positive values, but the range is symmetrically effective also in the negative direction. The monitoring is not active outside these two areas. Frequency.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15499,
+    "parametru": "37.18",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC frequency",
+    "descriere": "Defines the third frequency point. See parameter 37.16 ULC frequency table point 1. Frequency.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15500,
+    "parametru": "37.19",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC frequency",
+    "descriere": "Defines the fourth frequency point. See parameter 37.16 ULC frequency table point 1. Frequency.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15501,
+    "parametru": "37.20",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC frequency",
+    "descriere": "Defines the fifth frequency point. See parameter 37.16 ULC frequency table point 1. Frequency.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15502,
+    "parametru": "37.21",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the first of the five points on the Y-axis that together with the corresponding point on the X-axis (37.11 ULC speed table point 1…37.15 ULC speed table point 5 or 37.15 ULC speed table point 5…37.20 ULC frequency table point 5) define the underload (lower) curve. Each point of the underload curve must have a lower value than the corresponding overload point. Underload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15503,
+    "parametru": "37.22",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the second underload point. See parameter 37.21 ULC underload point 1. Underload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15504,
+    "parametru": "37.23",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the third underload point. See parameter 37.21 ULC underload point 1 Underload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15505,
+    "parametru": "37.24",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the fourth underload point. See parameter 37.21 ULC underload point 1 Underload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15506,
+    "parametru": "37.25",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Defines the fifth underload point. See parameter 37.21 ULC underload point 1 Underload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15507,
+    "parametru": "37.31",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC overload point",
+    "descriere": "Defines the first of the five points on the Y-axis that together with the corresponding point on the X-axis (37.11 ULC speed table point 1…37.15 ULC speed table point 5 or 37.15 ULC speed table point 5…37.20 ULC frequency table point 5) define the overload (higher) curve. Each point of the overload curve must have a higher value than the corresponding underload point. Overload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15508,
+    "parametru": "37.32",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC overload point",
+    "descriere": "Defines the second overload point. See parameter 37.31 ULC overload point 1. Overload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15510,
+    "parametru": "37.35",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC overload point",
+    "descriere": "Defines the fifth overload point. See parameter 37.31 ULC overload point 1. Overload point.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15511,
+    "parametru": "37.04",
+    "familie": "ACS580",
+    "descriere_scurta": "ULC underload",
+    "descriere": "Selects how the drive reacts if the absolute value of the monitored signal stays continuously below the overload curve for longer than the value of 37.42 ULC underload timer. No action taken. The drive generates a warning (A8BF ULC underload warning). The drive trips on 8001 ULC underload fault. The drive generates a warning (A8BF ULC underload warning) if the signal stays continuously below the underload curve for half of the time defined by parameter 37.41 ULC overload timer. The drive trips on 8001 ULC underload fault if the signal stays continuously below the underload curve for a time defined by parameter 37.42 ULC underload timer.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15512,
+    "parametru": "40.18",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 setpoint",
+    "descriere": "Selects a function between the setpoint sources selected by parameters 40.16 Set 1 setpoint 1 source and 40.17 Set 1 setpoint 2 source. The result of the function (for any selection) is multiplied by parameter 40.89 Set 1 setpoint multiplier. Source 1. Sum of sources 1 and 2. Source 2 subtracted from source 1. Source 1 multiplied by source 2. Source 1 divided by source 2. Smaller of the two sources. Greater of the two sources. Average of the two sources. Square root of source 1. Square root of (source 1 - source 2). Square root of (source 1 + source 2). Square root of source 1 + square root of source 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15513,
+    "parametru": "40.06",
+    "familie": "ACS580",
+    "descriere_scurta": "Process PID status",
+    "descriere": "Displays status information on process PID control. This parameter is read-only. Value 1 = Process PID control active. 1 = Process PID setpoint frozen. 1 = Process PID controller output frozen. 1 = Sleep mode active. 1 = Sleep boost active. 1 = Trim mode active 1 = Tracking function active. high 1 = PID output is being limited by par. 40.37. low 1 = PID output is being limited by par. 40.36. 1 = Deadband active (see par. 40.39) 0 = Parameter set 1 in use. 1 = Parameter set 2 in use. 1 = Internal setpoint active (see par. 40.16…40.23) Process PID control status word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15514,
+    "parametru": "40.91",
+    "familie": "ACS580",
+    "descriere_scurta": "Feedback data",
+    "descriere": "Storage parameter for receiving a process feedback value, for example, through the embedded fieldbus interface. The value can be sent to the drive as Modbus I/O data. Set the target selection parameter of that particular data (58.101…58.114) to Feedback data storage. In 40.08 Set 1 feedback 1 source (or 40.09 Set 1 feedback 2 source), select Feedback data storage. Storage parameter for process feedback.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15515,
+    "parametru": "81.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Actual gas",
+    "descriere": "Displays the calculated refrigerant gas temperature. Refrigerant gas temperature",
+    "pdf_extra": null
+  },
+  {
+    "id": 15516,
+    "parametru": "40.10",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 feedback",
+    "descriere": "Defines how process feedback is calculated from the two feedback sources selected by parameters 40.08 Set 1 feedback 1 source and 40.09 Set 1 feedback 2 source. The result of the function (for any selection) is multiplied by parameter 40.90 Set 1 feedback multiplier. Source 1. Sum of sources 1 and 2. Source 2 subtracted from source 1. Source 1 multiplied by source 2. Source 1 divided by source 2. Smaller of the two sources. Greater of the two sources. Average of the two sources. Square root of source 1. Square root of (source 1 - source 2). Square root of (source 1 + source 2). Square root of source 1 + square root of source 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15517,
+    "parametru": "40.15",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 output scaling",
+    "descriere": "See parameter 40.14 Set 1 setpoint scaling. If the parameter is set to zero, scaling is automatic, and according to column Scaling: Operation mode Scaling (see par. 19.01) Speed control 46.01 Speed scaling Frequency control 46.02 Frequency scaling Torque control 100% Process PID controller output base.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15518,
+    "parametru": "40.92",
+    "familie": "ACS580",
+    "descriere_scurta": "Setpoint data",
+    "descriere": "Storage parameter for receiving a process setpoint value, for example, through the embedded fieldbus interface. The value can be sent to the drive as Modbus I/O data. Set the target selection parameter of that particular data (58.101…58.114)) to Setpoint data storage. In 40.16 Set 1 setpoint 1 source (or 40.17 Set 1 setpoint 2 source), select Setpoint data storage. Storage parameter for process setpoint.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15519,
+    "parametru": "40.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 internal",
+    "descriere": "Internal process setpoint 1. See parameter 40.19 Set 1 internal setpoint sel1. Internal process setpoint 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15520,
+    "parametru": "40.22",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 internal",
+    "descriere": "Internal process setpoint 2. See parameter 40.19 Set 1 internal setpoint sel1. Internal process setpoint 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15521,
+    "parametru": "40.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 internal",
+    "descriere": "Internal process setpoint 3. See parameter 40.19 Set 1 internal setpoint sel1. Internal process setpoint 3.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15522,
+    "parametru": "40.24",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 internal",
+    "descriere": "Internal process setpoint 0. See parameter 40.19 Set 1 internal setpoint sel1. Internal process setpoint 0.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15523,
+    "parametru": "40.27",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 setpoint max",
+    "descriere": "Defines a maximum limit for the process PID controller setpoint. Maximum limit for process PID controller setpoint.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15524,
+    "parametru": "40.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 setpoint",
+    "descriere": "Freezes, or defines a source that can be used to freeze, the setpoint of the process PID controller. This feature is useful when the reference is based on a process feedback connected to an analog input, and the sensor must be serviced without stopping the process. 1 = Process PID controller setpoint frozen See also parameter 40.38 Set 1 output freeze enable. Process PID controller setpoint not frozen. Process PID controller setpoint frozen. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Bit 0 of 34.01 Timed functions status (see page 371). Bit 1 of 34.01 Timed functions status (see page 371). Bit 2 of 34.01 Timed functions status (see page 371). Bit 0 of 32.01 Supervision status (see page 361). Bit 1 of 32.01 Supervision status (see page 361). Bit 2 of 32.01 Supervision status (see page 361). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15525,
+    "parametru": "40.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 output freeze",
+    "descriere": "Freezes (or defines a source that can be used to freeze) the output of the process PID controller, keeping the output at the value it was before freeze was enabled. This feature can be used when, for example, a sensor providing process feedback must to be serviced without stopping the process. 1 = Process PID controller output frozen See also parameter 40.30 Set 1 setpoint freeze enable. Process PID controller output not frozen. Process PID controller output frozen. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Bit 0 of 34.01 Timed functions status (see page 371). Bit 1 of 34.01 Timed functions status (see page 371). Bit 2 of 34.01 Timed functions status (see page 371).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15526,
+    "parametru": "40.39",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 deadband",
+    "descriere": "Defines a deadband around the setpoint. Whenever process feedback enters the deadband, a delay timer starts. If the feedback remains within the deadband longer than the delay (40.40 Set 1 deadband delay), the PID controller output is frozen. Normal operation resumes after the feedback value leaves the deadband. PID controller output frozen 40.40 Set 1 deadband delay Deadband range.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15527,
+    "parametru": "40.40",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 deadband",
+    "descriere": "Delay for the deadband. See parameter 40.39 Set 1 deadband range. Delay for deadband area.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15528,
+    "parametru": "40.51",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 trim mode",
+    "descriere": "Activates the trim function and selects between direct and proportional trimming (or a combination of both). With trimming, it is possible to apply a corrective factor to the drive reference (setpoint). The output after trimming is available as parameter 40.05 Process PID trim output act. See section PID trim function (page 141), and the control chain diagram on page 628. The trim function is inactive. The trim function is active. The trimming factor is relative to the maximum speed, torque or frequency; the selection between these is made by parameter 40.52 Set 1 trim selection. The trim function is active. The trimming factor is relative to the reference selected by parameter 40.53 Set 1 trimmed ref pointer. The trim function is active. The trimming factor is a combination of both Direct and Proportional modes; the proportions of each are defined by parameter 40.54 Set 1 trim mix.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15529,
+    "parametru": "40.52",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 trim selection",
+    "descriere": "Selects whether trimming is used for correcting the speed, torque or frequency reference. Torque reference trimming. Speed reference trimming. Frequency reference trimming.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15531,
+    "parametru": "40.57",
+    "familie": "ACS580",
+    "descriere_scurta": "PID set1/set2",
+    "descriere": "Selects the source that determines whether process PID parameter set 1 (parameters 40.07…40.50) or set 2 (group 41 Process PID set 2) is used. 0. Process PID parameter set 1 in use. 1. Process PID parameter set 2 in use. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Bit 0 of 34.01 Timed functions status (see page 371). Bit 1 of 34.01 Timed functions status (see page 371). Bit 2 of 34.01 Timed functions status (see page 371). Bit 0 of 32.01 Supervision status (see page 361). Bit 1 of 32.01 Supervision status (see page 361). Bit 2 of 32.01 Supervision status (see page 361). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15532,
+    "parametru": "40.58",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 increase",
+    "descriere": "Activates increase prevention of PID integration term for PID set 1. Increase prevention not in use. The PID integration term is not increased. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15533,
+    "parametru": "40.59",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 decrease",
+    "descriere": "Activates decrease prevention of PID integration term for PID set 1. Decrease prevention not in use. The PID integration term is not decreased. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15534,
+    "parametru": "40.60",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 PID activation",
+    "descriere": "Selects a source that enables/disables process PID control. See also parameter 40.07 Process PID operation mode. 0 = Process PID control disabled. 1 = Process PID control enabled. 0. 1. Process PID control is disabled when external control location EXT1 is active, and enabled when external control location EXT2 is active. See also parameter 19.11 Ext1/Ext2 selection. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15535,
+    "parametru": "40.62",
+    "familie": "ACS580",
+    "descriere_scurta": "PID internal",
+    "descriere": "Displays the value of the internal setpoint. See the control chain diagram on page 627. This parameter is read-only. Process PID internal setpoint.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15536,
+    "parametru": "40.65",
+    "familie": "ACS580",
+    "descriere_scurta": "Trim auto",
+    "descriere": "Enables the PID trim auto connection and connects PID trim 40.05 Process PID trim output act to either speed, torque or frequency chains, based on the trim selection parameter 40.52 Set 1 trim selection or 41.52 Set 2 trim selection. See control chain diagram on page 632. Disable PID trim auto connection. Enable PID trim auto connection.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15537,
+    "parametru": "40.79",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 units",
+    "descriere": "Unit used for PID set 1. User editable text. Percent. Bar. Kilo pascal. Pascal. Pound per square inch. Cubic feet per minute. Inch of water. Degree Celsius. Degree Fahrenheit. Millibar. Cubic meter per hour. Cubic decimeter per hour. Liter per second. Liter per minute. Liter per hour. Cubic meter per second. Cubic meter per minute. Cubic kilometer per minute. Gallon per second. Cubic feet per second.",
+    "pdf_extra": null
+  }
+]
