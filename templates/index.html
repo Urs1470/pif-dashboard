@@ -4660,19 +4660,22 @@
             }
         }
 
-        /* Larger touch targets */
-        .btn {
-            min-height: 48px;
-        }
+        /* Larger touch targets — mobile only (was global by mistake; on desktop
+           it forced .todo-item to 52px and .btn to 48px, breaking compact rows). */
+        @media (max-width: 768px) {
+            .btn {
+                min-height: 48px;
+            }
 
-        input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-        }
+            input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
+            }
 
-        .todo-item, .checklist-item, .gt-task-card {
-            min-height: 52px;
-            padding: 12px 16px;
+            .todo-item, .checklist-item, .gt-task-card {
+                min-height: 52px;
+                padding: 12px 16px;
+            }
         }
 
         /* Larger text inputs on mobile */
