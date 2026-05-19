@@ -5,29 +5,32 @@
 var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec'];
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
-var LUNI_COUNT = 8;
+var LUNI_COUNT = 12; // default; overridden by d.profil.numarLuni
 var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte'];
 
-// Generate 8 months starting from "YYYY-MM"; returns {keys, labels}
-function generateLuni(startMonth) {
+// Generate N months starting from "YYYY-MM"; returns {keys, labels}
+function generateLuni(startMonth, count) {
   startMonth = startMonth || '2026-05';
+  var n = Math.max(1, Math.min(120, parseInt(count, 10) || LUNI_COUNT));
   var parts = String(startMonth).split('-');
   var year = parseInt(parts[0], 10) || 2026;
   var month = parseInt(parts[1], 10) || 5;
   var keys = [], labels = [];
-  for (var i = 0; i < LUNI_COUNT; i++) {
+  for (var i = 0; i < n; i++) {
     var idx = (month - 1 + i);
     var m = (idx % 12) + 1;
     var y = year + Math.floor(idx / 12);
     keys.push(y + '-' + (m < 10 ? '0' : '') + m);
-    labels.push(LUNI_LABELS_RO[m-1] + (y !== year ? " '" + (y % 100) : ''));
+    labels.push(LUNI_LABELS_RO[m-1] + (y !== year ? " '" + String(y % 100).padStart(2, '0') : ''));
   }
   return { keys: keys, labels: labels };
 }
 
 function refreshLuni() {
-  var sm = (state.data && state.data.profil && state.data.profil.startMonth) || '2026-05';
-  var cfg = generateLuni(sm);
+  var prof = (state.data && state.data.profil) || {};
+  var sm = prof.startMonth || '2026-05';
+  var n = parseInt(prof.numarLuni, 10) || LUNI_COUNT;
+  var cfg = generateLuni(sm, n);
   LUNI_KEYS = cfg.keys;
   LUNI = cfg.labels;
 }
@@ -94,7 +97,7 @@ function esc(s) {
 
 // --- Date inițiale Ion ---
 var DATI_INITIALE = {
-  profil: { nume: 'Ion', salariuNet: 7000, bonusMedie: 2000, startMonth: '2026-05' },
+  profil: { nume: 'Ion', salariuNet: 7000, bonusMedie: 2000, startMonth: '2026-05', numarLuni: 12 },
   cheltuieliFixe: [
     { id: 1, label: 'Chirie', suma: 2000 },
     { id: 2, label: 'Rată credit + asig.', suma: 1934 },
@@ -169,6 +172,7 @@ async function loadData() {
       if (!state.data.evolutie) state.data.evolutie = {};
       if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
       if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
+      if (!state.data.profil.numarLuni) state.data.profil.numarLuni = DATI_INITIALE.profil.numarLuni;
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
       migrateCheltuieliFixe(state.data);
       migrateCategoriiVar(state.data);
@@ -447,16 +451,26 @@ async function showAudit() {
 // --- Profil & cheltuieli fixe updaters ---
 function updateProfil(field, value) {
   if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
-  if (field === 'nume') state.data.profil[field] = value;
-  else if (field === 'startMonth') {
+  if (field === 'nume') {
+    state.data.profil[field] = value;
+  } else if (field === 'startMonth') {
     state.data.profil.startMonth = value;
     refreshLuni();
     LUNI_KEYS.forEach(function(l) {
       if (!state.data.venituri[l]) state.data.venituri[l] = {};
       if (!state.data.cheltuieli[l]) state.data.cheltuieli[l] = {};
     });
+  } else if (field === 'numarLuni') {
+    var n = Math.max(1, Math.min(120, parseInt(value, 10) || 12));
+    state.data.profil.numarLuni = n;
+    refreshLuni();
+    LUNI_KEYS.forEach(function(l) {
+      if (!state.data.venituri[l]) state.data.venituri[l] = {};
+      if (!state.data.cheltuieli[l]) state.data.cheltuieli[l] = {};
+    });
+  } else {
+    state.data.profil[field] = parseRON(value);
   }
-  else state.data.profil[field] = parseRON(value);
   saveData();
   render();
 }
@@ -678,10 +692,12 @@ function renderBugetLunar() {
   html += '  <div class="field"><label class="field-label">Lună start buget</label>';
   html += startMonthPicker(d.profil.startMonth || '2026-05');
   html += '  </div>';
+  html += '  <div class="field"><label class="field-label">Număr luni vizibile (1–120)</label>';
+  html += '    <input type="number" min="1" max="120" class="input num w-full" value="' + (d.profil.numarLuni || 12) + '" onchange="updateProfil(\'numarLuni\', this.value)"></div>';
   html += '</div>';
   html += '<div class="info-box" style="margin-top:0.85rem;">';
   html += '<i data-lucide="info"></i>';
-  html += '<div>Bugetul afișează 8 luni consecutive începând cu luna selectată. Modificarea acestei date va recalcula etichetele coloanelor.</div>';
+  html += '<div>Bugetul afișează N luni consecutive începând cu luna selectată. Treci peste 12 ca să vezi anul viitor; valorile cu an diferit primesc suffix (ex: <span class="mono">Ian \'27</span>).</div>';
   html += '</div>';
   html += '</div></div>';
 
