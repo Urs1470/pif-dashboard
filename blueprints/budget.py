@@ -5,6 +5,9 @@ from flask import Blueprint, send_from_directory, jsonify, request, session, cur
 from pathlib import Path
 from datetime import datetime
 import json
+import urllib.request
+import urllib.error
+import time
 
 budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
 
@@ -12,6 +15,10 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / 'static' / 'budget'
 
 AUDIT_VALUE_MAX = 200
 AUDIT_MAX_CHANGES_PER_SAVE = 60
+
+# In-memory quote cache: {symbol: (timestamp, payload)}
+_QUOTE_CACHE = {}
+QUOTE_CACHE_TTL = 300  # 5 minutes
 
 
 def _get_db():
@@ -137,3 +144,74 @@ def get_audit():
         WHERE user = 'ion' ORDER BY ts DESC, id DESC LIMIT ?
     """, (limit,)).fetchall()
     return jsonify([dict(r) for r in rows])
+
+
+# ============================================================
+# Live market quotes (Yahoo Finance proxy, CORS-safe)
+# ============================================================
+ALLOWED_QUOTE_SYMBOLS = {
+    # ETF / index symbols we whitelist. Add more as needed.
+    'VWCE.DE', 'VWCE.AS', 'VWCE.SW', 'VWCE.MI',
+    'IWDA.AS', 'EUNL.DE', 'CSPX.AS', 'SPY', 'VOO', 'QQQ', 'VTI',
+    'EXSA.DE', 'EXSP.DE', 'EUNK.DE',
+}
+
+
+def _fetch_yahoo_chart(symbol):
+    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d'
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (compatible; PIFDashboard/1.0)',
+        'Accept': 'application/json',
+    })
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
+@budget_bp.route('/api/quote/<symbol>', methods=['GET'])
+@login_required
+def get_quote(symbol):
+    """Proxy a single security quote from Yahoo Finance.
+
+    Whitelist-only to avoid abuse. Returns price, currency, previous close,
+    daily change and exchange name. Cached 5 minutes in-process.
+    """
+    symbol = symbol.upper()
+    if symbol not in ALLOWED_QUOTE_SYMBOLS:
+        return jsonify({'error': 'symbol not whitelisted', 'symbol': symbol}), 400
+
+    now = time.time()
+    cached = _QUOTE_CACHE.get(symbol)
+    if cached and (now - cached[0]) < QUOTE_CACHE_TTL:
+        payload = dict(cached[1])
+        payload['cached'] = True
+        return jsonify(payload)
+
+    try:
+        data = _fetch_yahoo_chart(symbol)
+        result = (data.get('chart') or {}).get('result') or []
+        if not result:
+            return jsonify({'error': 'no data from upstream', 'symbol': symbol}), 502
+        meta = result[0].get('meta') or {}
+        price = meta.get('regularMarketPrice')
+        prev = meta.get('chartPreviousClose') or meta.get('previousClose')
+        change = (price - prev) if (price is not None and prev is not None) else None
+        change_pct = (change / prev * 100.0) if (change is not None and prev) else None
+        payload = {
+            'symbol': symbol,
+            'price': price,
+            'currency': meta.get('currency'),
+            'previousClose': prev,
+            'change': change,
+            'changePct': change_pct,
+            'exchange': meta.get('exchangeName') or meta.get('fullExchangeName'),
+            'longName': meta.get('longName') or meta.get('shortName') or symbol,
+            'ts': meta.get('regularMarketTime'),
+            'fetchedAt': datetime.utcnow().isoformat() + 'Z',
+            'cached': False,
+        }
+        _QUOTE_CACHE[symbol] = (now, payload)
+        return jsonify(payload)
+    except urllib.error.HTTPError as e:
+        return jsonify({'error': f'upstream HTTP {e.code}', 'symbol': symbol}), 502
+    except Exception as e:
+        return jsonify({'error': str(e), 'symbol': symbol}), 500

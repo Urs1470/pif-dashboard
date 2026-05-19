@@ -86,6 +86,27 @@ function migrateEtf(data) {
   if (!Array.isArray(data.etf)) data.etf = [];
 }
 
+// VWCE-focused tracking with live price proxy
+function migrateVwce(data) {
+  if (!data) return;
+  if (!data.vwce || typeof data.vwce !== 'object') {
+    data.vwce = {
+      symbol: 'VWCE.DE',
+      isin: 'IE00BK5BQT80',
+      nume: 'Vanguard FTSE All-World UCITS ETF',
+      exchange: 'XETRA',
+      currency: 'EUR',
+      tranzactii: [],
+      pretCurent: 0,
+      previousClose: 0,
+      changePct: 0,
+      lastUpdate: null,
+      lastUpdateLocal: null,
+    };
+  }
+  if (!Array.isArray(data.vwce.tranzactii)) data.vwce.tranzactii = [];
+}
+
 // Seed d.credit.scadentar from real ING amortisation table if missing
 function migrateCreditScadentar(data) {
   if (!data) return;
@@ -369,6 +390,7 @@ async function loadData() {
       migrateImportedRefs(state.data);
       migrateGoals(state.data);
       migrateEtf(state.data);
+      migrateVwce(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -2075,121 +2097,171 @@ function etfMetrics(pos) {
   return { cantitate: cantitate, pretMediu: pretMediu, pretCurent: pretCurent, investit: investit, valoare: valoare, pl: pl, plPct: plPct };
 }
 
+function vwceTotals(v) {
+  var tranzactii = (v && v.tranzactii) || [];
+  var cantitate = tranzactii.reduce(function(s, t) { return s + (parseRON(t.cantitate) || 0); }, 0);
+  var investitEur = tranzactii.reduce(function(s, t) { return s + (parseRON(t.sumaEur) || 0) + (parseRON(t.comision) || 0); }, 0);
+  var investitRon = tranzactii.reduce(function(s, t) { return s + (parseRON(t.sumaRon) || 0); }, 0);
+  var pretMediu = cantitate > 0 ? investitEur / cantitate : 0;
+  var pretCurent = parseRON(v.pretCurent) || 0;
+  var valoareEur = cantitate * pretCurent;
+  var plEur = valoareEur - investitEur;
+  var plPct = investitEur > 0 ? (plEur / investitEur) * 100 : 0;
+  return { cantitate: cantitate, investitEur: investitEur, investitRon: investitRon, pretMediu: pretMediu, pretCurent: pretCurent, valoareEur: valoareEur, plEur: plEur, plPct: plPct };
+}
+
 function renderInvestitii() {
   var d = state.data;
-  var etfs = d.etf || [];
-  var brokers = ['Tradeville', 'XTB', 'Saxo', 'IBKR', 'Bursa Bucuresti', 'Altul'];
-  var monede = ['RON', 'EUR', 'USD'];
-  var burse = ['BVB', 'Xetra', 'NYSE', 'NASDAQ', 'LSE', 'Altele'];
-
-  // Aggregate by currency
-  var perCurrency = {};
-  etfs.forEach(function(e) {
-    var m = etfMetrics(e);
-    var c = e.moneda || 'RON';
-    perCurrency[c] = perCurrency[c] || { investit: 0, valoare: 0, pl: 0, count: 0 };
-    perCurrency[c].investit += m.investit;
-    perCurrency[c].valoare += m.valoare;
-    perCurrency[c].pl += m.pl;
-    perCurrency[c].count++;
-  });
-  var totalInvestit = Object.values(perCurrency).reduce(function(s, c) { return s + (perCurrency[Object.keys(perCurrency)[0]] === c && Object.keys(perCurrency).length === 1 ? c.investit : 0); }, 0);
-  // Easier: just show RON aggregate prominently
-  var ronAgg = perCurrency.RON || { investit: 0, valoare: 0, pl: 0, count: 0 };
-  var allCurrencies = Object.keys(perCurrency);
+  var v = d.vwce || {};
+  var t = vwceTotals(v);
+  var changePct = parseFloat(v.changePct) || 0;
+  var change = parseFloat(v.change) || 0;
+  var lastUpdate = v.lastUpdateLocal ? new Date(v.lastUpdateLocal) : null;
+  var lastUpdateStr = lastUpdate ? lastUpdate.toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' }) : 'niciodată';
+  var fmtEur = function(x) { return formatRON(x); };
 
   var html = '';
 
-  // Header
+  // Header card: VWCE info + live price
   html += '<div class="section">';
-  html += '<div class="section-title">';
-  html += '  <div class="section-title-left"><i data-lucide="briefcase"></i> Portofoliu investiții (ETF / acțiuni)</div>';
-  html += '  <button class="btn-add" onclick="addEtf()"><i data-lucide="plus"></i> Adaugă poziție</button>';
-  html += '</div>';
-
-  // Stat cards per currency
-  html += '<div class="stat-grid">';
-  if (allCurrencies.length === 0) {
-    html += statCard('briefcase', 'Portofoliu', '0,00', 'fără poziții', '');
-  } else {
-    allCurrencies.forEach(function(c) {
-      var a = perCurrency[c];
-      var plClass = a.pl > 0 ? 'success' : (a.pl < 0 ? 'danger' : '');
-      html += '<div class="stat-card ' + (plClass) + '">';
-      html += '  <div class="stat-label"><i data-lucide="coins"></i> ' + esc(c) + ' · ' + a.count + ' poziții</div>';
-      html += '  <div class="stat-value">' + formatRON(a.valoare) + '</div>';
-      html += '  <div class="stat-sub">Investit ' + formatRON(a.investit) + ' · <span class="' + (a.pl >= 0 ? 'pl-pos' : 'pl-neg') + '">' + (a.pl >= 0 ? '+' : '') + formatRON(a.pl) + '</span></div>';
-      html += '</div>';
-    });
+  html += '<div class="chart-card" style="border-color:var(--accent-ring);">';
+  html += '  <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">';
+  html += '    <div style="flex:1;min-width:240px;">';
+  html += '      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">';
+  html += '        <i data-lucide="briefcase" style="color:var(--accent);width:18px;height:18px;"></i>';
+  html += '        <span class="etf-symbol" style="font-size:1.1rem;">' + esc(v.symbol || 'VWCE.DE') + '</span>';
+  html += '        <span class="etf-broker">' + esc(v.exchange || 'XETRA') + '</span>';
+  html += '        <span class="etf-broker">Tradeville</span>';
+  html += '      </div>';
+  html += '      <div style="font-size:0.85rem;color:var(--text);">' + esc(v.nume || 'Vanguard FTSE All-World UCITS ETF') + '</div>';
+  html += '      <div style="font-size:0.72rem;color:var(--text-dim);font-family:var(--font-mono);">ISIN ' + esc(v.isin || 'IE00BK5BQT80') + '</div>';
+  html += '    </div>';
+  html += '    <div style="text-align:right;min-width:200px;">';
+  html += '      <div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--accent);">' + fmtEur(t.pretCurent) + ' EUR</div>';
+  if (change !== 0 || changePct !== 0) {
+    var cClass = change >= 0 ? 'pl-pos' : 'pl-neg';
+    html += '      <div class="' + cClass + '" style="font-size:0.82rem;">' + (change >= 0 ? '+' : '') + fmtEur(change) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) azi</div>';
   }
+  html += '      <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.2rem;">Ultima actualizare: ' + esc(lastUpdateStr) + '</div>';
+  html += '      <button class="btn-add" style="margin-top:0.5rem;" onclick="refreshVwcePrice()"><i data-lucide="refresh-cw"></i> Actualizează preț</button>';
+  html += '    </div>';
+  html += '  </div>';
   html += '</div></div>';
 
-  // Table
+  // Stat cards
+  var plClass = t.plEur > 0 ? 'success' : (t.plEur < 0 ? 'danger' : '');
+  html += '<div class="section">';
+  html += '<div class="stat-grid">';
+  html += statCard('hash', 'Total unități', t.cantitate.toFixed(4), v.tranzactii.length + ' tranzacții', '');
+  html += statCard('wallet', 'Investit', fmtEur(t.investitEur) + ' EUR', t.investitRon > 0 ? '≈ ' + formatRON(t.investitRon) + ' RON' : '', '');
+  html += statCard('trending-up', 'Valoare curentă', fmtEur(t.valoareEur) + ' EUR', 'preț mediu ' + fmtEur(t.pretMediu) + ' EUR', plClass);
+  html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%', plClass);
+  html += '</div></div>';
+
+  // Transactions table
   html += '<div class="section">';
   html += '<div class="section-title">';
-  html += '  <div class="section-title-left"><i data-lucide="list"></i> Poziții deschise</div>';
-  html += '  <div style="font-size:0.7rem;color:var(--text-dim);">Click <i data-lucide="refresh-cw" style="width:11px;height:11px;vertical-align:-1px;"></i> ca să actualizezi manual prețul curent</div>';
+  html += '  <div class="section-title-left"><i data-lucide="list"></i> Tranzacții VWCE</div>';
+  html += '  <button class="btn-add" onclick="addVwceTx()"><i data-lucide="plus"></i> Adaugă tranzacție</button>';
   html += '</div>';
   html += '<div class="panel">';
-  if (etfs.length === 0) {
-    html += '<div class="audit-empty">Niciun ETF / acțiune. Apasă "Adaugă poziție" pentru a începe. Tradeville → secțiunea Portofoliu îți dă simbol, cantitate, preț mediu.</div>';
+  if (v.tranzactii.length === 0) {
+    html += '<div class="audit-empty">Nicio tranzacție. Apasă "Adaugă tranzacție" pentru fiecare achiziție VWCE (data + sumă EUR + cantitate primită).</div>';
   } else {
     html += '<div class="table-wrap"><table>';
     html += '<thead><tr>';
-    html += '<th>Simbol</th><th>Nume</th><th>Broker</th><th class="num">Cant.</th><th class="num">Preț mediu</th><th class="num">Preț curent</th><th class="num">Valoare</th><th class="num">P&amp;L</th><th class="num">P&amp;L %</th><th>Mon.</th><th></th>';
+    html += '<th>Data</th><th class="num">Sumă EUR</th><th class="num">Cantitate</th><th class="num">Preț achiziție</th><th class="num">Comision EUR</th><th class="num">Sumă RON (curs)</th><th>Notă</th><th></th>';
     html += '</tr></thead><tbody>';
-    etfs.forEach(function(e) {
-      var m = etfMetrics(e);
-      var plClass = m.pl > 0 ? 'pl-pos' : (m.pl < 0 ? 'pl-neg' : 'pl-zero');
+    v.tranzactii.slice().sort(function(a, b) { return (a.data || '').localeCompare(b.data || ''); }).forEach(function(tx) {
+      var pretCalc = parseRON(tx.cantitate) > 0 ? (parseRON(tx.sumaEur) / parseRON(tx.cantitate)) : 0;
       html += '<tr>';
-      html += '<td><input type="text" class="input etf-symbol" style="width:90px;text-transform:uppercase;" value="' + esc(e.simbol || '') + '" placeholder="EXSA" onchange="updateEtf(' + e.id + ', \'simbol\', this.value.toUpperCase())"></td>';
-      html += '<td><input type="text" class="input" style="width:160px;" value="' + esc(e.nume || '') + '" placeholder="iShares Core MSCI..." onchange="updateEtf(' + e.id + ', \'nume\', this.value)"></td>';
-      html += '<td><select class="select cs-enhance" style="width:110px;" onchange="updateEtf(' + e.id + ', \'broker\', this.value)">';
-      brokers.forEach(function(b) { html += '<option value="' + esc(b) + '"' + ((e.broker || 'Tradeville') === b ? ' selected' : '') + '>' + esc(b) + '</option>'; });
-      html += '</select></td>';
-      html += '<td class="num"><input type="number" step="0.0001" class="input num w-20" value="' + (m.cantitate || 0) + '" onchange="updateEtf(' + e.id + ', \'cantitate\', this.value)"></td>';
-      html += '<td class="num"><input type="number" step="0.0001" class="input num w-20" value="' + (m.pretMediu || 0) + '" onchange="updateEtf(' + e.id + ', \'pretMediu\', this.value)"></td>';
-      html += '<td class="num"><input type="number" step="0.0001" class="input num w-20" value="' + (m.pretCurent || 0) + '" onchange="updateEtf(' + e.id + ', \'pretCurent\', this.value)" title="Actualizează manual din Tradeville sau bursă"></td>';
-      html += '<td class="num mono">' + formatRON(m.valoare) + '</td>';
-      html += '<td class="num ' + plClass + '">' + (m.pl >= 0 ? '+' : '') + formatRON(m.pl) + '</td>';
-      html += '<td class="num ' + plClass + '">' + (m.pl >= 0 ? '+' : '') + m.plPct.toFixed(2) + '%</td>';
-      html += '<td><select class="select cs-enhance" style="width:70px;" onchange="updateEtf(' + e.id + ', \'moneda\', this.value)">';
-      monede.forEach(function(mn) { html += '<option value="' + esc(mn) + '"' + ((e.moneda || 'RON') === mn ? ' selected' : '') + '>' + esc(mn) + '</option>'; });
-      html += '</select></td>';
-      html += '<td><button class="btn-del" onclick="removeEtf(' + e.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
+      html += '<td><input type="text" class="input fp-date" style="width:120px;" value="' + esc(tx.data || '') + '" placeholder="YYYY-MM-DD" onchange="updateVwceTx(' + tx.id + ', \'data\', this.value)"></td>';
+      html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.sumaEur || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'sumaEur\', this.value)"></td>';
+      html += '<td class="num"><input type="number" step="0.0001" class="input num w-20" value="' + (tx.cantitate || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'cantitate\', this.value)"></td>';
+      html += '<td class="num mono text-mid">' + fmtEur(pretCalc) + '</td>';
+      html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.comision || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'comision\', this.value)"></td>';
+      html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.sumaRon || 0) + '" placeholder="opt." onchange="updateVwceTx(' + tx.id + ', \'sumaRon\', this.value)"></td>';
+      html += '<td><input type="text" class="input" style="width:180px;" value="' + esc(tx.nota || '') + '" placeholder="DCA / lump sum..." onchange="updateVwceTx(' + tx.id + ', \'nota\', this.value)"></td>';
+      html += '<td><button class="btn-del" onclick="removeVwceTx(' + tx.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
       html += '</tr>';
     });
-    html += '</tbody></table></div>';
+    var totEur = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.sumaEur) || 0); }, 0);
+    var totCant = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.cantitate) || 0); }, 0);
+    var totCom = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.comision) || 0); }, 0);
+    var totRon = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.sumaRon) || 0); }, 0);
+    html += '</tbody><tfoot><tr><td>Total</td><td class="num">' + fmtEur(totEur) + '</td><td class="num">' + totCant.toFixed(4) + '</td><td class="num">' + fmtEur(t.pretMediu) + '</td><td class="num">' + fmtEur(totCom) + '</td><td class="num">' + (totRon > 0 ? formatRON(totRon) : '—') + '</td><td colspan="2"></td></tr></tfoot></table></div>';
+    html += '<div class="info-box" style="margin-top:0.85rem;">';
+    html += '<i data-lucide="info"></i>';
+    html += '<div>Introdu <strong>suma în EUR</strong> și <strong>cantitatea</strong> primită (din confirmarea Tradeville). Prețul de achiziție se calculează automat. Suma RON e opțională (utilă pentru a urmări CHF cumpărat la curs propriu).</div>';
+    html += '</div>';
   }
   html += '</div></div>';
 
-  // Detail panel for each position (ISIN, sursa, nota)
-  if (etfs.length > 0) {
-    html += '<div class="section">';
-    html += '<div class="section-title"><div class="section-title-left"><i data-lucide="info"></i> Detalii poziții</div></div>';
-    html += '<div class="panel">';
-    html += '<div class="table-wrap"><table>';
-    html += '<thead><tr><th>Simbol</th><th>ISIN</th><th>Bursă</th><th>Data achiziție</th><th>Notă</th></tr></thead><tbody>';
-    etfs.forEach(function(e) {
-      html += '<tr>';
-      html += '<td><span class="etf-symbol">' + esc(e.simbol || '?') + '</span></td>';
-      html += '<td><input type="text" class="input mono" style="width:140px;" value="' + esc(e.isin || '') + '" placeholder="IE00B4L5Y983" onchange="updateEtf(' + e.id + ', \'isin\', this.value.toUpperCase())"></td>';
-      html += '<td><select class="select cs-enhance" style="width:100px;" onchange="updateEtf(' + e.id + ', \'sursa\', this.value)">';
-      burse.forEach(function(b) { html += '<option value="' + esc(b) + '"' + ((e.sursa || 'BVB') === b ? ' selected' : '') + '>' + esc(b) + '</option>'; });
-      html += '</select></td>';
-      html += '<td><input type="text" class="input fp-date" style="width:120px;" value="' + esc(e.dataAchizitie || '') + '" placeholder="YYYY-MM-DD" onchange="updateEtf(' + e.id + ', \'dataAchizitie\', this.value)"></td>';
-      html += '<td><input type="text" class="input" style="width:240px;" value="' + esc(e.nota || '') + '" placeholder="strategie / observații..." onchange="updateEtf(' + e.id + ', \'nota\', this.value)"></td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-    html += '<div class="info-box" style="margin-top:0.85rem;">';
-    html += '<i data-lucide="info"></i>';
-    html += '<div>Tradeville oferă <strong>export tranzacții CSV</strong> din meniul "Portofoliu → Istoric tranzacții". Când îmi trimiți un sample fac parser-ul automat pentru import. Pentru cotații live BVB / Xetra e nevoie de proxy server-side (CORS) — îl coordonez separat cu Sprint-UI.</div>';
-    html += '</div>';
-    html += '</div></div>';
-  }
-
   return html;
+}
+
+async function refreshVwcePrice() {
+  var v = state.data.vwce || {};
+  var symbol = v.symbol || 'VWCE.DE';
+  setSaveStatus('pending');
+  try {
+    var r = await fetch('/budget/api/quote/' + encodeURIComponent(symbol), { credentials: 'same-origin' });
+    if (!r.ok) {
+      var err = await r.json().catch(function() { return { error: 'HTTP ' + r.status }; });
+      throw new Error(err.error || 'HTTP ' + r.status);
+    }
+    var q = await r.json();
+    state.data.vwce.pretCurent = q.price || 0;
+    state.data.vwce.previousClose = q.previousClose || 0;
+    state.data.vwce.change = q.change || 0;
+    state.data.vwce.changePct = q.changePct || 0;
+    state.data.vwce.currency = q.currency || 'EUR';
+    state.data.vwce.exchange = q.exchange || state.data.vwce.exchange;
+    state.data.vwce.lastUpdate = q.fetchedAt;
+    state.data.vwce.lastUpdateLocal = new Date().toISOString();
+    await saveDataNow();
+    render();
+  } catch (e) {
+    setSaveStatus('error');
+    showConfirm({
+      title: 'Eroare la actualizare preț',
+      body: 'Nu am putut obține cotația pentru ' + symbol + ': ' + (e.message || e),
+      okLabel: 'OK', cancelLabel: '', icon: 'alert-triangle'
+    });
+  }
+}
+
+function addVwceTx() {
+  if (!state.data.vwce) migrateVwce(state.data);
+  state.data.vwce.tranzactii.push({
+    id: getNextId(state.data.vwce.tranzactii),
+    data: new Date().toISOString().substring(0, 10),
+    sumaEur: 0,
+    cantitate: 0,
+    comision: 0,
+    sumaRon: 0,
+    nota: ''
+  });
+  saveData();
+  render();
+}
+function updateVwceTx(id, field, value) {
+  if (!state.data.vwce || !Array.isArray(state.data.vwce.tranzactii)) return;
+  state.data.vwce.tranzactii = state.data.vwce.tranzactii.map(function(tx) {
+    if (tx.id !== id) return tx;
+    var u = cloneObj(tx);
+    if (field === 'sumaEur' || field === 'cantitate' || field === 'comision' || field === 'sumaRon') u[field] = parseRON(value);
+    else u[field] = value;
+    return u;
+  });
+  saveData();
+  render();
+}
+function removeVwceTx(id) {
+  if (!state.data.vwce) return;
+  state.data.vwce.tranzactii = (state.data.vwce.tranzactii || []).filter(function(tx) { return tx.id !== id; });
+  saveData();
+  render();
 }
 
 function addEtf() {
