@@ -940,6 +940,30 @@ function renderBugetLunar() {
 
   var html = '';
 
+  // NEXT PAYMENT WIDGET (credit)
+  var scad = getScadentar(d);
+  var todayStr = todayIso();
+  var viit = platiViitoare(scad, todayStr);
+  if (viit.length > 0) {
+    var np = viit[0];
+    var dToday = new Date(todayStr + 'T00:00:00');
+    var dNext = new Date(np.data + 'T00:00:00');
+    var diffDays = Math.round((dNext - dToday) / (1000 * 60 * 60 * 24));
+    var totalNext = (np.suma || 0) + (np.asigurare || 0);
+    var dayLabel = diffDays === 0 ? 'astăzi' : (diffDays === 1 ? 'mâine' : 'în ' + diffDays + ' zile');
+    html += '<div class="next-payment">';
+    html += '  <div class="next-payment-icon"><i data-lucide="calendar-clock"></i></div>';
+    html += '  <div class="next-payment-body">';
+    html += '    <div class="next-payment-title">Următoarea rată credit</div>';
+    html += '    <div class="next-payment-line">';
+    html += '      <span class="mono">' + formatRON(totalNext) + ' RON</span>';
+    html += '      <span class="text-mid">scadenţa <strong class="mono">' + esc(np.data) + '</strong> · capital ' + formatRON(np.principal) + ' · dobandă ' + formatRON(np.dobanda) + ' · asigurare ' + formatRON(np.asigurare) + '</span>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="next-payment-count">' + esc(dayLabel) + '</div>';
+    html += '</div>';
+  }
+
   // STAT CARDS
   html += '<div class="section">';
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-up"></i> Sumar lunar (medii)</div></div>';
@@ -1332,6 +1356,23 @@ function toggleScadentarVizibil() {
   render();
 }
 
+function toggleActionsMenu(ev) {
+  if (ev) ev.stopPropagation();
+  var menu = document.getElementById('actions-menu');
+  if (!menu) return;
+  var willOpen = !menu.classList.contains('open');
+  menu.classList.toggle('open', willOpen);
+  if (willOpen) {
+    setTimeout(function() {
+      document.addEventListener('click', closeActionsMenu, { once: true });
+    }, 0);
+  }
+}
+function closeActionsMenu() {
+  var menu = document.getElementById('actions-menu');
+  if (menu) menu.classList.remove('open');
+}
+
 function updateCreditSold(val) {
   state.data.credit.soldActual = parseRON(val);
   saveData();
@@ -1689,12 +1730,19 @@ function render() {
   html += '    </div>';
   html += '    <div class="header-actions">';
   html += '      <span id="save-status" class="save-chip"><i data-lucide="cloud-check"></i> Salvat</span>';
-      html += '      <button class="icon-btn" onclick="showImportModal()" title="Importă tranzacții bancare"><i data-lucide="upload"></i></button>';
-  html += '      <button class="icon-btn" onclick="showAudit()" title="Istoric modificări"><i data-lucide="history"></i></button>';
-  html += '      <button class="icon-btn" onclick="exportCSV()" title="Export CSV"><i data-lucide="download"></i></button>';
+  html += '      <button class="icon-btn" onclick="showImportModal()" title="Importă tranzacții bancare"><i data-lucide="upload"></i></button>';
   html += '      <button class="icon-btn" onclick="toggleTheme()" title="Comută tema"><i data-lucide="' + themeIcon + '"></i></button>';
-  html += '      <button class="icon-btn danger" onclick="resetData()" title="Resetează date"><i data-lucide="rotate-ccw"></i></button>';
-  html += '      <a class="icon-btn danger" href="/logout" title="Ieșire"><i data-lucide="log-out"></i></a>';
+  html += '      <div class="actions-wrap">';
+  html += '        <button class="icon-btn" onclick="toggleActionsMenu(event)" title="Mai multe acțiuni" id="btn-actions"><i data-lucide="more-vertical"></i></button>';
+  html += '        <div class="actions-menu" id="actions-menu">';
+  html += '          <button class="menu-item" onclick="closeActionsMenu();exportCSV()"><i data-lucide="download"></i> Export CSV</button>';
+  html += '          <button class="menu-item" onclick="closeActionsMenu();showAudit()"><i data-lucide="history"></i> Istoric modificări</button>';
+  html += '          <div class="menu-divider"></div>';
+  html += '          <button class="menu-item danger" onclick="closeActionsMenu();resetData()"><i data-lucide="rotate-ccw"></i> Resetează date</button>';
+  html += '          <div class="menu-divider"></div>';
+  html += '          <a class="menu-item" href="/logout"><i data-lucide="log-out"></i> Ieșire</a>';
+  html += '        </div>';
+  html += '      </div>';
   html += '    </div>';
   html += '  </div>';
   html += '</div>';

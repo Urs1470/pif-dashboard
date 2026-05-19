@@ -533,6 +533,83 @@ label.field-label {
 .text-mid { color: var(--text-mid); }
 .text-dim { color: var(--text-dim); }
 
+/* ============ ACTIONS MENU (header dropdown) ============ */
+.actions-wrap { position: relative; }
+.actions-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  min-width: 190px;
+  box-shadow: var(--shadow);
+  opacity: 0; visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.12s, transform 0.12s, visibility 0.12s;
+  z-index: 200;
+}
+.actions-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.actions-menu .menu-item {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  text-decoration: none;
+}
+.actions-menu .menu-item:hover { background: var(--bg-elev3); }
+.actions-menu .menu-item.danger:hover { background: var(--danger-soft); color: var(--danger); }
+.actions-menu .menu-item .lucide { width: 14px; height: 14px; flex-shrink: 0; }
+.actions-menu .menu-divider { height: 1px; background: var(--border); margin: 4px 2px; }
+
+/* ============ NEXT PAYMENT WIDGET ============ */
+.next-payment {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--bg-elev1);
+  border: 1px solid var(--warning);
+  border-left-width: 3px;
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+.next-payment-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.next-payment-icon .lucide { width: 20px; height: 20px; }
+.next-payment-body { flex: 1; min-width: 0; }
+.next-payment-title { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.next-payment-line {
+  display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+}
+.next-payment-line .mono { color: var(--warning); font-weight: 600; }
+.next-payment-line .text-mid { font-size: 0.78rem; }
+.next-payment-count {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 0.7rem; font-weight: 600;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
 /* ============ CUSTOM SELECT (cs-enhance) ============ */
 .cs { position: relative; display: inline-block; min-width: 120px; }
 .cs-trigger {
