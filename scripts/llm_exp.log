@@ -2659,3 +2659,204 @@
 2026-05-19 03:51:34,398  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica 2. O valoare mai 
 2026-05-19 03:51:34,499  INFO      2153 13.27 (ACS880)  existing_len=1313  qc=rewrite
 2026-05-19 03:51:44,277  INFO        -> rewrite: Defineste valoarea minima reala a semnalului de iesire analogica AO2. Impreuna c
+2026-05-19 03:51:47,513  INFO        Committed + pushed
+2026-05-19 03:51:47,613  INFO      2154 13.28 (ACS880)  existing_len=1273  qc=rewrite
+2026-05-19 03:51:58,218  INFO        -> rewrite: Defineste valoarea reala maxima pentru semnalul de la iesirea analogica 2. Impre
+2026-05-19 03:51:58,319  INFO      2155 13.29 (ACS880)  existing_len=1203  qc=rewrite
+2026-05-19 03:52:05,132  INFO        -> rewrite: Defineste valoarea minima a iesirii analogice AO2 in mA. Aceasta seteaza nivelul
+2026-05-19 03:52:05,233  INFO      2156 13.30 (ACS880)  existing_len=1191  qc=rewrite
+2026-05-19 03:52:17,542  INFO        -> rewrite: Seteaza valoarea maxima de curent pentru iesirea analogica 2 exprimata in mA. Ac
+2026-05-19 03:52:17,643  INFO      2157 13.91 (ACS880)  existing_len=1348  qc=rewrite
+2026-05-19 03:52:27,634  INFO        -> rewrite: Acest parametru stocheaza valoarea care va fi transmisa la iesirea analogica AO1
+2026-05-19 03:52:27,735  INFO      2158 13.92 (ACS880)  existing_len=1348  qc=rewrite
+2026-05-19 03:52:36,304  INFO        -> rewrite: Parametru de stocare pentru controlul iesirii analogice AO2. Valoarea scrisa in 
+2026-05-19 03:52:36,405  INFO      2164 14.11 (ACS880)  existing_len=1419  qc=rewrite
+2026-05-19 03:52:45,990  INFO        -> rewrite: Seteaza sursa semnalului pentru iesirea digitala DIO1 de pe modulul de extensie 
+2026-05-19 03:52:46,090  INFO      2165 14.12 (ACS880)  existing_len=1238  qc=rewrite
+2026-05-19 03:52:56,167  INFO        -> rewrite: Seteaza timpul de intarziere pentru intrarea digitala DI1 cand semnalul trece di
+2026-05-19 03:52:56,267  INFO      2166 14.13 (ACS880)  existing_len=1304  qc=rewrite
+2026-05-19 03:53:07,826  INFO        -> rewrite: Seteaza intarzierea la dezactivarea intrarii digitale DI1. Dupa ce semnalul de l
+2026-05-19 03:53:07,926  INFO      2167 14.14 (ACS880)  existing_len=1187  qc=rewrite
+2026-05-19 03:53:13,645  INFO        -> rewrite: Selecteaza functia pentru borna digitala DIO2 a modulului de extensie FIO-11. In
+2026-05-19 03:53:13,745  INFO      2168 14.17 (ACS880)  existing_len=1248  qc=rewrite
+2026-05-19 03:53:24,562  INFO        -> rewrite: Seteaza intarzierea la activare pentru intrarea digitala DI2. Cand semnalul DI2 
+2026-05-19 03:53:24,663  INFO      2169 14.18 (ACS880)  existing_len=1249  qc=rewrite
+2026-05-19 03:53:31,003  INFO        -> rewrite: Seteaza timpul de intarziere pentru dezactivarea intrarii digitale DI2. Cand sem
+2026-05-19 03:53:31,104  INFO      2170 14.19 (ACS880)  existing_len=1370  qc=rewrite
+2026-05-19 03:53:37,566  INFO        -> rewrite: Defineste actiunea taken when supervizarea intrarii analogice este declansata. C
+2026-05-19 03:53:37,666  INFO      2171 14.20 (ACS880)  existing_len=1411  qc=rewrite
+2026-05-19 03:53:47,371  INFO        -> rewrite: Selecteaza care intrari analogice sunt supravegheate pentru conditii de alarma. 
+2026-05-19 03:53:47,472  INFO      2172 14.21 (ACS880)  existing_len=1433  qc=rewrite
+2026-05-19 03:53:51,786  INFO        -> rewrite: Initializeaza calibrarea modulului de intrare analogica FAIO-01. Ruleaza aceasta
+2026-05-19 03:53:51,886  INFO      2173 14.22 (ACS880)  existing_len=1174  qc=rewrite
+2026-05-19 03:54:04,595  INFO        -> rewrite: Seteaza durata de activare fortata a intrarii analogice pe modulul optional FAIO
+2026-05-19 03:54:04,696  INFO      2174 14.23 (ACS880)  existing_len=1196  qc=rewrite
+2026-05-19 03:54:13,038  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea intrarii digitale DI3. Cand DI3 comuta d
+2026-05-19 03:54:13,139  INFO      2175 14.24 (ACS880)  existing_len=1322  qc=rewrite
+2026-05-19 03:54:22,218  INFO        -> rewrite: Configureaza functia pinului DIO4 de pe modulul de extensie FIO-01. Valoarea 0 s
+2026-05-19 03:54:22,319  INFO      2176 14.26 (ACS880)  existing_len=1327  qc=rewrite
+2026-05-19 03:54:30,795  INFO        -> rewrite: Afiseaza valoarea actuala masurata pe intrarea analogica 1 (AI1) de pe modulul d
+2026-05-19 03:54:30,895  INFO      2177 14.27 (ACS880)  existing_len=1218  qc=rewrite
+2026-05-19 03:54:35,411  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice 1 (AI1) de la modulul de extensie
+2026-05-19 03:54:35,512  INFO      2178 14.28 (ACS880)  existing_len=1194  qc=rewrite
+2026-05-19 03:54:44,804  INFO        -> rewrite: Forteaza manual valoarea intrarii analogice AI1 de pe modulul FAIO-01. Cand este
+2026-05-19 03:54:44,905  INFO      2179 14.30 (ACS880)  existing_len=1373  qc=rewrite
+2026-05-19 03:54:51,597  INFO        -> rewrite: Selecteaza unitatea de masura pentru intrarea analogica 1 a modulului de extensi
+2026-05-19 03:54:51,698  INFO      2180 14.31 (ACS880)  existing_len=1304  qc=rewrite
+2026-05-19 03:54:57,816  INFO        -> rewrite: Afiseaza starea curenta a releului de iesire de pe modulul FDIO-01. Acest parame
+2026-05-19 03:54:57,917  INFO      2181 14.32 (ACS880)  existing_len=1233  qc=rewrite
+2026-05-19 03:55:03,462  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica 1 (AI1) de pe mo
+2026-05-19 03:55:03,563  INFO      2182 14.34 (ACS880)  existing_len=1283  qc=rewrite
+2026-05-19 03:55:13,112  INFO        -> rewrite: Selecteaza sursa semnalului care comanda releul 1 de pe modulul de extensie FDIO
+2026-05-19 03:55:13,213  INFO      2183 14.35 (ACS880)  existing_len=1278  qc=rewrite
+2026-05-19 03:55:20,969  INFO        -> rewrite: Seteaza timpul de intarziere in secunde inainte ca releul RO1 sa se activeze (sa
+2026-05-19 03:55:21,069  INFO      2184 14.36 (ACS880)  existing_len=1208  qc=rewrite
+2026-05-19 03:55:27,876  INFO        -> rewrite: Seteaza intarzierea la dezactivare pentru releul RO1 in секунды. Dupa primirea c
+2026-05-19 03:55:27,977  INFO      2185 14.37 (ACS880)  existing_len=1307  qc=rewrite
+2026-05-19 03:55:38,619  INFO        -> rewrite: Defineste ce functie activeaza iesirea releu RO2 pe modulul de extensie FDIO-01.
+2026-05-19 03:55:38,719  INFO      2186 14.38 (ACS880)  existing_len=1219  qc=rewrite
+2026-05-19 03:55:46,542  INFO        -> rewrite: Seteaza intarzierea la activare a releului de iesire RO2. Releul se va activa ab
+2026-05-19 03:55:46,642  INFO      2187 14.39 (ACS880)  existing_len=1212  qc=rewrite
+2026-05-19 03:55:57,393  INFO        -> rewrite: Seteaza intarzierea de dezactivare pentru releul RO2 in secunde. Cand conditia c
+2026-05-19 03:55:57,494  INFO      2188 14.43 (ACS880)  existing_len=1332  qc=rewrite
+2026-05-19 03:56:08,540  INFO        -> rewrite: Permite fortarea unei valori pe intrarea analogica 2 a modulului FAIO-01 pentru 
+2026-05-19 03:56:08,640  INFO      2189 14.45 (ACS880)  existing_len=1382  qc=rewrite
+2026-05-19 03:56:18,240  INFO        -> rewrite: Selecteaza unitatea de masura pentru intrarea analogica 2 (AI2) a modulului de e
+2026-05-19 03:56:18,341  INFO      2190 14.46 (ACS880)  existing_len=928  qc=rewrite
+2026-05-19 03:56:28,885  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului de la intrarea analogica 2
+2026-05-19 03:56:28,986  INFO      2191 14.47 (ACS880)  existing_len=934  qc=rewrite
+2026-05-19 03:56:36,738  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital pentru intrarea analogica AI2. O v
+2026-05-19 03:56:36,839  INFO      2192 14.49 (ACS880)  existing_len=844  qc=rewrite
+2026-05-19 03:56:43,509  INFO        -> rewrite: Defineste valoarea maxima de tensiune pentru intrarea analogica AI2. Când semnal
+2026-05-19 03:56:43,609  INFO      2193 14.50 (ACS880)  existing_len=921  qc=rewrite
+2026-05-19 03:56:49,579  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2. Scalarea este determinata de
+2026-05-19 03:56:49,681  INFO      2194 14.51 (ACS880)  existing_len=855  qc=rewrite
+2026-05-19 03:56:53,702  INFO        -> rewrite: Seteaza valoarea scalata pentru intrarea analogica AI2 a modulului de extensie F
+2026-05-19 03:56:53,803  INFO      2195 14.58 (ACS880)  existing_len=936  qc=rewrite
+2026-05-19 03:57:00,607  INFO        -> rewrite: Permite fortarea valorii analogice AI3 la o valoare manuala, inlocuind masuratoa
+2026-05-19 03:57:00,708  INFO      2196 14.60 (ACS880)  existing_len=883  qc=rewrite
+2026-05-19 03:57:07,831  INFO        -> rewrite: Selecteaza tipul de semnal pentru intrarea analogica AI3 (mA sau V). Optiunea mA
+2026-05-19 03:57:07,932  INFO      2197 14.61 (ACS880)  existing_len=806  qc=rewrite
+2026-05-19 03:57:13,104  INFO        -> rewrite: Seteaza factorul de filtrare pentru intrarea analogica AI3. Valoarea mare creste
+2026-05-19 03:57:13,205  INFO      2198 14.62 (ACS880)  existing_len=823  qc=rewrite
+2026-05-19 03:57:23,694  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul software al intrarii analogice AI3. Un 
+2026-05-19 03:57:23,794  INFO      2199 14.65 (ACS880)  existing_len=896  qc=rewrite
+2026-05-19 03:57:34,546  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice 3 (AI3) de la modulul de extensie
+2026-05-19 03:57:34,647  INFO      2200 14.66 (ACS880)  existing_len=1115  qc=rewrite
+2026-05-19 03:57:44,841  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 dupa aplicarea offset-ului si
+2026-05-19 03:57:44,942  INFO      2201 14.71 (ACS880)  existing_len=1081  qc=rewrite
+2026-05-19 03:57:55,500  INFO        -> rewrite: Forteaza iesirea analogica la o valoare prestabilita. Cand este activa, iesirea 
+2026-05-19 03:57:55,601  INFO      2202 14.78 (ACS880)  existing_len=917  qc=rewrite
+2026-05-19 03:58:03,029  INFO        -> rewrite: Fortareaza manual valoarea curentului pe iesirea analogica AO1 pentru testare si
+2026-05-19 03:58:03,130  INFO      2203 14.79 (ACS880)  existing_len=944  qc=rewrite
+2026-05-19 03:58:12,748  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica 1. O valoare mai 
+2026-05-19 03:58:12,849  INFO      2204 14.80 (ACS880)  existing_len=865  qc=rewrite
+2026-05-19 03:58:24,840  INFO        -> rewrite: Defineste valoarea minima a sursei de semnal pentru iesirea analogica AO1. Acest
+2026-05-19 03:58:24,941  INFO      2205 14.81 (ACS880)  existing_len=841  qc=rewrite
+2026-05-19 03:58:38,742  INFO        -> rewrite: Seteaza valoarea maxima a semnalului sursa pentru iesirea analogica 1 (AO1) a mo
+2026-05-19 03:58:38,843  INFO      2206 14.82 (ACS880)  existing_len=825  qc=rewrite
+2026-05-19 03:58:47,542  INFO        -> rewrite: Seteaza valoarea de iesire a releului analogic 1 masurata in mA. Acest parametru
+2026-05-19 03:58:47,642  INFO      2207 14.83 (ACS880)  existing_len=785  qc=rewrite
+2026-05-19 03:58:57,980  INFO        -> rewrite: Seteaza valoarea curentului de iesire pentru AO1 cand sursa selectata (AO1 src) 
+2026-05-19 03:58:58,081  INFO      2208 14.88 (ACS880)  existing_len=778  qc=rewrite
+2026-05-19 03:59:03,425  INFO        -> rewrite: Forteaza valoarea curentului pe iesirea analogica AO2 in mA. Folosit pentru test
+2026-05-19 03:59:03,526  INFO      2209 14.89 (ACS880)  existing_len=768  qc=rewrite
+2026-05-19 03:59:16,280  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul analogic al iesirii AO2. Cu cat valoare
+2026-05-19 03:59:16,381  INFO      2210 14.90 (ACS880)  existing_len=780  qc=rewrite
+2026-05-19 03:59:23,890  INFO        -> rewrite: Seteaza valoarea minima pentru iesirea analogica AO2 a modulului FAIO-01. Aceast
+2026-05-19 03:59:23,990  INFO      2211 14.91 (ACS880)  existing_len=741  qc=rewrite
+2026-05-19 03:59:33,958  INFO        -> rewrite: Seteaza valoarea maxima a sursei pentru iesirea analogica AO2. Cand semnalul sur
+2026-05-19 03:59:34,058  INFO      2212 14.92 (ACS880)  existing_len=717  qc=rewrite
+2026-05-19 03:59:40,666  INFO        -> rewrite: Seteaza valoarea curentului de iesire pentru AO2 (iesire analogica 2) a modululu
+2026-05-19 03:59:40,767  INFO      2213 14.93 (ACS880)  existing_len=773  qc=rewrite
+2026-05-19 03:59:49,365  INFO        -> rewrite: Seteaza valoarea curentului de iesire pentru iesirea analogica AO2 in miliamperi
+2026-05-19 03:59:49,466  INFO      2215 15.12 (ACS880)  existing_len=808  qc=rewrite
+2026-05-19 03:59:57,481  INFO        -> rewrite: Seteaza intarzierea pentru activarea intrarii digitale 1. Semnalul de la DI1 va 
+2026-05-19 03:59:57,582  INFO      2216 15.13 (ACS880)  existing_len=818  qc=rewrite
+2026-05-19 04:00:04,310  INFO        -> rewrite: Seteaza timpul de intarziere pentru dezactivarea intrarii digitale DI1 de pe mod
+2026-05-19 04:00:04,411  INFO      2217 15.17 (ACS880)  existing_len=790  qc=rewrite
+2026-05-19 04:00:13,926  INFO        -> rewrite: Seteaza intarzierea in secunde inainte ca intrarea digitala DI2 de pe modulul de
+2026-05-19 04:00:14,027  INFO      2218 15.18 (ACS880)  existing_len=816  qc=rewrite
+2026-05-19 04:00:21,942  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea intrarii digitale DI2 de pe modulul de e
+2026-05-19 04:00:22,042  INFO      2219 15.20 (ACS880)  existing_len=885  qc=rewrite
+2026-05-19 04:00:32,505  INFO        -> rewrite: Selecteaza functia de supervisie pentru intrarile analogice ale modulului de ext
+2026-05-19 04:00:32,606  INFO      2220 15.22 (ACS880)  existing_len=808  qc=rewrite
+2026-05-19 04:00:42,553  INFO        -> rewrite: Seteaza intarzierea la activare pentru intrarea digitala DI3. Intarzierea poate 
+2026-05-19 04:00:42,654  INFO      2221 15.23 (ACS880)  existing_len=775  qc=rewrite
+2026-05-19 04:00:49,705  INFO        -> rewrite: Seteaza timpul de intarziere in secunde inainte ca intrarea digitala DI3 sa semn
+2026-05-19 04:00:49,806  INFO      2222 15.27 (ACS880)  existing_len=835  qc=rewrite
+2026-05-19 04:01:03,914  INFO        -> rewrite: Seteaza intarzierea pentru activarea intrarii/iesiri digitale 4 (DIO4). Semnalul
+2026-05-19 04:01:04,015  INFO      2223 15.28 (ACS880)  existing_len=833  qc=rewrite
+2026-05-19 04:01:14,303  INFO        -> rewrite: Seteaza timpul de intarziere pentru dezactivarea iesirii digitale DIO4. Cand sem
+2026-05-19 04:01:14,403  INFO      2224 15.31 (ACS880)  existing_len=862  qc=rewrite
+2026-05-19 04:01:23,580  INFO        -> rewrite: Afiseaza starea curenta a releelor de iesire de pe modulul FDIO-01. Arata daca f
+2026-05-19 04:01:23,680  INFO      2225 15.32 (ACS880)  existing_len=924  qc=rewrite
+2026-05-19 04:01:33,734  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului analogic de la intrarea AI
+2026-05-19 04:01:33,835  INFO      2226 15.35 (ACS880)  existing_len=871  qc=rewrite
+2026-05-19 04:01:41,492  INFO        -> rewrite: Seteaza intarzierea la activare pentru releul RO1. Dupa primirea comenzii de inc
+2026-05-19 04:01:41,593  INFO      2227 15.36 (ACS880)  existing_len=852  qc=rewrite
+2026-05-19 04:01:48,632  INFO        -> rewrite: Defineste timpul de intarziere la dezactivare pentru releul RO1. Dupa ce conditi
+2026-05-19 04:01:48,733  INFO      2228 15.38 (ACS880)  existing_len=785  qc=rewrite
+2026-05-19 04:01:59,892  INFO        -> rewrite: Seteaza intarzierea la activare a releului RO2 in sutimi de secunda. Dupa indepl
+2026-05-19 04:01:59,993  INFO      2229 15.39 (ACS880)  existing_len=794  qc=rewrite
+2026-05-19 04:02:07,028  INFO        -> rewrite: Seteaza timpul de intarziere pentru releul RO2 de a se dezactiva (OFF) dupa ce c
+2026-05-19 04:02:07,129  INFO      2230 15.43 (ACS880)  existing_len=825  qc=rewrite
+2026-05-19 04:02:16,152  INFO        -> rewrite: Permite fortarea unei valori manuale pentru intrarea analogica AI2. Este vizibil
+2026-05-19 04:02:16,253  INFO      2231 15.46 (ACS880)  existing_len=839  qc=rewrite
+2026-05-19 04:02:29,058  INFO        -> rewrite: Seteaza castigul filtrului pentru intrarea analogica AI2. O valoare mai mare ofe
+2026-05-19 04:02:29,159  INFO      2232 15.47 (ACS880)  existing_len=833  qc=rewrite
+2026-05-19 04:02:38,868  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului analogic de la intrarea AI
+2026-05-19 04:02:38,969  INFO      2233 15.50 (ACS880)  existing_len=861  qc=rewrite
+2026-05-19 04:02:50,947  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2 de la modulul de extensie FAI
+2026-05-19 04:02:51,047  INFO      2234 15.51 (ACS880)  existing_len=865  qc=rewrite
+2026-05-19 04:02:58,235  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2 de la modulul de extensie FAI
+2026-05-19 04:02:58,336  INFO      2235 15.58 (ACS880)  existing_len=876  qc=rewrite
+2026-05-19 04:03:14,469  INFO        -> rewrite: Permite fortarea manuala a valorii pentru intrarea analogica 3 (AI3). Folosit in
+2026-05-19 04:03:14,570  INFO      2236 15.61 (ACS880)  existing_len=820  qc=rewrite
+2026-05-19 04:03:22,748  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica AI3 de pe modulu
+2026-05-19 04:03:22,849  INFO      2237 15.62 (ACS880)  existing_len=840  qc=rewrite
+2026-05-19 04:03:29,963  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital pentru intrarea analogica AI3. Un 
+2026-05-19 04:03:30,064  INFO      2238 15.65 (ACS880)  existing_len=920  qc=rewrite
+2026-05-19 04:03:41,917  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 de la modulul de extensie FIO
+2026-05-19 04:03:42,017  INFO      2239 15.66 (ACS880)  existing_len=851  qc=rewrite
+2026-05-19 04:03:48,105  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 dupa aplicarea tuturor factor
+2026-05-19 04:03:48,205  INFO      2240 15.71 (ACS880)  existing_len=904  qc=rewrite
+2026-05-19 04:03:55,474  INFO        -> rewrite: Aceasta functie permite fortarea iesirii analogice la o valoare fixaindependenta
+2026-05-19 04:03:55,575  INFO      2241 15.78 (ACS880)  existing_len=860  qc=rewrite
+2026-05-19 04:04:06,356  INFO        -> rewrite: Fortarea manuala a valorii pe iesirea analogica AO1 pentru testare sau depanare.
+2026-05-19 04:04:06,457  INFO      2242 15.79 (ACS880)  existing_len=889  qc=rewrite
+2026-05-19 04:04:21,258  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica 1. O valoare mai 
+2026-05-19 04:04:21,359  INFO      2243 15.80 (ACS880)  existing_len=797  qc=rewrite
+2026-05-19 04:04:28,715  INFO        -> rewrite: Defineste valoarea minima scalata pentru iesirea analogica AO1. Aceasta corespun
+2026-05-19 04:04:28,815  INFO      2244 15.81 (ACS880)  existing_len=845  qc=rewrite
+2026-05-19 04:04:41,746  INFO        -> rewrite: Defineste valoarea maxima pentru scalarea iesirii analogice AO1. Impreuna cu 15.
+2026-05-19 04:04:41,847  INFO      2245 15.82 (ACS880)  existing_len=876  qc=rewrite
+2026-05-19 04:04:48,930  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice 1 (AO1) in mA sau V, in functie de
+2026-05-19 04:04:49,030  INFO      2246 15.83 (ACS880)  existing_len=881  qc=rewrite
+2026-05-19 04:04:55,587  INFO        -> rewrite: Afiseaza valoarea actuala a semnalului de iesire analogic AO1 in mA sau V in fun
+2026-05-19 04:04:55,687  INFO      2247 15.88 (ACS880)  existing_len=814  qc=rewrite
+2026-05-19 04:05:02,648  INFO        -> rewrite: forteaza o valoare specifica pe iesirea analogica 2 (AO2). Folosit pentru testar
+2026-05-19 04:05:02,748  INFO      2248 15.89 (ACS880)  existing_len=832  qc=rewrite
+2026-05-19 04:05:11,448  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital pentru iesirea analogica AO2 a mod
+2026-05-19 04:05:11,549  INFO      2249 15.90 (ACS880)  existing_len=868  qc=rewrite
+2026-05-19 04:05:17,742  INFO        -> rewrite: Defineste valoarea minima corespunzatoare iesirii analogice AO2 de pe modulul de
+2026-05-19 04:05:17,843  INFO      2250 15.91 (ACS880)  existing_len=1205  qc=rewrite
+2026-05-19 04:05:29,841  INFO        -> rewrite: Defineste valoarea maxima pentru iesirea analogica AO2 a modulului de extensie F
+2026-05-19 04:05:29,942  INFO      2251 15.92 (ACS880)  existing_len=994  qc=rewrite
+2026-05-19 04:05:43,099  INFO        -> rewrite: Seteaza nivelul semnalului de iesire analogica 2 pe modulul de extensie FAIO-01.
+2026-05-19 04:05:43,200  INFO      2252 15.93 (ACS880)  existing_len=1023  qc=rewrite
+2026-05-19 04:05:48,559  INFO        -> rewrite: Seteaza valoarea de iesire pentru AO2 (analog output 2) pe modulul FAIO-01. Valo
+2026-05-19 04:05:48,659  INFO      2254 16.12 (ACS880)  existing_len=1111  qc=rewrite
+2026-05-19 04:06:03,156  INFO        -> rewrite: Defineste timpul de intarziere pentru activarea intrarii digitale DI1. Valoarea 
+2026-05-19 04:06:03,256  INFO      2256 16.13 (ACS880)  existing_len=1093  qc=rewrite
+2026-05-19 04:06:09,403  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea intrarii digitale DI1. Timpul dinainte c
+2026-05-19 04:06:09,504  INFO      2257 16.17 (ACS880)  existing_len=1022  qc=rewrite
+2026-05-19 04:06:23,476  INFO        -> rewrite: Seteaza intarzierea la activare pentru intrarea digitala DI2. Cand semnalul de i
+2026-05-19 04:06:23,576  INFO      2258 16.18 (ACS880)  existing_len=1058  qc=rewrite
+2026-05-19 04:06:34,370  INFO        -> rewrite: Seteaza intarzierea timpului necesar pentru ca intrarea digitala 2 (DI2) sa fie 
+2026-05-19 04:06:34,470  INFO      2259 16.20 (ACS880)  existing_len=1204  qc=rewrite
+2026-05-19 04:06:43,751  INFO        -> rewrite: Seteaza care intrare analogica din modulul FAIO-01 este monitorizata pentru func
+2026-05-19 04:06:43,852  INFO      2260 16.22 (ACS880)  existing_len=1066  qc=rewrite
+2026-05-19 04:06:50,727  INFO        -> rewrite: Activeaza fortarea selectiei intrarii analogice pentru modulul de extensie FAIO-
+2026-05-19 04:06:50,828  INFO      2261 16.23 (ACS880)  existing_len=992  qc=rewrite
+2026-05-19 04:07:03,873  INFO        -> rewrite: Seteaza intarzierea pentru dezactivarea intrarii digitale DI3. Dupa ce semnalul 
