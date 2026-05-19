@@ -5386,9 +5386,11 @@ function openParamModal(param) {
     const interconnRow = document.getElementById('param-modal-interconn-row');
     if (interconnRow) interconnRow.style.display = 'none';
 
-    // Influențe — ascunde temporar până la fetch
+    // Influențe — ascunde temporar până la fetch (ambele rânduri).
     const inflRow = document.getElementById('param-modal-influenteaza-row');
     if (inflRow) inflRow.style.display = 'none';
+    const inflByRow = document.getElementById('param-modal-influentat-de-row');
+    if (inflByRow) inflByRow.style.display = 'none';
 
     // Show manual button if family has a known manual
     const manualBtn = document.getElementById('param-manual-btn');
@@ -5509,11 +5511,13 @@ function _renderInfluRow(rowId, divId, label, iconName, color, entries) {
     }
     const div = document.getElementById(divId);
     if (!div) return;
+    // Ion wants both sections visible always — show an empty-state line when
+    // the list is empty instead of hiding the row.
     if (!entries || entries.length === 0) {
-        row.style.display = 'none';
-        return;
+        div.innerHTML = '<div style="font-size:0.85em;opacity:0.55;font-style:italic;padding:4px 2px;">— niciun parametru —</div>';
+    } else {
+        div.innerHTML = entries.map(e => _influChip(e, color)).join('');
     }
-    div.innerHTML = entries.map(e => _influChip(e, color)).join('');
     row.style.display = 'block';
 }
 

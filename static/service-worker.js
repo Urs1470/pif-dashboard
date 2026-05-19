@@ -1,9 +1,9 @@
 // PIF Dashboard Service Worker
 // Cache-first strategy for app shell, network-first for API calls
 
-const CACHE_NAME = 'pif-dashboard-v14';
-const STATIC_CACHE = 'pif-static-v14';
-const API_CACHE = 'pif-api-v14';
+const CACHE_NAME = 'pif-dashboard-v15';
+const STATIC_CACHE = 'pif-static-v15';
+const API_CACHE = 'pif-api-v15';
 
 // App shell files to cache on install
 const APP_SHELL = [
