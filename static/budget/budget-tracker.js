@@ -995,9 +995,19 @@ function renderBugetLunar() {
   html += '<span class="sep">·</span>Start buget <strong class="mono">' + esc(d.profil.startMonth || '2026-05') + '</strong>';
   html += '</div></div>';
 
+  return html;
+}
+
+// ====================================================================
+// RENDER: Setari (toate panourile editabile)
+// ====================================================================
+function renderSetari() {
+  var d = state.data;
+  var html = '';
+
   // PROFIL PANEL (editable)
-  html += '<div class="section" style="margin-top:1.5rem;">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="settings"></i> Profil</div></div>';
+  html += '<div class="section">';
+  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="user-cog"></i> Profil</div></div>';
   html += '<div class="panel">';
   html += '<div class="profil-grid">';
   html += '  <div class="field"><label class="field-label">Nume</label>';
@@ -1652,12 +1662,14 @@ function render() {
     { id: 'credite',      label: 'Credite',      icon: 'landmark' },
     { id: 'fond-urgenta', label: 'Fond urgență', icon: 'shield' },
     { id: 'venituri',     label: 'Venituri',     icon: 'coins' },
+    { id: 'setari',       label: 'Setări',       icon: 'sliders-horizontal' },
   ];
 
   var tabContent = {
     'buget-lunar': renderBugetLunar,
     'credite': renderCredite,
     'fond-urgenta': renderFondUrgenta,
+    'setari': renderSetari,
     'venituri': renderVenituri,
   };
 
