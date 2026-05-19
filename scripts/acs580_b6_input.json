@@ -1,0 +1,802 @@
+[
+  {
+    "id": 15332,
+    "parametru": "26.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference to",
+    "descriere": "Displays the final torque reference given to the torque controller in percent. This reference is then acted upon by various final limiters, like power, torque, load etc. See the control chain diagrams on pages 624 and 625. This parameter is read-only. Torque reference for torque control in percent of motor nominal torque (99.12).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15333,
+    "parametru": "26.08",
+    "familie": "ACS580",
+    "descriere_scurta": "Minimum torque ref",
+    "descriere": "Defines the minimum torque reference. Allows for local limiting of the torque reference before it is passed on to the torque ramp controller. For absolute torque limiting, refer to parameter 30.19 Minimum torque 1. Minimum torque reference in percent of motor nominal torque (99.12).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15334,
+    "parametru": "26.09",
+    "familie": "ACS580",
+    "descriere_scurta": "Maximum torque ref",
+    "descriere": "Defines the maximum torque reference. Allows for local limiting of the torque reference before it is passed on to the torque ramp controller. For absolute torque limiting, refer to parameter 30.20 Maximum torque 1. Maximum torque reference in percent of motor nominal torque (99.12).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15335,
+    "parametru": "26.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque ref1/2",
+    "descriere": "Configures the selection between torque references 1 and 2. See diagram at 26.11 Torque ref1 source. 0 = Torque reference 1 1 = Torque reference 2 0. 1. Torque reference 1 is used when external control location EXT1 is active. Torque reference 2 is used when external control location EXT2 is active. See also parameter 19.11 Ext1/Ext2 selection. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15336,
+    "parametru": "26.13",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque ref1",
+    "descriere": "Selects a mathematical function between the reference sources selected by parameters 26.11 Torque ref1 source and 26.12 Torque ref2 source. See diagram at 26.11 Torque ref1 source. Signal selected by 26.11 Torque ref1 source is used as torque reference 1 as such (no function applied). The sum of the reference sources is used as torque reference 1. The subtraction ([26.11 Torque ref1 source] - [26.12 Torque ref2 source]) of the reference sources is used as torque reference 1. The multiplication of the reference sources is used as torque reference 1. The smaller of the reference sources is used as torque reference 1. The greater of the reference sources is used as torque reference 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15337,
+    "parametru": "26.17",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque ref filter time",
+    "descriere": "Defines a low-pass filter time constant for the torque reference. Filter time constant for torque reference.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15338,
+    "parametru": "26.20",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reversal",
+    "descriere": "Selects the source of torque reversal function. Torque reversal function is disabled. Torque reversal function is enabled.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15339,
+    "parametru": "26.70",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference",
+    "descriere": "Displays the value of torque reference source 1 (selected by parameter 26.11 Torque ref1 source). See the control chain diagram on page 624. This parameter is read-only. Value of torque reference source 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15340,
+    "parametru": "26.71",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference",
+    "descriere": "Displays the value of torque reference source 2 (selected by parameter 26.12 Torque ref2 source). See the control chain diagram on page 624. This parameter is read-only. Value of torque reference source 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15341,
+    "parametru": "26.72",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference",
+    "descriere": "Displays the torque reference after the function applied by parameter 26.13 Torque ref1 function (if any), and after selection (26.14 Torque ref1/2 selection). See the control chain diagram on page 624. This parameter is read-only. Torque reference after selection.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15342,
+    "parametru": "26.73",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference",
+    "descriere": "Displays the torque reference after application of reference additive 1. See the control chain diagram on page 624. This parameter is read-only. Torque reference after application of reference additive 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15343,
+    "parametru": "26.76",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque reference",
+    "descriere": "Displays the torque reference after torque trim. See the control chain diagram on page 625. This parameter is read-only. Torque reference after torque trim.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15344,
+    "parametru": "26.81",
+    "familie": "ACS580",
+    "descriere_scurta": "Rush control gain",
+    "descriere": "Rush controller gain term. See section Rush control (page 188). Rush controller gain.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15345,
+    "parametru": "26.82",
+    "familie": "ACS580",
+    "descriere_scurta": "Rush control",
+    "descriere": "Rush controller integration time term. Rush controller integration time. Settings for the frequency reference chain. See the control chain diagrams on pages 616 and 617.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15346,
+    "parametru": "28.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Frequency ref ramp",
+    "descriere": "Displays the used frequency reference before ramping. See the control chain diagram on page 616. This parameter is read-only. Frequency reference before ramping.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15347,
+    "parametru": "28.24",
+    "familie": "ACS580",
+    "descriere_scurta": "Constant frequency",
+    "descriere": "When bit 0 of parameter 28.21 Constant frequency function is 0 (Separate), selects a source that activates constant frequency 3. When bit 0 of parameter 28.21 Constant frequency function is 1 (Packed), this parameter and parameters 28.22 Constant frequency sel1 and 28.23 Constant frequency sel2 select three sources that are used to activate constant frequencies. See table at parameter 28.22 Constant frequency sel1. For the selections, see parameter 28.22 Constant frequency sel1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15348,
+    "parametru": "28.29",
+    "familie": "ACS580",
+    "descriere_scurta": "Constant frequency",
+    "descriere": "Defines constant frequency 4. Constant frequency 4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15349,
+    "parametru": "28.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Constant frequency",
+    "descriere": "Defines constant frequency 5. Constant frequency 5.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15350,
+    "parametru": "28.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Constant frequency",
+    "descriere": "Defines constant frequency 6. Constant frequency 6.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15351,
+    "parametru": "28.32",
+    "familie": "ACS580",
+    "descriere_scurta": "Constant frequency",
+    "descriere": "Defines constant frequency 7. Constant frequency 7.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15352,
+    "parametru": "28.43",
+    "familie": "ACS580",
+    "descriere_scurta": "Jogging 2",
+    "descriere": "Defines the frequency reference for jogging function 2 in scalar control mode. Jogging 2 frequency reference.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15353,
+    "parametru": "28.51",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency",
+    "descriere": "Enables/disables the critical frequencies function. Also determines whether the specified ranges are effective in both rotating directions or not. See also section Critical speeds/frequencies (page 131). Information 1 = Enable: Critical frequencies enabled. 0 = Disable: Critical frequencies disabled. 1 = According to par: The signs of parameters 28.52…28.57 into account. 0 = Absolute: Parameters 28.52…28.57 are handled as absolute Each range is effective in both directions of rotation. Critical frequencies configuration word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15354,
+    "parametru": "28.52",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency 1",
+    "descriere": "Defines the low limit for critical frequency 1.",
+    "pdf_extra": "{\"notes\": [\"This value must be less than or equal to the value of 28.53 Critical frequency 1 high. Low limit for critical frequency 1.\"]}"
+  },
+  {
+    "id": 15355,
+    "parametru": "28.53",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency 1",
+    "descriere": "Defines the high limit for critical frequency 1.",
+    "pdf_extra": "{\"notes\": [\"This value must be greater than or equal to the value of 28.52 Critical frequency 1 low. High limit for critical frequency 1.\"]}"
+  },
+  {
+    "id": 15356,
+    "parametru": "28.54",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency 2",
+    "descriere": "Defines the low limit for critical frequency 2.",
+    "pdf_extra": "{\"notes\": [\"This value must be less than or equal to the value of 28.55 Critical frequency 2 high. Low limit for critical frequency 2.\"]}"
+  },
+  {
+    "id": 15357,
+    "parametru": "28.55",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency 2",
+    "descriere": "Defines the high limit for critical frequency 2.",
+    "pdf_extra": "{\"notes\": [\"This value must be greater than or equal to the value of 28.54 Critical frequency 2 low. High limit for critical frequency 2.\"]}"
+  },
+  {
+    "id": 15358,
+    "parametru": "28.56",
+    "familie": "ACS580",
+    "descriere_scurta": "Critical frequency 3",
+    "descriere": "Defines the low limit for critical frequency 3.",
+    "pdf_extra": "{\"notes\": [\"This value must be less than or equal to the value of 28.57 Critical frequency 3 high. Low limit for critical frequency 3.\"]}"
+  },
+  {
+    "id": 15359,
+    "parametru": "28.76",
+    "familie": "ACS580",
+    "descriere_scurta": "Freq ramp in zero",
+    "descriere": "Selects a source that forces the frequency reference to zero. 0 = Force frequency reference to zero 1 = Normal operation 0. 1. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15360,
+    "parametru": "28.97",
+    "familie": "ACS580",
+    "descriere_scurta": "Frequency ref",
+    "descriere": "Displays the frequency reference after application of critical frequencies, but before ramping and limiting. See the control chain diagram on page 617. This parameter is read-only. Frequency reference before ramping and limiting. Drive operation limits.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15361,
+    "parametru": "30.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Limit word 1",
+    "descriere": "Displays limit word 1. This parameter is read-only. Description 1 = Drive torque is being limited by the motor control (undervoltage control, current control, load angle control or pull-out control), torque limits defined by parameters. 1 = Torque reference ramp input is being limited by 26.09 torque ref, 30.20 Maximum torque 1, 30.26 Power motoring 30.27 Power generating limit. See the diagram on page 626. 1 = Torque reference ramp input is being limited by 26.08 torque ref, 30.19 Minimum torque 1, 30.26 Power motoring 30.27 Power generating limit. See the diagram on page 626. 1 = Torque reference is being limited by the rush control because maximum speed limit (30.12 Maximum speed) 1 = Torque reference is being limited by the rush control because minimum speed limit (30.11 Minimum speed) lim 1 = Speed reference is being limited by 30.12 Maximum lim 1 = Speed reference is being limited by 30.11 Minimum speed lim 1 = Frequency reference is being limited by 30.14 Maximum lim 1 = Frequency reference is being limited by 30.13 Minimum Limit word 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15362,
+    "parametru": "30.26",
+    "familie": "ACS580",
+    "descriere_scurta": "Power motoring",
+    "descriere": "Defines the maximum allowed power fed by the inverter to the motor in percent of nominal motor power. Maximum motoring power.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15363,
+    "parametru": "30.27",
+    "familie": "ACS580",
+    "descriere_scurta": "Power generating",
+    "descriere": "Defines the maximum allowed power fed by the motor to the inverter in percent of nominal motor power.",
+    "pdf_extra": "{\"notes\": [\"If your application, like a pump or a fan, requires that the motor must rotate in one direction only, use speed/ frequency limit (30.11 Minimum speed/30.13 Minimum frequency), or direction limit (20.21 Direction) to achieve this. Do not set parameter 30.19 Minimum torque 1 or 30.27 Power generating limit to 0%, as the drive is then not able to stop correctly. Maximum generating power.\"]}"
+  },
+  {
+    "id": 15364,
+    "parametru": "30.15",
+    "familie": "ACS580",
+    "descriere_scurta": "Maximum start",
+    "descriere": "A temporary motor current limit specifically for starting can be defined by this parameter and 30.16 Maximum start current. When this parameter is set to Enable, the drive observes the start current limit defined by 30.16 Maximum start current. The limit is in force for 2 seconds after the initial magnetization (of an asynchronous induction motor) or autophasing (of a permanent magnet motor), but not more often than once in every 7 seconds. Otherwise, the limit defined by 30.17 Maximum current is in force.",
+    "pdf_extra": "{\"notes\": [\"The availability of a start current higher than the general limit depends on the drive hardware. See the rating data in the hardware manual of the drive. Start current limit is disabled. Start current limit is enabled.\"]}"
+  },
+  {
+    "id": 15365,
+    "parametru": "30.16",
+    "familie": "ACS580",
+    "descriere_scurta": "Maximum start",
+    "descriere": "Defines a maximum start current when enabled by parameter 30.15 Maximum start current enable. The maximum start current.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15366,
+    "parametru": "30.18",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque limit",
+    "descriere": "Selects a source that switches between two different predefined minimum torque limit sets. 0 = minimum torque limit defined by 30.19 and maximum torque limit defined by 30.20 are active 1 = minimum torque limit selected by 30.21 and maximum torque limit defined by 30.22 are active The user can define two sets of torque limits, and switch between the sets using a binary source such as a digital input. The first set of limits is defined by parameters 30.19 and 30.20. The second set has selector parameters for both the minimum (30.21) and maximum (30.22) limits that allows the use of a selectable analog source (such as an analog input). 30.21 0 30.18 AI1 AI2 1 PID 30.23 User-defined 0 minimum torque Other limit 30.19 30.22 0 AI1 30.18 AI2 1 PID 30.24 User-defined Other 0 maximum torque limit 30.20",
+    "pdf_extra": "{\"notes\": [\"In addition to the user-defined limits, torque may be limited for other reasons (such as power limitation). See the block diagram on page 626. 0 (minimum torque limit defined by 30.19 and maximum torque limit defined by 30.20 are active). 1 (minimum torque limit selected by 30.21 and maximum torque limit defined by 30.22 are active). Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3).\"]}"
+  },
+  {
+    "id": 15367,
+    "parametru": "30.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Minimum torque 2",
+    "descriere": "Defines the minimum torque limit for the drive (in percent of nominal motor torque) when • the source selected by 30.18 Torque limit selection is 1, or • 30.18 is set to Torque limit set 2 and • 30.21 Min torque 2 source is set to Minimum torque 2. See diagram at 30.18 Torque limit selection. Minimum torque limit 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15368,
+    "parametru": "30.35",
+    "familie": "ACS580",
+    "descriere_scurta": "Thermal current",
+    "descriere": "Enables/disables temperature-based output current limitation. The limitation should only be disabled if required by the application. Thermal current limitation disabled. Thermal current limitation enabled.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15369,
+    "parametru": "30.36",
+    "familie": "ACS580",
+    "descriere_scurta": "Speed limit",
+    "descriere": "Selects a source that switches between two different predefined adjustable speed limit sets. 0 = minimum speed limit defined by 30.11 and maximum speed limit defined by 30.12 are active 1 = minimum speed limit selected by 30.37 and maximum speed limit defined by 30.38 are active The user can define two sets of speed limits, and switch between the sets using a binary source such as a digital input. The first set of limits is defined by parameters 30.11 Minimum speed and 30.12 Maximum speed. The second set has selector parameters for both the minimum (30.37) and maximum (30.38) limits that allows the use of a selectable analog source (such as an analog input). 30.37 0 AI1 30.36 AI2 1 Minimum speed User-defined 0 Other minimum speed limit 30.11 30.38 0 AI1 30.36 AI2 1 Maximum speed User-defined Other 0 maximum speed limit 30.12 Adjustable speed limits are disabled. (Minimum speed limit defined by 30.11 Minimum speed and maximum speed limit defined by 30.12 Maximum speed are active).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15370,
+    "parametru": "30.37",
+    "familie": "ACS580",
+    "descriere_scurta": "Minimum speed",
+    "descriere": "Defines the source of a minimum speed limit for the drive when the source is selected by 30.36 Speed limit selection.",
+    "pdf_extra": "{\"notes\": [\"In vector motor control mode only. In scalar motor control mode, use frequency limits 30.13 and 30.14. None. 12.12 AI1 scaled value (see page 251). 12.22 AI2 scaled value (see page 253). 30.11 Minimum speed. Source selection (see Terms and abbreviations on page 220).\"]}"
+  },
+  {
+    "id": 15371,
+    "parametru": "30.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Maximum speed",
+    "descriere": "Defines the source of a maximum speed limit for the drive when the source is selected by 30.36 Speed limit selection.",
+    "pdf_extra": "{\"notes\": [\"In vector motor control mode only. In scalar motor control mode, use frequency limits 30.13 and 30.14. None. 12.12 AI1 scaled value (see page 251). 12.22 AI2 scaled value (see page 253). 30.12 Maximum speed. Source selection (see Terms and abbreviations on page 220).\"]}"
+  },
+  {
+    "id": 15372,
+    "parametru": "30.39",
+    "familie": "ACS580",
+    "descriere_scurta": "Limit word event",
+    "descriere": "Determines if the limit word 1 (30.01) notifies the user when a trigger event has occurred. See parameters 30.41 and 30.42 for further details. do not give a notification to the user add an entry to the event log give a warning",
+    "pdf_extra": null
+  },
+  {
+    "id": 15373,
+    "parametru": "30.40",
+    "familie": "ACS580",
+    "descriere_scurta": "Limit word event",
+    "descriere": "Sets how long an event needs to last to trigger a warning. The event needs to persist for longer than this duration to trigger a warning.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15374,
+    "parametru": "30.41",
+    "familie": "ACS580",
+    "descriere_scurta": "Limit word 1 event",
+    "descriere": "Determines if a warning message is given based on being enabled or disabled in the table below. If enabled, a warning will be given. If disabled, the warnings are ignored. Description 0 = Disabled, 1=Enabled (see parameter 30.01) 0 = Disabled, 1=Enabled (Refer to parameters 30.20, 30.26, 30.27 for more details) 0 = Disabled, 1=Enabled (Refer to parameters 30.19, 30.26, 30.27 for more details) 0 = Disabled, 1=Enabled (Refer to 30.12 for more details) 0 = Disabled, 1=Enabled (Refer to 30.11 for more details) ref lim 0 = Disabled, 1=Enabled (see parameter 30.01) lim 0 = Disabled, 1=Enabled (see parameter 30.01) lim 0 = Disabled, 1=Enabled (see parameter 30.01) lim 0 = Disabled, 1=Enabled (see parameter 30.01) Enable/Disable Limit word 1 event selection",
+    "pdf_extra": null
+  },
+  {
+    "id": 15375,
+    "parametru": "30.42",
+    "familie": "ACS580",
+    "descriere_scurta": "Torque limit event",
+    "descriere": "Selects which bits of parameter 30.02 trigger a warning. Description 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) 0 = Disabled, 1=Enabled (see parameter 30.02 ) Torque limit event selection word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15377,
+    "parametru": "31.10",
+    "familie": "ACS580",
+    "descriere_scurta": "External event 5",
+    "descriere": "Selects the type of external event 5. The external event generates a fault. The external event generates a warning.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15378,
+    "parametru": "31.13",
+    "familie": "ACS580",
+    "descriere_scurta": "Selectable fault",
+    "descriere": "Defines the fault that can be automatically reset using parameter 31.12 Autoreset selection, bit 10. Faults are listed in chapter Fault tracing (page 553). Fault code.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15379,
+    "parametru": "31.19",
+    "familie": "ACS580",
+    "descriere_scurta": "Motor phase loss",
+    "descriere": "Selects how the drive reacts when a motor phase loss is detected. In scalar motor control mode: • The supervision activates above 10% of the motor nominal frequency. If any of the phase currents stays very small for a certain time limit, the output phase loss fault is given. • If the motor nominal current is below 1/6 of the drive nominal current or there is no motor connected, ABB recommends to disable the motor output phase loss function. No action taken. The drive trips on fault 3381 Output phase loss.",
+    "pdf_extra": "{\"notes\": [\"Hardware supervision may throw this fault regardless of the setting to prevent damage to the drive.\"]}"
+  },
+  {
+    "id": 15380,
+    "parametru": "31.20",
+    "familie": "ACS580",
+    "descriere_scurta": "Earth fault",
+    "descriere": "Selects how the drive reacts when an earth (ground) fault or current unbalance is detected in the motor or the motor cable. No action taken. The drive generates an A2B3 Earth leakage warning. The drive trips on fault 2330 Earth leakage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15381,
+    "parametru": "31.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Supply phase loss",
+    "descriere": "Selects how the drive reacts when a supply phase loss is detected. Output current is limited to 50% when supply phase loss is detected. No fault or warning is given. The drive trips on fault 3130 Input phase loss.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15382,
+    "parametru": "31.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Wiring or earth fault",
+    "descriere": "Selects how the drive reacts to incorrect input power and motor cable connection (ie. input power cable is connected to drive motor connection). No action taken. The drive trips on fault 3181 Wiring or earth fault.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15383,
+    "parametru": "31.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Frequency trip",
+    "descriere": "Defines, together with 30.13 Minimum frequency and 30.14 Maximum frequency, the maximum allowed frequency of the motor (overfrequency protection). The absolute value of this overfrequency trip level is calculated by adding the value of this parameter to the higher of the absolute values of 30.13 Minimum frequency and 30.14 Maximum frequency. If the output frequency (01.06 Output frequency) exceeds the overfrequency trip level (ie. the absolute value of the output frequency exceeds the absolute value of the overfrequency trip level), the drive trips on the 73F0 Overfrequency fault. Frequency Overfrequency trip level 31.31 30.14 ABS(30.14) Time ABS(30.14) 30.13 31.31 Overfrequency trip level Overfrequency trip margin.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15384,
+    "parametru": "31.54",
+    "familie": "ACS580",
+    "descriere_scurta": "Fault action",
+    "descriere": "Selects the stop mode when a non-critical fault occurs. Drive coasts to a stop. Drive follows the ramp specified for an emergency stop in parameter 23.23 Emergency stop time. Configuration of signal supervision functions 1…6. Six values can be chosen to be monitored; a warning or fault is generated whenever predefined limits are exceeded. See also section Signal supervision (page 210).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15385,
+    "parametru": "32.08",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 1 filter",
+    "descriere": "Defines a filter time constant for the signal monitored by signal supervision 1. Signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15387,
+    "parametru": "32.15",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2",
+    "descriere": "Selects the mode of signal supervision function 2. Determines how the monitored signal (see parameter 32.17) is compared to its lower and upper limits (32.19 and 32.20 respectively). The action to be taken when the condition is fulfilled is selected by 32.16. Signal supervision 2 not in use. Action is taken whenever the signal falls below its lower limit. Action is taken whenever the signal rises above its upper limit. Action is taken whenever the absolute value of the signal falls below its (absolute) lower limit. Action is taken whenever the absolute value of the signal rises above its (absolute) upper limit. Action is taken whenever the signal falls below its low limit or rises above its high limit. Action is taken whenever the absolute value of the signal falls below its (absolute) low limit or rises above its (absolute) high limit. Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis range (32.21 Supervision 2 hysteresis). The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis range. Action is taken whenever the signal falls from a value higher than the 'Supervision low' limit + (0.5 x hysteresis) to a value which is lower than the 'Supervision low' limit - (0.5 x hysteresis). Action is deactivated when the signal rises to higher than the 'Supervision low' limit + (0.5 x hysteresis).",
+    "pdf_extra": "{\"notes\": [\"Supervision action is also deactivated for every motor start command.\"]}"
+  },
+  {
+    "id": 15388,
+    "parametru": "32.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2",
+    "descriere": "Defines the hysteresis for the signal monitored by signal supervision 2. This parameter applies to all selections for parameter 32.35 Supervision 4 function, not just Hysteresis (selection 7). Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis. The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis. Hysteresis.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15389,
+    "parametru": "32.16",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2",
+    "descriere": "Selects whether the drive generates a fault, warning or neither when the value monitored by signal supervision 2 exceeds its limits.",
+    "pdf_extra": "{\"notes\": [\"This parameter does not affect the status indicated by 32.01 Supervision status. No warning or fault generated. Warning A8B1 ABB Signal supervision 2 is generated. Drive trips on fault 80B1 Signal supervision 2. If running, the drive trips on fault 80B0 Signal supervision 1.\"]}"
+  },
+  {
+    "id": 15390,
+    "parametru": "32.17",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2",
+    "descriere": "Selects the signal to be monitored by signal supervision function 2. For the available selections, see parameter 32.07 Supervision 1 signal.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15391,
+    "parametru": "32.18",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2 filter",
+    "descriere": "Defines a filter time constant for the signal monitored by signal supervision 2. Signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15392,
+    "parametru": "32.19",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2 low",
+    "descriere": "Defines the lower limit for signal supervision 2. Low limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15393,
+    "parametru": "32.20",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 2 high",
+    "descriere": "Defines the upper limit for signal supervision 2. Upper limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15394,
+    "parametru": "32.28",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 3 filter",
+    "descriere": "Defines a filter time constant for the signal monitored by signal supervision 3. Signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15395,
+    "parametru": "32.35",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4",
+    "descriere": "Selects the mode of signal supervision function 4. Determines how the monitored signal (see parameter 32.37) is compared to its lower and upper limits (32.39 and 32.30 respectively). The action to be taken when the condition is fulfilled is selected by 32.36. Signal supervision 4 not in use. Action is taken whenever the signal falls below its lower limit. Action is taken whenever the signal rises above its upper limit. Action is taken whenever the absolute value of the signal falls below its (absolute) lower limit. Action is taken whenever the absolute value of the signal rises above its (absolute) upper limit. Action is taken whenever the signal falls below its low limit or rises above its high limit. Action is taken whenever the absolute value of the signal falls below its (absolute) low limit or rises above its (absolute) high limit. Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis range (32.41 Supervision 4 hysteresis). The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis range. Action is taken whenever the signal falls from a value higher than the 'Supervision low' limit + (0.5 x hysteresis) to a value which is lower than the 'Supervision low' limit - (0.5 x hysteresis). Action is deactivated when the signal rises to higher than the 'Supervision low' limit + (0.5 x hysteresis).",
+    "pdf_extra": "{\"notes\": [\"Supervision action is also deactivated for every motor start command. Action is taken whenever the signal rises from a value lower than the 'Supervision high' limit - (0.5 x hysteresis) to a value which is higher than the 'Supervision high' limit + (0.5 x hysteresis). Action is deactivated when the signal falls to lower than the 'Supervision high' limit - (0.5 x hysteresis).\", \"Supervision action is also deactivated for every motor start command.\"]}"
+  },
+  {
+    "id": 15396,
+    "parametru": "32.41",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4",
+    "descriere": "Defines the hysteresis for the signal monitored by signal supervision 4. This parameter applies to all selections for parameter 32.35 Supervision 4 function, not just Hysteresis (selection 7). Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis. The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis. Hysteresis.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15397,
+    "parametru": "32.36",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4",
+    "descriere": "Selects whether the drive generates a fault, warning or neither when the value monitored by signal supervision 4 exceeds its limits.",
+    "pdf_extra": "{\"notes\": [\"This parameter does not affect the status indicated by 32.01 Supervision status. No warning or fault generated.\"]}"
+  },
+  {
+    "id": 15398,
+    "parametru": "32.37",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4",
+    "descriere": "Selects the signal to be monitored by signal supervision function 4. For the available selections, see parameter 32.07 Supervision 1 signal.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15399,
+    "parametru": "32.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4 filter",
+    "descriere": "Defines a filter time constant for the signal monitored by signal supervision 4. Signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15400,
+    "parametru": "32.39",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4 low",
+    "descriere": "Defines the lower limit for signal supervision 4. Low limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15401,
+    "parametru": "32.40",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 4 high",
+    "descriere": "Defines the upper limit for signal supervision 4. Upper limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15402,
+    "parametru": "32.45",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5",
+    "descriere": "Selects the mode of signal supervision function 5. Determines how the monitored signal (see parameter 32.47) is compared to its lower and upper limits (32.49 and 32.40 respectively). The action to be taken when the condition is fulfilled is selected by 32.46. Signal supervision 5 not in use. Action is taken whenever the signal falls below its lower limit. Action is taken whenever the signal rises above its upper limit. Action is taken whenever the absolute value of the signal falls below its (absolute) lower limit. Action is taken whenever the absolute value of the signal rises above its (absolute) upper limit. Action is taken whenever the signal falls below its low limit or rises above its high limit. Action is taken whenever the absolute value of the signal falls below its (absolute) low limit or rises above its (absolute) high limit. Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis range (32.51 Supervision 5 hysteresis). The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis range.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15403,
+    "parametru": "32.51",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5",
+    "descriere": "Defines the hysteresis for the signal monitored by signal supervision 5. This parameter applies to all selections for parameter 32.35 Supervision 4 function, not just Hysteresis (selection 7). Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis. The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis. Hysteresis.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15404,
+    "parametru": "32.46",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5",
+    "descriere": "Selects whether the drive generates a fault, warning or neither when the value monitored by signal supervision 5 exceeds its limits.",
+    "pdf_extra": "{\"notes\": [\"This parameter does not affect the status indicated by 32.01 Supervision status. No warning or fault generated. Warning A8B4 ABB Signal supervision 5 is generated. Drive trips on fault 80B4 Signal supervision 5. Drive trips on fault 80B0 Signal supervision 1 if the motor is running.\"]}"
+  },
+  {
+    "id": 15405,
+    "parametru": "32.47",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5",
+    "descriere": "Selects the signal to be monitored by signal supervision function 5. For the available selections, see parameter 32.07 Supervision 1 signal.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15406,
+    "parametru": "32.48",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5 filter",
+    "descriere": "Defines a filter time constant for the signal monitored by signal supervision 5. Signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15407,
+    "parametru": "32.49",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5 low",
+    "descriere": "Defines the lower limit for signal supervision 5. Low limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15408,
+    "parametru": "32.50",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 5 high",
+    "descriere": "Defines the upper limit for signal supervision 5. Upper limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15409,
+    "parametru": "32.61",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 6",
+    "descriere": "Defines the hysteresis for the signal monitored by signal supervision 6. This parameter applies to all selections for parameter 32.35 Supervision 4 function, not just Hysteresis (selection 7). Action is taken whenever the signal rises above the value defined by the upper limit + 0.5 · hysteresis. The action is deactivated when the signal falls below the value defined by the lower limit - 0.5 · hysteresis. Hysteresis. Configuration of the timed functions. See also section Timed functions (page 162).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15410,
+    "parametru": "32.56",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 6",
+    "descriere": "Selects whether the drive generates a fault, warning or neither when the value monitored by signal supervision 6 exceeds its limits.",
+    "pdf_extra": "{\"notes\": [\"This parameter does not affect the status indicated by 32.01 Supervision status. No warning or fault generated. Warning A8B5 ABB Signal supervision 6 is generated. Drive trips on fault 80B5 Signal supervision 6. Drive trips on fault 80B0 Signal supervision 1 if the motor is running.\"]}"
+  },
+  {
+    "id": 15411,
+    "parametru": "32.57",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 6",
+    "descriere": "Selects the signal to be monitored by signal supervision function 6. For the available selections, see parameter 32.07 Supervision 1 signal.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15412,
+    "parametru": "32.59",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 6 low",
+    "descriere": "Defines the lower limit for signal supervision 6. Low limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15413,
+    "parametru": "32.60",
+    "familie": "ACS580",
+    "descriere_scurta": "Supervision 6 high",
+    "descriere": "Defines the upper limit for signal supervision 6. Upper limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15414,
+    "parametru": "34.04",
+    "familie": "ACS580",
+    "descriere_scurta": "Season/exception",
+    "descriere": "Status of seasons 1…4, exception weekday and exception holiday. Only one season can be active at a time. A day can be a workday and a holiday at the same time. This parameter is read-only. Description 1 = Active. 1 = Active. 1 = Active. 1 = Active. 1 = Active. 1 = Active. Status of the seasons and exception weekday and holiday.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15415,
+    "parametru": "34.10",
+    "familie": "ACS580",
+    "descriere_scurta": "Timed functions",
+    "descriere": "Selects the source for the timed functions enable signal. 0 = Disabled. 1 = Enabled. 0. 1. Digital input DI1 (10.02 DI delayed status, bit 0). Digital input DI2 (10.02 DI delayed status, bit 1). Digital input DI3 (10.02 DI delayed status, bit 2). Digital input DI4 (10.02 DI delayed status, bit 3). Digital input DI5 (10.02 DI delayed status, bit 4). Digital input DI6 (10.02 DI delayed status, bit 5). Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15416,
+    "parametru": "34.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 2",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15417,
+    "parametru": "34.15",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 2 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15418,
+    "parametru": "34.16",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 2 duration",
+    "descriere": "Duration 00 00:00…07 00:00 min",
+    "pdf_extra": null
+  },
+  {
+    "id": 15419,
+    "parametru": "34.17",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 3",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15420,
+    "parametru": "34.18",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 3 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15421,
+    "parametru": "34.19",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 3 duration",
+    "descriere": "Duration 00 00:00…07 00:00 min",
+    "pdf_extra": null
+  },
+  {
+    "id": 15422,
+    "parametru": "34.20",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 4",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15423,
+    "parametru": "34.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 4 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15424,
+    "parametru": "34.22",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 4 duration",
+    "descriere": "Duration 00 00:00…07 00:00 min",
+    "pdf_extra": null
+  },
+  {
+    "id": 15425,
+    "parametru": "34.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 5",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15426,
+    "parametru": "34.24",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 5 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15427,
+    "parametru": "34.25",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 5 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15428,
+    "parametru": "34.26",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 6",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15429,
+    "parametru": "34.27",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 6 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15430,
+    "parametru": "34.28",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 6 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15431,
+    "parametru": "34.29",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 7",
+    "descriere": "See 34.11 Timer 1 configuration.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15432,
+    "parametru": "34.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 7 start time",
+    "descriere": "See 34.12 Timer 1 start time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15433,
+    "parametru": "34.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Timer 7 duration",
+    "descriere": "See 34.13 Timer 1 duration.",
+    "pdf_extra": null
+  }
+]

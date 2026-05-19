@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 15332,
+    "familie": "ACS580",
+    "parametru": "26.01",
+    "descriere_scurta": "Torque reference to",
+    "GENERATED": {
+      "explicatie": "Referinta finala de cuplu in % din $T_n$ transmisa controlerului de cuplu dupa selectie, limitare (26.08/26.09) si filtru (26.17). Parametru read-only.",
+      "influenteaza": "26.08,26.09,26.74,26.17",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15333,
+    "familie": "ACS580",
+    "parametru": "26.08",
+    "descriere_scurta": "Minimum torque ref",
+    "GENERATED": {
+      "explicatie": "Defineste limita minima locala de referinta cuplu in % din $T_n$, aplicata inainte de rampa de cuplu. Pentru limitare absoluta se foloseste 30.19 Minimum torque 1.",
+      "influenteaza": "26.01,26.14,30.19",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15334,
+    "familie": "ACS580",
+    "parametru": "26.09",
+    "descriere_scurta": "Maximum torque ref",
+    "GENERATED": {
+      "explicatie": "Defineste limita maxima locala de referinta cuplu in % din $T_n$, aplicata inainte de rampa de cuplu. Pentru limitare absoluta se foloseste 30.20 Maximum torque 1.",
+      "influenteaza": "26.01,26.14,30.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15335,
+    "familie": "ACS580",
+    "parametru": "26.14",
+    "descriere_scurta": "Torque ref1/2",
+    "GENERATED": {
+      "explicatie": "Selecteaza intre referinta de cuplu 1 (EXT1 activ) si referinta de cuplu 2 (EXT2 activ). Poate fi comutat cu DI sau sursa configurabila (19.11 Ext1/Ext2 selection).",
+      "influenteaza": "26.11,26.12,19.11",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15336,
+    "familie": "ACS580",
+    "parametru": "26.13",
+    "descriere_scurta": "Torque ref1",
+    "GENERATED": {
+      "explicatie": "Selecteaza functia matematica aplicata intre sursele 26.11 si 26.12: suma, diferenta, produs, minim, maxim sau nicio functie. Rezultatul devine referinta de cuplu 1.",
+      "influenteaza": "26.11,26.12,26.14,26.72",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15337,
+    "familie": "ACS580",
+    "parametru": "26.17",
+    "descriere_scurta": "Torque ref filter time",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat referintei de cuplu in ms. Reduce zgomotul dar adauga intarziere in lantul de reglare a cuplului.",
+      "influenteaza": "26.01,26.72",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15338,
+    "familie": "ACS580",
+    "parametru": "26.20",
+    "descriere_scurta": "Torque reversal",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza functia de inversare a semnului referintei de cuplu. Permite inversarea sensului cuplului aplicat prin semnal extern.",
+      "influenteaza": "26.01,26.11",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15339,
+    "familie": "ACS580",
+    "parametru": "26.70",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea sursei de referinta de cuplu 1 selectata de 26.11. Parametru read-only pentru diagnosticare lant referinta cuplu.",
+      "influenteaza": "26.11,26.13",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15340,
+    "familie": "ACS580",
+    "parametru": "26.71",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea sursei de referinta de cuplu 2 selectata de 26.12. Parametru read-only pentru diagnosticare lant referinta cuplu.",
+      "influenteaza": "26.12,26.13",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15341,
+    "familie": "ACS580",
+    "parametru": "26.72",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de cuplu dupa aplicarea functiei matematice (26.13) si selectia EXT1/EXT2 (26.14). Parametru read-only pentru diagnosticare.",
+      "influenteaza": "26.13,26.14,26.73",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15342,
+    "familie": "ACS580",
+    "parametru": "26.73",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de cuplu dupa adaugarea additivului de referinta 1 (corectie adaugata lantului de referinta). Parametru read-only.",
+      "influenteaza": "26.72,26.74",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15343,
+    "familie": "ACS580",
+    "parametru": "26.76",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de cuplu dupa aplicarea functiei de torque trim (PID extern sau corectie adaugata). Parametru read-only.",
+      "influenteaza": "26.74,26.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15344,
+    "familie": "ACS580",
+    "parametru": "26.81",
+    "descriere_scurta": "Rush control gain",
+    "GENERATED": {
+      "explicatie": "Castigul proportional al controlerului Rush care limiteaza cuplul cand viteza depaseste 30.11/30.12. Valoare mai mare creste agresivitatea limitarii de viteza.",
+      "influenteaza": "26.82,30.11,30.12",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15345,
+    "familie": "ACS580",
+    "parametru": "26.82",
+    "descriere_scurta": "Rush control",
+    "GENERATED": {
+      "explicatie": "Constanta de integrare a controlerului Rush in ms. Impreuna cu 26.81, determina viteza de reactie la depasirea limitelor de viteza 30.11/30.12.",
+      "influenteaza": "26.81,30.11,30.12",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15346,
+    "familie": "ACS580",
+    "parametru": "28.01",
+    "descriere_scurta": "Frequency ref ramp",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de frecventa activa la intrarea rampei, inainte de procesare. Parametru read-only pentru diagnosticare lant referinta frecventa (mod scalar).",
+      "influenteaza": "28.97,28.76",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15347,
+    "familie": "ACS580",
+    "parametru": "28.24",
+    "descriere_scurta": "Constant frequency",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa de activare a frecventei constante 3 in modul Separate (bit 0 din 28.21 = 0). In modul Packed, combinat cu 28.22/28.23 pentru selectie binara pe 3 biti.",
+      "influenteaza": "28.21,28.22,28.23,28.49",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15348,
+    "familie": "ACS580",
+    "parametru": "28.29",
+    "descriere_scurta": "Constant frequency",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea frecventei constante 4 in Hz. Se activeaza prin combinatia de biti din 28.22/28.23/28.24 in modul Packed (selectie 011 binar).",
+      "influenteaza": "28.22,28.23,28.24,28.21",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 15349,
+    "familie": "ACS580",
+    "parametru": "28.30",
+    "descriere_scurta": "Constant frequency",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea frecventei constante 5 in Hz. Se activeaza prin combinatia de biti corespunzatoare din 28.22/28.23/28.24 in modul Packed.",
+      "influenteaza": "28.22,28.23,28.24,28.21",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 15350,
+    "familie": "ACS580",
+    "parametru": "28.31",
+    "descriere_scurta": "Constant frequency",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea frecventei constante 6 in Hz. Se activeaza prin combinatia de biti corespunzatoare din 28.22/28.23/28.24 in modul Packed.",
+      "influenteaza": "28.22,28.23,28.24,28.21",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 15351,
+    "familie": "ACS580",
+    "parametru": "28.32",
+    "descriere_scurta": "Constant frequency",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea frecventei constante 7 in Hz. Se activeaza prin combinatia 111 binar a bitilor din 28.22/28.23/28.24 in modul Packed.",
+      "influenteaza": "28.22,28.23,28.24,28.21",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 15352,
+    "familie": "ACS580",
+    "parametru": "28.43",
+    "descriere_scurta": "Jogging 2",
+    "GENERATED": {
+      "explicatie": "Defineste referinta de frecventa pentru functia jogging 2 in modul scalar in Hz. Se activeaza cu sursa configurata in 20.27. Permite o a doua viteza de jogging.",
+      "influenteaza": "20.27,28.41",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 15353,
+    "familie": "ACS580",
+    "parametru": "28.51",
+    "descriere_scurta": "Critical frequency",
+    "GENERATED": {
+      "explicatie": "Cuvant de configurare pentru frecventele critice: activeaza functia si selecteaza daca intervalele 28.52-28.57 sunt aplicate absolut sau conform semnelor (ambele directii / una).",
+      "influenteaza": "28.52,28.53,28.54,28.55,28.56,28.57",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15354,
+    "familie": "ACS580",
+    "parametru": "28.52",
+    "descriere_scurta": "Critical frequency 1",
+    "GENERATED": {
+      "explicatie": "Limita inferioara a zonei 1 de frecventa critica in Hz. Trebuie sa fie $\\leq$ 28.53. Variatorul accelereaza prin aceasta zona fara a mentine frecventa in interior.",
+      "influenteaza": "28.53,28.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15355,
+    "familie": "ACS580",
+    "parametru": "28.53",
+    "descriere_scurta": "Critical frequency 1",
+    "GENERATED": {
+      "explicatie": "Limita superioara a zonei 1 de frecventa critica in Hz. Trebuie sa fie $\\geq$ 28.52. Variatorul sare peste aceasta zona la accelerare/decelerare.",
+      "influenteaza": "28.52,28.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15356,
+    "familie": "ACS580",
+    "parametru": "28.54",
+    "descriere_scurta": "Critical frequency 2",
+    "GENERATED": {
+      "explicatie": "Limita inferioara a zonei 2 de frecventa critica in Hz. Trebuie sa fie $\\leq$ 28.55. Zona evitata pentru a preveni rezonante mecanice.",
+      "influenteaza": "28.55,28.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15357,
+    "familie": "ACS580",
+    "parametru": "28.55",
+    "descriere_scurta": "Critical frequency 2",
+    "GENERATED": {
+      "explicatie": "Limita superioara a zonei 2 de frecventa critica in Hz. Trebuie sa fie $\\geq$ 28.54.",
+      "influenteaza": "28.54,28.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15358,
+    "familie": "ACS580",
+    "parametru": "28.56",
+    "descriere_scurta": "Critical frequency 3",
+    "GENERATED": {
+      "explicatie": "Limita inferioara a zonei 3 de frecventa critica in Hz. Trebuie sa fie $\\leq$ 28.57.",
+      "influenteaza": "28.57,28.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15359,
+    "familie": "ACS580",
+    "parametru": "28.76",
+    "descriere_scurta": "Freq ramp in zero",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa care forteaza referinta de frecventa la zero. Cand sursa este 0 logic, referinta devine 0 Hz indiferent de setarile EXT. Util pentru blocare rapida.",
+      "influenteaza": "28.01,28.97",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15360,
+    "familie": "ACS580",
+    "parametru": "28.97",
+    "descriere_scurta": "Frequency ref",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de frecventa dupa aplicarea frecventelor critice (28.51-28.57), inainte de rampa si limitare. Parametru read-only pentru diagnosticare.",
+      "influenteaza": "28.51,28.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15361,
+    "familie": "ACS580",
+    "parametru": "30.01",
+    "descriere_scurta": "Limit word 1",
+    "GENERATED": {
+      "explicatie": "Cuvant de stare al limitarilor active: cuplu limitat de UDC/curent/motor control, limite de viteza/frecventa, limitare rush control. Fiecare bit indica o limitare specifica. Parametru read-only.",
+      "influenteaza": "30.11,30.12,30.19,30.20,30.26,30.27",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15362,
+    "familie": "ACS580",
+    "parametru": "30.26",
+    "descriere_scurta": "Power motoring",
+    "GENERATED": {
+      "explicatie": "Limita maxima de putere absorbita de motor in % din $P_n$. Previne supraincarcaratoarea convertorului in regim motor. Activa si in limitele afisate in 30.01.",
+      "influenteaza": "30.01,30.27,99.12",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15363,
+    "familie": "ACS580",
+    "parametru": "30.27",
+    "descriere_scurta": "Power generating",
+    "GENERATED": {
+      "explicatie": "Limita maxima de putere regenerata in % din $P_n$. A nu se seta la 0% in aplicatii de pompe/ventilatoare deoarece variatorul nu poate opri corect.",
+      "influenteaza": "30.01,30.26,30.19,20.21",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15364,
+    "familie": "ACS580",
+    "parametru": "30.15",
+    "descriere_scurta": "Maximum start",
+    "GENERATED": {
+      "explicatie": "Activeaza limita speciala de curent la pornire (definita de 30.16). Activa 2 secunde dupa magnetizare/autofazare, nu mai des de o data la 7 secunde. Altfel se aplica 30.17.",
+      "influenteaza": "30.16,30.17",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15365,
+    "familie": "ACS580",
+    "parametru": "30.16",
+    "descriere_scurta": "Maximum start",
+    "GENERATED": {
+      "explicatie": "Curentul maxim de pornire in A activ cand 30.15 este activat. Permite un curent de pornire mai mare decat limita generala 30.17. Limitat de hardware-ul variatorului.",
+      "influenteaza": "30.15,30.17,99.06",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15366,
+    "familie": "ACS580",
+    "parametru": "30.18",
+    "descriere_scurta": "Torque limit",
+    "GENERATED": {
+      "explicatie": "Selecteaza intre setul 1 de limite de cuplu (30.19/30.20, fixe) si setul 2 (30.21/30.22, cu surse selectabile cum ar fi AI). Permite comutare dinamica prin semnal extern.",
+      "influenteaza": "30.19,30.20,30.21,30.22,30.23",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15367,
+    "familie": "ACS580",
+    "parametru": "30.23",
+    "descriere_scurta": "Minimum torque 2",
+    "GENERATED": {
+      "explicatie": "Limita minima de cuplu din setul 2 in % din $T_n$, activa cand 30.21 Min torque 2 source este setat la Minimum torque 2 si 30.18 selecteaza setul 2.",
+      "influenteaza": "30.18,30.21",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15368,
+    "familie": "ACS580",
+    "parametru": "30.35",
+    "descriere_scurta": "Thermal current",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza limitarea curentului de iesire bazata pe temperatura variatorului (05.11). Dezactivarea se recomanda doar daca aplicatia impune explicit.",
+      "influenteaza": "30.17,05.11",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15369,
+    "familie": "ACS580",
+    "parametru": "30.36",
+    "descriere_scurta": "Speed limit",
+    "GENERATED": {
+      "explicatie": "Selecteaza intre setul 1 de limite de viteza (30.11/30.12, fixe) si setul 2 (30.37/30.38, cu surse selectabile). Permite comutare dinamica a limitelor prin semnal extern.",
+      "influenteaza": "30.11,30.12,30.37,30.38",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15370,
+    "familie": "ACS580",
+    "parametru": "30.37",
+    "descriere_scurta": "Minimum speed",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa limitei minime de viteza din setul 2, activa cand 30.36 = 1. Permite limita de viteza minima variabila (AI1, AI2, valoare fixa 30.11).",
+      "influenteaza": "30.36,30.11,30.38",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15371,
+    "familie": "ACS580",
+    "parametru": "30.38",
+    "descriere_scurta": "Maximum speed",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa limitei maxime de viteza din setul 2, activa cand 30.36 = 1. Permite limita de viteza maxima variabila (AI1, AI2, valoare fixa 30.12).",
+      "influenteaza": "30.36,30.12,30.37",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 15372,
+    "familie": "ACS580",
+    "parametru": "30.39",
+    "descriere_scurta": "Limit word event",
+    "GENERATED": {
+      "explicatie": "Determina notificarea la depasirea limitelor din 30.01: nicio actiune, intrare in event log sau generare avertizare. Durata minima pentru declansare configurata in 30.40.",
+      "influenteaza": "30.01,30.40,30.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15373,
+    "familie": "ACS580",
+    "parametru": "30.40",
+    "descriere_scurta": "Limit word event",
+    "GENERATED": {
+      "explicatie": "Durata minima in secunde cat trebuie sa persiste evenimentul de limitare pentru a declansa notificarea configurata in 30.39. Previne alarme false la limitari tranzitorii.",
+      "influenteaza": "30.39,30.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15374,
+    "familie": "ACS580",
+    "parametru": "30.41",
+    "descriere_scurta": "Limit word 1 event",
+    "GENERATED": {
+      "explicatie": "Masca de biti care selecteaza care biti din 30.01 declanseaza notificarea definita in 30.39. Permite activare/dezactivare selectiva a alertelor per tip de limitare.",
+      "influenteaza": "30.01,30.39,30.40",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15375,
+    "familie": "ACS580",
+    "parametru": "30.42",
+    "descriere_scurta": "Torque limit event",
+    "GENERATED": {
+      "explicatie": "Masca de biti care selecteaza care biti din 30.02 (cuvant limitare cuplu) declanseaza notificarea configurata in 30.39. Configurare selectiva a alertelor de limitare cuplu.",
+      "influenteaza": "30.02,30.39,30.40",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15377,
+    "familie": "ACS580",
+    "parametru": "31.10",
+    "descriere_scurta": "External event 5",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul evenimentului extern 5: defect (opreste variatorul) sau avertizare (continua operarea cu notificare). Sursa evenimentului se configureaza in 31.09.",
+      "influenteaza": "31.09",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15378,
+    "familie": "ACS580",
+    "parametru": "31.13",
+    "descriere_scurta": "Selectable fault",
+    "GENERATED": {
+      "explicatie": "Codul defectului care poate fi resetat automat prin bitul 10 al parametrului 31.12 Autoreset selection. Permite reset automat al unui defect specific la alegerea utilizatorului.",
+      "influenteaza": "31.12",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15379,
+    "familie": "ACS580",
+    "parametru": "31.19",
+    "descriere_scurta": "Motor phase loss",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la detectarea pierderii unei faze motor: nicio actiune sau defect 3381 Output phase loss. In modul scalar activ peste 10% din frecventa nominala (99.07).",
+      "influenteaza": "99.06,99.07",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15380,
+    "familie": "ACS580",
+    "parametru": "31.20",
+    "descriere_scurta": "Earth fault",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la detectarea unui defect de impamantare sau dezechilibru de curent: nicio actiune, avertizare A2B3 sau defect 2330 Earth leakage.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15381,
+    "familie": "ACS580",
+    "parametru": "31.21",
+    "descriere_scurta": "Supply phase loss",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la pierderea unei faze de alimentare: curentul limitat la 50% fara fault, sau defect 3130 Input phase loss care opreste variatorul.",
+      "influenteaza": "30.17",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15382,
+    "familie": "ACS580",
+    "parametru": "31.23",
+    "descriere_scurta": "Wiring or earth fault",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia la detectarea cablajului incorect (cablu de alimentare conectat la bornele de motor): nicio actiune sau defect 3181 Wiring or earth fault.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15383,
+    "familie": "ACS580",
+    "parametru": "31.31",
+    "descriere_scurta": "Frequency trip",
+    "GENERATED": {
+      "explicatie": "Marja de suprafrecventa in Hz adaugata la max(|30.13|, |30.14|) pentru calculul nivelului de trip. Cand $|f_{out}|$ depaseste acest nivel: defect 73F0 Overfrequency.",
+      "influenteaza": "30.13,30.14,01.06",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15384,
+    "familie": "ACS580",
+    "parametru": "31.54",
+    "descriere_scurta": "Fault action",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de oprire la aparitia unui defect non-critic: coastire libera sau oprire pe rampa de urgenta definita de 23.23 Emergency stop time.",
+      "influenteaza": "23.23",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15385,
+    "familie": "ACS580",
+    "parametru": "32.08",
+    "descriere_scurta": "Supervision 1 filter",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat semnalului monitorizat de supervizarea 1 (32.07). Reduce reactiile false la semnale zgomotoase in ms.",
+      "influenteaza": "32.05,32.07",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15387,
+    "familie": "ACS580",
+    "parametru": "32.15",
+    "descriere_scurta": "Supervision 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de comparare al supervizarii 2: sub limita minima, peste limita maxima, iesire din banda, valoare absoluta sau histereza. Actiunea la 32.16.",
+      "influenteaza": "32.16,32.17,32.19,32.20,32.21",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15388,
+    "familie": "ACS580",
+    "parametru": "32.21",
+    "descriere_scurta": "Supervision 2",
+    "GENERATED": {
+      "explicatie": "Histereza supervizarii 2: banda $\\pm 0.5 \\cdot H$ in jurul limitelor 32.19/32.20. Previne comutarea repetata a actiunii cand semnalul oscileaza aproape de limita.",
+      "influenteaza": "32.15,32.19,32.20",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15389,
+    "familie": "ACS580",
+    "parametru": "32.16",
+    "descriere_scurta": "Supervision 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia supervizarii 2 la depasirea limitelor: nicio actiune, avertizare A8B1 sau defect 80B1 Signal supervision 2. Nu afecteaza 32.01 Supervision status.",
+      "influenteaza": "32.15,32.17",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15390,
+    "familie": "ACS580",
+    "parametru": "32.17",
+    "descriere_scurta": "Supervision 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de supervizarea 2. Selectii identice cu 32.07 Supervision 1 signal: viteza, curent, putere, tensiune DC, temperatura etc.",
+      "influenteaza": "32.15,32.16,32.19,32.20",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15391,
+    "familie": "ACS580",
+    "parametru": "32.18",
+    "descriere_scurta": "Supervision 2 filter",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat semnalului monitorizat de supervizarea 2 in ms. Reduce reactiile false la zgomot.",
+      "influenteaza": "32.15,32.17",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15392,
+    "familie": "ACS580",
+    "parametru": "32.19",
+    "descriere_scurta": "Supervision 2 low",
+    "GENERATED": {
+      "explicatie": "Limita inferioara pentru supervizarea 2. Depasirea (semnal scade sub aceasta valoare) poate declansa actiunea configurata in 32.16.",
+      "influenteaza": "32.15,32.16,32.20,32.21",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15393,
+    "familie": "ACS580",
+    "parametru": "32.20",
+    "descriere_scurta": "Supervision 2 high",
+    "GENERATED": {
+      "explicatie": "Limita superioara pentru supervizarea 2. Depasirea (semnal creste peste aceasta valoare) poate declansa actiunea configurata in 32.16.",
+      "influenteaza": "32.15,32.16,32.19,32.21",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15394,
+    "familie": "ACS580",
+    "parametru": "32.28",
+    "descriere_scurta": "Supervision 3 filter",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat semnalului monitorizat de supervizarea 3 in ms.",
+      "influenteaza": "32.25,32.27",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15395,
+    "familie": "ACS580",
+    "parametru": "32.35",
+    "descriere_scurta": "Supervision 4",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de comparare al supervizarii 4: sub limita, peste limita, iesire din banda, valoare absoluta sau histereza. Actiunea la 32.36.",
+      "influenteaza": "32.36,32.37,32.39,32.40,32.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15396,
+    "familie": "ACS580",
+    "parametru": "32.41",
+    "descriere_scurta": "Supervision 4",
+    "GENERATED": {
+      "explicatie": "Histereza supervizarii 4: banda $\\pm 0.5 \\cdot H$ in jurul limitelor 32.39/32.40. Se aplica tuturor functiilor selectate in 32.35, nu doar modului Hysteresis.",
+      "influenteaza": "32.35,32.39,32.40",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15397,
+    "familie": "ACS580",
+    "parametru": "32.36",
+    "descriere_scurta": "Supervision 4",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia supervizarii 4 la depasirea limitelor: nicio actiune, avertizare sau defect 80B3 Signal supervision 4. Nu afecteaza 32.01 Supervision status.",
+      "influenteaza": "32.35,32.37",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15398,
+    "familie": "ACS580",
+    "parametru": "32.37",
+    "descriere_scurta": "Supervision 4",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de supervizarea 4. Selectii identice cu 32.07 Supervision 1 signal.",
+      "influenteaza": "32.35,32.36,32.39,32.40",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15399,
+    "familie": "ACS580",
+    "parametru": "32.38",
+    "descriere_scurta": "Supervision 4 filter",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat semnalului monitorizat de supervizarea 4 in ms.",
+      "influenteaza": "32.35,32.37",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15400,
+    "familie": "ACS580",
+    "parametru": "32.39",
+    "descriere_scurta": "Supervision 4 low",
+    "GENERATED": {
+      "explicatie": "Limita inferioara pentru supervizarea 4. Depasirea (semnal scade sub aceasta valoare) poate declansa actiunea configurata in 32.36.",
+      "influenteaza": "32.35,32.36,32.40,32.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15401,
+    "familie": "ACS580",
+    "parametru": "32.40",
+    "descriere_scurta": "Supervision 4 high",
+    "GENERATED": {
+      "explicatie": "Limita superioara pentru supervizarea 4. Depasirea (semnal creste peste aceasta valoare) poate declansa actiunea configurata in 32.36.",
+      "influenteaza": "32.35,32.36,32.39,32.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15402,
+    "familie": "ACS580",
+    "parametru": "32.45",
+    "descriere_scurta": "Supervision 5",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de comparare al supervizarii 5: sub limita, peste limita, iesire din banda, valoare absoluta sau histereza. Actiunea la 32.46.",
+      "influenteaza": "32.46,32.47,32.49,32.50,32.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15403,
+    "familie": "ACS580",
+    "parametru": "32.51",
+    "descriere_scurta": "Supervision 5",
+    "GENERATED": {
+      "explicatie": "Histereza supervizarii 5: banda $\\pm 0.5 \\cdot H$ in jurul limitelor 32.49/32.50. Se aplica tuturor functiilor selectate in 32.45.",
+      "influenteaza": "32.45,32.49,32.50",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15404,
+    "familie": "ACS580",
+    "parametru": "32.46",
+    "descriere_scurta": "Supervision 5",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia supervizarii 5 la depasirea limitelor: nicio actiune, avertizare A8B4 sau defect 80B4 Signal supervision 5.",
+      "influenteaza": "32.45,32.47",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15405,
+    "familie": "ACS580",
+    "parametru": "32.47",
+    "descriere_scurta": "Supervision 5",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de supervizarea 5. Selectii identice cu 32.07 Supervision 1 signal.",
+      "influenteaza": "32.45,32.46,32.49,32.50",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15406,
+    "familie": "ACS580",
+    "parametru": "32.48",
+    "descriere_scurta": "Supervision 5 filter",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului low-pass aplicat semnalului monitorizat de supervizarea 5 in ms.",
+      "influenteaza": "32.45,32.47",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15407,
+    "familie": "ACS580",
+    "parametru": "32.49",
+    "descriere_scurta": "Supervision 5 low",
+    "GENERATED": {
+      "explicatie": "Limita inferioara pentru supervizarea 5. Depasirea poate declansa actiunea configurata in 32.46.",
+      "influenteaza": "32.45,32.46,32.50,32.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15408,
+    "familie": "ACS580",
+    "parametru": "32.50",
+    "descriere_scurta": "Supervision 5 high",
+    "GENERATED": {
+      "explicatie": "Limita superioara pentru supervizarea 5. Depasirea poate declansa actiunea configurata in 32.46.",
+      "influenteaza": "32.45,32.46,32.49,32.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15409,
+    "familie": "ACS580",
+    "parametru": "32.61",
+    "descriere_scurta": "Supervision 6",
+    "GENERATED": {
+      "explicatie": "Histereza supervizarii 6: banda $\\pm 0.5 \\cdot H$ in jurul limitelor 32.59/32.60. Se aplica tuturor functiilor selectate in 32.55.",
+      "influenteaza": "32.55,32.59,32.60",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15410,
+    "familie": "ACS580",
+    "parametru": "32.56",
+    "descriere_scurta": "Supervision 6",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia supervizarii 6 la depasirea limitelor: nicio actiune, avertizare A8B5 sau defect 80B5 Signal supervision 6.",
+      "influenteaza": "32.55,32.57",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15411,
+    "familie": "ACS580",
+    "parametru": "32.57",
+    "descriere_scurta": "Supervision 6",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de supervizarea 6. Selectii identice cu 32.07 Supervision 1 signal.",
+      "influenteaza": "32.55,32.56,32.59,32.60",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15412,
+    "familie": "ACS580",
+    "parametru": "32.59",
+    "descriere_scurta": "Supervision 6 low",
+    "GENERATED": {
+      "explicatie": "Limita inferioara pentru supervizarea 6. Depasirea poate declansa actiunea configurata in 32.56.",
+      "influenteaza": "32.55,32.56,32.60,32.61",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15413,
+    "familie": "ACS580",
+    "parametru": "32.60",
+    "descriere_scurta": "Supervision 6 high",
+    "GENERATED": {
+      "explicatie": "Limita superioara pentru supervizarea 6. Depasirea poate declansa actiunea configurata in 32.56.",
+      "influenteaza": "32.55,32.56,32.59,32.61",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15414,
+    "familie": "ACS580",
+    "parametru": "34.04",
+    "descriere_scurta": "Season/exception",
+    "GENERATED": {
+      "explicatie": "Starea sezonului activ (1-4) si a zilelor de exceptie (zi lucratoare/sarbatoare). Un singur sezon activ simultan. Parametru read-only pentru diagnosticare functii temporizate.",
+      "influenteaza": "34.10,34.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15415,
+    "familie": "ACS580",
+    "parametru": "34.10",
+    "descriere_scurta": "Timed functions",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa de activare globala a functiilor temporizate. Cand sursa este 0 logic, toate timerele si sezonul sunt dezactivate indiferent de programare.",
+      "influenteaza": "34.11,34.14,34.17,34.20,34.23,34.26,34.29",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15416,
+    "familie": "ACS580",
+    "parametru": "34.14",
+    "descriere_scurta": "Timer 2",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 2: selecteaza zilele saptamanii, sezonul si zilele de exceptie in care timerele este activ. Identic ca structura cu 34.11.",
+      "influenteaza": "34.10,34.15,34.16,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15417,
+    "familie": "ACS580",
+    "parametru": "34.15",
+    "descriere_scurta": "Timer 2 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 2 in format HH:MM (de la 00:00 la 23:59). Identic ca structura cu 34.12 Timer 1 start time.",
+      "influenteaza": "34.14,34.16",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15418,
+    "familie": "ACS580",
+    "parametru": "34.16",
+    "descriere_scurta": "Timer 2 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 2 in format ZZ HH:MM (max 7 zile). Defineste intervalul cat timerele 2 este activ dupa ora de start 34.15.",
+      "influenteaza": "34.14,34.15",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15419,
+    "familie": "ACS580",
+    "parametru": "34.17",
+    "descriere_scurta": "Timer 3",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 3: zilele saptamanii, sezonul si zilele de exceptie. Identic ca structura cu 34.11 Timer 1 configuration.",
+      "influenteaza": "34.10,34.18,34.19,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15420,
+    "familie": "ACS580",
+    "parametru": "34.18",
+    "descriere_scurta": "Timer 3 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 3 in format HH:MM.",
+      "influenteaza": "34.17,34.19",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15421,
+    "familie": "ACS580",
+    "parametru": "34.19",
+    "descriere_scurta": "Timer 3 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 3 in format ZZ HH:MM (max 7 zile).",
+      "influenteaza": "34.17,34.18",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15422,
+    "familie": "ACS580",
+    "parametru": "34.20",
+    "descriere_scurta": "Timer 4",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 4: zilele saptamanii, sezonul si zilele de exceptie. Identic ca structura cu 34.11.",
+      "influenteaza": "34.10,34.21,34.22,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15423,
+    "familie": "ACS580",
+    "parametru": "34.21",
+    "descriere_scurta": "Timer 4 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 4 in format HH:MM.",
+      "influenteaza": "34.20,34.22",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15424,
+    "familie": "ACS580",
+    "parametru": "34.22",
+    "descriere_scurta": "Timer 4 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 4 in format ZZ HH:MM (max 7 zile).",
+      "influenteaza": "34.20,34.21",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15425,
+    "familie": "ACS580",
+    "parametru": "34.23",
+    "descriere_scurta": "Timer 5",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 5: zilele saptamanii, sezonul si zilele de exceptie. Identic ca structura cu 34.11.",
+      "influenteaza": "34.10,34.24,34.25,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15426,
+    "familie": "ACS580",
+    "parametru": "34.24",
+    "descriere_scurta": "Timer 5 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 5 in format HH:MM.",
+      "influenteaza": "34.23,34.25",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15427,
+    "familie": "ACS580",
+    "parametru": "34.25",
+    "descriere_scurta": "Timer 5 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 5 in format ZZ HH:MM (max 7 zile).",
+      "influenteaza": "34.23,34.24",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15428,
+    "familie": "ACS580",
+    "parametru": "34.26",
+    "descriere_scurta": "Timer 6",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 6: zilele saptamanii, sezonul si zilele de exceptie. Identic ca structura cu 34.11.",
+      "influenteaza": "34.10,34.27,34.28,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15429,
+    "familie": "ACS580",
+    "parametru": "34.27",
+    "descriere_scurta": "Timer 6 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 6 in format HH:MM.",
+      "influenteaza": "34.26,34.28",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15430,
+    "familie": "ACS580",
+    "parametru": "34.28",
+    "descriere_scurta": "Timer 6 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 6 in format ZZ HH:MM (max 7 zile).",
+      "influenteaza": "34.26,34.27",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15431,
+    "familie": "ACS580",
+    "parametru": "34.29",
+    "descriere_scurta": "Timer 7",
+    "GENERATED": {
+      "explicatie": "Cuvantul de configurare al timerului 7: zilele saptamanii, sezonul si zilele de exceptie. Identic ca structura cu 34.11.",
+      "influenteaza": "34.10,34.30,34.31,34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15432,
+    "familie": "ACS580",
+    "parametru": "34.30",
+    "descriere_scurta": "Timer 7 start time",
+    "GENERATED": {
+      "explicatie": "Ora de start a timerului 7 in format HH:MM.",
+      "influenteaza": "34.29,34.31",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15433,
+    "familie": "ACS580",
+    "parametru": "34.31",
+    "descriere_scurta": "Timer 7 duration",
+    "GENERATED": {
+      "explicatie": "Durata de activare a timerului 7 in format ZZ HH:MM (max 7 zile).",
+      "influenteaza": "34.29,34.30",
+      "categorie": "Altul"
+    }
+  }
+]
