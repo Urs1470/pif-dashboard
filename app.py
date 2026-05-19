@@ -3137,6 +3137,40 @@ def webhook_deploy():
 
 # ============ PV (Proces Verbal) generation ============
 
+def _parse_pv_request():
+    """Parsare body PV: accepta JSON sau multipart cu 'payload' (JSON string)
+    + files 'image_0', 'image_1', ... cu metadata-uri 'image_N_caption' / 'image_N_anchor'.
+    Returneaza (data_dict, images_list) unde images_list e [{file: BytesIO, caption, anchor}].
+    """
+    if request.content_type and request.content_type.startswith('multipart/'):
+        try:
+            data = json.loads(request.form.get('payload') or '{}')
+        except Exception:
+            data = {}
+        images = []
+        i = 0
+        while True:
+            key = f'image_{i}'
+            f = request.files.get(key)
+            if f is None:
+                break
+            caption = request.form.get(f'{key}_caption', '')
+            anchor = request.form.get(f'{key}_anchor', 'final')
+            images.append({
+                'file': BytesIO(f.read()),
+                'caption': caption,
+                'anchor': anchor,
+                'filename': f.filename,
+            })
+            i += 1
+        return data, images
+    else:
+        data = request.json or {}
+        return data, []
+
+
+
+
 @app.route('/api/proiecte/<project_id>/pv/service/preview', methods=['GET'])
 @login_required
 def pv_service_preview(project_id):
@@ -3165,7 +3199,7 @@ def pv_service_generate(project_id):
         logger.error(f"PV generator import failed: {e}")
         return jsonify({'error': f'Generator indisponibil: {e}'}), 500
 
-    data = request.json or {}
+    data, images = _parse_pv_request()
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
@@ -3183,7 +3217,6 @@ def pv_service_generate(project_id):
         if e_row:
             echipament = row_to_dict(e_row)
     if echipament is None:
-        # fallback: primul echipament
         cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at ASC LIMIT 1', (project_id,))
         e_row = cursor.fetchone()
         if e_row:
@@ -3199,6 +3232,7 @@ def pv_service_generate(project_id):
         'reprezentant_eg': data.get('reprezentant_eg') or 'Ion Ursu',
         'ingineri': data.get('ingineri') or [],
         'ore': data.get('ore', []),
+        'images': images,
     }
 
     try:
@@ -3241,7 +3275,7 @@ def pv_pif_generate(project_id):
         logger.error(f"PV PIF generator import failed: {e}")
         return jsonify({'error': f'Generator indisponibil: {e}'}), 500
 
-    data = request.json or {}
+    data, images = _parse_pv_request()
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
@@ -3262,6 +3296,7 @@ def pv_pif_generate(project_id):
         'constatari': data.get('constatari', ''),
         'rep_client': data.get('rep_client', ''),
         'rep_eg': data.get('rep_eg') or 'Ing. Ion Ursu',
+        'images': images,
     }
 
     try:

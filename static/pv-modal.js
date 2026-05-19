@@ -28,6 +28,31 @@
     .pv-modal-overlay.active { display: grid; place-items: center; overflow: hidden; }
     body.pv-modal-open { overflow: hidden !important; }
     .pv-body { overscroll-behavior: contain; }
+    .pv-images-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .pv-img-card { display: flex; gap: 10px; padding: 10px;
+      background: var(--bg-elev2); border: 1px solid var(--line);
+      border-radius: 10px; align-items: flex-start; }
+    .pv-img-card .thumb { width: 86px; height: 86px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0; background: var(--bg-elev3); }
+    .pv-img-card .meta { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .pv-img-card .meta input,
+    .pv-img-card .meta select { width: 100%; background: var(--bg-elev1);
+      border: 1px solid var(--line); color: var(--text);
+      border-radius: 6px; padding: 6px 8px; font-size: 12px; font-family: inherit; }
+    .pv-img-card .meta input:focus, .pv-img-card .meta select:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-ring); }
+    .pv-img-card .filename { font-size: 10.5px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace; text-overflow: ellipsis;
+      overflow: hidden; white-space: nowrap; }
+    .pv-img-card .del-img { width: 30px; height: 30px; flex-shrink: 0;
+      border: 1px solid var(--line); background: transparent;
+      color: var(--text-mut); border-radius: 6px; cursor: pointer;
+      display: grid; place-items: center; }
+    .pv-img-card .del-img:hover { color: var(--danger);
+      border-color: var(--danger); background: var(--danger-soft); }
+    .pv-img-card .del-img [data-lucide] { width: 14px; height: 14px; }
+    @media (max-width: 720px) { .pv-images-list { grid-template-columns: 1fr; } }
     .pv-modal {
       width: 100%; max-width: 920px; max-height: calc(100vh - 48px);
       background: var(--bg-elev1, #11161e);
@@ -300,6 +325,18 @@
           </div>
           <div class="pv-form" id="pv-ingineri-rows"></div>
         </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head">
+            <div class="pv-sec-title">Anexe foto</div>
+            <span class="pv-sec-hint"><i data-lucide="info"></i>2 poze pe rând, caption opțional</span>
+          </div>
+          <input type="file" id="pv-img-input" accept="image/*" multiple style="display:none;">
+          <button type="button" class="pv-add" id="pv-add-images" style="margin-bottom:10px;">
+            <i data-lucide="image-plus"></i>Adaugă poze
+          </button>
+          <div id="pv-images-list" class="pv-images-list"></div>
+        </div>
       </div>
 
       <div class="pv-foot">
@@ -488,11 +525,68 @@
       .map(i => i.value.trim()).filter(Boolean);
   }
 
+  // ----- Image manager (Service) -----
+  const SERVICE_ANCHORS = [
+    { value: 'dupa_motiv', label: 'După Motivul intervenției' },
+    { value: 'dupa_actiuni', label: 'După Au fost efectuate' },
+    { value: 'dupa_observatii', label: 'După Observații' },
+    { value: 'final', label: 'La final (anexă)' },
+  ];
+  let imgSeq = 0;
+  const imageEntries = []; // {id, file, dataUrl, caption, anchor}
+
+  function addImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const id = ++imgSeq;
+      imageEntries.push({
+        id, file, dataUrl: e.target.result, caption: '', anchor: 'dupa_actiuni',
+      });
+      renderImagesList();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderImagesList() {
+    const list = $('#pv-images-list');
+    list.innerHTML = '';
+    imageEntries.forEach((entry) => {
+      const card = document.createElement('div');
+      card.className = 'pv-img-card';
+      card.innerHTML = `
+        <img class="thumb" src="${entry.dataUrl}" alt="">
+        <div class="meta">
+          <input type="text" placeholder="Caption opțional"
+                 value="${escapeHtml(entry.caption)}" data-img-caption>
+          <select data-img-anchor>
+            ${SERVICE_ANCHORS.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${a.label}</option>`).join('')}
+          </select>
+          <span class="filename">${escapeHtml(entry.file.name)}</span>
+        </div>
+        <button type="button" class="del-img" title="Șterge"><i data-lucide="trash-2"></i></button>
+      `;
+      card.querySelector('[data-img-caption]').oninput = (e) => { entry.caption = e.target.value; };
+      card.querySelector('[data-img-anchor]').onchange = (e) => { entry.anchor = e.target.value; };
+      card.querySelector('.del-img').onclick = () => {
+        const idx = imageEntries.findIndex(x => x.id === entry.id);
+        if (idx >= 0) imageEntries.splice(idx, 1);
+        renderImagesList();
+      };
+      list.appendChild(card);
+    });
+    rerenderIcons();
+  }
+
   // Bind static elements
   overlay.querySelectorAll('[data-pv-close]').forEach(b => b.onclick = close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   $('#pv-add-row').onclick = () => addRow();
   ['#pv-cod', '#pv-data'].forEach(s => $(s).oninput = updateNrPreview);
+  $('#pv-add-images').onclick = () => $('#pv-img-input').click();
+  $('#pv-img-input').onchange = (e) => {
+    Array.from(e.target.files || []).forEach(addImageFile);
+    e.target.value = ''; // reset ca sa poate re-selecta acelasi fisier
+  };
 
   $('#pv-echipament').onchange = function () {
     const opt = this.options[this.selectedIndex];
@@ -507,24 +601,36 @@
     rerenderIcons();
     try {
       const ingineri = collectIngineri();
-      const body = {
+      const payload = {
         echipament_id: $('#pv-echipament').value || null,
         cod_proiect: $('#pv-cod').value.trim(),
         data_pv: $('#pv-data').value.trim(),
         denumire_comanda: $('#pv-denumire').value.trim(),
         observatii: $('#pv-observatii').value,
         nota_facturare: $('#pv-nota-fact').value,
-        reprezentant_eg: ingineri[0] || 'Ion Ursu',  // backward compat
+        reprezentant_eg: ingineri[0] || 'Ion Ursu',
         ingineri: ingineri,
         ore: collectRows(),
       };
       const projectId = overlay.dataset.projectId;
-      const res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        credentials: 'same-origin',
-      });
+      let res;
+      if (imageEntries.length > 0) {
+        const fd = new FormData();
+        fd.append('payload', JSON.stringify(payload));
+        imageEntries.forEach((entry, i) => {
+          fd.append(`image_${i}`, entry.file, entry.file.name);
+          fd.append(`image_${i}_caption`, entry.caption || '');
+          fd.append(`image_${i}_anchor`, entry.anchor || 'final');
+        });
+        res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
+          method: 'POST', body: fd, credentials: 'same-origin',
+        });
+      } else {
+        res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload), credentials: 'same-origin',
+        });
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(err.error || `HTTP ${res.status}`);
@@ -566,6 +672,8 @@
     rowSeq = 0;
     addRow({ tip: 'TD' });
     renderIngineri(['Ion Ursu']);
+    imageEntries.length = 0;
+    renderImagesList();
 
     overlay.classList.add('active');
     document.body.classList.add('pv-modal-open');
@@ -788,6 +896,18 @@
             </div>
           </div>
         </div>
+
+        <div class="pv-sec">
+          <div class="pv-sec-head">
+            <div class="pv-sec-title">Anexe foto</div>
+            <span class="pv-sec-hint"><i data-lucide="info"></i>2 poze pe rând, caption opțional</span>
+          </div>
+          <input type="file" id="pif-img-input" accept="image/*" multiple style="display:none;">
+          <button type="button" class="pv-pif-add-date" id="pif-add-images" style="margin-bottom:10px;">
+            <i data-lucide="image-plus"></i>Adaugă poze
+          </button>
+          <div id="pif-images-list" class="pv-images-list"></div>
+        </div>
       </div>
 
       <div class="pv-foot">
@@ -845,6 +965,60 @@
   $('#pif-add-date').onclick = () => addDateRow('');
   ['#pif-cod', '#pif-data'].forEach(s => $(s).oninput = updatePreview);
 
+  // Image manager (PIF)
+  const PIF_ANCHORS = [
+    { value: 'dupa_constatari', label: 'După Alte constatări (pct. 3)' },
+    { value: 'dupa_concluzii', label: 'După Concluzii' },
+    { value: 'final', label: 'La final (anexă)' },
+  ];
+  let pifImgSeq = 0;
+  const pifImages = [];
+  function pifAddImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pifImages.push({
+        id: ++pifImgSeq, file, dataUrl: e.target.result,
+        caption: '', anchor: 'dupa_constatari',
+      });
+      pifRenderImages();
+    };
+    reader.readAsDataURL(file);
+  }
+  function pifRenderImages() {
+    const list = $('#pif-images-list');
+    list.innerHTML = '';
+    pifImages.forEach((entry) => {
+      const card = document.createElement('div');
+      card.className = 'pv-img-card';
+      card.innerHTML = `
+        <img class="thumb" src="${entry.dataUrl}" alt="">
+        <div class="meta">
+          <input type="text" placeholder="Caption opțional"
+                 value="${escapeHtml(entry.caption)}" data-img-caption>
+          <select data-img-anchor>
+            ${PIF_ANCHORS.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${a.label}</option>`).join('')}
+          </select>
+          <span class="filename">${escapeHtml(entry.file.name)}</span>
+        </div>
+        <button type="button" class="del-img" title="Șterge"><i data-lucide="trash-2"></i></button>
+      `;
+      card.querySelector('[data-img-caption]').oninput = (e) => { entry.caption = e.target.value; };
+      card.querySelector('[data-img-anchor]').onchange = (e) => { entry.anchor = e.target.value; };
+      card.querySelector('.del-img').onclick = () => {
+        const idx = pifImages.findIndex(x => x.id === entry.id);
+        if (idx >= 0) pifImages.splice(idx, 1);
+        pifRenderImages();
+      };
+      list.appendChild(card);
+    });
+    rerenderIcons();
+  }
+  $('#pif-add-images').onclick = () => $('#pif-img-input').click();
+  $('#pif-img-input').onchange = (e) => {
+    Array.from(e.target.files || []).forEach(pifAddImage);
+    e.target.value = '';
+  };
+
   $('#pif-generate').onclick = async function () {
     const btn = this;
     btn.disabled = true;
@@ -852,7 +1026,7 @@
     btn.innerHTML = '<i data-lucide="loader-2"></i>Se generează...';
     rerenderIcons();
     try {
-      const body = {
+      const payload = {
         cod_proiect: $('#pif-cod').value.trim(),
         data_pv: $('#pif-data').value.trim(),
         data_convocare: $('#pif-conv').value.trim(),
@@ -865,12 +1039,26 @@
         rep_eg: $('#pif-rep-eg').value.trim() || 'Ing. Ion Ursu',
       };
       const projectId = overlay.dataset.projectId;
-      const res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        credentials: 'same-origin',
-      });
+      // Hack to access body var name expected downstream
+      const body = payload;
+      let res;
+      if (pifImages.length > 0) {
+        const fd = new FormData();
+        fd.append('payload', JSON.stringify(payload));
+        pifImages.forEach((entry, i) => {
+          fd.append(`image_${i}`, entry.file, entry.file.name);
+          fd.append(`image_${i}_caption`, entry.caption || '');
+          fd.append(`image_${i}_anchor`, entry.anchor || 'final');
+        });
+        res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
+          method: 'POST', body: fd, credentials: 'same-origin',
+        });
+      } else {
+        res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload), credentials: 'same-origin',
+        });
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(err.error || `HTTP ${res.status}`);
@@ -914,6 +1102,8 @@
     $('#pif-rep-eg').value = 'Ing. Ion Ursu';
     $('#pif-dates-rows').innerHTML = '';
     addDateRow(today);
+    pifImages.length = 0;
+    pifRenderImages();
     updatePreview();
     overlay.classList.add('active');
     document.body.classList.add('pv-modal-open');
