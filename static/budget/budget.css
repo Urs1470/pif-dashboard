@@ -533,6 +533,29 @@ label.field-label {
 .text-mid { color: var(--text-mid); }
 .text-dim { color: var(--text-dim); }
 
+/* ============ INVESTITII (ETF) ============ */
+.etf-symbol {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+.etf-broker {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  background: var(--bg-elev3);
+  color: var(--text-mid);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.pl-pos { color: var(--success); font-family: var(--font-mono); font-weight: 600; }
+.pl-neg { color: var(--danger); font-family: var(--font-mono); font-weight: 600; }
+.pl-zero { color: var(--text-mid); font-family: var(--font-mono); font-weight: 500; }
+
 /* ============ GOALS ============ */
 .goals-grid {
   display: grid;
