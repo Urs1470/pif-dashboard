@@ -5437,10 +5437,9 @@ function openParamModal(param) {
             } else {
                 explicatieRow.style.display = 'none';
             }
-            // Influenteaza
-            if (detail.influenteaza) {
-                renderInfluenteazaDesktop(detail);
-            }
+            // Influenteaza (X →) + Influentat_de (← X) — bidirectional
+            renderInfluenteazaDesktop(detail);
+            renderInfluentatDeDesktop(detail);
         })
         .catch(function() {});
 }
@@ -5450,54 +5449,101 @@ function closeParamModal() {
     currentParam = null;
 }
 
-// Helper: randare influențe desktop — creează/actualizează div-ul
-function renderInfluenteazaDesktop(param) {
+// Parse `influenteaza` into a list of {code, label, efect, tip}.
+// Accepts:
+//   - CSV string "30.12, 21.13"
+//   - JSON array of strings ["30.12", "21.13"]
+//   - JSON array of objects [{parametru, efect?, tip?}]
+function _parseInfluenteaza(data) {
+    if (!data || data === 'null' || data === '[]') return [];
+    if (Array.isArray(data)) {
+        return data.map(o => typeof o === 'string'
+            ? { code: o, efect: '', tip: '' }
+            : { code: o.parametru || '?', efect: o.efect || '', tip: o.tip || '' });
+    }
+    if (typeof data !== 'string') return [];
+    const trimmed = data.trim();
+    if (!trimmed) return [];
+    // JSON?
+    if (trimmed.startsWith('[')) {
+        try { return _parseInfluenteaza(JSON.parse(trimmed)); } catch { /* fall through to CSV */ }
+    }
+    // CSV: split on commas (and whitespace) → unique codes
+    return trimmed.split(/[\s,]+/).filter(Boolean).map(c => ({ code: c, efect: '', tip: '' }));
+}
+
+// Build a clickable chip for a referenced parameter code. On click, navigates
+// to that param's modal if we have it in cache; otherwise just copies the code.
+function _influChip(entry, color) {
+    const code = entry.code || entry.parametru || '?';
+    const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${entry.tip}]</span>` : '';
+    const labelText = entry.descriere_scurta ? ` <span style="font-size:0.8em;opacity:0.75;">${entry.descriere_scurta}</span>` : '';
+    const efectText = entry.efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${entry.efect}</div>` : '';
+    return `<div class="influ-chip" data-code="${code}" style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid ${color};cursor:pointer;transition:background 0.12s;">
+        <span style="font-family:'JetBrains Mono', monospace;font-weight:600;color:${color};">${code}</span>${tipTag}${labelText}
+        ${efectText}
+    </div>`;
+}
+
+// Generic row builder: creates the influence/influenced-by panel before
+// `param-modal-explicatie-row` and renders chips inside it.
+function _renderInfluRow(rowId, divId, label, iconName, color, entries) {
     const modal = document.getElementById('param-detail-modal');
     if (!modal) return;
-    
-    // Găsește sau creează elementul
-    let row = document.getElementById('param-modal-influenteaza-row');
+    let row = document.getElementById(rowId);
     if (!row) {
-        // Creează dinamic dacă nu există în HTML
         const explicatieRow = document.getElementById('param-modal-explicatie-row');
         row = document.createElement('div');
-        row.id = 'param-modal-influenteaza-row';
-        row.style.cssText = 'display:none;margin-top:8px;padding:12px;background:rgba(116,212,165,0.08);border:1px solid var(--success);border-radius:6px;';
-        row.innerHTML = '<strong>📡 Influențează:</strong><div id="param-modal-influenteaza" style="margin-top:4px;font-size:0.9em;"></div>';
+        row.id = rowId;
+        row.style.cssText = `display:none;margin-top:8px;padding:12px;background:rgba(116,212,165,0.06);border:1px solid ${color};border-radius:6px;`;
+        row.innerHTML = `<strong style="display:flex;align-items:center;gap:6px;"><i data-lucide="${iconName}" style="width:16px;height:16px;"></i> ${label}</strong><div id="${divId}" style="margin-top:6px;font-size:0.9em;"></div>`;
         if (explicatieRow && explicatieRow.parentNode) {
             explicatieRow.parentNode.insertBefore(row, explicatieRow);
         } else {
             modal.appendChild(row);
         }
+        scheduleIconRefresh();
     }
-    const div = document.getElementById('param-modal-influenteaza');
+    const div = document.getElementById(divId);
     if (!div) return;
-    
-    const tryRender = (data) => {
-        if (!data || data === '[]' || data === 'null' || data === '') {
-            row.style.display = 'none';
-            return;
-        }
-        let arr;
-        try {
-            arr = typeof data === 'string' ? JSON.parse(data) : data;
-        } catch { row.style.display = 'none'; return; }
-        if (!Array.isArray(arr) || arr.length === 0) { row.style.display = 'none'; return; }
-        div.innerHTML = arr.map(obj => {
-            const pname = typeof obj === 'string' ? obj : (obj.parametru || '?');
-            const efect = typeof obj === 'string' ? '' : (obj.efect || '');
-            const tip = typeof obj === 'string' ? '' : (obj.tip || '');
-            const tipTag = tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${tip}]</span>` : '';
-            const efectText = efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${efect}</div>` : '';
-            return `<div style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid var(--success);">
-                <span style="font-family:monospace;font-weight:bold;color:var(--success);">${pname}</span>${tipTag}
-                ${efectText}
-            </div>`;
-        }).join('');
-        row.style.display = 'block';
-    };
-    
-    tryRender(param.influenteaza);
+    if (!entries || entries.length === 0) {
+        row.style.display = 'none';
+        return;
+    }
+    div.innerHTML = entries.map(e => _influChip(e, color)).join('');
+    row.style.display = 'block';
+}
+
+// X → others
+function renderInfluenteazaDesktop(param) {
+    const entries = _parseInfluenteaza(param.influenteaza);
+    _renderInfluRow(
+        'param-modal-influenteaza-row',
+        'param-modal-influenteaza',
+        'Influențează',
+        'arrow-right',
+        'var(--success)',
+        entries
+    );
+}
+
+// others → X
+function renderInfluentatDeDesktop(param) {
+    const arr = Array.isArray(param.influentat_de) ? param.influentat_de : [];
+    const entries = arr.map(o => ({
+        code: o.parametru,
+        descriere_scurta: o.descriere_scurta || '',
+        efect: '',
+        tip: '',
+    }));
+    _renderInfluRow(
+        'param-modal-influentat-de-row',
+        'param-modal-influentat-de',
+        'Influențat de',
+        'arrow-left',
+        'var(--violet)',
+        entries
+    );
 }
 
 function copyParamCode() {

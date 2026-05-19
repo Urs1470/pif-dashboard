@@ -1328,43 +1328,97 @@ function openMobileParamModal(param) {
   modal.classList.add('active');
 }
 
-// Helper: randare influențe din parametru sau fetch detalii
+// Parse influenteaza into [{code, efect, tip}]
+function _mobParseInflu(data) {
+  if (!data || data === '[]' || data === 'null') return [];
+  if (Array.isArray(data)) {
+    return data.map(o => typeof o === 'string'
+      ? { code: o, efect: '', tip: '' }
+      : { code: o.parametru || '?', efect: o.efect || '', tip: o.tip || '' });
+  }
+  if (typeof data !== 'string') return [];
+  const t = data.trim();
+  if (!t) return [];
+  if (t.startsWith('[')) {
+    try { return _mobParseInflu(JSON.parse(t)); } catch {}
+  }
+  return t.split(/[\s,]+/).filter(Boolean).map(c => ({ code: c, efect: '', tip: '' }));
+}
+
+function _mobChip(entry, color) {
+  const code = entry.code || entry.parametru || '?';
+  const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${entry.tip}]</span>` : '';
+  const labelText = entry.descriere_scurta ? ` <span style="font-size:0.8em;opacity:0.75;">${entry.descriere_scurta}</span>` : '';
+  const efectText = entry.efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${entry.efect}</div>` : '';
+  return `<div style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid ${color};">
+    <span style="font-family:'JetBrains Mono', monospace;font-weight:600;color:${color};">${code}</span>${tipTag}${labelText}
+    ${efectText}
+  </div>`;
+}
+
+function _mobEnsureRow(rowId, divId, label, iconName, color, anchorId) {
+  const modal = document.getElementById('param-modal-mobile') || document.getElementById('param-modal');
+  if (!modal) return null;
+  let row = document.getElementById(rowId);
+  if (!row) {
+    row = document.createElement('div');
+    row.id = rowId;
+    row.style.cssText = `display:none;margin-top:8px;padding:12px;background:rgba(116,212,165,0.06);border:1px solid ${color};border-radius:6px;`;
+    row.innerHTML = `<strong style="display:flex;align-items:center;gap:6px;"><i data-lucide="${iconName}" style="width:15px;height:15px;"></i> ${label}</strong><div id="${divId}" style="margin-top:6px;font-size:0.9em;"></div>`;
+    const anchor = anchorId ? document.getElementById(anchorId) : null;
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor);
+    else modal.appendChild(row);
+  }
+  return row;
+}
+
+// Helper: randare influențe (bidirectional) din parametru
 function renderInfluenteaza(param, modal, row) {
-  if (!row) return;
-  const div = modal.querySelector('#mpm-influenteaza');
-  
-  const tryRender = (influenteazaData) => {
-    if (!influenteazaData || influenteazaData === '[]' || influenteazaData === 'null') {
-      row.style.display = 'none';
-      return;
-    }
-    let arr;
-    try {
-      arr = typeof influenteazaData === 'string' ? JSON.parse(influenteazaData) : influenteazaData;
-    } catch { row.style.display = 'none'; return; }
-    if (!Array.isArray(arr) || arr.length === 0) { row.style.display = 'none'; return; }
-    div.innerHTML = arr.map(obj => {
-      const pname = typeof obj === 'string' ? obj : (obj.parametru || '?');
-      const efect = typeof obj === 'string' ? '' : (obj.efect || '');
-      const tip = typeof obj === 'string' ? '' : (obj.tip || '');
-      const tipTag = tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${tip}]</span>` : '';
-      const efectText = efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${efect}</div>` : '';
-      return `<div style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid var(--success);">
-        <span style="font-family:monospace;font-weight:bold;color:var(--success);">${pname}</span>${tipTag}
-        ${efectText}
-      </div>`;
-    }).join('');
-    row.style.display = 'block';
+  // Existing #mpm-influenteaza-row is the "influențează" panel (X →)
+  const div = modal && modal.querySelector('#mpm-influenteaza');
+  const tryRender = (data, panel, divEl, color) => {
+    const entries = _mobParseInflu(data);
+    if (!entries.length || !divEl || !panel) { if (panel) panel.style.display = 'none'; return; }
+    divEl.innerHTML = entries.map(e => _mobChip(e, color)).join('');
+    panel.style.display = 'block';
   };
-  
-  // Try param cache
-  if (param.influenteaza) { tryRender(param.influenteaza); return; }
-  
-  // Fetch detail
+
+  // Bidirectional row created dynamically (←)
+  const reverseRow = _mobEnsureRow(
+    'mpm-influentat-de-row', 'mpm-influentat-de',
+    'Influențat de', 'arrow-left', 'var(--violet)',
+    'mpm-influenteaza-row'
+  );
+  const reverseDiv = document.getElementById('mpm-influentat-de');
+
+  const applyDetail = (detail) => {
+    tryRender(detail.influenteaza, row, div, 'var(--success)');
+    if (Array.isArray(detail.influentat_de) && detail.influentat_de.length) {
+      const entries = detail.influentat_de.map(o => ({
+        code: o.parametru,
+        descriere_scurta: o.descriere_scurta || '',
+      }));
+      if (reverseDiv && reverseRow) {
+        reverseDiv.innerHTML = entries.map(e => _mobChip(e, 'var(--violet)')).join('');
+        reverseRow.style.display = 'block';
+      }
+    } else if (reverseRow) {
+      reverseRow.style.display = 'none';
+    }
+    if (window.lucide && lucide.createIcons) try { lucide.createIcons(); } catch {}
+  };
+
+  // Try param cache first; fetch only if we don't have influentat_de (computed reverse)
+  if (param.influentat_de !== undefined) {
+    applyDetail(param);
+    return;
+  }
   if (_isOnline && param.id) {
     apiGet('/api/parametri/' + param.id).then(detail => {
-      if (detail && detail.influenteaza) tryRender(detail.influenteaza);
+      if (detail) applyDetail(detail);
     }).catch(() => {});
+  } else if (param.influenteaza) {
+    tryRender(param.influenteaza, row, div, 'var(--success)');
   }
 }
 
