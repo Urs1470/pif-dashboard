@@ -238,19 +238,45 @@ def parse_abb(pdf_path):
                 default_val = ''
                 data_type = ''
                 if deftype:
+                    # 1) Peel type token (uint16/real32/...) wherever it sits
                     parts = deftype.replace('/', ' ').split()
                     for tok in reversed(parts):
                         if type_token_re.match(tok):
                             data_type = tok
                             break
-                    rest = ' '.join(p for p in parts if not type_token_re.match(p)).strip()
-                    rm = re.match(r'^(.+?)\s+([A-Za-z°%/]+)$', rest)
+                    rest_parts = [p for p in parts if not type_token_re.match(p)]
+                    rest = ' '.join(rest_parts).strip()
+                    # 2) Default values often come as "VAL [;VAL2] [UNIT]" (multiple
+                    # defaults for 50Hz/60Hz variants on ABB) — strip trailing ";"
+                    # and collapse to the first variant.
+                    rest = rest.rstrip(';,').strip()
+                    if ';' in rest:
+                        first_chunk = rest.split(';', 1)[0].strip()
+                        rest = first_chunk
+                    # 3) Try to peel a trailing UNIT only if the leading part is numeric.
+                    rm = re.match(r'^(-?[\d.,]+(?:\s+[\d.,]+)*)\s+([A-Za-z°%/]+)$', rest)
                     if rm:
                         default_val = rm.group(1).strip()
                         if not unit:
                             unit = rm.group(2)
                     else:
-                        default_val = rest
+                        # Label-default case (e.g. "Scalar", "Turning", "None"): no unit peel.
+                        # Take just the first whitespace-separated token to avoid bleeding
+                        # in repeated columns ("Scalar Scalar Scalar" -> "Scalar").
+                        if rest_parts:
+                            # Deduplicate consecutive identical tokens
+                            cleaned = []
+                            for t in rest_parts:
+                                if not cleaned or cleaned[-1] != t:
+                                    cleaned.append(t)
+                            default_val = ' '.join(cleaned).strip().rstrip(';,')
+                        else:
+                            default_val = rest
+
+                # If unit ended up being a number or contains a digit other than °C/°F,
+                # clear it — it's probably a scaling token, not a real unit.
+                if unit and not re.match(r'^[A-Za-z°%/]+$', unit):
+                    unit = ''
 
                 pdf_extra = {}
                 if values:
@@ -584,43 +610,122 @@ def parse_lenze(pdf_path):
                         }
 
         # Fallback: catch params that pdfplumber didn't recognise as tables
-        # (e.g. pages where table borders are missing). Linear regex on raw text
-        # gets at least name + page; other fields stay empty.
-        line_re = re.compile(
-            r'^\s*(0x[0-9A-F]{4,5}(?::\d{1,3})?)\s+([A-Z][^\n]{2,120})',
-            re.IGNORECASE
+        # (e.g. pages where table borders are missing). Use extract_words() with
+        # x-coordinates so we can split Address (x<~110), Name+range (110-280),
+        # Information (x>=~280) cleanly even when there is no visible border.
+        code_word_re = re.compile(r'^(0x[0-9A-F]{4,5}(?::\d{1,3})?)$', re.IGNORECASE)
+        lenze_range_re = re.compile(
+            r'^\s*([+-]?[\d.,]+)\s*\.{2,3}\s*\[\s*([+-]?[\d.,]+)\s*\]\*?\s*\.{2,3}\s*([+-]?[\d.,]+)\s*([^\s*]*)\s*\*?\s*$'
         )
         for pno, page in enumerate(pdf.pages, start=1):
-            text = page.extract_text() or ''
-            for line in text.split('\n'):
-                m = line_re.match(line)
-                if not m:
+            try:
+                words = page.extract_words(use_text_flow=True) or []
+            except Exception:
+                continue
+            if not words:
+                continue
+            # Group words by y-line (5 px tolerance — Lenze line height ~10-12 px)
+            rows = {}
+            for w in words:
+                key = round(w['top'] / 5) * 5
+                rows.setdefault(key, []).append({
+                    'x': w['x0'], 'text': w['text'], 'top': w['top']
+                })
+            ys = sorted(rows.keys())
+
+            # Walk rows; whenever the leftmost token at x<100 matches `0x...`,
+            # gather this row + continuation rows (top of code, no new code at x<100)
+            # as one parameter record.
+            i = 0
+            while i < len(ys):
+                y = ys[i]
+                row = sorted(rows[y], key=lambda w: w['x'])
+                if not row:
+                    i += 1
                     continue
-                raw = m.group(1)
-                if ':' in raw:
-                    h, idx = raw.split(':')
+                first = row[0]
+                cm = code_word_re.match(first['text'])
+                if not cm or first['x'] > 110:
+                    i += 1
+                    continue
+                raw_code = cm.group(1)
+                if ':' in raw_code:
+                    h, idx = raw_code.split(':')
                     code = h[:2] + h[2:].upper() + ':' + idx
                 else:
-                    code = raw[:2] + raw[2:].upper()
+                    code = raw_code[:2] + raw_code[2:].upper()
                 if code in out:
+                    i += 1
                     continue
-                name = m.group(2).strip()
-                # Trim trailing description bleed: keep up to first long pause or sentence end
-                # but Lenze names rarely exceed 80 chars in practice — clip there.
-                if len(name) > 80:
-                    name = name[:80].rsplit(' ', 1)[0]
+
+                # Continuation rows: until next code at left margin (or end)
+                end_i = i + 1
+                while end_i < len(ys):
+                    next_row = sorted(rows[ys[end_i]], key=lambda w: w['x'])
+                    if next_row and code_word_re.match(next_row[0]['text']) and next_row[0]['x'] <= 110:
+                        break
+                    end_i += 1
+                    # Stop if too many continuation rows (safety)
+                    if end_i - i > 25:
+                        break
+
+                # Aggregate tokens by column for all rows in [i, end_i)
+                name_tokens = []
+                info_tokens = []
+                range_str = ''
+                for rj in range(i, end_i):
+                    sub = sorted(rows[ys[rj]], key=lambda w: w['x'])
+                    for w in sub:
+                        # Skip the code itself
+                        if rj == i and w is first:
+                            continue
+                        if w['x'] < 280:
+                            name_tokens.append(w['text'])
+                        else:
+                            info_tokens.append(w['text'])
+
+                name_text = ' '.join(name_tokens).strip()
+                info_text = ' '.join(info_tokens).strip()
+
+                # Try to peel a "MIN ... [DEFAULT] ... MAX UNIT" range from name_text
+                min_val = max_val = default_val = unit = ''
+                rm = lenze_range_re.search(name_text)
+                if rm:
+                    min_val = rm.group(1)
+                    default_val = rm.group(2)
+                    max_val = rm.group(3)
+                    unit = rm.group(4) or ''
+                    # Strip the range fragment from name
+                    name_text = (name_text[:rm.start()] + name_text[rm.end():]).strip()
+
+                # Take only the first sentence-ish chunk as name
+                if len(name_text) > 80:
+                    cut = name_text.find('.')
+                    if 5 < cut < 80:
+                        name_text = name_text[:cut].strip()
+                    else:
+                        name_text = name_text[:80].rsplit(' ', 1)[0]
+
+                if len(name_text) < 2:
+                    i = end_i
+                    continue
+
+                # Skip "(P400.23)" suffix that often follows the address code
+                name_text = re.sub(r'^\(P\d+\.\d+\)\s*', '', name_text).strip()
+
                 out[code] = {
-                    'name': name,
+                    'name': name_text,
                     'page': pno,
-                    'description': '',
+                    'description': info_text,
                     'access': '',
                     'data_type': '',
-                    'default': '',
-                    'min': '',
-                    'max': '',
-                    'unit': '',
+                    'default': default_val,
+                    'min': min_val,
+                    'max': max_val,
+                    'unit': unit,
                     'pdf_extra': None,
                 }
+                i = end_i
     return out
 
 
@@ -707,6 +812,10 @@ def parse_siemens(pdf_path):
             return '', '', '', ''
         # Convert "-" sentinels to empty string
         norm = ['' if m == '-' else m for m in merged[:3]]
+        # Unit must look alphabetic (Hz, ms, %, °C, V/A...) — strip otherwise to
+        # avoid stray scaling tokens like "6" or "1" leaking in.
+        if unit and not re.match(r'^[A-Za-z°%/]+$', unit):
+            unit = ''
         return norm[0], norm[1], norm[2], unit
 
     with pdfplumber.open(pdf_path) as pdf:
@@ -1188,20 +1297,30 @@ def main():
         ap.print_help()
         sys.exit(0)
 
-    # --reextract: wipe descriere + pdf_extra columns first (for the families in scope)
+    # --reextract: wipe ALL PDF-derived fields first (so stale values from an
+    # earlier parser bug don't survive when the new parser returns blank).
     if args.reextract:
         conn = sqlite3.connect(args.db)
         cur = conn.cursor()
         placeholders = ','.join('?' * len(families_to_run))
         cur.execute(
-            f"UPDATE parametri_master SET descriere = NULL, pdf_extra = NULL "
+            f"UPDATE parametri_master SET "
+            f"  descriere = NULL, "
+            f"  pdf_extra = NULL, "
+            f"  acces = NULL, "
+            f"  tip_date = NULL, "
+            f"  valoare_default = NULL, "
+            f"  valoare_default_str = NULL, "
+            f"  min = NULL, "
+            f"  max = NULL, "
+            f"  unitate = NULL "
             f"WHERE familie IN ({placeholders})",
             families_to_run
         )
         wiped = cur.rowcount
         conn.commit()
         conn.close()
-        print(f'[reextract] Wiped descriere+pdf_extra on {wiped} rows '
+        print(f'[reextract] Wiped 9 PDF-derived columns on {wiped} rows '
               f'across {len(families_to_run)} families', file=sys.stderr)
         # Force --apply-all so the audit re-populates them
         args.apply_all = True
