@@ -1,0 +1,586 @@
+[
+  {
+    "id": 16771,
+    "parametru": "15.81",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 actual value",
+    "descriere": "Displays the value of AO3 in mA or V. This parameter is read- only.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Value of AO3\"]}"
+  },
+  {
+    "id": 16772,
+    "parametru": "15.83",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 forced value",
+    "descriere": "Forced value that can be used instead of the selected output signal. See parameter 15.45 AO force selection.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Forced value\"]}"
+  },
+  {
+    "id": 16773,
+    "parametru": "15.84",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 data storage",
+    "descriere": "Storage parameter for controlling analog output AO3 for example through the embedded fieldbus interface. In parameter 15.82 AO3 source, select the AO3 data storage. Then set this parameter as the target of the incoming value data. With the embedded fieldbus interface, simply set the target selection parameter of that particular data (58.101…58.114) to AO3 data storage.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Storage parameter for controlling AO3\"]}"
+  },
+  {
+    "id": 16774,
+    "parametru": "15.86",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 filter time",
+    "descriere": "Defines the filter time constant for analog output AO3. O = I × (1 - e-t/T) I = filter input (step) O = filter output t = time T = filter time constant",
+    "pdf_extra": "{\"notes\": [\"The signal is also filtered due to the signal interface hardware. This cannot be changed by any parameter.\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01. Filter time constant for AO3\"]}"
+  },
+  {
+    "id": 16775,
+    "parametru": "15.87",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 source min",
+    "descriere": "Defines the real minimum value of the signal (selected by parameter 15.82 AO3 source) that corresponds to the minimum required AO3 output value (defined by parameter 15.89 AO3 out at AO3 source min). Programming 15.87 as the maximum value and 15.88 as the minimum value inverts the output as shown below. AO has automatic scaling. Every time the source for the AO is changed, the scaling range is changed accordingly. User given minimum and maximum values override the automatic values. See parameter 13.17 for more details.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Real minimum value of the AO3 signal\"]}"
+  },
+  {
+    "id": 16776,
+    "parametru": "15.88",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 source max",
+    "descriere": "Defines the real maximum value of the signal (selected by parameter 15.82 AO3 source) that corresponds to the maximum required AO3 output value (defined by parameter 15.90 AO3 out at AO3 source max). See parameter 15.87 AO3 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Real maximum value of the AO3 signal\"]}"
+  },
+  {
+    "id": 16777,
+    "parametru": "15.89",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 out at AO3",
+    "descriere": "Defines the minimum output value for analog output AO3. See also the drawing at parameter 15.87 AO3 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Minimum output value of AO3\"]}"
+  },
+  {
+    "id": 16778,
+    "parametru": "15.90",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 out at AO3",
+    "descriere": "Defines the maximum output value for analog output AO3. See also the drawing at parameter 15.87 AO3 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01.\"]}"
+  },
+  {
+    "id": 16779,
+    "parametru": "15.91",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 actual value",
+    "descriere": "Displays the value of AO4 in mA or V. This parameter is read- only.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Value of AO4\"]}"
+  },
+  {
+    "id": 16780,
+    "parametru": "15.93",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 forced value",
+    "descriere": "Forced value that can be used instead of the selected output signal. See parameter 15.45 AO force selection.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Forced value\"]}"
+  },
+  {
+    "id": 16781,
+    "parametru": "15.94",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 data storage",
+    "descriere": "Storage parameter for controlling analog output AO4 for example through the embedded fieldbus interface. In parameter 15.92 AO4 source, select the AO4 data storage. Then set this parameter as the target of the incoming value data. With the embedded fieldbus interface, simply set the target selection parameter of that particular data (58.101…58.114) to AO4 data storage.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Storage parameter for controlling AO4\"]}"
+  },
+  {
+    "id": 16782,
+    "parametru": "15.96",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 filter time",
+    "descriere": "Defines the filter time constant for analog output AO4. O = I × (1 - e-t/T) I = filter input (step) O = filter output t = time T = filter time constant",
+    "pdf_extra": "{\"notes\": [\"The signal is also filtered due to the signal interface hardware. This cannot be changed by any parameter.\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01. Filter time constant for AO4\"]}"
+  },
+  {
+    "id": 16783,
+    "parametru": "15.97",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 source min",
+    "descriere": "Defines the real minimum value of the signal (selected by parameter 15.92 AO4 source) that corresponds to the minimum required AO4 output value (defined by parameter 15.99 AO4 out at AO4 source min). Programming 15.97 as the maximum value and 15.98 as the minimum value inverts the output as shown below. AO has automatic scaling. Every time the source for the AO is changed, the scaling range is changed accordingly. User given minimum and maximum values override the automatic values. See parameter 13.17 for more details.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Real minimum value of the AO4 signal\"]}"
+  },
+  {
+    "id": 16784,
+    "parametru": "15.98",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 source max",
+    "descriere": "Defines the real maximum value of the signal (selected by parameter 15.92 AO4 source) that corresponds to the maximum required AO4 output value (defined by parameter 15.100 AO4 out at AO4 source max). See parameter 15.97 AO4 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Real maximum value of the AO4 signal\"]}"
+  },
+  {
+    "id": 16785,
+    "parametru": "15.99",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 out at AO4",
+    "descriere": "Defines the minimum output value for analog output AO4. See also drawing at parameter 15.97 AO4 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Minimum output value for AO4\"]}"
+  },
+  {
+    "id": 16786,
+    "parametru": "21.10",
+    "familie": "ACS580",
+    "descriere_scurta": "DC current",
+    "descriere": "Defines the DC hold current in percent of the motor nominal current. See parameter 21.08 DC current control, and section DC magnetization (page 183). After 100 seconds post-magnetization time, the maximum magnetization current is limited to the magnetization current corresponding to the actual flux reference. DC hold current.",
+    "pdf_extra": null
+  },
+  {
+    "id": 16787,
+    "parametru": "21.21",
+    "familie": "ACS580",
+    "descriere_scurta": "DC hold frequency",
+    "descriere": "Defines the DC hold frequency, which is used instead of parameter 21.09 DC hold speed when the motor is in scalar frequency mode. See parameter 21.08 DC current control, and section DC hold (page 184). DC hold frequency.",
+    "pdf_extra": null
+  },
+  {
+    "id": 16788,
+    "parametru": "40.70",
+    "familie": "ACS580",
+    "descriere_scurta": "Compensated setpoint",
+    "descriere": "Real -200000.00…200000.00",
+    "pdf_extra": null
+  },
+  {
+    "id": 16789,
+    "parametru": "46.22",
+    "familie": "ACS580",
+    "descriere_scurta": "At frequency",
+    "descriere": "Defines the “at setpoint” limits for frequency control of the drive. When the absolute difference between reference (28.96 Frequency ref ramp input) and actual frequency (01.06 Output frequency) is smaller than 46.22 At frequency hysteresis, the drive is considered to be “at setpoint”. This is indicated by bit 8 of 06.11 Main status word. 01.06 (Hz) 28.96 + 46.22 (Hz) Drive at setpoint 28.96 (Hz) (06.11 bit 8 = 1) 28.96 - 46.22 (Hz) 0 Hz Limit for “at setpoint” indication in frequency control.",
+    "pdf_extra": null
+  },
+  {
+    "id": 16790,
+    "parametru": "46.41",
+    "familie": "ACS580",
+    "descriere_scurta": "kWh pulse scaling",
+    "descriere": "Defines the trigger level for the “kWh pulse” on for 50 ms. The output of the pulse is bit 9 of 05.22 Diagnostic word 3. “kWh pulse” on trigger level.",
+    "pdf_extra": null
+  },
+  {
+    "id": 20287,
+    "parametru": "99.13",
+    "familie": "ACS580",
+    "descriere_scurta": "ID run requested",
+    "descriere": "Selects the type of the motor identification routine (ID run) performed at the next start of the drive. During the ID run, the drive will identify the characteristics of the motor for optimum motor control. If no ID run has been performed yet (or if default parameter values have been restored using parameter 96.06 Parameter restore), this parameter is automatically set to Standstill, signifying that an ID run must be performed. After the ID run, the drive stops and this parameter is automatically set to None. Notes: • To ensure that the ID run can work properly, the drive limits in group 30 (maximum speed and minimum speed, and maximum torque and minimum torque) must to be large enough (the range specified by the limits must be wide enough. If, for example, speed limits are less than the motor nominal speed, the ID run cannot be completed. • Make sure the motor is stopped before starting the ID run. • For the Advanced ID run, the machinery must always be de-coupled from the motor. • With a permanent magnet or synchronous reluctance motor, a Normal, Reduced or Standstill ID run requires that the motor shaft is NOT locked and the load torque is less than 10%. • With scalar control mode (99.04 Motor control mode = Scalar), the ID run is not requested automatically. However, an ID run can be performed for more accurate torque estimation. • Once the ID run is activated, it can be canceled by stopping the drive. • The ID run must be performed every time any of the motor parameters (99.04, 99.06…99.12) have been changed. • Ensure that the Safe Torque Off and emergency stop circuits (if any) are closed during the ID run. • Mechanical brake (if present) is not opened by the logic for the ID run. • This parameter cannot be changed while the drive is running. No motor ID run is requested. This mode can be selected only if the ID run (Normal/Reduced/Standstill/Advanced) has already been performed once.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22436,
+    "parametru": "04.17",
+    "familie": "ACS580",
+    "descriere_scurta": "2nd latest warning",
+    "descriere": "Code of the 2nd stored (non-active) warning. 2nd stored warning.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22437,
+    "parametru": "04.18",
+    "familie": "ACS580",
+    "descriere_scurta": "3rd latest warning",
+    "descriere": "Code of the 3rd stored (non-active) warning. 3rd stored warning.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22438,
+    "parametru": "04.65",
+    "familie": "ACS580",
+    "descriere_scurta": "Event word 1 bit 12",
+    "descriere": "Default fault 4110 Control board temperature.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22439,
+    "parametru": "05.86",
+    "familie": "ACS580",
+    "descriere_scurta": "DI delayed status at",
+    "descriere": "Shows the value of copy of parameter 10.02 DI delayed status at the occurrence of the latest fault. Delayed status for digital inputs.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22440,
+    "parametru": "10.21",
+    "familie": "ACS580",
+    "descriere_scurta": "RO status",
+    "descriere": "Status of relay outputs RO3…RO1. energized, 0 = de-energized. energized, 0 = de-energized energized, 0 = de-energized Status of relay outputs.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22441,
+    "parametru": "10.22",
+    "familie": "ACS580",
+    "descriere_scurta": "RO force selection",
+    "descriere": "The signals connected to the relay outputs can be overridden, for example, testing purposes. A bit in parameter 10.23 RO forced data is provided for each relay output, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"Boot and power cycle reset the force selections (parameters 10.22 and 10.23). RO1 to value of bit 0 of parameter 10.23 RO forced data. (0 = RO2 to value of bit 1 of parameter 10.23 RO forced data. (0 = RO3 to value of bit 2 of parameter 10.23 RO forced data. (0 = Override selection for relay outputs.\"]}"
+  },
+  {
+    "id": 22442,
+    "parametru": "10.23",
+    "familie": "ACS580",
+    "descriere_scurta": "RO forced data",
+    "descriere": "Contains the values of relay outputs that are used instead of the connected signals if selected in parameter 10.22 RO force selection. Bit 0 is the forced value for RO1. value of this bit to RO1, if so defined in parameter 10.22 RO value of this bit to RO2, if so defined in parameter 10.22 RO value of this bit to RO3, if so defined in parameter 10.22 RO Forced RO values.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22443,
+    "parametru": "10.24",
+    "familie": "ACS580",
+    "descriere_scurta": "RO1 source",
+    "descriere": "Selects a drive signal to be connected to relay output RO1. Output is not energized. Output is energized. Bit 1 of 06.11 Main status word (see page 233). Bit 0 of 06.16 Drive status word 1 (see page 234). Bit 5 of 06.16 Drive status word 1 (see page 234). Bit 1 of 06.17 Drive status word 2 (see page 235). Bit 14 of 06.16 Drive status word 1 (see page 234). Bit 2 of 06.11 Main status word (see page 233). Bit 8 of 06.11 Main status word (see page 233). Bit 2 of 06.19 Speed control status word (see page 236). Bit 0 of 06.19 Speed control status word (see page 236). Bit 10 of 06.17 Drive status word 2 (see page 235). Bit 7 of 06.11 Main status word (see page 233). Bit 3 of 06.11 Main status word (see page 233). Inverted bit 3 of 06.11 Main status word (see page 233). Bit 3 of 06.11 Main status word OR bit 7 of 06.11 Main status word (see page 233).",
+    "pdf_extra": null
+  },
+  {
+    "id": 22444,
+    "parametru": "10.27",
+    "familie": "ACS580",
+    "descriere_scurta": "RO2 source",
+    "descriere": "Selects a drive signal to be connected to relay output RO2. For the available selections, see parameter 10.24 RO1 source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22445,
+    "parametru": "10.30",
+    "familie": "ACS580",
+    "descriere_scurta": "RO3 source",
+    "descriere": "Selects a drive signal to be connected to relay output RO3. For the available selections, see parameter 10.24 RO1 source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22446,
+    "parametru": "10.99",
+    "familie": "ACS580",
+    "descriere_scurta": "RO/DIO control",
+    "descriere": "Storage parameter for controlling the relay outputs, for example, through the embedded fieldbus interface. To control the relay outputs (RO) of the drive, send a control word with the bit assignments shown below as Modbus I/O data. Set the target selection parameter of that particular data (58.101…58.114) to RO/DIO control word. In the source selection parameter of the desired output, select the appropriate bit of this word. Description Source bits for relay outputs RO1…RO3. See parameters 10.27 and 10.30. Source bits for relay outputs RO4…RO5 with a CHDI-01 extension module. See parameters 15.07 and.15.10. RO/DIO control word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22447,
+    "parametru": "12.15",
+    "familie": "ACS580",
+    "descriere_scurta": "AI1 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AI1. Volts.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22448,
+    "parametru": "12.25",
+    "familie": "ACS580",
+    "descriere_scurta": "AI2 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AI2. Volts. Milliamperes.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22449,
+    "parametru": "13.02",
+    "familie": "ACS580",
+    "descriere_scurta": "AO force selection",
+    "descriere": "The source signals of the analog outputs can be overridden, for example, for testing purposes. A forced value parameter is provided for each analog output, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"Boot and power cycle reset the force selections (parameters 13.02 and 13.11). AO1 to value of parameter 13.13 AO1 forced value. (0 = Normal AO2 to value of parameter 13.23 AO2 forced value. (0 = Normal Forced values selector for analog outputs AO1 and AO2.\"]}"
+  },
+  {
+    "id": 22450,
+    "parametru": "13.15",
+    "familie": "ACS580",
+    "descriere_scurta": "AO1 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog output AO1. Volts. Milliamperes.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22452,
+    "parametru": "15.03",
+    "familie": "ACS580",
+    "descriere_scurta": "DI status",
+    "descriere": "Displays the status of the digital inputs DI7…DI12 on the extension module Bit 0 indicates the status of DI7.",
+    "pdf_extra": "{\"examples\": [\"001001b = DI7 and DI10 are on, the rest are off. This parameter is read-only. Description 1 = Digital input 7 is ON. 1 = Digital input 8 is ON. 1 = Digital input 9 is ON. 1 = Digital input 10 is ON. 1 = Digital input 11 is ON. 1 = Digital input 12 is ON. Status of digital input/outputs.\"]}"
+  },
+  {
+    "id": 22453,
+    "parametru": "15.06",
+    "familie": "ACS580",
+    "descriere_scurta": "RO/DO forced data",
+    "descriere": "Allows the data value of a forced relay or digital output to be changed from 0 to 1. It is only possible to force an output that has been selected in parameter 15.05 RO/DO force selection. Bits 0…1 are the forced values for RO4…RO5; bit 5 is the forced value for DO1. Description Force the value of this bit to RO4, if so defined in parameter 15.05 RO/DO force selection. Force the value of this bit to RO5, if so defined in parameter 15.05 RO/DO force selection. Force the value of this bit to DO1 if so defined in parameter 15.05 force selection. Forced values of relay/digital outputs.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22454,
+    "parametru": "15.07",
+    "familie": "ACS580",
+    "descriere_scurta": "RO4 source",
+    "descriere": "Selects a drive signal to be connected to relay output RO4. Output is not energized. Output is energized. Bit 1 of 06.11 Main status word (see page 233). Bit 0 of 06.16 Drive status word 1 (see page 234). Bit 5 of 06.16 Drive status word 1 (see page 234). Bit 1 of 06.17 Drive status word 2 (see page 235). Bit 6 of 06.16 Drive status word 1 (see page 234).",
+    "pdf_extra": null
+  },
+  {
+    "id": 22455,
+    "parametru": "15.08",
+    "familie": "ACS580",
+    "descriere_scurta": "RO4 ON delay",
+    "descriere": "Defines the activation delay for relay output RO4. tOn tOff tOn tOff Activation delay for RO4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22456,
+    "parametru": "15.09",
+    "familie": "ACS580",
+    "descriere_scurta": "RO4 OFF delay",
+    "descriere": "Defines the deactivation delay for relay output RO4. See parameter 15.08 RO4 ON delay. Deactivation delay for RO4.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22457,
+    "parametru": "15.22",
+    "familie": "ACS580",
+    "descriere_scurta": "DO1 configuration",
+    "descriere": "Selects how DO1 is used. DO1 is used as a digital output. DO1 is used as a frequency output.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22458,
+    "parametru": "15.23",
+    "familie": "ACS580",
+    "descriere_scurta": "DO1 source",
+    "descriere": "Selects a drive signal to be connected to digital output DO1 when 15.22 DO1 configuration is set to Digital output. Output is not energized. Output is energized. Bit 1 of 06.11 Main status word (see page 233). Bit 0 of 06.16 Drive status word 1 (see page 234). Bit 5 of 06.16 Drive status word 1 (see page 234). Bit 1 of 06.17 Drive status word 2 (see page 235). Bit 6 of 06.16 Drive status word 1 (see page 234). Bit 2 of 06.11 Main status word (see page 233). Bit 8 of 06.11 Main status word (see page 233). Bit 2 of 06.19 Speed control status word (see page 236). Bit 0 of 06.19 Speed control status word (see page 236). Bit 10 of 06.17 Drive status word 2 (see page 235). Bit 7 of 06.11 Main status word (see page 233). Bit 3 of 06.11 Main status word (see page 233). Inverted bit 3 of 06.11 Main status word (see page 233). Bit 3 of 06.11 Main status word OR bit 7 of 06.11 Main status word (see page 233). Fault 2310 Overcurrent has occurred. Fault 3210 DC link overvoltage has occurred. Fault 2381 IGBT overload or 4110 Control board temperature or 4210 IGBT overtemperature or 4290 Cooling or 42F1 IGBT temperature or 4310 Excess temperature or 4380 Excess temperature difference has occurred. Fault 3220 DC link undervoltage has occurred. Fault 4981 External temperature 1 or 4982 External temperature 2 has occurred. Bit 0 of 44.01 Brake control status (see page 416). Bit 11 of 06.16 Drive status word 1 (see page 234). Bit 9 of 06.11 Main status word (see page 233). Bit 0 of 34.01 Timed functions status (see page 371). Bit 1 of 34.01 Timed functions status (see page 371). Bit 2 of 34.01 Timed functions status (see page 371). Bit 0 of 32.01 Supervision status (see page 361). Bit 1 of 32.01 Supervision status (see page 361). Bit 2 of 32.01 Supervision status (see page 361).",
+    "pdf_extra": null
+  },
+  {
+    "id": 22459,
+    "parametru": "15.40",
+    "familie": "ACS580",
+    "descriere_scurta": "AI force selection",
+    "descriere": "The true readings of the analog inputs can be overridden for example for testing purposes. A forced value parameter is provided for each analog input, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"AI filter times (parameters 15.56 AI3 filter time, 15.66 AI4 filter time and 15.76 AI5 filter time) have no effect on forced AI values (parameters 15.54 AI3 forced value, 15.64 AI4 forced value and 15.74 AI5 forced value).\", \"Boot and power cycle reset the force selections (parameter 15.40).\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01. = Force AI3 to value of parameter 15.54 AI3 forced value. = Force AI4 to value of parameter 15.64 AI4 forced value. = Force AI5 to value of parameter 15.74 AI5 forced value. Bitmask\"]}"
+  },
+  {
+    "id": 22460,
+    "parametru": "15.42",
+    "familie": "ACS580",
+    "descriere_scurta": "AI supervision",
+    "descriere": "Specifies the analog input limits to be supervised. See parameter 15.43 AI supervision function.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01.\"]}"
+  },
+  {
+    "id": 22461,
+    "parametru": "15.43",
+    "familie": "ACS580",
+    "descriere_scurta": "AI supervision force",
+    "descriere": "Activates/deactivate the Analog Input supervision for each control location (EXT1, EXT2, Local). By deactivating any bit user can mask the fault/warning for selected control location.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. AI3 supervision is active when EXT1 control is being used. AI3 supervision is active when EXT2 control is being used. AI3 supervision is active when local control is being used. AI4 supervision is active when EXT1 control is being used. AI4 supervision is active when EXT2 control is being used. AI4 supervision is active when local control is being used. AI5 supervision is active when EXT1 control is being used. AI5 supervision is active when EXT2 control is being used. AI5 supervision is active when local control is being used. Bitmask\"]}"
+  },
+  {
+    "id": 22462,
+    "parametru": "15.45",
+    "familie": "ACS580",
+    "descriere_scurta": "AO force selection",
+    "descriere": "The source signals of the analog outputs can be overridden for eg. testing purposes. A forced value parameter is provided for each analog output, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"Boot and power cycle reset the force selections.\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01.\"]}"
+  },
+  {
+    "id": 22463,
+    "parametru": "15.55",
+    "familie": "ACS580",
+    "descriere_scurta": "AI3 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AI3.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Volts Milliamperes\"]}"
+  },
+  {
+    "id": 22464,
+    "parametru": "15.65",
+    "familie": "ACS580",
+    "descriere_scurta": "AI4 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AI4.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Volts Milliamperes\"]}"
+  },
+  {
+    "id": 22465,
+    "parametru": "15.75",
+    "familie": "ACS580",
+    "descriere_scurta": "AI5 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AI5.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Volts Milliamperes\"]}"
+  },
+  {
+    "id": 22466,
+    "parametru": "15.82",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 source",
+    "descriere": "Selects a signal to be connected to analog output AO3.",
+    "pdf_extra": "{\"notes\": [\"The following selection list depends on the parameters available in the product. If a parameter is not available in the product, then the corresponding list item is also not available/not supported.\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01. None 01.01 Motor speed used 01.06 Output frequency 01.07 Motor current 01.08 Motor current % of motor nom 01.10 Motor torque 01.11 DC voltage 01.14 Output power 23.01 Speed ref ramp input 23.02 Speed ref ramp output 24.01 Used speed reference 28.02 Frequency ref ramp output 40.01 Process PID output actual The output is used to feed an excitation current to the temperature sensor 1, 35.11 Temperature 1 source The output is used to feed an excitation current to the temperature sensor 2, 35.21 Temperature 2 source 01.61 Abs motor speed used 01.62 Abs motor speed % 01.63 Abs output frequency 01.64 Abs motor torque 01.65 Abs output power 01.68 Abs motor shaft power 71.01 External PID act value 72.01 External PID act value 73.01 External PID act value 74.01 External PID act value 13.91 AO1 data storage 13.92 AO2 data storage\"]}"
+  },
+  {
+    "id": 22467,
+    "parametru": "15.85",
+    "familie": "ACS580",
+    "descriere_scurta": "AO3 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AO3.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Volts Milliamperes\"]}"
+  },
+  {
+    "id": 22468,
+    "parametru": "15.92",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 source",
+    "descriere": "Selects a signal to be connected to analog output AO4.",
+    "pdf_extra": "{\"notes\": [\"The following selection list depends on the parameters available in the product. If a parameter is not available in the product, then the corresponding list item is also not available/not supported.\", \"This parameter is visible when CAIO-01 is selected in parameter 15.01. None 01.01 Motor speed used 01.06 Output frequency 01.07 Motor current 01.08 Motor current % of motor nom 01.10 Motor torque 01.11 DC voltage 01.14 Output power 23.01 Speed ref ramp input 23.02 Speed ref ramp output 24.01 Used speed reference 28.02 Frequency ref ramp output 40.01 Process PID output actual The output is used to feed an excitation current to the temperature sensor 1, 35.11 Temperature 1 source The output is used to feed an excitation current to the temperature sensor 2, 35.21 Temperature 2 source 01.61 Abs motor speed used 01.62 Abs motor speed % 01.63 Abs output frequency 01.64 Abs motor torque 01.65 Abs output power 01.68 Abs motor shaft power 71.01 External PID act value 72.01 External PID act value 73.01 External PID act value 74.01 External PID act value\"]}"
+  },
+  {
+    "id": 22469,
+    "parametru": "15.95",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 unit selection",
+    "descriere": "Selects the unit for readings and settings related to analog input AO4.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01. Volts Milliamperes\"]}"
+  },
+  {
+    "id": 22470,
+    "parametru": "21.08",
+    "familie": "ACS580",
+    "descriere_scurta": "DC current control",
+    "descriere": "Activates/deactivates the DC hold and post-magnetization functions. See section DC magnetization (page 183).",
+    "pdf_extra": "{\"notes\": [\"DC magnetization causes the motor to heat up. In applications where long DC magnetization times are required, externally ventilated motors should be used. If the DC magnetization period is long, DC magnetization cannot prevent the motor shaft from rotating if a constant load is applied to the motor. Value 1 = Enable DC hold. See section DC hold (page 184).\", \"The DC hold function has no effect if the start signal is 1 = Enable post-magnetization. See section Settings and diagnostics (page 184). Notes: • Post-magnetization is only available when ramping is the stop mode (see parameter 21.03 Stop mode). 1 = Enables DC injection braking after modulation has stopped. Notes: • To enable DC brake, parameter 21.03 Stop mode has to Coast. • DC braking current can be set with parameter 21.10 DC reference. • DC braking time can be set with parameter 21.11 Post magnetization time. DC magnetization selection.\"]}"
+  },
+  {
+    "id": 22473,
+    "parametru": "45.09",
+    "familie": "ACS580",
+    "descriere_scurta": "CO2 reduction in",
+    "descriere": "Reduction in CO2 emissions in metric tons compared to direct-on-line motor connection. This value is calculated by multiplying the saved energy in MWh by the value of parameter 45.18 CO2 conversion factor (by default, 0.5 metric tons/MWh). When this parameter rolls over, parameter 45.08 CO2 reduction in kilotons is incremented. This parameter is read-only (see parameter 45.21 Energy calculations reset). Reduction in CO2 emissions in metric tons.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22474,
+    "parametru": "45.18",
+    "familie": "ACS580",
+    "descriere_scurta": "CO2 conversion",
+    "descriere": "Defines a factor for conversion of saved energy into CO2 emissions (kg/kWh or tn/MWh).",
+    "pdf_extra": "{\"examples\": [\"45.10 Total saved CO2 = 45.02 Saved MW hours × 45.18 CO2 conversion factor (tn/MWh). Factor for conversion of saved energy into CO2 emissions.\"]}"
+  },
+  {
+    "id": 22475,
+    "parametru": "95.20",
+    "familie": "ACS580",
+    "descriere_scurta": "HW options word 1",
+    "descriere": "Specifies hardware-related options that require differentiated parameter defaults. This parameter is not affected by a parameter restore. Value See section Differences in the default values between 50 60 Hz supply frequency settings on page 491. 0 = 50 Hz. 1 = 60 Hz. When active, an external du/dt filter is connected to the output. The setting will limit the output switching frequency, force the fan of the drive/inverter module to full speed. 0 = du/dt filter inactive. 1 = du/dt filter active. 0 = Output contactor inactive 1 = Output contactor active When active, an output contactor is a connector between and motor. If this bit is set, then 31.12 Autoreset selection bit 0 Overcurrent, 5 Overfrequency, bit 6 Earth fault, and bit 7 Shortcircuit the value of 31.14 Number of trials = 1, 31.15 Total trials 31.16 Delay time = 1 s. This bit does not affect other bits parameter 31.12. Hardware options configuration word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22476,
+    "parametru": "95.21",
+    "familie": "ACS580",
+    "descriere_scurta": "HW options word 2",
+    "descriere": "Specifies more hardware-related options that require differentiated parameter defaults. See parameter 95.20 HW options word 1. WARNING! After switching any bits in this word, recheck the values of the affected parameters. Information 0 = Inactive, 1 = Active. Only for frame sizes R6 or larger. 0 = Inactive, 1 = Active. Only for frame sizes R6 or larger. Hardware options configuration word 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22477,
+    "parametru": "97.11",
+    "familie": "ACS580",
+    "descriere_scurta": "TR tuning",
+    "descriere": "Rotor time constant tuning. This parameter can be used to improve torque accuracy in closed-loop control of an induction motor. Normally, the motor identification run provides sufficient torque accuracy, but manual fine-tuning can be applied in exceptionally demanding applications to achieve optimal performance.",
+    "pdf_extra": "{\"notes\": [\"This is an expert level parameter and should not be adjusted without appropriate skill. Rotor time constant tuning.\"]}"
+  },
+  {
+    "id": 22478,
+    "parametru": "97.13",
+    "familie": "ACS580",
+    "descriere_scurta": "IR compensation",
+    "descriere": "Defines the relative output voltage boost at zero speed (IR compensation). The function is useful in applications with a high break-away torque where vector control cannot be applied. U / UN (%) Relative output voltage. IR compensation set to 15%. 100% Relative output voltage. No 15% IR compensation. f (Hz) Field weakening point 50% of nominal frequency See also section IR compensation for scalar motor control on page 178. Typical IR compensation values are shown below. 3-phase UN = 400 V (380…415 V) drives PN (kW) 3 7.5 15 37 132 IR compensation (%) 2.5 1.7 1.3 1.1 0.6 Voltage boost at zero speed in percent of nominal motor voltage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 22479,
+    "parametru": "97.20",
+    "familie": "ACS580",
+    "descriere_scurta": "U/F ratio",
+    "descriere": "Selects the form for the U/f (voltage to frequency) ratio below field weakening point. For scalar control only.",
+    "pdf_extra": "{\"notes\": [\"The U/f function cannot be used with energy optimization; if 45.11 Energy optimizer is set to Enable, parameter 97.20 U/F ratio is ignored. Linear ratio for constant torque applications.\"]}"
+  },
+  {
+    "id": 22482,
+    "parametru": "01.21",
+    "familie": "ACS580",
+    "descriere_scurta": "AI 2",
+    "descriere": "Read only 03.06 FAULT WORD 2",
+    "pdf_extra": null
+  },
+  {
+    "id": 22483,
+    "parametru": "01.22",
+    "familie": "ACS580",
+    "descriere_scurta": "RO 1-3 STATUS",
+    "descriere": "Read only 03.07 FAULT WORD 3",
+    "pdf_extra": null
+  },
+  {
+    "id": 22484,
+    "parametru": "01.23",
+    "familie": "ACS580",
+    "descriere_scurta": "RO 4-6 STATUS",
+    "descriere": "Read only 03.08 ALARM WORD 1",
+    "pdf_extra": null
+  },
+  {
+    "id": 22485,
+    "parametru": "01.25",
+    "familie": "ACS580",
+    "descriere_scurta": "AO 2",
+    "descriere": "Read only 04.01 LAST FAULT",
+    "pdf_extra": null
+  },
+  {
+    "id": 23724,
+    "parametru": "1.35",
+    "familie": "ACS580",
+    "descriere_scurta": "times the line-to-line",
+    "descriere": "supply voltage, and it is displayed by show the values of selected DC voltage levels, is enabled by parameter 95.02 Adaptive voltage limit is disabled by parameter 95.02 Adaptive voltages vary according to the drive/inverter If there is a risk of unstable supply network select the supply voltage range manually set the adaptive voltage limits in parameter enabled by parameter 95.02 Adaptive DC voltage level [V] supply voltage range AC supply voltage range [V] [V] 380…415 440…480 842 842 779 779 779 779 759 759 745 745 95.03 value 0.85×1.41×par 95.03 value 95.03 value 0.78×1.41×par 95.03 value 95.03 value 0.78×1.41×par 95.03 value 95.03 value 0.73×1.41 ×par 95.03 value 560 648 513 594",
+    "pdf_extra": null
+  },
+  {
+    "id": 23725,
+    "parametru": "10.101",
+    "familie": "ACS580",
+    "descriere_scurta": "RO1 toggle counter",
+    "descriere": "Displays the number of times relay output RO1 has changed states. Can be reset from the control panel by keeping Reset down for over 3 seconds. State change count.",
+    "pdf_extra": null
+  },
+  {
+    "id": 23726,
+    "parametru": "10.102",
+    "familie": "ACS580",
+    "descriere_scurta": "RO2 toggle counter",
+    "descriere": "Displays the number of times relay output RO2 has changed states. Can be reset from the control panel by keeping Reset down for over 3 seconds. State change count.",
+    "pdf_extra": null
+  },
+  {
+    "id": 23727,
+    "parametru": "10.103",
+    "familie": "ACS580",
+    "descriere_scurta": "RO3 toggle counter",
+    "descriere": "Displays the number of times relay output RO3 has changed states. Can be reset from the control panel by keeping Reset down for over 3 seconds. State change count. Configuration of the frequency input.",
+    "pdf_extra": null
+  },
+  {
+    "id": 23728,
+    "parametru": "12.101",
+    "familie": "ACS580",
+    "descriere_scurta": "AI1 percent value",
+    "descriere": "Value of analog input AI1 in percent of AI1 scaling (12.18 AI1 max - 12.17 AI1 min). AI1 value",
+    "pdf_extra": null
+  },
+  {
+    "id": 23729,
+    "parametru": "12.102",
+    "familie": "ACS580",
+    "descriere_scurta": "AI2 percent value",
+    "descriere": "Value of analog input AI2 in percent of AI2 scaling (12.28 AI2 max - 12.27 AI2 min). AI2 value",
+    "pdf_extra": null
+  },
+  {
+    "id": 23730,
+    "parametru": "15.100",
+    "familie": "ACS580",
+    "descriere_scurta": "AO4 out at AO4",
+    "descriere": "Defines the maximum output value for analog output AO4. See also drawing at parameter 15.97 AO4 source min.",
+    "pdf_extra": "{\"notes\": [\"This parameter is visible when CAIO-01 is selected in parameter 15.01.\"]}"
+  }
+]
