@@ -5478,3 +5478,204 @@
 2026-05-19 07:31:13,656  INFO        -> new: Defineste intarzierea in milisecunde pentru functia de zero viteza. Dupa ce refe
 2026-05-19 07:31:13,756  INFO      23986 21.8 (ACS880)  existing_len=0  qc=new
 2026-05-19 07:31:21,454  INFO        -> new: Activeaza functia de mentinere DC si post-magnetizare. Mentine axul motorului in
+2026-05-19 07:31:24,762  INFO        Committed + pushed
+2026-05-19 07:31:24,863  INFO      23987 21.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:33,838  INFO        -> new: Defineste viteza motorului la care se activeaza functia de mentinere DC. Aceasta
+2026-05-19 07:31:33,938  INFO      23988 21.15 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:43,980  INFO        -> new: Seteaza timpul de intarziere inainte de pornirea motorului pentru functia de pre
+2026-05-19 07:31:44,081  INFO      23989 21.37 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:52,159  INFO        -> new: Seteaza sursa pentru masurarea sau estimarea temperaturii motorului. Poate fi de
+2026-05-19 07:31:52,260  INFO      23990 21.38 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:00,216  INFO        -> new: Defineste timpul de estimare a temperaturii motorului. Acest parametru seteaza c
+2026-05-19 07:32:00,316  INFO      23991 22.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:09,817  INFO        -> new: Acest parametru afiseaza valoarea de referinta a vitezei selectata dupa procesar
+2026-05-19 07:32:09,918  INFO      23992 23.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:14,523  INFO        -> new: Afiseaza referinta de viteza efectiva in rpm inainte de functia de rampa. Valoar
+2026-05-19 07:32:14,624  INFO      23993 23.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:26,529  INFO        -> new: Afiseaza referinta de viteza dupa aplicarea rampei de accelerare/decelerare si f
+2026-05-19 07:32:26,630  INFO      23994 24.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:32,992  INFO        -> new: Parametru de diagnosticare care afiseaza referinta de viteza efectiva dupa proce
+2026-05-19 07:32:33,093  INFO      23995 24.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:41,723  INFO        -> new: Acest parametru afiseaza valoarea feedback-ului de viteza utilizata efectiv in c
+2026-05-19 07:32:41,824  INFO      23996 24.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:52,113  INFO        -> new: Afiseaza eroarea de viteza filtrata, adica diferenta dintre referinta de viteza 
+2026-05-19 07:32:52,214  INFO      23997 24.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:32:56,773  INFO        -> new: Afiseaza eroarea de viteza invertita si nefiltrare. Reprezinta diferenta dintre 
+2026-05-19 07:32:56,874  INFO      23998 25.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:03,923  INFO        -> new: Afiseaza iesirea controllerului de viteza care este transferata ca referinta de 
+2026-05-19 07:33:04,024  INFO      23999 25.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:11,103  INFO        -> new: Defineste castigul proportional (Kp) pentru bucla de control a vitezei. Valoare 
+2026-05-19 07:33:11,204  INFO      24000 25.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:17,404  INFO        -> new: Seteaza timpul de integrare al controllerului de viteza. Un timp scurt ofera ras
+2026-05-19 07:33:17,504  INFO      24001 25.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:28,403  INFO        -> new: Defineste timpul de derivare al regulatorului de viteza. Aceasta valoare control
+2026-05-19 07:33:28,503  INFO      24002 25.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:36,072  INFO        -> new: Defineste constanta de timp a filtrului derivativ in milisecunde. Filtreaza zgom
+2026-05-19 07:33:36,172  INFO      24003 25.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:43,159  INFO        -> new: Defineste constanta de timp pentru filtrul de compensare a acceleratiei sau dece
+2026-05-19 07:33:43,260  INFO      24004 25.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:33:50,538  INFO        -> new: Defineste gradul de coborare a vitezei in procente din viteza nominala a motorul
+2026-05-19 07:33:50,638  INFO      24005 25.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:01,649  INFO        -> new: Selecteaza sursa de intrare pentru activarea sau dezactivarea functiei de contro
+2026-05-19 07:34:01,750  INFO      24006 26.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:07,461  INFO        -> new: Afiseaza valoarea finala a referintei de cuplu care este transmisa catre bucla d
+2026-05-19 07:34:07,562  INFO      24007 26.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:16,032  INFO        -> new: Afiseaza referinta finala de cuplu dupa toate ajustarile si compensarile. Valoar
+2026-05-19 07:34:16,132  INFO      24008 26.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:23,664  INFO        -> new: Seteaza valoarea minima a referintei de cuplu in procente din cuplul nominal. Pe
+2026-05-19 07:34:23,765  INFO      24009 26.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:33,955  INFO        -> new: Seteaza limita maxima a cuplului motorului exprimata in procente din cuplul nomi
+2026-05-19 07:34:34,055  INFO      24010 26.27 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:45,924  INFO        -> new: Defineste timpul de filtrare pentru limita de cuplu. Un filtru mai mare ofera un
+2026-05-19 07:34:46,024  INFO      24011 28.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:34:57,762  INFO        -> new: Afiseaza referinta de frecventa utilizata inainte de aplicarea rampei de acceler
+2026-05-19 07:34:57,862  INFO      24012 28.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:07,701  INFO        -> new: Afiseaza referinta de frecventa finala dupa procesarea rampei de accelerare/dece
+2026-05-19 07:35:07,802  INFO      24013 29.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:18,571  INFO        -> new: Afiseaza iesirea controllerului de tensiune DC care este utilizata ca referinta 
+2026-05-19 07:35:18,671  INFO      24014 29.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:25,626  INFO        -> new: Afiseaza tensiunea de referinta DC dupa functie. Valoarea este determinata de re
+2026-05-19 07:35:25,727  INFO      24015 29.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:35,430  INFO        -> new: Afiseaza tensiunea de referinta DC masurata in volti pe bus-ul de current contin
+2026-05-19 07:35:35,531  INFO      24016 29.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:44,101  INFO        -> new: Afiseaza tensiunea continua de referinta dupa rampe. Valoarea este calculata aut
+2026-05-19 07:35:44,202  INFO      24017 29.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:49,276  INFO        -> new: Afiseaza tensiunea masurata pe busul DC dupa aplicarea filtrului. Valoarea este 
+2026-05-19 07:35:49,377  INFO      24018 29.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:35:55,169  INFO        -> new: Afiseaza diferenta dintre tensiunea de referinta rampei si tensiunea efectiva di
+2026-05-19 07:35:55,270  INFO      24019 29.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:00,153  INFO        -> new: Afiseaza iesirea controllerului PI sub forma unei referinte de putere proportion
+2026-05-19 07:36:00,253  INFO      24020 29.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:06,911  INFO        -> new: Defineste limita minima pentru tensiunea de referinta DC. Protejeaza convertizor
+2026-05-19 07:36:07,011  INFO      24021 30.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:12,177  INFO        -> new: Afiseaza cuvantul de stare al limitelor (bitmask). Fiecare bit reprezinta o cond
+2026-05-19 07:36:12,279  INFO      24022 30.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:19,665  INFO        -> new: Afiseaza cuvantul de stare al limitatorului de cuplu. Fiecare bit indica daca o 
+2026-05-19 07:36:19,766  INFO      24023 30.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:27,838  INFO        -> new: Defineste limita tensiunii RMS maxime a motorului exprimata ca procent din tensi
+2026-05-19 07:36:27,939  INFO      24024 30.102 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:37,310  INFO        -> new: Cuvant de stare bit-coded care afiseaza limitele active ale unitatii de alimenta
+2026-05-19 07:36:37,411  INFO      24025 30.103 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:47,883  INFO        -> new: Afiseaza cuvantul de stare 3 al unitatii de alimentare cu IGBT. Contine biti de 
+2026-05-19 07:36:47,983  INFO      24026 30.104 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:36:53,969  INFO        -> new: Cuvant de stare bit parametrizabil pentru functiile de limitare ale unitatii de 
+2026-05-19 07:36:54,069  INFO      24027 30.148 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:03,317  INFO        -> new: Seteaza limita minima pentru unitatea de alimentare IGBT (LSU) exprimata in proc
+2026-05-19 07:37:03,418  INFO      24028 31.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:13,193  INFO        -> new: Defineste sursa evenimentului extern 1. Semnalul de la intrarea digitala selecta
+2026-05-19 07:37:13,293  INFO      24029 31.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:23,207  INFO        -> new: Defineste tipul evenimentului extern 1. Poate fi configurat ca defectiune, avert
+2026-05-19 07:37:23,308  INFO      24030 31.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:31,715  INFO        -> new: Seteaza sursa evenimentului extern 2. Poate fi conectat la o intrare digitala sa
+2026-05-19 07:37:31,816  INFO      24031 31.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:40,630  INFO        -> new: Selecteaza tipul de reactie la evenimentul extern 2. Optiunile includ Fault (dec
+2026-05-19 07:37:40,731  INFO      24032 31.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:37:49,179  INFO        -> new: Defineste sursa evenimentului extern 3. Permite activarea unei functii de protec
+2026-05-19 07:37:49,279  INFO      24033 31.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:01,409  INFO        -> new: Defineste tipul evenimentului extern 3. Poate fi setat ca defectiune (Fault), av
+2026-05-19 07:38:01,510  INFO      24034 31.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:10,180  INFO        -> new: Defineste sursa evenimentului extern 4. Poate fi conectat la un semnal digital d
+2026-05-19 07:38:10,280  INFO      24035 31.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:19,887  INFO        -> new: Defineste tipul evenimentului extern 4 care poate fi defect, avertisment sau ign
+2026-05-19 07:38:19,988  INFO      24036 31.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:29,167  INFO        -> new: Defineste sursa evenimentului extern 5 care poate activa o functie de protectie 
+2026-05-19 07:38:29,268  INFO      24037 32.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:39,756  INFO        -> new: Afiseaza starea binara a supervisarii semnalelor. Fiecare bit indica daca un sem
+2026-05-19 07:38:39,857  INFO      24038 32.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:45,748  INFO        -> new: Seteaza modul de functionare pentru functia de supervisie 1. Supravegheaza un se
+2026-05-19 07:38:45,848  INFO      24039 32.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:38:51,151  INFO        -> new: Defineste actiunea pe care drive-ul o executa cand valoarea supravegheata (setat
+2026-05-19 07:38:51,252  INFO      24040 32.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:00,949  INFO        -> new: Selecteaza semnalul care va fi monitorizat de functia de supraveghere 1. Poate f
+2026-05-19 07:39:01,049  INFO      24041 32.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:09,990  INFO        -> new: Defineste constanta de timp a filtrului pentru semnalul monitorizat de supervisi
+2026-05-19 07:39:10,091  INFO      24042 32.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:19,535  INFO        -> new: Defineste limita inferioara pentru supravegherea semnalului 1. Cand valoarea mon
+2026-05-19 07:39:19,636  INFO      24043 33.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:26,389  INFO        -> new: Afiseaza cuvantul de stare al timerului de mentenanta sau counter-ului de functi
+2026-05-19 07:39:26,490  INFO      24044 35.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:31,826  INFO        -> new: Afiseaza temperatura estimata a motorului calculata de variator pe baza curentul
+2026-05-19 07:39:31,927  INFO      24045 35.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:37,628  INFO        -> new: Afiseaza valoarea temperaturii masurate prin sursa selectata (senzor PT100, term
+2026-05-19 07:39:37,729  INFO      24046 35.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:42,495  INFO        -> new: Afiseaza temperatura masurata de la senzorul configurat. Valoarea este doar pent
+2026-05-19 07:39:42,596  INFO      24047 35.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:53,940  INFO        -> new: Afiseaza starea word-ului de status pentru modulul optional FPTC-xx de protectie
+2026-05-19 07:39:54,041  INFO      24048 35.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:39:59,539  INFO        -> new: Afiseaza nivelul de suprasarcina a motorului ca procent din curentul nominal. Va
+2026-05-19 07:39:59,639  INFO      24049 35.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:04,515  INFO        -> new: Afiseaza cuvantul de stare pentru calibrarea temperaturii. Este un parametru de 
+2026-05-19 07:40:04,616  INFO      24050 35.17 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:10,636  INFO        -> new: Defineste offsetul de calibrare pentru senzorul de temperatura 1. Permite ajusta
+2026-05-19 07:40:10,737  INFO      24051 35.27 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:17,588  INFO        -> new: Defineste offsetul de calibrare pentru intrarea de temperatura 2. Permite corect
+2026-05-19 07:40:17,688  INFO      24052 36.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:25,205  INFO        -> new: Selecteaza semnalul care va fi monitorizat pentru valoarea de varf (PVL). Optiun
+2026-05-19 07:40:25,306  INFO      24053 36.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:36,365  INFO        -> new: Defineste constanta de timp pentru filtrarea semnalului in jurnalul valorilor de
+2026-05-19 07:40:36,466  INFO      24054 36.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:43,903  INFO        -> new: Selecteaza semnalul care va fi monitorizat de loggerul de amplitudine AL2. Aceas
+2026-05-19 07:40:44,003  INFO      24055 36.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:40:55,515  INFO        -> new: Defineste valoarea semnalului de la intrarea analogica AI2 care corespunde la 10
+2026-05-19 07:40:55,616  INFO      24056 36.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:04,617  INFO        -> new: Activeaza sau dezactiveaza functia de inregistrare a datelor pentru logger-ele d
+2026-05-19 07:41:04,717  INFO      24057 36.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:11,769  INFO        -> new: Reseteaza jurnalul valorilor de varf si/sau jurnalul amplitudinii. Dupa resetare
+2026-05-19 07:41:11,870  INFO      24058 37.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:17,332  INFO        -> new: Afiseaza valoarea curenta a semnalului monitorizat de functia ULC (User Level Co
+2026-05-19 07:41:17,433  INFO      24059 37.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:22,903  INFO        -> new: Selecteaza semnalul care va fi monitorizat de functia ULC. Poate fi o intrare an
+2026-05-19 07:41:23,004  INFO      24060 37.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:28,437  INFO        -> new: Selecteaza modul de reactie al convertizorului de frecventa atunci cand sarcina 
+2026-05-19 07:41:28,538  INFO      24061 37.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:35,301  INFO        -> new: Selecteaza modul de reactie al convertizorului la o scadere a curentului sub pra
+2026-05-19 07:41:35,402  INFO      24062 40.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:45,011  INFO        -> new: Afiseaza valoarea actuala a iesirii controllerului PID de proces. Poate fi negat
+2026-05-19 07:41:45,111  INFO      24063 40.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:41:55,110  INFO        -> new: Afiseaza valoarea feedback-ului de proces dupa selectarea sursei. Este o valoare
+2026-05-19 07:41:55,210  INFO      24064 40.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:05,100  INFO        -> new: Afiseaza valoarea curenta a referintei de tip setpoint pentru bucla PID de proce
+2026-05-19 07:42:05,200  INFO      24065 40.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:12,169  INFO        -> new: Afiseaza abaterea PID a procesului, adica diferenta dintre valoarea de referinta
+2026-05-19 07:42:12,269  INFO      24066 40.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:20,138  INFO        -> new: Afiseaza valoarea de iesire a functiei PID de compensare (trim). Aceasta reprezi
+2026-05-19 07:42:20,238  INFO      24067 40.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:29,526  INFO        -> new: Afiseaza informatii despre starea controlului PID de proces. Poate include date 
+2026-05-19 07:42:29,626  INFO      24068 40.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:40,113  INFO        -> new: Selecteaza a doua sursa de feedback pentru controlul procesului PID in Set 1. Fu
+2026-05-19 07:42:40,214  INFO      24069 41.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:51,290  INFO        -> new: Seteaza modul de operare PID pentru Setul 2 de parametri PID. Functioneaza simil
+2026-05-19 07:42:51,390  INFO      24070 41.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:42:58,557  INFO        -> new: Selecteaza sursa primului semnal de feedback pentru Setul 2 de parametri PID. Fu
+2026-05-19 07:42:58,658  INFO      24071 41.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:08,727  INFO        -> new: Selecteaza sursa celui de-al doilea semnal de feedback pentru Setul 2 de control
+2026-05-19 07:43:08,829  INFO      24072 43.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:14,595  INFO        -> new: Afiseaza temperatura estimata a rezistorului de franare. Este un parametru doar 
+2026-05-19 07:43:14,696  INFO      24073 43.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:21,993  INFO        -> new: Activeaza functia chopper de frânare pentru disiparea energiei regenerative. Cân
+2026-05-19 07:43:22,093  INFO      24074 43.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:29,178  INFO        -> new: Selecteaza sursa semnalului de activare a brake chopper-ului. Functioneaza impre
+2026-05-19 07:43:29,278  INFO      24075 43.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:40,449  INFO        -> new: Definește constanta de timp termică a rezistorului de frânare. Aceasta stabileșt
+2026-05-19 07:43:40,549  INFO      24076 43.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:47,733  INFO        -> new: Defineste puterea maxima continua suportata de rezistorul de franare. Valoarea 0
+2026-05-19 07:43:47,833  INFO      24077 44.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:43:58,937  INFO        -> new: Afiseaza starea logica a franei mecanice sub forma unui cuvant de stare (status 
+2026-05-19 07:43:59,037  INFO      24078 44.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:04,437  INFO        -> new: Afiseaza cuplul motorului in procente din cuplul nominal in momentul activarii f
+2026-05-19 07:44:04,538  INFO      24079 44.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:10,867  INFO        -> new: Afiseaza valoarea cuplului activ de deschidere a franei in timp real. Este un pa
+2026-05-19 07:44:10,968  INFO      24080 44.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:22,878  INFO        -> new: Activeaza sau dezactiveaza controlul franei mecanice sau al functiei de franare 
+2026-05-19 07:44:22,979  INFO      24081 44.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:30,987  INFO        -> new: Activeaza functia de confirmare a franei mecanice. Cand este activata, VFD-ul va
+2026-05-19 07:44:31,088  INFO      24082 44.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:40,984  INFO        -> new: Defineste intarzierea dintre comanda de deschidere a franei si eliberarea efecti
+2026-05-19 07:44:41,085  INFO      24083 44.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:50,322  INFO        -> new: Defineste sursa care furnizeaza cuplul necesar pentru deschiderea franei mecanic
+2026-05-19 07:44:50,422  INFO      24084 45.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:44:56,116  INFO        -> new: Afiseaza energia cumulata economisita in GWh comparativ cu operarea directa pe r
+2026-05-19 07:44:56,217  INFO      24085 45.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:01,500  INFO        -> new: Afiseaza energia totala economisita in megavati-ora comparativ cu operarea direc
+2026-05-19 07:45:01,601  INFO      24086 45.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:06,484  INFO        -> new: Afiseaza energia cumulata economisita in kWh fata de functionarea directa pe ret
