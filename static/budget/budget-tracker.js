@@ -1008,6 +1008,43 @@ function renderBugetLunar() {
 
   html += '</div></div>';
 
+  // CHART: surplus lunar (bars) + distributie cheltuieli (donut)
+  var surplusBars = LUNI_KEYS.map(function(lk, i) {
+    var v = (d.venituri[lk] || {});
+    var totalV = (d.profil.salariuNet || 0) + (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, 0);
+    var c = (d.cheltuieli[lk] || {});
+    var totalC = totalFixeLuna(d, lk) + Object.values(c).reduce(function(s, x) { return s + x; }, 0);
+    return { value: totalV - totalC, label: LUNI[i] };
+  });
+  var donutSlices = [];
+  // Fixed expenses grouped by item
+  (d.cheltuieliFixe || []).forEach(function(f) {
+    var v = 0;
+    LUNI_KEYS.forEach(function(lk) { if (cheltuialaFixaActiva(f, lk)) v += parseRON(f.suma) || 0; });
+    if (v > 0) donutSlices.push({ label: f.label, value: v });
+  });
+  // Variable categories aggregated across visible months
+  (d.categoriiVar || []).forEach(function(c) {
+    var v = LUNI_KEYS.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
+    if (v > 0) donutSlices.push({ label: c.label, value: v });
+  });
+  donutSlices.sort(function(a, b) { return b.value - a.value; });
+
+  html += '<div class="section" style="margin-top:1.25rem;">';
+  html += '<div class="stat-grid" style="grid-template-columns: 2fr 1fr;">';
+  html += '<div class="chart-card">';
+  html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="bar-chart-3"></i> Surplus lunar (venituri − cheltuieli)</div><div class="chart-meta">' + LUNI_KEYS.length + ' luni</div></div>';
+  html += '  <div class="chart-body">' + svgBars(surplusBars, { height: 200 }) + '</div>';
+  html += '</div>';
+  html += '<div class="chart-card">';
+  html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="pie-chart"></i> Distribuție cheltuieli</div><div class="chart-meta">cumulat</div></div>';
+  html += '  <div class="chart-body chart-flex">';
+  html += '    <div>' + svgDonut(donutSlices, { size: 180, centerLabel: formatRON(donutSlices.reduce(function(s, x){return s+x.value;}, 0)), centerSub: 'total cheltuieli' }) + '</div>';
+  html += '    <div>' + donutLegend(donutSlices.slice(0, 8)) + '</div>';
+  html += '  </div>';
+  html += '</div>';
+  html += '</div></div>';
+
   // INFO ROW
   html += '<div class="info-box">';
   html += '<i data-lucide="user"></i>';
@@ -1310,6 +1347,18 @@ function renderCredite() {
 
   html += '</div></div>';
 
+  // Sold credit line chart
+  if (scad.length > 0) {
+    var soldPoints = scad.map(function(p, i) { return { x: i + 1, y: p.soldFinal, label: p.data }; });
+    // Prepend "azi" point with current estimated balance
+    soldPoints.unshift({ x: 0, y: cr.suma || soldPoints[0].y, label: 'start' });
+    html += '<div class="section">';
+    html += '<div class="chart-card">';
+    html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="trending-down"></i> Evoluție sold credit</div><div class="chart-meta">' + scad.length + ' rate · ' + viit.length + ' rămase</div></div>';
+    html += '  <div class="chart-body">' + svgLine(soldPoints, { height: 200, markerX: trec.length }) + '</div>';
+    html += '</div></div>';
+  }
+
   // Scadentar real
   html += '<div class="section">';
   html += '<div class="section-title">';
@@ -1349,6 +1398,141 @@ function renderCredite() {
   html += '</tfoot></table></div></div></div>';
 
   return html;
+}
+
+// ====================================================================
+// SVG MINI-CHARTS (vanilla, no deps)
+// ====================================================================
+
+// Line chart for time-series like sold credit. Returns SVG markup.
+function svgLine(points, opts) {
+  opts = opts || {};
+  var w = opts.width || 760, h = opts.height || 180;
+  var pad = { t: 16, r: 14, b: 24, l: 56 };
+  var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  if (!points || points.length === 0) return '';
+  var ys = points.map(function(p) { return p.y; });
+  var xs = points.map(function(p) { return p.x; });
+  var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+  var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+  if (maxY === minY) maxY = minY + 1;
+  if (maxX === minX) maxX = minX + 1;
+  var sx = function(x) { return pad.l + (x - minX) / (maxX - minX) * iw; };
+  var sy = function(y) { return pad.t + ih - (y - minY) / (maxY - minY) * ih; };
+  var pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + sx(p.x).toFixed(1) + ',' + sy(p.y).toFixed(1); }).join(' ');
+  var areaD = pathD + ' L' + sx(maxX).toFixed(1) + ',' + (pad.t + ih).toFixed(1) + ' L' + sx(minX).toFixed(1) + ',' + (pad.t + ih).toFixed(1) + ' Z';
+  // Y axis ticks (4)
+  var ticks = '';
+  for (var k = 0; k <= 4; k++) {
+    var y = pad.t + ih - (k / 4) * ih;
+    var val = minY + (k / 4) * (maxY - minY);
+    ticks += '<line x1="' + pad.l + '" x2="' + (pad.l + iw) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="2 4"/>';
+    ticks += '<text x="' + (pad.l - 6) + '" y="' + (y + 3).toFixed(1) + '" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)" text-anchor="end">' + Math.round(val).toLocaleString('ro-RO') + '</text>';
+  }
+  // marker
+  var marker = '';
+  if (opts.markerX != null) {
+    var mp = points.find(function(p) { return p.x === opts.markerX; });
+    if (mp) {
+      marker = '<circle cx="' + sx(mp.x).toFixed(1) + '" cy="' + sy(mp.y).toFixed(1) + '" r="5" fill="var(--warning)" stroke="var(--bg-elev1)" stroke-width="2"/>';
+    }
+  }
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-height:' + h + 'px;">' +
+    ticks +
+    '<path d="' + areaD + '" fill="var(--accent-soft)" stroke="none"/>' +
+    '<path d="' + pathD + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    marker +
+    '</svg>';
+}
+
+// Vertical bar chart with positive/negative split (green/red)
+function svgBars(bars, opts) {
+  opts = opts || {};
+  var w = opts.width || 760, h = opts.height || 200;
+  var pad = { t: 18, r: 14, b: 34, l: 60 };
+  var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  if (!bars || bars.length === 0) return '<div class="text-dim mono" style="padding:1rem;font-size:0.8rem;">Nicio dată</div>';
+  var values = bars.map(function(b) { return b.value || 0; });
+  var maxV = Math.max.apply(null, values.concat(0));
+  var minV = Math.min.apply(null, values.concat(0));
+  var range = maxV - minV || 1;
+  var zeroY = pad.t + ih * (maxV / range);
+  var barW = iw / bars.length;
+  var inner = barW * 0.62;
+  var bandPad = (barW - inner) / 2;
+  var rects = '';
+  var labels = '';
+  bars.forEach(function(b, i) {
+    var v = b.value || 0;
+    var color = v >= 0 ? 'var(--success)' : 'var(--danger)';
+    var x = pad.l + i * barW + bandPad;
+    var yTop = v >= 0 ? pad.t + (ih * (maxV - v) / range) : zeroY;
+    var bh = Math.max(1, Math.abs(v / range) * ih);
+    rects += '<rect x="' + x.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + inner.toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + color + '" rx="3"><title>' + esc(b.label) + ': ' + formatRON(v) + ' RON</title></rect>';
+    labels += '<text x="' + (x + inner / 2).toFixed(1) + '" y="' + (pad.t + ih + 16) + '" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)" text-anchor="middle">' + esc(b.label) + '</text>';
+  });
+  // axis
+  var axis = '<line x1="' + pad.l + '" x2="' + (pad.l + iw) + '" y1="' + zeroY.toFixed(1) + '" y2="' + zeroY.toFixed(1) + '" stroke="var(--border)" stroke-width="1"/>';
+  // ticks left
+  var ticks = '';
+  for (var k = 0; k <= 4; k++) {
+    var ty = pad.t + (k / 4) * ih;
+    var tv = maxV - (k / 4) * range;
+    ticks += '<text x="' + (pad.l - 6) + '" y="' + (ty + 3).toFixed(1) + '" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)" text-anchor="end">' + Math.round(tv).toLocaleString('ro-RO') + '</text>';
+  }
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-height:' + h + 'px;">' +
+    ticks + rects + axis + labels +
+    '</svg>';
+}
+
+// Donut chart with central label
+function svgDonut(slices, opts) {
+  opts = opts || {};
+  var sz = opts.size || 220;
+  var cx = sz / 2, cy = sz / 2;
+  var rOut = sz / 2 - 4, rIn = rOut * 0.62;
+  var total = slices.reduce(function(s, x) { return s + (x.value || 0); }, 0);
+  if (total <= 0) return '<div class="text-dim mono" style="padding:1rem;font-size:0.8rem;text-align:center;">Nicio dată</div>';
+  var palette = ['var(--accent)', 'var(--danger)', 'var(--warning)', 'var(--violet)', 'var(--success)', '#6ea8fe', '#f59e0b', '#a855f7', '#10b981', '#ef4444', '#3b82f6', '#84cc16'];
+  var ang = -Math.PI / 2;
+  var paths = '';
+  slices.forEach(function(s, i) {
+    if (!s.value) return;
+    var a2 = ang + (s.value / total) * Math.PI * 2;
+    var large = (a2 - ang) > Math.PI ? 1 : 0;
+    var x1 = cx + rOut * Math.cos(ang), y1 = cy + rOut * Math.sin(ang);
+    var x2 = cx + rOut * Math.cos(a2), y2 = cy + rOut * Math.sin(a2);
+    var x3 = cx + rIn * Math.cos(a2), y3 = cy + rIn * Math.sin(a2);
+    var x4 = cx + rIn * Math.cos(ang), y4 = cy + rIn * Math.sin(ang);
+    var color = s.color || palette[i % palette.length];
+    var d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) +
+            ' A' + rOut + ',' + rOut + ' 0 ' + large + ' 1 ' + x2.toFixed(1) + ',' + y2.toFixed(1) +
+            ' L' + x3.toFixed(1) + ',' + y3.toFixed(1) +
+            ' A' + rIn + ',' + rIn + ' 0 ' + large + ' 0 ' + x4.toFixed(1) + ',' + y4.toFixed(1) +
+            ' Z';
+    paths += '<path d="' + d + '" fill="' + color + '" stroke="var(--bg-elev1)" stroke-width="2"><title>' + esc(s.label) + ': ' + formatRON(s.value) + ' RON (' + (s.value/total*100).toFixed(1) + '%)</title></path>';
+    ang = a2;
+  });
+  var centerLbl = opts.centerLabel || formatRON(total) + ' RON';
+  var centerSub = opts.centerSub || 'total';
+  return '<svg viewBox="0 0 ' + sz + ' ' + sz + '" style="width:100%;max-width:' + sz + 'px;height:auto;">' +
+    paths +
+    '<text x="' + cx + '" y="' + cy + '" font-family="var(--font-mono)" font-size="' + (sz/14) + '" font-weight="600" fill="var(--text)" text-anchor="middle">' + esc(centerLbl) + '</text>' +
+    '<text x="' + cx + '" y="' + (cy + sz/12) + '" font-family="var(--font-sans)" font-size="' + (sz/22) + '" fill="var(--text-dim)" text-anchor="middle">' + esc(centerSub) + '</text>' +
+    '</svg>';
+}
+
+function donutLegend(slices) {
+  var total = slices.reduce(function(s, x) { return s + (x.value || 0); }, 0) || 1;
+  var palette = ['var(--accent)', 'var(--danger)', 'var(--warning)', 'var(--violet)', 'var(--success)', '#6ea8fe', '#f59e0b', '#a855f7', '#10b981', '#ef4444', '#3b82f6', '#84cc16'];
+  var h = '<div class="donut-legend">';
+  slices.forEach(function(s, i) {
+    if (!s.value) return;
+    var color = s.color || palette[i % palette.length];
+    h += '<div class="legend-item"><span class="legend-swatch" style="background:' + color + '"></span><span class="legend-label">' + esc(s.label) + '</span><span class="legend-value mono">' + formatRON(s.value) + '</span><span class="legend-pct mono text-dim">' + (s.value/total*100).toFixed(1) + '%</span></div>';
+  });
+  h += '</div>';
+  return h;
 }
 
 function toggleScadentarVizibil() {

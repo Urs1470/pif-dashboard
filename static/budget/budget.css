@@ -533,6 +533,44 @@ label.field-label {
 .text-mid { color: var(--text-mid); }
 .text-dim { color: var(--text-dim); }
 
+/* ============ CHARTS ============ */
+.chart-card {
+  background: var(--bg-elev1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.chart-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.6rem;
+}
+.chart-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.chart-title .lucide { width: 14px; height: 14px; color: var(--accent); }
+.chart-meta { font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-mono); }
+.chart-body { position: relative; }
+.chart-flex {
+  display: flex; gap: 1rem; align-items: center;
+  flex-wrap: wrap;
+}
+.chart-flex > div:first-child { flex: 0 0 auto; }
+.chart-flex > div:last-child { flex: 1; min-width: 200px; }
+
+.donut-legend {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  font-size: 0.78rem;
+}
+.legend-item { display: flex; align-items: center; gap: 0.5rem; }
+.legend-swatch {
+  width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+}
+.legend-label { flex: 1; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend-value { color: var(--text-mid); }
+.legend-pct { font-size: 0.7rem; }
+
 /* ============ ACTIONS MENU (header dropdown) ============ */
 .actions-wrap { position: relative; }
 .actions-menu {
