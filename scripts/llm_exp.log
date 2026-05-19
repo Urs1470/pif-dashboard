@@ -5076,3 +5076,204 @@
 2026-05-19 07:07:06,313  INFO        -> new: Afiseaza valoarea masurata a curentului RMS pentru faza V a motorului. Este un p
 2026-05-19 07:07:06,414  INFO      23786 1.74 (ACS880)  existing_len=0  qc=new
 2026-05-19 07:07:12,854  INFO        -> new: Afiseaza valoarea curentului RMS masurat in faza W a motorului. Este un parametr
+2026-05-19 07:07:15,810  INFO        Committed + pushed
+2026-05-19 07:07:15,911  INFO      23787 1.102 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:22,566  INFO        -> new: Afiseaza valoarea curentului de linie masurat pe partea de intrare a convertizor
+2026-05-19 07:07:22,667  INFO      23788 1.104 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:31,726  INFO        -> new: Afiseaza valoarea estimata a curentului activ al unitatii de alimentare IGBT. Ac
+2026-05-19 07:07:31,827  INFO      23789 1.106 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:38,899  INFO        -> new: Afiseaza valoarea estimata a curentului reactiv in sistem. Acest parametru este 
+2026-05-19 07:07:38,999  INFO      23790 1.108 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:50,648  INFO        -> new: Definește frecvența rețelei electrice de intrare în Hz. Este vizibil doar când c
+2026-05-19 07:07:50,749  INFO      23791 1.109 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:00,138  INFO        -> new: Afiseaza tensiunea retelei electrice masurata de unitatea de alimentare IGBT. Ac
+2026-05-19 07:08:00,239  INFO      23792 1.110 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:06,459  INFO        -> new: Afiseaza puterea aparenta estimata a retelei electrice in unitati de kVA sau ech
+2026-05-19 07:08:06,559  INFO      23793 1.112 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:12,984  INFO        -> new: Afiseaza puterea estimata pe retea in unitati de kW sau MW. Valoarea pozitiva in
+2026-05-19 07:08:13,085  INFO      23794 1.114 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:18,429  INFO        -> new: Afiseaza puterea reactiva estimata pe partea de retea. Este vizibil doar cand co
+2026-05-19 07:08:18,529  INFO      23795 1.116 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:24,741  INFO        -> new: Afiseaza factorul de putere (cos phi) al unitatii de alimentare IGBT. O valoare 
+2026-05-19 07:08:24,842  INFO      23796 1.164 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:35,550  INFO        -> new: Seteaza puterea nominala a unitatii de alimentare IGBT (LSU). Acest parametru es
+2026-05-19 07:08:35,651  INFO      23797 3.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:47,094  INFO        -> new: Seteaza valoarea referintei locale de viteza sau frecventa cand sursa de control
+2026-05-19 07:08:47,195  INFO      23798 3.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:08:56,913  INFO        -> new: Afiseaza valoarea referintei de viteza setata de la panoul de control sau de la 
+2026-05-19 07:08:57,014  INFO      23799 3.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:04,602  INFO        -> new: Reprezinta valoarea referintei 1 primita prin intermediul adaptorului fieldbus A
+2026-05-19 07:09:04,703  INFO      23800 3.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:11,109  INFO        -> new: Reprezinta valoarea celei de-a doua referinte primite prin adaptorul de fieldbus
+2026-05-19 07:09:11,210  INFO      23801 3.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:22,791  INFO        -> new: Reprezinta referinta 1 receptionata prin adaptorul de fieldbus B. Valoarea este 
+2026-05-19 07:09:22,892  INFO      23802 3.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:33,379  INFO        -> new: Reprezinta valoarea celei de-a doua referinte receptionata prin intermediul adap
+2026-05-19 07:09:33,479  INFO      23803 3.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:44,950  INFO        -> new: Reprezinta prima referinta scalata primita prin interfata fieldbus integrata (EF
+2026-05-19 07:09:45,051  INFO      23804 3.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:09:53,047  INFO        -> new: Defineste referinta secundara de viteza receptionata prin interfata de comunicat
+2026-05-19 07:09:53,148  INFO      23805 3.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:02,007  INFO        -> new: Reprezinta referinta 1 receptionata de la controlerul extern prin magistrala DDC
+2026-05-19 07:10:02,107  INFO      23806 3.12 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:10,030  INFO        -> new: Reprezinta referinta 2 receptionata de la controllerul extern prin intermediul c
+2026-05-19 07:10:10,131  INFO      23807 3.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:20,433  INFO        -> new: Afiseaza referinta 1 receptionata de la dispozitivul master in mod master/follow
+2026-05-19 07:10:20,534  INFO      23808 3.14 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:30,037  INFO        -> new: Afiseaza valoarea referintei 2 primita de la dispozitivul master intr-o configur
+2026-05-19 07:10:30,137  INFO      23809 3.30 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:44,446  INFO        -> new: Afiseaza valoarea referintei 1 receptionata prin intermediul adaptorului de fiel
+2026-05-19 07:10:44,547  INFO      23810 3.31 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:53,762  INFO        -> new: Reprezinta a doua referinta de viteza sau proces receptionata prin intermediul a
+2026-05-19 07:10:53,863  INFO      23811 3.51 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:10:59,364  INFO        -> new: Defineste referinta panelului utilizata in programul de aplicatie IEC. Valoarea 
+2026-05-19 07:10:59,465  INFO      23812 4.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:04,964  INFO        -> new: Afiseaza codul primei defectiuni active care a cauzat oprirea de urgenta a conve
+2026-05-19 07:11:05,065  INFO      23813 4.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:10,275  INFO        -> new: Afiseaza codul celei de-a doua erori active in ordine cronologica. Cand o eroare
+2026-05-19 07:11:10,375  INFO      23814 4.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:15,345  INFO        -> new: Afiseaza codul celei de-a treia defectiuni active detectate de variator. Daca nu
+2026-05-19 07:11:15,446  INFO      23815 4.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:21,995  INFO        -> new: Afiseaza codul celui de-al patrulea defect activ in ordinea aparitiei. Când un d
+2026-05-19 07:11:22,096  INFO      23816 4.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:28,087  INFO        -> new: Afiseaza codul fault-ului 5 activ din memoria drive-ului. Este un parametru read
+2026-05-19 07:11:28,187  INFO      23817 4.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:34,187  INFO        -> new: Afiseaza codul primei avertizari active in sistem. Cand o avertizare este prezen
+2026-05-19 07:11:34,288  INFO      23818 4.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:39,099  INFO        -> new: Afiseaza codul celei de-a doua avertizari active in sistem. Este un parametru nu
+2026-05-19 07:11:39,199  INFO      23819 4.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:44,797  INFO        -> new: Afiseaza codul celei de-a treia avertizari active in sistem. Daca nu exista a tr
+2026-05-19 07:11:44,897  INFO      23820 4.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:50,250  INFO        -> new: Afiseaza codul celei de-a 4-a avertizari active in sistem. Este un parametru rea
+2026-05-19 07:11:50,351  INFO      23821 4.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:11:57,941  INFO        -> new: Afiseaza codul celei de-a 5-a avertizari active in sistem. Daca valoarea este 0,
+2026-05-19 07:11:58,042  INFO      23822 4.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:04,382  INFO        -> new: Afiseaza codul ultimei defectiuni inregistrate care nu mai este activa. Fault-ul
+2026-05-19 07:12:04,482  INFO      23823 4.12 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:09,477  INFO        -> new: Stocheaza codul celei de-a doua defectiuni in ordine cronologica. Fault-ul activ
+2026-05-19 07:12:09,578  INFO      23824 4.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:19,489  INFO        -> new: Stocheaza codul al 3-lea cel mai recent defect inregistrat in memorie. Este un p
+2026-05-19 07:12:19,589  INFO      23825 4.14 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:25,750  INFO        -> new: Afiseaza codul celei de-a 4-a erori memorate anterior. Este un parametru read-on
+2026-05-19 07:12:25,851  INFO      23826 4.15 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:33,193  INFO        -> new: Afiseaza codul celui de-al 5-lea fault in ordine cronologica inversa. Fault-ul c
+2026-05-19 07:12:33,294  INFO      23827 4.16 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:39,488  INFO        -> new: Afiseaza codul primei avertizari neactive din istoric. Avertizarile active sunt 
+2026-05-19 07:12:39,589  INFO      23828 4.17 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:46,213  INFO        -> new: Stocheaza codul celei de-a doua ultime avertizari inregistrate in memorie. Cand 
+2026-05-19 07:12:46,314  INFO      23829 4.18 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:49,865  INFO        -> new: Afiseaza codul celei de-a treia avertizari stocate in memorie. Avertizarile inac
+2026-05-19 07:12:49,966  INFO      23830 4.19 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:12:56,106  INFO        -> new: Afiseaza codul celei de-a 4-a avertizare stocata in memorie. Avertizarile sunt p
+2026-05-19 07:12:56,206  INFO      23831 4.20 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:03,465  INFO        -> new: Afiseaza codul avertismentului al 5-lea cel mai recent din istoricul de avertism
+2026-05-19 07:13:03,565  INFO      23832 4.21 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:09,111  INFO        -> new: Cuvant de stare defecte compatibil cu formatul ACS800. Afiseaza biti codificati 
+2026-05-19 07:13:09,212  INFO      23833 4.22 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:15,240  INFO        -> new: Parametru de tip read-only care afiseaza cuvantul de stare pentru defectiuni in 
+2026-05-19 07:13:15,341  INFO      23834 4.25 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:20,350  INFO        -> new: Afiseaza modulele care au semnalat defectiuni in sistemul de control BCU. Valoar
+2026-05-19 07:13:20,451  INFO      23835 4.31 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:27,528  INFO        -> new: Cuvânt de stare care afiseaza warning-urile active ale drive-ului în format comp
+2026-05-19 07:13:27,628  INFO      23836 4.32 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:33,469  INFO        -> new: Afiseaza cuvantul binar de avertizare 2 compatibil cu seria ACS800. Fiecare bit 
+2026-05-19 07:13:33,570  INFO      23837 4.40 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:39,815  INFO        -> new: Cuvant de stare definit de utilizator. Grupeaza biti de stare din diferite surse
+2026-05-19 07:13:39,916  INFO      23838 4.41 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:46,662  INFO        -> new: Selecteaza codul hexadecimal al unui eveniment (avertizare sau defectiune) pentr
+2026-05-19 07:13:46,762  INFO      23839 4.42 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:54,282  INFO        -> new: Reprezinta bitul 0 al cuvantului de stare eveniment 1. Afiseaza informatii despr
+2026-05-19 07:13:54,383  INFO      23840 4.43 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:13:59,242  INFO        -> new: Selecteaza codul hexazecimal al unui eveniment (avertizare, defectiune) care cor
+2026-05-19 07:13:59,343  INFO      23841 4.44 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:05,118  INFO        -> new: Reprezinta bitul 1 al cuvantului de stare eveniment 1. Este un parametru de diag
+2026-05-19 07:14:05,218  INFO      23842 4.71 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:14,345  INFO        -> new: Selecteaza codul hexadecimal al evenimentului (avertizare sau alarma) care activ
+2026-05-19 07:14:14,446  INFO      23843 4.72 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:20,567  INFO        -> new: Bitul 15 din cuvantul de eveniment 1 indica starea unui eveniment specific monit
+2026-05-19 07:14:20,668  INFO      23844 4.120 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:26,834  INFO        -> new: Defineste formatul de afisare al cuvintelor de eroare si avertizare. Selecteaza 
+2026-05-19 07:14:26,935  INFO      23845 5.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:33,448  INFO        -> new: Contorizeaza zilele de functionare a variatorului. Contorul ruleaza doar cand va
+2026-05-19 07:14:33,549  INFO      23846 5.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:39,521  INFO        -> new: Contorizeaza timpul total de functionare a motorului in zile. Contorul ruleaza c
+2026-05-19 07:14:39,622  INFO      23847 5.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:46,097  INFO        -> new: Afiseaza timpul total de functionare a ventilatorului de racire al convertizorul
+2026-05-19 07:14:46,198  INFO      23848 5.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:51,541  INFO        -> new: Contorizeaza timpul scurs de la ultimul boot al variatorului, masurat in interva
+2026-05-19 07:14:51,642  INFO      23849 5.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:14:58,474  INFO        -> new: Parametru de tip read-only care afiseaza temperatura curenta a placii de control
+2026-05-19 07:14:58,574  INFO      23850 5.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:06,877  INFO        -> new: Acest parametru afiseaza temperatura estimata a invertorului ca procent din limi
+2026-05-19 07:15:06,978  INFO      23851 5.22 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:13,313  INFO        -> new: Cuvant de stare care afiseaza informatii de diagnosticare pentru inversor. Fieca
+2026-05-19 07:15:13,414  INFO      23852 5.41 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:17,042  INFO        -> new: Afiseaza uzura ventilatorului principal de racire ca procent din durata de viata
+2026-05-19 07:15:17,142  INFO      23853 5.42 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:22,408  INFO        -> new: Afiseaza uzura ventilatorului de racire auxiliar ca procent din durata de viata 
+2026-05-19 07:15:22,508  INFO      23854 5.111 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:28,053  INFO        -> new: Afiseaza temperatura convertizorului de linie ca procent din intervalul maxim de
+2026-05-19 07:15:28,153  INFO      23855 5.121 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:33,614  INFO        -> new: Contorizeaza de cite ori s-a inchis intrerupatorul principal de circuit (MCB). E
+2026-05-19 07:15:33,715  INFO      23856 6.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:40,455  INFO        -> new: Afiseaza starea cuvantului de control principal al convertizorului. Contine biti
+2026-05-19 07:15:40,556  INFO      23857 6.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:49,089  INFO        -> new: Cuvantul de control receptionat de la aplicatie care comanda functionarea variat
+2026-05-19 07:15:49,189  INFO      23858 6.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:15:54,250  INFO        -> new: Afiseaza cuvantul de control primit de la campul de comunicatie Fieldbus Adapter
+2026-05-19 07:15:54,351  INFO      23859 6.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:02,849  INFO        -> new: Afiseaza cuvantul de control primit de la bus-ul de camp fara nicio modificare s
+2026-05-19 07:16:02,949  INFO      23860 6.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:09,488  INFO        -> new: Afiseaza cuvantul de control primit de la magistrala de comunicatie fieldbus, ne
+2026-05-19 07:16:09,589  INFO      23861 6.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:19,490  INFO        -> new: Afiseaza cuvantul de stare principal al convertizorului de frecventa. Contine in
+2026-05-19 07:16:19,591  INFO      23862 6.16 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:25,247  INFO        -> new: Cuvantul de stare 1 al drive-ului afiseaza starea operationala curenta in format
+2026-05-19 07:16:25,348  INFO      23863 6.17 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:30,677  INFO        -> new: Afiseaza starea drive-ului intr-un format de cuvant binar. Contine informatii de
+2026-05-19 07:16:30,777  INFO      23864 6.18 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:35,722  INFO        -> new: Cuvant de stare care afiseaza conditiile active care inhiba pornirea motorului. 
+2026-05-19 07:16:35,823  INFO      23865 6.19 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:41,531  INFO        -> new: Cuvant de stare pentru controlul vitezei. Afiseaza bitii de stare ai controlului
+2026-05-19 07:16:41,632  INFO      23866 6.20 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:46,713  INFO        -> new: Acest parametru este un cuvant de stare care indica statusul vitezei constante s
+2026-05-19 07:16:46,813  INFO      23867 6.21 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:52,718  INFO        -> new: Este un parametru de tip read-only care afiseaza informatii despre starea drive-
+2026-05-19 07:16:52,819  INFO      23868 6.25 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:16:58,534  INFO        -> new: Afiseaza starea de inhibitare a convertizorului de frecventa. Bitii acestui cuva
+2026-05-19 07:16:58,635  INFO      23869 6.29 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:04,336  INFO        -> new: Selecteaza sursa binara al carei status este transmis in bitul 10 al cuvantului 
+2026-05-19 07:17:04,436  INFO      23870 6.30 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:16,337  INFO        -> new: Selecteaza sursa binara a carei stare este transmisa prin bitul 11 al cuvantului
+2026-05-19 07:17:16,437  INFO      23871 6.31 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:24,898  INFO        -> new: Selecteaza sursa binara a carei stare va fi transmisa ca bit 12 in cuvantul de s
+2026-05-19 07:17:24,999  INFO      23872 6.32 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:33,205  INFO        -> new: Selecteaza sursa binara al carei status este transmis prin bitul 13 al cuvantulu
+2026-05-19 07:17:33,306  INFO      23873 6.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:41,728  INFO        -> new: Selecteaza o sursa binara a carei stare este transmisa pe bitul 14 al cuvantului
+2026-05-19 07:17:41,829  INFO      23874 6.36 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:50,620  INFO        -> new: Aceasta parametru afiseaza cuvantul de stare al unitatii de alimentare (LSU) in 
+2026-05-19 07:17:50,720  INFO      23875 6.39 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:17:58,123  INFO        -> new: Afiseaza starea interna a unitatii de alimentare in format hexadecimal. Este viz
+2026-05-19 07:17:58,224  INFO      23876 6.40 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:07,187  INFO        -> new: Bitul 0 al cuvantului de comanda utilizator pentru unitatea de alimentare LSU. P
+2026-05-19 07:18:07,287  INFO      23877 6.41 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:17,156  INFO        -> new: Bitul utilizator 1 in cuvantul de control al unitatii de alimentare (LSU). Permi
+2026-05-19 07:18:17,256  INFO      23878 6.42 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:28,187  INFO        -> new: Bitul 2 din cuvantul de control al unitatii de alimentare (LSU - Line Supply Uni
+2026-05-19 07:18:28,288  INFO      23879 6.43 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:38,861  INFO        -> new: Bitul 3 din cuvantul de control al unitatii de alimentare retele (LSU). Vizibil 
+2026-05-19 07:18:38,961  INFO      23880 6.45 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:47,681  INFO        -> new: Selecteaza sursa binara al carei status este transmis catre unitatea follower. I
+2026-05-19 07:18:47,781  INFO      23881 6.46 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:18:56,566  INFO        -> new: Selecteaza sursa binara care transmite statutul catre dispozitivul follower. Bit
+2026-05-19 07:18:56,667  INFO      23882 6.47 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:07,262  INFO        -> new: Selecteaza o sursa binara al carei stare este transmisa catre un dispozitiv foll
+2026-05-19 07:19:07,362  INFO      23883 6.48 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:15,437  INFO        -> new: Selecteaza o sursa binara a carei stare este transmisa catre un drive follower/u
+2026-05-19 07:19:15,538  INFO      23884 6.50 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:21,620  INFO        -> new: Cuvant de stare definit de utilizator. Afiseaza informatii de stare selectate de
+2026-05-19 07:19:21,721  INFO      23885 6.60 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:32,033  INFO        -> new: Seteaza sursa binara care va fi afisata ca bit in cuvantul de stare 1. Permite m
+2026-05-19 07:19:32,133  INFO      23886 6.61 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:38,335  INFO        -> new: Configureaza sursa binara care va fi afisata ca bit in cuvantul de stare 1. Perm
