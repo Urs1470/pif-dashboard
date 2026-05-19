@@ -5277,3 +5277,204 @@
 2026-05-19 07:19:32,033  INFO        -> new: Seteaza sursa binara care va fi afisata ca bit in cuvantul de stare 1. Permite m
 2026-05-19 07:19:32,133  INFO      23886 6.61 (ACS880)  existing_len=0  qc=new
 2026-05-19 07:19:38,335  INFO        -> new: Configureaza sursa binara care va fi afisata ca bit in cuvantul de stare 1. Perm
+2026-05-19 07:19:41,470  INFO        Committed + pushed
+2026-05-19 07:19:41,570  INFO      23887 6.62 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:50,886  INFO        -> new: Selecteaza sursa binara a carei stare este afisata ca bit in cuvantul de stare u
+2026-05-19 07:19:50,987  INFO      23888 6.63 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:19:58,717  INFO        -> new: Selecteaza sursa binara pentru bitul de stare din cuvantul de stare utilizator 1
+2026-05-19 07:19:58,818  INFO      23889 6.64 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:06,289  INFO        -> new: Selecteaza sursa binara a carei stare este afisata ca bit in cuvantul de stare 1
+2026-05-19 07:20:06,390  INFO      23890 6.65 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:14,867  INFO        -> new: Afiseaza starea unui semnal binar selectat de utilizator ca un bit in cuvantul d
+2026-05-19 07:20:14,968  INFO      23891 6.66 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:22,781  INFO        -> new: Selecteaza o sursa binara (intrare digitala sau semnal intern) a carei stare est
+2026-05-19 07:20:22,882  INFO      23892 6.67 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:28,643  INFO        -> new: Selecteaza o sursa binara ale carei informatii de stare sunt afisate ca bit in c
+2026-05-19 07:20:28,744  INFO      23893 6.68 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:36,198  INFO        -> new: Defineseste un cuvant de stare configurabil de catre utilizator in care bitii in
+2026-05-19 07:20:36,299  INFO      23894 6.69 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:42,460  INFO        -> new: Selecteaza sursa binara care va fi afisata ca bit in cuvantul de stare 1 al util
+2026-05-19 07:20:42,561  INFO      23895 6.70 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:48,565  INFO        -> new: Selecteaza sursa binara care este afisata ca bit in cuvantul de stare 1. Permite
+2026-05-19 07:20:48,666  INFO      23896 6.71 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:20:57,741  INFO        -> new: Seteaza sursa binara ale carei informatii sunt afisate ca bit in cuvantul de sta
+2026-05-19 07:20:57,842  INFO      23897 6.72 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:05,815  INFO        -> new: Defineste sursa binara a bitului din cuvantul de stare 1 selectat de utilizator.
+2026-05-19 07:21:05,916  INFO      23898 6.73 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:14,048  INFO        -> new: Permite selectarea unei surse binare a carei stare va fi afisata ca bit in cuvan
+2026-05-19 07:21:14,148  INFO      23899 6.74 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:19,389  INFO        -> new: Defineste sursa binara pentru primul bit din cuvantul de stare utilizator. Permi
+2026-05-19 07:21:19,489  INFO      23900 6.75 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:29,143  INFO        -> new: Permite selectarea unei surse binare a carei stare va fi afisata ca bit in cuvan
+2026-05-19 07:21:29,244  INFO      23901 6.100 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:38,752  INFO        -> new: Cuvant de comanda definit de utilizator pentru functii de control specifice. Per
+2026-05-19 07:21:38,853  INFO      23902 6.101 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:43,488  INFO        -> new: Cuvant de control definit de utilizator pentru functii personalizate. Bitii pot 
+2026-05-19 07:21:43,589  INFO      23903 6.116 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:48,249  INFO        -> new: Afiseaza starea curenta a unitatii de alimentare IGBT (LSU). Acest parametru est
+2026-05-19 07:21:48,349  INFO      23904 6.118 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:21:58,684  INFO        -> new: Activeaza inhibitia pornirii unitatii de alimentare IGBT (LSU). Cand este setata
+2026-05-19 07:21:58,784  INFO      23905 7.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:04,520  INFO        -> new: Identifica tipul si puterea invertorului. Este un parametru informational read-o
+2026-05-19 07:22:04,621  INFO      23906 7.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:10,593  INFO        -> new: Afiseaza identificarea firmware-ului controllerului VFD. Acest parametru este do
+2026-05-19 07:22:10,694  INFO      23907 7.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:14,225  INFO        -> new: Afiseaza versiunea firmware-ului instalat in convertizor. Este un parametru read
+2026-05-19 07:22:14,326  INFO      23908 7.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:17,691  INFO        -> new: Reprezinta numele pachetului de firmware incarcat in actionare. Acest parametru 
+2026-05-19 07:22:17,792  INFO      23909 7.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:21,429  INFO        -> new: Afiseaza numarul de versiune al pachetului de incarcare firmware. Este o informa
+2026-05-19 07:22:21,530  INFO      23910 7.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:28,012  INFO        -> new: Afiseaza versiunea bootloaderului firmware-ului incarcat in unitate. Este un par
+2026-05-19 07:22:28,113  INFO      23911 7.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:33,510  INFO        -> new: Afiseaza incarcarea microprocesorului in procente. Valoarea indica cat de mult e
+2026-05-19 07:22:33,610  INFO      23912 7.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:40,108  INFO        -> new: Afiseaza versiunea firmware-ului logicului unitatii de putere. Este un parametru
+2026-05-19 07:22:40,209  INFO      23913 7.14 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:45,557  INFO        -> new: Afiseaza versiunea logicii FPGA a unitatii de control. Aceasta este o informatie
+2026-05-19 07:22:45,658  INFO      23914 7.15 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:50,622  INFO        -> new: Afiseaza versiunea logicii FPGA a unitatii de control. Este un parametru informa
+2026-05-19 07:22:50,723  INFO      23915 7.21 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:22:56,235  INFO        -> new: Activeaza mediul de programare a aplicatiilor cand modululul +N8010 este instala
+2026-05-19 07:22:56,336  INFO      23916 7.22 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:05,906  INFO        -> new: Selecteaza mediul de aplicatie pentru configurarea variatorului. Parametrul este
+2026-05-19 07:23:06,007  INFO      23917 7.23 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:12,086  INFO        -> new: Afiseaza numele aplicatiei incarcate in controler. Vizibil doar daca este instal
+2026-05-19 07:23:12,187  INFO      23918 7.24 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:18,177  INFO        -> new: Afiseaza versiunea aplicatiei incarcate in VFD. Este doar pentru informare si nu
+2026-05-19 07:23:18,278  INFO      23919 7.25 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:23,952  INFO        -> new: Defineste primele cinci litere ASCII ale unui nume personalizat pentru configura
+2026-05-19 07:23:24,052  INFO      23920 7.26 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:27,580  INFO        -> new: Afiseaza versiunea pachetului de personalizare instalat pe convertizor. Este un 
+2026-05-19 07:23:27,681  INFO      23921 7.30 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:31,953  INFO        -> new: Afiseaza starea programului adaptiv al variatorului. Valoarea este in format hex
+2026-05-19 07:23:32,055  INFO      23922 7.40 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:39,401  INFO        -> new: Parametrul 7.40 afiseaza informatii despre CPU-ul aplicatiei IEC. Este vizibil d
+2026-05-19 07:23:39,501  INFO      23923 7.41 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:44,577  INFO        -> new: Afiseaza utilizarea procesorului de catre programul de aplicatie IEC. Vizibil do
+2026-05-19 07:23:44,677  INFO      23924 7.51 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:48,936  INFO        -> new: Afiseaza tipul modulului detectat in slotul 1 al variatorului de frecventa. Este
+2026-05-19 07:23:49,037  INFO      23925 7.52 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:23:55,272  INFO        -> new: Afiseaza tipul modulului optional detectat in slotul 2 al unitatii. Este un para
+2026-05-19 07:23:55,373  INFO      23926 7.53 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:00,198  INFO        -> new: Afiseaza tipul modulului optional detectat in slotul 3 al convertizorului de fre
+2026-05-19 07:24:00,299  INFO      23927 7.54 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:05,192  INFO        -> new: Afiseaza versiunea logicii FPGA a modulului optional detectat in Slot 1. Este un
+2026-05-19 07:24:05,293  INFO      23928 7.55 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:09,694  INFO        -> new: Afiseaza versiunea software a modulului optional detectat in Slot 1. Parametrul 
+2026-05-19 07:24:09,795  INFO      23929 7.56 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:14,842  INFO        -> new: Afiseaza versiunea logicii FPGA a modulului de extensie detectat in Slot 2. Este
+2026-05-19 07:24:14,942  INFO      23930 7.57 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:21,773  INFO        -> new: Acest parametru afiseaza versiunea de software a modulului de extensie detectat 
+2026-05-19 07:24:21,873  INFO      23931 7.58 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:28,780  INFO        -> new: Afiseaza versiunea logicii FPGA a modulului de extensie detectat in Slot 3. Este
+2026-05-19 07:24:28,880  INFO      23932 7.59 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:33,571  INFO        -> new: Afiseaza versiunea de software a modulului detectat in slotul 3. Este un paramet
+2026-05-19 07:24:33,672  INFO      23933 7.106 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:39,580  INFO        -> new: Seteaza modul de incarcare al unitatii de alimentare IGBT. Controleaza cum este 
+2026-05-19 07:24:39,681  INFO      23934 7.107 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:44,330  INFO        -> new: Definește timpul de încărcare (preîncărcare) pentru unitatea de alimentare IGBT.
+2026-05-19 07:24:44,430  INFO      23935 10.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:49,897  INFO        -> new: Afiseaza statusul electric al intrarilor digitale DI1-DI6 sub forma de biti. Fie
+2026-05-19 07:24:49,997  INFO      23936 10.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:24:55,924  INFO        -> new: Afiseaza statusul intarziat al intrarilor digitale DIIL si DI6...DI1. Fiecare bi
+2026-05-19 07:24:56,024  INFO      23937 10.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:02,240  INFO        -> new: Permite fortarea manuala a starilor logice ale intrarilor digitale pentru testar
+2026-05-19 07:25:02,341  INFO      23938 10.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:13,350  INFO        -> new: Stocheaza valorile fortate pentru intrarile digitale ale convertizorului de frec
+2026-05-19 07:25:13,450  INFO      23939 10.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:19,223  INFO        -> new: Seteaza intarzierea de activare pentru intrarea digitala DI1. Cand DI1 devine ac
+2026-05-19 07:25:19,324  INFO      23940 10.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:26,319  INFO        -> new: Seteaza intarzierea de dezactivare pentru intrarea digitala DI1. Dupa ce semnalu
+2026-05-19 07:25:26,419  INFO      23941 10.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:33,255  INFO        -> new: Seteaza intarzierea in secunde inainte ca intrarea digitala DI2 sa fie recunoscu
+2026-05-19 07:25:33,356  INFO      23942 10.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:39,186  INFO        -> new: Seteaza timpul de intarziere la dezactivare pentru intrarea digitala DI2. Previn
+2026-05-19 07:25:39,286  INFO      23943 10.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:45,438  INFO        -> new: Defineste intarzierea pentru activarea intrarii digitale DI3. Semnalul trebuie m
+2026-05-19 07:25:45,539  INFO      23944 10.90 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:25:56,026  INFO        -> new: Selecteaza nivelul de timp pentru comunicatia standard I/O. Setarea 'Fast' ofera
+2026-05-19 07:25:56,126  INFO      23945 11.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:01,404  INFO        -> new: Afiseaza starea logica a intrarilor-iesirilor digitale DIO1 si DIO2. Valoarea 0 
+2026-05-19 07:26:01,505  INFO      23946 11.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:07,410  INFO        -> new: Afiseaza starea intarziata a intrarilor si iesirilor digitale dupa aplicarea tim
+2026-05-19 07:26:07,511  INFO      23947 11.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:15,244  INFO        -> new: Configureaza DIO1 ca intrare sau iesire digitala. In modul intrare, semnalul vin
+2026-05-19 07:26:15,344  INFO      23948 11.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:21,370  INFO        -> new: Configureaza semnalul care va fi directionat catre iesirea digitala DIO1. Semnal
+2026-05-19 07:26:21,470  INFO      23949 11.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:29,265  INFO        -> new: Defineste intarzierea de activare pentru intrarea/iesirea digitala 1 (DIO1). Dup
+2026-05-19 07:26:29,365  INFO      23950 11.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:39,169  INFO        -> new: Seteaza intarzierea de dezactivare pentru intrarea/iesirea digitala DIO1. Dupa c
+2026-05-19 07:26:39,269  INFO      23951 11.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:50,088  INFO        -> new: Configureaza pinul DIO2 ca iesire digitala sau ca intrare digitala. Cand este se
+2026-05-19 07:26:50,189  INFO      23952 12.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:26:57,122  INFO        -> new: Activeaza functia de calibrare automata pentru intrarile analogice. Dupa activar
+2026-05-19 07:26:57,222  INFO      23953 12.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:03,403  INFO        -> new: Selecteaza actiunea invertorului cand un semnal de intrare analogica iese din li
+2026-05-19 07:27:03,504  INFO      23954 12.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:10,004  INFO        -> new: Selecteaza care intrari analogice sunt supravegheute pentru depasirea limitelor.
+2026-05-19 07:27:10,105  INFO      23955 12.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:17,888  INFO        -> new: Activeaza monitorizarea supervizor pentru intrarile analogice in mod individual.
+2026-05-19 07:27:17,989  INFO      23956 14.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:24,977  INFO        -> new: Activeaza si specifica tipul modulului de extensie I/O 1. Alegerea tipului deter
+2026-05-19 07:27:25,077  INFO      23957 14.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:30,687  INFO        -> new: Defineste pozitia fizica a slotului (1, 2 sau 3) pe unitatea de control a conver
+2026-05-19 07:27:30,787  INFO      23958 14.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:37,407  INFO        -> new: Afiseaza starea curenta a modulului de extensie I/O 1. Arata daca modulul este c
+2026-05-19 07:27:37,508  INFO      23959 14.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:44,927  INFO        -> new: Afiseaza starea logica a intrarilor digitale de pe modulul de extensie FDIO-01. 
+2026-05-19 07:27:45,027  INFO      23960 14.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:27:55,488  INFO        -> new: Afiseaza starea intarziata a intrarilor digitale de pe modulul de extensie FDIO-
+2026-05-19 07:27:55,589  INFO      23961 14.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:01,670  INFO        -> new: Seteaza constanta de timp pentru filtrarea zgomotului pe intrarile digitale ale 
+2026-05-19 07:28:01,771  INFO      23962 14.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:08,819  INFO        -> new: Configureaza functia pinului DIO1 de pe modulul de extensie FIO-11. Poate fi set
+2026-05-19 07:28:08,920  INFO      23963 15.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:20,113  INFO        -> new: Selecteaza tipul modulului de extensie 2. Functioneaza similar cu parametrul 14.
+2026-05-19 07:28:20,214  INFO      23964 15.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:27,898  INFO        -> new: Defineste locatia fizica sau adresa modulului de extensie 2 in sistemul VFD. Ace
+2026-05-19 07:28:27,998  INFO      23965 15.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:32,389  INFO        -> new: Afiseaza starea operationala a modulului de extensie 2. Vizualizeaza daca modulu
+2026-05-19 07:28:32,489  INFO      23966 15.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:37,861  INFO        -> new: Afiseaza starea logica a intrarilor digitale de pe modulul de extensie FDIO-01. 
+2026-05-19 07:28:37,961  INFO      23967 15.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:48,757  INFO        -> new: Afiseaza starea logica a intrarilor digitale de pe modulul FDIO-01 dupa aplicare
+2026-05-19 07:28:48,857  INFO      23968 15.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:28:54,920  INFO        -> new: Seteaza timpul de filtrare pentru intrarile digitale ale modulului de extensie F
+2026-05-19 07:28:55,021  INFO      23969 15.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:02,561  INFO        -> new: Configureaza functia primului canal digital de pe modulul de extensie FIO-11. Po
+2026-05-19 07:29:02,662  INFO      23970 16.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:08,738  INFO        -> new: Afiseaza tipul modulului de extensie I/O instalat in slot 3. Vizualizati acest p
+2026-05-19 07:29:08,838  INFO      23971 16.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:13,805  INFO        -> new: Defineste pozitia modulului de expansiune 3 in sistemul de automatizare al conve
+2026-05-19 07:29:13,907  INFO      23972 16.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:22,961  INFO        -> new: Afiseaza starea operationala a modulului de extensie I/O optional 3. Parametrul 
+2026-05-19 07:29:23,062  INFO      23973 16.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:31,980  INFO        -> new: Afiseaza starea logica a intrarilor digitale de pe modulul de extensie FDIO-01. 
+2026-05-19 07:29:32,080  INFO      23974 16.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:38,172  INFO        -> new: Afiseaza starea intarziata a intrarilor digitale de pe modulul de expansiune FDI
+2026-05-19 07:29:38,273  INFO      23975 16.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:47,434  INFO        -> new: Seteaza timpul de filtrare pentru intrarile digitale ale modulului FDIO-01. O va
+2026-05-19 07:29:47,535  INFO      23976 16.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:29:57,539  INFO        -> new: Defineste functia pentru borna DIO1 de pe modulul de extensie FIO-11. Poate fi c
+2026-05-19 07:29:57,640  INFO      23977 19.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:05,327  INFO        -> new: Afiseaza modul de operare activ in prezent, selectat prin 19.2 sau 19.3. Valoare
+2026-05-19 07:30:05,428  INFO      23978 20.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:14,262  INFO        -> new: Seteaza sursa semnalului de start/stop pentru controlul extern 1. Poate fi o int
+2026-05-19 07:30:14,363  INFO      23979 20.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:22,186  INFO        -> new: Defineste sursa de comanda pentru intrarea externa 3 a grupului de control Ext1.
+2026-05-19 07:30:22,287  INFO      23980 21.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:31,218  INFO        -> new: Selecteaza functia de pornire a motorului pentru controlul DTC. Modul automat as
+2026-05-19 07:30:31,318  INFO      23981 21.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:37,728  INFO        -> new: Defineste timpul de pre-magnetizare a motorului inainte de aplicarea sarcinii. A
+2026-05-19 07:30:37,829  INFO      23982 21.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:44,199  INFO        -> new: Defineste modul de oprire a motorului in caz de oprire de urgenta. Optiunile inc
+2026-05-19 07:30:44,300  INFO      23983 21.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:30:55,526  INFO        -> new: Selecteaza sursa semnalului de oprire de urgenta (de obicei intrare digitala DI4
+2026-05-19 07:30:55,627  INFO      23984 21.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:02,549  INFO        -> new: Defineste pragul de viteza zero. Cand viteza motorului scade sub aceasta valoare
+2026-05-19 07:31:02,650  INFO      23985 21.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:13,656  INFO        -> new: Defineste intarzierea in milisecunde pentru functia de zero viteza. Dupa ce refe
+2026-05-19 07:31:13,756  INFO      23986 21.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:31:21,454  INFO        -> new: Activeaza functia de mentinere DC si post-magnetizare. Mentine axul motorului in
