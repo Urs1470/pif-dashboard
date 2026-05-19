@@ -74,6 +74,12 @@ function migrateImportedRefs(data) {
   if (!Array.isArray(data.importedRefs)) data.importedRefs = [];
 }
 
+// Goals / saving objectives
+function migrateGoals(data) {
+  if (!data) return;
+  if (!Array.isArray(data.goals)) data.goals = [];
+}
+
 // Seed d.credit.scadentar from real ING amortisation table if missing
 function migrateCreditScadentar(data) {
   if (!data) return;
@@ -355,6 +361,7 @@ async function loadData() {
       migrateCreditScadentar(state.data);
       migrateReguliCategorizare(state.data);
       migrateImportedRefs(state.data);
+      migrateGoals(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -1916,6 +1923,138 @@ function updateCheltuiala(luna, categorie, val) {
 }
 
 // ====================================================================
+// RENDER: Goals (obiective economisire)
+// ====================================================================
+function goalNeedPerMonth(g) {
+  if (!g || !g.dataTarget || !g.sumaTarget) return 0;
+  var ramas = (parseRON(g.sumaTarget) || 0) - (parseRON(g.contribuit) || 0);
+  if (ramas <= 0) return 0;
+  var today = new Date();
+  var target = new Date(g.dataTarget + 'T00:00:00');
+  var luni = (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth());
+  if (luni <= 0) return ramas;
+  return ramas / luni;
+}
+
+function renderGoals() {
+  var d = state.data;
+  var goals = d.goals || [];
+  var mediiV = calcMediiVenituri(d);
+  var mediiC = calcMediiCheltuieli(d);
+  var surplus = mediiV.total - mediiC.total;
+  var totalNecesar = goals.reduce(function(s, g) { return s + goalNeedPerMonth(g); }, 0);
+
+  var html = '';
+
+  // Header info
+  html += '<div class="section">';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="target"></i> Obiective economisire</div>';
+  html += '  <button class="btn-add" onclick="addGoal()"><i data-lucide="plus"></i> Adaugă obiectiv</button>';
+  html += '</div>';
+  html += '<div class="stat-grid">';
+  html += statCard('piggy-bank', 'Surplus mediu', formatRON(surplus), 'pentru economii', surplus >= 0 ? 'success' : 'danger');
+  html += statCard('calendar-clock', 'Necesar lunar pentru obiective', formatRON(totalNecesar), goals.length + ' obiective active', totalNecesar > surplus ? 'danger' : 'warning');
+  var disponibil = surplus - totalNecesar;
+  html += statCard(disponibil >= 0 ? 'check-circle' : 'alert-triangle', 'Disponibil după obiective', (disponibil >= 0 ? '+' : '') + formatRON(disponibil), disponibil >= 0 ? 'rezervă liberă' : 'surplus insuficient', disponibil >= 0 ? 'success' : 'danger');
+  html += '</div></div>';
+
+  // Goals grid
+  html += '<div class="section">';
+  if (goals.length === 0) {
+    html += '<div class="panel"><div class="audit-empty">Niciun obiectiv. Apasă "Adaugă obiectiv" pentru a defini ținte de economisire (vacanță, fond educație, depozit, etc.).</div></div>';
+  } else {
+    html += '<div class="goals-grid">';
+    goals.forEach(function(g) {
+      var target = parseRON(g.sumaTarget) || 0;
+      var contribuit = parseRON(g.contribuit) || 0;
+      var ramas = Math.max(0, target - contribuit);
+      var pct = target > 0 ? Math.min(100, (contribuit / target) * 100) : 0;
+      var done = contribuit >= target && target > 0;
+      var necesar = goalNeedPerMonth(g);
+      var today = new Date();
+      var targetDate = g.dataTarget ? new Date(g.dataTarget + 'T00:00:00') : null;
+      var luniRamase = targetDate ? Math.max(0, (targetDate.getFullYear() - today.getFullYear()) * 12 + (targetDate.getMonth() - today.getMonth())) : null;
+      var late = targetDate && targetDate < today && !done;
+      var cardCls = done ? ' done' : (late ? ' late' : '');
+      html += '<div class="goal-card' + cardCls + '">';
+      html += '  <div class="goal-head">';
+      html += '    <div class="goal-label"><i data-lucide="' + (done ? 'check-circle-2' : (late ? 'alert-octagon' : 'target')) + '"></i><input type="text" class="input w-full" value="' + esc(g.label || '') + '" placeholder="Ex: Vacanță Spania, Fond educație..." style="background:transparent;border:none;padding:2px;font-size:0.95rem;font-weight:600;" onchange="updateGoal(' + g.id + ', \'label\', this.value)"></div>';
+      html += '    <div class="goal-actions"><button class="btn-del" onclick="removeGoal(' + g.id + ')" title="Șterge obiectiv"><i data-lucide="trash-2"></i></button></div>';
+      html += '  </div>';
+      html += '  <div class="goal-bar-wrap"><div class="goal-bar" style="width:' + pct.toFixed(1) + '%;"></div></div>';
+      html += '  <div class="goal-stats">';
+      html += '    <div><div class="goal-stat-label">Strâns</div><div class="goal-stat-value success">' + formatRON(contribuit) + '</div></div>';
+      html += '    <div><div class="goal-stat-label">Țintă</div><div class="goal-stat-value">' + formatRON(target) + '</div></div>';
+      html += '    <div><div class="goal-stat-label">' + pct.toFixed(0) + '% complet</div><div class="goal-stat-value ' + (done ? 'success' : (late ? 'danger' : '')) + '">' + formatRON(ramas) + ' rămas</div></div>';
+      html += '  </div>';
+      html += '  <div class="goal-stats">';
+      html += '    <div><div class="goal-stat-label">Țintă suma (RON)</div><input type="number" class="input num w-full" value="' + (target || 0) + '" onchange="updateGoal(' + g.id + ', \'sumaTarget\', this.value)"></div>';
+      html += '    <div><div class="goal-stat-label">Dată țintă</div><input type="text" class="input fp-date w-full" value="' + esc(g.dataTarget || '') + '" placeholder="YYYY-MM-DD" onchange="updateGoal(' + g.id + ', \'dataTarget\', this.value)"></div>';
+      html += '    <div><div class="goal-stat-label">Necesar / lună</div><div class="goal-stat-value ' + (necesar > surplus ? 'danger' : 'warning') + '">' + formatRON(necesar) + '</div></div>';
+      html += '  </div>';
+      if (luniRamase !== null) {
+        html += '  <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.3rem;"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-1px;"></i> ' + (done ? 'Atins!' : (late ? 'Termen depășit' : luniRamase + ' luni rămase')) + (g.nota ? ' · ' + esc(g.nota) : '') + '</div>';
+      }
+      html += '  <div class="goal-contribute">';
+      html += '    <input type="number" class="input num" id="contrib-input-' + g.id + '" placeholder="Adaugă contribuție RON">';
+      html += '    <button class="btn-add" onclick="contribuieGoal(' + g.id + ')"><i data-lucide="plus"></i> Contribuie</button>';
+      html += '  </div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function addGoal() {
+  if (!Array.isArray(state.data.goals)) state.data.goals = [];
+  var today = new Date();
+  var nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+  var defaultDate = nextYear.toISOString().substring(0, 10);
+  state.data.goals.push({
+    id: getNextId(state.data.goals),
+    label: '',
+    sumaTarget: 5000,
+    contribuit: 0,
+    dataTarget: defaultDate,
+    nota: ''
+  });
+  saveData();
+  render();
+}
+function updateGoal(id, field, value) {
+  if (!Array.isArray(state.data.goals)) return;
+  state.data.goals = state.data.goals.map(function(g) {
+    if (g.id !== id) return g;
+    var u = cloneObj(g);
+    if (field === 'sumaTarget' || field === 'contribuit') u[field] = parseRON(value);
+    else u[field] = value;
+    return u;
+  });
+  saveData();
+  render();
+}
+function removeGoal(id) {
+  state.data.goals = (state.data.goals || []).filter(function(g) { return g.id !== id; });
+  saveData();
+  render();
+}
+function contribuieGoal(id) {
+  var inp = document.getElementById('contrib-input-' + id);
+  if (!inp) return;
+  var val = parseRON(inp.value);
+  if (val <= 0) return;
+  var g = (state.data.goals || []).find(function(x) { return x.id === id; });
+  if (!g) return;
+  g.contribuit = (parseRON(g.contribuit) || 0) + val;
+  saveData();
+  render();
+}
+
+// ====================================================================
 // MAIN RENDER
 // ====================================================================
 function render() {
@@ -1924,6 +2063,7 @@ function render() {
     { id: 'credite',      label: 'Credite',      icon: 'landmark' },
     { id: 'fond-urgenta', label: 'Fond urgență', icon: 'shield' },
     { id: 'venituri',     label: 'Venituri',     icon: 'coins' },
+    { id: 'goals',        label: 'Obiective',    icon: 'target' },
     { id: 'setari',       label: 'Setări',       icon: 'sliders-horizontal' },
   ];
 
@@ -1931,6 +2071,7 @@ function render() {
     'buget-lunar': renderBugetLunar,
     'credite': renderCredite,
     'fond-urgenta': renderFondUrgenta,
+    'goals': renderGoals,
     'setari': renderSetari,
     'venituri': renderVenituri,
   };
