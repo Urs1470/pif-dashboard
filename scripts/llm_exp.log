@@ -8501,3 +8501,168 @@
 2026-05-19 11:45:07,482  INFO        -> rewrite: Afiseaza turatia masurata a ventilatorului C de pe placa de putere. Valoarea afi
 2026-05-19 11:45:07,583  INFO      16866 0-40 (Danfoss_VLT_FC302)  existing_len=1190  qc=rewrite
 2026-05-19 11:45:18,118  INFO        -> rewrite: Controleaza functionarea tastei Hand On de pe panoul de control local LCP. Setar
+2026-05-19 11:45:22,779  INFO        Committed + pushed
+2026-05-19 11:45:22,879  INFO      16867 0-41 (Danfoss_VLT_FC302)  existing_len=1216  qc=rewrite
+2026-05-19 11:45:30,033  INFO        -> rewrite: Blocheaza tastele de pe panoul de control local pentru a preveni oprirea acciden
+2026-05-19 11:45:30,134  INFO      16868 0-42 (Danfoss_VLT_FC302)  existing_len=1044  qc=rewrite
+2026-05-19 11:45:43,348  INFO        -> rewrite: Previne pornirea accidentala a convertizorului de frecventa in modul auto-on. Ca
+2026-05-19 11:45:43,449  INFO      16869 0-43 (Danfoss_VLT_FC302)  existing_len=1145  qc=rewrite
+2026-05-19 11:45:53,877  INFO        -> rewrite: Activeaza functia de resetare a convertizorului de frecventa prin tasta [Reset] 
+2026-05-19 11:45:53,977  INFO      16870 0-44 (Danfoss_VLT_FC302)  existing_len=1225  qc=rewrite
+2026-05-19 11:46:04,961  INFO        -> rewrite: Permite sau blocheaza tasta [Off/Reset] de pe panoul de control local (LCP). Can
+2026-05-19 11:46:05,062  INFO      16871 0-45 (Danfoss_VLT_FC302)  existing_len=1252  qc=rewrite
+2026-05-19 11:46:22,332  INFO        -> rewrite: Activeaza sau dezactiveaza tastele de pe panoul de control local (LCP). Cu setar
+2026-05-19 11:46:22,432  INFO      16872 9-99 (Danfoss_VLT_FC302)  existing_len=1257  qc=rewrite
+2026-05-19 11:46:35,637  INFO        -> rewrite: Contorul de revizie Profibus afiseaza nivelul de revizie al interfetei de comuni
+2026-05-19 11:46:35,738  INFO      16873 10-51 (Danfoss_VLT_FC302)  existing_len=1230  qc=rewrite
+2026-05-19 11:46:44,163  INFO        -> rewrite: Configureaza cuvantul de date de proces care este transmis catre magistrala de c
+2026-05-19 11:46:44,264  INFO      16874 12-99 (Danfoss_VLT_FC302)  existing_len=1241  qc=rewrite
+2026-05-19 11:46:51,935  INFO        -> rewrite: Afiseaza contorul media total care inregistreaza timpul de functionare sau numar
+2026-05-19 11:46:52,035  INFO      16875 14-90 (Danfoss_VLT_FC302)  existing_len=1288  qc=rewrite
+2026-05-19 11:47:03,973  INFO        -> rewrite: Seteaza pragul de declansare pentru protectia hardware la supracurent. Aceasta f
+2026-05-19 11:47:04,074  INFO      16876 33-95 (Danfoss_VLT_FC302)  existing_len=1358  qc=rewrite
+2026-05-19 11:47:14,142  INFO        -> rewrite: Seteaza viteza de comunicatie seriala RS485 pentru modulul MCO (Motion Control O
+2026-05-19 11:47:14,243  INFO      16877 36-65 (Danfoss_VLT_FC302)  existing_len=1207  qc=rewrite
+2026-05-19 11:47:23,274  INFO        -> rewrite: Seteaza valoarea de iesire (%) care este trimisa la borna X49/11 cand aceasta es
+2026-05-19 11:47:23,374  INFO      22486 1-89 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:47:28,975  INFO        -> new: Seteaza timpul in secunde in care cuplul motorului este redus la zero, dupa ce v
+2026-05-19 11:47:29,075  INFO      22487 4-49 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:47:39,670  INFO        -> new: Seteaza intervalul de timp la care se verifica conexiunile dintre motor si conve
+2026-05-19 11:47:39,771  INFO      22488 14-49 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:47:46,301  INFO        -> new: Parametru de diagnostic read-only care afiseaza informatii despre starea si func
+2026-05-19 11:47:46,401  INFO      22489 16-98 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:47:56,399  INFO        -> new: Afiseaza cuvantul de avertizare primit prin portul de comunicatie seriala in for
+2026-05-19 11:47:56,500  INFO      22490 18-20 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:48:07,135  INFO        -> new: Afiseaza pozitia de referinta pentru controller-ul PI de pozitie care este calcu
+2026-05-19 11:48:07,236  INFO      22491 18-23 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:48:17,815  INFO        -> new: Afiseaza pozitia virtuala curenta a master-ului calculata de generatorul de prof
+2026-05-19 11:48:17,915  INFO      22492 18-93 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:48:24,710  INFO        -> new: Afiseaza valoarea curenta a iesirii controllerului PID de proces dupa aplicarea 
+2026-05-19 11:48:24,811  INFO      22493 23-01 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:48:36,417  INFO        -> new: Selecteaza actiunea care se executa in timpul starii ON (activ) a unui ciclu log
+2026-05-19 11:48:36,518  INFO      22494 23-02 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:48:48,826  INFO        -> new: Seteaza timpul de oprire pentru actiunea temporizata. Functioneaza impreuna cu t
+2026-05-19 11:48:48,927  INFO      22495 23-08 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:00,623  WARNING     Bad categorie 'Altol' for 23-08, retry
+2026-05-19 11:49:07,359  INFO        -> new: Activeaza functia de actiuni temporizate bazate pe ceasul intern al convertizoru
+2026-05-19 11:49:07,459  INFO      22496 23-09 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:17,936  INFO        -> new: Controloaza comportarea actiunilor temporizate la schimbarea configuratiei. Cand
+2026-05-19 11:49:18,037  INFO      22497 23-18 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:27,652  INFO        -> new: Acest parametru controleaza daca counterul brake-ului mecanic poate fi resetat. 
+2026-05-19 11:49:27,752  INFO      22498 36-11 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:34,337  INFO        -> new: Definește curentul minim pentru intrarea analogica X49/1 in mod curent (0-20mA s
+2026-05-19 11:49:34,437  INFO      22499 36-21 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:41,251  INFO        -> new: Seteaza valoarea curentului minim pentru intrarea analogica X49/3. Aceasta repre
+2026-05-19 11:49:41,352  INFO      22500 36-31 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:49:52,007  INFO        -> new: Seteaza pragul minim de curent pentru intrarea analogica de la terminalul X49/5.
+2026-05-19 11:49:52,108  INFO      22501 36-36 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:03,492  INFO        -> new: Seteaza constanta de timp pentru filtrarea semnalului de la intrarea digitala X4
+2026-05-19 11:50:03,592  INFO      22502 36-41 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:16,001  INFO        -> new: Configureaza functionarea iesirii digitale de pe terminalul X49/7. Valoarea impl
+2026-05-19 11:50:16,102  INFO      22503 36-51 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:25,818  INFO        -> new: Seteaza functia iesirii digitale de pe terminalul X49/9. Poate fi configurata ca
+2026-05-19 11:50:25,918  INFO      22504 36-61 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:31,527  INFO        -> new: Selecteaza functia sursei pentru iesirea digitala X49/11. Acest parametru define
+2026-05-19 11:50:31,628  INFO      22505 40-29 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:45,180  INFO        -> new: Parametru de citire pentru inregistrarea evenimentelor functiei Back EMF. Valoar
+2026-05-19 11:50:45,281  INFO      22506 42-16 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:50:59,595  INFO        -> new: Defineste tipul de montare al senzorului de masura a vitezei. Cand senzorul este
+2026-05-19 11:50:59,695  INFO      24227 600-22 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:51:11,579  INFO        -> new: Selecteaza tipul de telegram PROFIdrive utilizat pentru comunicatia cu automatul
+2026-05-19 11:51:11,680  INFO      24228 600-44 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:51:18,235  INFO        -> new: parametru de diagnostic doar pentru citire care afiseaza numarul total de modifi
+2026-05-19 11:51:18,335  INFO      24229 600-47 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:51:27,881  INFO        -> new: Afiseaza numarul intern al unei erori din bufferul de erori de siguranta. Valoar
+2026-05-19 11:51:27,984  INFO      24230 600-52 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:51:34,799  INFO        -> new: Contorizeaza numarul de situatii de defectiune inregistrate de la ultima resetar
+2026-05-19 11:51:34,900  INFO      24231 601-22 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-19 11:51:41,533  INFO        -> new: Seteaza numarul canalului de siguranta pentru comunicatia PROFIdrive. Acest para
+2026-05-19 11:51:41,634  INFO      4222 0x6080 (Lenze_i550)  existing_len=1148  qc=rewrite
+2026-05-19 11:51:53,661  INFO        -> rewrite: Seteaza limita superioara a vitezei motorului in unitati de turatie. Daca referi
+2026-05-19 11:51:53,761  INFO      18661 0x4018:003 (Lenze_i550)  existing_len=1079  qc=rewrite
+2026-05-19 11:52:02,706  INFO        -> rewrite: Seteaza intarzierea de deconectare a releului in secunde. Daca releul este asign
+2026-05-19 11:52:02,806  INFO      18662 0x4018:004 (Lenze_i550)  existing_len=1065  qc=rewrite
+2026-05-19 11:52:11,096  INFO        -> rewrite: Seteaza timpul de intarziere la conectare pentru releu. Dupa comanda de activare
+2026-05-19 11:52:11,197  INFO      18663 0x4018:005 (Lenze_i550)  existing_len=1011  qc=rewrite
+2026-05-19 11:52:19,930  INFO        -> rewrite: Afiseaza starea logica curenta a releului de iesire. Valoarea este binara (0=dez
+2026-05-19 11:52:20,031  INFO      18664 0x4018:006 (Lenze_i550)  existing_len=1032  qc=rewrite
+2026-05-19 11:52:32,992  INFO        -> rewrite: Afiseaza starea logica a semnalului de trigger pentru releu. Este un parametru d
+2026-05-19 11:52:33,092  INFO      18665 0x4018:007 (Lenze_i550)  existing_len=1109  qc=rewrite
+2026-05-19 11:52:38,087  INFO        -> rewrite: Afiseaza numarul de cicluri de comutare ale releului. Este un parametru de diagn
+2026-05-19 11:52:38,188  INFO      18667 0x4016:003 (Lenze_i550)  existing_len=1099  qc=rewrite
+2026-05-19 11:52:53,409  INFO        -> rewrite: Seteaza timpul de intarziere la dezactivare pentru iesirea digitala 1, masurat i
+2026-05-19 11:52:53,509  INFO      18668 0x4016:004 (Lenze_i550)  existing_len=1097  qc=rewrite
+2026-05-19 11:53:04,533  INFO        -> rewrite: Seteaza timpul de intarziere la activarea iesirii digitale 1. Dupa expirarea int
+2026-05-19 11:53:04,633  INFO      18669 0x4016:005 (Lenze_i550)  existing_len=1069  qc=rewrite
+2026-05-19 11:53:11,214  INFO        -> rewrite: Afiseaza starea logica curenta (ON/OFF) a terminalului de iesire digitala X3/DO1
+2026-05-19 11:53:11,314  INFO      18670 0x4016:006 (Lenze_i550)  existing_len=1102  qc=rewrite
+2026-05-19 11:53:24,494  INFO        -> rewrite: Afiseaza starea logica bruta a semnalului de trigger pentru iesirea digitala 1, 
+2026-05-19 11:53:24,595  INFO      18679 0x4017:003 (Lenze_i550)  existing_len=1175  qc=rewrite
+2026-05-19 11:53:30,441  INFO        -> rewrite: Seteaza intarzierea la dezactivarea iesirii digitale 2 dupa ce conditia de activ
+2026-05-19 11:53:30,542  INFO      18680 0x4017:004 (Lenze_i550)  existing_len=1156  qc=rewrite
+2026-05-19 11:53:43,053  INFO        -> rewrite: Seteaza intarzierea la conectare pentru iesirea digitala 2 in secunde. Daca iesi
+2026-05-19 11:53:43,153  INFO      18681 0x4017:005 (Lenze_i550)  existing_len=1005  qc=rewrite
+2026-05-19 11:53:54,949  INFO        -> rewrite: Afiseaza starea logica a terminalului de iesire digitala X3/DO2. Valoarea 0 inse
+2026-05-19 11:53:55,049  INFO      18682 0x4017:006 (Lenze_i550)  existing_len=1057  qc=rewrite
+2026-05-19 11:54:07,020  INFO        -> rewrite: Afiseaza starea logica brută (0 sau 1) a semnalului de trigger pentru ieșirea di
+2026-05-19 11:54:07,121  INFO      18764 0x1400:000 (Lenze_i550)  existing_len=753  qc=rewrite
+2026-05-19 11:54:14,518  INFO        -> rewrite: Reprezinta numarul maxim de sub-indici suportati de obiectul RPDO1 (Receive PDO)
+2026-05-19 11:54:14,619  INFO      18774 0x1800:000 (Lenze_i550)  existing_len=1184  qc=rewrite
+2026-05-19 11:54:21,607  INFO        -> rewrite: Defineste numarul maxim de sub-indici disponibili pentru obiectul TPDO1. Valoare
+2026-05-19 11:54:21,708  INFO      18779 0x1801:000 (Lenze_i550)  existing_len=1111  qc=rewrite
+2026-05-19 11:54:29,687  INFO        -> rewrite: Indicele maxim al sub-parametrilor pentru obiectul de comunicare TPDO2 (0x1801).
+2026-05-19 11:54:29,788  INFO      18784 0x1802:000 (Lenze_i550)  existing_len=1186  qc=rewrite
+2026-05-19 11:54:35,407  INFO        -> rewrite: Indicele cel mai mare al sub-indicilor pentru TPDO3. Valoarea 5 este fixa si nu 
+2026-05-19 11:54:35,508  INFO      18790 0x1600:000 (Lenze_i550)  existing_len=1289  qc=rewrite
+2026-05-19 11:54:42,936  INFO        -> rewrite: Seteaza numarul de obiecte mapate in RPDO1 (Receive PDO1). Acest parametru defin
+2026-05-19 11:54:43,036  INFO      18791 0x1600:001 (Lenze_i550)  existing_len=1444  qc=rewrite
+2026-05-19 11:54:49,943  INFO        -> rewrite: Configureaza maparea obiectelor aplicatiei in RPDO1. Acest parametru defineste c
+2026-05-19 11:54:50,043  INFO      18792 0x1600:002 (Lenze_i550)  existing_len=1356  qc=rewrite
+2026-05-19 11:54:57,491  INFO        -> rewrite: Defineste ce obiect de aplicatie este mapat in intrarea 2 a RPDO1 (Receive PDO 1
+2026-05-19 11:54:57,591  INFO      18793 0x1600:003 (Lenze_i550)  existing_len=1369  qc=rewrite
+2026-05-19 11:55:05,147  INFO        -> rewrite: Defineste al treilea obiect mapat in RPDO1 (Receive PDO 1). Acest parametru spec
+2026-05-19 11:55:05,247  INFO      18794 0x1600:004 (Lenze_i550)  existing_len=1305  qc=rewrite
+2026-05-19 11:55:13,457  INFO        -> rewrite: Defineste intrarea de mapare 4 pentru RPDO1 (Receive PDO1). Acest parametru spec
+2026-05-19 11:55:13,557  INFO      18795 0x1600:005 (Lenze_i550)  existing_len=770  qc=rewrite
+2026-05-19 11:55:26,118  INFO        -> rewrite: Defineste a 5-a intrare de mapare pentru RPDO1 (Receive PDO 1). Acest parametru 
+2026-05-19 11:55:26,219  INFO      18796 0x1600:006 (Lenze_i550)  existing_len=799  qc=rewrite
+2026-05-19 11:55:34,119  INFO        -> rewrite: Mapeaza al 6-lea obiect aplicatie in RPDO1. Valoarea contine index-ul pe 16 biti
+2026-05-19 11:55:34,220  INFO      18797 0x1600:007 (Lenze_i550)  existing_len=1105  qc=rewrite
+2026-05-19 11:55:41,210  INFO        -> rewrite: Defineste care obiect aplicativ este mapat la intrarea 7 din RPDO1 (Receive Proc
+2026-05-19 11:55:41,310  INFO      18798 0x1600:008 (Lenze_i550)  existing_len=1108  qc=rewrite
+2026-05-19 11:55:48,501  INFO        -> rewrite: Defineste al 8-lea obiect din dictionarul CANopen care este mapat in RPDO1. Fiec
+2026-05-19 11:55:48,602  INFO      18799 0x1601:000 (Lenze_i550)  existing_len=1263  qc=rewrite
+2026-05-19 11:55:57,293  INFO        -> rewrite: Seteaza numarul de obiect mapate in RPDO2 (Receive Process Data Object 2). RPDO2
+2026-05-19 11:55:57,393  INFO      18800 0x1601:001 (Lenze_i550)  existing_len=1208  qc=rewrite
+2026-05-19 11:56:12,076  INFO        -> rewrite: Defineste primul obiect din dictionarul CANopen care este mapat in RPDO2. RPDO2 
+2026-05-19 11:56:12,176  INFO      18801 0x1601:002 (Lenze_i550)  existing_len=1146  qc=rewrite
+2026-05-19 11:56:24,052  INFO        -> rewrite: Defineste intrarea de mapare 2 pentru RPDO2 (Receive PDO 2). Acest parametru spe
+2026-05-19 11:56:24,153  INFO      18802 0x1601:003 (Lenze_i550)  existing_len=1161  qc=rewrite
+2026-05-19 11:56:34,127  INFO        -> rewrite: Defineste al treilea obiect aplicativ mapat in RPDO2 (Receive PDO 2). Acest para
+2026-05-19 11:56:34,228  INFO      18803 0x1601:004 (Lenze_i550)  existing_len=1100  qc=rewrite
+2026-05-19 11:56:43,100  INFO        -> rewrite: Defineste al patrulea obiect de aplicatie mapat in RPDO2 (Receive PDO 2). Valoar
+2026-05-19 11:56:43,201  INFO      18804 0x1601:005 (Lenze_i550)  existing_len=1087  qc=rewrite
+2026-05-19 11:56:52,833  INFO        -> rewrite: Defineste obiectul de aplicatie mapat in intrarea 5 a RPDO2 (Receive PDO 2). Ace
+2026-05-19 11:56:52,933  INFO      18805 0x1601:006 (Lenze_i550)  existing_len=1112  qc=rewrite
+2026-05-19 11:57:03,182  INFO        -> rewrite: Acest parametru defineste intrarea de mapare 6 pentru RPDO2 (Receive Process Dat
+2026-05-19 11:57:03,282  INFO      18806 0x1601:007 (Lenze_i550)  existing_len=1073  qc=rewrite
+2026-05-19 11:57:12,025  INFO        -> rewrite: Defineste obiectul de aplicatie care va fi transmis prin RPDO2 (Receive PDO 2). 
+2026-05-19 11:57:12,126  INFO      18807 0x1601:008 (Lenze_i550)  existing_len=1188  qc=rewrite
+2026-05-19 11:57:24,006  INFO        -> rewrite: Mapeaza obiectul de aplicatie 8 in RPDO2 (Receive PDO2). Valoarea 32-bit contine
+2026-05-19 11:57:24,107  INFO      18808 0x1602:000 (Lenze_i550)  existing_len=1190  qc=rewrite
+2026-05-19 11:57:33,744  INFO        -> rewrite: Defineste numarul de obiect SDO care sunt mapate in RPDO3. RPDO3 este un canal d
+2026-05-19 11:57:33,845  INFO      18809 0x1602:001 (Lenze_i550)  existing_len=1161  qc=rewrite
+2026-05-19 11:57:47,686  INFO        -> rewrite: Defineste obiectul de aplicatie care este mapat ca intrarea 1 in RPDO3 (Receive 
+2026-05-19 11:57:47,786  INFO      18810 0x1602:002 (Lenze_i550)  existing_len=1030  qc=rewrite
+2026-05-19 11:57:54,605  INFO        -> rewrite: Defineste al doilea obiect din harta RPDO3 (Receive PDO 3). Acest parametru spec
+2026-05-19 11:57:54,706  INFO      18811 0x1602:003 (Lenze_i550)  existing_len=1047  qc=rewrite
+2026-05-19 11:58:00,387  INFO        -> rewrite: Defineste obiectul de aplicatie care este transferat prin al treilea canal al RP
+2026-05-19 11:58:00,488  INFO      18812 0x1602:004 (Lenze_i550)  existing_len=1071  qc=rewrite
+2026-05-19 11:58:10,860  INFO        -> rewrite: Defineste obiectul care va fi receptionat prin RPDO3 (canal 3 de date de la magi
+2026-05-19 11:58:10,960  INFO      18813 0x1602:005 (Lenze_i550)  existing_len=972  qc=rewrite
+2026-05-19 11:58:19,404  INFO        -> rewrite: Defineste intrarea de mapare 5 pentru RPDO3 (Receive PDO 3) in comunicatia CANop
+2026-05-19 11:58:19,504  INFO      18814 0x1602:006 (Lenze_i550)  existing_len=1020  qc=rewrite
+2026-05-19 11:58:27,892  INFO        -> rewrite: Defineste obiectul CANopen mapat in pozitia 6 a RPDO3 (Receive PDO 3). RPDO3 pri
+2026-05-19 11:58:27,993  INFO      18815 0x1602:007 (Lenze_i550)  existing_len=1034  qc=rewrite
+2026-05-19 11:58:35,017  INFO        -> rewrite: Defineste intrarea de mapare 7 pentru RPDO3 (Receive Process Data Object 3) in r
+2026-05-19 11:58:35,117  INFO      18816 0x1602:008 (Lenze_i550)  existing_len=1082  qc=rewrite
