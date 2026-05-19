@@ -5679,3 +5679,204 @@
 2026-05-19 07:45:01,500  INFO        -> new: Afiseaza energia totala economisita in megavati-ora comparativ cu operarea direc
 2026-05-19 07:45:01,601  INFO      24086 45.3 (ACS880)  existing_len=0  qc=new
 2026-05-19 07:45:06,484  INFO        -> new: Afiseaza energia cumulata economisita in kWh fata de functionarea directa pe ret
+2026-05-19 07:45:09,822  INFO        Committed + pushed
+2026-05-19 07:45:09,922  INFO      24087 45.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:13,277  INFO        -> new: Afiseaza economiile monetare in mii de unitati. Valoarea este acumulata de la ul
+2026-05-19 07:45:13,378  INFO      24088 45.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:19,132  INFO        -> new: Afiseaza economiile banesti acumulate comparativ cu pornirea directa pe retea. V
+2026-05-19 07:45:19,233  INFO      24089 45.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:25,758  INFO        -> new: Afiseaza reducerea cumulativa a emisiilor de CO2 in kilotone metrice. Valoarea e
+2026-05-19 07:45:25,859  INFO      24090 45.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:32,534  INFO        -> new: Afiseaza reducerea emisiilor de CO2 in tone metrice calculate pe baza energiei e
+2026-05-19 07:45:32,635  INFO      24091 46.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:38,690  INFO        -> new: Defineste valoarea maxima de viteza utilizata ca referinta pentru scalarea vitez
+2026-05-19 07:45:38,791  INFO      24092 46.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:47,578  INFO        -> new: Defineste frecventa maxima a motorului folosita ca referinta pentru scalare. Ace
+2026-05-19 07:45:47,678  INFO      24093 46.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:45:52,769  INFO        -> new: Defineste factorul de scalare pentru toti parametrii de cuplu pe 16 biti. Cu val
+2026-05-19 07:45:52,870  INFO      24094 46.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:02,741  INFO        -> new: Defineste puterea nominala a motorului in cai putere pentru scalare si afisare. 
+2026-05-19 07:46:02,842  INFO      24095 46.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:16,111  INFO        -> new: Defineste valoarea curentului in amperi care corespunde scalarii pe 16 biti pent
+2026-05-19 07:46:16,211  INFO      24096 46.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:22,529  INFO        -> new: Defineste viteza motorului in rpm corespunzatoare referintei zero (0V, 0mA sau 0
+2026-05-19 07:46:22,629  INFO      24097 46.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:31,581  INFO        -> new: Defineste frecventa care corespunde punctului de referinta zero. Aceasta valoare
+2026-05-19 07:46:31,682  INFO      24098 47.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:39,237  INFO        -> new: Parametru de stocare generala a datelor. Poate fi scris si citit de la comunicat
+2026-05-19 07:46:39,337  INFO      24099 47.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:45,159  INFO        -> new: Parameter de stocare generala pentru valori numerice. Poate fi folosit pentru sa
+2026-05-19 07:46:45,259  INFO      24100 47.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:46:53,898  INFO        -> new: Parametru de stocare generala a datelor utilizat pentru salvarea valorilor inter
+2026-05-19 07:46:53,998  INFO      24101 47.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:05,141  INFO        -> new: Parametru de stocare generala a datelor pentru schimb de valori intre sistemul d
+2026-05-19 07:47:05,242  INFO      24102 47.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:11,283  INFO        -> new: Parametru de stocare a datelor pentru salvarea valorilor temporare sau pentru sc
+2026-05-19 07:47:11,384  INFO      24103 47.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:21,019  INFO        -> new: parametru de stocare a datelor folosit pentru schimbul de valori intre convertiz
+2026-05-19 07:47:21,119  INFO      24104 47.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:30,944  INFO        -> new: Parametru de stocare generala a datelor utilizat pentru salvarea valorilor numer
+2026-05-19 07:47:31,045  INFO      24105 47.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:36,339  INFO        -> new: Parametru general de stocare a datelor folosit pentru memorarea valorilor interm
+2026-05-19 07:47:36,439  INFO      24106 49.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:45,099  INFO        -> new: Defineste identificatorul unic al drive-ului in reteaua de comunicatie fieldbus.
+2026-05-19 07:47:45,200  INFO      24107 49.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:47:52,243  INFO        -> new: Defineste rata de transfer a comunicatiei seriale in kilobiti pe secunda. Trebui
+2026-05-19 07:47:52,343  INFO      24108 49.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:01,054  INFO        -> new: Seteaza timpul maxim de asteptare pentru comunicarea cu panoul de control sau PC
+2026-05-19 07:48:01,155  INFO      24109 49.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:10,692  INFO        -> new: Defineste reactia drive-ului la pierderea comunicarii cu panoul de control sau c
+2026-05-19 07:48:10,793  INFO      24110 49.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:17,020  INFO        -> new: Comanda de aplicare a setarilor de comunicatie fieldbus. Dupa modificarea parame
+2026-05-19 07:48:17,120  INFO      24111 49.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:27,518  INFO        -> new: Activeaza functia de monitorizare a comunicarii cu panoul de control. Cand este 
+2026-05-19 07:48:27,619  INFO      24112 49.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:36,847  INFO        -> new: Seteaza actiunea drive-ului la conectarea unui panou de control sau a unui PC. A
+2026-05-19 07:48:36,947  INFO      24113 50.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:45,928  INFO        -> new: Activeaza sau dezactiveaza comunicatia prin adapterul de fieldbus A. Cand este a
+2026-05-19 07:48:46,029  INFO      24114 50.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:51,864  INFO        -> new: Selecteaza actiunea pe care drive-ul o executa cand comunicatia pe fieldbus se i
+2026-05-19 07:48:51,965  INFO      24115 50.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:48:59,821  INFO        -> new: Seteaza timpul de intarziere in secunde inainte ca actiunea de protectie sa fie 
+2026-05-19 07:48:59,922  INFO      24116 50.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:07,013  INFO        -> new: Selecteaza tipul si scalarea referintei 1 receptionate prin adaptorul de fieldbu
+2026-05-19 07:49:07,113  INFO      24117 50.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:17,217  INFO        -> new: Selecteaza tipul si scalarea referintei 2 primite prin interfata fieldbus adapte
+2026-05-19 07:49:17,318  INFO      24118 50.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:27,462  INFO        -> new: Defineste tipul si sursa valorii actuale 1 transmise de adaptorul de camp FBA A.
+2026-05-19 07:49:27,563  INFO      24119 50.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:37,102  INFO        -> new: Defineste sursa si tipul de date pentru valoarea actuala 2 a adaptorului Fieldbu
+2026-05-19 07:49:37,203  INFO      24120 50.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:43,155  INFO        -> new: Selecteaza sursa cuvantului de stare pentru comunicatia fieldbus. Cand este acti
+2026-05-19 07:49:43,256  INFO      24121 50.99 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:48,251  INFO        -> new: Activeaza sau dezactiveaza detectia automata a modulului FBA (FieldBus Adapter).
+2026-05-19 07:49:48,352  INFO      24122 51.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:49:57,505  INFO        -> new: Acest parametru este doar pentru citire si afiseaza tipul adaptorului fieldbus c
+2026-05-19 07:49:57,605  INFO      24123 51.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:09,055  INFO        -> new: Acest parametru este un camp de configurare specific pentru modulul adaptor fiel
+2026-05-19 07:50:09,156  INFO      24124 52.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:18,491  INFO        -> new: Parametrii 52.01…52.12 configureaza datele transferate prin adaptorul fieldbus. 
+2026-05-19 07:50:18,592  INFO      24125 53.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:27,764  INFO        -> new: Selecteaza parametrul intern al drive-ului care va fi transmis ca iesire de date
+2026-05-19 07:50:27,865  INFO      24126 53.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:38,073  INFO        -> new: Defineste al doilea parametru de date transferate de la invertor spre magistrala
+2026-05-19 07:50:38,173  INFO      24127 54.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:44,554  INFO        -> new: Afiseaza tipul adaptorului fieldbus conectat la slotul B. Informatia este utila 
+2026-05-19 07:50:44,654  INFO      24128 54.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:50,307  INFO        -> new: Acest parametru este specific modulului de adaptare fieldbus si nu are o functie
+2026-05-19 07:50:50,407  INFO      24129 55.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:50:56,884  INFO        -> new: Selecteaza sursa datelor care vor fi transferate prin adaptorul de fieldbus B. F
+2026-05-19 07:50:56,984  INFO      24130 56.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:07,409  INFO        -> new: Selecteaza primul parametru din grupul 56.01-56.12 care va fi transferat prin fi
+2026-05-19 07:51:07,509  INFO      24131 58.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:13,334  INFO        -> new: Activeaza sau dezactiveaza interfata fieldbus integrata in VFD. Permite comunica
+2026-05-19 07:51:13,434  INFO      24132 58.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:20,592  INFO        -> new: Afiseaza identificatorul protocolului de comunicatie seriala folosit de converti
+2026-05-19 07:51:20,692  INFO      24133 58.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:29,047  INFO        -> new: Defineste adresa nodului unitatii pe reteaua fieldbus. Fiecare dispozitiv trebui
+2026-05-19 07:51:29,148  INFO      24134 58.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:36,653  INFO        -> new: Selecteaza rata de transfer a datelor pentru legatura fieldbus. Valorile disponi
+2026-05-19 07:51:36,753  INFO      24135 58.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:43,869  INFO        -> new: Configureaza tipul bitului de paritate (Niciuna, Impara, Para) si numarul de bit
+2026-05-19 07:51:43,970  INFO      24136 58.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:51:52,787  INFO        -> new: Activeaza validarea modificarilor facute in setarile EFB (Embedded Fieldbus). Ca
+2026-05-19 07:51:52,887  INFO      24137 58.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:02,636  INFO        -> new: Afiseaza starea comunicatiei EFB (Embedded Fieldbus). Acest parametru arata daca
+2026-05-19 07:52:02,737  INFO      24138 58.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:09,068  INFO        -> new: Afiseaza numarul total de pachete de date valide receptionate si adresate acestu
+2026-05-19 07:52:09,169  INFO      24139 58.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:15,206  INFO        -> new: Afiseaza numarul de pachete valide transmise de interfata de comunicatie a conve
+2026-05-19 07:52:15,306  INFO      24140 60.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:23,400  INFO        -> new: Selecteaza tipul de conexiune folosita pentru comunicatia master/follower. Aceas
+2026-05-19 07:52:23,501  INFO      24141 60.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:32,520  INFO        -> new: Defineste adresa nodului drive-ului in reteaua de comunicatie master/follower. A
+2026-05-19 07:52:32,621  INFO      24142 60.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:44,454  INFO        -> new: Defineste rolul convertizorului in configuratia master/follower. Cand este setat
+2026-05-19 07:52:44,555  INFO      24143 60.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:52:54,392  INFO        -> new: Defineste topologia conexiunii hardware intre unitatile master si follower. Opti
+2026-05-19 07:52:54,492  INFO      24144 60.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:00,412  INFO        -> new: Seteaza intensitatea luminoasa a LED-ului de transmisie de pe placa de comunicat
+2026-05-19 07:53:00,512  INFO      24145 60.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:09,243  INFO        -> new: Seteaza timpul de asteptare pentru detectarea pierderii comunicatiei master/foll
+2026-05-19 07:53:09,344  INFO      24146 60.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:19,188  INFO        -> new: Defineste reactia drive-ului la pierderea comunicatiei in configuratia master/fo
+2026-05-19 07:53:19,289  INFO      24147 61.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:26,891  INFO        -> new: Selecteaza ce informatie va fi transmisa ca primul cuvant de date in comunicatia
+2026-05-19 07:53:26,992  INFO      24148 61.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:32,255  INFO        -> new: Selecteaza ce data se trimite ca al doilea cuvant in comunicatia fieldbus. Optiu
+2026-05-19 07:53:32,356  INFO      24149 61.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:37,961  INFO        -> new: Selecteaza ce parametru este transmis ca al treilea cuvant de date pe comunicati
+2026-05-19 07:53:38,061  INFO      24150 62.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:46,449  INFO        -> new: Selecteaza destinatia datelor primite de la unitatea master in configuratia Mast
+2026-05-19 07:53:46,550  INFO      24151 62.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:53:55,029  INFO        -> new: Defineste ce parametru intern al drive-ului va primi data 2 de la master in modu
+2026-05-19 07:53:55,130  INFO      24152 62.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:01,969  INFO        -> new: Defineste ce data primeste dispozitivul Follower de la Master in configuratia Ma
+2026-05-19 07:54:02,070  INFO      24153 62.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:09,444  INFO        -> new: Defineste destinatia datelor primite ca si cuvant 1 de la dispozitivul master in
+2026-05-19 07:54:09,544  INFO      24154 62.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:20,198  INFO        -> new: Defineste parametrul tinta pentru datele receptionate ca si cuvant 2 de la un no
+2026-05-19 07:54:20,298  INFO      24155 62.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:26,034  INFO        -> new: Defineste destinatia datelor primite ca si cuvant 3 de la nodul follower 2 prin 
+2026-05-19 07:54:26,135  INFO      24156 62.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:33,481  INFO        -> new: Defineste destinatia sau functia pentru cuvantul 1 receptionat de la dispozitivu
+2026-05-19 07:54:33,581  INFO      24157 62.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:39,649  INFO        -> new: Defineste destinatia datelor primite ca word 2 de la nodul follower 3 in comunic
+2026-05-19 07:54:39,750  INFO      24158 62.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:50,667  INFO        -> new: Defineste parametrul tinta pentru datele receptionate ca si cuvant 3 de la inter
+2026-05-19 07:54:50,767  INFO      24159 90.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:54:56,072  INFO        -> new: Afiseaza viteza actuala a motorului in unitati selectate prin 90.2 (Hz sau RPM).
+2026-05-19 07:54:56,173  INFO      24160 90.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:03,519  INFO        -> new: Afiseaza pozitia motorului in interiorul unei rotatii complete. Valoarea variaza
+2026-05-19 07:55:03,619  INFO      24161 90.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:13,089  INFO        -> new: Afiseaza viteza estimata sau masurata a motorului, exprimata in RPM sau in unita
+2026-05-19 07:55:13,190  INFO      24162 90.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:23,244  INFO        -> new: Afiseaza pozitia sarcinii receptionata de la o sursa externa, de obicei prin com
+2026-05-19 07:55:23,345  INFO      24163 90.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:28,779  INFO        -> new: Afiseaza pozitia sarcinii in format zecimal scalat. Valoarea este calculata auto
+2026-05-19 07:55:28,880  INFO      24164 90.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:36,675  INFO        -> new: Afiseaza pozitia calculata a motorului in unitati de masura interne (rotatii sau
+2026-05-19 07:55:36,776  INFO      24165 91.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:42,591  INFO        -> new: Afiseaza starea intrarilor digitale ale modulului de interfata encoder FEN-xx. E
+2026-05-19 07:55:42,692  INFO      24166 91.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:55:49,190  INFO        -> new: Afiseaza tipul modulului de interfata detectat in slotul 1 al convertizorului de
+2026-05-19 07:55:49,290  INFO      24167 91.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:00,108  INFO        -> new: Afiseaza tipul modulului de interfata optional instalat in slotul 2 al convertiz
+2026-05-19 07:56:00,208  INFO      24168 91.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:05,592  INFO        -> new: Afiseaza temperatura masurata prin intermediul modulului 1. Valoarea este doar p
+2026-05-19 07:56:05,693  INFO      24169 91.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:09,832  INFO        -> new: Afiseaza temperatura masurata prin modulul de extensie 2. Valoarea este doar pen
+2026-05-19 07:56:09,933  INFO      24170 92.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:19,941  INFO        -> new: Selecteaza tipul de encoder sau rezolver conectat la intrarea 1. Optiunile inclu
+2026-05-19 07:56:20,042  INFO      24171 92.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:27,970  INFO        -> new: Selecteaza modulul de interfata la care este conectat encoderul 1. Optiunea Modu
+2026-05-19 07:56:28,071  INFO      24172 93.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:36,167  INFO        -> new: Selecteaza tipul de encoder sau rezolver pentru intrarea 2. Optiunile includ enc
+2026-05-19 07:56:36,268  INFO      24173 93.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:42,197  INFO        -> new: Selecteaza modulul de interfata la care este conectat encoderul 2. Aceasta optiu
+2026-05-19 07:56:42,297  INFO      24174 94.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:52,530  INFO        -> new: Activeaza sau dezactiveaza masina de stari interna INU-LSU care controleaza unit
+2026-05-19 07:56:52,630  INFO      24175 94.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:56:58,524  INFO        -> new: Activeaza sau dezactiveaza accesul panoului de control si al PC tool la converti
+2026-05-19 07:56:58,625  INFO      24176 94.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:08,203  INFO        -> new: Afiseaza starea modului de comunicare INU-LSU (Internal Network Unit - Local Sup
+2026-05-19 07:57:08,303  INFO      24177 94.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:15,010  INFO        -> new: Activeaza pornirea externa a unitatii de alimentare IGBT (LSU). Cand este select
+2026-05-19 07:57:15,110  INFO      24178 94.50 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:24,998  INFO        -> new: Activeaza detectia retelei slabe pentru LSU (Line Side Unit). Cand este activata
+2026-05-19 07:57:25,099  INFO      24179 95.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:32,290  INFO        -> new: Selecteaza gama de tensiune de alimentare pentru convertizorul de frecventa. Tre
+2026-05-19 07:57:32,391  INFO      24180 95.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:39,496  INFO        -> new: Activeaza functia de adaptare automata a limitelor de tensiune. In conditii de v
+2026-05-19 07:57:39,597  INFO      24181 95.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:45,257  INFO        -> new: Defineste modul de alimentare al placii de control a convertizorului de frecvent
+2026-05-19 07:57:45,358  INFO      24182 95.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:57:54,510  INFO        -> new: Activeaza monitorizarea intrerupatorului DC in unitatea de control ZCU. Cand est
+2026-05-19 07:57:54,611  INFO      24183 95.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:58:01,424  INFO        -> new: Activeaza controlul sigurantei de comutare pentru protectia circuitului de puter
+2026-05-19 07:58:01,524  INFO      24184 95.12 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:58:06,793  INFO        -> new: Defineste restrictii pentru comenzile de rulare cand se utilizeaza unitatea de c
+2026-05-19 07:58:06,894  INFO      24185 96.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:58:15,381  INFO        -> new: Trebuie sa selecteze limba utilizata pentru interfata cu utilizatorul si afisare
+2026-05-19 07:58:15,481  INFO      24186 96.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:58:26,877  INFO        -> new: Introducerea codului de acces permite deblocarea parametrilor protejati impotriv
