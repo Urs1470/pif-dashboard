@@ -179,16 +179,17 @@ def get_quote(symbol):
     if symbol not in ALLOWED_QUOTE_SYMBOLS:
         return jsonify({'error': 'symbol not whitelisted', 'symbol': symbol}), 400
 
+    rng = request.args.get('range', '3mo')
+    if rng not in ('5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max'):
+        rng = '3mo'
+
+    cache_key = f'{symbol}:{rng}'
     now = time.time()
-    cached = _QUOTE_CACHE.get(symbol)
+    cached = _QUOTE_CACHE.get(cache_key)
     if cached and (now - cached[0]) < QUOTE_CACHE_TTL:
         payload = dict(cached[1])
         payload['cached'] = True
         return jsonify(payload)
-
-    rng = request.args.get('range', '3mo')
-    if rng not in ('5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max'):
-        rng = '3mo'
 
     try:
         data = _fetch_yahoo_chart(symbol, rng=rng)
@@ -225,7 +226,7 @@ def get_quote(symbol):
             'fetchedAt': datetime.utcnow().isoformat() + 'Z',
             'cached': False,
         }
-        _QUOTE_CACHE[symbol] = (now, payload)
+        _QUOTE_CACHE[cache_key] = (now, payload)
         return jsonify(payload)
     except urllib.error.HTTPError as e:
         return jsonify({'error': f'upstream HTTP {e.code}', 'symbol': symbol}), 502
