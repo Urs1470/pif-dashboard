@@ -5561,6 +5561,45 @@ if (el) el.addEventListener('click', function(e) {
     if (e.target === this) closeParamModal();
 });
 
+// Influ-chip click navigation: clicking a referenced parameter chip swaps the
+// modal to that parameter. Cache lookup first (parametriData populated by the
+// Parametri tab), then fallback to API search scoped to the current familie.
+if (el) el.addEventListener('click', async function(e) {
+    const chip = e.target.closest('.influ-chip');
+    if (!chip) return;
+    e.stopPropagation();
+    const code = chip.getAttribute('data-code');
+    if (!code || code === '?') return;
+    // Snapshot familie before openParamModal overwrites currentParam.
+    const familie = currentParam && currentParam.familie;
+    if (!familie) return;
+
+    let found = (Array.isArray(parametriData) ? parametriData : [])
+        .find(p => p && p.parametru === code && p.familie === familie);
+
+    if (!found) {
+        try {
+            const url = '/api/parametri?familie=' + encodeURIComponent(familie)
+                + '&search=' + encodeURIComponent(code) + '&limit=50';
+            const r = await fetch(url);
+            if (r.ok) {
+                const data = await r.json();
+                const list = (data && data.params) || [];
+                found = list.find(p => p.parametru === code && p.familie === familie)
+                    || list.find(p => p.parametru === code);
+            }
+        } catch (err) {
+            console.error('Influ-chip fetch failed:', err);
+        }
+    }
+
+    if (found) {
+        openParamModal(found);
+    } else {
+        showToast('Parametrul ' + code + ' nu a fost gasit', true);
+    }
+});
+
 // ============ MANUALS MODAL ============
 const MANUAL_LABELS = {
     'ACS880_Primary_Firmware_Manual.pdf': 'ABB ACS880 — Primary Firmware Manual',
