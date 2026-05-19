@@ -614,9 +614,12 @@ def parse_lenze(pdf_path):
         # x-coordinates so we can split Address (x<~110), Name+range (110-280),
         # Information (x>=~280) cleanly even when there is no visible border.
         code_word_re = re.compile(r'^(0x[0-9A-F]{4,5}(?::\d{1,3})?)$', re.IGNORECASE)
-        lenze_range_re = re.compile(
-            r'^\s*([+-]?[\d.,]+)\s*\.{2,3}\s*\[\s*([+-]?[\d.,]+)\s*\]\*?\s*\.{2,3}\s*([+-]?[\d.,]+)\s*([^\s*]*)\s*\*?\s*$'
+        # range can appear anywhere inside the aggregated name text — NOT anchored
+        lenze_range_inline_re = re.compile(
+            r'([+-]?[\d.,]+)\s*\.{2,3}\s*\[\s*([+-]?[\d.,]+)\s*\]\*?\s*\.{2,3}\s*([+-]?[\d.,]+)\s*([A-Za-z°%/]+)?'
         )
+        # Read-only enum row: "0 FALSE", "1 TRUE", "0 LABEL" — single key + short label
+        lenze_enum_row_re = re.compile(r'^(\d+|0x[0-9A-Fa-f]+)\s+(.{1,80}?)$')
         for pno, page in enumerate(pdf.pages, start=1):
             try:
                 words = page.extract_words(use_text_flow=True) or []
@@ -658,45 +661,70 @@ def parse_lenze(pdf_path):
                     i += 1
                     continue
 
-                # Continuation rows: until next code at left margin (or end)
+                # Continuation rows: until next code at left margin (or end).
+                # We accept new codes up to x~160 to handle sub-index rows that may
+                # be slightly indented (e.g. consecutive 0xNNNN:024 entries on the
+                # same Lenze page often live at x ~ 73 OR up to ~140).
                 end_i = i + 1
                 while end_i < len(ys):
                     next_row = sorted(rows[ys[end_i]], key=lambda w: w['x'])
-                    if next_row and code_word_re.match(next_row[0]['text']) and next_row[0]['x'] <= 110:
-                        break
+                    if next_row:
+                        nx0 = next_row[0]
+                        if code_word_re.match(nx0['text']) and nx0['x'] <= 160:
+                            break
                     end_i += 1
-                    # Stop if too many continuation rows (safety)
                     if end_i - i > 25:
                         break
 
-                # Aggregate tokens by column for all rows in [i, end_i)
+                # Aggregate tokens by column for all rows in [i, end_i).
+                # Per-row tracking so we can spot value-enum rows like "0 FALSE".
                 name_tokens = []
                 info_tokens = []
-                range_str = ''
+                value_rows = []  # collect candidate (key, label) pairs from name col
                 for rj in range(i, end_i):
                     sub = sorted(rows[ys[rj]], key=lambda w: w['x'])
+                    # Track only name-column tokens for this row to detect enum lines
+                    name_col_this_row = []
                     for w in sub:
-                        # Skip the code itself
                         if rj == i and w is first:
                             continue
                         if w['x'] < 280:
                             name_tokens.append(w['text'])
+                            name_col_this_row.append(w['text'])
                         else:
                             info_tokens.append(w['text'])
+                    # Check if this name-col row is "<num> <short label>"
+                    if 2 <= len(name_col_this_row) <= 6:
+                        joined = ' '.join(name_col_this_row)
+                        em = lenze_enum_row_re.match(joined)
+                        if em and re.fullmatch(r'\d+|0x[0-9A-Fa-f]+', em.group(1)):
+                            value_rows.append({'key': em.group(1), 'label': em.group(2).strip()})
 
                 name_text = ' '.join(name_tokens).strip()
                 info_text = ' '.join(info_tokens).strip()
 
-                # Try to peel a "MIN ... [DEFAULT] ... MAX UNIT" range from name_text
+                # Peel a "MIN ... [DEFAULT] ... MAX UNIT" range from name_text (inline,
+                # no anchors — the range can sit between name and description tokens).
                 min_val = max_val = default_val = unit = ''
-                rm = lenze_range_re.search(name_text)
+                rm = lenze_range_inline_re.search(name_text)
                 if rm:
                     min_val = rm.group(1)
                     default_val = rm.group(2)
                     max_val = rm.group(3)
                     unit = rm.group(4) or ''
-                    # Strip the range fragment from name
-                    name_text = (name_text[:rm.start()] + name_text[rm.end():]).strip()
+                    name_text = (name_text[:rm.start()] + ' ' + name_text[rm.end():]).strip()
+
+                # Strip leftover artefacts:
+                # - Lenze "(Pxxx.xx)" alternate-code suffix
+                # - chapter numbers like "5.8.3"
+                name_text = re.sub(r'\(P\d+\.\d{1,3}\)', '', name_text)
+                name_text = re.sub(r'\b\d+\.\d+\.\d+\b', '', name_text)
+                # Collapse the "(repeat of name)" pattern: e.g.
+                # "Max. motor speed (Max. motor speed)" -> "Max. motor speed"
+                m_repeat = re.match(r'^(.+?)\s*\(\s*\1\s*\)', name_text)
+                if m_repeat:
+                    name_text = m_repeat.group(1).strip()
+                name_text = re.sub(r'\s{2,}', ' ', name_text).strip()
 
                 # Take only the first sentence-ish chunk as name
                 if len(name_text) > 80:
@@ -710,8 +738,12 @@ def parse_lenze(pdf_path):
                     i = end_i
                     continue
 
-                # Skip "(P400.23)" suffix that often follows the address code
-                name_text = re.sub(r'^\(P\d+\.\d+\)\s*', '', name_text).strip()
+                # If we found value-enum rows AND we have a range, the value rows are
+                # probably not meaningful (range row was misdetected as enum). Otherwise
+                # if no range and ≥2 value rows, treat as a read-only enum (e.g. relay state).
+                pdf_extra = None
+                if not (min_val or max_val) and len(value_rows) >= 2:
+                    pdf_extra = {'values': value_rows}
 
                 out[code] = {
                     'name': name_text,
@@ -723,7 +755,7 @@ def parse_lenze(pdf_path):
                     'min': min_val,
                     'max': max_val,
                     'unit': unit,
-                    'pdf_extra': None,
+                    'pdf_extra': pdf_extra,
                 }
                 i = end_i
     return out
