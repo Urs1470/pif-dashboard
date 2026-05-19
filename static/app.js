@@ -305,6 +305,37 @@ function scheduleIconRefresh() {
     _iconRefreshTimer = setTimeout(() => { _iconRefreshTimer = null; refreshIcons(); }, 30);
 }
 
+// Render KaTeX math inside a container (e.g. parameter explicatie modal).
+// Delimiters: $...$ inline, $$...$$ display. No-op until the auto-render
+// helper has loaded from CDN. Safe to call repeatedly.
+function renderMathIn(el) {
+    if (!el) return;
+    if (typeof window.renderMathInElement !== 'function') {
+        // Library still loading — try once it does
+        const onReady = () => { try { window.renderMathInElement(el, _katexOptions); } catch (e) {} };
+        setTimeout(() => {
+            if (typeof window.renderMathInElement === 'function') onReady();
+            else setTimeout(onReady, 300);
+        }, 100);
+        return;
+    }
+    try {
+        window.renderMathInElement(el, _katexOptions);
+    } catch (e) {
+        console.warn('KaTeX render failed:', e);
+    }
+}
+const _katexOptions = {
+    delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$',  right: '$',  display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true },
+    ],
+    throwOnError: false,
+    errorColor: 'var(--danger)',
+};
+
 // Check if a node tree contains an UN-RENDERED <i data-lucide="...">
 // (we only need to refresh when raw placeholders appear, not when Lucide's own
 // SVGs get inserted — those also carry data-lucide but are already rendered)
@@ -5401,6 +5432,7 @@ function openParamModal(param) {
             const explicatieDiv = document.getElementById('param-modal-explicatie');
             if (detail.explicatie && detail.explicatie.trim().length > 0) {
                 explicatieDiv.innerHTML = detail.explicatie;
+                renderMathIn(explicatieDiv);
                 explicatieRow.style.display = 'block';
             } else {
                 explicatieRow.style.display = 'none';

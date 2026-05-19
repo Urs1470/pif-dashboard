@@ -557,6 +557,30 @@ function timeSince(timestamp) {
   return Math.floor(seconds / 86400) + ' zile';
 }
 
+// Render KaTeX math inside a container. Delimiters: $...$ inline, $$...$$ display.
+const _katexOptions = {
+  delimiters: [
+    { left: '$$', right: '$$', display: true },
+    { left: '$',  right: '$',  display: false },
+    { left: '\\(', right: '\\)', display: false },
+    { left: '\\[', right: '\\]', display: true },
+  ],
+  throwOnError: false,
+  errorColor: 'var(--danger)',
+};
+function renderMathIn(el) {
+  if (!el) return;
+  if (typeof window.renderMathInElement !== 'function') {
+    setTimeout(() => {
+      if (typeof window.renderMathInElement === 'function') {
+        try { window.renderMathInElement(el, _katexOptions); } catch (e) {}
+      }
+    }, 200);
+    return;
+  }
+  try { window.renderMathInElement(el, _katexOptions); } catch (e) {}
+}
+
 async function getCachedParams() {
   try {
     const database = await openDB();
@@ -1270,21 +1294,24 @@ function openMobileParamModal(param) {
   
   // Explicație — din cache (dacă există) sau fetch
   const explicatieRow = modal.querySelector('#mpm-explicatie-row');
+  const explicatieEl = modal.querySelector('#mpm-explicatie');
   if (param.explicatie && param.explicatie.trim().length > 0) {
-    modal.querySelector('#mpm-explicatie').innerHTML = param.explicatie;
+    explicatieEl.innerHTML = param.explicatie;
+    renderMathIn(explicatieEl);
     explicatieRow.style.display = 'block';
   } else if (_isOnline && param.id) {
     // Fetch detail from server for full explicatie
     explicatieRow.style.display = 'block';
-    modal.querySelector('#mpm-explicatie').textContent = 'Se încarcă...';
+    explicatieEl.textContent = 'Se încarcă...';
     apiGet('/api/parametri/' + param.id).then(detail => {
       if (detail && detail.explicatie) {
-        modal.querySelector('#mpm-explicatie').innerHTML = detail.explicatie;
+        explicatieEl.innerHTML = detail.explicatie;
+        renderMathIn(explicatieEl);
       } else {
-        modal.querySelector('#mpm-explicatie').textContent = 'Nicio explicație disponibilă';
+        explicatieEl.textContent = 'Nicio explicație disponibilă';
       }
     }).catch(() => {
-      modal.querySelector('#mpm-explicatie').textContent = 'Eroare la încărcare';
+      explicatieEl.textContent = 'Eroare la încărcare';
     });
   } else {
     explicatieRow.style.display = 'none';

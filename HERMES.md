@@ -202,6 +202,15 @@ Notă: `interconexiuni` a fost DROP-uit (schema v6, mai 2026).
    - Pass 2 (sample 5-10%): self-review per param să verifici că nu sunt halucinații
 5. **Stil**: română fără diacritice (convenția Ion), max 2-3 propoziții, commissioner-friendly.
    Exemplu bun: `"Defineste viteza minima a motorului. Setare critica daca aplicatia cere reverse — pune negativ. Vezi 30.12 pentru limita superioara."`
+5b. **Formule LaTeX**: pentru ecuații electrotehnice, folosește sintaxă LaTeX delimitată cu `$...$` (inline). Frontend randează cu KaTeX. Reguli:
+   - Variabile single-letter cu indici: `$T_n$, $P_n$, $n_n$, $L_d$, $i_q$, $\omega_e$, $\Psi$`
+   - Fracții: `$\dfrac{a}{b}$` (mai bun vizual inline decât `\frac`)
+   - Unități în `\text{}` cu `\,` separator: `$T_n = \dfrac{9550 \cdot P_n\,[\text{kW}]}{n_n\,[\text{rpm}]}\,[\text{Nm}]$`
+   - Operatori: `\cdot` pentru multiplicare (NU `*`), `\dfrac` pentru fracții
+   - Intervale: `$[10\%, 300\%]$`
+   - Derivate: `$\dfrac{di_d}{dt}$`
+   - Exemple bune în `scripts/sample_explicatii.json`: 26.08, 01.52, 32.31, 98.13, p0362.
+   - NU folosi LaTeX pentru valori simple (e.g. `30.12`, `1500 rpm`) — doar formule.
 6. **NU skip-ui valori existente** — verifică TOATE 14.743 params. Pentru cei cu `explicatie` deja populată:
    - Compară semantic cu `descriere` PDF-derived
    - Dacă explicatia existentă o reflectă corect și e în stilul cerut (RO fără diacritice, 2-3 propoziții, commissioner-friendly): păstrează, marchează `decision=keep` în log

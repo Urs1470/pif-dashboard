@@ -38,7 +38,7 @@
     "parametru": "26.08",
     "descriere_scurta": "Minimum torque reference",
     "GENERATED": {
-      "explicatie": "Limita inferioara a referintei de cuplu, exprimata in procente din cuplul nominal motor (Tn = 9550 * Pn[kW] / nn[rpm]). Pentru limita absoluta hard, vezi 30.19. Valori negative permit cuplu in directie inversa.",
+      "explicatie": "Limita inferioara a referintei de cuplu, exprimata in procente din cuplul nominal motor $T_n = \\dfrac{9550 \\cdot P_n\\,[\\text{kW}]}{n_n\\,[\\text{rpm}]}\\,[\\text{Nm}]$. Pentru limita absoluta hard, vezi 30.19. Valori negative permit cuplu in directie inversa.",
       "influenteaza": "30.19, 99.12",
       "categorie": "Limite"
     }
@@ -71,7 +71,7 @@
     "parametru": "01.52",
     "descriere_scurta": "Current day kWh",
     "GENERATED": {
-      "explicatie": "Energia consumata in ultimele 24 ore de functionare (nu calendaristic). Valoarea persista la cycle de alimentare. Util pentru monitorizare consum si calculul costului energetic: Cost = kWh * tarif[lei/kWh].",
+      "explicatie": "Energia consumata in ultimele 24 ore de functionare (nu calendaristic). Valoarea persista la cycle de alimentare. Util pentru monitorizare consum si calculul costului energetic: $\\text{Cost} = E\\,[\\text{kWh}] \\cdot t\\,[\\text{lei}/\\text{kWh}]$.",
       "influenteaza": "",
       "categorie": "Diagnostic"
     }
@@ -82,7 +82,7 @@
     "parametru": "98.13",
     "descriere_scurta": "Ld user SI",
     "GENERATED": {
-      "explicatie": "Inductanta de axa directa (Ld) pentru motoare cu magneti permanenti, in mH. Folosita in modelul motor pentru control vectorial precis. Valoare critica — citita de pe placa motor sau din ID run.",
+      "explicatie": "Inductanta de axa directa $L_d$ pentru motoare cu magneti permanenti, in $\\text{mH}$. Folosita in modelul motor pentru control vectorial precis ($u_d = R_s i_d + L_d \\frac{di_d}{dt} - \\omega_e L_q i_q$). Valoare critica — citita de pe placa motor sau din ID run.",
       "influenteaza": "98.14, 99.03",
       "categorie": "Motor"
     }
@@ -93,7 +93,7 @@
     "parametru": "32.31",
     "descriere_scurta": "Supervision 3 hysteresis",
     "GENERATED": {
-      "explicatie": "Histerezisul pentru supervizarea 3: actiunea se activeaza cand semnalul depaseste limita + hist/2 si se dezactiveaza la limita - hist/2. Previne oscilatii in jurul pragului. Aplicabil tuturor modurilor 32.35, nu doar Hysteresis.",
+      "explicatie": "Histerezis pentru supervizarea 3: actiunea se activeaza cand semnalul $S$ depaseste $L_{up} + \\frac{h}{2}$ si se dezactiveaza la $L_{low} - \\frac{h}{2}$. Previne oscilatii in jurul pragului. Aplicabil tuturor modurilor 32.35, nu doar Hysteresis.",
       "influenteaza": "32.35",
       "categorie": "Protectii"
     }
@@ -313,7 +313,7 @@
     "parametru": "p0362",
     "descriere_scurta": "Motor saturation characteristic flux 1",
     "GENERATED": {
-      "explicatie": "Primul punct (flux) pentru caracteristica de saturatie magnetica motor — Psi=f(Imag), in % din fluxul nominal (100%). 4 puncte definesc curba pentru control vectorial precis pe motoare cu saturatie pronuntata. Default 60%, plaja 10-300%.",
+      "explicatie": "Primul punct (flux) pentru caracteristica de saturatie magnetica motor — $\\Psi = f(I_{mag})$, in $\\%$ din fluxul nominal (100%). 4 puncte definesc curba pentru control vectorial precis pe motoare cu saturatie pronuntata. Default 60%, plaja $[10\\%, 300\\%]$.",
       "influenteaza": "p0363, p0364, p0365",
       "categorie": "Motor"
     }
