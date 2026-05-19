@@ -7492,3 +7492,204 @@
 2026-05-19 10:20:20,451  INFO        -> rewrite: Defineste factorul de sincronizare pentru aplicatii master-slave. Inmulteste ref
 2026-05-19 10:20:20,551  INFO      3715 33-11 (Danfoss_VLT_FC302)  existing_len=1224  qc=rewrite
 2026-05-19 10:20:30,579  INFO        -> rewrite: Defineste factorul de sincronizare pentru motorul slave. Valoarea multiplica ref
+2026-05-19 10:20:34,970  INFO        Committed + pushed
+2026-05-19 10:20:35,071  INFO      3716 33-12 (Danfoss_VLT_FC302)  existing_len=1258  qc=rewrite
+2026-05-19 10:20:49,116  INFO        -> rewrite: Defineste offsetul de pozitie pentru functia de sincronizare intre motoare sau f
+2026-05-19 10:20:49,217  INFO      3717 33-13 (Danfoss_VLT_FC302)  existing_len=1403  qc=rewrite
+2026-05-19 10:21:04,380  INFO        -> rewrite: Defineste fereastra de precizie pentru sincronizarea pozitiei. Cand diferenta di
+2026-05-19 10:21:04,481  INFO      3718 33-14 (Danfoss_VLT_FC302)  existing_len=1315  qc=rewrite
+2026-05-19 10:21:13,920  INFO        -> rewrite: Seteaza limita relativa a vitezei motorului slave (secundar) ca procent din vite
+2026-05-19 10:21:14,020  INFO      3719 33-15 (Danfoss_VLT_FC302)  existing_len=1642  qc=rewrite
+2026-05-19 10:21:21,239  INFO        -> rewrite: Seteaza numarul unic de identificare pentru unitatea master intr-o retea de acti
+2026-05-19 10:21:21,340  INFO      3720 33-16 (Danfoss_VLT_FC302)  existing_len=1460  qc=rewrite
+2026-05-19 10:21:32,009  INFO        -> rewrite: Seteaza numarul marker-ului pentru dispozitivul slave in comunicatia MODBUS. Def
+2026-05-19 10:21:32,109  INFO      3721 33-17 (Danfoss_VLT_FC302)  existing_len=1648  qc=rewrite
+2026-05-19 10:21:44,565  INFO        -> rewrite: Seteaza distanta markerului master in impulsuri de encoder. Defineste pozitia ma
+2026-05-19 10:21:44,665  INFO      3722 33-18 (Danfoss_VLT_FC302)  existing_len=1533  qc=rewrite
+2026-05-19 10:21:58,874  INFO        -> rewrite: Defineste distanta in impulsuri encoder intre markerele de pozitie pentru axa sl
+2026-05-19 10:21:58,974  INFO      3723 33-19 (Danfoss_VLT_FC302)  existing_len=1656  qc=rewrite
+2026-05-19 10:22:09,503  INFO        -> rewrite: Defineste tipul de marker utilizat pentru referinta de pozitie a axului master. 
+2026-05-19 10:22:09,603  INFO      3724 33-20 (Danfoss_VLT_FC302)  existing_len=1620  qc=rewrite
+2026-05-19 10:22:23,307  INFO        -> rewrite: Defineste tipul de marker folosit pentru detectarea pozitiei rotorului. Marca Z 
+2026-05-19 10:22:23,407  INFO      3725 33-21 (Danfoss_VLT_FC302)  existing_len=1732  qc=rewrite
+2026-05-19 10:22:32,829  INFO        -> rewrite: Defineste fereastra de toleranta pentru detectia markerului master. Când este se
+2026-05-19 10:22:32,930  INFO      3726 33-22 (Danfoss_VLT_FC302)  existing_len=1682  qc=rewrite
+2026-05-19 10:22:42,825  INFO        -> rewrite: Defineste fereastra de toleranta pentru detectia markerului slave. Seteaza cat d
+2026-05-19 10:22:42,925  INFO      3727 33-24 (Danfoss_VLT_FC302)  existing_len=1429  qc=rewrite
+2026-05-19 10:22:48,107  INFO        -> rewrite: Seteaza numarul marker pentru identificarea si localizarea defectelor in sistem.
+2026-05-19 10:22:48,208  INFO      3728 33-25 (Danfoss_VLT_FC302)  existing_len=1415  qc=rewrite
+2026-05-19 10:23:01,611  INFO        -> rewrite: Seteaza numarul markerului care semnaleaza starea Ready a convertizorului. Folos
+2026-05-19 10:23:01,712  INFO      3729 33-26 (Danfoss_VLT_FC302)  existing_len=1381  qc=rewrite
+2026-05-19 10:23:14,880  INFO        -> rewrite: Filtru digital pentru semnalul de viteza masurat. Valoarea reprezinta constanta 
+2026-05-19 10:23:14,980  INFO      3730 33-27 (Danfoss_VLT_FC302)  existing_len=1305  qc=rewrite
+2026-05-19 10:23:27,340  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea valorii offset. Un filtru mai lent (v
+2026-05-19 10:23:27,441  INFO      3731 33-28 (Danfoss_VLT_FC302)  existing_len=1540  qc=rewrite
+2026-05-19 10:23:42,604  INFO        -> rewrite: Configureaza optiunile de filtrare pentru semnalele marker de la encoder. Contro
+2026-05-19 10:23:42,704  INFO      3732 33-29 (Danfoss_VLT_FC302)  existing_len=1391  qc=rewrite
+2026-05-19 10:23:49,451  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului marker. Mareste valoarea p
+2026-05-19 10:23:49,552  INFO      3733 33-30 (Danfoss_VLT_FC302)  existing_len=1377  qc=rewrite
+2026-05-19 10:24:02,235  INFO        -> rewrite: Defineste valoarea maxima permisa pentru corectia marker-ului encoderului. Aceas
+2026-05-19 10:24:02,336  INFO      3734 33-31 (Danfoss_VLT_FC302)  existing_len=1488  qc=rewrite
+2026-05-19 10:24:12,304  INFO        -> rewrite: Selecteaza tipul algoritmului de sincronizare cu motorul la pornire sau repornir
+2026-05-19 10:24:12,405  INFO      3735 33-32 (Danfoss_VLT_FC302)  existing_len=1341  qc=rewrite
+2026-05-19 10:24:23,387  INFO        -> rewrite: Activeaza adaptarea feed-forward pentru controlul vitezei motorului. Aceasta fun
+2026-05-19 10:24:23,488  INFO      3736 33-33 (Danfoss_VLT_FC302)  existing_len=1341  qc=rewrite
+2026-05-19 10:24:31,372  INFO        -> rewrite: Seteaza fereastra de timp pentru filtrul de viteza a motorului. O valoare mai ma
+2026-05-19 10:24:31,472  INFO      3737 33-34 (Danfoss_VLT_FC302)  existing_len=1295  qc=rewrite
+2026-05-19 10:24:45,177  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul semnalului de marker de la slave. Filtr
+2026-05-19 10:24:45,277  INFO      3738 33-40 (Danfoss_VLT_FC302)  existing_len=1406  qc=rewrite
+2026-05-19 10:24:51,837  INFO        -> rewrite: Defineste comportarea convertizatorului la atingerea limitatorului de cursa. Opt
+2026-05-19 10:24:51,938  INFO      3739 33-41 (Danfoss_VLT_FC302)  existing_len=1308  qc=rewrite
+2026-05-19 10:25:07,181  INFO        -> rewrite: Seteaza limita inferioara software pentru directia negativa. Când referinta scad
+2026-05-19 10:25:07,281  INFO      3740 33-42 (Danfoss_VLT_FC302)  existing_len=1343  qc=rewrite
+2026-05-19 10:25:17,564  INFO        -> rewrite: Seteaza limita superioara software pentru referinta pozitiva. Cand valoarea pozi
+2026-05-19 10:25:17,665  INFO      3741 33-43 (Danfoss_VLT_FC302)  existing_len=1295  qc=rewrite
+2026-05-19 10:25:28,745  INFO        -> rewrite: Activeaza sau dezactiveaza limita inferioara software pentru viteza motor. Cand 
+2026-05-19 10:25:28,845  INFO      3742 33-44 (Danfoss_VLT_FC302)  existing_len=1733  qc=rewrite
+2026-05-19 10:25:38,317  INFO        -> rewrite: Activeaza limita software pentru sensul pozitiv al miscarii motorului. Cand este
+2026-05-19 10:25:38,418  INFO      3743 33-45 (Danfoss_VLT_FC302)  existing_len=2051  qc=rewrite
+2026-05-19 10:25:48,529  INFO        -> rewrite: Seteaza timpul in milisecunde cat motorul trebuie sa ramana in interiorul ferest
+2026-05-19 10:25:48,630  INFO      3744 33-46 (Danfoss_VLT_FC302)  existing_len=2055  qc=rewrite
+2026-05-19 10:26:02,667  INFO        -> rewrite: Seteaza valoarea limitei pentru fereastra tinta in functia de control proces. Ac
+2026-05-19 10:26:02,768  INFO      3745 33-47 (Danfoss_VLT_FC302)  existing_len=1777  qc=rewrite
+2026-05-19 10:26:13,983  INFO        -> rewrite: Defineste marimea ferestrei tinta pentru functiile de configurare I/O. O valoare
+2026-05-19 10:26:14,083  INFO      3746 33-52 (Danfoss_VLT_FC302)  existing_len=2084  qc=rewrite
+2026-05-19 10:26:25,268  INFO        -> rewrite: Configureaza functia intrarii digitale de la terminalul X57/3. Setarea 0 dezacti
+2026-05-19 10:26:25,369  INFO      3747 33-53 (Danfoss_VLT_FC302)  existing_len=2201  qc=rewrite
+2026-05-19 10:26:37,797  INFO        -> rewrite: Configureaza functia pentru intrarea digitala de pe terminalul X57/4. Optiunea 1
+2026-05-19 10:26:37,897  INFO      3748 33-60 (Danfoss_VLT_FC302)  existing_len=1198  qc=rewrite
+2026-05-19 10:26:46,908  INFO        -> rewrite: Selecteaza modul de functionare pentru bornele X59/1 si X59/2. Cand setat pe 0, 
+2026-05-19 10:26:47,009  INFO      3749 33-61 (Danfoss_VLT_FC302)  existing_len=1706  qc=rewrite
+2026-05-19 10:26:56,974  INFO        -> rewrite: Configureaza intrarea digitala de pe terminalul X59/1. Permite selectarea functi
+2026-05-19 10:26:57,074  INFO      3750 33-63 (Danfoss_VLT_FC302)  existing_len=1092  qc=rewrite
+2026-05-19 10:27:12,707  INFO        -> rewrite: Configureaza iesirea digitala de pe terminalul X59/1. Selectioneaza functia dori
+2026-05-19 10:27:12,809  INFO      3751 33-64 (Danfoss_VLT_FC302)  existing_len=1114  qc=rewrite
+2026-05-19 10:27:25,480  INFO        -> rewrite: Configureaza functia iesirii digitale de pe terminalul X59/2. Puteti alege semna
+2026-05-19 10:27:25,581  INFO      3752 33-65 (Danfoss_VLT_FC302)  existing_len=1115  qc=rewrite
+2026-05-19 10:27:38,417  INFO        -> rewrite: Configureaza functia iesirii digitale X59/3. Selecteaza ce semnal va fi generat:
+2026-05-19 10:27:38,517  INFO      3753 33-66 (Danfoss_VLT_FC302)  existing_len=1089  qc=rewrite
+2026-05-19 10:27:46,579  INFO        -> rewrite: Seteaza functia terminalului digital de iesire X59/4. Optiunile includ semnaliza
+2026-05-19 10:27:46,680  INFO      3754 33-68 (Danfoss_VLT_FC302)  existing_len=1073  qc=rewrite
+2026-05-19 10:27:57,374  INFO        -> rewrite: Configureaza functia iesirii digitale de pe terminalul X59/6. Poate semnaliza mi
+2026-05-19 10:27:57,475  INFO      3755 33-69 (Danfoss_VLT_FC302)  existing_len=1117  qc=rewrite
+2026-05-19 10:28:08,727  INFO        -> rewrite: Configureaza functia pentru iesirea digitala de pe terminalul X59/7. Poate semna
+2026-05-19 10:28:08,828  INFO      3756 34-01 (Danfoss_VLT_FC302)  existing_len=841  qc=rewrite
+2026-05-19 10:28:24,085  INFO        -> rewrite: Parametrul defineste valoarea scrisa in PCD 1 (Process Data 1) catre optiunea MC
+2026-05-19 10:28:24,185  INFO      3757 34-02 (Danfoss_VLT_FC302)  existing_len=1344  qc=rewrite
+2026-05-19 10:28:33,567  INFO        -> rewrite: Parametrul defineste valoarea parolei de date scrisa catre optiunea Motion Contr
+2026-05-19 10:28:33,668  INFO      3758 34-03 (Danfoss_VLT_FC302)  existing_len=1377  qc=rewrite
+2026-05-19 10:28:44,254  INFO        -> rewrite: Seteaza valoarea datei de proces PCD 3 care este transmisa catre modulul optiona
+2026-05-19 10:28:44,355  INFO      3759 34-04 (Danfoss_VLT_FC302)  existing_len=1197  qc=rewrite
+2026-05-19 10:28:52,422  INFO        -> rewrite: Definește al 4-lea cuvânt de date proces trimis de la VFD către modulul MCO (Mot
+2026-05-19 10:28:52,522  INFO      3760 34-05 (Danfoss_VLT_FC302)  existing_len=1171  qc=rewrite
+2026-05-19 10:29:05,843  INFO        -> rewrite: Parametrul 34-05 defineste valoarea data word-ului PCD 5 care este transmis catr
+2026-05-19 10:29:05,944  INFO      3761 34-06 (Danfoss_VLT_FC302)  existing_len=1155  qc=rewrite
+2026-05-19 10:29:17,528  INFO        -> rewrite: Defineste valoarea de scriere pentru PCD 6 (Process Control Data) catre modulul 
+2026-05-19 10:29:17,628  INFO      3762 34-07 (Danfoss_VLT_FC302)  existing_len=1154  qc=rewrite
+2026-05-19 10:29:25,675  INFO        -> rewrite: Parametrul 34-07 seteaza valoarea PCD 7 (Process Control Data) pentru scriere ca
+2026-05-19 10:29:25,776  INFO      3763 34-08 (Danfoss_VLT_FC302)  existing_len=1179  qc=rewrite
+2026-05-19 10:29:38,398  INFO        -> rewrite: Reprezinta valoarea scrisa in PCD 8 (Process Data) pentru comunicarea cu modulul
+2026-05-19 10:29:38,498  INFO      3764 34-09 (Danfoss_VLT_FC302)  existing_len=1304  qc=rewrite
+2026-05-19 10:29:46,817  INFO        -> rewrite: Parametru pentru scrierea datelor catre optiunea Motion Control (MCO) prin PCD 9
+2026-05-19 10:29:46,918  INFO      3765 34-10 (Danfoss_VLT_FC302)  existing_len=1487  qc=rewrite
+2026-05-19 10:29:56,152  INFO        -> rewrite: Parametrul PCD 10 reprezinta date de proces scrise catre modulul MCO (Motion Con
+2026-05-19 10:29:56,252  INFO      3766 34-21 (Danfoss_VLT_FC302)  existing_len=1356  qc=rewrite
+2026-05-19 10:30:07,007  INFO        -> rewrite: Cuvantul de date proces 1 receptionat de la modulul optional MCO (Motion Control
+2026-05-19 10:30:07,107  INFO      3767 34-22 (Danfoss_VLT_FC302)  existing_len=1348  qc=rewrite
+2026-05-19 10:30:15,319  INFO        -> rewrite: Parametrul defineste citirea datelor PCD2 de la modulul optional MCO (Motion Con
+2026-05-19 10:30:15,420  INFO      3768 34-23 (Danfoss_VLT_FC302)  existing_len=1283  qc=rewrite
+2026-05-19 10:30:25,563  INFO        -> rewrite: Defineste registrul PCD3 pentru citirea datelor de la modulul optional MCO (Moti
+2026-05-19 10:30:25,664  INFO      3769 34-24 (Danfoss_VLT_FC302)  existing_len=1303  qc=rewrite
+2026-05-19 10:30:33,598  INFO        -> rewrite: Definește cuvantul de date proces 4 pentru citire de la modulul MCO (Motion Cont
+2026-05-19 10:30:33,699  INFO      3770 34-25 (Danfoss_VLT_FC302)  existing_len=1276  qc=rewrite
+2026-05-19 10:30:45,810  INFO        -> rewrite: Definește citirea valorii PCD 5 de la modulul optional MCO (Motion Controller Op
+2026-05-19 10:30:45,910  INFO      3771 34-26 (Danfoss_VLT_FC302)  existing_len=1347  qc=rewrite
+2026-05-19 10:30:52,003  INFO        -> rewrite: Afiseaza valoarea parolei curente. Daca este setata o parola, blocheaza accesul 
+2026-05-19 10:30:52,104  INFO      3772 34-27 (Danfoss_VLT_FC302)  existing_len=1353  qc=rewrite
+2026-05-19 10:31:05,162  INFO        -> rewrite: Afiseaza valoarea de date procesate (PCD 7) receptionata de la modulul optional 
+2026-05-19 10:31:05,263  INFO      3773 34-28 (Danfoss_VLT_FC302)  existing_len=1105  qc=rewrite
+2026-05-19 10:31:13,697  INFO        -> rewrite: Parameter pentru citirea valorii PCD 8 de la modulul optional Motion Control (MC
+2026-05-19 10:31:13,798  INFO      3774 34-29 (Danfoss_VLT_FC302)  existing_len=969  qc=rewrite
+2026-05-19 10:31:29,805  INFO        -> rewrite: Afiseaza valoarea cuvantului PCD 9 primit de la modulul optional MCO (Motion Con
+2026-05-19 10:31:29,906  INFO      3775 34-30 (Danfoss_VLT_FC302)  existing_len=916  qc=rewrite
+2026-05-19 10:31:41,724  INFO        -> rewrite: Afiseaza valoarea PCD 10 (Process Control Data word 10) receptionata de la modul
+2026-05-19 10:31:41,825  INFO      3776 34-40 (Danfoss_VLT_FC302)  existing_len=1036  qc=rewrite
+2026-05-19 10:31:58,547  INFO        -> rewrite: Defineste functia atribuita fiecarui intrari digitale. Valoarea 0-4095 reprezint
+2026-05-19 10:31:58,647  INFO      3777 34-41 (Danfoss_VLT_FC302)  existing_len=1038  qc=rewrite
+2026-05-19 10:32:04,639  INFO        -> rewrite: Configureaza functiile ieirilor digitale folosind o masca de biti. Fiecare bit d
+2026-05-19 10:32:04,740  INFO      3778 34-50 (Danfoss_VLT_FC302)  existing_len=1003  qc=rewrite
+2026-05-19 10:32:11,871  INFO        -> rewrite: Afiseaza pozitia actuala a motorului masurata de encoder sau senzor de pozitie. 
+2026-05-19 10:32:11,972  INFO      3779 34-51 (Danfoss_VLT_FC302)  existing_len=1065  qc=rewrite
+2026-05-19 10:32:22,164  INFO        -> rewrite: Reprezinta pozitia comandata a motorului in sistemele de pozitionare cu bucla in
+2026-05-19 10:32:22,265  INFO      3780 34-52 (Danfoss_VLT_FC302)  existing_len=1100  qc=rewrite
+2026-05-19 10:32:29,965  INFO        -> rewrite: Afiseaza pozitia actuala a master-ului intr-un sistem de pozitionare. Parametrul
+2026-05-19 10:32:30,065  INFO      3781 34-53 (Danfoss_VLT_FC302)  existing_len=1426  qc=rewrite
+2026-05-19 10:32:41,265  INFO        -> rewrite: Defineste pozitia index a slave-ului intr-un sistem de pozitionare master-slave.
+2026-05-19 10:32:41,366  INFO      3782 34-54 (Danfoss_VLT_FC302)  existing_len=1362  qc=rewrite
+2026-05-19 10:32:52,667  INFO        -> rewrite: Defineste pozitia indexului master pentru sisteme de pozitionare. Valoarea repre
+2026-05-19 10:32:52,768  INFO      3783 34-55 (Danfoss_VLT_FC302)  existing_len=1283  qc=rewrite
+2026-05-19 10:33:04,042  INFO        -> rewrite: Defineste pozitia punctului pe o curba personalizata definita de utilizator. Ace
+2026-05-19 10:33:04,143  INFO      3784 34-56 (Danfoss_VLT_FC302)  existing_len=1421  qc=rewrite
+2026-05-19 10:33:18,252  INFO        -> rewrite: Afiseaza diferenta dintre referinta de viteza si viteza reala a motorului. Valoa
+2026-05-19 10:33:18,353  INFO      3785 34-57 (Danfoss_VLT_FC302)  existing_len=1465  qc=rewrite
+2026-05-19 10:33:26,896  INFO        -> rewrite: Afiseaza eroarea de sincronizare intre motoare sau sisteme. Valoarea indica dife
+2026-05-19 10:33:26,997  INFO      3786 34-58 (Danfoss_VLT_FC302)  existing_len=1430  qc=rewrite
+2026-05-19 10:33:35,955  INFO        -> rewrite: Afiseaza viteza actuala a motorului masurata de encoder sau estimata intern. Est
+2026-05-19 10:33:36,056  INFO      3787 34-59 (Danfoss_VLT_FC302)  existing_len=1552  qc=rewrite
+2026-05-19 10:33:45,353  INFO        -> rewrite: Parametru de citire care afiseaza valoarea actuala a vitezei master. Afiseaza vi
+2026-05-19 10:33:45,454  INFO      3788 34-60 (Danfoss_VLT_FC302)  existing_len=1556  qc=rewrite
+2026-05-19 10:33:57,020  INFO        -> rewrite: Parametru de stare care afiseaza starea sincronizarii convertizorului de frecven
+2026-05-19 10:33:57,120  INFO      3789 34-61 (Danfoss_VLT_FC302)  existing_len=998  qc=rewrite
+2026-05-19 10:34:07,075  INFO        -> rewrite: Parametrul 34-61 afiseaza starea curenta a axei. Este un parametru read-only car
+2026-05-19 10:34:07,176  INFO      3790 34-62 (Danfoss_VLT_FC302)  existing_len=990  qc=rewrite
+2026-05-19 10:34:15,697  INFO        -> rewrite: Parametru de tip read-only care afiseaza statusul intern al programului VFD. Val
+2026-05-19 10:34:15,798  INFO      3791 34-64 (Danfoss_VLT_FC302)  existing_len=968  qc=rewrite
+2026-05-19 10:34:27,384  INFO        -> rewrite: Reprezinta cuvantul de stare al modulului optional MCO 302 pentru controlul misc
+2026-05-19 10:34:27,485  INFO      3792 34-65 (Danfoss_VLT_FC302)  existing_len=980  qc=rewrite
+2026-05-19 10:34:41,940  INFO        -> rewrite: Reprezinta cuvantul de control pentru modulul optional MCO 302 de control in mis
+2026-05-19 10:34:42,040  INFO      3793 34-66 (Danfoss_VLT_FC302)  existing_len=1063  qc=rewrite
+2026-05-19 10:34:49,704  INFO        -> rewrite: Contorizeaza erorile de comunicare SPI dintre placa de control principala si mod
+2026-05-19 10:34:49,805  INFO      3794 34-70 (Danfoss_VLT_FC302)  existing_len=1056  qc=rewrite
+2026-05-19 10:34:56,966  INFO        -> rewrite: Parametru doar pentru citire care afiseaza alarmele active sub forma unui cuvant
+2026-05-19 10:34:57,067  INFO      3795 35-01 (Danfoss_VLT_FC302)  existing_len=1355  qc=rewrite
+2026-05-19 10:35:05,590  INFO        -> rewrite: Afiseaza tipul senzorului de temperatura detectat la intrarea X48/4. Valoarea es
+2026-05-19 10:35:05,691  INFO      3796 35-03 (Danfoss_VLT_FC302)  existing_len=1244  qc=rewrite
+2026-05-19 10:35:12,429  INFO        -> rewrite: Afiseaza tipul senzorului de temperatura detectat la intrarea X48/7. Este un par
+2026-05-19 10:35:12,529  INFO      3797 35-05 (Danfoss_VLT_FC302)  existing_len=1215  qc=rewrite
+2026-05-19 10:35:22,433  INFO        -> rewrite: Afiseaza tipul senzorului de temperatura detectat la intrarea X48/10. Este un pa
+2026-05-19 10:35:22,534  INFO      3798 35-06 (Danfoss_VLT_FC302)  existing_len=1320  qc=rewrite
+2026-05-19 10:35:27,555  INFO        -> rewrite: Activeaza functia de alarma pentru senzorul de temperatura. Cand temperatura mas
+2026-05-19 10:35:27,656  INFO      3799 35-15 (Danfoss_VLT_FC302)  existing_len=1205  qc=rewrite
+2026-05-19 10:35:37,732  INFO        -> rewrite: Activeaza sau dezactiveaza monitorizarea temperaturii pentru terminalul X48/4. C
+2026-05-19 10:35:37,833  INFO      3800 35-16 (Danfoss_VLT_FC302)  existing_len=1145  qc=rewrite
+2026-05-19 10:35:46,012  INFO        -> rewrite: Defineste limita minima de temperatura pentru senzorul conectat la terminalul X4
+2026-05-19 10:35:46,114  INFO      3801 35-17 (Danfoss_VLT_FC302)  existing_len=1134  qc=rewrite
+2026-05-19 10:35:52,374  INFO        -> rewrite: Defineste limita superioara de temperatura pentru senzorul conectat la borna X48
+2026-05-19 10:35:52,475  INFO      3802 35-25 (Danfoss_VLT_FC302)  existing_len=1113  qc=rewrite
+2026-05-19 10:36:01,205  INFO        -> rewrite: Activeaza sau dezactiveaza monitorizarea temperaturii pentru terminalul X48/7. C
+2026-05-19 10:36:01,306  INFO      3803 35-26 (Danfoss_VLT_FC302)  existing_len=1164  qc=rewrite
+2026-05-19 10:36:09,983  INFO        -> rewrite: Seteaza temperatura minima asteptata pentru functionarea normala a senzorului de
+2026-05-19 10:36:10,084  INFO      3804 35-27 (Danfoss_VLT_FC302)  existing_len=1159  qc=rewrite
+2026-05-19 10:36:20,415  INFO        -> rewrite: Seteaza temperatura maxima asteptata pentru functionare normala a senzorului de 
+2026-05-19 10:36:20,516  INFO      3805 35-34 (Danfoss_VLT_FC302)  existing_len=1162  qc=rewrite
+2026-05-19 10:36:29,457  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru borna X48/10. O valoare mai mare ma
+2026-05-19 10:36:29,558  INFO      3806 35-35 (Danfoss_VLT_FC302)  existing_len=1152  qc=rewrite
+2026-05-19 10:36:36,817  INFO        -> rewrite: Activeaza sau dezactiveaza monitorizarea temperaturii pentru terminalul X48/10. 
+2026-05-19 10:36:36,918  INFO      3807 35-36 (Danfoss_VLT_FC302)  existing_len=1450  qc=rewrite
+2026-05-19 10:36:48,226  INFO        -> rewrite: Seteaza limita minima de temperatura pentru senzorul conectat la borna X48/10. V
+2026-05-19 10:36:48,326  INFO      3808 35-37 (Danfoss_VLT_FC302)  existing_len=1382  qc=rewrite
+2026-05-19 10:36:54,939  INFO        -> rewrite: Seteaza temperatura maxima asteptata pentru operarea normala a senzorului de tem
+2026-05-19 10:36:55,040  INFO      3809 35-42 (Danfoss_VLT_FC302)  existing_len=1378  qc=rewrite
+2026-05-19 10:37:08,228  INFO        -> rewrite: Seteaza valoarea curentului (in mA) care corespunde referintei minime pentru int
+2026-05-19 10:37:08,328  INFO      3810 35-43 (Danfoss_VLT_FC302)  existing_len=1440  qc=rewrite
+2026-05-19 10:37:15,955  INFO        -> rewrite: Seteaza curentul (mA) care corespunde valorii de referinta maxima pentru intrare
+2026-05-19 10:37:16,056  INFO      3811 35-44 (Danfoss_VLT_FC302)  existing_len=1442  qc=rewrite
+2026-05-19 10:37:27,045  INFO        -> rewrite: Seteaza valoarea minima a referintei sau feedback-ului care corespunde semnalulu
+2026-05-19 10:37:27,145  INFO      3812 35-45 (Danfoss_VLT_FC302)  existing_len=1377  qc=rewrite
+2026-05-19 10:37:33,266  INFO        -> rewrite: Seteaza valoarea de referinta sau feedback (in unitati de proces: RPM, Hz, bar e
+2026-05-19 10:37:33,366  INFO      3813 36-00 (Danfoss_VLT_FC302)  existing_len=1565  qc=rewrite
+2026-05-19 10:37:42,885  INFO        -> rewrite: Selecteaza tipul de semnal pentru intrarea analogica X49/1. Poate fi curent (0-2
+2026-05-19 10:37:42,985  INFO      3814 36-01 (Danfoss_VLT_FC302)  existing_len=1440  qc=rewrite
+2026-05-19 10:37:49,006  INFO        -> rewrite: Defineste modul de functionare pentru terminalul X49/3. Permite configurarea ter
+2026-05-19 10:37:49,106  INFO      3815 36-02 (Danfoss_VLT_FC302)  existing_len=1446  qc=rewrite
+2026-05-19 10:37:59,852  INFO        -> rewrite: Configureaza tipul de semnal pentru terminalul X49/5. Poate fi setat pentru cure
