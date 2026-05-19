@@ -762,13 +762,16 @@ async function saveProject(event) {
 }
 
 async function showProjectDetail(projectId) {
-    currentProjectId = projectId;
-
-    // If invoked from another tab (Acasa cards), switch to Proiecte first so detail view is visible
+    // If invoked from another tab (Acasa cards), switch to Proiecte first so detail
+    // view is visible. switchTab('proiecte') resets currentProjectId to null, so we
+    // MUST switch BEFORE assigning currentProjectId. Otherwise click-from-home leaves
+    // currentProjectId null and every subsequent action (status pill, addTodo,
+    // saveServiceField, changeProjectStatus, ...) silently early-returns.
     const proiecteTab = document.getElementById('tab-proiecte');
     if (proiecteTab && !proiecteTab.classList.contains('active')) {
         switchTab('proiecte');
     }
+    currentProjectId = projectId;
 
     try {
         const project = await apiGet(`/proiecte/${projectId}`);
