@@ -1854,3 +1854,205 @@
 2026-05-19 02:52:47,913  INFO        -> rewrite: Defineste durata pentru functia de monitorizare a ciclului de curatare. Timpul e
 2026-05-19 02:52:48,014  INFO      15752 83.37 (ACS580)  existing_len=1258  qc=rewrite
 2026-05-19 02:52:55,666  INFO        -> rewrite: Defineste numarul maxim de cicluri de curatare permise pentru functia de curatar
+2026-05-19 02:52:58,227  INFO        Committed + pushed
+2026-05-19 02:52:58,328  INFO      15753 86.01 (ACS580)  existing_len=1127  qc=rewrite
+2026-05-19 02:53:06,407  INFO        -> rewrite: Afiseaza starea curenta a functiei de control cavitatie pompa. Este un parametru
+2026-05-19 02:53:06,508  INFO      15754 86.02 (ACS580)  existing_len=1110  qc=rewrite
+2026-05-19 02:53:11,581  INFO        -> rewrite: Valoarea calculata RMS a ondulatiilor cuplului motor. Masoara variatiile de cupl
+2026-05-19 02:53:11,682  INFO      15755 86.11 (ACS580)  existing_len=1107  qc=rewrite
+2026-05-19 02:53:18,863  INFO        -> rewrite: Selecteaza reactia convertizorului de frecventa la detectia cavitatiei pompei. I
+2026-05-19 02:53:18,964  INFO      15756 86.12 (ACS580)  existing_len=1109  qc=rewrite
+2026-05-19 02:53:30,803  INFO        -> rewrite: Defineste viteza minima a motorului la care functia de control al cavitatiei est
+2026-05-19 02:53:30,903  INFO      15757 86.13 (ACS580)  existing_len=1103  qc=rewrite
+2026-05-19 02:53:37,895  INFO        -> rewrite: Seteaza treapta de viteza cu care variatorul va reduce referinta de turatie in c
+2026-05-19 02:53:37,996  INFO      15758 86.18 (ACS580)  existing_len=1155  qc=rewrite
+2026-05-19 02:53:45,996  INFO        -> rewrite: Defineste timpul in care referinta va stationa la fiecare treapta inainte de a t
+2026-05-19 02:53:46,097  INFO      15759 86.14 (ACS580)  existing_len=1102  qc=rewrite
+2026-05-19 02:53:53,726  INFO        -> rewrite: Defineste pasul de turatie cu care convertizorul creste referinta de viteza cand
+2026-05-19 02:53:53,827  INFO      15760 86.15 (ACS580)  existing_len=1218  qc=rewrite
+2026-05-19 02:54:04,299  INFO        -> rewrite: Seteaza frecventa minima a motorului la care controlul cavitatiei devine activ. 
+2026-05-19 02:54:04,400  INFO      15761 86.16 (ACS580)  existing_len=1133  qc=rewrite
+2026-05-19 02:54:07,893  INFO        -> rewrite: Defineste cu cat va fi micsorata referinta de viteza atunci cand cavitatia este 
+2026-05-19 02:54:07,994  INFO      15763 86.19 (ACS580)  existing_len=1229  qc=rewrite
+2026-05-19 02:54:13,108  INFO        -> rewrite: Seteaza timpul in care variatorul va mentine functionarea la nivelul minim de ca
+2026-05-19 02:54:13,209  INFO      15764 86.20 (ACS580)  existing_len=1162  qc=rewrite
+2026-05-19 02:54:27,882  INFO        -> rewrite: Selecteaza curba de cavitatie pentru autotuning-ul pompei. Aceasta setare este u
+2026-05-19 02:54:27,983  INFO      15765 86.21 (ACS580)  existing_len=1249  qc=rewrite
+2026-05-19 02:54:33,242  INFO        -> rewrite: Defineste primul punct de cuplu in curba de cavitatie a pompei. Acest punct desc
+2026-05-19 02:54:33,342  INFO      15766 86.22 (ACS580)  existing_len=1256  qc=rewrite
+2026-05-19 02:54:40,844  INFO        -> rewrite: Defineste al doilea punct de cuplu in curba de baza a pompei pentru calculul car
+2026-05-19 02:54:40,944  INFO      15767 86.23 (ACS580)  existing_len=1151  qc=rewrite
+2026-05-19 02:54:49,543  INFO        -> rewrite: Defineste al treilea punct de cuplu in curba de baza a pompei. Acest parametru f
+2026-05-19 02:54:49,644  INFO      15768 86.24 (ACS580)  existing_len=1136  qc=rewrite
+2026-05-19 02:54:58,969  INFO        -> rewrite: Defineste al patrulea punct de cuplu in curba de baza a pompei. Utilizat pentru 
+2026-05-19 02:54:59,070  INFO      15769 86.25 (ACS580)  existing_len=1108  qc=rewrite
+2026-05-19 02:55:06,355  INFO        -> rewrite: Defineste al cincilea punct de cuplu in curba de baza a pompei, folosit pentru p
+2026-05-19 02:55:06,455  INFO      15770 86.30 (ACS580)  existing_len=1163  qc=rewrite
+2026-05-19 02:55:13,703  INFO        -> rewrite: Parametru de ajustare utilizat pentru calculul valorii cuplului RMS (Root Mean S
+2026-05-19 02:55:13,804  INFO      15771 95.04 (ACS580)  existing_len=1239  qc=rewrite
+2026-05-19 02:55:22,151  INFO        -> rewrite: Seteaza modul de alimentare al placii de control a convertizorului. Optiunea Int
+2026-05-19 02:55:22,251  INFO      15772 95.200 (ACS580)  existing_len=1346  qc=rewrite
+2026-05-19 02:55:33,013  INFO        -> rewrite: Controleaza modul de functionare al ventilatorului de racire al convertizorului 
+2026-05-19 02:55:33,113  INFO      15773 96.05 (ACS580)  existing_len=1138  qc=rewrite
+2026-05-19 02:55:38,166  INFO        -> rewrite: Afiseaza care macrocomanda de control este activa in momentul curent. Este un pa
+2026-05-19 02:55:38,267  INFO      15774 96.07 (ACS580)  existing_len=1247  qc=rewrite
+2026-05-19 02:55:47,984  INFO        -> rewrite: Salveaza toate valorile valide ale parametrilor in memoria permanenta. Dupa modi
+2026-05-19 02:55:48,085  INFO      15775 96.20 (ACS580)  existing_len=1446  qc=rewrite
+2026-05-19 02:55:54,143  INFO        -> rewrite: Defineste sursa primara externa pentru sincronizarea ceasului de timp real al co
+2026-05-19 02:55:54,243  INFO      15776 96.25 (ACS580)  existing_len=1434  qc=rewrite
+2026-05-19 02:55:58,733  INFO        -> rewrite: Reprezinta timpul curent exprimat in minute de la miezul noptii. Valoarea 0 inse
+2026-05-19 02:55:58,834  INFO      15777 96.26 (ACS580)  existing_len=1449  qc=rewrite
+2026-05-19 02:56:04,041  INFO        -> rewrite: Afiseaza timpul scurs in milisecunde de la ultimul eveniment sau de la pornirea 
+2026-05-19 02:56:04,142  INFO      15778 96.54 (ACS580)  existing_len=1453  qc=rewrite
+2026-05-19 02:56:10,694  INFO        -> rewrite: Selecteaza actiunea pe care drive-ul o executa atunci cand detecteaza o eroare d
+2026-05-19 02:56:10,795  INFO      15779 96.55 (ACS580)  existing_len=1480  qc=rewrite
+2026-05-19 02:56:16,592  INFO        -> rewrite: Bitii 8 si 9 selecteaza ce comparatii sunt efectuate pentru controlul checksum-u
+2026-05-19 02:56:16,693  INFO      15780 96.68 (ACS580)  existing_len=1118  qc=rewrite
+2026-05-19 02:56:25,426  INFO        -> rewrite: Afiseaza valoarea curenta a sumelor de control pentru configuratia parametrilor 
+2026-05-19 02:56:25,526  INFO      15781 97.01 (ACS580)  existing_len=1258  qc=rewrite
+2026-05-19 02:56:33,393  INFO        -> rewrite: Defineste frecventa de comutatie a redresorului-invertorului VFD, masurata in kH
+2026-05-19 02:56:33,493  INFO      15782 97.03 (ACS580)  existing_len=1247  qc=rewrite
+2026-05-19 02:56:45,692  INFO        -> rewrite: Defineste factorul de compensare a alunecarii motorului in control vectorial. Va
+2026-05-19 02:56:45,792  INFO      15783 97.04 (ACS580)  existing_len=1295  qc=rewrite
+2026-05-19 02:56:57,200  INFO        -> rewrite: Defineste rezerva minima de tensiune admisa pe bus-ul DC exprimata procentual. C
+2026-05-19 02:56:57,301  INFO      15784 97.08 (ACS580)  existing_len=1311  qc=rewrite
+2026-05-19 02:57:05,961  INFO        -> rewrite: Defineste pragul minim pentru functia de optimizare a controlului motorului. Ace
+2026-05-19 02:57:06,062  INFO      15785 97.10 (ACS580)  existing_len=1237  qc=rewrite
+2026-05-19 02:57:16,838  INFO        -> rewrite: Activeaza functia anti-cogging prin injectarea unui semnal de inalta frecventa i
+2026-05-19 02:57:16,939  INFO      15786 97.15 (ACS580)  existing_len=1298  qc=rewrite
+2026-05-19 02:57:23,337  INFO        -> rewrite: Activeaza functia de adaptare termica a modelului motorului. Estimeaza rezistent
+2026-05-19 02:57:23,437  INFO      15787 97.16 (ACS580)  existing_len=1221  qc=rewrite
+2026-05-19 02:57:32,669  INFO        -> rewrite: Ajusta dependenta de temperatura a statorului motorului in modelul termic intern
+2026-05-19 02:57:32,769  INFO      15788 97.17 (ACS580)  existing_len=1193  qc=rewrite
+2026-05-19 02:57:42,699  INFO        -> rewrite: Ajusteaza dependenta termica a rotorului fata de temperatura motorului. Valoarea
+2026-05-19 02:57:42,800  INFO      15789 97.48 (ACS580)  existing_len=1292  qc=rewrite
+2026-05-19 02:57:52,452  INFO        -> rewrite: Activeaza sau dezactiveaza stabilizatorul de tensiune DC pe bus-ul de curent con
+2026-05-19 02:57:52,553  INFO      15790 97.49 (ACS580)  existing_len=1259  qc=rewrite
+2026-05-19 02:58:03,068  INFO        -> rewrite: Seteaza castigul compensarii alunecarii motorului in modul scalar de control. Va
+2026-05-19 02:58:03,169  INFO      15791 97.135 (ACS580)  existing_len=1110  qc=rewrite
+2026-05-19 02:58:09,625  INFO        -> rewrite: Afiseaza tensiunea de ripple pe bus-ul DC, calculata de convertor. Valoarea indi
+2026-05-19 02:58:09,725  INFO      15792 98.01 (ACS580)  existing_len=1250  qc=rewrite
+2026-05-19 02:58:15,993  INFO        -> rewrite: Activeaza functionarea cu model personalizat de motor. Cand este activat, parame
+2026-05-19 02:58:16,093  INFO      15793 98.05 (ACS580)  existing_len=1147  qc=rewrite
+2026-05-19 02:58:24,348  INFO        -> rewrite: Defineste inductanța de scapari a motorului in unitati relative (per-unit). Acea
+2026-05-19 02:58:24,449  INFO      15794 98.12 (ACS580)  existing_len=1161  qc=rewrite
+2026-05-19 02:58:31,052  INFO        -> rewrite: Defineste inductanta de dispersie a motorului in milihenry. Aceasta este utiliza
+2026-05-19 02:58:31,153  INFO      15795 99.03 (ACS580)  existing_len=1601  qc=rewrite
+2026-05-19 02:58:39,000  INFO        -> rewrite: Selecteaza tipul de motor conectat la VFD. Optiunile includ motor asincron stand
+2026-05-19 02:58:39,100  INFO      15796 99.08 (ACS580)  existing_len=1469  qc=rewrite
+2026-05-19 02:58:48,302  INFO        -> rewrite: Defineste frecventa nominala a motorului in herti. Aceasta corespunde frecventei
+2026-05-19 02:58:48,403  INFO      15797 99.10 (ACS580)  existing_len=1531  qc=rewrite
+2026-05-19 02:58:54,171  INFO        -> rewrite: Defineste puterea nominala a motorului in kW conform placutei de identificare. A
+2026-05-19 02:58:54,272  INFO      15798 99.11 (ACS580)  existing_len=1415  qc=rewrite
+2026-05-19 02:59:03,517  INFO        -> rewrite: Defineste factorul de putere (cos phi) nominal al motorului. Valoarea tipica pen
+2026-05-19 02:59:03,617  INFO      15799 99.14 (ACS580)  existing_len=1538  qc=rewrite
+2026-05-19 02:59:09,788  INFO        -> rewrite: Afiseaza tipul ultimei masuratori ID (identificare motor) care a fost executata.
+2026-05-19 02:59:09,889  INFO      15800 99.15 (ACS580)  existing_len=1332  qc=rewrite
+2026-05-19 02:59:19,996  INFO        -> rewrite: Reprezinta numarul de perechi de poli ai motorului. Valoarea este determinata au
+2026-05-19 02:59:20,097  INFO      15801 22.30 (ACS580)  existing_len=1338  qc=rewrite
+2026-05-19 02:59:29,463  INFO        -> rewrite: Defineste valoarea vitezei constante 5 presetate pentru iesire. Viteza poate fi 
+2026-05-19 02:59:29,563  INFO      15808 01.74 (ACS580)  existing_len=1028  qc=rewrite
+2026-05-19 02:59:34,812  INFO        -> rewrite: Afiseaza valoarea efectiva a curentului pe faza W a motorului. Este un parametru
+2026-05-19 02:59:34,912  INFO      15812 03.05 (ACS580)  existing_len=1204  qc=rewrite
+2026-05-19 02:59:41,533  INFO        -> rewrite: Aceasta parametru afiseaza referinta 1 primita prin adaptorul de fieldbus A. Est
+2026-05-19 02:59:41,634  INFO      15813 03.06 (ACS580)  existing_len=1025  qc=rewrite
+2026-05-19 02:59:46,921  INFO        -> rewrite: Reprezinta valoarea referintei 2 receptionata prin intermediul adaptatorului de 
+2026-05-19 02:59:47,021  INFO      15816 04.12 (ACS580)  existing_len=991  qc=rewrite
+2026-05-19 02:59:52,432  INFO        -> rewrite: Afiseaza codul celei de-a doua cele mai recente defectiuni stocate in memorie. F
+2026-05-19 02:59:52,532  INFO      15817 04.13 (ACS580)  existing_len=317  qc=rewrite
+2026-05-19 03:00:00,093  INFO        -> rewrite: Afiseaza codul celei de-a treia ultimei defectiuni inregistrate in memoria VFD-u
+2026-05-19 03:00:00,194  INFO      15818 10.01 (ACS580)  existing_len=1842  qc=rewrite
+2026-05-19 03:00:04,320  INFO        -> rewrite: Afiseaza starea electrica a intrarilor digitale DI1-DI6. Fiecare bit reprezinta 
+2026-05-19 03:00:04,421  INFO      15819 10.02 (ACS580)  existing_len=1781  qc=rewrite
+2026-05-19 03:00:12,665  INFO        -> rewrite: Afiseaza starea logica a intrarilor digitale DI1-DI6 dupa aplicarea delay-urilor
+2026-05-19 03:00:12,765  INFO      15820 10.03 (ACS580)  existing_len=1923  qc=rewrite
+2026-05-19 03:00:21,440  INFO        -> rewrite: Permite fortarea manuala a starii intrarilor digitale, inlocuind statusul lor re
+2026-05-19 03:00:21,540  INFO      15821 10.04 (ACS580)  existing_len=2217  qc=rewrite
+2026-05-19 03:00:27,603  INFO        -> rewrite: Permite modificarea valorii fortate a unui semnal digital de intrare atunci cand
+2026-05-19 03:00:27,704  INFO      15824 01.04 (ACS580)  existing_len=843  qc=rewrite
+2026-05-19 03:00:32,726  INFO        -> rewrite: Acest parametru afiseaza curentul instantaneu consumat de motor in amperi. Este 
+2026-05-19 03:00:32,827  INFO      15825 01.05 (ACS580)  existing_len=785  qc=rewrite
+2026-05-19 03:00:40,901  INFO        -> rewrite: Afiseaza cuplul motorului in timp real ca procent din cuplul nominal. Valoarea e
+2026-05-19 03:00:41,002  INFO      15826 01.11 (ACS580)  existing_len=818  qc=rewrite
+2026-05-19 03:00:47,489  INFO        -> rewrite: Tensiunea masurata in bus-ul DC al convertizorului de frecventa. Aceasta tensiun
+2026-05-19 03:00:47,589  INFO      15827 01.26 (ACS580)  existing_len=1143  qc=rewrite
+2026-05-19 03:00:58,290  INFO        -> rewrite: Afiseaza valoarea de iesire a regulatorului PID 1. Este un parametru read-only c
+2026-05-19 03:00:58,391  INFO      15828 01.27 (ACS580)  existing_len=1123  qc=rewrite
+2026-05-19 03:01:10,224  INFO        -> rewrite: Parametrul 01.27 afiseaza valoarea de iesire a controllerului PID 2 in procente.
+2026-05-19 03:01:10,325  INFO      15829 01.28 (ACS580)  existing_len=1093  qc=rewrite
+2026-05-19 03:01:20,939  INFO        -> rewrite: Afiseaza valoarea curenta a setpoint-ului pentru bucla de control PID 1. Este un
+2026-05-19 03:01:21,040  INFO      15830 01.29 (ACS580)  existing_len=990  qc=rewrite
+2026-05-19 03:01:30,984  INFO        -> rewrite: Afiseaza valoarea setpoint pentru al doilea loop PID (PID 2) in modul de comanda
+2026-05-19 03:01:31,085  INFO      15831 01.32 (ACS580)  existing_len=1128  qc=rewrite
+2026-05-19 03:01:38,225  INFO        -> rewrite: Afiseaza diferenta dintre referinta PID (setpoint) si valoarea masurata de la se
+2026-05-19 03:01:38,326  INFO      15832 01.33 (ACS580)  existing_len=1069  qc=rewrite
+2026-05-19 03:01:51,585  INFO        -> rewrite: Afiseaza diferenta dintre referinta si valoarea masurata pentru PID 2. O deviati
+2026-05-19 03:01:51,686  INFO      15833 21.09 (ACS580)  existing_len=1324  qc=rewrite
+2026-05-19 03:01:59,974  INFO        -> rewrite: Defineste turatia la care se aplica functia de mentinere DC in modul control vit
+2026-05-19 03:02:00,075  INFO      15844 30.02 (ACS580)  existing_len=1459  qc=rewrite
+2026-05-19 03:02:07,849  INFO        -> rewrite: Afiseaza starea limitelor cuplului motorului sub forma unui cuvant de stare bina
+2026-05-19 03:02:07,949  INFO      15857 11.04 (ACS580)  existing_len=1335  qc=rewrite
+2026-05-19 03:02:16,814  INFO        -> rewrite: Seteaza valoarea minima pentru referinta de viteza 1. Aceasta corespunde nivelul
+2026-05-19 03:02:16,915  INFO      15858 11.05 (ACS580)  existing_len=1269  qc=rewrite
+2026-05-19 03:02:27,913  INFO        -> rewrite: Seteaza valoarea maxima pentru referinta 1 care controleaza referinta curentului
+2026-05-19 03:02:28,013  INFO      15859 11.06 (ACS580)  existing_len=1364  qc=rewrite
+2026-05-19 03:02:37,479  INFO        -> rewrite: Selecteaza sursa semnalului de referinta 2 pentru viteza motorului. Poate fi con
+2026-05-19 03:02:37,580  INFO      15860 11.07 (ACS580)  existing_len=1362  qc=rewrite
+2026-05-19 03:02:48,893  INFO        -> rewrite: Seteaza valoarea minima pentru referinta 2 (REF2) a variatorului. Asigura ca mot
+2026-05-19 03:02:48,994  INFO      15861 11.08 (ACS580)  existing_len=1359  qc=rewrite
+2026-05-19 03:03:01,741  INFO        -> rewrite: Seteaza valoarea maxima pentru referinta 2 (REF2). Aceasta limita superioara a s
+2026-05-19 03:03:01,842  INFO      15862 12.01 (ACS580)  existing_len=1417  qc=rewrite
+2026-05-19 03:03:14,477  INFO        -> rewrite: Selecteaza sursa pentru referinta vitezei constante 1. Valoarea din acest parame
+2026-05-19 03:03:14,578  INFO      15863 12.02 (ACS580)  existing_len=1443  qc=rewrite
+2026-05-19 03:03:24,548  INFO        -> rewrite: Permite fortarea valorilor analogice ale intrarilor AI in locul citirilor reale.
+2026-05-19 03:03:24,649  INFO      15864 12.03 (ACS580)  existing_len=1240  qc=rewrite
+2026-05-19 03:03:31,704  INFO        -> rewrite: Defineste reactia convertizorului de frecventa atunci cand un semnal de intrare 
+2026-05-19 03:03:31,805  INFO      15865 12.04 (ACS580)  existing_len=1231  qc=rewrite
+2026-05-19 03:03:38,812  INFO        -> rewrite: Defineste limitele de supraghere pentru intrarile analogice AI1 si AI2. Când sem
+2026-05-19 03:03:38,913  INFO      15866 12.05 (ACS580)  existing_len=1292  qc=rewrite
+2026-05-19 03:03:46,785  INFO        -> rewrite: Activeaza sau dezactiveaza functia de supervisie pentru fiecare intrare analogic
+2026-05-19 03:03:46,885  INFO      15867 12.06 (ACS580)  existing_len=1252  qc=rewrite
+2026-05-19 03:04:17,061  INFO        -> rewrite: Defineste valoarea vitezei constante 5 (preset speed 5). Valoarea implicita este
+2026-05-19 03:04:17,161  INFO      15868 12.07 (ACS580)  existing_len=1264  qc=rewrite
+2026-05-19 03:04:27,114  INFO        -> rewrite: Defineste valoarea vitezei constante 7 (ultima treapta de viteza fixa din lista 
+2026-05-19 03:04:27,215  INFO      15869 15.04 (ACS580)  existing_len=1265  qc=rewrite
+2026-05-19 03:04:33,259  INFO        -> rewrite: Afiseaza starea logica a releelor de iesire RO4 si RO5. Fiecare bit reprezinta s
+2026-05-19 03:04:33,360  INFO      15870 15.05 (ACS580)  existing_len=1238  qc=rewrite
+2026-05-19 03:04:39,807  INFO        -> rewrite: Permite fortarea manuala a starilor electrice ale releelor si iesirilor digitale
+2026-05-19 03:04:39,908  INFO      15871 15.10 (ACS580)  existing_len=1220  qc=rewrite
+2026-05-19 03:04:48,145  INFO        -> rewrite: Seteaza semnalul sursa pentru releul de iesire RO5. Permite conectarea diferitel
+2026-05-19 03:04:48,246  INFO      15872 15.11 (ACS580)  existing_len=1250  qc=rewrite
+2026-05-19 03:04:54,976  INFO        -> rewrite: Seteaza timpul de intarziere in secunde inainte ca releul RO5 sa se activeze can
+2026-05-19 03:04:55,077  INFO      15873 16.01 (ACS580)  existing_len=1377  qc=rewrite
+2026-05-19 03:05:06,526  INFO        -> rewrite: Selecteaza sursa semnalului de enable pentru functionare. Cand semnalul selectat
+2026-05-19 03:05:06,629  INFO      15874 16.02 (ACS580)  existing_len=1389  qc=rewrite
+2026-05-19 03:05:16,707  INFO        -> rewrite: Blocheaza accesul la modificarea parametrilor conform unei curbe de protectie pr
+2026-05-19 03:05:16,807  INFO      15875 16.03 (ACS580)  existing_len=1353  qc=rewrite
+2026-05-19 03:05:31,526  INFO        -> rewrite: Parametrul 16.03 PASS CODE permite introducerea unui cod numeric pentru protecti
+2026-05-19 03:05:31,626  INFO      15876 16.08 (ACS580)  existing_len=1462  qc=rewrite
+2026-05-19 03:05:43,235  INFO        -> rewrite: Bitul de enable pentru comanda de start a variatorului. Cand acest semnal este i
+2026-05-19 03:05:43,336  INFO      15877 16.09 (ACS580)  existing_len=1579  qc=rewrite
+2026-05-19 03:05:54,320  INFO        -> rewrite: Activeaza permiterea comenzii de pornire a variatorului. Cand acest parametru es
+2026-05-19 03:05:54,420  INFO      15878 20.13 (ACS580)  existing_len=1745  qc=rewrite
+2026-05-19 03:06:03,848  INFO        -> rewrite: Seteaza valoarea minima a cuplului motorului in procente din cuplul nominal. Pre
+2026-05-19 03:06:03,949  INFO      15879 20.14 (ACS580)  existing_len=1179  qc=rewrite
+2026-05-19 03:06:11,047  INFO        -> rewrite: Afiseaza valoarea cuplului maxim disponibil al motorului. Acest parametru este d
+2026-05-19 03:06:11,148  INFO      15880 20.15 (ACS580)  existing_len=1189  qc=rewrite
+2026-05-19 03:06:22,283  INFO        -> rewrite: Afiseaza cuplul minim de referinta primit de la pachetul de incarcare conectat p
+2026-05-19 03:06:22,383  INFO      15881 20.16 (ACS580)  existing_len=1105  qc=rewrite
+2026-05-19 03:06:28,815  INFO        -> rewrite: Defineste cuplul minim al motorului in unitati de procente din cuplul nominal. I
+2026-05-19 03:06:28,916  INFO      15882 20.17 (ACS580)  existing_len=1135  qc=rewrite
+2026-05-19 03:06:35,796  INFO        -> rewrite: Seteaza limita maxima a cuplului motorului exprimata ca procent din cuplul nomin
+2026-05-19 03:06:35,897  INFO      15883 20.18 (ACS580)  existing_len=1074  qc=rewrite
+2026-05-19 03:06:51,442  INFO        -> rewrite: 20.18 defineste cuplul maxim pe care VFD-ul il poate furniza motorului, exprimat
+2026-05-19 03:06:51,543  INFO      15886 41.24 (ACS580)  existing_len=1357  qc=rewrite
+2026-05-19 03:06:59,523  WARNING     Bad categorie 'PID' for 41.24, retry
+2026-05-19 03:07:09,483  INFO        -> rewrite: Defineste al doilea setpoint intern pentru controlul PID. Reprezinta o valoare p
+2026-05-19 03:07:09,583  INFO      15889 53.05 (ACS580)  existing_len=1417  qc=rewrite
+2026-05-19 03:07:17,959  INFO        -> rewrite: Defineste ce parametru este transmis pe iesirea 5 a fieldbus-ului. Seteaza valoa
+2026-05-19 03:07:18,059  INFO      15892 99.07 (ACS580)  existing_len=1463  qc=rewrite
+2026-05-19 03:07:26,047  INFO        -> rewrite: Defineste tensiunea nominala a motorului in volti conform placutei de identifica
+2026-05-19 03:07:26,148  INFO      15893 40.12 (ACS580)  existing_len=1110  qc=rewrite
+2026-05-19 03:07:37,139  INFO        -> rewrite: Defineste valoarea minima a referintei pentru bucla de control PID. Aceasta limi
+2026-05-19 03:07:37,240  INFO      15894 40.13 (ACS580)  existing_len=1102  qc=rewrite
+2026-05-19 03:07:49,522  INFO        -> rewrite: Defineste valoarea maxima a setpointului pentru bucla de control PID secundara. 
