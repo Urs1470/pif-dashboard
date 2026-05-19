@@ -5566,17 +5566,24 @@ if (el) el.addEventListener('click', function(e) {
 });
 
 // Influ-chip click navigation: clicking a referenced parameter chip swaps the
-// modal to that parameter. Cache lookup first (parametriData populated by the
-// Parametri tab), then fallback to API search scoped to the current familie.
-if (el) el.addEventListener('click', async function(e) {
-    const chip = e.target.closest('.influ-chip');
+// modal to that parameter. Document-level delegation so we don't depend on
+// modal-attach timing or on the chips being children of the modal at the
+// moment the listener was registered (capture phase to beat any preventing
+// stopPropagation in deeper handlers).
+document.addEventListener('click', async function(e) {
+    const chip = e.target.closest && e.target.closest('.influ-chip');
     if (!chip) return;
     e.stopPropagation();
+    e.preventDefault();
     const code = chip.getAttribute('data-code');
+    console.debug('[influ-chip] click', { code, currentParam });
     if (!code || code === '?') return;
     // Snapshot familie before openParamModal overwrites currentParam.
     const familie = currentParam && currentParam.familie;
-    if (!familie) return;
+    if (!familie) {
+        showToast('Familie necunoscuta pentru param curent', true);
+        return;
+    }
 
     let found = (Array.isArray(parametriData) ? parametriData : [])
         .find(p => p && p.parametru === code && p.familie === familie);
@@ -5593,16 +5600,17 @@ if (el) el.addEventListener('click', async function(e) {
                     || list.find(p => p.parametru === code);
             }
         } catch (err) {
-            console.error('Influ-chip fetch failed:', err);
+            console.error('[influ-chip] fetch failed:', err);
         }
     }
 
+    console.debug('[influ-chip] resolved', { found });
     if (found) {
         openParamModal(found);
     } else {
         showToast('Parametrul ' + code + ' nu a fost gasit', true);
     }
-});
+}, true);
 
 // ============ MANUALS MODAL ============
 const MANUAL_LABELS = {
