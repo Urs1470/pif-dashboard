@@ -4875,3 +4875,204 @@
 2026-05-19 06:53:22,485  INFO        -> rewrite: Afiseaza procentul de esantioane inregistrate de la intrarea analogica 2 (AL2) c
 2026-05-19 06:53:22,586  INFO      22369 36.21 (ACS880)  existing_len=0  qc=new
 2026-05-19 06:53:31,872  INFO        -> new: Afiseaza procentul de esantioane inregistrate de canalul de logare AL1. Acest pa
+2026-05-19 06:53:34,779  INFO        Committed + pushed
+2026-05-19 06:53:34,880  INFO      22370 36.22 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:53:43,394  INFO        -> new: Afiseaza procentul de esantioane inregistrate care se incadreaza in banda de 20 
+2026-05-19 06:53:43,494  INFO      22371 36.23 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:53:49,479  INFO        -> new: Afiseaza procentul de esantioane inregistrate care se incadreaza in intervalul 3
+2026-05-19 06:53:49,580  INFO      22372 36.24 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:53:57,144  INFO        -> new: Afiseaza procentul de esantioane inregistrate de functia de monitorizare AL1. Va
+2026-05-19 06:53:57,245  INFO      22373 36.25 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:04,357  INFO        -> new: Afiseaza procentul de esantioane inregistrate pentru care semnalul AL1 se incadr
+2026-05-19 06:54:04,458  INFO      22374 36.26 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:14,477  INFO        -> new: Afiseaza procentul de esantioane inregistrate de functia de monitorizare AL1 car
+2026-05-19 06:54:14,577  INFO      22375 36.27 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:23,655  INFO        -> new: Afiseaza procentul de esantioane inregistrate de functia de monitorizare pentru 
+2026-05-19 06:54:23,756  INFO      22376 36.28 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:30,623  INFO        -> new: Afiseaza procentul de esantioane inregistrate de catre functia de monitorizare A
+2026-05-19 06:54:30,723  INFO      22377 36.41 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:37,949  INFO        -> new: Afiseaza procentul de esantioane inregistrate de logger-ul de date care se incad
+2026-05-19 06:54:38,050  INFO      22378 36.42 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:44,129  INFO        -> new: Afiseaza procentul de esantioane inregistrate care se incadreaza in intervalul 2
+2026-05-19 06:54:44,230  INFO      22379 36.43 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:54:54,562  INFO        -> new: Afiseaza procentul de esantioane inregistrate care cad in intervalul 30-40% din 
+2026-05-19 06:54:54,662  INFO      22380 36.44 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:01,948  INFO        -> new: Afiseaza procentul de esantioane inregistrate de intrarea analogica 2 (AL2) care
+2026-05-19 06:55:02,049  INFO      22381 36.45 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:08,450  INFO        -> new: Afiseaza procentul de esantioane inregistrate de intrarea analogica 2 (AI2). Val
+2026-05-19 06:55:08,550  INFO      22382 36.46 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:16,522  INFO        -> new: Afiseaza procentul de esantioane inregistrate de semnalul de la intrarea analogi
+2026-05-19 06:55:16,623  INFO      22383 36.47 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:23,606  INFO        -> new: Afiseaza procentul de esantioane inregistrate care se incadreaza in intervalul 7
+2026-05-19 06:55:23,706  INFO      22384 36.48 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:30,568  INFO        -> new: Afiseaza procentul de esantioane inregistrate care se incadreaza in banda 80-90%
+2026-05-19 06:55:30,668  INFO      22390 46.23 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:43,017  INFO        -> new: Defineste limita inferioara si superioara a histerezisului pentru starea "la ref
+2026-05-19 06:55:43,118  INFO      22391 50.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:55:55,167  INFO        -> new: Afiseaza cuvantul de control brut receptionat de pe fieldbus de la adaptorul A. 
+2026-05-19 06:55:55,268  INFO      22392 50.16 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:00,270  INFO        -> new: Afiseaza cuvantul de stare brut (nemodificat) receptionat de la adaptorul de fie
+2026-05-19 06:56:00,370  INFO      22393 50.43 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:07,404  INFO        -> new: Afiseaza cuvantul de control brut receptionat de la adaptorul de fieldbus B. Ace
+2026-05-19 06:56:07,505  INFO      22394 50.46 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:15,134  INFO        -> new: Afiseaza cuvantul de stare brut (nemodificat) receptionat de la adaptorul de fie
+2026-05-19 06:56:15,235  INFO      22396 51.28 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:23,472  INFO        -> new: Afiseaza versiunea reviziei tabelului de parametri ai adaptorului fieldbus. Este
+2026-05-19 06:56:23,573  INFO      22397 51.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:28,175  INFO        -> new: Afiseaza versiunea majora si minora a software-ului adaptorului fieldbus. Este u
+2026-05-19 06:56:28,276  INFO      22399 54.28 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:38,407  INFO        -> new: Afiseaza versiunea reviziei tabelului de parametri pentru adaptorul fieldbus B. 
+2026-05-19 06:56:38,508  INFO      22400 54.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:45,558  INFO        -> new: Afiseaza versiunea de firmware a adapterului fieldbus B, inclusiv numarul versiu
+2026-05-19 06:56:45,659  INFO      22404 58.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:51,070  INFO        -> new: Afiseaza un contor cu toate pachetele valide primite pe magistrala de comunicati
+2026-05-19 06:56:51,170  INFO      22405 58.12 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:56:56,439  INFO        -> new: Afiseaza numarul de pachete receptionate cu eroare CRC pe interfata de comunicat
+2026-05-19 06:56:56,540  INFO      22406 58.18 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:07,298  INFO        -> new: Afiseaza cuvantul de control brut receptionat de pe interfata fieldbus (Modbus R
+2026-05-19 06:57:07,399  INFO      22407 58.19 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:13,908  INFO        -> new: Afiseaza cuvantul de stare brut (nemodificat) receptionat de la interfata fieldb
+2026-05-19 06:57:14,009  INFO      22408 90.56 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:26,091  INFO        -> new: Defineste offset-ul pozitiei pe partea de sarcina. Permite corectarea pozitiei m
+2026-05-19 06:57:26,191  INFO      22411 92.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:36,321  INFO        -> new: Defineste numarul de cicluri de ceas utilizate pentru comunicarea cu encoderul S
+2026-05-19 06:57:36,422  INFO      22412 92.34 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:43,048  INFO        -> new: Defineste pozitia byte-ului MSB (cel mai semnificativ byte) in fluxul de date SS
+2026-05-19 06:57:43,149  INFO      22413 92.35 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:57:54,995  INFO        -> new: Defineste byte-ul cel mai semnificativ pentru contorul de revolutii in cadrul in
+2026-05-19 06:57:55,096  INFO      22414 93.15 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:03,774  INFO        -> new: Filtru tranzitoriu pentru semnalul encoderului de tip HTL 1 (canalul 2). Elimina
+2026-05-19 06:58:03,875  INFO      22415 93.30 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:12,834  INFO        -> new: Seteaza modul de comunicare seriala pentru encoderul absolut 2. Acest parametru 
+2026-05-19 06:58:12,935  INFO      22416 93.36 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:23,875  INFO        -> new: Defineste formatul de date pentru interfata seriala sincrona SSI a encoderului a
+2026-05-19 06:58:23,976  INFO      22417 93.40 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:29,944  INFO        -> new: Seteaza pozitia de zero faza pentru encoderul absolut SSI. Reprezinta unghiul de
+2026-05-19 06:58:30,044  INFO      22418 93.45 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:39,244  INFO        -> new: Seteaza paritatea pentru comunicatia cu encoderul absolut tip Hyperface pe intra
+2026-05-19 06:58:39,345  INFO      22419 95.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:49,483  INFO        -> new: Activeaza modul de functionare redusa a variatorului. Vizibil doar cand este con
+2026-05-19 06:58:49,584  INFO      22420 95.14 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:58:57,378  INFO        -> new: Afiseaza in format hexazecimal modulele hardware conectate la unitatea BCU. Fiec
+2026-05-19 06:58:57,479  INFO      22421 95.16 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:07,805  INFO        -> new: Activeaza configuratia definita in parametrul 95.14. Valoarea 95.14 = 000Fh (111
+2026-05-19 06:59:07,906  INFO      22422 95.21 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:16,957  INFO        -> new: Defineste optiuni suplimentare de configurare hardware pentru convertizor. Conti
+2026-05-19 06:59:17,057  INFO      22425 96.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:24,488  INFO        -> new: Afiseaza starea seturilor de parametri utilizator. Valoarea indica daca au fost 
+2026-05-19 06:59:24,589  INFO      22427 97.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:30,806  INFO        -> new: Seteaza constanta de timp rotor in modul de control vectorial. Valoarea se expri
+2026-05-19 06:59:30,907  INFO      22434 98.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:41,367  INFO        -> new: Defineste rezistenta rotorului RR in modelul matematic al motorului asincron pen
+2026-05-19 06:59:41,468  INFO      23731 90.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:48,670  INFO        -> new: Defineste adresa de date partajate intre convertizor si PLC. Valoarea parametrul
+2026-05-19 06:59:48,770  INFO      23732 1.35 (ACS880)  existing_len=0  qc=new
+2026-05-19 06:59:58,204  INFO        -> new: Defineste factorul de multiplicare a tensiunii de alimentare linie-la-linie. Val
+2026-05-19 06:59:58,305  INFO      23733 99.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:00:06,594  INFO        -> new: Defineste tensiunea nominala a motorului in volti conform placutei de identifica
+2026-05-19 07:00:06,694  INFO      23734 20.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:00:17,041  INFO        -> new: Defineste functia intrarilor digitale pentru External Control 2. In1 controleaza
+2026-05-19 07:00:17,141  INFO      23735 20.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:00:26,996  INFO        -> new: Selecteaza intrarea digitala DI6 ca sursa pentru primul semnal al Controlului Ex
+2026-05-19 07:00:27,097  INFO      23736 20.9 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:00:41,032  INFO        -> new: Selecteaza sursa semnalului pentru intrarea 2 a comenzii externe Ext2. In acest 
+2026-05-19 07:00:41,133  INFO      23737 20.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:00:50,417  INFO        -> new: Configureaza functia intrarii digitale 1 (DI1) pentru comanda de start a motorul
+2026-05-19 07:00:50,517  INFO      23738 20.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:00,170  INFO        -> new: Seteaza sursa functiei pentru intrarea digitala IN2 a variatorului. Poate fi con
+2026-05-19 07:01:00,271  INFO      23739 40.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:12,160  INFO        -> new: Activeaza functionarea PID Set 1 cand convertizorul functioneaza. Cand acest par
+2026-05-19 07:01:12,260  INFO      23740 40.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:25,150  INFO        -> new: Selecteaza sursa semnalului de feedback pentru Setul PID 1. In acest caz este se
+2026-05-19 07:01:25,250  INFO      23741 20.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:34,913  INFO        -> new: Defineste tipul de comanda pentru pornirea si oprirea de la intrarea externa 1. 
+2026-05-19 07:01:35,014  INFO      23742 20.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:43,640  INFO        -> new: Defineste tipul de trigger pentru semnalul de start al controlului extins 2 (Ext
+2026-05-19 07:01:43,741  INFO      23743 21.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:49,264  INFO        -> new: Selecteaza modul de oprire cu rampa de decelerare. Motorul incetineste treptat c
+2026-05-19 07:01:49,364  INFO      23744 25.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:01:59,763  INFO        -> new: Seteaza timpul derivativ pentru compensarea acceleratiei motorului. Aceasta func
+2026-05-19 07:01:59,864  INFO      23745 1.1 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:04,040  INFO        -> new: Afiseaza viteza actuala a motorului in unitati de frecventa sau RPM, in functie 
+2026-05-19 07:02:04,141  INFO      23746 1.2 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:16,228  INFO        -> new: Afiseaza viteza estimata a motorului in rpm calculata intern de convertizor pe b
+2026-05-19 07:02:16,328  INFO      23747 1.3 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:27,218  INFO        -> new: Afiseaza viteza actuala a motorului exprimata in procente din viteza nominala se
+2026-05-19 07:02:27,319  INFO      23748 1.4 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:33,932  INFO        -> new: Afiseaza viteza curenta a encoderului 1 in rotatii pe minut. Poate fi negativa p
+2026-05-19 07:02:34,032  INFO      23749 1.5 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:42,467  INFO        -> new: Afiseaza turatia curenta a encoderului 2 masurata in rotatii pe minut. Valoarea 
+2026-05-19 07:02:42,567  INFO      23750 1.6 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:46,803  INFO        -> new: Afiseaza frecventa estimata la iesirea convertizorului in Hz. Valoarea este filt
+2026-05-19 07:02:46,904  INFO      23751 1.7 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:02:55,855  INFO        -> new: Parametru de tip read-only care afiseaza curentul masurat al motorului in amperi
+2026-05-19 07:02:55,956  INFO      23752 1.8 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:05,623  INFO        -> new: Afiseaza curentul motorului ca procent din curentul nominal setat in parametrul 
+2026-05-19 07:03:05,724  INFO      23753 1.10 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:12,933  INFO        -> new: Afiseaza cuplul motorului ca procent din cuplul nominal. Valoarea este masurata 
+2026-05-19 07:03:13,034  INFO      23754 1.11 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:23,301  INFO        -> new: Afiseaza tensiunea masurata in circuitul intermediar DC (bus DC) al variatorului
+2026-05-19 07:03:23,402  INFO      23755 1.13 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:30,636  INFO        -> new: Tensiunea de iesire catre motor masurata in volti AC. Valoarea este calculata au
+2026-05-19 07:03:30,737  INFO      23756 1.14 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:37,617  INFO        -> new: Afiseaza puterea la iesirea variatorului de frecventa catre motor. Este un param
+2026-05-19 07:03:37,718  INFO      23757 1.15 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:42,406  INFO        -> new: Afiseaza puterea de iesire ca procent din puterea nominala a motorului (1.14). E
+2026-05-19 07:03:42,506  INFO      23758 1.17 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:50,079  INFO        -> new: Reprezinta puterea mecanica estimata la axul motorului calculata din curentul si
+2026-05-19 07:03:50,180  INFO      23759 1.18 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:03:56,491  INFO        -> new: Contorizeaza energia totala care a trecut prin convertizorul de frecventa, masur
+2026-05-19 07:03:56,592  INFO      23760 1.19 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:02,163  INFO        -> new: Contorizeaza energia totala care a trecut prin convertizor de frecventa, masurat
+2026-05-19 07:04:02,263  INFO      23761 1.20 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:08,234  INFO        -> new: Afiseaza energia totala consumata de motor care a trecut prin convertizor. Este 
+2026-05-19 07:04:08,335  INFO      23762 1.21 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:14,764  INFO        -> new: Afiseaza curentul masurat in faza U a motorului in amperi. Este un parametru de 
+2026-05-19 07:04:14,865  INFO      23763 1.22 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:24,317  INFO        -> new: Afiseaza curentul masurat in faza V a motorului. Valoarea este obtinuta de la se
+2026-05-19 07:04:24,418  INFO      23764 1.23 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:31,427  INFO        -> new: Afiseaza valoarea masurata a curentului pe faza W a motorului in amperi. Este o 
+2026-05-19 07:04:31,528  INFO      23765 1.24 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:39,210  INFO        -> new: Afiseaza fluxul real utilizat de motor in procente din fluxul nominal. Valoarea 
+2026-05-19 07:04:39,310  INFO      23766 1.25 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:48,178  INFO        -> new: Afiseaza factorul de putere instantaneu al convertizorului de frecventa. Valoare
+2026-05-19 07:04:48,279  INFO      23767 1.29 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:04:54,790  INFO        -> new: Afiseaza rata de modificare a vitezei reale a motorului masurata in unitati pe s
+2026-05-19 07:04:54,890  INFO      23768 1.30 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:04,793  INFO        -> new: Definește cuplul nominal al motorului, adică valoarea cuplului corespunzătoare f
+2026-05-19 07:05:04,894  INFO      23769 1.31 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:09,533  INFO        -> new: Temperatura masurata a aerului de racire care intra in VFD. Aceasta valoare este
+2026-05-19 07:05:09,634  INFO      23770 1.32 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:16,699  INFO        -> new: Parameterul 1.32 afiseaza energia totala care a traversat convertizorul de frecv
+2026-05-19 07:05:16,800  INFO      23771 1.33 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:23,421  INFO        -> new: Acest parametru afiseaza cantitatea de energie regenerata care a trecut prin con
+2026-05-19 07:05:23,522  INFO      23772 1.34 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:28,487  INFO        -> new: Contorizeaza energia electrica in kilovati-ora care a trecut prin convertizorul 
+2026-05-19 07:05:28,587  INFO      23773 1.36 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:33,755  INFO        -> new: Afiseaza energia neta a motorului calculata ca diferenta intre energia consumata
+2026-05-19 07:05:33,856  INFO      23774 1.37 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:40,183  INFO        -> new: Monitorizeaza energia electrica neta schimbata intre variator si motor. Valori p
+2026-05-19 07:05:40,284  INFO      23775 1.61 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:05:54,930  INFO        -> new: Afiseaza valoarea absoluta a vitezei motorului, intotdeauna pozitiva indiferent 
+2026-05-19 07:05:55,030  INFO      23776 1.62 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:00,395  INFO        -> new: Reprezinta valoarea absoluta a vitezei motorului din parametre 1.3. Semnul negat
+2026-05-19 07:06:00,495  INFO      23777 1.63 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:10,588  INFO        -> new: Afiseaza valoarea absoluta a frecventei de iesire catre motor. Valoarea este int
+2026-05-19 07:06:10,688  INFO      23778 1.64 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:17,833  INFO        -> new: Valoarea absoluta a cuplului motorului exprimata in procente din cuplul nominal.
+2026-05-19 07:06:17,933  INFO      23779 1.65 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:23,820  INFO        -> new: Afiseaza valoarea absoluta a puterii de iesire a invertorului in kW. Este un par
+2026-05-19 07:06:23,921  INFO      23780 1.66 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:31,026  INFO        -> new: Afiseaza valoarea absoluta a puterii de iesire a convertizorului in procente fat
+2026-05-19 07:06:31,126  INFO      23781 1.68 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:36,808  INFO        -> new: Valoarea absoluta a puterii la axul motorului, fara semn. Este o marime de stare
+2026-05-19 07:06:36,909  INFO      23782 1.70 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:46,123  INFO        -> new: Afiseaza temperatura masurata a aerului de racire care intra in convertizor. Val
+2026-05-19 07:06:46,224  INFO      23783 1.71 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:52,367  INFO        -> new: Reprezinta curentul estimat al motorului in amperi atunci cand se utilizeaza o c
+2026-05-19 07:06:52,468  INFO      23784 1.72 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:06:58,729  INFO        -> new: Afiseaza valoarea efectiva (RMS) a curentului din faza U a motorului electric. E
+2026-05-19 07:06:58,829  INFO      23785 1.73 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:06,313  INFO        -> new: Afiseaza valoarea masurata a curentului RMS pentru faza V a motorului. Este un p
+2026-05-19 07:07:06,414  INFO      23786 1.74 (ACS880)  existing_len=0  qc=new
+2026-05-19 07:07:12,854  INFO        -> new: Afiseaza valoarea curentului RMS masurat in faza W a motorului. Este un parametr
