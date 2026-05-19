@@ -281,6 +281,21 @@ def run_migrations():
         set_schema_version(7)
         current_version = 7
 
+    # Self-heal: a backup/restore can leave schema_version at the latest while
+    # an earlier migration's structural changes never ran. Re-apply the v5
+    # additions if checklist_categorii / categorie_id are still missing — the
+    # migration is idempotent (IF NOT EXISTS / column-existence checks).
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checklist_categorii'")
+    has_cat_table = cursor.fetchone() is not None
+    cursor.execute("PRAGMA table_info(checklist_pif)")
+    has_cat_col = any(row[1] == 'categorie_id' for row in cursor.fetchall())
+    conn.close()
+    if not has_cat_table or not has_cat_col:
+        print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
+        migrate_v4_to_v5()
+
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
