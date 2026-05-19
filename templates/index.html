@@ -1805,15 +1805,19 @@
         .gt-task-card {
             display: flex;
             align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
+            gap: 8px;
+            padding: 4px 10px;
             background: var(--bg);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-sm);
+            border-radius: 6px;
+            margin-bottom: 2px;
             border-left: 3px solid var(--border);
-            min-height: 44px;
-            transition: background 0.15s, border-left-color 0.15s, transform 0.15s;
+            min-height: 30px;
+            font-size: 0.86rem;
+            transition: background 0.12s, border-left-color 0.12s;
         }
+        #gt-task-list, #project-tasks-list { max-width: 980px; }
+        .gt-task-card .gt-task-title { font-size: 0.86rem; font-weight: 500; }
+        .gt-task-card .todo-meta { font-size: 0.68rem; }
         .gt-task-card[onclick] { cursor: pointer; }
         .gt-task-card[onclick]:hover {
             background: var(--bg3);
@@ -1957,37 +1961,48 @@
 
         .todo-add-form {
             display: grid;
-            grid-template-columns: 1fr 110px 110px 130px auto;
+            grid-template-columns: 1fr 105px 105px 125px 34px;
             gap: 6px;
-            margin-bottom: var(--space-md);
+            margin-bottom: 10px;
             align-items: stretch;
         }
+        .todo-add-form .form-group { margin-bottom: 0 !important; }
         .todo-add-form input, .todo-add-form select {
-            min-height: 34px;
+            min-height: 32px;
+            height: 32px;
             font-size: 0.85rem;
             padding: 4px 10px;
         }
-        .todo-add-form .btn {
-            min-height: 34px;
-            padding: 0 14px;
-            font-size: 0.85rem;
-            white-space: nowrap;
+        .todo-add-form .btn-icon-sm {
+            min-width: 34px;
+            width: 34px;
+            height: 32px;
+            min-height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
+        .todo-add-form .btn-icon-sm [data-lucide] { width: 16px; height: 16px; }
 
         .todo-list { max-height: 300px; overflow-y: auto; }
 
         .todo-item {
             display: flex;
             align-items: center;
-            gap: var(--space-sm);
-            /* Tighter padding so a list of 10+ tasks does not become a wall of whitespace. */
-            padding: 6px 12px;
+            gap: 8px;
+            /* Tight padding + max-width so wider monitors don't stretch row to 1500px. */
+            padding: 4px 10px;
             background: var(--bg);
-            border-radius: var(--radius-md);
-            margin-bottom: 4px;
-            border-left: 4px solid;
-            min-height: 36px;
+            border-radius: 6px;
+            margin-bottom: 2px;
+            border-left: 3px solid;
+            min-height: 30px;
+            font-size: 0.86rem;
         }
+        .todo-list { max-width: 980px; }
+        .todo-item .todo-title { font-size: 0.86rem; font-weight: 500; }
+        .todo-item .todo-meta { font-size: 0.68rem; }
         /* Divider between active and finalised tasks within a project. */
         .todo-divider {
             display: flex;
@@ -2056,14 +2071,14 @@
            value (Normal/Minor/Urgent and To Do/In Lucru/Finalizat have different
            widths and used to jitter). Both are also click-cyclable. */
         .todo-priority, .todo-status {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 20px;
+            padding: 2px 8px;
+            border-radius: 12px;
             text-transform: uppercase;
             letter-spacing: 0.03em;
             flex-shrink: 0;
-            min-width: 78px;
+            min-width: 68px;
             text-align: center;
             font-family: var(--font-mono);
             user-select: none;
@@ -3703,7 +3718,7 @@
                             <option value="done">Finalizat</option>
                         </select>
                         <input type="text" id="todo-scadenta" placeholder="Termen (zz.ll.aaaa)" autocomplete="off">
-                        <button class="btn btn-primary btn-small" onclick="addTodo()">Adaugă</button>
+                        <button class="btn btn-primary btn-icon-sm" onclick="addTodo()" title="Adaugă task"><i data-lucide="plus"></i></button>
                     </div>
                     <div class="todo-list" id="todo-list"></div>
                 </div>

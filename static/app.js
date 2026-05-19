@@ -2289,7 +2289,12 @@ function renderGlobalTasks(tasks) {
         return;
     }
 
-    container.innerHTML = tasks.map(task => {
+    // Group active vs done — Ion wants the finalised pile collapsed by default.
+    const active = tasks.filter(t => t.status !== 'done');
+    const done = tasks.filter(t => t.status === 'done');
+    done.sort((a, b) => (b.data_finalizare || b.updated_at || b.created_at || '').localeCompare(a.data_finalizare || a.updated_at || a.created_at || ''));
+
+    const renderOne = (task) => {
         const isOverdue = task.data_scadenta && task.data_scadenta < today && task.status !== 'done';
         const isDueToday = task.data_scadenta === today && task.status !== 'done';
         const classes = ['gt-task-card'];
@@ -2304,8 +2309,8 @@ function renderGlobalTasks(tasks) {
                     <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
                     <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">
-                    ${task.categorie && task.categorie !== 'General' ? `<span style="font-size:0.72rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'Courier New',monospace;">${escapeHtml(task.categorie)}</span>` : ''}
-                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
+                    ${task.categorie && task.categorie !== 'General' ? `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>` : ''}
+                    ${task.data_scadenta ? `<span style="font-size:0.68rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
                 </div>
                 </div>
                 <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
@@ -2314,8 +2319,36 @@ function renderGlobalTasks(tasks) {
                 <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
             </div>
         `;
-    }).join('');
+    };
+
+    let html = active.map(renderOne).join('');
+    if (done.length > 0) {
+        const isCollapsed = localStorage.getItem('pif:gt-done-collapsed') !== '0';
+        html += `<div class="todo-divider todo-divider-clickable" onclick="toggleGtDoneCollapse()" data-collapsed="${isCollapsed ? '1' : '0'}">
+            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}" style="width:14px;height:14px;"></i>
+            <span>Finalizate (${done.length})</span>
+        </div>`;
+        html += `<div class="gt-done-group" style="${isCollapsed ? 'display:none;' : ''}">${done.map(renderOne).join('')}</div>`;
+    }
+    container.innerHTML = html;
     if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+function toggleGtDoneCollapse() {
+    const key = 'pif:gt-done-collapsed';
+    const isCollapsed = localStorage.getItem(key) !== '0';
+    localStorage.setItem(key, isCollapsed ? '0' : '1');
+    const divider = document.querySelector('#gt-task-list .todo-divider-clickable');
+    const group = document.querySelector('#gt-task-list .gt-done-group');
+    if (divider && group) {
+        divider.setAttribute('data-collapsed', isCollapsed ? '0' : '1');
+        const icon = divider.querySelector('[data-lucide]');
+        if (icon) {
+            icon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-right');
+            if (window.lucide) try { window.lucide.createIcons(); } catch {}
+        }
+        group.style.display = isCollapsed ? 'block' : 'none';
+    }
 }
 
 // Cycle helpers: click on the priority/status pill rotates through values
