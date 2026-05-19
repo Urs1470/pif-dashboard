@@ -4473,3 +4473,204 @@
 2026-05-19 06:22:10,910  INFO        -> rewrite: Seteaza pozitia switch-ului hardware pentru intrarea analogica AI1 de pe modulul
 2026-05-19 06:22:11,010  INFO      17636 15.30 (ACS880)  existing_len=1191  qc=rewrite
 2026-05-19 06:22:22,200  INFO        -> rewrite: Selecteaza tipul de unitate pentru intrarea analogica AI1 a modulului de extensi
+2026-05-19 06:22:25,029  INFO        Committed + pushed
+2026-05-19 06:22:25,129  INFO      17637 15.33 (ACS880)  existing_len=1046  qc=rewrite
+2026-05-19 06:22:34,384  INFO        -> rewrite: Seteaza valoarea minima pentru semnalul de intrare analogica 1 (AI1). Aceasta re
+2026-05-19 06:22:34,485  INFO      17638 15.41 (ACS880)  existing_len=1090  qc=rewrite
+2026-05-19 06:22:50,457  INFO        -> rewrite: Afiseaza valoarea actuala scalata a intrarii analogice AI2 de pe modulul de exte
+2026-05-19 06:22:50,557  INFO      17639 15.42 (ACS880)  existing_len=1126  qc=rewrite
+2026-05-19 06:23:00,866  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice 2 de la modulul de extensie FAIO-
+2026-05-19 06:23:00,967  INFO      17640 15.44 (ACS880)  existing_len=1110  qc=rewrite
+2026-05-19 06:23:13,279  INFO        -> rewrite: Seteaza pozitia switch-ului hardware pentru intrarea analogica AI2 de pe modulul
+2026-05-19 06:23:13,380  INFO      17641 15.45 (ACS880)  existing_len=1036  qc=rewrite
+2026-05-19 06:23:20,766  INFO        -> rewrite: Selecteaza unitatea de masura pentru intrarea analogica 2 a modulului de extensi
+2026-05-19 06:23:20,867  INFO      17642 15.48 (ACS880)  existing_len=1008  qc=rewrite
+2026-05-19 06:23:28,750  INFO        -> rewrite: Seteaza valoarea minima corespunzatoare semnalului de la intrarea analogica AI2 
+2026-05-19 06:23:28,850  INFO      17643 15.49 (ACS880)  existing_len=1001  qc=rewrite
+2026-05-19 06:23:34,866  INFO        -> rewrite: Seteaza valoarea maxima a intrarii analogice AI2 in unitati de proces. Impreuna 
+2026-05-19 06:23:34,966  INFO      17644 15.56 (ACS880)  existing_len=1095  qc=rewrite
+2026-05-19 06:23:42,318  INFO        -> rewrite: Afiseaza valoarea curenta masurata a intrarii analogice 3 (AI3). Este un paramet
+2026-05-19 06:23:42,419  INFO      17645 15.57 (ACS880)  existing_len=1115  qc=rewrite
+2026-05-19 06:23:49,606  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 de la modulul de extensie opt
+2026-05-19 06:23:49,707  INFO      17646 15.59 (ACS880)  existing_len=1074  qc=rewrite
+2026-05-19 06:23:54,924  INFO        -> rewrite: Afiseaza pozitia switch-ului hardware pentru intrarea analogica 3 de pe modulul 
+2026-05-19 06:23:55,025  INFO      17647 15.60 (ACS880)  existing_len=1123  qc=rewrite
+2026-05-19 06:24:04,859  INFO        -> rewrite: Seteaza tipul de semnal pentru intrarea analogica 3 (AI3) a modulului de extensi
+2026-05-19 06:24:04,960  INFO      17648 15.63 (ACS880)  existing_len=1013  qc=rewrite
+2026-05-19 06:24:10,818  INFO        -> rewrite: Seteaza valoarea minima pentru intrarea analogica 3 a modulului de extensie FIO-
+2026-05-19 06:24:10,919  INFO      17649 15.64 (ACS880)  existing_len=1039  qc=rewrite
+2026-05-19 06:24:22,529  INFO        -> rewrite: Defineste valoarea maxima a semnalului de la intrarea analogica AI3 cand modulul
+2026-05-19 06:24:22,629  INFO      17650 15.76 (ACS880)  existing_len=1101  qc=rewrite
+2026-05-19 06:24:28,076  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice 1 (AO1) de pe modulul de extensie 
+2026-05-19 06:24:28,177  INFO      17651 15.77 (ACS880)  existing_len=1153  qc=rewrite
+2026-05-19 06:24:41,722  INFO        -> rewrite: Selecteaza ce semnal va fi transmis pe iesirea analogica AO1 a modulului FAIO-01
+2026-05-19 06:24:41,823  INFO      17652 15.86 (ACS880)  existing_len=1098  qc=rewrite
+2026-05-19 06:24:54,486  INFO        -> rewrite: Parameter afiseaza valoarea reala a iesirii analogice AO2 in miliamperi. Este un
+2026-05-19 06:24:54,587  INFO      17653 15.87 (ACS880)  existing_len=1079  qc=rewrite
+2026-05-19 06:25:03,145  INFO        -> rewrite: Selecteaza sursa semnalului pentru iesirea analogica 2 a modulului de extensie F
+2026-05-19 06:25:03,245  INFO      17660 16.11 (ACS880)  existing_len=1171  qc=rewrite
+2026-05-19 06:25:10,177  INFO        -> rewrite: Selecteaza sursa semnalului pentru iesirea digitala DIO1 de pe modulul 3 (FIO-11
+2026-05-19 06:25:10,277  INFO      17661 16.14 (ACS880)  existing_len=1173  qc=rewrite
+2026-05-19 06:25:19,738  INFO        -> rewrite: Configureaza functia pinului DIO2 de pe modulul de extensie FIO-11. Cand setat p
+2026-05-19 06:25:19,839  INFO      17662 16.16 (ACS880)  existing_len=1146  qc=rewrite
+2026-05-19 06:25:28,439  INFO        -> rewrite: Configureaza sursa semnalului pentru iesirea digitala DIO2 a modulului de extens
+2026-05-19 06:25:28,539  INFO      17663 16.19 (ACS880)  existing_len=1094  qc=rewrite
+2026-05-19 06:25:35,190  INFO        -> rewrite: Activeaza functia de supervizare a intrarilor analogice pentru modulul 3 de exte
+2026-05-19 06:25:35,290  INFO      17664 16.21 (ACS880)  existing_len=1072  qc=rewrite
+2026-05-19 06:25:45,438  INFO        -> rewrite: Activeaza functia de auto-calibrare pentru intrarile analogice ale modulului opt
+2026-05-19 06:25:45,539  INFO      17665 16.24 (ACS880)  existing_len=1129  qc=rewrite
+2026-05-19 06:25:56,082  INFO        -> rewrite: Configureaza functia pinului DIO4 de pe modulul de extensie FIO-01. Setarea 0 de
+2026-05-19 06:25:56,183  INFO      17666 16.26 (ACS880)  existing_len=1100  qc=rewrite
+2026-05-19 06:26:05,436  INFO        -> rewrite: Afiseaza valoarea curenta masurata la intrarea analogica 1 de pe modulul de exte
+2026-05-19 06:26:05,537  INFO      17667 16.34 (ACS880)  existing_len=1095  qc=rewrite
+2026-05-19 06:26:14,970  INFO        -> rewrite: Selecteaza sursa semnalului care comanda releul de iesire RO1. Releul devine ene
+2026-05-19 06:26:15,071  INFO      17668 16.37 (ACS880)  existing_len=1101  qc=rewrite
+2026-05-19 06:26:23,300  INFO        -> rewrite: Selecteaza sursa care comanda iesirea Releu 2 (RO2) pe modulul de extensie FDIO-
+2026-05-19 06:26:23,401  INFO      17669 16.29 (ACS880)  existing_len=1177  qc=rewrite
+2026-05-19 06:26:35,132  INFO        -> rewrite: Afiseaza pozitia comutatorului hardware pentru intrarea analogica AI1 de pe modu
+2026-05-19 06:26:35,233  INFO      17670 16.30 (ACS880)  existing_len=1152  qc=rewrite
+2026-05-19 06:26:47,079  INFO        -> rewrite: Selecteaza tipul de semnal pentru intrarea analogica 1 (AI1) cand modulul de ext
+2026-05-19 06:26:47,179  INFO      17671 16.33 (ACS880)  existing_len=1035  qc=rewrite
+2026-05-19 06:26:58,618  INFO        -> rewrite: Seteaza valoarea minima a semnalului de intrare analogica AI1. Aceasta defineste
+2026-05-19 06:26:58,719  INFO      17672 16.41 (ACS880)  existing_len=1109  qc=rewrite
+2026-05-19 06:27:05,076  INFO        -> rewrite: Afiseaza valoarea actuala masurata pe intrarea analogica AI2 a modulului de exte
+2026-05-19 06:27:05,177  INFO      17673 16.42 (ACS880)  existing_len=1099  qc=rewrite
+2026-05-19 06:27:12,083  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2, dupa aplicarea parametrilor 
+2026-05-19 06:27:12,184  INFO      17674 16.44 (ACS880)  existing_len=1143  qc=rewrite
+2026-05-19 06:27:18,824  INFO        -> rewrite: Seteaza pozitia switch-ului hardware pentru intrarea analogica AI2 de pe modulul
+2026-05-19 06:27:18,925  INFO      17675 16.45 (ACS880)  existing_len=1110  qc=rewrite
+2026-05-19 06:27:24,572  INFO        -> rewrite: Selecteaza unitatea de masura pentru intrarea analogica AI2 (modulul de extensie
+2026-05-19 06:27:24,672  INFO      17676 16.48 (ACS880)  existing_len=1012  qc=rewrite
+2026-05-19 06:27:30,712  INFO        -> rewrite: Seteaza valoarea minima a intrarii analogice AI2. Defineste punctul inferior al 
+2026-05-19 06:27:30,812  INFO      17677 16.49 (ACS880)  existing_len=1026  qc=rewrite
+2026-05-19 06:27:42,835  INFO        -> rewrite: Defineste valoarea maxima scalata pentru intrarea analogica 2 (AI2). Impreuna cu
+2026-05-19 06:27:42,938  INFO      17678 16.56 (ACS880)  existing_len=1119  qc=rewrite
+2026-05-19 06:27:49,943  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice 3 (AI3). Este un parametru de dia
+2026-05-19 06:27:50,043  INFO      17679 16.57 (ACS880)  existing_len=1096  qc=rewrite
+2026-05-19 06:27:59,572  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI3 dupa aplicarea ajustărilor de
+2026-05-19 06:27:59,672  INFO      17680 16.59 (ACS880)  existing_len=1112  qc=rewrite
+2026-05-19 06:28:10,464  INFO        -> rewrite: Selecteaza pozitia switch-ului hardware pentru intrarea analogica AI3 de pe modu
+2026-05-19 06:28:10,565  INFO      17681 16.60 (ACS880)  existing_len=1080  qc=rewrite
+2026-05-19 06:28:16,289  INFO        -> rewrite: Selecteaza tipul de semnal pentru intrarea analogica AI3. Optiunea mA permite co
+2026-05-19 06:28:16,389  INFO      17682 16.63 (ACS880)  existing_len=985  qc=rewrite
+2026-05-19 06:28:28,113  INFO        -> rewrite: Defineste valoarea minima scalata pentru intrarea analogica 3. impreuna cu 16.64
+2026-05-19 06:28:28,213  INFO      17683 16.64 (ACS880)  existing_len=1040  qc=rewrite
+2026-05-19 06:28:36,616  INFO        -> rewrite: Seteaza valoarea maxima pentru scalarea intrarii analogice AI3. Aceasta valoare 
+2026-05-19 06:28:36,717  INFO      17684 16.76 (ACS880)  existing_len=1079  qc=rewrite
+2026-05-19 06:28:46,743  INFO        -> rewrite: Afiseaza valoarea reala a semnalului de iesire pe iesirea analogica 1 (AO1) cand
+2026-05-19 06:28:46,844  INFO      17685 16.77 (ACS880)  existing_len=1118  qc=rewrite
+2026-05-19 06:28:53,075  INFO        -> rewrite: Selecteaza semnalul sursa pentru iesirea analogica AO1 a modulului de extensie F
+2026-05-19 06:28:53,175  INFO      17686 16.86 (ACS880)  existing_len=1037  qc=rewrite
+2026-05-19 06:29:02,991  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice 2 de pe modulul de extensie FAIO-0
+2026-05-19 06:29:03,092  INFO      17687 16.87 (ACS880)  existing_len=1083  qc=rewrite
+2026-05-19 06:29:14,221  INFO        -> rewrite: Selecteaza ce semnal este trimis la iesirea analogica 2 de pe modulul de extensi
+2026-05-19 06:29:14,321  INFO      17689 19.14 (ACS880)  existing_len=1081  qc=rewrite
+2026-05-19 06:29:23,904  INFO        -> rewrite: Seteaza modul de control pentru sursa de comanda externa 2 (Ext2). Modul Torque 
+2026-05-19 06:29:24,005  INFO      17690 19.17 (ACS880)  existing_len=1106  qc=rewrite
+2026-05-19 06:29:36,216  INFO        -> rewrite: Activeaza sau dezactiveaza controlul local prin butoanele de start si stop de pe
+2026-05-19 06:29:36,317  INFO      17696 20.10 (ACS880)  existing_len=1152  qc=rewrite
+2026-05-19 06:29:46,384  INFO        -> rewrite: Selecteaza sursa pentru semnalul 3 asociat comenzilor Ext2. Permite comutarea in
+2026-05-19 06:29:46,484  INFO      17697 20.19 (ACS880)  existing_len=1228  qc=rewrite
+2026-05-19 06:29:59,796  INFO        -> rewrite: Selecteaza sursa semnalului de enable pentru pornirea convertizorului. Poate fi 
+2026-05-19 06:29:59,897  INFO      17698 20.23 (ACS880)  existing_len=1259  qc=rewrite
+2026-05-19 06:30:07,578  INFO        -> rewrite: Selecteaza sursa care activeaza comanda pentru viteza pozitiva a motorului. Poat
+2026-05-19 06:30:07,678  INFO      17699 20.24 (ACS880)  existing_len=1255  qc=rewrite
+2026-05-19 06:30:20,892  INFO        -> rewrite: Activeaza functionarea motorului in directie inversa proportional cu referinta d
+2026-05-19 06:30:20,992  INFO      17700 20.25 (ACS880)  existing_len=1307  qc=rewrite
+2026-05-19 06:30:28,474  INFO        -> rewrite: Activeaza functia de jogging pentru miscare pas cu pas a motorului. Selecteaza s
+2026-05-19 06:30:28,575  INFO      17701 20.26 (ACS880)  existing_len=1274  qc=rewrite
+2026-05-19 06:30:38,014  INFO        -> rewrite: Selecteaza sursa de comanda pentru functionarea in regim de jogging 1. Când este
+2026-05-19 06:30:38,115  INFO      17702 20.27 (ACS880)  existing_len=1261  qc=rewrite
+2026-05-19 06:30:46,521  INFO        -> rewrite: Selecteaza sursa referintei de viteza pentru functia de jogging 2. Jogging-ul pe
+2026-05-19 06:30:46,621  INFO      17703 21.10 (ACS880)  existing_len=1352  qc=rewrite
+2026-05-19 06:30:56,839  INFO        -> rewrite: Seteaza curentul continuu de mentinere DC in procente din curentul nominal al mo
+2026-05-19 06:30:56,940  INFO      17704 21.14 (ACS880)  existing_len=1321  qc=rewrite
+2026-05-19 06:31:08,966  INFO        -> rewrite: Activeaza functia de pre-incalzire a motorului folosind o intrare digitala selec
+2026-05-19 06:31:09,067  INFO      17705 21.16 (ACS880)  existing_len=1359  qc=rewrite
+2026-05-19 06:31:16,702  INFO        -> rewrite: Seteaza curentul de preincalzire a motorului in amperi. Aceasta functie mentine 
+2026-05-19 06:31:16,803  INFO      17707 22.12 (ACS880)  existing_len=1339  qc=rewrite
+2026-05-19 06:31:26,048  INFO        -> rewrite: Selecteaza sursa secundara de referinta pentru viteza, utilizand intrarea analog
+2026-05-19 06:31:26,148  INFO      17708 22.15 (ACS880)  existing_len=1303  qc=rewrite
+2026-05-19 06:31:37,280  INFO        -> rewrite: Defineste o valoare de referinta care se aduna la referinta principala de viteza
+2026-05-19 06:31:37,381  INFO      17709 22.17 (ACS880)  existing_len=1266  qc=rewrite
+2026-05-19 06:31:47,370  INFO        -> rewrite: Definește o valoare de viteză suplimentară care se adună la referința principală
+2026-05-19 06:31:47,471  INFO      17710 22.22 (ACS880)  existing_len=1250  qc=rewrite
+2026-05-19 06:31:54,305  INFO        -> rewrite: Selecteaza intrarea digitala DI4 ca semnal de selectie 1 pentru vitezele constan
+2026-05-19 06:31:54,405  INFO      17711 22.23 (ACS880)  existing_len=1261  qc=rewrite
+2026-05-19 06:32:02,985  INFO        -> rewrite: Selecteaza semnalul digital DI5 ca sursa pentru activarea vitezei constante 2. C
+2026-05-19 06:32:03,085  INFO      17712 22.24 (ACS880)  existing_len=1303  qc=rewrite
+2026-05-19 06:32:13,966  INFO        -> rewrite: Selecteaza viteza constanta 3 prin intrarea digitala DI6. Cand DI6 este activata
+2026-05-19 06:32:14,067  INFO      17713 22.73 (ACS880)  existing_len=1322  qc=rewrite
+2026-05-19 06:32:22,367  INFO        -> rewrite: Selecteaza sursa semnalului de crestere pentru motorpotentiometru. Când este act
+2026-05-19 06:32:22,468  INFO      17714 22.74 (ACS880)  existing_len=1299  qc=rewrite
+2026-05-19 06:32:29,951  INFO        -> rewrite: Defineste care intrare digitala controleaza functia de decrementare a potentiome
+2026-05-19 06:32:30,052  INFO      17715 22.80 (ACS880)  existing_len=1354  qc=rewrite
+2026-05-19 06:32:37,496  INFO        -> rewrite: Afiseaza valoarea curenta a potentiometrului motor. Aceasta functie permite cres
+2026-05-19 06:32:37,597  INFO      17716 22.81 (ACS880)  existing_len=1352  qc=rewrite
+2026-05-19 06:32:43,324  INFO        -> rewrite: Afiseaza valoarea curenta a referintei de viteza de la sursa 1. Este un parametr
+2026-05-19 06:32:43,425  INFO      17717 22.83 (ACS880)  existing_len=1116  qc=rewrite
+2026-05-19 06:32:50,124  INFO        -> rewrite: Afiseaza valoarea de referinta a vitezei dupa procesarea matematica — adica semn
+2026-05-19 06:32:50,225  INFO      17718 22.84 (ACS880)  existing_len=972  qc=rewrite
+2026-05-19 06:32:57,713  INFO        -> rewrite: Parametru de diagnostic doar pentru citire. Afiseaza valoarea referintei de vite
+2026-05-19 06:32:57,814  INFO      17719 22.85 (ACS880)  existing_len=980  qc=rewrite
+2026-05-19 06:33:03,681  INFO        -> rewrite: Afiseaza valoarea referintei de viteza dupa procesare aplicatie. Valoarea este d
+2026-05-19 06:33:03,781  INFO      17720 22.86 (ACS880)  existing_len=979  qc=rewrite
+2026-05-19 06:33:11,495  INFO        -> rewrite: Afiseaza valoarea referintei de viteza dupa aplicarea tuturor functiilor (ramp, 
+2026-05-19 06:33:11,596  INFO      17721 22.87 (ACS880)  existing_len=975  qc=rewrite
+2026-05-19 06:33:21,494  INFO        -> rewrite: Afiseaza valoarea curenta a referintei de viteza inainte de aplicare. Valoarea p
+2026-05-19 06:33:21,595  INFO      17724 23.11 (ACS880)  existing_len=1029  qc=rewrite
+2026-05-19 06:33:30,862  INFO        -> rewrite: Selecteaza ce set de rampe de accelerare si decelerare este activ. Setul 1 cores
+2026-05-19 06:33:30,963  INFO      17725 23.24 (ACS880)  existing_len=1030  qc=rewrite
+2026-05-19 06:33:37,531  INFO        -> rewrite: Selecteaza o sursa digitala care forteaza referinta de viteza la zero. Cand intr
+2026-05-19 06:33:37,631  INFO      17726 23.26 (ACS880)  existing_len=1096  qc=rewrite
+2026-05-19 06:33:42,521  INFO        -> rewrite: Activeaza functia de echilibrare a rampei de iesire. Când este activata, mentine
+2026-05-19 06:33:42,621  INFO      17727 23.28 (ACS880)  existing_len=1056  qc=rewrite
+2026-05-19 06:33:49,688  INFO        -> rewrite: Activeaza functia de panta variabila pentru controlul rampei de accelerare si de
+2026-05-19 06:33:49,789  INFO      17728 23.39 (ACS880)  existing_len=1129  qc=rewrite
+2026-05-19 06:33:57,860  INFO        -> rewrite: Afiseaza termenul de corectie a vitezei folosit in functia de distributie a sarc
+2026-05-19 06:33:57,960  INFO      17729 23.41 (ACS880)  existing_len=1058  qc=rewrite
+2026-05-19 06:34:13,253  INFO        -> rewrite: Defineste factorul de amplificare al termenului de corectie a vitezei in aplicat
+2026-05-19 06:34:13,354  INFO      17730 23.42 (ACS880)  existing_len=1084  qc=rewrite
+2026-05-19 06:34:24,267  INFO        -> rewrite: Selecteaza sursa de referinta a cuplului pentru unitatea follower intr-o configu
+2026-05-19 06:34:24,368  INFO      17737 25.10 (ACS880)  existing_len=1115  qc=rewrite
+2026-05-19 06:34:35,282  INFO        -> rewrite: Defineste referinta utilizata la iesirea controllerului de viteza. Valoarea este
+2026-05-19 06:34:35,382  INFO      17738 25.11 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 06:34:42,000  INFO        -> rewrite: Seteaza cuplul minim de iesire al controllerului de viteza ca procent din cuplul
+2026-05-19 06:34:42,101  INFO      17739 25.12 (ACS880)  existing_len=1085  qc=rewrite
+2026-05-19 06:34:53,197  INFO        -> rewrite: Seteaza cuplul maxim de iesire al controllerului de viteza exprimat in procente 
+2026-05-19 06:34:53,298  INFO      17740 25.13 (ACS880)  existing_len=1100  qc=rewrite
+2026-05-19 06:35:06,322  INFO        -> rewrite: Defineste limita minima a cuplului de iesire din controlerul de viteza. Valoarea
+2026-05-19 06:35:06,423  INFO      17741 25.14 (ACS880)  existing_len=1084  qc=rewrite
+2026-05-19 06:35:16,643  INFO        -> rewrite: Defineste cuplul maxim electromagnetic de iesire al controllerului de viteza. Es
+2026-05-19 06:35:16,744  INFO      17742 25.25 (ACS880)  existing_len=1112  qc=rewrite
+2026-05-19 06:35:28,394  INFO        -> rewrite: Defineste cuplul maxim de referinta pentru controllerul de viteza cu functie de 
+2026-05-19 06:35:28,496  INFO      17743 25.33 (ACS880)  existing_len=1176  qc=rewrite
+2026-05-19 06:35:40,026  INFO        -> rewrite: Defineste sursa semnalului pentru functia de control asociata din grupul 25. Per
+2026-05-19 06:35:40,127  INFO      17744 25.37 (ACS880)  existing_len=1140  qc=rewrite
+2026-05-19 06:35:52,368  INFO        -> rewrite: Defineste constanta de timp mecanica a actionarii si a motorului. Seteaza durata
+2026-05-19 06:35:52,469  INFO      17745 25.38 (ACS880)  existing_len=1163  qc=rewrite
+2026-05-19 06:36:01,898  INFO        -> rewrite: Defineste o valoare adaugata de cuplu utilizata in timpul procedurii de autotuni
+2026-05-19 06:36:01,999  INFO      17746 25.39 (ACS880)  existing_len=1154  qc=rewrite
+2026-05-19 06:36:14,918  INFO        -> rewrite: Defineste o valoare de viteza suplimentara adaugata la viteza initiala in timpul
+2026-05-19 06:36:15,018  INFO      17747 25.41 (ACS880)  existing_len=1115  qc=rewrite
+2026-05-19 06:36:27,089  INFO        -> rewrite: Parametru rezervat care defineste referinta de cuplu pentru motor in aplicatii d
+2026-05-19 06:36:27,189  INFO      17748 25.42 (ACS880)  existing_len=1118  qc=rewrite
+2026-05-19 06:36:39,810  INFO        -> rewrite: Activeaza sau dezactiveaza termenul integral (I) al controlerului PID. Cand este
+2026-05-19 06:36:39,910  INFO      17749 25.53 (ACS880)  existing_len=1118  qc=rewrite
+2026-05-19 06:36:46,536  INFO        -> rewrite: Afiseaza valoarea componentei proportionale (P) a regulatorului de cuplu. Reprez
+2026-05-19 06:36:46,636  INFO      17750 25.54 (ACS880)  existing_len=1121  qc=rewrite
+2026-05-19 06:36:55,700  INFO        -> rewrite: Afiseaza valoarea partii integrale (I) a controllerului de viteza care contribui
+2026-05-19 06:36:55,801  INFO      17751 25.55 (ACS880)  existing_len=1115  qc=rewrite
+2026-05-19 06:37:02,300  INFO        -> rewrite: Afiseaza valoarea componentei derivative (D) din controllerul PID de cuplu. Este
+2026-05-19 06:37:02,400  INFO      17752 25.56 (ACS880)  existing_len=1097  qc=rewrite
+2026-05-19 06:37:09,367  INFO        -> rewrite: Afiseaza valoarea compensatiei de cuplu in timpul accelerarii motorului. Reprezi
+2026-05-19 06:37:09,468  INFO      17753 25.57 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 06:37:21,852  INFO        -> rewrite: Afiseaza referinta de cuplu compensata pentru efectele accelerarii motorului. Va
+2026-05-19 06:37:21,953  INFO      17757 26.09 (ACS880)  existing_len=1074  qc=rewrite
+2026-05-19 06:37:29,857  INFO        -> rewrite: Defineste factorul de scala pentru referinta de cuplu. Valoarea 1000.0 reprezint
+2026-05-19 06:37:29,957  INFO      17758 26.12 (ACS880)  existing_len=1154  qc=rewrite
+2026-05-19 06:37:42,328  INFO        -> rewrite: Defineste sursa semnalului de referinta de cuplu 2 pentru controlul motorului. P
+2026-05-19 06:37:42,429  INFO      17759 26.16 (ACS880)  existing_len=1122  qc=rewrite
+2026-05-19 06:37:54,123  INFO        -> rewrite: Defineste sursa de referinta aditiva pentru cuplu 1. Aditivul de cuplu se adauga
+2026-05-19 06:37:54,224  INFO      17760 26.25 (ACS880)  existing_len=798  qc=rewrite
+2026-05-19 06:38:00,200  INFO        -> rewrite: Selecteaza sursa referintei de aditiv de cuplu 2. Poate fi semnal analogic, tast
