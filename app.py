@@ -942,6 +942,31 @@ def create_jurnal_entry(project_id):
 def delete_jurnal_entry(entry_id):
     conn = get_db()
     cursor = conn.cursor()
+
+    # If this jurnal entry was created by stop-with-note, there is a paired
+    # timer_session row with stop_time within ~2 min of jurnal.created_at.
+    # Cascade-delete it so the user doesn't need two clicks (delete the note,
+    # then delete the leftover "Timer fără notă" that pops up afterward).
+    cursor.execute(
+        'SELECT proiect_id, created_at FROM jurnal WHERE id = ?',
+        (entry_id,)
+    )
+    row = cursor.fetchone()
+    if row:
+        try:
+            j_time = datetime.fromisoformat(row['created_at'])
+            cursor.execute('''
+                SELECT id, stop_time FROM timer_sessions
+                WHERE proiect_id = ? AND stop_time IS NOT NULL
+            ''', (row['proiect_id'],))
+            for s in cursor.fetchall():
+                s_stop = datetime.fromisoformat(s['stop_time'])
+                if abs((s_stop - j_time).total_seconds()) < 120:
+                    cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (s['id'],))
+                    break
+        except (ValueError, TypeError):
+            pass
+
     cursor.execute('DELETE FROM jurnal WHERE id = ?', (entry_id,))
     conn.commit()
     conn.close()
