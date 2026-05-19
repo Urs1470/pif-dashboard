@@ -2257,3 +2257,204 @@
 2026-05-19 03:21:08,933  INFO        -> rewrite: Defineste rezistenta statorica RS a motorului utilizata in modelul matematic int
 2026-05-19 03:21:09,033  INFO      16685 98.10 (ACS580)  existing_len=932  qc=rewrite
 2026-05-19 03:21:17,819  INFO        -> rewrite: Defineste rezistenta rotorului Rr in modelul motorului utilizat de algoritmul de
+2026-05-19 03:21:20,657  INFO        Committed + pushed
+2026-05-19 03:21:20,758  INFO      16686 98.11 (ACS580)  existing_len=964  qc=rewrite
+2026-05-19 03:21:34,585  INFO        -> rewrite: Defineste inductanta principala a statorului (Lm) folosita in modelul motorului 
+2026-05-19 03:21:34,686  INFO      16687 98.13 (ACS580)  existing_len=900  qc=rewrite
+2026-05-19 03:21:39,906  INFO        -> rewrite: Defineste inductanta pe axa directa pentru motoare sincrone. Folosita in modelul
+2026-05-19 03:21:40,007  INFO      16688 98.14 (ACS580)  existing_len=985  qc=rewrite
+2026-05-19 03:21:48,739  INFO        -> rewrite: Defineste inductanta pe axa in cuadratura (Lq) pentru motoare sincrone. Este par
+2026-05-19 03:21:48,839  INFO      16689 01.72 (ACS580)  existing_len=1084  qc=rewrite
+2026-05-19 03:21:55,943  INFO        -> rewrite: Afiseaza valoarea efectiva a curentului fazei U. Este un parametru read-only pen
+2026-05-19 03:21:56,043  INFO      16690 01.73 (ACS580)  existing_len=1082  qc=rewrite
+2026-05-19 03:22:01,524  INFO        -> rewrite: Afiseaza curentul RMS al fazei V a motorului. Este un parametru de diagnosticare
+2026-05-19 03:22:01,624  INFO      16691 05.01 (ACS580)  existing_len=1019  qc=rewrite
+2026-05-19 03:22:07,114  INFO        -> rewrite: Contorizeaza timpul total de functionare al convertizorului de frecventa. Contor
+2026-05-19 03:22:07,214  INFO      16692 05.82 (ACS580)  existing_len=1119  qc=rewrite
+2026-05-19 03:22:13,867  INFO        -> rewrite: Reprezinta valoarea tensiunii DC masurata si inregistrata in momentul aparitiei 
+2026-05-19 03:22:13,968  INFO      16693 07.31 (ACS580)  existing_len=1092  qc=rewrite
+2026-05-19 03:22:27,432  INFO        -> rewrite: Defineste secventa de stare pentru functia de repornire automata dupa o defectiu
+2026-05-19 03:22:27,533  INFO      16694 10.05 (ACS580)  existing_len=359  qc=rewrite
+2026-05-19 03:22:38,260  INFO        -> rewrite: Defineste intarzierea de activare pentru intrarea digitala DI1. Cand semnalul DI
+2026-05-19 03:22:38,361  INFO      16695 10.06 (ACS580)  existing_len=1038  qc=rewrite
+2026-05-19 03:22:52,232  INFO        -> rewrite: Defineste intarzierea la dezactivare pentru intrarea digitala DI1. Dupa disparit
+2026-05-19 03:22:52,333  INFO      16696 10.07 (ACS580)  existing_len=1004  qc=rewrite
+2026-05-19 03:23:04,463  INFO        -> rewrite: Seteaza timpul de intarziere la activarea intrarii digitale DI2. Cand DI2 este f
+2026-05-19 03:23:04,564  INFO      16697 10.08 (ACS580)  existing_len=1047  qc=rewrite
+2026-05-19 03:23:11,867  INFO        -> rewrite: Seteaza intarzierea la dezactivare pentru intrarea digitala DI2. Cand semnalul d
+2026-05-19 03:23:11,967  INFO      16698 10.09 (ACS580)  existing_len=1092  qc=rewrite
+2026-05-19 03:23:26,896  INFO        -> rewrite: Seteaza timpul de intarziere la activare pentru intrarea digitala DI3. Intrarea 
+2026-05-19 03:23:26,997  INFO      16699 10.10 (ACS580)  existing_len=1024  qc=rewrite
+2026-05-19 03:23:37,699  INFO        -> rewrite: Seteaza timpul de intarziere inainte ca intrarea digitala DI3 sa fie considerata
+2026-05-19 03:23:37,800  INFO      16700 10.11 (ACS580)  existing_len=1013  qc=rewrite
+2026-05-19 03:23:46,289  INFO        -> rewrite: Defineste intarzierea de activare pentru intrarea digitala DI4. Cand semnalul es
+2026-05-19 03:23:46,390  INFO      16701 10.12 (ACS580)  existing_len=987  qc=rewrite
+2026-05-19 03:23:56,557  INFO        -> rewrite: Seteaza timpul de intarziere la dezactivarea intrarii digitale DI4. Cand semnalu
+2026-05-19 03:23:56,657  INFO      16702 10.13 (ACS580)  existing_len=1035  qc=rewrite
+2026-05-19 03:24:01,946  INFO        -> rewrite: Seteaza intarzierea de activare pentru intrarea digitala DI5. Semnalul de la DI5
+2026-05-19 03:24:02,046  INFO      16703 10.14 (ACS580)  existing_len=1006  qc=rewrite
+2026-05-19 03:24:08,472  INFO        -> rewrite: Seteaza intarzierea de dezactivare pentru intrarea digitala DI5. Dupa ce semnalu
+2026-05-19 03:24:08,573  INFO      16704 10.15 (ACS580)  existing_len=947  qc=rewrite
+2026-05-19 03:24:16,359  INFO        -> rewrite: Seteaza intarzierea de activare pentru intrarea digitala DI6. Semnalul de la DI6
+2026-05-19 03:24:16,460  INFO      16705 10.16 (ACS580)  existing_len=966  qc=rewrite
+2026-05-19 03:24:23,884  INFO        -> rewrite: Defineste intarzierea la dezactivare pentru intrarea digitala DI6. Cand semnalul
+2026-05-19 03:24:23,985  INFO      16706 10.25 (ACS580)  existing_len=1077  qc=rewrite
+2026-05-19 03:24:30,337  INFO        -> rewrite: Seteaza intarzierea de activare pentru releul de iesire RO1. Dupa primirea comen
+2026-05-19 03:24:30,437  INFO      16707 10.26 (ACS580)  existing_len=1080  qc=rewrite
+2026-05-19 03:24:36,025  INFO        -> rewrite: Defineste intarzierea de dezactivare pentru releul RO1. Dupa primirea comenzii d
+2026-05-19 03:24:36,126  INFO      16708 10.28 (ACS580)  existing_len=1027  qc=rewrite
+2026-05-19 03:24:41,891  INFO        -> rewrite: Seteaza intarzierea de activare pentru releul de iesire RO2. Dupa primirea comen
+2026-05-19 03:24:41,992  INFO      16709 10.29 (ACS580)  existing_len=1017  qc=rewrite
+2026-05-19 03:24:50,988  INFO        -> rewrite: Seteaza intarzierea de dezactivare pentru releul de iesire RO2 dupa indeplinirea
+2026-05-19 03:24:51,088  INFO      16710 10.31 (ACS580)  existing_len=1037  qc=rewrite
+2026-05-19 03:25:00,829  INFO        -> rewrite: Seteaza intarzierea de activare pentru releul RO3. Dupa primirea comenzii de inc
+2026-05-19 03:25:00,930  INFO      16711 10.32 (ACS580)  existing_len=975  qc=rewrite
+2026-05-19 03:25:09,814  INFO        -> rewrite: Defineste intarzierea de dezactivare pentru releul RO3. Dupa ce semnalul de coma
+2026-05-19 03:25:09,915  INFO      16712 11.21 (ACS580)  existing_len=1108  qc=rewrite
+2026-05-19 03:25:20,878  INFO        -> rewrite: Configureaza functia intrarii digitale 5. Cand este setat pe Digital intrarea fu
+2026-05-19 03:25:20,978  INFO      16713 12.11 (ACS580)  existing_len=1110  qc=rewrite
+2026-05-19 03:25:28,565  INFO        -> rewrite: Afiseaza valoarea masurata a intrarii analogice AI1 in mA sau V, functie de conf
+2026-05-19 03:25:28,666  INFO      16714 12.12 (ACS580)  existing_len=1145  qc=rewrite
+2026-05-19 03:25:40,639  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI1 dupa aplicarea factorilor de 
+2026-05-19 03:25:40,740  INFO      16715 12.13 (ACS580)  existing_len=1169  qc=rewrite
+2026-05-19 03:25:48,016  INFO        -> rewrite: Defineste valoarea fortata pentru intrarea analogica AI1 in mA. Cand functia de 
+2026-05-19 03:25:48,117  INFO      16716 12.16 (ACS580)  existing_len=1152  qc=rewrite
+2026-05-19 03:25:54,660  INFO        -> rewrite: Defineste constanta de timp a filtrului pentru intrarea analogica AI1. Un filtru
+2026-05-19 03:25:54,760  INFO      16717 12.17 (ACS580)  existing_len=1205  qc=rewrite
+2026-05-19 03:26:01,560  INFO        -> rewrite: Seteaza valoarea minima a semnalului de intrare pentru intrarea analogica AI1. D
+2026-05-19 03:26:01,660  INFO      16718 12.18 (ACS580)  existing_len=1138  qc=rewrite
+2026-05-19 03:26:09,837  INFO        -> rewrite: Seteaza valoarea maxima pentru semnalul de intrare analogica AI1. Impreuna cu 12
+2026-05-19 03:26:09,938  INFO      16719 12.20 (ACS580)  existing_len=1207  qc=rewrite
+2026-05-19 03:26:22,297  INFO        -> rewrite: Seteaza scara sau punctul de calibrare pentru intrarea analogica AI1. Valoarea 5
+2026-05-19 03:26:22,398  INFO      16720 12.21 (ACS580)  existing_len=1157  qc=rewrite
+2026-05-19 03:26:29,046  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI2 in mA sau V, in functie de co
+2026-05-19 03:26:29,148  INFO      16721 12.22 (ACS580)  existing_len=1180  qc=rewrite
+2026-05-19 03:26:34,600  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI2, dupa procesarea prin paramet
+2026-05-19 03:26:34,701  INFO      16722 12.23 (ACS580)  existing_len=1172  qc=rewrite
+2026-05-19 03:26:43,794  INFO        -> rewrite: Valoarea fortata pentru intrarea analogica AI2 care inlocuieste citirea reala a 
+2026-05-19 03:26:43,895  INFO      16723 12.26 (ACS580)  existing_len=1148  qc=rewrite
+2026-05-19 03:26:52,418  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica AI2. Filtreaza z
+2026-05-19 03:26:52,519  INFO      16724 12.27 (ACS580)  existing_len=1134  qc=rewrite
+2026-05-19 03:27:02,885  INFO        -> rewrite: Seteaza valoarea minima a semnalului pentru intrarea analogica AI2. In mod norma
+2026-05-19 03:27:02,985  INFO      16725 12.28 (ACS580)  existing_len=1077  qc=rewrite
+2026-05-19 03:27:12,528  INFO        -> rewrite: Defineste valoarea maxima a semnalului de intrare pentru intrarea analogica AI2.
+2026-05-19 03:27:12,629  INFO      16726 12.30 (ACS580)  existing_len=1212  qc=rewrite
+2026-05-19 03:27:22,354  INFO        -> rewrite: Seteaza valoarea din proces care corespunde semnalului minim de la intrarea anal
+2026-05-19 03:27:22,454  INFO      16727 12.110 (ACS580)  existing_len=1146  qc=rewrite
+2026-05-19 03:27:33,645  INFO        -> rewrite: Defineste banda moarta pentru intrarile analogice. Cand semnalul de intrare se s
+2026-05-19 03:27:33,746  INFO      16728 13.11 (ACS580)  existing_len=1146  qc=rewrite
+2026-05-19 03:27:39,979  INFO        -> rewrite: Afiseaza valoarea curenta a iesirii analogice AO1 in mA sau V, in functie de con
+2026-05-19 03:27:40,080  INFO      16729 13.13 (ACS580)  existing_len=1137  qc=rewrite
+2026-05-19 03:27:49,529  INFO        -> rewrite: Valoarea fortata pentru iesirea analogica 1 in miliamperi. Cand fortarea este ac
+2026-05-19 03:27:49,630  INFO      16730 13.16 (ACS580)  existing_len=1088  qc=rewrite
+2026-05-19 03:27:56,334  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica AO1. O valoare ma
+2026-05-19 03:27:56,435  INFO      16731 13.18 (ACS580)  existing_len=1141  qc=rewrite
+2026-05-19 03:28:07,011  INFO        -> rewrite: Defineste valoarea maxima pentru sursa de referinta selectata. Seteaza pragul su
+2026-05-19 03:28:07,112  INFO      16732 13.20 (ACS580)  existing_len=1143  qc=rewrite
+2026-05-19 03:28:13,256  INFO        -> rewrite: Seteaza valoarea maxima a curentului de iesire pentru iesirea analogica AO1. imp
+2026-05-19 03:28:13,357  INFO      16733 13.21 (ACS580)  existing_len=1052  qc=rewrite
+2026-05-19 03:28:24,043  INFO        -> rewrite: Afiseaza valoarea actuala a iesirii analogice AO2 in miliamperi. Este un paramet
+2026-05-19 03:28:24,144  INFO      16734 13.23 (ACS580)  existing_len=1074  qc=rewrite
+2026-05-19 03:28:33,204  INFO        -> rewrite: Seteaza valoarea fortata pentru iesirea analogica AO2 in miliamperi. Cand functi
+2026-05-19 03:28:33,304  INFO      16735 13.26 (ACS580)  existing_len=1155  qc=rewrite
+2026-05-19 03:28:38,743  INFO        -> rewrite: Defineste constanta de timp pentru filtrarea semnalului de la iesirea analogica 
+2026-05-19 03:28:38,844  INFO      16736 13.28 (ACS580)  existing_len=1086  qc=rewrite
+2026-05-19 03:28:46,501  INFO        -> rewrite: Defineste valoarea reala maxima a semnalului de la iesirea analogica 2. Scalare 
+2026-05-19 03:28:46,602  INFO      16737 13.30 (ACS580)  existing_len=1094  qc=rewrite
+2026-05-19 03:28:56,401  INFO        -> rewrite: Defineste valoarea maxima de iesire pentru iesirea analogica AO2. Aceasta coresp
+2026-05-19 03:28:56,502  INFO      16738 13.91 (ACS580)  existing_len=1041  qc=rewrite
+2026-05-19 03:29:02,882  INFO        -> rewrite: Parametru de stocare a datelor pentru controlul iesirii analogice AO1. Valoarea 
+2026-05-19 03:29:02,983  INFO      16739 13.92 (ACS580)  existing_len=1068  qc=rewrite
+2026-05-19 03:29:12,685  INFO        -> rewrite: Parametru de stocare a datei pentru iesirea analogica AO2. Acest parametru prime
+2026-05-19 03:29:12,786  INFO      16740 15.24 (ACS580)  existing_len=1159  qc=rewrite
+2026-05-19 03:29:21,179  INFO        -> rewrite: Seteaza intarzierea la activare pentru iesirea digitala DO1. Iesirea va fi activ
+2026-05-19 03:29:21,280  INFO      16741 15.25 (ACS580)  existing_len=1110  qc=rewrite
+2026-05-19 03:29:29,101  INFO        -> rewrite: Defineste intarzierea de dezactivare pentru iesirea releu digital DO1. Dupa ce c
+2026-05-19 03:29:29,202  INFO      16742 15.34 (ACS580)  existing_len=1051  qc=rewrite
+2026-05-19 03:29:34,569  INFO        -> rewrite: Defineste valoarea reala minima a semnalului pentru iesirea de frecventa 1. Repr
+2026-05-19 03:29:34,670  INFO      16743 15.41 (ACS580)  existing_len=1086  qc=rewrite
+2026-05-19 03:29:46,220  INFO        -> rewrite: Selecteaza reactia convertizorului la pierderea semnalului de la intrarile analo
+2026-05-19 03:29:46,320  INFO      16744 15.44 (ACS580)  existing_len=1131  qc=rewrite
+2026-05-19 03:29:55,843  INFO        -> rewrite: Defineste zona moarta a intrarii analogice. Cand variatia semnalului de intrare 
+2026-05-19 03:29:55,944  INFO      16745 15.51 (ACS580)  existing_len=1123  qc=rewrite
+2026-05-19 03:30:06,491  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI3 in volti. Arata tensiunea sau
+2026-05-19 03:30:06,591  INFO      16746 15.52 (ACS580)  existing_len=1099  qc=rewrite
+2026-05-19 03:30:13,484  INFO        -> rewrite: Afiseaza valoarea intrarii analogice AI3 dupa aplicarea scalarii. Valoarea este 
+2026-05-19 03:30:13,585  INFO      16747 15.53 (ACS580)  existing_len=1160  qc=rewrite
+2026-05-19 03:30:23,632  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI3 exprimata ca procent din scal
+2026-05-19 03:30:23,733  INFO      16748 15.56 (ACS580)  existing_len=1053  qc=rewrite
+2026-05-19 03:30:35,853  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul de intrare analogica AI3. Un filtru cu 
+2026-05-19 03:30:35,954  INFO      16749 15.57 (ACS580)  existing_len=1066  qc=rewrite
+2026-05-19 03:30:45,609  INFO        -> rewrite: Defineste valoarea minima scalata corespunzatoare semnalului de intrare analogic
+2026-05-19 03:30:45,709  INFO      16750 15.58 (ACS580)  existing_len=1082  qc=rewrite
+2026-05-19 03:30:56,042  INFO        -> rewrite: Defineste valoarea maxima pentru intrarea analogica AI3. Impreuna cu 15.59 permi
+2026-05-19 03:30:56,143  INFO      16751 15.59 (ACS580)  existing_len=1032  qc=rewrite
+2026-05-19 03:31:02,966  INFO        -> rewrite: Defineste valoarea reala interna care corespunde semnalului de la intrarea analo
+2026-05-19 03:31:03,066  INFO      16752 15.60 (ACS580)  existing_len=1059  qc=rewrite
+2026-05-19 03:31:09,216  INFO        -> rewrite: Defineste valoarea reala (in unitati de inginerie) care corespunde semnalului ma
+2026-05-19 03:31:09,317  INFO      16753 15.61 (ACS580)  existing_len=983  qc=rewrite
+2026-05-19 03:31:16,098  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI4, in mod Voltaj sau mA. Este u
+2026-05-19 03:31:16,199  INFO      16754 15.62 (ACS580)  existing_len=966  qc=rewrite
+2026-05-19 03:31:22,046  INFO        -> rewrite: Afiseaza valoarea intrarii analogice AI4 dupa aplicarea scalarii. Valoarea este 
+2026-05-19 03:31:22,147  INFO      16755 15.63 (ACS580)  existing_len=1015  qc=rewrite
+2026-05-19 03:31:30,381  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI4 exprimata in procente din sca
+2026-05-19 03:31:30,482  INFO      16756 15.64 (ACS580)  existing_len=1001  qc=rewrite
+2026-05-19 03:31:38,830  INFO        -> rewrite: Seteaza o valoare fortata pentru intrarea analogica AI4 in volti. In loc de citi
+2026-05-19 03:31:38,931  INFO      16757 15.66 (ACS580)  existing_len=1025  qc=rewrite
+2026-05-19 03:31:49,044  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru intrarea analogica AI4. Filtrul net
+2026-05-19 03:31:49,144  INFO      16758 15.67 (ACS580)  existing_len=1061  qc=rewrite
+2026-05-19 03:31:55,639  INFO        -> rewrite: Defineste valoarea minima pentru intrarea analogica AI4. Aceasta setare stabiles
+2026-05-19 03:31:55,740  INFO      16759 15.68 (ACS580)  existing_len=1039  qc=rewrite
+2026-05-19 03:32:07,285  INFO        -> rewrite: Defineste valoarea maxima a semnalului de intrare analogic AI4 in volti. Aceasta
+2026-05-19 03:32:07,385  INFO      16760 15.69 (ACS580)  existing_len=1021  qc=rewrite
+2026-05-19 03:32:20,675  INFO        -> rewrite: Defineste valoarea reala interna care corespunde semnalului maxim de la intrarea
+2026-05-19 03:32:20,776  INFO      16761 15.70 (ACS580)  existing_len=984  qc=rewrite
+2026-05-19 03:32:27,274  INFO        -> rewrite: Defineste valoarea interna reala care corespunde semnalului analog de la intrare
+2026-05-19 03:32:27,375  INFO      16762 15.71 (ACS580)  existing_len=977  qc=rewrite
+2026-05-19 03:32:33,700  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI5 in modul V sau mA conform set
+2026-05-19 03:32:33,801  INFO      16763 15.72 (ACS580)  existing_len=944  qc=rewrite
+2026-05-19 03:32:44,266  INFO        -> rewrite: Afiseaza valoarea scalata a intrarii analogice AI5. Rezultatul este obtinut prin
+2026-05-19 03:32:44,367  INFO      16764 15.73 (ACS580)  existing_len=955  qc=rewrite
+2026-05-19 03:32:56,834  INFO        -> rewrite: Afiseaza valoarea curenta a intrarii analogice AI5 exprimata ca procent din scal
+2026-05-19 03:32:56,934  INFO      16765 15.74 (ACS580)  existing_len=977  qc=rewrite
+2026-05-19 03:33:05,936  INFO        -> rewrite: Seteaza o valoare fortata pentru intrarea analogica AI5. Folosit in scopuri de t
+2026-05-19 03:33:06,037  INFO      16766 15.76 (ACS580)  existing_len=1005  qc=rewrite
+2026-05-19 03:33:16,888  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul de netezire al intrarii analogice AI5. 
+2026-05-19 03:33:16,989  INFO      16767 15.77 (ACS580)  existing_len=957  qc=rewrite
+2026-05-19 03:33:28,032  INFO        -> rewrite: Defineste nivelul minim al semnalului de intrare analogica AI5, masurat in volti
+2026-05-19 03:33:28,133  INFO      16768 15.78 (ACS580)  existing_len=910  qc=rewrite
+2026-05-19 03:33:35,577  INFO        -> rewrite: Defineste valoarea maxima a semnalului de intrare analogic AI5 in volți. Impreun
+2026-05-19 03:33:35,678  INFO      16769 15.79 (ACS580)  existing_len=918  qc=rewrite
+2026-05-19 03:33:40,204  INFO        -> rewrite: Defineste valoarea reala a procesului care corespunde semnalului maxim de la int
+2026-05-19 03:33:40,304  INFO      16770 15.80 (ACS580)  existing_len=997  qc=rewrite
+2026-05-19 03:33:47,041  INFO        -> rewrite: Defineste valoarea reala interna care corespunde semnalului de la intrarea analo
+2026-05-19 03:33:47,142  INFO      16771 15.81 (ACS580)  existing_len=902  qc=rewrite
+2026-05-19 03:33:53,564  INFO        -> rewrite: Acest parametru afiseaza valoarea reala a iesirii analogice AO3 in volti sau mA.
+2026-05-19 03:33:53,664  INFO      16772 15.83 (ACS580)  existing_len=1101  qc=rewrite
+2026-05-19 03:34:06,533  INFO        -> rewrite: Seteaza valoarea fortata pentru iesirea analogica AO3. Cand functia de forare es
+2026-05-19 03:34:06,633  INFO      16773 15.84 (ACS580)  existing_len=1024  qc=rewrite
+2026-05-19 03:34:16,537  INFO        -> rewrite: Parametru de stocare pentru iesirea analogica AO3. Stocheaza valoarea de referin
+2026-05-19 03:34:16,638  INFO      16774 15.86 (ACS580)  existing_len=904  qc=rewrite
+2026-05-19 03:34:23,479  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul de iesire analogica AO3. O valoare mai 
+2026-05-19 03:34:23,579  INFO      16775 15.87 (ACS580)  existing_len=971  qc=rewrite
+2026-05-19 03:34:31,913  INFO        -> rewrite: Defineste valoarea minima reala a semnalului de la iesirea analogica 3. Aceasta 
+2026-05-19 03:34:32,014  INFO      16776 15.88 (ACS580)  existing_len=934  qc=rewrite
+2026-05-19 03:34:43,018  INFO        -> rewrite: Defineste valoarea reala maxima corespunzatoare semnalului maxim de la iesirea a
+2026-05-19 03:34:43,119  INFO      16777 15.89 (ACS580)  existing_len=915  qc=rewrite
+2026-05-19 03:34:53,775  INFO        -> rewrite: Defineste valoarea minima a tensiunii de iesire pentru iesirea analogica AO3. Ac
+2026-05-19 03:34:53,876  INFO      16778 15.90 (ACS580)  existing_len=1009  qc=rewrite
+2026-05-19 03:35:04,290  INFO        -> rewrite: Defineste valoarea maxima a tensiunii de iesire pentru iesirea analogica AO3. Ac
+2026-05-19 03:35:04,390  INFO      16779 15.91 (ACS580)  existing_len=915  qc=rewrite
+2026-05-19 03:35:09,160  INFO        -> rewrite: Afiseaza valoarea curenta a iesirii analogice AO4 in mA sau V. Acest parametru e
+2026-05-19 03:35:09,261  INFO      16780 15.93 (ACS580)  existing_len=1035  qc=rewrite
+2026-05-19 03:35:17,084  INFO        -> rewrite: Defineste valoarea fortata pentru iesirea analogica AO4. Cand functia de fortare
+2026-05-19 03:35:17,185  INFO      16781 15.94 (ACS580)  existing_len=986  qc=rewrite
+2026-05-19 03:35:28,132  INFO        -> rewrite: Parametru de stocare temporara pentru controlul iesirii analogice AO4. Scrie val
+2026-05-19 03:35:28,233  INFO      16782 15.96 (ACS580)  existing_len=913  qc=rewrite
+2026-05-19 03:35:38,438  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica AO4. Valoarea 0 d
+2026-05-19 03:35:38,539  INFO      16783 15.97 (ACS580)  existing_len=903  qc=rewrite
+2026-05-19 03:35:43,566  INFO        -> rewrite: Defineste valoarea minima reala a semnalului pentru iesirea analogica AO4. Utili
+2026-05-19 03:35:43,667  INFO      16784 15.98 (ACS580)  existing_len=976  qc=rewrite
+2026-05-19 03:35:52,269  INFO        -> rewrite: Defineste valoarea maxima reala a semnalului pentru iesirea analogica AO4. Impre
+2026-05-19 03:35:52,369  INFO      16785 15.99 (ACS580)  existing_len=959  qc=rewrite
+2026-05-19 03:36:06,007  INFO        -> rewrite: Defineste valoarea minima de iesire pentru iesirea analogica AO4 in volti. Valoa
