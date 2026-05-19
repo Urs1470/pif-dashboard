@@ -1,0 +1,802 @@
+[
+  {
+    "id": 15738,
+    "familie": "ACS580",
+    "parametru": "81.38",
+    "descriere_scurta": "Antoine coefficient",
+    "descriere": "Defines the Antoine coefficient A for parameter 81.35 Refrigerant gas type. The Antoine equation is given by T=(B/(A-log10(P)))+C where T is refrigerant temperature in Kelvin and P is refrigerant pressure in mmHg. Antoine coefficient A",
+    "pdf_extra": null
+  },
+  {
+    "id": 15739,
+    "familie": "ACS580",
+    "parametru": "81.39",
+    "descriere_scurta": "Antoine coefficient",
+    "descriere": "Defines the Antoine coefficient B for parameter 81.35 Refrigerant gas type. See parameter 81.38 Antoine coefficient A.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15740,
+    "familie": "ACS580",
+    "parametru": "81.40",
+    "descriere_scurta": "Antoine coefficient",
+    "descriere": "Defines the Antoine coefficient C for parameter 81.35 Refrigerant gas type. See parameter 81.38 Antoine coefficient A. Antoine coefficient C",
+    "pdf_extra": null
+  },
+  {
+    "id": 15741,
+    "familie": "ACS580",
+    "parametru": "81.41",
+    "descriere_scurta": "Gas pressure",
+    "descriere": "Defines the lowest pressure that parameter 81.35 Refrigerant gas type can reach before triggering warning D58B Gas pressure outside limits and preventing the calculation of parameter 81.30 Actual gas temperature. lowest pressure",
+    "pdf_extra": null
+  },
+  {
+    "id": 15742,
+    "familie": "ACS580",
+    "parametru": "81.42",
+    "descriere_scurta": "Gas pressure",
+    "descriere": "Defines the highest pressure that parameter 81.35 Refrigerant gas type can reach before triggering warning D58B Gas pressure outside limits and preventing the calculation of 81.30 Actual gas temperature. highest pressure Settings for pump protection functions. See sections Dry pump protection (page 148) and Soft pipe fill (page 149).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15743,
+    "familie": "ACS580",
+    "parametru": "82.51",
+    "descriere_scurta": "Pump protection",
+    "descriere": "Selects pump protection faults that are automatically reset. The parameter is a 16-bit word with each bit corresponding to a fault type. Whenever a bit is set to 1, the corresponding fault is automatically reset after 82.52 Pump protection autoreset delay time. WARNING! Before you activate the function, make sure that no dangerous situations can occur. The function restarts the drive automatically and continues operation after a fault. Descriptions Enables autoreset of the Dry run fault detected Enables autoreset of a cavitation fault Bit mask",
+    "pdf_extra": null
+  },
+  {
+    "id": 15744,
+    "familie": "ACS580",
+    "parametru": "82.52",
+    "descriere_scurta": "Pump protection",
+    "descriere": "Defines the time that the drive will wait after a pump protection fault before attempting an automatic reset. Wait time Settings for the pump cleaning sequence. See section Pump cleaning (page 152).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15745,
+    "familie": "ACS580",
+    "parametru": "83.01",
+    "descriere_scurta": "Pump cleaning",
+    "descriere": "Displays the status of pump cleaning. Cleaning sequence is disabled. Cleaning sequence is active. Triggers are not configured. Waiting for triggering signal. Cleaning sequence is triggered by parameter 83.11 specifies warning generation only.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15746,
+    "familie": "ACS580",
+    "parametru": "83.02",
+    "descriere_scurta": "Pump cleaning",
+    "descriere": "Displays the pump cleaning progress. Percentage",
+    "pdf_extra": null
+  },
+  {
+    "id": 15747,
+    "familie": "ACS580",
+    "parametru": "83.10",
+    "descriere_scurta": "Pump cleaning",
+    "descriere": "Enables the pump cleaning action. Pump cleaning is disabled. Pump cleaning is started based on triggers. Generates warning message based on triggers.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15748,
+    "familie": "ACS580",
+    "parametru": "83.12",
+    "descriere_scurta": "Manually force",
+    "descriere": "Starts pump cleaning. Pump cleaning is not active. Starts pump cleaning immediately. Starts pump cleaning when DI4 goes high. Starts pump cleaning when DI5 goes high. Starts pump cleaning when DI6 goes high. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15749,
+    "familie": "ACS580",
+    "parametru": "83.15",
+    "descriere_scurta": "Fixed time interval",
+    "descriere": "Defines the constant time interval between cleaning cycles. This parameter is used only when cleaning is triggered by time interval.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15750,
+    "familie": "ACS580",
+    "parametru": "83.35",
+    "descriere_scurta": "Cleaning count fault",
+    "descriere": "Activates the cleaning count monitoring, and selects the action it takes if it detects too many cleaning starts within the time defined by parameter 83.36 Cleaning count time. See section Cleaning count monitoring (page 154). No action. Warning. Fault.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15751,
+    "familie": "ACS580",
+    "parametru": "83.36",
+    "descriere_scurta": "Cleaning count time",
+    "descriere": "Defines the time for cleaning count monitoring. See section Cleaning count monitoring (page 154). Time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15752,
+    "familie": "ACS580",
+    "parametru": "83.37",
+    "descriere_scurta": "Maximum cleaning",
+    "descriere": "Defines the maximum cleaning counts allowed. See section Cleaning count monitoring (page 154). Maximum cleaning counts. Settings for the detection and control of pump cavitation. See section Cavitation control on page 169.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15753,
+    "familie": "ACS580",
+    "parametru": "86.01",
+    "descriere_scurta": "Cavitation status",
+    "descriere": "Displays in which state the pump cavitation control is currently in.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15754,
+    "familie": "ACS580",
+    "parametru": "86.02",
+    "descriere_scurta": "Cavitation value",
+    "descriere": "The calculated ripple rms value of torque which is used in the cavitation algorithm Calculated ripple rms value",
+    "pdf_extra": null
+  },
+  {
+    "id": 15755,
+    "familie": "ACS580",
+    "parametru": "86.11",
+    "descriere_scurta": "Cavitation control",
+    "descriere": "Selects the drive’s reaction to a detection of pump cavitation.",
+    "pdf_extra": "{\"notes\": [\"Cavitation detection requires a pump curve; see 86.20 - 86.25. The pump cavitation detection algorithm is disabled. Bit 00 of 86.01 Cavitation minimum speed is set. The drive enunciates a “Cavitation Detected” warning only, no corrective actions by the drive occurs. Bit 02 of 86.01 Cavitation status word is set when a cavitation in the pump is detected; otherwise, bit 01 is set. The drive enunciates a “Cavitation Detected” warning and implements corrective actions until the detection is cleared or the actions fail to resolve the issue and the drive faults, at which point a Cavitation Detected fault is enunciated. Bit(s) 03 - 06 of 86.01 Cavitation status word are set when a cavitation in the pump is detected, depending on the situation; otherwise, bit 01 is set. The drive does not enunciate a warning; however, it implements corrective actions until the detection is cleared or the actions fail to resolve the issue and drive faults, at whic h point a “Cavitation Detected” fault is enunciated. Bit(s) 03-06 of 86.01 Cavitation status word are set when a cavitation in the pump is detected, depending on the situation; otherwise, bit 01 is set.\"]}"
+  },
+  {
+    "id": 15756,
+    "familie": "ACS580",
+    "parametru": "86.12",
+    "descriere_scurta": "Cavitation minimum",
+    "descriere": "The minimum motor speed at which the cavitation control is enabled. This is the lowest speed the drive will adjust to while trying to resolve the detection of pump cavitation. The setting cannot be set lower than 30.11 Minimum speed",
+    "pdf_extra": "{\"notes\": [\"This parameter is hidden when 99.04 Motor control mode is Scalar. Minimum motor speed\"]}"
+  },
+  {
+    "id": 15757,
+    "familie": "ACS580",
+    "parametru": "86.13",
+    "descriere_scurta": "Cavitation speed",
+    "descriere": "The speed step the drive will decrease the reference by when attempting to resolve a detected pump cavitation.",
+    "pdf_extra": "{\"notes\": [\"This parameter is hidden when 99.04 Motor control mode is Scalar. Speed step for decrease\"]}"
+  },
+  {
+    "id": 15758,
+    "familie": "ACS580",
+    "parametru": "86.18",
+    "descriere_scurta": "Cavitation hold time",
+    "descriere": "The time the reference will hold at each step before moving to the next step. The time the reference will hold at each step",
+    "pdf_extra": null
+  },
+  {
+    "id": 15759,
+    "familie": "ACS580",
+    "parametru": "86.14",
+    "descriere_scurta": "Cavitation speed",
+    "descriere": "The speed step the drive will increase the reference by when transitioning from pump cavitation control back to normal operation (after a detected cavitation in the pump has been resolved).",
+    "pdf_extra": "{\"notes\": [\"This parameter is hidden when 99.04 Motor control mode is Scalar. Speed step for increase\"]}"
+  },
+  {
+    "id": 15760,
+    "familie": "ACS580",
+    "parametru": "86.15",
+    "descriere_scurta": "Cavitation minimum",
+    "descriere": "The minimum motor frequency at which the cavitation control is enabled. This is the lowest frequency the drive will adjust to while trying to resolve the detection of pump cavitation. The setting cannot be set lower than 30.13 Minimum frequency.",
+    "pdf_extra": "{\"notes\": [\"This parameter is hidden when 99.04 Motor control mode is Vector. Minimum motor frequency\"]}"
+  },
+  {
+    "id": 15761,
+    "familie": "ACS580",
+    "parametru": "86.16",
+    "descriere_scurta": "Cavitation",
+    "descriere": "The step the drive will decrease the reference by when attempting to resolve a detected pump cavitation.",
+    "pdf_extra": "{\"notes\": [\"This parameter is hidden when 99.04 Motor control mode is Vector. Frequency step for decrease\"]}"
+  },
+  {
+    "id": 15763,
+    "familie": "ACS580",
+    "parametru": "86.19",
+    "descriere_scurta": "Cavitation empty",
+    "descriere": "The time the drive will hold at the cavitation minimum reference before faulting for Cavitation Detection. The time the drive will hold at the minimum reference",
+    "pdf_extra": null
+  },
+  {
+    "id": 15764,
+    "familie": "ACS580",
+    "parametru": "86.20",
+    "descriere_scurta": "Cavitation curve",
+    "descriere": "Selects the inital autotune of the pump curve used only for the cavitation detection algorithm. No action.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15765,
+    "familie": "ACS580",
+    "parametru": "86.21",
+    "descriere_scurta": "Cavitation curve p1",
+    "descriere": "The first torque point in the base pump curve. This will be set during the cavitation control curve autotune or can be set manually. See the example diagram for the speed/frequency points used for each curve point. Torque point",
+    "pdf_extra": null
+  },
+  {
+    "id": 15766,
+    "familie": "ACS580",
+    "parametru": "86.22",
+    "descriere_scurta": "Cavitation curve p2",
+    "descriere": "The second torque point in the base pump curve. Torque point",
+    "pdf_extra": null
+  },
+  {
+    "id": 15767,
+    "familie": "ACS580",
+    "parametru": "86.23",
+    "descriere_scurta": "Cavitation curve p3",
+    "descriere": "The third torque point in the base pump curve. Torque point",
+    "pdf_extra": null
+  },
+  {
+    "id": 15768,
+    "familie": "ACS580",
+    "parametru": "86.24",
+    "descriere_scurta": "Cavitation curve p4",
+    "descriere": "The fourth torque point in the base pump curve. Torque point",
+    "pdf_extra": null
+  },
+  {
+    "id": 15769,
+    "familie": "ACS580",
+    "parametru": "86.25",
+    "descriere_scurta": "Cavitation curve p5",
+    "descriere": "The fifth torque point in the base pump curve. Torque point",
+    "pdf_extra": null
+  },
+  {
+    "id": 15770,
+    "familie": "ACS580",
+    "parametru": "86.30",
+    "descriere_scurta": "Cavitation",
+    "descriere": "Tuning parameter used to calculate the RMS torque value. Tuning parameter",
+    "pdf_extra": null
+  },
+  {
+    "id": 15771,
+    "familie": "ACS580",
+    "parametru": "95.04",
+    "descriere_scurta": "Control board",
+    "descriere": "Specifies how the control unit of the drive is powered. The drive control unit is powered from the drive power unit it is connected to. The drive control unit is powered from an external power supply.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15772,
+    "familie": "ACS580",
+    "parametru": "95.200",
+    "descriere_scurta": "Cooling fan mode",
+    "descriere": "Cooling fan operation mode. Fan runs normally: Fan on/off, fan speed reference can autochange according to the drive state. Fan always runs at 100% speed reference.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15773,
+    "familie": "ACS580",
+    "parametru": "96.05",
+    "descriere_scurta": "Macro active",
+    "descriere": "Shows which control macro is currently selected. See chapter Control macros (page 79) for more information. To change the macro, use parameter 96.04 Macro select. Factory macro (see page 80). For scalar motor control. Hand/Auto macro (see page 90). Hand/PID macro (see page 92). Compressor control macro (see page 102). 3-wire macro (see page 80). Alternate macro (see page 86). Motor potentiometer macro (see page 88). PID macro (see page 94). Panel PID macro (see page 96). PFC macro (see page 98). ABB standard (vector) macro (see page 82). For vector motor control. Torque control macro (see page 100).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15774,
+    "familie": "ACS580",
+    "parametru": "96.07",
+    "descriere_scurta": "Parameter save",
+    "descriere": "Saves the valid parameter values to the permanent memory on the drive control unit to ensure that operation can continue after cycling the power. Save the parameters with this parameter • to store values sent from the fieldbus • when using external +24 V DC power supply to the control unit: to save parameter changes before you power down the control unit. The supply has a very short hold-up time when powered off.",
+    "pdf_extra": "{\"notes\": [\"A new parameter value is saved automatically when changed from the PC tool or control panel but not when altered through a fieldbus adapter connection. Save completed. Save in progress.\"]}"
+  },
+  {
+    "id": 15775,
+    "familie": "ACS580",
+    "parametru": "96.20",
+    "descriere_scurta": "Time sync primary",
+    "descriere": "Defines the first priority external source for synchronization of the drive’s time and date. The date and time can also be directly set into 96.24…96.26 in which case this parameter is ignored. Fieldbus interface A. Embedded fieldbus interface. Control panel, or the Drive composer PC tool connected to the control panel. Drive composer PC tool through a FENA module.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15776,
+    "familie": "ACS580",
+    "parametru": "96.25",
+    "descriere_scurta": "Time in minutes",
+    "descriere": "The number of full minutes passed since midnight. For example, the value 860 corresponds to 2:20 pm. See parameter 96.24 Full days since 1st Jan 1980. Minutes since midnight.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15777,
+    "familie": "ACS580",
+    "parametru": "96.26",
+    "descriere_scurta": "Time in ms within",
+    "descriere": "The number of milliseconds passed since the previous minute. See parameter 96.24 Full days since 1st Jan 1980. Number of milliseconds since the last minute.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15778,
+    "familie": "ACS580",
+    "parametru": "96.54",
+    "descriere_scurta": "Checksum action",
+    "descriere": "Selects how the drive reacts. • when 96.55 Checksum control word, bit 8 = 1 (Approved checksum A): if the parameter checksum 96.68 Actual checksumA does not match 96.71 Approved checksum A, and/or • when 96.55 Checksum control word, bit 9 = 1 (Approved checksum B): if the parameter checksum 96.69 Actual checksumB does not match 96.72 Approved checksum B. No action taken. (The checksum feature is not in use.) The drive generates an event log entry (B686 Checksum mismatch). The drive generates a warning (A686 Checksum mismatch). The drive generates a warning (A686 Checksum mismatch). Starting the drive is prevented. The drive trips on 6200 Checksum mismatch.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15779,
+    "familie": "ACS580",
+    "parametru": "96.55",
+    "descriere_scurta": "Checksum control",
+    "descriere": "Bits 8…9 select which comparison(s) are made: • Bit 8 = 1 (Approved checksum A): 96.68 Actual checksumA is compared to 96.71 Approved checksum A, and/or • Bit 9 = 1 (Approved checksum A): if 96.69 Actual checksumB is compared to 96.72 Approved checksum B. Bits 12…13 select approved (reference) checksum parameter(s) into which the actual checksum(s) from parameter(s) are copied: • Bit 12 = 1 (Set approved checksum A): Value of 96.68 Actual checksumA is copied into 96.71 Approved checksum A, and/or • Bit 13 = 1 (Set approved checksum B): Value of 96.69 Actual checksumB copied into 96.72 Approved checksum B. Information 1 = Enabled: Checksum A (96.71) is observed. 0 = Disabled. 1 = Enabled: Checksum B (96.72) is observed. 0 = Disabled. 1 = Set: Copy value of 96.68 into 96.71. 0 = Done (copy has been made). 1 = Set: Copy value of 96.69 into 96.72. 0 = Done (copy has been made). 1 = lbft (lb·ft) Checksum control word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15780,
+    "familie": "ACS580",
+    "parametru": "96.68",
+    "descriere_scurta": "Actual checksumA",
+    "descriere": "Displays the actual parameter configuration checksum A. The checksum A is generated and updated whenever an action is selected in 96.54 Checksum action and 96.55 Checksum control word, bit 8 = 1 (Approved checksum A). Checksum A calculation does not include • fieldbus settings. The parameters included in the calculation are user editable parameters in parameter groups 10, 11, 12, 13, 15, 19, 20, 21, 22, 23, 24, 25, 28, 30, 31, 32, 34, 35, 36, 37, 40, 41, 43, 45, 46, 70, 71, 72, 73, 74, 76, 80, 94, 95, 96, 97, 98, 99. See also section Parameter checksum calculation (page 215). Actual checksum.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15781,
+    "familie": "ACS580",
+    "parametru": "97.01",
+    "descriere_scurta": "Switching",
+    "descriere": "Defines the switching frequency of the drive that is used as long as the drive stays below the thermal limit. See section Switching frequency on page 187. Higher switching frequency results in lower acoustic motor noise. Lower switching frequency generates less switching losses and reduce EMC emissions. Notes: • If you have a multimotor system, contact your local ABB representative. • With the CPTC-02 ATEX-certified thermistor protection module, follow the instructions given in the CPTC-02 ATEX-certified thermistor protection module, Ex II (2) GD (+L537+Q971) user's manual (3AXD50000030058 [English]. • With an ABB EX motor, follow the instructions given in the ABB EX motor documentation. 2 kHz. 3 kHz. 4 kHz. 5 kHz. 6 kHz. 7 kHz. 8 kHz. 9 kHz. 10 kHz. 11 kHz. 12 kHz.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15782,
+    "familie": "ACS580",
+    "parametru": "97.03",
+    "descriere_scurta": "Slip gain",
+    "descriere": "Defines the slip gain which is used to improve the estimated motor slip. 100% means full slip gain; 0% means no slip gain. The default value is 100%. Other values can be used if a static speed error is detected despite having the setting at full slip gain. Example (with nominal load and nominal slip of 40 rpm): A 1000 rpm constant speed reference is given to the drive. Despite having full slip gain (= 100%), a manual tachometer measurement from the motor axis gives a speed value of 998 rpm. The static speed error is 1000 rpm - 998 rpm = 2 rpm. To compensate the error, the slip gain should be increased to 105% (2 rpm / 40 rpm = 5%). Slip gain.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15783,
+    "familie": "ACS580",
+    "parametru": "97.04",
+    "descriere_scurta": "Voltage reserve",
+    "descriere": "Defines the minimum allowed voltage reserve. When the voltage reserve has decreased to the set value, the drive enters the field weakening area.",
+    "pdf_extra": "{\"notes\": [\"This is an expert level parameter and should not be adjusted without appropriate skill. If the intermediate circuit DC voltage Udc = 550 V and the voltage reserve is 5%, the RMS value of the maximum output voltage in steady-state operation is 0.95 × 550 V / sqrt(2) = 369 V The dynamic performance of the motor control in the field weakening area can be improved by increasing the voltage reserve value, but the drive enters the field weakening area earlier. Warning: Decreasing the voltage reserve parameter to -5% to get higher voltage leads to higher harmonics in output current, typically 8 - 10%, as the drive is operating in over- modulation region. Voltage reserve.\"]}"
+  },
+  {
+    "id": 15784,
+    "familie": "ACS580",
+    "parametru": "97.08",
+    "descriere_scurta": "Optimizer minimum",
+    "descriere": "This parameter can be used to improve the control dynamics of a synchronous reluctance motor or a salient permanent magnet synchronous motor. As a rule of thumb, define a level to which the output torque must rise with minimum delay. This will increase the motor current and improve the torque response at low speeds. Optimizer torque limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15785,
+    "familie": "ACS580",
+    "parametru": "97.10",
+    "descriere_scurta": "Signal injection",
+    "descriere": "Enables the anti-cogging function: a high-frequency alternating signal is injected to the motor in the low speed region to improve the stability of torque control. This removes the “cogging” that can sometimes be seen as the rotor passes the motor magnetic poles. Anti-cogging can be enabled with different amplitude levels. Notes: • This is an expert level parameter and should not be adjusted without appropriate skill. • Use as low a level as possible that gives satisfactory performance. • Signal injection cannot be applied to asynchronous motors. • For frames R6…R9 only. Anti-cogging disabled. Anti-cogging enabled with amplitude level of 5%. Anti-cogging enabled with amplitude level of 10%. Anti-cogging enabled with amplitude level of 15%. Anti-cogging enabled with amplitude level of 20%.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15786,
+    "familie": "ACS580",
+    "parametru": "97.15",
+    "descriere_scurta": "Motor model",
+    "descriere": "Enables the motor model temperature adaptation. Estimated motor temperature can be used to adapt temperature dependent parameters (for example, resistances) of motor model. Temperature adaptation disabled. Temperature adaptation with motor temperature estimate (parameter 35.01 Motor estimated temperature).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15787,
+    "familie": "ACS580",
+    "parametru": "97.16",
+    "descriere_scurta": "Stator temperature",
+    "descriere": "Tunes the motor temperature dependence of stator parameters (stator resistance). Tuning factor.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15788,
+    "familie": "ACS580",
+    "parametru": "97.17",
+    "descriere_scurta": "Rotor temperature",
+    "descriere": "Tunes the motor temperature dependence of rotor parameters (for example, rotor resistance). Tuning factor.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15789,
+    "familie": "ACS580",
+    "parametru": "97.48",
+    "descriere_scurta": "Udc stabilizer",
+    "descriere": "Enables or disables the DC bus voltage stabilizer. When enabled, the gain can be selected from the list. The stabilizer is used to prevent possible voltage oscillations in the drive DC bus caused and excited by a combination of drive output power (motor power) and the drive DC bus parameters and grid side parameters (inductances, capacitances and resistances). In case of voltage variation, the drive tunes the internal torque/frequency reference to stabilize the DC bus voltage oscillation.",
+    "pdf_extra": "{\"notes\": [\"if the drive trips to a supply phase loss fault, this may also indicate some oscillation in DC bus voltage. In that case it is reasonable to enable the DC bus stabilizer. DC bus voltage stabilizer disabled. DC bus voltage stabilizer enabled, minimum stabilization. DC bus voltage stabilizer enabled, mild stabilization. DC bus voltage stabilizer enabled, medium stabilization. DC bus voltage stabilizer enabled, strong stabilization. DC bus voltage stabilizer enabled, maximum stabilization.\"]}"
+  },
+  {
+    "id": 15790,
+    "familie": "ACS580",
+    "parametru": "97.49",
+    "descriere_scurta": "Slip gain for scalar",
+    "descriere": "Sets gain for slip compensation in percent when the drive is operating in scalar control mode. A squirrel-cage motor slips under load. Increasing the frequency as the motor torque increases compensates for the slip.",
+    "pdf_extra": "{\"notes\": [\"This parameter is only effective in scalar motor control mode (parameter 99.04 Motor control mode is set to Scalar). 0% = No slip compensation. 0…200% = Increasing slip compensation. 100% means full slip compensation according to parameter 99.08 Motor nominal frequency and 99.09 Motor nominal speed.\"]}"
+  },
+  {
+    "id": 15791,
+    "familie": "ACS580",
+    "parametru": "97.135",
+    "descriere_scurta": "Udc ripple",
+    "descriere": "Calculates ripple voltage. Voltage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15792,
+    "familie": "ACS580",
+    "parametru": "98.01",
+    "descriere_scurta": "User motor model",
+    "descriere": "Activates the motor model parameters 98.02…98.12 and 98.14. Notes: • Parameter value is automatically set to zero when ID run is selected by parameter 99.13 ID run requested. The values of parameters 98.02…98.12 are then updated according to the motor characteristics identified during the ID run. • Measurements made directly from the motor terminals during the ID run are likely to produce slightly different values than those on a data sheet from a motor manufacturer. • This parameter cannot be changed while the drive is running. Parameters 98.02…98.12 inactive. The values of parameters 98.02… 98.12 are used as the motor model.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15793,
+    "familie": "ACS580",
+    "parametru": "98.05",
+    "descriere_scurta": "SigmaL user",
+    "descriere": "Defines the leakage inductance",
+    "pdf_extra": "{\"notes\": [\"This parameter is valid only for asynchronous motors. Leakage inductance in per unit.\"]}"
+  },
+  {
+    "id": 15794,
+    "familie": "ACS580",
+    "parametru": "98.12",
+    "descriere_scurta": "SigmaL user SI",
+    "descriere": "Defines the leakage inductance",
+    "pdf_extra": "{\"notes\": [\"This parameter is valid only for asynchronous motors. Leakage inductance.\"]}"
+  },
+  {
+    "id": 15795,
+    "familie": "ACS580",
+    "parametru": "99.03",
+    "descriere_scurta": "Motor type",
+    "descriere": "Selects the motor type.",
+    "pdf_extra": "{\"notes\": [\"This parameter cannot be changed while the drive is running. Standard squirrel cage AC induction motor (asynchronous induction motor). Permanent magnet motor. Three-phase AC synchronous motor with permanent magnet rotor and sinusoidal BackEMF voltage.\", \"With permanent magnet motors special attention must be paid on setting the motor nominal values correctly in parameter group 99 Motor data. You must use vector control. If the nominal BackEMF voltage of the motor is not available, a full ID run should be performed for improving performance. Synchronous reluctance motor. Three-phase AC synchronous motor with salient pole rotor without permanent magnets. You must use vector control for this selection. Permanent-magnet-assisted synchronous reluctance motor.\"]}"
+  },
+  {
+    "id": 15796,
+    "familie": "ACS580",
+    "parametru": "99.08",
+    "descriere_scurta": "Motor nominal",
+    "descriere": "Defines the nominal motor frequency. This setting must match the value on the rating plate of the motor.",
+    "pdf_extra": "{\"notes\": [\"This parameter cannot be changed while the drive is running. Nominal frequency of the motor.\"]}"
+  },
+  {
+    "id": 15797,
+    "familie": "ACS580",
+    "parametru": "99.10",
+    "descriere_scurta": "Motor nominal",
+    "descriere": "Defines the nominal motor power. The setting must match the value on the rating plate of the motor. If multiple motors are connected to the drive, enter the total power of the motors. The unit is selected by parameter 96.16 Unit selection.",
+    "pdf_extra": "{\"notes\": [\"This parameter cannot be changed while the drive is running. Nominal power of the motor.\"]}"
+  },
+  {
+    "id": 15798,
+    "familie": "ACS580",
+    "parametru": "99.11",
+    "descriere_scurta": "Motor nominal cos",
+    "descriere": "Defines the cosphi of the motor for a more accurate motor model. The value is not obligatory, but is useful with an asynchronous motor, especially when performing a standstill identification run. With a permanent magnet or synchronous reluctance motor, this value is not needed. Notes: • Do not enter an estimated value. If you do not know the exact value, leave the parameter at zero. • This parameter cannot be changed while the drive is running. Cosphi of the motor.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15799,
+    "familie": "ACS580",
+    "parametru": "99.14",
+    "descriere_scurta": "Last ID run",
+    "descriere": "Shows the type of ID run that was performed last. For more information about the different modes, see the selections of parameter 99.13 ID run requested. No ID run has been performed. Normal ID run. Reduced ID run. Standstill ID run. Current measurement calibration. Advanced ID run.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15800,
+    "familie": "ACS580",
+    "parametru": "99.15",
+    "descriere_scurta": "Motor polepairs",
+    "descriere": "Calculated number of pole pairs in the motor. Number of pole pairs.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15801,
+    "familie": "ACS580",
+    "parametru": "22.30",
+    "descriere_scurta": "Constant speed 5",
+    "descriere": "Defines constant speed 5. Constant speed 5.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15808,
+    "familie": "ACS580",
+    "parametru": "01.74",
+    "descriere_scurta": "W-phase RMS",
+    "descriere": "W-phase RMS current. W-phase RMS current. Values of references received from various sources. All parameters in this group are read-only unless otherwise noted.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15812,
+    "familie": "ACS580",
+    "parametru": "03.05",
+    "descriere_scurta": "FB A reference 1",
+    "descriere": "Reference 1 received through fieldbus adapter A. See also chapter Fieldbus control through a fieldbus adapter (page 599). Reference 1 from fieldbus adapter A.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15813,
+    "familie": "ACS580",
+    "parametru": "03.06",
+    "descriere_scurta": "FB A reference 2",
+    "descriere": "Reference 2 received through fieldbus adapter A. Reference 2 from fieldbus adapter A.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15816,
+    "familie": "ACS580",
+    "parametru": "04.12",
+    "descriere_scurta": "2nd latest fault",
+    "descriere": "Code of the 2nd stored (non-active) fault. 2nd stored fault.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15817,
+    "familie": "ACS580",
+    "parametru": "04.13",
+    "descriere_scurta": "3rd latest fault",
+    "descriere": "Code of the 3rd stored (non-active) fault. 3rd stored fault.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15818,
+    "familie": "ACS580",
+    "parametru": "10.01",
+    "descriere_scurta": "DI status",
+    "descriere": "Displays the electrical status of digital inputs DI1…DI6. The activation/deactivation delays of the inputs (if any are specified) are ignored. Bits 0…5 reflect the status of DI1…DI6.",
+    "pdf_extra": "{\"examples\": [\"0000000000010011b = DI5, DI2 and DI1 are on, DI3, DI4 and DI6 are off. This parameter is read-only. Description 1 = Digital input 1 is ON. 1 = Digital input 2 is ON. 1 = Digital input 3 is ON. 1 = Digital input 4 is ON. 1 = Digital input 5 is ON. 1 = Digital input 6 is ON. Status for digital inputs.\"]}"
+  },
+  {
+    "id": 15819,
+    "familie": "ACS580",
+    "parametru": "10.02",
+    "descriere_scurta": "DI delayed status",
+    "descriere": "Displays the delayed status of digital inputs DI1…DI6. Bits 0…5 reflect the delayed status of DI1…DI6.",
+    "pdf_extra": "{\"examples\": [\"0000000000010011b = DI5, DI2 and DI1 are on, DI3, DI4 and DI6 are off. This word is updated only after a 2 ms activation/deactivation delay. When the value of a digital input changes, it must remain the same in two consecutive samples, that is, for 2 ms, for the new value to be accepted. This parameter is read-only. Description 1 = Digital input 1 is ON. 1 = Digital input 2 is ON. 1 = Digital input 3 is ON. 1 = Digital input 4 is ON. 1 = Digital input 5 is ON. 1 = Digital input 6 is ON. Delayed status for digital inputs.\"]}"
+  },
+  {
+    "id": 15820,
+    "familie": "ACS580",
+    "parametru": "10.03",
+    "descriere_scurta": "DI force selection",
+    "descriere": "The electrical statuses of the digital inputs can be overridden, for example, testing purposes. A bit in parameter 10.04 DI forced data is provided for each digital input, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"Boot and power cycle reset the force selections (parameters 10.03 and 10.04). DI1 to value of bit 0 of parameter 10.04 DI forced data. (0 = Normal DI2 to value of bit 1 of parameter 10.04 DI forced data. (0 = Normal DI3 to value of bit 2 of parameter 10.04 DI forced data. (0 = Normal DI4 to value of bit 3 of parameter 10.04 DI forced data. (0 = Normal DI5 to value of bit 4 of parameter 10.04 DI forced data. (0 = Normal DI6 to value of bit 5 of parameter 10.04 DI forced data. (0 = Normal Override selection for digital inputs.\"]}"
+  },
+  {
+    "id": 15821,
+    "familie": "ACS580",
+    "parametru": "10.04",
+    "descriere_scurta": "DI forced data",
+    "descriere": "Allows the data value of a forced digital input to be changed from 0 to 1. It is only possible to force an input that has been selected in parameter 10.03 DI force selection. the value of this bit to D1, if so defined in parameter 10.03 DI force the value of this bit to D3, if so defined in parameter 10.03 DI force the value of this bit to D3, if so defined in parameter 10.03 DI force the value of this bit to D4, if so defined in parameter 10.03 DI force the value of this bit to D5, if so defined in parameter 10.03 DI force the value of this bit to D6, if so defined in parameter 10.03 DI force Forced values of digital inputs.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15824,
+    "familie": "ACS580",
+    "parametru": "01.04",
+    "descriere_scurta": "CURRENT",
+    "descriere": "Read only 01.41 MWH COUNTER",
+    "pdf_extra": null
+  },
+  {
+    "id": 15825,
+    "familie": "ACS580",
+    "parametru": "01.05",
+    "descriere_scurta": "TORQUE",
+    "descriere": "Read only 01.43 DRIVE ON TIME",
+    "pdf_extra": null
+  },
+  {
+    "id": 15826,
+    "familie": "ACS580",
+    "parametru": "01.11",
+    "descriere_scurta": "DC voltage",
+    "descriere": "Measured DC link voltage. DC link voltage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15827,
+    "familie": "ACS580",
+    "parametru": "01.26",
+    "descriere_scurta": "PID 1 OUTPUT",
+    "descriere": "Read only 04.12 PREVIOUS FAULT",
+    "pdf_extra": null
+  },
+  {
+    "id": 15828,
+    "familie": "ACS580",
+    "parametru": "01.27",
+    "descriere_scurta": "PID 2 OUTPUT",
+    "descriere": "Read only 04.13 PREVIOUS FAULT",
+    "pdf_extra": null
+  },
+  {
+    "id": 15829,
+    "familie": "ACS580",
+    "parametru": "01.28",
+    "descriere_scurta": "PID 1 SETPNT",
+    "descriere": "Read only 10.01 EXT1 COMMANDS",
+    "pdf_extra": null
+  },
+  {
+    "id": 15830,
+    "familie": "ACS580",
+    "parametru": "01.29",
+    "descriere_scurta": "PID 2 SETPNT",
+    "descriere": "Read only 10.02 EXT2 COMMANDS",
+    "pdf_extra": null
+  },
+  {
+    "id": 15831,
+    "familie": "ACS580",
+    "parametru": "01.32",
+    "descriere_scurta": "PID 1 DEVIATION",
+    "descriere": "Read only 11.02 EXT1/EXT2 SEL",
+    "pdf_extra": null
+  },
+  {
+    "id": 15832,
+    "familie": "ACS580",
+    "parametru": "01.33",
+    "descriere_scurta": "PID 2 DEVIATION",
+    "descriere": "Read only 11.03 REF1 SELECT",
+    "pdf_extra": null
+  },
+  {
+    "id": 15833,
+    "familie": "ACS580",
+    "parametru": "21.09",
+    "descriere_scurta": "DC hold speed",
+    "descriere": "Defines the DC hold speed in speed control mode. See parameter 21.08 DC current control, and section DC hold (page 184). DC hold speed.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15844,
+    "familie": "ACS580",
+    "parametru": "30.02",
+    "descriere_scurta": "Torque limit status",
+    "descriere": "Displays the torque controller limitation status word. This parameter is read-only. Description *1 = Intermediate DC circuit undervoltage *1 = Intermediate DC circuit overvoltage *1 = Torque is being limited by 30.19 Minimum torque 1, motoring limit or 30.27 Power generating limit *1 = Torque is being limited by 30.20 Maximum torque 1, motoring limit or 30.27 Power generating limit 1 = An inverter current limit (identified by bits 8…11) is active (With permanent magnet motors and reluctance motors only) 1 = Load angle limit is active, ie. the motor cannot produce torque (With asynchronous motors only) Motor pull-out limit is active, ie. the motor cannot produce torque 1 = Input current is being limited by the main circuit thermal *1 = Maximum output current (IMAX) is being limited *1 = Output current is being limited by 30.17 Maximum current *1 = Output current is being limited by a calculated thermal value *1 = Output current is being limited because of estimated temperature *1 = Output current is being limited because of IGBT junction temperature 0…3, and one out of bits 9…11 can be on simultaneously. The bit is exceeded first. Torque limitation status word.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15857,
+    "familie": "ACS580",
+    "parametru": "11.04",
+    "descriere_scurta": "REF1 MIN",
+    "descriere": "Read/Write 21.05 DC HOLD SPEED",
+    "pdf_extra": null
+  },
+  {
+    "id": 15858,
+    "familie": "ACS580",
+    "parametru": "11.05",
+    "descriere_scurta": "REF1 MAX",
+    "descriere": "Read/Write 21.06 DC CURR REF",
+    "pdf_extra": null
+  },
+  {
+    "id": 15859,
+    "familie": "ACS580",
+    "parametru": "11.06",
+    "descriere_scurta": "REF2 SEL",
+    "descriere": "Read/Write 21.09 EMERG STOP",
+    "pdf_extra": null
+  },
+  {
+    "id": 15860,
+    "familie": "ACS580",
+    "parametru": "11.07",
+    "descriere_scurta": "REF2 MIN",
+    "descriere": "Read/Write 21.12 ZERO SPEED",
+    "pdf_extra": null
+  },
+  {
+    "id": 15861,
+    "familie": "ACS580",
+    "parametru": "11.08",
+    "descriere_scurta": "REF2 MAX",
+    "descriere": "Read/Write 21.13 START DELAY",
+    "pdf_extra": null
+  },
+  {
+    "id": 15862,
+    "familie": "ACS580",
+    "parametru": "12.01",
+    "descriere_scurta": "CONST SPEED",
+    "descriere": "SEL Read/Write 22.02 ACCELER TIME",
+    "pdf_extra": null
+  },
+  {
+    "id": 15863,
+    "familie": "ACS580",
+    "parametru": "12.02",
+    "descriere_scurta": "AI force selection",
+    "descriere": "The true readings of the analog inputs can be overridden, for example, for testing purposes. A forced value parameter is provided for each analog input, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"AI filter times (parameters 12.16 AI1 filter time and 12.26 AI2 filter time) have no effect on forced AI values (parameters 12.13 AI1 forced value and 12.23 AI2 forced value).\", \"Boot and power cycle reset the force selections (parameters 12.02 and 12.03). Force AI1 to value of parameter 12.13 AI1 forced value. Force AI2 to value of parameter 12.23 AI2 forced value. Forced values selector for analog inputs AI1 and AI2.\"]}"
+  },
+  {
+    "id": 15864,
+    "familie": "ACS580",
+    "parametru": "12.03",
+    "descriere_scurta": "AI supervision",
+    "descriere": "Selects how the drive reacts when an analog input signal moves out of the minimum and/or maximum limits specified for the input. The supervision applies a margin of 0.5 V or 1.0 mA to the limits. For example, if the maximum limit for the input is 7.000 V, the maximum limit supervision activates at 7.500 V. The inputs and the limits to be observed are selected by parameter 12.04 AI supervision selection. No action taken. Drive trips on 80A0 AI supervision. Drive generates an A8A0 AI supervision warning. Drive generates a warning (A8A0 AI supervision) and freezes the speed (or frequency) to the level the drive was operating at. The speed/frequency is determined on the basis of actual speed using 850 ms low-pass filtering. WARNING! Make sure that it is safe to continue operation in case of a communication break. Drive generates a warning (A8A0 AI supervision) and sets the speed to the speed defined by parameter 22.41 Speed ref safe (or 28.41 Frequency ref safe when frequency reference is being used). WARNING! Make sure that it is safe to continue operation in case of a communication break.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15865,
+    "familie": "ACS580",
+    "parametru": "12.04",
+    "descriere_scurta": "AI supervision",
+    "descriere": "Specifies the analog input limits to be supervised. See parameter 12.03 AI supervision function. Description 1 = Minimum limit supervision of AI1 active. 1 = Maximum limit supervision of AI1 active. 1 = Minimum limit supervision of AI2 active. 1 = Maximum limit supervision of AI2 active. Activation of analog input supervision.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15866,
+    "familie": "ACS580",
+    "parametru": "12.05",
+    "descriere_scurta": "AI supervision force",
+    "descriere": "Activates/deactivates analog input supervision for each control location (see section Local control vs. external control on page 113). When a control location does not utilize AI for referencing, you can use this parameter to deactivate AI supervision (12.04). This hides the AI supervision function (12.03) for the selected control location. Description 1 = AI1 supervision is active when EXT1 is used. 1 = AI1 supervision is active when EXT2 is used. 1 = AI1 supervision is active when local control is used. 1 = AI2 supervision is active when EXT1 is used. 1 = AI2 supervision is active when EXT2 is used. 1 = AI2 supervision is active when local control is used. Activation of analog input supervision.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15867,
+    "familie": "ACS580",
+    "parametru": "12.06",
+    "descriere_scurta": "CONST SPEED",
+    "descriere": "5 Read/Write 22.07 RAMP SHAPE",
+    "pdf_extra": null
+  },
+  {
+    "id": 15868,
+    "familie": "ACS580",
+    "parametru": "12.07",
+    "descriere_scurta": "CONST SPEED",
+    "descriere": "6 Read/Write 22.08 EMERG DEC",
+    "pdf_extra": null
+  },
+  {
+    "id": 15869,
+    "familie": "ACS580",
+    "parametru": "15.04",
+    "descriere_scurta": "RO/DO status",
+    "descriere": "Displays the status of the relay outputs RO4 and RO5 and digital output DO1 on the extension module. Bits 0…1 indicates the status of RO4…RO5; bit 5 indicates the status of DO1.",
+    "pdf_extra": "{\"examples\": [\"100101b = RO4 is on, RO5 is off. and DO1 is on. This parameter is read-only. Description 1 = Relay output 4 is ON. 1 = Relay output 5 is ON 1 = Digital output 1 is ON. Status of relay/digital outputs.\"]}"
+  },
+  {
+    "id": 15870,
+    "familie": "ACS580",
+    "parametru": "15.05",
+    "descriere_scurta": "RO/DO force",
+    "descriere": "The electrical statuses of the relay/digital outputs can be overridden, for example, for testing purposes. A bit in parameter 15.06 RO/DO forced data is provided for each relay or digital output, and its value is applied whenever the corresponding bit in this parameter is 1.",
+    "pdf_extra": "{\"notes\": [\"Boot and power cycle reset the force selections (parameters 15.05 and 15.06). Force RO4 to value of bit 0 of parameter 15.06 RO/DO forced data. Force RO5 to value of bit 1 of parameter 15.06 RO/DO forced data. Force DO1 to value of bit 5 of parameter 15.06 RO/DO forced data. Override selection for relay/digital outputs.\"]}"
+  },
+  {
+    "id": 15871,
+    "familie": "ACS580",
+    "parametru": "15.10",
+    "descriere_scurta": "RO5 source",
+    "descriere": "Selects a drive signal to be connected to relay output RO5. For the available selections, see parameter 15.07 RO4 source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15872,
+    "familie": "ACS580",
+    "parametru": "15.11",
+    "descriere_scurta": "RO5 ON delay",
+    "descriere": "Defines the activation delay for relay output RO5. tOn tOff tOn tOff Activation delay for RO5.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15873,
+    "familie": "ACS580",
+    "parametru": "16.01",
+    "descriere_scurta": "RUN ENABLE",
+    "descriere": "Read/Write 30.06 MOT THERM",
+    "pdf_extra": null
+  }
+]
