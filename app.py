@@ -2876,15 +2876,50 @@ def parametri_audit():
 @app.route('/api/parametri/<int:param_id>', methods=['GET'])
 @login_required
 def get_parametru_detail(param_id):
-    """Returnează detaliul complet al unui parametru (cu explicatie + influenteaza)."""
+    """Returnează detaliul complet al unui parametru.
+
+    Include:
+      - toate coloanele din parametri_master
+      - `influentat_de`: lista params din aceeași familie care îl referențiază
+        în câmpul lor `influenteaza` (computed reverse, nu coloană separată).
+    """
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM parametri_master WHERE id = ?', (param_id,))
     row = cursor.fetchone()
-    conn.close()
     if not row:
+        conn.close()
         return jsonify({'error': 'Not found'}), 404
-    return jsonify(dict(row))
+    result = dict(row)
+
+    # Reverse lookup: who references this parameter's code?
+    code = result.get('parametru')
+    familie = result.get('familie')
+    if code and familie:
+        # influenteaza is stored as comma-separated codes (e.g. "30.12, 21.13").
+        # Match the code as a standalone token to avoid p100 catching p1000.
+        # SQLite REGEXP isn't built-in by default, so use LIKE with delimiters.
+        like1 = f'%{code}%'
+        cursor.execute(
+            'SELECT id, parametru, descriere_scurta, influenteaza FROM parametri_master '
+            'WHERE familie = ? AND id != ? AND influenteaza IS NOT NULL AND influenteaza LIKE ?',
+            (familie, param_id, like1)
+        )
+        candidates = cursor.fetchall()
+        # Refine: code appears as a comma/space-delimited token (avoid p100 catching p1000)
+        import re as _re
+        token_pat = _re.compile(r'(?:^|[,\s])' + _re.escape(code) + r'(?:$|[,\s])')
+        influentat_de = [
+            {'id': c['id'], 'parametru': c['parametru'], 'descriere_scurta': c['descriere_scurta']}
+            for c in candidates
+            if c['influenteaza'] and token_pat.search(c['influenteaza'])
+        ]
+        result['influentat_de'] = influentat_de
+    else:
+        result['influentat_de'] = []
+
+    conn.close()
+    return jsonify(result)
 
 # ============ MANUALS API ============
 
