@@ -2458,3 +2458,204 @@
 2026-05-19 03:35:52,269  INFO        -> rewrite: Defineste valoarea maxima reala a semnalului pentru iesirea analogica AO4. Impre
 2026-05-19 03:35:52,369  INFO      16785 15.99 (ACS580)  existing_len=959  qc=rewrite
 2026-05-19 03:36:06,007  INFO        -> rewrite: Defineste valoarea minima de iesire pentru iesirea analogica AO4 in volti. Valoa
+2026-05-19 03:36:08,550  INFO        Committed + pushed
+2026-05-19 03:36:08,651  INFO      16786 21.10 (ACS580)  existing_len=861  qc=rewrite
+2026-05-19 03:36:18,065  INFO        -> rewrite: Defineste curentul continuu de mentinere in procente din curentul nominal al mot
+2026-05-19 03:36:18,166  INFO      16787 21.21 (ACS580)  existing_len=909  qc=rewrite
+2026-05-19 03:36:28,033  INFO        -> rewrite: Defineste frecventa de mentinere DC pentru functia de franare cu curent continuu
+2026-05-19 03:36:28,134  INFO      16788 40.70 (ACS580)  existing_len=949  qc=rewrite
+2026-05-19 03:36:42,005  INFO        -> rewrite: Reprezinta valoarea setpoint-ului dupa aplicarea compensatiilor in bucla PID. Po
+2026-05-19 03:36:42,106  INFO      16789 46.22 (ACS580)  existing_len=859  qc=rewrite
+2026-05-19 03:36:51,188  INFO        -> rewrite: Defineste banda de toleranta pentru frecventa la care motorul este considerat "l
+2026-05-19 03:36:51,289  INFO      16790 46.41 (ACS580)  existing_len=889  qc=rewrite
+2026-05-19 03:37:02,841  INFO        -> rewrite: Defineste nivelul de energie care declanseaza impulsul kWh pe iesirea digitala p
+2026-05-19 03:37:02,941  INFO      20287 99.13 (ACS580)  existing_len=455  qc=rewrite
+2026-05-19 03:37:12,313  INFO        -> rewrite: Selecteaza tipul rutinei de identificare a motorului (ID run) care va fi executa
+2026-05-19 03:37:12,414  INFO      22436 04.17 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:17,279  INFO        -> new: Afiseaza codul al 2-lea cel mai recent warning inregistrat in istoricul drive-ul
+2026-05-19 03:37:17,379  INFO      22437 04.18 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:24,673  INFO        -> new: Afiseaza codul celei de-a treia avertizari stocate in istoric. Avertizarile sunt
+2026-05-19 03:37:24,774  INFO      22438 04.65 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:33,201  INFO        -> new: Afiseaza starea bitului 12 din cuvantul de eveniment 1. Valoarea implicita 0x411
+2026-05-19 03:37:33,301  INFO      22439 05.86 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:45,001  INFO        -> new: Parametrul 05.86 este un parametru de tip read-only care afiseaza o copie a valo
+2026-05-19 03:37:45,102  INFO      22440 10.21 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:49,432  INFO        -> new: Afiseaza starea curenta a releelor de iesire RO1, RO2 si RO3. Valoarea este bina
+2026-05-19 03:37:49,533  INFO      22441 10.22 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:37:58,267  INFO        -> new: Permite fortarea manuala a semnalelor de iesire pe releele statice. In modul for
+2026-05-19 03:37:58,368  INFO      22442 10.23 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:10,879  INFO        -> new: Contine valorile fortate pentru iesirile releu. Cand modul fortat este activat, 
+2026-05-19 03:38:10,980  INFO      22443 10.24 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:20,519  INFO        -> new: Defineste sursa secundara pentru semnalul Ready al convertizorului de frecventa.
+2026-05-19 03:38:20,620  INFO      22444 10.27 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:28,633  INFO        -> new: Defineste sursa de semnal pentru iesirea digitala 7. Selectand "Running", iesire
+2026-05-19 03:38:28,734  INFO      22445 10.30 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:37,421  INFO        -> new: Defineste sursa defectului cu indicele 15. Valoarea -1 inseamna ca functia este 
+2026-05-19 03:38:37,522  INFO      22446 10.99 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:47,713  INFO        -> new: Parametru de stocare pentru controlul iesirilor prin relee RO si iesiri digitale
+2026-05-19 03:38:47,813  INFO      22447 12.15 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:38:56,302  INFO        -> new: Selecteaza unitatea de masura pentru semnalul analogic 1 (AI1). Poate fi V (volt
+2026-05-19 03:38:56,403  INFO      22448 12.25 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:01,728  INFO        -> new: Selecteaza unitatea de masura pentru semnalul analogic de la intrarea AI2. Aceas
+2026-05-19 03:39:01,828  INFO      22449 13.02 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:14,113  INFO        -> new: Permite fortarea semnalelor de iesire analogice la valori prestabilite, ignorand
+2026-05-19 03:39:14,213  INFO      22450 13.15 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:23,705  INFO        -> new: Selecteaza unitatea de masura pentru iesirea analogica AO1. Poate fi mA sau V in
+2026-05-19 03:39:23,806  INFO      22452 15.03 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:29,998  INFO        -> new: Afiseaza starea curenta a intrarilor digitale DI7-DI12. Valoarea este un bitmask
+2026-05-19 03:39:30,098  INFO      22453 15.06 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:38,609  INFO        -> new: Permite fortarea valorii unui releu sau iesiri digitale la o valoare specificata
+2026-05-19 03:39:38,710  INFO      22454 15.07 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:44,599  INFO        -> new: Selecteaza semnalul care comanda releul RO4. Poate fi configurat pentru: functio
+2026-05-19 03:39:44,699  INFO      22455 15.08 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:50,090  INFO        -> new: Defineste timpul de intarziere la activarea releului de iesire RO4. Dupa primire
+2026-05-19 03:39:50,190  INFO      22456 15.09 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:39:57,622  INFO        -> new: Seteaza intarzierea de dezactivare pentru iesirea releu RO4. Dupa primirea comen
+2026-05-19 03:39:57,722  INFO      22457 15.22 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:40:06,787  INFO        -> new: Selecteaza functia iesirii digitale DO1. Poate fi configurata ca iesire digitala
+2026-05-19 03:40:06,887  INFO      22458 15.23 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:40:20,528  INFO        -> new: Selecteaza ce semnal al drive-ului va fi directionat catre iesirea digitala DO1.
+2026-05-19 03:40:20,629  INFO      22459 15.40 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:40:26,643  INFO        -> new: Permits forcing valorile analogice ale intrarilor AI1, AI2 si AI3 la valori manu
+2026-05-19 03:40:26,743  INFO      22460 15.42 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:40:36,682  INFO        -> new: Activeaza supravegherea limitelor pentru intrarile analogice selectate. Fiecare 
+2026-05-19 03:40:36,783  INFO      22461 15.43 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:40:58,315  INFO        -> new: Activeaza sau dezactiveaza functia de supervisare pentru fiecare intrare analogi
+2026-05-19 03:40:58,416  INFO      22462 15.45 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:05,229  INFO        -> new: Permite fortarea manuala a semnalelor de la iesirile analogice. Cand este activa
+2026-05-19 03:41:05,330  INFO      22463 15.55 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:12,311  INFO        -> new: Selecteaza unitatea de masura pentru semnalul analogic AI3. Aceasta setare afect
+2026-05-19 03:41:12,411  INFO      22464 15.65 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:21,361  INFO        -> new: Selecteaza unitatea de masura pentru citirile si setarile referitoare la intrare
+2026-05-19 03:41:21,462  INFO      22465 15.75 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:31,051  INFO        -> new: Selecteaza unitatea de masura pentru semnalul de la intrarea analogica AI5. Seta
+2026-05-19 03:41:31,152  INFO      22466 15.82 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:40,111  INFO        -> new: Selecteaza ce semnal va fi trimis prin iesirea analogica AO3. Optiunile includ f
+2026-05-19 03:41:40,212  INFO      22467 15.85 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:41:53,102  INFO        -> new: Selecteaza unitatea de masura (mA sau V) pentru iesirea analogica 3. Aceasta tre
+2026-05-19 03:41:53,203  INFO      22468 15.92 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:02,371  INFO        -> new: Selecteaza semnalul care va fi conectat la iesirea analogica AO4. Poate fi vitez
+2026-05-19 03:42:02,472  INFO      22469 15.95 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:11,294  INFO        -> new: Selecteaza tipul de semnal pentru iesirea analogica 4 (AO4) - mA sau V. Trebuie 
+2026-05-19 03:42:11,395  INFO      22470 21.08 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:20,345  INFO        -> new: Activeaza sau dezactiveaza functiile de mentinere DC si post-magnetizare a motor
+2026-05-19 03:42:20,445  INFO      22473 45.09 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:25,984  INFO        -> new: Afiseaza reducerea emisiilor de CO2 in tone metrice comparativ cu functionarea c
+2026-05-19 03:42:26,085  INFO      22474 45.18 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:42,286  INFO        -> new: Defineste factorul de conversie pentru transformarea energiei economisite in emi
+2026-05-19 03:42:42,386  INFO      22475 95.20 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:42:54,545  INFO        -> new: Definește opțiunile hardware pentru convertizorul de frecvență. Fiecare bit al a
+2026-05-19 03:42:54,645  INFO      22476 95.21 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:43:05,624  INFO        -> new: Defineste optiuni aditionale legate de configuratia hardware-ului VFD. Contine b
+2026-05-19 03:43:05,725  INFO      22477 97.11 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:43:19,257  INFO        -> new: Seteaza constanta de timp a rotorului pentru control vectorial fara senzor. Acea
+2026-05-19 03:43:19,358  INFO      22478 97.13 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:43:30,923  INFO        -> new: Defineste marirea relativa a tensiunii de iesire la frecventa zero. Compenseaza 
+2026-05-19 03:43:31,023  INFO      22479 97.20 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:43:42,626  INFO        -> new: Defineste forma curbei raportului tensiune/frecventa pentru controlul motorului.
+2026-05-19 03:43:42,727  INFO      22482 01.21 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:43:53,424  INFO        -> new: Afiseaza valoarea curenta a intrarii analogice 2 (AI2). Este un parametru read-o
+2026-05-19 03:43:53,525  INFO      22483 01.22 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:00,831  INFO        -> new: Afiseaza starea releelor de iesire 1-3 si cuvantul de defectiune 3. Este un para
+2026-05-19 03:44:00,932  INFO      22484 01.23 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:07,582  INFO        -> new: Parametru de citire care afiseaza cuvantul de alarma 1. Contine codificarea bina
+2026-05-19 03:44:07,683  INFO      22485 01.25 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:13,988  INFO        -> new: parametru doar-citire care afiseaza codul ultimei erori inregistrate in sistem. 
+2026-05-19 03:44:14,089  INFO      23724 1.35 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:25,995  INFO        -> new: Reprezinta factorul de conversie utilizat pentru calcularea tensiunii DC din ten
+2026-05-19 03:44:26,096  INFO      23725 10.101 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:30,678  INFO        -> new: Afiseaza numarul de schimbari de stare ale releului RO1. Este un contor diagnost
+2026-05-19 03:44:30,779  INFO      23726 10.102 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:35,641  INFO        -> new: Afiseaza numarul de comutari ale releului RO2. Contorul creste de fiecare data c
+2026-05-19 03:44:35,741  INFO      23727 10.103 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:42,773  INFO        -> new: Afiseaza numarul de schimbari de stare ale releului RO3 de la ultima initializar
+2026-05-19 03:44:42,873  INFO      23728 12.101 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:49,540  INFO        -> new: Afiseaza valoarea curenta a intrarii analogice AI1 exprimata ca procent din scal
+2026-05-19 03:44:49,640  INFO      23729 12.102 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:44:59,514  INFO        -> new: Afiseaza valoarea curenta a intrarii analogice AI2 exprimata in procente din sca
+2026-05-19 03:44:59,615  INFO      23730 15.100 (ACS580)  existing_len=0  qc=new
+2026-05-19 03:45:07,359  INFO        -> new: Defineste valoarea maxima a semnalului de iesire pentru iesirea analogica AO4. A
+2026-05-19 03:45:07,460  INFO      2103 10.10 (ACS880)  existing_len=985  qc=rewrite
+2026-05-19 03:45:19,941  INFO        -> rewrite: Seteaza intarzierea de dezactivare pentru intrarea digitala DI3. Cand semnalul f
+2026-05-19 03:45:20,042  INFO      2104 10.11 (ACS880)  existing_len=1016  qc=rewrite
+2026-05-19 03:45:33,266  INFO        -> rewrite: Defineste intarzierea in secunde de la momentul activarii fizice a intrarii digi
+2026-05-19 03:45:33,366  INFO      2105 10.12 (ACS880)  existing_len=1065  qc=rewrite
+2026-05-19 03:45:41,737  INFO        -> rewrite: Seteaza timpul de intarziere la dezactivare pentru intrarea digitala DI4. Impied
+2026-05-19 03:45:41,838  INFO      2106 10.13 (ACS880)  existing_len=1030  qc=rewrite
+2026-05-19 03:45:49,767  INFO        -> rewrite: Seteaza intarzierea de activare pentru intrarea digitala DI5. Dupa aplicarea sem
+2026-05-19 03:45:49,868  INFO      2107 10.14 (ACS880)  existing_len=1012  qc=rewrite
+2026-05-19 03:45:58,306  INFO        -> rewrite: Defineste timpul de intarziere inainte ca dezactivarea intrarii digitale DI5 sa 
+2026-05-19 03:45:58,406  INFO      2108 10.15 (ACS880)  existing_len=1059  qc=rewrite
+2026-05-19 03:46:08,139  INFO        -> rewrite: Seteaza timpul de intarziere inainte ca intrarea digitala DI6 sa fie recunoscuta
+2026-05-19 03:46:08,239  INFO      2109 10.16 (ACS880)  existing_len=1136  qc=rewrite
+2026-05-19 03:46:18,244  INFO        -> rewrite: Seteaza intarzierea de dezactivare pentru intrarea digitala DI6. Dupa ce semnalu
+2026-05-19 03:46:18,345  INFO      2110 10.24 (ACS880)  existing_len=1192  qc=rewrite
+2026-05-19 03:46:24,082  INFO        -> rewrite: Selecteaza semnalul de actionare pentru releul de iesire RO1. Releul se inchide 
+2026-05-19 03:46:24,182  INFO      2111 10.25 (ACS880)  existing_len=1057  qc=rewrite
+2026-05-19 03:46:33,529  INFO        -> rewrite: Defineste intarzierea de activare pentru releul de iesire RO1. Dupa indeplinirea
+2026-05-19 03:46:33,630  INFO      2112 10.26 (ACS880)  existing_len=991  qc=rewrite
+2026-05-19 03:46:43,100  INFO        -> rewrite: Defineste intarzierea de dezactivare pentru iesirea releu RO1. Seteaza timpul du
+2026-05-19 03:46:43,201  INFO      2113 10.28 (ACS880)  existing_len=939  qc=rewrite
+2026-05-19 03:46:53,556  INFO        -> rewrite: Seteaza intarzierea la activare pentru releul de iesire RO2. Dupa primirea comen
+2026-05-19 03:46:53,656  INFO      2114 10.29 (ACS880)  existing_len=852  qc=rewrite
+2026-05-19 03:47:03,033  INFO        -> rewrite: Seteaza intarzierea la dezactivarea releului RO2 dupa ce conditia de activare nu
+2026-05-19 03:47:03,134  INFO      2115 10.31 (ACS880)  existing_len=958  qc=rewrite
+2026-05-19 03:47:10,210  INFO        -> rewrite: Defineste intarzierea de activare pentru releul de iesire RO3, in secunde. Dupa 
+2026-05-19 03:47:10,311  INFO      2116 10.32 (ACS880)  existing_len=896  qc=rewrite
+2026-05-19 03:47:27,412  INFO        -> rewrite: Definește întârzierea de dezactivare pentru releul de ieșire RO3, în secunde. Du
+2026-05-19 03:47:27,513  INFO      2117 10.51 (ACS880)  existing_len=1051  qc=rewrite
+2026-05-19 03:47:36,960  INFO        -> rewrite: Seteaza timpul de filtrare pentru intrarile digitale (DI). Un filtru mai lung el
+2026-05-19 03:47:37,060  INFO      2118 10.99 (ACS880)  existing_len=1134  qc=rewrite
+2026-05-19 03:47:42,597  INFO        -> rewrite: Acest parametru stocheaza valorile de control pentru iesirile releu (RO/DIO). Pe
+2026-05-19 03:47:42,698  INFO      2124 11.11 (ACS880)  existing_len=823  qc=rewrite
+2026-05-19 03:47:56,535  INFO        -> rewrite: Defineste intarzierea de timp in secunde de la activarea semnalului DIO2 pana la
+2026-05-19 03:47:56,636  INFO      2125 11.12 (ACS880)  existing_len=846  qc=rewrite
+2026-05-19 03:48:03,426  INFO        -> rewrite: Defineste intarzierea de dezactivare pentru intrarea/iesirea digitala 2. Dupa ce
+2026-05-19 03:48:03,527  INFO      2126 11.44 (ACS880)  existing_len=1126  qc=rewrite
+2026-05-19 03:48:15,256  INFO        -> rewrite: Seteaza valoarea de frecventa care corespunde punctului intermediar de pe curba 
+2026-05-19 03:48:15,357  INFO      2127 11.45 (ACS880)  existing_len=1010  qc=rewrite
+2026-05-19 03:48:28,754  INFO        -> rewrite: Defineste valoarea de referinta pentru frecventa scalata a intrarii 1. Impreuna 
+2026-05-19 03:48:28,854  INFO      2128 11.55 (ACS880)  existing_len=992  qc=rewrite
+2026-05-19 03:48:34,733  INFO        -> rewrite: Selecteaza semnalul care va fi trimis la iesirea de frecventa 1. Iesirea generea
+2026-05-19 03:48:34,834  INFO      2129 11.58 (ACS880)  existing_len=973  qc=rewrite
+2026-05-19 03:48:41,253  INFO        -> rewrite: Defineste valoarea reala minima a semnalului selectat pentru iesirea analogica 1
+2026-05-19 03:48:41,354  INFO      2130 11.59 (ACS880)  existing_len=841  qc=rewrite
+2026-05-19 03:48:51,802  INFO        -> rewrite: Definește valoarea reala maxima a semnalului pentru iesirea de frecventa 1. Aces
+2026-05-19 03:48:51,903  INFO      2131 11.81 (ACS880)  existing_len=936  qc=rewrite
+2026-05-19 03:49:00,940  INFO        -> rewrite: Defineste timpul de filtrare pentru semnalele DIO (intrari/iesiri digitale). Fil
+2026-05-19 03:49:01,040  INFO      2136 12.15 (ACS880)  existing_len=2425  qc=rewrite
+2026-05-19 03:49:10,471  INFO        -> rewrite: Selecteaza unitatea de masura pentru citirile si setarile asociate intrarii anal
+2026-05-19 03:49:10,572  INFO      2137 12.16 (ACS880)  existing_len=977  qc=rewrite
+2026-05-19 03:49:24,571  INFO        -> rewrite: Definește constanta de timp pentru filtrul analogic al intrarii AI1. Un filtru m
+2026-05-19 03:49:24,672  INFO      2138 12.18 (ACS880)  existing_len=873  qc=rewrite
+2026-05-19 03:49:36,938  INFO        -> rewrite: Seteaza valoarea maxima a semnalului pentru intrarea analogica AI1. In combinati
+2026-05-19 03:49:37,041  INFO      2139 12.19 (ACS880)  existing_len=1005  qc=rewrite
+2026-05-19 03:49:44,533  INFO        -> rewrite: Definește valoarea scalata care corespunde intrarii analogice minime AI1. De exe
+2026-05-19 03:49:44,633  INFO      2140 12.20 (ACS880)  existing_len=911  qc=rewrite
+2026-05-19 03:49:52,892  INFO        -> rewrite: Defineste valoarea reala interna care corespunde intrarii analogice AI1. Utiliza
+2026-05-19 03:49:52,992  INFO      2141 12.25 (ACS880)  existing_len=970  qc=rewrite
+2026-05-19 03:50:00,612  INFO        -> rewrite: Selecteaza unitatea de masura pentru semnalul de intrare analogica AI2. Implicit
+2026-05-19 03:50:00,713  INFO      2142 12.26 (ACS880)  existing_len=845  qc=rewrite
+2026-05-19 03:50:13,848  INFO        -> rewrite: Defineste constanta de timp a filtrului pentru intrarea analogica AI2. Cu cat va
+2026-05-19 03:50:13,949  INFO      2143 12.28 (ACS880)  existing_len=851  qc=rewrite
+2026-05-19 03:50:23,800  INFO        -> rewrite: Defineste valoarea maxima a semnalului pentru intrarea analogica AI2. Impreuna c
+2026-05-19 03:50:23,901  INFO      2144 12.29 (ACS880)  existing_len=885  qc=rewrite
+2026-05-19 03:50:35,592  INFO        -> rewrite: Seteaza valoarea reala a procesului care corespunde semnalului minim de la intra
+2026-05-19 03:50:35,693  INFO      2145 12.30 (ACS880)  existing_len=860  qc=rewrite
+2026-05-19 03:50:42,705  INFO        -> rewrite: Seteaza valoarea maxima scalata pentru intrarea analogica AI2. Daca AI2 primeste
+2026-05-19 03:50:42,806  INFO      2146 13.12 (ACS880)  existing_len=1012  qc=rewrite
+2026-05-19 03:50:51,575  INFO        -> rewrite: Selecteaza semnalul care va fi trimis la iesirea analogica AO1. Poate fi viteza 
+2026-05-19 03:50:51,676  INFO      2147 13.16 (ACS880)  existing_len=896  qc=rewrite
+2026-05-19 03:50:55,127  INFO        -> rewrite: Defineste constanta de timp pentru filtrul analogiei iesiri AO1. Filtreaza zgomo
+2026-05-19 03:50:55,228  INFO      2148 13.17 (ACS880)  existing_len=886  qc=rewrite
+2026-05-19 03:51:05,118  INFO        -> rewrite: Seteaza valoarea minima a semnalului de la iesirea analogica AO1. Impreuna cu 13
+2026-05-19 03:51:05,218  INFO      2149 13.18 (ACS880)  existing_len=850  qc=rewrite
+2026-05-19 03:51:10,982  INFO        -> rewrite: Defineste valoarea reala maxima corespunzatoare iesirii analogice AO1 la 10V sau
+2026-05-19 03:51:11,083  INFO      2150 13.19 (ACS880)  existing_len=1280  qc=rewrite
+2026-05-19 03:51:17,297  INFO        -> rewrite: Defineste valoarea minima de curent pentru iesirea analogica 1 (AO1). Seteaza cu
+2026-05-19 03:51:17,397  INFO      2151 13.20 (ACS880)  existing_len=1265  qc=rewrite
+2026-05-19 03:51:27,643  INFO        -> rewrite: Defineste valoarea maxima de curent la iesirea analogica AO1 in mA. Aceasta core
+2026-05-19 03:51:27,743  INFO      2152 13.26 (ACS880)  existing_len=1195  qc=rewrite
+2026-05-19 03:51:34,398  INFO        -> rewrite: Seteaza constanta de timp a filtrului pentru iesirea analogica 2. O valoare mai 
+2026-05-19 03:51:34,499  INFO      2153 13.27 (ACS880)  existing_len=1313  qc=rewrite
+2026-05-19 03:51:44,277  INFO        -> rewrite: Defineste valoarea minima reala a semnalului de iesire analogica AO2. Impreuna c
