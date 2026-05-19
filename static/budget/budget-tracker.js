@@ -61,6 +61,15 @@ function totalFixeLuna(d, lunaKey) {
   }, 0);
 }
 
+// Seed d.credit.scadentar from real ING amortisation table if missing
+function migrateCreditScadentar(data) {
+  if (!data) return;
+  if (!data.credit) data.credit = cloneObj(DATI_INITIALE.credit);
+  if (!Array.isArray(data.credit.scadentar) || data.credit.scadentar.length === 0) {
+    data.credit.scadentar = cloneObj(SCADENTAR_REAL_DEFAULT);
+  }
+}
+
 // Ensure d.emisiuniTezaur exists as [{id,label}]
 function migrateEmisiuniTezaur(data) {
   if (!data) return;
@@ -153,6 +162,68 @@ function esc(s) {
   });
 }
 
+// --- Scadentar real (sursa: ING Home'Bank scadenţar 19.05.2026) ---
+var SCADENTAR_REAL_DEFAULT = [
+  { data: "2026-06-18", suma: 1793.9, dobanda: 682.11, principal: 1111.79, soldFinal: 80823.9, asigurare: 145.0 },
+  { data: "2026-07-18", suma: 1793.9, dobanda: 672.86, principal: 1121.04, soldFinal: 79702.86, asigurare: 142.99 },
+  { data: "2026-08-18", suma: 1786.52, dobanda: 663.53, principal: 1122.99, soldFinal: 78579.87, asigurare: 140.97 },
+  { data: "2026-09-18", suma: 1786.52, dobanda: 654.18, principal: 1132.34, soldFinal: 77447.53, asigurare: 138.94 },
+  { data: "2026-10-18", suma: 1786.52, dobanda: 644.75, principal: 1141.77, soldFinal: 76305.76, asigurare: 136.89 },
+  { data: "2026-11-18", suma: 1786.52, dobanda: 635.24, principal: 1151.28, soldFinal: 75154.48, asigurare: 134.83 },
+  { data: "2026-12-18", suma: 1786.52, dobanda: 625.66, principal: 1160.86, soldFinal: 73993.62, asigurare: 132.74 },
+  { data: "2027-01-18", suma: 1786.52, dobanda: 616.0, principal: 1170.52, soldFinal: 72823.1, asigurare: 130.64 },
+  { data: "2027-02-18", suma: 1786.53, dobanda: 606.25, principal: 1180.28, soldFinal: 71642.82, asigurare: 128.53 },
+  { data: "2027-03-18", suma: 1786.53, dobanda: 596.43, principal: 1190.1, soldFinal: 70452.72, asigurare: 126.39 },
+  { data: "2027-04-18", suma: 1786.53, dobanda: 586.52, principal: 1200.01, soldFinal: 69252.71, asigurare: 124.24 },
+  { data: "2027-05-18", suma: 1786.52, dobanda: 576.53, principal: 1209.99, soldFinal: 68042.72, asigurare: 122.07 },
+  { data: "2027-06-18", suma: 1786.52, dobanda: 566.45, principal: 1220.07, soldFinal: 66822.65, asigurare: 119.88 },
+  { data: "2027-07-18", suma: 1786.52, dobanda: 556.3, principal: 1230.22, soldFinal: 65592.43, asigurare: 117.67 },
+  { data: "2027-08-18", suma: 1786.52, dobanda: 546.06, principal: 1240.46, soldFinal: 64351.97, asigurare: 115.45 },
+  { data: "2027-09-18", suma: 1786.52, dobanda: 535.73, principal: 1250.79, soldFinal: 63101.18, asigurare: 113.2 },
+  { data: "2027-10-18", suma: 1786.52, dobanda: 525.32, principal: 1261.2, soldFinal: 61839.98, asigurare: 110.94 },
+  { data: "2027-11-18", suma: 1786.52, dobanda: 514.81, principal: 1271.71, soldFinal: 60568.27, asigurare: 108.66 },
+  { data: "2027-12-18", suma: 1786.52, dobanda: 504.23, principal: 1282.29, soldFinal: 59285.98, asigurare: 106.36 },
+  { data: "2028-01-18", suma: 1786.52, dobanda: 493.56, principal: 1292.96, soldFinal: 57993.02, asigurare: 104.04 },
+  { data: "2028-02-18", suma: 1786.53, dobanda: 482.79, principal: 1303.74, soldFinal: 56689.28, asigurare: 101.7 },
+  { data: "2028-03-18", suma: 1786.53, dobanda: 471.94, principal: 1314.59, soldFinal: 55374.69, asigurare: 99.34 },
+  { data: "2028-04-18", suma: 1786.53, dobanda: 460.99, principal: 1325.54, soldFinal: 54049.15, asigurare: 96.96 },
+  { data: "2028-05-18", suma: 1786.53, dobanda: 449.96, principal: 1336.57, soldFinal: 52712.58, asigurare: 94.57 },
+  { data: "2028-06-18", suma: 1786.53, dobanda: 438.84, principal: 1347.69, soldFinal: 51364.89, asigurare: 92.15 },
+  { data: "2028-07-18", suma: 1786.53, dobanda: 427.61, principal: 1358.92, soldFinal: 50005.97, asigurare: 89.71 },
+  { data: "2028-08-18", suma: 1786.52, dobanda: 416.3, principal: 1370.22, soldFinal: 48635.75, asigurare: 87.25 },
+  { data: "2028-09-18", suma: 1786.52, dobanda: 404.89, principal: 1381.63, soldFinal: 47254.12, asigurare: 84.77 },
+  { data: "2028-10-18", suma: 1786.52, dobanda: 393.39, principal: 1393.13, soldFinal: 45860.99, asigurare: 82.27 },
+  { data: "2028-11-18", suma: 1786.53, dobanda: 381.79, principal: 1404.74, soldFinal: 44456.25, asigurare: 79.75 },
+  { data: "2028-12-18", suma: 1786.53, dobanda: 370.1, principal: 1416.43, soldFinal: 43039.82, asigurare: 77.21 },
+  { data: "2029-01-18", suma: 1786.53, dobanda: 358.31, principal: 1428.22, soldFinal: 41611.6, asigurare: 74.65 },
+  { data: "2029-02-18", suma: 1786.53, dobanda: 346.42, principal: 1440.11, soldFinal: 40171.49, asigurare: 72.07 },
+  { data: "2029-03-18", suma: 1786.53, dobanda: 334.42, principal: 1452.11, soldFinal: 38719.38, asigurare: 69.46 },
+  { data: "2029-04-18", suma: 1786.53, dobanda: 322.34, principal: 1464.19, soldFinal: 37255.19, asigurare: 66.84 },
+  { data: "2029-05-18", suma: 1786.52, dobanda: 310.15, principal: 1476.37, soldFinal: 35778.82, asigurare: 64.19 },
+  { data: "2029-06-18", suma: 1786.52, dobanda: 297.86, principal: 1488.66, soldFinal: 34290.16, asigurare: 61.52 },
+  { data: "2029-07-18", suma: 1786.52, dobanda: 285.47, principal: 1501.05, soldFinal: 32789.11, asigurare: 58.82 },
+  { data: "2029-08-18", suma: 1786.53, dobanda: 272.96, principal: 1513.57, soldFinal: 31275.54, asigurare: 56.11 },
+  { data: "2029-09-18", suma: 1786.53, dobanda: 260.37, principal: 1526.16, soldFinal: 29749.38, asigurare: 53.37 },
+  { data: "2029-10-18", suma: 1786.53, dobanda: 247.67, principal: 1538.86, soldFinal: 28210.52, asigurare: 50.61 },
+  { data: "2029-11-18", suma: 1786.52, dobanda: 234.85, principal: 1551.67, soldFinal: 26658.85, asigurare: 47.83 },
+  { data: "2029-12-18", suma: 1786.52, dobanda: 221.93, principal: 1564.59, soldFinal: 25094.26, asigurare: 45.02 },
+  { data: "2030-01-18", suma: 1786.52, dobanda: 208.91, principal: 1577.61, soldFinal: 23516.65, asigurare: 42.19 },
+  { data: "2030-02-18", suma: 1786.52, dobanda: 195.78, principal: 1590.74, soldFinal: 21925.91, asigurare: 39.34 },
+  { data: "2030-03-18", suma: 1786.52, dobanda: 182.53, principal: 1603.99, soldFinal: 20321.92, asigurare: 36.46 },
+  { data: "2030-04-18", suma: 1786.52, dobanda: 169.18, principal: 1617.34, soldFinal: 18704.58, asigurare: 33.56 },
+  { data: "2030-05-18", suma: 1786.53, dobanda: 155.72, principal: 1630.81, soldFinal: 17073.77, asigurare: 30.63 },
+  { data: "2030-06-18", suma: 1786.53, dobanda: 142.14, principal: 1644.39, soldFinal: 15429.38, asigurare: 27.68 },
+  { data: "2030-07-18", suma: 1786.53, dobanda: 128.45, principal: 1658.08, soldFinal: 13771.3, asigurare: 24.71 },
+  { data: "2030-08-18", suma: 1786.52, dobanda: 114.64, principal: 1671.88, soldFinal: 12099.42, asigurare: 21.71 },
+  { data: "2030-09-18", suma: 1786.52, dobanda: 100.73, principal: 1685.79, soldFinal: 10413.63, asigurare: 18.68 },
+  { data: "2030-10-18", suma: 1786.52, dobanda: 86.7, principal: 1699.82, soldFinal: 8713.81, asigurare: 15.63 },
+  { data: "2030-11-18", suma: 1786.53, dobanda: 72.54, principal: 1713.99, soldFinal: 6999.82, asigurare: 12.56 },
+  { data: "2030-12-18", suma: 1786.53, dobanda: 58.27, principal: 1728.26, soldFinal: 5271.56, asigurare: 9.46 },
+  { data: "2031-01-18", suma: 1786.53, dobanda: 43.89, principal: 1742.64, soldFinal: 3528.92, asigurare: 6.33 },
+  { data: "2031-02-18", suma: 1786.52, dobanda: 29.38, principal: 1757.14, soldFinal: 1771.78, asigurare: 3.18 },
+  { data: "2031-03-18", suma: 1786.53, dobanda: 14.75, principal: 1771.78, soldFinal: 0.0, asigurare: 0.0 },
+];
+
 // --- Date inițiale Ion ---
 var DATI_INITIALE = {
   profil: { nume: 'Ion', salariuNet: 7000, bonusMedie: 2000, startMonth: '2026-05', numarLuni: 12 },
@@ -184,8 +255,9 @@ var DATI_INITIALE = {
     { id: 5, label: 'Fidelis EUR' },
   ],
   credit: {
-    suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1787, asigurare: 147,
-    durata: 60, comisionRambursare: 1, dataStart: '2026-05', soldActual: 84450
+    suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1786.52, asigurare: 145,
+    durata: 58, comisionRambursare: 1, dataStart: '2026-06-18', soldActual: 84450,
+    contract: '18099406', dataContract: '2026-05-02'
   },
   fondUrgenta: [
     { id: 1, cont: 'Cont economii ING', suma: 8000, dobanda: 2, lichid: 'Da', nota: 'Acces instant' },
@@ -222,6 +294,7 @@ var INITIAL_DATA = {
 var state = {
   activeTab: 'buget-lunar',
   data: null,
+  scadShowAll: false,
 };
 
 // --- API client (Flask backend) ---
@@ -249,6 +322,7 @@ async function loadData() {
       migrateCategoriiVar(state.data);
       migrateCategoriiVenit(state.data);
       migrateEmisiuniTezaur(state.data);
+      migrateCreditScadentar(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -750,7 +824,34 @@ function calcMediiCheltuieli(d) {
   return result;
 }
 
+function getScadentar(d) {
+  return (d && d.credit && Array.isArray(d.credit.scadentar)) ? d.credit.scadentar : [];
+}
+
+function platiTrecute(scadentar, refIso) {
+  return scadentar.filter(function(p) { return p.data <= refIso; });
+}
+
+function platiViitoare(scadentar, refIso) {
+  return scadentar.filter(function(p) { return p.data > refIso; });
+}
+
+function soldDupaPlatiTrecute(scadentar, refIso, sumaInitiala) {
+  var trec = platiTrecute(scadentar, refIso);
+  if (trec.length === 0) return sumaInitiala || 0;
+  return trec[trec.length - 1].soldFinal;
+}
+
+function todayIso() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 function calcLuniRamase() {
+  var scad = getScadentar(state.data);
+  if (scad.length > 0) {
+    return platiViitoare(scad, todayIso()).length;
+  }
   var cr = state.data.credit;
   if (!cr || !cr.dataStart) return cr ? cr.durata : 60;
   var parts = cr.dataStart.split('-');
@@ -1029,86 +1130,107 @@ function statCard(icon, label, value, sub, variant) {
 function renderCredite() {
   var d = state.data;
   var cr = d.credit;
+  var scad = getScadentar(d);
+  var today = todayIso();
+  var trec = platiTrecute(scad, today);
+  var viit = platiViitoare(scad, today);
+  var soldEstimat = soldDupaPlatiTrecute(scad, today, cr.suma);
+  var totalPlatit = trec.reduce(function(s, p) { return s + (p.suma || 0) + (p.asigurare || 0); }, 0);
+  var totalRamas = viit.reduce(function(s, p) { return s + (p.suma || 0) + (p.asigurare || 0); }, 0);
+  var totalDobandaRamasa = viit.reduce(function(s, p) { return s + (p.dobanda || 0); }, 0);
 
   var html = '';
 
+  // Stat cards
+  html += '<div class="section">';
+  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="landmark"></i> Credit activ — scadenţar ING Home\'Bank</div></div>';
+  html += '<div class="stat-grid">';
+  html += statCard('banknote', 'Sold rămas', formatRON(soldEstimat), trec.length + ' / ' + scad.length + ' rate plătite', 'danger');
+  html += statCard('calendar-clock', 'Luni rămase', viit.length, 'din ' + scad.length + ' total', 'warning');
+  html += statCard('coins', 'Total rămas de plătit', formatRON(totalRamas), 'capital + dobandă + asigurare', 'danger');
+  html += statCard('trending-down', 'Dobândă viitoare', formatRON(totalDobandaRamasa), 'rămasă până la final', 'warning');
+  html += '</div></div>';
+
   // Two-column: details + simulare
   html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="landmark"></i> Credit activ</div></div>';
   html += '<div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">';
 
   // Detalii
   html += '<div class="panel danger">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="file-text"></i> Detalii credit</div></div>';
+  if (cr.contract) html += '<div class="stat-row"><span>Contract</span><span class="mono">' + esc(cr.contract) + ' / ' + esc(cr.dataContract || '') + '</span></div>';
   html += '<div class="stat-row"><span>Sumă inițială</span><span class="stat-val danger">' + formatRON(cr.suma) + '</span></div>';
-  html += '<div class="stat-row"><span>Sold actual</span>';
+  html += '<div class="stat-row"><span>Sold estimat azi</span><span class="stat-val danger">' + formatRON(soldEstimat) + '</span></div>';
+  html += '<div class="stat-row"><span>Sold actual (manual)</span>';
   html += '<input type="number" class="input num w-28" value="' + cr.soldActual + '" onchange="updateCreditSold(this.value)"></div>';
   html += '<div class="stat-row"><span>Dobândă anuală</span><span class="mono">' + cr.dobanda + ' %</span></div>';
   html += '<div class="stat-row"><span>DAE</span><span class="mono">' + cr.dae + ' %</span></div>';
-  html += '<div class="stat-row"><span>Rată lunară</span><span class="stat-val danger">' + formatRON(cr.rata) + '</span></div>';
-  html += '<div class="stat-row"><span>Asigurare</span><span class="stat-val danger">' + formatRON(cr.asigurare) + '</span></div>';
+  html += '<div class="stat-row"><span>Rată standard</span><span class="stat-val danger">' + formatRON(cr.rata) + '</span></div>';
+  html += '<div class="stat-row"><span>Asigurare curentă</span><span class="stat-val danger">' + formatRON(viit[0] ? viit[0].asigurare : 0) + '</span></div>';
   html += '<div class="stat-row"><span>Comision rambursare</span><span class="mono">' + cr.comisionRambursare + ' %</span></div>';
-  html += '<div class="stat-row"><span>Durată rămasă</span><span class="mono">' + cr.durata + ' luni</span></div>';
-  html += '<div class="stat-row"><span>Data start</span><span class="mono">' + esc(cr.dataStart) + '</span></div>';
+  html += '<div class="stat-row"><span>Durată totală</span><span class="mono">' + scad.length + ' rate</span></div>';
+  html += '<div class="stat-row"><span>Prima rată</span><span class="mono">' + esc(scad[0] ? scad[0].data : '—') + '</span></div>';
+  html += '<div class="stat-row"><span>Ultima rată</span><span class="mono">' + esc(scad[scad.length - 1] ? scad[scad.length - 1].data : '—') + '</span></div>';
   html += '</div>';
 
   // Simulare
   html += '<div class="panel accent">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="calculator"></i> Simulare rambursare anticipată</div></div>';
   html += '<div class="field"><label class="field-label">Sold credit curent (RON)</label>';
-  html += '<input type="number" id="sim-sold" class="input num w-full" value="' + cr.soldActual + '" oninput="recalcSimulare()"></div>';
+  html += '<input type="number" id="sim-sold" class="input num w-full" value="' + soldEstimat.toFixed(2) + '" oninput="recalcSimulare()"></div>';
   html += '<div class="field"><label class="field-label">Sumă rambursare (RON)</label>';
   html += '<input type="number" id="sim-suma" class="input num w-full" value="5000" oninput="recalcSimulare()"></div>';
   html += '<div class="field"><label class="field-label">Luni rămase</label>';
-  html += '<input type="number" id="sim-luni" class="input num w-full" value="' + calcLuniRamase() + '" oninput="recalcSimulare()"></div>';
+  html += '<input type="number" id="sim-luni" class="input num w-full" value="' + viit.length + '" oninput="recalcSimulare()"></div>';
   html += '<div id="sim-rezultat" class="sim-result"></div>';
   html += '</div>';
 
   html += '</div></div>';
 
-  // Evoluție sold credit
+  // Scadentar real
   html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-down"></i> Evoluție sold credit (estimare)</div></div>';
+  html += '<div class="section-title">';
+  html += '  <div class="section-title-left"><i data-lucide="calendar"></i> Scadenţar complet (ING Home\'Bank)</div>';
+  html += '  <div style="display:flex;gap:0.5rem;">';
+  html += '    <button class="btn-back" onclick="toggleScadentarVizibil()" id="btn-scad-vizibil"><i data-lucide="filter"></i> ' + (state.scadShowAll ? 'Doar rămase' : 'Toate') + '</button>';
+  html += '  </div>';
+  html += '</div>';
   html += '<div class="panel">';
   html += '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Lună</th><th class="num">Sold inițial</th><th class="num">Rată</th><th class="num">Dobândă</th><th class="num">Sold final</th></tr></thead><tbody>';
-
-  var soldCurent = cr.soldActual;
-  var rataLunara = cr.rata;
-  for (var i = 0; i < 6 && i < LUNI_KEYS.length; i++) {
-    var l = LUNI_KEYS[i];
-    var dobanda = soldCurent * (cr.dobanda / 100 / 12);
-    var principal = rataLunara - dobanda;
-    var soldFinal = Math.max(0, soldCurent - principal);
-    var evol = d.evolutie[l] || {};
-    var displaySold = evol.soldCredit || soldFinal;
-    html += '<tr>';
-    html += '<td class="muted">' + LUNI[i] + '</td>';
-    html += '<td class="num">' + formatRON(soldCurent) + '</td>';
-    html += '<td class="num neg">' + formatRON(rataLunara) + '</td>';
-    html += '<td class="num neg">' + formatRON(dobanda) + '</td>';
-    html += '<td class="num accent">' + formatRON(displaySold) + '</td>';
+  html += '<thead><tr><th>#</th><th>Data</th><th class="num">Rată</th><th class="num">Dobândă</th><th class="num">Capital</th><th class="num">Sold rămas</th><th class="num">Asigurare</th><th class="num">Total</th><th>Status</th></tr></thead><tbody>';
+  scad.forEach(function(p, i) {
+    var isPast = p.data <= today;
+    if (!state.scadShowAll && isPast) return;
+    var total = (p.suma || 0) + (p.asigurare || 0);
+    var statusBadge = isPast
+      ? '<span class="tag" style="background:var(--success-soft);color:var(--success);"><i data-lucide="check"></i> plătită</span>'
+      : (i === trec.length
+        ? '<span class="tag" style="background:var(--warning-soft);color:var(--warning);"><i data-lucide="clock"></i> următoarea</span>'
+        : '<span class="tag" style="background:var(--bg-elev3);color:var(--text-mid);">viitoare</span>');
+    var trClass = isPast ? ' style="opacity:0.55;"' : (i === trec.length ? ' style="background:var(--accent-soft);"' : '');
+    html += '<tr' + trClass + '>';
+    html += '<td class="muted mono">' + (i + 1) + '</td>';
+    html += '<td class="mono">' + esc(p.data) + '</td>';
+    html += '<td class="num neg">' + formatRON(p.suma) + '</td>';
+    html += '<td class="num neg">' + formatRON(p.dobanda) + '</td>';
+    html += '<td class="num">' + formatRON(p.principal) + '</td>';
+    html += '<td class="num accent">' + formatRON(p.soldFinal) + '</td>';
+    html += '<td class="num">' + formatRON(p.asigurare) + '</td>';
+    html += '<td class="num neg">' + formatRON(total) + '</td>';
+    html += '<td>' + statusBadge + '</td>';
     html += '</tr>';
-    soldCurent = soldFinal;
-  }
-  html += '</tbody></table></div></div></div>';
-
-  // Sold credit pe luni (input)
-  html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="calendar"></i> Sold credit înregistrat lunar</div></div>';
-  html += '<div class="panel">';
-  html += '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Activ</th>';
-  LUNI.forEach(function(l) { html += '<th class="num">' + l + '</th>'; });
-  html += '</tr></thead><tbody>';
-  html += '<tr><td class="muted">Sold credit</td>';
-  LUNI_KEYS.forEach(function(l) {
-    var val = (d.evolutie[l] || {}).soldCredit || '';
-    html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateEvolutie(\'' + l + '\', \'soldCredit\', this.value)"></td>';
   });
-  html += '</tr></tbody></table></div></div></div>';
+  html += '</tbody><tfoot>';
+  html += '<tr><td colspan="2">Total plătit până azi</td><td class="num">' + formatRON(trec.reduce(function(s,p){return s+(p.suma||0);},0)) + '</td><td class="num">' + formatRON(trec.reduce(function(s,p){return s+(p.dobanda||0);},0)) + '</td><td class="num">' + formatRON(trec.reduce(function(s,p){return s+(p.principal||0);},0)) + '</td><td></td><td class="num">' + formatRON(trec.reduce(function(s,p){return s+(p.asigurare||0);},0)) + '</td><td class="num">' + formatRON(totalPlatit) + '</td><td></td></tr>';
+  html += '<tr><td colspan="2">Total rămas de plătit</td><td class="num">' + formatRON(viit.reduce(function(s,p){return s+(p.suma||0);},0)) + '</td><td class="num">' + formatRON(totalDobandaRamasa) + '</td><td class="num">' + formatRON(viit.reduce(function(s,p){return s+(p.principal||0);},0)) + '</td><td></td><td class="num">' + formatRON(viit.reduce(function(s,p){return s+(p.asigurare||0);},0)) + '</td><td class="num">' + formatRON(totalRamas) + '</td><td></td></tr>';
+  html += '</tfoot></table></div></div></div>';
 
   return html;
+}
+
+function toggleScadentarVizibil() {
+  state.scadShowAll = !state.scadShowAll;
+  render();
 }
 
 function updateCreditSold(val) {
