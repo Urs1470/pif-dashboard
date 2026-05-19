@@ -3337,17 +3337,8 @@ async function stopTimer() {
     if (!currentProjectId) return;
 
     try {
-        const data = await apiPost(`/proiecte/${currentProjectId}/timer/stop`, {});
-
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-
-        document.getElementById('timer-display').textContent = '00:00:00';
-        document.getElementById('timer-start').style.display = 'inline-flex';
-        document.getElementById('timer-stop').style.display = 'none';
-
+        await apiPost(`/proiecte/${currentProjectId}/timer/stop`, {});
+        stopTimerUI();
         loadJurnal(currentProjectId);
         showToast('Timer oprit!');
     } catch (e) {
@@ -3367,25 +3358,32 @@ async function stopTimerWithNote() {
     const note  = document.getElementById('timer-note').value.trim();
     try {
         await apiPost(`/proiecte/${currentProjectId}/timer/stop-with-note`, { titlu, note });
-        document.getElementById('timer-titlu').value = '';
-        document.getElementById('timer-note').value  = '';
         stopTimerUI();
         await loadJurnal(currentProjectId);
         showToast('Activitate salvată în jurnal!');
     } catch (e) { console.error('Stop timer error:', e); showToast('Eroare la oprirea timerului', true); }
 }
 
+// Single source of truth for resetting the timer UI after stop (both with and
+// without note). Clears inputs and hides the stop-form so fields disappear once
+// the entry is saved.
 function stopTimerUI() {
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
     }
-    document.getElementById('timer-display').textContent = '00:00:00';
-    document.getElementById('timer-stop-form').style.display = 'none';
+    const display = document.getElementById('timer-display');
+    if (display) display.textContent = '00:00:00';
+    const titluEl = document.getElementById('timer-titlu');
+    const noteEl  = document.getElementById('timer-note');
+    if (titluEl) titluEl.value = '';
+    if (noteEl)  noteEl.value  = '';
+    const form = document.getElementById('timer-stop-form');
+    if (form) form.style.display = 'none';
     const startBtn = document.getElementById('timer-start');
-    const stopBtn = document.getElementById('timer-stop');
+    const stopBtn  = document.getElementById('timer-stop');
     if (startBtn) startBtn.style.display = 'inline-flex';
-    if (stopBtn) stopBtn.style.display = 'none';
+    if (stopBtn)  stopBtn.style.display  = 'none';
 }
 
 async function deleteTimerSession(sessionId) {
