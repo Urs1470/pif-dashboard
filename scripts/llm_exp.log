@@ -3464,3 +3464,206 @@
 2026-05-19 04:59:35,054  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul semnalului de feedback in Set-ul 2 PID.
 2026-05-19 04:59:35,155  INFO      2606 41.12 (ACS880)  existing_len=710  qc=rewrite
 2026-05-19 04:59:45,993  INFO        -> rewrite: Selecteaza unitatea de masura pentru parametrii 41.21, 41.22, 41.23, 41.24 si 41
+2026-05-19 04:59:49,038  INFO        Committed + pushed
+2026-05-19 04:59:49,138  INFO      2607 41.14 (ACS880)  existing_len=1162  qc=rewrite
+2026-05-19 05:00:00,098  INFO        -> rewrite: Defineste factorul de scalare pentru referinta de viteza in Set 2 de parametri. 
+2026-05-19 05:00:00,199  INFO      2608 41.15 (ACS880)  existing_len=1297  qc=rewrite
+2026-05-19 05:00:07,465  INFO        -> rewrite: Seteaza factorul de scalare pentru iesirile din Set 2. Scalarea ajusteaza valoar
+2026-05-19 05:00:07,566  INFO      2609 41.21 (ACS880)  existing_len=1244  qc=rewrite
+2026-05-19 05:00:23,741  INFO        -> rewrite: Defineste valoarea setpoint-ului intern 1 pentru Set 2. Este similar cu parametr
+2026-05-19 05:00:23,841  INFO      2610 41.22 (ACS880)  existing_len=1198  qc=rewrite
+2026-05-19 05:00:37,928  INFO        -> rewrite: Seteaza valoarea celui de-al doilea punct de referinta intern pentru Setul 2 de 
+2026-05-19 05:00:38,028  INFO      2611 41.23 (ACS880)  existing_len=1167  qc=rewrite
+2026-05-19 05:00:53,906  INFO        -> rewrite: Defineste valoarea setpoint-ului intern 3 pentru Setul 2 de parametri. Functione
+2026-05-19 05:00:54,007  INFO      2612 41.24 (ACS880)  existing_len=1175  qc=rewrite
+2026-05-19 05:01:07,085  INFO        -> rewrite: Seteaza a 4-a referinta de viteza interna pentru Setul 2 (Motor 2). Folosit pent
+2026-05-19 05:01:07,186  INFO      2613 41.26 (ACS880)  existing_len=1211  qc=rewrite
+2026-05-19 05:01:21,946  INFO        -> rewrite: Defineste valoarea minima a setpointului pentru Setul 2 de parametri. Aceasta se
+2026-05-19 05:01:22,047  INFO      2614 41.27 (ACS880)  existing_len=1224  qc=rewrite
+2026-05-19 05:01:33,504  INFO        -> rewrite: Defineste valoarea maxima a referintei de viteza sau proces pentru Setul 2 de pa
+2026-05-19 05:01:33,605  INFO      2615 41.28 (ACS880)  existing_len=1263  qc=rewrite
+2026-05-19 05:01:42,276  INFO        -> rewrite: Seteaza timpul de crestere a referintei de viteza pentru Set 2 de parametri. Fun
+2026-05-19 05:01:42,377  INFO      2616 41.29 (ACS880)  existing_len=1222  qc=rewrite
+2026-05-19 05:01:49,962  INFO        -> rewrite: Defineste timpul de scadere al referintei de setpoint pentru Set 2. Controleaza 
+2026-05-19 05:01:50,063  INFO      2617 41.32 (ACS880)  existing_len=1168  qc=rewrite
+2026-05-19 05:01:59,429  INFO        -> rewrite: Defineste castigul pentru Setul 2 de parametri de control. Valoarea trebuie seta
+2026-05-19 05:01:59,530  INFO      2618 41.33 (ACS880)  existing_len=1275  qc=rewrite
+2026-05-19 05:02:17,444  INFO        -> rewrite: Seteaza timpul de integrare pentru Setul 2 de parametri PID. Aceasta determina c
+2026-05-19 05:02:17,545  INFO      2619 41.34 (ACS880)  existing_len=1208  qc=rewrite
+2026-05-19 05:02:33,643  WARNING     Bad categorie 'Altol' for 41.34, retry
+2026-05-19 05:02:48,367  WARNING     Bad categorie 'Altol' for 41.34, retry
+2026-05-19 05:03:03,161  INFO        -> rewrite: Seteaza timpul derivat pentru Setul 2 de parametri PID. Timpul derivat controlea
+2026-05-19 05:03:03,261  INFO      2620 41.35 (ACS880)  existing_len=1167  qc=rewrite
+2026-05-19 05:03:15,191  INFO        -> rewrite: Seteaza constanta de timp a filtrului derivativ pentru Setul 2 de parametri PID.
+2026-05-19 05:03:15,292  INFO      2621 41.36 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 05:03:29,273  INFO        -> rewrite: Seteaza valoarea minima pentru iesirea procesului atunci cand Setul 2 de paramet
+2026-05-19 05:03:29,374  INFO      2622 41.37 (ACS880)  existing_len=1260  qc=rewrite
+2026-05-19 05:03:46,055  INFO        -> rewrite: Defineste valoarea maxima a iesirii pentru Setul 2 de parametri. Consulta 40.37 
+2026-05-19 05:03:46,156  INFO      2623 41.39 (ACS880)  existing_len=1118  qc=rewrite
+2026-05-19 05:03:58,508  INFO        -> rewrite: Defineste zona morta pentru Setul 2 de parametri. Zona morta previne ajustari ex
+2026-05-19 05:03:58,609  INFO      2624 41.40 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 05:04:15,144  INFO        -> rewrite: Defineste timpul de intarziere pentru deadband-ul din Setul 2 de parametri. Func
+2026-05-19 05:04:15,245  INFO      2625 41.43 (ACS880)  existing_len=1242  qc=rewrite
+2026-05-19 05:04:27,615  INFO        -> rewrite: Seteaza nivelul de viteza sub care VFD-ul intra in mod sleep (oprire motor) pent
+2026-05-19 05:04:27,716  INFO      2626 41.44 (ACS880)  existing_len=1194  qc=rewrite
+2026-05-19 05:04:45,336  INFO        -> rewrite: Seteaza timpul de intarziere in secunde inainte ca variatorul sa intre in modul 
+2026-05-19 05:04:45,436  INFO      2627 41.45 (ACS880)  existing_len=1207  qc=rewrite
+2026-05-19 05:05:00,945  INFO        -> rewrite: Seteaza valoarea boost-ului de frecventa pentru Set 2 in modul sleep. Aceasta fu
+2026-05-19 05:05:01,045  INFO      2628 41.46 (ACS880)  existing_len=1156  qc=rewrite
+2026-05-19 05:05:13,426  INFO        -> rewrite: Defineste pasul de boost de frecventa pentru Setul 2 cand motorul iese din modul
+2026-05-19 05:05:13,527  INFO      2629 41.48 (ACS880)  existing_len=1215  qc=rewrite
+2026-05-19 05:05:26,302  INFO        -> rewrite: Seteaza intarzierea de trezire pentru Set 2 de parametri PID. Dupa ce variabila 
+2026-05-19 05:05:26,403  INFO      2630 41.54 (ACS880)  existing_len=1162  qc=rewrite
+2026-05-19 05:05:40,904  INFO        -> rewrite: Definește al doilea set de ajustare (trim mix) pentru calibrarea fină a semnalul
+2026-05-19 05:05:41,004  INFO      2631 41.55 (ACS880)  existing_len=1125  qc=rewrite
+2026-05-19 05:05:51,046  INFO        -> rewrite: Ajustare fina pentru referinta in Set 2. Permite corectarea valorii de referinta
+2026-05-19 05:05:51,146  INFO      2632 41.60 (ACS880)  existing_len=1177  qc=rewrite
+2026-05-19 05:05:58,002  INFO        -> rewrite: Selecteaza sursa de activare pentru Setul 2 de control PID. Functioneaza la fel 
+2026-05-19 05:05:58,102  INFO      2636 43.10 (ACS880)  existing_len=1253  qc=rewrite
+2026-05-19 05:06:05,864  INFO        -> rewrite: Seteaza valoarea rezistentei rezistorului de franare in ohmi. Este necesara pent
+2026-05-19 05:06:05,964  INFO      2637 43.12 (ACS880)  existing_len=1348  qc=rewrite
+2026-05-19 05:06:19,740  INFO        -> rewrite: Seteaza pragul de avertizare pentru protectia rezistorului de franare. Cand pute
+2026-05-19 05:06:19,841  INFO      2640 44.11 (ACS880)  existing_len=1271  qc=rewrite
+2026-05-19 05:06:31,183  INFO        -> rewrite: Defineste sursa care mentine frana inchisa. Cand intrarea selectata este activa,
+2026-05-19 05:06:31,283  INFO      2641 44.13 (ACS880)  existing_len=1282  qc=rewrite
+2026-05-19 05:06:42,219  INFO        -> rewrite: Defineste intarzierea dintre comanda de oprire sau inceputul rampei de decelerar
+2026-05-19 05:06:42,319  INFO      2642 44.14 (ACS880)  existing_len=1269  qc=rewrite
+2026-05-19 05:06:51,762  INFO        -> rewrite: Defineste viteza motorului la care se inchide frana. Cand turatia scade sub acea
+2026-05-19 05:06:51,863  INFO      2643 44.15 (ACS880)  existing_len=1185  qc=rewrite
+2026-05-19 05:07:00,289  INFO        -> rewrite: Defineste timpul de intarziere pentru inchiderea franei. Dupa ce viteza scade su
+2026-05-19 05:07:00,390  INFO      2644 44.16 (ACS880)  existing_len=1125  qc=rewrite
+2026-05-19 05:07:13,512  INFO        -> rewrite: Defineste timpul minim de pauza dupa inchiderea franei inainte ca aceasta sa se 
+2026-05-19 05:07:13,613  INFO      2645 44.17 (ACS880)  existing_len=1286  qc=rewrite
+2026-05-19 05:07:25,289  INFO        -> rewrite: Defineste reactia convertizorului la o defectiune a franei mecanice. Poate gener
+2026-05-19 05:07:25,390  INFO      2646 44.18 (ACS880)  existing_len=1163  qc=rewrite
+2026-05-19 05:07:39,174  INFO        -> rewrite: Defineste timpul de intarziere pentru declansarea alarmei de defectiune a franei
+2026-05-19 05:07:39,276  INFO      2647 44.21 (ACS880)  existing_len=1198  qc=rewrite
+2026-05-19 05:07:49,342  INFO        -> rewrite: Seteaza timpul de filtrare pentru functia de frana. Un filtru mai lung atenueaza
+2026-05-19 05:07:49,442  INFO      2648 45.11 (ACS880)  existing_len=1639  qc=rewrite
+2026-05-19 05:08:02,227  INFO        -> rewrite: Activeaza functia de optimizare energetica care reduce consumul de energie prin 
+2026-05-19 05:08:02,328  INFO      2649 45.14 (ACS880)  existing_len=1207  qc=rewrite
+2026-05-19 05:08:09,893  INFO        -> rewrite: Selecteaza care set predefinit de parametri de energie este activ. Tariful deter
+2026-05-19 05:08:09,994  INFO      2650 45.17 (ACS880)  existing_len=1179  qc=rewrite
+2026-05-19 05:08:18,805  INFO        -> rewrite: Defineste moneda utilizata pentru calculul costurilor cu energia si afisarea eco
+2026-05-19 05:08:18,905  INFO      2651 45.18 (ACS880)  existing_len=1168  qc=rewrite
+2026-05-19 05:08:30,983  INFO        -> rewrite: Defineste factorul de conversie pentru transformarea energiei economisite in ech
+2026-05-19 05:08:31,084  INFO      2652 45.19 (ACS880)  existing_len=1384  qc=rewrite
+2026-05-19 05:08:43,810  INFO        -> rewrite: Afiseaza puterea reala absorbita de motor in timp real, masurata in kW. Valoarea
+2026-05-19 05:08:43,910  INFO      2653 45.21 (ACS880)  existing_len=1159  qc=rewrite
+2026-05-19 05:08:49,832  INFO        -> rewrite: Reseteaza toti parametrii contorului de economii de energie de la 45.01 la 45.09
+2026-05-19 05:08:49,932  INFO      2659 46.11 (ACS880)  existing_len=1329  qc=rewrite
+2026-05-19 05:09:03,387  INFO        -> rewrite: Defineste constanta de timp pentru filtrarea semnalului de viteza motor (1.1). U
+2026-05-19 05:09:03,487  INFO      2660 46.12 (ACS880)  existing_len=1170  qc=rewrite
+2026-05-19 05:09:13,071  INFO        -> rewrite: Defineste constanta de timp pentru filtrarea semnalului de frecventa de iesire. 
+2026-05-19 05:09:13,172  INFO      2661 46.13 (ACS880)  existing_len=1137  qc=rewrite
+2026-05-19 05:09:27,073  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul de semnal al cuplului motorului (1.10).
+2026-05-19 05:09:27,174  INFO      2662 46.14 (ACS880)  existing_len=1156  qc=rewrite
+2026-05-19 05:09:40,822  INFO        -> rewrite: Defineste constanta de timp pentru filtrarea semnalului de putere la iesire (1.1
+2026-05-19 05:09:40,923  INFO      2663 46.21 (ACS880)  existing_len=1311  qc=rewrite
+2026-05-19 05:09:48,401  INFO        -> rewrite: Defineste banda de histerezis pentru verificarea starii "la turatie". Cand vitez
+2026-05-19 05:09:48,501  INFO      2664 46.22 (ACS880)  existing_len=1323  qc=rewrite
+2026-05-19 05:10:05,276  INFO        -> rewrite: Defineste banda de histereza pentru frecventa de referinta. Cand frecventa actua
+2026-05-19 05:10:05,376  INFO      2666 46.31 (ACS880)  existing_len=1265  qc=rewrite
+2026-05-19 05:10:14,922  INFO        -> rewrite: Seteaza pragul de viteza pentru activarea indicatiei "deasupra limitei". Cand tu
+2026-05-19 05:10:15,023  INFO      2667 46.32 (ACS880)  existing_len=1283  qc=rewrite
+2026-05-19 05:10:29,229  INFO        -> rewrite: Seteaza nivelul de frecventa pentru care se activeaza indicatia de depasire limi
+2026-05-19 05:10:29,329  INFO      2668 46.42 (ACS880)  existing_len=1166  qc=rewrite
+2026-05-19 05:10:39,782  INFO        -> rewrite: Defineste numarul de zecimale afisate pentru valorile cuplului motor. Afecteaza 
+2026-05-19 05:10:39,883  INFO      2677 47.21 (ACS880)  existing_len=1109  qc=rewrite
+2026-05-19 05:10:53,026  INFO        -> rewrite: Registru de stocare generala cu valoare intreaga pe 16 biti cu semn. Poate fi ut
+2026-05-19 05:10:53,127  INFO      2678 47.22 (ACS880)  existing_len=1035  qc=rewrite
+2026-05-19 05:10:59,616  INFO        -> rewrite: Parametru de stocare a datelor de tip intreg pe 16 biti. Poate fi folosit pentru
+2026-05-19 05:10:59,717  INFO      2679 47.23 (ACS880)  existing_len=1041  qc=rewrite
+2026-05-19 05:11:10,702  INFO        -> rewrite: Parametru de stocare a datelor de tip int16 cu semn. Poate fi folosit pentru mem
+2026-05-19 05:11:10,802  INFO      2680 47.24 (ACS880)  existing_len=1019  qc=rewrite
+2026-05-19 05:11:15,820  INFO        -> rewrite: Parametru de stocare a datelor pentru valori intregi pe 16 biti. Poate fi folosi
+2026-05-19 05:11:15,921  INFO      2681 47.25 (ACS880)  existing_len=1018  qc=rewrite
+2026-05-19 05:11:23,021  INFO        -> rewrite: parametru de stocare generala pentru valori intregi pe 16 biti. Poate fi utiliza
+2026-05-19 05:11:23,121  INFO      2682 47.26 (ACS880)  existing_len=1021  qc=rewrite
+2026-05-19 05:11:30,623  INFO        -> rewrite: Parametru de stocare generala a datelor pe 16 biti cu semn. Poate fi utilizat pe
+2026-05-19 05:11:30,724  INFO      2683 47.27 (ACS880)  existing_len=1001  qc=rewrite
+2026-05-19 05:11:39,381  INFO        -> rewrite: Parameter pentru stocarea temporara a datelor intregi pe 16 biti cu semn. Poate 
+2026-05-19 05:11:39,481  INFO      2684 47.28 (ACS880)  existing_len=1054  qc=rewrite
+2026-05-19 05:11:45,343  INFO        -> rewrite: parametru de stocare date generala de tip int16 pe 16 biti cu semn. Poate fi fol
+2026-05-19 05:11:45,444  INFO      2685 47.31 (ACS880)  existing_len=1557  qc=rewrite
+2026-05-19 05:11:52,412  INFO        -> rewrite: Defineste factorul de scalare pentru valoarea stocata in parametrul 47.1 DataSto
+2026-05-19 05:11:52,512  INFO      2693 49.14 (ACS880)  existing_len=1119  qc=rewrite
+2026-05-19 05:11:58,299  INFO        -> rewrite: Defineste unitatea de masura pentru referinta de viteza atunci cand comanda este
+2026-05-19 05:11:58,400  INFO      2694 49.15 (ACS880)  existing_len=1151  qc=rewrite
+2026-05-19 05:12:06,670  INFO        -> rewrite: Defineste limita minima pentru viteza de referinta setata de la panoul de contro
+2026-05-19 05:12:06,771  INFO      2696 49.16 (ACS880)  existing_len=1167  qc=rewrite
+2026-05-19 05:12:18,941  INFO        -> rewrite: Defineste limita maxima pentru referinta de viteza setata de la panoul de contro
+2026-05-19 05:12:19,042  INFO      2697 49.17 (ACS880)  existing_len=1163  qc=rewrite
+2026-05-19 05:12:26,940  INFO        -> rewrite: Defineste limita minima de frecventa atunci cand referinta de viteza provine de 
+2026-05-19 05:12:27,041  INFO      2698 49.18 (ACS880)  existing_len=1129  qc=rewrite
+2026-05-19 05:12:34,806  INFO        -> rewrite: Defineste limita maxima de frecventa externa prin panoul de control. Aceasta set
+2026-05-19 05:12:34,906  INFO      2704 50.12 (ACS880)  existing_len=1215  qc=rewrite
+2026-05-19 05:12:43,540  INFO        -> rewrite: Activeaza modul de depanare pentru adaptorul Fieldbus A. Cand este activat, date
+2026-05-19 05:12:43,641  INFO      2705 50.21 (ACS880)  existing_len=1411  qc=rewrite
+2026-05-19 05:12:51,612  INFO        -> rewrite: Selecteaza nivelul de prioritate al timpului de comunicatie pentru Fieldbus Adap
+2026-05-19 05:12:51,712  INFO      2706 50.26 (ACS880)  existing_len=1339  qc=rewrite
+2026-05-19 05:13:01,942  INFO        -> rewrite: Activeaza functia de monitorizare a comunicatiei fieldbus pentru adaptorul FBA A
+2026-05-19 05:13:02,043  INFO      2707 50.31 (ACS880)  existing_len=1183  qc=rewrite
+2026-05-19 05:13:12,515  INFO        -> rewrite: Activeaza sau dezactiveaza comunicatia prin intermediul adaptorului de fieldbus 
+2026-05-19 05:13:12,616  INFO      2708 50.32 (ACS880)  existing_len=1356  qc=rewrite
+2026-05-19 05:13:24,031  INFO        -> rewrite: Defineste actiunea pe care drive-ul o executa cand comunicatia fieldbus este pie
+2026-05-19 05:13:24,132  INFO      2709 50.33 (ACS880)  existing_len=1495  qc=rewrite
+2026-05-19 05:13:37,971  INFO        -> rewrite: Seteaza timpul de intarziere in secunde inainte ca actiunea de comunicatie pierd
+2026-05-19 05:13:38,072  INFO      2710 50.42 (ACS880)  existing_len=1168  qc=rewrite
+2026-05-19 05:13:47,694  INFO        -> rewrite: Activeaza afisarea datelor brute receptionate de la adaptorul de camp. Datele su
+2026-05-19 05:13:47,795  INFO      2711 50.51 (ACS880)  existing_len=1154  qc=rewrite
+2026-05-19 05:13:56,729  INFO        -> rewrite: Defineste nivelul de timp pentru comunicatia Fieldbus Adapter pe portul B. Nivel
+2026-05-19 05:13:56,830  INFO      2712 50.56 (ACS880)  existing_len=1110  qc=rewrite
+2026-05-19 05:14:06,102  INFO        -> rewrite: Activeaza monitorizarea separata a comunicatiei Fieldbus pentru adaptorul B. Dac
+2026-05-19 05:14:06,203  INFO      2713 51.27 (ACS880)  existing_len=1102  qc=rewrite
+2026-05-19 05:14:15,893  INFO        -> rewrite: Activeaza validarea si reincarcarea parametrilor adaptorului fieldbus dupa orice
+2026-05-19 05:14:15,994  INFO      2714 52.01 (ACS880)  existing_len=1155  qc=rewrite
+2026-05-19 05:14:23,138  INFO        -> rewrite: Selecteaza sursa si formatul primului cuvant de date receptionat prin comunicati
+2026-05-19 05:14:23,238  INFO      2715 52.12 (ACS880)  existing_len=965  qc=rewrite
+2026-05-19 05:14:32,705  INFO        -> rewrite: Definește intrarea de date 12 de la adaptorul de câmp A. Valorile sunt primite p
+2026-05-19 05:14:32,805  INFO      2716 53.12 (ACS880)  existing_len=991  qc=rewrite
+2026-05-19 05:14:41,689  INFO        -> rewrite: Configureaza al 12-lea cuvant de date de iesire catre adaptorul de retea fieldbu
+2026-05-19 05:14:41,789  INFO      2717 54.27 (ACS880)  existing_len=1056  qc=rewrite
+2026-05-19 05:14:50,352  INFO        -> rewrite: Comanda de reimprospatare a parametrilor adaptorului fieldbus B. Dupa modificare
+2026-05-19 05:14:50,453  INFO      2719 55.12 (ACS880)  existing_len=923  qc=rewrite
+2026-05-19 05:14:57,207  INFO        -> rewrite: Parametrul 55.12 afiseaza valoarea celui de-al 12-lea cuvant de date receptionat
+2026-05-19 05:14:57,308  INFO      2720 56.12 (ACS880)  existing_len=964  qc=rewrite
+2026-05-19 05:15:04,450  INFO        -> rewrite: Configureaza continutul cuvantului de date 12 pentru iesirea pe fieldbus adapter
+2026-05-19 05:15:04,551  INFO      2726 58.14 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 05:15:15,550  INFO        -> rewrite: Defineste reactia convertizorului la pierderea comunicatiei pe bus-ul de camp EF
+2026-05-19 05:15:15,651  INFO      2727 58.15 (ACS880)  existing_len=1062  qc=rewrite
+2026-05-19 05:15:28,149  INFO        -> rewrite: Defineste tipurile de mesaje care reseteaza temporizatorul de timeout pentru com
+2026-05-19 05:15:28,249  INFO      2728 58.16 (ACS880)  existing_len=1520  qc=rewrite
+2026-05-19 05:15:40,354  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia EFB (Embedded FieldBus). Da
+2026-05-19 05:15:40,454  INFO      2729 58.17 (ACS880)  existing_len=1186  qc=rewrite
+2026-05-19 05:15:46,868  INFO        -> rewrite: Defineste un delay minim de raspuns in comunicatia seriala, adaugat inainte de t
+2026-05-19 05:15:46,970  INFO      2730 58.25 (ACS880)  existing_len=1232  qc=rewrite
+2026-05-19 05:16:00,112  INFO        -> rewrite: Defineste profilul de control utilizat de protocolul de comunicatie. Acest param
+2026-05-19 05:16:00,212  INFO      2731 58.26 (ACS880)  existing_len=1160  qc=rewrite
+2026-05-19 05:16:14,727  INFO        -> rewrite: Selecteaza tipul si modul de scalare al referintei 1 receptionate prin fieldbus-
+2026-05-19 05:16:14,827  INFO      2732 58.28 (ACS880)  existing_len=1157  qc=rewrite
+2026-05-19 05:16:26,047  INFO        -> rewrite: Selecteaza sursa si tipul semnalului pentru valoarea actuala 1 utilizata in comu
+2026-05-19 05:16:26,147  INFO      2733 58.29 (ACS880)  existing_len=1141  qc=rewrite
+2026-05-19 05:16:40,739  INFO        -> rewrite: Selecteaza tipul si sursa valorii actuale 2 transmise prin fieldbus integrat. Pa
+2026-05-19 05:16:40,840  INFO      2734 58.33 (ACS880)  existing_len=1134  qc=rewrite
+2026-05-19 05:16:51,709  INFO        -> rewrite: Defineste modul de adresare utilizat pentru accesarea registrelor si parametrilo
+2026-05-19 05:16:51,810  INFO      2735 58.34 (ACS880)  existing_len=1076  qc=rewrite
+2026-05-19 05:16:58,790  INFO        -> rewrite: Defineste ordinea in care sunt organizate registrele de 16 biti pentru a forma v
+2026-05-19 05:16:58,891  INFO      2736 58.36 (ACS880)  existing_len=1131  qc=rewrite
+2026-05-19 05:17:04,161  INFO        -> rewrite: Activeaza functia de monitorizare a comunicatiei fieldbus. Daca comunicatia cu m
+2026-05-19 05:17:04,261  INFO      2737 58.124 (ACS880)  existing_len=953  qc=rewrite
+2026-05-19 05:17:15,358  INFO        -> rewrite: Defineste selectorul de parametru pentru registrul Modbus asociat cu data I/O 24
+2026-05-19 05:17:15,459  INFO      2745 60.10 (ACS880)  existing_len=1054  qc=rewrite
+2026-05-19 05:17:25,442  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 1 receptionate prin interfata fieldbus. 
+2026-05-19 05:17:25,543  INFO      2746 60.12 (ACS880)  existing_len=1015  qc=rewrite
+2026-05-19 05:17:37,441  INFO        -> rewrite: Defineste tipul si sursa valorii actuale 1 pentru comunicatia fieldbus sau contr
+2026-05-19 05:17:37,541  INFO      2747 60.13 (ACS880)  existing_len=1058  qc=rewrite
+2026-05-19 05:17:48,917  INFO        -> rewrite: Seteaza sursa si scalarea valorii actuale 2 pentru functia Motor/Follower. In mo
+2026-05-19 05:17:49,017  INFO      2748 60.14 (ACS880)  existing_len=1071  qc=rewrite
+2026-05-19 05:17:55,361  INFO        -> rewrite: Defineste selectorul pentru urmasii (followers) in configuratia Master/Follower.
+2026-05-19 05:17:55,462  INFO      2749 60.17 (ACS880)  existing_len=1348  qc=rewrite
+2026-05-19 05:18:09,490  INFO        -> rewrite: Selecteaza actiunea pe care drive-ul master o executa cand unul dintre followere
+2026-05-19 05:18:09,591  INFO      2750 60.18 (ACS880)  existing_len=1311  qc=rewrite
+2026-05-19 05:18:25,919  INFO        -> rewrite: Activeaza functia de follower (sclav) pentru acest drive intr-un sistem multi-dr
+2026-05-19 05:18:26,020  INFO      2751 60.31 (ACS880)  existing_len=1473  qc=rewrite
+2026-05-19 05:18:33,984  INFO        -> rewrite: Defineste un delay de trezire pentru comunicatia master/follower. Dupa ce drive-
