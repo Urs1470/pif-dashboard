@@ -68,6 +68,12 @@ function migrateReguliCategorizare(data) {
   data.reguliCategorizare = cloneObj(REGULI_CATEGORIZARE_DEFAULT);
 }
 
+// Track which transaction refs have already been imported
+function migrateImportedRefs(data) {
+  if (!data) return;
+  if (!Array.isArray(data.importedRefs)) data.importedRefs = [];
+}
+
 // Seed d.credit.scadentar from real ING amortisation table if missing
 function migrateCreditScadentar(data) {
   if (!data) return;
@@ -348,6 +354,7 @@ async function loadData() {
       migrateEmisiuniTezaur(state.data);
       migrateCreditScadentar(state.data);
       migrateReguliCategorizare(state.data);
+      migrateImportedRefs(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -2126,7 +2133,7 @@ function parseDataIngRo(s) {
   return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 
-// Parse ING transaction export CSV. Returns [{ data, dataIso, detalii, beneficiar, tranzactieAt, suma, sens }]
+// Parse ING transaction export CSV. Returns [{data, dataIso, detalii, beneficiar, tranzactieAt, ref, suma, sens}]
 function parseIngCsv(text) {
   var lines = text.split(/\r?\n/);
   var tx = [];
@@ -2140,7 +2147,6 @@ function parseIngCsv(text) {
       if (cols[0] && /^Data$/i.test(cols[0].trim())) { headerSeen = true; continue; }
       continue;
     }
-    // Tranzactie row: A=data, D=detalii, E=debit, G=credit, H=balanta
     var dataCol = (cols[0] || '').trim();
     if (parseDataIngRo(dataCol)) {
       if (current) tx.push(current);
@@ -2153,25 +2159,44 @@ function parseIngCsv(text) {
         detalii: (cols[3] || '').trim(),
         beneficiar: '',
         tranzactieAt: '',
+        ref: '',
         descriereFull: (cols[3] || '').trim(),
         suma: debit > 0 ? debit : credit,
         sens: sens,
       };
     } else if (current) {
-      // Detail row: column D carries metadata
       var meta = (cols[3] || '').trim();
       if (!meta) continue;
       current.descriereFull += ' | ' + meta;
       if (/^Beneficiar:/i.test(meta)) current.beneficiar = meta.replace(/^Beneficiar:/i, '').trim();
       else if (/^Tranzactie la:/i.test(meta)) current.tranzactieAt = meta.replace(/^Tranzactie la:/i, '').trim();
+      else if (/^Referinta:/i.test(meta)) current.ref = meta.replace(/^Referinta:/i, '').trim();
+      else if (/^Numar autorizare:/i.test(meta) && !current.ref) current.ref = 'auth:' + meta.replace(/^Numar autorizare:/i, '').trim();
     }
-    // Stop at footer rows (Roxana Petria / Alexandra Ilie etc.)
     if (cols[1] && /Roxana Petria|Alexandra Ilie|Sef Serviciu/i.test(cols[1])) {
       if (current) { tx.push(current); current = null; }
     }
   }
   if (current) tx.push(current);
+  // Synthetic ref fallback (data + suma + first 30 chars of detalii) so duplicate detection works even when Referinta missing
+  tx.forEach(function(t) {
+    if (!t.ref) t.ref = 'syn:' + (t.dataIso || t.data) + ':' + (t.suma || 0).toFixed(2) + ':' + (t.detalii || '').substring(0, 30);
+  });
   return tx;
+}
+
+// Suggest a regex pattern from a transaction's merchant/beneficiar
+function suggestPatternFromTx(tx) {
+  var source = (tx.tranzactieAt || tx.beneficiar || tx.detalii || '').toUpperCase();
+  // Strip trailing country/city tail (e.g. "BOLT.EUO2605151016  EE  Tallinn")
+  source = source.replace(/\s+(RO|EE|US|DE|FR|GB|IT|ES|NL|BE)\s+.*/i, '');
+  // Take a meaningful chunk: alpha+digits before two-spaces or end
+  var m = source.match(/^[A-ZĂÂÎȘȚ0-9\.\&\-]{3,}(?:[\s\.][A-ZĂÂÎȘȚ0-9\.\&\-]{3,})?/);
+  if (!m) return null;
+  var token = m[0].replace(/\d+$/, '').trim(); // strip trailing digits
+  if (token.length < 3) return null;
+  // Escape regex metachars
+  return token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function categorizeAuto(tx, reguli) {
@@ -2228,13 +2253,21 @@ async function showImportModal() {
         var text = reader.result;
         parsed = parseIngCsv(text).filter(function(t) { return t.sens === 'debit' && t.suma > 0; });
         var reguli = state.data.reguliCategorizare || [];
+        var importedSet = (state.data.importedRefs || []).reduce(function(s, r) { s[r] = true; return s; }, {});
         var categories = (state.data.categoriiVar || []).map(function(c) { return c.label; })
           .concat((state.data.cheltuieliFixe || []).map(function(c) { return c.label; }));
         parsed.forEach(function(t) {
-          var auto = categorizeAuto(t, reguli);
-          t.categorie = (auto && categories.indexOf(auto) >= 0) ? auto : (auto || categories[categories.length - 1] || 'Alte');
-          t.skip = (auto === '__SKIP__');
-          if (t.skip) t.categorie = '__SKIP__';
+          t.duplicate = !!(t.ref && importedSet[t.ref]);
+          t.autoCategoryInitial = categorizeAuto(t, reguli);
+          var auto = t.autoCategoryInitial;
+          if (t.duplicate) {
+            t.categorie = '__SKIP__'; t.skip = true;
+          } else {
+            t.categorie = (auto && categories.indexOf(auto) >= 0) ? auto : (auto || categories[categories.length - 1] || 'Alte');
+            t.skip = (auto === '__SKIP__');
+            if (t.skip) t.categorie = '__SKIP__';
+          }
+          t.userOverridden = false;
         });
         renderPreview();
       } catch (err) {
@@ -2250,28 +2283,29 @@ async function showImportModal() {
       (state.data.cheltuieliFixe || []).map(function(c) { return c.label; }),
       (state.data.categoriiVar || []).map(function(c) { return c.label; })
     );
-    var summByMonthCat = {};
-    var nSkip = 0, nApply = 0;
+    var nSkip = 0, nApply = 0, nDup = 0;
     parsed.forEach(function(t) {
+      if (t.duplicate) { nDup++; return; }
       if (t.categorie === '__SKIP__') { nSkip++; return; }
-      var mk = t.dataIso ? t.dataIso.substring(0, 7) : 'altele';
-      summByMonthCat[mk] = summByMonthCat[mk] || {};
-      summByMonthCat[mk][t.categorie] = (summByMonthCat[mk][t.categorie] || 0) + t.suma;
       nApply++;
     });
     summary.style.display = 'flex';
     summary.querySelector('div').innerHTML =
       '<strong>' + parsed.length + '</strong> tranzacții debit găsite' +
       ' <span class="sep">·</span> <strong>' + nApply + '</strong> de aplicat' +
-      ' <span class="sep">·</span> <strong>' + nSkip + '</strong> ignorate (Tezaur / __SKIP__)';
+      ' <span class="sep">·</span> <strong>' + nSkip + '</strong> ignorate' +
+      (nDup > 0 ? ' <span class="sep">·</span> <strong>' + nDup + '</strong> duplicate (deja importate)' : '');
     applyBtn.disabled = (nApply === 0);
 
     var h = '<div class="table-wrap"><table>';
     h += '<thead><tr><th>Data</th><th>Descriere</th><th class="num">Sumă</th><th>Categorie</th></tr></thead><tbody>';
     parsed.forEach(function(t, idx) {
       var descShort = t.detalii + (t.tranzactieAt ? ' — ' + t.tranzactieAt : (t.beneficiar ? ' — ' + t.beneficiar : ''));
-      h += '<tr' + (t.categorie === '__SKIP__' ? ' style="opacity:0.45;"' : '') + '>';
-      h += '<td class="mono">' + esc(t.dataIso || t.data) + '</td>';
+      var rowStyle = '';
+      if (t.duplicate) rowStyle = ' style="opacity:0.35;"';
+      else if (t.categorie === '__SKIP__') rowStyle = ' style="opacity:0.45;"';
+      h += '<tr' + rowStyle + '>';
+      h += '<td class="mono">' + esc(t.dataIso || t.data) + (t.duplicate ? ' <span class="tag" style="background:var(--warning-soft);color:var(--warning);font-size:0.62rem;">dup</span>' : '') + '</td>';
       h += '<td style="max-width:340px;font-size:0.78rem;">' + esc(descShort) + '</td>';
       h += '<td class="num neg">' + formatRON(t.suma) + '</td>';
       h += '<td><select class="select" data-imp-cat="' + idx + '">';
@@ -2287,8 +2321,12 @@ async function showImportModal() {
     preview.querySelectorAll('select[data-imp-cat]').forEach(function(sel) {
       sel.addEventListener('change', function() {
         var idx = parseInt(sel.dataset.impCat, 10);
-        parsed[idx].categorie = sel.value;
-        parsed[idx].skip = sel.value === '__SKIP__';
+        var t = parsed[idx];
+        t.categorie = sel.value;
+        t.skip = sel.value === '__SKIP__';
+        // If user picked a different category than what auto suggested, flag for learning
+        if (t.autoCategoryInitial !== sel.value && !t.duplicate) t.userOverridden = true;
+        else t.userOverridden = false;
         renderPreview();
       });
     });
@@ -2302,27 +2340,102 @@ async function showImportModal() {
     if (act.dataset.act === 'cancel') return close();
     if (act.dataset.act === 'apply') {
       var fixedLabels = (state.data.cheltuieliFixe || []).reduce(function(s, c) { s[c.label] = true; return s; }, {});
-      var added = 0;
+      var added = 0, refsAdded = [];
+      // Collect candidate new rules from user overrides
+      var ruleProposals = {};
       parsed.forEach(function(t) {
-        if (t.categorie === '__SKIP__' || fixedLabels[t.categorie]) return; // skip ratele fixe — ele se sumează automat
+        if (t.duplicate) return;
+        if (t.userOverridden && t.categorie && t.categorie !== '__SKIP__') {
+          var pat = suggestPatternFromTx(t);
+          if (pat && pat.length >= 3) {
+            var key = pat + '|' + t.categorie;
+            ruleProposals[key] = ruleProposals[key] || { pattern: pat, categorie: t.categorie, count: 0 };
+            ruleProposals[key].count++;
+          }
+        }
+        if (t.categorie === '__SKIP__' || fixedLabels[t.categorie]) return;
         var mk = t.dataIso ? t.dataIso.substring(0, 7) : null;
         if (!mk) return;
         if (!state.data.cheltuieli[mk]) state.data.cheltuieli[mk] = {};
         state.data.cheltuieli[mk][t.categorie] = (state.data.cheltuieli[mk][t.categorie] || 0) + t.suma;
         added++;
+        if (t.ref) refsAdded.push(t.ref);
+      });
+      // Persist imported refs (deduped)
+      if (!Array.isArray(state.data.importedRefs)) state.data.importedRefs = [];
+      var refSet = state.data.importedRefs.reduce(function(s, r) { s[r] = true; return s; }, {});
+      refsAdded.forEach(function(r) { if (!refSet[r]) { state.data.importedRefs.push(r); refSet[r] = true; } });
+      saveData();
+      close();
+      render();
+      var proposalsList = Object.keys(ruleProposals).map(function(k) { return ruleProposals[k]; });
+      // Avoid proposing rules already present
+      var existingPatterns = (state.data.reguliCategorizare || []).map(function(r) { return (r.pattern || '').toUpperCase(); });
+      proposalsList = proposalsList.filter(function(p) { return existingPatterns.indexOf(p.pattern.toUpperCase()) < 0; });
+      setTimeout(function() {
+        if (proposalsList.length > 0) {
+          showRuleProposals(proposalsList, added);
+        } else {
+          showConfirm({
+            title: 'Import complet',
+            body: added + ' tranzacții adăugate. Cheltuielile fixe au fost păstrate intacte. ' + (refsAdded.length ? refsAdded.length + ' referințe salvate pentru detectare duplicate.' : ''),
+            okLabel: 'OK',
+            cancelLabel: '',
+            icon: 'check-circle'
+          });
+        }
+      }, 100);
+    }
+  });
+  document.addEventListener('keydown', onKey);
+}
+
+function showRuleProposals(proposals, addedCount) {
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  var rows = proposals.map(function(p, i) {
+    return '<label class="rule-proposal" style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0;border-bottom:1px solid var(--border);">' +
+      '  <input type="checkbox" data-rp="' + i + '" checked>' +
+      '  <span class="mono" style="flex:1;color:var(--accent);">' + esc(p.pattern) + '</span>' +
+      '  <i data-lucide="arrow-right" style="color:var(--text-dim);width:14px;height:14px;"></i>' +
+      '  <span class="tag">' + esc(p.categorie) + '</span>' +
+      '  <span class="mono text-dim" style="font-size:0.72rem;">×' + p.count + '</span>' +
+      '</label>';
+  }).join('');
+  overlay.innerHTML =
+    '<div class="modal" role="dialog" aria-modal="true" style="max-width:520px;">' +
+    '  <div class="modal-title"><i data-lucide="zap"></i> Învăță reguli noi din corectările tale</div>' +
+    '  <div class="modal-body">' +
+    '    <div style="margin-bottom:0.75rem;color:var(--text-mid);font-size:0.85rem;">' + addedCount + ' tranzacții importate. Ai modificat manual ' + proposals.length + ' categorii — vrei să adaug reguli automate ca pe viitor să le categorizez singur?</div>' +
+    '    <div>' + rows + '</div>' +
+    '  </div>' +
+    '  <div class="modal-actions">' +
+    '    <button class="modal-btn" data-act="skip">Nu, mulțumesc</button>' +
+    '    <button class="modal-btn primary" data-act="ok">Adaugă regulile bifate</button>' +
+    '  </div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  refreshIcons();
+  function close() { document.body.removeChild(overlay); document.removeEventListener('keydown', onKey); }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) return close();
+    var act = e.target.closest('[data-act]');
+    if (!act) return;
+    if (act.dataset.act === 'skip') return close();
+    if (act.dataset.act === 'ok') {
+      if (!Array.isArray(state.data.reguliCategorizare)) state.data.reguliCategorizare = [];
+      overlay.querySelectorAll('input[data-rp]:checked').forEach(function(cb) {
+        var p = proposals[parseInt(cb.dataset.rp, 10)];
+        state.data.reguliCategorizare.push({
+          id: getNextId(state.data.reguliCategorizare),
+          pattern: p.pattern,
+          categorie: p.categorie
+        });
       });
       saveData();
       close();
       render();
-      setTimeout(function() {
-        showConfirm({
-          title: 'Import complet',
-          body: added + ' tranzacții adăugate în buget. Cheltuielile fixe (chirie, rată credit) au fost păstrate intacte — sunt deja înregistrate prin rândul fix lunar.',
-          okLabel: 'OK',
-          cancelLabel: '',
-          icon: 'check-circle'
-        });
-      }, 100);
     }
   });
   document.addEventListener('keydown', onKey);
