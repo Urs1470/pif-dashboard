@@ -157,8 +157,8 @@ ALLOWED_QUOTE_SYMBOLS = {
 }
 
 
-def _fetch_yahoo_chart(symbol):
-    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d'
+def _fetch_yahoo_chart(symbol, interval='1d', rng='3mo'):
+    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval={interval}&range={rng}'
     req = urllib.request.Request(url, headers={
         'User-Agent': 'Mozilla/5.0 (compatible; PIFDashboard/1.0)',
         'Accept': 'application/json',
@@ -186,16 +186,30 @@ def get_quote(symbol):
         payload['cached'] = True
         return jsonify(payload)
 
+    rng = request.args.get('range', '3mo')
+    if rng not in ('5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max'):
+        rng = '3mo'
+
     try:
-        data = _fetch_yahoo_chart(symbol)
+        data = _fetch_yahoo_chart(symbol, rng=rng)
         result = (data.get('chart') or {}).get('result') or []
         if not result:
             return jsonify({'error': 'no data from upstream', 'symbol': symbol}), 502
-        meta = result[0].get('meta') or {}
+        r0 = result[0]
+        meta = r0.get('meta') or {}
         price = meta.get('regularMarketPrice')
         prev = meta.get('chartPreviousClose') or meta.get('previousClose')
         change = (price - prev) if (price is not None and prev is not None) else None
         change_pct = (change / prev * 100.0) if (change is not None and prev) else None
+        # Build historical series
+        ts = r0.get('timestamp') or []
+        closes = (((r0.get('indicators') or {}).get('quote') or [{}])[0]).get('close') or []
+        series = []
+        for i, t in enumerate(ts):
+            c = closes[i] if i < len(closes) else None
+            if c is None:
+                continue
+            series.append({'t': t, 'c': round(c, 4)})
         payload = {
             'symbol': symbol,
             'price': price,
@@ -206,6 +220,8 @@ def get_quote(symbol):
             'exchange': meta.get('exchangeName') or meta.get('fullExchangeName'),
             'longName': meta.get('longName') or meta.get('shortName') or symbol,
             'ts': meta.get('regularMarketTime'),
+            'range': rng,
+            'series': series,
             'fetchedAt': datetime.utcnow().isoformat() + 'Z',
             'cached': False,
         }

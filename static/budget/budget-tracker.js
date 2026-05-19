@@ -2158,6 +2158,56 @@ function renderInvestitii() {
   html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%', plClass);
   html += '</div></div>';
 
+  // Chart: VWCE price + portfolio value evolution
+  var series = (v.priceHistory || []);
+  if (series.length > 1) {
+    var rng = v.chartRange || '3mo';
+    var rangeOpts = [
+      { v: '5d', l: '5 z' },
+      { v: '1mo', l: '1 L' },
+      { v: '3mo', l: '3 L' },
+      { v: '6mo', l: '6 L' },
+      { v: '1y', l: '1 an' },
+      { v: '2y', l: '2 ani' },
+      { v: '5y', l: '5 ani' },
+      { v: 'max', l: 'tot' },
+    ];
+    var pricePts = series.map(function(p, i) { return { x: i, y: p.c, label: new Date(p.t * 1000).toLocaleDateString('ro-RO') }; });
+    var firstC = series[0].c, lastC = series[series.length - 1].c;
+    var rangeChange = ((lastC - firstC) / firstC) * 100;
+    var firstDate = new Date(series[0].t * 1000).toLocaleDateString('ro-RO', { day: '2-digit', month: 'short', year: 'numeric' });
+    var lastDate = new Date(series[series.length - 1].t * 1000).toLocaleDateString('ro-RO', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    html += '<div class="section">';
+    html += '<div class="chart-card">';
+    html += '  <div class="chart-head">';
+    html += '    <div class="chart-title"><i data-lucide="line-chart"></i> Evoluție preț VWCE</div>';
+    html += '    <div style="display:flex;gap:0.25rem;">';
+    rangeOpts.forEach(function(o) {
+      var active = o.v === rng;
+      html += '<button class="tab' + (active ? ' active' : '') + '" style="padding:0.25rem 0.55rem;font-size:0.72rem;" onclick="setVwceRange(\'' + o.v + '\')">' + esc(o.l) + '</button>';
+    });
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="chart-meta" style="margin-bottom:0.4rem;">' + esc(firstDate) + ' → ' + esc(lastDate) + ' · <span class="' + (rangeChange >= 0 ? 'pl-pos' : 'pl-neg') + '">' + (rangeChange >= 0 ? '+' : '') + rangeChange.toFixed(2) + '%</span> pe intervalul ales</div>';
+    html += '  <div class="chart-body">' + svgLine(pricePts, { height: 220 }) + '</div>';
+    html += '</div>';
+
+    // Portfolio value evolution if user has positions
+    if (t.cantitate > 0) {
+      var portPts = series.map(function(p, i) { return { x: i, y: p.c * t.cantitate, label: new Date(p.t * 1000).toLocaleDateString('ro-RO') }; });
+      var firstVal = portPts[0].y, lastVal = portPts[portPts.length - 1].y;
+      html += '<div class="chart-card">';
+      html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="trending-up"></i> Evoluție valoare portofoliu (cantitate curentă × preț istoric)</div><div class="chart-meta">' + fmtEur(firstVal) + ' EUR → ' + fmtEur(lastVal) + ' EUR</div></div>';
+      html += '  <div class="chart-body">' + svgLine(portPts, { height: 180 }) + '</div>';
+      html += '  <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.4rem;font-style:italic;">Notă: graficul folosește cantitatea curentă pe toată perioada — nu reflectă cumpărările progresive (DCA).</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  } else if (v.lastUpdateLocal) {
+    html += '<div class="section"><div class="chart-card"><div class="audit-empty">Apasă "Actualizează preț" pentru a încărca istoricul prețurilor.</div></div></div>';
+  }
+
   // Transactions table
   html += '<div class="section">';
   html += '<div class="section-title">';
@@ -2200,12 +2250,13 @@ function renderInvestitii() {
   return html;
 }
 
-async function refreshVwcePrice() {
+async function refreshVwcePrice(silent) {
   var v = state.data.vwce || {};
   var symbol = v.symbol || 'VWCE.DE';
-  setSaveStatus('pending');
+  var rng = state.vwceChartRange || v.chartRange || '3mo';
+  if (!silent) setSaveStatus('pending');
   try {
-    var r = await fetch('/budget/api/quote/' + encodeURIComponent(symbol), { credentials: 'same-origin' });
+    var r = await fetch('/budget/api/quote/' + encodeURIComponent(symbol) + '?range=' + encodeURIComponent(rng), { credentials: 'same-origin' });
     if (!r.ok) {
       var err = await r.json().catch(function() { return { error: 'HTTP ' + r.status }; });
       throw new Error(err.error || 'HTTP ' + r.status);
@@ -2219,16 +2270,27 @@ async function refreshVwcePrice() {
     state.data.vwce.exchange = q.exchange || state.data.vwce.exchange;
     state.data.vwce.lastUpdate = q.fetchedAt;
     state.data.vwce.lastUpdateLocal = new Date().toISOString();
+    state.data.vwce.chartRange = rng;
+    state.data.vwce.priceHistory = q.series || [];
     await saveDataNow();
     render();
   } catch (e) {
-    setSaveStatus('error');
-    showConfirm({
-      title: 'Eroare la actualizare preț',
-      body: 'Nu am putut obține cotația pentru ' + symbol + ': ' + (e.message || e),
-      okLabel: 'OK', cancelLabel: '', icon: 'alert-triangle'
-    });
+    if (!silent) {
+      setSaveStatus('error');
+      showConfirm({
+        title: 'Eroare la actualizare preț',
+        body: 'Nu am putut obține cotația pentru ' + symbol + ': ' + (e.message || e),
+        okLabel: 'OK', cancelLabel: '', icon: 'alert-triangle'
+      });
+    } else {
+      console.warn('VWCE silent refresh failed:', e.message || e);
+    }
   }
+}
+
+function setVwceRange(rng) {
+  state.vwceChartRange = rng;
+  refreshVwcePrice(false);
 }
 
 function addVwceTx() {
@@ -2381,8 +2443,19 @@ function render() {
 function switchTab(tabId) {
   state.activeTab = tabId;
   render();
-  // recalc simulation if on Credite
   if (tabId === 'credite') setTimeout(recalcSimulare, 0);
+  if (tabId === 'investitii') maybeAutoRefreshVwce();
+}
+
+function maybeAutoRefreshVwce() {
+  var v = (state.data && state.data.vwce) || null;
+  if (!v) return;
+  var last = v.lastUpdateLocal ? new Date(v.lastUpdateLocal).getTime() : 0;
+  var ageMs = Date.now() - last;
+  // Refresh if older than 1h or never fetched
+  if (ageMs > 60 * 60 * 1000) {
+    refreshVwcePrice(true);
+  }
 }
 
 // ====================================================================
@@ -2869,6 +2942,7 @@ async function init() {
   refreshLuni();
   render();
   if (state.activeTab === 'credite') setTimeout(recalcSimulare, 0);
+  if (state.activeTab === 'investitii') setTimeout(maybeAutoRefreshVwce, 0);
 }
 
 if (document.readyState === 'loading') {
