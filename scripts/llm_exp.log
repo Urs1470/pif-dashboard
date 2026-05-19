@@ -4071,3 +4071,204 @@
 2026-05-19 05:50:37,673  INFO        -> rewrite: Activeaza modul de urmarire/tracking pentru Set 2. Similar cu 40.49 pentru Set 1
 2026-05-19 05:50:37,774  INFO      17240 41.50 (ACS880)  existing_len=1129  qc=rewrite
 2026-05-19 05:50:48,975  INFO        -> rewrite: Selecteaza sursa referintei de urmarire pentru Setul 2 de parametri. Functioneaz
+2026-05-19 05:50:52,047  INFO        Committed + pushed
+2026-05-19 05:50:52,147  INFO      17241 41.51 (ACS880)  existing_len=1211  qc=rewrite
+2026-05-19 05:51:01,023  INFO        -> rewrite: Activeaza functia de reglaj fin (trim) pentru Setul 2. Modul de reglaj fin modif
+2026-05-19 05:51:01,124  INFO      17242 41.52 (ACS880)  existing_len=1136  qc=rewrite
+2026-05-19 05:51:12,493  INFO        -> rewrite: Selecteaza functia de ajustare fina (trim) pentru Setul 2 de parametri. Function
+2026-05-19 05:51:12,594  INFO      17243 41.53 (ACS880)  existing_len=1130  qc=rewrite
+2026-05-19 05:51:23,441  INFO        -> rewrite: Parameterul 41.53 este un pointer care selecteaza sursa referintei ajustate (tri
+2026-05-19 05:51:23,542  INFO      17246 43.11 (ACS880)  existing_len=1243  qc=rewrite
+2026-05-19 05:51:32,006  INFO        -> rewrite: Seteaza pragul de defect pentru protectia rezistentei de franare. Valoarea este 
+2026-05-19 05:51:32,106  INFO      17255 45.12 (ACS880)  existing_len=1224  qc=rewrite
+2026-05-19 05:51:40,855  INFO        -> rewrite: Seteaza pretul pentru tariful energetic 1 (cost pe kWh). Folosit pentru calculul
+2026-05-19 05:51:40,956  INFO      17256 45.13 (ACS880)  existing_len=1256  qc=rewrite
+2026-05-19 05:51:47,152  INFO        -> rewrite: Defineste tariful 2 pentru energia consumata, exprimat in pret pe kWh. Acest par
+2026-05-19 05:51:47,253  INFO      17259 47.12 (ACS880)  existing_len=1139  qc=rewrite
+2026-05-19 05:51:53,930  INFO        -> rewrite: Parametru de stocare generala cu valoare intreaga pe 32 de biti. Poate fi folosi
+2026-05-19 05:51:54,031  INFO      17260 47.13 (ACS880)  existing_len=1173  qc=rewrite
+2026-05-19 05:52:01,392  INFO        -> rewrite: Parametru de stocare generala a datelor de tip intreg pe 32 de biti. Poate fi ut
+2026-05-19 05:52:01,492  INFO      17261 47.14 (ACS880)  existing_len=1128  qc=rewrite
+2026-05-19 05:52:06,751  INFO        -> rewrite: Parametru de stocare a datelor pentru comunicatie Modbus. Folosit pentru schimbu
+2026-05-19 05:52:06,852  INFO      17262 47.15 (ACS880)  existing_len=1138  qc=rewrite
+2026-05-19 05:52:16,052  INFO        -> rewrite: Parametru de stocare generala pentru valori intregi pe 32 de biti cu semn. Poate
+2026-05-19 05:52:16,153  INFO      17263 47.16 (ACS880)  existing_len=1075  qc=rewrite
+2026-05-19 05:52:21,827  INFO        -> rewrite: Parametru de stocare generala pentru valori intregi pe 32 de biti. Poate fi folo
+2026-05-19 05:52:21,928  INFO      17264 47.17 (ACS880)  existing_len=1077  qc=rewrite
+2026-05-19 05:52:29,462  INFO        -> rewrite: Parametru de stocare a datelor de tip intreg pe 32 de biti. Poate fi folosit pen
+2026-05-19 05:52:29,562  INFO      17265 47.18 (ACS880)  existing_len=1093  qc=rewrite
+2026-05-19 05:52:36,584  INFO        -> rewrite: parametru general de stocare a datelor pe 32 de biti cu semn. Folosit pentru sal
+2026-05-19 05:52:36,684  INFO      17266 47.32 (ACS880)  existing_len=1105  qc=rewrite
+2026-05-19 05:52:44,096  INFO        -> rewrite: Seteaza factorul de scalare pe 16 biti pentru parametrul 47.2 DataStorage. Permi
+2026-05-19 05:52:44,197  INFO      17267 47.33 (ACS880)  existing_len=1093  qc=rewrite
+2026-05-19 05:52:53,050  INFO        -> rewrite: Defineste scala de 16 biti pentru valoarea stocata in parametrul 47.3 DataStorag
+2026-05-19 05:52:53,150  INFO      17268 47.34 (ACS880)  existing_len=1086  qc=rewrite
+2026-05-19 05:52:57,724  INFO        -> rewrite: Defineste scalarea pe 16 biti pentru parametrul 47.4 DataStorage. Permite mapare
+2026-05-19 05:52:57,825  INFO      17269 47.35 (ACS880)  existing_len=1098  qc=rewrite
+2026-05-19 05:53:04,163  INFO        -> rewrite: Defineste factorul de scalare pe 16 biti pentru parametrul 47.5 DataStorage. Per
+2026-05-19 05:53:04,264  INFO      17270 47.36 (ACS880)  existing_len=1090  qc=rewrite
+2026-05-19 05:53:15,432  INFO        -> rewrite: Seteaza factorul de scalare pe 16 biti pentru valoarea din parametrul 47.6 DataS
+2026-05-19 05:53:15,533  INFO      17271 47.37 (ACS880)  existing_len=1080  qc=rewrite
+2026-05-19 05:53:26,499  INFO        -> rewrite: Defineste scalarea pe 16 biti pentru valoarea memorata in parametrul 47.7 DataSt
+2026-05-19 05:53:26,599  INFO      17272 47.38 (ACS880)  existing_len=1058  qc=rewrite
+2026-05-19 05:53:32,113  INFO        -> rewrite: Defineste factorul de scalare pe 16 biti pentru parametrul 47.8 DataStorage 8. P
+2026-05-19 05:53:32,214  INFO      17276 50.10 (ACS880)  existing_len=1213  qc=rewrite
+2026-05-19 05:53:40,306  INFO        -> rewrite: Controleaza modul de transparenta pentru valoarea actuala 1 a adaptorului de fie
+2026-05-19 05:53:40,406  INFO      17277 50.11 (ACS880)  existing_len=1153  qc=rewrite
+2026-05-19 05:53:47,763  INFO        -> rewrite: Activeaza transparenta valorii actuale 2 de pe adaptorul de fieldbus A. Cand est
+2026-05-19 05:53:47,863  INFO      17278 50.14 (ACS880)  existing_len=1189  qc=rewrite
+2026-05-19 05:53:58,703  INFO        -> rewrite: Afiseaza valoarea bruta a referintei REF1 receptionata de la adaptorul fieldbus 
+2026-05-19 05:53:58,803  INFO      17279 50.15 (ACS880)  existing_len=1191  qc=rewrite
+2026-05-19 05:54:09,419  INFO        -> rewrite: Afiseaza valoarea de referinta REF2 receptionata de la adaptorul fieldbus A. Par
+2026-05-19 05:54:09,520  INFO      17280 50.17 (ACS880)  existing_len=1108  qc=rewrite
+2026-05-19 05:54:15,573  INFO        -> rewrite: Afiseaza valoarea actuala bruta (nemodificata) ACT1 transmisa de adaptorul Field
+2026-05-19 05:54:15,674  INFO      17281 50.18 (ACS880)  existing_len=1169  qc=rewrite
+2026-05-19 05:54:25,131  INFO        -> rewrite: Afiseaza valoarea actuala ACT2 in forma bruta nemodificata transmisa prin adapto
+2026-05-19 05:54:25,232  INFO      17282 50.34 (ACS880)  existing_len=1031  qc=rewrite
+2026-05-19 05:54:33,079  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 1 receptionate prin adaptorul de fieldbu
+2026-05-19 05:54:33,180  INFO      17283 50.35 (ACS880)  existing_len=993  qc=rewrite
+2026-05-19 05:54:41,827  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 2 receptionate prin fieldbus adapter B. 
+2026-05-19 05:54:41,928  INFO      17284 50.37 (ACS880)  existing_len=998  qc=rewrite
+2026-05-19 05:54:50,475  INFO        -> rewrite: Selecteaza tipul si sursa valorii actuale 1 care este transmisa prin adaptorul d
+2026-05-19 05:54:50,576  INFO      17285 50.38 (ACS880)  existing_len=979  qc=rewrite
+2026-05-19 05:54:58,256  INFO        -> rewrite: Selecteaza tipul si scalarea valorii actuale 2 pentru adaptorul de fieldbus B. P
+2026-05-19 05:54:58,357  INFO      17286 50.39 (ACS880)  existing_len=928  qc=rewrite
+2026-05-19 05:55:08,085  INFO        -> rewrite: Selecteaza sursa cuvantului de stare pentru fieldbus. Cand este activat, permite
+2026-05-19 05:55:08,186  INFO      17287 50.40 (ACS880)  existing_len=1011  qc=rewrite
+2026-05-19 05:55:17,719  INFO        -> rewrite: Activeaza transparenta valorii actuale 1 pentru adaptorul FBA B. Cand este selec
+2026-05-19 05:55:17,819  INFO      17288 50.41 (ACS880)  existing_len=957  qc=rewrite
+2026-05-19 05:55:26,411  INFO        -> rewrite: Definește transparența valorii actuale 2 pentru FBA B. Controlează modul în care
+2026-05-19 05:55:26,512  INFO      17289 50.44 (ACS880)  existing_len=992  qc=rewrite
+2026-05-19 05:55:33,565  INFO        -> rewrite: Afiseaza valoarea de referinta REF1 primita de la adaptorul fieldbus pe portul B
+2026-05-19 05:55:33,666  INFO      17290 50.45 (ACS880)  existing_len=968  qc=rewrite
+2026-05-19 05:55:42,951  INFO        -> rewrite: Afiseaza valoarea referintei brute REF2 receptionata de la adaptorul FieldBus B.
+2026-05-19 05:55:43,052  INFO      17291 50.47 (ACS880)  existing_len=949  qc=rewrite
+2026-05-19 05:55:54,171  INFO        -> rewrite: Afiseaza valoarea actuala bruta (nemodificata) ACT1 transmisa prin adaptorul de 
+2026-05-19 05:55:54,272  INFO      17292 50.48 (ACS880)  existing_len=910  qc=rewrite
+2026-05-19 05:56:04,860  INFO        -> rewrite: Afiseaza valoarea reala (nemodificata) ACT2 primita de la adaptorul Fieldbus B. 
+2026-05-19 05:56:04,960  INFO      17293 51.26 (ACS880)  existing_len=990  qc=rewrite
+2026-05-19 05:56:14,018  INFO        -> rewrite: Parametru transparent pentru fieldbus care mapeaza valoarea parametrului 51.2 FB
+2026-05-19 05:56:14,119  INFO      17294 51.29 (ACS880)  existing_len=937  qc=rewrite
+2026-05-19 05:56:21,925  INFO        -> rewrite: Afiseaza codul tipului de convertizor detectat de adapterul de fieldbus. Este un
+2026-05-19 05:56:22,026  INFO      17295 51.30 (ACS880)  existing_len=1041  qc=rewrite
+2026-05-19 05:56:28,611  INFO        -> rewrite: Afiseaza fisierul de mapare pentru adaptorul fieldbus. Este un parametru doar pe
+2026-05-19 05:56:28,711  INFO      17296 51.31 (ACS880)  existing_len=963  qc=rewrite
+2026-05-19 05:56:37,372  INFO        -> rewrite: Afiseaza starea modulului adaptor fieldbus D2FBA. Valoarea indica daca modulul e
+2026-05-19 05:56:37,472  INFO      17297 51.32 (ACS880)  existing_len=905  qc=rewrite
+2026-05-19 05:56:42,635  INFO        -> rewrite: Afiseaza versiunea software-ului de comunicare pentru adaptorul FieldBus (FBA). 
+2026-05-19 05:56:42,735  INFO      17298 54.26 (ACS880)  existing_len=993  qc=rewrite
+2026-05-19 05:56:54,832  INFO        -> rewrite: Acest parametru este o referinta la parametrul 54.2 FBA B Par2 pentru configurat
+2026-05-19 05:56:54,933  INFO      17299 54.29 (ACS880)  existing_len=964  qc=rewrite
+2026-05-19 05:57:02,943  INFO        -> rewrite: Afiseaza codul tipului de drive detectat pe adaptorul fieldbus B. Acest parametr
+2026-05-19 05:57:03,044  INFO      17300 54.30 (ACS880)  existing_len=1047  qc=rewrite
+2026-05-19 05:57:09,762  INFO        -> rewrite: Afiseaza fisierul de mapare pentru modulul adaptor fieldbus B. Acest parametru e
+2026-05-19 05:57:09,862  INFO      17301 54.31 (ACS880)  existing_len=946  qc=rewrite
+2026-05-19 05:57:16,675  INFO        -> rewrite: Afiseaza starea modulului adaptor fieldbus conectat la slotul D2. Arata daca mod
+2026-05-19 05:57:16,776  INFO      17302 54.32 (ACS880)  existing_len=951  qc=rewrite
+2026-05-19 05:57:24,062  INFO        -> rewrite: Afiseaza versiunea patch si build a firmware-ului pentru adaptorul de fieldbus B
+2026-05-19 05:57:24,163  INFO      17304 58.11 (ACS880)  existing_len=1056  qc=rewrite
+2026-05-19 05:57:32,345  INFO        -> rewrite: Afiseaza numarul total de erori de caracter receptionate prin interfata de comun
+2026-05-19 05:57:32,445  INFO      17305 58.27 (ACS880)  existing_len=1063  qc=rewrite
+2026-05-19 05:57:41,253  INFO        -> rewrite: Defineste tipul si scalarea referintei 2 receptionate prin fieldbus-ul integrat.
+2026-05-19 05:57:41,354  INFO      17306 58.30 (ACS880)  existing_len=1046  qc=rewrite
+2026-05-19 05:57:48,784  INFO        -> rewrite: Selecteaza sursa cuvantului de stare (status word) cand se utilizeaza comunicati
+2026-05-19 05:57:48,884  INFO      17307 58.31 (ACS880)  existing_len=1052  qc=rewrite
+2026-05-19 05:57:59,475  INFO        -> rewrite: Defineste sursa valorii actuale 1 pentru comunicatia fieldbus integrata (EFB). P
+2026-05-19 05:57:59,576  INFO      17308 58.32 (ACS880)  existing_len=1098  qc=rewrite
+2026-05-19 05:58:11,713  INFO        -> rewrite: Selecteaza sursa valorii actuale 1 transmisa prin fieldbus. Permite transparenta
+2026-05-19 05:58:11,813  INFO      17309 58.101 (ACS880)  existing_len=1076  qc=rewrite
+2026-05-19 05:58:18,530  INFO        -> rewrite: Defineste adresa din convertizor pe care o acceseaza comunicatia Modbus. Aceasta
+2026-05-19 05:58:18,630  INFO      17310 58.102 (ACS880)  existing_len=952  qc=rewrite
+2026-05-19 05:58:28,738  INFO        -> rewrite: Defineste adresa interna a convertorului unde se transfera datele primite prin c
+2026-05-19 05:58:28,838  INFO      17311 58.103 (ACS880)  existing_len=976  qc=rewrite
+2026-05-19 05:58:34,683  INFO        -> rewrite: Defineste adresa interna a drive-ului care va fi accesata prin comunicatia Modbu
+2026-05-19 05:58:34,784  INFO      17312 58.104 (ACS880)  existing_len=934  qc=rewrite
+2026-05-19 05:58:42,529  INFO        -> rewrite: Defineste adresa parametrului din convertizor care va fi accesat prin registrul 
+2026-05-19 05:58:42,630  INFO      17313 58.105 (ACS880)  existing_len=875  qc=rewrite
+2026-05-19 05:58:48,837  INFO        -> rewrite: Defineste adresa interna a convertizorului de frecventa care este mapata pe data
+2026-05-19 05:58:48,937  INFO      17314 58.106 (ACS880)  existing_len=870  qc=rewrite
+2026-05-19 05:58:55,922  INFO        -> rewrite: Defineste adresa din convertizor care este accesibila prin comunicatia Modbus. S
+2026-05-19 05:58:56,023  INFO      17315 58.107 (ACS880)  existing_len=1044  qc=rewrite
+2026-05-19 05:59:07,503  INFO        -> rewrite: Defineste care parametru VFD este mapat la registrul Modbus 7. Permite citire/sc
+2026-05-19 05:59:07,603  INFO      17316 60.11 (ACS880)  existing_len=1042  qc=rewrite
+2026-05-19 05:59:16,021  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 2 primite in configuratia Master/Followe
+2026-05-19 05:59:16,122  INFO      17317 60.15 (ACS880)  existing_len=1008  qc=rewrite
+2026-05-19 05:59:24,462  INFO        -> rewrite: Activeaza fortarea controlului master in modul DDCS. Cand 60.3 este setat pe DDC
+2026-05-19 05:59:24,562  INFO      17318 60.16 (ACS880)  existing_len=996  qc=rewrite
+2026-05-19 05:59:30,513  INFO        -> rewrite: Activeaza fortarea modului follower in comunicatia DDCS. Cand este activata, con
+2026-05-19 05:59:30,613  INFO      17319 60.19 (ACS880)  existing_len=993  qc=rewrite
+2026-05-19 05:59:41,429  INFO        -> rewrite: Seteaza timpul de supraveghere pentru comunicatia Modbus/Fieldbus. Daca comunica
+2026-05-19 05:59:41,530  INFO      17320 60.20 (ACS880)  existing_len=1086  qc=rewrite
+2026-05-19 05:59:53,143  INFO        -> rewrite: Selecteaza care dintre followerii 17-32 sunt inclusi in supervizarea comunicatie
+2026-05-19 05:59:53,244  INFO      17321 60.23 (ACS880)  existing_len=1077  qc=rewrite
+2026-05-19 06:00:01,099  INFO        -> rewrite: Defineste indexul de status pentru supervisia functiei master/follower. Acest pa
+2026-05-19 06:00:01,200  INFO      17322 60.24 (ACS880)  existing_len=999  qc=rewrite
+2026-05-19 06:00:08,158  INFO        -> rewrite: Selecteaza dispozitivele followere (din grupul 17-32) ale caror stari vor fi mon
+2026-05-19 06:00:08,259  INFO      17323 60.27 (ACS880)  existing_len=1078  qc=rewrite
+2026-05-19 06:00:18,035  INFO        -> rewrite: Seteaza timpul de supraveghere pentru starea Master/Follower in comunicatia D2D.
+2026-05-19 06:00:18,136  INFO      17324 60.28 (ACS880)  existing_len=1069  qc=rewrite
+2026-05-19 06:00:29,306  INFO        -> rewrite: Selecteaza modul de monitorizare al cuvantului de stare in configuratia Master/F
+2026-05-19 06:00:29,406  INFO      17325 60.61 (ACS880)  existing_len=1028  qc=rewrite
+2026-05-19 06:00:37,333  INFO        -> rewrite: Selecteaza tipul si scalarea referintei 2 primite prin DDCS. DDCS este un protoc
+2026-05-19 06:00:37,434  INFO      17328 61.45 (ACS880)  existing_len=1184  qc=rewrite
+2026-05-19 06:00:46,093  INFO        -> rewrite: Selecteaza primul parametru din setul de date 2 care va fi transmis prin interfa
+2026-05-19 06:00:46,194  INFO      17329 61.46 (ACS880)  existing_len=1083  qc=rewrite
+2026-05-19 06:00:59,750  INFO        -> rewrite: Configureaza ce parametru sau valoare va fi transmisa ca al doilea cuvant (word 
+2026-05-19 06:00:59,851  INFO      17330 61.47 (ACS880)  existing_len=1153  qc=rewrite
+2026-05-19 06:01:07,376  INFO        -> rewrite: Selecteaza sursa sau functia pentru al treilea element din setul de date 2. Aces
+2026-05-19 06:01:07,477  INFO      17331 61.50 (ACS880)  existing_len=2142  qc=rewrite
+2026-05-19 06:01:21,308  INFO        -> rewrite: Selecteaza sursa sau valoarea pentru setul de date 4, data 3. Functioneaza simil
+2026-05-19 06:01:21,409  INFO      17332 61.51 (ACS880)  existing_len=1135  qc=rewrite
+2026-05-19 06:01:34,336  INFO        -> rewrite: Selecteaza primul parametru din setul de date 11 care va fi transmis prin interf
+2026-05-19 06:01:34,436  INFO      17333 61.52 (ACS880)  existing_len=1101  qc=rewrite
+2026-05-19 06:01:42,908  INFO        -> rewrite: Selecteaza data sau valoarea parametrului care va fi transmisa ca al doilea cuva
+2026-05-19 06:01:43,009  INFO      17334 61.53 (ACS880)  existing_len=1109  qc=rewrite
+2026-05-19 06:01:53,884  INFO        -> rewrite: Selecteaza parametrul sau valoarea care va fi transmisa ca al treilea cuvant de 
+2026-05-19 06:01:53,985  INFO      17335 61.54 (ACS880)  existing_len=1100  qc=rewrite
+2026-05-19 06:02:07,383  INFO        -> rewrite: Selecteaza sursa pentru primul element de date din setul de date 13 de iesire fi
+2026-05-19 06:02:07,484  INFO      17336 61.74 (ACS880)  existing_len=1039  qc=rewrite
+2026-05-19 06:02:14,523  INFO        -> rewrite: Selecteaza sursa de date pentru al treilea canal de logare din setul de date 25.
+2026-05-19 06:02:14,624  INFO      17337 61.152 (ACS880)  existing_len=1213  qc=rewrite
+2026-05-19 06:02:27,669  INFO        -> rewrite: Selecteaza ce parametru se trimite ca al doilea cuvant in setul de date 10 catre
+2026-05-19 06:02:27,770  INFO      17338 61.153 (ACS880)  existing_len=1184  qc=rewrite
+2026-05-19 06:02:41,452  INFO        -> rewrite: Preselecteaza ce date vor fi trimise ca al treilea cuvant (word 3) in setul de d
+2026-05-19 06:02:41,553  INFO      17343 62.37 (ACS880)  existing_len=1079  qc=rewrite
+2026-05-19 06:02:53,712  INFO        -> rewrite: Afiseaza starea comunicarii intre master si follower in sistemul Master/Follower
+2026-05-19 06:02:53,812  INFO      17344 62.38 (ACS880)  existing_len=976  qc=rewrite
+2026-05-19 06:03:00,334  INFO        -> rewrite: Afiseaza starea comunicatiei pe magistrala de camp in modul master. Acest parame
+2026-05-19 06:03:00,435  INFO      17345 62.41 (ACS880)  existing_len=1014  qc=rewrite
+2026-05-19 06:03:11,246  INFO        -> rewrite: Afiseaza starea de pregatire a dispozitivului follower in configuratia master-fo
+2026-05-19 06:03:11,346  INFO      17346 62.42 (ACS880)  existing_len=988  qc=rewrite
+2026-05-19 06:03:18,456  INFO        -> rewrite: Afiseaza starea de pregatire a unui drive follower in configuratia Master/Follow
+2026-05-19 06:03:18,556  INFO      17347 62.46 (ACS880)  existing_len=993  qc=rewrite
+2026-05-19 06:03:28,175  INFO        -> rewrite: Defineste destinatia pentru datele primite ca al doilea cuvant (word 2) dintr-un
+2026-05-19 06:03:28,277  INFO      17348 62.47 (ACS880)  existing_len=880  qc=rewrite
+2026-05-19 06:03:38,742  INFO        -> rewrite: Selecteaza sursa datei 3 din setul de date 1. Acest parametru defineste ce valoa
+2026-05-19 06:03:38,843  INFO      17349 62.50 (ACS880)  existing_len=875  qc=rewrite
+2026-05-19 06:03:48,785  INFO        -> rewrite: Selecteaza sursa valorii pentru setul de date 3, data 3. Similar cu 62.45, permi
+2026-05-19 06:03:48,885  INFO      17350 62.51 (ACS880)  existing_len=897  qc=rewrite
+2026-05-19 06:04:01,140  INFO        -> rewrite: Defineste obiectul sau sursa datelor pentru setul de date 10. Parametrii 62.51-6
+2026-05-19 06:04:01,240  INFO      17351 62.52 (ACS880)  existing_len=869  qc=rewrite
+2026-05-19 06:04:11,117  INFO        -> rewrite: Defineste destinatia pentru datele receptionate ca al doilea cuvant (word 2) in 
+2026-05-19 06:04:11,217  INFO      17352 62.53 (ACS880)  existing_len=862  qc=rewrite
+2026-05-19 06:04:19,411  INFO        -> rewrite: Defineste destinatia sau parametrul tinta pentru datele primite ca al treilea cu
+2026-05-19 06:04:19,512  INFO      17353 62.54 (ACS880)  existing_len=865  qc=rewrite
+2026-05-19 06:04:31,879  INFO        -> rewrite: Selecteaza sursa datelor pentru data set 12, data 1. Aceasta parametru permite a
+2026-05-19 06:04:31,980  INFO      17354 62.74 (ACS880)  existing_len=889  qc=rewrite
+2026-05-19 06:04:45,722  INFO        -> rewrite: Acest parametru apartine setului de date 24 si reprezinta al treilea element de 
+2026-05-19 06:04:45,823  INFO      17355 62.151 (ACS880)  existing_len=978  qc=rewrite
+2026-05-19 06:04:57,611  INFO        -> rewrite: Definește setul de date 11 pentru comunicarea INU-LSU. Parametrii 62.151...62.20
+2026-05-19 06:04:57,712  INFO      17356 62.152 (ACS880)  existing_len=969  qc=rewrite
+2026-05-19 06:05:07,316  INFO        -> rewrite: Defineste destinatia unde va fi scrisa valoarea primita ca al doilea cuvant de d
+2026-05-19 06:05:07,417  INFO      17357 62.153 (ACS880)  existing_len=977  qc=rewrite
+2026-05-19 06:05:16,704  INFO        -> rewrite: Defineste destinatia (parametrul tinta) unde sunt scrise datele receptionate ca 
+2026-05-19 06:05:16,805  INFO      17362 90.10 (ACS880)  existing_len=969  qc=rewrite
+2026-05-19 06:05:24,348  INFO        -> rewrite: Afiseaza viteza curenta masurata de encoder 1 in rotatii pe minut. Este un param
+2026-05-19 06:05:24,449  INFO      17363 90.12 (ACS880)  existing_len=954  qc=rewrite
+2026-05-19 06:05:30,123  INFO        -> rewrite: Afiseaza numarul de rotatii complete (partea multiturn) ale encoderului 1. Valoa
+2026-05-19 06:05:30,223  INFO      17364 90.13 (ACS880)  existing_len=1069  qc=rewrite
+2026-05-19 06:05:38,807  INFO        -> rewrite: Afiseaza extensia numarului de revolutii pentru encoderul 1. Valoarea se increme
+2026-05-19 06:05:38,907  INFO      17365 90.14 (ACS880)  existing_len=1159  qc=rewrite
+2026-05-19 06:05:44,677  INFO        -> rewrite: Afiseaza pozitia curenta a encoderului 1 in format brut (raw). Valoarea creste s
+2026-05-19 06:05:44,778  INFO      17366 90.15 (ACS880)  existing_len=1064  qc=rewrite
+2026-05-19 06:05:52,908  INFO        -> rewrite: Afiseaza numarul de revolutii complete (multiturn) ale encoderului 1. Valoarea c
