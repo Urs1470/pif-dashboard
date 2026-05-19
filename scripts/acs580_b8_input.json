@@ -1,0 +1,802 @@
+[
+  {
+    "id": 15538,
+    "parametru": "40.80",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 PID output",
+    "descriere": "Selects the source for set 1 PID output minimum. Not selected. 40.36 Set 1 output min.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15539,
+    "parametru": "40.81",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 PID output",
+    "descriere": "Selects the source for set 1 PID output maximum. Not selected. 40.37 Set 1 output max",
+    "pdf_extra": null
+  },
+  {
+    "id": 15540,
+    "parametru": "40.89",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 setpoint",
+    "descriere": "Defines the multiplier with which the result of the function specified by parameter 40.18 Set 1 setpoint function is multiplied. Multiplier.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15541,
+    "parametru": "40.90",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 1 feedback",
+    "descriere": "Defines the multiplier with which the result of the function specified by parameter 40.10 Set 1 feedback function is multiplied. Multiplier.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15542,
+    "parametru": "40.96",
+    "familie": "ACS580",
+    "descriere_scurta": "Process PID",
+    "descriere": "Percentage scaled signal of parameter 40.01 Process PID feedback actual. Percentage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15543,
+    "parametru": "40.98",
+    "familie": "ACS580",
+    "descriere_scurta": "Process PID",
+    "descriere": "Percentage scaled signal of parameter 40.03 Process PID setpoint actual. Percentage.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15544,
+    "parametru": "40.99",
+    "familie": "ACS580",
+    "descriere_scurta": "Process PID",
+    "descriere": "Percentage scaled signal of parameter 40.04 Process PID deviation actual. Percentage. A second set of parameter values for process PID control. The selection between this set and first set (parameter group 40 Process PID set 1) is made by parameter 40.57 PID set1/set2 selection. See also parameters 40.01…40.06, and the control chain diagrams on pages 627 and 628.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15545,
+    "parametru": "41.09",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 feedback 2",
+    "descriere": "See parameter 40.09 Set 1 feedback 2 source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15546,
+    "parametru": "41.10",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 feedback",
+    "descriere": "See parameter 40.10 Set 1 feedback function.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15547,
+    "parametru": "41.11",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 feedback filter",
+    "descriere": "See parameter 40.11 Set 1 feedback filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15548,
+    "parametru": "41.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint",
+    "descriere": "See parameter 40.14 Set 1 setpoint scaling.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15549,
+    "parametru": "41.15",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 output scaling",
+    "descriere": "See parameter 40.15 Set 1 output scaling.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15550,
+    "parametru": "41.17",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint 2",
+    "descriere": "See parameter 40.17 Set 1 setpoint 2 source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15551,
+    "parametru": "41.18",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint",
+    "descriere": "See parameter 40.18 Set 1 setpoint function.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15552,
+    "parametru": "41.19",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 internal",
+    "descriere": "See parameter 40.19 Set 1 internal setpoint sel1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15553,
+    "parametru": "41.20",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 internal",
+    "descriere": "See parameter 40.20 Set 1 internal setpoint sel2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15554,
+    "parametru": "41.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 internal",
+    "descriere": "See parameter 40.21 Set 1 internal setpoint 1.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15555,
+    "parametru": "41.22",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 internal",
+    "descriere": "See parameter 40.22 Set 1 internal setpoint 2.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15556,
+    "parametru": "41.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 internal",
+    "descriere": "See parameter 40.23 Set 1 internal setpoint 3.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15557,
+    "parametru": "41.26",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint min",
+    "descriere": "See parameter 40.26 Set 1 setpoint min.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15558,
+    "parametru": "41.27",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint max",
+    "descriere": "Real -200000.00…200000.00 PID customer units",
+    "pdf_extra": null
+  },
+  {
+    "id": 15559,
+    "parametru": "41.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint",
+    "descriere": "See parameter 40.30 Set 1 setpoint freeze enable.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15560,
+    "parametru": "41.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 deviation",
+    "descriere": "See parameter 40.31 Set 1 deviation inversion.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15561,
+    "parametru": "41.32",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 gain",
+    "descriere": "See parameter 40.32 Set 1 gain.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15562,
+    "parametru": "41.33",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 integration",
+    "descriere": "See parameter 40.33 Set 1 integration time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15563,
+    "parametru": "41.34",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 derivation",
+    "descriere": "See parameter 40.34 Set 1 derivation time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15564,
+    "parametru": "41.35",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 derivation",
+    "descriere": "See parameter 40.35 Set 1 derivation filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15565,
+    "parametru": "41.36",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 output min",
+    "descriere": "See parameter 40.36 Set 1 output min.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15566,
+    "parametru": "41.37",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 output max",
+    "descriere": "See parameter 40.37 Set 1 output max.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15567,
+    "parametru": "41.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 output freeze",
+    "descriere": "See parameter 40.38 Set 1 output freeze enable.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15568,
+    "parametru": "41.39",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 deadband",
+    "descriere": "See parameter 40.39 Set 1 deadband range.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15569,
+    "parametru": "41.40",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 deadband",
+    "descriere": "See parameter 40.40 Set 1 deadband delay.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15570,
+    "parametru": "41.43",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 sleep level",
+    "descriere": "See parameter 40.43 Set 1 sleep level.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15571,
+    "parametru": "41.44",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 sleep delay",
+    "descriere": "See parameter 40.44 Set 1 sleep delay.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15572,
+    "parametru": "41.45",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 sleep boost",
+    "descriere": "See parameter 40.45 Set 1 sleep boost time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15573,
+    "parametru": "41.46",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 sleep boost",
+    "descriere": "See parameter 40.46 Set 1 sleep boost step.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15574,
+    "parametru": "41.47",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 wake-up",
+    "descriere": "See parameter 40.47 Set 1 wake-up deviation.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15575,
+    "parametru": "41.48",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 wake-up",
+    "descriere": "See parameter 40.48 Set 1 wake-up delay.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15576,
+    "parametru": "41.49",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 tracking mode",
+    "descriere": "See parameter 40.49 Set 1 tracking mode.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15577,
+    "parametru": "41.50",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 tracking ref",
+    "descriere": "See parameter 40.50 Set 1 tracking ref selection.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15578,
+    "parametru": "41.51",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 trim mode",
+    "descriere": "See parameter 40.51 Set 1 trim mode.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15579,
+    "parametru": "41.53",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 trimmed ref",
+    "descriere": "See parameter 40.53 Set 1 trimmed ref pointer.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15580,
+    "parametru": "41.54",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 trim mix",
+    "descriere": "See parameter 40.54 Set 1 trim mix.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15581,
+    "parametru": "41.55",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 trim adjust",
+    "descriere": "See parameter 40.55 Set 1 trim adjust.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15582,
+    "parametru": "41.58",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 increase",
+    "descriere": "See parameter 40.58 Set 1 increase prevention.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15583,
+    "parametru": "41.59",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 decrease",
+    "descriere": "See parameter 40.59 Set 1 decrease prevention.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15584,
+    "parametru": "41.60",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 PID activation",
+    "descriere": "See parameter 40.60 Set 1 PID activation source.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15585,
+    "parametru": "41.79",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 units",
+    "descriere": "See parameter 40.79 Set 1 units.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15586,
+    "parametru": "41.80",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 PID output",
+    "descriere": "Selects the source for set 2 PID output minimum. Not selected. 41.36 Set 2 output min.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15587,
+    "parametru": "41.81",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 PID output",
+    "descriere": "Selects the source for set 2 PID output maximum. Not selected. 41.37 Set 2 output max",
+    "pdf_extra": null
+  },
+  {
+    "id": 15588,
+    "parametru": "41.89",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 setpoint",
+    "descriere": "See parameter 40.89 Set 1 setpoint multiplier.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15589,
+    "parametru": "41.90",
+    "familie": "ACS580",
+    "descriere_scurta": "Set 2 feedback",
+    "descriere": "Defines the multiplier k used in formulas of parameter 41.10 Set 2 feedback function. See parameter 40.90 Set 1 feedback multiplier. Settings for the internal brake chopper.",
+    "pdf_extra": "{\"notes\": [\"These parameters apply to internal brake chopper only. When using external brake, you must disable brake chopper function by setting parameter 43.06 Brake chopper function to value Disabled.\"]}"
+  },
+  {
+    "id": 15590,
+    "parametru": "43.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Braking resistor",
+    "descriere": "Displays the estimated temperature of the brake resistor, or how close the brake resistor is to being too hot. The value is given in percent where 100% is the eventual temperature the resistor would reach when loaded long enough with its rated maximum load capacity (43.09 Brake resistor Pmax cont). The temperature calculation is based on the values of parameters 43.08, 43.09 and 43.10, and on the assumption that the resistor is installed as instructed by the manufacturer (that is, it cools down as expected). This parameter is read-only. Estimated brake resistor temperature.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15591,
+    "parametru": "43.09",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake resistor",
+    "descriere": "Defines the maximum continuous load of the brake resistor that will eventually raise the resistor temperature to the maximum allowed value (= continuous heat dissipation capacity of the resistor in kW) but not above it. The value is used in the resistor overload protection based on the thermal model. See parameter 43.06 Brake chopper function and the data sheet of the brake resistor used. Maximum continuous load of the brake resistor.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15592,
+    "parametru": "43.07",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake chopper run",
+    "descriere": "Selects the source for quick brake chopper on/off control. 0 = Brake chopper IGBT pulses are cut off 1 = Normal brake chopper IGBT modulation allowed. 0. 1. Source selection (see Terms and abbreviations on page 220).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15593,
+    "parametru": "43.08",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake resistor",
+    "descriere": "Defines the thermal time constant for the brake resistor thermal model. Brake resistor thermal time constant, that is, the rated time to achieve 63% temperature.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15594,
+    "parametru": "43.10",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake resistance",
+    "descriere": "Defines the resistance value of the brake resistor. The value is used for the brake resistor protection based on the thermal model. See parameter 43.06 Brake chopper function. Brake resistor resistance value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15595,
+    "parametru": "43.11",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake resistor fault",
+    "descriere": "Selects the fault limit for the brake resistor protection based on the thermal model. See parameter 43.06 Brake chopper function. When the limit is exceeded, the drive trips on fault 7183 BR excess temperature. The value is given in percent of the temperature the resistor reaches when loaded with the power defined by parameter 43.09 Brake resistor Pmax cont. Brake resistor temperature fault limit.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15596,
+    "parametru": "43.12",
+    "familie": "ACS580",
+    "descriere_scurta": "Brake resistor",
+    "descriere": "Selects the warning limit for the brake resistor protection based on the thermal model. See parameter 43.06 Brake chopper function. When the limit is exceeded, the drive generates a A793 BR excess temperature warning. The value is given in percent of the temperature the resistor reaches when loaded with the power defined by parameter 43.09 Brake resistor Pmax cont. Brake resistor temperature warning limit. Configuration of mechanical brake control. See also section Mechanical brake control (page 165).",
+    "pdf_extra": null
+  },
+  {
+    "id": 15597,
+    "parametru": "45.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Saved GW hours",
+    "descriere": "Energy saved in GWh compared to direct-on-line motor connection. This parameter is incremented when 45.02 Saved MW hours rolls over. This parameter is read-only (see parameter 45.21 Energy calculations reset). Energy savings in GWh.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15598,
+    "parametru": "45.02",
+    "familie": "ACS580",
+    "descriere_scurta": "Saved MW hours",
+    "descriere": "Energy saved in MWh compared to direct-on-line motor connection. This parameter is incremented when 45.03 Saved kW hours rolls over. When this parameter rolls over, parameter 45.01 Saved GW hours is incremented. This parameter is read-only (see parameter 45.21 Energy calculations reset). Energy savings in MWh.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15599,
+    "parametru": "45.03",
+    "familie": "ACS580",
+    "descriere_scurta": "Saved kW hours",
+    "descriere": "Energy saved in kWh compared to direct-on-line motor connection. If the internal brake chopper of the drive is enabled, all energy fed by the motor to the drive is assumed to be converted into heat, but the calculation still records savings made by controlling the speed. If the chopper is disabled, then regenerated energy from the motor is also recorded here. When this parameter rolls over, parameter 45.02 Saved MW hours is incremented. This parameter is read-only (see parameter 45.21 Energy calculations reset). Energy savings in kWh.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15600,
+    "parametru": "45.05",
+    "familie": "ACS580",
+    "descriere_scurta": "Saved money",
+    "descriere": "Monetary savings in thousands compared to direct-on-line motor connection. This parameter is incremented when 45.06 Saved money rolls over. You can define the currency during the first start up or from primary settings (Main menu - Primary settings - Clock, region display - Units - Currency). This parameter is read-only (see parameter 45.21 Energy calculations reset). Monetary savings in thousands of units.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15601,
+    "parametru": "45.06",
+    "familie": "ACS580",
+    "descriere_scurta": "Saved money",
+    "descriere": "Monetary savings compared to direct-on-line motor connection. This value is a calculated by multiplying the saved energy in kWh by the currently active energy tariff (45.14 Tariff selection). When this parameter rolls over, parameter 45.05 Saved money x1000 is incremented. You can define the currency during the first start up or from primary settings (Main menu - Primary settings - Clock, region display - Units - Currency). This parameter is read-only (see parameter 45.21 Energy calculations reset). Monetary savings.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15602,
+    "parametru": "45.24",
+    "familie": "ACS580",
+    "descriere_scurta": "Hourly peak power",
+    "descriere": "Value of the peak power during the last hour, that is, the most recent 60 minutes after the drive has been powered up. The parameter is updated once every 10 minutes unless the hourly peak is found in the most recent 10 minutes. In that case, the values is shown immediately. Peak power value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15603,
+    "parametru": "45.25",
+    "familie": "ACS580",
+    "descriere_scurta": "Hourly peak power",
+    "descriere": "Time of the peak power value during the last hour. Time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15604,
+    "parametru": "45.26",
+    "familie": "ACS580",
+    "descriere_scurta": "Hourly total energy",
+    "descriere": "Total energy consumption during the last hour, that is, the most recent 60 minutes. You can reset the value by setting it to zero. Total energy.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15605,
+    "parametru": "45.27",
+    "familie": "ACS580",
+    "descriere_scurta": "Daily peak power",
+    "descriere": "Value of the peak power since midnight of the present day. You can reset the value by setting it to zero. Peak power value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15606,
+    "parametru": "45.28",
+    "familie": "ACS580",
+    "descriere_scurta": "Daily peak power",
+    "descriere": "Time of the peak power since midnight of the present day. Time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15607,
+    "parametru": "45.29",
+    "familie": "ACS580",
+    "descriere_scurta": "Daily total energy",
+    "descriere": "Total energy consumption since midnight of the present day. You can reset the value by setting it to zero. Total energy.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15608,
+    "parametru": "45.30",
+    "familie": "ACS580",
+    "descriere_scurta": "Last day total",
+    "descriere": "Total energy consumption during the previous day, that is, between midnight of the previous day and midnight of the present day Total energy.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15609,
+    "parametru": "45.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Monthly peak",
+    "descriere": "Value of the peak power during the present month, that is, since midnight of the first day of the present month. You can reset the value by setting it to zero. Peak power value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15610,
+    "parametru": "45.33",
+    "familie": "ACS580",
+    "descriere_scurta": "Monthly peak",
+    "descriere": "Time of the peak power during the present month. Time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15611,
+    "parametru": "45.34",
+    "familie": "ACS580",
+    "descriere_scurta": "Monthly total",
+    "descriere": "Total energy consumption from the beginning of the present month. You can reset the value by setting it to zero. Total energy.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15612,
+    "parametru": "45.35",
+    "familie": "ACS580",
+    "descriere_scurta": "Last month total",
+    "descriere": "Total energy consumption during the previous month, that is, between midnight of the first day or the previous month and midnight of the first day of the present month.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15613,
+    "parametru": "45.36",
+    "familie": "ACS580",
+    "descriere_scurta": "Lifetime peak",
+    "descriere": "Value of the peak power over the drive lifetime. Peak power value.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15614,
+    "parametru": "45.37",
+    "familie": "ACS580",
+    "descriere_scurta": "Lifetime peak",
+    "descriere": "Date of the peak power over the drive lifetime. Date.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15615,
+    "parametru": "45.38",
+    "familie": "ACS580",
+    "descriere_scurta": "Lifetime peak",
+    "descriere": "Time of the peak power over the drive lifetime. Time. Speed supervision settings; actual signal filtering; general scaling settings.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15616,
+    "parametru": "46.43",
+    "familie": "ACS580",
+    "descriere_scurta": "Power decimals",
+    "descriere": "Defines the number of display decimals places and 32-bit scaling of power-related parameters. The value of this parameter corresponds to the number of decimals assumed in the 32-bit integer fieldbus communication (for 16-bit scaling see 46.04 Power scaling). Number of decimals.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15617,
+    "parametru": "46.05",
+    "familie": "ACS580",
+    "descriere_scurta": "Current scaling",
+    "descriere": "Defines the 16-bit scaling of current parameters. The value of this parameter corresponds to 10000 in fieldbus communication. For 32-bit scaling see 46.44 Current decimals. Current corresponding to 10000 on fieldbus.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15618,
+    "parametru": "46.44",
+    "familie": "ACS580",
+    "descriere_scurta": "Current decimals",
+    "descriere": "Defines the number of display decimals places and 32-bit scaling of current-related parameters. The value of this parameter corresponds to the number of decimals assumed in the 32-bit integer fieldbus communication (for 16-bit scaling see 46.05 Current scaling). Number of decimals.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15619,
+    "parametru": "46.06",
+    "familie": "ACS580",
+    "descriere_scurta": "Speed ref zero",
+    "descriere": "Defines a speed corresponding to a zero reference received from fieldbus (either the embedded fieldbus interface, or interface FBA A). For example, with a setting of 500, the fieldbus reference range of 0…20000 would correspond to a speed of 500…[46.01] rpm.",
+    "pdf_extra": "{\"notes\": [\"This parameter is effective only with the ABB Drives communication profile. Speed corresponding to minimum fieldbus reference.\"]}"
+  },
+  {
+    "id": 15620,
+    "parametru": "46.07",
+    "familie": "ACS580",
+    "descriere_scurta": "Frequency ref zero",
+    "descriere": "Defines a frequency corresponding to a zero reference received from fieldbus (either the embedded fieldbus interface, or interface FBA). For example, with a setting of 30, the fieldbus reference range of 0…20000 would correspond to a speed of 30…[46.02] Hz.",
+    "pdf_extra": "{\"notes\": [\"This parameter is effective only with the ABB Drives communication profile. Frequency corresponding to minimum fieldbus reference.\"]}"
+  },
+  {
+    "id": 15621,
+    "parametru": "46.11",
+    "familie": "ACS580",
+    "descriere_scurta": "Filter time motor",
+    "descriere": "Defines a filter time for signals 01.01 Motor speed used and 01.02 Motor speed estimated. Motor speed signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15622,
+    "parametru": "46.12",
+    "familie": "ACS580",
+    "descriere_scurta": "Filter time output",
+    "descriere": "Defines a filter time for signal 01.06 Output frequency. Output frequency signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15623,
+    "parametru": "46.13",
+    "familie": "ACS580",
+    "descriere_scurta": "Filter time motor",
+    "descriere": "Defines a filter time for signal 01.10 Motor torque. Motor torque signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15624,
+    "parametru": "46.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Filter time power",
+    "descriere": "Defines a filter time for signal 01.14 Output power. Output power signal filter time.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15625,
+    "parametru": "46.31",
+    "familie": "ACS580",
+    "descriere_scurta": "Above speed limit",
+    "descriere": "Defines the trigger level for “above limit” indication in speed control. When actual speed exceeds the limit, bit 10 of 06.17 Drive status word 2 and bit 10 of 06.11 Main status word are set. “Above limit” indication trigger level for speed control.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15626,
+    "parametru": "46.32",
+    "familie": "ACS580",
+    "descriere_scurta": "Above frequency",
+    "descriere": "Defines the trigger level for “above limit” indication in frequency control. When actual frequency exceeds the limit, bit 10 of 06.17 Drive status word 2 and bit 10 of 06.11 Main status word are set. “Above limit” indication trigger level for frequency control.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15627,
+    "parametru": "46.33",
+    "familie": "ACS580",
+    "descriere_scurta": "Above torque limit",
+    "descriere": "Defines the trigger level for “above limit” indication in torque control. When actual torque exceeds the limit, bit 10 of 06.17 Drive status word 2 and bit 10 of 06.11 Main status word are set. “Above limit” indication trigger level for torque control.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15628,
+    "parametru": "47.11",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 1",
+    "descriere": "Data storage parameter 9. 32-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15629,
+    "parametru": "47.12",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 2",
+    "descriere": "Data storage parameter 10. 32-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15630,
+    "parametru": "47.13",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 3",
+    "descriere": "Data storage parameter 11. 32-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15631,
+    "parametru": "47.14",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 4",
+    "descriere": "Data storage parameter 12. 32-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15632,
+    "parametru": "47.21",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 1",
+    "descriere": "Data storage parameter 17. 16-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15633,
+    "parametru": "47.22",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 2",
+    "descriere": "Data storage parameter 18. 16-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15634,
+    "parametru": "47.23",
+    "familie": "ACS580",
+    "descriere_scurta": "Data storage 3",
+    "descriere": "Data storage parameter 19. 16-bit data.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15635,
+    "parametru": "49.01",
+    "familie": "ACS580",
+    "descriere_scurta": "Node ID number",
+    "descriere": "Defines the node ID of the drive. All devices connected to the network must have a unique node ID.",
+    "pdf_extra": "{\"notes\": [\"For networked drives, it is advisable to reserve ID 1 for spare/replacement drives. Node ID.\"]}"
+  },
+  {
+    "id": 15636,
+    "parametru": "49.03",
+    "familie": "ACS580",
+    "descriere_scurta": "Baud rate",
+    "descriere": "Defines the transfer rate of the link. 38.4 kbit/s. 57.6 kbit/s. 86.4 kbit/s. 115.2 kbit/s. 230.4 kbit/s.",
+    "pdf_extra": null
+  },
+  {
+    "id": 15637,
+    "parametru": "49.04",
+    "familie": "ACS580",
+    "descriere_scurta": "Communication",
+    "descriere": "Sets a timeout for control panel (or PC tool) communication. If a communication break lasts longer than the timeout, the action specified by parameter 49.05 Communication loss action is taken. Control panel/PC tool communication timeout.",
+    "pdf_extra": null
+  }
+]
