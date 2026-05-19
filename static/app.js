@@ -1508,8 +1508,11 @@ async function loadJurnal(projectId) {
             if (!jTime) continue;
             const found = sessions.find(s => {
                 if (matched.has(s.id)) return false;
-                if (!s.end_time) return false;
-                const sEnd = new Date(s.end_time).getTime();
+                // Backend column is `stop_time`, not `end_time` (this was the
+                // bug — match always failed, so both rows showed).
+                const stopIso = s.stop_time || s.end_time;
+                if (!stopIso) return false;
+                const sEnd = new Date(stopIso).getTime();
                 return Math.abs(jTime - sEnd) < 2 * 60 * 1000;
             });
             if (found) {
