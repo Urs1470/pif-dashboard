@@ -3336,9 +3336,11 @@ async function startTimer() {
 async function stopTimer() {
     if (!currentProjectId) return;
 
+    // Hide form synchronously before the network call — Ion expects fields to
+    // disappear the moment he clicks save, not after the round-trip.
+    stopTimerUI();
     try {
         await apiPost(`/proiecte/${currentProjectId}/timer/stop`, {});
-        stopTimerUI();
         loadJurnal(currentProjectId);
         showToast('Timer oprit!');
     } catch (e) {
@@ -3356,9 +3358,10 @@ async function stopTimerWithNote() {
     if (!currentProjectId) return;
     const titlu = document.getElementById('timer-titlu').value.trim() || 'Activitate';
     const note  = document.getElementById('timer-note').value.trim();
+    // Hide form synchronously before the network call.
+    stopTimerUI();
     try {
         await apiPost(`/proiecte/${currentProjectId}/timer/stop-with-note`, { titlu, note });
-        stopTimerUI();
         await loadJurnal(currentProjectId);
         showToast('Activitate salvată în jurnal!');
     } catch (e) { console.error('Stop timer error:', e); showToast('Eroare la oprirea timerului', true); }
