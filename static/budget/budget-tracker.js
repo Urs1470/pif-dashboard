@@ -2097,10 +2097,33 @@ function etfMetrics(pos) {
   return { cantitate: cantitate, pretMediu: pretMediu, pretCurent: pretCurent, investit: investit, valoare: valoare, pl: pl, plPct: plPct };
 }
 
+// Find the closest historical close on or before `dateIso`. Falls back to v.pretCurent.
+function getVwcePriceOnDate(dateIso) {
+  var v = (state.data && state.data.vwce) || {};
+  if (!dateIso) return parseRON(v.pretCurent) || 0;
+  var history = v.priceHistory || [];
+  if (history.length === 0) return parseRON(v.pretCurent) || 0;
+  var targetMs = new Date(dateIso + 'T12:00:00Z').getTime();
+  // history is chronological; pick last point with t*1000 <= targetMs, else first point
+  var match = null;
+  for (var i = 0; i < history.length; i++) {
+    var ts = history[i].t * 1000;
+    if (ts <= targetMs) match = history[i];
+    else break;
+  }
+  if (!match) match = history[0];
+  return match.c || (parseRON(v.pretCurent) || 0);
+}
+
 function vwceTotals(v) {
   var tranzactii = (v && v.tranzactii) || [];
-  var cantitate = tranzactii.reduce(function(s, t) { return s + (parseRON(t.cantitate) || 0); }, 0);
-  var investitEur = tranzactii.reduce(function(s, t) { return s + (parseRON(t.sumaEur) || 0) + (parseRON(t.comision) || 0); }, 0);
+  var cantitate = tranzactii.reduce(function(s, t) { return s + (parseInt(t.cantitate, 10) || 0); }, 0);
+  var investitEur = tranzactii.reduce(function(s, t) {
+    var qty = parseInt(t.cantitate, 10) || 0;
+    var pretAchiz = parseRON(t.pretAchizitie) || (qty > 0 && t.sumaEur ? parseRON(t.sumaEur) / qty : getVwcePriceOnDate(t.data));
+    var lineEur = qty * pretAchiz;
+    return s + lineEur + (parseRON(t.comision) || 0);
+  }, 0);
   var investitRon = tranzactii.reduce(function(s, t) { return s + (parseRON(t.sumaRon) || 0); }, 0);
   var pretMediu = cantitate > 0 ? investitEur / cantitate : 0;
   var pretCurent = parseRON(v.pretCurent) || 0;
@@ -2152,7 +2175,7 @@ function renderInvestitii() {
   var plClass = t.plEur > 0 ? 'success' : (t.plEur < 0 ? 'danger' : '');
   html += '<div class="section">';
   html += '<div class="stat-grid">';
-  html += statCard('hash', 'Total unități', t.cantitate.toFixed(4), v.tranzactii.length + ' tranzacții', '');
+  html += statCard('hash', 'Total unități', String(t.cantitate), v.tranzactii.length + ' tranzacții', '');
   html += statCard('wallet', 'Investit', fmtEur(t.investitEur) + ' EUR', t.investitRon > 0 ? '≈ ' + formatRON(t.investitRon) + ' RON' : '', '');
   html += statCard('trending-up', 'Valoare curentă', fmtEur(t.valoareEur) + ' EUR', 'preț mediu ' + fmtEur(t.pretMediu) + ' EUR', plClass);
   html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%', plClass);
@@ -2220,29 +2243,33 @@ function renderInvestitii() {
   } else {
     html += '<div class="table-wrap"><table>';
     html += '<thead><tr>';
-    html += '<th>Data</th><th class="num">Sumă EUR</th><th class="num">Cantitate</th><th class="num">Preț achiziție</th><th class="num">Comision EUR</th><th class="num">Sumă RON (curs)</th><th>Notă</th><th></th>';
+    html += '<th>Data</th><th class="num">Cantitate</th><th class="num">Preț achiziție (auto)</th><th class="num">Sumă EUR (auto)</th><th class="num">Comision EUR</th><th class="num">Sumă RON (curs propriu)</th><th>Notă</th><th></th>';
     html += '</tr></thead><tbody>';
     v.tranzactii.slice().sort(function(a, b) { return (a.data || '').localeCompare(b.data || ''); }).forEach(function(tx) {
-      var pretCalc = parseRON(tx.cantitate) > 0 ? (parseRON(tx.sumaEur) / parseRON(tx.cantitate)) : 0;
+      var pretCalc = parseRON(tx.pretAchizitie) || getVwcePriceOnDate(tx.data);
+      var sumaCalc = (parseInt(tx.cantitate, 10) || 0) * pretCalc;
       html += '<tr>';
       html += '<td><input type="text" class="input fp-date" style="width:120px;" value="' + esc(tx.data || '') + '" placeholder="YYYY-MM-DD" onchange="updateVwceTx(' + tx.id + ', \'data\', this.value)"></td>';
-      html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.sumaEur || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'sumaEur\', this.value)"></td>';
-      html += '<td class="num"><input type="number" step="0.0001" class="input num w-20" value="' + (tx.cantitate || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'cantitate\', this.value)"></td>';
+      html += '<td class="num"><input type="number" step="1" min="0" class="input num w-20" value="' + (parseInt(tx.cantitate, 10) || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'cantitate\', this.value)"></td>';
       html += '<td class="num mono text-mid">' + fmtEur(pretCalc) + '</td>';
+      html += '<td class="num mono">' + fmtEur(sumaCalc) + '</td>';
       html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.comision || 0) + '" onchange="updateVwceTx(' + tx.id + ', \'comision\', this.value)"></td>';
       html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (tx.sumaRon || 0) + '" placeholder="opt." onchange="updateVwceTx(' + tx.id + ', \'sumaRon\', this.value)"></td>';
       html += '<td><input type="text" class="input" style="width:180px;" value="' + esc(tx.nota || '') + '" placeholder="DCA / lump sum..." onchange="updateVwceTx(' + tx.id + ', \'nota\', this.value)"></td>';
       html += '<td><button class="btn-del" onclick="removeVwceTx(' + tx.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
       html += '</tr>';
     });
-    var totEur = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.sumaEur) || 0); }, 0);
-    var totCant = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.cantitate) || 0); }, 0);
+    var totCant = v.tranzactii.reduce(function(s, x) { return s + (parseInt(x.cantitate, 10) || 0); }, 0);
+    var totEur = v.tranzactii.reduce(function(s, x) {
+      var p = parseRON(x.pretAchizitie) || getVwcePriceOnDate(x.data);
+      return s + (parseInt(x.cantitate, 10) || 0) * p;
+    }, 0);
     var totCom = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.comision) || 0); }, 0);
     var totRon = v.tranzactii.reduce(function(s, x) { return s + (parseRON(x.sumaRon) || 0); }, 0);
-    html += '</tbody><tfoot><tr><td>Total</td><td class="num">' + fmtEur(totEur) + '</td><td class="num">' + totCant.toFixed(4) + '</td><td class="num">' + fmtEur(t.pretMediu) + '</td><td class="num">' + fmtEur(totCom) + '</td><td class="num">' + (totRon > 0 ? formatRON(totRon) : '—') + '</td><td colspan="2"></td></tr></tfoot></table></div>';
+    html += '</tbody><tfoot><tr><td>Total</td><td class="num">' + totCant + '</td><td class="num">' + fmtEur(t.pretMediu) + '</td><td class="num">' + fmtEur(totEur) + '</td><td class="num">' + fmtEur(totCom) + '</td><td class="num">' + (totRon > 0 ? formatRON(totRon) : '—') + '</td><td colspan="2"></td></tr></tfoot></table></div>';
     html += '<div class="info-box" style="margin-top:0.85rem;">';
     html += '<i data-lucide="info"></i>';
-    html += '<div>Introdu <strong>suma în EUR</strong> și <strong>cantitatea</strong> primită (din confirmarea Tradeville). Prețul de achiziție se calculează automat. Suma RON e opțională (utilă pentru a urmări CHF cumpărat la curs propriu).</div>';
+    html += '<div>Introdu doar <strong>data</strong> + <strong>cantitatea</strong> (număr întreg — Tradeville nu permite ETF fracționare). Prețul achiziție și suma EUR se calculează automat din istoricul VWCE la data tranzacției. Comisionul Tradeville și suma RON (la cursul tău de schimb) le introduci dacă vrei tracking precis.</div>';
     html += '</div>';
   }
   html += '</div></div>';
@@ -2295,11 +2322,14 @@ function setVwceRange(rng) {
 
 function addVwceTx() {
   if (!state.data.vwce) migrateVwce(state.data);
+  var todayIsoStr = new Date().toISOString().substring(0, 10);
+  var pretZi = getVwcePriceOnDate(todayIsoStr);
   state.data.vwce.tranzactii.push({
     id: getNextId(state.data.vwce.tranzactii),
-    data: new Date().toISOString().substring(0, 10),
-    sumaEur: 0,
-    cantitate: 0,
+    data: todayIsoStr,
+    cantitate: 1,
+    sumaEur: pretZi,           // auto: 1 unitate * pret
+    pretAchizitie: pretZi,      // auto: pret la data
     comision: 0,
     sumaRon: 0,
     nota: ''
@@ -2312,8 +2342,21 @@ function updateVwceTx(id, field, value) {
   state.data.vwce.tranzactii = state.data.vwce.tranzactii.map(function(tx) {
     if (tx.id !== id) return tx;
     var u = cloneObj(tx);
-    if (field === 'sumaEur' || field === 'cantitate' || field === 'comision' || field === 'sumaRon') u[field] = parseRON(value);
-    else u[field] = value;
+    if (field === 'cantitate') {
+      var qty = parseInt(value, 10);
+      if (isNaN(qty) || qty < 0) qty = 0;
+      u.cantitate = qty;
+    } else if (field === 'comision' || field === 'sumaRon') {
+      u[field] = parseRON(value);
+    } else {
+      u[field] = value;
+    }
+    // Recompute auto fields when data or cantitate changes
+    if (field === 'data' || field === 'cantitate') {
+      var pretZi = getVwcePriceOnDate(u.data);
+      u.pretAchizitie = pretZi;
+      u.sumaEur = (u.cantitate || 0) * pretZi;
+    }
     return u;
   });
   saveData();
