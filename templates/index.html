@@ -1957,10 +1957,21 @@
 
         .todo-add-form {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            gap: var(--space-sm);
+            grid-template-columns: 1fr 110px 110px 130px auto;
+            gap: 6px;
             margin-bottom: var(--space-md);
-            align-items: end;
+            align-items: stretch;
+        }
+        .todo-add-form input, .todo-add-form select {
+            min-height: 34px;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+        }
+        .todo-add-form .btn {
+            min-height: 34px;
+            padding: 0 14px;
+            font-size: 0.85rem;
+            white-space: nowrap;
         }
 
         .todo-list { max-height: 300px; overflow-y: auto; }
@@ -1990,6 +2001,38 @@
             letter-spacing: 0.06em;
         }
         .todo-divider::before, .todo-divider::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+        .todo-divider-clickable { cursor: pointer; user-select: none; transition: color 0.12s; }
+        .todo-divider-clickable:hover { color: var(--accent); }
+        .todo-divider-clickable [data-lucide] { color: var(--text-dim); transition: color 0.12s; }
+        .todo-divider-clickable:hover [data-lucide] { color: var(--accent); }
+
+        /* Status pills in project detail header */
+        .detail-status-pills {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .detail-status-pill {
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: var(--bg-elev2);
+            color: var(--text2);
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .detail-status-pill:hover { background: var(--bg-elev3); color: var(--text); }
+        .detail-status-pill.active.in_lucru { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+        .detail-status-pill.active.in_asteptare { background: var(--warning-soft); color: var(--warning); border-color: var(--warning); }
+        .detail-status-pill.active.blocat { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+        .detail-status-pill.active.finalizat { background: var(--success-soft); color: var(--success); border-color: var(--success); }
 
         .todo-item.priority-urgent { border-left-color: var(--danger); }
         .todo-item.priority-normal { border-left-color: var(--warning); }
@@ -3517,6 +3560,8 @@
                 <div>
                     <h2 class="detail-title" id="detail-nume"></h2>
                     <p class="detail-meta" id="detail-client"></p>
+                    <!-- Status pills — click to cycle through in_lucru -> in_asteptare -> blocat -> finalizat -->
+                    <div id="detail-status-pills" class="detail-status-pills"></div>
                 </div>
                 <div class="detail-actions">
                     <button class="btn btn-secondary" onclick="editCurrentProject()" title="Modifică datele administrative ale proiectului"><i data-lucide="pencil"></i> Editează proiect</button>
@@ -4012,6 +4057,68 @@
                 <div class="form-actions">
                     <button class="btn btn-secondary" onclick="closeConfirmModal()">Anulează</button>
                     <button class="btn btn-danger" id="confirm-btn" onclick="confirmAction()">Șterge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task edit modal — opens when clicking on a project task row. -->
+    <div class="modal-overlay" id="task-edit-modal" onclick="if(event.target === this) closeTaskEditModal()">
+        <div class="modal" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i data-lucide="pencil"></i> Editează task</h3>
+                <button class="modal-close" onclick="closeTaskEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="task-edit-id">
+                <div class="form-group">
+                    <label>Titlu</label>
+                    <input type="text" id="task-edit-titlu" placeholder="Titlul taskului...">
+                </div>
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                        <label>Prioritate</label>
+                        <select id="task-edit-prioritate" class="cs-enhance">
+                            <option value="normal">Normal</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="minor">Minor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="task-edit-status" class="cs-enhance">
+                            <option value="to_do">To Do</option>
+                            <option value="in_lucru">În Lucru</option>
+                            <option value="done">Finalizat</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Termen (data scadenței)</label>
+                    <input type="text" id="task-modal-scadenta" placeholder="zz.ll.aaaa" autocomplete="off">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeTaskEditModal()">Anulează</button>
+                    <button class="btn btn-danger" onclick="deleteTaskFromModal()"><i data-lucide="trash-2"></i> Șterge</button>
+                    <button class="btn btn-primary" onclick="saveTaskFromModal()"><i data-lucide="check"></i> Salvează</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Universal prompt/confirm modal — replaces native prompt() and confirm() with a styled dialog. -->
+    <div class="modal-overlay" id="pif-ask-modal" onclick="if(event.target === this) _pifAskClose(null)">
+        <div class="modal" style="max-width: 460px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="pif-ask-title">Confirmare</h3>
+                <button class="modal-close" onclick="_pifAskClose(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="pif-ask-message" style="margin-bottom: 14px; color: var(--text2);"></p>
+                <input type="text" id="pif-ask-input" style="display:none; width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:0.95rem; margin-bottom:12px;" onkeydown="if(event.key==='Enter') _pifAskSubmit()">
+                <div class="form-actions">
+                    <button class="btn btn-secondary" id="pif-ask-cancel" onclick="_pifAskClose(null)">Anulează</button>
+                    <button class="btn btn-primary" id="pif-ask-ok" onclick="_pifAskSubmit()">OK</button>
                 </div>
             </div>
         </div>

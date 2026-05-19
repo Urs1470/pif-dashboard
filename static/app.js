@@ -777,6 +777,9 @@ async function showProjectDetail(projectId) {
         document.getElementById('detail-nume').textContent = project.nume;
         document.getElementById('detail-client').textContent = project.client || '';
 
+        // Render clickable status pills
+        renderProjectStatusPills(project.status || 'in_lucru');
+
         // Set print attributes
         const detailView = document.getElementById('project-detail-view');
         detailView.setAttribute('data-print-date', new Date().toLocaleDateString('ro-RO'));
@@ -1170,14 +1173,68 @@ function renderTodos(tasks) {
 
     let html = active.map(renderOne).join('');
     if (done.length > 0) {
-        html += `<div class="todo-divider"><span>Finalizate (${done.length})</span></div>`;
-        html += done.map(renderOne).join('');
+        // Finalizate sunt colapsate by default; click pe divider expand/collapse.
+        // Starea persistă în localStorage per proiect.
+        const collapsedKey = `pif:todo-done-collapsed:${currentProjectId}`;
+        const isCollapsed = localStorage.getItem(collapsedKey) !== '0';  // default = colapsate
+        html += `<div class="todo-divider todo-divider-clickable" onclick="toggleTodoDoneCollapse('${currentProjectId}')" data-collapsed="${isCollapsed ? '1' : '0'}">
+            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}" style="width:14px;height:14px;"></i>
+            <span>Finalizate (${done.length})</span>
+        </div>`;
+        html += `<div class="todo-done-group" style="${isCollapsed ? 'display:none;' : ''}">${done.map(renderOne).join('')}</div>`;
     }
     container.innerHTML = html;
     if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 
     // Add drag-and-drop event listeners
     initTaskDragDrop();
+}
+
+// Status pills in project detail header — click to change status without opening
+// the full edit modal. Optimistic update + save.
+const _PROJECT_STATUSES = [
+    { key: 'in_lucru', label: 'În Lucru' },
+    { key: 'in_asteptare', label: 'În Așteptare' },
+    { key: 'blocat', label: 'Blocat' },
+    { key: 'finalizat', label: 'Finalizat' },
+];
+function renderProjectStatusPills(currentStatus) {
+    const container = document.getElementById('detail-status-pills');
+    if (!container) return;
+    container.innerHTML = _PROJECT_STATUSES.map(s => `
+        <span class="detail-status-pill ${s.key === currentStatus ? 'active ' + s.key : ''}"
+              onclick="changeProjectStatus('${s.key}')">${s.label}</span>
+    `).join('');
+}
+async function changeProjectStatus(newStatus) {
+    if (!currentProjectId) return;
+    try {
+        await apiPut(`/proiecte/${currentProjectId}`, { status: newStatus });
+        renderProjectStatusPills(newStatus);
+        showToast('Status actualizat');
+        // Refresh stats if user is using them
+        if (typeof updateStats === 'function') updateStats();
+    } catch (e) {
+        console.error('Failed to change status:', e);
+        showToast('Eroare la schimbarea statusului', true);
+    }
+}
+
+function toggleTodoDoneCollapse(projectId) {
+    const key = `pif:todo-done-collapsed:${projectId}`;
+    const isCollapsed = localStorage.getItem(key) !== '0';
+    localStorage.setItem(key, isCollapsed ? '0' : '1');
+    const divider = document.querySelector('.todo-divider-clickable');
+    const group = document.querySelector('.todo-done-group');
+    if (divider && group) {
+        divider.setAttribute('data-collapsed', isCollapsed ? '0' : '1');
+        const icon = divider.querySelector('[data-lucide]');
+        if (icon) {
+            icon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-right');
+            if (window.lucide) try { window.lucide.createIcons(); } catch {}
+        }
+        group.style.display = isCollapsed ? 'block' : 'none';
+    }
 }
 
 function initTaskDragDrop() {
@@ -1332,6 +1389,45 @@ function openTaskEditModal(task) {
 function closeTaskEditModal() {
     document.getElementById('task-edit-modal').classList.remove('active');
     if (taskEditFlatpickr) { taskEditFlatpickr.destroy(); taskEditFlatpickr = null; }
+}
+
+async function saveTaskFromModal() {
+    const id = document.getElementById('task-edit-id').value;
+    if (!id) return;
+    const titlu = document.getElementById('task-edit-titlu').value.trim();
+    const prioritate = document.getElementById('task-edit-prioritate').value;
+    const status = document.getElementById('task-edit-status').value;
+    const data_scadenta = (document.getElementById('task-modal-scadenta').value || '').trim();
+    if (!titlu) { showToast('Titlul nu poate fi gol', true); return; }
+    try {
+        await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta });
+        closeTaskEditModal();
+        if (currentProjectId) loadTodos(currentProjectId);
+        showToast('Task actualizat');
+    } catch (e) {
+        console.error('Save task error:', e);
+        showToast('Eroare la salvare', true);
+    }
+}
+
+async function deleteTaskFromModal() {
+    const id = document.getElementById('task-edit-id').value;
+    if (!id) return;
+    const ok = await pifAsk({
+        title: 'Șterge task',
+        message: 'Sigur ștergi acest task?',
+        okLabel: 'Șterge',
+        danger: true
+    });
+    if (!ok) return;
+    try {
+        await apiDelete(`/tasks/${id}`);
+        closeTaskEditModal();
+        if (currentProjectId) loadTodos(currentProjectId);
+        showToast('Task șters');
+    } catch (e) {
+        showToast('Eroare la ștergere', true);
+    }
 }
 
 function selectTaskPriority(val) {
@@ -2942,43 +3038,96 @@ function _renderChecklistCatBlock(cat, items, collapsed, isUncategorized = false
     `;
 }
 
+// ===== Universal ask modal (replaces prompt() / confirm()) =====
+let _pifAskResolve = null;
+function pifAsk({ title = 'Confirmare', message = '', input = false, defaultValue = '', okLabel = 'OK', cancelLabel = 'Anulează', danger = false }) {
+    return new Promise(resolve => {
+        _pifAskResolve = resolve;
+        document.getElementById('pif-ask-title').textContent = title;
+        document.getElementById('pif-ask-message').textContent = message;
+        const inputEl = document.getElementById('pif-ask-input');
+        if (input) {
+            inputEl.style.display = '';
+            inputEl.value = defaultValue;
+        } else {
+            inputEl.style.display = 'none';
+        }
+        const okBtn = document.getElementById('pif-ask-ok');
+        okBtn.textContent = okLabel;
+        okBtn.className = danger ? 'btn btn-danger' : 'btn btn-primary';
+        document.getElementById('pif-ask-cancel').textContent = cancelLabel;
+        document.getElementById('pif-ask-modal').classList.add('active');
+        setTimeout(() => { if (input) inputEl.focus(); else okBtn.focus(); }, 50);
+    });
+}
+function _pifAskClose(value) {
+    document.getElementById('pif-ask-modal').classList.remove('active');
+    const r = _pifAskResolve; _pifAskResolve = null;
+    if (r) r(value);
+}
+function _pifAskSubmit() {
+    const inputEl = document.getElementById('pif-ask-input');
+    if (inputEl.style.display !== 'none') {
+        _pifAskClose(inputEl.value.trim());
+    } else {
+        _pifAskClose(true);
+    }
+}
+
 async function addChecklistCategory() {
     if (!currentProjectId) return;
-    const nume = prompt('Numele categoriei (ex: Verificări mecanice):');
-    if (!nume || !nume.trim()) return;
+    const nume = await pifAsk({
+        title: 'Categorie nouă',
+        message: 'Cum se numește noua categorie de checklist? (ex: Verificări mecanice, Electrice...)',
+        input: true,
+        okLabel: 'Creează'
+    });
+    if (!nume) return;
     try {
-        await apiPost(`/proiecte/${currentProjectId}/checklist-categorii`, { nume: nume.trim() });
+        await apiPost(`/proiecte/${currentProjectId}/checklist-categorii`, { nume });
         showToast('Categorie creată!');
         loadChecklist(currentProjectId);
     } catch (e) {
         console.error('Failed to add category:', e);
-        showToast('Eroare la creare', true);
+        showToast('Eroare la creare: ' + (e.message || e), true);
     }
 }
 
 async function renameChecklistCategory(catId) {
     if (!currentProjectId) return;
     const current = document.querySelector(`.checklist-cat[data-cat-key="${catId}"] .checklist-cat-name`)?.textContent || '';
-    const newName = prompt('Noul nume:', current);
-    if (!newName || !newName.trim() || newName.trim() === current) return;
+    const newName = await pifAsk({
+        title: 'Redenumește categorie',
+        message: `Categoria "${current}"`,
+        input: true,
+        defaultValue: current,
+        okLabel: 'Salvează'
+    });
+    if (!newName || newName === current) return;
     try {
-        await apiPut(`/checklist-categorii/${catId}`, { nume: newName.trim() });
+        await apiPut(`/checklist-categorii/${catId}`, { nume: newName });
         loadChecklist(currentProjectId);
     } catch (e) {
-        showToast('Eroare la redenumire', true);
+        showToast('Eroare la redenumire: ' + (e.message || e), true);
     }
 }
 
 async function deleteChecklistCategory(catId, catName) {
     if (!currentProjectId) return;
-    const choice = confirm(`Ștergi categoria "${catName}"?\n\nOK = mută items la "Fără categorie"\nAnulează = NU se șterge\n\n(Dacă vrei să ștergi item-urile complet, folosește butonul × pe fiecare apoi pe categorie.)`);
-    if (!choice) return;
+    const ok = await pifAsk({
+        title: 'Șterge categorie',
+        message: `Ștergi categoria "${catName}"? Item-urile vor fi mutate la "Fără categorie", nu se șterg.`,
+        okLabel: 'Șterge categoria',
+        danger: true
+    });
+    if (!ok) return;
     try {
         await apiDelete(`/checklist-categorii/${catId}?move=1`);
         loadChecklist(currentProjectId);
         showToast('Categorie ștearsă, items mutate la "Fără categorie"');
     } catch (e) {
-        showToast('Eroare la ștergere', true);
+        console.error('Delete category failed:', e);
+        showToast('Eroare la ștergere: ' + (e.message || e), true);
     }
 }
 
@@ -3112,7 +3261,7 @@ async function stopTimer() {
         document.getElementById('timer-start').style.display = 'inline-flex';
         document.getElementById('timer-stop').style.display = 'none';
 
-        loadTimerSessions(currentProjectId);
+        loadJurnal(currentProjectId);
         showToast('Timer oprit!');
     } catch (e) {
         console.error('Failed to stop timer:', e);
@@ -3134,7 +3283,7 @@ async function stopTimerWithNote() {
         document.getElementById('timer-titlu').value = '';
         document.getElementById('timer-note').value  = '';
         stopTimerUI();
-        await Promise.all([loadTimerSessions(currentProjectId), loadJurnal(currentProjectId)]);
+        await loadJurnal(currentProjectId);
         showToast('Activitate salvată în jurnal!');
     } catch (e) { console.error('Stop timer error:', e); showToast('Eroare la oprirea timerului', true); }
 }
@@ -3155,7 +3304,7 @@ function stopTimerUI() {
 async function deleteTimerSession(sessionId) {
     try {
         await apiDelete(`/timer/${sessionId}`);
-        loadTimerSessions(currentProjectId);
+        loadJurnal(currentProjectId);
         showToast('Sesiune ștearsă!');
     } catch (e) {
         console.error('Failed to delete timer session:', e);
