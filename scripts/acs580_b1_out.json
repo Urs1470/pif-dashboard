@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 14799,
+    "familie": "ACS580",
+    "parametru": "76.01",
+    "descriere_scurta": "PFC status",
+    "GENERATED": {
+      "explicatie": "Afiseaza starea de rulare/oprire a fiecarui motor din sistemul PFC (Pump/Fan Control), biti 0-5 corespunzand motoarelor PFC1-PFC6. Alocarea motorului la drive variaza dupa configuratia 76.74 Autochange. Parametru read-only.",
+      "influenteaza": "76.74",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14800,
+    "familie": "ACS580",
+    "parametru": "15.54",
+    "descriere_scurta": "AI3 forced value",
+    "GENERATED": {
+      "explicatie": "Valoarea fortata aplicata intrarii analogice AI3 de pe modulul CAIO-01, activa cand bitul corespunzator din 15.40 e setat la 1. Folosita in testarea circuitelor fara semnal real. Vizibil doar cand CAIO-01 e selectat in 15.01.",
+      "influenteaza": "15.40",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14801,
+    "familie": "ACS580",
+    "parametru": "71.01",
+    "descriere_scurta": "External PID act",
+    "GENERATED": {
+      "explicatie": "Valoarea actuala la iesirea controlerului PID extern 1. Identica cu 40.01 Process PID output actual — citeste acelasi semnal. Read-only, poate fi folosita ca sursa pentru referinte sau iesiri analogice.",
+      "influenteaza": "40.01",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14802,
+    "familie": "ACS580",
+    "parametru": "22.28",
+    "descriere_scurta": "Constant speed 3",
+    "GENERATED": {
+      "explicatie": "Valoarea vitezei constante 3, in rpm. Activata conform configuratiei din 22.21 (Packed sau Separate) prin sursa de selectie 22.23. Implicit 900 rpm.",
+      "influenteaza": "22.21, 22.23",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14803,
+    "familie": "ACS580",
+    "parametru": "31.08",
+    "descriere_scurta": "External event 4",
+    "GENERATED": {
+      "explicatie": "Tipul actiunii generate de evenimentul extern 4: fault sau warning. Sursa semnalului se configureaza separat (31.07). Fault opreste drive-ul; warning permite continuarea functionarii cu indicatie activa.",
+      "influenteaza": "31.07",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14804,
+    "familie": "ACS580",
+    "parametru": "32.25",
+    "descriere_scurta": "Supervision 3",
+    "GENERATED": {
+      "explicatie": "Modul de supervizare 3: dezactivat, sub limita inferioara, peste limita superioara sau valoare absoluta sub limita. Semnalul monitorizat e selectat in 32.27, limitele in 32.29/32.30, actiunea in 32.26.",
+      "influenteaza": "32.26, 32.27, 32.29, 32.30",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14805,
+    "familie": "ACS580",
+    "parametru": "34.33",
+    "descriere_scurta": "Timer 8 start time",
+    "GENERATED": {
+      "explicatie": "Ora de pornire a timer-ului 8 din functia Timed functions, format HH:MM:SS. Comportament identic cu 34.12 Timer 1 start time. Statusul timerelor e reflectat in 34.01.",
+      "influenteaza": "34.12, 34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14806,
+    "familie": "ACS580",
+    "parametru": "01.61",
+    "descriere_scurta": "Abs motor speed used",
+    "GENERATED": {
+      "explicatie": "Valoarea absoluta a vitezei motorului (01.01), mereu pozitiva indiferent de directia de rotatie. Read-only. Utila ca semnal de supervizare sau conditie de comutare unde directia nu conteaza.",
+      "influenteaza": "01.01",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14807,
+    "familie": "ACS580",
+    "parametru": "07.25",
+    "descriere_scurta": "Customization",
+    "GENERATED": {
+      "explicatie": "Primele 5 caractere ASCII ale numelui pachetului de customizare incarcat in drive. Valoarea _N/A_ indica lipsa unui pachet activ. Parametru read-only; numele complet e vizibil in meniul System info.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14808,
+    "familie": "ACS580",
+    "parametru": "15.12",
+    "descriere_scurta": "RO5 OFF delay",
+    "GENERATED": {
+      "explicatie": "Intarzierea de dezactivare pentru releul RO5 al modulului de extensie, in secunde. Functionare identica cu 15.09 pentru RO4. Timp cuprins intre dezactivarea sursei si deschiderea contactului.",
+      "influenteaza": "15.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14809,
+    "familie": "ACS580",
+    "parametru": "34.63",
+    "descriere_scurta": "Season 4 start date",
+    "GENERATED": {
+      "explicatie": "Data de inceput a sezonului 4 pentru functia Timed functions, format ZZ.LL. Comportament identic cu 34.60 Season 1 start date. Sezonul activ influenteaza care timere sunt active.",
+      "influenteaza": "34.60, 34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14810,
+    "familie": "ACS580",
+    "parametru": "37.33",
+    "descriere_scurta": "ULC overload point 3",
+    "GENERATED": {
+      "explicatie": "Al treilea punct al curbei de suprasarcina din User Load Curve, in procente din sarcina nominala. Comportament identic cu 37.31 ULC overload point 1. Depasirea curbei poate declansa curatare pompa sau protectie.",
+      "influenteaza": "37.31, 37.01",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14811,
+    "familie": "ACS580",
+    "parametru": "51.32",
+    "descriere_scurta": "FBA A comm SW",
+    "GENERATED": {
+      "explicatie": "Versiunea programului comun al modulului adaptor fieldbus A, format axyz (a=major, xy=minor, z=corectie). Exemplu: 190A = rev 1.90A. Read-only, util la diagnosticare probleme de comunicatie.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14812,
+    "familie": "ACS580",
+    "parametru": "86.17",
+    "descriere_scurta": "Cavitation frequency step",
+    "GENERATED": {
+      "explicatie": "Pasul de crestere a referintei de frecventa la revenirea din modul de protectie la cavitatie, in Hz. Vizibil si activ doar in modul Scalar (99.04 != Vector). Valoarea implicita 3 Hz asigura tranzitie lenta la frecventa normala.",
+      "influenteaza": "86.16, 99.04",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14832,
+    "familie": "ACS580",
+    "parametru": "99.04",
+    "descriere_scurta": "Motor control mode",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de control motor: Vector (precizie maxima cuplu/viteza, necesita ID run 99.13) sau Scalar (general, fara ID run, obligatoriu la multimotoare). In modul Vector, la primul start fara ID run anterior se executa automat standstill ID run.",
+      "influenteaza": "99.13, 21.19, 97.20",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14833,
+    "familie": "ACS580",
+    "parametru": "30.11",
+    "descriere_scurta": "Minimum speed",
+    "GENERATED": {
+      "explicatie": "Limita inferioara a ferestrei de viteza permise, in rpm. O valoare negativa defineste un singur interval simetric; o valoare pozitiva sau zero defineste doua intervale. Valoarea absoluta nu poate depasi 30.12 Maximum speed.",
+      "influenteaza": "30.12, 20.21",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14834,
+    "familie": "ACS580",
+    "parametru": "30.12",
+    "descriere_scurta": "Maximum speed",
+    "GENERATED": {
+      "explicatie": "Limita superioara a ferestrei de viteza permise, in rpm. Nu influenteaza timpii de rampa — pentru scalarea rampelor, vezi 46.01 Speed scaling. Modificarea in sens invers fata de 30.11 genereaza fault.",
+      "influenteaza": "30.11, 46.01",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14835,
+    "familie": "ACS580",
+    "parametru": "30.17",
+    "descriere_scurta": "Maximum current",
+    "GENERATED": {
+      "explicatie": "Curentul maxim admis al motorului in Amperi, implicit 90% din $I_{max}$ al drive-ului. Poate fi crescut cu inca 10% daca drive-ul suporta (nu valabil pentru ACS580-01-12A7-4). Limita hardware de protectie motor si invertoare IGBT.",
+      "influenteaza": "",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14836,
+    "familie": "ACS580",
+    "parametru": "30.20",
+    "descriere_scurta": "Maximum torque 1",
+    "GENERATED": {
+      "explicatie": "Limita maxima de cuplu in procente din cuplul nominal motor $T_n$, activa cand 30.18 selecteaza setul 1. Valori mari pot produce curenti de suprasarcina. Pentru setul alternativ, vezi 30.24.",
+      "influenteaza": "30.18, 30.22, 30.24",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14837,
+    "familie": "ACS580",
+    "parametru": "30.24",
+    "descriere_scurta": "Maximum torque 2",
+    "GENERATED": {
+      "explicatie": "Al doilea set de limita maxima de cuplu in procente din $T_n$, activ cand 30.18 e setat pe set 2 sau sursa 30.22 comuta. Permite profiluri de cuplu diferite pe acelasi ax in functie de conditii de proces.",
+      "influenteaza": "30.18, 30.22",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14838,
+    "familie": "ACS580",
+    "parametru": "99.06",
+    "descriere_scurta": "Motor nominal current",
+    "GENERATED": {
+      "explicatie": "Curentul nominal al motorului de pe placa de identificare, in Amperi. In modul vectorial intervalul admis este $[\\tfrac{1}{6}...2] \\cdot I_N$ drive. Nu se poate modifica in timp ce drive-ul ruleaza. La multimotoare se introduce suma curentilor nominali.",
+      "influenteaza": "99.04, 30.17",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14839,
+    "familie": "ACS580",
+    "parametru": "99.12",
+    "descriere_scurta": "Motor nominal torque",
+    "GENERATED": {
+      "explicatie": "Cuplul nominal al axului motor, in Nm (sau unitatea selectata de 96.16). Imbunatateste acuratetea modelului motor in control vectorial — nu obligatoriu dar recomandat. Se citeste de pe placa motor sau din datasheet.",
+      "influenteaza": "96.16",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14840,
+    "familie": "ACS580",
+    "parametru": "97.05",
+    "descriere_scurta": "Flux braking",
+    "GENERATED": {
+      "explicatie": "Nivelul de franare prin flux: dezactivat, redus sau complet. Creste nivelul de flux al motorului la franare pentru disiparea energiei in motor, eliminand nevoia de rezistor de franare in aplicatii cu inertie mica. Parametru expert — modificati cu precautie.",
+      "influenteaza": "21.03",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14841,
+    "familie": "ACS580",
+    "parametru": "21.14",
+    "descriere_scurta": "Pre-heating input source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de activare a functiei de preincalzire motor (injectie DC cand drive-ul e oprit). Activa doar in starea Stop, daca STO nu e declansat si drive-ul nu e in fault. Curentul de preincalzire se seteaza in 21.16.",
+      "influenteaza": "21.16, 06.21",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14842,
+    "familie": "ACS580",
+    "parametru": "21.16",
+    "descriere_scurta": "Pre-heating current",
+    "GENERATED": {
+      "explicatie": "Curentul DC de preincalzire motor, in procente din curentul nominal. Permite mentinerea temperaturii motorului in medii reci sau umede. Valori mari pot cauza incalzire excesiva la timpi lungi — se recomanda motoare cu ventilatie externa.",
+      "influenteaza": "21.14",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14843,
+    "familie": "ACS580",
+    "parametru": "99.16",
+    "descriere_scurta": "Motor phase order",
+    "GENERATED": {
+      "explicatie": "Inverseaza ordinea fazelor pentru a corecta sensul de rotatie fara a recabla motorul. Referintele pozitive de viteza raman \"inainte\" indiferent de aceasta setare — inversarea e transparenta pentru logica de control.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14844,
+    "familie": "ACS580",
+    "parametru": "82.20",
+    "descriere_scurta": "Dry run protection",
+    "GENERATED": {
+      "explicatie": "Actiunea de protectie la functionarea in gol a pompei: dezactivat, avertisment D50A sau fault D404. Detectarea se bazeaza pe curba ULC (37.01) sau semnal DI configurat in 82.21. Previne deteriorarea mecanica a pompei.",
+      "influenteaza": "82.21, 37.01",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14845,
+    "familie": "ACS580",
+    "parametru": "82.21",
+    "descriere_scurta": "Dry run source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de detectie a functionarii in gol a pompei: ULC (under load curve), DI1-DI6 sau supervizari. Functia e activa doar daca 82.20 e diferit de No action. Selectia Under load foloseste 37.01 ca referinta de sarcina minima.",
+      "influenteaza": "82.20, 37.01",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14846,
+    "familie": "ACS580",
+    "parametru": "40.14",
+    "descriere_scurta": "Set 1 setpoint scale",
+    "GENERATED": {
+      "explicatie": "Factor de scalare al setpoint-ului PID; la 0 scalarea e automata pe baza sursei selectate (afisata in 40.61). La valoare nenula se aplica raportul $\\frac{40.15}{40.14}$ referintei — ex. 50/1500 transforma Hz in rpm pentru PID cu feedback in Hz.",
+      "influenteaza": "40.15, 40.61",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14847,
+    "familie": "ACS580",
+    "parametru": "40.28",
+    "descriere_scurta": "Set 1 setpoint increase time",
+    "GENERATED": {
+      "explicatie": "Timpul minim de crestere a setpoint-ului PID de la 0% la 100%, in secunde. Limiteaza viteza de modificare a referintei de proces pentru a evita socuri hidraulice sau supraincarcari la pornire. Complementar cu 40.29.",
+      "influenteaza": "40.29",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14848,
+    "familie": "ACS580",
+    "parametru": "40.29",
+    "descriere_scurta": "Set 1 setpoint decrease time",
+    "GENERATED": {
+      "explicatie": "Timpul minim de scadere a setpoint-ului PID de la 100% la 0%, in secunde. Lucreaza impreuna cu 40.28 pentru profilarea rampei referintei de proces. La valori 0 setpoint-ul se modifica instantaneu.",
+      "influenteaza": "40.28",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14849,
+    "familie": "ACS580",
+    "parametru": "82.25",
+    "descriere_scurta": "Soft pipe fill timeout action",
+    "GENERATED": {
+      "explicatie": "Actiunea la depasirea timpului limita 82.26 de umplere a conductei: dezactivat, avertisment D50B sau fault D405. Previne alarmele false in sistemele cu umplere lenta — se calculeaza de la ultima modificare a referintei rampate 40.03.",
+      "influenteaza": "82.26, 40.03",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14850,
+    "familie": "ACS580",
+    "parametru": "82.26",
+    "descriere_scurta": "Soft pipe fill time-out limit",
+    "GENERATED": {
+      "explicatie": "Intervalul de timp in secunde in care sistemul trebuie sa atinga setpoint-ul dupa ultima modificare a referintei PID rampate (40.03). Depasirea declanseaza actiunea configurata in 82.25. Valoarea implicita 60 s.",
+      "influenteaza": "82.25, 40.03",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14851,
+    "familie": "ACS580",
+    "parametru": "83.11",
+    "descriere_scurta": "Pump cleaning triggers",
+    "GENERATED": {
+      "explicatie": "Bitmask pentru activarea si configurarea declansatorilor secventei de curatare pompa: la fiecare start/stop, la suprasarcina/subincarcare ULC, la timer sau la DI. Secventa executa cicluri forward-reverse definite de 83.16/83.20.",
+      "influenteaza": "83.16, 83.20, 37.01, 34.01",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14852,
+    "familie": "ACS580",
+    "parametru": "83.16",
+    "descriere_scurta": "Cycles in cleaning sequence",
+    "GENERATED": {
+      "explicatie": "Numarul de cicluri complete in secventa de curatare pompa, unde 1 ciclu = 1 pas forward + 1 pas reverse. Mai multe cicluri cresc eficienta curatarii dar prelungesc intreruperea procesului.",
+      "influenteaza": "83.11, 83.27, 83.28",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14853,
+    "familie": "ACS580",
+    "parametru": "83.20",
+    "descriere_scurta": "Cleaning speed step",
+    "GENERATED": {
+      "explicatie": "Viteza de curatare a pompei ca procent din viteza maxima, identica pentru ambele directii. Daca limitele de viteza exclud directia negativa, secventa se executa doar forward. Viteza efectiva = 83.20% din 30.12.",
+      "influenteaza": "83.11, 83.25, 83.26",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14854,
+    "familie": "ACS580",
+    "parametru": "83.25",
+    "descriere_scurta": "Time to cleaning speed",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare pana la viteza de curatare (83.20), in secunde. Defineste rampa de accelerare specifica secventei de curatare, independenta de rampele normale 23.12/23.14.",
+      "influenteaza": "83.20, 83.26",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14855,
+    "familie": "ACS580",
+    "parametru": "83.26",
+    "descriere_scurta": "Time to zero-speed",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare de la viteza de curatare (83.20) la zero, in secunde. Complementar cu 83.25 — impreuna definesc profilul de rampa al secventei de curatare pompa.",
+      "influenteaza": "83.20, 83.25",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14856,
+    "familie": "ACS580",
+    "parametru": "83.27",
+    "descriere_scurta": "Cleaning on time",
+    "GENERATED": {
+      "explicatie": "Durata mentinerii la viteza de curatare (83.20) intr-un pas al secventei, in secunde. O valoare mai mare asigura curatare mai eficienta dar prelungeste intreruperea procesului. Lucreaza impreuna cu 83.28.",
+      "influenteaza": "83.11, 83.28",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14857,
+    "familie": "ACS580",
+    "parametru": "83.28",
+    "descriere_scurta": "Cleaning off time",
+    "GENERATED": {
+      "explicatie": "Pauza la viteza zero intre pulsurile forward/reverse si intre cicluri de curatare, in secunde. O pauza mai mare reduce socurile mecanice si presiunea hidraulica la inversare. Complementar cu 83.27.",
+      "influenteaza": "83.11, 83.27",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14858,
+    "familie": "ACS580",
+    "parametru": "28.11",
+    "descriere_scurta": "Ext1 frequency ref1",
+    "GENERATED": {
+      "explicatie": "Sursa primara a referintei de frecventa pentru locatia EXT1. Impreuna cu 28.12 si functia matematica 28.13 formeaza referinta EXT1. Comutatorul EXT1/EXT2 e selectat de 19.11.",
+      "influenteaza": "28.12, 28.13, 19.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14859,
+    "familie": "ACS580",
+    "parametru": "22.11",
+    "descriere_scurta": "Ext1 speed ref1",
+    "GENERATED": {
+      "explicatie": "Sursa primara a referintei de viteza pentru locatia EXT1. Impreuna cu 22.12 si 22.13 formeaza referinta EXT1. Comutarea intre EXT1/EXT2 se face prin semnalul 19.11.",
+      "influenteaza": "22.12, 22.13, 19.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14860,
+    "familie": "ACS580",
+    "parametru": "20.01",
+    "descriere_scurta": "Ext1 commands",
+    "GENERATED": {
+      "explicatie": "Sursa comenzilor de start/stop/directie pentru locatia externa EXT1. Modurile disponibile: In1 (start/stop pe un fir), In1/In2 (cu directie), 3-wire (forward/reverse separate). Sursele se configureaza in 20.03-20.05, tipul de tranzitie in 20.02.",
+      "influenteaza": "20.02, 20.03, 20.04, 20.05",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14861,
+    "familie": "ACS580",
+    "parametru": "19.11",
+    "descriere_scurta": "Ext1/Ext2 selection",
+    "GENERATED": {
+      "explicatie": "Sursa comutatorului intre locatiile de control EXT1 (0) si EXT2 (1). Poate fi o intrare digitala, bit fieldbus sau timed function. Afecteaza toate sursele de referinta si comenzi din ambele locatii externe.",
+      "influenteaza": "20.01, 22.11, 28.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14862,
+    "familie": "ACS580",
+    "parametru": "28.15",
+    "descriere_scurta": "Ext2 frequency ref1",
+    "GENERATED": {
+      "explicatie": "Sursa primara a referintei de frecventa pentru locatia EXT2. Functionare similara cu 28.11 Ext1 frequency ref1, activa cand 19.11 comuta pe EXT2. Impreuna cu 28.16 si 28.17 formeaza referinta EXT2.",
+      "influenteaza": "28.16, 28.17, 19.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14863,
+    "familie": "ACS580",
+    "parametru": "22.18",
+    "descriere_scurta": "Ext2 speed ref1",
+    "GENERATED": {
+      "explicatie": "Sursa primara a referintei de viteza pentru locatia EXT2. Functionare similara cu 22.11, activa cand 19.11 comuta pe EXT2. Impreuna cu 22.19 si 22.20 formeaza referinta EXT2.",
+      "influenteaza": "22.19, 22.20, 19.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14864,
+    "familie": "ACS580",
+    "parametru": "20.06",
+    "descriere_scurta": "Ext2 commands",
+    "GENERATED": {
+      "explicatie": "Sursa comenzilor de start/stop/directie pentru locatia externa EXT2. Functionare identica cu 20.01 Ext1 commands, activa cand 19.11 selecteaza EXT2. Sursele semnalelor se configureaza in 20.08-20.10.",
+      "influenteaza": "20.07, 20.08, 20.09, 20.10, 19.11",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14865,
+    "familie": "ACS580",
+    "parametru": "20.08",
+    "descriere_scurta": "Ext2 in1 source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului 1 pentru comenzile EXT2 (20.06). Selectii disponibile identice cu 20.03 Ext1 in1 source — DI1-DI6, fieldbus, timed functions, supervizari.",
+      "influenteaza": "20.06, 20.03",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14866,
+    "familie": "ACS580",
+    "parametru": "20.09",
+    "descriere_scurta": "Ext2 in2 source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului 2 pentru comenzile EXT2 (20.06), utilizat pentru directie in moduri 2-wire sau al doilea fir in 3-wire. Selectii identice cu 20.04.",
+      "influenteaza": "20.06",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14867,
+    "familie": "ACS580",
+    "parametru": "20.10",
+    "descriere_scurta": "Ext2 in3 source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului 3 pentru comenzile EXT2 (20.06), utilizat in modul 3-wire pentru comanda reverse. Selectii identice cu 20.03.",
+      "influenteaza": "20.06",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14868,
+    "familie": "ACS580",
+    "parametru": "28.21",
+    "descriere_scurta": "Constant frequency function",
+    "GENERATED": {
+      "explicatie": "Configureaza modul de selectie a frecventelor constante (Packed = 7 din 3 biti sau Separate = 3 individuale) si tratamentul directiei de rotatie. Identic structural cu 22.21 dar pentru controlul in modul frecventa.",
+      "influenteaza": "28.22, 28.23, 28.24, 28.26",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14869,
+    "familie": "ACS580",
+    "parametru": "22.21",
+    "descriere_scurta": "Constant speed function",
+    "GENERATED": {
+      "explicatie": "Configureaza selectia vitezelor constante: Packed (7 viteze din 3 surse binare) sau Separate (3 viteze activate individual). Bit 1 determina daca directia e data de semnul vitezei sau de semnalul de directie separat. Sursele de selectie sunt 22.22-22.24.",
+      "influenteaza": "22.22, 22.23, 22.24, 22.26",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14870,
+    "familie": "ACS580",
+    "parametru": "28.26",
+    "descriere_scurta": "Constant frequency 1",
+    "GENERATED": {
+      "explicatie": "Valoarea frecventei constante 1, in Hz. Activata prin configuratia din 28.21 si sursa de selectie 28.22. Implicit 5 Hz.",
+      "influenteaza": "28.21, 28.22",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14871,
+    "familie": "ACS580",
+    "parametru": "28.27",
+    "descriere_scurta": "Constant frequency 2",
+    "GENERATED": {
+      "explicatie": "Valoarea frecventei constante 2, in Hz. Activata prin configuratia din 28.21 si sursa 28.23. Implicit 10 Hz.",
+      "influenteaza": "28.21, 28.23",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14872,
+    "familie": "ACS580",
+    "parametru": "28.28",
+    "descriere_scurta": "Constant frequency 3",
+    "GENERATED": {
+      "explicatie": "Valoarea frecventei constante 3, in Hz. Activata prin configuratia din 28.21 si sursa 28.24. Implicit 15 Hz.",
+      "influenteaza": "28.21, 28.24",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14873,
+    "familie": "ACS580",
+    "parametru": "22.26",
+    "descriere_scurta": "Constant speed 1",
+    "GENERATED": {
+      "explicatie": "Valoarea vitezei constante 1, in rpm. Activata prin configuratia din 22.21 si sursa de selectie 22.22. Implicit 300 rpm.",
+      "influenteaza": "22.21, 22.22",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14874,
+    "familie": "ACS580",
+    "parametru": "22.27",
+    "descriere_scurta": "Constant speed 2",
+    "GENERATED": {
+      "explicatie": "Valoarea vitezei constante 2, in rpm. Activata prin configuratia din 22.21 si sursa de selectie 22.23. Implicit 600 rpm.",
+      "influenteaza": "22.21, 22.23",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14876,
+    "familie": "ACS580",
+    "parametru": "20.25",
+    "descriere_scurta": "Jogging enable source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de permitere a functiei de jogging (inching). Disponibil doar in control vectorial si numai cand nu e activa nicio comanda de start din EXT1/EXT2. Sursele de activare jogging sunt 20.26 si 20.27.",
+      "influenteaza": "20.26, 20.27, 22.42, 22.43",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14877,
+    "familie": "ACS580",
+    "parametru": "22.42",
+    "descriere_scurta": "Jogging 1 ref",
+    "GENERATED": {
+      "explicatie": "Referinta de viteza pentru functia de jogging 1, in rpm. Activa cand semnalul 20.26 e activat si jogging-ul e permis prin 20.25. Accelerarea se face cu rampa 23.20.",
+      "influenteaza": "20.25, 20.26, 23.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14878,
+    "familie": "ACS580",
+    "parametru": "22.43",
+    "descriere_scurta": "Jogging 2 ref",
+    "GENERATED": {
+      "explicatie": "Referinta de viteza pentru functia de jogging 2, in rpm. Identica structural cu 22.42 pentru jogging 1 — permite doua pozitii de jogging distincte.",
+      "influenteaza": "20.25, 20.27, 23.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14879,
+    "familie": "ACS580",
+    "parametru": "23.20",
+    "descriere_scurta": "Acc time jogging",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare specific functiei de jogging, de la 0 la viteza de scalare 46.01, in secunde. Separat de timpii de rampa normali 23.12/23.14 pentru a permite jogging lent independent de parametrizarea procesului.",
+      "influenteaza": "23.21, 46.01, 22.42",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14880,
+    "familie": "ACS580",
+    "parametru": "23.21",
+    "descriere_scurta": "Dec time jogging",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare specific functiei de jogging, de la viteza de scalare 46.01 la 0, in secunde. Complementar cu 23.20 pentru profilul complet de rampa al jogging-ului.",
+      "influenteaza": "23.20, 46.01",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14881,
+    "familie": "ACS580",
+    "parametru": "20.12",
+    "descriere_scurta": "Run enable 1 source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de permisie de functionare externa (1=permis, 0=oprit). La 0, drive-ul nu porneste sau se opreste conform 20.11. Distincta de 20.19: Run enable opreste si drive-ul in rulare, iar Start enable blocheaza doar pornirile noi.",
+      "influenteaza": "20.11, 20.19",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14882,
+    "familie": "ACS580",
+    "parametru": "20.11",
+    "descriere_scurta": "Run enable stop mode",
+    "GENERATED": {
+      "explicatie": "Modul de oprire la dezactivarea semnalului Run enable (20.12): Coast (liber), Ramp (dupa rampa activa) sau limita de cuplu. Aplicabil doar daca 20.12 tranziteaza la 0 in timp ce drive-ul ruleaza.",
+      "influenteaza": "20.12",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14883,
+    "familie": "ACS580",
+    "parametru": "20.19",
+    "descriere_scurta": "Enable start command",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de permitere a comenzilor de start. La 0 blocheaza orice pornire noua dar nu opreste drive-ul aflat deja in rulare — diferit de 20.12 Run enable care opreste si drive-ul activ.",
+      "influenteaza": "20.12",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14884,
+    "familie": "ACS580",
+    "parametru": "20.22",
+    "descriere_scurta": "Enable to rotate",
+    "GENERATED": {
+      "explicatie": "Controleaza permisiunea de rotatie a motorului fara a afecta alte conditii de start/stop. La 0 motorul se opreste imediat; la revenire la 1 porneste automat daca comanda de start e activa. Bit 13 al 06.16 reflecta starea acestui param.",
+      "influenteaza": "06.16",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14885,
+    "familie": "ACS580",
+    "parametru": "21.05",
+    "descriere_scurta": "Emergency stop source",
+    "GENERATED": {
+      "explicatie": "Sursa semnalului de stop de urgenta: 0=stop activ, 1=functionare normala (logica negata). Modul de oprire e selectat de 21.04. Nu poate fi modificat in timp ce drive-ul ruleaza.",
+      "influenteaza": "21.04",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14886,
+    "familie": "ACS580",
+    "parametru": "21.04",
+    "descriere_scurta": "Emergency stop mode",
+    "GENERATED": {
+      "explicatie": "Modul de oprire la stop de urgenta: Ramp stop (Off1 — rampa normala), Coast (Off2 — liber) sau rampa dedicata Off3 (23.23). Dupa oprire necesita resemnal de start; Off3 foloseste exclusiv rampa de urgenta.",
+      "influenteaza": "21.05, 23.23",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14887,
+    "familie": "ACS580",
+    "parametru": "23.23",
+    "descriere_scurta": "Emergency stop Off3 time",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare pentru stop de urgenta tip Off3, de la viteza de scalare 46.01 la zero, in secunde. Off1 foloseste rampa normala 23.12/23.13; Off3 foloseste exclusiv aceasta valoare — dimensionat mai scurt pentru situatii de urgenta.",
+      "influenteaza": "21.04, 46.01",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14888,
+    "familie": "ACS580",
+    "parametru": "46.02",
+    "descriere_scurta": "Frequency scaling",
+    "GENERATED": {
+      "explicatie": "Frecventa de referinta pentru calculul pantei rampelor in modul frecventa (nu 30.14 Maximum frequency). Defineste si scalarea 16-bit a parametrilor de frecventa in fieldbus — valoarea 20000 corespunde acestei frecvente.",
+      "influenteaza": "28.72, 28.73, 30.14",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14889,
+    "familie": "ACS580",
+    "parametru": "23.12",
+    "descriere_scurta": "Acceleration time 1",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare 1, de la 0 la 46.01 Speed scaling, in secunde. Daca referinta creste mai rapid decat rampa, motorul urmeaza rampa; daca mai lent, urmeaza referinta. La valori prea mici, drive-ul prelungeste automat rampa pentru a respecta limitele de cuplu.",
+      "influenteaza": "23.13, 23.11, 46.01",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14890,
+    "familie": "ACS580",
+    "parametru": "28.72",
+    "descriere_scurta": "Freq acceleration time 1",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare 1 in modul frecventa, de la 0 la 46.02 Frequency scaling, in secunde. Comportament identic cu 23.12 pentru modul viteza. Daca rampa e prea scurta, drive-ul o prelungeste automat la limita de cuplu.",
+      "influenteaza": "28.73, 28.71, 46.02",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14891,
+    "familie": "ACS580",
+    "parametru": "23.13",
+    "descriere_scurta": "Deceleration time 1",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare 1, de la 46.01 la 0, in secunde. La valori prea mici drive-ul prelungeste rampa pentru a nu depasi limitele de cuplu sau tensiunea DC pe bara de bus. Recomandat: 30.30 Overvoltage control activ.",
+      "influenteaza": "23.12, 23.11, 30.30, 46.01",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14892,
+    "familie": "ACS580",
+    "parametru": "28.73",
+    "descriere_scurta": "Freq deceleration time 1",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare 1 in modul frecventa, de la 46.02 la 0, in secunde. Similar cu 23.13; la inertii mari se recomanda echipament de franare (chopper + rezistor). Recomandat: 30.30 Overvoltage control activ.",
+      "influenteaza": "28.72, 28.71, 30.30, 46.02",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14893,
+    "familie": "ACS580",
+    "parametru": "23.32",
+    "descriere_scurta": "Shape time 1",
+    "GENERATED": {
+      "explicatie": "Forma rampei setului 1: 0 = liniara, >0 = curba S cu colturile rotunjite simetric la start si sfarsit rampei. Curba S reduce socurile mecanice si electrice; recomandata in aplicatii de ridicare si conveioare.",
+      "influenteaza": "23.12, 23.13",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14894,
+    "familie": "ACS580",
+    "parametru": "28.82",
+    "descriere_scurta": "Freq shape time 1",
+    "GENERATED": {
+      "explicatie": "Forma rampei de frecventa setul 1: 0 = liniara, >0 = curba S cu colturile rotunjite. Functionare identica cu 23.32 dar aplicata rampelor in modul frecventa (28.72/28.73).",
+      "influenteaza": "28.72, 28.73",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14895,
+    "familie": "ACS580",
+    "parametru": "21.03",
+    "descriere_scurta": "Stop mode",
+    "GENERATED": {
+      "explicatie": "Modul de oprire normal la comanda Stop: Coast (liber, motor se raceste), Ramp (dupa rampa activa) sau limita de cuplu (doar control vectorial). Franarea suplimentara prin flux se configureaza independent in 97.05.",
+      "influenteaza": "97.05, 23.13",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14896,
+    "familie": "ACS580",
+    "parametru": "23.11",
+    "descriere_scurta": "Ramp set selection",
+    "GENERATED": {
+      "explicatie": "Sursa pentru comutarea intre setul 1 (23.12/23.13) si setul 2 (23.14/23.15) de timpi de rampa in modul viteza. 0=set 1, 1=set 2. Permite schimbarea dinamica a profilului de rampa in functie de conditii de proces sau semnal extern.",
+      "influenteaza": "23.12, 23.13, 23.14, 23.15",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14897,
+    "familie": "ACS580",
+    "parametru": "28.71",
+    "descriere_scurta": "Freq ramp set selection",
+    "GENERATED": {
+      "explicatie": "Sursa pentru comutarea intre setul 1 (28.72/28.73) si setul 2 (28.74/28.75) de timpi de rampa frecventa. Functionare identica cu 23.11 pentru modul viteza.",
+      "influenteaza": "28.72, 28.73, 28.74, 28.75",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14898,
+    "familie": "ACS580",
+    "parametru": "23.14",
+    "descriere_scurta": "Acceleration time 2",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare al setului 2, in secunde. Activ cand sursa 23.11 e la 1. Comportament identic cu 23.12 Acceleration time 1.",
+      "influenteaza": "23.11, 23.12",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14899,
+    "familie": "ACS580",
+    "parametru": "28.74",
+    "descriere_scurta": "Freq acceleration time 2",
+    "GENERATED": {
+      "explicatie": "Timpul de accelerare 2 in modul frecventa, in secunde. Activ cand 28.71 e la 1. Comportament identic cu 28.72 Freq acceleration time 1.",
+      "influenteaza": "28.71, 28.72",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14900,
+    "familie": "ACS580",
+    "parametru": "23.15",
+    "descriere_scurta": "Deceleration time 2",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare al setului 2, in secunde. Activ cand sursa 23.11 e la 1. Comportament identic cu 23.13 Deceleration time 1.",
+      "influenteaza": "23.11, 23.13",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14901,
+    "familie": "ACS580",
+    "parametru": "28.75",
+    "descriere_scurta": "Freq deceleration time 2",
+    "GENERATED": {
+      "explicatie": "Timpul de decelerare 2 in modul frecventa, in secunde. Activ cand 28.71 e la 1. Comportament identic cu 28.73 Freq deceleration time 1.",
+      "influenteaza": "28.71, 28.73",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14902,
+    "familie": "ACS580",
+    "parametru": "23.33",
+    "descriere_scurta": "Shape time 2",
+    "GENERATED": {
+      "explicatie": "Forma rampei setului 2: 0 = liniara, >0 = curba S. Functionare identica cu 23.32 Shape time 1. Activ cand 23.11 selecteaza setul 2.",
+      "influenteaza": "23.11, 23.14, 23.15",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14903,
+    "familie": "ACS580",
+    "parametru": "28.83",
+    "descriere_scurta": "Freq shape time 2",
+    "GENERATED": {
+      "explicatie": "Forma rampei de frecventa setul 2: 0 = liniara, >0 = curba S. Identic cu 28.82 dar pentru setul 2, activ cand 28.71 selecteaza setul 2.",
+      "influenteaza": "28.71, 28.74, 28.75",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 14904,
+    "familie": "ACS580",
+    "parametru": "30.13",
+    "descriere_scurta": "Minimum frequency",
+    "GENERATED": {
+      "explicatie": "Limita inferioara a ferestrei de frecventa permise, in Hz. O valoare negativa defineste un interval simetric; pozitiva sau zero defineste doua intervale. Valoarea absoluta nu poate depasi 30.14 Maximum frequency.",
+      "influenteaza": "30.14, 20.21",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14905,
+    "familie": "ACS580",
+    "parametru": "30.14",
+    "descriere_scurta": "Maximum frequency",
+    "GENERATED": {
+      "explicatie": "Limita superioara a ferestrei de frecventa permise, in Hz. Nu influenteaza timpii de rampa — scalarea rampelor se face prin 46.02 Frequency scaling. Lucreaza impreuna cu 30.13 Minimum frequency.",
+      "influenteaza": "30.13, 46.02",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14906,
+    "familie": "ACS580",
+    "parametru": "30.19",
+    "descriere_scurta": "Minimum torque 1",
+    "GENERATED": {
+      "explicatie": "Limita minima de cuplu in procente din $T_n$, activa cand 30.18 selecteaza setul 1. Valori negative permit functionare in regim generator (franare regenerativa). Vedere diagrama la 30.18 Torque limit selection.",
+      "influenteaza": "30.18, 30.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14907,
+    "familie": "ACS580",
+    "parametru": "40.07",
+    "descriere_scurta": "Process PID enable",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza controlul PID de proces. Disponibil doar in control extern (nu local). Optiunea Enable when running evita acumulare integratoare la pornire, activand PID-ul numai dupa ce drive-ul ruleaza.",
+      "influenteaza": "40.08, 40.16, 40.32",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14908,
+    "familie": "ACS580",
+    "parametru": "40.01",
+    "descriere_scurta": "Process PID output actual",
+    "GENERATED": {
+      "explicatie": "Iesirea actuala a controlerului PID de proces, in procente. Read-only. Poate fi folosita ca sursa de referinta pentru viteza/frecventa sau ca semnal pentru iesiri analogice — vezi 13.12 AO1 source.",
+      "influenteaza": "40.36, 40.37",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14909,
+    "familie": "ACS580",
+    "parametru": "40.36",
+    "descriere_scurta": "Set 1 output min",
+    "GENERATED": {
+      "explicatie": "Limita minima a iesirii controlerului PID de proces, in procente. Impreuna cu 40.37 defineste fereastra de operare PID. O valoare pozitiva previne oprirea completa a drive-ului de catre PID.",
+      "influenteaza": "40.37, 40.01",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14910,
+    "familie": "ACS580",
+    "parametru": "40.37",
+    "descriere_scurta": "Set 1 output max",
+    "GENERATED": {
+      "explicatie": "Limita maxima a iesirii controlerului PID de proces, in procente. La 100% iesirea poate comanda toata gama de referinta. Se seteaza mai mic pentru a proteja procesul la erori mari de deviatie.",
+      "influenteaza": "40.36, 40.01",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14911,
+    "familie": "ACS580",
+    "parametru": "40.04",
+    "descriere_scurta": "Process PID deviation",
+    "GENERATED": {
+      "explicatie": "Deviatia PID actuala (implicit Setpoint - Feedback), inversabila cu 40.31. Read-only. O deviatie persistenta indica eroare de scalare, P/I insuficient sau un proces fara integrator suplimentar.",
+      "influenteaza": "40.31, 40.03, 40.02",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14912,
+    "familie": "ACS580",
+    "parametru": "40.31",
+    "descriere_scurta": "Set 1 deviation inversion",
+    "GENERATED": {
+      "explicatie": "Inverseaza calculul deviatiei PID: 0 = Deviatie = Setpoint - Feedback; 1 = Deviatie = Feedback - Setpoint. Folosit cand procesul are actiune inversa — ex. presiunea creste cand viteza pompei scade.",
+      "influenteaza": "40.04, 40.32",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14913,
+    "familie": "ACS580",
+    "parametru": "40.03",
+    "descriere_scurta": "Process PID setpoint actual",
+    "GENERATED": {
+      "explicatie": "Setpoint-ul PID actual dupa selectarea sursei, functia matematica (40.18), limitare si rampare (40.28/40.29). Read-only. Reflecta valoarea efectiva transmisa la intrarea de referinta a PID-ului.",
+      "influenteaza": "40.16, 40.18, 40.28, 40.29",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14914,
+    "familie": "ACS580",
+    "parametru": "40.16",
+    "descriere_scurta": "Set 1 setpoint 1 source",
+    "GENERATED": {
+      "explicatie": "Sursa primara a setpoint-ului PID de proces. Poate fi AI1/AI2, motor potentiometer, frecventa sau setpoint intern (configurat prin 40.19). Impreuna cu 40.17 si functia 40.18 formeaza referinta de intrare a PID-ului.",
+      "influenteaza": "40.17, 40.18, 40.19",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14915,
+    "familie": "ACS580",
+    "parametru": "40.02",
+    "descriere_scurta": "Process feedback actual",
+    "GENERATED": {
+      "explicatie": "Valoarea feedback-ului PID actual dupa selectarea sursei, functia matematica (40.10) si filtrare (40.11). Read-only. Trebuie sa fie in aceeasi unitate si scala cu setpoint-ul pentru ca PID-ul sa functioneze corect.",
+      "influenteaza": "40.08, 40.10, 40.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14916,
+    "familie": "ACS580",
+    "parametru": "40.08",
+    "descriere_scurta": "Set 1 feedback 1 source",
+    "GENERATED": {
+      "explicatie": "Sursa primara a feedback-ului de proces pentru PID. Selectii tipice: AI1 sau AI2 (transductor de presiune sau debit). Impreuna cu 40.09 si functia 40.10 formeaza semnalul de feedback al PID-ului.",
+      "influenteaza": "40.09, 40.10, 40.02",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14917,
+    "familie": "ACS580",
+    "parametru": "40.11",
+    "descriere_scurta": "Set 1 feedback filter time",
+    "GENERATED": {
+      "explicatie": "Constanta de timp a filtrului de feedback PID, in secunde. O valoare mai mare stabilizeaza bucla dar mareste intarzierea de raspuns. Recomandat 0.1-1 s pentru senzori cu zgomot sau fluctuatii hidraulice.",
+      "influenteaza": "40.02, 40.32",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14918,
+    "familie": "ACS580",
+    "parametru": "40.32",
+    "descriere_scurta": "Set 1 gain",
+    "GENERATED": {
+      "explicatie": "Castigul proportional $K_p$ al controlerului PID. Impreuna cu 40.33 (timp integral) si 40.34 (timp derivativ) determina raspunsul buclei de proces. Valori mari accelereaza raspunsul dar pot provoca oscilatii.",
+      "influenteaza": "40.33, 40.34",
+      "categorie": "I/O"
+    }
+  }
+]
