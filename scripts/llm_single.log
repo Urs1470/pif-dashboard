@@ -10291,3 +10291,12 @@
 2026-05-20 16:08:12,696  INFO        -> rewrite: Defineste obiectul de aplicatie care este mapat in TPDO 16 pentru comunicare Eth
 2026-05-20 16:08:12,812  INFO        -> rewrite: Defineste viteza de comunicare seriala pentru portul RS-485. Valorile tipice sun
 2026-05-20 16:08:12,912  INFO      4031 10-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:08:13,916  INFO        -> rewrite: Afiseaza calitatea retelei de comunicatie in raport cu erorile CRC. Continutul c
+2026-05-20 16:08:14,017  INFO      23194 0x1C0F:003 (Lenze_i550)  existing_len=220  qc=rewrite
+2026-05-20 16:08:16,826  INFO        Committed + pushed
+2026-05-20 16:08:16,926  INFO      24971 0x24E7:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:08:20,206  INFO        -> rewrite: Seteaza pragul maxim pentru numarul de erori CRC in comunicatia de retea. Daca v
+2026-05-20 16:08:20,306  INFO      23195 0x1C10 (Lenze_i550)  existing_len=314  qc=rewrite
+2026-05-20 16:08:25,231  INFO        -> rewrite: Seteaza limita superioara pentru adresa MAC in comunicatia Ethernet. Activeaza r
+2026-05-20 16:08:25,332  INFO      4032 10-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:08:28,587  INFO        -> rewrite: Afiseaza numarul total de pierderi de conexiune detectate de nodul controlat in 
