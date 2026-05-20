@@ -9115,3 +9115,40 @@
 2026-05-20 15:41:03,301  INFO        -> rewrite: Comanda de restart pentru comunicatia EtherCAT. Dupa executarea comenzii cu succ
 2026-05-20 15:41:03,368  INFO        -> rewrite: Afiseaza starea functiilor de monitorizare a timeout-ului pentru comunicatia CAN
 2026-05-20 15:41:03,402  INFO      22985 0x2361:004 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 15:41:07,187  INFO        Committed + pushed
+2026-05-20 15:41:07,287  INFO      24771 0x2308 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:07,868  INFO        -> rewrite: Seteaza scara pentru iesirea maxima a terminalului X49/11. Valoarea implicita de
+2026-05-20 15:41:07,968  INFO      3844 36-64 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:09,541  INFO        -> rewrite: Seteaza identificatorul unic al dispozitivului in reteaua EtherCAT (Explicit Dev
+2026-05-20 15:41:09,641  INFO      22986 0x1603:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:41:13,623  INFO        -> rewrite: Afiseaza starea curenta a comunicatiei CANopen. Este un parametru doar pentru ci
+2026-05-20 15:41:13,724  INFO      24772 0x2309 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:17,893  INFO        -> rewrite: Defineste nivelul de iesire al terminalului X49/11 atunci cand terminalul este c
+2026-05-20 15:41:17,927  INFO        -> rewrite: Mapeaza intrarea RPDO (A) pentru modul de viteza CANopen/CiA 402. Defineste care
+2026-05-20 15:41:17,994  INFO      3845 40-28 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:18,028  INFO      22987 0x1603:002 (Lenze_i550)  existing_len=261  qc=rewrite
+2026-05-20 15:41:19,070  INFO        -> rewrite: Afiseaza starea curenta a controllerului CANopen intern. Informatia este read-on
+2026-05-20 15:41:19,171  INFO      24773 0x230A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:25,009  INFO        -> rewrite: Defineste intrarea de mapare pentru obiectul 0x6042 "Set speed" in modul de oper
+2026-05-20 15:41:25,110  INFO      22988 0x1A03:001 (Lenze_i550)  existing_len=306  qc=rewrite
+2026-05-20 15:41:25,277  INFO        -> rewrite: Afiseaza numarul de telegrame PDO1 receptionate prin CANopen. Este un contor sta
+2026-05-20 15:41:25,378  INFO      24774 0x230A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:28,777  INFO        -> rewrite: Activeaza protectia impotriva tensiunii inverse generate de motoarele IPM sau SP
+2026-05-20 15:41:28,878  INFO      3846 40-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:33,140  INFO        -> rewrite: Afiseaza numarul de telegrame PDO2 receptionate prin interfata CANopen. Este un 
+2026-05-20 15:41:33,240  INFO      24775 0x230A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:34,679  INFO        -> rewrite: Inregistreaza valoarea referintei externe active in momentul aparitiei unei defe
+2026-05-20 15:41:34,780  INFO      3847 40-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:37,760  INFO        -> rewrite: Configureaza intrarea de mapare 0 pentru TPDO (A) in modul de operare Velocity c
+2026-05-20 15:41:37,860  INFO      22989 0x1A03:002 (Lenze_i550)  existing_len=306  qc=rewrite
+2026-05-20 15:41:39,566  INFO        -> rewrite: Afiseaza numarul de telegrame PDO3 receptionate prin magistrala CANopen. Este un
+2026-05-20 15:41:39,667  INFO      24776 0x230A:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:43,145  INFO        -> rewrite: Afiseaza frecventa motorului inregistrata in momentul aparitiei unei defectiuni.
+2026-05-20 15:41:43,245  INFO      3848 40-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:46,214  INFO        -> rewrite: Afiseaza numarul de telegrame PDO4 receptionate prin interfata CANopen. Este un 
+2026-05-20 15:41:46,315  INFO      24777 0x230A:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:46,529  INFO        -> rewrite: Mapeaza valoarea vitezei actuale a motorului (obiect 0x6044) la canalul 2 al TPD
+2026-05-20 15:41:46,630  INFO      22990 0x1A03:003 (Lenze_i550)  existing_len=301  qc=rewrite
+2026-05-20 15:41:51,786  INFO        -> rewrite: Acest parametru inregistreaza valoarea curentului motorului in momentul aparitie
+2026-05-20 15:41:51,886  INFO      3849 40-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:41:53,615  INFO        -> rewrite: Mapeaza obiectul 0x603F0010 "Error code" in TPDO (A) pentru modul de operare CiA
