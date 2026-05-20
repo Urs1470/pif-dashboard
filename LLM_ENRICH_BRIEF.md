@@ -14,19 +14,43 @@
 
 DB-ul de pe server a fost deja inlocuit cu versiunea care contine toate astea (upload prin `/admin/db-upload`, backup `backups/pif_dashboard_pre_upload_20260520_121812.db`). **Tu lucrezi pe acelasi `pif_dashboard.db`** — modificarile tale merg LIVE direct, fara upload.
 
-## Task-ul tau (HERMES)
+## Task-ul tau (HERMES) — REFACERE COMPLETA
 
-Completeaza `explicatie` + `influenteaza` + `categorie` pentru cele 3 familii ramase:
+Regenereaza `explicatie` + `influenteaza` + `categorie` pentru cele 3 familii ramase.
+**ATENTIE: refacere de la ZERO** — explicatiile existente la aceste familii sunt vechi
+(generate cu calitate slaba inainte) si trebuie INLOCUITE toate, nu doar completate golurile.
 
-| Familie | Lipsa | Format cod param |
+| Familie | Params (TOTI) | Format cod param |
 |---|---|---|
-| Danfoss_VLT_FC302 | **26** | `0-01`, `3-41` (grup-index) |
-| Lenze_i550 | **1206** | `0x0000` (hex) |
-| Lenze_i950 | **1388** | `0x1000` (hex) |
+| Danfoss_VLT_FC302 | **1297** | `0-01`, `3-41` (grup-index) |
+| Lenze_i550 | **1638** | `0x0000` (hex) |
+| Lenze_i950 | **1799** | `0x1000` (hex) |
 
-Total: **2620 params**. Ordine recomandata: Danfoss intai (rapid), apoi i550, apoi i950.
+Total: **4734 params**. Ordine recomandata: Danfoss intai (cel mai mic), apoi i550, apoi i950.
 
 **NU atinge** campurile PDF-derived: `parametru, descriere_scurta, descriere, acces, tip_date, valoare_default_str, valoare_default, min, max, unitate, pagina, pdf_extra`.
+
+### PAS OBLIGATORIU inainte de enrichment: golire campuri
+
+`llm_batch_enrich.py` are `quality_check` care PASTREAZA explicatiile existente daca par OK
+(-> decizie "keep"). Ca sa forteze refacerea de la zero, sterge intai cele 3 campuri LLM
+pentru aceste 3 familii (DOAR pentru ele — NU atinge ABB/Siemens):
+
+```bash
+cd ~/Projects/pif-dashboard
+python - <<'EOF'
+import sqlite3
+conn = sqlite3.connect('pif_dashboard.db')
+cur = conn.cursor()
+fams = ('Danfoss_VLT_FC302','Lenze_i550','Lenze_i950')
+for f in fams:
+    cur.execute("UPDATE parametri_master SET explicatie='', influenteaza='', categorie='' WHERE familie=?", (f,))
+    print(f, cur.rowcount, 'campuri golite')
+conn.commit(); conn.close()
+EOF
+```
+
+Dupa golire, fiecare param va trece prin `quality_check` -> "new" -> regenerare completa.
 
 ## Cum rulezi
 
@@ -36,12 +60,15 @@ git pull origin master          # ia ultimele scripts de la Claude
 git status                      # TREBUIE curat (vezi anti-coliziune)
 cp pif_dashboard.db pif_dashboard.db.before-hermes-$(date +%Y%m%d_%H%M%S)
 
+# PAS OBLIGATORIU: goleste campurile LLM pentru cele 3 familii (vezi mai sus)
+# ... ruleaza blocul de golire ...
+
 python scripts/llm_batch_enrich.py --familie Danfoss_VLT_FC302 --field explicatie
 python scripts/llm_batch_enrich.py --familie Lenze_i550 --field explicatie
 python scripts/llm_batch_enrich.py --familie Lenze_i950 --field explicatie
 ```
 
-`llm_batch_enrich.py` scrie direct in DB (`write_row`), face `git commit + push` automat la fiecare 100 params, si sare peste params cu `explicatie` deja buna (`quality_check` -> "keep"). Deci poate fi rulat in siguranta peste familiile deja gata — nu le rescrie.
+`llm_batch_enrich.py` scrie direct in DB (`write_row`), face `git commit + push` automat la fiecare 100 params. Dupa golirea campurilor, `quality_check` returneaza "new" pentru toti params -> regenerare completa de la zero. Familiile ABB/Siemens NU sunt afectate (nu le golesti, deci raman "keep").
 
 ## Reguli stil explicatie
 
