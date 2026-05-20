@@ -7947,3 +7947,38 @@
 2026-05-20 15:11:47,011  INFO        -> rewrite: Defineste frecventa minima a motorului pentru modul de operare HTL cu semnal de 
 2026-05-20 15:11:47,033  INFO        -> rewrite: Seteaza o zona moarta simetrica in jurul punctului zero de frecventa pentru intr
 2026-05-20 15:11:47,133  INFO      24578 0x2637:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:50,373  INFO        Committed + pushed
+2026-05-20 15:11:50,473  INFO      22791 0x2640:004 (Lenze_i550)  existing_len=250  qc=rewrite
+2026-05-20 15:11:53,348  INFO        -> rewrite: Seteaza intarzierea de timp in secunde pentru declansarea alarmei cand functiona
+2026-05-20 15:11:53,448  INFO      3650 31-03 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:58,275  INFO        -> rewrite: Defineste raspunsul care se executa cand intrarea analogica 2 prezinta o eroare.
+2026-05-20 15:11:58,297  INFO        -> rewrite: Seteaza frecventa maxima a motorului cand controlul este facut prin semnal HTL. 
+2026-05-20 15:11:58,376  INFO      24579 0x2637:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:58,398  INFO      22792 0x2640:005 (Lenze_i550)  existing_len=254  qc=rewrite
+2026-05-20 15:12:01,361  INFO        -> rewrite: Activeaza modul de test pentru verificarea functionarii convertizorului de frecv
+2026-05-20 15:12:01,461  INFO      3651 31-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:12:05,033  INFO        -> rewrite: Seteaza valoarea minima pentru scalarea intrarii analogice 2. Aceasta corespunde
+2026-05-20 15:12:05,134  INFO      24580 0x2637:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:12:08,065  INFO        -> rewrite: Defineste limita inferioara a setpointului pentru controlerul PID cand se utiliz
+2026-05-20 15:12:08,166  INFO      22793 0x2640:006 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 15:12:08,747  INFO        -> rewrite: Cuvant de stare pentru functia bypass. Afiseaza bitii de stare ai contactorului 
+2026-05-20 15:12:08,847  INFO      3652 31-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:12:17,268  INFO        -> rewrite: Defineste valoarea maxima pentru scalarea semnalului de la intrarea analogica 2 
+2026-05-20 15:12:17,368  INFO      24581 0x2634:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:12:17,755  INFO        -> rewrite: Setează sau ocoleste valoarea contorului de ore de functionare. Permite resetare
+2026-05-20 15:12:17,855  INFO      3653 32-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:12:19,747  INFO        -> rewrite: Seteaza valoarea maxima a referintei PID cand se utilizeaza intrarile HTL. Impre
+2026-05-20 15:12:19,848  INFO      22794 0x2640:007 (Lenze_i550)  existing_len=233  qc=rewrite
+2026-05-20 15:12:24,212  INFO        -> rewrite: Defineste tipul semnalului de la encoderul incremental conectat. Valoarea 3 spec
+2026-05-20 15:12:24,313  INFO      3654 32-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:12:28,737  INFO        -> rewrite: Seteaza punctul de referinta minim pentru cuplul motor in modul de operare "MS: 
+2026-05-20 15:12:28,838  INFO      22795 0x2640:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:12:28,852  INFO        -> rewrite: Atribuie o functie de trigger iesirii digitale DO1 de pe conectorul X3. Cand con
+2026-05-20 15:12:28,953  INFO      24582 0x2635:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:12:34,862  INFO        -> rewrite: Defineste numarul de impulsuri pe rotatie pentru encoderul incremental conectat.
+2026-05-20 15:12:34,963  INFO      3655 32-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:12:39,999  INFO        -> rewrite: Seteaza valoarea maxima a cuplului atunci cand se utilizeaza intrarea HTL in mod
+2026-05-20 15:12:40,100  INFO      22796 0x2640:009 (Lenze_i550)  existing_len=274  qc=rewrite
+2026-05-20 15:12:40,799  INFO        -> rewrite: Activeaza inversarea logicii pentru iesirea digitala 1. Cand este activata, star
+2026-05-20 15:12:40,900  INFO      24583 0x4016:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:12:42,366  INFO        -> rewrite: Activeaza dezactivarea protocolului de comunicatie Absolute pentru interfata de 
