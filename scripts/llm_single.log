@@ -4294,3 +4294,52 @@
 2026-05-20 13:36:19,915  INFO      19222 0x2942:001 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 13:36:20,466  INFO        -> rewrite: Permite introducerea unui text personalizat care poate fi afisat pe ecranul graf
 2026-05-20 13:36:22,267  INFO        -> rewrite: Definește care parametru VFD este transmis in primul obiect TPDO. TPDO-urile sun
+2026-05-20 13:36:22,950  INFO        Committed + pushed
+2026-05-20 13:36:23,051  INFO      3055 0-39 (Danfoss_VLT_FC302)  existing_len=353  qc=rewrite
+2026-05-20 13:36:24,730  INFO        Committed + pushed
+2026-05-20 13:36:24,830  INFO      19009 0x24E1:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:36:29,972  INFO        -> rewrite: Permite introducerea unui text personalizat care poate fi afisat pe ecranul graf
+2026-05-20 13:36:30,073  INFO      3056 17-70 (Danfoss_VLT_FC302)  existing_len=259  qc=rewrite
+2026-05-20 13:36:32,552  INFO        -> rewrite: Defineste al doilea obiect mapat intr-un TPDO (Transmit Process Data Object). Fi
+2026-05-20 13:36:32,653  INFO      19010 0x24E1:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:36:33,917  INFO        -> rewrite: Seteaza factorul de amplificare Vp al controllerului de curent. Valoarea mica of
+2026-05-20 13:36:34,017  INFO      19223 0x2942:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:36:35,769  INFO        -> rewrite: Defineste unitatea de masura pentru pozitie. Valorile posibile includ pasi, grad
+2026-05-20 13:36:35,869  INFO      3057 0-30 (Danfoss_VLT_FC302)  existing_len=247  qc=rewrite
+2026-05-20 13:36:44,714  INFO        -> rewrite: Seteaza timpul de resetare (integrala) al controlerului de curent. Valori mici i
+2026-05-20 13:36:44,815  INFO      19224 0x29E2 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:36:45,604  INFO        -> rewrite: Defineste unitatea de masura pentru afisajul custom. Poti alege intre diferite u
+2026-05-20 13:36:45,705  INFO      3058 0-31 (Danfoss_VLT_FC302)  existing_len=293  qc=rewrite
+2026-05-20 13:36:47,586  INFO        -> rewrite: Defineste continutul celei de-a treia intrari din mesajul TPDO. Aceasta intrare 
+2026-05-20 13:36:47,687  INFO      19011 0x24E1:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:36:51,776  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea tensiunii DC-bus folosita in calculul
+2026-05-20 13:36:51,876  INFO      19225 0x29E3 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:36:52,516  INFO        -> rewrite: Seteaza valoarea minima pentru afisajul personalizat al variatorului. Aceasta va
+2026-05-20 13:36:52,617  INFO      3059 0-32 (Danfoss_VLT_FC302)  existing_len=223  qc=rewrite
+2026-05-20 13:36:55,791  INFO        -> rewrite: Seteaza obiectul CANopen care va fi transmis in intrarea 4 a TPDO-ului selectat.
+2026-05-20 13:36:55,892  INFO      19012 0x24E1:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:37:00,170  INFO        -> rewrite: Defineste valoarea maxima afisata pentru citirea definita de utilizator. Aceasta
+2026-05-20 13:37:00,196  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea tensiunii motorului utilizata in calc
+2026-05-20 13:37:00,271  INFO      3060 4-13 (Danfoss_VLT_FC302)  existing_len=250  qc=rewrite
+2026-05-20 13:37:00,296  INFO      19226 0x29E0:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:37:02,261  INFO        -> rewrite: Defineste continutul entry-ului 5 dintr-un TPDO (Transmit Process Data Object). 
+2026-05-20 13:37:02,362  INFO      19013 0x24E1:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:37:08,015  INFO        -> rewrite: Factorul de amplificare Vp al controllerului de slabire a campului magnetic pent
+2026-05-20 13:37:08,116  INFO      19227 0x29E0:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:37:11,706  INFO        -> rewrite: Seteze limita superioara pentru viteza motorului in rotatii pe minut. Valoarea t
+2026-05-20 13:37:11,807  INFO      3061 4-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 13:37:16,517  INFO        -> rewrite: Seteaza timpul de resetare Tn al controllerului de slabire a campului magnetic p
+2026-05-20 13:37:16,618  INFO      19228 0x29E1 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:37:17,914  INFO        -> rewrite: Defineste ce parametru din dictionarul de obiecte CANopen este transmis in al sa
+2026-05-20 13:37:18,015  INFO      19014 0x24E1:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:37:19,524  INFO        -> rewrite: Defineste limita superioara a vitezei motorului in Hz. Trebuie sa fie intotdeaun
+2026-05-20 13:37:19,624  INFO      3062 16-09 (Danfoss_VLT_FC302)  existing_len=221  qc=rewrite
+2026-05-20 13:37:24,901  INFO        -> rewrite: Limiteaza reducerea fluxului magnetic in regimul de slabire de camp. Valoarea ma
+2026-05-20 13:37:25,002  INFO      19229 0x29C0:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:37:25,020  INFO        -> rewrite: Defineste intrarea de mapare 7 pentru TPDO (Transmit Process Data Object). Selec
+2026-05-20 13:37:25,121  INFO      19015 0x24E1:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:37:28,270  INFO        -> rewrite: Afiseaza valoarea citirii personalizate definite de utilizator. Valoarea este co
+2026-05-20 13:37:28,371  INFO      3063 0-33 (Danfoss_VLT_FC302)  existing_len=211  qc=rewrite
+2026-05-20 13:37:29,504  INFO        -> rewrite: Defineste al 8-lea parametru mapat in TPDO de transmisie. Fiecare intrare specif
+2026-05-20 13:37:29,605  INFO      19016 0x24E1:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:37:35,448  INFO        -> rewrite: Factorul de amplificare proportionala Vp al controlerului de camp. Valorile mari
