@@ -223,6 +223,10 @@ var REGULI_CATEGORIZARE_DEFAULT = [
   { id: 11, pattern: 'NETFLIX|SPOTIFY|HBO|YOUTUBE|APPLE\\.COM|GOOGLE|MICROSOFT|ADOBE',         categorie: 'Abonamente' },
   { id: 12, pattern: 'H\\&M|ZARA|RESERVED|BERSHKA|PULL\\&BEAR|C\\&A|DECATHLON',                categorie: 'Îmbrăcăminte' },
   { id: 13, pattern: 'CINEMA|RESTAURANT|MCDONALDS|KFC|STARBUCKS|BURGER KING|PIZZA',            categorie: 'Divertisment' },
+  // Income rules (matched on credit transactions)
+  { id: 14, pattern: 'SALARIU|VENIT SALARIAL|LEAFA|LEFE',                                      categorie: '__SKIP__' },
+  { id: 15, pattern: 'BONUS|PRIMA|TICHETE|BONURI DE MASA|BONURI MASA',                         categorie: 'Bonus' },
+  { id: 16, pattern: 'DIURNA|DELEGATIE|DECONT DEPLASARE',                                      categorie: 'Diurnă' },
 ];
 
 // --- Scadentar real (sursa: ING Home'Bank scadenţar 19.05.2026) ---
@@ -1834,6 +1838,19 @@ function renderVenituri() {
   var d = state.data;
   var html = '';
 
+  // Import banner — primary data-entry path
+  var nImported = (d.importedRefs || []).length;
+  html += '<div class="section">';
+  html += '<div class="next-payment" style="border-color:var(--accent);">';
+  html += '  <div class="next-payment-icon" style="background:var(--accent-soft);color:var(--accent);"><i data-lucide="upload"></i></div>';
+  html += '  <div class="next-payment-body">';
+  html += '    <div class="next-payment-title">Import extras bancar</div>';
+  html += '    <div class="next-payment-line"><span class="text-mid">Încarcă CSV-ul ING — venituri și cheltuieli se completează și categorizează automat.' + (nImported > 0 ? ' <strong>' + nImported + '</strong> tranzacții importate până acum.' : '') + '</span></div>';
+  html += '  </div>';
+  html += '  <button class="btn-add" onclick="showImportModal()"><i data-lucide="upload"></i> Importă CSV</button>';
+  html += '</div>';
+  html += '</div>';
+
   // Venituri
   html += '<div class="section">';
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="coins"></i> Venituri lunare</div></div>';
@@ -2772,7 +2789,7 @@ async function showImportModal() {
     '<div class="modal" role="dialog" aria-modal="true" style="max-width:920px;width:95%;">' +
     '  <div class="modal-title"><i data-lucide="upload"></i> Importă tranzacții bancare (CSV ING)</div>' +
     '  <div class="modal-body">' +
-    '    <div class="field"><label class="field-label">Selectează fișierul CSV exportat din ING Home\'Bank</label>' +
+    '    <div class="field"><label class="field-label">Selectează fișierul CSV exportat din ING Home\'Bank — venituri și cheltuieli se importă împreună</label>' +
     '      <input type="file" id="imp-file" accept=".csv,text/csv" class="input w-full"></div>' +
     '    <div id="imp-summary" class="info-box" style="display:none;"><i data-lucide="info"></i><div></div></div>' +
     '    <div id="imp-preview" style="max-height:50vh;overflow:auto;margin-top:0.75rem;"></div>' +
@@ -2804,21 +2821,28 @@ async function showImportModal() {
     reader.onload = function() {
       try {
         var text = reader.result;
-        parsed = parseIngCsv(text).filter(function(t) { return t.sens === 'debit' && t.suma > 0; });
+        parsed = parseIngCsv(text).filter(function(t) { return (t.sens === 'debit' || t.sens === 'credit') && t.suma > 0; });
         var reguli = state.data.reguliCategorizare || [];
         var importedSet = (state.data.importedRefs || []).reduce(function(s, r) { s[r] = true; return s; }, {});
-        var categories = (state.data.categoriiVar || []).map(function(c) { return c.label; })
+        var chCats = (state.data.categoriiVar || []).map(function(c) { return c.label; })
           .concat((state.data.cheltuieliFixe || []).map(function(c) { return c.label; }));
+        var venitCats = (state.data.categoriiVenit || []).map(function(c) { return c.label; });
         parsed.forEach(function(t) {
+          t.tip = t.sens === 'credit' ? 'venit' : 'cheltuiala';
           t.duplicate = !!(t.ref && importedSet[t.ref]);
           t.autoCategoryInitial = categorizeAuto(t, reguli);
           var auto = t.autoCategoryInitial;
+          var pool = t.tip === 'venit' ? venitCats : chCats;
           if (t.duplicate) {
             t.categorie = '__SKIP__'; t.skip = true;
+          } else if (auto === '__SKIP__') {
+            t.categorie = '__SKIP__'; t.skip = true;
+          } else if (auto && pool.indexOf(auto) >= 0) {
+            t.categorie = auto; t.skip = false;
           } else {
-            t.categorie = (auto && categories.indexOf(auto) >= 0) ? auto : (auto || categories[categories.length - 1] || 'Alte');
-            t.skip = (auto === '__SKIP__');
-            if (t.skip) t.categorie = '__SKIP__';
+            // fallback to the catch-all category for this type
+            t.categorie = pool.length ? pool[pool.length - 1] : '__SKIP__';
+            t.skip = (t.categorie === '__SKIP__');
           }
           t.userOverridden = false;
         });
@@ -2832,37 +2856,47 @@ async function showImportModal() {
   });
 
   function renderPreview() {
-    var allCategories = ['__SKIP__'].concat(
+    var chCategories = ['__SKIP__'].concat(
       (state.data.cheltuieliFixe || []).map(function(c) { return c.label; }),
       (state.data.categoriiVar || []).map(function(c) { return c.label; })
     );
-    var nSkip = 0, nApply = 0, nDup = 0;
+    var venitCategories = ['__SKIP__'].concat(
+      (state.data.categoriiVenit || []).map(function(c) { return c.label; })
+    );
+    var nSkip = 0, nApplyCh = 0, nApplyV = 0, nDup = 0;
     parsed.forEach(function(t) {
       if (t.duplicate) { nDup++; return; }
       if (t.categorie === '__SKIP__') { nSkip++; return; }
-      nApply++;
+      if (t.tip === 'venit') nApplyV++;
+      else nApplyCh++;
     });
     summary.style.display = 'flex';
     summary.querySelector('div').innerHTML =
-      '<strong>' + parsed.length + '</strong> tranzacții debit găsite' +
-      ' <span class="sep">·</span> <strong>' + nApply + '</strong> de aplicat' +
+      '<strong>' + parsed.length + '</strong> tranzacții găsite' +
+      ' <span class="sep">·</span> <strong>' + nApplyCh + '</strong> cheltuieli' +
+      ' <span class="sep">·</span> <strong>' + nApplyV + '</strong> venituri' +
       ' <span class="sep">·</span> <strong>' + nSkip + '</strong> ignorate' +
-      (nDup > 0 ? ' <span class="sep">·</span> <strong>' + nDup + '</strong> duplicate (deja importate)' : '');
-    applyBtn.disabled = (nApply === 0);
+      (nDup > 0 ? ' <span class="sep">·</span> <strong>' + nDup + '</strong> duplicate' : '');
+    applyBtn.disabled = ((nApplyCh + nApplyV) === 0);
 
     var h = '<div class="table-wrap"><table>';
-    h += '<thead><tr><th>Data</th><th>Descriere</th><th class="num">Sumă</th><th>Categorie</th></tr></thead><tbody>';
+    h += '<thead><tr><th>Data</th><th>Tip</th><th>Descriere</th><th class="num">Sumă</th><th>Categorie</th></tr></thead><tbody>';
     parsed.forEach(function(t, idx) {
       var descShort = t.detalii + (t.tranzactieAt ? ' — ' + t.tranzactieAt : (t.beneficiar ? ' — ' + t.beneficiar : ''));
       var rowStyle = '';
       if (t.duplicate) rowStyle = ' style="opacity:0.35;"';
       else if (t.categorie === '__SKIP__') rowStyle = ' style="opacity:0.45;"';
+      var isVenit = t.tip === 'venit';
+      var tipChip = isVenit
+        ? '<span class="tag" style="background:var(--success-soft);color:var(--success);">venit</span>'
+        : '<span class="tag" style="background:var(--danger-soft);color:var(--danger);">cheltuială</span>';
       h += '<tr' + rowStyle + '>';
       h += '<td class="mono">' + esc(t.dataIso || t.data) + (t.duplicate ? ' <span class="tag" style="background:var(--warning-soft);color:var(--warning);font-size:0.62rem;">dup</span>' : '') + '</td>';
-      h += '<td style="max-width:340px;font-size:0.78rem;">' + esc(descShort) + '</td>';
-      h += '<td class="num neg">' + formatRON(t.suma) + '</td>';
+      h += '<td>' + tipChip + '</td>';
+      h += '<td style="max-width:300px;font-size:0.78rem;">' + esc(descShort) + '</td>';
+      h += '<td class="num ' + (isVenit ? 'pl-pos' : 'neg') + '">' + (isVenit ? '+' : '') + formatRON(t.suma) + '</td>';
       h += '<td><select class="select" data-imp-cat="' + idx + '">';
-      allCategories.forEach(function(c) {
+      (isVenit ? venitCategories : chCategories).forEach(function(c) {
         var lbl = c === '__SKIP__' ? '— ignoră —' : c;
         h += '<option value="' + esc(c) + '"' + (t.categorie === c ? ' selected' : '') + '>' + esc(lbl) + '</option>';
       });
@@ -2893,7 +2927,7 @@ async function showImportModal() {
     if (act.dataset.act === 'cancel') return close();
     if (act.dataset.act === 'apply') {
       var fixedLabels = (state.data.cheltuieliFixe || []).reduce(function(s, c) { s[c.label] = true; return s; }, {});
-      var added = 0, refsAdded = [];
+      var addedCh = 0, addedV = 0, refsAdded = [];
       // Collect candidate new rules from user overrides
       var ruleProposals = {};
       parsed.forEach(function(t) {
@@ -2906,14 +2940,22 @@ async function showImportModal() {
             ruleProposals[key].count++;
           }
         }
-        if (t.categorie === '__SKIP__' || fixedLabels[t.categorie]) return;
+        if (t.categorie === '__SKIP__') return;
         var mk = t.dataIso ? t.dataIso.substring(0, 7) : null;
         if (!mk) return;
-        if (!state.data.cheltuieli[mk]) state.data.cheltuieli[mk] = {};
-        state.data.cheltuieli[mk][t.categorie] = (state.data.cheltuieli[mk][t.categorie] || 0) + t.suma;
-        added++;
+        if (t.tip === 'venit') {
+          if (!state.data.venituri[mk]) state.data.venituri[mk] = {};
+          state.data.venituri[mk][t.categorie] = (state.data.venituri[mk][t.categorie] || 0) + t.suma;
+          addedV++;
+        } else {
+          if (fixedLabels[t.categorie]) return; // fixed expenses counted via the fixed row
+          if (!state.data.cheltuieli[mk]) state.data.cheltuieli[mk] = {};
+          state.data.cheltuieli[mk][t.categorie] = (state.data.cheltuieli[mk][t.categorie] || 0) + t.suma;
+          addedCh++;
+        }
         if (t.ref) refsAdded.push(t.ref);
       });
+      var added = addedCh + addedV;
       // Persist imported refs (deduped)
       if (!Array.isArray(state.data.importedRefs)) state.data.importedRefs = [];
       var refSet = state.data.importedRefs.reduce(function(s, r) { s[r] = true; return s; }, {});
@@ -2931,7 +2973,7 @@ async function showImportModal() {
         } else {
           showConfirm({
             title: 'Import complet',
-            body: added + ' tranzacții adăugate. Cheltuielile fixe au fost păstrate intacte. ' + (refsAdded.length ? refsAdded.length + ' referințe salvate pentru detectare duplicate.' : ''),
+            body: addedCh + ' cheltuieli și ' + addedV + ' venituri adăugate. Cheltuielile fixe au fost păstrate intacte. ' + (refsAdded.length ? refsAdded.length + ' referințe salvate pentru detectare duplicate.' : ''),
             okLabel: 'OK',
             cancelLabel: '',
             icon: 'check-circle'
