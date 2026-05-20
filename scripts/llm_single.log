@@ -25825,3 +25825,14 @@
 2026-05-20 19:16:23,976  INFO        -> rewrite: I/O
 2026-05-20 19:16:24,077  INFO      19437 0x2820:009 (Lenze_i950)  existing_len=5  qc=rewrite
 2026-05-20 19:16:24,763  INFO        -> rewrite: Motor
+2026-05-20 19:16:25,183  INFO        -> rewrite: Motor
+2026-05-20 19:16:25,283  INFO      20032 0x2B03:004 (Lenze_i550)  existing_len=5  qc=rewrite
+2026-05-20 19:16:26,056  INFO        -> rewrite: Diagnostic
+2026-05-20 19:16:26,056  INFO        -> rewrite: Diagnostic
+2026-05-20 19:16:26,156  INFO      3320 5-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 19:16:26,156  INFO      3320 5-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 19:16:26,875  INFO        -> rewrite: Limite
+2026-05-20 19:16:26,976  INFO      3256 30-11 (Danfoss_VLT_FC302)  existing_len=5  qc=rewrite
+2026-05-20 19:16:28,530  INFO        Committed + pushed
+2026-05-20 19:16:28,631  INFO      19438 0x2820:010 (Lenze_i950)  existing_len=5  qc=rewrite
+2026-05-20 19:16:29,440  INFO        -> rewrite: Motor
