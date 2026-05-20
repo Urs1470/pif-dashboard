@@ -1137,6 +1137,59 @@ function todayIso() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
+// "1 an" -> 12, "6 luni" -> 6, "3 ani" -> 36
+function maturitateLuni(s) {
+  if (!s) return 12;
+  var m = String(s).match(/(\d+)\s*(luni|lun[ăa]|ani|an)/i);
+  if (!m) return 12;
+  var n = parseInt(m[1], 10) || 1;
+  return /lun/i.test(m[2]) ? n : n * 12;
+}
+
+// Add N months to a YYYY-MM-DD date, return YYYY-MM-DD
+function addMonthsIso(iso, months) {
+  if (!iso) return '';
+  var p = String(iso).split('-');
+  var y = parseInt(p[0], 10), mo = parseInt(p[1], 10), d = parseInt(p[2] || '1', 10);
+  if (!y || !mo) return '';
+  var idx = (mo - 1) + months;
+  var ny = y + Math.floor(idx / 12);
+  var nm = (idx % 12) + 1;
+  return ny + '-' + String(nm).padStart(2, '0') + '-' + String(d || 1).padStart(2, '0');
+}
+
+function daysBetween(isoA, isoB) {
+  if (!isoA || !isoB) return 0;
+  var a = new Date(isoA + 'T00:00:00');
+  var b = new Date(isoB + 'T00:00:00');
+  if (isNaN(a) || isNaN(b)) return 0;
+  return Math.round((b - a) / 86400000);
+}
+
+// Full metrics for a Tezaur subscription
+function tezaurMetrics(t) {
+  var suma = parseRON(t.suma) || 0;
+  var dobPct = parseRON(t.dobanda) || 0;
+  var luni = maturitateLuni(t.maturitate);
+  var dataScad = t.dataScadenta || (t.dataSubscriere ? addMonthsIso(t.dataSubscriere, luni) : '');
+  var dobandaAnuala = suma * dobPct / 100;
+  var dobandaTotala = dobandaAnuala * luni / 12;
+  var today = todayIso();
+  var zileTotal = (t.dataSubscriere && dataScad) ? daysBetween(t.dataSubscriere, dataScad) : 0;
+  var zileTrecute = t.dataSubscriere ? Math.max(0, daysBetween(t.dataSubscriere, today)) : 0;
+  var fractie = zileTotal > 0 ? Math.min(1, zileTrecute / zileTotal) : 0;
+  var dobandaAcumulata = round2(dobandaTotala * fractie);
+  var matur = dataScad ? (today >= dataScad) : false;
+  var zileRamase = dataScad ? daysBetween(today, dataScad) : 0;
+  return {
+    suma: suma, dobPct: dobPct, luni: luni, dataScad: dataScad,
+    dobandaAnuala: dobandaAnuala, dobandaTotala: round2(dobandaTotala),
+    dobandaAcumulata: dobandaAcumulata, valoareAzi: round2(suma + dobandaAcumulata),
+    valoareLaScadenta: round2(suma + dobandaTotala),
+    matur: matur, zileRamase: zileRamase, progres: Math.round(fractie * 100)
+  };
+}
+
 function calcLuniRamase() {
   var scad = getScadentar(state.data);
   if (scad.length > 0) {
@@ -1872,20 +1925,36 @@ function renderFondUrgenta() {
   html += '</tfoot></table></div></div></div>';
 
   // Tezaur
+  var tezMetrics = d.tezaur.map(tezaurMetrics);
+  var totalTez = tezMetrics.reduce(function(s, m) { return s + m.suma; }, 0);
+  var totalDobTotala = tezMetrics.reduce(function(s, m) { return s + m.dobandaTotala; }, 0);
+  var totalDobAcum = tezMetrics.reduce(function(s, m) { return s + m.dobandaAcumulata; }, 0);
+  var totalValoareAzi = tezMetrics.reduce(function(s, m) { return s + m.valoareAzi; }, 0);
+  // next maturity
+  var viitoare = tezMetrics.filter(function(m) { return !m.matur && m.dataScad; })
+    .sort(function(a, b) { return (a.dataScad || '').localeCompare(b.dataScad || ''); });
+  var urmMat = viitoare[0];
+
   html += '<div class="section">';
   html += '<div class="section-title">';
   html += '<div class="section-title-left"><i data-lucide="coins"></i> Titluri de stat Tezaur</div>';
   html += '<button class="btn-add" onclick="addTezaur()"><i data-lucide="plus"></i> Adaugă subscriere</button>';
   html += '</div>';
+
+  // Stat cards
+  html += '<div class="stat-grid" style="margin-bottom:1rem;">';
+  html += statCard('coins', 'Total investit', formatRON(totalTez), d.tezaur.length + ' subscrieri', '');
+  html += statCard('trending-up', 'Valoare azi', formatRON(totalValoareAzi), 'dobândă acumulată ' + formatRON(totalDobAcum), 'success');
+  html += statCard('gift', 'Dobândă la maturitate', formatRON(totalDobTotala), 'total câștig dacă ții până la final', 'success');
+  html += statCard('calendar-clock', 'Următoarea maturitate', urmMat ? urmMat.dataScad : '—', urmMat ? (urmMat.zileRamase + ' zile') : 'nicio scadență viitoare', 'warning');
+  html += '</div>';
+
   html += '<div class="panel">';
   html += '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Emisiune</th><th>Data subsc.</th><th class="num">Sumă</th><th class="num">Dobândă %</th><th>Maturitate</th><th>Data scad.</th><th class="num">Dobândă câștigată</th><th class="num">Total</th><th></th></tr></thead><tbody>';
+  html += '<thead><tr><th>Emisiune</th><th>Data subscriere</th><th class="num">Sumă</th><th class="num">Dobândă %</th><th>Maturitate</th><th>Data scadență</th><th class="num">Dobândă acumulată</th><th class="num">Valoare azi</th><th class="num">La maturitate</th><th>Status</th><th></th></tr></thead><tbody>';
 
-  d.tezaur.forEach(function(t) {
-    var suma = parseRON(t.suma) || 0;
-    var dobPct = parseRON(t.dobanda) || 0;
-    var dobCistigata = suma * dobPct / 100;
-    var total = suma + dobCistigata;
+  d.tezaur.forEach(function(t, i) {
+    var m = tezMetrics[i];
     html += '<tr>';
     var emisiuniList = (d.emisiuniTezaur || []).map(function(e) { return e.label; });
     if (t.emisiune && emisiuniList.indexOf(t.emisiune) < 0) emisiuniList.unshift(t.emisiune);
@@ -1895,29 +1964,43 @@ function renderFondUrgenta() {
     });
     html += '</select></td>';
     html += '<td><input type="text" class="input fp-date w-32" value="' + esc(t.dataSubscriere || '') + '" placeholder="YYYY-MM-DD" onchange="updateTezaur(' + t.id + ', \'dataSubscriere\', this.value)"></td>';
-    html += '<td class="num"><input type="number" class="input num w-28" value="' + t.suma + '" onchange="updateTezaur(' + t.id + ', \'suma\', this.value)"></td>';
-    html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + t.dobanda + '" onchange="updateTezaur(' + t.id + ', \'dobanda\', this.value)"></td>';
+    html += '<td class="num"><input type="number" class="input num w-28" value="' + (t.suma || 0) + '" onchange="updateTezaur(' + t.id + ', \'suma\', this.value)"></td>';
+    html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + (t.dobanda || 0) + '" onchange="updateTezaur(' + t.id + ', \'dobanda\', this.value)"></td>';
     html += '<td><select class="select cs-enhance" onchange="updateTezaur(' + t.id + ', \'maturitate\', this.value)">';
-    ['1 an','3 ani','5 ani'].forEach(function(opt) {
+    ['6 luni','1 an','2 ani','3 ani','5 ani'].forEach(function(opt) {
       html += '<option value="' + opt + '"' + (t.maturitate === opt ? ' selected' : '') + '>' + opt + '</option>';
     });
     html += '</select></td>';
-    html += '<td><input type="text" class="input fp-date w-32" value="' + esc(t.dataScadenta || '') + '" placeholder="YYYY-MM-DD" onchange="updateTezaur(' + t.id + ', \'dataScadenta\', this.value)"></td>';
-    html += '<td class="num accent">' + formatRON(dobCistigata) + '</td>';
-    html += '<td class="num accent">' + formatRON(total) + '</td>';
+    html += '<td class="mono text-mid">' + esc(m.dataScad || '—') + '</td>';
+    html += '<td class="num accent">' + formatRON(m.dobandaAcumulata) + '</td>';
+    html += '<td class="num">' + formatRON(m.valoareAzi) + '</td>';
+    html += '<td class="num accent">' + formatRON(m.valoareLaScadenta) + '</td>';
+    if (m.matur) {
+      html += '<td><span class="tag" style="background:var(--success-soft);color:var(--success);"><i data-lucide="check"></i> maturat</span></td>';
+    } else if (m.dataScad) {
+      var urgent = m.zileRamase <= 30;
+      html += '<td><span class="tag" style="background:' + (urgent ? 'var(--warning-soft);color:var(--warning)' : 'var(--accent-soft);color:var(--accent)') + ';">' + m.progres + '% · ' + m.zileRamase + ' z</span></td>';
+    } else {
+      html += '<td><span class="text-dim">—</span></td>';
+    }
     html += '<td><button class="btn-del" onclick="removeTezaur(' + t.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
     html += '</tr>';
   });
 
-  var totalTez = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
-  var totalDobTez = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0) * (parseRON(t.dobanda) || 0) / 100; }, 0);
   html += '</tbody><tfoot>';
-  html += '<tr><td colspan="2">Total Tezaur investit</td>';
+  html += '<tr><td colspan="2">Total</td>';
   html += '<td class="num">' + formatRON(totalTez) + '</td>';
   html += '<td colspan="3"></td>';
-  html += '<td class="num">+' + formatRON(totalDobTez) + ' / an</td>';
+  html += '<td class="num">+' + formatRON(totalDobAcum) + '</td>';
+  html += '<td class="num">' + formatRON(totalValoareAzi) + '</td>';
+  html += '<td class="num">+' + formatRON(totalDobTotala) + '</td>';
   html += '<td colspan="2"></td></tr>';
-  html += '</tfoot></table></div></div></div>';
+  html += '</tfoot></table></div>';
+  html += '<div class="info-box" style="margin-top:0.85rem;">';
+  html += '<i data-lucide="info"></i>';
+  html += '<div>Data scadenței se calculează automat din data subscrierii + maturitate. Dobânda acumulată e pro-rata (proporțional cu timpul scurs). Dobânda la maturitate = dobândă anuală × durata titlului — un titlu pe 3 ani câștigă de 3 ori dobânda anuală.</div>';
+  html += '</div>';
+  html += '</div></div>';
 
   // Proiecție avere netă — calculată automat din active curente + scadenar credit
   var totalFondCurent = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
@@ -1968,7 +2051,17 @@ function removeFond(id) {
   render();
 }
 function addTezaur() {
-  state.data.tezaur.push({ id: getNextId(state.data.tezaur), emisiune: 'Tezaur 1 an', dataSubscriere: '', suma: '', dobanda: 6.30, maturitate: '1 an', dataScadenta: '' });
+  var emis = ((state.data.emisiuniTezaur || [])[0] || {}).label || 'Tezaur 1 an';
+  var azi = todayIso();
+  state.data.tezaur.push({
+    id: getNextId(state.data.tezaur),
+    emisiune: emis,
+    dataSubscriere: azi,
+    suma: 0,
+    dobanda: 6.30,
+    maturitate: '1 an',
+    dataScadenta: addMonthsIso(azi, 12)
+  });
   saveData();
   render();
 }
@@ -1978,6 +2071,10 @@ function updateTezaur(id, field, value) {
     var u = cloneObj(t);
     if (field === 'suma' || field === 'dobanda') u[field] = parseRON(value);
     else u[field] = value;
+    // Auto-recompute scadenta when subscriere or maturitate changes
+    if (field === 'dataSubscriere' || field === 'maturitate') {
+      if (u.dataSubscriere) u.dataScadenta = addMonthsIso(u.dataSubscriere, maturitateLuni(u.maturitate));
+    }
     return u;
   });
   saveData();
