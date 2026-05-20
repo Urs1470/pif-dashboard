@@ -154,6 +154,8 @@ ALLOWED_QUOTE_SYMBOLS = {
     'VWCE.DE', 'VWCE.AS', 'VWCE.SW', 'VWCE.MI',
     'IWDA.AS', 'EUNL.DE', 'CSPX.AS', 'SPY', 'VOO', 'QQQ', 'VTI',
     'EXSA.DE', 'EXSP.DE', 'EUNK.DE',
+    # FX pairs
+    'EURRON=X', 'EURUSD=X', 'USDRON=X',
 }
 
 

@@ -991,7 +991,7 @@ function renderBugetLunar() {
   var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var buffer = Object.keys(d.evolutie).reduce(function(s, l) { return s + (d.evolutie[l].buffer || 0); }, 0);
   var totalActive = totalTezaur + totalFond + buffer;
-  var soldCredit = d.credit.soldActual;
+  var soldCredit = soldDupaPlatiTrecute(getScadentar(d), todayIso(), d.credit.suma);
   var avereNeta = totalActive - soldCredit;
 
   var html = '';
@@ -1376,9 +1376,7 @@ function renderCredite() {
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="file-text"></i> Detalii credit</div></div>';
   if (cr.contract) html += '<div class="stat-row"><span>Contract</span><span class="mono">' + esc(cr.contract) + ' / ' + esc(cr.dataContract || '') + '</span></div>';
   html += '<div class="stat-row"><span>Sumă inițială</span><span class="stat-val danger">' + formatRON(cr.suma) + '</span></div>';
-  html += '<div class="stat-row"><span>Sold estimat azi</span><span class="stat-val danger">' + formatRON(soldEstimat) + '</span></div>';
-  html += '<div class="stat-row"><span>Sold actual (manual)</span>';
-  html += '<input type="number" class="input num w-28" value="' + cr.soldActual + '" onchange="updateCreditSold(this.value)"></div>';
+  html += '<div class="stat-row"><span>Sold rămas azi</span><span class="stat-val danger">' + formatRON(soldEstimat) + '</span></div>';
   html += '<div class="stat-row"><span>Dobândă anuală</span><span class="mono">' + cr.dobanda + ' %</span></div>';
   html += '<div class="stat-row"><span>DAE</span><span class="mono">' + cr.dae + ' %</span></div>';
   html += '<div class="stat-row"><span>Rată standard</span><span class="stat-val danger">' + formatRON(cr.rata) + '</span></div>';
@@ -2139,9 +2137,11 @@ function renderInvestitii() {
   var t = vwceTotals(v);
   var changePct = parseFloat(v.changePct) || 0;
   var change = parseFloat(v.change) || 0;
+  var cursRon = parseRON(v.cursRon) || 0;
   var lastUpdate = v.lastUpdateLocal ? new Date(v.lastUpdateLocal) : null;
   var lastUpdateStr = lastUpdate ? lastUpdate.toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' }) : 'niciodată';
   var fmtEur = function(x) { return formatRON(x); };
+  var ron = function(eur) { return cursRon > 0 ? '≈ ' + formatRON(eur * cursRon) + ' RON' : ''; };
 
   var html = '';
 
@@ -2165,6 +2165,9 @@ function renderInvestitii() {
     var cClass = change >= 0 ? 'pl-pos' : 'pl-neg';
     html += '      <div class="' + cClass + '" style="font-size:0.82rem;">' + (change >= 0 ? '+' : '') + fmtEur(change) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) azi</div>';
   }
+  if (cursRon > 0) {
+    html += '      <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.2rem;">' + ron(t.pretCurent) + ' · curs ' + cursRon.toFixed(4) + '</div>';
+  }
   html += '      <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.2rem;">Ultima actualizare: ' + esc(lastUpdateStr) + '</div>';
   html += '      <button class="btn-add" style="margin-top:0.5rem;" onclick="refreshVwcePrice()"><i data-lucide="refresh-cw"></i> Actualizează preț</button>';
   html += '    </div>';
@@ -2176,9 +2179,9 @@ function renderInvestitii() {
   html += '<div class="section">';
   html += '<div class="stat-grid">';
   html += statCard('hash', 'Total unități', String(t.cantitate), v.tranzactii.length + ' tranzacții', '');
-  html += statCard('wallet', 'Investit', fmtEur(t.investitEur) + ' EUR', t.investitRon > 0 ? '≈ ' + formatRON(t.investitRon) + ' RON' : '', '');
-  html += statCard('trending-up', 'Valoare curentă', fmtEur(t.valoareEur) + ' EUR', 'preț mediu ' + fmtEur(t.pretMediu) + ' EUR', plClass);
-  html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%', plClass);
+  html += statCard('wallet', 'Investit', fmtEur(t.investitEur) + ' EUR', t.investitRon > 0 ? '≈ ' + formatRON(t.investitRon) + ' RON' : ron(t.investitEur), '');
+  html += statCard('trending-up', 'Valoare curentă', fmtEur(t.valoareEur) + ' EUR', cursRon > 0 ? ron(t.valoareEur) : 'preț mediu ' + fmtEur(t.pretMediu) + ' EUR', plClass);
+  html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%' + (cursRon > 0 ? ' · ' + (t.plEur >= 0 ? '+' : '') + formatRON(t.plEur * cursRon) + ' RON' : ''), plClass);
   html += '</div></div>';
 
   // Chart: VWCE price + portfolio value evolution
@@ -2299,6 +2302,14 @@ async function refreshVwcePrice(silent) {
     state.data.vwce.lastUpdateLocal = new Date().toISOString();
     state.data.vwce.chartRange = rng;
     state.data.vwce.priceHistory = q.series || [];
+    // Also fetch EUR/RON FX rate
+    try {
+      var rfx = await fetch('/budget/api/quote/' + encodeURIComponent('EURRON=X') + '?range=5d', { credentials: 'same-origin' });
+      if (rfx.ok) {
+        var fx = await rfx.json();
+        if (fx.price) state.data.vwce.cursRon = fx.price;
+      }
+    } catch (fxErr) { console.warn('FX fetch failed:', fxErr); }
     await saveDataNow();
     render();
   } catch (e) {
