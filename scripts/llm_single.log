@@ -3546,3 +3546,6 @@
 2026-05-20 13:06:16,238  INFO        -> new: Defineste frecventa maxima a semnalului de intrare HTL. Valoarea pozitiva stabil
 2026-05-20 13:06:16,338  INFO      22789 0x2640:001 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 13:06:16,611  INFO        -> new: Intrarea 10 pentru suprimarea alarmelor individuale. Permite dezactivarea select
+2026-05-20 13:06:18,062  INFO        -> new: Seteaza limita maxima de curent pentru motor in procente fata de curentul nomina
+2026-05-20 13:06:18,163  INFO      3165 5-15 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:06:18,763  INFO        -> new: Selecteaza conditia de activare a modului sleep pentru economisire de energie. C
