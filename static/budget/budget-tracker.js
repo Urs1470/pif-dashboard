@@ -6,7 +6,7 @@ var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
 var LUNI_COUNT = 12; // default; overridden by d.profil.numarLuni
-var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte'];
+var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte credite', 'Alte'];
 
 // Generate N months starting from "YYYY-MM"; returns {keys, labels}
 function generateLuni(startMonth, count) {
@@ -172,6 +172,19 @@ function migrateCategoriiVar(data) {
   data.categoriiVar = CHELTUIELI_VARIABILE_DEFAULT.map(function(s, i) { return { id: i + 1, label: s }; });
 }
 
+// Guarantee a given variable category exists (for retro-fitting new defaults
+// onto already-saved data). Idempotent — case-insensitive match.
+function ensureCategorieVar(data, label) {
+  if (!data) return;
+  if (!Array.isArray(data.categoriiVar)) data.categoriiVar = [];
+  var exists = data.categoriiVar.some(function(c) {
+    return ((c && c.label) || '').toLowerCase() === label.toLowerCase();
+  });
+  if (!exists) {
+    data.categoriiVar.push({ id: getNextId(data.categoriiVar), label: label });
+  }
+}
+
 // Convert legacy cheltuieliFixe object {chirie, rataCredit} to array of {id,label,suma}
 function migrateCheltuieliFixe(data) {
   if (!data) return;
@@ -318,7 +331,8 @@ var DATI_INITIALE = {
     { id: 5, label: 'Îmbrăcăminte' },
     { id: 6, label: 'Divertisment' },
     { id: 7, label: 'Abonamente' },
-    { id: 8, label: 'Alte' },
+    { id: 8, label: 'Alte credite' },
+    { id: 9, label: 'Alte' },
   ],
   categoriiVenit: [
     { id: 1, label: 'Bonuri masă' },
@@ -399,6 +413,7 @@ async function loadData() {
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
       migrateCheltuieliFixe(state.data);
       migrateCategoriiVar(state.data);
+      ensureCategorieVar(state.data, 'Alte credite');
       migrateCategoriiVenit(state.data);
       migrateEmisiuniTezaur(state.data);
       migrateCreditScadentar(state.data);
