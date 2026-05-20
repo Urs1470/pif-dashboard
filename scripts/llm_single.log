@@ -9834,3 +9834,460 @@
 2026-05-20 15:57:16,526  INFO        -> rewrite: Afiseaza ultimul octet de date primit prin comunicatia Modbus. Util pentru depan
 2026-05-20 15:57:16,627  INFO      23106 0x232E:004 (Lenze_i550)  existing_len=243  qc=rewrite
 2026-05-20 15:57:18,718  INFO        -> rewrite: Seteaza valoarea minima pentru semnalul analogic de iesire de pe terminalul X45/
+2026-05-20 15:57:21,776  INFO        -> rewrite: Afiseaza ultimul octet de date receptionat prin comunicatia Modbus. Este utiliza
+2026-05-20 15:57:21,877  INFO      23107 0x232E:005 (Lenze_i550)  existing_len=247  qc=rewrite
+2026-05-20 15:57:22,609  INFO        Committed + pushed
+2026-05-20 15:57:22,711  INFO      3961 7-03 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:57:23,695  INFO        -> rewrite: Seteaza daca Slave-ul 7 EtherCAT este mandatory in configuratia retelei. Daca es
+2026-05-20 15:57:23,795  INFO      24896 0x5863:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:57:26,257  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin comunicatia Modbus RTU. Este un p
+2026-05-20 15:57:26,358  INFO      23108 0x232E:006 (Lenze_i550)  existing_len=220  qc=rewrite
+2026-05-20 15:57:31,718  INFO        -> rewrite: Indicatoare de stare care arata ca Slave 8 este un dispozitiv EtherCAT obligator
+2026-05-20 15:57:31,819  INFO      24897 0x5863:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:57:32,858  INFO        -> rewrite: parametru de diagnosticare doar pentru citire care afiseaza ultimul octet de dat
+2026-05-20 15:57:32,959  INFO      23109 0x232E:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:57:34,752  INFO        -> rewrite: Seteaza timpul integrator pentru controllerul PID de viteza, determinand cat de 
+2026-05-20 15:57:34,853  INFO      3962 7-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:57:37,976  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin comunicatia Modbus. Este un param
+2026-05-20 15:57:38,024  INFO        -> rewrite: Acest parametru indica faptul ca Slave 9 este un slave EtherCAT obligatoriu in r
+2026-05-20 15:57:38,076  INFO      23110 0x232E:008 (Lenze_i550)  existing_len=223  qc=rewrite
+2026-05-20 15:57:38,125  INFO      24898 0x5863:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:57:43,253  INFO        -> rewrite: Defineste daca Slave 10 este obligatoriu in reteaua EtherCAT. Daca este activat 
+2026-05-20 15:57:43,353  INFO      24899 0x5863:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:57:44,471  INFO        -> rewrite: Seteaza timpul de diferentiere pentru controllerul PID de viteza. Diferentiatoru
+2026-05-20 15:57:44,571  INFO      3963 7-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:57:47,766  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin comunicatia Modbus RTU. Este un p
+2026-05-20 15:57:47,867  INFO      23111 0x232E:009 (Lenze_i550)  existing_len=231  qc=rewrite
+2026-05-20 15:57:54,424  INFO        -> rewrite: Specifica daca slave-ul EtherCAT 11 trebuie sa fie prezent si functional in rete
+2026-05-20 15:57:54,524  INFO      24900 0x5863:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:57:54,805  INFO        -> rewrite: Seteaza o limita pentru castigul diferentei in controlerul PID de viteza. Difere
+2026-05-20 15:57:54,905  INFO      3964 7-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:57:55,210  INFO        -> rewrite: Afiseaza cel de-al 9-lea byte de date din ultimul mesaj Modbus receptionat. Este
+2026-05-20 15:57:55,311  INFO      23112 0x232E:010 (Lenze_i550)  existing_len=231  qc=rewrite
+2026-05-20 15:58:00,378  INFO        -> rewrite: Parametru de diagnostic Modbus care afiseaza ultimul byte de date receptionat pr
+2026-05-20 15:58:00,479  INFO      23113 0x232E:011 (Lenze_i550)  existing_len=225  qc=rewrite
+2026-05-20 15:58:01,563  INFO        -> rewrite: Selecteaza sursa de feedback pentru bucla PI de cuplu. Setarea la valoarea 0 tre
+2026-05-20 15:58:01,664  INFO      3965 7-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:05,503  INFO        -> rewrite: Defineste daca Slave 12 in reteaua EtherCAT este obligatoriu pentru functionarea
+2026-05-20 15:58:05,603  INFO      24901 0x5863:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:06,295  INFO        -> rewrite: Afiseaza ultimul byte de date primit prin comunicatia Modbus RTU. Valoarea 9 ind
+2026-05-20 15:58:06,395  INFO      23114 0x232E:012 (Lenze_i550)  existing_len=200  qc=rewrite
+2026-05-20 15:58:09,850  INFO        -> rewrite: Defineste castigul proportional pentru controlerul PI de cuplu. O valoare mare f
+2026-05-20 15:58:09,951  INFO      3966 7-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:12,462  INFO        -> rewrite: Afiseaza ultimul octet de date receptionat prin Modbus. Valoarea 10 reprezinta c
+2026-05-20 15:58:12,563  INFO      23115 0x232E:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:58:15,205  INFO        -> rewrite: Defineste daca Slave 13 EtherCAT este obligatoriu sau optional in configuratia f
+2026-05-20 15:58:15,305  INFO      24902 0x5863:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:17,034  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin comunicatia Modbus RTU. Este un p
+2026-05-20 15:58:17,135  INFO      23116 0x232E:014 (Lenze_i550)  existing_len=224  qc=rewrite
+2026-05-20 15:58:18,551  INFO        -> rewrite: Seteaza timpul de integrare pentru controlerul PI de cuplu. O valoare mica face 
+2026-05-20 15:58:18,652  INFO      3967 7-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:21,730  INFO        -> rewrite: Seteaza Slave 14 ca fiind obligatoriu in configuratia retelei EtherCAT. Daca ace
+2026-05-20 15:58:21,831  INFO      24903 0x5863:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:24,814  INFO        -> rewrite: Seteaza timpul de crestere al controlerului de curent ca procent din perioada de
+2026-05-20 15:58:24,915  INFO      3968 7-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:25,749  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin interfata Modbus. Este un paramet
+2026-05-20 15:58:25,849  INFO      23117 0x232E:015 (Lenze_i550)  existing_len=257  qc=rewrite
+2026-05-20 15:58:29,045  INFO        -> rewrite: Defineste daca slave-ul EtherCAT 15 este obligatoriu pentru reteaua de comunicat
+2026-05-20 15:58:29,146  INFO      24904 0x5863:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:32,698  INFO        -> rewrite: Afiseaza ultimul byte de date receptionat prin comunicatia Modbus RTU. Este un p
+2026-05-20 15:58:32,799  INFO      23118 0x232E:016 (Lenze_i550)  existing_len=238  qc=rewrite
+2026-05-20 15:58:33,047  INFO        -> rewrite: Selecteaza care intrare a convertizorului de frecventa este utilizata ca sursa p
+2026-05-20 15:58:33,148  INFO      3969 7-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:36,581  INFO        -> rewrite: Defineste daca Slave-ul EtherCAT 16 este obligatoriu pentru functionarea retelei
+2026-05-20 15:58:36,681  INFO      24905 0x5864:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:38,003  INFO        -> rewrite: Parametru de diagnostic Modbus care afiseaza ultimul byte de date receptionat. F
+2026-05-20 15:58:38,103  INFO      23119 0x232E:017 (Lenze_i550)  existing_len=279  qc=rewrite
+2026-05-20 15:58:43,438  INFO        -> rewrite: Selecteaza sursa semnalului pentru al 2-lea feedback in bucla PID de control pro
+2026-05-20 15:58:43,470  INFO        -> rewrite: Afiseaza starea de initializare a unui slave EtherCAT conectat la retea. Este un
+2026-05-20 15:58:43,539  INFO      3970 7-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:43,570  INFO      24906 0x5864:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:43,936  INFO        -> rewrite: Afiseaza ultimul byte de date primit prin comunicatie Modbus. Este un parametru 
+2026-05-20 15:58:44,037  INFO      23120 0x232F:001 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 15:58:50,191  INFO        -> rewrite: Afiseaza starea de initializare a slave-urilor EtherCAT conectate la retea. Valo
+2026-05-20 15:58:50,292  INFO      24907 0x5864:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:58:54,196  INFO        -> rewrite: Seteaza offsetul pentru afisarea diagnosticilor ultimului mesaj Modbus transmis.
+2026-05-20 15:58:54,296  INFO      23121 0x232F:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:58:54,351  INFO        -> rewrite: Defineste directia actiunii regulatorului PID. In mod Normal, daca valoarea feed
+2026-05-20 15:58:54,452  INFO      3971 7-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:58:55,247  INFO        -> rewrite: Afiseaza starea de initializare a slave-urilor EtherCAT. Valoarea indica daca di
+2026-05-20 15:58:55,348  INFO      24908 0x5864:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:01,853  INFO        -> rewrite: Afiseaza ultimul octet de date transmis prin comunicatia Modbus. Este un paramet
+2026-05-20 15:59:01,954  INFO      23122 0x232F:003 (Lenze_i550)  existing_len=212  qc=rewrite
+2026-05-20 15:59:03,731  INFO        -> rewrite: Afiseaza starea de initializare a slave-urilor EtherCAT conectate la retea. Valo
+2026-05-20 15:59:03,832  INFO      24909 0x5864:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:04,353  INFO        -> rewrite: Activeaza functia anti-windup pentru bucla PID de proces. Cand frecventa de iesi
+2026-05-20 15:59:04,454  INFO      3972 7-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:59:09,273  INFO        -> rewrite: Afiseaza ultimul octet de date transmise prin interfata Modbus. Valoarea 1 indic
+2026-05-20 15:59:09,374  INFO      23123 0x232F:004 (Lenze_i550)  existing_len=254  qc=rewrite
+2026-05-20 15:59:10,453  INFO        -> rewrite: Afiseaza starea de initializare a dispozitivelor slave EtherCAT. Valoarea "Initi
+2026-05-20 15:59:10,554  INFO      24910 0x5864:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:13,799  INFO        -> rewrite: Afiseaza ultimul octet de date transmis prin comunicatia Modbus. Utilizat pentru
+2026-05-20 15:59:13,900  INFO      23124 0x232F:005 (Lenze_i550)  existing_len=200  qc=rewrite
+2026-05-20 15:59:16,118  INFO        -> rewrite: Seteaza viteza la care VFD comuta de la control open-loop la control PID. La por
+2026-05-20 15:59:16,218  INFO      3973 7-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:59:16,278  INFO        -> rewrite: Arata starea de initializare a slave-urilor EtherCAT conectate la retea. Valoare
+2026-05-20 15:59:16,379  INFO      24911 0x5864:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:19,487  INFO        -> rewrite: Afiseaza ultimul byte de date transmis prin comunicatia Modbus. Este un parametr
+2026-05-20 15:59:19,587  INFO      23125 0x232F:006 (Lenze_i550)  existing_len=282  qc=rewrite
+2026-05-20 15:59:22,340  INFO        -> rewrite: Afiseaza starea de initializare a dispozitivelor (slave) conectate pe reteaua Et
+2026-05-20 15:59:22,440  INFO      24912 0x5864:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:25,881  INFO        -> rewrite: Seteaza timpul integral pentru bucla PID de proces. Timpul integral reprezinta d
+2026-05-20 15:59:25,981  INFO      3974 7-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:59:26,502  INFO        -> rewrite: Parametru de diagnosticare Modbus care afiseaza ultimul byte de date transmis (T
+2026-05-20 15:59:26,603  INFO      23126 0x232F:007 (Lenze_i550)  existing_len=189  qc=rewrite
+2026-05-20 15:59:31,718  INFO        -> rewrite: Afiseaza starea de initializare a dispozitivelor slave conectate pe magistrala d
+2026-05-20 15:59:31,819  INFO      24913 0x5864:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:35,450  INFO        -> rewrite: Afiseaza ultimul octet de date transmis prin comunicatia Modbus. Valoarea 5 indi
+2026-05-20 15:59:35,551  INFO      23127 0x232F:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:59:39,008  INFO        -> rewrite: Afiseaza starea de initializare a slave-urilor EtherCAT conectate. Valoarea indi
+2026-05-20 15:59:39,109  INFO      24914 0x5864:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:40,401  INFO        -> rewrite: Seteaza timpul derivativ pentru controlerul PID de proces. Derivatorul reactione
+2026-05-20 15:59:40,501  INFO      3975 7-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:59:40,880  INFO        -> rewrite: Afiseaza ultimul octet de date transmis prin interfata Modbus. Este un parametru
+2026-05-20 15:59:40,981  INFO      23128 0x232F:009 (Lenze_i550)  existing_len=226  qc=rewrite
+2026-05-20 15:59:47,679  INFO        -> rewrite: Afiseaza starea curenta a initializarii dispozitivelor slave EtherCAT. Valoarea 
+2026-05-20 15:59:47,763  INFO        -> rewrite: Aceasta parametru afiseaza ultimul octet de date transmis prin interfata Modbus.
+2026-05-20 15:59:47,779  INFO      24915 0x5864:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:59:47,864  INFO      23129 0x232F:010 (Lenze_i550)  existing_len=230  qc=rewrite
+2026-05-20 15:59:50,130  INFO        -> rewrite: Seteaza o limita pentru castigul diferentiatorului in bucla PID de proces. Fara 
+2026-05-20 15:59:50,231  INFO      3976 7-39 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:59:55,789  INFO        -> rewrite: Afiseaza octetul de date din ultima transmisie Modbus. Acest parametru este read
+2026-05-20 15:59:55,803  INFO        -> rewrite: Afiseaza starea curenta a initializarii dispozitivelor slave EtherCAT. Valoarea 
+2026-05-20 15:59:55,890  INFO      23130 0x232F:011 (Lenze_i550)  existing_len=248  qc=rewrite
+2026-05-20 15:59:55,903  INFO      24916 0x5864:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:00,850  INFO        -> rewrite: Defineste banda de toleranta in jurul referintei pentru control PID. Cand difere
+2026-05-20 16:00:00,950  INFO      3977 7-49 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:00:03,191  INFO        -> rewrite: Afiseaza ultimul byte de date transmis prin interfata Modbus. Este un parametru 
+2026-05-20 16:00:03,292  INFO      23131 0x232F:012 (Lenze_i550)  existing_len=185  qc=rewrite
+2026-05-20 16:00:06,510  INFO        -> rewrite: Afiseaza starea de initializare a dispozitivelor slave EtherCAT conectate in ret
+2026-05-20 16:00:06,610  INFO      24917 0x5864:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:10,461  INFO        -> rewrite: Afiseaza ultimul byte de date transmis prin comunicatia Modbus. Valoarea 10 repr
+2026-05-20 16:00:10,561  INFO      23132 0x232F:013 (Lenze_i550)  existing_len=245  qc=rewrite
+2026-05-20 16:00:12,451  INFO        -> rewrite: Selecteaza directia actiunii de control a controllerului PID. [0] Normal: daca e
+2026-05-20 16:00:12,552  INFO      3978 7-56 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:00:14,375  INFO        -> rewrite: Afiseaza starea de initializare a modulelor slave EtherCAT conectate la retea. V
+2026-05-20 16:00:14,475  INFO      24918 0x5864:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:15,870  INFO        -> rewrite: Afiseaza ultimul byte de date transmis in comunicatia Modbus. Este un parametru 
+2026-05-20 16:00:15,970  INFO      23133 0x232F:014 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:00:23,187  INFO        -> rewrite: Afiseaza starea curenta a procesului de initializare pentru modulele slave Ether
+2026-05-20 16:00:23,288  INFO      24919 0x5864:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:23,882  INFO        -> rewrite: Afiseaza valoarea ultimului byte de date transmis prin interfata Modbus. Paramet
+2026-05-20 16:00:23,983  INFO      23134 0x232F:015 (Lenze_i550)  existing_len=227  qc=rewrite
+2026-05-20 16:00:30,491  INFO        -> rewrite: Afiseaza starea curenta a initializarii slave-urilor EtherCAT in retea. Valoarea
+2026-05-20 16:00:30,591  INFO      24920 0x5864:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:34,845  INFO        -> rewrite: Afiseaza valoarea byte-ului de date 13 din ultimul telegram transmis prin comuni
+2026-05-20 16:00:34,946  INFO      23135 0x232F:016 (Lenze_i550)  existing_len=206  qc=rewrite
+2026-05-20 16:00:40,084  INFO        -> rewrite: Afiseaza starea curenta de initializare a slave-urilor EtherCAT. Valoarea indica
+2026-05-20 16:00:40,117  INFO        -> rewrite: Afiseaza octetul de date din ultimul mesaj Modbus transmis. Utilizat pentru depa
+2026-05-20 16:00:40,186  INFO      24921 0x5865:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:40,217  INFO      23136 0x232F:017 (Lenze_i550)  existing_len=223  qc=rewrite
+2026-05-20 16:00:44,193  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul trece-jos de ordinul 1 aplicat referint
+2026-05-20 16:00:44,293  INFO      3979 7-57 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:00:46,081  INFO        -> rewrite: Afiseaza ultimul byte de date transmis prin Modbus. Folosit pentru depanarea pro
+2026-05-20 16:00:46,181  INFO      23137 0x23B0 (Lenze_i550)  existing_len=239  qc=rewrite
+2026-05-20 16:00:47,371  INFO        -> rewrite: Afiseaza starea operationala a primului dispozitiv slave EtherCAT in retea. Indi
+2026-05-20 16:00:47,471  INFO      24922 0x5865:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:55,465  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul trece-jos de ordinul 1 aplicat semnalul
+2026-05-20 16:00:55,566  INFO      3980 7-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:00:56,714  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul 2 in reteaua EtherCAT. Valoarea i
+2026-05-20 16:00:56,814  INFO      24923 0x5865:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:00:58,641  INFO        -> rewrite: Controleaza comunicatia Modbus TCP. Restartul activeaza modificarile facute in c
+2026-05-20 16:00:58,742  INFO      23138 0x23B1:001 (Lenze_i550)  existing_len=195  qc=rewrite
+2026-05-20 16:01:04,373  INFO        -> rewrite: Seteaza deviatia unghiulara a motorului la sarcina nominala intr-un sistem de di
+2026-05-20 16:01:04,474  INFO      3981 7-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:05,061  INFO        -> rewrite: Afiseaza starea operationala a dispozitivului EtherCAT slave 3 in retea. Paramet
+2026-05-20 16:01:05,162  INFO      24924 0x5865:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:09,752  INFO        -> rewrite: Seteaza adresa IP a convertizorului de frecventa pentru comunicatia Modbus TCP/I
+2026-05-20 16:01:09,852  INFO      23139 0x23B1:002 (Lenze_i550)  existing_len=297  qc=rewrite
+2026-05-20 16:01:14,343  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul EtherCAT 4. Valoarea indica daca 
+2026-05-20 16:01:14,444  INFO      24925 0x5865:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:16,096  INFO        -> rewrite: Defineste masca de subnet pentru conexiunea Modbus TCP/IP. Valoarea implicita 16
+2026-05-20 16:01:16,122  INFO        -> rewrite: Seteaza timpul integral pentru controllerul PI de pozitie. Un timp mai scurt fac
+2026-05-20 16:01:16,197  INFO      23140 0x23B1:003 (Lenze_i550)  existing_len=228  qc=rewrite
+2026-05-20 16:01:16,223  INFO      3982 7-99 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:19,758  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul EtherCAT 5. Valoarea indica stare
+2026-05-20 16:01:19,858  INFO      24926 0x5865:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:23,634  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul EtherCAT 6. Valoarea indica daca 
+2026-05-20 16:01:23,734  INFO      24927 0x5865:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:26,356  INFO        -> rewrite: Seteaza adresa gateway pentru comunicatia Modbus TCP/IP. Valoarea este codificat
+2026-05-20 16:01:26,456  INFO      23141 0x23B1:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:01:27,228  INFO        -> rewrite: Seteaza timpul minim de rampa pentru controlerul PI de pozitie. Acest parametru 
+2026-05-20 16:01:27,328  INFO      3983 8-08 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:34,172  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul 7 in reteaua EtherCAT. Valoarea r
+2026-05-20 16:01:34,272  INFO      24928 0x5865:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:37,568  INFO        -> rewrite: Stabileste nivelul de filtrare aplicat valorilor afisate si transmise prin field
+2026-05-20 16:01:37,669  INFO      3984 8-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:37,922  INFO        -> rewrite: Seteaza configuratia adresei IP pentru comunicatia Modbus TCP/IP. IP-ul poate fi
+2026-05-20 16:01:38,024  INFO      23142 0x23B1:006 (Lenze_i550)  existing_len=329  qc=rewrite
+2026-05-20 16:01:44,756  INFO        -> rewrite: Afiseaza starea operationala curenta a dispozitivului slave 8 in reteaua EtherCA
+2026-05-20 16:01:44,857  INFO      24929 0x5865:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:45,451  INFO        -> rewrite: Seteaza valoarea TTL (Time-to-live) pentru pachetele de date Modbus TCP/IP in re
+2026-05-20 16:01:45,551  INFO      23143 0x23B1:011 (Lenze_i550)  existing_len=187  qc=rewrite
+2026-05-20 16:01:47,975  INFO        -> rewrite: Permite configurarea cuvantului de stare STW (Status Word) transmis de invertor 
+2026-05-20 16:01:48,075  INFO      3985 8-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:51,155  INFO        -> rewrite: Seteaza numarul portului TCP/IP pentru o a doua conexiune Modbus. Valoarea impli
+2026-05-20 16:01:51,255  INFO      23144 0x23B4:001 (Lenze_i550)  existing_len=261  qc=rewrite
+2026-05-20 16:01:54,253  INFO        -> rewrite: Defineste cuvantul de alarma si avertizare configurabil. Permite selectarea tipu
+2026-05-20 16:01:54,354  INFO      3986 8-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:01:54,596  INFO        -> rewrite: Afiseaza starea operationala curenta a slave-ului EtherCAT numarul 9. Parametrul
+2026-05-20 16:01:54,697  INFO      24930 0x5865:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:01:56,138  INFO        -> rewrite: Seteaza rata de transfer (baud rate) pentru portul serial 1. Valorile uzuale sun
+2026-05-20 16:01:56,239  INFO      23145 0x23B4:002 (Lenze_i550)  existing_len=246  qc=rewrite
+2026-05-20 16:02:03,034  INFO        -> rewrite: Selecteaza codul de produs care este citit prin fieldbus. Setarea 0 afiseaza cod
+2026-05-20 16:02:03,135  INFO      3987 8-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:03,161  INFO        -> rewrite: Afiseaza starea operationala a dispozitivului fieldbus conectat ca slave 10 in r
+2026-05-20 16:02:03,261  INFO      24931 0x5865:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:04,089  INFO        -> rewrite: Configureaza rata de transfer de date pentru portul serial 2. Valoarea 515 cores
+2026-05-20 16:02:04,190  INFO      23146 0x23BB:024 (Lenze_i550)  existing_len=258  qc=rewrite
+2026-05-20 16:02:12,252  INFO        -> rewrite: Acest parametru stocheaza o referinta catre alt parametru in format index/subind
+2026-05-20 16:02:12,287  INFO        -> rewrite: Afiseaza starea curenta a slave-ului EtherCAT cu numarul 11. Valorile posibile i
+2026-05-20 16:02:12,353  INFO      23148 0x23BD (Lenze_i550)  existing_len=259  qc=rewrite
+2026-05-20 16:02:12,387  INFO      24932 0x5865:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:14,156  INFO        -> rewrite: Seteaza intervalul de timp intre doua cadre succesive pe reteaua de comunicatie.
+2026-05-20 16:02:14,256  INFO      3988 8-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:19,052  INFO        -> rewrite: Cod de verificare folosit pentru identificarea versiunii de firmware. Acest para
+2026-05-20 16:02:19,153  INFO      23149 0x23B1:010 (Lenze_i550)  existing_len=233  qc=rewrite
+2026-05-20 16:02:24,297  INFO        -> rewrite: Selecteaza tipul de telegrama folosit pentru comunicatia pe portul FC. Valoarea 
+2026-05-20 16:02:24,398  INFO      3989 8-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:24,824  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul EtherCAT 12. Valoarea indica daca
+2026-05-20 16:02:24,925  INFO      24933 0x5865:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:27,358  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia TCP Modbus. Daca raspunsul 
+2026-05-20 16:02:27,459  INFO      23150 0x23B6:001 (Lenze_i550)  existing_len=259  qc=rewrite
+2026-05-20 16:02:31,465  INFO        -> rewrite: Configureaza parametrii pentru semnale de intrare si iesire. Setarile din acest 
+2026-05-20 16:02:31,565  INFO      3990 8-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:33,087  INFO        -> rewrite: Indicator de stare pentru slave-ul EtherCAT 13. Afiseaza codul de stare curent a
+2026-05-20 16:02:33,188  INFO      24934 0x5865:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:37,794  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru monitorizarea comunicatiei Modbus TCP. 
+2026-05-20 16:02:37,895  INFO      23151 0x23B6:002 (Lenze_i550)  existing_len=303  qc=rewrite
+2026-05-20 16:02:40,757  INFO        -> rewrite: Afiseaza starea operationala a dispozitivului slave EtherCAT cu indexul 14. Valo
+2026-05-20 16:02:40,857  INFO      24935 0x5865:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:42,677  INFO        -> rewrite: Configureaza care parametri sunt asignati la PCD-urile telegramelor de comunicat
+2026-05-20 16:02:42,777  INFO      3991 8-49 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:48,635  INFO        -> rewrite: Afiseaza lista parametrilor care au esuat in timpul transferului in masa (BTM). 
+2026-05-20 16:02:48,736  INFO      3992 8-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:02:48,955  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru monitorizarea keep-alive pe Modbus TCP.
+2026-05-20 16:02:49,055  INFO      23152 0x23B6:005 (Lenze_i550)  existing_len=328  qc=rewrite
+2026-05-20 16:02:51,841  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul EtherCAT cu ID 15. Valoarea retur
+2026-05-20 16:02:51,942  INFO      24936 0x5865:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:02:58,139  INFO        -> rewrite: Selecteaza intrarea digitala care activeaza functia de start al variatorului. Po
+2026-05-20 16:02:58,239  INFO      3993 8-54 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:00,192  INFO        -> rewrite: Acest parametru defineste registrul keep-alive pentru monitorizarea timeout-ului
+2026-05-20 16:03:00,293  INFO      23153 0x2859:008 (Lenze_i550)  existing_len=411  qc=rewrite
+2026-05-20 16:03:01,631  INFO        -> rewrite: Afiseaza starea dispozitivului pentru slave-ul 16 in reteaua EtherCAT. Valoarea 
+2026-05-20 16:03:01,731  INFO      24937 0x2360 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:09,636  INFO        -> rewrite: Comanda restart pentru comunicatia EtherCAT. Dupa trimiterea comenzii, comunicat
+2026-05-20 16:03:09,736  INFO      24938 0x5850:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:10,055  INFO        -> rewrite: Defineste intrarea digitala care controleaza functia de inversare a sensului de 
+2026-05-20 16:03:10,155  INFO      3994 8-55 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:11,295  INFO        -> rewrite: Defineste actiunea intreprinsa de controller cand master-ul Modbus TCP/IP nu pri
+2026-05-20 16:03:11,396  INFO      23154 0x2859:009 (Lenze_i550)  existing_len=336  qc=rewrite
+2026-05-20 16:03:17,826  INFO        -> rewrite: Permite selectarea intre doua configuratii diferite de parametri (Setup A si Set
+2026-05-20 16:03:17,927  INFO      3995 9-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:18,032  INFO        -> rewrite: Trimite o comanda de restart pentru interfata de comunicare EtherCAT. Când este 
+2026-05-20 16:03:18,133  INFO      24939 0x1630:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:20,419  INFO        -> rewrite: Defineste actiunea pe care o executa convertizorul de frecventa atunci cand nu p
+2026-05-20 16:03:20,519  INFO      23155 0x23B2:001 (Lenze_i550)  existing_len=251  qc=rewrite
+2026-05-20 16:03:27,666  INFO        -> rewrite: Parametrul 9-00 defineste valoarea setpoint-ului 0 pentru functia PID sau alta r
+2026-05-20 16:03:27,766  INFO      3996 9-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:30,334  INFO        -> rewrite: Defineste obiectul de aplicatie 1 in harta RPDO (Receive Process Data Object) pe
+2026-05-20 16:03:30,435  INFO      24940 0x1630:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:30,605  INFO        -> rewrite: Afiseaza adresa IP activa utilizata de convertizor in comunicatia Modbus TCP. Pa
+2026-05-20 16:03:30,706  INFO      23156 0x23B2:002 (Lenze_i550)  existing_len=232  qc=rewrite
+2026-05-20 16:03:37,025  INFO        -> rewrite: Afiseaza masca de subretea activa pentru conexiunea Modbus TCP. Este un parametr
+2026-05-20 16:03:37,126  INFO      23157 0x23B2:003 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 16:03:38,112  INFO        -> rewrite: Parametru read-only care afiseaza o valoare curenta masurata. In acest moment va
+2026-05-20 16:03:38,212  INFO      3997 9-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:38,691  INFO        -> rewrite: Defineste maparea celui de-al doilea obiect aplicatie in cadrul procesului RPDO 
+2026-05-20 16:03:38,791  INFO      24941 0x1630:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:43,138  INFO        -> rewrite: Afiseaza adresa gateway activa pentru comunicatia Modbus TCP. Valoarea este afis
+2026-05-20 16:03:43,238  INFO      23158 0x23B2:005 (Lenze_i550)  existing_len=232  qc=rewrite
+2026-05-20 16:03:45,782  INFO        -> rewrite: Defineste al treilea obiect mapat in RPDO pentru comunicatia EtherCAT. Acest cim
+2026-05-20 16:03:45,883  INFO      24942 0x1630:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:46,778  INFO        -> rewrite: Configureaza scrierea datelor de proces (PCD) pentru setarea ExpressionLimit 1. 
+2026-05-20 16:03:46,879  INFO      3999 9-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:52,007  INFO        -> rewrite: Acest parametru afiseaza numarul de sistem al unitatii de actionare. Este un par
+2026-05-20 16:03:52,108  INFO      4000 9-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:03:52,945  INFO        -> rewrite: Afiseaza adresa MAC activa pentru comunicatia Modbus TCP. Aceasta este o adresa 
+2026-05-20 16:03:53,046  INFO      23159 0x23B3 (Lenze_i550)  existing_len=201  qc=rewrite
+2026-05-20 16:03:54,534  INFO        -> rewrite: Defineste obiectul de aplicatie mapat in slotul 4 al RPDO (Receive Process Data 
+2026-05-20 16:03:54,635  INFO      24943 0x1630:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:03:59,457  INFO        -> rewrite: Afiseaza pozitia switch-ului encoder rotativ de la ultima pornire a retelei elec
+2026-05-20 16:03:59,557  INFO      23160 0x23B5:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:04:03,393  INFO        -> rewrite: Selecteaza tipul de telegrama de comunicatie utilizata pentru interfata de field
+2026-05-20 16:04:03,494  INFO      4001 9-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:04,785  INFO        -> rewrite: Defineste obiectul de aplicatie 5 care este transmis prin RPDO in reteaua EtherC
+2026-05-20 16:04:04,886  INFO      24944 0x1630:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:05,868  INFO        -> rewrite: Afiseaza viteza de transfer (baud rate) setata activ pentru Portul 1 de comunica
+2026-05-20 16:04:05,969  INFO      23161 0x23B5:002 (Lenze_i550)  existing_len=227  qc=rewrite
+2026-05-20 16:04:09,361  INFO        -> rewrite: Defineste care grupuri de parametri sunt accesibile in meniul de configurare. Pe
+2026-05-20 16:04:09,461  INFO      4002 9-27 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:12,946  INFO        -> rewrite: Defineste obiectul 6 din mapa RPDO EtherCAT care receptioneaza Control Word-ul d
+2026-05-20 16:04:13,046  INFO      24945 0x1630:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:14,280  INFO        -> rewrite: Acest parametru afiseaza informatii de diagnostic despre sistem sau motor. Este 
+2026-05-20 16:04:14,380  INFO      23162 0x23B8 (Lenze_i550)  existing_len=218  qc=rewrite
+2026-05-20 16:04:17,013  INFO        -> rewrite: Controleaza daca parametrii pot fi editati in timpul functionarii. Cand este set
+2026-05-20 16:04:17,113  INFO      4003 9-28 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:21,720  INFO        -> rewrite: Afiseaza starea curenta a modulului TCP pentru comunicatia Modbus TCP. Parametru
+2026-05-20 16:04:21,820  INFO      23163 0x23B9 (Lenze_i550)  existing_len=216  qc=rewrite
+2026-05-20 16:04:21,920  INFO        -> rewrite: Mapeaza bitul 6 al cuvantului de control la obiectul de aplicatie 7 in cadrul ha
+2026-05-20 16:04:22,020  INFO      24946 0x1630:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:28,906  INFO        -> rewrite: Afiseaza starea curenta a retelei Modbus TCP/IP. Parametru read-only folosit pen
+2026-05-20 16:04:29,007  INFO      23164 0x23BA:001 (Lenze_i550)  existing_len=225  qc=rewrite
+2026-05-20 16:04:30,680  INFO        -> rewrite: Activeaza functia de comutare ciclica intre set-up-ul 1 si set-up-ul 2 pentru ap
+2026-05-20 16:04:30,781  INFO      4004 9-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:31,526  INFO        -> rewrite: Defineste maparea RPDO pentru cuvantul de control (object 8) in comunicatia Ethe
+2026-05-20 16:04:31,626  INFO      24947 0x1630:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:36,997  INFO        -> rewrite: Afiseaza numarul total de mesaje Modbus TCP primite de convertizor. Contorizeaza
+2026-05-20 16:04:37,098  INFO      23165 0x23BA:002 (Lenze_i550)  existing_len=227  qc=rewrite
+2026-05-20 16:04:38,618  INFO        -> rewrite: Contorizeaza mesajele de eroare receptionate pe interfata fieldbus. Valoarea cre
+2026-05-20 16:04:38,719  INFO      4005 9-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:40,441  INFO        -> rewrite: Mapeaza obiectul de aplicatie 9 in RPDO EtherCAT. Acest parametru defineste ce d
+2026-05-20 16:04:40,542  INFO      24948 0x1630:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:45,480  INFO        -> rewrite: Afiseaza numarul total de mesaje valide receptionate prin protocolul Modbus TCP.
+2026-05-20 16:04:45,581  INFO      23166 0x23BA:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:04:46,378  INFO        -> rewrite: Parametru de diagnostic care afiseaza codul ultimului fault inregistrat de VFD. 
+2026-05-20 16:04:46,478  INFO      4006 9-47 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:49,605  INFO        -> rewrite: Defineste continutul unui RPDO (Receive Process Data Object) in comunicatia Ethe
+2026-05-20 16:04:49,706  INFO      24949 0x1630:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:04:49,974  INFO        -> rewrite: Contorizeaza numarul de mesaje Modbus TCP receptionate cu exceptii sau erori de 
+2026-05-20 16:04:50,074  INFO      23167 0x23BA:005 (Lenze_i550)  existing_len=197  qc=rewrite
+2026-05-20 16:04:52,745  INFO        -> rewrite: Afiseaza numarul ultimului defect inregistrat in variator. Valoarea 0 indica abs
+2026-05-20 16:04:52,846  INFO      4007 9-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:04:54,691  INFO        -> rewrite: Afiseaza numarul total de mesaje Modbus TCP trimise de convertizor. Dupa atinger
+2026-05-20 16:04:54,792  INFO      23168 0x23BE:001 (Lenze_i550)  existing_len=252  qc=rewrite
+2026-05-20 16:04:55,441  INFO        -> rewrite: Defineste obiectul de aplicatie 11 care este mapat in RPDO-ul EtherCAT. RPDO-uri
+2026-05-20 16:04:55,542  INFO      24950 0x1630:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:02,962  INFO        -> rewrite: Seteaza offsetul pentru afisarea ultimului mesaj Modbus TCP receptionat. Datele 
+2026-05-20 16:05:03,062  INFO      23169 0x23BE:002 (Lenze_i550)  existing_len=216  qc=rewrite
+2026-05-20 16:05:03,478  INFO        -> rewrite: Acest parametru este un contor de diagnosticare care inregistreaza numarul total
+2026-05-20 16:05:03,579  INFO      4008 9-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:04,014  INFO        -> rewrite: Configureaza maparea obiectului de aplicatie 12 in RPDO EtherCAT. Acest parametr
+2026-05-20 16:05:04,114  INFO      24951 0x1630:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:11,421  INFO        -> rewrite: Afiseaza ultimul mesaj receptionat prin reteaua Modbus TCP/IP. Folosit pentru di
+2026-05-20 16:05:11,521  INFO      23170 0x23BE:003 (Lenze_i550)  existing_len=223  qc=rewrite
+2026-05-20 16:05:13,205  INFO        -> rewrite: Configureaza maparea obiectului 13 in RPDO (Receive Process Data Object) pentru 
+2026-05-20 16:05:13,225  INFO        -> rewrite: Acest parametru afiseaza cuvantul de avertizare Profibus — bitii indica ce avert
+2026-05-20 16:05:13,305  INFO      24952 0x1630:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:13,326  INFO      4009 9-63 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:18,367  INFO        -> rewrite: Seteaza offset-ul pentru afisarea ultimului mesaj transmis Modbus TCP/IP. Pentru
+2026-05-20 16:05:18,467  INFO      23171 0x23BE:004 (Lenze_i550)  existing_len=237  qc=rewrite
+2026-05-20 16:05:21,845  INFO        -> rewrite: Afiseaza rata de transfer detectata automat pe interfata de comunicatie. Valoare
+2026-05-20 16:05:21,946  INFO      4010 9-64 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:23,348  INFO        -> rewrite: Defineste obiectul de aplicatie care este mapat in RPDO-ul de receptionare Ether
+2026-05-20 16:05:23,449  INFO      24953 0x1630:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:30,317  INFO        -> rewrite: Parametru de diagnostic read-only care afiseaza continutul ultimului mesaj trans
+2026-05-20 16:05:30,330  INFO        -> rewrite: Afiseaza codul de identificare al dispozitivului VFD. Este un parametru read-onl
+2026-05-20 16:05:30,418  INFO      23172 0x23C0 (Lenze_i550)  existing_len=210  qc=rewrite
+2026-05-20 16:05:30,431  INFO      4011 9-65 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:33,147  INFO        -> rewrite: Mapeaza obiectul de aplicatie 15 in cadrul mesajului RPDO EtherCAT pentru recept
+2026-05-20 16:05:33,247  INFO      24954 0x1630:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:37,548  INFO        -> rewrite: Defineste numarul profilului de configurare pentru controllerul de motor. Permit
+2026-05-20 16:05:37,650  INFO      4012 9-67 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:37,815  INFO        -> rewrite: Comanda de restart sau oprire a comunicatiei POWERLINK pe fieldbus industrial. D
+2026-05-20 16:05:37,916  INFO      23173 0x1F99 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:05:43,011  INFO        -> rewrite: Defineste al 16-lea obiect de aplicatie mapat in RPDO-ul EtherCAT. Acest paramet
+2026-05-20 16:05:43,112  INFO      24955 0x1A30:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:46,895  INFO        -> rewrite: Cuvantul de control 1 este un parametru de comunicatie fieldbus care primeste co
+2026-05-20 16:05:46,996  INFO      4013 9-68 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:49,684  INFO        -> rewrite: Defineste timpul maxim in milisecunde pe care nodul controlat (slave) asteapta n
+2026-05-20 16:05:49,785  INFO      23174 0x1F9A (Lenze_i550)  existing_len=233  qc=rewrite
+2026-05-20 16:05:52,149  INFO        -> rewrite: cuvant de stare pe 16 biti care indica starea curenta a convertizorului de frecv
+2026-05-20 16:05:52,250  INFO      4014 9-70 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:05:55,508  INFO        -> rewrite: Seteaza primul obiect din mapa TPDO1 pentru comunicatia EtherCAT. Mapeaza cuvant
+2026-05-20 16:05:55,608  INFO      24956 0x1A30:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:05:57,558  INFO        -> rewrite: Seteaza numele dispozitivului compatibil DNS pentru identificare in retea. Lungi
+2026-05-20 16:05:57,658  INFO      23175 0x1F9E (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 16:06:03,292  INFO        -> rewrite: Selecteaza care set de parametri (Set-up) este activ sau in curs de editare. Per
+2026-05-20 16:06:03,392  INFO      4015 9-71 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:05,021  INFO        -> rewrite: Mapeaza al doilea obiect in TPDO1 (Transmit Process Data Object 1) pentru comuni
+2026-05-20 16:06:05,122  INFO      24957 0x1A30:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:08,397  INFO        -> rewrite: Aceasta comanda permite nodului coordonator sa execute o resetare a nodului cont
+2026-05-20 16:06:08,497  INFO      23178 0x1F98:004 (Lenze_i550)  existing_len=360  qc=rewrite
+2026-05-20 16:06:12,459  INFO        -> rewrite: Activeaza salvarea valorilor parametrilor prin Profibus in memoria nevolatila. C
+2026-05-20 16:06:12,560  INFO      4016 9-72 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:14,118  INFO        -> rewrite: Mapeaza cuvantul de stare al drive-ului in al treilea obiect TPDO pentru transmi
+2026-05-20 16:06:14,218  INFO      24958 0x1A30:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:16,490  INFO        -> rewrite: Seteaza dimensiunea maxima a datelor ce pot fi receptionate de nodul controlat p
+2026-05-20 16:06:16,591  INFO      23179 0x1F98:005 (Lenze_i550)  existing_len=320  qc=rewrite
+2026-05-20 16:06:19,384  INFO        -> rewrite: Reseteaza comunicatia Profibus si fortand o reconfigurare a drive-ului pe bus. F
+2026-05-20 16:06:19,485  INFO      4017 9-75 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:21,013  INFO        -> rewrite: Mapeaza cuvantul de stare 03 (Status word) in al patrulea slot al TPDO EtherCAT.
+2026-05-20 16:06:21,113  INFO      24959 0x1A30:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:25,527  INFO        -> rewrite: Acest parametru afiseaza identificatorul tipului de iesire digitala (DO). Este u
+2026-05-20 16:06:25,627  INFO      4018 9-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:26,702  INFO        -> rewrite: Seteaza dimensiunea maxima in octeti a datelor PDO care pot fi transmise de nodu
+2026-05-20 16:06:26,802  INFO      23180 0x1300 (Lenze_i550)  existing_len=371  qc=rewrite
+2026-05-20 16:06:31,911  INFO        -> rewrite: Defineste obiectul de aplicatie mapat in TPDO 5 pentru comunicatia EtherCAT. Val
+2026-05-20 16:06:32,012  INFO      24960 0x1A30:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:36,923  INFO        -> rewrite: Defineste timpul maxim de asteptare pentru detectarea unei conexiuni SDO abandon
+2026-05-20 16:06:36,956  INFO        -> rewrite: Acest parametru gestioneaza lista parametrilor care au fost definite sau modific
+2026-05-20 16:06:37,023  INFO      23181 0x1301 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:06:37,057  INFO      4019 9-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:42,225  INFO        -> rewrite: Afiseaza numarul de parametri care au fost modificati fata de setarile din fabri
+2026-05-20 16:06:42,326  INFO      4020 9-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:43,356  INFO        -> rewrite: Mapeaza cuvantul de stare 05 la obiectul 6 din TPDO (Transmit Process Data Objec
+2026-05-20 16:06:43,456  INFO      24961 0x1A30:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:43,597  INFO        -> rewrite: Seteaza timpul de asteptare pentru detectarea unei conexiuni SDO intrerupte in l
+2026-05-20 16:06:43,697  INFO      23182 0x1F98:006 (Lenze_i550)  existing_len=297  qc=rewrite
+2026-05-20 16:06:50,103  INFO        -> rewrite: Parameter de diagnostic care afiseaza numarul total de parametri care au fost mo
+2026-05-20 16:06:50,203  INFO      4021 9-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:06:54,137  INFO        -> rewrite: Mapeaza obiectul de aplicatie 7 in TPDO EtherCAT pentru transmisie in timp real.
+2026-05-20 16:06:54,238  INFO      24962 0x1A30:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:06:54,863  INFO        -> rewrite: Afiseaza intarzierea maxima a raspunsului asincron in comunicatia CANopen. Masoa
+2026-05-20 16:06:54,964  INFO      23183 0x1F98:008 (Lenze_i550)  existing_len=297  qc=rewrite
+2026-05-20 16:07:01,053  INFO        -> rewrite: Parametru de diagnostic care afiseaza numarul total de parametri care au fost mo
+2026-05-20 16:07:01,153  INFO      4022 9-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:01,896  INFO        -> rewrite: Configureaza maparea obiectului 8 in TPDO EtherCAT pentru transmisie date de la 
+2026-05-20 16:07:01,996  INFO      24963 0x1A30:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:02,914  INFO        -> rewrite: Seteaza dimensiunea maxima a datelor utilizator pentru cadrele asincrone in comu
+2026-05-20 16:07:03,015  INFO      23184 0x2859:010 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 16:07:08,007  INFO        -> rewrite: Defineste obiectul de aplicatie care este mapat in TPDO (Transmit Process Data O
+2026-05-20 16:07:08,107  INFO      24964 0x1A30:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:09,127  INFO        -> rewrite: Afiseaza numarul total de parametri care au fost modificati fata de setarile din
+2026-05-20 16:07:09,227  INFO      4023 9-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:12,445  INFO        -> rewrite: Selecteaza raspunsul de eroare care va fi executat de variator in cazul detectie
+2026-05-20 16:07:12,545  INFO      23185 0x2859:011 (Lenze_i550)  existing_len=271  qc=rewrite
+2026-05-20 16:07:19,009  INFO        -> rewrite: Parametru de diagnostic care afiseaza numarul total de parametri care au fost mo
+2026-05-20 16:07:19,110  INFO      4024 9-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:21,723  INFO        -> rewrite: Selecteaza raspunsul de eroare cand se pierde SoC (State of Control) in reteaua 
+2026-05-20 16:07:21,824  INFO      23186 0x0001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:07:22,377  INFO        -> rewrite: Defineste continutul obiectului TPDO (Transmit Process Data Object) pentru trans
+2026-05-20 16:07:22,478  INFO      24965 0x1A30:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:26,477  INFO        -> rewrite: Contorizeaza si afiseaza numarul total de parametri care au fost modificati fata
+2026-05-20 16:07:26,578  INFO      4025 9-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:31,257  INFO        -> rewrite: Defineste obiectul de aplicatie 11 care este transmis prin TPDO in reteaua Ether
+2026-05-20 16:07:31,358  INFO      24966 0x1A30:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:31,862  INFO        -> rewrite: Controleaza accesul la modificarea parametrilor. Cand este activat, blocheaza or
+2026-05-20 16:07:31,963  INFO      23188 0x1C0A:001 (Lenze_i550)  existing_len=241  qc=rewrite
+2026-05-20 16:07:32,488  INFO        -> rewrite: Acest parametru afiseaza o lista cu toti parametrii care au fost modificati fata
+2026-05-20 16:07:32,589  INFO      4026 9-92 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:36,264  INFO        -> rewrite: Afiseaza numarul de erori de coliziune detectate de nodul controlat intr-o retea
+2026-05-20 16:07:36,365  INFO      23189 0x1C0B:001 (Lenze_i550)  existing_len=313  qc=rewrite
+2026-05-20 16:07:37,733  INFO        -> rewrite: Mapeaza obiectul aplicatiei 12 intr-un TPDO EtherCAT pentru transmisie de date i
+2026-05-20 16:07:37,833  INFO      24967 0x1A30:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:37,922  INFO        -> rewrite: Acest parametru este un indicator de stare care arata cati parametri au fost mod
+2026-05-20 16:07:38,023  INFO      4027 9-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:44,333  INFO        -> rewrite: Afiseaza numarul total de pierderi SoC (Safety of Communication) detectate de no
+2026-05-20 16:07:44,434  INFO      23190 0x1C0B:002 (Lenze_i550)  existing_len=320  qc=rewrite
+2026-05-20 16:07:45,988  INFO        -> rewrite: Acest parametru este read-only si afiseaza numarul total de parametri care au fo
+2026-05-20 16:07:46,089  INFO      4028 9-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:47,935  INFO        -> rewrite: Defineste obiectul de aplicatie care va fi mapat in canalul 13 al TPDO EtherCAT.
+2026-05-20 16:07:48,035  INFO      24968 0x1A30:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:07:51,009  INFO        -> rewrite: Afiseaza calitatea retelei in raport cu pierderile SoC (State of Control). Conti
+2026-05-20 16:07:51,110  INFO      23191 0x1C0B:003 (Lenze_i550)  existing_len=280  qc=rewrite
+2026-05-20 16:07:51,538  INFO        -> rewrite: Acest parametru afiseaza o lista cu toate parametrii care au fost modificati fat
+2026-05-20 16:07:51,638  INFO      4029 10-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:07:56,437  INFO        -> rewrite: Defineste obiectul de aplicatie care va fi transmis prin TPDO (Transmit PDO) pe 
+2026-05-20 16:07:56,538  INFO      24969 0x1A30:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:08:00,556  INFO        -> rewrite: Seteaza pragul de eroare pentru monitorizarea pierderilor de comunicatie (SoC). 
+2026-05-20 16:08:00,657  INFO      23192 0x1C0F:001 (Lenze_i550)  existing_len=286  qc=rewrite
+2026-05-20 16:08:02,541  INFO        -> rewrite: Defineste activarea functiei de limitare a expresiilor pentru protocolul CAN. Va
+2026-05-20 16:08:02,641  INFO      4030 10-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:08:04,520  INFO        -> rewrite: Mapeaza obiectul de aplicatie 15 in TPDO pentru transmisie EtherCAT. Aceasta set
+2026-05-20 16:08:04,621  INFO      24970 0x1A30:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:08:07,516  INFO        -> rewrite: Afiseaza numarul total de erori CRC detectate de nodul controlat in reteaua CAN.
+2026-05-20 16:08:07,617  INFO      23193 0x1C0F:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:08:12,696  INFO        -> rewrite: Defineste obiectul de aplicatie care este mapat in TPDO 16 pentru comunicare Eth
+2026-05-20 16:08:12,812  INFO        -> rewrite: Defineste viteza de comunicare seriala pentru portul RS-485. Valorile tipice sun
+2026-05-20 16:08:12,912  INFO      4031 10-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
