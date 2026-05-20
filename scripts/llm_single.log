@@ -1706,3 +1706,782 @@
 2026-05-20 12:55:05,908  INFO        -> new: Acest parametru indica o avertizare de supraincalzire a unitatii de putere (PU) 
 2026-05-20 12:55:05,968  INFO      23647 0x2833 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 12:55:06,008  INFO      23344 0x1815 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:07,613  INFO        -> new: Seteaza valoarea cuplului pentru segmentul 8 al secventiatorului. Valoarea este 
+2026-05-20 12:55:07,713  INFO      22621 0x402D:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:08,085  INFO        -> new: Reporneste sau opreste comunicatia Modbus TCP. Dupa modificarea parametrilor de 
+2026-05-20 12:55:08,186  INFO      23138 0x23B1:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:08,698  INFO        -> new: Afiseaza versiunea bootloader-ului pentru optiunea de comunicatie in retea. Este
+2026-05-20 12:55:08,799  INFO      23550 0x2000:017 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:08,881  INFO        -> new: Afiseaza intrarea cu numarul 5 din istoricul erorilor VFD-ului. Contine informat
+2026-05-20 12:55:08,916  INFO        -> new: Seteaza timpul minim intre transmisia a doua PDO-uri identice pentru TPDO2 confo
+2026-05-20 12:55:08,982  INFO      23237 0x1003:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:09,016  INFO      22930 0x1801:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:11,829  INFO        -> new: Afiseaza indicele obiectului de mapare pentru TPDO1. Parametru doar pentru citir
+2026-05-20 12:55:11,888  INFO        -> new: Seteaza pragul de avertizare pentru utilizarea unitatii de putere a invertorului
+2026-05-20 12:55:11,930  INFO      23030 0x1C13:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:11,989  INFO      23444 0x2D40:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:12,102  INFO        Committed + pushed
+2026-05-20 12:55:12,102  INFO      DONE: total=38 {'keep': 0, 'rewrite': 0, 'new': 31, 'error': 7} cost=$0.0543
+2026-05-20 12:55:12,340  INFO        -> new: Cuvant de stare bit-coded care afiseaza conditiile curente ale invertorului. Fie
+2026-05-20 12:55:12,440  INFO      23648 0x2826 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:13,180  INFO        -> new: Seteaza adresa IP pentru interfata Modbus TCP/IP. Valoarea default 276605120 cor
+2026-05-20 12:55:13,280  INFO      23139 0x23B1:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:13,811  INFO        -> new: Seteaza numarul de impulsuri pe revolutie ale encoderului incremental utilizat p
+2026-05-20 12:55:13,912  INFO      22728 0x2C42:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:16,009  INFO        -> new: Afiseaza subtipul de firmware al unitatii de control (CU). Este un parametru inf
+2026-05-20 12:55:16,110  INFO      23551 0x2002:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:16,182  INFO        -> new: Defineste valoarea cuvantului de date NetWordOUT2 pentru segmentul 8 al secvente
+2026-05-20 12:55:16,283  INFO      22622 0x402D:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:17,452  INFO        -> new: Defineste functia care este activata de bitul 10 al cuvantului de intrare NetWor
+2026-05-20 12:55:17,553  INFO      22830 0x400E:012 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:18,104  INFO        -> new: Acest parametru indica starea de temperatura a motorului. Când senzorul de tempe
+2026-05-20 12:55:18,204  INFO      23345 0x1816 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:19,501  INFO        -> new: Afiseaza utilizarea curenta a dispozitivului ca procent din capacitatea nominala
+2026-05-20 12:55:19,602  INFO      23445 0x2D40:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:19,653  INFO        -> new: Seteaza masca de subnet pentru conexiunea Modbus TCP/IP. Valoarea implicita 255.
+2026-05-20 12:55:19,753  INFO      23140 0x23B1:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:20,591  INFO        -> new: Seteaza timpul de ciclu pentru transmisia TPDO2 cand se utilizeaza tipul de tran
+2026-05-20 12:55:20,691  INFO      22931 0x1802:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:21,045  INFO        -> new: Selecteaza indexul obiectului Object Dictionary care va fi mapat in TPDO2 (Trans
+2026-05-20 12:55:21,145  INFO      23031 0x1C32:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:21,534  INFO        -> new: Seteaza intervalul de timp dupa care, daca motorul continua sa se roteasca in ti
+2026-05-20 12:55:21,635  INFO      23649 0x2839:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:22,411  ERROR       Error 0x1802:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80a9994f07e661f1f89cfde736c'}
+2026-05-20 12:55:22,433  INFO        -> new: Afiseaza codul de tip al unitatii de control (CU) montata in VFD. Este un parame
+2026-05-20 12:55:22,471  INFO        -> new: Camp rezervat pentru segmentul 8 al sequencer-ului. Nu are functie activa in ace
+2026-05-20 12:55:22,533  INFO      23552 0x2002:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:22,571  INFO      22623 0x402E:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:22,858  ERROR       Error 0x1C32:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80a09471c7a30eac17bb4e7da95'}
+2026-05-20 12:55:23,264  ERROR       Error 0x2839:006: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80b3ffba1ccabc9ffbdbc90a773'}
+2026-05-20 12:55:24,047  INFO        -> new: Indică o stare de avertizare legata de tensiunea de alimentare externa. Cand ten
+2026-05-20 12:55:24,148  INFO      23346 0x1817 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:24,301  ERROR       Error 0x2002:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80cf7f935cd2c4d3cef23376834'}
+2026-05-20 12:55:24,344  ERROR       Error 0x402E:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80c95eb45dd773e8329e6baf60d'}
+2026-05-20 12:55:25,480  INFO        -> new: Afiseaza viteza actuala masurata de encoder in unitati de turatie. Valoarea este
+2026-05-20 12:55:25,581  INFO      22729 0x2C42:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:25,942  ERROR       Error 0x1817: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80d334f521401d1c765d4095c45'}
+2026-05-20 12:55:26,073  ERROR       Error 0x1802:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80de6ed3c0776574780fd428b64'}
+2026-05-20 12:55:26,696  ERROR       Error 0x1C32:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80e3305ed945d53ecee45c58d64'}
+2026-05-20 12:55:26,850  ERROR       Error 0x2839:006: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80e081440370e4eee59468bd83c'}
+2026-05-20 12:55:27,330  ERROR       Error 0x2C42:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80f060f890abad7c1bf072fa3e6'}
+2026-05-20 12:55:27,924  INFO        -> new: Seteaza adresa gateway pentru comunicatia Modbus TCP/IP in retea. Adresa trebuie
+2026-05-20 12:55:28,025  INFO      23141 0x23B1:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:28,060  ERROR       Error 0x2002:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80f7b13c6bd4bc62f5ad74508f0'}
+2026-05-20 12:55:28,310  ERROR       Error 0x402E:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb80f16bce6f087cc0f21aa582e3e'}
+2026-05-20 12:55:29,252  INFO        -> new: Seteaza raspunsul care va fi executat cand functia de monitorizare a supraincarc
+2026-05-20 12:55:29,353  INFO      23446 0x2839:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:29,840  ERROR       Error 0x23B1:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8118046b9c07eb3012c2b7ff688'}
+2026-05-20 12:55:30,150  ERROR       Error 0x1817: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb812fa6d32cdcee98486a5d67bb2'}
+2026-05-20 12:55:31,070  ERROR       Error 0x2C42:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb812e9e23fcea8614c36a573178a'}
+2026-05-20 12:55:31,684  ERROR       Error 0x2839:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8130d416947fd5f465f4e46bbba'}
+2026-05-20 12:55:32,271  INFO        -> new: Defineste functia care este activata prin bitul 11 al cuvantului de comunicatie 
+2026-05-20 12:55:32,306  ERROR       Error 0x1802:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8146260f418c3ca4cfe67630052'}
+2026-05-20 12:55:32,372  INFO      22831 0x400E:013 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:32,501  ERROR       Error 0x1C32:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb814dd824c7b405159578ec89678'}
+2026-05-20 12:55:33,006  ERROR       Error 0x2839:006: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8146608fac51855df3f79e5a777'}
+2026-05-20 12:55:33,587  ERROR       Error 0x23B1:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb815f8f863359f98c370813bf50c'}
+2026-05-20 12:55:33,806  ERROR       Error 0x2002:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8157b15db04f97cc2ff80bb281c'}
+2026-05-20 12:55:33,899  ERROR       Error 0x402E:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8154ca68d748d24a2faf17f5dd3'}
+2026-05-20 12:55:33,972  ERROR       Error 0x400E:013: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb81557868331ac1d7543c00ce46d'}
+2026-05-20 12:55:35,230  ERROR       Error 0x2839:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb817de7ca3d75ff13944e0db8799'}
+2026-05-20 12:55:35,873  ERROR       Error 0x1817: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb817a7a08a42c1114318446fafdc'}
+2026-05-20 12:55:36,758  ERROR       Error 0x2C42:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb818da00d94f0650535b7faeebcc'}
+2026-05-20 12:55:37,677  ERROR       Error 0x400E:013: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb819c1b84a3e612590b5a5e43442'}
+2026-05-20 12:55:38,307  INFO      22932 0x1802:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:38,501  INFO      23032 0x1C32:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:39,006  INFO      23650 0x2857:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:39,241  ERROR       Error 0x23B1:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb81bb2a90023b477be1ea69558ab'}
+2026-05-20 12:55:39,807  INFO      23553 0x2002:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:39,899  INFO      22624 0x402E:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:40,316  ERROR       Error 0x1802:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb81c775839a5d61718bc8a737487'}
+2026-05-20 12:55:40,621  ERROR       Error 0x1C32:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb81cf7551da149606be84387ff3c'}
+2026-05-20 12:55:40,922  ERROR       Error 0x2839:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb81cccc785f74095b2bd7ad1175e'}
+2026-05-20 12:55:41,873  INFO      23347 0x1818 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:42,759  INFO      22730 0x2C45 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:45,241  INFO      23142 0x23B1:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:46,923  INFO      23447 0x2839:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:47,734  INFO        -> new: Defineste actiunea care va fi executata cand se detecteaza un timeout Heartbeat 
+2026-05-20 12:55:47,834  INFO      23651 0x2857:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:48,581  INFO        -> new: Reprezinta numarul de serie unic al unitatii de control. Este atribuit din fabri
+2026-05-20 12:55:48,682  INFO      23554 0x2002:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:49,038  INFO        -> new: Defineste functia care este activata prin bitul 12 al cuvantului de intrare de r
+2026-05-20 12:55:49,138  INFO      22832 0x400E:014 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:49,402  INFO        -> new: Acest parametru semnaleaza o neconcordanta intre hardware-ul OEM instalat si fir
+2026-05-20 12:55:49,502  INFO      23348 0x1820 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:49,926  INFO        -> new: Defineste tipul de transmisie pentru TPDO3 in conformitate cu profilul CANopen D
+2026-05-20 12:55:50,026  INFO      22933 0x1802:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:52,311  INFO        -> new: Seteaza timpul de accelerare sau decelerare pentru segmentul final al unei secve
+2026-05-20 12:55:52,338  INFO        -> new: Afiseaza timpul de ciclu pentru comunicatia mailbox pe magistralei EtherCAT. Ace
+2026-05-20 12:55:52,412  INFO      22625 0x402E:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:52,438  INFO      23033 0x1C32:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:52,481  INFO        -> new: Defineste raspunsul variatorului la pierderea semnalului de la encoderul HTL. Mo
+2026-05-20 12:55:52,582  INFO      22731 0x2B01:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:53,242  INFO        -> new: Afiseaza numarul de serie al unitatii de putere (power unit). Este un parametru 
+2026-05-20 12:55:53,343  INFO      23555 0x2040 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:53,576  INFO        -> new: Defineste raspunsul variatorului la expirarea heartbeat-ului de la consumatorul 
+2026-05-20 12:55:53,676  INFO      23652 0x2857:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:54,387  INFO        -> new: Seteaza valoarea TTL (Time-to-live) pentru pachetele de date Modbus TCP/IP in re
+2026-05-20 12:55:54,487  INFO      23143 0x23B1:011 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:58,430  INFO        -> new: Seteaza numarul de incercari automate de repornire dupa aparitia unei defectiuni
+2026-05-20 12:55:58,530  INFO        -> new: Defineste functia care este activata prin bitul 13 al cuvantului de control NetW
+2026-05-20 12:55:58,531  INFO      23448 0x2839:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:58,631  INFO      22833 0x400E:015 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:55:59,466  INFO        -> new: Acest parametru semnaleaza o avertizare legata de ventilatorul intern de racire 
+2026-05-20 12:55:59,568  INFO      23349 0x182A (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:00,593  INFO        -> new: Defineste actiunea pe care drive-ul o executa cand detecteaza un heartbeat timeo
+2026-05-20 12:56:00,693  INFO      23653 0x2857:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:00,726  INFO        -> new: Defineste tensiunea pentru punctul median al caracteristicii V/f personalizate. 
+2026-05-20 12:56:00,780  INFO        -> new: Afiseaza timpul de decalaj pentru comunicatia mailbox in Sync Manager 2 din Ethe
+2026-05-20 12:56:00,827  INFO      22732 0x2B01:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:00,880  INFO      23034 0x1C32:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:01,391  INFO        -> new: Seteaza timpul minim de asteptare intre doua transmisii identice ale TPDO3 pe ma
+2026-05-20 12:56:01,491  INFO      22934 0x1802:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:01,693  INFO        -> new: Defineste timpul de intarziere pentru activarea starilor de iesire la finalul un
+2026-05-20 12:56:01,793  INFO      22626 0x402E:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:02,227  INFO        -> new: Seteaza numarul portului TCP/IP pentru o a doua conexiune Modbus. Valoarea impli
+2026-05-20 12:56:02,328  INFO      23144 0x23B4:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:03,065  INFO        -> new: Arata starea curenta a protectiei la acces dupa logarea cu PIN1 sau PIN2. Este u
+2026-05-20 12:56:03,166  INFO      23556 0x2827 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:05,691  INFO        -> new: Acest cod de eroare indica faptul ca functiile de declansare sau conexiunile int
+2026-05-20 12:56:05,791  INFO      23350 0x182B (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:06,029  INFO        -> new: Defineste functia care este activata prin bitul 14 al cuvantului de date NetWord
+2026-05-20 12:56:06,130  INFO      22834 0x400E:016 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:06,544  INFO        -> new: Seteaza timpul de ciclus pentru transmiterea TPDO3 cand tipul de transmisie este
+2026-05-20 12:56:06,645  INFO      22935 0x2301:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:06,993  INFO        -> new: Afiseaza metodele de sincronizare disponibile pentru comunicatia mailbox in Ethe
+2026-05-20 12:56:07,094  INFO      23035 0x1C32:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:08,989  INFO        -> new: Defineste frecventa punctului intermediar pe curba V/f pentru controlul motorulu
+2026-05-20 12:56:09,090  INFO      22733 0x2B0D:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:10,382  INFO        -> new: Seteaza iesirile digitale la nivelul specificat (LOW sau HIGH) dupa segmentul fi
+2026-05-20 12:56:10,483  INFO      22627 0x402E:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:10,507  INFO        -> new: Seteaza timpul de functionare fara defectiuni dupa care contorul de erori scade 
+2026-05-20 12:56:10,607  INFO      23449 0x2839:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:13,232  INFO        -> new: Configureaza actiunea de raspuns la evenimentul de timeout heartbeat pentru cons
+2026-05-20 12:56:13,333  INFO      23685 0x2B02:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:13,572  INFO        -> new: Seteaza rata de transfer (baud rate) pentru portul serial 1 de comunicatie. Valo
+2026-05-20 12:56:13,673  INFO      23145 0x23B4:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:14,187  INFO        -> new: Defineste functia care este declanșata prin bitul 15 al cuvantului de date mappa
+2026-05-20 12:56:14,234  INFO        -> new: Afiseaza timpul minim de ciclu pentru comunicatia mailbox prin Sync Manager 2. A
+2026-05-20 12:56:14,288  INFO      22835 0x2634:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:14,334  INFO      23036 0x1C33:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:15,526  INFO        -> new: Configureaza modul de atribuire a identificatorilor COB-ID pentru PDO-urile CANo
+2026-05-20 12:56:15,627  INFO      22936 0x1200:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:15,923  INFO        -> new: Defineste sursa activa a setarilor de parametri incarcate in invertor - memorie 
+2026-05-20 12:56:16,023  INFO      23557 0x231F:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:16,072  INFO        -> new: Reprezinta un defect definit de utilizator care poate fi activat prin semnal ext
+2026-05-20 12:56:16,173  INFO      23351 0x182C (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:17,489  INFO        -> new: Seteaza tensiunea de iesire pentru analoagicele iesiri dupa terminarea segmentul
+2026-05-20 12:56:17,590  INFO      22628 0x402E:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:18,281  INFO        -> new: Afiseaza continutul curent al contorului de defectiuni. Continutul contorului cr
+2026-05-20 12:56:18,381  INFO      23450 0x2631:043 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:19,996  WARNING     Incomplete response for 0x1003:006: retry 1/3
+2026-05-20 12:56:21,630  INFO        -> new: Atribuie o functie de trigger bitului 0 din NetWordOUT1. Cand triggerul este FAL
+2026-05-20 12:56:21,731  INFO      22836 0x2634:011 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:22,919  INFO        -> new: Indicele maxim al sub-indexurilor disponibile pentru obiectul SDO1 server (0x120
+2026-05-20 12:56:23,019  INFO      22937 0x1200:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:23,256  INFO        -> new: Defineste prima frecventa punctuala (pe axa X) pentru caracteristica V/f persona
+2026-05-20 12:56:23,341  INFO        -> new: Seteaza rata de transfer (baud rate) pentru portul de comunicare 2 al convertiza
+2026-05-20 12:56:23,357  INFO      23686 0x2B02:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:23,442  INFO      23146 0x23BB:024 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:24,411  INFO        -> new: Defineste valoarea referinta PID dupa finalizarea secventei, adica dupa ce toti 
+2026-05-20 12:56:24,430  INFO        -> new: Defineste tensiunea minima pentru caracteristica V/f ECO. Stabileste limita infe
+2026-05-20 12:56:24,512  INFO      22629 0x402E:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:24,531  INFO      22734 0x2B0D:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:24,923  INFO        -> new: Afiseaza optiunile de retea configurate in prezent in dispozitiv. Cu ajutorul ac
+2026-05-20 12:56:25,024  INFO      23558 0x231F:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:25,225  INFO        -> new: Reprezinta o defectiune definita de utilizator care poate fi configurata si decl
+2026-05-20 12:56:25,326  INFO      23352 0x182D (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:26,723  ERROR       Error 0x231F:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84a32384798ba485d8ef551445d'}
+2026-05-20 12:56:26,899  ERROR       Error 0x182D: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84a446647703e0430c3f9b604d7'}
+2026-05-20 12:56:27,089  INFO        -> new: Defineste metoda de sincronizare pentru datele Receive PDO (RPDO) in comunicatia
+2026-05-20 12:56:27,138  INFO        -> new: Atribuie o sursa de trigger pentru functia "Activate fault 1". Cand trigger-ul d
+2026-05-20 12:56:27,190  INFO      23037 0x1C33:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:27,239  INFO      23451 0x2631:044 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:28,929  ERROR       Error 0x2631:044: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84cc3f356d7c8993d550592360b'}
+2026-05-20 12:56:28,971  ERROR       Error 0x1C33:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84cb5e5e484fc6c2e5095f1bca1'}
+2026-05-20 12:56:30,382  ERROR       Error 0x231F:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84e50b6ff4119eb1fa4ca513bf7'}
+2026-05-20 12:56:30,688  ERROR       Error 0x182D: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb84ebd56916ecd71fd4a820e06fd'}
+2026-05-20 12:56:32,735  ERROR       Error 0x2631:044: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8509d834e476927e88a34daa435'}
+2026-05-20 12:56:32,752  INFO        -> new: Acest parametru defineste un pointer catre parametrul 530 (P530). Formatu 0xiiii
+2026-05-20 12:56:32,852  INFO      23148 0x23BD (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:32,910  ERROR       Error 0x1C33:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb85044cf7bc0c59f4420de6b570f'}
+2026-05-20 12:56:33,420  INFO        -> new: Atribuie un trigger (semnal sursa) bitului 1 al cuvantului de retea NetWordOUT1.
+2026-05-20 12:56:33,521  INFO      22837 0x2634:012 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:33,559  INFO        -> new: Defineste al doilea punct de frecventa (coordonata x) pe curba V/f personalizata
+2026-05-20 12:56:33,610  INFO        -> new: Stocheaza ziua din luna (1-31) cand a fost inregistrata a 6-a eroare din istoric
+2026-05-20 12:56:33,660  INFO      23687 0x2B02:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:33,711  INFO      23238 0x1003:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:34,505  INFO        -> new: Seteaza valoarea cuplului dupa ce secventa de miscare a fost finalizata, adica d
+2026-05-20 12:56:34,587  INFO        -> new: Afiseaza valoarea actuala a factorului de putere (cos phi) in modul VFC-ECO. Est
+2026-05-20 12:56:34,606  INFO      22630 0x402E:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:34,687  INFO      22735 0x2B0C (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:35,173  ERROR       Error 0x2634:012: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb853ffa925da5329a7dda763bf69'}
+2026-05-20 12:56:35,256  ERROR       Error 0x23BD: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb853015e65c8290fc6f3962ca20a'}
+2026-05-20 12:56:35,329  ERROR       Error 0x2B02:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb85357ef4ddf655a7becd04e77c1'}
+2026-05-20 12:56:35,353  ERROR       Error 0x1003:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb85350fe8333715fcd8c9153770d'}
+2026-05-20 12:56:36,226  ERROR       Error 0x231F:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb854f1b9d232cb2cde850288e635'}
+2026-05-20 12:56:36,346  ERROR       Error 0x182D: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8546c882dce18b3ede9f5a5b089'}
+2026-05-20 12:56:36,398  ERROR       Error 0x402E:008: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb854009dc899b5e403c9e6affb7a'}
+2026-05-20 12:56:36,460  ERROR       Error 0x2B0C: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb854d4b067e356cc1dc37155618b'}
+2026-05-20 12:56:37,853  INFO        -> new: Afiseaza identificatorul COB-ID utilizat pentru receptionarea mesajelor SDO de l
+2026-05-20 12:56:37,954  INFO      22938 0x1200:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:38,377  ERROR       Error 0x2631:044: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb856d0c2e9e77e36df686c7b6902'}
+2026-05-20 12:56:38,497  ERROR       Error 0x1C33:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb856c9b936720bbe4533facb334e'}
+2026-05-20 12:56:38,825  ERROR       Error 0x2634:012: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8562d20b9d78b53c08002bc078e'}
+2026-05-20 12:56:38,990  ERROR       Error 0x1003:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb856a4cd21da2f7cef40d767ef3c'}
+2026-05-20 12:56:39,003  ERROR       Error 0x23BD: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8567e0ec2fde6b8c7b879618db9'}
+2026-05-20 12:56:39,064  ERROR       Error 0x2B02:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8565c26c7a50bfde6de75d05ac6'}
+2026-05-20 12:56:39,757  ERROR       Error 0x1200:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb857ff5b9f28f06fe5eb6aa5538b'}
+2026-05-20 12:56:40,040  ERROR       Error 0x2B0C: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8575d34d9e5c23616baed38ad8c'}
+2026-05-20 12:56:40,136  ERROR       Error 0x402E:008: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8585e85f4967584f19a5e894efa'}
+2026-05-20 12:56:42,227  INFO      23559 0x2022:015 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:42,346  INFO      23353 0x182E (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:44,378  INFO      23452 0x2541:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:44,497  INFO      23038 0x1C33:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:45,494  INFO      START: Danfoss_VLT_FC302/explicatie  offset=0 limit=100 batch_size=1  dry=False
+2026-05-20 12:56:46,077  INFO      2955 3-03 (Danfoss_VLT_FC302)  existing_len=309  qc=keep
+2026-05-20 12:56:46,077  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,077  INFO      2956 14-26 (Danfoss_VLT_FC302)  existing_len=222  qc=keep
+2026-05-20 12:56:46,077  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,077  INFO      2957 4-20 (Danfoss_VLT_FC302)  existing_len=309  qc=keep
+2026-05-20 12:56:46,077  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,077  INFO      2958 5-10 (Danfoss_VLT_FC302)  existing_len=270  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2959 5-12 (Danfoss_VLT_FC302)  existing_len=223  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2960 5-13 (Danfoss_VLT_FC302)  existing_len=230  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2961 5-14 (Danfoss_VLT_FC302)  existing_len=263  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2962 0-60 (Danfoss_VLT_FC302)  existing_len=234  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2963 0-20 (Danfoss_VLT_FC302)  existing_len=238  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2964 0-21 (Danfoss_VLT_FC302)  existing_len=286  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2965 0-22 (Danfoss_VLT_FC302)  existing_len=235  qc=keep
+2026-05-20 12:56:46,078  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,078  INFO      2966 0-23 (Danfoss_VLT_FC302)  existing_len=283  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2967 0-24 (Danfoss_VLT_FC302)  existing_len=200  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2968 16-00 (Danfoss_VLT_FC302)  existing_len=285  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2969 16-01 (Danfoss_VLT_FC302)  existing_len=216  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2970 16-02 (Danfoss_VLT_FC302)  existing_len=278  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2971 16-03 (Danfoss_VLT_FC302)  existing_len=283  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2972 16-05 (Danfoss_VLT_FC302)  existing_len=302  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,079  INFO      2973 16-10 (Danfoss_VLT_FC302)  existing_len=256  qc=keep
+2026-05-20 12:56:46,079  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2974 16-11 (Danfoss_VLT_FC302)  existing_len=271  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2975 16-12 (Danfoss_VLT_FC302)  existing_len=247  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2976 16-13 (Danfoss_VLT_FC302)  existing_len=250  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2977 16-14 (Danfoss_VLT_FC302)  existing_len=264  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2978 16-16 (Danfoss_VLT_FC302)  existing_len=277  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2979 16-17 (Danfoss_VLT_FC302)  existing_len=208  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2980 16-18 (Danfoss_VLT_FC302)  existing_len=264  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2981 16-20 (Danfoss_VLT_FC302)  existing_len=314  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,080  INFO      2982 16-30 (Danfoss_VLT_FC302)  existing_len=276  qc=keep
+2026-05-20 12:56:46,080  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2983 16-32 (Danfoss_VLT_FC302)  existing_len=271  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2984 16-33 (Danfoss_VLT_FC302)  existing_len=331  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2985 16-34 (Danfoss_VLT_FC302)  existing_len=247  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2986 16-35 (Danfoss_VLT_FC302)  existing_len=170  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2987 16-36 (Danfoss_VLT_FC302)  existing_len=204  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2988 16-37 (Danfoss_VLT_FC302)  existing_len=269  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2989 16-38 (Danfoss_VLT_FC302)  existing_len=228  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2990 16-39 (Danfoss_VLT_FC302)  existing_len=233  qc=keep
+2026-05-20 12:56:46,081  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,081  INFO      2991 16-40 (Danfoss_VLT_FC302)  existing_len=278  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2992 16-50 (Danfoss_VLT_FC302)  existing_len=314  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2993 16-51 (Danfoss_VLT_FC302)  existing_len=251  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2994 16-52 (Danfoss_VLT_FC302)  existing_len=267  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2995 16-53 (Danfoss_VLT_FC302)  existing_len=228  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2996 16-60 (Danfoss_VLT_FC302)  existing_len=337  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2997 16-61 (Danfoss_VLT_FC302)  existing_len=234  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,082  INFO      2998 16-62 (Danfoss_VLT_FC302)  existing_len=251  qc=keep
+2026-05-20 12:56:46,082  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      2999 16-63 (Danfoss_VLT_FC302)  existing_len=236  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      3000 16-64 (Danfoss_VLT_FC302)  existing_len=223  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      3001 16-65 (Danfoss_VLT_FC302)  existing_len=267  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      3002 16-66 (Danfoss_VLT_FC302)  existing_len=255  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      3003 16-67 (Danfoss_VLT_FC302)  existing_len=201  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,083  INFO      3004 16-68 (Danfoss_VLT_FC302)  existing_len=320  qc=keep
+2026-05-20 12:56:46,083  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3005 16-69 (Danfoss_VLT_FC302)  existing_len=250  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3006 16-70 (Danfoss_VLT_FC302)  existing_len=187  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3007 16-71 (Danfoss_VLT_FC302)  existing_len=212  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3008 16-72 (Danfoss_VLT_FC302)  existing_len=228  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3009 16-73 (Danfoss_VLT_FC302)  existing_len=238  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3010 16-80 (Danfoss_VLT_FC302)  existing_len=296  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3011 16-82 (Danfoss_VLT_FC302)  existing_len=267  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,084  INFO      3012 16-84 (Danfoss_VLT_FC302)  existing_len=222  qc=keep
+2026-05-20 12:56:46,084  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,085  INFO      3013 16-85 (Danfoss_VLT_FC302)  existing_len=303  qc=keep
+2026-05-20 12:56:46,085  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,085  INFO      3014 16-86 (Danfoss_VLT_FC302)  existing_len=281  qc=keep
+2026-05-20 12:56:46,085  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,085  INFO      3015 16-90 (Danfoss_VLT_FC302)  existing_len=235  qc=keep
+2026-05-20 12:56:46,085  INFO        -> keep (existing OK)
+2026-05-20 12:56:46,085  INFO      3016 16-92 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:56:48,810  INFO        -> new: Atribuie un trigger bitului 2 al NetWordOUT1 pentru comunicatie cu dispozitivul 
+2026-05-20 12:56:48,911  INFO      22838 0x2634:013 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:49,826  INFO        -> new: Inregistrarea celui de-al 7-lea fault din istoricul erorilor. Contine codul eror
+2026-05-20 12:56:49,927  INFO      23239 0x1003:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:51,611  INFO        -> new: Seteaza valoarea data word-ului NetWordOUT2 (P591.02) dupa terminarea segmentulu
+2026-05-20 12:56:51,712  INFO      22631 0x402E:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:51,999  INFO        -> new: Afiseaza identificatorul COB-ID pentru directia de transmitere a canalului SDO s
+2026-05-20 12:56:52,100  INFO      22939 0x1201:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:53,176  INFO        -> new: Când este mai mare ca 0 Hz, caracteristica curentului maxim este deplasata către
+2026-05-20 12:56:53,205  INFO        -> new: Cod de verificare pentru validarea integritatii software-ului VFD. Acest paramet
+2026-05-20 12:56:53,276  INFO      22736 0x2B10:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:53,290  INFO        -> new: Defineste al treilea punct de frecventa pe curba V/f definita de utilizator. Rep
+2026-05-20 12:56:53,305  INFO      23149 0x23B1:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:53,391  INFO      23688 0x2B02:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:54,397  INFO        -> new: Comanda de stergere a jurnalului de evenimente (logbook) al dispozitivului. Dupa
+2026-05-20 12:56:54,498  INFO      23560 0x2862 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:54,850  INFO        -> new: Acest parametru este un indicator de stare care arata daca numarul maxim de defe
+2026-05-20 12:56:54,951  INFO      23354 0x182F (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:55,323  INFO        -> new: Afiseaza decalajul de timp (shift) pentru datele de proces receptionate via Ethe
+2026-05-20 12:56:55,423  INFO      23039 0x1C33:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:55,570  INFO        -> new: Inregistrare diagnostica pentru al 8-lea eveniment de eroare memorat in istoricu
+2026-05-20 12:56:55,670  INFO      23240 0x1003:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:56,779  INFO        -> new: Acest parametru este rezervat de producator si nu are nicio functie activa in co
+2026-05-20 12:56:56,808  INFO        -> new: Defineste metoda de franare utilizata de VFD. Option 0 activeaza chopperul de fr
+2026-05-20 12:56:56,880  INFO      22633 0x4031 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:56,909  INFO      23453 0x2541:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:56:58,496  INFO        -> new: Afiseaza cuvantul de avertizare receptionat prin portul de comunicatie seriala, 
+2026-05-20 12:56:58,596  INFO      3017 0-01 (Danfoss_VLT_FC302)  existing_len=192  qc=keep
+2026-05-20 12:56:58,597  INFO        -> keep (existing OK)
+2026-05-20 12:56:58,597  INFO      3018 1-20 (Danfoss_VLT_FC302)  existing_len=183  qc=keep
+2026-05-20 12:56:58,597  INFO        -> keep (existing OK)
+2026-05-20 12:56:58,597  INFO      3019 1-22 (Danfoss_VLT_FC302)  existing_len=268  qc=keep
+2026-05-20 12:56:58,597  INFO        -> keep (existing OK)
+2026-05-20 12:56:58,597  INFO      3020 1-23 (Danfoss_VLT_FC302)  existing_len=215  qc=keep
+2026-05-20 12:56:58,597  INFO        -> keep (existing OK)
+2026-05-20 12:56:58,597  INFO      3021 1-24 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:56:58,693  INFO        -> new: Seteaza timpul maxim permis pentru time-outul comunicarii TCP Ethernet. Cand tim
+2026-05-20 12:56:58,794  INFO      23150 0x23B6:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:00,050  INFO        -> new: Configureaza functia pentru bitul 3 al cuvantului de retea NetWordOUT1. Cind tri
+2026-05-20 12:57:00,128  INFO        -> new: Parametru de diagnostic doar pentru citire care indica numarul maxim de sub-indi
+2026-05-20 12:57:00,151  INFO      22839 0x2634:014 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:00,228  INFO      22940 0x1201:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:01,189  INFO        -> new: Inregistrare a celui de-al 9-lea eveniment de eroare memorat in istoric. Contine
+2026-05-20 12:57:01,290  INFO      23241 0x1003:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:01,311  INFO        -> new: Seteaza factorul de amplificare pentru limitarea cuplului in modul V/f. La 0% li
+2026-05-20 12:57:01,412  INFO      22737 0x2BA1:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:02,925  INFO        -> new: Defineste punctul 4 de frecventa pe axa X pentru curba V/F definita de utilizato
+2026-05-20 12:57:03,026  INFO      23689 0x2B02:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:03,081  INFO        -> new: Afiseaza pragul de tensiune activ pentru operatia de franare regenerativa. Pragu
+2026-05-20 12:57:03,183  INFO      23454 0x2541:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:03,287  INFO        -> new: Indică un cod de eroare definit de utilizator care poate fi activat prin comandă
+2026-05-20 12:57:03,388  INFO      23355 0x1830 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:03,507  INFO        -> new: Seteaza pasul de modificare a referintei cand apesi o data tasta sageata de pe t
+2026-05-20 12:57:03,608  INFO      23561 0x4002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:05,207  INFO        -> new: Defineste de cate ori se executa secventa 1 in cadrul unui ciclu de functionare.
+2026-05-20 12:57:05,308  INFO      22635 0x4033 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:05,648  INFO        -> new: Parametru doar pentru citire care afiseaza modurile de sincronizare disponibile 
+2026-05-20 12:57:05,749  INFO      23040 0x1C33:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:06,406  INFO        -> new: Seteaza curentul nominal al motorului in amperi, preluat de pe placuta de identi
+2026-05-20 12:57:06,506  INFO      3022 1-25 (Danfoss_VLT_FC302)  existing_len=275  qc=keep
+2026-05-20 12:57:06,507  INFO        -> keep (existing OK)
+2026-05-20 12:57:06,507  INFO      3023 1-29 (Danfoss_VLT_FC302)  existing_len=251  qc=keep
+2026-05-20 12:57:06,507  INFO        -> keep (existing OK)
+2026-05-20 12:57:06,507  INFO      3024 3-02 (Danfoss_VLT_FC302)  existing_len=245  qc=keep
+2026-05-20 12:57:06,508  INFO        -> keep (existing OK)
+2026-05-20 12:57:06,508  INFO      3025 3-41 (Danfoss_VLT_FC302)  existing_len=238  qc=keep
+2026-05-20 12:57:06,508  INFO        -> keep (existing OK)
+2026-05-20 12:57:06,508  INFO      3026 3-42 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:57:07,017  INFO        -> new: Seteaza timpul maxim de asteptare pentru monitorizarea watchdog Modbus TCP. Daca
+2026-05-20 12:57:07,118  INFO      23151 0x23B6:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:07,273  INFO        -> new: Inregistreaza ziua din luna cand a aparut eroarea numarul 10 in istoricul de ero
+2026-05-20 12:57:07,373  INFO      23242 0x2341:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:07,531  INFO        -> new: Specifica identificatorul COB-ID pentru receptionarea mesajelor SDO de la client
+2026-05-20 12:57:07,633  INFO      22941 0x1201:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:09,148  INFO        -> new: Assigna un semnal de trigger bitului 4 din NetWordOUT1. Cand trigger-ul este FAL
+2026-05-20 12:57:09,249  INFO      22840 0x2634:015 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:10,618  INFO        -> new: Defineste al 5-lea punct de frecventa pe axa X a caracteristicii V/f definita de
+2026-05-20 12:57:10,719  INFO      23690 0x2B02:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:12,239  INFO        -> new: Seteaza curentul injectat in motor in timpul repornirii pe fly pentru identifica
+2026-05-20 12:57:12,340  INFO      22738 0x2BA1:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:12,777  INFO        -> new: Afiseaza timpul minim de ciclu pentru datele de proces de intrare (RPDO) in comu
+2026-05-20 12:57:12,878  INFO      23041 0x2859:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:13,209  INFO        -> new: Seteaza cu cat se reduce tensiunea de prag pentru operatia de franare in modul d
+2026-05-20 12:57:13,309  INFO      23455 0x2541:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:13,517  INFO        -> new: Defineste factorul de scalare pentru afisarea vitezei in parametrul 0x400D (P101
+2026-05-20 12:57:13,618  INFO      23562 0x2864 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:15,037  INFO        -> new: Defineste identificatorul COB-ID pentru transmiterea datelor pe canalul SDO serv
+2026-05-20 12:57:15,138  INFO      22942 0x1201:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:15,266  INFO        -> new: Defectul 425249 este o eroare definita de utilizator care poate fi declansata pr
+2026-05-20 12:57:15,367  INFO      23356 0x1831 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:15,697  INFO        -> new: Seteaza adresa stationului pentru comunicatia PROFIBUS, alternativa fata de comu
+2026-05-20 12:57:15,798  INFO      23243 0x0000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:16,431  INFO        -> new: Defineste timpul maxim de asteptare pentru monitorizarea keep-alive in comunicat
+2026-05-20 12:57:16,455  INFO        -> new: Seteaza timpul de decelerare a motorului de la viteza nominala pana la 0 RPM. Al
+2026-05-20 12:57:16,532  INFO      23152 0x23B6:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:16,556  INFO      3027 1-71 (Danfoss_VLT_FC302)  existing_len=233  qc=keep
+2026-05-20 12:57:16,556  INFO        -> keep (existing OK)
+2026-05-20 12:57:16,556  INFO      3028 15-30 (Danfoss_VLT_FC302)  existing_len=206  qc=keep
+2026-05-20 12:57:16,556  INFO        -> keep (existing OK)
+2026-05-20 12:57:16,556  INFO      3029 15-32 (Danfoss_VLT_FC302)  existing_len=253  qc=keep
+2026-05-20 12:57:16,557  INFO        -> keep (existing OK)
+2026-05-20 12:57:16,557  INFO      3030 14-22 (Danfoss_VLT_FC302)  existing_len=426  qc=keep
+2026-05-20 12:57:16,557  INFO        -> keep (existing OK)
+2026-05-20 12:57:16,557  INFO      3031 14-50 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:57:17,666  INFO        -> new: Defineste de cate ori se repeta secventa 2 intr-un ciclu complet. Valoarea 1 = o
+2026-05-20 12:57:17,766  INFO      22637 0x4035 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:18,692  INFO        -> new: Atribuie un trigger bitului 5 al NetWordOUT1 pentru comunicatie in retea. Daca t
+2026-05-20 12:57:18,793  INFO      22841 0x2634:016 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:20,735  INFO        -> new: Seteaza adresa nodului pentru clientul SDO in configuratia CANopen. Valoarea tre
+2026-05-20 12:57:20,836  INFO      22943 0x2301:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:21,786  INFO        -> new: Selecteaza actiunea de eroare cand watchdog-ul POWERLINK expira si comunicatia e
+2026-05-20 12:57:21,886  INFO      23042 0x2859:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:22,995  INFO        -> new: Seteaza registrul pentru monitorizarea keep alive in Modbus TCP. Monitorizarea t
+2026-05-20 12:57:23,095  INFO      23153 0x2859:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:23,497  INFO        -> new: Defineste frecventa de pornire pentru procesul de repornire la zbor (flying rest
+2026-05-20 12:57:23,598  INFO      22739 0x2BA1:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:24,052  INFO        -> new: Seteaza timpul maxim permis pentru suprascrierea decelerarii in timpul operarii 
+2026-05-20 12:57:24,137  INFO        -> new: Punctul 6 de frecventa pentru curba V/F definita de utilizator. Impreuna cu tens
+2026-05-20 12:57:24,153  INFO      23456 0x2541:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:24,238  INFO      23691 0x2B02:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:25,025  INFO        -> new: Fault user configurabil prin retea de comunicatie. Poate fi activat de un contro
+2026-05-20 12:57:25,125  INFO      23357 0x1832 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:25,217  INFO        -> new: Acest cod este returnat de convertizor atunci cand se solicita citirea sau scrie
+2026-05-20 12:57:25,318  INFO      23244 0x0002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:25,934  ERROR       Error 0x2B02:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb885551cf1d9d0de1494e02b24aa'}
+2026-05-20 12:57:26,015  INFO        -> new: Atribuie un semnal de trigger bitului 6 al cuvantului NetWordOUT1. Când triggeru
+2026-05-20 12:57:26,100  INFO        -> new: Controleaza ce informatie este afisata pe tastatura invertorului in timpul funct
+2026-05-20 12:57:26,115  INFO      22842 0x2634:017 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:26,200  INFO      23563 0x2863 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:26,899  ERROR       Error 0x1832: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88649e6a83df06a30b189487645'}
+2026-05-20 12:57:27,085  ERROR       Error 0x0002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8879dd31afd89deae523d135cfe'}
+2026-05-20 12:57:27,386  INFO        -> new: Activeaza configurarea libera a COB-ID-ului pentru SDO 2 in reteaua CANopen. Cân
+2026-05-20 12:57:27,487  INFO      22944 0x1014 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:27,659  INFO        -> new: Defineste de cate ori se executa secventa 3 intr-un ciclu de functionare automat
+2026-05-20 12:57:27,760  INFO      22639 0x4037 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:27,930  ERROR       Error 0x2634:017: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8878d0b5ebe7f4d4d1101e9ab24'}
+2026-05-20 12:57:27,959  ERROR       Error 0x2863: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88706c659de94dbf0e7eaff0691'}
+2026-05-20 12:57:29,072  INFO        -> new: Activeaza filtrul RFI pentru reducerea interferentelor electromagnetice. Filtrea
+2026-05-20 12:57:29,173  INFO      3032 8-30 (Danfoss_VLT_FC302)  existing_len=252  qc=keep
+2026-05-20 12:57:29,173  INFO        -> keep (existing OK)
+2026-05-20 12:57:29,174  INFO      3033 8-31 (Danfoss_VLT_FC302)  existing_len=283  qc=keep
+2026-05-20 12:57:29,174  INFO        -> keep (existing OK)
+2026-05-20 12:57:29,174  INFO      3034 8-32 (Danfoss_VLT_FC302)  existing_len=271  qc=keep
+2026-05-20 12:57:29,174  INFO        -> keep (existing OK)
+2026-05-20 12:57:29,175  INFO      3035 8-35 (Danfoss_VLT_FC302)  existing_len=230  qc=keep
+2026-05-20 12:57:29,175  INFO        -> keep (existing OK)
+2026-05-20 12:57:29,175  INFO      3036 8-36 (Danfoss_VLT_FC302)  existing_len=219  qc=keep
+2026-05-20 12:57:29,175  INFO        -> keep (existing OK)
+2026-05-20 12:57:29,175  INFO      3037 8-37 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:57:29,239  ERROR       Error 0x1014: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb889efa58d15d148052a7650501a'}
+2026-05-20 12:57:29,299  INFO        -> new: Defineste actiunea declansata de receptia datelor de configuratie invalide prin 
+2026-05-20 12:57:29,399  INFO      23043 0x2859:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:29,543  ERROR       Error 0x2B02:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8895eed82af5bed9ebfe2d100cc'}
+2026-05-20 12:57:29,611  ERROR       Error 0x4037: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb889b7068c26e512694775e07a6a'}
+2026-05-20 12:57:30,734  ERROR       Error 0x1832: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88a948419f3e6e42a377f48b3c7'}
+2026-05-20 12:57:30,738  ERROR       Error 0x0002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88ad6886cd78442d7a1761ef039'}
+2026-05-20 12:57:30,836  ERROR       Error 8-37: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88adc08dfb9229ae63be8d2a4c2'}
+2026-05-20 12:57:31,060  ERROR       Error 0x2859:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88aa6d4b8470c222615fe961762'}
+2026-05-20 12:57:31,577  ERROR       Error 0x2863: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88bb5a133687a2339a68008bcbc'}
+2026-05-20 12:57:31,693  ERROR       Error 0x2634:017: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88be1253b8bfd5ba8489b9b5396'}
+2026-05-20 12:57:32,033  INFO        -> new: Afiseaza frecventa la care motorul a fost restartat cu succes in functie de flyi
+2026-05-20 12:57:32,134  INFO      22740 0x2B84:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:32,154  INFO        -> new: Selecteaza actiunea variatorului cand masterul Modbus TCP nu receptioneaza niciu
+2026-05-20 12:57:32,254  INFO      23154 0x2859:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:32,997  ERROR       Error 0x1014: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88ce35ef1deef98f2228c463523'}
+2026-05-20 12:57:33,162  ERROR       Error 0x4037: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88d9bd8ea6a7ed6d45456eb34cb'}
+2026-05-20 12:57:33,773  ERROR       Error 0x2B84:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88d57eccf6f06b8d15fcbd59d79'}
+2026-05-20 12:57:33,926  ERROR       Error 0x2859:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88d864e9ce9852d59c567067a84'}
+2026-05-20 12:57:34,504  ERROR       Error 8-37: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88efd628832d64e1bda52e3ac95'}
+2026-05-20 12:57:34,792  INFO        -> new: Defineste comportarea chopper-ului de frana integrat in functie de starea invert
+2026-05-20 12:57:34,832  ERROR       Error 0x2859:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88e66577f322df8858c05f1b81c'}
+2026-05-20 12:57:34,893  INFO      23457 0x2550:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:35,286  ERROR       Error 0x2B02:007: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb88f2695685f8362c3b414c675eb'}
+2026-05-20 12:57:36,572  ERROR       Error 0x0002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb890fab1f975378ebfed3076dc85'}
+2026-05-20 12:57:36,684  ERROR       Error 0x2550:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb89036642d37ea9b28080ffe148c'}
+2026-05-20 12:57:36,699  ERROR       Error 0x1832: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8901f7ade679cd1878f500af23c'}
+2026-05-20 12:57:37,487  ERROR       Error 0x2863: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8914770c9307989e3e341aa9c98'}
+2026-05-20 12:57:37,522  ERROR       Error 0x2B84:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb891ff62b2fa0f270a6975e4eb1a'}
+2026-05-20 12:57:37,852  ERROR       Error 0x2634:017: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8912a3b8b7c1f692e896ec07179'}
+2026-05-20 12:57:37,874  ERROR       Error 0x2859:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8910f9c79774221dbab14405a26'}
+2026-05-20 12:57:38,698  ERROR       Error 0x1014: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8928928346603ff29195f7848e4'}
+2026-05-20 12:57:39,048  ERROR       Error 0x4037: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb892cf1733fcc57fca2f9172bf0a'}
+2026-05-20 12:57:40,276  ERROR       Error 8-37: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb894fcaac9b90a30fad4c9fa73e0'}
+2026-05-20 12:57:40,566  ERROR       Error 0x2859:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb894430a461b5e9779401f94cdac'}
+2026-05-20 12:57:40,788  ERROR       Error 0x2550:002: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8945a6c1a0cf1190d2cbe384529'}
+2026-05-20 12:57:41,287  INFO      23692 0x2B02:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:42,572  INFO      23245 0x0003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:42,700  INFO      23358 0x1834 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:43,487  INFO      23564 0x2602:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:43,853  INFO      22843 0x2634:018 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:44,698  INFO      22945 0x1015 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:45,048  INFO      22641 0x4039 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:46,314  INFO      3038 15-00 (Danfoss_VLT_FC302)  existing_len=247  qc=keep
+2026-05-20 12:57:46,399  INFO        -> keep (existing OK)
+2026-05-20 12:57:46,400  INFO      3039 15-05 (Danfoss_VLT_FC302)  existing_len=265  qc=keep
+2026-05-20 12:57:46,400  INFO        -> keep (existing OK)
+2026-05-20 12:57:46,400  INFO      3040 15-20 (Danfoss_VLT_FC302)  existing_len=325  qc=keep
+2026-05-20 12:57:46,400  INFO        -> keep (existing OK)
+2026-05-20 12:57:46,400  INFO      3041 15-22 (Danfoss_VLT_FC302)  existing_len=238  qc=keep
+2026-05-20 12:57:46,400  INFO        -> keep (existing OK)
+2026-05-20 12:57:46,401  INFO      3042 15-03 (Danfoss_VLT_FC302)  existing_len=241  qc=keep
+2026-05-20 12:57:46,401  INFO        -> keep (existing OK)
+2026-05-20 12:57:46,401  INFO      3043 15-04 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:57:46,567  INFO      23044 0x2859:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:49,643  INFO        -> new: Acest cod indica o incercare de acces la un subindex care nu exista sau nu este 
+2026-05-20 12:57:49,744  INFO      23246 0x0004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:50,348  INFO        -> new: Seteaza timpul de demagnetizare pentru franarea DC ca procent din valoarea impli
+2026-05-20 12:57:50,449  INFO      22741 0x2B84:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:51,071  INFO        -> new: Reprezinta identificatorul erorii incarcate in unitatea de control (CU). Afiseaz
+2026-05-20 12:57:51,172  INFO      23359 0x1835 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:51,259  INFO        -> new: Defineste frecventa punctului 8 din curba V/f definita de utilizator. Punctele f
+2026-05-20 12:57:51,360  INFO      23693 0x2B02:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:51,486  INFO        -> new: Activeaza sau dezactiveaza tastele CTRL si F/R de pe keypad. Cand este dezactiva
+2026-05-20 12:57:51,587  INFO      23565 0x2602:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:53,420  INFO        -> new: Seteaza timpul de blocare pentru telegramele de urgenta pe bus. Impiedica variat
+2026-05-20 12:57:53,521  INFO      22946 0x1016:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:53,926  INFO        -> new: Atribuie o sursa de trigger bitului 8 din NetWordOUT1, care este folosit pentru 
+2026-05-20 12:57:53,968  INFO        -> new: Seteaza valoarea rezistentei brake resistor-ului in ohmi. Valoarea trebuie prelu
+2026-05-20 12:57:54,027  INFO      22844 0x2634:019 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:54,069  INFO      23458 0x2550:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:54,096  INFO        -> new: Contorizeaza numarul de defectiuni de supraincalzire ale convertizorului de frec
+2026-05-20 12:57:54,196  INFO      3044 0-02 (Danfoss_VLT_FC302)  existing_len=255  qc=keep
+2026-05-20 12:57:54,196  INFO        -> keep (existing OK)
+2026-05-20 12:57:54,196  INFO      3045 0-03 (Danfoss_VLT_FC302)  existing_len=250  qc=keep
+2026-05-20 12:57:54,197  INFO        -> keep (existing OK)
+2026-05-20 12:57:54,197  INFO      3046 0-12 (Danfoss_VLT_FC302)  existing_len=268  qc=keep
+2026-05-20 12:57:54,197  INFO        -> keep (existing OK)
+2026-05-20 12:57:54,197  INFO      3047 0-51 (Danfoss_VLT_FC302)  existing_len=178  qc=keep
+2026-05-20 12:57:54,197  INFO        -> keep (existing OK)
+2026-05-20 12:57:54,197  INFO      3048 0-11 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:57:54,464  INFO        -> new: Defineste numarul de cicluri de executie pentru secventa 5 intr-o secventa cicli
+2026-05-20 12:57:54,565  INFO      22643 0x403B (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:54,647  INFO        -> new: Seteaza actiunea drive-ului cand nu primeste niciun mesaj valid pe registrul kee
+2026-05-20 12:57:54,747  INFO      23155 0x23B2:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:55,121  INFO        -> new: Monitorizeaza starea datelor ciclice primite de la dispozitivul IO-Link. Daca da
+2026-05-20 12:57:55,222  INFO      23045 0x2362:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:58,923  INFO        -> new: Afiseaza timpul standard de demagnetizare calculat automat de invertor pentru fr
+2026-05-20 12:57:58,939  INFO        -> new: Seteaza directia de rotatie a motorului cand controlul prin tastatura locala est
+2026-05-20 12:57:59,023  INFO      22742 0x2820:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:57:59,039  INFO      23566 0x2602:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:00,139  INFO        -> new: Afiseaza adresa IP activa utilizata de comunicatia Modbus TCP. Acest parametru e
+2026-05-20 12:58:00,240  INFO      23156 0x23B2:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:00,274  INFO        -> new: Defineste al 9-lea punct de frecvență pe axa X pentru caracteristica V/f persona
+2026-05-20 12:58:00,374  INFO      23694 0x2B02:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:00,957  INFO        -> new: Acest parametru afiseaza identificatorul (tag-ul) asociat ultimei erori de sarci
+2026-05-20 12:58:01,058  INFO      23360 0x1836 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:01,898  INFO        -> new: "Acest parametru indica o eroare de accesare cu subindex a unui parametru care n
+2026-05-20 12:58:01,998  INFO      23247 0x0005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:02,308  INFO        -> new: Afiseaza adresa IP activa pentru functia Ethernet over EtherCAT (EoE). Aceasta a
+2026-05-20 12:58:02,326  INFO        -> new: Parametrul indica numarul maxim de noduri heartbeat care pot fi monitorizate sim
+2026-05-20 12:58:02,409  INFO      23046 0x2362:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:02,427  INFO      22947 0x1016:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:02,752  INFO        -> new: Defineste puterea nominala a rezistorului de franare conectat la invertor. Valoa
+2026-05-20 12:58:02,853  INFO      23459 0x2550:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:03,729  INFO        -> new: Permite selectarea configuratiei de parametri care va fi editata in timpul funct
+2026-05-20 12:58:03,810  INFO        -> new: Atribuie un semnal trigger bitului 9 din NetWordOUT1. Cand triggerul este FALSE 
+2026-05-20 12:58:03,830  INFO      3049 0-13 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:03,911  INFO      22845 0x2634:020 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:06,285  INFO        -> new: Defineste punctul de frecventa pe axa X pentru curba personalizata V/f. Valoarea
+2026-05-20 12:58:06,332  INFO        -> new: Acest parametru indica o eroare de comunicare interna intre unitatea de control 
+2026-05-20 12:58:06,386  INFO      23695 0x2B02:011 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:06,433  INFO      23361 0x1838 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:07,139  INFO        -> new: Defineste cuplul de mentinere a sarcinii ca procent din cuplul nominal al motoru
+2026-05-20 12:58:07,233  INFO        -> new: Afiseaza masca de subretea activa pentru comunicatia Modbus TCP. Acest parametru
+2026-05-20 12:58:07,240  INFO      22743 0x2820:013 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:07,334  INFO      23157 0x23B2:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:08,073  INFO        -> new: Activeaza sau dezactiveaza controlul complet de la tastatura. Când se activeaza,
+2026-05-20 12:58:08,173  INFO      23567 0x2440 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:08,827  INFO        -> new: Defineste numarul de cicluri pentru secventa 6. Valoarea 1 inseamna o singura ex
+2026-05-20 12:58:08,927  INFO      22645 0x403D (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:09,605  INFO        -> new: Seteaza limita maxima a incarcarii termice calculate a motorului. Cand valoarea 
+2026-05-20 12:58:09,705  INFO      23460 0x2550:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:10,223  INFO        -> new: Indicator de stare care semnaleaza ca a fost scrisa o valoare care nu corespunde
+2026-05-20 12:58:10,323  INFO      23248 0x0006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:10,830  INFO        -> new: Atribuie un semnal trigger bitului 10 din NetWordOUT1 pentru comunicatia pe rete
+2026-05-20 12:58:10,931  INFO      22846 0x2634:021 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:11,524  INFO        -> new: Seteaza timpul de monitorizare heartbeat pentru nodul CANopen 1. Encoda ID nodul
+2026-05-20 12:58:11,624  INFO      22948 0x1016:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:12,794  INFO        -> new: Seteaza masca de subretea pentru conexiunile Ethernet over EtherCAT (EoE). Aceas
+2026-05-20 12:58:12,895  INFO      23047 0x2362:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:13,061  INFO        -> new: Afiseaza adresa gateway activa pentru comunicatia Modbus TCP. Valoarea este afis
+2026-05-20 12:58:13,161  INFO      23158 0x23B2:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:13,371  INFO        -> new: Acest parametru este doar pentru citire si afiseaza care set-up-uri sunt legate 
+2026-05-20 12:58:13,472  INFO      3050 0-14 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:15,889  INFO        -> new: Seteaza timpul de rampa pentru controlul franei de mentinere. Reduce vibratiile 
+2026-05-20 12:58:15,928  INFO        -> new: Defineste de cate ori secventa 7 este executata in cadrul unei secvente de funct
+2026-05-20 12:58:15,990  INFO      22744 0x2820:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:16,029  INFO      22647 0x403F (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:17,260  INFO        -> new: Blocheaza modificarea parametrilor la valoarea curenta. Odata setat, parametrul 
+2026-05-20 12:58:17,361  INFO      23249 0x0007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:17,764  INFO        -> new: Seteaza timpul de heartbeat si ID-ul nodului 2 care trebuie monitorizat pe retea
+2026-05-20 12:58:17,864  INFO      22949 0x1016:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:18,186  INFO        -> new: Afiseaza adresa MAC activa a interfetei Modbus TCP. Este un parametru numai pent
+2026-05-20 12:58:18,287  INFO      23159 0x23B3 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:18,729  INFO        -> new: Defineste nivelul de tensiune considerat semnal activ pentru intrarile digitale.
+2026-05-20 12:58:18,829  INFO      23362 0x1839 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:19,141  INFO        -> new: Afiseaza utilizarea termica a rezistorului de franare conectat. Valoarea este ex
+2026-05-20 12:58:19,242  INFO      23461 0x2550:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:20,636  INFO        -> new: Initiere si resetare a modulului WLAN pentru reconectare la reteaua wireless. Co
+2026-05-20 12:58:20,679  INFO        -> new: Defineste punctul 11 de frecventa pe axa X din caracteristica V/f definita de ut
+2026-05-20 12:58:20,736  INFO      23568 0x2441:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:20,779  INFO      24232 0x2811:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:22,234  INFO        -> new: Afiseaza starea activa a gateway-ului EoE (Ethernet over EtherCAT). Parametru do
+2026-05-20 12:58:22,335  INFO      23048 0x2362:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:22,477  INFO        -> new: Atribuie un trigger bitului 11 al cuvantului de retea NetWordOUT1. Cand triggeru
+2026-05-20 12:58:22,577  INFO      22847 0x2634:022 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:22,601  INFO        -> new: Parametru de citire care afiseaza set-up-ul curent editat si canalul prin care a
+2026-05-20 12:58:22,702  INFO      3051 0-15 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:26,219  INFO        -> new: Acest parametru controleaza accesul la elementele de descriere din dictionarul d
+2026-05-20 12:58:26,260  INFO        -> new: Seteaza pragul de avertizare pentru monitorizarea rezistorului de franare. Daca 
+2026-05-20 12:58:26,279  INFO        -> new: Defineste numarul de cicluri pentru secventa 8. Valoarea 65535 seteaza executie 
+2026-05-20 12:58:26,310  INFO        -> new: Seteaza timpul de heartbeat si ID-ul nodului 3 care trebuie monitorizat pe retea
+2026-05-20 12:58:26,319  INFO      23250 0x0008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:26,361  INFO      23462 0x2550:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:26,379  INFO      22648 0x4025 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:26,411  INFO      22950 0x1016:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:27,197  INFO        -> new: Seteaza pragul minim de frecventa la care frana de mentinere se inchide. Daca va
+2026-05-20 12:58:27,297  INFO      22745 0x4006:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:28,017  ERROR       Error 0x0008: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c37cbf581c3f5a4f9fdae45e5c'}
+2026-05-20 12:58:28,086  ERROR       Error 0x2550:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c49b0514fbf1894e215c953070'}
+2026-05-20 12:58:28,132  ERROR       Error 0x4025: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c4d9dc39119d107c683869877c'}
+2026-05-20 12:58:28,157  ERROR       Error 0x1016:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c40b6b3448d231d90ea68f6edb'}
+2026-05-20 12:58:28,428  INFO        -> new: Afiseaza pozitia comutatorului rotativ encoder de la ultima alimentare cu tensiu
+2026-05-20 12:58:28,528  INFO      23160 0x23B5:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:29,019  ERROR       Error 0x4006:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c440382bbfecac71275bb1839f'}
+2026-05-20 12:58:29,038  INFO        -> new: Permite inversarea sensului de rotatie al motorului fara modificarea conexiunilo
+2026-05-20 12:58:29,139  INFO      24233 0x2C42:011 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:29,477  INFO        -> new: Activeaza functia DHCP pentru conexiunea WLAN. In modul access point, dispozitiv
+2026-05-20 12:58:29,577  INFO      23569 0x2441:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:29,719  INFO        -> new: Acest parametru indica o defectiune detectata pe intrarea analogica 1 (AI1). Fau
+2026-05-20 12:58:29,819  INFO      23363 0x183A (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:30,180  ERROR       Error 0x23B5:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c6204ebf95a956cc190348fc03'}
+2026-05-20 12:58:30,701  INFO        -> new: Afiseaza adresa activa a dispozitivului EtherCAT in retea. Adresa se preia autom
+2026-05-20 12:58:30,772  ERROR       Error 0x2C42:011: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c6026ea749cda36660a17f7bb1'}
+2026-05-20 12:58:30,802  INFO      23049 0x2362:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:31,212  ERROR       Error 0x2441:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c7e19c203d0801915111b157b0'}
+2026-05-20 12:58:31,453  ERROR       Error 0x183A: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c746b610a97dbb03a6bafd3c7b'}
+2026-05-20 12:58:31,554  ERROR       Error 0x0008: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c7c1196e0573f08d938f17d8e7'}
+2026-05-20 12:58:31,759  ERROR       Error 0x2550:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c77f00a32390b9ddcf26715bb1'}
+2026-05-20 12:58:31,852  INFO        -> new: Afiseaza configuratia activa curenta a variatorului de frecventa. Permite citire
+2026-05-20 12:58:31,892  ERROR       Error 0x4025: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c792894e91bbcc062a2924fa5f'}
+2026-05-20 12:58:31,953  INFO      3052 0-10 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:32,032  ERROR       Error 0x1016:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c74b604b4b7f0d62e5588e53db'}
+2026-05-20 12:58:32,691  ERROR       Error 0x2362:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c8ff059c4a0fe009ccb0c12e3a'}
+2026-05-20 12:58:32,693  ERROR       Error 0x4006:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c84ac21230da91b00f891ceb65'}
+2026-05-20 12:58:33,903  ERROR       Error 0-10: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c9ef25331bf1fe341504b67752'}
+2026-05-20 12:58:33,992  ERROR       Error 0x23B5:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8c9cc9c5a3a4ca19dd9e18256d2'}
+2026-05-20 12:58:34,684  INFO        -> new: Atribuie o sursa de trigger bitului 12 al NetWordOUT1, cuvant de iesire transmis
+2026-05-20 12:58:34,785  INFO      22848 0x2634:023 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:34,827  ERROR       Error 0x2C42:011: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8ca0cf1418dcc41c3cc019d6636'}
+2026-05-20 12:58:34,841  ERROR       Error 0x2441:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8ca590fdfb7020ec730d0250512'}
+2026-05-20 12:58:35,265  ERROR       Error 0x183A: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cb87b618643a0a67b5777463ac'}
+2026-05-20 12:58:36,448  ERROR       Error 0x2634:023: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8ccf52e3a1edf7351e57b9e8fdf'}
+2026-05-20 12:58:36,519  ERROR       Error 0x2362:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8ccc4deea128ecfa3c5c8957b44'}
+2026-05-20 12:58:37,111  ERROR       Error 0x0008: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cdf1651089dc0a2c7e8a1903b3'}
+2026-05-20 12:58:37,436  ERROR       Error 0x2550:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cdfdeaf534c2fed05b2ca3a543'}
+2026-05-20 12:58:37,619  ERROR       Error 0-10: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cd83195424c0ded8ec1df0b170'}
+2026-05-20 12:58:37,686  ERROR       Error 0x4025: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cd0c199ba47c1808802735cb98'}
+2026-05-20 12:58:37,704  ERROR       Error 0x1016:004: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cdc2c20ff81d0803d5cbfd21ec'}
+2026-05-20 12:58:38,458  ERROR       Error 0x4006:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cee185505283ad2fd4fb902b9e'}
+2026-05-20 12:58:39,757  ERROR       Error 0x23B5:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8cfdfe80550de3a07c0a9045e38'}
+2026-05-20 12:58:40,136  ERROR       Error 0x2634:023: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8d0d033ebd23dd3a610b0bf0c43'}
+2026-05-20 12:58:40,589  ERROR       Error 0x2441:005: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8d018d4eb10285db42dfe45c791'}
+2026-05-20 12:58:40,837  ERROR       Error 0x2C42:011: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8d061685f4cac17dc2745bcf11a'}
+2026-05-20 12:58:40,913  ERROR       Error 0x183A: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cb8d0a38303e6a4260afc00c8ea9e'}
+2026-05-20 12:58:43,111  INFO      23251 0x0009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:43,436  INFO      23463 0x2550:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:43,686  INFO      22649 0x402F (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:43,704  INFO      22951 0x1017 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:44,459  INFO      22746 0x2822:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:45,758  INFO      23161 0x23B5:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:46,590  INFO      23570 0x2441:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:46,838  INFO      24234 0x2C63:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:46,914  INFO      23364 0x183B (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:47,330  INFO        -> new: Selecteaza setul de parametri activ care controleaza functionarea convertizorulu
+2026-05-20 12:58:47,430  INFO      3053 0-37 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:49,377  INFO        -> new: Acest parametru este un element de diagnostic intern folosit pentru accesul la d
+2026-05-20 12:58:49,478  INFO      23252 0x000A (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:50,743  INFO        -> new: Afiseaza adresa MAC virtuala activa utilizata pentru comunicatia Ethernet over E
+2026-05-20 12:58:50,843  INFO      23050 0x2362:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:50,857  INFO        -> new: Defineste actiunea care se executa atunci cand rezistenta de franare atinge prag
+2026-05-20 12:58:50,958  INFO      23464 0x2550:011 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:52,094  INFO        -> new: Seteaza intervalul de timp pentru transmiterea telegramelor de heartbeat catre c
+2026-05-20 12:58:52,194  INFO      22952 0x1029:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:52,712  INFO        -> new: Activeaza identificarea automata a datelor motorului. Porneste procedura de iden
+2026-05-20 12:58:52,812  INFO      22747 0x2DE0:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:52,965  INFO        -> new: Indică o eroare de comunicație cu encoderul HTL conectat la intrarea de encoder.
+2026-05-20 12:58:53,066  INFO      23365 0x183C (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:53,763  INFO        -> new: Defineste comportamentul inverterului la finalul unei secvente de segmente de vi
+2026-05-20 12:58:53,797  INFO        -> new: Atribuie o stare unui bit din cuvantul de retea NetWordOUT1. Cand trigger-ul est
+2026-05-20 12:58:53,863  INFO      22650 0x4040 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:53,898  INFO      22849 0x2634:024 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:54,874  INFO        -> new: Defineste modul de operare al modulului WLAN integrat. Optiunile tipice includ d
+2026-05-20 12:58:54,975  INFO      23571 0x2441:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:55,369  INFO        -> new: Acest parametru este rezervat de producator si nu trebuie modificat de utilizato
+2026-05-20 12:58:55,470  INFO      23253 0x000B (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:55,975  INFO        -> new: Parametru informational read-only care afiseaza informatii despre configuratia p
+2026-05-20 12:58:56,075  INFO      23162 0x23B8 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:56,876  INFO        -> new: Selecteaza actiunea care trebuie executata cand pragul de eroare pentru monitori
+2026-05-20 12:58:56,976  INFO      23465 0x2541:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:57,704  INFO        -> new: Permite introducerea unui text personalizat care poate fi afisat pe ecranul graf
+2026-05-20 12:58:57,804  INFO      3054 0-38 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 12:58:57,892  INFO        -> new: Defineste factorul de ajustare a curentului in conditiile in care motorul este d
+2026-05-20 12:58:57,993  INFO      24235 0x2D52:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:58:59,124  INFO        -> new: Afiseaza adresa de statie activa in reteaua EtherCAT. Valoarea este atribuita au
+2026-05-20 12:58:59,224  INFO      23051 0x2362:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:00,576  INFO        -> new: Atribuie o sursa de trigger bitului 14 din NetWordOUT1 pentru functia de iesire 
+2026-05-20 12:59:00,677  INFO      22850 0x2634:025 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:01,870  INFO        -> new: Defineste numele retelei WLAN (SSID - Service Set Identifier) la care se conecte
+2026-05-20 12:59:01,971  INFO      23572 0x2441:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:02,070  INFO        -> new: Acest parametru indica numarul maxim de sub-indici disponibili pentru obiectul 0
+2026-05-20 12:59:02,170  INFO      22953 0x1029:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:02,475  INFO        -> new: Acest parametru indica o defectiune la iesirea analogica 1 a convertizorului de 
+2026-05-20 12:59:02,576  INFO      23366 0x183D (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:03,317  INFO        -> new: Setează modul de identificare a motorului pentru masurarea parametrilor electric
+2026-05-20 12:59:03,418  INFO      22748 0x2822:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:03,676  INFO        -> new: Controleaza drepturile de acces pentru modificarea parametrilor VFD. Cand este a
+2026-05-20 12:59:03,777  INFO      23254 0x000C (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:04,828  INFO        -> new: Seteaza modul de pornire pentru secventiatorul de viteza multi-segment. Modul "R
+2026-05-20 12:59:04,928  INFO      22651 0x2631:053 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:05,130  INFO        -> new: Afiseaza starea modulului TCP utilizat pentru comunicatia Modbus TCP. Este un pa
+2026-05-20 12:59:05,230  INFO      23163 0x23B9 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:59:06,003  INFO        -> new: Permite introducerea unui text personalizat care poate fi afisat pe ecranul graf
