@@ -11120,3 +11120,348 @@
 2026-05-20 16:27:17,934  INFO        -> rewrite: Avertizare care semnaleaza ca tensiunea DC bus a scazut sub pragul minim de sigu
 2026-05-20 16:27:18,003  INFO        -> rewrite: Seteaza amplificarea proportionala pentru controllerul PID de proces. O valoare 
 2026-05-20 16:27:18,034  INFO      23340 0x1810 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:27:22,040  INFO        Committed + pushed
+2026-05-20 16:27:22,140  INFO      4163 30-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:27:25,042  INFO        -> rewrite: Seteaza nivelul de activare a controlului pentru caderea retelei electrice. Daca
+2026-05-20 16:27:25,143  INFO      25109 0x2D66:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:27:27,417  INFO        -> rewrite: Avertizarea indica faptul ca tensiunea pe bus-ul DC este sub nivelul minim neces
+2026-05-20 16:27:27,517  INFO      23341 0x1811 (Lenze_i550)  existing_len=265  qc=rewrite
+2026-05-20 16:27:32,022  INFO        -> rewrite: Defineste o limita de frecventa a motorului bazata pe o expresie sau formula. Va
+2026-05-20 16:27:32,122  INFO      4164 30-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:27:37,176  INFO        -> rewrite: Timpul de filtrare pentru tensiunea masurata pe busul DC. Valoarea 0.00 s dezact
+2026-05-20 16:27:37,277  INFO      25110 0x2D66:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:27:37,882  INFO        -> rewrite: Indică o defecțiune de supratemperatură a unității de putere a convertizorului d
+2026-05-20 16:27:37,983  INFO      23342 0x1812 (Lenze_i550)  existing_len=281  qc=rewrite
+2026-05-20 16:27:41,320  INFO        -> rewrite: Seteaza canalul de frecventa pentru comunicatia wireless a dispozitivului. Valoa
+2026-05-20 16:27:41,420  INFO      4165 30-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:27:46,589  INFO        -> rewrite: Acest defect indica o problema cu senzorul de temperatura al radiatorului invert
+2026-05-20 16:27:46,690  INFO      23343 0x1814 (Lenze_i550)  existing_len=343  qc=rewrite
+2026-05-20 16:27:47,241  INFO        -> rewrite: Defineste cuplul maxim aplicat in timpul rampei de cuplu de franare in cazul cad
+2026-05-20 16:27:47,342  INFO      25111 0x2D66:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:27:48,741  INFO        -> rewrite: Selecteaza tipul de securitate pentru conexiunea WiFi. Valoarea 2 inseamna WPA_W
+2026-05-20 16:27:48,842  INFO      4166 30-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:27:52,944  INFO        -> rewrite: Acest parametru indica o avertizare de supraincalzire a unitatii de putere (Powe
+2026-05-20 16:27:53,045  INFO      23344 0x1815 (Lenze_i550)  existing_len=338  qc=rewrite
+2026-05-20 16:27:54,337  INFO        -> rewrite: Seteaza adresa IP pentru interfata de comunicatie Ethernet. Adresa IP trebuie co
+2026-05-20 16:27:54,438  INFO      4167 30-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:27:56,006  INFO        -> rewrite: Seteaza timpul de rampa pentru cresterea cuplului de la 0 Nm la cuplul maxim in 
+2026-05-20 16:27:56,106  INFO      25112 0x2D66:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:27:59,687  INFO        -> rewrite: Indicates motor overtemperature fault condition. This fault activates when motor
+2026-05-20 16:27:59,788  INFO      23345 0x1816 (Lenze_i550)  existing_len=253  qc=rewrite
+2026-05-20 16:28:03,297  INFO        -> rewrite: Configureaza masca de subfunctie pentru ExpressionLimit 1. Valoarea TRUE activea
+2026-05-20 16:28:03,398  INFO      4168 30-96 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:04,974  INFO        -> rewrite: Afiseaza tensiunea masurata a circuitului intermediar DC filtrata. Acest paramet
+2026-05-20 16:28:05,075  INFO      25113 0xF980:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:10,053  INFO        -> rewrite: Avertizare ce semnaleaza o conditie critica a tensiunii de alimentare externa a 
+2026-05-20 16:28:10,153  INFO      23346 0x1817 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:28:10,543  INFO        -> rewrite: Configureaza portul de comunicatie TCP/IP 5001 pentru conexiuni in retea. Valoar
+2026-05-20 16:28:10,644  INFO      4169 30-97 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:14,720  INFO        -> rewrite: Afiseaza adresa de siguranta setata pentru protocoalele FSoE (Fail Safe over Eth
+2026-05-20 16:28:14,821  INFO      25114 0xF980:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:17,531  INFO        -> rewrite: Semnalizeaza suprasarcina pe linia de alimentare 24V DC. Aceasta alerta apare ca
+2026-05-20 16:28:17,631  INFO      23347 0x1818 (Lenze_i550)  existing_len=352  qc=rewrite
+2026-05-20 16:28:19,877  INFO        -> rewrite: Defineste actiunea convertorului de frecventa cand conexiunea WiFi se intrerupe 
+2026-05-20 16:28:19,977  INFO      4170 31-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:21,444  INFO        -> rewrite: Seteaza adresa unica de siguranta pentru comunicatia PROFIsafe si FSoE. Fiecare 
+2026-05-20 16:28:21,545  INFO      25115 0x2114:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:26,911  INFO        -> rewrite: Semnalează o neconcordanță între hardware-ul OEM instalat și software-ul. Eroare
+2026-05-20 16:28:27,012  INFO      23348 0x1820 (Lenze_i550)  existing_len=312  qc=rewrite
+2026-05-20 16:28:27,069  INFO        -> rewrite: Afiseaza versiunea setului de parametri de siguranta. Este un parametru doar pen
+2026-05-20 16:28:27,169  INFO      25116 0x2114:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:30,886  INFO        -> rewrite: Activeaza functia de ocolire la distanta a convertizorului de frecventa. Cand es
+2026-05-20 16:28:30,986  INFO      4171 32-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:33,934  INFO        -> rewrite: Acest parametru indica o avertizare privind functionarea ventilatorului intern d
+2026-05-20 16:28:34,037  INFO      23349 0x182A (Lenze_i550)  existing_len=308  qc=rewrite
+2026-05-20 16:28:34,613  INFO        -> rewrite: Reprezinta suma de control CRC pentru setul de parametri de siguranta. Valoarea 
+2026-05-20 16:28:34,714  INFO      25117 0x2115:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:36,611  INFO        -> rewrite: Seteaza sursa selectata pentru functia de debug a variatorului. Valoarea 0 insea
+2026-05-20 16:28:36,712  INFO      4172 33-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:41,443  INFO        -> rewrite: Afiseaza starea curenta a setului de parametri de siguranta. Este un parametru r
+2026-05-20 16:28:41,544  INFO      25118 0x2115:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:42,434  INFO        -> rewrite: Semnaleaza o eroare de cablare sau o configurare incorecta a functiilor de trigg
+2026-05-20 16:28:42,535  INFO      23350 0x182B (Lenze_i550)  existing_len=257  qc=rewrite
+2026-05-20 16:28:46,927  INFO        -> rewrite: Afiseaza valoarea curenta a CRC-ului (suma de control) din setul de parametri de
+2026-05-20 16:28:47,028  INFO      25119 0x2115:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:47,704  INFO        -> rewrite: Defineste comportarea drive-ului la pornire in modul de sincronizare cu marker. 
+2026-05-20 16:28:47,805  INFO      4173 33-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:28:53,404  INFO        -> rewrite: Defectul definit de utilizator 1 este o functie de protectie programabila care p
+2026-05-20 16:28:53,505  INFO      23351 0x182C (Lenze_i550)  existing_len=254  qc=rewrite
+2026-05-20 16:28:56,746  INFO        -> rewrite: Afiseaza valoarea CRC (Cyclic Redundancy Check) a ultimei seturi de parametri va
+2026-05-20 16:28:56,847  INFO      25120 0x2115:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:28:58,024  INFO        -> rewrite: Defineste functia atribuite intrarii digitale de pe terminalul X57/1. Poate fi p
+2026-05-20 16:28:58,124  INFO      4174 33-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:02,138  INFO        -> rewrite: Acest parametru afiseaza starea defectului definit de utilizator 2. Poate fi act
+2026-05-20 16:29:02,239  INFO      23352 0x182D (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:29:03,291  INFO        -> rewrite: Inregistreaza momentul in care setul de parametri a fost preluat de dispozitiv c
+2026-05-20 16:29:03,392  INFO      25121 0x2115:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:03,649  INFO        -> rewrite: Selecteaza functia asignata terminalului digital X57/2. Poate fi configurat pent
+2026-05-20 16:29:03,750  INFO      4175 33-54 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:08,858  INFO        -> rewrite: Activeaza o avertizare atunci cand directia de rotatie a motorului este inversat
+2026-05-20 16:29:08,959  INFO      23353 0x182E (Lenze_i550)  existing_len=325  qc=rewrite
+2026-05-20 16:29:11,228  INFO        -> rewrite: Selecteaza functia asignata intrarii digitale de la terminalul X57/5. Poate fi c
+2026-05-20 16:29:11,328  INFO      4176 33-55 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:11,858  INFO        -> rewrite: Afiseaza numarul erorii detectate in cazul unei erori de plauzibilitate a setulu
+2026-05-20 16:29:11,959  INFO      25122 0x2115:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:17,234  INFO        -> rewrite: Acest parametru este rezervat pentru sistem si stocheaza informatii despre erori
+2026-05-20 16:29:17,335  INFO      25123 0x2115:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:18,367  INFO        -> rewrite: Acest parametru indica numarul total de defectiuni de tip 425233 si 425248 care 
+2026-05-20 16:29:18,468  INFO      23354 0x182F (Lenze_i550)  existing_len=312  qc=rewrite
+2026-05-20 16:29:21,991  INFO        -> rewrite: Configureaza functia asignata intrarii digitale de la terminalul X57/6. Valoarea
+2026-05-20 16:29:22,091  INFO      4177 33-56 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:22,247  INFO        -> rewrite: Acest parametru este doar pentru citire si afiseaza informatii despre erori记录 in
+2026-05-20 16:29:22,348  INFO      25124 0x2115:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:28,432  INFO        -> rewrite: Afiseaza valoarea CRC (verificare ciclica) curenta a setului de parametri siguri
+2026-05-20 16:29:28,533  INFO      25125 0x2110:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:29,309  INFO        -> rewrite: Reprezinta o defectiune definita de utilizator si declansata prin protocolul LEC
+2026-05-20 16:29:29,410  INFO      23355 0x1830 (Lenze_i550)  existing_len=266  qc=rewrite
+2026-05-20 16:29:34,051  INFO        -> rewrite: Selecteaza functia atribuita intrarii digitale de la terminalul X57/7. Poate fi 
+2026-05-20 16:29:34,152  INFO      4178 33-57 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:38,559  INFO        -> rewrite: Comanda de stergere a pozitiei de referinta sigure (home position). Se foloseste
+2026-05-20 16:29:38,660  INFO      25126 0x2110:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:39,734  INFO        -> rewrite: Acest parametru defineste codul de eroare definit de utilizator care poate fi de
+2026-05-20 16:29:39,834  INFO      23356 0x1831 (Lenze_i550)  existing_len=244  qc=rewrite
+2026-05-20 16:29:42,983  INFO        -> rewrite: Configureaza functia atribuita intrarii digitale X57/8. Poate selecta referinte 
+2026-05-20 16:29:43,083  INFO      4179 33-58 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:48,043  INFO        -> rewrite: Activeaza functia Safe Muting (MUT) care permite dezactivarea temporara a protec
+2026-05-20 16:29:48,144  INFO      25127 0x2118:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:29:49,007  INFO        -> rewrite: Defineste functia atribuita intrarii digitale de la terminalul X57/9. Valoarea 0
+2026-05-20 16:29:49,107  INFO      4180 33-59 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:52,450  INFO        -> rewrite: Afiseaza starea fault-ului definit de utilizator pentru comunicatia de retea. Co
+2026-05-20 16:29:52,550  INFO      23357 0x1832 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:29:53,044  INFO        -> rewrite: Seteaza functia atribuita intrarii digitale X57/10. Aceasta intrare poate fi pro
+2026-05-20 16:29:53,145  INFO      4181 33-62 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:29:54,673  INFO        -> rewrite: Configureaza intrarea digitala de siguranta SD-In1 ca senzor activ sau pasiv. Se
+2026-05-20 16:29:54,774  INFO      25128 0x2118:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:00,887  INFO        -> rewrite: Configureaza intrarea de siguranta SD-In2 ca activa sau pasiva. Cand este setata
+2026-05-20 16:30:00,988  INFO      25129 0x2118:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:03,148  INFO        -> rewrite: Defineste functia atribuita terminalului digital X59/2. Poate fi configurat pent
+2026-05-20 16:30:03,248  INFO      4182 33-67 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:06,662  INFO        -> rewrite: Semnalizeaza o eroare de configurare a intrarii de retea NetWordIN1. Aceasta int
+2026-05-20 16:30:06,762  INFO      23358 0x1834 (Lenze_i550)  existing_len=251  qc=rewrite
+2026-05-20 16:30:09,655  INFO        -> rewrite: Selecteaza functia asociata iesirii digitale X59/5. Poate semnaliza starea VFD (
+2026-05-20 16:30:09,682  INFO        -> rewrite: Configureaza sau dezactiveaza intrarea digitala de siguranta SD-In3 ca intrare a
+2026-05-20 16:30:09,755  INFO      4183 33-70 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:09,782  INFO      25130 0x2118:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:14,330  INFO        -> rewrite: Eticheta de identificare a defectiunii 425505 pentru eroare de sarcina pe unitat
+2026-05-20 16:30:14,430  INFO      23359 0x1835 (Lenze_i550)  existing_len=293  qc=rewrite
+2026-05-20 16:30:19,630  INFO        -> rewrite: Configureaza intrarea digitala safety SD-In4 ca intrare activa, pasiva sau o dez
+2026-05-20 16:30:19,731  INFO      25131 0x2119:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:20,349  INFO        -> rewrite: Defineste functia asignata iesirii digitale de pe terminalul X59/8. Poate fi con
+2026-05-20 16:30:20,449  INFO      4184 33-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:24,313  INFO        -> rewrite: Eticheta de identificare pentru eroarea de incarcare a unitatii de program (PU).
+2026-05-20 16:30:24,413  INFO      23360 0x1836 (Lenze_i550)  existing_len=254  qc=rewrite
+2026-05-20 16:30:29,872  INFO        -> rewrite: Acest parametru indica o eroare de comunicare intre unitatea de control si modul
+2026-05-20 16:30:29,973  INFO      23361 0x1838 (Lenze_i550)  existing_len=319  qc=rewrite
+2026-05-20 16:30:30,189  INFO        -> rewrite: Seteaza timpul maxim in care cele doua canale ale intrarii securizate SD-In1 pot
+2026-05-20 16:30:30,290  INFO      25132 0x2119:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:33,609  INFO        -> rewrite: Afiseaza numarul set-up-ului sau programului care este activ in mod curent. Perm
+2026-05-20 16:30:33,709  INFO      4185 33-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:37,415  INFO        -> rewrite: Selecteaza nivelul de asertiune pentru intrarile digitale. HIGH inseamna ca intr
+2026-05-20 16:30:37,515  INFO      23362 0x1839 (Lenze_i550)  existing_len=268  qc=rewrite
+2026-05-20 16:30:39,832  INFO        -> rewrite: Seteaza timpul maxim permis pentru discrepanta intre intrarile digitale de sigur
+2026-05-20 16:30:39,932  INFO      25133 0x2119:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:42,464  INFO        -> rewrite: Defineste comportarea motorului la conectarea alimentarii convertizorului. Setar
+2026-05-20 16:30:42,565  INFO      4186 33-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:45,447  INFO        -> rewrite: Indică o stare de eroare legată de intrarea analogică 1. Semnalul de la senzorul
+2026-05-20 16:30:45,547  INFO      23363 0x183A (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:30:49,140  INFO        -> rewrite: Seteaza timpul de intarziere in milisecunde inainte de declansarea alarmei cand 
+2026-05-20 16:30:49,241  INFO      25134 0x2119:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:30:51,575  INFO        -> rewrite: Acest parametru indica o eroare la intrarea analogica 2 (AI2). Fault-ul apare ca
+2026-05-20 16:30:51,676  INFO      23364 0x183B (Lenze_i550)  existing_len=253  qc=rewrite
+2026-05-20 16:30:53,273  INFO        -> rewrite: Activeaza sau dezactiveaza functia de monitorizare a starii convertizatorului de
+2026-05-20 16:30:53,374  INFO      4187 33-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:30:56,035  INFO        -> rewrite: Seteaza timpul de discrepanta pentru intrarea SD-In4. Daca starea intrarii difer
+2026-05-20 16:30:56,136  INFO      25135 0x211A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:02,150  INFO        -> rewrite: Acest parametru indica o stare de eroare la intrarea HTL (encoder). Semnalizeaza
+2026-05-20 16:31:02,251  INFO      23365 0x183C (Lenze_i550)  existing_len=327  qc=rewrite
+2026-05-20 16:31:02,943  INFO        -> rewrite: Seteaza timpul de intarziere intre detectarea schimbarii semnalului la intrarea 
+2026-05-20 16:31:03,043  INFO      25136 0x211A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:04,374  INFO        -> rewrite: Defineste actiunea VFD dupa aparitia unei erori. Valoarea 0 implica oprirea in i
+2026-05-20 16:31:04,474  INFO      4188 33-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:10,566  INFO        -> rewrite: Seteaza intarzierea de filtrare pentru semnalul digital SD-In2. Ajuta la elimina
+2026-05-20 16:31:10,667  INFO      25137 0x211A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:10,742  INFO        -> rewrite: Semnalizeaza o eroare la iesirea analogica 1. Poate indica defectiune hardware a
+2026-05-20 16:31:10,843  INFO      23366 0x183D (Lenze_i550)  existing_len=263  qc=rewrite
+2026-05-20 16:31:20,450  INFO        -> rewrite: Semnalizeaza o eroare la iesirea analogica 2 a convertizorului de frecventa. Ace
+2026-05-20 16:31:20,550  INFO      23367 0x183E (Lenze_i550)  existing_len=311  qc=rewrite
+2026-05-20 16:31:21,133  INFO        -> rewrite: Defineste comportamentul variatorului dupa apasarea tastei ESC de pe panoul de c
+2026-05-20 16:31:21,233  INFO      4189 33-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:21,479  INFO        -> rewrite: Seteaza timpul de intarziere pentru semnalul digital de la intrarea SD-In3. Filt
+2026-05-20 16:31:21,580  INFO      25138 0x211A:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:30,274  INFO        -> rewrite: Seteaza timpul de intarziere pentru intrarea digitala SD-In4. Este folosit pentr
+2026-05-20 16:31:30,310  INFO        -> rewrite: Activeaza alimentarea externa cu 24VDC pentru modulul optional MCO (Motion Contr
+2026-05-20 16:31:30,375  INFO      25139 0x211B (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:30,411  INFO      4190 33-86 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:30,475  INFO        -> rewrite: Acest fault indica o eroare aparuta in timpul identificarii pozitiei polilor mot
+2026-05-20 16:31:30,576  INFO      23368 0x183F (Lenze_i550)  existing_len=211  qc=rewrite
+2026-05-20 16:31:38,571  INFO        -> rewrite: Acest defect indica o situatie de supracurent la motor. Apare cand curentul cons
+2026-05-20 16:31:38,671  INFO      23369 0x1840 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:31:39,885  INFO        -> rewrite: Defineste configuratia releelor de iesire la aparitia unei alarme. Seteaza care 
+2026-05-20 16:31:39,986  INFO      4191 33-87 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:40,756  INFO        -> rewrite: Afiseaza starea intrarilor de siguranta ca valori bit-codate. Fiecare bit reprez
+2026-05-20 16:31:40,857  INFO      25140 0x2120:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:47,407  INFO        -> rewrite: Acest warning indica o intrerupere a semnalului de la encoder. Encoderul nu mai 
+2026-05-20 16:31:47,507  INFO      23370 0x1841 (Lenze_i550)  existing_len=305  qc=rewrite
+2026-05-20 16:31:47,531  INFO        -> rewrite: Defineste starea releelor sau a terminalelor de iesire digitale atunci cand apar
+2026-05-20 16:31:47,631  INFO      4192 33-88 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:52,593  INFO        -> rewrite: Selecteaza busul de siguranta (S-Bus) ca sursa de declansare pentru functia SD-O
+2026-05-20 16:31:52,693  INFO      25141 0x2121:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:57,254  INFO        -> rewrite: Afiseaza cuvantul de stare binar al convertizorului de frecventa in momentul apa
+2026-05-20 16:31:57,355  INFO      4193 33-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:31:58,236  INFO        -> rewrite: Defineste functia logica pentru legarea conditiilor de comutare ale iesirii SD-O
+2026-05-20 16:31:58,337  INFO      25142 0x2122 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:31:58,535  INFO        -> rewrite: Limiteaza viteza masurata in sistemul de feedback pentru a preveni functionarea 
+2026-05-20 16:31:58,636  INFO      23371 0x1842 (Lenze_i550)  existing_len=269  qc=rewrite
+2026-05-20 16:32:03,890  INFO        -> rewrite: Afiseaza statutul iesirilor sigure sub forma de valori bit-coded. Fiecare bit re
+2026-05-20 16:32:03,990  INFO      25143 0x2128 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:04,905  INFO        -> rewrite: Modulul de memorie al variatorului este plin. Acest avertisment apare cand nu ma
+2026-05-20 16:32:05,006  INFO      23372 0x1844 (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 16:32:08,707  INFO        -> rewrite: Seteaza identificatorul nodului CAN pentru optiunea MCO. Valoarea trebuie sa fie
+2026-05-20 16:32:08,808  INFO      4194 33-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:10,287  INFO        -> rewrite: Aceasta eroare indica faptul ca datele salvate de utilizator in convertizor sunt
+2026-05-20 16:32:10,388  INFO      23373 0x1845 (Lenze_i550)  existing_len=343  qc=rewrite
+2026-05-20 16:32:12,826  INFO        -> rewrite: Configureaza parametrii sistemului Safety Bus (S-Bus) utilizat pentru comunicati
+2026-05-20 16:32:12,926  INFO      25144 0x212A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:17,320  INFO        -> rewrite: Acest warning indica faptul ca datele de configuratie nu au fost salvate complet
+2026-05-20 16:32:17,418  INFO        -> rewrite: Seteaza rata de transfer CAN pentru optiunea de control miscare MCO pe portul X6
+2026-05-20 16:32:17,421  INFO      23374 0x1848 (Lenze_i550)  existing_len=274  qc=rewrite
+2026-05-20 16:32:17,519  INFO      4195 33-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:21,092  INFO        -> rewrite: Afiseaza starea curenta a comunicatiei PROFIsafe pe interfata de bus. Acest para
+2026-05-20 16:32:21,193  INFO      25145 0x212A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:23,043  INFO        -> rewrite: Acest avertisment indica faptul ca datele OEM stocate pe modulul de memorie sunt
+2026-05-20 16:32:23,144  INFO      23375 0x1849 (Lenze_i550)  existing_len=290  qc=rewrite
+2026-05-20 16:32:23,585  INFO        -> rewrite: Activeaza sau dezactiveaza rezistenta de terminare pe bus-ul RS485 pentru modulu
+2026-05-20 16:32:23,686  INFO      4196 34-71 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:29,516  INFO        -> rewrite: Afiseaza octetul de stare al comunicatiei PROFIsafe prin S-Bus. Fiecare bit al s
+2026-05-20 16:32:29,617  INFO      25146 0x212A:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:30,607  INFO        -> rewrite: Reprezinta cuvantul de alarma pentru optiunea de control miscare (MCO). Afiseaza
+2026-05-20 16:32:30,708  INFO      4197 35-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:31,720  INFO        -> rewrite: Acest defect indica faptul ca modulul de memorie instalat este de un tip incompa
+2026-05-20 16:32:31,821  INFO      23376 0x184A (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:32:36,587  INFO        -> rewrite: Defineste octetul de control pentru comunicatia PROFIsafe pe S-Bus. Contine come
+2026-05-20 16:32:36,688  INFO      25147 0x212A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:37,159  INFO        -> rewrite: Cod de eroare care indica incompatibilitatea versiunii de firmware a modulului E
+2026-05-20 16:32:37,259  INFO      23377 0x184B (Lenze_i550)  existing_len=329  qc=rewrite
+2026-05-20 16:32:39,150  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital trece-jos pentru borna X48/4. Aces
+2026-05-20 16:32:39,251  INFO      4198 35-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:45,379  INFO        -> rewrite: Seteaza valoarea CRC (verificare redundanta ciclica) pentru proiectul FSoE (Fail
+2026-05-20 16:32:45,480  INFO      25148 0xE600:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:45,757  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital low-pass pentru terminalul X48/7. 
+2026-05-20 16:32:45,857  INFO      4199 35-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:46,263  INFO        -> rewrite: Aceasta eroare indica faptul ca datele modulului EPM (Electronic Power Module) s
+2026-05-20 16:32:46,364  INFO      23378 0x184C (Lenze_i550)  existing_len=270  qc=rewrite
+2026-05-20 16:32:53,329  INFO        -> rewrite: Defineste elementul de comanda din cadrul cadrului FSoE (Fail Safe over EtherCAT
+2026-05-20 16:32:53,430  INFO      25149 0xE600:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:32:55,842  INFO        -> rewrite: Seteaza constanta de timp a filtrului digital low-pass de ordin 1 pentru termina
+2026-05-20 16:32:55,943  INFO      4200 36-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:32:57,605  INFO        -> rewrite: Acest parametru indica o stare de alarma legata de detectarea unui nou tip de fi
+2026-05-20 16:32:57,706  INFO      23379 0x184D (Lenze_i550)  existing_len=363  qc=rewrite
+2026-05-20 16:33:01,281  INFO        -> rewrite: Identificatorul unic al conexiunii FSoE (Fail Safe over EtherCAT). Stabileste le
+2026-05-20 16:33:01,381  INFO      25150 0xE600:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:05,228  INFO        -> rewrite: Acest parametru semnaleaza o eroare de incompatibilitate intre datele EPM si dim
+2026-05-20 16:33:05,276  INFO        -> rewrite: Seteaza valoarea care este trimisa la terminalul X49/7 atunci cand comunicatia f
+2026-05-20 16:33:05,329  INFO      23380 0x184E (Lenze_i550)  existing_len=266  qc=rewrite
+2026-05-20 16:33:05,377  INFO      4201 36-55 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:08,439  INFO        -> rewrite: Reprezinta valoarea CRC pentru primul element al cadrului FSoE (Fail Safe Over E
+2026-05-20 16:33:08,539  INFO      25151 0xE600:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:12,494  INFO        -> rewrite: Acest parametru semnaleaza ca s-a detectat o schimbare in dimensiunea modulului 
+2026-05-20 16:33:12,594  INFO      23381 0x184F (Lenze_i550)  existing_len=306  qc=rewrite
+2026-05-20 16:33:13,955  INFO        -> rewrite: Defineste valoarea de iesire presetata trimisa la borna X49/9 cand terminalul es
+2026-05-20 16:33:14,055  INFO      4202 40-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:19,058  INFO        -> rewrite: Reprezinta primul ciclu CRC (verificare redundanta ciclica) in cadrul frame-uril
+2026-05-20 16:33:19,159  INFO      25152 0xE600:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:24,764  INFO        -> rewrite: Acest parametru semnaleaza o configurare invalida a functiei de schimbare a para
+2026-05-20 16:33:24,864  INFO      23382 0x1850 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:33:26,580  INFO        -> rewrite: Controleaza castigul corectiei fluxului in modul sensorless (fara senzor de tura
+2026-05-20 16:33:26,681  INFO      4203 42-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:27,737  INFO        -> rewrite: CRC_2 reprezinta al doilea ciclu de verificare a redundantei in cadrul protocolu
+2026-05-20 16:33:27,837  INFO      25153 0xE600:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:31,093  INFO        -> rewrite: Parametrul ofera informatii de diagnosticare despre datele EPM (Electronic Progr
+2026-05-20 16:33:31,193  INFO      23383 0x1851 (Lenze_i550)  existing_len=275  qc=rewrite
+2026-05-20 16:33:37,200  INFO        -> rewrite: Defineste sursa pentru masurarea vitezei reale a motorului. Poate fi de la encod
+2026-05-20 16:33:37,300  INFO      4204 42-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:37,485  INFO        -> rewrite: Reprezinta elementul CRC_3 din cadrul cadrului FSoE (Fail Safe over EtherCAT) ut
+2026-05-20 16:33:37,585  INFO      25154 0xE600:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:37,951  INFO        -> rewrite: Acest parametru indica faptul ca modificarile facute la parametrii inverterului 
+2026-05-20 16:33:38,052  INFO      23384 0x1852 (Lenze_i550)  existing_len=282  qc=rewrite
+2026-05-20 16:33:43,314  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru mesajele explicite trimise pe retea. Da
+2026-05-20 16:33:43,414  INFO      23385 0x1853 (Lenze_i550)  existing_len=198  qc=rewrite
+2026-05-20 16:33:48,246  INFO        -> rewrite: Defineste elementul CRC_4 din cadrul cadrului de comunicatie FSoE (FailSafe over
+2026-05-20 16:33:48,347  INFO      25155 0xE600:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:33:50,597  INFO        -> rewrite: Permite schimbarea directiei detectate de encoder pentru rotatia in sensul acelo
+2026-05-20 16:33:50,698  INFO      4205 42-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:56,412  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia de retea inainte de generar
+2026-05-20 16:33:56,512  INFO      23386 0x1854 (Lenze_i550)  existing_len=241  qc=rewrite
+2026-05-20 16:33:58,343  INFO        -> rewrite: Selecteaza tipul de feedback de la encoderul de pozitie. Optiunea TTL/HTL cu inf
+2026-05-20 16:33:58,444  INFO      4206 42-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:33:58,852  INFO        -> rewrite: Seteaza elementul CRC_5 din cadrul de comunicatie FSoE pentru slave. CRC pe 5 bi
+2026-05-20 16:33:58,953  INFO      25156 0xE600:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:02,610  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru primirea raspunsului de la dispozitivul
+2026-05-20 16:34:02,710  INFO      23387 0x1855 (Lenze_i550)  existing_len=246  qc=rewrite
+2026-05-20 16:34:08,541  INFO        -> rewrite: Seteaza frecventa filtrului pentru semnalul de feedback de la encoder. Valoarea 
+2026-05-20 16:34:08,642  INFO      4207 42-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:34:09,314  INFO        -> rewrite: Defineste elementul CRC_6 din cadrul cadrelor de comunicare FSoE (Fail Safe over
+2026-05-20 16:34:09,415  INFO      25157 0xE700:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:10,600  INFO        -> rewrite: Seteaza timpul maxim de asteptare in milisecunde pentru comunicatia Modbus TCP i
+2026-05-20 16:34:10,701  INFO      23388 0x1856 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:34:16,307  INFO        -> rewrite: Seteaza timpul de asteptare pentru functia Keep Alive in comunicatia Modbus TCP.
+2026-05-20 16:34:16,408  INFO      23389 0x1858 (Lenze_i550)  existing_len=271  qc=rewrite
+2026-05-20 16:34:16,514  INFO        -> rewrite: Defineste elementele cadrului de comanda pentru protocolul FSoE Master. Seteaza 
+2026-05-20 16:34:16,614  INFO      25158 0xE700:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:17,712  INFO        -> rewrite: Activeaza functia de siguranta Safe Torque Off (STO) conform standardului EN IEC
+2026-05-20 16:34:17,813  INFO      4208 42-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:34:23,341  INFO        -> rewrite: Indică o eroare critică pe bus-ul CAN. Starea "bus off" apare când controller-ul
+2026-05-20 16:34:23,442  INFO      23390 0x1859 (Lenze_i550)  existing_len=168  qc=rewrite
+2026-05-20 16:34:26,380  INFO        -> rewrite: Defineste identificatorul unic pentru conexiunea safety FSoE (Fail Safe over Eth
+2026-05-20 16:34:26,481  INFO      25159 0xE700:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:28,174  INFO        -> rewrite: Defineste timpul de stabilitate a semnalului pentru intrarile de siguranta. Filt
+2026-05-20 16:34:28,275  INFO      4209 42-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:34:33,167  INFO        -> rewrite: Indică o stare de avertizare în comunicaţia CAN. Când acest bit este setat, înse
+2026-05-20 16:34:33,268  INFO      23391 0x185A (Lenze_i550)  existing_len=275  qc=rewrite
+2026-05-20 16:34:37,306  INFO        -> rewrite: Reprezinta primul octet al codului de verificare CRC in cadrul de comunicatie FS
+2026-05-20 16:34:37,406  INFO      25160 0xE700:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:38,297  INFO        -> rewrite: Selectează reacția convertorului când se primește un semnal de eroare externă ca
+2026-05-20 16:34:38,398  INFO      4210 42-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:34:43,742  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru primirea heartbeat-ului de la consumato
+2026-05-20 16:34:43,842  INFO      23392 0x185B (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 16:34:46,855  INFO        -> rewrite: Defineste tipul interfetei de comunicatie PLC/fieldbus. Selecteaza protocolul ac
+2026-05-20 16:34:46,956  INFO      4211 42-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:34:47,915  INFO        -> rewrite: Reprezinta valoarea CRC-1 (Cyclic Redundancy Check) din cadrul cadrului FSoE Mas
+2026-05-20 16:34:48,016  INFO      25161 0xE901:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:51,572  INFO        -> rewrite: Defineste timpul maxim de asteptare pentru primirea heartbeat-ului de la al doil
+2026-05-20 16:34:51,673  INFO      23393 0x185C (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:34:55,338  INFO        -> rewrite: Defineste versiunea protocolului FSoE (Fail Safe over EtherCAT) pentru conexiune
+2026-05-20 16:34:55,439  INFO      25162 0xE901:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:34:58,605  INFO        -> rewrite: Seteaza reactia de siguranta cand viteza depaseste limita setata pentru SLS (Saf
+2026-05-20 16:34:58,705  INFO      4212 42-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:01,411  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru primirea mesajului heartbeat de la nodu
+2026-05-20 16:35:01,512  INFO      23394 0x185D (Lenze_i550)  existing_len=301  qc=rewrite
+2026-05-20 16:35:04,322  INFO        -> rewrite: Parametru de comunicare safety pentru conexiunea FSoE (Fail Safe over EtherCAT).
+2026-05-20 16:35:04,423  INFO      25163 0xE901:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:07,629  INFO        -> rewrite: Seteaza rampa de pornire pentru functia SLS (Safe Limited Speed). Daca viteza in
+2026-05-20 16:35:07,730  INFO      4213 42-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:10,648  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru primirea heartbeat-ului de la consumato
+2026-05-20 16:35:10,748  INFO      23395 0x185E (Lenze_i550)  existing_len=295  qc=rewrite
+2026-05-20 16:35:14,469  INFO        -> rewrite: Parametru de configurare pentru comunicatia FSoE (Fail Safe over EtherCAT). Stab
+2026-05-20 16:35:14,570  INFO      25164 0xE901:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:15,431  INFO        -> rewrite: Activeaza optiunea de siguranta pentru repornire dupa o defectiune interna. Cand
+2026-05-20 16:35:15,531  INFO      4214 43-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:16,789  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia de retea. Daca nu se primes
+2026-05-20 16:35:16,890  INFO      23396 0x185F (Lenze_i550)  existing_len=221  qc=rewrite
+2026-05-20 16:35:20,436  INFO        -> rewrite: Afiseaza temperatura componentelor electronice de putere ale convertizorului de 
+2026-05-20 16:35:20,536  INFO      4215 43-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:23,973  INFO        -> rewrite: Defineste un parametru de comunicatie pentru conexiunea FSoE (Fail Safe over Eth
+2026-05-20 16:35:24,073  INFO      25165 0xE901:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:25,564  INFO        -> rewrite: Indicateur de problema care detecteaza intreruperea schimbului ciclic de date pr
+2026-05-20 16:35:25,665  INFO      23397 0x1860 (Lenze_i550)  existing_len=232  qc=rewrite
+2026-05-20 16:35:29,906  INFO        -> rewrite: Seteaza valoarea temperaturii auxiliare sau pragul de temperatura pentru intrare
+2026-05-20 16:35:30,007  INFO      4216 43-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:31,229  INFO        -> rewrite: Defineste un parametru de comunicare pentru conexiunea FSoE (Fail Safe over Ethe
+2026-05-20 16:35:31,330  INFO      25166 0xE901:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:33,197  INFO        -> rewrite: Semnaleaza o eroare de initializare a retelei de comunicatie. Aceasta problema a
+2026-05-20 16:35:33,297  INFO      23398 0x1861 (Lenze_i550)  existing_len=210  qc=rewrite
+2026-05-20 16:35:36,796  INFO        -> rewrite: Afiseaza identificatorul versiunii software pentru optiunea instalata. Acest par
+2026-05-20 16:35:36,860  INFO        -> rewrite: Acest parametru defineste configuratia comunicarii pentru conexiunea FSoE (Fail 
+2026-05-20 16:35:36,897  INFO      4217 43-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:36,961  INFO      25167 0xE901:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:42,493  INFO        -> rewrite: Semnaleaza o eroare de comunicatie de retea cand datele ciclice de proces sunt i
