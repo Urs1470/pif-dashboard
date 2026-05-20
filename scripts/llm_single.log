@@ -8484,3 +8484,84 @@
 2026-05-20 15:25:36,819  INFO        -> rewrite: Defineste parametrii de comunicatie pentru RPDO2, al doilea canal de receptionar
 2026-05-20 15:25:36,837  INFO        -> rewrite: Acest parametru controleaza contributia feed-forward in bucla de control a vitez
 2026-05-20 15:25:36,938  INFO      3736 33-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:25:40,668  INFO        Committed + pushed
+2026-05-20 15:25:40,768  INFO      24671 0x1402 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:25:43,203  INFO        -> rewrite: Defineste comportamentul invertorului cand monitorizarea continua dupa un evenim
+2026-05-20 15:25:43,303  INFO      22879 0x2552:007 (Lenze_i550)  existing_len=280  qc=rewrite
+2026-05-20 15:25:47,666  INFO        -> rewrite: Defineste dimensiunea ferestrei de filtrare pentru semnalul de viteza. O valoare
+2026-05-20 15:25:47,702  INFO        -> rewrite: RPDO3 (Receive Process Data Object 3) este un canal de comunicare CANopen pentru
+2026-05-20 15:25:47,767  INFO      3737 33-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:25:47,803  INFO      24672 0x1403 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:25:51,910  INFO        -> rewrite: Seteaza timpul dupa care WLAN-ul este restartat daca nu se primesc mesaje "keep 
+2026-05-20 15:25:52,011  INFO      22880 0x24E5:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:25:55,036  INFO        -> rewrite: Seteaza parametrii de comunicatie pentru RPDO4 (Receive PDO 4) care este al patr
+2026-05-20 15:25:55,137  INFO      24673 0x1600 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:25:55,409  INFO        -> rewrite: Seteaza constanta de timp pentru filtrarea semnalului marker receptionat de la d
+2026-05-20 15:25:55,510  INFO      3738 33-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:02,039  INFO        -> rewrite: Defineste obiectele de date mapate in RPDO1. Fiecare intrare specifica indexul s
+2026-05-20 15:26:02,139  INFO      24674 0x1601 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:02,661  INFO        -> rewrite: Defineste actiunea invertorului cand primeste date de proces invalide prin comun
+2026-05-20 15:26:02,762  INFO      22881 0x285C:001 (Lenze_i550)  existing_len=269  qc=rewrite
+2026-05-20 15:26:03,504  INFO        -> rewrite: Defineste actiunea VFD-ului cand senzorul de limita finala este activat. In func
+2026-05-20 15:26:03,605  INFO      3739 33-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:09,350  INFO        -> rewrite: Defineste obiectele mape in RPDO2 (Receive PDO 2) pentru comunicatia CANopen. Ac
+2026-05-20 15:26:09,451  INFO      24675 0x1602 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:09,521  INFO        -> rewrite: Seteaza limita inferioara software pentru referinta negativa de viteza sau pozit
+2026-05-20 15:26:09,622  INFO      3740 33-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:10,415  INFO        -> rewrite: Defineste numerele de eroare care nu vor fi trimise ca alarma, mesaj de urgenta 
+2026-05-20 15:26:10,516  INFO      22882 0x285C:002 (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 15:26:14,322  INFO        -> rewrite: Defineste limita superioara a software-ului pentru directia pozitiva. Aceasta pr
+2026-05-20 15:26:14,422  INFO      3741 33-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:15,331  INFO        -> rewrite: Configureaza obiectele care sunt receptionate prin PDO3. Fiecare intrare mapeaza
+2026-05-20 15:26:15,431  INFO      24676 0x1800 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:20,132  INFO        -> rewrite: Seteaza al doilea cod de alarma care poate fi suprimat din functionare. Fiecare 
+2026-05-20 15:26:20,233  INFO      22883 0x285C:003 (Lenze_i550)  existing_len=220  qc=rewrite
+2026-05-20 15:26:21,345  INFO        -> rewrite: Seteaza parametrii de comunicatie pentru TPDO1 (Transmit Process Data Object 1) 
+2026-05-20 15:26:21,446  INFO      24677 0x1801 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:24,530  INFO        -> rewrite: Activeaza functia de limita software pentru directia inversa de rotatie. Cand es
+2026-05-20 15:26:24,631  INFO      3742 33-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:28,858  INFO        -> rewrite: Defineste cea de-a treia alarma sau eveniment care va fi suprimata. Cand este ac
+2026-05-20 15:26:28,958  INFO      22884 0x285C:004 (Lenze_i550)  existing_len=194  qc=rewrite
+2026-05-20 15:26:30,856  INFO        -> rewrite: Seteaza parametrii de comunicatie pentru TPDO1 (Transmit Process Data Object 1).
+2026-05-20 15:26:30,957  INFO      24678 0x1802 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:32,910  INFO        -> rewrite: Activeaza functia de limita software pentru capatul de cursa pozitiv al motorulu
+2026-05-20 15:26:33,011  INFO      3743 33-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:36,179  INFO        -> rewrite: Defineste a patra intrare in lista de suprimare alarme. Selecteaza codul alarmei
+2026-05-20 15:26:36,280  INFO      22885 0x285C:005 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 15:26:40,807  INFO        -> rewrite: Seteaza parametrii de comunicatie pentru TPDO1 (Transmit Process Data Object) in
+2026-05-20 15:26:40,877  INFO        -> rewrite: Seteaza durata in milisecunde cat timp procesul trebuie sa ramana in interiorul 
+2026-05-20 15:26:40,908  INFO      24679 0x1803 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:40,977  INFO      3744 33-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:44,305  INFO        -> rewrite: Seteaza al cincilea semnal de alarma care va fi suprimat sau mascat de convertiz
+2026-05-20 15:26:44,406  INFO      22886 0x285C:006 (Lenze_i550)  existing_len=272  qc=rewrite
+2026-05-20 15:26:52,660  INFO        -> rewrite: Defineste valoarea limita a ferestrei tinta pentru functia de monitorizare. Când
+2026-05-20 15:26:52,760  INFO      3745 33-47 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:26:52,773  INFO        -> rewrite: Defineste parametrii de comunicatie pentru TPDO1 (Transmit Process Data Object) 
+2026-05-20 15:26:52,874  INFO      24680 0x1A00 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:26:54,459  INFO        -> rewrite: Defineste a sasea intrare din lista de suprimare alarme. Permite specificarea co
+2026-05-20 15:26:54,560  INFO      22887 0x285C:007 (Lenze_i550)  existing_len=250  qc=rewrite
+2026-05-20 15:27:00,382  INFO        -> rewrite: Defineste care parametri ai aplicatiei sunt mapati in TPDO1 (Transmit Process Da
+2026-05-20 15:27:00,482  INFO      24681 0x1A01 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:03,117  INFO        -> rewrite: Defineste marimea ferestrei de toleranta in jurul valorii tinta pentru o variabi
+2026-05-20 15:27:03,178  INFO        -> rewrite: Definește care alarme sunt suprimate de catre VFD. Intrarea 7 permite dezactivar
+2026-05-20 15:27:03,218  INFO      3746 33-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:03,279  INFO      22888 0x285C:008 (Lenze_i550)  existing_len=207  qc=rewrite
+2026-05-20 15:27:04,542  INFO        -> rewrite: Definește obiectele CANopen care sunt transmise prin TPDO2. Fiecare intrare din 
+2026-05-20 15:27:04,643  INFO      24682 0x1A02 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:12,282  INFO        -> rewrite: Defineste obiectele de date care sunt mapate pentru a fi transmise prin TPDO3 (T
+2026-05-20 15:27:12,383  INFO      24683 0x2301:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:13,316  INFO        -> rewrite: Configureaza suprimarea alarmei 8. Cand conditia setata este activa, alarma 8 es
+2026-05-20 15:27:13,416  INFO      22889 0x285C:009 (Lenze_i550)  existing_len=245  qc=rewrite
+2026-05-20 15:27:14,683  INFO        -> rewrite: Defineste functia atribuita intrarii digitale de pe terminalul X57/3. Valoarea i
+2026-05-20 15:27:14,784  INFO      3747 33-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:20,503  INFO        -> rewrite: Seteaza identificatorul unic al dispozitivului pe bus-ul CANopen. Fiecare nod tr
+2026-05-20 15:27:20,604  INFO      24684 0x2301:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:22,525  INFO        -> rewrite: Defineste functia atribuita intrarii digitale de pe terminalul fizic X57/4. Valo
+2026-05-20 15:27:22,626  INFO      3748 33-60 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:23,671  INFO        -> rewrite: Suprima alarma cu index 9 din lista de alarme active ale convertizorului. Cand a
+2026-05-20 15:27:23,772  INFO      22890 0x285C:010 (Lenze_i550)  existing_len=222  qc=rewrite
+2026-05-20 15:27:25,497  INFO        -> rewrite: Seteaza rata de transfer (viteza de comunicare) pentru magistrala CANopen. Valor
+2026-05-20 15:27:25,598  INFO      24685 0x2301:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:31,048  INFO        -> rewrite: Seteaza modul de functionare pentru terminalele fizice X59/1 si X59/2 de pe plac
+2026-05-20 15:27:31,066  INFO        -> rewrite: Activeaza suprimarea alarmei cu numarul 10. Cand este setata, aceasta alarma nu 
+2026-05-20 15:27:31,148  INFO      3749 33-61 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
