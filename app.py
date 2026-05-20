@@ -3216,10 +3216,12 @@ def _parse_pv_request():
                 break
             caption = request.form.get(f'{key}_caption', '')
             anchor = request.form.get(f'{key}_anchor', 'final')
+            width = request.form.get(f'{key}_width', 'half')
             images.append({
                 'file': BytesIO(f.read()),
                 'caption': caption,
                 'anchor': anchor,
+                'width': width,
                 'filename': f.filename,
             })
             i += 1

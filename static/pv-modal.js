@@ -52,6 +52,13 @@
     .pv-img-card .del-img:hover { color: var(--danger);
       border-color: var(--danger); background: var(--danger-soft); }
     .pv-img-card .del-img [data-lucide] { width: 14px; height: 14px; }
+    .pv-width-toggle { display: flex; gap: 0; border: 1px solid var(--line);
+      border-radius: 6px; overflow: hidden; width: fit-content; }
+    .pv-width-toggle button { border: 0; background: var(--bg-elev1);
+      color: var(--text-mut); font-size: 10.5px; font-weight: 600;
+      padding: 4px 9px; cursor: pointer; font-family: inherit; }
+    .pv-width-toggle button.on { background: var(--accent); color: #0a1311; }
+    .pv-pif-overlay .pv-width-toggle button.on { background: var(--violet, #8b87ff); color: #0a0a1d; }
     @media (max-width: 720px) { .pv-images-list { grid-template-columns: 1fr; } }
     .pv-modal {
       width: 100%; max-width: 920px; max-height: calc(100vh - 48px);
@@ -526,21 +533,40 @@
   }
 
   // ----- Image manager (Service) -----
-  const SERVICE_ANCHORS = [
-    { value: 'dupa_motiv', label: 'După Motivul intervenției' },
-    { value: 'dupa_actiuni', label: 'După Au fost efectuate' },
-    { value: 'dupa_observatii', label: 'După Observații' },
-    { value: 'final', label: 'La final (anexă)' },
-  ];
   let imgSeq = 0;
-  const imageEntries = []; // {id, file, dataUrl, caption, anchor}
+  const imageEntries = []; // {id, file, dataUrl, caption, anchor, width}
+  let svcBeforeLines = [];  // liniile din service_before (motivul)
+  let svcAfterLines = [];   // liniile din service_after (actiuni)
+
+  function truncLine(s, n) {
+    s = (s || '').trim();
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  function buildServiceAnchors() {
+    // Returneaza lista {value, label} cu liniile reale din PV
+    const opts = [];
+    svcBeforeLines.forEach((l, i) => {
+      opts.push({ value: `motiv:${i}`, label: `După: ${truncLine(l, 48)}` });
+    });
+    svcAfterLines.forEach((l, i) => {
+      opts.push({ value: `actiuni:${i}`, label: `După: ${truncLine(l, 48)}` });
+    });
+    opts.push({ value: 'observatii', label: 'După Observații' });
+    opts.push({ value: 'final', label: 'La final (anexă)' });
+    return opts;
+  }
 
   function addImageFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const id = ++imgSeq;
+      const anchors = buildServiceAnchors();
+      // default: dupa ultima linie de actiuni daca exista, altfel final
+      const lastAct = svcAfterLines.length ? `actiuni:${svcAfterLines.length - 1}` : 'final';
       imageEntries.push({
-        id, file, dataUrl: e.target.result, caption: '', anchor: 'dupa_actiuni',
+        id, file, dataUrl: e.target.result, caption: '',
+        anchor: lastAct, width: 'half',
       });
       renderImagesList();
     };
@@ -550,7 +576,10 @@
   function renderImagesList() {
     const list = $('#pv-images-list');
     list.innerHTML = '';
+    const anchors = buildServiceAnchors();
     imageEntries.forEach((entry) => {
+      // daca anchor-ul salvat nu mai exista in lista, fallback la final
+      if (!anchors.some(a => a.value === entry.anchor)) entry.anchor = 'final';
       const card = document.createElement('div');
       card.className = 'pv-img-card';
       card.innerHTML = `
@@ -558,15 +587,25 @@
         <div class="meta">
           <input type="text" placeholder="Caption opțional"
                  value="${escapeHtml(entry.caption)}" data-img-caption>
-          <select data-img-anchor>
-            ${SERVICE_ANCHORS.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${a.label}</option>`).join('')}
+          <select data-img-anchor title="Unde apare poza în PV">
+            ${anchors.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${escapeHtml(a.label)}</option>`).join('')}
           </select>
+          <div class="pv-width-toggle">
+            <button type="button" data-w="half" class="${entry.width==='half'?'on':''}">2 / rând</button>
+            <button type="button" data-w="full" class="${entry.width==='full'?'on':''}">1 / rând</button>
+          </div>
           <span class="filename">${escapeHtml(entry.file.name)}</span>
         </div>
         <button type="button" class="del-img" title="Șterge"><i data-lucide="trash-2"></i></button>
       `;
       card.querySelector('[data-img-caption]').oninput = (e) => { entry.caption = e.target.value; };
       card.querySelector('[data-img-anchor]').onchange = (e) => { entry.anchor = e.target.value; };
+      card.querySelectorAll('.pv-width-toggle button').forEach(b => {
+        b.onclick = () => {
+          entry.width = b.dataset.w;
+          card.querySelectorAll('.pv-width-toggle button').forEach(x => x.classList.toggle('on', x.dataset.w === entry.width));
+        };
+      });
       card.querySelector('.del-img').onclick = () => {
         const idx = imageEntries.findIndex(x => x.id === entry.id);
         if (idx >= 0) imageEntries.splice(idx, 1);
@@ -621,6 +660,7 @@
           fd.append(`image_${i}`, entry.file, entry.file.name);
           fd.append(`image_${i}_caption`, entry.caption || '');
           fd.append(`image_${i}_anchor`, entry.anchor || 'final');
+          fd.append(`image_${i}_width`, entry.width || 'half');
         });
         res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
           method: 'POST', body: fd, credentials: 'same-origin',
@@ -692,6 +732,11 @@
       $('#pv-a-actiuni').textContent = trim(p.service_after, 220) || 'Lipsește — completează "Acțiuni și rezultat" în proiect';
       if (!p.service_before) $('#pv-a-motiv').classList.add('muted');
       if (!p.service_after) $('#pv-a-actiuni').classList.add('muted');
+
+      // Linii pentru ancorele pozelor (selectarea randului din PV)
+      svcBeforeLines = (p.service_before || '').split('\n').map(l => l.trim()).filter(Boolean);
+      svcAfterLines = (p.service_after || '').split('\n').map(l => l.trim()).filter(Boolean);
+      renderImagesList();
 
       // pre-fill cod proiect din DB daca exista
       if (p.cod_proiect) {
@@ -966,19 +1011,32 @@
   ['#pif-cod', '#pif-data'].forEach(s => $(s).oninput = updatePreview);
 
   // Image manager (PIF)
-  const PIF_ANCHORS = [
-    { value: 'dupa_constatari', label: 'După Alte constatări (pct. 3)' },
-    { value: 'dupa_concluzii', label: 'După Concluzii' },
-    { value: 'final', label: 'La final (anexă)' },
-  ];
   let pifImgSeq = 0;
   const pifImages = [];
+
+  function pifTrunc(s, n) {
+    s = (s || '').trim();
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+  function buildPifAnchors() {
+    // liniile din textarea constatari (live)
+    const opts = [];
+    const lines = ($('#pif-constatari').value || '').split('\n').map(l => l.trim()).filter(Boolean);
+    lines.forEach((l, i) => {
+      opts.push({ value: `constatari:${i}`, label: `După: ${pifTrunc(l, 48)}` });
+    });
+    opts.push({ value: 'concluzii', label: 'După Concluzii' });
+    opts.push({ value: 'final', label: 'La final (anexă)' });
+    return opts;
+  }
   function pifAddImage(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
+      const lines = ($('#pif-constatari').value || '').split('\n').map(l => l.trim()).filter(Boolean);
+      const def = lines.length ? `constatari:${lines.length - 1}` : 'final';
       pifImages.push({
         id: ++pifImgSeq, file, dataUrl: e.target.result,
-        caption: '', anchor: 'dupa_constatari',
+        caption: '', anchor: def, width: 'half',
       });
       pifRenderImages();
     };
@@ -987,7 +1045,9 @@
   function pifRenderImages() {
     const list = $('#pif-images-list');
     list.innerHTML = '';
+    const anchors = buildPifAnchors();
     pifImages.forEach((entry) => {
+      if (!anchors.some(a => a.value === entry.anchor)) entry.anchor = 'final';
       const card = document.createElement('div');
       card.className = 'pv-img-card';
       card.innerHTML = `
@@ -995,15 +1055,25 @@
         <div class="meta">
           <input type="text" placeholder="Caption opțional"
                  value="${escapeHtml(entry.caption)}" data-img-caption>
-          <select data-img-anchor>
-            ${PIF_ANCHORS.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${a.label}</option>`).join('')}
+          <select data-img-anchor title="Unde apare poza în PV">
+            ${anchors.map(a => `<option value="${a.value}" ${entry.anchor===a.value?'selected':''}>${escapeHtml(a.label)}</option>`).join('')}
           </select>
+          <div class="pv-width-toggle">
+            <button type="button" data-w="half" class="${entry.width==='half'?'on':''}">2 / rând</button>
+            <button type="button" data-w="full" class="${entry.width==='full'?'on':''}">1 / rând</button>
+          </div>
           <span class="filename">${escapeHtml(entry.file.name)}</span>
         </div>
         <button type="button" class="del-img" title="Șterge"><i data-lucide="trash-2"></i></button>
       `;
       card.querySelector('[data-img-caption]').oninput = (e) => { entry.caption = e.target.value; };
       card.querySelector('[data-img-anchor]').onchange = (e) => { entry.anchor = e.target.value; };
+      card.querySelectorAll('.pv-width-toggle button').forEach(b => {
+        b.onclick = () => {
+          entry.width = b.dataset.w;
+          card.querySelectorAll('.pv-width-toggle button').forEach(x => x.classList.toggle('on', x.dataset.w === entry.width));
+        };
+      });
       card.querySelector('.del-img').onclick = () => {
         const idx = pifImages.findIndex(x => x.id === entry.id);
         if (idx >= 0) pifImages.splice(idx, 1);
@@ -1013,6 +1083,10 @@
     });
     rerenderIcons();
   }
+  // Re-randeaza dropdown-urile cand se editeaza constatarile
+  $('#pif-constatari').addEventListener('input', () => {
+    if (pifImages.length) pifRenderImages();
+  });
   $('#pif-add-images').onclick = () => $('#pif-img-input').click();
   $('#pif-img-input').onchange = (e) => {
     Array.from(e.target.files || []).forEach(pifAddImage);
@@ -1049,6 +1123,7 @@
           fd.append(`image_${i}`, entry.file, entry.file.name);
           fd.append(`image_${i}_caption`, entry.caption || '');
           fd.append(`image_${i}_anchor`, entry.anchor || 'final');
+          fd.append(`image_${i}_width`, entry.width || 'half');
         });
         res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
           method: 'POST', body: fd, credentials: 'same-origin',

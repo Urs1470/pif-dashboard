@@ -512,44 +512,41 @@ def generate_pv_service(proiect, echipament, form_data):
             nota_fact_para_list.append(p)
             continue
 
-    _apply_block(motivul_block, motivul.splitlines() if motivul else [])
-    _apply_block(actiuni_block, actiuni.splitlines() if actiuni else [])
+    motivul_paras = _apply_block(motivul_block, motivul.splitlines() if motivul else [])
+    actiuni_paras = _apply_block(actiuni_block, actiuni.splitlines() if actiuni else [])
 
     # ---- Insereaza poze pe ancore (Service) ----
-    # Strategia: foloseam paragraph-ul ANTERIOR header-ului urmator
-    # ("Au fost efectuate" pentru motiv, "Observatii" pentru actiuni)
-    # ca anchor — referinta XML stabila chiar dupa apply_block care
-    # clone-aza/sterge paragrafe.
+    # Anchor format: "motiv:N", "actiuni:N", "observatii", "final"
+    # unde N = indexul liniei din motivul/actiuni. Pozele se insereaza dupa
+    # paragraful exact ales de Ion in modal.
     images = form_data.get('images') or []
-    by_anchor = _group_images_by_anchor(images)
+    images_groups = _group_images_ordered(images)
 
-    def _para_before(target_para):
-        """Returneaza Paragraph imediat anterior lui target_para in XML body."""
-        if target_para is None or target_para._p is None:
-            return None
-        pp = target_para._p
-        parent = pp.getparent()
-        if parent is None:
-            return None
-        siblings = list(parent)
-        idx = siblings.index(pp)
-        if idx == 0:
-            return None
-        prev = siblings[idx - 1]
-        from docx.text.paragraph import Paragraph as DocxParagraph
-        return DocxParagraph(prev, target_para._parent)
+    def _resolve_service_anchor(anchor_key):
+        """Returneaza paragraph-ul dupa care se insereaza pozele, sau None."""
+        if anchor_key.startswith('motiv:'):
+            try:
+                idx = int(anchor_key.split(':', 1)[1])
+                return motivul_paras[idx] if 0 <= idx < len(motivul_paras) else (motivul_paras[-1] if motivul_paras else None)
+            except (ValueError, IndexError):
+                return motivul_paras[-1] if motivul_paras else None
+        if anchor_key.startswith('actiuni:'):
+            try:
+                idx = int(anchor_key.split(':', 1)[1])
+                return actiuni_paras[idx] if 0 <= idx < len(actiuni_paras) else (actiuni_paras[-1] if actiuni_paras else None)
+            except (ValueError, IndexError):
+                return actiuni_paras[-1] if actiuni_paras else None
+        return None  # 'observatii' / 'final' tratate separat mai jos
 
-    # Pentru "dupa_motiv": anchor = paragraph inainte de "Au fost efectuate"
-    au_fost_para = _find_paragraph_with_text(doc, 'Au fost efectuate')
-    if 'dupa_motiv' in by_anchor and au_fost_para is not None:
-        anchor = _para_before(au_fost_para)
-        if anchor is not None:
-            _build_images_block(doc, by_anchor['dupa_motiv'], after_paragraph=anchor)
-    # Pentru "dupa_actiuni": anchor = paragraph inainte de "Observatii"
-    if 'dupa_actiuni' in by_anchor and observatii_header_para is not None:
-        anchor = _para_before(observatii_header_para)
-        if anchor is not None:
-            _build_images_block(doc, by_anchor['dupa_actiuni'], after_paragraph=anchor)
+    # Insereaza pozele cu ancore in motiv/actiuni (in ordine inversa pe acelasi
+    # paragraf nu e cazul — fiecare grup are anchor unic)
+    deferred_groups = []  # (anchor_key, imgs) pentru observatii / final
+    for anchor_key, imgs in images_groups:
+        target = _resolve_service_anchor(anchor_key)
+        if target is not None:
+            _build_images_block(doc, imgs, after_paragraph=target)
+        else:
+            deferred_groups.append((anchor_key, imgs))
 
     # Observatii: page break inainte de "Observații:" header + setare continut
     if observatii_header_para is not None:
@@ -569,11 +566,12 @@ def generate_pv_service(proiect, echipament, form_data):
             if observatii_content_para is not None:
                 _set_paragraph_text(observatii_content_para, 'Nu sunt.')
 
-        # Imagini dupa observatii
-        if 'dupa_observatii' in by_anchor:
-            anchor = observatii_content_para if observatii_content_para is not None and observatii_content_para._p is not None else observatii_header_para
-            if anchor is not None:
-                _build_images_block(doc, by_anchor['dupa_observatii'], after_paragraph=anchor)
+        # Imagini cu anchor "observatii"
+        for anchor_key, imgs in deferred_groups:
+            if anchor_key == 'observatii':
+                anchor = observatii_content_para if (observatii_content_para is not None and observatii_content_para._p is not None) else observatii_header_para
+                if anchor is not None:
+                    _build_images_block(doc, imgs, after_paragraph=anchor)
 
     # Nota facturare
     if nota_fact:
@@ -668,18 +666,15 @@ def generate_pv_service(proiect, echipament, form_data):
         _move_table_to_position(sig_table, sig_parent, sig_idx)
 
     # Anexa final: pozele cu anchor "final" se adauga la sfarsitul docului
-    if 'final' in by_anchor:
-        # header "Anexe foto" la final
-        from docx.text.paragraph import Paragraph as DocxParagraph
-        body_elem = doc.element.body
-        # asigura page break
+    final_imgs = [imgs for (a, imgs) in deferred_groups if a == 'final']
+    if final_imgs:
         hdr_p = doc.add_paragraph()
         _add_page_break_before(hdr_p)
         run = hdr_p.add_run('Anexe foto')
         run.bold = True
         run.font.size = Pt(13)
         hdr_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        _build_images_block(doc, by_anchor['final'], after_paragraph=hdr_p)
+        _build_images_block(doc, final_imgs[0], after_paragraph=hdr_p)
 
     out = BytesIO()
     doc.save(out)
@@ -700,11 +695,15 @@ def _luna_din_ore(ore):
 
 
 def _apply_block(paragraphs, lines):
+    """Aplica `lines` pe `paragraphs`. Returneaza lista de paragrafe rezultate
+    (in ordine, cate unul pe linie) — utila ca ancore pentru poze."""
     lines = [l.strip() for l in lines if l.strip()]
+    result = []
     survivors = list(paragraphs)
     for i, p in enumerate(paragraphs):
         if i < len(lines):
             _set_paragraph_text(p, lines[i])
+            result.append(p)
         else:
             _delete_paragraph(p)
             survivors[i] = None
@@ -712,7 +711,7 @@ def _apply_block(paragraphs, lines):
         anchors = [p for p in survivors if p is not None and p._p is not None]
         anchor = anchors[-1] if anchors else None
         if anchor is None:
-            return
+            return result
         from docx.text.paragraph import Paragraph as DocxParagraph
         extra = lines[len(paragraphs):]
         for line in extra:
@@ -723,6 +722,8 @@ def _apply_block(paragraphs, lines):
             wrap = DocxParagraph(new_p, anchor._parent)
             _set_paragraph_text(wrap, line)
             anchor = wrap
+            result.append(wrap)
+    return result
 
 
 def _format_date_list(dates):
@@ -775,68 +776,93 @@ def _build_pif_signature_table(doc, client_name, rep_client, rep_eg):
     return table
 
 
+def _put_image_in_cell(cell, entry, pic_width_cm):
+    """Pune poza + caption intr-o celula de tabel."""
+    cell.text = ''
+    p_pic = cell.paragraphs[0]
+    p_pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_pic.add_run()
+    try:
+        run.add_picture(entry['file'], width=Cm(pic_width_cm))
+    except Exception as e:
+        run.add_text(f"[Imagine invalida: {e}]")
+    caption = (entry.get('caption') or '').strip()
+    if caption:
+        p_cap = cell.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r2 = p_cap.add_run(caption)
+        r2.italic = True
+        r2.font.size = Pt(9)
+        r2.font.name = 'Calibri'
+
+
 def _build_images_block(doc, group, after_paragraph=None):
     """
-    Construieste un tabel borderless 2 coloane cu pozele din `group`
-    (lista de dict {file: bytes/BytesIO, caption: str}).
-    Fiecare celula: poza centrata (width 7.5cm) + paragraph caption italic.
-    Daca `after_paragraph` e dat, inserez tabelul dupa el; altfel ramane
-    la finalul docului.
+    Construieste un tabel borderless cu pozele din `group`.
+    Fiecare poza are `width`: 'full' (1 pe rand, 15cm) sau 'half' (2 pe rand, 7.5cm).
+    Pozele 'half' consecutive se imperecheaza pe acelasi rand.
+    `after_paragraph` — daca e dat, tabelul se insereaza dupa el.
     """
-    import math
     n = len(group)
     if n == 0:
         return None
-    rows = math.ceil(n / 2)
-    table = doc.add_table(rows=rows, cols=2)
+
+    # Construieste layout-ul randurilor respectand width per poza
+    rows_layout = []
+    i = 0
+    while i < n:
+        entry = group[i]
+        w = (entry.get('width') or 'half').lower()
+        if w == 'half' and i + 1 < n and (group[i + 1].get('width') or 'half').lower() == 'half':
+            rows_layout.append([group[i], group[i + 1]])
+            i += 2
+        else:
+            rows_layout.append([group[i]])
+            i += 1
+
+    table = doc.add_table(rows=len(rows_layout), cols=2)
     table.autofit = False
+    cell_w = 8.0  # 16cm / 2
 
-    cell_w = 8.0  # 16cm/2
-    pic_w = Cm(7.5)
-
-    for idx, entry in enumerate(group):
-        r, c = divmod(idx, 2)
-        cell = table.rows[r].cells[c]
-        cell.text = ''
-        # Picture
-        p_pic = cell.paragraphs[0]
-        p_pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run = p_pic.add_run()
-        try:
-            run.add_picture(entry['file'], width=pic_w)
-        except Exception as e:
-            run.add_text(f"[Imagine invalidă: {e}]")
-        # Caption
-        caption = (entry.get('caption') or '').strip()
-        if caption:
-            p_cap = cell.add_paragraph()
-            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            r2 = p_cap.add_run(caption)
-            r2.italic = True
-            r2.font.size = Pt(9)
-            r2.font.name = 'Calibri'
-        _set_cell_borders(cell, sides=())
-        _set_cell_width(cell, cell_w)
-
-    # Goleste cell-urile suplimentare din ultimul rand
-    extra = (rows * 2) - n
-    if extra:
-        last_row = table.rows[rows - 1]
-        for c in range(2 - extra, 2):
-            cell = last_row.cells[c]
-            cell.text = ''
+    for r, row_imgs in enumerate(rows_layout):
+        if len(row_imgs) == 1:
+            # poza singura — merge cele 2 celule, poza 15cm
+            cell = table.rows[r].cells[0].merge(table.rows[r].cells[1])
+            _put_image_in_cell(cell, row_imgs[0], pic_width_cm=15.0)
             _set_cell_borders(cell, sides=())
-            _set_cell_width(cell, cell_w)
+        else:
+            for c in range(2):
+                cell = table.rows[r].cells[c]
+                _put_image_in_cell(cell, row_imgs[c], pic_width_cm=7.5)
+                _set_cell_borders(cell, sides=())
+                _set_cell_width(cell, cell_w)
 
-    if after_paragraph is not None:
+    if after_paragraph is not None and after_paragraph._p is not None:
         anchor_p = after_paragraph._p
         parent = anchor_p.getparent()
-        idx = list(parent).index(anchor_p) + 1
-        _move_table_to_position(table, parent, idx)
-        # adauga si un paragraph spacer dupa tabel
-        spacer = OxmlElement('w:p')
-        parent.insert(idx + 1, spacer)
+        if parent is not None:
+            idx = list(parent).index(anchor_p) + 1
+            _move_table_to_position(table, parent, idx)
+            spacer = OxmlElement('w:p')
+            parent.insert(idx + 1, spacer)
     return table
+
+
+def _group_images_ordered(images):
+    """
+    images: lista [{file, caption, anchor, width}].
+    Returneaza lista de tuple (anchor, [imgs...]) pastrand ordinea de
+    aparitie a ancorelor.
+    """
+    order = []
+    buckets = {}
+    for img in (images or []):
+        a = img.get('anchor') or 'final'
+        if a not in buckets:
+            buckets[a] = []
+            order.append(a)
+        buckets[a].append(img)
+    return [(a, buckets[a]) for a in order]
 
 
 def _group_images_by_anchor(images):
@@ -953,45 +979,57 @@ def generate_pv_pif(proiect, form_data):
             if _para_text(p).strip().startswith('3.') and 'Alte constat' in _para_text(p):
                 constatari_anchor = p
                 break
+    constatari_paras = []
+    if True:
         if constatari_anchor and constatari_anchor != '__done__':
             from docx.text.paragraph import Paragraph as DocxParagraph
             anchor_p = constatari_anchor._p
             lines = [l.strip() for l in constatari.splitlines() if l.strip()]
-            last_constat_wrap = None
             for line in lines:
                 new_p = deepcopy(anchor_p)
                 for t in new_p.iter(qn('w:t')):
                     t.text = ''
-                # remove pPr formatting that might force "3. Alte constatari" style
                 anchor_p.addnext(new_p)
                 wrap = DocxParagraph(new_p, constatari_anchor._parent)
                 _set_paragraph_text(wrap, line)
                 anchor_p = new_p
-                last_constat_wrap = wrap
+                constatari_paras.append(wrap)
 
     # ---- Poze pe ancore (PIF) ----
+    # Anchor format: "constatari:N", "concluzii", "final"
     images = form_data.get('images') or []
-    by_anchor = _group_images_by_anchor(images)
+    images_groups = _group_images_ordered(images)
 
-    if 'dupa_constatari' in by_anchor:
-        # ancora = ultimul paragraph de constatari sau header-ul "3. Alte constatari:"
-        anchor = None
-        for p in doc.paragraphs:
-            if _para_text(p).strip().startswith('3.') and 'Alte constat' in _para_text(p):
-                anchor = p
-        if 'last_constat_wrap' in dir() and last_constat_wrap is not None and last_constat_wrap._p is not None:
-            anchor = last_constat_wrap
-        if anchor is not None:
-            _build_images_block(doc, by_anchor['dupa_constatari'], after_paragraph=anchor)
+    concluzii_para = None
+    for p in doc.paragraphs:
+        if 'Pe baza constat' in _para_text(p):
+            concluzii_para = p
+            break
+    constatari_header = None
+    for p in doc.paragraphs:
+        if _para_text(p).strip().startswith('3.') and 'Alte constat' in _para_text(p):
+            constatari_header = p
 
-    if 'dupa_concluzii' in by_anchor:
-        anchor = None
-        for p in doc.paragraphs:
-            if 'Pe baza constat' in _para_text(p):
-                anchor = p
-                break
-        if anchor is not None:
-            _build_images_block(doc, by_anchor['dupa_concluzii'], after_paragraph=anchor)
+    pif_final_imgs = []
+    for anchor_key, imgs in images_groups:
+        if anchor_key.startswith('constatari:'):
+            try:
+                idx = int(anchor_key.split(':', 1)[1])
+            except ValueError:
+                idx = -1
+            if 0 <= idx < len(constatari_paras):
+                target = constatari_paras[idx]
+            elif constatari_paras:
+                target = constatari_paras[-1]
+            else:
+                target = constatari_header
+            if target is not None:
+                _build_images_block(doc, imgs, after_paragraph=target)
+        elif anchor_key == 'concluzii':
+            if concluzii_para is not None:
+                _build_images_block(doc, imgs, after_paragraph=concluzii_para)
+        elif anchor_key == 'final':
+            pif_final_imgs.extend(imgs)
 
     # ---- Semnaturi: inlocuim tabelul existent cu unul nou ----
     old_sig = None
@@ -1006,14 +1044,14 @@ def generate_pv_pif(proiect, form_data):
         _move_table_to_position(sig_table, parent, idx)
 
     # Anexa final: pozele cu anchor "final"
-    if 'final' in by_anchor:
+    if pif_final_imgs:
         hdr_p = doc.add_paragraph()
         _add_page_break_before(hdr_p)
         run = hdr_p.add_run('Anexe foto')
         run.bold = True
         run.font.size = Pt(13)
         hdr_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        _build_images_block(doc, by_anchor['final'], after_paragraph=hdr_p)
+        _build_images_block(doc, pif_final_imgs, after_paragraph=hdr_p)
 
     out = BytesIO()
     doc.save(out)
