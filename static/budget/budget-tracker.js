@@ -324,8 +324,15 @@ function formatRON(num) {
   const n = parseFloat(num) || 0;
   return new Intl.NumberFormat('ro-RO', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
+// Round to 2 decimals, killing binary-float drift (0.1+0.2 etc.)
+function round2(n) {
+  if (typeof n !== 'number' || !isFinite(n)) return 0;
+  return Math.round((n + (n >= 0 ? 1 : -1) * Number.EPSILON) * 100) / 100;
+}
+
 // Robust money parser — handles thousands separators in both RO ("2.000,00")
 // and US ("2,000.00") notation, plain numbers, and native input.value.
+// Result is always rounded to 2 decimals.
 function parseRON(str) {
   if (str == null) return 0;
   var s = String(str).trim().replace(/\s/g, '');
@@ -352,7 +359,7 @@ function parseRON(str) {
   }
   var n = parseFloat(s);
   if (isNaN(n)) return 0;
-  return neg ? -Math.abs(n) : n;
+  return round2(neg ? -Math.abs(n) : n);
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
@@ -2247,7 +2254,7 @@ function contribuieGoal(id) {
   if (val <= 0) return;
   var g = (state.data.goals || []).find(function(x) { return x.id === id; });
   if (!g) return;
-  g.contribuit = (parseRON(g.contribuit) || 0) + val;
+  g.contribuit = round2((parseRON(g.contribuit) || 0) + val);
   saveData();
   render();
 }
@@ -2337,7 +2344,7 @@ function renderInvestitii() {
     html += '      <div class="' + cClass + '" style="font-size:0.82rem;">' + (change >= 0 ? '+' : '') + fmtEur(change) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) azi</div>';
   }
   if (cursRon > 0) {
-    html += '      <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.2rem;">' + ron(t.pretCurent) + ' · curs ' + cursRon.toFixed(4) + '</div>';
+    html += '      <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.2rem;">' + ron(t.pretCurent) + ' · curs ' + cursRon.toFixed(2) + '</div>';
   }
   html += '      <div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.2rem;">Ultima actualizare: ' + esc(lastUpdateStr) + '</div>';
   html += '      <button class="btn-add" style="margin-top:0.5rem;" onclick="refreshVwcePrice()"><i data-lucide="refresh-cw"></i> Actualizează preț</button>';
@@ -2481,10 +2488,10 @@ async function refreshVwcePrice(silent) {
       throw new Error(err.error || 'HTTP ' + r.status);
     }
     var q = await r.json();
-    state.data.vwce.pretCurent = q.price || 0;
-    state.data.vwce.previousClose = q.previousClose || 0;
-    state.data.vwce.change = q.change || 0;
-    state.data.vwce.changePct = q.changePct || 0;
+    state.data.vwce.pretCurent = round2(q.price || 0);
+    state.data.vwce.previousClose = round2(q.previousClose || 0);
+    state.data.vwce.change = round2(q.change || 0);
+    state.data.vwce.changePct = round2(q.changePct || 0);
     state.data.vwce.currency = q.currency || 'EUR';
     state.data.vwce.exchange = q.exchange || state.data.vwce.exchange;
     state.data.vwce.lastUpdate = q.fetchedAt;
@@ -3152,13 +3159,13 @@ async function showImportModal() {
         }
         if (t.tip === 'venit') {
           if (!state.data.venituri[mk]) state.data.venituri[mk] = {};
-          state.data.venituri[mk][t.categorie] = (state.data.venituri[mk][t.categorie] || 0) + t.suma;
+          state.data.venituri[mk][t.categorie] = round2((state.data.venituri[mk][t.categorie] || 0) + t.suma);
           importItems.push({ type: 'venit', mk: mk, categorie: t.categorie, suma: t.suma, ref: t.ref || '' });
           addedV++;
         } else {
           if (fixedLabels[t.categorie]) return; // fixed expenses counted via the fixed row
           if (!state.data.cheltuieli[mk]) state.data.cheltuieli[mk] = {};
-          state.data.cheltuieli[mk][t.categorie] = (state.data.cheltuieli[mk][t.categorie] || 0) + t.suma;
+          state.data.cheltuieli[mk][t.categorie] = round2((state.data.cheltuieli[mk][t.categorie] || 0) + t.suma);
           importItems.push({ type: 'cheltuiala', mk: mk, categorie: t.categorie, suma: t.suma, ref: t.ref || '' });
           addedCh++;
         }
@@ -3226,13 +3233,13 @@ async function deleteImport(id) {
     if (it.type === 'cheltuiala') {
       var m = state.data.cheltuieli[it.mk];
       if (m && m[it.categorie] != null) {
-        m[it.categorie] = m[it.categorie] - it.suma;
+        m[it.categorie] = round2(m[it.categorie] - it.suma);
         if (m[it.categorie] <= 0.001) delete m[it.categorie];
       }
     } else if (it.type === 'venit') {
       var mv = state.data.venituri[it.mk];
       if (mv && mv[it.categorie] != null) {
-        mv[it.categorie] = mv[it.categorie] - it.suma;
+        mv[it.categorie] = round2(mv[it.categorie] - it.suma);
         if (mv[it.categorie] <= 0.001) delete mv[it.categorie];
       }
     } else if (it.type === 'tezaur') {
