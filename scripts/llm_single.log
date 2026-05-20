@@ -6131,3 +6131,6 @@
 2026-05-20 14:23:09,642  INFO        -> rewrite: Seteaza nivelul de tensiune maxim pentru intrarea analogica de la terminalul 53.
 2026-05-20 14:23:09,742  INFO      3358 6-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 14:23:13,270  INFO        -> rewrite: Seteaza inversarea logicii pentru intrarea digitala 1 (DI1). Cu 0 = functionare 
+2026-05-20 14:23:15,880  INFO        Committed + pushed
+2026-05-20 14:23:15,981  INFO      20222 0x2632:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:18,956  INFO        -> rewrite: Seteaza limitarea variatiei acceleratiei (jerk) pentru referinta de cuplu. Limit
