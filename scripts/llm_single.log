@@ -25836,3 +25836,8 @@
 2026-05-20 19:16:28,530  INFO        Committed + pushed
 2026-05-20 19:16:28,631  INFO      19438 0x2820:010 (Lenze_i950)  existing_len=5  qc=rewrite
 2026-05-20 19:16:29,440  INFO        -> rewrite: Motor
+2026-05-20 19:16:33,538  INFO        Committed + pushed
+2026-05-20 19:16:33,638  INFO      20044 0x2C02:004 (Lenze_i550)  existing_len=5  qc=rewrite
+2026-05-20 19:16:34,490  INFO        -> rewrite: Motor
+2026-05-20 19:16:34,590  INFO      20033 0x2B03:005 (Lenze_i550)  existing_len=5  qc=rewrite
+2026-05-20 19:16:34,831  INFO        -> rewrite: Motor
