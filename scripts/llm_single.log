@@ -7902,3 +7902,48 @@
 2026-05-20 15:10:27,392  INFO        -> rewrite: Seteaza durata ferestrei de timp pentru detectarea conditiei de rotor blocat. O 
 2026-05-20 15:10:27,493  INFO      3641 30-29 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 15:10:27,506  INFO        -> rewrite: Seteaza valoarea maxima in procente pentru scalarea semnalului de la intrarea an
+2026-05-20 15:10:31,247  INFO        Committed + pushed
+2026-05-20 15:10:31,348  INFO      24571 0x2DA4:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:10:35,001  INFO        -> rewrite: Seteaza timpul de filtrare bouncing pentru intrarea digitala 4. Elimina efectele
+2026-05-20 15:10:35,102  INFO      22785 0x2633:005 (Lenze_i550)  existing_len=216  qc=rewrite
+2026-05-20 15:10:38,908  INFO        -> rewrite: Seteaza timpul de rampa utilizat in timpul secventelor de evacuare si masurare. 
+2026-05-20 15:10:39,008  INFO      3642 30-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:10:41,625  INFO        -> rewrite: Afiseaza valoarea actuala a intrarii analogice 1, scalata in procente. Scalarea 
+2026-05-20 15:10:41,725  INFO      24572 0x263D:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:10:43,218  INFO        -> rewrite: Defineste timpul de eliminare a efectului de bounce pentru intrarea digitala 5. 
+2026-05-20 15:10:43,318  INFO      22786 0x2633:006 (Lenze_i550)  existing_len=251  qc=rewrite
+2026-05-20 15:10:48,613  INFO        -> rewrite: Controleaza modul de functionare al ventilatorului de racire a radiatorului de c
+2026-05-20 15:10:48,714  INFO      3643 30-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:10:51,550  INFO        -> rewrite: Activeaza functia de control intern pentru toate intrarile analogice disponibile
+2026-05-20 15:10:51,651  INFO      24573 0x263D:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:10:54,137  INFO        -> rewrite: Defineste numele retelei wireless (SSID) la care se conecteaza convertizorul de 
+2026-05-20 15:10:54,238  INFO      3644 30-92 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:10:55,634  INFO        -> rewrite: Seteaza timpul de filtrare (debounce) pentru intrarea digitala 6. Elimina zgomot
+2026-05-20 15:10:55,734  INFO      22787 0x2633:007 (Lenze_i550)  existing_len=198  qc=rewrite
+2026-05-20 15:11:01,405  INFO        -> rewrite: Seteaza valoarea interna manuala pentru intrarea analogica AI1 cand modul de con
+2026-05-20 15:11:01,505  INFO      24574 0x263D:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:04,440  INFO        -> rewrite: Seteaza parola pentru conectarea la reteaua wireless a VFD-ului. Parola trebuie 
+2026-05-20 15:11:04,541  INFO      3645 30-98 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:07,003  INFO        -> rewrite: Seteaza timpul de filtrare pentru intrarea digitala 7 in milisecunde. Functia de
+2026-05-20 15:11:07,104  INFO      22788 0x2640:002 (Lenze_i550)  existing_len=262  qc=rewrite
+2026-05-20 15:11:11,201  INFO        -> rewrite: Defineste numele retelei WiFi (SSID) pentru conexiunea wireless la VFD. Acest pa
+2026-05-20 15:11:11,302  INFO      3646 30-99 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:11,608  INFO        -> rewrite: Activeaza controlul intern al intrarii analogice AI2 cu o valoare procentuala. S
+2026-05-20 15:11:11,708  INFO      24575 0x2637:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:19,632  INFO        -> rewrite: Seteaza frecventa maxima permisa pentru intrarea HTL. Acest parametru defineste 
+2026-05-20 15:11:19,733  INFO      22789 0x2640:001 (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 15:11:20,987  INFO        -> rewrite: Selecteaza modul de functionare WiFi al dispozitivului. Valoarea 0 dezactiveaza 
+2026-05-20 15:11:21,088  INFO      3647 31-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:24,493  INFO        -> rewrite: Defineste tipul si scala semnalului analogic receptionat de intrarea AI2. Poate 
+2026-05-20 15:11:24,594  INFO      24576 0x2637:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:34,389  INFO        -> rewrite: Selecteaza modul de operare a motorului. Cand setat pe 0, motorul este controlat
+2026-05-20 15:11:34,489  INFO      3648 31-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:35,205  INFO        -> rewrite: Defineste frecventa minima a intrarii HTL pentru semnale de impuls de la encoder
+2026-05-20 15:11:35,306  INFO      22790 0x2640:003 (Lenze_i550)  existing_len=243  qc=rewrite
+2026-05-20 15:11:37,996  INFO        -> rewrite: Seteaza constanta de timp PT1 pentru filtrul low-pass al intrarii analogice 2. F
+2026-05-20 15:11:38,096  INFO      24577 0x2637:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:11:42,534  INFO        -> rewrite: Seteaza intarzierea in secunde inainte ca bypass-ul sa actioneze la pornire. Con
+2026-05-20 15:11:42,634  INFO      3649 31-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:11:47,011  INFO        -> rewrite: Defineste frecventa minima a motorului pentru modul de operare HTL cu semnal de 
+2026-05-20 15:11:47,033  INFO        -> rewrite: Seteaza o zona moarta simetrica in jurul punctului zero de frecventa pentru intr
+2026-05-20 15:11:47,133  INFO      24578 0x2637:010 (Lenze_i950)  existing_len=0  qc=rewrite
