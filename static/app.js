@@ -5368,7 +5368,7 @@ function openParamModal(param) {
     currentParam = param;
     document.getElementById('param-modal-code').textContent = param.parametru || '-';
     document.getElementById('param-modal-familie').textContent = param.familie || '';
-    document.getElementById('param-modal-name').textContent = extractParamName(param.descriere);
+    document.getElementById('param-modal-name').textContent = extractParamName(param.descriere) || param.descriere_scurta || '-';
     document.getElementById('param-modal-descriere').textContent = param.descriere || '-';
     document.getElementById('param-modal-acces').textContent = param.acces || '-';
     document.getElementById('param-modal-tip').textContent = param.tip_date || '-';
@@ -5439,7 +5439,9 @@ function openParamModal(param) {
             const explicatieRow = document.getElementById('param-modal-explicatie-row');
             const explicatieDiv = document.getElementById('param-modal-explicatie');
             if (detail.explicatie && detail.explicatie.trim().length > 0) {
-                explicatieDiv.innerHTML = detail.explicatie;
+                // Use textContent (safe) then let KaTeX scan text nodes for $...$ delimiters.
+                // Avoids treating < > chars in technical notation as HTML tags.
+                explicatieDiv.textContent = detail.explicatie;
                 renderMathIn(explicatieDiv);
                 explicatieRow.style.display = 'block';
             } else {
