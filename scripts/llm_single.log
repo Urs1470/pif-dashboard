@@ -9195,3 +9195,502 @@
 2026-05-20 15:42:50,149  INFO        -> rewrite: Afiseaza distanta pozitiei de faza pentru mesajele SYNC in reteaua CANopen. Este
 2026-05-20 15:42:50,250  INFO      24785 0x230B (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 15:42:51,682  INFO        -> rewrite: Seteaza rezolutia encoderului conectat la modulul MCB 150 TTL sau MCB 151 HTL. V
+2026-05-20 15:42:54,821  INFO        -> rewrite: Mapeaza un obiect CANopen pentru a fi receptionat prin RPDO (Receive Process Dat
+2026-05-20 15:42:54,922  INFO      22998 0x1605:008 (Lenze_i550)  existing_len=247  qc=rewrite
+2026-05-20 15:42:55,150  INFO        Committed + pushed
+2026-05-20 15:42:55,251  INFO      3856 42-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:58,060  INFO        -> rewrite: Afiseaza numarul total de erori de comunicatie CANopen detectate de convertizor.
+2026-05-20 15:42:58,160  INFO      24786 0x2580:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:02,568  INFO        -> rewrite: Definește intrarea de mapare 8 pentru RPDO (A) in configurare libera. Permite se
+2026-05-20 15:43:02,669  INFO      22999 0x1605:009 (Lenze_i550)  existing_len=281  qc=rewrite
+2026-05-20 15:43:04,297  INFO        -> rewrite: Seteaza raportul de transmisie dintre motor si encoder. Valoarea 1 inseamna comu
+2026-05-20 15:43:04,397  INFO      3857 42-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:08,645  INFO        -> rewrite: Afiseaza starea sincronizarii temporale a invertorului. Daca invertorul nu a pri
+2026-05-20 15:43:08,746  INFO      24787 0x2580:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:12,833  INFO        -> rewrite: Mapeaza un obiect din dictionarul CANopen pentru a fi receptionat prin RPDO (Rec
+2026-05-20 15:43:12,934  INFO      23000 0x1605:010 (Lenze_i550)  existing_len=279  qc=rewrite
+2026-05-20 15:43:16,453  INFO        -> rewrite: Seteaza durata maxima in ore in care turatia motorului poate ramane sub 120 RPM 
+2026-05-20 15:43:16,554  INFO      3858 42-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:18,174  INFO        -> rewrite: Mapeaza un obiect CANopen pentru receptie prin PDO (Process Data Object). Format
+2026-05-20 15:43:18,274  INFO      23001 0x1605:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:43:18,800  INFO        -> rewrite: Afiseaza momentul de timp cand-invertorul a primit prima data informatii de timp
+2026-05-20 15:43:18,901  INFO      24788 0x2580:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:26,326  INFO        -> rewrite: Defineste configuratia tipului pentru doua canale de siguranta in mod Normally C
+2026-05-20 15:43:26,427  INFO      3859 42-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:27,221  INFO        -> rewrite: Afiseaza momentul de timp in care invertorul a primit cel mai recent un semnal d
+2026-05-20 15:43:27,322  INFO      24789 0x2580:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:32,609  INFO        -> rewrite: Defineste intrarea 11 de mapare pentru primirea obiectelor CANopen prin RPDO (A)
+2026-05-20 15:43:32,709  INFO      23002 0x1605:012 (Lenze_i550)  existing_len=297  qc=rewrite
+2026-05-20 15:43:33,170  INFO        -> rewrite: Parametru de afisare care arata timpul curent utilizat de convertizor pentru sin
+2026-05-20 15:43:33,271  INFO      24790 0x2372:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:35,065  INFO        -> rewrite: Seteaza timpul de filtru pentru functia de detectie discrepanta. Daca diferenta 
+2026-05-20 15:43:35,166  INFO      3860 42-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:38,373  INFO        -> rewrite: Configureaza intrarea de mapare 12 pentru obiectul CANopen care va fi receptiona
+2026-05-20 15:43:38,474  INFO      23003 0x1605:013 (Lenze_i550)  existing_len=239  qc=rewrite
+2026-05-20 15:43:42,553  INFO        -> rewrite: Selecteaza sursa permisa pentru resetarea defectiunilor si alarme. Poate fi rese
+2026-05-20 15:43:42,608  INFO        -> rewrite: Afiseaza modul activ al interfetei EtherCAT pe bus-ul de sistem - arata daca fun
+2026-05-20 15:43:42,653  INFO      3861 8-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:42,709  INFO      24791 0x2020:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:45,195  INFO        -> rewrite: Mapeaza un obiect CANopen pentru receptionare in RPDO (A) pe pozitia 13. Formatu
+2026-05-20 15:43:45,296  INFO      23004 0x1605:014 (Lenze_i550)  existing_len=301  qc=rewrite
+2026-05-20 15:43:46,951  INFO        -> rewrite: Afiseaza adresa MAC virtuala a dispozitivului pentru comunicatia Ethernet over E
+2026-05-20 15:43:47,051  INFO      24792 0x2020:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:49,473  INFO        -> rewrite: Permite configurarea cuvantului de control CTW pentru comunicatia seriala sau fi
+2026-05-20 15:43:49,573  INFO      3862 42-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:43:50,180  INFO        -> rewrite: Mapeaza un obiect CANopen in RPDO (Receive PDO) canal A, intrarea 14. Formatu es
+2026-05-20 15:43:50,281  INFO      23005 0x1605:015 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 15:43:52,738  INFO        -> rewrite: Afiseaza adresa IP asignata dispozitivului pe reteaua EtherCAT folosind functia 
+2026-05-20 15:43:52,838  INFO      24793 0x2020:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:43:57,592  INFO        -> rewrite: Configureaza intrarea de mapare 15 pentru RPDO (A) canal de receptie date. Defin
+2026-05-20 15:43:57,692  INFO      23006 0x1605:016 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:43:59,134  INFO        -> rewrite: Aceasta parametru afiseaza masca de subnet pentru conexiunea Ethernet (EoE). Val
+2026-05-20 15:43:59,235  INFO      24794 0x2020:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:00,093  INFO        -> rewrite: Defineste numele setului de parametri siguri pentru identificare usoara. Se reco
+2026-05-20 15:44:00,193  INFO      3863 42-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:09,392  INFO        -> rewrite: Stocheaza valoarea CRC pentru functiile de siguranta ale convertizorului. Aceast
+2026-05-20 15:44:09,493  INFO      3864 42-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:09,771  INFO        -> rewrite: Afiseaza adresa IP a gateway-ului standard pentru comunicatia EtherCAT over Ethe
+2026-05-20 15:44:09,871  INFO      24795 0x2020:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:10,373  INFO        -> rewrite: Defineste care obiect CANopen este mapat in canalul de receptie PDO (A). Utiliza
+2026-05-20 15:44:10,473  INFO      23007 0x1A05:001 (Lenze_i550)  existing_len=228  qc=rewrite
+2026-05-20 15:44:14,832  INFO        -> rewrite: Seteaza parola pentru nivelul 1 de acces la parametrii invertorului. Valoarea 0 
+2026-05-20 15:44:14,933  INFO      3865 42-37 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:15,680  INFO        -> rewrite: Afiseaza adresa serverului DNS utilizat in comunicatia Ethernet (EoE - Ethernet 
+2026-05-20 15:44:15,781  INFO      24796 0x2020:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:20,221  INFO        -> rewrite: Configureaza primul obiect care va fi transmis prin TPDO (A) in reteaua de comun
+2026-05-20 15:44:20,322  INFO      23008 0x1A05:002 (Lenze_i550)  existing_len=349  qc=rewrite
+2026-05-20 15:44:21,196  INFO        -> rewrite: Stocheaza parola pentru Level 1 de acces. Când este setata, protejeaza grupurile
+2026-05-20 15:44:21,297  INFO      3866 42-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:23,038  INFO        -> rewrite: Afiseaza numele DNS asignat dispozitivului in reteaua Ethernet. Folosit pentru i
+2026-05-20 15:44:23,138  INFO      24797 0x2020:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:26,036  INFO        -> rewrite: Configureaza intrarea de mapare 2 pentru obiectul TPDO (A) care va fi transmis i
+2026-05-20 15:44:26,137  INFO      23009 0x1A05:003 (Lenze_i550)  existing_len=314  qc=rewrite
+2026-05-20 15:44:29,452  INFO        -> rewrite: Afiseaza numarul de pachete de date primite in timpul transmisiei EoE (Ethernet 
+2026-05-20 15:44:29,553  INFO      24798 0x2020:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:30,813  INFO        -> rewrite: Selecteaza tipul de rampa folosit pentru accelerare si decelerare. Valoarea [0] 
+2026-05-20 15:44:30,914  INFO      3867 42-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:34,052  INFO        -> rewrite: Defineste intrarea de mapare 3 pentru TPDO (A) configurat de utilizator. Selecte
+2026-05-20 15:44:34,153  INFO      23010 0x1A05:004 (Lenze_i550)  existing_len=260  qc=rewrite
+2026-05-20 15:44:38,578  INFO        -> rewrite: Seteaza timpul in care functia STO (Safe Torque Off) trebuie sa ramana activa in
+2026-05-20 15:44:38,650  INFO        -> rewrite: Afiseaza numarul total de pachete trimise prin conexiunea EoE (Ethernet over Eth
+2026-05-20 15:44:38,679  INFO      3868 42-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:38,750  INFO      24799 0x2371:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:41,243  INFO        -> rewrite: Configureaza intrarea de mapping 4 pentru TPDO (A). Permite selectarea unui obie
+2026-05-20 15:44:41,344  INFO      23011 0x1A05:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:44:44,903  INFO        -> rewrite: Selecteaza functionalitatea master/slave pentru interfata EtherCAT on-board. Mod
+2026-05-20 15:44:45,004  INFO      24800 0xA200:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:47,647  INFO        -> rewrite: Delta T scade din timpul de intarziere setat in parametru 42-42 pentru a determi
+2026-05-20 15:44:47,747  INFO      3869 42-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:44:49,324  INFO        -> rewrite: Defineste ce obiect CANopen va fi transmis in aceasta intrare de mapare TPDO (A)
+2026-05-20 15:44:49,425  INFO      23012 0x1A05:006 (Lenze_i550)  existing_len=237  qc=rewrite
+2026-05-20 15:44:53,681  INFO        -> rewrite: Defineste cuvantul de date transmis de la PLC catre invertor prin busul de siste
+2026-05-20 15:44:53,782  INFO      24801 0xA200:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:57,096  INFO        -> rewrite: Mapeaza obiectul 6 pentru TPDO (A) - defineste ce date sunt transmise in acest m
+2026-05-20 15:44:57,197  INFO      23013 0x1A05:007 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 15:44:59,354  INFO        -> rewrite: Defineste ce data este transmisa pe Systembus ca iesire 2. Aceasta permite trimi
+2026-05-20 15:44:59,385  INFO        -> rewrite: Seteaza rata de decelerare pentru tipul de rampa SS1 (Safe Stop 1). Rampa SS1 es
+2026-05-20 15:44:59,455  INFO      24802 0xA200:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:44:59,485  INFO      3870 42-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:03,367  INFO        -> rewrite: Defineste intrarea de mapare 7 pentru TPDO (A) in modul configurare libera. Sele
+2026-05-20 15:45:03,467  INFO      23014 0x1A05:008 (Lenze_i550)  existing_len=291  qc=rewrite
+2026-05-20 15:45:06,190  INFO        -> rewrite: Stabileste toleranta intre viteza calculata de convertizor si viteza reala masur
+2026-05-20 15:45:06,290  INFO      3871 42-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:08,925  INFO        -> rewrite: Defineste continutul datei de iesire 3 pe Systembus. Valoarea este transmisa reg
+2026-05-20 15:45:09,026  INFO      24803 0xA200:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:11,663  INFO        -> rewrite: Defineste intrarea de mapare 8 pentru TPDO (A) utilizator. Seteaza ce obiect CAN
+2026-05-20 15:45:11,764  INFO      23015 0x1A05:009 (Lenze_i550)  existing_len=304  qc=rewrite
+2026-05-20 15:45:15,945  INFO        -> rewrite: Seteaza pragul de viteza la care functia de siguranta STO (Safe Torque Off) este
+2026-05-20 15:45:16,045  INFO      3872 42-47 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:18,731  INFO        -> rewrite: Selecteaza ce valoare de date se transmite ca iesire 4 pe Systembus. Poate fi ma
+2026-05-20 15:45:18,832  INFO      24804 0xA200:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:24,435  INFO        -> rewrite: Defineste intrarea de mapare 9 pentru obiectul TPDO (A) utilizator. Permite sele
+2026-05-20 15:45:24,536  INFO      23016 0x1A05:010 (Lenze_i550)  existing_len=310  qc=rewrite
+2026-05-20 15:45:25,822  INFO        -> rewrite: Configureaza al 5-lea canal de date de iesire Systembus. Aceasta parametru defin
+2026-05-20 15:45:25,923  INFO      24805 0xA200:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:26,784  INFO        -> rewrite: Seteaza durata de decelerare a motorului de la viteza de functionare pana la opr
+2026-05-20 15:45:26,885  INFO      3873 42-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:34,369  INFO        -> rewrite: Configureaza intrarea de mapare 10 pentru TPDO (A) utilizator. Permite selectare
+2026-05-20 15:45:34,470  INFO      23017 0x1A05:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:45:36,367  INFO        -> rewrite: Defineste proportia din timpul total de decelerare unde cuplul de decelerare cre
+2026-05-20 15:45:36,467  INFO      3874 42-49 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:36,898  INFO        -> rewrite: Defineste ce data interna a VFD este transmisa ca iesire 6 pe Systembus. Poate f
+2026-05-20 15:45:36,999  INFO      24806 0xA200:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:42,094  INFO        -> rewrite: Defineste intrarea de mapare 11 pentru TPDO (A) utilizator. Selecteaza obiectul 
+2026-05-20 15:45:42,195  INFO      23018 0x1A05:012 (Lenze_i550)  existing_len=259  qc=rewrite
+2026-05-20 15:45:46,063  INFO        -> rewrite: Defineste proportia din timpul total de decelerare (parametrul 42-42) in care cu
+2026-05-20 15:45:46,164  INFO      3875 42-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:46,297  INFO        -> rewrite: Selecteaza sursa datelor transmise ca iesire 7 pe Systembus. Permite trimiterea 
+2026-05-20 15:45:46,398  INFO      24807 0xA200:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:52,431  INFO        -> rewrite: Configureaza al 12-lea obiect CANopen care va fi transmis prin TPDO (A). Formatu
+2026-05-20 15:45:52,474  INFO        -> rewrite: Defineste viteza la care se activeaza reactia de siguranta (fail-safe). Valoarea
+2026-05-20 15:45:52,532  INFO      23019 0x1A05:013 (Lenze_i550)  existing_len=235  qc=rewrite
+2026-05-20 15:45:52,575  INFO      3876 42-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:45:55,562  INFO        -> rewrite: Defineste continutul octetului de date 8 pentru iesirea pe Systembus. Acest para
+2026-05-20 15:45:55,663  INFO      24808 0xA680:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:45:59,826  INFO        -> rewrite: Seteaza viteza maxima permisa in timp ce functia SLS (Safe Limited Speed) este a
+2026-05-20 15:45:59,927  INFO      3877 42-54 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:00,092  INFO        -> rewrite: Defineste intrarea de mapare 13 pentru TPDO (A) de transmisie. Seteaza ce obiect
+2026-05-20 15:46:00,193  INFO      23020 0x1A05:014 (Lenze_i550)  existing_len=211  qc=rewrite
+2026-05-20 15:46:01,656  INFO        -> rewrite: Reprezinta date de intrare primite de pe busul de sistem de la invertor catre PL
+2026-05-20 15:46:01,757  INFO      24809 0xA680:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:09,617  INFO        -> rewrite: Configureaza intrarea de mapare 14 pentru obiectul TPDO (A). Permite selectarea 
+2026-05-20 15:46:09,718  INFO      23021 0x1A05:015 (Lenze_i550)  existing_len=315  qc=rewrite
+2026-05-20 15:46:11,345  INFO        -> rewrite: Seteaza durata de decelerare a motorului de la frecventa maxima la cea minima. V
+2026-05-20 15:46:11,445  INFO      3878 42-60 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:11,889  INFO        -> rewrite: Defineste al doilea canal de date de intrare de pe systembus. Acest parametru re
+2026-05-20 15:46:11,989  INFO      24810 0xA680:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:17,347  INFO        -> rewrite: Configureaza intrarea de mapare 15 pentru TPDO (A) in modul free configuration. 
+2026-05-20 15:46:17,447  INFO      23022 0x1A05:016 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:46:18,484  INFO        -> rewrite: Selecteaza tipul de telegram de comunicatie fieldbus utilizat pentru schimbul de
+2026-05-20 15:46:18,584  INFO      3879 42-61 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:22,405  INFO        -> rewrite: Reprezinta al treilea cuvant de date primit pe magistrala System Bus de la un di
+2026-05-20 15:46:22,429  INFO        -> rewrite: Configureaza intrarea de mapare 16 pentru TPDO (A). Seteaza ce obiect din dictio
+2026-05-20 15:46:22,506  INFO      24811 0xA680:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:22,530  INFO      23023 0x1C00:001 (Lenze_i550)  existing_len=303  qc=rewrite
+2026-05-20 15:46:23,713  INFO        -> rewrite: Seteaza adresa de destinatie (slave ID) a variatorului in reteaua de comunicatie
+2026-05-20 15:46:23,814  INFO      3880 42-70 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:30,233  INFO        -> rewrite: Reprezinta al patrulea canal de date receptionat prin systembus. Datele primite 
+2026-05-20 15:46:30,260  INFO        -> rewrite: Permite dezactivarea functiei Safe Maximum Speed (SMS). Cand SMS este dezactivat
+2026-05-20 15:46:30,334  INFO      24812 0xA680:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:30,361  INFO      3881 42-71 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:31,507  INFO        -> rewrite: Defineste tipul de comunicatie pentru Sync Manager 0 (SM0) in reteaua EtherCAT. 
+2026-05-20 15:46:31,608  INFO      23024 0x1C00:002 (Lenze_i550)  existing_len=337  qc=rewrite
+2026-05-20 15:46:40,337  INFO        -> rewrite: Defineste viteza maxima permisa a motorului in RPM. Actioneaza ca o protectie im
+2026-05-20 15:46:40,437  INFO      3882 42-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:41,512  INFO        -> rewrite: Parametru de intrare Systembus care primeste date pe canalul 5. Contine valoarea
+2026-05-20 15:46:41,613  INFO      24813 0xA680:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:44,646  INFO        -> rewrite: Defineste tipul de comunicatie pentru Sync Manager 2 (SM2). SM2 este folosit pen
+2026-05-20 15:46:44,747  INFO      23025 0x1C00:003 (Lenze_i550)  existing_len=259  qc=rewrite
+2026-05-20 15:46:50,272  INFO        -> rewrite: Afiseaza starea optionului de siguranta (ex: STO - Safe Torque Off) ca valoare h
+2026-05-20 15:46:50,373  INFO      3883 42-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:46:53,328  INFO        -> rewrite: Aceasta intrare primeste date de la comunicatia Systembus. Valoarea receptionata
+2026-05-20 15:46:53,428  INFO      24814 0xA680:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:46:55,953  INFO        -> rewrite: Defineste tipul de comunicatie pentru Sync Manager 2 (SM2) in reteaua EtherCAT. 
+2026-05-20 15:46:56,054  INFO      23026 0x1C00:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:46:58,320  INFO        -> rewrite: Afiseaza starea optionului de siguranta 2 sub forma de valoare hexazecimala. Con
+2026-05-20 15:46:58,421  INFO      3884 42-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:00,241  INFO        -> rewrite: Definește intrarea de date 7 de pe Systembus. Aceasta primește date pe 32 de bit
+2026-05-20 15:47:00,342  INFO      24815 0xA680:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:05,217  INFO        -> rewrite: Reprezinta cuvantul de control pentru functiile de siguranta ale convertizorului
+2026-05-20 15:47:05,317  INFO      3885 42-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:07,609  INFO        -> rewrite: Defineste tipul de comunicare pentru Sync Manager 3 (SM3). SM3 gestioneaza datel
+2026-05-20 15:47:07,709  INFO      23027 0x1C12:001 (Lenze_i550)  existing_len=277  qc=rewrite
+2026-05-20 15:47:12,277  INFO        -> rewrite: Reprezinta intrarea de date 8 de pe Systembus. Primeste valori numerice de la di
+2026-05-20 15:47:12,378  INFO      24816 0xA200:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:15,075  INFO        -> rewrite: Afiseaza starea functiilor de siguranta ale convertizorului sub forma unui cuvan
+2026-05-20 15:47:15,176  INFO      3886 42-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:16,082  INFO        -> rewrite: Afiseaza indicele obiectului de mapare pentru RPDO1 (Receive PDO 1) in configura
+2026-05-20 15:47:16,183  INFO      23028 0x1C12:002 (Lenze_i550)  existing_len=250  qc=rewrite
+2026-05-20 15:47:21,424  INFO        -> rewrite: Defineste continutul datei de iesire 9 pe Systembus. Selecteaza ce valoare inter
+2026-05-20 15:47:21,448  INFO        -> rewrite: Activeaza functia Safe Torque Off (STO). Cand este activata, variatorul taie ali
+2026-05-20 15:47:21,524  INFO      24817 0xA200:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:21,548  INFO      3887 42-86 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:25,150  INFO        -> rewrite: Afiseaza indexul obiectului CANopen care este mapat in RPDO2 (Receive PDO 2). Ac
+2026-05-20 15:47:25,251  INFO      23029 0x1C13:001 (Lenze_i550)  existing_len=218  qc=rewrite
+2026-05-20 15:47:30,003  INFO        -> rewrite: Defineste continutul datelor de iesire 10 pe interfata Systembus. Acest parametr
+2026-05-20 15:47:30,104  INFO      24818 0xA200:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:30,678  INFO        -> rewrite: Afiseaza informatii despre optiunea de siguranta instalata, precum tipul modulul
+2026-05-20 15:47:30,778  INFO      3888 42-87 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:32,021  INFO        -> rewrite: Afiseaza indexul obiectului de mapping pentru TPDO1 in configuratia CANopen. Ace
+2026-05-20 15:47:32,121  INFO      23030 0x1C13:002 (Lenze_i550)  existing_len=259  qc=rewrite
+2026-05-20 15:47:38,678  INFO        -> rewrite: Defineste continutul datei transmise prin Systembus ca iesire 11. Selecteaza ce 
+2026-05-20 15:47:38,779  INFO      24819 0xA200:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:41,116  INFO        -> rewrite: Seteaza intervalul de timp ramas pana la urmatorul test manual programat. Cand t
+2026-05-20 15:47:41,217  INFO      3889 42-88 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:41,393  INFO        -> rewrite: Afiseaza indexul obiectului mapat in TPDO2 (Transmit PDO 2). Parte a configurari
+2026-05-20 15:47:41,493  INFO      23031 0x1C32:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:47:47,116  INFO        -> rewrite: Defineste continutul iesirii de date 12 de pe System Bus. Reprezinta valoarea in
+2026-05-20 15:47:47,216  INFO      24820 0xA200:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:47:47,308  INFO        -> rewrite: Afiseaza versiunea fisierului de personalizare suportat de convertizor. Este un 
+2026-05-20 15:47:47,408  INFO      3890 42-89 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:52,703  INFO        -> rewrite: Afiseaza versiunea fisierului de customizare incarcat in invertor. Este un param
+2026-05-20 15:47:52,804  INFO      3891 43-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:47:53,954  INFO        -> rewrite: Defineste tipul de sincronizare pentru comunicatia mailbox EtherCAT folosind Syn
+2026-05-20 15:47:54,055  INFO      23032 0x1C32:002 (Lenze_i550)  existing_len=229  qc=rewrite
+2026-05-20 15:47:56,897  INFO        -> rewrite: Defineste continutul datelor transmise prin Systembus ca iesire 13. Permite sele
+2026-05-20 15:47:56,997  INFO      24821 0xA200:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:00,195  INFO        -> rewrite: Afiseaza turatia ventilatorului de racire B (PC Fan B) in rotatii pe minut. Valo
+2026-05-20 15:48:00,295  INFO      3892 43-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:02,127  INFO        -> rewrite: Defineste continutul datei de iesire 14 pe Systembus. Aceasta parametru mapeaza 
+2026-05-20 15:48:02,227  INFO      24822 0xA200:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:06,662  INFO        -> rewrite: Afiseaza timpul de ciclu pentru comunicatia mailbox EtherCAT. Acest parametru es
+2026-05-20 15:48:06,698  INFO        -> rewrite: Afiseaza turatia ventilatorului A de pe placa de putere a convertizorului de fre
+2026-05-20 15:48:06,762  INFO      23033 0x1C32:003 (Lenze_i550)  existing_len=280  qc=rewrite
+2026-05-20 15:48:06,799  INFO      3893 43-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:11,996  INFO        -> rewrite: Configureaza continutul datelor de iesire 15 pe Systembus. Selecteaza ce paramet
+2026-05-20 15:48:12,097  INFO      24823 0xA200:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:12,949  INFO        -> rewrite: Afiseaza turatia ventilatorului B de pe placa de putere. Valoarea este actualiza
+2026-05-20 15:48:13,050  INFO      3894 43-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:14,637  INFO        -> rewrite: Afiseaza decalajul de timp pentru comunicatia mailbox in Sync Manager 2 EtherCAT
+2026-05-20 15:48:14,737  INFO      23034 0x1C32:004 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 15:48:18,541  INFO        -> rewrite: Seteaza sursa datei care va fi transmisa pe Systembus ca iesire 16. Aceasta valo
+2026-05-20 15:48:18,641  INFO      24824 0xA680:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:22,210  INFO        -> rewrite: Afiseaza modurile de sincronizare disponibile pentru comunicatia mailbox EtherCA
+2026-05-20 15:48:22,310  INFO      23035 0x1C32:005 (Lenze_i550)  existing_len=253  qc=rewrite
+2026-05-20 15:48:24,261  INFO        -> rewrite: Afiseaza turatia actuala a ventilatorului C de pe placa de putere, masurata in r
+2026-05-20 15:48:24,362  INFO      3895 43-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:27,861  INFO        -> rewrite: Reprezinta al 9-lea canal de intrare de date de pe Systembus. Valorile reception
+2026-05-20 15:48:27,962  INFO      24825 0xA680:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:28,813  INFO        -> rewrite: Afiseaza timpul minim de ciclu pentru comunicatia mailbox prin Sync Manager 2. A
+2026-05-20 15:48:28,914  INFO      23036 0x1C33:001 (Lenze_i550)  existing_len=296  qc=rewrite
+2026-05-20 15:48:32,624  INFO        -> rewrite: Afiseaza turatia actuala a ventilatorului D de pe placa de putere. Este un param
+2026-05-20 15:48:32,725  INFO      3896 43-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:37,295  INFO        -> rewrite: Afiseaza turatia ventilatorului E de pe placa de putere. Valoarea este masurata 
+2026-05-20 15:48:37,396  INFO      3897 43-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:37,414  INFO        -> rewrite: Defineste tipul de sincronizare pentru Sync Manager 3 in comunicatia EtherCAT. A
+2026-05-20 15:48:37,515  INFO      23037 0x1C33:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:48:37,679  INFO        -> rewrite: Reprezinta date de intrare receptionate prin Systembus (fieldbus). Aceasta valoa
+2026-05-20 15:48:37,780  INFO      24826 0xA680:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:43,078  INFO        -> rewrite: Afiseaza turatia ventilatorului F de pe placa de putere. Este un parametru read-
+2026-05-20 15:48:43,179  INFO      3903 7-98 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:44,435  INFO        -> rewrite: Reprezinta data receptionata de pe Systembus (magistrala de comunicare intra-var
+2026-05-20 15:48:44,536  INFO      24827 0xA680:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:49,309  INFO        -> rewrite: Afiseaza timpul de ciclu pentru datele de proces receptionate (RPDO) in comunica
+2026-05-20 15:48:49,336  INFO        -> rewrite: Reprezinta date de intrare de la systembus (fieldbus) pe canalul 12. Acest param
+2026-05-20 15:48:49,409  INFO      23038 0x1C33:003 (Lenze_i550)  existing_len=362  qc=rewrite
+2026-05-20 15:48:49,437  INFO      24828 0xA680:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:54,686  INFO        -> rewrite: Reprezinta cuvantul de date 13 receptionat de pe magistrala de sistem (fieldbus)
+2026-05-20 15:48:54,713  INFO        -> rewrite: Seteaza factorul de feed forward pentru bucla de pozitie PI. Un factor mai mare 
+2026-05-20 15:48:54,787  INFO      24829 0xA680:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:48:54,814  INFO      3904 0-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:48:55,529  INFO        -> rewrite: Afiseaza timpul de decalaj pentru datele de proces de intrare receptionate prin 
+2026-05-20 15:48:55,630  INFO      23039 0x1C33:004 (Lenze_i550)  existing_len=320  qc=rewrite
+2026-05-20 15:49:03,198  INFO        -> rewrite: Afiseaza metodele de sincronizare disponibile pentru datele de proces primite (R
+2026-05-20 15:49:03,299  INFO      23040 0x1C33:005 (Lenze_i550)  existing_len=242  qc=rewrite
+2026-05-20 15:49:04,718  INFO        -> rewrite: Reprezinta canalul 14 de intrare pentru datele receptionate de pe busul de siste
+2026-05-20 15:49:04,819  INFO      24830 0xA680:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:05,631  INFO        -> rewrite: Selecteaza modul de functionare la reconectarea convertorului de frecventa la re
+2026-05-20 15:49:05,732  INFO      3905 0-09 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:10,382  INFO        -> rewrite: Afiseaza timpul minim de ciclu masurat pentru datele de proces receptionate (RPD
+2026-05-20 15:49:10,484  INFO      23041 0x2859:001 (Lenze_i550)  existing_len=304  qc=rewrite
+2026-05-20 15:49:11,545  INFO        -> rewrite: Afiseaza informatii de performanta ale convertizorului de frecventa. Valoarea 0%
+2026-05-20 15:49:11,646  INFO      3906 0-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:16,076  INFO        -> rewrite: Defineste sursa de date primite prin intermediul bus-ului de sistem. Aceasta int
+2026-05-20 15:49:16,177  INFO      24831 0xA680:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:20,893  INFO        -> rewrite: Permite selectarea pana la 50 de parametri care vor aparea in meniul personal Q1
+2026-05-20 15:49:20,993  INFO      3907 0-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:22,379  INFO        -> rewrite: Selecteaza raspunsul de eroare cand comunicatia POWERLINK pierde statutul Operat
+2026-05-20 15:49:22,480  INFO      23042 0x2859:003 (Lenze_i550)  existing_len=208  qc=rewrite
+2026-05-20 15:49:27,994  INFO        -> rewrite: Defineste actiunea declansata la primirea datelor de configurare invalide prin P
+2026-05-20 15:49:28,094  INFO      23043 0x2859:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:49:28,452  INFO        -> rewrite: Primeste date de pe Systembus (fieldbus) de la un master extern PLC. Contine val
+2026-05-20 15:49:28,552  INFO      24832 0x285B:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:30,211  INFO        -> rewrite: Defineste date calendaristice pentru zile libere aditionale in afara weekend-uri
+2026-05-20 15:49:30,312  INFO      3908 1-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:34,458  INFO        -> rewrite: Defineste raspunsul VFD-ului la aparitia unei erori de initializare a modulului 
+2026-05-20 15:49:34,558  INFO      23044 0x2859:005 (Lenze_i550)  existing_len=294  qc=rewrite
+2026-05-20 15:49:36,310  INFO        -> rewrite: Monitorizeaza starea watchdog-ului pentru comunicatia EtherCAT on-board. Daca co
+2026-05-20 15:49:36,411  INFO      24833 0x2379 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:39,571  INFO        -> rewrite: Defineste modul de raspuns al drive-ului la suprasarcina motorului. Selecteaza i
+2026-05-20 15:49:39,671  INFO      3909 1-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:41,103  INFO        -> rewrite: Indicatoare stare pentru comunicatia IO-Link. Când datele ciclice sunt invalide 
+2026-05-20 15:49:41,203  INFO      23045 0x2362:001 (Lenze_i550)  existing_len=248  qc=rewrite
+2026-05-20 15:49:45,615  INFO        -> rewrite: Afiseaza eroarea activa de retea pentru interfata EtherCAT integrata pe placa de
+2026-05-20 15:49:45,716  INFO      24834 0x5851:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:46,890  INFO        -> rewrite: Afiseaza adresa IP activa pentru conexiunea Ethernet over EtherCAT (EoE). Adresa
+2026-05-20 15:49:46,925  INFO        -> rewrite: Seteaza automat valorile de fabrica pentru tipul de motor selectat. Daca se folo
+2026-05-20 15:49:46,991  INFO      23046 0x2362:002 (Lenze_i550)  existing_len=250  qc=rewrite
+2026-05-20 15:49:47,025  INFO      3910 1-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:52,372  INFO        -> rewrite: Seteaza masca de subretea pentru conexiunile EtherCAT over Ethernet (EoE). Aceas
+2026-05-20 15:49:52,392  INFO        -> rewrite: Afiseaza starea curenta a masterului EtherCAT (Init, Pre-Operational, Safe-Opera
+2026-05-20 15:49:52,473  INFO      23047 0x2362:003 (Lenze_i550)  existing_len=258  qc=rewrite
+2026-05-20 15:49:52,492  INFO      24835 0x5851:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:53,365  INFO        -> rewrite: Defineste punctul de saturatie al inductantei pe axa d a motorului sincron. Acea
+2026-05-20 15:49:53,466  INFO      3911 1-49 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:49:57,218  INFO        -> rewrite: Afiseaza starea generala a magistralei EtherCAT. Arata daca masterul este in fun
+2026-05-20 15:49:57,319  INFO      24836 0x5851:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:49:58,386  INFO        -> rewrite: Afiseaza starea activa a functiei EoE gateway in configuratia EtherCAT curenta. 
+2026-05-20 15:49:58,486  INFO      23048 0x2362:004 (Lenze_i550)  existing_len=279  qc=rewrite
+2026-05-20 15:50:00,301  INFO        -> rewrite: Defineste punctul de saturatie al inductantei pe axa q pentru motoarele de induc
+2026-05-20 15:50:00,401  INFO      3912 1-54 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:06,165  INFO        -> rewrite: Afiseaza adresa activa a dispozitivului EtherCAT in retea. Adresa este definita 
+2026-05-20 15:50:06,266  INFO      23049 0x2362:005 (Lenze_i550)  existing_len=284  qc=rewrite
+2026-05-20 15:50:06,415  INFO        -> rewrite: Afiseaza daca a aparut o eroare in reteaua EtherCAT. Este un parametru read-only
+2026-05-20 15:50:06,516  INFO      24837 0x5851:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:07,513  INFO        -> rewrite: Redu tensiunea maxima disponibila pentru fluxul motorului in zona de slabire de 
+2026-05-20 15:50:07,613  INFO      3913 1-61 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:12,881  INFO        -> rewrite: Afiseaza daca configuratia actuala a magistralei EtherCAT corespunde cu topologi
+2026-05-20 15:50:12,981  INFO      24838 0x5851:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:16,119  INFO        -> rewrite: Afiseaza adresa MAC virtuala activa pentru conexiunea Ethernet over EtherCAT (Eo
+2026-05-20 15:50:16,220  INFO      23050 0x2362:006 (Lenze_i550)  existing_len=234  qc=rewrite
+2026-05-20 15:50:18,025  INFO        -> rewrite: Afiseaza timpul de ciclu configurat pentru masterul EtherCAT. Acest parametru es
+2026-05-20 15:50:18,125  INFO      24839 0x5851:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:18,175  INFO        -> rewrite: Compenseaza tensiunea in functie de sarcina la frecvente inalte pentru a obtine 
+2026-05-20 15:50:18,275  INFO      3914 1-67 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:23,413  INFO        -> rewrite: Afiseaza numarul de dispozitive slave EtherCAT detectate si conectate in retea. 
+2026-05-20 15:50:23,514  INFO      24840 0x5851:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:23,626  INFO        -> rewrite: Afiseaza adresa stationara activa a dispozitivului EtherCAT in retea. Aceasta ad
+2026-05-20 15:50:23,727  INFO      23051 0x2362:007 (Lenze_i550)  existing_len=242  qc=rewrite
+2026-05-20 15:50:28,793  INFO        -> rewrite: Afiseaza lungimea in bytes a datelor transmise ciclic prin EtherCAT. Este o info
+2026-05-20 15:50:28,837  INFO        -> rewrite: Configureaza tipul de sarcina conectata la VFD pentru optimizarea automata a cur
+2026-05-20 15:50:28,893  INFO      23052 0x2362:008 (Lenze_i550)  existing_len=192  qc=rewrite
+2026-05-20 15:50:28,938  INFO      3915 1-68 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:29,508  INFO        -> rewrite: Afiseaza numarul de dispozitive slave EtherCAT configurate in sistem. Valoarea e
+2026-05-20 15:50:29,609  INFO      24841 0x5860:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:34,839  INFO        -> rewrite: Afiseaza lungimea datelor ciclice receptionate prin EtherCAT, masurata in octeti
+2026-05-20 15:50:34,940  INFO      23053 0x2363 (Lenze_i550)  existing_len=213  qc=rewrite
+2026-05-20 15:50:40,441  INFO        -> rewrite: Seteaza inertia motorului in kgm² pentru imbunatatirea preciziei citirii cuplulu
+2026-05-20 15:50:40,542  INFO      3916 1-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:40,834  INFO        -> rewrite: Afiseaza adresa de statie a slave-urilor EtherCAT conectate la retea. Parametrul
+2026-05-20 15:50:40,935  INFO      24842 0x5860:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:41,390  INFO        -> rewrite: Afiseaza pozitia curenta a comutatoarelor rotary encoder de pe interfata EtherCA
+2026-05-20 15:50:41,490  INFO      23054 0x2368 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:50:46,168  INFO        -> rewrite: Seteaza adresa stationara pentru slave-urile EtherCAT in retea. Fiecare slave tr
+2026-05-20 15:50:46,269  INFO      24843 0x5860:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:51,801  INFO        -> rewrite: Afiseaza starea curenta a conexiunii de retea EtherCAT. Poate indica mai multe s
+2026-05-20 15:50:51,901  INFO      23055 0x2369 (Lenze_i550)  existing_len=217  qc=rewrite
+2026-05-20 15:50:52,891  INFO        -> rewrite: Seteaza tipul de racire al motorului. La valoarea 0, motorul functioneaza fara v
+2026-05-20 15:50:52,991  INFO      3917 1-96 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:50:55,703  INFO        -> rewrite: Seteaza adresa de statie pentru un slave EtherCAT pe reteaua de comunicatie. Fie
+2026-05-20 15:50:55,803  INFO      24844 0x5860:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:50:57,528  INFO        -> rewrite: Defineste sursa de intrare pentru senzorul termistor care monitorizeaza temperat
+2026-05-20 15:50:57,629  INFO      3918 2-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:00,261  INFO        -> rewrite: Afiseaza erorile de comunicare EtherCAT intr-un format codificat pe biti. Fiecar
+2026-05-20 15:51:00,362  INFO      23056 0x6402 (Lenze_i550)  existing_len=262  qc=rewrite
+2026-05-20 15:51:06,962  INFO        -> rewrite: Seteaza castigul pentru controlul tensiunii in busul DC in timpul decelerarii mo
+2026-05-20 15:51:07,062  INFO      3919 2-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:07,411  INFO        -> rewrite: Selecteaza tipul motorului AC conectat la VFD. Optiunile includ motor asincron (
+2026-05-20 15:51:07,512  INFO      23057 0x23A0 (Lenze_i550)  existing_len=323  qc=rewrite
+2026-05-20 15:51:08,856  INFO        -> rewrite: Seteaza adresa de statie pentru dispozitivele slave EtherCAT din retea. Fiecare 
+2026-05-20 15:51:08,957  INFO      24845 0x5860:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:12,685  INFO        -> rewrite: Reporneste sau opreste comunicatia EtherNet/IP. Dupa executarea comenzii de rest
+2026-05-20 15:51:12,786  INFO      23058 0x23A3 (Lenze_i550)  existing_len=227  qc=rewrite
+2026-05-20 15:51:13,425  INFO        -> rewrite: Seteaza adresa station pentru slave-ul EtherCAT conectat. Fiecare slave trebuie 
+2026-05-20 15:51:13,526  INFO      24846 0x5860:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:18,351  INFO        -> rewrite: Afiseaza pozitia comutatorului rotativ al interfetei EtherNet/IP detectata la ul
+2026-05-20 15:51:18,452  INFO      23059 0x23A1:001 (Lenze_i550)  existing_len=277  qc=rewrite
+2026-05-20 15:51:19,324  INFO        -> rewrite: Seteaza castigul proportional pentru bucla de pozitie la viteza zero. Valoarea 0
+2026-05-20 15:51:19,425  INFO      3920 3-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:20,992  INFO        -> rewrite: Defineste adresa de statiune (node address) pentru un dispozitiv slave EtherCAT 
+2026-05-20 15:51:21,092  INFO      24847 0x5860:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:26,465  INFO        -> rewrite: Seteaza adresa stationara a unui slave EtherCAT in retea. Fiecare dispozitiv sla
+2026-05-20 15:51:26,495  INFO        -> rewrite: Seteaza adresa IP si parametrii de retea Ethernet pentru VFD. Subnet mask (0x23A
+2026-05-20 15:51:26,565  INFO      24848 0x5860:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:26,596  INFO      23060 0x23A1:005 (Lenze_i550)  existing_len=250  qc=rewrite
+2026-05-20 15:51:26,709  INFO        -> rewrite: Activeaza functia de sumare a referintelor de viteza din surse multiple. Cand es
+2026-05-20 15:51:26,810  INFO      3921 3-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:32,976  INFO        -> rewrite: Selecteaza modul de atribuire a adresei IP pentru comunicatia EtherNet/IP. Optiu
+2026-05-20 15:51:33,077  INFO      23061 0x23A1:002 (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 15:51:35,664  INFO        -> rewrite: Seteaza adresa station unica a slave-ului EtherCAT in retea. Fiecare nod trebuie
+2026-05-20 15:51:35,764  INFO      24849 0x5860:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:38,313  INFO        -> rewrite: Seteaza masca de subretea pentru interfata de comunicatie EtherNet/IP. Aceasta d
+2026-05-20 15:51:38,330  INFO        -> rewrite: Defineste o scala relativa pentru referinta de viteza folosind formula Z = X + X
+2026-05-20 15:51:38,414  INFO      23062 0x23A1:003 (Lenze_i550)  existing_len=203  qc=rewrite
+2026-05-20 15:51:38,430  INFO      3922 3-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:41,966  INFO        -> rewrite: Defineste adresa de statie EtherCAT pentru fiecare dispozitiv slave conectat pe 
+2026-05-20 15:51:42,066  INFO      24850 0x5860:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:49,253  INFO        -> rewrite: Seteaza adresa de statie EtherCAT pentru acest dispozitiv pe bus-ul de comunicar
+2026-05-20 15:51:49,354  INFO      24851 0x5860:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:49,520  INFO        -> rewrite: Seteaza adresa IP a gateway-ului pentru comunicatia EtherNet/IP. Aceasta adresa 
+2026-05-20 15:51:49,621  INFO      23063 0x23A1:004 (Lenze_i550)  existing_len=148  qc=rewrite
+2026-05-20 15:51:49,713  INFO        -> rewrite: Seteaza valoarea tinta atinsa prin interfata touch a panoului de operare. Utiliz
+2026-05-20 15:51:49,814  INFO      3923 3-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:51:55,421  INFO        -> rewrite: Seteaza adresa station a dispozitivelor slave EtherCAT pe reteaua de comunicatie
+2026-05-20 15:51:55,522  INFO      24852 0x5860:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:51:55,907  INFO        -> rewrite: Seteaza numele de gazda (hostname) pentru drive in reteaua EtherNet/IP. Folosit 
+2026-05-20 15:51:56,008  INFO      23064 0x23A1:006 (Lenze_i550)  existing_len=326  qc=rewrite
+2026-05-20 15:52:00,598  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul trece-jos al referintei master de vitez
+2026-05-20 15:52:00,699  INFO      3924 3-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:01,337  INFO        -> rewrite: Seteaza adresa station a slave-urilor EtherCAT in retea. Fiecare dispozitiv slav
+2026-05-20 15:52:01,438  INFO      24853 0x5860:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:02,884  INFO        -> rewrite: Seteaza valoarea TTL (timpul de viata) pentru pachetele multicast in reteaua Eth
+2026-05-20 15:52:02,985  INFO      23065 0x23A1:007 (Lenze_i550)  existing_len=291  qc=rewrite
+2026-05-20 15:52:06,172  INFO        -> rewrite: Seteaza adresa de statie pentru fiecare slave EtherCAT pe magistrala de comunica
+2026-05-20 15:52:06,272  INFO      24854 0x5860:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:08,677  INFO        -> rewrite: Configureaza alocarea adreselor IP multicast pentru comunicatia EtherNet/IP. Ace
+2026-05-20 15:52:08,778  INFO      23066 0x23A1:008 (Lenze_i550)  existing_len=221  qc=rewrite
+2026-05-20 15:52:09,262  INFO        -> rewrite: Defineste rezolutia busului de comunicatie cu dispozitivul master. Valoarea impl
+2026-05-20 15:52:09,363  INFO      3925 3-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:12,132  INFO        -> rewrite: Defineste adresa de statie pentru dispozitivele slave EtherCAT conectate la rete
+2026-05-20 15:52:12,233  INFO      24855 0x5860:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:15,903  INFO        -> rewrite: Seteaza adresa IP multicast pentru comunicatia EtherNet/IP. Adresele multicast s
+2026-05-20 15:52:16,003  INFO      23067 0x23A1:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:52:18,294  INFO        -> rewrite: Defineste tipul rampei de accelerare si decelerare pentru motorul 1. Optiunile t
+2026-05-20 15:52:18,394  INFO      3926 3-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:22,885  INFO        -> rewrite: Seteaza numarul de multicast pentru comunicatia EtherNet/IP. Valoarea trebuie co
+2026-05-20 15:52:22,986  INFO      23068 0x23A4:001 (Lenze_i550)  existing_len=197  qc=rewrite
+2026-05-20 15:52:23,599  INFO        -> rewrite: Defineste adresa de statie pentru dispozitivele slave EtherCAT conectate in rete
+2026-05-20 15:52:23,699  INFO      24856 0x5860:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:29,214  INFO        -> rewrite: Selecteaza tipul rampei de accelerare/decelerare pentru rampa 2. Rampa liniara o
+2026-05-20 15:52:29,300  INFO        -> rewrite: Seteaza adresa station a unui slave EtherCAT in retea. Fiecare slave trebuie sa 
+2026-05-20 15:52:29,314  INFO      3927 3-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:29,401  INFO      24857 0x5861:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:30,109  INFO        -> rewrite: Seteaza rata de transfer (baud rate) pentru portul Ethernet 1. Viteza poate fi 1
+2026-05-20 15:52:30,209  INFO      23069 0x23A4:002 (Lenze_i550)  existing_len=191  qc=rewrite
+2026-05-20 15:52:36,861  INFO        -> rewrite: Selecteaza tipul rampei pentru oprirea rapida a motorului. Rampa liniara asigura
+2026-05-20 15:52:36,962  INFO      3928 3-89 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:40,271  INFO        -> rewrite: Afiseaza numele dispozitivului slave EtherCAT conectat la prima pozitie in retea
+2026-05-20 15:52:40,372  INFO      24858 0x5861:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:40,776  INFO        -> rewrite: Seteaza timpul de netezire a rampei de viteza. Un filtru mai mare incetineste ra
+2026-05-20 15:52:40,876  INFO      3929 3-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:40,958  INFO        -> rewrite: Seteaza viteza de comunicare pentru portul Ethernet 2 (10/100/1000 Mbps). Optiun
+2026-05-20 15:52:41,059  INFO      23070 0x23A7 (Lenze_i550)  existing_len=257  qc=rewrite
+2026-05-20 15:52:47,133  INFO        -> rewrite: Activeaza detectarea conflictelor de adresa pe reteaua de comunicatie fieldbus. 
+2026-05-20 15:52:47,234  INFO      23071 0x23A1:010 (Lenze_i550)  existing_len=273  qc=rewrite
+2026-05-20 15:52:50,245  INFO        -> rewrite: Defineste timpul de rampa, adica durata necesara pentru accelerare sau decelerar
+2026-05-20 15:52:50,346  INFO      3930 3-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:52:50,434  INFO        -> rewrite: Defineste numele dispozitivului pentru al doilea slave EtherCAT din retea. Acest
+2026-05-20 15:52:50,535  INFO      24859 0x5861:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:52:54,998  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia CIP in retele EtherNet/IP. 
+2026-05-20 15:52:55,098  INFO      23072 0x2859:006 (Lenze_i550)  existing_len=341  qc=rewrite
+2026-05-20 15:52:57,545  INFO        -> rewrite: Defineste numele dispozitivului pentru sclavul EtherCAT 3 pe reteaua de camp. Ac
+2026-05-20 15:52:57,645  INFO      24860 0x5861:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:01,163  INFO        -> rewrite: Defineste raspunsul convertizorului la expirarea timpului de asteptare pentru me
+2026-05-20 15:53:01,264  INFO      23073 0x2859:007 (Lenze_i550)  existing_len=286  qc=rewrite
+2026-05-20 15:53:02,208  INFO        -> rewrite: Seteaza limita superioara pentru valoarea rezultanta a referintei. Recomandat pe
+2026-05-20 15:53:02,309  INFO      3931 3-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:03,985  INFO        -> rewrite: Defineste numele dispozitivului pentru modulul slave EtherCAT cu index 4. Acest 
+2026-05-20 15:53:04,086  INFO      24861 0x5861:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:06,870  INFO        -> rewrite: Defineste actiunea la expirarea timeout-ului in comunicarea EtherNet/IP CIP. Can
+2026-05-20 15:53:06,971  INFO      23074 0x23A2:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:53:09,326  INFO        -> rewrite: Seteaza valoarea minima permisa pentru referinta rezultanta. Cand se foloseste p
+2026-05-20 15:53:09,427  INFO      3932 4-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:11,715  INFO        -> rewrite: Afiseaza numele dispozitivului pentru slave-ul EtherCAT 5 in retea. Este un para
+2026-05-20 15:53:11,815  INFO      24862 0x5861:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:14,501  INFO        -> rewrite: Afiseaza adresa IP activa a interfetei EtherNet/IP. Valoarea este informationala
+2026-05-20 15:53:14,602  INFO      23075 0x23A2:002 (Lenze_i550)  existing_len=249  qc=rewrite
+2026-05-20 15:53:19,251  INFO        -> rewrite: Defineste numele dispozitivului pentru slave-ul EtherCAT 6 in reteaua de comunic
+2026-05-20 15:53:19,352  INFO      24863 0x5861:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:20,143  INFO        -> rewrite: Seteaza sursa de selectie a factorului de limita pentru functia de verificare a 
+2026-05-20 15:53:20,244  INFO      3933 4-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:22,809  INFO        -> rewrite: Afiseaza masca de subretea activa utilizata de interfata EtherNet/IP. Acest para
+2026-05-20 15:53:22,909  INFO      23076 0x23A2:003 (Lenze_i550)  existing_len=222  qc=rewrite
+2026-05-20 15:53:25,948  INFO        -> rewrite: Seteaza numele dispozitivului pentru slave-ul EtherCAT 7. Este folosit pentru id
+2026-05-20 15:53:26,048  INFO      24864 0x5861:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:27,188  INFO        -> rewrite: Selecteaza sursa factorului de limitare a puterii generate. Valoarea 0 = sursa i
+2026-05-20 15:53:27,288  INFO      3934 4-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:29,681  INFO        -> rewrite: Afiseaza adresa activa a gateway-ului utilizata pentru comunicatia EtherNet/IP. 
+2026-05-20 15:53:29,782  INFO      23077 0x23A2:005 (Lenze_i550)  existing_len=194  qc=rewrite
+2026-05-20 15:53:34,743  INFO        -> rewrite: Defineste numele dispozitivului pentru slave-ul EtherCAT 8 in retea. Acest nume 
+2026-05-20 15:53:34,843  INFO      24865 0x5861:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:37,410  INFO        -> rewrite: Activeaza functia de monitorizare a vitezei motorului. Convertorul compara vitez
+2026-05-20 15:53:37,511  INFO      3935 4-74 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:38,673  INFO        -> rewrite: Afiseaza adresa MAC activa a interfetei EtherNet/IP integrate in unitatea de con
+2026-05-20 15:53:38,774  INFO      23078 0x23A2:006 (Lenze_i550)  existing_len=236  qc=rewrite
+2026-05-20 15:53:42,844  INFO        -> rewrite: Defineste numele dispozitivului pentru slave-ul EtherCAT 9. Este folosit pentru 
+2026-05-20 15:53:42,945  INFO      24866 0x5861:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:46,531  INFO        -> rewrite: Afiseaza adresa IP multicast activa utilizata pentru comunicatia EtherNet/IP in 
+2026-05-20 15:53:46,631  INFO      23079 0x23A5:001 (Lenze_i550)  existing_len=264  qc=rewrite
+2026-05-20 15:53:48,269  INFO        -> rewrite: Seteaza functia de pornire pentru schimbarea directiei motorului intre forward s
+2026-05-20 15:53:48,369  INFO      3936 4-75 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:53:48,840  INFO        -> rewrite: Stocheaza numele dispozitivului pentru slave-ul 10 in reteaua EtherCAT. Acest pa
+2026-05-20 15:53:48,941  INFO      24867 0x5861:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:54,543  INFO        -> rewrite: Defineste numele descriptiv pentru dispozitivul slave 11 in reteaua EtherCAT. Ac
+2026-05-20 15:53:54,643  INFO      24868 0x5861:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:53:54,980  INFO        -> rewrite: Afiseaza configuratia activa pentru portul Ethernet 1 (X266). Este un parametru 
+2026-05-20 15:53:55,081  INFO      23080 0x23A5:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:53:58,494  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru detectarea senzorului de atingere in ti
+2026-05-20 15:53:58,594  INFO      3937 4-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:03,959  INFO        -> rewrite: Afiseaza configuratia activa a portului Ethernet 2. Este un parametru de citire 
+2026-05-20 15:54:04,060  INFO      23081 0x23A6 (Lenze_i550)  existing_len=242  qc=rewrite
+2026-05-20 15:54:04,127  INFO        -> rewrite: Stocheaza numele dispozitivului pentru slave-ul EtherCAT 12 pe retea. Acest para
+2026-05-20 15:54:04,228  INFO      24869 0x5861:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:06,750  INFO        -> rewrite: Controleaza daca limitele directionale pentru miscarea motorului sunt active sau
+2026-05-20 15:54:06,851  INFO      3938 5-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:08,754  INFO        -> rewrite: Stocheaza numele dispozitivului pentru slave-ul EtherCAT cu ID 13. Acest paramet
+2026-05-20 15:54:08,854  INFO      24870 0x5861:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:13,399  INFO        -> rewrite: Afiseaza starea tag-ului QoS folosit pentru prioritizarea pachetelor de date tra
+2026-05-20 15:54:13,500  INFO      23082 0x23A8 (Lenze_i550)  existing_len=265  qc=rewrite
+2026-05-20 15:54:14,262  INFO        -> rewrite: Seteaza modul de configurare pentru bornele digitale I/O. Aceasta parametru defi
+2026-05-20 15:54:14,362  INFO      3939 5-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:17,576  INFO        -> rewrite: Defineste numele dispozitivului pentru slave-ul EtherCAT cu ID 14. Acest paramet
