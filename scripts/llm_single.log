@@ -10874,3 +10874,24 @@
 2026-05-20 16:21:29,990  INFO        -> rewrite: Comanda dispozitivului pentru pornirea aplicatiei. Dupa executarea cu succes, va
 2026-05-20 16:21:30,091  INFO      25067 0x2022:045 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 16:21:30,446  INFO        -> rewrite: Afiseaza numele de statie PROFINET activ atribuit convertizorului de frecventa. 
+2026-05-20 16:21:34,922  INFO        -> rewrite: Seteaza timpul de integrare pentru controlul limitei de curent. O valoare mai mi
+2026-05-20 16:21:35,023  INFO      4123 14-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:21:35,034  INFO        Committed + pushed
+2026-05-20 16:21:35,135  INFO      23298 0x2382:005 (Lenze_i550)  existing_len=218  qc=rewrite
+2026-05-20 16:21:36,074  INFO        -> rewrite: Comanda oprire aplicatie opreste functionarea variatorului in mod controlat. Dup
+2026-05-20 16:21:36,174  INFO      25068 0x2022:041 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:21:41,885  INFO        -> rewrite: Afiseaza adresa MAC activa a interfetei PROFINET. Aceasta este o valoare read-on
+2026-05-20 16:21:41,985  INFO      23299 0x2388 (Lenze_i550)  existing_len=307  qc=rewrite
+2026-05-20 16:21:43,704  INFO        -> rewrite: Reporneste functiile extinse de siguranta ale variatorului. In timpul executiei 
+2026-05-20 16:21:43,805  INFO      25069 0x2022:036 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:21:45,182  INFO        -> rewrite: Configureaza timpul de filtrare pentru controlul limitei de curent. Un timp scur
+2026-05-20 16:21:45,283  INFO      4124 14-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:21:50,104  INFO        -> rewrite: Afiseaza starea curenta a magistralei PROFINET in format bit-coded. Arata daca c
+2026-05-20 16:21:50,204  INFO      23300 0x2389:001 (Lenze_i550)  existing_len=204  qc=rewrite
+2026-05-20 16:21:50,232  INFO        -> rewrite: Comanda exporta fisierul de tip logbook din dispozitiv pentru incarcare in instr
+2026-05-20 16:21:50,333  INFO      25070 0x2022:037 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:21:56,052  INFO        -> rewrite: Activeaza functia de slabire a campului magnetic pentru calculul cuplului optim.
+2026-05-20 16:21:56,152  INFO      4125 14-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:21:57,860  INFO        -> rewrite: Afiseaza codul erorii curente detectate pe reteaua PROFINET. Valoarea 557 indica
+2026-05-20 16:21:57,961  INFO      23301 0x2389:002 (Lenze_i550)  existing_len=337  qc=rewrite
+2026-05-20 16:21:59,584  INFO        -> rewrite: Comanda de stergere a fisierelor jurnal exportate anterior. In timpul executiei 
