@@ -6110,3 +6110,24 @@
 2026-05-20 14:22:40,490  INFO        -> rewrite: Defineste punctele de pe axa Y (amplitudine) pentru curba de saturatie a inducta
 2026-05-20 14:22:40,591  INFO      19537 0x2C07:016 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 14:22:42,776  INFO        -> rewrite: Seteaza tensiunea minima pentru intrarea analogica de la terminalul 54. Valoarea
+2026-05-20 14:22:45,567  INFO        -> rewrite: Seteaza pragul de avertizare pentru temperatura radiatorului invertorului. Daca 
+2026-05-20 14:22:45,668  INFO      20219 0x2820:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:22:45,730  INFO        Committed + pushed
+2026-05-20 14:22:45,832  INFO      3355 6-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:22:48,851  INFO        -> rewrite: Punct de date pe axa Y a caracteristicii de saturatie a inductantei Lh. Definest
+2026-05-20 14:22:48,951  INFO      19538 0x2C07:017 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:22:51,763  INFO        -> rewrite: Seteaza o intarziere temporara inainte de inchiderea franei de retinere. Daca fr
+2026-05-20 14:22:51,863  INFO      20220 0x2D49:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:22:52,572  INFO        -> rewrite: Seteaza valoarea curentului minim pentru intrarea analogica Terminal 54. Aceasta
+2026-05-20 14:22:52,673  INFO      3356 6-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:22:58,692  INFO        -> rewrite: Defineste punctele grid pentru inductanta Lh pe axa Y in caracteristica de satur
+2026-05-20 14:22:58,793  INFO      19539 0x2822:023 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:02,813  INFO        -> rewrite: Selecteaza actiunea pe care o executa convertizorul de frecventa cand senzorul d
+2026-05-20 14:23:02,914  INFO      20221 0x2632:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:04,123  INFO        -> rewrite: Selecteaza actiunea care se executa cand semnalul analogic pe terminalul 53 sau 
+2026-05-20 14:23:04,224  INFO      3357 6-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:09,522  INFO        -> rewrite: Activeaza procedura de identificare automata a curentului optim de magnetizare p
+2026-05-20 14:23:09,623  INFO      19540 0x2945 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:09,642  INFO        -> rewrite: Seteaza nivelul de tensiune maxim pentru intrarea analogica de la terminalul 53.
+2026-05-20 14:23:09,742  INFO      3358 6-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:13,270  INFO        -> rewrite: Seteaza inversarea logicii pentru intrarea digitala 1 (DI1). Cu 0 = functionare 
