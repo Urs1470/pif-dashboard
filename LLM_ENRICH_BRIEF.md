@@ -1,166 +1,74 @@
-# LLM Enrichment Brief — pentru sesiunea Sonnet
+# LLM Enrichment Brief — pentru HERMES
 
-## Context rapid
+> Status la **2026-05-20**. Brief rescris dupa ce Claude (Claude Code pe Windows) a terminat ABB + Siemens.
 
-DB `parametri_master` pe PIF Dashboard are **14.745 params** după audit PDF complet (sesiunile Claude Opus 4.6, 18-19 mai 2026). Toate câmpurile PDF-derived sunt populate:
-- `parametru`, `descriere_scurta`, `descriere`, `acces`, `tip_date`, `valoare_default_str`, `min`, `max`, `unitate`, `pagina`, `pdf_extra` (JSON).
+## Ce e GATA (NU atinge)
 
-**Task-ul tău (Sonnet)**: completare câmpuri LLM-only:
-- `explicatie` — RO commissioning text cu LaTeX pentru formule electrotehnice
-- `influenteaza` — CSV cu coduri params (ex: `"30.12, 21.13"`)
-- `categorie` — din lista fixă: `Motor | Limite | Rampe | I/O | Comunicatii | Protectii | Diagnostic | Altul`
-
-**NU atinge**: parametru, descriere_scurta, descriere, acces, tip_date, valoare_default_str, valoare_default, min, max, unitate, pagina, pdf_extra. TOATE sunt PDF-derived și validate.
-
-## Pași concreți la start
-
-1. `cd D:\Projects\pif-dashboard`
-2. `git pull && git log --oneline -10` — verifică ai ultimele commit-uri (`b002bb7` apply_explicatii.py)
-3. Citește `HERMES.md` secțiunea "Audit parametri (status la 2026-05-18)" + regulile 5b LaTeX
-4. Verifică `scripts/sample_explicatii.json` — 30 params deja procesate (NU le refaci). Sunt artifact-ul format-ului așteptat.
-
-## Format input/output (pentru fiecare batch)
-
-**Citește un batch din DB**:
-```python
-import sqlite3
-conn = sqlite3.connect('pif_dashboard.db')
-conn.row_factory = sqlite3.Row
-cur = conn.cursor()
-cur.execute("""
-  SELECT id, familie, parametru, descriere_scurta, descriere,
-         valoare_default_str, min, max, unitate, pdf_extra
-  FROM parametri_master
-  WHERE familie = ?
-    AND descriere IS NOT NULL AND TRIM(descriere) != ''
-    AND (explicatie IS NULL OR explicatie = '')
-  ORDER BY id
-  LIMIT 100
-""", ('ACS580',))
-```
-
-**Generează JSON** în același format ca `scripts/sample_explicatii.json`:
-```json
-[
-  {
-    "id": 15333,
-    "familie": "ACS580",
-    "parametru": "26.08",
-    "descriere_scurta": "Minimum torque reference",
-    "GENERATED": {
-      "explicatie": "Limita inferioara... $T_n = \\dfrac{9550 \\cdot P_n}{n_n}$ ...",
-      "influenteaza": "30.19, 99.12",
-      "categorie": "Limite"
-    }
-  }
-]
-```
-
-**Apply la DB**:
-```bash
-python scripts/apply_explicatii.py path/to/batch.json
-```
-
-## Reguli stil
-
-- **Limba**: română FĂRĂ DIACRITICE (`â, ă, î, ț, ș` interzise — Ion preferă fără)
-- **Lungime**: 2-3 propoziții, max ~250 chars
-- **Tone**: commissioner-friendly (Ion e inginer câmp, nu academic)
-- **Formule LaTeX inline**: `$...$` (vezi reguli mai jos)
-- **Citează alte params**: cu cod (e.g. `Vezi 30.12 pentru limita superioara`)
-- **Skip nimic**: dacă param-ul are descriere existentă în PDF, generează explicatie. Doar params cu `descriere IS NULL` skip.
-
-## LaTeX pentru formule (KaTeX render în UI)
-
-Frontend folosește KaTeX. Sintaxă:
-
-| Tip | Cum scrii | Render |
+| Familie | Coverage `explicatie` | Cine |
 |---|---|---|
-| Variabile cu indici | `$T_n$, $P_n$, $L_d$, $i_q$, $\omega_e$, $\Psi$` | $T_n$ |
-| Fracții | `$\dfrac{a}{b}$` (NU `\frac` — mai bun inline) | $\dfrac{a}{b}$ |
-| Unități | `$T_n\,[\text{Nm}]$` (cu `\,` separator) | $T_n\,[\text{Nm}]$ |
-| Multiplicare | `\cdot` (NU `*`) | $\cdot$ |
-| Intervale | `$[10\%, 300\%]$` | |
-| Derivate | `$\dfrac{di_d}{dt}$` | |
+| ACS580 | 100% (1273/1273) | Claude |
+| ACS880 | 100% (1682/1682) | Claude |
+| SINAMICS_G120 | 99% (1458/1461) | Claude |
+| SINAMICS_G130_G150 | 100% (2096/2096) | Claude |
+| SINAMICS_S120_S150 | 100% (3499/3499) | Claude |
 
-**NU folosi LaTeX** pentru:
-- Valori simple (`30.12`, `1500 rpm`, `100%`)
-- Coduri (`p0500`, `99.04`)
+DB-ul de pe server a fost deja inlocuit cu versiunea care contine toate astea (upload prin `/admin/db-upload`, backup `backups/pif_dashboard_pre_upload_20260520_121812.db`). **Tu lucrezi pe acelasi `pif_dashboard.db`** — modificarile tale merg LIVE direct, fara upload.
 
-**Exemple bune** (din sample-ul deja procesat):
-- 26.08: `Limita inferioara a referintei de cuplu, exprimata in procente din cuplul nominal motor $T_n = \dfrac{9550 \cdot P_n\,[\text{kW}]}{n_n\,[\text{rpm}]}\,[\text{Nm}]$. Pentru limita absoluta hard, vezi 30.19.`
-- 98.13: `Inductanta de axa directa $L_d$ pentru motoare cu magneti permanenti, in $\text{mH}$. Folosita in modelul motor pentru control vectorial precis ($u_d = R_s i_d + L_d \frac{di_d}{dt} - \omega_e L_q i_q$).`
-- 32.31: `Histerezis pentru supervizarea 3: actiunea se activeaza cand semnalul $S$ depaseste $L_{up} + \frac{h}{2}$.`
+## Task-ul tau (HERMES)
 
-## Sursa info pentru explicații
+Completeaza `explicatie` + `influenteaza` + `categorie` pentru cele 3 familii ramase:
 
-1. `descriere` — text PDF-derived (cel mai important input)
-2. `pdf_extra` (JSON) — `values[]` (enum), `dependency`, `notice`, `note`, `refer_to`, `warnings`
-3. `descriere_scurta` — numele scurt al param
-4. Înțelegerea ta tehnică despre convertizoare frecvență (drives, motor control, comms)
+| Familie | Lipsa | Format cod param |
+|---|---|---|
+| Danfoss_VLT_FC302 | **26** | `0-01`, `3-41` (grup-index) |
+| Lenze_i550 | **1206** | `0x0000` (hex) |
+| Lenze_i950 | **1388** | `0x1000` (hex) |
 
-**NU genera info care NU-i derivable** din descriere + pdf_extra + cunostințe tehnice generale.
+Total: **2620 params**. Ordine recomandata: Danfoss intai (rapid), apoi i550, apoi i950.
 
-## influenteaza CSV — cum populezi
+**NU atinge** campurile PDF-derived: `parametru, descriere_scurta, descriere, acces, tip_date, valoare_default_str, valoare_default, min, max, unitate, pagina, pdf_extra`.
 
-- Coduri primare din `pdf_extra.refer_to` (lista deja extrasă)
-- Coduri menționate în `descriere` (regex `\b[pr]\d{4,5}\b` pentru Siemens, `\b\d+\.\d+\b` pentru ABB, `\b\d+-\d+\b` pentru Danfoss, `\b0x[0-9A-F]{4,5}\b` pentru Lenze)
-- Format final: `"30.12, 21.13"` (CSV, fără spații extra)
+## Cum rulezi
 
-## Strategie batch pas-cu-pas
+```bash
+cd ~/Projects/pif-dashboard
+git pull origin master          # ia ultimele scripts de la Claude
+git status                      # TREBUIE curat (vezi anti-coliziune)
+cp pif_dashboard.db pif_dashboard.db.before-hermes-$(date +%Y%m%d_%H%M%S)
 
-Ion vrea **cate un pic per turn** (asta-i decizia luată). Sugestie:
+python scripts/llm_batch_enrich.py --familie Danfoss_VLT_FC302 --field explicatie
+python scripts/llm_batch_enrich.py --familie Lenze_i550 --field explicatie
+python scripts/llm_batch_enrich.py --familie Lenze_i950 --field explicatie
+```
 
-1. **Turn 1**: ACS580 batch 100 (10% din 1273). Generezi, applici, raportezi.
-2. **Turn 2**: continuă ACS580 până termini, apoi ACS880.
-3. **Turn 3-N**: pe rând familiile (Danfoss → Lenze → Siemens).
-4. **După fiecare batch**: scurt raport — count keep/rewrite/new, observații quality, eventual issues.
+`llm_batch_enrich.py` scrie direct in DB (`write_row`), face `git commit + push` automat la fiecare 100 params, si sare peste params cu `explicatie` deja buna (`quality_check` -> "keep"). Deci poate fi rulat in siguranta peste familiile deja gata — nu le rescrie.
 
-**Sample mai bun decât mare**: 50 params per turn cu LaTeX corect > 500 generic.
+## Reguli stil explicatie
 
-## Categorii — ghid de mapping
+- Limba: **romana FARA diacritice** (`a a i t s` simple, niciun `â ă î ț ș`)
+- 2-3 propozitii, max ~250 chars, ton commissioner (Ion e inginer de camp)
+- Formule electrotehnice cu LaTeX inline `$...$`, KaTeX render in UI:
+  - indici `$T_n$ $P_n$ $L_d$`, fractii `$\dfrac{a}{b}$` (nu `\frac`), `\cdot` (nu `*`), unitati `$T_n\,[\text{Nm}]$`
+  - NU LaTeX pentru valori simple (`1500 rpm`, `100%`) sau coduri (`3-41`, `0x2900`)
+- `influenteaza`: CSV coduri params corelate, ex `"3-41, 3-42"`. Surse: `pdf_extra.refer_to`, coduri din `descriere`. Regex: Danfoss `\b\d+-\d+\b`, Lenze `\b0x[0-9A-F]{4,5}\b`. Gol daca nu exista.
+- `categorie`: exact una din `Motor | Limite | Rampe | I/O | Comunicatii | Protectii | Diagnostic | Altul`
 
-| Categorie | Exemple params |
-|---|---|
-| **Motor** | nameplate (current, voltage, freq, speed, poles, cos φ, Ld, Lq, Rs), control mode, ID run |
-| **Limite** | min/max speed, max torque, current limit, frequency limit |
-| **Rampe** | acceleration time, deceleration time, S-curve, jerk |
-| **I/O** | digital input/output, analog input/output, terminal config, scaling |
-| **Comunicatii** | fieldbus (Profibus, Profinet, Modbus, CANopen, EtherCAT), PDO mapping, IP/MAC, baud rate |
-| **Protectii** | overcurrent, overvoltage, undervoltage, motor temp, IGBT temp, supervision actions, SLS/STO |
-| **Diagnostic** | actual values, status words, fault buffer, alarm time, energy counters |
-| **Altul** | DCC blocks (LIM, MFP, MUL), favorites, expert/dev params |
+## Anti-coliziune (CRITIC)
 
-## Cost estimat (Sonnet 4.7)
+- Worktree-ul de pe server TREBUIE curat inainte sa pornesti — altfel webhook-ul auto-deploy al lui Claude crapa cu 500 si push-urile lui se blocheaza pe GitHub. Daca ai WIP: `git stash` sau commit+push.
+- Commit per batch (scriptul o face automat). Push imediat.
+- Daca `git pull` da conflict pe `scripts/`, rezolva inainte de a rula enrichment.
 
-- ~14.000 params × 1500 tokens input (descriere + pdf_extra context cached) × 250 tokens output
-- Sonnet $3/MT input, $15/MT output → ~$50-80 cu prompt caching agresiv
-- Ion explicit: cost nu e blocker pentru accuracy
+## Verificare dupa fiecare familie
 
-## Anti-coliziune
+```sql
+SELECT COUNT(*) FROM parametri_master
+WHERE familie='Lenze_i550' AND (explicatie IS NULL OR explicatie='');
+-- trebuie 0
+```
 
-- Înainte de orice modificare: `git pull && git status` curat
-- `git add scripts/apply_explicatii.py` + commit per batch ("LLM enrich: ACS580 +100 params, batch 1/13")
-- Push imediat ca alte sesiuni (Claude pe alte fișiere, Hermes) să vadă
-- Backup DB înainte de `apply` masiv: `Copy-Item pif_dashboard.db pif_dashboard.db.before-enrich-<ts>`
-
-## Verificare quality
-
-După fiecare batch:
-1. Sample 3 params random din ultimul batch
-2. Verifică:
-   - Nu există diacritice
-   - LaTeX pe formule e sintactic corect (`$...$` matched, `\dfrac` nu `\frac`)
-   - Coduri în `influenteaza` sunt valide (există în DB-ul familiei)
-   - Categorie e din lista fixă
+Sample 3 params random: fara diacritice, LaTeX `$...$` matched, categorie din lista fixa, coduri `influenteaza` valide.
 
 ## Done state
 
-DB local va avea toate 14.745 params cu:
-- `explicatie` non-empty cu LaTeX pe formule
-- `influenteaza` CSV populat unde aplicabil
-- `categorie` din lista fixă
-
-Apoi: upload DB la server prin `https://pif.iupif.org/admin/db-upload`.
-
-**Frontend deja randează KaTeX + chip-uri "Influențează" / "Influențat de"** — totul așteaptă DB-ul cu explicații.
+Toate 8 familiile la 100% `explicatie`. Cum tu rulezi pe DB-ul live de pe server, nu mai e nevoie de upload — schimbarile sunt deja vizibile pe `https://pif.iupif.org` (eventual dupa refresh cache stale-while-revalidate).
