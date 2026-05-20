@@ -3157,14 +3157,26 @@ def webhook_deploy():
 
     project_dir = os.path.dirname(os.path.abspath(__file__))
     try:
-        result = subprocess.run(
-            ['git', 'pull', 'origin', 'master'],
+        # `git pull` aborts when the server worktree is dirty (audit scripts
+        # regenerate tracked JSONs in-place, leaving uncommitted changes), so
+        # every deploy after such a run silently failed. fetch + reset --hard
+        # makes the deploy idempotent: server always matches origin/master.
+        # Tracked-but-regenerated files are recreated by the next audit run.
+        fetch = subprocess.run(
+            ['git', 'fetch', 'origin', 'master'],
             cwd=project_dir, capture_output=True, text=True, timeout=30
         )
-        logger.info(f"Auto-deploy git pull: {result.stdout.strip()}")
+        if fetch.returncode != 0:
+            logger.error(f"Auto-deploy git fetch failed: {fetch.stderr}")
+            return f'Fetch failed: {fetch.stderr}', 500
+        result = subprocess.run(
+            ['git', 'reset', '--hard', 'origin/master'],
+            cwd=project_dir, capture_output=True, text=True, timeout=30
+        )
+        logger.info(f"Auto-deploy git reset: {result.stdout.strip()}")
         if result.returncode != 0:
-            logger.error(f"Auto-deploy git pull failed: {result.stderr}")
-            return f'Pull failed: {result.stderr}', 500
+            logger.error(f"Auto-deploy git reset failed: {result.stderr}")
+            return f'Reset failed: {result.stderr}', 500
     except Exception as e:
         logger.error(f"Auto-deploy error: {e}")
         return f'Deploy error: {e}', 500
