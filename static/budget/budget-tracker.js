@@ -6,7 +6,14 @@ var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
 var LUNI_COUNT = 12; // default; overridden by d.profil.numarLuni
-var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Mâncare restaurant', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte credite', 'Alte'];
+var CHELTUIELI_VARIABILE_DEFAULT = [
+  'Alimente', 'Mâncare restaurant', 'Transport', 'Utilități & facturi',
+  'Sănătate & îngrijire', 'Îmbrăcăminte', 'Casă & întreținere',
+  'Divertisment & timp liber', 'Abonamente', 'Educație & dezvoltare',
+  'Cadouri & evenimente', 'Călătorii & vacanțe', 'Taxe & asigurări',
+  'Alte credite', 'Alte'
+];
+var CATEGORII_VENIT_DEFAULT = ['Bonuri de masă', 'Bonus & prime', 'Diurnă & deconturi', 'Dobânzi & dividende', 'Alte venituri'];
 
 // Generate N months starting from "YYYY-MM"; returns {keys, labels}
 function generateLuni(startMonth, count) {
@@ -163,7 +170,7 @@ function migrateCategoriiVenit(data) {
   };
   if (!Array.isArray(data.categoriiVenit) || data.categoriiVenit.length === 0) seed();
   // Rename legacy keys in venituri buckets
-  var mapping = { bonuri: 'Bonuri masă', bonus: 'Bonus', diurna: 'Diurnă' };
+  var mapping = { bonuri: 'Bonuri de masă', bonus: 'Bonus & prime', diurna: 'Diurnă & deconturi' };
   Object.keys(data.venituri || {}).forEach(function(luna) {
     var v = data.venituri[luna];
     if (!v || typeof v !== 'object') return;
@@ -199,6 +206,70 @@ function ensureCategorieVar(data, label) {
   if (!exists) {
     data.categoriiVar.push({ id: getNextId(data.categoriiVar), label: label });
   }
+}
+
+// Rename a variable expense category and migrate its data + rules
+function renameCategorieVar(data, oldLabel, newLabel) {
+  if (!data || !Array.isArray(data.categoriiVar)) return;
+  var found = false;
+  data.categoriiVar.forEach(function(c) { if (c && c.label === oldLabel) { c.label = newLabel; found = true; } });
+  if (!found) return;
+  Object.keys(data.cheltuieli || {}).forEach(function(luna) {
+    var m = data.cheltuieli[luna];
+    if (m && m[oldLabel] !== undefined) {
+      m[newLabel] = (m[newLabel] || 0) + m[oldLabel];
+      delete m[oldLabel];
+    }
+  });
+  (data.reguliCategorizare || []).forEach(function(r) { if (r && r.categorie === oldLabel) r.categorie = newLabel; });
+}
+
+// Rename an income category and migrate its data + rules
+function renameCategorieVenit(data, oldLabel, newLabel) {
+  if (!data || !Array.isArray(data.categoriiVenit)) return;
+  var found = false;
+  data.categoriiVenit.forEach(function(c) { if (c && c.label === oldLabel) { c.label = newLabel; found = true; } });
+  if (!found) return;
+  Object.keys(data.venituri || {}).forEach(function(luna) {
+    var m = data.venituri[luna];
+    if (m && m[oldLabel] !== undefined) {
+      m[newLabel] = (m[newLabel] || 0) + m[oldLabel];
+      delete m[oldLabel];
+    }
+  });
+  (data.reguliCategorizare || []).forEach(function(r) { if (r && r.categorie === oldLabel) r.categorie = newLabel; });
+}
+
+// One-shot category structure alignment (v2). Renames legacy categories to the
+// balanced structure and adds the missing ones. Guarded by data.categoriesAligned.
+function migrateCategoriesV2(data) {
+  if (!data || data.categoriesAligned) return;
+  // Expense renames
+  renameCategorieVar(data, 'Facturi', 'Utilități & facturi');
+  renameCategorieVar(data, 'Sănătate', 'Sănătate & îngrijire');
+  renameCategorieVar(data, 'Divertisment', 'Divertisment & timp liber');
+  // Income renames
+  renameCategorieVenit(data, 'Bonuri masă', 'Bonuri de masă');
+  renameCategorieVenit(data, 'Bonus', 'Bonus & prime');
+  renameCategorieVenit(data, 'Diurnă', 'Diurnă & deconturi');
+  // New expense categories
+  ['Casă & întreținere', 'Educație & dezvoltare', 'Cadouri & evenimente',
+   'Călătorii & vacanțe', 'Taxe & asigurări'].forEach(function(label) {
+    ensureCategorieVar(data, label);
+  });
+  // New income category
+  ensureCategorieVenit(data, 'Dobânzi & dividende');
+  data.categoriesAligned = true;
+}
+
+// Guarantee an income category exists. Idempotent — case-insensitive match.
+function ensureCategorieVenit(data, label) {
+  if (!data) return;
+  if (!Array.isArray(data.categoriiVenit)) data.categoriiVenit = [];
+  var exists = data.categoriiVenit.some(function(c) {
+    return ((c && c.label) || '').toLowerCase() === label.toLowerCase();
+  });
+  if (!exists) data.categoriiVenit.push({ id: getNextId(data.categoriiVenit), label: label });
 }
 
 // Guarantee a categorisation rule routing to `categorie` exists. Idempotent —
@@ -297,18 +368,21 @@ var REGULI_CATEGORIZARE_DEFAULT = [
   { id: 4,  pattern: 'Subscriere Tezaur',                 categorie: '__TEZAUR__' },
   { id: 5,  pattern: 'KAUFLAND|AUCHAN|CARREFOUR|MEGA IMAGE|LIDL|PROFI|PENNY|SELGROS|FRESH MARKET', categorie: 'Alimente' },
   { id: 17, pattern: 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', categorie: 'Mâncare restaurant' },
-  { id: 6,  pattern: 'ENGIE|ELECTRICA|APA NOVA|E\\.ON|HIDROELECTRICA|ENEL',                    categorie: 'Facturi' },
-  { id: 7,  pattern: 'VODAFONE|DIGI|RDS|RCS|ORANGE|TELEKOM',                                   categorie: 'Facturi' },
-  { id: 8,  pattern: 'MEDICAL|FARMACIE|FARMACIA|CATENA|SENSIBLU|HELPNET|REGINA MARIA|MEDLIFE|MEDICOVER|CLUJ MEDICAL', categorie: 'Sănătate' },
+  { id: 6,  pattern: 'ENGIE|ELECTRICA|APA NOVA|E\\.ON|HIDROELECTRICA|ENEL|DISTRIGAZ',           categorie: 'Utilități & facturi' },
+  { id: 7,  pattern: 'VODAFONE|DIGI|RDS|RCS|ORANGE|TELEKOM',                                   categorie: 'Utilități & facturi' },
+  { id: 8,  pattern: 'MEDICAL|FARMACIE|FARMACIA|CATENA|SENSIBLU|HELPNET|REGINA MARIA|MEDLIFE|MEDICOVER|CLUJ MEDICAL', categorie: 'Sănătate & îngrijire' },
   { id: 9,  pattern: 'BOLT|UBER|FREE NOW|FREENOW|TAXIFY',                                      categorie: 'Transport' },
   { id: 10, pattern: 'OMV|MOL|PETROM|ROMPETROL|LUKOIL|SOCAR',                                  categorie: 'Transport' },
   { id: 11, pattern: 'NETFLIX|SPOTIFY|HBO|YOUTUBE|APPLE\\.COM|GOOGLE|MICROSOFT|ADOBE',         categorie: 'Abonamente' },
   { id: 12, pattern: 'H\\&M|ZARA|RESERVED|BERSHKA|PULL\\&BEAR|C\\&A|DECATHLON',                categorie: 'Îmbrăcăminte' },
-  { id: 13, pattern: 'CINEMA|TEATRU|CONCERT|BOWLING|ESCAPE ROOM',                              categorie: 'Divertisment' },
+  { id: 13, pattern: 'CINEMA|TEATRU|CONCERT|BOWLING|ESCAPE ROOM',                              categorie: 'Divertisment & timp liber' },
+  { id: 18, pattern: 'IKEA|DEDEMAN|LEROY MERLIN|BRICO|HORNBACH|JYSK',                          categorie: 'Casă & întreținere' },
+  { id: 19, pattern: 'RCA|CASCO|ASIGURARE AUTO|IMPOZIT|ANAF|TAXA',                             categorie: 'Taxe & asigurări' },
   // Income rules (matched on credit transactions)
   { id: 14, pattern: 'SALARIU|VENIT SALARIAL|LEAFA|LEFE',                                      categorie: '__SKIP__' },
-  { id: 15, pattern: 'BONUS|PRIMA|TICHETE|BONURI DE MASA|BONURI MASA',                         categorie: 'Bonus' },
-  { id: 16, pattern: 'DIURNA|DELEGATIE|DECONT DEPLASARE',                                      categorie: 'Diurnă' },
+  { id: 15, pattern: 'BONUS|PRIMA|TICHETE|BONURI DE MASA|BONURI MASA',                         categorie: 'Bonus & prime' },
+  { id: 16, pattern: 'DIURNA|DELEGATIE|DECONT DEPLASARE',                                      categorie: 'Diurnă & deconturi' },
+  { id: 20, pattern: 'DOBANDA|DIVIDEND|CUPON',                                                 categorie: 'Dobânzi & dividende' },
 ];
 
 // --- Scadentar real (sursa: ING Home'Bank scadenţar 19.05.2026) ---
@@ -381,22 +455,28 @@ var DATI_INITIALE = {
     { id: 2, label: 'Rată credit + asig.', suma: 1934 },
   ],
   categoriiVar: [
-    { id: 1, label: 'Alimente' },
-    { id: 2, label: 'Mâncare restaurant' },
-    { id: 3, label: 'Facturi' },
-    { id: 4, label: 'Transport' },
-    { id: 5, label: 'Sănătate' },
-    { id: 6, label: 'Îmbrăcăminte' },
-    { id: 7, label: 'Divertisment' },
-    { id: 8, label: 'Abonamente' },
-    { id: 9, label: 'Alte credite' },
-    { id: 10, label: 'Alte' },
+    { id: 1,  label: 'Alimente' },
+    { id: 2,  label: 'Mâncare restaurant' },
+    { id: 3,  label: 'Transport' },
+    { id: 4,  label: 'Utilități & facturi' },
+    { id: 5,  label: 'Sănătate & îngrijire' },
+    { id: 6,  label: 'Îmbrăcăminte' },
+    { id: 7,  label: 'Casă & întreținere' },
+    { id: 8,  label: 'Divertisment & timp liber' },
+    { id: 9,  label: 'Abonamente' },
+    { id: 10, label: 'Educație & dezvoltare' },
+    { id: 11, label: 'Cadouri & evenimente' },
+    { id: 12, label: 'Călătorii & vacanțe' },
+    { id: 13, label: 'Taxe & asigurări' },
+    { id: 14, label: 'Alte credite' },
+    { id: 15, label: 'Alte' },
   ],
   categoriiVenit: [
-    { id: 1, label: 'Bonuri masă' },
-    { id: 2, label: 'Bonus' },
-    { id: 3, label: 'Diurnă' },
-    { id: 4, label: 'Alte venituri' },
+    { id: 1, label: 'Bonuri de masă' },
+    { id: 2, label: 'Bonus & prime' },
+    { id: 3, label: 'Diurnă & deconturi' },
+    { id: 4, label: 'Dobânzi & dividende' },
+    { id: 5, label: 'Alte venituri' },
   ],
   emisiuniTezaur: [
     { id: 1, label: 'Tezaur 1 an' },
@@ -421,11 +501,11 @@ var DATI_INITIALE = {
     '2026-05': { fondUrgenta: 14000, tezaur: 5000, buffer: 3450, soldCredit: 84450 },
   },
   venituri: {
-    '2026-05': { 'Bonuri masă': 360, 'Bonus': 1750, 'Diurnă': 1200 },
+    '2026-05': { 'Bonuri de masă': 360, 'Bonus & prime': 1750, 'Diurnă & deconturi': 1200 },
     '2026-06': {}, '2026-07': {}, '2026-08': {}, '2026-09': {}, '2026-10': {}, '2026-11': {}, '2026-12': {}
   },
   cheltuieli: {
-    '2026-05': { 'Sănătate': 200 },
+    '2026-05': { 'Sănătate & îngrijire': 200 },
     '2026-06': {}, '2026-07': {}, '2026-08': {}, '2026-09': {}, '2026-10': {}, '2026-11': {}, '2026-12': {}
   }
 };
@@ -478,6 +558,7 @@ async function loadData() {
       migrateCreditScadentar(state.data);
       migrateReguliCategorizare(state.data);
       ensureRegula(state.data, 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', 'Mâncare restaurant', true);
+      migrateCategoriesV2(state.data);
       migrateImportedRefs(state.data);
       migrateGoals(state.data);
       migrateEtf(state.data);
