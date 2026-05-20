@@ -3521,3 +3521,28 @@
 2026-05-20 13:05:45,343  INFO        -> new: Seteaza timpul de accelerare al rampei de activare a influentei PID. Cand semnal
 2026-05-20 13:05:45,443  INFO      22687 0x404E:001 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 13:05:47,619  INFO        -> new: Afiseaza puterea de iesire in mod motor pentru analiza energetica a aplicatiei. 
+2026-05-20 13:05:48,167  INFO        -> new: Defineste pragul de temperatura la care termistorul declanseaza protectia termic
+2026-05-20 13:05:48,268  INFO      3162 1-95 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:50,440  INFO        Committed + pushed
+2026-05-20 13:05:50,440  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 85, 'error': 15} cost=$0.1591
+2026-05-20 13:05:50,782  INFO        -> new: Seteaza timpul de debounce pentru intrarea digitala 5. Aceasta functie previne d
+2026-05-20 13:05:50,882  INFO      22786 0x2633:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:55,866  INFO        -> new: Defineste valoarea minima a referintei pentru controllerul PID. Aceasta limita p
+2026-05-20 13:05:55,966  INFO      22688 0x404E:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:56,765  INFO        -> new: Defineste cea de-a opta intrare in lista de suprimare alarme. Cand o alarma este
+2026-05-20 13:05:56,865  INFO      22889 0x285C:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:57,732  INFO        -> new: Seteaza timpul de eliminare a oscilatiilor (debounce) pentru intrarea digitala 6
+2026-05-20 13:05:57,833  INFO      22787 0x2633:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:59,459  INFO        -> new: Defineste tipul senzorului termic conectat la VFD pentru protectia termica a mot
+2026-05-20 13:05:59,560  INFO      3163 1-99 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:06:03,925  INFO        -> new: Seteaza timpul de filtrare (debounce) pentru intrarea digitala 7. Acest parametr
+2026-05-20 13:06:04,025  INFO      22788 0x2640:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:06:05,845  INFO        -> new: Defineste codul alarmei care va fi suprimata de intrarea 9. Cand intrarea este a
+2026-05-20 13:06:05,946  INFO      22890 0x285C:010 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:06:06,850  INFO        -> new: Seteaza punctele de interpolare pentru modelul termic ETR in aplicatii ATEX. Def
+2026-05-20 13:06:06,951  INFO      3164 4-18 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:06:08,381  INFO        -> new: Seteaza limita superioara pentru valoarea setpoint-ului controllerului PID. Impr
+2026-05-20 13:06:08,481  INFO      22689 0x4023:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:06:16,238  INFO        -> new: Defineste frecventa maxima a semnalului de intrare HTL. Valoarea pozitiva stabil
+2026-05-20 13:06:16,338  INFO      22789 0x2640:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:06:16,611  INFO        -> new: Intrarea 10 pentru suprimarea alarmelor individuale. Permite dezactivarea select
