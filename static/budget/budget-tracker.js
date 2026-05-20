@@ -2320,6 +2320,11 @@ function setVwceRange(rng) {
   refreshVwcePrice(false);
 }
 
+// Investitii tab = VWCE portfolio + Fond urgenta + Tezaur + Evolutie active
+function renderInvestitiiTab() {
+  return renderInvestitii() + renderFondUrgenta();
+}
+
 function addVwceTx() {
   if (!state.data.vwce) migrateVwce(state.data);
   var todayIsoStr = new Date().toISOString().substring(0, 10);
@@ -2411,24 +2416,25 @@ function removeEtf(id) {
 // ====================================================================
 function render() {
   var tabs = [
-    { id: 'buget-lunar',  label: 'Buget lunar',  icon: 'bar-chart-3' },
-    { id: 'credite',      label: 'Credite',      icon: 'landmark' },
-    { id: 'fond-urgenta', label: 'Fond urgență', icon: 'shield' },
-    { id: 'venituri',     label: 'Venituri',     icon: 'coins' },
-    { id: 'investitii',   label: 'Investiții',   icon: 'briefcase' },
-    { id: 'goals',        label: 'Obiective',    icon: 'target' },
-    { id: 'setari',       label: 'Setări',       icon: 'sliders-horizontal' },
+    { id: 'buget-lunar',  label: 'Dashboard',  icon: 'layout-dashboard' },
+    { id: 'venituri',     label: 'Cash flow',  icon: 'arrow-left-right' },
+    { id: 'credite',      label: 'Credit',     icon: 'landmark' },
+    { id: 'investitii',   label: 'Investiții', icon: 'trending-up' },
+    { id: 'goals',        label: 'Obiective',  icon: 'target' },
+    { id: 'setari',       label: 'Setări',     icon: 'sliders-horizontal' },
   ];
 
   var tabContent = {
     'buget-lunar': renderBugetLunar,
     'credite': renderCredite,
-    'fond-urgenta': renderFondUrgenta,
-    'investitii': renderInvestitii,
+    'investitii': renderInvestitiiTab,
     'goals': renderGoals,
     'setari': renderSetari,
     'venituri': renderVenituri,
   };
+
+  // Guard: drop stale tab ids (e.g. removed 'fond-urgenta')
+  if (!tabContent[state.activeTab]) state.activeTab = 'buget-lunar';
 
   var theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
   var themeIcon = theme === 'dark' ? 'sun' : 'moon';
