@@ -20492,3 +20492,448 @@
 2026-05-20 18:04:04,650  INFO        -> rewrite: 
 2026-05-20 18:04:04,751  INFO      19426 0x2BA6:001 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 18:04:07,613  INFO        -> rewrite: Seteaza pozitia punctului zecimal pentru afisarea pe keypad a referintei control
+2026-05-20 18:04:09,424  INFO        -> rewrite: Diagnostic
+2026-05-20 18:04:09,478  INFO        -> rewrite: 4-18, 3-72
+2026-05-20 18:04:09,525  INFO      19427 0x2BA6:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:09,578  INFO      3243 3-75 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:10,729  INFO        -> rewrite: Rampe
+2026-05-20 18:04:10,829  INFO      3247 4-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:12,650  INFO        Committed + pushed
+2026-05-20 18:04:12,651  INFO      DONE: total=1638 {'keep': 0, 'rewrite': 1378, 'new': 0, 'error': 260} cost=$2.5631
+2026-05-20 18:04:13,071  INFO        -> rewrite: 2B03:002, 2B03:003, 2B03:004, 2B02
+2026-05-20 18:04:13,090  INFO        -> rewrite: Reprezinta bitii de stare ai interfetei de siguranta integrate in convertizor. F
+2026-05-20 18:04:13,172  INFO      20030 0x2B03:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:13,190  INFO      25500 0x2871:057 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:13,857  INFO        -> rewrite: Motor
+2026-05-20 18:04:13,958  INFO      20030 0x2B03:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:15,085  INFO        -> rewrite: 
+2026-05-20 18:04:15,186  INFO      19427 0x2BA6:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:15,940  INFO        -> rewrite: Limite
+2026-05-20 18:04:16,040  INFO      3248 3-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:16,217  INFO        -> rewrite: Diagnostic
+2026-05-20 18:04:16,318  INFO      19428 0x2820:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:20,892  INFO        -> rewrite: 3-71, 3-76
+2026-05-20 18:04:20,993  INFO      3244 3-76 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:21,157  INFO        -> rewrite: Activeaza permiterea directiei pozitive prin interfata de siguranta. Bitul trebu
+2026-05-20 18:04:21,257  INFO      25501 0x2871:058 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:23,102  INFO        -> rewrite: 20.24, 20.25, 2B03:001, 2B03:003
+2026-05-20 18:04:23,122  INFO        -> rewrite: Motor
+2026-05-20 18:04:23,202  INFO      20031 0x2B03:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:23,223  INFO      20031 0x2B03:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:25,317  INFO        -> rewrite: 
+2026-05-20 18:04:25,417  INFO      19428 0x2820:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:25,943  INFO        -> rewrite: Motor
+2026-05-20 18:04:26,044  INFO      19429 0x2820:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:26,860  INFO        -> rewrite: 3-71
+2026-05-20 18:04:26,961  INFO      3245 3-77 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:31,181  INFO        -> rewrite: Rampe
+2026-05-20 18:04:31,282  INFO      3249 3-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:31,350  INFO        -> rewrite: Bitul de siguranta care indica depasirea alunecarii motorului cu peste 25% din v
+2026-05-20 18:04:31,451  INFO      25502 0x2871:059 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:32,850  INFO        -> rewrite: Motor
+2026-05-20 18:04:32,951  INFO      20032 0x2B03:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:33,564  INFO        -> rewrite: 3-72
+2026-05-20 18:04:33,664  INFO      3246 3-78 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:36,182  INFO        -> rewrite: 0x2B03:002, 0x2B03:001, 0x2B02
+2026-05-20 18:04:36,283  INFO      20032 0x2B03:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:37,898  INFO        -> rewrite: Motor
+2026-05-20 18:04:37,998  INFO      19430 0x2820:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:38,308  INFO        -> rewrite: 0.2820, 0.2821, 22.01
+2026-05-20 18:04:38,409  INFO      19429 0x2820:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:39,133  INFO        -> rewrite: Rampe
+2026-05-20 18:04:39,234  INFO      3250 3-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:41,465  INFO        -> rewrite: Bit de stare al interfetei de siguranta care indica depasirea alunecarii motorul
+2026-05-20 18:04:41,566  INFO      25503 0x2871:060 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:42,584  INFO        -> rewrite: 3-72, 3-70, 3-71
+2026-05-20 18:04:42,685  INFO      3247 4-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:44,083  INFO        -> rewrite: Motor
+2026-05-20 18:04:44,183  INFO      20033 0x2B03:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:44,697  INFO        -> rewrite: Motor
+2026-05-20 18:04:44,798  INFO      19431 0x2820:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:45,173  INFO        -> rewrite: Rampe
+2026-05-20 18:04:45,273  INFO      3251 3-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:45,433  INFO        -> rewrite: 2B03:003
+2026-05-20 18:04:45,534  INFO      20033 0x2B03:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:49,431  INFO        -> rewrite: 
+2026-05-20 18:04:49,531  INFO      19430 0x2820:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:50,631  INFO        -> rewrite: Motor
+2026-05-20 18:04:50,732  INFO      20034 0x2B03:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:51,401  INFO        -> rewrite: 4-13
+2026-05-20 18:04:51,502  INFO      3248 3-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:53,806  INFO        -> rewrite: Rampe
+2026-05-20 18:04:53,906  INFO      3252 3-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:04:54,493  INFO        -> rewrite: Bit de stare din interfata de siguranta care se activeaza cand alunecarea motoru
+2026-05-20 18:04:54,594  INFO      25504 0x2871:064 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:04:55,717  INFO        -> rewrite: 2B03:105, 2B03:000, 01.09
+2026-05-20 18:04:55,806  INFO        -> rewrite: I/O
+2026-05-20 18:04:55,817  INFO      20034 0x2B03:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:04:55,907  INFO      19432 0x2820:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:00,997  INFO        -> rewrite: Afiseaza starea bitului de eroare activa din interfata de siguranta STO. Cand es
+2026-05-20 18:05:01,097  INFO      25505 0x2871:073 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:01,564  INFO        -> rewrite: Motor
+2026-05-20 18:05:01,660  INFO        -> rewrite: 0x2825
+2026-05-20 18:05:01,665  INFO      20035 0x2B03:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:01,761  INFO      19431 0x2820:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:02,946  INFO        -> rewrite: 4-18, 1-86
+2026-05-20 18:05:03,046  INFO      3249 3-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:04,221  INFO        -> rewrite: Rampe
+2026-05-20 18:05:04,321  INFO      3253 3-92 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:04,526  INFO        -> rewrite: Protectii
+2026-05-20 18:05:04,627  INFO      19433 0x2820:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:05,079  INFO        -> rewrite: 0x2B02:006, 0x2B03:005, 0x2B03:007
+2026-05-20 18:05:05,180  INFO      20035 0x2B03:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:10,872  INFO        -> rewrite: Afiseaza bitii individuali din cuvantul de stare I/O ai intrarilor interfetei de
+2026-05-20 18:05:10,972  INFO      25506 0x2871:074 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:12,272  INFO        -> rewrite: 0x2820:001, 0x2820:002, 0x2820:003, 0x2820:004
+2026-05-20 18:05:12,373  INFO      19432 0x2820:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:12,686  INFO        -> rewrite: Altul
+2026-05-20 18:05:12,787  INFO      3254 1-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:14,015  INFO        -> rewrite: Rampe
+2026-05-20 18:05:14,115  INFO      19434 0x2820:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:15,038  INFO        -> rewrite: Motor
+2026-05-20 18:05:15,139  INFO      20036 0x2B03:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:15,609  INFO        -> rewrite: 3-42
+2026-05-20 18:05:15,710  INFO      3250 3-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:20,336  INFO        -> rewrite: 0x2820, 0x2821
+2026-05-20 18:05:20,363  INFO        -> rewrite: 0x2B02:007, 0x2B03:006, 0x2B03:008
+2026-05-20 18:05:20,437  INFO      19433 0x2820:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:20,463  INFO      20036 0x2B03:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:21,850  INFO        -> rewrite: Motor
+2026-05-20 18:05:21,951  INFO      3255 4-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:23,302  INFO        -> rewrite: Diagnostic
+2026-05-20 18:05:23,402  INFO      19435 0x2820:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:23,865  INFO        -> rewrite: Afiseaza bitii de stare ai interfetei de siguranta AIE prin S-Bus. Monitorizeaza
+2026-05-20 18:05:23,966  INFO      25507 0x2871:075 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:24,110  INFO        -> rewrite: 3-41, 3-82, 3-81
+2026-05-20 18:05:24,210  INFO      3251 3-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:26,285  INFO        -> rewrite: Motor
+2026-05-20 18:05:26,385  INFO      20037 0x2B03:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:28,606  INFO        -> rewrite: Limite
+2026-05-20 18:05:28,707  INFO      3256 30-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:29,754  INFO        -> rewrite: 0x2820:011, 0x2820:012, 1.22
+2026-05-20 18:05:29,855  INFO      19434 0x2820:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:31,529  INFO        -> rewrite: 2B03:004
+2026-05-20 18:05:31,546  INFO        -> rewrite: 3-91
+2026-05-20 18:05:31,630  INFO      20037 0x2B03:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:31,647  INFO      3252 3-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:34,805  INFO        -> rewrite: Motor
+2026-05-20 18:05:34,906  INFO      19436 0x2820:023 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:35,827  INFO        -> rewrite: Bit de stare pentru functia Safe Home Start receptionata prin Safety Bus. Indica
+2026-05-20 18:05:35,928  INFO      25508 0x2871:076 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:37,115  INFO        -> rewrite: Altul
+2026-05-20 18:05:37,215  INFO      3257 30-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:38,620  INFO        -> rewrite: 
+2026-05-20 18:05:38,721  INFO      19435 0x2820:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:41,894  INFO        -> rewrite: 2B03:008, 2B03:010
+2026-05-20 18:05:41,994  INFO      20038 0x2B03:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:42,007  INFO        -> rewrite: 3-91, 3-92
+2026-05-20 18:05:42,108  INFO      3253 3-92 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:42,388  INFO        -> rewrite: I/O
+2026-05-20 18:05:42,489  INFO      19437 0x2820:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:45,563  INFO        -> rewrite: Altul
+2026-05-20 18:05:45,664  INFO      3258 4-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:46,063  INFO        -> rewrite: 0x2820:018, 0x2820:020
+2026-05-20 18:05:46,164  INFO      19436 0x2820:023 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:46,895  INFO        -> rewrite: Afiseaza bitii de stare ai interfetei de siguranta pentru functia SHom (Safe Hom
+2026-05-20 18:05:46,996  INFO      25509 0x2874 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:50,779  INFO        -> rewrite: Motor
+2026-05-20 18:05:50,880  INFO      20038 0x2B03:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:51,099  INFO        -> rewrite: 
+2026-05-20 18:05:51,199  INFO      3254 1-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:53,163  INFO        -> rewrite: 2B03:001, 2B03:002, 2B03:003, 2B03:004, 2B03:005, 2B03:006, 2B03:007, 2B03:008, 
+2026-05-20 18:05:53,211  INFO        -> rewrite: Limite
+2026-05-20 18:05:53,264  INFO      20039 0x2B03:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:05:53,312  INFO      3259 4-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:05:53,639  INFO        -> rewrite: Motor
+2026-05-20 18:05:53,740  INFO      19438 0x2820:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:54,709  INFO        -> rewrite: 0x2820:024, 0x2820:025, 0x2820:026
+2026-05-20 18:05:54,810  INFO      19437 0x2820:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:05:55,997  INFO        -> rewrite: Afiseaza datele de control receptionate prin busul de siguranta S-Bus, filtrate 
+2026-05-20 18:05:56,097  INFO      25510 0x2875:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:00,526  INFO        -> rewrite: Rampe
+2026-05-20 18:06:00,627  INFO      20039 0x2B03:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:00,841  INFO        -> rewrite: 2B01, 2B02, 01.06
+2026-05-20 18:06:00,942  INFO      20040 0x2B12:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:01,762  INFO        -> rewrite: Protectii
+2026-05-20 18:06:01,863  INFO      3260 4-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:01,889  INFO        -> rewrite: 1-07, 1-08
+2026-05-20 18:06:01,991  INFO      3255 4-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:02,992  INFO        -> rewrite: Motor
+2026-05-20 18:06:03,093  INFO      19439 0x2820:021 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:03,578  INFO        -> rewrite: Afiseaza starea bitului de control STO (Safe Torque Off) receptionat prin busul 
+2026-05-20 18:06:03,679  INFO      25511 0x2875:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:06,164  INFO        -> rewrite: 0x2820:008, 0x2820:010
+2026-05-20 18:06:06,265  INFO      19438 0x2820:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:09,707  INFO        -> rewrite: Motor
+2026-05-20 18:06:09,807  INFO      20040 0x2B12:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:10,166  INFO        -> rewrite: 4-14, 3-03
+2026-05-20 18:06:10,267  INFO      3256 30-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:10,830  INFO        -> rewrite: Diagnostic
+2026-05-20 18:06:10,931  INFO      19440 0x2820:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:11,667  INFO        -> rewrite: 0x2B01:001, 0x2B12:000
+2026-05-20 18:06:11,767  INFO      20041 0x2B12:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:13,152  INFO        -> rewrite: Limite
+2026-05-20 18:06:13,253  INFO      3261 4-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:13,998  INFO        -> rewrite: Bit de control pentru functia Safe Stop 1 (SS1) prin comunicatie fieldbus S-Bus.
+2026-05-20 18:06:14,098  INFO      25512 0x2875:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:14,195  INFO        -> rewrite: 0x2820:009
+2026-05-20 18:06:14,296  INFO      19439 0x2820:021 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:19,708  INFO        -> rewrite: 0x2B12:001, 0x2B01:001
+2026-05-20 18:06:19,759  INFO        -> rewrite: I/O
+2026-05-20 18:06:19,808  INFO      20042 0x2B09:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:19,860  INFO      19441 0x2820:020 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:20,569  INFO        -> rewrite: Limite
+2026-05-20 18:06:20,669  INFO      3262 4-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:21,638  INFO        -> rewrite: 17-53
+2026-05-20 18:06:21,739  INFO      3257 30-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:22,500  INFO        -> rewrite: Rampe
+2026-05-20 18:06:22,600  INFO      20041 0x2B12:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:23,739  INFO        -> rewrite: 
+2026-05-20 18:06:23,840  INFO      19440 0x2820:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:28,039  INFO        -> rewrite: 
+2026-05-20 18:06:28,121  INFO        -> rewrite: Bitul SS2 (Safe Stop 2) comanda functia de oprire sigura controlata prin magistr
+2026-05-20 18:06:28,140  INFO      20043 0x2B09:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:28,222  INFO      25513 0x2875:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:28,898  INFO        -> rewrite: 30.11
+2026-05-20 18:06:28,999  INFO      3258 4-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:30,813  INFO        -> rewrite: Motor
+2026-05-20 18:06:30,914  INFO      19442 0x2820:022 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:31,528  INFO        -> rewrite: Limite
+2026-05-20 18:06:31,629  INFO      3263 4-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:32,857  INFO        -> rewrite: Rampe
+2026-05-20 18:06:32,957  INFO      20042 0x2B09:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:33,653  INFO        -> rewrite: 0x2820:010, 0x2820:012
+2026-05-20 18:06:33,753  INFO      19441 0x2820:020 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:36,068  INFO        -> rewrite: 4-22, 4-23, 22.01
+2026-05-20 18:06:36,169  INFO      3259 4-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:36,584  INFO        -> rewrite: 0x2B09:001, 01.08
+2026-05-20 18:06:36,686  INFO      20044 0x2C02:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:41,465  INFO        -> rewrite: Bitul de control SLS1 selecteaza setul de limita de viteza 1 prin busul serial S
+2026-05-20 18:06:41,566  INFO      25514 0x2875:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:41,731  INFO        -> rewrite: Protectii
+2026-05-20 18:06:41,832  INFO      3264 4-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:42,290  INFO        -> rewrite: 
+2026-05-20 18:06:42,390  INFO      20045 0x2B0A:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:42,469  INFO        -> rewrite: Motor
+2026-05-20 18:06:42,569  INFO      19443 0x2832 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:44,454  INFO        -> rewrite: 0.2821
+2026-05-20 18:06:44,528  INFO        -> rewrite: Motor
+2026-05-20 18:06:44,554  INFO      19442 0x2820:022 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:44,629  INFO      20043 0x2B09:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:46,009  INFO        -> rewrite: 2-15, 4-23
+2026-05-20 18:06:46,110  INFO      3260 4-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:48,595  INFO        -> rewrite: Diagnostic
+2026-05-20 18:06:48,664  INFO        -> rewrite: 
+2026-05-20 18:06:48,695  INFO      19444 0x2DE0:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:48,765  INFO      20046 0x2B0A:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:50,479  INFO        -> rewrite: Protectii
+2026-05-20 18:06:50,579  INFO      3265 4-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:51,644  INFO        -> rewrite: Motor
+2026-05-20 18:06:51,746  INFO      20044 0x2C02:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:53,400  INFO        -> rewrite: Bit de control pentru functia SLS2 (Safety Limited Speed 2) prin interfata de co
+2026-05-20 18:06:53,501  INFO      25515 0x2875:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:55,113  INFO        -> rewrite: 4-24
+2026-05-20 18:06:55,214  INFO      3261 4-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:06:56,789  INFO        -> rewrite: 
+2026-05-20 18:06:56,889  INFO      20047 0x2B13:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:06:57,701  INFO        -> rewrite: 0x2820:021, 0x2820:023
+2026-05-20 18:06:57,802  INFO      19443 0x2832 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:06:59,639  INFO        -> rewrite: Motor
+2026-05-20 18:06:59,739  INFO      20045 0x2B0A:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:00,602  INFO        -> rewrite: Motor
+2026-05-20 18:07:00,703  INFO      19445 0x2910:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:00,826  INFO        -> rewrite: Protectii
+2026-05-20 18:07:00,853  INFO        -> rewrite: 1-20, 1-21
+2026-05-20 18:07:00,927  INFO      3266 4-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:00,953  INFO      3262 4-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:01,946  INFO        -> rewrite: Bit de control pentru functia SLS3 (limitare selectiva viteza 3) prin comunicati
+2026-05-20 18:07:02,047  INFO      25516 0x2875:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:03,748  INFO        -> rewrite: 
+2026-05-20 18:07:03,849  INFO      19444 0x2DE0:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:05,655  INFO        -> rewrite: 0x2B13:002, 0x2B13:003
+2026-05-20 18:07:05,755  INFO      20048 0x2B13:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:07,702  INFO        -> rewrite: Motor
+2026-05-20 18:07:07,803  INFO      19446 0x2910:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:08,402  INFO        -> rewrite: Diagnostic
+2026-05-20 18:07:08,503  INFO      20046 0x2B0A:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:11,915  INFO        -> rewrite: 1-20, 1-21, 4-84
+2026-05-20 18:07:12,015  INFO      3263 4-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:13,412  INFO        -> rewrite: Bitul 7 din registrul de control S-Bus activeaza functia SLS4 (Slow Speed 4). Ac
+2026-05-20 18:07:13,452  INFO        -> rewrite: Protectii
+2026-05-20 18:07:13,512  INFO      25517 0x2875:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:13,553  INFO      3267 4-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:13,802  INFO        -> rewrite: (empty)
+2026-05-20 18:07:13,903  INFO      19445 0x2910:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:16,511  INFO        -> rewrite: 0x2C01:007, 0x2B13:001
+2026-05-20 18:07:16,611  INFO      20049 0x2B13:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:16,837  INFO        -> rewrite: Diagnostic
+2026-05-20 18:07:16,937  INFO      20047 0x2B13:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:18,330  INFO        -> rewrite: Motor
+2026-05-20 18:07:18,431  INFO      19447 0x2910:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:20,789  INFO        -> rewrite: Protectii
+2026-05-20 18:07:20,889  INFO      3268 4-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:22,293  INFO        -> rewrite: 4-30, 7-30, 1-00
+2026-05-20 18:07:22,394  INFO      3264 4-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:23,604  INFO        -> rewrite: Bit de control S-Bus care comanda intrarea digitala pentru directia pozitiva a m
+2026-05-20 18:07:23,705  INFO      25518 0x2875:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:24,503  INFO        -> rewrite: Motor
+2026-05-20 18:07:24,604  INFO      20048 0x2B13:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:25,408  INFO        -> rewrite: 0x2910:002, 1.01, 2.01
+2026-05-20 18:07:25,508  INFO      19446 0x2910:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:26,216  INFO        -> rewrite: Motor
+2026-05-20 18:07:26,317  INFO      19448 0x2910:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:27,246  INFO        -> rewrite: 
+2026-05-20 18:07:27,347  INFO      20050 0x2B13:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:30,448  INFO        -> rewrite: 4-30, 4-31
+2026-05-20 18:07:30,549  INFO      3265 4-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:31,024  INFO        -> rewrite: Protectii
+2026-05-20 18:07:31,124  INFO      3269 4-38 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:32,080  INFO        -> rewrite: Bit de control pentru functia SDIneg (inversare sens secundar) pe magistrala S-B
+2026-05-20 18:07:32,180  INFO      25519 0x2875:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:35,436  INFO        -> rewrite: 0x2C01:007
+2026-05-20 18:07:35,482  INFO        -> rewrite: 0x2910:001, 22.03
+2026-05-20 18:07:35,536  INFO      20051 0x2636:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:35,583  INFO      19447 0x2910:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:36,022  INFO        -> rewrite: Motor
+2026-05-20 18:07:36,122  INFO      20049 0x2B13:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:37,100  INFO        -> rewrite: Altul
+2026-05-20 18:07:37,201  INFO      19449 0x2910:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:38,545  INFO        -> rewrite: Protectii
+2026-05-20 18:07:38,646  INFO      3270 4-37 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:39,617  INFO        -> rewrite: 4-31, 4-32
+2026-05-20 18:07:39,718  INFO      3266 4-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:40,843  INFO        -> rewrite: 
+2026-05-20 18:07:40,944  INFO      19448 0x2910:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:42,054  INFO        -> rewrite: Bit de control din interfata de comunicare seriala S-Bus. Activeaza functia de s
+2026-05-20 18:07:42,154  INFO      25520 0x2875:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:42,179  INFO        -> rewrite: 26.37, 22.01
+2026-05-20 18:07:42,279  INFO      20052 0x2636:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:45,122  INFO        -> rewrite: Diagnostic
+2026-05-20 18:07:45,222  INFO      20050 0x2B13:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:45,914  INFO        -> rewrite: Motor
+2026-05-20 18:07:46,014  INFO      19450 0x2947:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:49,114  INFO        -> rewrite: 0x2910:001, 0x2910:002, 0x2910:003
+2026-05-20 18:07:49,215  INFO      19449 0x2910:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:49,306  INFO        -> rewrite: Rampe
+2026-05-20 18:07:49,407  INFO      3271 4-39 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:49,766  INFO        -> rewrite: 4-36
+2026-05-20 18:07:49,866  INFO      3267 4-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:07:50,117  INFO        -> rewrite: Bitul de control SLI prin magistrala S-Bus permite activarea functiei selectate 
+2026-05-20 18:07:50,218  INFO      25521 0x2875:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:53,623  INFO        -> rewrite: Rampe
+2026-05-20 18:07:53,697  INFO        -> rewrite: 22.01, 30.12, 40.01
+2026-05-20 18:07:53,724  INFO      20051 0x2636:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:53,797  INFO      20053 0x2540:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:07:57,454  INFO        -> rewrite: Motor
+2026-05-20 18:07:57,554  INFO      19451 0x2947:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:59,084  INFO        -> rewrite: Reprezinta bitii de control pentru magistrala seriala S-Bus. OMS = Operation Mod
+2026-05-20 18:07:59,184  INFO      25522 0x2875:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:07:59,414  INFO        -> rewrite: 4-35
+2026-05-20 18:07:59,515  INFO      3268 4-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:00,177  INFO        -> rewrite: 0x2910:003
+2026-05-20 18:08:00,277  INFO      19450 0x2947:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:00,621  INFO        -> rewrite: Protectii
+2026-05-20 18:08:00,721  INFO      3272 4-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:00,753  INFO        -> rewrite: P203.02, P208.04, P208.05, P208.06, P208.07
+2026-05-20 18:08:00,853  INFO      20054 0x2915 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:04,465  INFO        -> rewrite: I/O
+2026-05-20 18:08:04,565  INFO      20052 0x2636:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:06,462  INFO        -> rewrite: Bit de control S-Bus care activeaza functia de repaus (sleep mode 1). Cand acest
+2026-05-20 18:08:06,562  INFO      25523 0x2875:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:07,510  INFO        -> rewrite: 4-35
+2026-05-20 18:08:07,611  INFO      3269 4-38 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:08,159  INFO        -> rewrite: 0x2947:002, 0x2947:003, 0x2947:004
+2026-05-20 18:08:08,259  INFO      19451 0x2947:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:08,374  INFO        -> rewrite: 0x2916, 0x2914, 0x2920
+2026-05-20 18:08:08,474  INFO      20055 0x2916 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:09,992  INFO        -> rewrite: Motor
+2026-05-20 18:08:10,093  INFO      19452 0x2947:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:10,750  INFO        -> rewrite: Diagnostic
+2026-05-20 18:08:10,851  INFO      3273 16-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:15,723  INFO        -> rewrite: 4-37, 4-39
+2026-05-20 18:08:15,823  INFO      3270 4-37 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:16,721  INFO        -> rewrite: Bitul SLP2 (Sleep 2) din registrul de control S-Bus. Activeaza functia secundara
+2026-05-20 18:08:16,821  INFO      25524 0x2875:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:17,018  INFO        -> rewrite: 29.17, 22.01, 30.01
+2026-05-20 18:08:17,118  INFO      20056 0x2C03:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:17,514  INFO        -> rewrite: I/O
+2026-05-20 18:08:17,614  INFO      20053 0x2540:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:18,539  INFO        -> rewrite: 0x2947:001, 0x2947:003, 0x2947:004
+2026-05-20 18:08:18,640  INFO      19452 0x2947:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:21,951  INFO        -> rewrite: Diagnostic
+2026-05-20 18:08:22,051  INFO      3274 4-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:22,667  INFO        -> rewrite: 2C03:001, 2C03:002, 2C03:006, 2C03:007
+2026-05-20 18:08:22,768  INFO      20057 0x2C03:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:25,224  INFO        -> rewrite: Protectii
+2026-05-20 18:08:25,325  INFO      20054 0x2915 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:26,030  INFO        -> rewrite: Bit de control S-Bus pentru functia Sleep etapa 3 (SLP3). Controleaza intrarea i
+2026-05-20 18:08:26,130  INFO      25525 0x2875:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:28,479  INFO        -> rewrite: 1-82, 4-38, 8-04
+2026-05-20 18:08:28,509  INFO        -> rewrite: 0x2947:001, 0x2947:002, 0x2947:004
+2026-05-20 18:08:28,579  INFO      3271 4-39 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:28,609  INFO      19453 0x2947:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:32,265  INFO        -> rewrite: Limite
+2026-05-20 18:08:32,365  INFO      20055 0x2916 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:32,962  INFO        -> rewrite: 2C03:005, 2C03:007, 01.01
+2026-05-20 18:08:33,063  INFO      20058 0x2C10:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:33,405  INFO        -> rewrite: Diagnostic
+2026-05-20 18:08:33,506  INFO      3275 7-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:36,740  INFO        -> rewrite: 0x2947:001, 0x2947:002, 0x2947:003, 0x2947:005, 22.01
+2026-05-20 18:08:36,841  INFO      19454 0x2947:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:39,156  INFO        -> rewrite: Bitul 16 din registrul de control S-Bus care activeaza functia SLP4. Aceasta fun
+2026-05-20 18:08:39,257  INFO      25526 0x2875:017 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:39,434  INFO        -> rewrite: 4-37, 4-38
+2026-05-20 18:08:39,535  INFO      3272 4-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:40,678  INFO        -> rewrite: Limite
+2026-05-20 18:08:40,778  INFO      20056 0x2C03:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:42,095  INFO        -> rewrite: 2C10:001, 2C10:002, 01.06
+2026-05-20 18:08:42,195  INFO      20059 0x2838:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:45,091  INFO        -> rewrite: Motor
+2026-05-20 18:08:45,192  INFO      3276 4-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:46,837  INFO        -> rewrite: 0x2947:001, 0x2947:002, 0x2947:003, 0x2947:004, 0x2947:006, 0x2947:007, 0x2947:0
+2026-05-20 18:08:46,938  INFO      19455 0x2947:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:47,678  INFO        -> rewrite: Motor
+2026-05-20 18:08:47,779  INFO      20057 0x2C03:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:47,996  INFO        -> rewrite: Bit de control S-Bus care activeaza selectarea sursei de intrare analogica (AIS)
+2026-05-20 18:08:48,097  INFO      25527 0x2875:018 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:48,505  INFO        -> rewrite: Motor
+2026-05-20 18:08:48,606  INFO      19453 0x2947:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:49,543  INFO        -> rewrite: 
+2026-05-20 18:08:49,643  INFO      3273 16-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:51,080  INFO        -> rewrite: 22.01, 28.01
+2026-05-20 18:08:51,181  INFO      20060 0x6060 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:53,720  INFO        -> rewrite: Motor
+2026-05-20 18:08:53,821  INFO      20058 0x2C10:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:55,168  INFO        -> rewrite: Protectii
+2026-05-20 18:08:55,269  INFO      3277 4-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:56,460  INFO        -> rewrite: 0x2947:001, 0x2947:002, 0x2947:003, 0x2947:004, 0x2947:005, 0x2947:007
+2026-05-20 18:08:56,560  INFO      19456 0x2947:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:56,971  INFO        -> rewrite: Motor
+2026-05-20 18:08:57,072  INFO      19454 0x2947:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:08:57,307  INFO        -> rewrite: 
+2026-05-20 18:08:57,407  INFO      3274 4-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:08:58,419  INFO        -> rewrite: P300.00, 0x6061, 0x6071, 0x6072
+2026-05-20 18:08:58,520  INFO      20061 0x60E1 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:08:59,183  INFO        -> rewrite: Acest parametru seteaza bitul de control AIE pentru magistrala seriala S-Bus. Co
+2026-05-20 18:08:59,283  INFO      25528 0x2875:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:09:02,522  INFO        -> rewrite: Motor
+2026-05-20 18:09:02,622  INFO      20059 0x2838:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:09:02,685  INFO        -> rewrite: 
+2026-05-20 18:09:02,785  INFO      3275 7-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:09:03,617  INFO        -> rewrite: Protectii
+2026-05-20 18:09:03,717  INFO      3278 4-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:09:07,650  INFO        -> rewrite: Motor
+2026-05-20 18:09:07,743  INFO        -> rewrite: 29.01, 29.02, 29.03, 29.04, 29.05, 29.06, 29.07, 29.08
+2026-05-20 18:09:07,750  INFO      19455 0x2947:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:09:07,844  INFO      19457 0x2947:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:09:08,954  INFO        -> rewrite: Bitul de control SOS pentru interfata S-Bus (LONWORKS). Activeaza o functie spec
+2026-05-20 18:09:09,054  INFO      25529 0x2875:020 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:09:10,240  INFO        -> rewrite: 0x6076, P325.00
+2026-05-20 18:09:10,340  INFO      20062 0x2C13 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:09:11,782  INFO        -> rewrite: 7-00, 7-01, 7-02, 22.01
+2026-05-20 18:09:11,883  INFO      3276 4-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:09:11,955  INFO        -> rewrite: I/O
+2026-05-20 18:09:12,055  INFO      20060 0x6060 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:09:18,366  INFO        -> rewrite: Activeaza bitii de control pentru comunicatia S-Bus referitori la functia de mas
+2026-05-20 18:09:18,773  INFO        -> rewrite: 0x2947:007, 0x2947:009
+2026-05-20 18:09:18,795  INFO        -> rewrite: Motor
