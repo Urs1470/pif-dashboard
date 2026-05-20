@@ -9152,3 +9152,46 @@
 2026-05-20 15:41:51,786  INFO        -> rewrite: Acest parametru inregistreaza valoarea curentului motorului in momentul aparitie
 2026-05-20 15:41:51,886  INFO      3849 40-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 15:41:53,615  INFO        -> rewrite: Mapeaza obiectul 0x603F0010 "Error code" in TPDO (A) pentru modul de operare CiA
+2026-05-20 15:41:55,326  INFO        -> rewrite: Afiseaza numarul total de telegrame PDO1 trimise prin interfata CANopen. Este un
+2026-05-20 15:41:55,427  INFO      24778 0x230A:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:41:57,059  INFO        Committed + pushed
+2026-05-20 15:41:57,159  INFO      22991 0x1605:001 (Lenze_i550)  existing_len=232  qc=rewrite
+2026-05-20 15:41:58,606  INFO        -> rewrite: Memoreaza tensiunea masurata pe bus-ul DC sau la intrare in momentul aparitiei u
+2026-05-20 15:41:58,707  INFO      3850 40-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:01,530  INFO        -> rewrite: Afiseaza numarul de telegrame PDO2 (Process Data Object 2) care au fost transmis
+2026-05-20 15:42:01,631  INFO      24779 0x230A:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:02,711  INFO        -> rewrite: Definește obiectul CANopen receptionat prin acest RPDO. Formatul contine indexul
+2026-05-20 15:42:02,811  INFO      22992 0x1605:002 (Lenze_i550)  existing_len=285  qc=rewrite
+2026-05-20 15:42:03,671  INFO        -> rewrite: Inregistreaza tensiunea din busul DC in momentul aparitiei unei avarii. Valoarea
+2026-05-20 15:42:03,772  INFO      3851 40-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:09,183  INFO        -> rewrite: Afiseaza numarul de telegrame PDO3 transmise prin interfata CANopen. Este un con
+2026-05-20 15:42:09,283  INFO      24780 0x230A:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:09,641  INFO        -> rewrite: Inregistreaza cuvantul de control (Control Word) care era activ in momentul apar
+2026-05-20 15:42:09,742  INFO      3852 40-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:12,240  INFO        -> rewrite: Aceasta intrare mapeaza un obiect CANopen pentru receptie prin RPDO (A). Formatu
+2026-05-20 15:42:12,340  INFO      22993 0x1605:003 (Lenze_i550)  existing_len=276  qc=rewrite
+2026-05-20 15:42:16,197  INFO        -> rewrite: Afiseaza cuvantul de stare salvat in jurnalul de defectiuni. Contine informatii 
+2026-05-20 15:42:16,298  INFO      3853 42-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:17,023  INFO        -> rewrite: Afiseaza numarul de telegrame PDO4 trimise prin reteaua CANopen. Este un contor 
+2026-05-20 15:42:17,124  INFO      24781 0x230A:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:23,517  INFO        -> rewrite: Afiseaza numarul total de telegrame SDO1 (Service Data Object) receptionate sau 
+2026-05-20 15:42:23,613  INFO        -> rewrite: Configureaza intrarea de mapare 3 pentru obiectul receptionat prin RPDO (A). For
+2026-05-20 15:42:23,617  INFO      24782 0x230A:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:23,713  INFO      22994 0x1605:004 (Lenze_i550)  existing_len=292  qc=rewrite
+2026-05-20 15:42:27,811  INFO        -> rewrite: Seteaza timpul maxim permis pentru care o deviatie de viteza mai mare de 120 RPM
+2026-05-20 15:42:27,911  INFO      3854 42-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:31,375  INFO        -> rewrite: Afiseaza numarul total de telegrame SDO2 receptionate sau transmise prin reteaua
+2026-05-20 15:42:31,475  INFO      24783 0x230A:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:33,336  INFO        -> rewrite: Configureaza al 4-lea obiect CANopen care va fi receptionat prin RPDO (A). Fieca
+2026-05-20 15:42:33,437  INFO      22995 0x1605:005 (Lenze_i550)  existing_len=300  qc=rewrite
+2026-05-20 15:42:38,324  INFO        -> rewrite: Activeaza functia de rampa rapida pentru accelerare sau decelerare. Cand este ac
+2026-05-20 15:42:38,424  INFO      3855 42-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:42:41,001  INFO        -> rewrite: Afiseaza diferenta dintre momentul asteptat si cel real al mesajelor de sincroni
+2026-05-20 15:42:41,102  INFO      24784 0x230A:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:42,281  INFO        -> rewrite: Defineste intrarea de mapping 5 pentru obiectul CANopen receptionat prin RPDO(A)
+2026-05-20 15:42:42,381  INFO      22996 0x1605:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:42:49,292  INFO        -> rewrite: Defineste intrarea de mapare 6 pentru un obiect CANopen receptionat prin RPDO (A
+2026-05-20 15:42:49,392  INFO      22997 0x1605:007 (Lenze_i550)  existing_len=303  qc=rewrite
+2026-05-20 15:42:50,149  INFO        -> rewrite: Afiseaza distanta pozitiei de faza pentru mesajele SYNC in reteaua CANopen. Este
+2026-05-20 15:42:50,250  INFO      24785 0x230B (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:42:51,682  INFO        -> rewrite: Seteaza rezolutia encoderului conectat la modulul MCB 150 TTL sau MCB 151 HTL. V
