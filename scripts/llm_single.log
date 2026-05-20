@@ -6711,3 +6711,20 @@
 2026-05-20 14:38:22,569  INFO      3446 13-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 14:38:22,603  INFO      24368 0x2540:008 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 14:38:23,581  INFO        -> rewrite: Activeaza selectia sursei de comanda pentru VFD intre retea si tastatura. Bit 1 
+2026-05-20 14:38:26,967  INFO        Committed + pushed
+2026-05-20 14:38:27,069  INFO      22581 0x401F:002 (Lenze_i550)  existing_len=256  qc=rewrite
+2026-05-20 14:38:31,932  INFO        -> rewrite: Afiseaza valoarea curenta a variabilei de reactie (feedback) pentru controllerul
+2026-05-20 14:38:32,033  INFO      22582 0x291C (Lenze_i550)  existing_len=230  qc=rewrite
+2026-05-20 14:38:32,183  INFO        -> rewrite: Afiseaza starea tensiunii in busul DC al variatorului de frecventa. Cand valoare
+2026-05-20 14:38:32,284  INFO      24369 0x2822:037 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:32,558  INFO        -> rewrite: Activeaza sau dezactiveaza controlerul de logica programata (Smart Logic). Cand 
+2026-05-20 14:38:32,659  INFO      3447 13-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:41,174  INFO        -> rewrite: Defineste timpul de decelerare cand comanda de oprire rapida este activata. Moto
+2026-05-20 14:38:41,274  INFO      22583 0x291E:001 (Lenze_i550)  existing_len=354  qc=rewrite
+2026-05-20 14:38:42,389  INFO        -> rewrite: Defineste operandul folosit in comparatia logica. Poate fi o variabila analogica
+2026-05-20 14:38:42,489  INFO      3448 13-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:43,030  INFO        -> rewrite: Comanda de auto-acordare care initiaza identificarea automata a parametrilor mot
+2026-05-20 14:38:43,131  INFO      24370 0x2822:038 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:49,108  INFO        -> rewrite: Defineste factorul de netezire a formelor rampei de accelerare si decelerare. Cu
+2026-05-20 14:38:49,125  INFO        -> rewrite: Seteaza pozitia tinta pentru o axa folosind protocolul HIPERFACE. Aceasta comand
+2026-05-20 14:38:49,208  INFO      22584 0x2601:002 (Lenze_i550)  existing_len=276  qc=rewrite
