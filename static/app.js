@@ -427,8 +427,11 @@ async function initApp() {
 
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', function(e) {
-        // Don't trigger shortcuts when typing in inputs/textareas (except Escape)
-        const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+        // Don't trigger shortcuts when typing in inputs/textareas (except Escape).
+        // isContentEditable covers the WYSIWYG notes editor — a <div>, so the old
+        // tagName-only check let 'n' fire the New-project shortcut mid-typing.
+        const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)
+            || e.target.isContentEditable;
 
         // Escape - close modal or go back
         if (e.key === 'Escape') {
@@ -5735,7 +5738,9 @@ document.addEventListener('DOMContentLoaded', initPWA);
 
 // Keyboard shortcuts for undo/redo
 document.addEventListener('keydown', function(e) {
-    const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+    // isContentEditable so Ctrl+Z inside the notes editor stays native.
+    const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)
+        || e.target.isContentEditable;
     
     // Ctrl+Z - Undo
     if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey && !isInput) {
