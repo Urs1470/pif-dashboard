@@ -3483,3 +3483,16 @@
 2026-05-20 13:05:18,538  INFO        -> new: Afiseaza numele de statie PROFINET activ si utilizat in retea. Acest parametru e
 2026-05-20 13:05:18,574  INFO        Committed + pushed
 2026-05-20 13:05:18,574  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 86, 'error': 14} cost=$0.1542
+2026-05-20 13:05:18,999  INFO        -> new: Entry 4 din lista de suprimare alarme. Permite dezactivarea tipurilor specifice 
+2026-05-20 13:05:19,100  INFO      22885 0x285C:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:21,121  INFO        -> new: Parametru doar pentru citire care afiseaza valoarea referintei de frecventa atri
+2026-05-20 13:05:21,222  INFO      23501 0x2D89 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:21,349  INFO        Committed + pushed
+2026-05-20 13:05:21,350  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 86, 'error': 14} cost=$0.1413
+2026-05-20 13:05:23,935  INFO        -> new: Seteaza timpul de integrare pentru componenta I a regulatorului PID. Cu valoarea
+2026-05-20 13:05:24,036  INFO      22685 0x404B (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:24,551  INFO        -> new: Seteaza timpul de filtrare pentru intrarea digitala 2. Elimina oscilatiile de se
+2026-05-20 13:05:24,652  INFO      22783 0x2633:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:26,023  INFO        -> new: Afiseaza tensiunea actuala a motorului masurata de invertor. Valoarea este in vo
+2026-05-20 13:05:26,124  INFO      23502 0x2DA2:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:26,397  INFO        -> new: Defineste continutul obiectului TPDO (A) pentru modul de functionare Velocity co
