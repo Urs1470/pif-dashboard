@@ -8565,3 +8565,40 @@
 2026-05-20 15:27:31,048  INFO        -> rewrite: Seteaza modul de functionare pentru terminalele fizice X59/1 si X59/2 de pe plac
 2026-05-20 15:27:31,066  INFO        -> rewrite: Activeaza suprimarea alarmei cu numarul 10. Cand este setata, aceasta alarma nu 
 2026-05-20 15:27:31,148  INFO      3749 33-61 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:34,712  INFO        Committed + pushed
+2026-05-20 15:27:34,814  INFO      22891 0x6061 (Lenze_i550)  existing_len=260  qc=rewrite
+2026-05-20 15:27:34,952  INFO        -> rewrite: Seteaza comportamentul nodului CANopen dupa alimentarea invertorului. Valoarea 1
+2026-05-20 15:27:35,052  INFO      24686 0x2301:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:38,718  INFO        -> rewrite: Selecteaza functia comenzii asociata intrarii digitale de pe terminalul X59/1. O
+2026-05-20 15:27:38,819  INFO      3750 33-63 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:44,235  INFO        -> rewrite: Seteaza timpul de intarziere in milisecunde pe care invertorul il asteapta dupa 
+2026-05-20 15:27:44,336  INFO      24687 0x2300 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:47,677  INFO        -> rewrite: Selecteaza modul activ de operare al drive-ului conform standardului CANopen. Mo
+2026-05-20 15:27:47,778  INFO      22892 0x6502 (Lenze_i550)  existing_len=283  qc=rewrite
+2026-05-20 15:27:48,671  INFO        -> rewrite: Comanda permite restartarea sau oprirea comunicatiei CANopen. Valoarea 1 forteaz
+2026-05-20 15:27:48,771  INFO      24688 0x2301:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:49,148  INFO        -> rewrite: Selecteaza functia semnalului de iesire de pe terminalul X59/1. Valorile posibil
+2026-05-20 15:27:49,249  INFO      3751 33-64 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:27:54,719  INFO        -> rewrite: Parametru doar pentru citire care afiseaza modurile de operare suportate de conv
+2026-05-20 15:27:54,820  INFO      22893 0x605A (Lenze_i550)  existing_len=297  qc=rewrite
+2026-05-20 15:27:56,248  INFO        -> rewrite: Seteaza modul de atribuire a identificatorilor COB-ID pentru PDO-urile CANopen. 
+2026-05-20 15:27:56,348  INFO      24689 0x2304:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:27:57,674  INFO        -> rewrite: Configureaza functia iesirii digitale de pe terminalul X59/2. Aceasta poate fi s
+2026-05-20 15:27:57,775  INFO      3752 33-65 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:28:02,732  INFO        -> rewrite: Defineste functia atribuita terminalului digital de iesire X59/3. Poate fi confi
+2026-05-20 15:28:02,833  INFO      3753 33-66 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:28:03,499  INFO        -> rewrite: Seteaza identificatorul pentru telegrama SYNC in retelele CANopen. Bitul 30 cont
+2026-05-20 15:28:03,600  INFO      24690 0x2304:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:28:05,336  INFO        -> rewrite: Defineste actiunea drive-ului dupa finalizarea rampei de oprire rapida (quick st
+2026-05-20 15:28:05,436  INFO      22894 0x605B (Lenze_i550)  existing_len=269  qc=rewrite
+2026-05-20 15:28:12,299  INFO        -> rewrite: Seteaza intervalul de timp in milisecunde intre telegramele de sincronizare CANo
+2026-05-20 15:28:12,379  INFO        -> rewrite: Atribuie o functie iesirii digitale de pe terminalul X59/4. Poate fi setata sa s
+2026-05-20 15:28:12,399  INFO      24691 0x2304:041 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:28:12,480  INFO      3754 33-68 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:28:17,449  INFO        -> rewrite: Seteaza functia terminalului digital X59/6. Valoarea 0 inseamna iesire inactiva.
+2026-05-20 15:28:17,550  INFO      3755 33-69 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:28:18,170  INFO        -> rewrite: Defineste comportarea drive-ului in timpul tranzitiei de la starea 'Operatie act
+2026-05-20 15:28:18,270  INFO      22895 0x6085 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 15:28:20,912  INFO        -> rewrite: Seteaza identificatorul CAN (COB-ID) pentru RPDO1 - primul telegram de date rece
+2026-05-20 15:28:21,013  INFO      24692 0x2304:042 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:28:25,267  INFO        -> rewrite: Seteaza functia asignata iesirii digitale X59/7. Poate transmite stare_RUN, vite
