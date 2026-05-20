@@ -286,6 +286,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--offset", type=int, default=0)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true", help="Force rewrite all params (ignore quality_check)")
     ap.add_argument("--log", default="scripts/llm_single.log")
     args = ap.parse_args()
 
@@ -302,7 +303,7 @@ def main():
         pid = row["id"]
         pcode = row["parametru"]
         existing_val = row.get(args.field)
-        qc = quality_check(pcode, existing_val, args.field)
+        qc = "rewrite" if args.force else quality_check(pcode, existing_val, args.field)
 
         lg.info(f"{pid} {pcode} ({row['familie']})  existing_len={len(str(existing_val)) if existing_val else 0}  qc={qc}")
 

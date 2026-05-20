@@ -3558,3 +3558,107 @@
 2026-05-20 13:06:28,170  INFO        -> new: Selecteaza functia atribuita terminalului 33 (intrare digitala). Oferera optiuni
 2026-05-20 13:06:28,271  INFO      3166 5-19 (Danfoss_VLT_FC302)  existing_len=0  qc=new
 2026-05-20 13:06:33,871  INFO        -> new: Seteaza frecventa minima a motorului pentru modul de operare HTL cu semnal de in
+2026-05-20 13:06:36,744  INFO        Committed + pushed
+2026-05-20 13:06:36,744  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 86, 'error': 14} cost=$0.1696
+2026-05-20 13:17:14,350  INFO      START: Danfoss_VLT_FC302/explicatie  offset=0 limit=50 batch_size=1  dry=False
+2026-05-20 13:17:14,950  INFO      2955 3-03 (Danfoss_VLT_FC302)  existing_len=309  qc=keep
+2026-05-20 13:17:14,950  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,950  INFO      2956 14-26 (Danfoss_VLT_FC302)  existing_len=222  qc=keep
+2026-05-20 13:17:14,950  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,950  INFO      2957 4-20 (Danfoss_VLT_FC302)  existing_len=309  qc=keep
+2026-05-20 13:17:14,950  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,950  INFO      2958 5-10 (Danfoss_VLT_FC302)  existing_len=270  qc=keep
+2026-05-20 13:17:14,950  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,950  INFO      2959 5-12 (Danfoss_VLT_FC302)  existing_len=223  qc=keep
+2026-05-20 13:17:14,950  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2960 5-13 (Danfoss_VLT_FC302)  existing_len=230  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2961 5-14 (Danfoss_VLT_FC302)  existing_len=263  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2962 0-60 (Danfoss_VLT_FC302)  existing_len=234  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2963 0-20 (Danfoss_VLT_FC302)  existing_len=238  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2964 0-21 (Danfoss_VLT_FC302)  existing_len=286  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2965 0-22 (Danfoss_VLT_FC302)  existing_len=235  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2966 0-23 (Danfoss_VLT_FC302)  existing_len=283  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2967 0-24 (Danfoss_VLT_FC302)  existing_len=200  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2968 16-00 (Danfoss_VLT_FC302)  existing_len=285  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,951  INFO      2969 16-01 (Danfoss_VLT_FC302)  existing_len=216  qc=keep
+2026-05-20 13:17:14,951  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2970 16-02 (Danfoss_VLT_FC302)  existing_len=278  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2971 16-03 (Danfoss_VLT_FC302)  existing_len=283  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2972 16-05 (Danfoss_VLT_FC302)  existing_len=302  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2973 16-10 (Danfoss_VLT_FC302)  existing_len=256  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2974 16-11 (Danfoss_VLT_FC302)  existing_len=271  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2975 16-12 (Danfoss_VLT_FC302)  existing_len=247  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2976 16-13 (Danfoss_VLT_FC302)  existing_len=250  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2977 16-14 (Danfoss_VLT_FC302)  existing_len=264  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2978 16-16 (Danfoss_VLT_FC302)  existing_len=277  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2979 16-17 (Danfoss_VLT_FC302)  existing_len=208  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,952  INFO      2980 16-18 (Danfoss_VLT_FC302)  existing_len=264  qc=keep
+2026-05-20 13:17:14,952  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2981 16-20 (Danfoss_VLT_FC302)  existing_len=314  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2982 16-30 (Danfoss_VLT_FC302)  existing_len=276  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2983 16-32 (Danfoss_VLT_FC302)  existing_len=271  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2984 16-33 (Danfoss_VLT_FC302)  existing_len=331  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2985 16-34 (Danfoss_VLT_FC302)  existing_len=247  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2986 16-35 (Danfoss_VLT_FC302)  existing_len=170  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2987 16-36 (Danfoss_VLT_FC302)  existing_len=204  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2988 16-37 (Danfoss_VLT_FC302)  existing_len=269  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2989 16-38 (Danfoss_VLT_FC302)  existing_len=228  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2990 16-39 (Danfoss_VLT_FC302)  existing_len=233  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,953  INFO      2991 16-40 (Danfoss_VLT_FC302)  existing_len=278  qc=keep
+2026-05-20 13:17:14,953  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2992 16-50 (Danfoss_VLT_FC302)  existing_len=314  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2993 16-51 (Danfoss_VLT_FC302)  existing_len=251  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2994 16-52 (Danfoss_VLT_FC302)  existing_len=267  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2995 16-53 (Danfoss_VLT_FC302)  existing_len=228  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2996 16-60 (Danfoss_VLT_FC302)  existing_len=337  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2997 16-61 (Danfoss_VLT_FC302)  existing_len=234  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2998 16-62 (Danfoss_VLT_FC302)  existing_len=251  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      2999 16-63 (Danfoss_VLT_FC302)  existing_len=236  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      3000 16-64 (Danfoss_VLT_FC302)  existing_len=223  qc=keep
+2026-05-20 13:17:14,954  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,954  INFO      3001 16-65 (Danfoss_VLT_FC302)  existing_len=267  qc=keep
+2026-05-20 13:17:14,955  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,955  INFO      3002 16-66 (Danfoss_VLT_FC302)  existing_len=255  qc=keep
+2026-05-20 13:17:14,955  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,955  INFO      3003 16-67 (Danfoss_VLT_FC302)  existing_len=201  qc=keep
+2026-05-20 13:17:14,955  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,955  INFO      3004 16-68 (Danfoss_VLT_FC302)  existing_len=320  qc=keep
+2026-05-20 13:17:14,955  INFO        -> keep (existing OK)
+2026-05-20 13:17:14,955  INFO      DONE: total=50 {'keep': 50, 'rewrite': 0, 'new': 0, 'error': 0} cost=$0.0000
