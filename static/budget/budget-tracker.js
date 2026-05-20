@@ -62,10 +62,11 @@ function cheltuialaFixaActiva(item, lunaKey) {
 
 // Sum of fixed-expense items active in given month key
 function totalFixeLuna(d, lunaKey) {
-  return (d.cheltuieliFixe || []).reduce(function(s, f) {
+  var fixe = (d.cheltuieliFixe || []).reduce(function(s, f) {
     if (!cheltuialaFixaActiva(f, lunaKey)) return s;
     return s + (parseRON(f.suma) || 0);
   }, 0);
+  return round2(fixe + rataCredituluiLuna(d, lunaKey));
 }
 
 // Seed d.reguliCategorizare from defaults if missing
@@ -312,6 +313,19 @@ function migrateCheltuieliFixe(data) {
   data.cheltuieliFixe = arr;
 }
 
+// The credit instalment is no longer a manual fixed expense — it is pulled
+// automatically from the scadentar. Drop any leftover "Rata credit" row.
+function migrateRemoveRataFixa(data) {
+  if (!data || !Array.isArray(data.cheltuieliFixe)) return;
+  data.cheltuieliFixe = data.cheltuieliFixe.filter(function(f) {
+    return !/^rat[ăa]\s*credit/i.test(((f && f.label) || '').trim());
+  });
+  // Re-point old categorisation rules onto __SKIP__ (instalment auto-counted)
+  (data.reguliCategorizare || []).forEach(function(r) {
+    if (r && /^rat[ăa]\s*credit/i.test((r.categorie || '').trim())) r.categorie = '__SKIP__';
+  });
+}
+
 // Convert legacy keys (mai/iun/etc) → YYYY-MM. Called once at load.
 function migrateLegacyMonthKeys(data) {
   if (!data) return data;
@@ -380,8 +394,8 @@ function esc(s) {
 
 // --- Auto-categorization rules for bank CSV import (ING) ---
 var REGULI_CATEGORIZARE_DEFAULT = [
-  { id: 1,  pattern: 'Rata Credit',                       categorie: 'Rată credit + asig.' },
-  { id: 2,  pattern: 'Prima asigurare ING Credit Protect',categorie: 'Rată credit + asig.' },
+  { id: 1,  pattern: 'Rata Credit',                       categorie: '__SKIP__' },
+  { id: 2,  pattern: 'Prima asigurare ING Credit Protect',categorie: '__SKIP__' },
   { id: 3,  pattern: 'Detalii:chirie',                    categorie: 'Chirie' },
   { id: 4,  pattern: 'Subscriere Tezaur',                 categorie: '__TEZAUR__' },
   { id: 5,  pattern: 'KAUFLAND|AUCHAN|CARREFOUR|MEGA IMAGE|LIDL|PROFI|PENNY|SELGROS|FRESH MARKET', categorie: 'Alimente' },
@@ -470,7 +484,6 @@ var DATI_INITIALE = {
   profil: { nume: 'Ion', salariuNet: 7000, bonusMedie: 2000, startMonth: '2026-05', numarLuni: 12 },
   cheltuieliFixe: [
     { id: 1, label: 'Chirie', suma: 2000 },
-    { id: 2, label: 'Rată credit + asig.', suma: 1934 },
   ],
   categoriiVar: [
     { id: 1,  label: 'Alimente' },
@@ -564,6 +577,7 @@ async function loadData() {
       if (!state.data.profil.numarLuni) state.data.profil.numarLuni = DATI_INITIALE.profil.numarLuni;
       if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
       migrateCheltuieliFixe(state.data);
+      migrateRemoveRataFixa(state.data);
       migrateCategoriiVar(state.data);
       ensureCategorieVar(state.data, 'Alte credite');
       ensureCategorieVar(state.data, 'Mâncare restaurant');
@@ -1111,7 +1125,8 @@ function calcMediiCheltuieli(d) {
   var variabile = LUNI_KEYS.map(function(l) { return d.cheltuieli[l] || {}; });
   var count = variabile.filter(function(v) { return Object.values(v).some(function(x) { return x > 0; }); }).length || 1;
   var cats = Array.isArray(d.categoriiVar) ? d.categoriiVar : [];
-  var result = { fixe: fixe, totalFixe: totalFixe, variabile: {}, categorii: cats };
+  var rataCreditMedie = LUNI_KEYS.length ? round2(LUNI_KEYS.reduce(function(s, l) { return s + rataCredituluiLuna(d, l); }, 0) / LUNI_KEYS.length) : 0;
+  var result = { fixe: fixe, totalFixe: totalFixe, rataCreditMedie: rataCreditMedie, variabile: {}, categorii: cats };
   var totalVar = 0;
   cats.forEach(function(c) {
     var label = c.label || '';
@@ -1146,6 +1161,18 @@ function getSoldCurent(d) {
   var manual = parseRON(d && d.credit && d.credit.soldActual);
   if (manual > 0) return manual;
   return soldDupaPlatiTrecute(getScadentar(d), todayIso(), (d && d.credit && d.credit.suma) || 0);
+}
+
+// Credit instalment (rate + insurance) due in a given YYYY-MM month, from the
+// schedule. 0 if no payment falls in that month.
+function rataCredituluiLuna(d, lunaKey) {
+  var scad = getScadentar(d);
+  for (var i = 0; i < scad.length; i++) {
+    if ((scad[i].data || '').substring(0, 7) === lunaKey) {
+      return round2((scad[i].suma || 0) + (scad[i].asigurare || 0));
+    }
+  }
+  return 0;
 }
 
 function todayIso() {
@@ -1300,12 +1327,13 @@ function renderBugetLunar() {
   // Cheltuieli panel
   html += '<div class="panel">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="receipt"></i> Cheltuieli medii</div></div>';
+  if (mediiC.rataCreditMedie > 0) {
+    html += '<div class="stat-row"><span>Rată credit</span><span class="stat-val danger">' + formatRON(mediiC.rataCreditMedie) + '</span></div>';
+  }
   mediiC.fixe.forEach(function(f) {
     html += '<div class="stat-row"><span>' + esc(f.label) + '</span><span class="stat-val danger">' + formatRON(f.suma) + '</span></div>';
   });
-  if (mediiC.fixe.length > 0) {
-    html += '<div class="stat-row" style="border-top:1px dashed var(--border); padding-top:0.5rem; margin-top:0.25rem;"><span class="text-mid">Total fixe</span><span class="stat-val danger">' + formatRON(mediiC.totalFixe) + '</span></div>';
-  }
+  html += '<div class="stat-row" style="border-top:1px dashed var(--border); padding-top:0.5rem; margin-top:0.25rem;"><span class="text-mid">Total fixe</span><span class="stat-val danger">' + formatRON(mediiC.totalFixe) + '</span></div>';
   (mediiC.categorii || []).forEach(function(c) {
     html += '<div class="stat-row"><span>' + esc(c.label) + '</span><span class="stat-val danger">' + formatRON(mediiC.variabile[c.label] || 0) + '</span></div>';
   });
@@ -1324,6 +1352,8 @@ function renderBugetLunar() {
   });
   var donutSlices = [];
   // Fixed expenses grouped by item
+  var rcTotal = LUNI_KEYS.reduce(function(s, lk) { return s + rataCredituluiLuna(d, lk); }, 0);
+  if (rcTotal > 0) donutSlices.push({ label: 'Rată credit', value: rcTotal });
   (d.cheltuieliFixe || []).forEach(function(f) {
     var v = 0;
     LUNI_KEYS.forEach(function(lk) { if (cheltuialaFixaActiva(f, lk)) v += parseRON(f.suma) || 0; });
@@ -1403,7 +1433,7 @@ function renderSetari() {
   html += '</div>';
   html += '<div class="panel">';
   if (!d.cheltuieliFixe || d.cheltuieliFixe.length === 0) {
-    html += '<div class="audit-empty">Nicio cheltuială fixă. Apasă "Adaugă" pentru a introduce chirie, abonamente, rate, etc.</div>';
+    html += '<div class="audit-empty">Nicio cheltuială fixă. Apasă "Adaugă" pentru chirie, abonamente, asigurări recurente. Rata creditului e gestionată automat din scadenar — nu o adăuga aici.</div>';
   } else {
     html += '<div class="table-wrap"><table>';
     html += '<thead><tr><th>Denumire</th><th class="num">Sumă RON/lună</th><th>Start</th><th class="num">Luni (gol = perpetual)</th><th class="num">Total perioadă</th><th></th></tr></thead><tbody>';
@@ -1421,8 +1451,8 @@ function renderSetari() {
       html += '<td><button class="btn-del" onclick="removeCheltuialaFixa(' + f.id + ')" title="Șterge"><i data-lucide="trash-2"></i></button></td>';
       html += '</tr>';
     });
-    var totalFixeNow = LUNI_KEYS.length > 0 ? totalFixeLuna(d, LUNI_KEYS[0]) : 0;
-    html += '</tbody><tfoot><tr><td>Total fixe în prima lună vizibilă (' + (LUNI[0] || '') + ')</td><td class="num">' + formatRON(totalFixeNow) + '</td><td colspan="4"></td></tr></tfoot>';
+    var totalFixeItems = LUNI_KEYS.length > 0 ? d.cheltuieliFixe.reduce(function(s, f) { return cheltuialaFixaActiva(f, LUNI_KEYS[0]) ? s + (parseRON(f.suma) || 0) : s; }, 0) : 0;
+    html += '</tbody><tfoot><tr><td>Total în prima lună vizibilă (' + (LUNI[0] || '') + ')</td><td class="num">' + formatRON(totalFixeItems) + '</td><td colspan="4"></td></tr></tfoot>';
     html += '</table></div>';
   }
   html += '</div></div>';
@@ -2181,6 +2211,15 @@ function renderVenituri() {
   LUNI.forEach(function(l) { html += '<th class="num">' + l + '</th>'; });
   html += '</tr></thead><tbody>';
 
+  // Auto row: credit instalment pulled from the scadentar
+  html += '<tr class="fixed"><td><i data-lucide="landmark" style="width:12px;height:12px;vertical-align:-1px;"></i> Rată credit <span class="text-dim" style="font-size:0.68rem;">(scadenţar)</span></td>';
+  LUNI_KEYS.forEach(function(lk) {
+    var rc = rataCredituluiLuna(d, lk);
+    if (rc > 0) html += '<td class="num neg mono">' + formatRON(rc) + '</td>';
+    else html += '<td class="num text-dim">—</td>';
+  });
+  html += '</tr>';
+
   (d.cheltuieliFixe || []).forEach(function(f) {
     html += '<tr class="fixed"><td>' + esc(f.label || '—') + '</td>';
     LUNI_KEYS.forEach(function(lk) {
@@ -2927,6 +2966,7 @@ function generateAndDownloadCSV(keys, labels) {
   lines.push('');
   lines.push('CHELTUIELI');
   lines.push('Categorie,' + labels.join(','));
+  lines.push('Rata credit,' + keys.map(function(lk) { return rataCredituluiLuna(d, lk); }).join(','));
   (d.cheltuieliFixe || []).forEach(function(f) {
     var row = keys.map(function(lk) { return cheltuialaFixaActiva(f, lk) ? (f.suma || 0) : 0; }).join(',');
     lines.push((f.label || '').replace(/,/g, ' ') + ',' + row);
