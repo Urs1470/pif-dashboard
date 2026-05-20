@@ -11465,3 +11465,26 @@
 2026-05-20 16:35:36,897  INFO      4217 43-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 16:35:36,961  INFO      25167 0xE901:008 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 16:35:42,493  INFO        -> rewrite: Semnaleaza o eroare de comunicatie de retea cand datele ciclice de proces sunt i
+2026-05-20 16:35:47,135  INFO        Committed + pushed
+2026-05-20 16:35:47,236  INFO      23399 0x1863 (Lenze_i550)  existing_len=230  qc=rewrite
+2026-05-20 16:35:48,544  INFO        -> rewrite: Defineste un parametru de comunicare pentru conexiunea FSoE (Fail Safe over Ethe
+2026-05-20 16:35:48,644  INFO      25168 0xEA00:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:52,226  INFO        -> rewrite: Afiseaza temperatura radiatorului invertorului pentru faza U, masurata in grade 
+2026-05-20 16:35:52,326  INFO      4218 43-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:35:54,274  INFO        -> rewrite: Afiseaza starea conexiunii safety pe EtherCAT (FSoE). Valoarea indica daca comun
+2026-05-20 16:35:54,375  INFO      25169 0x2878:050 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:35:56,059  INFO        -> rewrite: Seteaza timpul maxim de asteptare pentru comunicatia Modbus inainte de declansar
+2026-05-20 16:35:56,160  INFO      23400 0x1864 (Lenze_i550)  existing_len=308  qc=rewrite
+2026-05-20 16:35:57,462  INFO        -> rewrite: Afiseaza temperatura radiatorului de racire pentru faza V a invertorului. Este u
+2026-05-20 16:35:57,563  INFO      4219 43-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:36:01,639  INFO        -> rewrite: Avertizare ce indica faptul ca dispozitivul master Modbus a trimis o cerere inva
+2026-05-20 16:36:01,739  INFO      23401 0x1865 (Lenze_i550)  existing_len=233  qc=rewrite
+2026-05-20 16:36:01,897  INFO        -> rewrite: Afiseaza starea driverului HDSL pentru encoderul de siguranta al motorului. Indi
+2026-05-20 16:36:01,998  INFO      25170 0x2878:051 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 16:36:05,156  INFO        -> rewrite: Afiseaza temperatura actuala a radiatorului pentru faza W a invertorului. Este u
+2026-05-20 16:36:05,257  INFO      4220 43-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:36:07,606  INFO        -> rewrite: Acest parametru indica o eroare de comunicare in reteaua de camp. Codul 433200 s
+2026-05-20 16:36:07,707  INFO      23402 0x1866 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 16:36:11,384  INFO        -> rewrite: Parametru de diagnosticare care afiseaza turatia curenta a ventilatorului intern
+2026-05-20 16:36:11,485  INFO      4221 43-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 16:36:11,853  INFO        -> rewrite: Afiseaza starea conexiunii HDSL pentru encoderul de siguranta al motorului. Valo
