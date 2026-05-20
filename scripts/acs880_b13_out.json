@@ -1,0 +1,453 @@
+[
+  {
+    "id": 24186,
+    "familie": "ACS880",
+    "parametru": "96.2",
+    "descriere_scurta": "Pass code",
+    "GENERATED": {
+      "explicatie": "Permite introducerea codurilor de acces pentru activarea nivelurilor suplimentare de acces sau configurarea blocajului de utilizator. Codul 358 comuta blocarea parametrilor prin panoul de control, iar codul implicit 10000000 permite configurarea unui cod personalizat prin 96.100-96.102. Coduri invalide inchid blocajul daca era deschis.",
+      "influenteaza": "96.3, 96.100, 96.101, 96.102",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24187,
+    "familie": "ACS880",
+    "parametru": "96.3",
+    "descriere_scurta": "Access levels active",
+    "GENERATED": {
+      "explicatie": "Afiseaza nivelurile de acces activate prin codurile introduse in 96.2. Este parametru read-only, util pentru verificarea drepturilor de acces curente la parametrii actionarii. Bitii individuali indica care niveluri de acces sunt active.",
+      "influenteaza": "96.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24188,
+    "familie": "ACS880",
+    "parametru": "96.4",
+    "descriere_scurta": "Macro select",
+    "GENERATED": {
+      "explicatie": "Selecteaza macro-ul de aplicatie care preconfigureaza parametrii actionarii pentru un tip specific de aplicatie (Factory, Hand/Auto, PID, Torque control, Sequential control). Dupa selectie, parametrul revine automat la Done. Selectia unui macro suprascrie configuratia curenta a parametrilor.",
+      "influenteaza": "96.5",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24189,
+    "familie": "ACS880",
+    "parametru": "96.5",
+    "descriere_scurta": "Macro active",
+    "GENERATED": {
+      "explicatie": "Afiseaza macro-ul de aplicatie selectat curent. Este parametru read-only. Pentru a schimba macro-ul activ se foloseste parametrul 96.4. Indica configuratia preconfigurrata activa a actionarii.",
+      "influenteaza": "96.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24190,
+    "familie": "ACS880",
+    "parametru": "96.6",
+    "descriere_scurta": "Parameter restore",
+    "GENERATED": {
+      "explicatie": "Restaureaza setarile originale ale programului de control, adica valorile implicite ale parametrilor. Este util dupa configurari eronate sau pentru repornirea de la zero a configuratiei actionarii. Operatia suprascrie toti parametrii cu valorile din fabrica.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24191,
+    "familie": "ACS880",
+    "parametru": "96.7",
+    "descriere_scurta": "Parameter save",
+    "GENERATED": {
+      "explicatie": "Salveaza valorile valide ale parametrilor in memoria permanenta a actionarii. Trebuie folosit pentru a stoca valorile trimise din fieldbus sau cand unitatea de control este alimentata extern cu timp scurt de mentinere la oprire. Fara salvare manuala, modificarile din fieldbus pot fi pierdute la oprire.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24192,
+    "familie": "ACS880",
+    "parametru": "96.8",
+    "descriere_scurta": "Control board boot",
+    "GENERATED": {
+      "explicatie": "Reporneste unitatea de control fara a necesita oprirea si repornirea completa a modulului actionarii. Scrierea valorii 1 declanseaza repornirea, iar parametrul revine automat la 0. Este util dupa modificarea parametrilor care necesita repornire pentru a fi activati.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24193,
+    "familie": "ACS880",
+    "parametru": "96.9",
+    "descriere_scurta": "FSO reboot",
+    "GENERATED": {
+      "explicatie": "Reporneste modulul optional de functii de siguranta FSO-xx prin comutarea valorii de la 0 la 1. Este util dupa modificarea configuratiei modulului FSO sau la diagnosticarea problemelor cu functiile de siguranta. Sursa semnalului poate fi configurata.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24194,
+    "familie": "ACS880",
+    "parametru": "97.1",
+    "descriere_scurta": "Switching fre-",
+    "GENERATED": {
+      "explicatie": "Defineste frecventa de comutare a IGBT-urilor cand parametrul 97.9 este setat pe Custom si aceasta nu este limitata intern. Frecvente mai mari reduc zgomotul motorului dar cresc pierderile termice in invertor. Este important pentru echilibrul intre performanta acustica si eficienta termica.",
+      "influenteaza": "97.2, 97.9",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24195,
+    "familie": "ACS880",
+    "parametru": "97.2",
+    "descriere_scurta": "Minimum switching",
+    "GENERATED": {
+      "explicatie": "Defineste frecventa minima de comutare in modul Custom, sub care frecventa de comutare nu va scadea indiferent de conditii termice sau alte limitari interne. Garanteaza o calitate minima a formei de unda chiar in conditii de suprasarcina termica. Trebuie sa fie mai mica sau egala cu 97.1.",
+      "influenteaza": "97.1, 97.9",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24196,
+    "familie": "ACS880",
+    "parametru": "97.3",
+    "descriere_scurta": "Slip gain",
+    "GENERATED": {
+      "explicatie": "Defineste castigul de alunecare utilizat pentru imbunatatirea estimarii alunecarii motorului. Valoarea 100% inseamna compensare completa, 0% inseamna fara compensare. Se ajusteaza atunci cand se detecteaza o eroare de viteza statica in ciuda setarii la 100%, pentru a corecta abaterea masurata.",
+      "influenteaza": "90.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24197,
+    "familie": "ACS880",
+    "parametru": "97.4",
+    "descriere_scurta": "Voltage reserve",
+    "GENERATED": {
+      "explicatie": "Defineste rezerva minima de tensiune permisa. Cand rezerva de tensiune scade la valoarea setata, actionarea intra in zona de slabire a campului (field weakening). O valoare negativa permite intrarea mai devreme in field weakening, utila la tensiuni de retea ridicate.",
+      "influenteaza": "95.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24198,
+    "familie": "ACS880",
+    "parametru": "97.5",
+    "descriere_scurta": "Flux braking",
+    "GENERATED": {
+      "explicatie": "Defineste nivelul puterii de franare prin flux. Cand este activat, actionarea creste fluxul motorului in timpul franarii, convertind energia de franare in caldura in motor fara a folosi un rezistor de franare extern. Este util pentru aplicatii cu franare frecventa unde nu se doreste un chopper de franare.",
+      "influenteaza": "21.1, 21.2",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24199,
+    "familie": "ACS880",
+    "parametru": "97.6",
+    "descriere_scurta": "Flux reference se-",
+    "GENERATED": {
+      "explicatie": "Defineste sursa referintei de flux a motorului. Optiunile includ referinta de flux a utilizatorului definita in 97.7 sau o sursa externa. Permite ajustarea fluxului motorului in functie de sarcina sau conditii specifice de aplicatie.",
+      "influenteaza": "97.7, 97.78",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24200,
+    "familie": "ACS880",
+    "parametru": "97.7",
+    "descriere_scurta": "User flux reference",
+    "GENERATED": {
+      "explicatie": "Defineste referinta de flux cand parametrul 97.6 este setat pe User flux reference. Valoarea 100% corespunde fluxului nominal al motorului. Reducerea fluxului sub 100% poate imbunatati eficienta la sarcini mici, dar poate afecta dinamica controlului.",
+      "influenteaza": "97.6, 97.78",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24201,
+    "familie": "ACS880",
+    "parametru": "97.8",
+    "descriere_scurta": "Optimizerminimum",
+    "GENERATED": {
+      "explicatie": "Imbunatateste dinamica controlului pentru motoarele sincrone cu reluctanta sau motoarele PMSM saliante definind nivelul minim al cuplului la care raspunsul trebuie sa fie rapid. Cresterea acestui parametru mareste curentul motorului si imbunatateste raspunsul la cuplu la viteze mici. Valoarea 0 dezactiveaza functia.",
+      "influenteaza": "97.6",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24202,
+    "familie": "ACS880",
+    "parametru": "97.9",
+    "descriere_scurta": "Switching freq",
+    "GENERATED": {
+      "explicatie": "Setare de optimizare pentru echilibrul intre performanta de control si nivelul de zgomot al motorului. Modul Normal lasa actionarea sa selecteze automat frecventa de comutare. Modul Custom permite configurarea manuala prin 97.1 si 97.2.",
+      "influenteaza": "97.1, 97.2",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24203,
+    "familie": "ACS880",
+    "parametru": "97.78",
+    "descriere_scurta": "Maximum flux refer-",
+    "GENERATED": {
+      "explicatie": "Defineste asistenta maxima de flux statoric permisa pentru cresterea fluxului atunci cand este necesar, imbunatatind eficienta la sarcini mari pentru motoarele sincrone cu excitatie externa. Functia este activata cand se seteaza o valoare nenula, cu fluxul crescand intre 97.7 si 97.7 plus 97.78.",
+      "influenteaza": "97.7, 97.6",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24204,
+    "familie": "ACS880",
+    "parametru": "98.1",
+    "descriere_scurta": "User motor model",
+    "GENERATED": {
+      "explicatie": "Activeaza parametrii modelului de motor definiti de utilizator (98.2 pana la 98.14) si parametrul de offset unghi rotor 98.15. Cand este activat, actionarea foloseste aceste valori in loc de cele identificate automat prin ID run. Este util cand valorile din catalogul producatorului de motor sunt cunoscute si mai precise.",
+      "influenteaza": "98.2, 98.3, 98.4, 98.5, 98.6, 98.7, 98.8, 98.9, 98.15",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24205,
+    "familie": "ACS880",
+    "parametru": "98.2",
+    "descriere_scurta": "Rs user",
+    "GENERATED": {
+      "explicatie": "Defineste rezistenta statorica Rs a modelului de motor in unitati per unitate (pu). Pentru motoarele stea, Rs este rezistenta unei singure infasurari; pentru motoarele triunghi, este o treime din rezistenta infasurarii. Valoarea este specificata la 20 grade Celsius.",
+      "influenteaza": "98.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24206,
+    "familie": "ACS880",
+    "parametru": "98.3",
+    "descriere_scurta": "Rr user",
+    "GENERATED": {
+      "explicatie": "Defineste rezistenta rotorica Rr a modelului de motor in unitati per unitate (pu). Valoarea este specificata la 20 grade Celsius. Este relevant in principal pentru motoarele asincrone, unde rezistenta rotorica influenteaza caracteristicile de alunecare.",
+      "influenteaza": "98.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24207,
+    "familie": "ACS880",
+    "parametru": "98.4",
+    "descriere_scurta": "Lm user",
+    "GENERATED": {
+      "explicatie": "Defineste inductanta principala Lm a modelului de motor in unitati per unitate (pu). Inductanta principala determina curentul de magnetizare al motorului si caracteristicile de saturatie. Este un parametru important pentru controlul DTC al motorului asincron.",
+      "influenteaza": "98.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24208,
+    "familie": "ACS880",
+    "parametru": "98.5",
+    "descriere_scurta": "SigmaL user",
+    "GENERATED": {
+      "explicatie": "Defineste inductanta de dispersie sigma-LS a modelului de motor in unitati per unitate (pu). Aceasta valoare influenteaza dinamica curentului statorului si performanta controlului vectorial. Este determinata de constructia motorului si se gaseste de obicei in catalogul producatorului.",
+      "influenteaza": "98.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24209,
+    "familie": "ACS880",
+    "parametru": "98.6",
+    "descriere_scurta": "Ld user",
+    "GENERATED": {
+      "explicatie": "Defineste inductanta de axa directa (sincronizata) a modelului de motor in unitati per unitate (pu). Este parametru relevant in principal pentru motoarele sincrone cu magneti permanenti sau cu reluctanta, unde axele d si q au inductante diferite.",
+      "influenteaza": "98.1, 98.7",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24210,
+    "familie": "ACS880",
+    "parametru": "98.7",
+    "descriere_scurta": "Lq user",
+    "GENERATED": {
+      "explicatie": "Defineste inductanta de axa in cuadratura (sincronizata) a modelului de motor in unitati per unitate (pu). Diferenta dintre Ld si Lq determina cuplul de reluctanta al motorului. Este relevant pentru motoarele PMSM saliante si motoarele cu reluctanta sincronizata.",
+      "influenteaza": "98.1, 98.6",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24211,
+    "familie": "ACS880",
+    "parametru": "98.8",
+    "descriere_scurta": "PM flux user",
+    "GENERATED": {
+      "explicatie": "Defineste fluxul magnetilor permanenti ai motorului PMSM in unitati per unitate (pu). Aceasta valoare determina FEM-ul indus de magneti si influenteaza curentul de mers in gol si performanta controlului. Este specific motoarelor cu magneti permanenti.",
+      "influenteaza": "98.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24212,
+    "familie": "ACS880",
+    "parametru": "98.9",
+    "descriere_scurta": "Rs user SI",
+    "GENERATED": {
+      "explicatie": "Defineste rezistenta statorica Rs a modelului de motor in unitati fizice (Ohm), alternativ fata de 98.2 care foloseste unitati per unitate. Valoarea este specificata la 20 grade Celsius. Permite introducerea directa a valorii din catalogul motorului fara conversie la unitati per unitate.",
+      "influenteaza": "98.1, 98.2",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24213,
+    "familie": "ACS880",
+    "parametru": "99.3",
+    "descriere_scurta": "Motor type",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul de motor conectat: motor asincron (inductie), motor sincron cu magneti permanenti (PMSM) sau motor cu reluctanta sincronizata (SynRM). Tipul motorului determina algoritmul de control utilizat si parametrii relevanti. Trebuie setat corect inainte de ID run sau de configurarea modelului de motor.",
+      "influenteaza": "99.4, 98.1, 98.6, 98.7, 98.8",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24214,
+    "familie": "ACS880",
+    "parametru": "99.4",
+    "descriere_scurta": "Motor control mode",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de control al motorului: DTC (Direct Torque Control) sau control scalar (frecventa/tensiune). Modul DTC ofera performanta superioara de control al cuplului si vitezei. Controlul scalar este folosit in aplicatii simple sau cand motorul nu poate fi identificat.",
+      "influenteaza": "99.3, 97.9",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24215,
+    "familie": "ACS880",
+    "parametru": "99.6",
+    "descriere_scurta": "Motor nominal cur-",
+    "GENERATED": {
+      "explicatie": "Defineste curentul nominal al motorului conform placutei de identificare. Trebuie sa corespunda exact valorii de pe placa motorului, deoarece este folosit ca baza de calcul pentru protectii si pentru modelul motor. In cazul motoarelor multiple in paralel, se introduce suma curentilor.",
+      "influenteaza": "99.3, 99.4, 30.17",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24216,
+    "familie": "ACS880",
+    "parametru": "99.8",
+    "descriere_scurta": "Motor nominal fre-",
+    "GENERATED": {
+      "explicatie": "Defineste frecventa nominala a motorului conform placutei de identificare. Este utilizata ca referinta pentru calculul frecventei de functionare si al alunecarii. Trebuie sa corespunda exact valorii de pe placa motorului pentru functionare corecta.",
+      "influenteaza": "99.3, 99.9, 30.14",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24217,
+    "familie": "ACS880",
+    "parametru": "99.9",
+    "descriere_scurta": "Motor nominal",
+    "GENERATED": {
+      "explicatie": "Defineste viteza nominala a motorului conform placutei de identificare. Este folosita ca referinta pentru controlul de viteza si pentru calculul alunecarii motorului asincron. Trebuie sa corespunda exact valorii de pe placa motorului.",
+      "influenteaza": "99.3, 99.8, 30.12",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24218,
+    "familie": "ACS880",
+    "parametru": "51.03",
+    "descriere_scurta": "rate",
+    "GENERATED": {
+      "explicatie": "Afiseaza viteza de transfer curenta a retelei PROFIBUS in kbit/s, detectata automat de adaptorul FPBA. Este parametru read-only, util pentru verificarea vitezei de comunicatie negociate cu masterul PROFIBUS. Valoarea 12000 indica 12 Mbit/s.",
+      "influenteaza": "51.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24219,
+    "familie": "ACS880",
+    "parametru": "51.04",
+    "descriere_scurta": "type",
+    "GENERATED": {
+      "explicatie": "Afiseaza tipul de telegrama PROFIBUS selectat de instrumentul de configurare PLC. Este parametru read-only, indicand formatul datelor de proces utilizat (PPO1 si altele). Tipul de telegrama determina structura datelor schimbate intre PLC si actionare.",
+      "influenteaza": "51.1, 52.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24220,
+    "familie": "ACS880",
+    "parametru": "51.07",
+    "descriere_scurta": "mode",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza emularea RPBA (PROFIBUS DP adaptor vechi) prin adaptorul FPBA. Valoarea 0 dezactiveaza emularea. Este relevant la migrarea de la sisteme cu adaptoare RPBA la noile adaptoare FPBA, asigurand compatibilitatea cu configuratia PLC existenta.",
+      "influenteaza": "51.1",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24221,
+    "familie": "ACS880",
+    "parametru": "52.02",
+    "descriere_scurta": "data in2",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la actionare catre controlerul fieldbus prin adaptorul A, pentru cuvantul de date 2. Valoarea 5 corespunde valorii actuale ACT1 in 16 biti. Permite transmiterea unui parametru suplimentar de stare al actionarii catre sistemul de control.",
+      "influenteaza": "52.1, 52.3",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24222,
+    "familie": "ACS880",
+    "parametru": "52.03",
+    "descriere_scurta": "FBA data in3",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la actionare catre controlerul fieldbus prin adaptorul A, pentru cuvantul de date 3. Configurat implicit pe curentul motorului din 01.07. Permite trimiterea curentului motorului catre sistemul SCADA sau PLC prin fieldbus.",
+      "influenteaza": "52.1, 52.2, 01.07",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24223,
+    "familie": "ACS880",
+    "parametru": "52.05",
+    "descriere_scurta": "FBA data in5",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la actionare catre controlerul fieldbus prin adaptorul A, pentru cuvantul de date 5. Configurat implicit pe tensiunea DC din 01.11. Permite monitorizarea tensiunii barei DC a actionarii din sistemul SCADA sau PLC.",
+      "influenteaza": "52.1, 01.11",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24224,
+    "familie": "ACS880",
+    "parametru": "53.02",
+    "descriere_scurta": "FBA data out2",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la controlerul fieldbus catre actionare prin adaptorul A, pentru cuvantul de date 2. Valoarea 2 corespunde referintei de viteza REF1 in 16 biti. Este esential pentru transmiterea referintei de viteza de la PLC catre actionare.",
+      "influenteaza": "53.1, 53.3",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24225,
+    "familie": "ACS880",
+    "parametru": "53.03",
+    "descriere_scurta": "FBA data out3",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la controlerul fieldbus catre actionare prin adaptorul A, pentru cuvantul de date 3. Configurat implicit pe timpul de accelerare 1 din 23.12. Permite configurarea dinamica a timpului de accelerare din PLC prin fieldbus.",
+      "influenteaza": "53.1, 23.12",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 24226,
+    "familie": "ACS880",
+    "parametru": "53.05",
+    "descriere_scurta": "FBA data out5",
+    "GENERATED": {
+      "explicatie": "Selecteaza datele transferate de la controlerul fieldbus catre actionare prin adaptorul A, pentru cuvantul de date 5. Configurat implicit pe timpul de decelerare 1 din 23.13. Permite configurarea dinamica a timpului de decelerare din PLC prin fieldbus.",
+      "influenteaza": "53.1, 23.13",
+      "categorie": "Comunicatii"
+    }
+  }
+]

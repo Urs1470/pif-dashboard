@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 23986,
+    "familie": "ACS880",
+    "parametru": "21.8",
+    "descriere_scurta": "DC current control",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza functiile de mentinere DC (DC hold) si post-magnetizare. Functia DC hold mentine motorul magnetizat la viteza zero prin injectie de curent DC. Utila in aplicatii unde motorul trebuie tinut frant fara frana mecanica.",
+      "influenteaza": "21.9",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23987,
+    "familie": "ACS880",
+    "parametru": "21.9",
+    "descriere_scurta": "DC hold speed",
+    "GENERATED": {
+      "explicatie": "Defineste viteza sub care se activeaza functia DC hold pentru mentinerea motorului frant prin curent DC. Cand viteza motorului scade sub aceasta valoare, convertorul comuta de la control DTC la injectie curent DC. Relevant in aplicatii cu carcare grava la pornire sau unde patinarea la viteze mici este inacceptabila.",
+      "influenteaza": "21.8",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23988,
+    "familie": "ACS880",
+    "parametru": "21.15",
+    "descriere_scurta": "Pre-heating time",
+    "GENERATED": {
+      "explicatie": "Defineste durata de incalzire prealabila a motorului inainte de pornire. Functia previne condensul de umiditate in motoare in medii cu temperatura si umiditate variabile. Important in aplicatii unde motorul este expus la temperaturi scazute sau la perioade lungi de inactivitate.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 23989,
+    "familie": "ACS880",
+    "parametru": "21.37",
+    "descriere_scurta": "Motor temperature",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa comenzii de activare a estimarii temperaturii motorului. Cand este activata, convertorul estimeaza temperatura motorului fara senzor extern. Utilizeaza modelul termic intern al motorului pentru protectie la supraincalzire.",
+      "influenteaza": "21.38",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 23990,
+    "familie": "ACS880",
+    "parametru": "21.38",
+    "descriere_scurta": "Motor temperature",
+    "GENERATED": {
+      "explicatie": "Defineste constanta de timp a estimarii temperaturii motorului, activata prin 21.37. O valoare mai mica ofera raspuns mai rapid la schimbarile de temperatura. Trebuie calibrata in functie de caracteristicile termice ale motorului utilizat.",
+      "influenteaza": "21.37",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 23991,
+    "familie": "ACS880",
+    "parametru": "22.1",
+    "descriere_scurta": "Speed ref unlimited",
+    "GENERATED": {
+      "explicatie": "Afiseaza iesirea blocului de selectie a referintei de viteza inainte de aplicarea limitelor. Parametru read-only util pentru urmarirea lantului de control al vitezei. Valoarea reflecta referinta selectata din sursa activa de referinta inainte de orice limitare.",
+      "influenteaza": "23.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23992,
+    "familie": "ACS880",
+    "parametru": "23.1",
+    "descriere_scurta": "Speed ref ramp in-",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de viteza in rpm inainte de intrarea in blocul de rampa si de formare. Parametru read-only pentru urmarirea lantului de control al vitezei. Diferenta intre 23.1 si 23.2 indica efectul rampelor configurate.",
+      "influenteaza": "23.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23993,
+    "familie": "ACS880",
+    "parametru": "23.2",
+    "descriere_scurta": "Speed ref ramp",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de viteza dupa aplicarea rampei si a functiei de formare. Parametru read-only pentru verificarea efectului rampelor de accelerare si decelerare. Este referinta de viteza efectiv folosita de regulatorul de viteza.",
+      "influenteaza": "24.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23994,
+    "familie": "ACS880",
+    "parametru": "24.1",
+    "descriere_scurta": "Used speed refer-",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de viteza ramped si corectata inainte de calculul erorii de viteza. Parametru read-only care reprezinta intrarea finala in calculul erorii regulatorului de viteza. Diferenta intre aceasta valoare si 24.2 reprezinta eroarea de viteza.",
+      "influenteaza": "24.2, 24.3",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23995,
+    "familie": "ACS880",
+    "parametru": "24.2",
+    "descriere_scurta": "Used speed feed-",
+    "GENERATED": {
+      "explicatie": "Afiseaza feedbackul de viteza utilizat pentru calculul erorii in regulatorul de viteza. Parametru read-only care poate reprezenta viteza de la encoder sau viteza estimata. Compararea cu 24.1 permite diagnosticarea functionarii regulatorului de viteza.",
+      "influenteaza": "24.3, 24.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23996,
+    "familie": "ACS880",
+    "parametru": "24.3",
+    "descriere_scurta": "Speed error filtered",
+    "GENERATED": {
+      "explicatie": "Afiseaza eroarea de viteza filtrata, adica diferenta dintre referinta si feedbackul de viteza dupa filtrare. Parametru read-only util pentru diagnosticarea performantei regulatorului de viteza. O eroare persistenta indica posibil un gain insuficient sau sarcina variabila.",
+      "influenteaza": "25.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23997,
+    "familie": "ACS880",
+    "parametru": "24.4",
+    "descriere_scurta": "Speed error inver-",
+    "GENERATED": {
+      "explicatie": "Afiseaza eroarea de viteza inversata si nefiltrata. Parametru read-only util pentru analiza dinamica a erorii de viteza. Compararea cu 24.3 permite evaluarea efectului filtrului aplicat erorii.",
+      "influenteaza": "25.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23998,
+    "familie": "ACS880",
+    "parametru": "25.1",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza iesirea regulatorului de viteza care este transferata ca referinta catre regulatorul de cuplu. Parametru read-only esential pentru diagnosticarea comportamentului buclei de control. Valoarea ridicata indica o eroare mare de viteza sau o sarcina semnificativa.",
+      "influenteaza": "26.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23999,
+    "familie": "ACS880",
+    "parametru": "25.2",
+    "descriere_scurta": "Speed proportional",
+    "GENERATED": {
+      "explicatie": "Defineste gainul proportional Kp al regulatorului de viteza. Un gain prea mic duce la raspuns lent, un gain prea mare duce la oscilatii de viteza. Ajustarea Kp este primul pas in tuningul regulatorului PID de viteza.",
+      "influenteaza": "25.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24000,
+    "familie": "ACS880",
+    "parametru": "25.3",
+    "descriere_scurta": "Speed integration",
+    "GENERATED": {
+      "explicatie": "Defineste timpul de integrare al regulatorului de viteza care determina viteza de eliminare a erorii de viteza constante. Un timp mic corecteaza eroarea rapid dar poate duce la instabilitate; setarea la zero dezactiveaza componenta integrala. Trebuie ajustat dupa gainul proportional pentru tuning optim.",
+      "influenteaza": "25.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24001,
+    "familie": "ACS880",
+    "parametru": "25.4",
+    "descriere_scurta": "Speed derivation",
+    "GENERATED": {
+      "explicatie": "Defineste timpul de derivare al regulatorului de viteza, care amplifica iesirea la schimbari rapide ale erorii. Setat la zero, regulatorul functioneaza ca PI; cu valoare pozitiva actioneaza ca PID. Derivata nu este necesara in aplicatii simple sau fara encoder.",
+      "influenteaza": "25.1, 25.5",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24002,
+    "familie": "ACS880",
+    "parametru": "25.5",
+    "descriere_scurta": "Derivation filter",
+    "GENERATED": {
+      "explicatie": "Defineste constanta de timp a filtrului aplicat componentei derivative a regulatorului de viteza. Filtrul este necesar pentru a elimina zgomotele din semnalul de viteza care ar amplifica componenta D. Valoarea implicita de 8ms ofera un compromis bun intre filtrare si raspuns dinamic.",
+      "influenteaza": "25.4",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24003,
+    "familie": "ACS880",
+    "parametru": "25.7",
+    "descriere_scurta": "Acc comp filter time",
+    "GENERATED": {
+      "explicatie": "Defineste constanta de timp a filtrului de compensare la accelerare/decelerare din regulatorul de viteza. Filtrul este aplicat termenului derivativ de compensare pentru a reduce zgomotul. Ajusteaza calitatea compensatiei la tranzitii de referinta rapide.",
+      "influenteaza": "25.4",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24004,
+    "familie": "ACS880",
+    "parametru": "25.8",
+    "descriere_scurta": "Drooping rate",
+    "GENERATED": {
+      "explicatie": "Defineste rata de drooping ca procent din viteza nominala, reducand usor viteza odata cu cresterea sarcinii. Folosit in aplicatii Master/Follower cu arbori cuplati mecanic pentru echilibrarea sarcinii intre mai multi convertori. Valoarea exacta trebuie determinata experimental pentru fiecare aplicatie.",
+      "influenteaza": "25.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24005,
+    "familie": "ACS880",
+    "parametru": "25.9",
+    "descriere_scurta": "Speed ctrl balan-",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa pentru activarea balansarii iesirii regulatorului de viteza, permitand tranzitii bumpless intre moduri de control cuplu si viteza. Cand balansarea este activa, iesirea regulatorului de viteza este fortata la valoarea din 25.10. Util in aplicatii de tensionare banda sau Master/Follower.",
+      "influenteaza": "25.10",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 24006,
+    "familie": "ACS880",
+    "parametru": "26.1",
+    "descriere_scurta": "Torque reference to",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta finala de cuplu transmisa catre regulatorul de cuplu, inainte de limitarile finale. Parametru read-only esential pentru diagnosticarea lantului de control al cuplului. Valoarea din 26.2 reflecta referinta dupa limitarile de putere si curent.",
+      "influenteaza": "26.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24007,
+    "familie": "ACS880",
+    "parametru": "26.2",
+    "descriere_scurta": "Torque reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta finala de cuplu in procente din cuplul nominal dupa toate limitarile de frecventa, tensiune si curent. Parametru read-only care reprezinta comanda efectiva catre nucleul DTC. Diferenta intre 26.1 si 26.2 indica daca o limitare este activa.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24008,
+    "familie": "ACS880",
+    "parametru": "26.8",
+    "descriere_scurta": "Minimum torque ref",
+    "GENERATED": {
+      "explicatie": "Defineste limita minima locala a referintei de cuplu inainte de transferul catre regulatorul de rampa de cuplu. Pentru limitarea absoluta a cuplului se foloseste 30.19. Util in aplicatii de tensionare sau unde directia de cuplu trebuie restrictionata.",
+      "influenteaza": "26.1, 30.19",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 24009,
+    "familie": "ACS880",
+    "parametru": "26.9",
+    "descriere_scurta": "Maximum torque",
+    "GENERATED": {
+      "explicatie": "Defineste limita maxima locala a referintei de cuplu inainte de transferul catre regulatorul de rampa de cuplu. Pentru limitarea absoluta a cuplului se foloseste 30.20. Permite restrictionarea cuplului maxim fara a modifica limitele globale.",
+      "influenteaza": "26.1, 30.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 24010,
+    "familie": "ACS880",
+    "parametru": "26.27",
+    "descriere_scurta": "Torque limit filter",
+    "GENERATED": {
+      "explicatie": "Defineste timpul de filtrare al limitei de cuplu pentru a netezi tranzitiile la schimbarea limitei in timp ce convertorul functioneaza la limita de cuplu. Previne socurile in referinta de cuplu la modificarea dinamica a limitelor. Important in aplicatii unde limitele de cuplu sunt ajustate in timpul functionarii.",
+      "influenteaza": "30.19, 30.20",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 24011,
+    "familie": "ACS880",
+    "parametru": "28.1",
+    "descriere_scurta": "Frequency ref ramp",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de frecventa utilizata inainte de rampa, in modul de control scalar. Parametru read-only pentru urmarirea lantului de control al frecventei. Relevant doar in modul de control scalar, nu in modul DTC.",
+      "influenteaza": "28.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24012,
+    "familie": "ACS880",
+    "parametru": "28.2",
+    "descriere_scurta": "Frequency ref ramp",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta finala de frecventa dupa selectie, limitare si rampa in modul de control scalar. Parametru read-only care reprezinta frecventa efectiv comandata motorului in modul scalar. Diferenta intre 28.1 si 28.2 indica efectul rampei de accelerare/decelerare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24013,
+    "familie": "ACS880",
+    "parametru": "29.1",
+    "descriere_scurta": "Torque ref DC",
+    "GENERATED": {
+      "explicatie": "Afiseaza iesirea regulatorului de tensiune DC transferata catre regulatorul de cuplu. Parametru read-only relevant in modurile de control care utilizeaza regulatorul de tensiune DC. Util pentru diagnosticarea functionarii controlului tensiunii in circuit intermediar.",
+      "influenteaza": "26.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24014,
+    "familie": "ACS880",
+    "parametru": "29.2",
+    "descriere_scurta": "DC voltage ref",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de tensiune DC dupa aplicarea functiei definite de 29.13 si selectia prin 29.14. Parametru read-only util pentru urmarirea lantului de referinta al tensiunii DC. Relevant in aplicatii cu control activ al tensiunii in circuit intermediar.",
+      "influenteaza": "29.3, 29.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24015,
+    "familie": "ACS880",
+    "parametru": "29.3",
+    "descriere_scurta": "DC voltage ref used",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de tensiune DC dupa aplicarea limitelor minima si maxima si inainte de rampa. Parametru read-only in lantul de control al tensiunii DC. Permite verificarea efectului limitarilor configurate asupra referintei.",
+      "influenteaza": "29.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24016,
+    "familie": "ACS880",
+    "parametru": "29.4",
+    "descriere_scurta": "DC voltage ref",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de tensiune DC dupa rampa. Parametru read-only care reprezinta comanda finala de tensiune DC dupa toate procesarile. Compararea cu 29.5 indica eroarea de tensiune activa in regulator.",
+      "influenteaza": "29.6",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24017,
+    "familie": "ACS880",
+    "parametru": "29.5",
+    "descriere_scurta": "Filtered DC voltage",
+    "GENERATED": {
+      "explicatie": "Afiseaza tensiunea DC masurata dupa filtrare. Parametru read-only esential pentru monitorizarea tensiunii in circuitul intermediar. Valoarea este folosita de regulatorul de tensiune DC pentru calculul erorii si al referintei de cuplu.",
+      "influenteaza": "29.6",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24018,
+    "familie": "ACS880",
+    "parametru": "29.6",
+    "descriere_scurta": "DC voltage error",
+    "GENERATED": {
+      "explicatie": "Afiseaza diferenta dintre referinta de tensiune DC rampata (29.4) si tensiunea DC filtrata masurata (29.5). Parametru read-only util pentru diagnosticarea performantei regulatorului de tensiune DC. Eroarea persistenta poate indica probleme cu alimentarea sau cu regulatorul.",
+      "influenteaza": "29.7",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24019,
+    "familie": "ACS880",
+    "parametru": "29.7",
+    "descriere_scurta": "Power reference",
+    "GENERATED": {
+      "explicatie": "Afiseaza iesirea regulatorului PI de tensiune DC, inainte de conversia in referinta de cuplu. Parametru read-only in lantul de control al tensiunii. Valoarea este convertita in referinta de cuplu si transmisa regulatorului de cuplu.",
+      "influenteaza": "29.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24020,
+    "familie": "ACS880",
+    "parametru": "29.9",
+    "descriere_scurta": "Minimum DC",
+    "GENERATED": {
+      "explicatie": "Defineste limita minima pentru referinta de tensiune DC inainte de rampa. Previne setarea unei referinte prea mici care ar putea provoca functionare instabila. Important in aplicatii cu regenerare sau cu cerinte stricte de tensiune DC.",
+      "influenteaza": "29.3",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 24021,
+    "familie": "ACS880",
+    "parametru": "30.1",
+    "descriere_scurta": "Limit word 1",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al limitarilor active in convertor, indicand limitarile de cuplu, viteza, frecventa si alte limite active. Parametru read-only esential pentru diagnosticarea cauzelor de limitare a performantei. Fiecare bit indica o limitare specifica activa in momentul citirii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24022,
+    "familie": "ACS880",
+    "parametru": "30.2",
+    "descriere_scurta": "Torque limit status",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al limitarilor active in regulatorul de cuplu, inclusiv limitari de curent, tensiune, putere si termica. Parametru read-only pentru diagnosticarea detaliata a cauzelor limitarii cuplului. Complementar cu 30.1 pentru analiza completa a limitarilor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24023,
+    "familie": "ACS880",
+    "parametru": "30.33",
+    "descriere_scurta": "Motor RMS voltage",
+    "GENERATED": {
+      "explicatie": "Defineste limita maxima a tensiunii RMS de iesire catre motor. Previne supratensionarea motorului in aplicatii cu motoare cu tensiune nominala mai mica decat tensiunea sursei. Important pentru protectia motoarelor cu izolatie sensibila la tensiuni ridicate.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24024,
+    "familie": "ACS880",
+    "parametru": "30.102",
+    "descriere_scurta": "LSU limit word 2",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de limitare 2 al unitatii de alimentare LSU, indicand limitarile de putere reactiva si protectii la supratensiune AC. Vizibil doar cand controlul LSU este activat prin 95.20. Util pentru diagnosticarea limitarilor active pe unitatea de alimentare.",
+      "influenteaza": "95.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24025,
+    "familie": "ACS880",
+    "parametru": "30.103",
+    "descriere_scurta": "LSU limit word 3",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de limitare 3 al unitatii LSU, indicand limitarile de putere activa si reactiva generate de controlarele de tensiune sau temperatura. Vizibil doar cand controlul LSU este activat prin 95.20. Complementar cu 30.102 pentru diagnosticarea completa a LSU.",
+      "influenteaza": "95.20, 30.148, 30.149",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24026,
+    "familie": "ACS880",
+    "parametru": "30.104",
+    "descriere_scurta": "LSU limit word 4",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de limitare 4 al unitatii LSU, indicand limitarile referintei DC si ale curentului din unitatea de alimentare. Vizibil doar cand controlul LSU este activat prin 95.20. Folosit la diagnosticarea avansata a problemelor de alimentare.",
+      "influenteaza": "95.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24027,
+    "familie": "ACS880",
+    "parametru": "30.148",
+    "descriere_scurta": "LSU minimum",
+    "GENERATED": {
+      "explicatie": "Defineste limita minima de putere a unitatii de alimentare LSU, unde valorile negative reprezinta regenerare. Vizibil doar cand controlul LSU este activat prin 95.20. Important in aplicatii cu regenerare pentru a limita puterea returnata in retea.",
+      "influenteaza": "95.20, 30.103",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 24028,
+    "familie": "ACS880",
+    "parametru": "31.1",
+    "descriere_scurta": "External event 1",
+    "GENERATED": {
+      "explicatie": "Defineste sursa evenimentului extern 1; logica 0=eveniment activ, 1=operare normala. Poate fi oricare intrare digitala sau semnal logic disponibil in convertor. Folosit pentru a conecta evenimente externe din proces (presiune, temperatura, nivel) la sistemul de alarmare al convertorului.",
+      "influenteaza": "31.2",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24029,
+    "familie": "ACS880",
+    "parametru": "31.2",
+    "descriere_scurta": "External event 1",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul evenimentului extern 1: fault (defect), warning (avertizare) sau fault/warning in functie de starea de modulare. Defineste severitatea reactiei convertorului la evenimentul extern. Trebuie ales in functie de criticitatea evenimentului monitorizat.",
+      "influenteaza": "31.1",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24030,
+    "familie": "ACS880",
+    "parametru": "31.3",
+    "descriere_scurta": "External event 2",
+    "GENERATED": {
+      "explicatie": "Defineste sursa evenimentului extern 2. Functioneaza similar cu 31.1 dar pentru un al doilea eveniment extern independent. Permite monitorizarea a doua conditii externe separate cu reactii individuale configurabile.",
+      "influenteaza": "31.4",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24031,
+    "familie": "ACS880",
+    "parametru": "31.4",
+    "descriere_scurta": "External event 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul evenimentului extern 2: fault, warning sau fault/warning in functie de starea de modulare. Functioneaza similar cu 31.2 dar pentru evenimentul extern 2. Trebuie corelat cu 31.3 pentru configurarea completa a evenimentului.",
+      "influenteaza": "31.3",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24032,
+    "familie": "ACS880",
+    "parametru": "31.5",
+    "descriere_scurta": "External event 3",
+    "GENERATED": {
+      "explicatie": "Defineste sursa evenimentului extern 3. Functioneaza similar cu 31.1 si 31.3 pentru un al treilea eveniment extern independent. Permite monitorizarea pana la 5 conditii externe separate.",
+      "influenteaza": "31.6",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24033,
+    "familie": "ACS880",
+    "parametru": "31.6",
+    "descriere_scurta": "External event 3",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul evenimentului extern 3: fault, warning sau combinat. Functioneaza similar cu 31.2 si 31.4 pentru evenimentul 3. Trebuie corelat cu 31.5 pentru configurarea completa.",
+      "influenteaza": "31.5",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24034,
+    "familie": "ACS880",
+    "parametru": "31.7",
+    "descriere_scurta": "External event 4",
+    "GENERATED": {
+      "explicatie": "Defineste sursa evenimentului extern 4. Functioneaza similar cu celelalte surse de evenimente externe. Permite expandarea monitorizarii la patru conditii externe ale procesului.",
+      "influenteaza": "31.8",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24035,
+    "familie": "ACS880",
+    "parametru": "31.8",
+    "descriere_scurta": "External event 4",
+    "GENERATED": {
+      "explicatie": "Selecteaza tipul evenimentului extern 4: fault, warning sau combinat. Functioneaza similar cu celelalte tipuri de evenimente externe. Trebuie corelat cu 31.7.",
+      "influenteaza": "31.7",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24036,
+    "familie": "ACS880",
+    "parametru": "31.9",
+    "descriere_scurta": "External event 5",
+    "GENERATED": {
+      "explicatie": "Defineste sursa celui de-al cincilea eveniment extern. Ofera posibilitatea monitorizarii a cinci conditii externe independente ale procesului. Functioneaza identic cu 31.1, 31.3, 31.5 si 31.7.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24037,
+    "familie": "ACS880",
+    "parametru": "32.1",
+    "descriere_scurta": "Supervision status",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al functiilor de supraveghere a semnalelor, indicand daca valorile monitorizate sunt in interiorul sau in afara limitelor configurate. Parametru read-only util pentru monitorizarea starii supravegherii. Fiecare bit corespunde unei functii de supraveghere.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24038,
+    "familie": "ACS880",
+    "parametru": "32.5",
+    "descriere_scurta": "Supervision 1 func-",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul functiei de supraveghere 1, determinand cum semnalul monitorizat este comparat cu limitele sale. Optiunile includ supraveghere la sub-limita, supra-limita sau in afara intervalului. Trebuie corelat cu 32.6, 32.7, 32.9 si 32.10 pentru configurare completa.",
+      "influenteaza": "32.6, 32.7, 32.9",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24039,
+    "familie": "ACS880",
+    "parametru": "32.6",
+    "descriere_scurta": "Supervision 1 action",
+    "GENERATED": {
+      "explicatie": "Selecteaza actiunea convertorului cand semnalul supravegheat de functia 1 depaseste limitele configurate. Reactia poate fi o alarma, un defect sau o actiune logica. Trebuie ales in functie de criticitatea depasirii limitei pentru proces.",
+      "influenteaza": "32.5",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24040,
+    "familie": "ACS880",
+    "parametru": "32.7",
+    "descriere_scurta": "Supervision 1 signal",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de functia de supraveghere 1 din lista de semnale disponibile ale convertorului. Poate fi viteza motorului, curentul, cuplul, tensiunea DC, puterea, referinta sau feedbackul PID. Alegerea corecta este esentiala pentru functionarea supravegherii.",
+      "influenteaza": "32.5, 32.8",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24041,
+    "familie": "ACS880",
+    "parametru": "32.8",
+    "descriere_scurta": "Supervision 1 filter",
+    "GENERATED": {
+      "explicatie": "Defineste constanta de timp a filtrului aplicat semnalului monitorizat de supraveghere 1. Filtrul previne activari false cauzate de zgomote sau tranzitii scurte ale semnalului. Valoarea optima depinde de dinamica semnalului monitorizat.",
+      "influenteaza": "32.5, 32.7",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24042,
+    "familie": "ACS880",
+    "parametru": "32.9",
+    "descriere_scurta": "Supervision 1 low",
+    "GENERATED": {
+      "explicatie": "Defineste limita inferioara pentru functia de supraveghere 1. Cand semnalul monitorizat scade sub aceasta valoare, conditia de sub-limita este activata. Trebuie calibrata in functie de parametrii normali de operare ai procesului.",
+      "influenteaza": "32.5, 32.6",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24043,
+    "familie": "ACS880",
+    "parametru": "33.1",
+    "descriere_scurta": "Counter status",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al contorelor si timerelor de mentenanta, indicand care au depasit limitele preset. Parametru read-only pentru planificarea mentenantei predictive. Fiecare bit corespunde unui timer sau contor de mentenanta configurat.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24044,
+    "familie": "ACS880",
+    "parametru": "35.1",
+    "descriere_scurta": "Motor estimated",
+    "GENERATED": {
+      "explicatie": "Afiseaza temperatura estimata a motorului calculata de modelul termic intern, fara senzor extern. Parametru read-only util pentru monitorizarea starii termice a motorului. Modelul este calibrat prin parametrii 35.50-35.55 si trebuie verificat la punerea in functiune.",
+      "influenteaza": "35.50, 35.51",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24045,
+    "familie": "ACS880",
+    "parametru": "35.2",
+    "descriere_scurta": "Measuredtemperat-",
+    "GENERATED": {
+      "explicatie": "Afiseaza temperatura masurata prin sursa definita de parametrul 35.11, de obicei un senzor Pt100 sau PTC. Parametru read-only pentru monitorizarea temperaturii motorului. Valoarea este folosita de functia de protectie la supraincalzire configurata.",
+      "influenteaza": "35.11",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24046,
+    "familie": "ACS880",
+    "parametru": "35.3",
+    "descriere_scurta": "Measuredtemperat-",
+    "GENERATED": {
+      "explicatie": "Afiseaza a doua temperatura masurata prin sursa definita de parametrul 35.21. Permite monitorizarea a doua puncte de temperatura pe motor sau echipament. Useful in motoare mari sau cu doua infasurari monitorizate independent.",
+      "influenteaza": "35.21",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24047,
+    "familie": "ACS880",
+    "parametru": "35.4",
+    "descriere_scurta": "FPTC status word",
+    "GENERATED": {
+      "explicatie": "Afiseaza statusul modulelor optionale de protectie cu termistor FPTC-xx. Poate fi folosit ca sursa pentru evenimente externe sau alarme. Util in aplicatii cu protectie la supraincalzire prin termistor NTC/PTC conectat prin modul FPTC.",
+      "influenteaza": "31.1",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24048,
+    "familie": "ACS880",
+    "parametru": "35.5",
+    "descriere_scurta": "Motor overload",
+    "GENERATED": {
+      "explicatie": "Afiseaza nivelul de suprasarcina al motorului ca procent din limita de defect (100%). La 88% este generat un avertisment, la 100% este generat un defect. Parametru read-only esential pentru monitorizarea solicitarii termice a motorului in timp real.",
+      "influenteaza": "35.56",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24049,
+    "familie": "ACS880",
+    "parametru": "35.9",
+    "descriere_scurta": "Temperature Calib-",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al calibrarii temperaturilor, indicand starea calibrarii pentru temperatura 1 si 2. Parametru read-only util pentru verificarea procesului de calibrare al masuratorilor de temperatura. Legat de parametrii 35.17 si 35.27.",
+      "influenteaza": "35.17, 35.27",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24050,
+    "familie": "ACS880",
+    "parametru": "35.17",
+    "descriere_scurta": "Temperature1calib-",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea de calibrare a masuratoriide temperatura 1 pentru ajustarea fina a senzorului Pt100/Pt1000. Calibrarea se face prin masurarea temperaturii ambientale cu motorul rece si setarea valorii corespunzatoare. Afecteaza doar masuratorile prin AI/AO pe unitatea de control sau modulele I/O.",
+      "influenteaza": "35.2, 35.9",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24051,
+    "familie": "ACS880",
+    "parametru": "35.27",
+    "descriere_scurta": "Temperature2calib-",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea de calibrare a masuratoriide temperatura 2. Functioneaza identic cu 35.17 dar pentru al doilea canal de temperatura. Permite calibrarea independenta a celor doua canale de masurare a temperaturii.",
+      "influenteaza": "35.3, 35.9",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24052,
+    "familie": "ACS880",
+    "parametru": "36.1",
+    "descriere_scurta": "PVL signal source",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de logger-ul de valori de varf. Logger-ul retine valoarea de varf a semnalului si starea celorlalte semnale preselect in momentul atingerii varfului. Util pentru capturarea evenimentelor tranzitorii de suprasarcina sau alte conditii extreme.",
+      "influenteaza": "36.2, 36.12",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24053,
+    "familie": "ACS880",
+    "parametru": "36.2",
+    "descriere_scurta": "PVL filter time",
+    "GENERATED": {
+      "explicatie": "Defineste timpul de filtrare aplicat semnalului monitorizat de logger-ul de valori de varf. Filtrul previne inregistrarea varfurilor tranzitorii cauzate de zgomote. Valoarea optima depinde de dinamica semnalului monitorizat si de interesul aplicatiei.",
+      "influenteaza": "36.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24054,
+    "familie": "ACS880",
+    "parametru": "36.6",
+    "descriere_scurta": "AL2 signal source",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de amplitude logger 2, esantionat la intervale de 200ms. Logger-ul distribuie esantioanele pe 10 intervale de amplitudine pentru analiza statistica. Util pentru analiza distributiei valorilor unui semnal pe termen lung.",
+      "influenteaza": "36.7, 36.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24055,
+    "familie": "ACS880",
+    "parametru": "36.7",
+    "descriere_scurta": "AL2 signal scaling",
+    "GENERATED": {
+      "explicatie": "Defineste valoarea semnalului care corespunde la 100% in amplitude logger 2. Permite scalarea corecta a intervalelor de amplitudine pentru semnale cu magnitudine diferita. Trebuie setat la valoarea maxima asteptata a semnalului monitorizat.",
+      "influenteaza": "36.6, 36.40",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24056,
+    "familie": "ACS880",
+    "parametru": "36.8",
+    "descriere_scurta": "Logger function",
+    "GENERATED": {
+      "explicatie": "Determina daca amplitude logger-ele 1 si 2 sunt active continuu sau doar cand convertorul moduleaza. Activarea numai in timpul modularii elimina datele colectate cand motorul nu functioneaza. Relevant pentru analiza incarcarii reale a motorului.",
+      "influenteaza": "36.6",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24057,
+    "familie": "ACS880",
+    "parametru": "36.9",
+    "descriere_scurta": "Reset loggers",
+    "GENERATED": {
+      "explicatie": "Reseteaza logger-ul de valori de varf si/sau amplitude logger 2 la initierea unei noi perioade de monitorizare. Amplitude logger 1 nu poate fi resetat. Folosit la inceperea unei noi campanii de masurare sau dupa modificarea configuratiei logger-elor.",
+      "influenteaza": "36.1, 36.6",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24058,
+    "familie": "ACS880",
+    "parametru": "37.1",
+    "descriere_scurta": "ULC output status",
+    "GENERATED": {
+      "explicatie": "Afiseaza starea curba de incarcare (ULC), indicand daca semnalul monitorizat este sub curba de underload sau peste curba de overload. Parametru read-only independent de actiunile si intarzierile configurate. Util pentru diagnosticarea starii de incarcare a procesului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24059,
+    "familie": "ACS880",
+    "parametru": "37.2",
+    "descriere_scurta": "ULC supervision",
+    "GENERATED": {
+      "explicatie": "Selecteaza semnalul monitorizat de functia de curba de incarcare (ULC), comparand valoarea absoluta cu curba de incarcare definita. Optiunile includ curentul motor, cuplul sau puterea de iesire. Alegerea corecta a semnalului depinde de tipul de protectie dorit pentru proces.",
+      "influenteaza": "37.1, 37.3, 37.4",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24060,
+    "familie": "ACS880",
+    "parametru": "37.3",
+    "descriere_scurta": "ULC overload ac-",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia convertorului cand semnalul depaseste curba de overload pentru mai mult decat durata definita de 37.41. Optiunile includ nicio actiune, avertizare sau defect. Important pentru protectia echipamentelor mecanice antrenate la suprasarcina.",
+      "influenteaza": "37.41",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24061,
+    "familie": "ACS880",
+    "parametru": "37.4",
+    "descriere_scurta": "ULC underload ac-",
+    "GENERATED": {
+      "explicatie": "Selecteaza reactia convertorului cand semnalul este sub curba de underload pentru mai mult decat durata definita de 37.42. Optiunile includ nicio actiune, avertizare sau defect. Util pentru detectarea ruperii transmisiei, curelei sau a pompei cu cavitatie.",
+      "influenteaza": "37.42",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24062,
+    "familie": "ACS880",
+    "parametru": "40.1",
+    "descriere_scurta": "Process PID output",
+    "GENERATED": {
+      "explicatie": "Afiseaza iesirea regulatorului PID de proces, reprezentand referinta de viteza sau frecventa generata de PID pentru controlul procesului. Parametru read-only esential pentru diagnosticarea functionarii buclei PID de proces. Unitatea este selectata prin 40.12.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24063,
+    "familie": "ACS880",
+    "parametru": "40.2",
+    "descriere_scurta": "Process PID feed-",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea feedbackului de proces dupa selectie, functia matematica si filtrare. Parametru read-only care reprezinta variabila de proces masurata folosita de regulatorul PID. Compararea cu 40.3 permite evaluarea erorii de proces.",
+      "influenteaza": "40.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24064,
+    "familie": "ACS880",
+    "parametru": "40.3",
+    "descriere_scurta": "Process PID set-",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea setpoint-ului PID dupa selectie, functia matematica, limitare si rampa. Parametru read-only care reprezinta referinta dorita a procesului dupa toate procesarile. Compararea cu 40.2 indica eroarea de proces.",
+      "influenteaza": "40.4",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24065,
+    "familie": "ACS880",
+    "parametru": "40.4",
+    "descriere_scurta": "Process PID devi-",
+    "GENERATED": {
+      "explicatie": "Afiseaza deviatia procesului PID, egala implicit cu setpoint minus feedback. Deviatia poate fi inversata prin 40.31. Parametru read-only care indica direct eroarea de reglare a procesului.",
+      "influenteaza": "40.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24066,
+    "familie": "ACS880",
+    "parametru": "40.5",
+    "descriere_scurta": "Process PID trim",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta trimmed la iesirea regulatorului PID de proces. Parametru read-only pentru urmarirea lantului de control PID. Diferenta fata de 40.1 indica efectul functiei de trim asupra referintei de iesire.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24067,
+    "familie": "ACS880",
+    "parametru": "40.6",
+    "descriere_scurta": "Process PID status",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al regulatorului PID de proces, cu informatii despre modul activ, starea setpoint-ului, a iesirilor si a functiilor speciale. Parametru read-only esential pentru diagnosticarea completa a comportamentului PID. Fiecare bit indica o conditie specifica.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24068,
+    "familie": "ACS880",
+    "parametru": "40.9",
+    "descriere_scurta": "Set 1 feedback 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza a doua sursa de feedback de proces pentru setul 1 al PID. Functioneaza similar cu 40.8 si permite calculul feedbackului ca o combinatie matematica intre doua semnale de masura. Relevant cand procesul necesita feedback calculat din doua semnale.",
+      "influenteaza": "40.2, 40.10",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24069,
+    "familie": "ACS880",
+    "parametru": "41.7",
+    "descriere_scurta": "Set 2 PID operation",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de operare al regulatorului PID pentru setul 2 de parametri. Functioneaza identic cu 40.7 dar pentru al doilea set de parametri PID. Permite configurarea unui mod PID alternativ pentru tranzitia intre doua regimuri de control.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24070,
+    "familie": "ACS880",
+    "parametru": "41.8",
+    "descriere_scurta": "Set 2 feedback 1",
+    "GENERATED": {
+      "explicatie": "Selecteaza prima sursa de feedback de proces pentru setul 2 al PID. Functioneaza identic cu 40.8 dar pentru setul 2 de parametri. Permite folosirea unui semnal de feedback diferit in setul alternativ de parametri PID.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24071,
+    "familie": "ACS880",
+    "parametru": "41.9",
+    "descriere_scurta": "Set 2 feedback 2",
+    "GENERATED": {
+      "explicatie": "Selecteaza a doua sursa de feedback de proces pentru setul 2 al PID. Functioneaza identic cu 40.9 dar pentru setul 2 de parametri. Complementar cu 41.8 pentru configurarea feedbackului combinat al setului alternativ.",
+      "influenteaza": "41.8",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24072,
+    "familie": "ACS880",
+    "parametru": "43.1",
+    "descriere_scurta": "Brake resistor tem-",
+    "GENERATED": {
+      "explicatie": "Afiseaza temperatura estimata a rezistentei de franare ca procent din temperatura maxima admisa. La 100%, rezistenta a atins temperatura maxima si protectia se va activa. Parametru read-only calculat pe baza modelului termic configurat prin 43.8 si 43.9.",
+      "influenteaza": "43.6, 43.8, 43.9",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24073,
+    "familie": "ACS880",
+    "parametru": "43.6",
+    "descriere_scurta": "Brake chopper",
+    "GENERATED": {
+      "explicatie": "Activeaza controlul chopper-ului de franare si selecteaza metoda de protectie la suprasarcina a rezistentei (calcul termic sau masurare). Trebuie activat daca este instalata o rezistenta de franare externa. Modelul termic necesita configurarea corecta a parametrilor rezistentei.",
+      "influenteaza": "43.1, 43.7, 43.8, 43.9",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24074,
+    "familie": "ACS880",
+    "parametru": "43.7",
+    "descriere_scurta": "Brake chopper run",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa pentru controlul rapid de pornire/oprire al chopper-ului de franare. Permite dezactivarea rapida a impulsurilor IGBT ale chopper-ului. Util in aplicatii cu alimentare regenerativa unde chopper-ul trebuie activ doar in anumite conditii.",
+      "influenteaza": "43.6",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24075,
+    "familie": "ACS880",
+    "parametru": "43.8",
+    "descriere_scurta": "Brake resistor",
+    "GENERATED": {
+      "explicatie": "Defineste constanta de timp termica a modelului termic al rezistentei de franare, reprezentand timpul pentru atingerea a 63% din temperatura finala. Trebuie setata conform datelor tehnice ale rezistentei de franare utilizate. Parametru critic pentru protectia corecta a rezistentei de franare.",
+      "influenteaza": "43.1, 43.6",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24076,
+    "familie": "ACS880",
+    "parametru": "43.9",
+    "descriere_scurta": "Brake resistor max",
+    "GENERATED": {
+      "explicatie": "Defineste capacitatea maxima de disipare continua a rezistentei de franare in kW. Valoarea trebuie setata conform specificatiilor producatorului rezistentei. Parametrul este utilizat de modelul termic pentru calculul temperaturii estimate a rezistentei.",
+      "influenteaza": "43.1, 43.6, 43.8",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24077,
+    "familie": "ACS880",
+    "parametru": "44.1",
+    "descriere_scurta": "Brake control status",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare al logicii de control a franei mecanice, inclusiv comenzile de deschidere/inchidere si starea masinii de stare a franei. Parametru read-only pentru diagnosticarea functionarii secventei de control a franei. Bit 0 conectat la iesirea digitala care comanda frena.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24078,
+    "familie": "ACS880",
+    "parametru": "44.2",
+    "descriere_scurta": "Brake torque",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuplul motorului in momentul ultimei comenzi de inchidere a franei. Aceasta valoare poate fi utilizata ca referinta de cuplu de deschidere a franei. Permite controlul mai precis al secventei de deschidere pentru a evita alunecarea sarcinii.",
+      "influenteaza": "44.9, 44.10",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24079,
+    "familie": "ACS880",
+    "parametru": "44.3",
+    "descriere_scurta": "Brake open torque",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuplul activ de deschidere a franei utilizat in momentul curent. Parametru read-only care reflecta valoarea efectiva selectata din 44.9 sau 44.10. Util pentru verificarea corectitudinii secventei de deschidere a franei mecanice.",
+      "influenteaza": "44.9, 44.10",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24080,
+    "familie": "ACS880",
+    "parametru": "44.6",
+    "descriere_scurta": "Brake control en-",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza logica de control a franei mecanice sau selecteaza o sursa externa pentru aceasta. Trebuie activat pentru a folosi functia de control integrat al franei. Esential in aplicatii de ridicat sau cu cerinte de siguranta la franare.",
+      "influenteaza": "44.1",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24081,
+    "familie": "ACS880",
+    "parametru": "44.7",
+    "descriere_scurta": "Brake acknowledge",
+    "GENERATED": {
+      "explicatie": "Activeaza si selecteaza sursa semnalului de confirmare a starii franei mecanice (deschisa/inchisa). Cand este detectata o stare neasteptata a confirmarii, convertorul reactioneaza conform 44.17. Esential pentru siguranta in aplicatii cu frana mecanica controlata.",
+      "influenteaza": "44.17",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 24082,
+    "familie": "ACS880",
+    "parametru": "44.8",
+    "descriere_scurta": "Brake open delay",
+    "GENERATED": {
+      "explicatie": "Defineste intarzierea intre comanda de deschidere a franei si eliberarea controlului de viteza al motorului. Corespunde timpului mecanic de deschidere al franei specificat de producator. Valoarea corecta previne alunecarea sarcinii in aplicatii de ridicat.",
+      "influenteaza": "44.1",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24083,
+    "familie": "ACS880",
+    "parametru": "44.9",
+    "descriere_scurta": "Brake open torque",
+    "GENERATED": {
+      "explicatie": "Defineste sursa referintei de cuplu de deschidere a franei, folosita daca valoarea absoluta depaseste setarea din 44.10 si semnul este acelasi. Permite folosirea cuplului memorizat la ultima inchidere a franei ca referinta de deschidere. Asigura o secventa de deschidere frana adaptiva la sarcina.",
+      "influenteaza": "44.3, 44.10",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 24084,
+    "familie": "ACS880",
+    "parametru": "45.1",
+    "descriere_scurta": "Saved GW hours",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia economisita in GWh comparativ cu conectarea directa la retea, incrementat cand 45.2 se roteste. Parametru read-only pentru monitorizarea impactului energetic al convertorului pe termen lung. Resetabil prin 45.21.",
+      "influenteaza": "45.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 24085,
+    "familie": "ACS880",
+    "parametru": "45.2",
+    "descriere_scurta": "Saved MW hours",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia economisita in MWh comparativ cu conectarea directa la retea. La rulover incrementeaza 45.1. Parametru read-only util pentru raportarea economisirii de energie si calculul ROI al investitiei in convertor.",
+      "influenteaza": "45.1, 45.3",
+      "categorie": "Diagnostic"
+    }
+  }
+]

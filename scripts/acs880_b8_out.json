@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 22369,
+    "familie": "ACS880",
+    "parametru": "36.21",
+    "descriere_scurta": "AL1 10 to 20%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 10 si 20% din valoarea maxima. Util pentru analiza distributiei de incarcare in timp si identificarea regimurilor predominante de functionare. Parametru de doar citire, nu poate fi modificat.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22370,
+    "familie": "ACS880",
+    "parametru": "36.22",
+    "descriere_scurta": "AL1 20 to 30%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 20 si 30% din valoarea maxima. Impreuna cu ceilalti parametri din grupul 36, formeaza histograma distributiei amplitudinii semnalului monitorizat. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22371,
+    "familie": "ACS880",
+    "parametru": "36.23",
+    "descriere_scurta": "AL1 30 to 40%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 30 si 40% din valoarea maxima. Acest interval indica operarea la sarcini mediu-mici si este relevant pentru analiza profilului de functionare al aplicatiei. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22372,
+    "familie": "ACS880",
+    "parametru": "36.24",
+    "descriere_scurta": "AL1 40 to 50%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 40 si 50% din valoarea maxima. Un procent ridicat in acest interval indica functionare predominanta la jumatate de sarcina, ceea ce poate influenta eficienta energetica. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22373,
+    "familie": "ACS880",
+    "parametru": "36.25",
+    "descriere_scurta": "AL1 50 to 60%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 50 si 60% din valoarea maxima. Ajuta la identificarea intervalelor de lucru frecvente si la dimensionarea corecta a echipamentului. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22374,
+    "familie": "ACS880",
+    "parametru": "36.26",
+    "descriere_scurta": "AL1 60 to 70%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 60 si 70% din valoarea maxima. Valorile ridicate in acest interval sugereaza functionare frecventa la sarcini mediu-mari, relevante pentru analiza uzurii si a consumului energetic. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22375,
+    "familie": "ACS880",
+    "parametru": "36.27",
+    "descriere_scurta": "AL1 70 to 80%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 70 si 80% din valoarea maxima. Functionarea frecventa in acest interval indica utilizare intensiva a convertorului si poate fi relevanta pentru planificarea mentenantei. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22376,
+    "familie": "ACS880",
+    "parametru": "36.28",
+    "descriere_scurta": "AL1 80 to 90%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 1 care se incadreaza intre 80 si 90% din valoarea maxima. Valorile mari in acest interval semnaleaza functionare aproape de limita nominala, important pentru evaluarea riscului de suprasarcina. Parametru de doar citire.",
+      "influenteaza": "36.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22377,
+    "familie": "ACS880",
+    "parametru": "36.41",
+    "descriere_scurta": "AL2 10 to 20%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 10 si 20% din valoarea maxima. Amplitude logger 2 monitorizeaza un al doilea semnal configurabil, permitat analiza paralela a doua marimi diferite. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22378,
+    "familie": "ACS880",
+    "parametru": "36.42",
+    "descriere_scurta": "AL2 20 to 30%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 20 si 30% din valoarea maxima. Impreuna cu ceilalti parametri AL2, ofera o histograma completa a distributiei semnalului monitorizat de loggerul 2. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22379,
+    "familie": "ACS880",
+    "parametru": "36.43",
+    "descriere_scurta": "AL2 30 to 40%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 30 si 40% din valoarea maxima. Util pentru compararea profilului de functionare al unui al doilea semnal fata de amplitude logger 1. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22380,
+    "familie": "ACS880",
+    "parametru": "36.44",
+    "descriere_scurta": "AL2 40 to 50%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 40 si 50% din valoarea maxima. Datele din acest interval completeaza histograma amplitude logger 2 si permit evaluarea regimului tipic de lucru. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22381,
+    "familie": "ACS880",
+    "parametru": "36.45",
+    "descriere_scurta": "AL2 50 to 60%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 50 si 60% din valoarea maxima. Valorile din acest interval reflecta functionarea la sarcina medie si sunt utile pentru analiza eficientei energetice. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22382,
+    "familie": "ACS880",
+    "parametru": "36.46",
+    "descriere_scurta": "AL2 60 to 70%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 60 si 70% din valoarea maxima. Util in aplicatii unde al doilea semnal monitorizat trebuie mentinut preponderent in acest interval de amplitudine. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22383,
+    "familie": "ACS880",
+    "parametru": "36.47",
+    "descriere_scurta": "AL2 70 to 80%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 70 si 80% din valoarea maxima. Procentele ridicate in acest interval pot indica suprasolicitare frecventa a semnalului monitorizat de loggerul 2. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22384,
+    "familie": "ACS880",
+    "parametru": "36.48",
+    "descriere_scurta": "AL2 80 to 90%",
+    "GENERATED": {
+      "explicatie": "Afiseaza procentul de esantioane inregistrate de amplitude logger 2 care se incadreaza intre 80 si 90% din valoarea maxima. Valorile ridicate in acest interval semnaleaza operare frecventa aproape de capacitatea nominala a semnalului monitorizat. Parametru de doar citire.",
+      "influenteaza": "36.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22390,
+    "familie": "ACS880",
+    "parametru": "46.23",
+    "descriere_scurta": "At torque hysteresis",
+    "GENERATED": {
+      "explicatie": "Defineste banda de histereza in jurul referintei de cuplu in cadrul careia convertorul este considerat la setpoint. Cand diferenta absoluta dintre cuplul de referinta (26.73) si cuplul actual (1.10) este mai mica decat aceasta valoare, bitul 8 din cuvantul de stare principal (6.11) este setat pe 1. Parametrul este important in aplicatii cu control de cuplu unde semnalizarea 'la setpoint' este folosita de automatul programabil.",
+      "influenteaza": "6.11, 26.73, 1.10",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 22391,
+    "familie": "ACS880",
+    "parametru": "50.13",
+    "descriere_scurta": "FBA A control word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de control brut (nemodificat) trimis de master (PLC) catre adaptorul fieldbus A, vizibil doar cand modul debug este activat prin parametrul 50.12. Este util pentru depanarea comunicatiei fieldbus A si verificarea comenzilor primite de la PLC. Parametru de doar citire.",
+      "influenteaza": "50.12",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22392,
+    "familie": "ACS880",
+    "parametru": "50.16",
+    "descriere_scurta": "FBA A status word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare brut (nemodificat) trimis de adaptorul fieldbus A catre master (PLC), vizibil doar cand modul debug este activat prin parametrul 50.12. Permite verificarea datelor de stare transmise catre PLC fara procesare interna. Parametru de doar citire.",
+      "influenteaza": "50.12",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22393,
+    "familie": "ACS880",
+    "parametru": "50.43",
+    "descriere_scurta": "FBA B control word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de control brut (nemodificat) trimis de master (PLC) catre adaptorul fieldbus B, vizibil doar cand modul debug este activat prin parametrul 50.42. Util pentru depanarea comunicatiei pe al doilea adaptor fieldbus. Parametru de doar citire.",
+      "influenteaza": "50.42",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22394,
+    "familie": "ACS880",
+    "parametru": "50.46",
+    "descriere_scurta": "FBA B status word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare brut (nemodificat) trimis de adaptorul fieldbus B catre master (PLC), vizibil doar cand modul debug este activat prin parametrul 50.42. Util pentru verificarea informatiilor de stare transmise prin al doilea adaptor fieldbus. Parametru de doar citire.",
+      "influenteaza": "50.42",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22396,
+    "familie": "ACS880",
+    "parametru": "51.28",
+    "descriere_scurta": "FBA A par table ver",
+    "GENERATED": {
+      "explicatie": "Afiseaza revisiunea tabelului de parametri al fisierului de mapare al modulului adaptor fieldbus A, stocat in memoria convertorului. Versiunea este afisata in formatul axyz, unde ax reprezinta numarul major iar yz numarul minor de revisie. Parametru de diagnosticare, util la actualizarea firmware-ului adaptorului.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22397,
+    "familie": "ACS880",
+    "parametru": "51.33",
+    "descriere_scurta": "FBA A appl SW ver",
+    "GENERATED": {
+      "explicatie": "Afiseaza versiunile majora si minora ale firmware-ului modulului adaptor fieldbus A, in formatul xyy. Util pentru verificarea versiunii de software instalate pe adaptorul fieldbus A si pentru compatibilitatea cu sistemul de automatizare. Parametru de doar citire.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22399,
+    "familie": "ACS880",
+    "parametru": "54.28",
+    "descriere_scurta": "FBA B par table ver",
+    "GENERATED": {
+      "explicatie": "Afiseaza revisiunea tabelului de parametri al fisierului de mapare al modulului adaptor fieldbus B, stocat in memoria convertorului. Similar cu 51.28 dar pentru al doilea adaptor fieldbus B. Parametru de diagnosticare, util la actualizarea firmware-ului adaptorului B.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22400,
+    "familie": "ACS880",
+    "parametru": "54.33",
+    "descriere_scurta": "FBA B appl SW ver",
+    "GENERATED": {
+      "explicatie": "Afiseaza versiunile majora si minora ale firmware-ului modulului adaptor fieldbus B, in formatul xyy. Util pentru verificarea versiunii de software instalate pe adaptorul fieldbus B si compatibilitatea acestuia cu sistemul de automatizare. Parametru de doar citire.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22404,
+    "familie": "ACS880",
+    "parametru": "58.10",
+    "descriere_scurta": "All packets",
+    "GENERATED": {
+      "explicatie": "Afiseaza numarul total de pachete valide adresate oricarui dispozitiv de pe magistrala Modbus. In functionare normala, contorul creste continuu; o valoare stationara poate indica probleme de comunicatie pe magistrala. Poate fi resetat de la panoul de control prin apasarea prelungita a butonului Reset.",
+      "influenteaza": "58.12",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22405,
+    "familie": "ACS880",
+    "parametru": "58.12",
+    "descriere_scurta": "CRC errors",
+    "GENERATED": {
+      "explicatie": "Afiseaza numarul de pachete cu eroare CRC receptionate de convertor pe magistrala Modbus. Un contor in crestere rapida indica perturbatii electromagnetice sau probleme de cablare pe magistrala. Poate fi resetat de la panoul de control prin apasarea prelungita a butonului Reset.",
+      "influenteaza": "58.10",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22406,
+    "familie": "ACS880",
+    "parametru": "58.18",
+    "descriere_scurta": "EFB control word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de control brut (nemodificat) trimis de controllerul Modbus catre convertor prin interfata fieldbus integrata. Util pentru depanarea comunicatiei Modbus si verificarea comenzilor primite fara procesare interna. Parametru de doar citire.",
+      "influenteaza": "58.19",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22407,
+    "familie": "ACS880",
+    "parametru": "58.19",
+    "descriere_scurta": "EFB status word",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuvantul de stare brut (nemodificat) trimis de convertor catre controllerul Modbus prin interfata fieldbus integrata. Permite verificarea exacta a datelor de stare transmise, util in depanarea comunicatiei Modbus. Parametru de doar citire.",
+      "influenteaza": "58.18",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22408,
+    "familie": "ACS880",
+    "parametru": "90.56",
+    "descriere_scurta": "Load position off-",
+    "GENERATED": {
+      "explicatie": "Defineste un offset de pozitie pentru partea de sarcina a sistemului de actionare. Rezolutia offsetului este determinata de parametrul 90.57 Load position resolution. Folosit pentru calibrarea pozitiei de referinta in aplicatii de pozitionare precisa.",
+      "influenteaza": "90.57",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22411,
+    "familie": "ACS880",
+    "parametru": "92.33",
+    "descriere_scurta": "SSI clock cycles",
+    "GENERATED": {
+      "explicatie": "Defineste lungimea unui mesaj SSI exprimata ca numar de cicluri de ceas, calculata prin adaugarea valorii 1 la numarul de biti din cadrul SSI. Parametru vizibil doar cand encoder 1 este de tip absolut (92.1 = Absolute encoder). Configurarea corecta este esentiala pentru citirea precisa a pozitiei de la encoderul absolut SSI.",
+      "influenteaza": "92.1, 92.34, 92.35",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22412,
+    "familie": "ACS880",
+    "parametru": "92.34",
+    "descriere_scurta": "SSI position msb",
+    "GENERATED": {
+      "explicatie": "Defineste pozitia bitului cel mai semnificativ (MSB) al datelor de pozitie in cadrul unui mesaj SSI, pentru un encoder absolut de tip SSI. Parametru vizibil doar cand 92.1 = Absolute encoder. Configurarea corecta este necesara pentru interpretarea precisa a datelor de pozitie transmise de encoder.",
+      "influenteaza": "92.1, 92.33",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22413,
+    "familie": "ACS880",
+    "parametru": "92.35",
+    "descriere_scurta": "SSI revolution msb",
+    "GENERATED": {
+      "explicatie": "Defineste pozitia bitului cel mai semnificativ (MSB) al contorului de rotatii in cadrul unui mesaj SSI, pentru un encoder absolut de tip SSI. Parametru vizibil doar cand 92.1 = Absolute encoder. Esential pentru determinarea corecta a numarului de rotatii din mesajul SSI.",
+      "influenteaza": "92.1, 92.33, 92.34",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22414,
+    "familie": "ACS880",
+    "parametru": "93.15",
+    "descriere_scurta": "Transient filter",
+    "GENERATED": {
+      "explicatie": "Defineste frecventa filtrului de tranziente pentru encoder 2 de tip HTL 1, avand aceeasi functionalitate ca parametrul 92.15 Transient filter de la encoder 1. Filtrul elimina impulsuri parazite scurte din semnalul encoderului, prevenind numararea eronata. Parametru vizibil doar cand 93.1 = HTL 1.",
+      "influenteaza": "93.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22415,
+    "familie": "ACS880",
+    "parametru": "93.30",
+    "descriere_scurta": "Serial link mode",
+    "GENERATED": {
+      "explicatie": "Defineste modul de comunicatie seriala pentru encoder 2 de tip absolut, avand aceeasi functionalitate ca parametrul 92.30 de la encoder 1. Determina cum este initiata si gestionata comunicatia seriala cu encoderul absolut. Parametru vizibil doar cand 93.1 = Absolute encoder.",
+      "influenteaza": "93.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22416,
+    "familie": "ACS880",
+    "parametru": "93.36",
+    "descriere_scurta": "SSI data format",
+    "GENERATED": {
+      "explicatie": "Defineste formatul datelor SSI pentru encoder 2 de tip absolut, avand aceeasi functionalitate ca parametrul 92.36 de la encoder 1. Selectia poate fi Binary sau Gray code, in functie de tipul encoderului absolut SSI utilizat. Parametru vizibil doar cand 93.1 = Absolute encoder.",
+      "influenteaza": "93.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22417,
+    "familie": "ACS880",
+    "parametru": "93.40",
+    "descriere_scurta": "SSI zero phase",
+    "GENERATED": {
+      "explicatie": "Defineste faza de ceas SSI considerata zero pentru encoder 2 de tip absolut, avand aceeasi functionalitate ca parametrul 92.40 de la encoder 1. Configurarea corecta asigura sincronizarea intre convertor si encoderul absolut SSI. Parametru vizibil doar cand 93.1 = Absolute encoder.",
+      "influenteaza": "93.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22418,
+    "familie": "ACS880",
+    "parametru": "93.45",
+    "descriere_scurta": "Hiperface parity",
+    "GENERATED": {
+      "explicatie": "Defineste paritatea bitului pentru comunicatia cu encoderul de tip Hiperface conectat la intrarea encoder 2, avand aceeasi functionalitate ca parametrul 92.45 de la encoder 1. Trebuie sa corespunda configuratiei fizice a encoderului Hiperface utilizat. Parametru vizibil doar cand 93.1 = Absolute encoder.",
+      "influenteaza": "93.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22419,
+    "familie": "ACS880",
+    "parametru": "95.13",
+    "descriere_scurta": "Reduced run mode",
+    "GENERATED": {
+      "explicatie": "Specifica numarul de module invertor disponibile pentru functia 'reduced run', vizibil doar cu unitate de control BCU. O valoare diferita de 0 activeaza functia de functionare redusa, permitand convertorului sa continue operarea cu mai putine module invertor. Daca numarul detectat de module nu corespunde cu valoarea setata, este generat defectul 5695 Reduced run.",
+      "influenteaza": "95.14",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 22420,
+    "familie": "ACS880",
+    "parametru": "95.14",
+    "descriere_scurta": "Connectedmodules",
+    "GENERATED": {
+      "explicatie": "Afiseaza care dintre modulele invertor conectate in paralel au fost detectate de programul de control, vizibil doar cu unitate de control BCU. Fiecare bit corespunde unui modul invertor paralel. Util pentru verificarea configuratiei hardware a convertorului multi-modul.",
+      "influenteaza": "95.13",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22421,
+    "familie": "ACS880",
+    "parametru": "95.16",
+    "descriere_scurta": "Router mode",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza modul router al unitatii de control BCU, vizibil doar in configuratii BCU. Cand este activ, canalele PSL2 conectate la un alt BCU sunt rutate catre unitatile de putere ale acestui BCU, permitand configuratii complexe multi-convertor. Modificarea acestui parametru necesita reconfigurarea atenta a intregului sistem.",
+      "influenteaza": "95.17",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 22422,
+    "familie": "ACS880",
+    "parametru": "95.21",
+    "descriere_scurta": "HW options word 2",
+    "GENERATED": {
+      "explicatie": "Specifica optiuni hardware suplimentare care necesita valori implicite diferite ale parametrilor, extensie a parametrului 95.20 HW options word 1. Atentie: dupa modificarea oricarui bit din acest cuvant, valorile parametrilor afectati trebuie reverificati si recalibarti. Setarea incorecta poate cauza functionare anormala a convertorului.",
+      "influenteaza": "95.20",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 22425,
+    "familie": "ACS880",
+    "parametru": "96.10",
+    "descriere_scurta": "User set status",
+    "GENERATED": {
+      "explicatie": "Afiseaza starea seturilor de parametri utilizator (user parameter sets), indicand daca seturile sunt salvate, incarcate sau in curs de procesare. Util pentru gestionarea configuratiilor multiple ale convertorului. Parametru de doar citire.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 22427,
+    "familie": "ACS880",
+    "parametru": "97.11",
+    "descriere_scurta": "TR tuning",
+    "GENERATED": {
+      "explicatie": "Permite ajustarea manuala a constantei de timp a rotorului pentru imbunatatirea preciziei cuplului in controlul in bucla inchisa al unui motor asincron. In mod normal, rularea ID run furnizeaza precizie suficienta, dar acest parametru permite reglaj fin in aplicatii deosebit de pretentioase. Modificarea este recomandata doar de personal specializat si dupa efectuarea ID run.",
+      "influenteaza": "97.1",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 22434,
+    "familie": "ACS880",
+    "parametru": "98.10",
+    "descriere_scurta": "Rr user SI",
+    "GENERATED": {
+      "explicatie": "Defineste rezistenta rotorului RR a modelului de motor, valoarea fiind specificata la temperatura de 20 grade Celsius. Parametrul face parte din grupul de parametri avansati ai modelului de motor si permite introducerea manuala a datelor de catalog ale motorului. Utilizarea valorii corecte imbunatateste acuratetea controlului vectorial al motorului.",
+      "influenteaza": "97.11",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23731,
+    "familie": "ACS880",
+    "parametru": "90.7",
+    "descriere_scurta": "drive. The same",
+    "GENERATED": {
+      "explicatie": "Parametru cu descriere incompleta sau corupta in baza de date, probabil un artifact de extractie din documentatie. Nu contine informatii utilizabile pentru configurarea convertorului. Se recomanda consultarea manuaului ABB ACS880 pentru clarificarea acestui parametru.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 23732,
+    "familie": "ACS880",
+    "parametru": "1.35",
+    "descriere_scurta": "Mot - regen energy",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia neta (energie motoring minus energie regenerativa) care a trecut prin convertor, exprimata in gigawatt-ore. Contorul poate fi resetat la zero, iar resetarea oricaruia dintre parametrii 1.35 pana la 1.37 reseteaza toti trei contori. Util pentru monitorizarea bilantului energetic pe termen lung al instalatiei.",
+      "influenteaza": "1.36, 1.37",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23733,
+    "familie": "ACS880",
+    "parametru": "99.7",
+    "descriere_scurta": "Motor nominal",
+    "GENERATED": {
+      "explicatie": "Defineste tensiunea nominala a motorului, care trebuie sa corespunda exact cu valoarea de pe placuta de identificare a motorului. Aceasta setare este fundamentala pentru functionarea corecta a convertorului si a tuturor functiilor de protectie legate de motor. O valoare incorecta poate duce la supraflux sau la functionare ineficienta a motorului.",
+      "influenteaza": "99.8, 99.9, 99.10",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23734,
+    "familie": "ACS880",
+    "parametru": "20.6",
+    "descriere_scurta": "Ext2 commands",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa comenzilor de start, stop si directie pentru locatia de control externa 2 (EXT2). Determina de unde primeste convertorul comenzile de functionare atunci cand EXT2 este activa, putand fi intrari digitale, fieldbus sau alte surse. Lucreaza impreuna cu parametrii 20.7 pana la 20.10 pentru configurarea completa a EXT2.",
+      "influenteaza": "20.7, 20.8, 20.9, 20.10",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23735,
+    "familie": "ACS880",
+    "parametru": "20.8",
+    "descriere_scurta": "Ext2 in1 source",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa 1 pentru parametrul 20.6 Ext2 commands, determinand intrarea fizica sau logica folosita ca primul semnal de comanda pentru EXT2. Selectiile disponibile sunt identice cu cele ale parametrului 20.3 Ext1 in1 source. Important pentru configurarea corecta a lantului de comanda al locatiei externe EXT2.",
+      "influenteaza": "20.6",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23736,
+    "familie": "ACS880",
+    "parametru": "20.9",
+    "descriere_scurta": "Ext2 in2 source",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa 2 pentru parametrul 20.6 Ext2 commands, determinand a doua intrare folosita pentru comanda locatiei EXT2 (ex: directie sau stop). Selectiile disponibile sunt identice cu cele ale parametrului 20.3 Ext1 in1 source. Utilizat impreuna cu 20.8 pentru a configura logic de start/stop/directie al EXT2.",
+      "influenteaza": "20.6, 20.8",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23737,
+    "familie": "ACS880",
+    "parametru": "20.1",
+    "descriere_scurta": "Ext1 commands",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa comenzilor de start, stop si directie pentru locatia de control externa 1 (EXT1), determinand modul de interpretare a semnalelor de intrare. Tipul de declansare (pe front sau pe nivel) este configurat prin 20.2, iar sursele de intrare prin 20.3 si 20.4. Este unul dintre cei mai importanti parametri de configurare a lantului de comanda al convertorului.",
+      "influenteaza": "20.2, 20.3, 20.4, 20.5",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23738,
+    "familie": "ACS880",
+    "parametru": "20.4",
+    "descriere_scurta": "Ext1 in2 source",
+    "GENERATED": {
+      "explicatie": "Selecteaza sursa 2 pentru parametrul 20.1 Ext1 commands, folosita de obicei ca semnal de directie sau de stop invers in functie de modul de comanda selectat. Selectiile disponibile sunt identice cu cele ale parametrului 20.3 Ext1 in1 source. Configurarea corecta este esentiala pentru functionarea sigura a comenzilor de directie.",
+      "influenteaza": "20.1, 20.3",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23739,
+    "familie": "ACS880",
+    "parametru": "40.7",
+    "descriere_scurta": "Set 1 PID operation",
+    "GENERATED": {
+      "explicatie": "Activeaza sau dezactiveaza controlul PID de proces pentru setul 1 de parametri PID. Cand este activ, convertorul foloseste regulatorul PID intern pentru a mentine o variabila de proces la valoarea de referinta dorita. Parametrul 40.60 poate selecta o sursa externa de activare in locul activarii manuale.",
+      "influenteaza": "40.8, 40.9, 40.60",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 23740,
+    "familie": "ACS880",
+    "parametru": "40.8",
+    "descriere_scurta": "Set 1 feedback 1",
+    "GENERATED": {
+      "explicatie": "Selecteaza prima sursa de feedback pentru regulatorul PID de proces din setul 1. Poate fi o intrare analogica (AI1, AI2), o intrare de frecventa sau un semnal intern al convertorului (curent motor, putere, cuplu). Alegerea sursei corecte de feedback este critica pentru stabilitatea si precizia regularii de proces.",
+      "influenteaza": "40.7, 40.9, 40.10",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23741,
+    "familie": "ACS880",
+    "parametru": "20.2",
+    "descriere_scurta": "Ext1 start trigger",
+    "GENERATED": {
+      "explicatie": "Defineste tipul de declansare al semnalului de start pentru locatia de control externa EXT1: pe front (Edge) sau pe nivel (Level). In modul Edge, convertorul porneste la tranzitia 0 spre 1 a semnalului; in modul Level, semnalul trebuie sa ramana la nivel 1 pentru mentinerea pornirii. Alegerea corecta depinde de tipul butonului sau al semnalului de start utilizat.",
+      "influenteaza": "20.1, 20.3",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23742,
+    "familie": "ACS880",
+    "parametru": "20.7",
+    "descriere_scurta": "Ext2 start trigger",
+    "GENERATED": {
+      "explicatie": "Defineste tipul de declansare al semnalului de start pentru locatia de control externa EXT2: pe front (Edge) sau pe nivel (Level). Functionalitate identica cu 20.2 Ext1 start trigger, dar aplicata locatiei EXT2. Configurarea trebuie sa corespunda tipului de semnal de start utilizat pentru EXT2.",
+      "influenteaza": "20.6, 20.8",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 23743,
+    "familie": "ACS880",
+    "parametru": "21.3",
+    "descriere_scurta": "Stop mode",
+    "GENERATED": {
+      "explicatie": "Selecteaza modul de oprire al motorului la primirea comenzii de stop: in gol (Coast) sau pe rampa (Ramp). In modul Coast, invertorul se blocheaza imediat si motorul decelereaza liber; in modul Ramp, decelerarea se face controlat pe rampa definita. Franarea suplimentara prin flux poate fi activata prin parametrul 97.5.",
+      "influenteaza": "97.5, 23.3, 23.4",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 23744,
+    "familie": "ACS880",
+    "parametru": "25.6",
+    "descriere_scurta": "Acc comp deriva-",
+    "GENERATED": {
+      "explicatie": "Defineste timpul de derivatie pentru compensarea de acceleratie/deceleratie in aplicatii cu inertie mare. O valoare corespunzatoare a acestui parametru adauga un termen derivativ la iesirea regulatorului de viteza pentru a compensa inertia sarcinii si a imbunatati raspunsul dinamic. Principiul actiunii derivative este similar cu cel descris pentru parametrul 25.4.",
+      "influenteaza": "25.4, 25.5",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 23745,
+    "familie": "ACS880",
+    "parametru": "1.1",
+    "descriere_scurta": "Motor speed used",
+    "GENERATED": {
+      "explicatie": "Afiseaza viteza motorului masurata sau estimata, in functie de tipul de feedback configurat prin 90.41. Aceasta este valoarea de viteza utilizata efectiv de sistemul de control al convertorului. O constanta de timp de filtrare poate fi definita prin 46.11 pentru atenuarea zgomotului de masura.",
+      "influenteaza": "90.41, 46.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23746,
+    "familie": "ACS880",
+    "parametru": "1.2",
+    "descriere_scurta": "Motor speed estim-",
+    "GENERATED": {
+      "explicatie": "Afiseaza viteza estimata a motorului in rotatii pe minut, calculata de modelul intern al convertorului. Spre deosebire de 1.1, aceasta valoare este intotdeauna estimata, indiferent de tipul de feedback configurat. O constanta de filtrare poate fi setata prin 46.11.",
+      "influenteaza": "46.11",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23747,
+    "familie": "ACS880",
+    "parametru": "1.3",
+    "descriere_scurta": "Motor speed %",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea parametrului 1.1 Motor speed used exprimata procentual fata de viteza sincrona a motorului. Permite evaluarea rapida a gradului de utilizare al vitezei nominale fara a cunoaste valoarea in rpm. Scalarea este determinata de parametrul 46.1.",
+      "influenteaza": "1.1, 46.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23748,
+    "familie": "ACS880",
+    "parametru": "1.4",
+    "descriere_scurta": "Encoder 1 speed",
+    "GENERATED": {
+      "explicatie": "Afiseaza viteza encoderului 1 in rotatii pe minut, oferind feedback direct de la traductorul de pozitie/viteza montat pe motor. Util pentru verificarea functionarii corecte a encoderului si a lantului de masura. O constanta de filtrare poate fi definita prin 46.11.",
+      "influenteaza": "46.11, 92.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23749,
+    "familie": "ACS880",
+    "parametru": "1.5",
+    "descriere_scurta": "Encoder 2 speed",
+    "GENERATED": {
+      "explicatie": "Afiseaza viteza encoderului 2 in rotatii pe minut, pentru sisteme cu doua traductoare de viteza/pozitie. Util in aplicatii de control master-follower sau de sincronizare unde al doilea encoder monitorizeaza sarcina sau un ax secundar. O constanta de filtrare poate fi definita prin 46.11.",
+      "influenteaza": "46.11, 93.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23750,
+    "familie": "ACS880",
+    "parametru": "1.6",
+    "descriere_scurta": "Output frequency",
+    "GENERATED": {
+      "explicatie": "Afiseaza frecventa estimata la iesirea convertorului in Hz. Este valoarea frecventei tensiunii aplicate motorului, calculata intern de convertor. O constanta de filtrare poate fi definita prin 46.12 Filter time output frequency.",
+      "influenteaza": "46.12",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23751,
+    "familie": "ACS880",
+    "parametru": "1.7",
+    "descriere_scurta": "Motor current",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul absolut al motorului in amperi, masurat de traductoarele de curent ale convertorului. Este valoarea RMS a curentului de iesire, independent de directia de rotatie. Esential pentru monitorizarea incarcarii motorului si verificarea protectiilor la supracurent.",
+      "influenteaza": "30.2, 30.3",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23752,
+    "familie": "ACS880",
+    "parametru": "1.8",
+    "descriere_scurta": "Motor current % of",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul motorului (curentul de iesire al convertorului) exprimat procentual fata de curentul nominal al motorului. Permite evaluarea rapida a gradului de incarcare fara a cunoaste valoarea nominala in amperi. Valori peste 100% indica suprasarcina.",
+      "influenteaza": "1.7, 99.6",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23753,
+    "familie": "ACS880",
+    "parametru": "1.10",
+    "descriere_scurta": "Motor torque",
+    "GENERATED": {
+      "explicatie": "Afiseaza cuplul motorului exprimat procentual fata de cuplul nominal al motorului. Valorile pozitive indica functionare in regim motor, valorile negative indica functionare in regim generator (frana). O constanta de filtrare poate fi setata prin 46.13 Filter time motor torque.",
+      "influenteaza": "1.30, 46.13",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23754,
+    "familie": "ACS880",
+    "parametru": "1.11",
+    "descriere_scurta": "DC voltage",
+    "GENERATED": {
+      "explicatie": "Afiseaza tensiunea masurata a circuitului de curent continuu (bus DC) al convertorului. Monitorizarea tensiunii DC este importanta pentru detectarea supratensiunilor de retea sau generate de franare regenerativa. Valorile anormale pot indica probleme cu rezistenta de frana sau cu reteaua de alimentare.",
+      "influenteaza": "30.30, 30.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23755,
+    "familie": "ACS880",
+    "parametru": "1.13",
+    "descriere_scurta": "Output voltage",
+    "GENERATED": {
+      "explicatie": "Afiseaza tensiunea calculata la iesirea convertorului catre motor, in volti AC. Aceasta valoare este calculata pe baza modelului intern al convertorului si reflecta tensiunea aplicata infasurarilor motorului. Util pentru verificarea functionarii corecte a modulatiei PWM.",
+      "influenteaza": "99.7",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23756,
+    "familie": "ACS880",
+    "parametru": "1.14",
+    "descriere_scurta": "Output power",
+    "GENERATED": {
+      "explicatie": "Afiseaza puterea de iesire a convertorului, in kW sau CP, in functie de selectia unitatilor din 96.16. Valorile pozitive indica putere consumata de motor, valorile negative indica putere regenerata catre retea. O constanta de filtrare poate fi setata prin 46.14 Filter time power out.",
+      "influenteaza": "46.14, 96.16",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23757,
+    "familie": "ACS880",
+    "parametru": "1.15",
+    "descriere_scurta": "Output power % of",
+    "GENERATED": {
+      "explicatie": "Afiseaza puterea de iesire a convertorului exprimata procentual fata de puterea nominala a motorului. Valorile pozitive indica regim motor, valorile negative indica regim generator. Permite evaluarea rapida a gradului de utilizare al puterii nominale.",
+      "influenteaza": "1.14, 99.10",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23758,
+    "familie": "ACS880",
+    "parametru": "1.17",
+    "descriere_scurta": "Motor shaft power",
+    "GENERATED": {
+      "explicatie": "Afiseaza puterea mecanica estimata la arborele motorului, reprezentand puterea utila disponibila la sarcina, dupa deducerea pierderilor motorului. Unitatea de masura este selectata prin 96.16. O constanta de filtrare poate fi setata prin 46.14.",
+      "influenteaza": "46.14, 96.16",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23759,
+    "familie": "ACS880",
+    "parametru": "1.18",
+    "descriere_scurta": "InverterGWhmotor-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia consumata de motor care a trecut prin convertor, in gigawatt-ore intregi. Valoarea minima este zero. Contorul se incrementeaza automat cand contorul din 1.19 face rollover. Util pentru monitorizarea consumului total de energie pe termen lung.",
+      "influenteaza": "1.19, 1.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23760,
+    "familie": "ACS880",
+    "parametru": "1.19",
+    "descriere_scurta": "InverterMWhmotor-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia consumata de motor care a trecut prin convertor, in megawatt-ore intregi. La rollover, contorul 1.18 este incrementat. Impreuna cu 1.18 si 1.20 formeaza un contor ierarhic de energie pentru motoring. Valoarea minima este zero.",
+      "influenteaza": "1.18, 1.20",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23761,
+    "familie": "ACS880",
+    "parametru": "1.20",
+    "descriere_scurta": "Inverter kWh motor-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia consumata de motor care a trecut prin convertor, in kilowatt-ore intregi. La rollover, contorul 1.19 este incrementat. Este cel mai fin nivel al contorului ierarhic de energie pentru directia de motoring. Valoarea minima este zero.",
+      "influenteaza": "1.18, 1.19",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23762,
+    "familie": "ACS880",
+    "parametru": "1.21",
+    "descriere_scurta": "U-phase current",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul masurat al fazei U la iesirea convertorului. Monitorizarea curentilor pe faze individuale permite detectarea dezechilibrelor de faza sau a defectelor in infasurarile motorului. Util pentru diagnosticarea avansata a motorului.",
+      "influenteaza": "1.22, 1.23",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23763,
+    "familie": "ACS880",
+    "parametru": "1.22",
+    "descriere_scurta": "V-phase current",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul masurat al fazei V la iesirea convertorului. Compararea cu curentii fazelor U si W permite identificarea dezechilibrelor intre faze sau a problemelor mecanice ale motorului. Parametru de diagnosticare, doar citire.",
+      "influenteaza": "1.21, 1.23",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23764,
+    "familie": "ACS880",
+    "parametru": "1.23",
+    "descriere_scurta": "W-phase current",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul masurat al fazei W la iesirea convertorului. Impreuna cu 1.21 si 1.22 permite analiza completa a dezechilibrelor trifazate si diagnosticarea problemelor motorului sau ale cablurilor de iesire. Parametru de diagnosticare, doar citire.",
+      "influenteaza": "1.21, 1.22",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23765,
+    "familie": "ACS880",
+    "parametru": "1.24",
+    "descriere_scurta": "Flux actual %",
+    "GENERATED": {
+      "explicatie": "Afiseaza referinta de flux utilizata, exprimata procentual fata de fluxul nominal al motorului. In controlul vectorial, mentinerea fluxului la valoarea corecta este esentiala pentru generarea eficienta a cuplului. Valorile sub 100% pot indica functionare in zona de deviere de flux (field weakening).",
+      "influenteaza": "97.3",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23766,
+    "familie": "ACS880",
+    "parametru": "1.25",
+    "descriere_scurta": "INU momentary cos",
+    "GENERATED": {
+      "explicatie": "Afiseaza factorul de putere momentan al convertorului (cos phi), calculat ca raport intre puterea activa si puterea aparenta la iesire. Valorile aproape de 1 indica functionare eficienta; valorile mici indica consum ridicat de putere reactiva. Util pentru monitorizarea calitatii energiei electrice.",
+      "influenteaza": "1.14",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23767,
+    "familie": "ACS880",
+    "parametru": "1.29",
+    "descriere_scurta": "Speed change rate",
+    "GENERATED": {
+      "explicatie": "Afiseaza rata de variatie a vitezei actuale, valorile pozitive indicand acceleratie si valorile negative indicand deceleratie. Este utilizat de functiile de supraveghere a rampei de urgenta (31.32, 31.33) si de supraveghere a opririi pe rampa (31.37, 31.38). Util pentru diagnosticarea problemelor de accelerare sau decelerare.",
+      "influenteaza": "31.32, 31.33, 31.37, 31.38",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23768,
+    "familie": "ACS880",
+    "parametru": "1.30",
+    "descriere_scurta": "Nominal torque",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea cuplului corespunzatoare a 100% din cuplul nominal al motorului, in Nm sau lb.ft in functie de selectia unitatilor din 96.16. Este valoarea de referinta pentru toti parametrii de cuplu exprimati procentual. Parametru de doar citire, calculat automat dupa identificarea motorului.",
+      "influenteaza": "1.10, 96.16",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 23769,
+    "familie": "ACS880",
+    "parametru": "1.31",
+    "descriere_scurta": "Ambient temperat-",
+    "GENERATED": {
+      "explicatie": "Afiseaza temperatura aerului de racire care intra in convertor, masurata de senzorul intern de temperatura. Unitatea este selectata prin 96.16 (grade C sau F). Valorile ridicate reduc capacitatea de curent admisibila a convertorului si pot duce la decuplare termica.",
+      "influenteaza": "30.55, 96.16",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23770,
+    "familie": "ACS880",
+    "parametru": "1.32",
+    "descriere_scurta": "Inverter GWh regen-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia regenerata (returnata catre retea) care a trecut prin convertor, in gigawatt-ore intregi. Valoarea minima este zero. Impreuna cu 1.33 si 1.34 formeaza un contor ierarhic de energie pentru directia regenerativa. Util pentru evaluarea beneficiului energetic al franarii regenerative.",
+      "influenteaza": "1.33, 1.34",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23771,
+    "familie": "ACS880",
+    "parametru": "1.33",
+    "descriere_scurta": "InverterMWhregen-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia regenerata care a trecut prin convertor in megawatt-ore intregi. La rollover, contorul 1.32 este incrementat. Face parte din ierarhia contorilor de energie regenerativa alaturi de 1.32 si 1.34. Valoarea minima este zero.",
+      "influenteaza": "1.32, 1.34",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23772,
+    "familie": "ACS880",
+    "parametru": "1.34",
+    "descriere_scurta": "Inverter kWh regen-",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia regenerata care a trecut prin convertor in kilowatt-ore intregi. La rollover, contorul 1.33 este incrementat. Este cel mai fin nivel al contorului ierarhic de energie regenerativa. Valoarea minima este zero.",
+      "influenteaza": "1.32, 1.33",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23773,
+    "familie": "ACS880",
+    "parametru": "1.36",
+    "descriere_scurta": "Mot - regen energy",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia neta (motoring minus regenerativa) in megawatt-ore intregi. La rollover, contorul 1.35 este incrementat sau decrementat. Poate fi resetat la zero; resetarea oricaruia dintre 1.35, 1.36 sau 1.37 reseteaza toti trei. Util pentru bilantul energetic net al instalatiei.",
+      "influenteaza": "1.35, 1.37",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23774,
+    "familie": "ACS880",
+    "parametru": "1.37",
+    "descriere_scurta": "Mot - regen energy",
+    "GENERATED": {
+      "explicatie": "Afiseaza energia neta (motoring minus regenerativa) in kilowatt-ore intregi. La rollover, contorul 1.36 este incrementat sau decrementat. Poate fi resetat la zero; resetarea oricaruia dintre 1.35, 1.36 sau 1.37 reseteaza toti trei. Este cel mai fin nivel al contorului de bilant energetic net.",
+      "influenteaza": "1.35, 1.36",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23775,
+    "familie": "ACS880",
+    "parametru": "1.61",
+    "descriere_scurta": "Abs motor speed",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a vitezei motorului din 1.1, eliminand semnul directiei de rotatie. Util in aplicatii unde conteaza doar magnitudinea vitezei, nu directia. Scalarea este determinata de parametrul 46.1.",
+      "influenteaza": "1.1, 46.1",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23776,
+    "familie": "ACS880",
+    "parametru": "1.62",
+    "descriere_scurta": "Abs motor speed %",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a vitezei motorului din 1.3 Motor speed %, eliminand semnul directiei de rotatie. Util pentru comparatii si supraveghere independente de directia de rotatie. Intotdeauna o valoare pozitiva intre 0 si 1000%.",
+      "influenteaza": "1.3",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23777,
+    "familie": "ACS880",
+    "parametru": "1.63",
+    "descriere_scurta": "Abs output fre-",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a frecventei de iesire din 1.6 Output frequency, exprimata in Hz. Util pentru supravegherea frecventei independenta de directia de rotatie. Scalarea este determinata de parametrul 46.2.",
+      "influenteaza": "1.6, 46.2",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23778,
+    "familie": "ACS880",
+    "parametru": "1.64",
+    "descriere_scurta": "Abs motor torque",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a cuplului motorului din 1.10 Motor torque, eliminand semnul directiei cuplului. Util pentru supravegherea incarcarii indiferent de modul de functionare (motor sau generator). Intotdeauna o valoare pozitiva.",
+      "influenteaza": "1.10",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23779,
+    "familie": "ACS880",
+    "parametru": "1.65",
+    "descriere_scurta": "Abs output power",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a puterii de iesire din 1.14 Output power, exprimata in kW. Elimina semnul, permitand monitorizarea magnitudinii puterii independent de directia de transfer energetic. Intotdeauna o valoare pozitiva.",
+      "influenteaza": "1.14",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23780,
+    "familie": "ACS880",
+    "parametru": "1.66",
+    "descriere_scurta": "Abs output power",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a puterii de iesire procentuale din 1.15 Output power % of motor nom. Util pentru supravegherea gradului de utilizare a puterii nominale independent de directia de transfer energetic. Intotdeauna o valoare pozitiva intre 0 si 300%.",
+      "influenteaza": "1.15",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23781,
+    "familie": "ACS880",
+    "parametru": "1.68",
+    "descriere_scurta": "Abs motor shaft",
+    "GENERATED": {
+      "explicatie": "Afiseaza valoarea absoluta a puterii mecanice la arborele motorului din 1.17 Motor shaft power. Elimina semnul, permitand monitorizarea puterii utile disponibile la sarcina independent de directia de rotatie. Intotdeauna o valoare pozitiva.",
+      "influenteaza": "1.17",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23782,
+    "familie": "ACS880",
+    "parametru": "1.70",
+    "descriere_scurta": "Ambient temperat-",
+    "GENERATED": {
+      "explicatie": "Afiseaza temperatura aerului de racire la intrarea in convertor, exprimata procentual unde 0-100% corespunde la 0-60 grade Celsius sau 32-140 grade Fahrenheit. Permite integrarea facila in sisteme SCADA unde variabilele sunt normalizate la 0-100%. Vedeti si parametrul 1.31 pentru valoarea in unitati absolute.",
+      "influenteaza": "1.31",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23783,
+    "familie": "ACS880",
+    "parametru": "1.71",
+    "descriere_scurta": "Step-up motor cur-",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul estimat al motorului in amperi cand un transformator step-up este utilizat in sistem. Valoarea este calculata din 1.7 folosind raportul transformatorului step-up (95.40) si valorile filtrului sinusoidal (99.18, 99.19). Scalarea este determinata de 46.5.",
+      "influenteaza": "1.7, 95.40, 99.18, 99.19, 46.5",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23784,
+    "familie": "ACS880",
+    "parametru": "1.72",
+    "descriere_scurta": "U-phase RMS cur-",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul RMS al fazei U la iesirea convertorului. Valoarea RMS pe faza este mai precisa decat valoarea instantanee si util pentru analiza dezechilibrelor de faza. Scalarea este determinata de parametrul 46.5.",
+      "influenteaza": "1.73, 1.74, 46.5",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 23785,
+    "familie": "ACS880",
+    "parametru": "1.73",
+    "descriere_scurta": "V-phase RMS cur-",
+    "GENERATED": {
+      "explicatie": "Afiseaza curentul RMS al fazei V la iesirea convertorului. Impreuna cu 1.72 si 1.74 permite analiza completa a dezechilibrelor de curent trifazate. Scalarea este determinata de parametrul 46.5.",
+      "influenteaza": "1.72, 1.74, 46.5",
+      "categorie": "Diagnostic"
+    }
+  }
+]
