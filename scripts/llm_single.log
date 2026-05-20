@@ -5506,3 +5506,18 @@
 2026-05-20 14:06:57,240  INFO      19434 0x2820:015 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 14:06:57,309  INFO      20041 0x2B12:002 (Lenze_i550)  existing_len=0  qc=rewrite
 2026-05-20 14:06:57,779  INFO        -> rewrite: Seteaza directia de rotatie a motorului in sensul acelor de ceasornic (CW). Acea
+2026-05-20 14:07:00,924  INFO        Committed + pushed
+2026-05-20 14:07:01,026  INFO      3255 4-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:07:05,744  INFO        -> rewrite: Afiseaza starea franei de retinere. Valoarea indica daca frana este activata (in
+2026-05-20 14:07:05,845  INFO      19435 0x2820:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:07:06,238  INFO        -> rewrite: Tensiune suplimentara pentru caracteristica V/f in timpul accelerarii. Se adauga
+2026-05-20 14:07:06,339  INFO      20042 0x2B09:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:07:09,407  INFO        -> rewrite: Seteaza limita minima de viteza a motorului in herti. Reprezinta frecventa minim
+2026-05-20 14:07:09,508  INFO      3256 30-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:07:12,466  INFO        -> rewrite: Regleaza factorul de compensare a alunecarii motorului in procente fata de alune
+2026-05-20 14:07:12,566  INFO      20043 0x2B09:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:07:16,919  INFO        -> rewrite: Seteaza timpul de deschidere a franei de retinere in milisecunde cand semnalul d
+2026-05-20 14:07:17,019  INFO      19436 0x2820:023 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:07:19,496  INFO        -> rewrite: Defineste raportul maxim permis pentru functia wobble (oscilatie). Valoarea cont
+2026-05-20 14:07:19,597  INFO      3257 30-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:07:20,339  INFO        -> rewrite: Seteaza timpul de filtrare pentru compensarea alunecarii motorului. Compensarea 
