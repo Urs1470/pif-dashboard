@@ -10,6 +10,8 @@ logs/
 uploads/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 
 # System
 pif-dashboard.service
