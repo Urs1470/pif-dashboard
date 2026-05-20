@@ -23377,3 +23377,1045 @@
 2026-05-20 18:48:31,101  INFO      19049 0x2024:001 (Lenze_i550)  existing_len=0  qc=rewrite
 2026-05-20 18:48:33,969  INFO        -> rewrite: Motor
 2026-05-20 18:48:33,969  INFO        -> rewrite: Motor
+2026-05-20 18:48:34,760  INFO        -> rewrite: Motor
+2026-05-20 18:48:34,860  INFO      19247 0x2B06 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:36,448  INFO        -> rewrite: Altul
+2026-05-20 18:48:36,480  INFO        -> rewrite: Motor
+2026-05-20 18:48:36,549  INFO      19050 0x2022:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:48:36,581  INFO      19250 0x2B80 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:37,156  INFO        Committed + pushed
+2026-05-20 18:48:37,156  INFO        Committed + pushed
+2026-05-20 18:48:37,199  INFO        -> rewrite: Diagnostic
+2026-05-20 18:48:37,257  INFO      3155 1-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:37,257  INFO      3155 1-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:37,300  INFO      3080 0-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:41,331  WARNING     Bad categorie 'Altel' for 0x2024:001, retry
+2026-05-20 18:48:42,162  INFO        -> rewrite: Rampe
+2026-05-20 18:48:42,263  INFO      19251 0x6046:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:44,583  INFO        -> rewrite: Motor
+2026-05-20 18:48:44,683  INFO      19248 0x2B04 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:44,684  INFO        -> rewrite: Altul
+2026-05-20 18:48:44,785  INFO      19051 0x2022:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:48:46,908  INFO        -> rewrite: Comunicatii
+2026-05-20 18:48:47,008  INFO      3081 0-86 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:49,450  INFO        -> rewrite: Altul
+2026-05-20 18:48:49,550  INFO      19050 0x2022:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:48:51,065  INFO        -> rewrite: Motor
+2026-05-20 18:48:51,165  INFO      19249 0x2B00 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:51,337  INFO        -> rewrite: Motor
+2026-05-20 18:48:51,337  INFO        -> rewrite: Motor
+2026-05-20 18:48:51,438  INFO      3156 1-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:51,438  INFO      3156 1-85 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:51,947  INFO        -> rewrite: Limite
+2026-05-20 18:48:52,047  INFO      19252 0x6046:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:48:52,168  INFO        -> rewrite: Altul
+2026-05-20 18:48:52,269  INFO      19052 0x2022:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:48:54,593  INFO        -> rewrite: Comunicatii
+2026-05-20 18:48:54,694  INFO      3082 1-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:59,156  INFO        -> rewrite: Altul
+2026-05-20 18:48:59,257  INFO      19051 0x2022:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:48:59,593  INFO        -> rewrite: Rampe
+2026-05-20 18:48:59,593  INFO        -> rewrite: Rampe
+2026-05-20 18:48:59,694  INFO      3157 1-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:48:59,694  INFO      3157 1-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:00,718  INFO        -> rewrite: Altul
+2026-05-20 18:49:00,819  INFO      19053 0x2022:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:02,561  INFO        -> rewrite: Motor
+2026-05-20 18:49:02,596  INFO        -> rewrite: Limite
+2026-05-20 18:49:02,662  INFO      19250 0x2B80 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:02,697  INFO      19253 0x60FF (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:05,144  INFO        -> rewrite: Motor
+2026-05-20 18:49:05,244  INFO      3083 30-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:06,321  INFO        -> rewrite: Comunicatii
+2026-05-20 18:49:06,421  INFO      19052 0x2022:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:08,807  INFO        -> rewrite: Altul
+2026-05-20 18:49:08,908  INFO      19068 0x2635:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:10,869  INFO        -> rewrite: Altul
+2026-05-20 18:49:10,969  INFO      19254 0x2D51:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:11,665  INFO        -> rewrite: Altul
+2026-05-20 18:49:11,682  INFO        -> rewrite: Protectii
+2026-05-20 18:49:11,682  INFO        -> rewrite: Protectii
+2026-05-20 18:49:11,765  INFO      3084 1-55 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:11,783  INFO      3158 1-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:11,783  INFO      3158 1-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:12,575  INFO        -> rewrite: Motor
+2026-05-20 18:49:12,675  INFO      19251 0x6046:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:15,058  INFO        -> rewrite: Altul
+2026-05-20 18:49:15,158  INFO      19053 0x2022:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:19,160  INFO        -> rewrite: Comunicatii
+2026-05-20 18:49:19,260  INFO      19069 0x2635:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:19,502  INFO        -> rewrite: Protectii
+2026-05-20 18:49:19,603  INFO      19260 0x294A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:19,732  INFO        -> rewrite: Motor
+2026-05-20 18:49:19,808  INFO        -> rewrite: Limite
+2026-05-20 18:49:19,833  INFO      3085 7-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:19,909  INFO      19252 0x6046:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:20,011  INFO        -> rewrite: Protectii
+2026-05-20 18:49:20,011  INFO        -> rewrite: Protectii
+2026-05-20 18:49:20,112  INFO      3159 1-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:20,112  INFO      3159 1-94 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:24,446  INFO        -> rewrite: Diagnostic
+2026-05-20 18:49:24,547  INFO      19068 0x2635:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:25,610  INFO        -> rewrite: Limite
+2026-05-20 18:49:25,711  INFO      19261 0x294A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:26,304  INFO        -> rewrite: Protectii
+2026-05-20 18:49:26,304  INFO        -> rewrite: Protectii
+2026-05-20 18:49:26,405  INFO      3160 1-98 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:26,405  INFO      3160 1-98 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:28,916  INFO        -> rewrite: Limite
+2026-05-20 18:49:29,017  INFO      19253 0x60FF (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:30,108  INFO        -> rewrite: Altul
+2026-05-20 18:49:30,209  INFO      3086 14-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:30,318  INFO        -> rewrite: I/O
+2026-05-20 18:49:30,419  INFO      19070 0x2635:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:31,417  INFO        -> rewrite: I/O
+2026-05-20 18:49:31,518  INFO      19069 0x2635:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:35,765  INFO        -> rewrite: Limite
+2026-05-20 18:49:35,866  INFO      19262 0x294A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:36,315  INFO        -> rewrite: Protectii
+2026-05-20 18:49:36,315  INFO        -> rewrite: Protectii
+2026-05-20 18:49:36,416  INFO      3161 1-97 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:36,416  INFO      3161 1-97 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:38,183  INFO        -> rewrite: Motor
+2026-05-20 18:49:38,284  INFO      3087 14-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:38,846  INFO        -> rewrite: I/O
+2026-05-20 18:49:38,935  INFO        -> rewrite: Comunicatii
+2026-05-20 18:49:38,947  INFO      19071 0x2635:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:39,036  INFO      19254 0x2D51:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:42,131  INFO        -> rewrite: I/O
+2026-05-20 18:49:42,232  INFO      19070 0x2635:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:45,595  INFO        -> rewrite: I/O
+2026-05-20 18:49:45,613  INFO        -> rewrite: Protectii
+2026-05-20 18:49:45,613  INFO        -> rewrite: Protectii
+2026-05-20 18:49:45,696  INFO      19072 0x2635:014 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:45,713  INFO      3162 1-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:45,713  INFO      3162 1-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:48,254  INFO        -> rewrite: Motor
+2026-05-20 18:49:48,283  INFO        -> rewrite: Limite
+2026-05-20 18:49:48,355  INFO      3088 1-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:48,384  INFO      19263 0x2C00 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:48,505  INFO        -> rewrite: Protectii
+2026-05-20 18:49:48,605  INFO      19260 0x294A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:53,251  INFO        -> rewrite: I/O
+2026-05-20 18:49:53,352  INFO      19071 0x2635:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:49:53,427  INFO        -> rewrite: Protectii
+2026-05-20 18:49:53,427  INFO        -> rewrite: Protectii
+2026-05-20 18:49:53,528  INFO      3163 1-99 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:53,528  INFO      3163 1-99 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:55,218  INFO        -> rewrite: Limite
+2026-05-20 18:49:55,318  INFO      19261 0x294A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:56,045  INFO        -> rewrite: Altul
+2026-05-20 18:49:56,145  INFO      3089 1-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:49:57,347  INFO        -> rewrite: Motor
+2026-05-20 18:49:57,448  INFO      19264 0x6074 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:49:57,542  INFO        -> rewrite: I/O
+2026-05-20 18:49:57,642  INFO      19073 0x2635:015 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:04,110  INFO        -> rewrite: I/O
+2026-05-20 18:50:04,211  INFO      19072 0x2635:014 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:04,339  INFO        -> rewrite: Protectii
+2026-05-20 18:50:04,339  INFO        -> rewrite: Protectii
+2026-05-20 18:50:04,439  INFO      3164 4-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:04,439  INFO      3164 4-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:06,083  INFO        -> rewrite: I/O
+2026-05-20 18:50:06,166  INFO        -> rewrite: Altul
+2026-05-20 18:50:06,183  INFO      19074 0x2635:016 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:06,267  INFO      3090 3-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:07,967  INFO        -> rewrite: Limite
+2026-05-20 18:50:07,988  INFO        -> rewrite: Diagnostic
+2026-05-20 18:50:08,068  INFO      19262 0x294A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:08,088  INFO      19265 0x2DD5 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:12,386  INFO        -> rewrite: Limite
+2026-05-20 18:50:12,486  INFO      19263 0x2C00 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:15,325  INFO        -> rewrite: Diagnostic
+2026-05-20 18:50:15,425  INFO      19266 0x2C45 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:15,754  INFO        -> rewrite: I/O
+2026-05-20 18:50:15,855  INFO      19073 0x2635:015 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:16,345  INFO        -> rewrite: I/O
+2026-05-20 18:50:16,445  INFO      3091 1-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:17,099  INFO        -> rewrite: Protectii
+2026-05-20 18:50:17,099  INFO        -> rewrite: Protectii
+2026-05-20 18:50:17,200  INFO      3165 5-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:17,200  INFO      3165 5-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:18,617  INFO        -> rewrite: Motor
+2026-05-20 18:50:18,718  INFO      19264 0x6074 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:18,738  INFO        -> rewrite: I/O
+2026-05-20 18:50:18,838  INFO      19075 0x2635:017 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:23,989  INFO        -> rewrite: Motor
+2026-05-20 18:50:24,018  INFO        -> rewrite: I/O
+2026-05-20 18:50:24,018  INFO        -> rewrite: I/O
+2026-05-20 18:50:24,089  INFO      3092 1-36 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:24,119  INFO      3166 5-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:24,119  INFO      3166 5-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:24,958  INFO        -> rewrite: Diagnostic
+2026-05-20 18:50:25,058  INFO      19265 0x2DD5 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:25,775  INFO        -> rewrite: I/O
+2026-05-20 18:50:25,875  INFO      19074 0x2635:016 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:27,144  INFO        -> rewrite: Protectii
+2026-05-20 18:50:27,244  INFO      19267 0x2C46 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:28,656  INFO        -> rewrite: I/O
+2026-05-20 18:50:28,757  INFO      19076 0x2635:018 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:31,190  INFO        -> rewrite: Diagnostic
+2026-05-20 18:50:31,290  INFO      19266 0x2C45 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:33,575  INFO        -> rewrite: I/O
+2026-05-20 18:50:33,676  INFO      19077 0x2635:019 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:34,164  INFO        -> rewrite: Comunicatii
+2026-05-20 18:50:34,265  INFO      19075 0x2635:017 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:34,778  INFO        -> rewrite: Protectii
+2026-05-20 18:50:34,778  INFO        -> rewrite: Protectii
+2026-05-20 18:50:34,879  INFO      3167 14-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:34,879  INFO      3167 14-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:35,451  INFO        -> rewrite: Motor
+2026-05-20 18:50:35,552  INFO      3093 1-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:38,102  INFO        -> rewrite: Motor
+2026-05-20 18:50:38,202  INFO      19268 0x2C47 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:41,505  INFO        -> rewrite: Motor
+2026-05-20 18:50:41,606  INFO      3094 1-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:43,844  INFO        -> rewrite: Protectii
+2026-05-20 18:50:43,945  INFO      19267 0x2C46 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:43,983  INFO        -> rewrite: I/O
+2026-05-20 18:50:44,083  INFO      19078 0x2635:020 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:44,153  INFO        -> rewrite: I/O
+2026-05-20 18:50:44,253  INFO      19076 0x2635:018 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:44,460  INFO        -> rewrite: Protectii
+2026-05-20 18:50:44,561  INFO      19269 0x608F:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:45,292  INFO        -> rewrite: Altul
+2026-05-20 18:50:45,292  INFO        -> rewrite: Altul
+2026-05-20 18:50:45,393  INFO      3168 3-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:45,393  INFO      3168 3-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:46,474  INFO        -> rewrite: Motor
+2026-05-20 18:50:46,574  INFO      3095 1-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:49,511  INFO        -> rewrite: I/O
+2026-05-20 18:50:49,611  INFO      19079 0x2635:021 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:50,703  INFO        -> rewrite: I/O
+2026-05-20 18:50:50,803  INFO      19077 0x2635:019 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:50:53,371  INFO        -> rewrite: Motor
+2026-05-20 18:50:53,439  INFO        -> rewrite: I/O
+2026-05-20 18:50:53,439  INFO        -> rewrite: I/O
+2026-05-20 18:50:53,471  INFO      19270 0x608F:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:53,484  INFO        -> rewrite: Motor
+2026-05-20 18:50:53,540  INFO      3169 3-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:53,540  INFO      3169 3-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:53,585  INFO      3096 1-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:50:54,221  INFO        -> rewrite: Diagnostic
+2026-05-20 18:50:54,322  INFO      19268 0x2C47 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:50:57,381  INFO        -> rewrite: I/O
+2026-05-20 18:50:57,482  INFO      19078 0x2635:020 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:00,938  INFO        -> rewrite: I/O
+2026-05-20 18:51:01,039  INFO      19080 0x2635:022 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:02,005  INFO        -> rewrite: Motor
+2026-05-20 18:51:02,106  INFO      3097 1-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:02,168  INFO        -> rewrite: Motor
+2026-05-20 18:51:02,269  INFO      19271 0x6090:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:02,993  WARNING     Bad categorie 'Referinte' for 3-16, retry
+2026-05-20 18:51:02,993  WARNING     Bad categorie 'Referinte' for 3-16, retry
+2026-05-20 18:51:05,804  INFO        -> rewrite: Protectii
+2026-05-20 18:51:05,905  INFO      19269 0x608F:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:06,796  INFO        -> rewrite: I/O
+2026-05-20 18:51:06,897  INFO      19079 0x2635:021 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:09,856  INFO        -> rewrite: Motor
+2026-05-20 18:51:09,957  INFO      19272 0x6090:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:10,586  INFO        -> rewrite: Motor
+2026-05-20 18:51:10,686  INFO      3098 1-66 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:12,915  INFO        -> rewrite: I/O
+2026-05-20 18:51:12,915  INFO        -> rewrite: I/O
+2026-05-20 18:51:13,016  INFO      3170 3-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:13,016  INFO      3170 3-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:13,282  INFO        -> rewrite: I/O
+2026-05-20 18:51:13,383  INFO      19080 0x2635:022 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:13,575  INFO        -> rewrite: I/O
+2026-05-20 18:51:13,675  INFO      19081 0x2635:023 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:16,565  INFO        -> rewrite: Motor
+2026-05-20 18:51:16,666  INFO      19273 0x2822:025 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:18,935  INFO        -> rewrite: Motor
+2026-05-20 18:51:19,036  INFO      19270 0x608F:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:21,817  INFO        -> rewrite: Rampe
+2026-05-20 18:51:21,817  INFO        -> rewrite: Rampe
+2026-05-20 18:51:21,918  INFO      3171 1-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:21,918  INFO      3171 1-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:21,931  INFO        -> rewrite: Limite
+2026-05-20 18:51:22,032  INFO      3099 1-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:23,044  INFO        -> rewrite: I/O
+2026-05-20 18:51:23,145  INFO      19081 0x2635:023 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:24,710  INFO        -> rewrite: Motor
+2026-05-20 18:51:24,810  INFO      19274 0x2C43 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:24,865  INFO        -> rewrite: I/O
+2026-05-20 18:51:24,966  INFO      19082 0x2635:024 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:25,094  INFO        -> rewrite: Motor
+2026-05-20 18:51:25,195  INFO      19271 0x6090:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:28,398  INFO        -> rewrite: I/O
+2026-05-20 18:51:28,498  INFO      19083 0x2635:025 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:29,570  INFO        -> rewrite: Motor
+2026-05-20 18:51:29,671  INFO      3100 1-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:30,877  INFO        -> rewrite: Motor
+2026-05-20 18:51:30,877  INFO        -> rewrite: Motor
+2026-05-20 18:51:30,977  INFO      3172 1-59 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:30,977  INFO      3172 1-59 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:31,917  INFO        -> rewrite: Motor
+2026-05-20 18:51:32,017  INFO      19275 0x2C44:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:36,070  INFO        -> rewrite: Motor
+2026-05-20 18:51:36,170  INFO      19272 0x6090:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:36,183  INFO        -> rewrite: I/O
+2026-05-20 18:51:36,283  INFO      19082 0x2635:024 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:36,389  INFO        -> rewrite: Motor
+2026-05-20 18:51:36,490  INFO      3101 1-37 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:38,153  INFO        -> rewrite: Motor
+2026-05-20 18:51:38,254  INFO      19276 0x2C44:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:39,740  INFO        -> rewrite: I/O
+2026-05-20 18:51:39,840  INFO      19094 0x2822:019 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:41,014  INFO        -> rewrite: Motor
+2026-05-20 18:51:41,014  INFO        -> rewrite: Motor
+2026-05-20 18:51:41,115  INFO      3173 2-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:41,115  INFO      3173 2-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:41,968  INFO        -> rewrite: I/O
+2026-05-20 18:51:42,069  INFO      19083 0x2635:025 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:45,383  INFO        -> rewrite: Motor
+2026-05-20 18:51:45,483  INFO      19273 0x2822:025 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:46,232  INFO        -> rewrite: Motor
+2026-05-20 18:51:46,333  INFO      19277 0x2C44:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:47,207  INFO        -> rewrite: Motor
+2026-05-20 18:51:47,307  INFO      3102 2-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:50,626  INFO        -> rewrite: Motor
+2026-05-20 18:51:50,626  INFO        -> rewrite: Motor
+2026-05-20 18:51:50,696  INFO        -> rewrite: Protectii
+2026-05-20 18:51:50,727  INFO      3174 2-03 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:50,727  INFO      3174 2-03 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:50,796  INFO      19099 0x282A:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:50,834  INFO        -> rewrite: I/O
+2026-05-20 18:51:50,934  INFO      19094 0x2822:019 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:54,434  INFO        -> rewrite: Motor
+2026-05-20 18:51:54,535  INFO      19278 0x2C44:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:55,542  INFO        -> rewrite: Diagnostic
+2026-05-20 18:51:55,643  INFO      19274 0x2C43 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:51:55,855  INFO        -> rewrite: Motor
+2026-05-20 18:51:55,955  INFO      3103 1-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:51:56,803  INFO        -> rewrite: Protectii
+2026-05-20 18:51:56,904  INFO      19099 0x282A:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:51:59,674  INFO        -> rewrite: Diagnostic
+2026-05-20 18:51:59,775  INFO      19106 0x282B:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:02,032  INFO        -> rewrite: Rampe
+2026-05-20 18:52:02,032  INFO        -> rewrite: Rampe
+2026-05-20 18:52:02,132  INFO      3175 2-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:02,132  INFO      3175 2-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:03,378  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:03,479  INFO      19279 0x2C40 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:06,244  INFO        -> rewrite: Motor
+2026-05-20 18:52:06,345  INFO      19275 0x2C44:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:06,449  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:06,550  INFO      19107 0x282B:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:07,155  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:07,211  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:07,256  INFO      3104 1-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:07,311  INFO      19106 0x282B:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:10,056  INFO        -> rewrite: Motor
+2026-05-20 18:52:10,056  INFO        -> rewrite: Motor
+2026-05-20 18:52:10,156  INFO      3176 2-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:10,156  INFO      3176 2-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:13,236  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:13,329  INFO        -> rewrite: Motor
+2026-05-20 18:52:13,337  INFO      19107 0x282B:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:13,429  INFO      19280 0x2C42:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:14,402  INFO        -> rewrite: Motor
+2026-05-20 18:52:14,504  INFO      3105 1-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:16,766  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:16,867  INFO      19108 0x282B:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:16,880  INFO        -> rewrite: Motor
+2026-05-20 18:52:16,981  INFO      19276 0x2C44:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:19,684  INFO        -> rewrite: Limite
+2026-05-20 18:52:19,684  INFO        -> rewrite: Limite
+2026-05-20 18:52:19,784  INFO      3177 3-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:19,784  INFO      3177 3-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:21,987  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:22,088  INFO      19108 0x282B:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:25,240  INFO        -> rewrite: Motor
+2026-05-20 18:52:25,258  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:25,340  INFO      19281 0x2C42:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:25,359  INFO      19109 0x282B:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:27,875  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:27,975  INFO      19109 0x282B:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:27,989  INFO        -> rewrite: Motor
+2026-05-20 18:52:28,032  INFO        -> rewrite: Motor
+2026-05-20 18:52:28,089  INFO      3106 1-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:28,132  INFO      19277 0x2C44:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:29,582  INFO        -> rewrite: Altul
+2026-05-20 18:52:29,582  INFO        -> rewrite: Altul
+2026-05-20 18:52:29,683  INFO      3178 2-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:29,683  INFO      3178 2-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:29,700  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:29,800  INFO      19110 0x282B:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:35,278  INFO        -> rewrite: I/O
+2026-05-20 18:52:35,378  INFO      19282 0x2822:026 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:35,836  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:35,936  INFO      19110 0x282B:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:38,734  INFO        -> rewrite: Motor
+2026-05-20 18:52:38,835  INFO      3107 30-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:38,972  INFO        -> rewrite: Motor
+2026-05-20 18:52:38,972  INFO        -> rewrite: Motor
+2026-05-20 18:52:39,073  INFO      3179 30-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:39,073  INFO      3179 30-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:39,393  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:39,493  INFO      19111 0x282B:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:39,590  INFO        -> rewrite: Motor
+2026-05-20 18:52:39,691  INFO      19278 0x2C44:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:43,848  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:43,949  INFO      19283 0x2C41:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:45,702  INFO        -> rewrite: Rampe
+2026-05-20 18:52:45,802  INFO      3108 1-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:46,229  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:46,330  INFO      19112 0x282B:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:46,520  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:46,620  INFO      19111 0x282B:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:47,946  INFO        -> rewrite: Protectii
+2026-05-20 18:52:47,946  INFO        -> rewrite: Protectii
+2026-05-20 18:52:48,046  INFO      3180 2-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:48,046  INFO      3180 2-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:51,813  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:51,914  INFO      19279 0x2C40 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:52,104  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:52,205  INFO      19284 0x2C41:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:52:53,988  INFO        -> rewrite: Motor
+2026-05-20 18:52:54,089  INFO      3109 1-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:54,291  INFO        -> rewrite: Diagnostic
+2026-05-20 18:52:54,392  INFO      19112 0x282B:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:52:57,561  INFO        -> rewrite: Protectii
+2026-05-20 18:52:57,561  INFO        -> rewrite: Protectii
+2026-05-20 18:52:57,661  INFO      3181 2-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:52:57,661  INFO      3181 2-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:01,968  INFO        -> rewrite: Motor
+2026-05-20 18:53:02,069  INFO      19280 0x2C42:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:02,090  INFO        -> rewrite: I/O
+2026-05-20 18:53:02,192  INFO      19285 0x2C41:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:02,617  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:02,718  INFO      19565 0x2C01:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:04,408  INFO        -> rewrite: Motor
+2026-05-20 18:53:04,508  INFO      3110 1-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:05,505  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:05,606  INFO      19565 0x2C01:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:08,871  INFO        -> rewrite: Motor
+2026-05-20 18:53:08,971  INFO      19281 0x2C42:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:09,643  INFO        -> rewrite: Motor
+2026-05-20 18:53:09,743  INFO      19286 0x2C41:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:10,208  INFO        -> rewrite: Altul
+2026-05-20 18:53:10,309  INFO      19566 0x2910:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:11,985  INFO        -> rewrite: Protectii
+2026-05-20 18:53:11,985  INFO        -> rewrite: Protectii
+2026-05-20 18:53:12,085  INFO      3182 2-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:12,085  INFO      3182 2-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:12,195  INFO        -> rewrite: Motor
+2026-05-20 18:53:12,296  INFO      3111 1-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:13,438  INFO        -> rewrite: Motor
+2026-05-20 18:53:13,538  INFO      19566 0x2910:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:16,412  INFO        -> rewrite: I/O
+2026-05-20 18:53:16,513  INFO      19282 0x2822:026 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:19,537  INFO        -> rewrite: Motor
+2026-05-20 18:53:19,638  INFO      19567 0x2C01:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:20,117  INFO        -> rewrite: Motor
+2026-05-20 18:53:20,217  INFO      19567 0x2C01:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:20,422  INFO        -> rewrite: I/O
+2026-05-20 18:53:20,523  INFO      19287 0x2C41:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:20,987  INFO        -> rewrite: Motor
+2026-05-20 18:53:21,087  INFO      3112 30-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:23,716  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:23,816  INFO      19283 0x2C41:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:26,760  INFO        -> rewrite: Motor
+2026-05-20 18:53:26,861  INFO      19568 0x2C01:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:27,823  INFO        -> rewrite: Protectii
+2026-05-20 18:53:27,823  INFO        -> rewrite: Protectii
+2026-05-20 18:53:27,852  INFO        -> rewrite: Motor
+2026-05-20 18:53:27,923  INFO      3183 2-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:27,923  INFO      3183 2-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:27,952  INFO      3113 1-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:28,237  INFO        -> rewrite: Motor
+2026-05-20 18:53:28,338  INFO      19568 0x2C01:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:30,166  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:30,267  INFO      19288 0x2C41:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:31,092  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:31,193  INFO      19284 0x2C41:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:33,216  INFO        -> rewrite: Motor
+2026-05-20 18:53:33,317  INFO      3114 1-39 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:34,662  INFO        -> rewrite: Motor
+2026-05-20 18:53:34,762  INFO      19569 0x2C01:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:36,146  INFO        -> rewrite: Motor
+2026-05-20 18:53:36,247  INFO      19569 0x2C01:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:39,981  INFO        -> rewrite: Diagnostic
+2026-05-20 18:53:40,082  INFO      19289 0x2C41:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:40,280  INFO        -> rewrite: Protectii
+2026-05-20 18:53:40,280  INFO        -> rewrite: Protectii
+2026-05-20 18:53:40,381  INFO      3184 2-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:40,381  INFO      3184 2-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:40,949  INFO        -> rewrite: Motor
+2026-05-20 18:53:41,050  INFO      19285 0x2C41:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:44,042  INFO        -> rewrite: Motor
+2026-05-20 18:53:44,142  INFO      3115 1-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:44,385  INFO        -> rewrite: Motor
+2026-05-20 18:53:44,486  INFO      19570 0x2C01:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:46,934  INFO        -> rewrite: Motor
+2026-05-20 18:53:47,034  INFO      19570 0x2C01:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:48,001  INFO        -> rewrite: Protectii
+2026-05-20 18:53:48,001  INFO        -> rewrite: Protectii
+2026-05-20 18:53:48,101  INFO      3185 5-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:48,101  INFO      3185 5-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:50,706  INFO        -> rewrite: Motor
+2026-05-20 18:53:50,807  INFO      19290 0x2C41:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:52,426  INFO        -> rewrite: Motor
+2026-05-20 18:53:52,526  INFO        -> rewrite: Motor
+2026-05-20 18:53:52,527  INFO      3116 1-69 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:52,627  INFO      19286 0x2C41:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:53:52,687  INFO        -> rewrite: Motor
+2026-05-20 18:53:52,788  INFO      19572 0x2C01:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:54,693  INFO        -> rewrite: Motor
+2026-05-20 18:53:54,794  INFO      19572 0x2C01:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:53:57,987  INFO        -> rewrite: I/O
+2026-05-20 18:53:57,987  INFO        -> rewrite: I/O
+2026-05-20 18:53:58,002  INFO        -> rewrite: Motor
+2026-05-20 18:53:58,087  INFO      3186 5-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:58,087  INFO      3186 5-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:53:58,102  INFO      19291 0x2C41:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:00,721  INFO        -> rewrite: Motor
+2026-05-20 18:54:00,822  INFO      19287 0x2C41:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:01,788  INFO        -> rewrite: Motor
+2026-05-20 18:54:01,889  INFO      3117 7-08 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:02,457  INFO        -> rewrite: Motor
+2026-05-20 18:54:02,557  INFO      19574 0x2C01:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:04,212  INFO        -> rewrite: Motor
+2026-05-20 18:54:04,312  INFO      19574 0x2C01:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:05,462  INFO        -> rewrite: Motor
+2026-05-20 18:54:05,562  INFO      19292 0x2C41:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:07,947  INFO        -> rewrite: Diagnostic
+2026-05-20 18:54:08,047  INFO      19288 0x2C41:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:10,376  INFO        -> rewrite: I/O
+2026-05-20 18:54:10,376  INFO        -> rewrite: I/O
+2026-05-20 18:54:10,477  INFO      3187 5-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:10,477  INFO      3187 5-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:11,638  INFO        -> rewrite: Motor
+2026-05-20 18:54:11,738  INFO      19575 0x2C01:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:14,429  INFO        -> rewrite: Rampe
+2026-05-20 18:54:14,486  INFO        -> rewrite: Diagnostic
+2026-05-20 18:54:14,530  INFO      3118 1-47 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:14,587  INFO      19289 0x2C41:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:14,868  INFO        -> rewrite: Diagnostic
+2026-05-20 18:54:14,968  INFO      19293 0x2C4A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:16,878  INFO        -> rewrite: Motor
+2026-05-20 18:54:16,979  INFO      19575 0x2C01:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:18,651  INFO        -> rewrite: I/O
+2026-05-20 18:54:18,651  INFO        -> rewrite: I/O
+2026-05-20 18:54:18,751  INFO      3188 2-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:18,751  INFO      3188 2-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:20,196  INFO        -> rewrite: Motor
+2026-05-20 18:54:20,297  INFO      19290 0x2C41:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:20,938  INFO        -> rewrite: Motor
+2026-05-20 18:54:21,038  INFO      19576 0x2C01:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:21,978  INFO        -> rewrite: Motor
+2026-05-20 18:54:22,079  INFO      19576 0x2C01:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:22,849  INFO        -> rewrite: I/O
+2026-05-20 18:54:22,950  INFO      19294 0x2C4A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:23,474  INFO        -> rewrite: Motor
+2026-05-20 18:54:23,575  INFO      3119 30-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:26,218  INFO        -> rewrite: Motor
+2026-05-20 18:54:26,319  INFO      19577 0x2C02:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:27,161  INFO        -> rewrite: Motor
+2026-05-20 18:54:27,161  INFO        -> rewrite: Motor
+2026-05-20 18:54:27,262  INFO      3189 14-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:27,262  INFO      3189 14-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:27,608  INFO        -> rewrite: Motor
+2026-05-20 18:54:27,709  INFO      19291 0x2C41:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:31,456  INFO        -> rewrite: Motor
+2026-05-20 18:54:31,557  INFO      19577 0x2C02:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:32,820  INFO        -> rewrite: Motor
+2026-05-20 18:54:32,920  INFO      3120 1-38 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:34,102  INFO        -> rewrite: Motor
+2026-05-20 18:54:34,179  INFO        -> rewrite: I/O
+2026-05-20 18:54:34,203  INFO      19292 0x2C41:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:34,280  INFO      19295 0x2C4A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:37,186  INFO        -> rewrite: Motor
+2026-05-20 18:54:37,287  INFO      19578 0x2C03:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:38,501  INFO        -> rewrite: Protectii
+2026-05-20 18:54:38,501  INFO        -> rewrite: Protectii
+2026-05-20 18:54:38,601  INFO      3190 2-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:38,601  INFO      3190 2-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:40,401  INFO        -> rewrite: Motor
+2026-05-20 18:54:40,502  INFO      19293 0x2C4A:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:42,446  INFO        -> rewrite: Motor
+2026-05-20 18:54:42,546  INFO      19578 0x2C03:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:43,530  INFO        -> rewrite: Motor
+2026-05-20 18:54:43,631  INFO      3121 1-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:45,177  INFO        -> rewrite: I/O
+2026-05-20 18:54:45,194  INFO        -> rewrite: Rampe
+2026-05-20 18:54:45,194  INFO        -> rewrite: Rampe
+2026-05-20 18:54:45,278  INFO      19296 0x2C4A:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:45,294  INFO      3191 4-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:45,294  INFO      3191 4-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:46,263  INFO        -> rewrite: Motor
+2026-05-20 18:54:46,364  INFO      19579 0x6075 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:52,086  INFO        -> rewrite: Motor
+2026-05-20 18:54:52,187  INFO      3122 1-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:52,209  INFO        -> rewrite: I/O
+2026-05-20 18:54:52,276  INFO        -> rewrite: Diagnostic
+2026-05-20 18:54:52,276  INFO        -> rewrite: Diagnostic
+2026-05-20 18:54:52,310  INFO      19294 0x2C4A:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:52,377  INFO      3192 2-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:52,377  INFO      3192 2-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:54:52,585  INFO        -> rewrite: Motor
+2026-05-20 18:54:52,686  INFO      19580 0x6076 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:54:55,435  INFO        -> rewrite: Comunicatii
+2026-05-20 18:54:55,536  INFO      19297 0x2C4A:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:54:55,557  INFO        -> rewrite: Motor
+2026-05-20 18:54:55,657  INFO      19579 0x6075 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:00,614  INFO        -> rewrite: I/O
+2026-05-20 18:55:00,715  INFO      19295 0x2C4A:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:00,738  INFO        -> rewrite: Motor
+2026-05-20 18:55:00,838  INFO      3123 1-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:03,462  INFO        -> rewrite: Motor
+2026-05-20 18:55:03,562  INFO      19581 0x2C00 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:04,898  INFO        -> rewrite: Rampe
+2026-05-20 18:55:04,898  INFO        -> rewrite: Rampe
+2026-05-20 18:55:04,999  INFO      3193 2-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:04,999  INFO      3193 2-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:06,315  INFO        -> rewrite: I/O
+2026-05-20 18:55:06,416  INFO      19298 0x2C4A:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:06,659  INFO        -> rewrite: Motor
+2026-05-20 18:55:06,709  INFO        -> rewrite: Motor
+2026-05-20 18:55:06,760  INFO      19580 0x6076 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:06,810  INFO      3124 1-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:13,445  INFO        -> rewrite: Motor
+2026-05-20 18:55:13,546  INFO      19629 0x4026:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:13,625  INFO        -> rewrite: Motor
+2026-05-20 18:55:13,725  INFO      19296 0x2C4A:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:13,771  INFO        -> rewrite: Motor
+2026-05-20 18:55:13,871  INFO      19581 0x2C00 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:14,760  INFO        -> rewrite: Rampe
+2026-05-20 18:55:14,760  INFO        -> rewrite: Rampe
+2026-05-20 18:55:14,860  INFO      3194 2-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:14,860  INFO      3194 2-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:15,588  INFO        -> rewrite: Motor
+2026-05-20 18:55:15,689  INFO      3125 40-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:18,687  INFO        -> rewrite: Motor
+2026-05-20 18:55:18,788  INFO      19299 0x2C4A:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:21,855  INFO        -> rewrite: Comunicatii
+2026-05-20 18:55:21,956  INFO      19297 0x2C4A:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:22,933  INFO        -> rewrite: Rampe
+2026-05-20 18:55:23,034  INFO      19630 0x4026:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:25,523  INFO        -> rewrite: Motor
+2026-05-20 18:55:25,564  INFO        -> rewrite: Motor
+2026-05-20 18:55:25,623  INFO      3126 1-56 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:25,665  INFO      19629 0x4026:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:26,345  INFO        -> rewrite: Motor
+2026-05-20 18:55:26,345  INFO        -> rewrite: Motor
+2026-05-20 18:55:26,446  INFO      3195 2-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:26,446  INFO      3195 2-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:27,125  INFO        -> rewrite: I/O
+2026-05-20 18:55:27,226  INFO      19298 0x2C4A:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:29,181  INFO        -> rewrite: I/O
+2026-05-20 18:55:29,282  INFO      19300 0x2C4A:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:33,510  INFO        -> rewrite: Rampe
+2026-05-20 18:55:33,610  INFO      19631 0x4026:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:34,575  INFO        -> rewrite: Rampe
+2026-05-20 18:55:34,675  INFO      19630 0x4026:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:35,401  INFO        -> rewrite: Motor
+2026-05-20 18:55:35,502  INFO      3127 1-57 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:36,709  INFO        -> rewrite: Motor
+2026-05-20 18:55:36,709  INFO        -> rewrite: Motor
+2026-05-20 18:55:36,810  INFO      3196 2-29 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:36,810  INFO      3196 2-29 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:37,919  INFO        -> rewrite: I/O
+2026-05-20 18:55:38,020  INFO      19301 0x2C4A:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:39,045  INFO        -> rewrite: Comunicatii
+2026-05-20 18:55:39,146  INFO      19299 0x2C4A:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:42,966  INFO        -> rewrite: Rampe
+2026-05-20 18:55:42,981  INFO        -> rewrite: Altul
+2026-05-20 18:55:43,067  INFO      19631 0x4026:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:43,082  INFO      19632 0x4026:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:45,507  INFO        -> rewrite: I/O
+2026-05-20 18:55:45,539  INFO        -> rewrite: Motor
+2026-05-20 18:55:45,608  INFO      19302 0x2C4A:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:45,639  INFO      3128 1-70 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:45,703  INFO        -> rewrite: Rampe
+2026-05-20 18:55:45,703  INFO        -> rewrite: Rampe
+2026-05-20 18:55:45,803  INFO      3197 2-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:45,803  INFO      3197 2-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:48,185  INFO        -> rewrite: Comunicatii
+2026-05-20 18:55:48,286  INFO      19300 0x2C4A:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:54,019  INFO        -> rewrite: I/O
+2026-05-20 18:55:54,119  INFO      19633 0x4026:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:56,953  INFO        -> rewrite: Motor
+2026-05-20 18:55:56,953  INFO        -> rewrite: Motor
+2026-05-20 18:55:57,054  INFO      3198 2-27 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:57,054  INFO      3198 2-27 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:55:57,676  INFO        -> rewrite: Altul
+2026-05-20 18:55:57,776  INFO      19632 0x4026:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:55:57,818  INFO        -> rewrite: I/O
+2026-05-20 18:55:57,918  INFO      19303 0x2C4A:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:57,973  INFO        -> rewrite: I/O
+2026-05-20 18:55:58,021  INFO        -> rewrite: Rampe
+2026-05-20 18:55:58,073  INFO      19301 0x2C4A:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:55:58,121  INFO      3129 1-60 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:01,720  INFO        -> rewrite: I/O
+2026-05-20 18:56:01,821  INFO      19634 0x4026:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:03,379  INFO        -> rewrite: I/O
+2026-05-20 18:56:03,480  INFO      19302 0x2C4A:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:06,514  INFO        -> rewrite: Rampe
+2026-05-20 18:56:06,514  INFO        -> rewrite: Rampe
+2026-05-20 18:56:06,615  INFO      3199 2-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:06,615  INFO      3199 2-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:06,705  INFO        -> rewrite: Motor
+2026-05-20 18:56:06,805  INFO      3130 1-62 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:08,065  INFO        -> rewrite: Motor
+2026-05-20 18:56:08,165  INFO      19304 0x2C4A:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:09,246  INFO        -> rewrite: Rampe
+2026-05-20 18:56:09,346  INFO      19635 0x4026:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:09,587  INFO        -> rewrite: I/O
+2026-05-20 18:56:09,688  INFO      19633 0x4026:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:15,110  INFO        -> rewrite: Motor
+2026-05-20 18:56:15,210  INFO      3131 1-63 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:15,740  INFO        -> rewrite: Motor
+2026-05-20 18:56:15,841  INFO      19303 0x2C4A:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:16,268  INFO        -> rewrite: Diagnostic
+2026-05-20 18:56:16,369  INFO      19305 0x2C4A:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:18,145  INFO        -> rewrite: I/O
+2026-05-20 18:56:18,245  INFO      19634 0x4026:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:18,265  INFO        -> rewrite: Motor
+2026-05-20 18:56:18,265  INFO        -> rewrite: Motor
+2026-05-20 18:56:18,366  INFO      3200 2-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:18,366  INFO      3200 2-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:21,387  INFO        -> rewrite: Motor
+2026-05-20 18:56:21,487  INFO      19636 0x4026:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:21,513  INFO        -> rewrite: Motor
+2026-05-20 18:56:21,614  INFO      3132 1-64 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:24,941  INFO        -> rewrite: I/O
+2026-05-20 18:56:25,012  INFO        -> rewrite: Rampe
+2026-05-20 18:56:25,012  INFO        -> rewrite: Rampe
+2026-05-20 18:56:25,042  INFO      19306 0x2C4A:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:25,113  INFO      3201 2-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:25,113  INFO      3201 2-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:25,144  INFO        -> rewrite: I/O
+2026-05-20 18:56:25,245  INFO      19304 0x2C4A:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:28,396  INFO        -> rewrite: Altul
+2026-05-20 18:56:28,496  INFO      19635 0x4026:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:30,218  INFO        -> rewrite: Motor
+2026-05-20 18:56:30,318  INFO      3133 1-65 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:31,036  INFO        -> rewrite: Comunicatii
+2026-05-20 18:56:31,137  INFO      19637 0x4026:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:31,322  INFO        -> rewrite: I/O
+2026-05-20 18:56:31,422  INFO      19307 0x2C4A:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:34,675  INFO        -> rewrite: Diagnostic
+2026-05-20 18:56:34,776  INFO      19305 0x2C4A:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:35,214  INFO        -> rewrite: Altul
+2026-05-20 18:56:35,314  INFO      19638 0x4027:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:36,898  INFO        -> rewrite: Altul
+2026-05-20 18:56:36,898  INFO        -> rewrite: Altul
+2026-05-20 18:56:36,999  INFO      3202 3-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:36,999  INFO      3202 3-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:38,120  INFO        -> rewrite: I/O
+2026-05-20 18:56:38,221  INFO      19308 0x2C4A:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:39,871  INFO        -> rewrite: I/O
+2026-05-20 18:56:39,972  INFO      19306 0x2C4A:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:42,661  INFO        -> rewrite: Motor
+2026-05-20 18:56:42,762  INFO      19636 0x4026:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:42,945  INFO        -> rewrite: Motor
+2026-05-20 18:56:43,046  INFO      3134 4-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:47,220  INFO        -> rewrite: Rampe
+2026-05-20 18:56:47,320  INFO      19639 0x4027:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:48,905  INFO        -> rewrite: Diagnostic
+2026-05-20 18:56:49,006  INFO      19309 0x2C4A:017 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:49,453  INFO        -> rewrite: I/O
+2026-05-20 18:56:49,453  INFO        -> rewrite: I/O
+2026-05-20 18:56:49,553  INFO      3203 4-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:49,553  INFO      3203 4-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:50,306  INFO        -> rewrite: Comunicatii
+2026-05-20 18:56:50,406  INFO      19637 0x4026:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:51,230  INFO        -> rewrite: Motor
+2026-05-20 18:56:51,330  INFO      19307 0x2C4A:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:51,724  INFO        -> rewrite: Protectii
+2026-05-20 18:56:51,825  INFO      3135 4-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:54,938  INFO        -> rewrite: Altul
+2026-05-20 18:56:55,038  INFO      19638 0x4027:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:58,537  INFO        -> rewrite: Motor
+2026-05-20 18:56:58,569  INFO        -> rewrite: Protectii
+2026-05-20 18:56:58,592  INFO        -> rewrite: Rampe
+2026-05-20 18:56:58,636  INFO        -> rewrite: Diagnostic
+2026-05-20 18:56:58,638  INFO      19308 0x2C4A:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:56:58,670  INFO      3136 2-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:56:58,693  INFO      19640 0x4027:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:56:58,736  INFO      19310 0x2C4A:018 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:00,148  INFO        -> rewrite: Motor
+2026-05-20 18:57:00,148  INFO        -> rewrite: Motor
+2026-05-20 18:57:00,249  INFO      3204 3-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:00,249  INFO      3204 3-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:01,472  INFO        -> rewrite: Rampe
+2026-05-20 18:57:01,573  INFO      19639 0x4027:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:07,042  INFO        -> rewrite: Motor
+2026-05-20 18:57:07,143  INFO      19311 0x2C4A:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:07,144  INFO        -> rewrite: Motor
+2026-05-20 18:57:07,240  INFO        -> rewrite: Altul
+2026-05-20 18:57:07,244  INFO      3137 1-72 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:07,341  INFO      19641 0x4027:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:08,740  INFO        -> rewrite: I/O
+2026-05-20 18:57:08,740  INFO        -> rewrite: I/O
+2026-05-20 18:57:08,842  INFO      3205 3-28 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:08,842  INFO      3205 3-28 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:09,158  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:09,259  INFO      19309 0x2C4A:017 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:09,922  INFO        -> rewrite: Rampe
+2026-05-20 18:57:10,023  INFO      19640 0x4027:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:16,320  INFO        -> rewrite: I/O
+2026-05-20 18:57:16,421  INFO      19312 0x2DE1:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:17,120  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:17,220  INFO      19310 0x2C4A:018 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:17,462  INFO        -> rewrite: I/O
+2026-05-20 18:57:17,563  INFO      19642 0x4027:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:17,661  INFO        -> rewrite: Rampe
+2026-05-20 18:57:17,761  INFO      3138 2-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:18,697  INFO        -> rewrite: Rampe
+2026-05-20 18:57:18,697  INFO        -> rewrite: Rampe
+2026-05-20 18:57:18,798  INFO      3206 3-08 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:18,798  INFO      3206 3-08 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:22,307  INFO        -> rewrite: Altul
+2026-05-20 18:57:22,407  INFO      19641 0x4027:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:25,242  INFO        -> rewrite: I/O
+2026-05-20 18:57:25,343  INFO      19313 0x2C42:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:26,975  INFO        -> rewrite: Motor
+2026-05-20 18:57:27,076  INFO      3139 1-74 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:27,989  INFO        -> rewrite: I/O
+2026-05-20 18:57:28,090  INFO      19642 0x4027:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:28,091  INFO        -> rewrite: I/O
+2026-05-20 18:57:28,191  INFO      19643 0x4027:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:28,434  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:28,535  INFO      19311 0x2C4A:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:29,055  INFO        -> rewrite: Altul
+2026-05-20 18:57:29,055  INFO        -> rewrite: Altul
+2026-05-20 18:57:29,155  INFO      3207 17-76 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:29,155  INFO      3207 17-76 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:35,517  INFO        -> rewrite: I/O
+2026-05-20 18:57:35,566  INFO        -> rewrite: I/O
+2026-05-20 18:57:35,617  INFO      19314 0x2C42:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:35,666  INFO      19643 0x4027:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:36,210  INFO        -> rewrite: Altul
+2026-05-20 18:57:36,311  INFO      19644 0x4027:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:36,455  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:36,556  INFO      19312 0x2DE1:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:36,705  INFO        -> rewrite: I/O
+2026-05-20 18:57:36,705  INFO        -> rewrite: I/O
+2026-05-20 18:57:36,806  INFO      3208 4-73 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:36,806  INFO      3208 4-73 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:37,402  INFO        -> rewrite: Rampe
+2026-05-20 18:57:37,503  INFO      3140 1-76 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:42,887  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:42,987  INFO      19315 0x2C4F (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:44,200  INFO        -> rewrite: Altul
+2026-05-20 18:57:44,219  INFO        -> rewrite: Limite
+2026-05-20 18:57:44,219  INFO        -> rewrite: Limite
+2026-05-20 18:57:44,300  INFO      19644 0x4027:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:44,320  INFO      3209 3-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:44,320  INFO      3209 3-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:45,606  INFO        -> rewrite: Motor
+2026-05-20 18:57:45,661  INFO        -> rewrite: I/O
+2026-05-20 18:57:45,707  INFO      3141 1-75 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:45,762  INFO      19313 0x2C42:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:48,301  INFO        -> rewrite: Motor
+2026-05-20 18:57:48,402  INFO      19645 0x4027:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:50,587  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:50,687  INFO      19316 0x2DDF:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:51,591  INFO        -> rewrite: Limite
+2026-05-20 18:57:51,591  INFO        -> rewrite: Limite
+2026-05-20 18:57:51,692  INFO      3210 3-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:51,692  INFO      3210 3-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:55,028  INFO        -> rewrite: Rampe
+2026-05-20 18:57:55,129  INFO      3142 2-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:56,256  INFO        -> rewrite: Motor
+2026-05-20 18:57:56,256  INFO        -> rewrite: Motor
+2026-05-20 18:57:56,357  INFO      3211 3-09 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:56,357  INFO      3211 3-09 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:57:56,405  INFO        -> rewrite: Motor
+2026-05-20 18:57:56,506  INFO      19645 0x4027:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:57:56,883  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:56,930  INFO        -> rewrite: Diagnostic
+2026-05-20 18:57:56,983  INFO      19314 0x2C42:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:57,031  INFO      19317 0x2C55 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:57:57,966  INFO        -> rewrite: Comunicatii
+2026-05-20 18:57:58,066  INFO      19646 0x4027:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:02,686  INFO        -> rewrite: Altul
+2026-05-20 18:58:02,787  INFO      19647 0x4028:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:03,480  INFO        -> rewrite: Diagnostic
+2026-05-20 18:58:03,581  INFO      19315 0x2C4F (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:06,106  INFO        -> rewrite: Altul
+2026-05-20 18:58:06,106  INFO        -> rewrite: Altul
+2026-05-20 18:58:06,149  INFO        -> rewrite: Motor
+2026-05-20 18:58:06,207  INFO      3212 3-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:06,207  INFO      3212 3-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:06,250  INFO      3143 2-28 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:06,341  INFO        -> rewrite: Comunicatii
+2026-05-20 18:58:06,442  INFO      19646 0x4027:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:07,598  INFO        -> rewrite: Protectii
+2026-05-20 18:58:07,699  INFO      19318 0x2C56 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:09,784  INFO        -> rewrite: Diagnostic
+2026-05-20 18:58:09,884  INFO      19316 0x2DDF:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:11,504  INFO        -> rewrite: Rampe
+2026-05-20 18:58:11,605  INFO      19648 0x4028:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:12,180  INFO        -> rewrite: Altul
+2026-05-20 18:58:12,280  INFO      19647 0x4028:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:15,524  INFO        -> rewrite: Diagnostic
+2026-05-20 18:58:15,625  INFO      19317 0x2C55 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:16,732  INFO        -> rewrite: Altul
+2026-05-20 18:58:16,732  INFO        -> rewrite: Altul
+2026-05-20 18:58:16,763  INFO        -> rewrite: Diagnostic
+2026-05-20 18:58:16,832  INFO      3213 3-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:16,832  INFO      3213 3-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:16,854  INFO        -> rewrite: Rampe
+2026-05-20 18:58:16,863  INFO      19319 0x2C57 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:16,955  INFO      3144 1-73 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:17,665  INFO        -> rewrite: Rampe
+2026-05-20 18:58:17,766  INFO      19649 0x4028:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:22,508  INFO        -> rewrite: Rampe
+2026-05-20 18:58:22,609  INFO      19648 0x4028:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:24,209  INFO        -> rewrite: Rampe
+2026-05-20 18:58:24,295  INFO        -> rewrite: Protectii
+2026-05-20 18:58:24,309  INFO      3145 1-58 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:24,396  INFO      19318 0x2C56 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:25,032  INFO        -> rewrite: Rampe
+2026-05-20 18:58:25,132  INFO      19650 0x4028:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:26,687  INFO        -> rewrite: I/O
+2026-05-20 18:58:26,687  INFO        -> rewrite: I/O
+2026-05-20 18:58:26,788  INFO      3214 3-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:26,788  INFO      3214 3-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:26,839  INFO        -> rewrite: I/O
+2026-05-20 18:58:26,939  INFO      19320 0x60E6:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:30,695  INFO        -> rewrite: Rampe
+2026-05-20 18:58:30,796  INFO      19649 0x4028:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:31,118  INFO        -> rewrite: I/O
+2026-05-20 18:58:31,219  INFO      19651 0x4028:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:34,792  INFO        -> rewrite: Motor
+2026-05-20 18:58:34,893  INFO      19319 0x2C57 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:35,222  INFO        -> rewrite: Motor
+2026-05-20 18:58:35,222  INFO        -> rewrite: Motor
+2026-05-20 18:58:35,323  INFO      3215 3-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:35,323  INFO      3215 3-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:35,972  INFO        -> rewrite: Motor
+2026-05-20 18:58:36,073  INFO      19321 0x60EB:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:37,310  INFO        -> rewrite: Rampe
+2026-05-20 18:58:37,347  INFO        -> rewrite: I/O
+2026-05-20 18:58:37,411  INFO      3146 2-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:37,447  INFO      19652 0x4028:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:39,708  INFO        -> rewrite: Rampe
+2026-05-20 18:58:39,809  INFO      19650 0x4028:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:42,709  INFO        -> rewrite: Rampe
+2026-05-20 18:58:42,709  INFO        -> rewrite: Rampe
+2026-05-20 18:58:42,810  INFO      3216 3-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:42,810  INFO      3216 3-12 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:43,461  INFO        -> rewrite: Protectii
+2026-05-20 18:58:43,562  INFO      19320 0x60E6:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:44,600  INFO        -> rewrite: Motor
+2026-05-20 18:58:44,700  INFO      19322 0x2822:029 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:47,412  INFO        -> rewrite: Rampe
+2026-05-20 18:58:47,475  INFO        -> rewrite: Motor
+2026-05-20 18:58:47,513  INFO      3147 1-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:47,575  INFO      19653 0x4028:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:49,128  INFO        -> rewrite: Rampe
+2026-05-20 18:58:49,229  INFO      19651 0x4028:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:50,014  INFO        -> rewrite: I/O
+2026-05-20 18:58:50,115  INFO      19321 0x60EB:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:58:51,538  INFO        -> rewrite: I/O
+2026-05-20 18:58:51,538  INFO        -> rewrite: I/O
+2026-05-20 18:58:51,638  INFO      3217 32-66 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:51,638  INFO      3217 32-66 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:54,605  INFO        -> rewrite: I/O
+2026-05-20 18:58:54,705  INFO      19652 0x4028:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:55,124  INFO        -> rewrite: Motor
+2026-05-20 18:58:55,225  INFO      19654 0x4028:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:58:57,025  INFO        -> rewrite: Motor
+2026-05-20 18:58:57,126  INFO      3148 1-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:58,033  INFO        -> rewrite: Rampe
+2026-05-20 18:58:58,033  INFO        -> rewrite: Rampe
+2026-05-20 18:58:58,134  INFO      3218 3-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:58,134  INFO      3218 3-14 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:58:58,523  INFO        -> rewrite: I/O
+2026-05-20 18:58:58,624  INFO      19323 0x2C53 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:01,150  INFO        -> rewrite: I/O
+2026-05-20 18:59:01,251  INFO      19322 0x2822:029 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:03,556  INFO        -> rewrite: Rampe
+2026-05-20 18:59:03,656  INFO      19655 0x4028:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:04,448  INFO        -> rewrite: Limite
+2026-05-20 18:59:04,549  INFO      3149 1-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:04,817  INFO        -> rewrite: Rampe
+2026-05-20 18:59:04,917  INFO      19653 0x4028:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:07,662  INFO        -> rewrite: Motor
+2026-05-20 18:59:07,762  INFO      19324 0x2C54:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:08,829  INFO        -> rewrite: Altul
+2026-05-20 18:59:08,929  INFO      19656 0x4029:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:09,669  INFO        -> rewrite: Rampe
+2026-05-20 18:59:09,669  INFO        -> rewrite: Rampe
+2026-05-20 18:59:09,769  INFO      3219 8-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:09,769  INFO      3219 8-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:13,141  INFO        -> rewrite: Motor
+2026-05-20 18:59:13,242  INFO      19654 0x4028:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:13,261  INFO        -> rewrite: I/O
+2026-05-20 18:59:13,361  INFO      19323 0x2C53 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:16,527  INFO        -> rewrite: Motor
+2026-05-20 18:59:16,627  INFO      19325 0x2C54:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:16,641  INFO        -> rewrite: Limite
+2026-05-20 18:59:16,741  INFO      3150 4-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:17,313  INFO        -> rewrite: Comunicatii
+2026-05-20 18:59:17,313  INFO        -> rewrite: Comunicatii
+2026-05-20 18:59:17,413  INFO      3220 3-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:17,413  INFO      3220 3-19 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:18,478  INFO        -> rewrite: Motor
+2026-05-20 18:59:18,578  INFO      19657 0x4029:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:20,693  INFO        -> rewrite: Comunicatii
+2026-05-20 18:59:20,793  INFO      19655 0x4028:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:21,043  INFO        -> rewrite: Motor
+2026-05-20 18:59:21,043  INFO        -> rewrite: Motor
+2026-05-20 18:59:21,143  INFO      3221 3-22 (Danfoss_VLT_FC302)  existing_len=5  qc=rewrite
+2026-05-20 18:59:21,143  INFO      3221 3-22 (Danfoss_VLT_FC302)  existing_len=5  qc=rewrite
+2026-05-20 18:59:23,426  INFO        -> rewrite: Motor
+2026-05-20 18:59:23,527  INFO      19324 0x2C54:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:25,797  INFO        -> rewrite: Rampe
+2026-05-20 18:59:25,898  INFO      19658 0x4029:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:26,130  INFO        -> rewrite: Motor
+2026-05-20 18:59:26,230  INFO      3151 3-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:26,376  INFO        -> rewrite: Altul
+2026-05-20 18:59:26,477  INFO      19656 0x4029:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:26,992  INFO        -> rewrite: Motor
+2026-05-20 18:59:27,093  INFO      19326 0x2C54:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:28,765  INFO        -> rewrite: Motor
+2026-05-20 18:59:28,765  INFO        -> rewrite: Motor
+2026-05-20 18:59:28,865  INFO      3222 3-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:28,865  INFO      3222 3-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:30,554  INFO        -> rewrite: Motor
+2026-05-20 18:59:30,655  INFO      19325 0x2C54:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:32,949  INFO        -> rewrite: Motor
+2026-05-20 18:59:33,050  INFO      19657 0x4029:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:33,399  INFO        -> rewrite: Rampe
+2026-05-20 18:59:33,500  INFO      3152 3-62 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:35,181  INFO        -> rewrite: Altul
+2026-05-20 18:59:35,282  INFO      19659 0x4029:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:37,639  INFO        -> rewrite: I/O
+2026-05-20 18:59:37,739  INFO      19327 0x2C54:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:40,300  INFO        -> rewrite: Rampe
+2026-05-20 18:59:40,400  INFO      3153 3-72 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:40,420  INFO        -> rewrite: Motor
+2026-05-20 18:59:40,420  INFO        -> rewrite: Motor
+2026-05-20 18:59:40,521  INFO      3223 3-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:40,521  INFO      3223 3-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:40,906  INFO        -> rewrite: Rampe
+2026-05-20 18:59:40,957  INFO        -> rewrite: I/O
+2026-05-20 18:59:41,006  INFO      19658 0x4029:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:41,057  INFO      19326 0x2C54:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:43,403  INFO        -> rewrite: Diagnostic
+2026-05-20 18:59:43,503  INFO      19328 0x2C50 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:46,468  INFO        -> rewrite: I/O
+2026-05-20 18:59:46,569  INFO      19660 0x4029:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:48,394  INFO        -> rewrite: Rampe
+2026-05-20 18:59:48,410  INFO        -> rewrite: I/O
+2026-05-20 18:59:48,495  INFO      3154 1-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 18:59:48,510  INFO      19327 0x2C54:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:49,337  INFO        -> rewrite: Rampe
+2026-05-20 18:59:49,337  INFO        -> rewrite: Rampe
+2026-05-20 18:59:49,438  INFO      3224 3-34 (Danfoss_VLT_FC302)  existing_len=5  qc=rewrite
+2026-05-20 18:59:49,438  INFO      3224 3-34 (Danfoss_VLT_FC302)  existing_len=5  qc=rewrite
+2026-05-20 18:59:49,619  INFO        -> rewrite: Rampe
+2026-05-20 18:59:49,720  INFO      19659 0x4029:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:51,975  INFO        -> rewrite: I/O
+2026-05-20 18:59:52,076  INFO      19329 0x2C52:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:54,736  INFO        -> rewrite: I/O
+2026-05-20 18:59:54,836  INFO      19661 0x4029:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 18:59:55,165  INFO        -> rewrite: Diagnostic
+2026-05-20 18:59:55,265  INFO      19328 0x2C50 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 18:59:56,342  INFO        -> rewrite: Motor
