@@ -237,8 +237,35 @@ function formatRON(num) {
   const n = parseFloat(num) || 0;
   return new Intl.NumberFormat('ro-RO', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
+// Robust money parser — handles thousands separators in both RO ("2.000,00")
+// and US ("2,000.00") notation, plain numbers, and native input.value.
 function parseRON(str) {
-  return parseFloat(((str == null ? '0' : String(str)).replace(/\s/g, '').replace(',', '.'))) || 0;
+  if (str == null) return 0;
+  var s = String(str).trim().replace(/\s/g, '');
+  if (!s) return 0;
+  var neg = /^-/.test(s);
+  s = s.replace(/[^0-9.,]/g, '');
+  if (!s) return 0;
+  var lastComma = s.lastIndexOf(',');
+  var lastDot = s.lastIndexOf('.');
+  if (lastComma > -1 && lastDot > -1) {
+    // Both present — the later one is the decimal separator
+    if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
+    else s = s.replace(/,/g, '');
+  } else if (lastComma > -1) {
+    var commaCount = (s.match(/,/g) || []).length;
+    if (commaCount > 1) s = s.replace(/,/g, '');           // multiple = thousands
+    else if (/^\d{1,3},\d{3}$/.test(s)) s = s.replace(/,/g, ''); // "5,000" = thousands
+    else s = s.replace(/,/g, '.');                          // "146,99" = decimal
+  } else if (lastDot > -1) {
+    var dotCount = (s.match(/\./g) || []).length;
+    if (dotCount > 1) s = s.replace(/\./g, '');             // multiple = thousands
+    else if (/^\d{1,3}\.\d{3}$/.test(s)) s = s.replace(/\./g, ''); // "2.000" = thousands
+    // else single dot, 1-2 decimals — leave as decimal
+  }
+  var n = parseFloat(s);
+  if (isNaN(n)) return 0;
+  return neg ? -Math.abs(n) : n;
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
