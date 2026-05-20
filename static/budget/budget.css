@@ -464,6 +464,17 @@ label.field-label {
   gap: 0.85rem 1rem;
 }
 
+/* ============ IMPORT HISTORY ============ */
+.import-history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.import-history-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.import-history-item .btn-del { flex-shrink: 0; }
+
 /* ============ AUDIT MODAL ============ */
 .audit-modal { max-width: 640px; }
 .audit-body { max-height: 60vh; overflow-y: auto; margin-bottom: 1rem; }

@@ -80,6 +80,22 @@ function migrateGoals(data) {
   if (!Array.isArray(data.goals)) data.goals = [];
 }
 
+// Import sessions history (for undo). Kept ~6 months.
+function migrateImportHistory(data) {
+  if (!data) return;
+  if (!Array.isArray(data.importHistory)) data.importHistory = [];
+}
+
+// Drop import sessions older than 6 months
+function pruneImportHistory(data) {
+  if (!data || !Array.isArray(data.importHistory)) return;
+  var cutoff = Date.now() - 182 * 24 * 60 * 60 * 1000;
+  data.importHistory = data.importHistory.filter(function(imp) {
+    var t = imp.ts ? new Date(imp.ts).getTime() : 0;
+    return t >= cutoff;
+  });
+}
+
 // ETF investments (manual tracking)
 function migrateEtf(data) {
   if (!data) return;
@@ -465,6 +481,8 @@ async function loadData() {
       migrateImportedRefs(state.data);
       migrateGoals(state.data);
       migrateEtf(state.data);
+      migrateImportHistory(state.data);
+      pruneImportHistory(state.data);
       migrateVwce(state.data);
       if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
@@ -1899,7 +1917,10 @@ function renderVenituri() {
   html += '    <div class="next-payment-title">Import extras bancar</div>';
   html += '    <div class="next-payment-line"><span class="text-mid">Încarcă CSV-ul ING — venituri și cheltuieli se completează și categorizează automat.' + (nImported > 0 ? ' <strong>' + nImported + '</strong> tranzacții importate până acum.' : '') + '</span></div>';
   html += '  </div>';
-  html += '  <button class="btn-add" onclick="showImportModal()"><i data-lucide="upload"></i> Importă CSV</button>';
+  html += '  <div style="display:flex;gap:0.5rem;flex-shrink:0;">';
+  html += '    <button class="btn-back" onclick="showImportHistory()" title="Istoric importuri"><i data-lucide="history"></i> Istoric</button>';
+  html += '    <button class="btn-add" onclick="showImportModal()"><i data-lucide="upload"></i> Importă CSV</button>';
+  html += '  </div>';
   html += '</div>';
   html += '</div>';
 
@@ -2873,6 +2894,7 @@ async function showImportModal() {
   refreshIcons();
 
   var parsed = [];
+  var importFileName = '';
   var fileInput = overlay.querySelector('#imp-file');
   var summary = overlay.querySelector('#imp-summary');
   var preview = overlay.querySelector('#imp-preview');
@@ -2887,6 +2909,7 @@ async function showImportModal() {
   fileInput.addEventListener('change', function() {
     var f = fileInput.files[0];
     if (!f) return;
+    importFileName = f.name || 'import.csv';
     var reader = new FileReader();
     reader.onload = function() {
       try {
@@ -3003,6 +3026,7 @@ async function showImportModal() {
     if (act.dataset.act === 'apply') {
       var fixedLabels = (state.data.cheltuieliFixe || []).reduce(function(s, c) { s[c.label] = true; return s; }, {});
       var addedCh = 0, addedV = 0, addedTez = 0, addedTrv = 0, refsAdded = [];
+      var importItems = [];   // recorded for undo
       // Collect candidate new rules from user overrides
       var ruleProposals = {};
       parsed.forEach(function(t) {
@@ -3021,8 +3045,9 @@ async function showImportModal() {
         // Investment transfers — route to Tezaur / Tradeville instead of expenses
         if (t.categorie === '__TEZAUR__') {
           if (!Array.isArray(state.data.tezaur)) state.data.tezaur = [];
+          var tezId = getNextId(state.data.tezaur);
           state.data.tezaur.push({
-            id: getNextId(state.data.tezaur),
+            id: tezId,
             emisiune: ((state.data.emisiuniTezaur || [])[0] || {}).label || 'Tezaur',
             dataSubscriere: t.dataIso || '',
             suma: t.suma,
@@ -3030,6 +3055,7 @@ async function showImportModal() {
             maturitate: '1 an',
             dataScadenta: ''
           });
+          importItems.push({ type: 'tezaur', tezaurId: tezId, suma: t.suma, ref: t.ref || '' });
           addedTez++;
           if (t.ref) refsAdded.push(t.ref);
           return;
@@ -3037,7 +3063,8 @@ async function showImportModal() {
         if (t.categorie === '__TRADEVILLE__') {
           if (!state.data.vwce) migrateVwce(state.data);
           if (!Array.isArray(state.data.vwce.alimentari)) state.data.vwce.alimentari = [];
-          state.data.vwce.alimentari.push({ data: t.dataIso || '', suma: t.suma });
+          state.data.vwce.alimentari.push({ data: t.dataIso || '', suma: t.suma, ref: t.ref || '' });
+          importItems.push({ type: 'tradeville', data: t.dataIso || '', suma: t.suma, ref: t.ref || '' });
           addedTrv++;
           if (t.ref) refsAdded.push(t.ref);
           return;
@@ -3045,11 +3072,13 @@ async function showImportModal() {
         if (t.tip === 'venit') {
           if (!state.data.venituri[mk]) state.data.venituri[mk] = {};
           state.data.venituri[mk][t.categorie] = (state.data.venituri[mk][t.categorie] || 0) + t.suma;
+          importItems.push({ type: 'venit', mk: mk, categorie: t.categorie, suma: t.suma, ref: t.ref || '' });
           addedV++;
         } else {
           if (fixedLabels[t.categorie]) return; // fixed expenses counted via the fixed row
           if (!state.data.cheltuieli[mk]) state.data.cheltuieli[mk] = {};
           state.data.cheltuieli[mk][t.categorie] = (state.data.cheltuieli[mk][t.categorie] || 0) + t.suma;
+          importItems.push({ type: 'cheltuiala', mk: mk, categorie: t.categorie, suma: t.suma, ref: t.ref || '' });
           addedCh++;
         }
         if (t.ref) refsAdded.push(t.ref);
@@ -3059,6 +3088,18 @@ async function showImportModal() {
       if (!Array.isArray(state.data.importedRefs)) state.data.importedRefs = [];
       var refSet = state.data.importedRefs.reduce(function(s, r) { s[r] = true; return s; }, {});
       refsAdded.forEach(function(r) { if (!refSet[r]) { state.data.importedRefs.push(r); refSet[r] = true; } });
+      // Record the import session for the history / undo
+      if (importItems.length > 0) {
+        if (!Array.isArray(state.data.importHistory)) state.data.importHistory = [];
+        state.data.importHistory.push({
+          id: 'imp_' + Date.now(),
+          ts: new Date().toISOString(),
+          fileName: importFileName,
+          items: importItems,
+          summary: { cheltuieli: addedCh, venituri: addedV, tezaur: addedTez, tradeville: addedTrv }
+        });
+        pruneImportHistory(state.data);
+      }
       saveData();
       close();
       render();
@@ -3083,6 +3124,98 @@ async function showImportModal() {
         }
       }, 100);
     }
+  });
+  document.addEventListener('keydown', onKey);
+}
+
+// Revert an import session: subtract the amounts, drop created Tezaur rows /
+// Tradeville top-ups, release the imported refs, remove the history entry.
+async function deleteImport(id) {
+  var imp = (state.data.importHistory || []).filter(function(x) { return x.id === id; })[0];
+  if (!imp) return;
+  var ok = await showConfirm({
+    title: 'Șterge importul',
+    body: 'Se anulează ' + imp.items.length + ' modificări din "' + imp.fileName + '". Sumele adăugate se scad, subscrierile Tezaur și alimentările Tradeville create de acest import se șterg. Tranzacțiile vor putea fi reimportate.',
+    okLabel: 'Șterge importul', cancelLabel: 'Anulează', icon: 'trash-2'
+  });
+  if (!ok) return;
+  var refsToRemove = {};
+  (imp.items || []).forEach(function(it) {
+    if (it.ref) refsToRemove[it.ref] = true;
+    if (it.type === 'cheltuiala') {
+      var m = state.data.cheltuieli[it.mk];
+      if (m && m[it.categorie] != null) {
+        m[it.categorie] = m[it.categorie] - it.suma;
+        if (m[it.categorie] <= 0.001) delete m[it.categorie];
+      }
+    } else if (it.type === 'venit') {
+      var mv = state.data.venituri[it.mk];
+      if (mv && mv[it.categorie] != null) {
+        mv[it.categorie] = mv[it.categorie] - it.suma;
+        if (mv[it.categorie] <= 0.001) delete mv[it.categorie];
+      }
+    } else if (it.type === 'tezaur') {
+      state.data.tezaur = (state.data.tezaur || []).filter(function(t) { return t.id !== it.tezaurId; });
+    } else if (it.type === 'tradeville') {
+      var arr = (state.data.vwce && state.data.vwce.alimentari) || [];
+      for (var i = 0; i < arr.length; i++) {
+        if ((it.ref && arr[i].ref === it.ref) || (arr[i].data === it.data && arr[i].suma === it.suma)) {
+          arr.splice(i, 1); break;
+        }
+      }
+    }
+  });
+  state.data.importedRefs = (state.data.importedRefs || []).filter(function(r) { return !refsToRemove[r]; });
+  state.data.importHistory = (state.data.importHistory || []).filter(function(x) { return x.id !== id; });
+  saveData();
+  render();
+  // Re-open the history so the user sees the result
+  setTimeout(showImportHistory, 120);
+}
+
+function showImportHistory() {
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  var hist = (state.data.importHistory || []).slice().sort(function(a, b) {
+    return (b.ts || '').localeCompare(a.ts || '');
+  });
+  var body = '';
+  if (hist.length === 0) {
+    body = '<div class="audit-empty">Niciun import în ultimele 6 luni. Importurile apar aici după ce încarci un CSV bancar.</div>';
+  } else {
+    body = '<div class="import-history-list">';
+    hist.forEach(function(imp) {
+      var when = imp.ts ? new Date(imp.ts).toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' }) : '';
+      var s = imp.summary || {};
+      var chips = '';
+      if (s.cheltuieli) chips += '<span class="tag" style="background:var(--danger-soft);color:var(--danger);">' + s.cheltuieli + ' cheltuieli</span> ';
+      if (s.venituri) chips += '<span class="tag" style="background:var(--success-soft);color:var(--success);">' + s.venituri + ' venituri</span> ';
+      if (s.tezaur) chips += '<span class="tag" style="background:var(--violet-soft);color:var(--violet);">' + s.tezaur + ' Tezaur</span> ';
+      if (s.tradeville) chips += '<span class="tag" style="background:var(--violet-soft);color:var(--violet);">' + s.tradeville + ' Tradeville</span> ';
+      body += '<div class="import-history-item">';
+      body += '  <div style="flex:1;min-width:0;">';
+      body += '    <div style="font-size:0.85rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(imp.fileName || 'import.csv') + '</div>';
+      body += '    <div class="mono" style="font-size:0.7rem;color:var(--text-dim);">' + esc(when) + ' · ' + (imp.items || []).length + ' modificări</div>';
+      body += '    <div style="margin-top:0.35rem;">' + chips + '</div>';
+      body += '  </div>';
+      body += '  <button class="btn-del" onclick="deleteImport(\'' + esc(imp.id) + '\')" title="Șterge importul"><i data-lucide="trash-2"></i></button>';
+      body += '</div>';
+    });
+    body += '</div>';
+  }
+  overlay.innerHTML =
+    '<div class="modal" role="dialog" aria-modal="true" style="max-width:560px;">' +
+    '  <div class="modal-title"><i data-lucide="history"></i> Istoric importuri (ultimele 6 luni)</div>' +
+    '  <div class="modal-body" style="max-height:60vh;overflow:auto;">' + body + '</div>' +
+    '  <div class="modal-actions"><button class="modal-btn" data-act="close">Închide</button></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  refreshIcons();
+  function close() { document.body.removeChild(overlay); document.removeEventListener('keydown', onKey); }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) return close();
+    if (e.target.closest('[data-act="close"]')) close();
   });
   document.addEventListener('keydown', onKey);
 }
