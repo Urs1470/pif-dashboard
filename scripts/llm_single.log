@@ -9694,3 +9694,52 @@
 2026-05-20 15:54:14,262  INFO        -> rewrite: Seteaza modul de configurare pentru bornele digitale I/O. Aceasta parametru defi
 2026-05-20 15:54:14,362  INFO      3939 5-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 15:54:17,576  INFO        -> rewrite: Defineste numele dispozitivului pentru slave-ul EtherCAT cu ID 14. Acest paramet
+2026-05-20 15:54:22,386  INFO        Committed + pushed
+2026-05-20 15:54:22,487  INFO      24871 0x5861:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:22,539  INFO        -> rewrite: Afiseaza starea curenta a modulului CIP (Common Industrial Protocol). Valorile i
+2026-05-20 15:54:22,640  INFO      23083 0x23A9 (Lenze_i550)  existing_len=181  qc=rewrite
+2026-05-20 15:54:22,855  INFO        -> rewrite: Configureaza functia asignata intrarii digitale de la terminalul 19. Optiunile i
+2026-05-20 15:54:22,956  INFO      3940 5-17 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:31,094  INFO        -> rewrite: Afiseaza starea activa a retelei EtherNet/IP. Parametru read-only care indica da
+2026-05-20 15:54:31,194  INFO      23084 0x2320 (Lenze_i550)  existing_len=251  qc=rewrite
+2026-05-20 15:54:31,561  INFO        -> rewrite: Atribuie o functie intrarii digitale de pe terminalul X30/3 al modulului optiona
+2026-05-20 15:54:31,580  INFO        -> rewrite: Stocheaza numele dispozitivului pentru slave-ul EtherCAT 15 pe retea. Este folos
+2026-05-20 15:54:31,662  INFO      3941 5-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:31,681  INFO      24872 0x5861:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:37,701  INFO        -> rewrite: Stocheaza numele dispozitivului pentru slave-ul EtherCAT cu ID 16. Acest paramet
+2026-05-20 15:54:37,802  INFO      24873 0x5862:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:40,944  INFO        -> rewrite: Activeaza restartarea comunicatiei Modbus pentru ca setarile modificate ale inte
+2026-05-20 15:54:41,044  INFO      23085 0x2321:001 (Lenze_i550)  existing_len=313  qc=rewrite
+2026-05-20 15:54:41,705  INFO        -> rewrite: Selecteaza functia asignata intrarii digitale de pe terminalul X30/4. Terminalul
+2026-05-20 15:54:41,806  INFO      3942 5-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:49,361  INFO        -> rewrite: Seteaza adresa nodului Modbus pentru identificarea dispozitivului pe magistrala 
+2026-05-20 15:54:49,423  INFO        -> rewrite: Afiseaza tipul dispozitivului pentru slave-ul 1 in reteaua EtherCAT. Acest param
+2026-05-20 15:54:49,462  INFO      23086 0x2321:002 (Lenze_i550)  existing_len=375  qc=rewrite
+2026-05-20 15:54:49,524  INFO      24874 0x5862:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:50,200  INFO        -> rewrite: Acest parametru activeaza intrarea digitala de pe terminalul X46/3 al modulului 
+2026-05-20 15:54:50,301  INFO      3943 5-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:54:54,393  INFO        -> rewrite: Seteaza rata de transfer (baud rate) pentru comunicatia Modbus. Valoarea setata 
+2026-05-20 15:54:54,494  INFO      23087 0x2321:003 (Lenze_i550)  existing_len=368  qc=rewrite
+2026-05-20 15:54:55,835  INFO        -> rewrite: Afiseaza tipul de dispozitiv conectat ca slave 2 in reteaua EtherCAT. Valoarea i
+2026-05-20 15:54:55,936  INFO      24875 0x5862:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:54:56,507  INFO        -> rewrite: Defineste functia atribuita intrarii digitale de pe terminalul X46/7. Acest term
+2026-05-20 15:54:56,608  INFO      3944 5-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:55:01,779  INFO        -> rewrite: Defineste formatul de date pentru comunicatia Modbus RTU prin setarea bitului de
+2026-05-20 15:55:01,879  INFO      23088 0x2321:004 (Lenze_i550)  existing_len=243  qc=rewrite
+2026-05-20 15:55:02,446  INFO        -> rewrite: Afiseaza tipul de dispozitiv al slave-ului EtherCAT 3. Valoarea indica categoria
+2026-05-20 15:55:02,538  INFO        -> rewrite: Configureaza functia asignata intrarii digitale de pe terminalul X46/9. Selectea
+2026-05-20 15:55:02,547  INFO      24876 0x5862:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:55:02,638  INFO      3945 5-26 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:55:07,894  INFO        -> rewrite: Seteaza timpul minim de intarziere intre receptia unei mesaj valid si raspunsul 
+2026-05-20 15:55:07,995  INFO      23089 0x232B:024 (Lenze_i550)  existing_len=228  qc=rewrite
+2026-05-20 15:55:09,093  INFO        -> rewrite: Acest parametru defineste functia intrarii digitale de la terminalul X46/13 de p
+2026-05-20 15:55:09,194  INFO      3946 5-32 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:55:10,429  INFO        -> rewrite: Afiseaza tipul de dispozitiv al slave-ului EtherCAT 4 conform specificatiei CoE.
+2026-05-20 15:55:10,530  INFO      24877 0x5862:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 15:55:15,614  INFO        -> rewrite: Configureaza functionarea iesirii digitale de pe modulul optional VLT General Pu
+2026-05-20 15:55:15,715  INFO      3947 5-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 15:55:16,615  INFO        -> rewrite: Parametru de tip index care stocheaza o referinta catre alt parametru. Formatul 
+2026-05-20 15:55:16,716  INFO      23091 0x232D (Lenze_i550)  existing_len=246  qc=rewrite
+2026-05-20 15:55:22,265  INFO        -> rewrite: Cod de verificare Modbus afisat doar pentru monitorizare. Este un parametru read
+2026-05-20 15:55:22,383  INFO        -> rewrite: Afiseaza tipul de dispozitiv al slave-ului EtherCAT 5 conectat la retea. Este un
+2026-05-20 15:55:22,483  INFO      24878 0x5862:006 (Lenze_i950)  existing_len=0  qc=rewrite
