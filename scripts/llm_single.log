@@ -3496,3 +3496,28 @@
 2026-05-20 13:05:26,023  INFO        -> new: Afiseaza tensiunea actuala a motorului masurata de invertor. Valoarea este in vo
 2026-05-20 13:05:26,124  INFO      23502 0x2DA2:001 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 13:05:26,397  INFO        -> new: Defineste continutul obiectului TPDO (A) pentru modul de functionare Velocity co
+2026-05-20 13:05:28,470  INFO        -> new: Defineste procentul de reducere a vitezei motorului cand se atinge limita de cur
+2026-05-20 13:05:28,571  INFO      3160 1-98 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:29,631  INFO        Committed + pushed
+2026-05-20 13:05:29,631  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 85, 'error': 15} cost=$0.1569
+2026-05-20 13:05:30,017  INFO        -> new: Defineste codul alarmei care va fi suprimata pentru intrarea 5. Alarma selectata
+2026-05-20 13:05:30,118  INFO      22886 0x285C:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:31,947  INFO        -> new: Seteaza timpul de eliminare a efectului de bounce pentru intrarea digitala 3. Ac
+2026-05-20 13:05:32,048  INFO      22784 0x2633:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:33,590  INFO        -> new: Parametru de diagnostic doar pentru citire care afiseaza puterea activa la iesir
+2026-05-20 13:05:33,691  INFO      23503 0x2DA2:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:35,568  INFO        -> new: Seteaza timpul de accelerare si decelerare pentru referinta controllerului PID, 
+2026-05-20 13:05:35,669  INFO      22686 0x404C:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:36,417  INFO        -> new: Seteaza alarma care va fi suprimata in intrarea 6 a tabelului de suprimare alarm
+2026-05-20 13:05:36,518  INFO      22887 0x285C:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:41,114  INFO        -> new: Seteaza punctele de frecventa pentru interpolarea curbei de protectie termica AT
+2026-05-20 13:05:41,159  INFO        -> new: Afiseaza puterea aparenta de iesire calculata din tensiunea si curentul de iesir
+2026-05-20 13:05:41,215  INFO      3161 1-97 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:41,260  INFO      23504 0x2DA3:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:42,881  INFO        -> new: Seteaza timpul de eliminare a oscilatiilor (debounce) pentru intrarea digitala 4
+2026-05-20 13:05:42,982  INFO      22785 0x2633:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:44,469  INFO        -> new: Activeaza sau dezactiveaza suprimarea unei alarme specifice. Cand este setata pe
+2026-05-20 13:05:44,570  INFO      22888 0x285C:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:45,343  INFO        -> new: Seteaza timpul de accelerare al rampei de activare a influentei PID. Cand semnal
+2026-05-20 13:05:45,443  INFO      22687 0x404E:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:47,619  INFO        -> new: Afiseaza puterea de iesire in mod motor pentru analiza energetica a aplicatiei. 
