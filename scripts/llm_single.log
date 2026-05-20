@@ -4900,3 +4900,7 @@
 2026-05-20 13:51:27,774  INFO      3154 1-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
 2026-05-20 13:51:31,020  INFO        -> rewrite: Selecteaza tipul de encoder utilizat pentru pozitionare sau ca sursa de referint
 2026-05-20 13:51:31,050  INFO        -> rewrite: Seteaza valoarea cuvantului de date NetWordOUT2 pentru segmentul 4 al sequencer-
+2026-05-20 13:51:31,121  INFO      19329 0x2C52:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 13:51:33,679  INFO        Committed + pushed
+2026-05-20 13:51:33,779  INFO      19664 0x4029:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 13:51:39,004  INFO        -> rewrite: Seteaza valoarea contorului pentru functia de oprire precisa integrata. Function
