@@ -3416,3 +3416,63 @@
 2026-05-20 13:04:41,949  ERROR       Error 0x1603:001: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cba39c08a6a6d3d36ca46d6549538'}
 2026-05-20 13:04:42,116  ERROR       Error 0x4007:003: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cba3a3a38790050c4e00b4fe0434c'}
 2026-05-20 13:04:43,326  INFO      22681 0x4021:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:44,057  INFO      23496 0x2631:055 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:44,408  INFO      23292 0x2381:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:45,836  INFO        Committed + pushed
+2026-05-20 13:04:45,837  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 84, 'error': 16} cost=$0.1375
+2026-05-20 13:04:45,939  INFO      START: Danfoss_VLT_FC302/explicatie  offset=200 limit=100 batch_size=1  dry=False
+2026-05-20 13:04:46,175  INFO      22881 0x285C:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:46,533  INFO      3155 1-83 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:04:47,949  INFO      22987 0x1603:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:48,116  INFO      22779 0x2630:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:50,685  INFO        -> new: Defineste numele station pentru identificarea dispozitivului pe reteaua PROFINET
+2026-05-20 13:04:50,786  INFO      23294 0x2382:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:51,968  INFO        -> new: Defineste timpul de accelerare pentru controlul temporar al vitezei in modul con
+2026-05-20 13:04:52,031  INFO        -> new: Defineste formatul de date pentru comunicatia Modbus RTU. Seteaza bitii de parit
+2026-05-20 13:04:52,069  INFO      22682 0x4021:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:52,131  INFO      23088 0x2321:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:54,376  INFO        -> new: Activeaza functia de oprire precisa a motorului. Controleaza precizia si modulta
+2026-05-20 13:04:54,477  INFO      3156 1-85 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:04:55,108  INFO        -> new: Trebuie atribuita unei intrari digitale pentru a declansa comutarea pe UPS. Cand
+2026-05-20 13:04:55,209  INFO      23497 0x2D87 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:56,306  INFO        -> new: Defineste numerele de eroare care nu vor fi trimise ca alarma, urgenta sau mesaj
+2026-05-20 13:04:56,406  INFO      22882 0x285C:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:57,685  INFO        -> new: Afiseaza adresa IP activa curenta a dispozitivului PROFINET. Valoarea este confi
+2026-05-20 13:04:57,786  INFO      23295 0x2382:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:57,839  INFO        -> new: Defineste nivelul de asertiune pentru intrarile digitale. Intrarile digitale pot
+2026-05-20 13:04:57,939  INFO      22780 0x2630:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:58,864  INFO        -> new: Configureaza intrarea de mapare RPDO pentru obiectul 0x6042 (Set speed) cu subin
+2026-05-20 13:04:58,964  INFO      22988 0x1A03:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:00,642  INFO        -> new: Seteaza timpul de decelerare pentru controlul temporar al vitezei in modul contr
+2026-05-20 13:05:00,742  INFO      22683 0x4048 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:00,921  INFO        -> new: Afiseaza tensiunea curenta din busul DC al convertizorului de frecventa. Valoare
+2026-05-20 13:05:01,022  INFO      23498 0x2024:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:01,897  INFO        -> new: Seteaza timpul minim de intarziere a raspunsului Modbus. Defineste delay-ul dint
+2026-05-20 13:05:01,956  INFO        -> new: Seteaza timpul de intarziere pentru senzori si PLC-uri in modul de oprire precis
+2026-05-20 13:05:01,998  INFO      23089 0x232B:024 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:02,057  INFO      3157 1-93 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:03,226  INFO        -> new: Aceasta intrare permite suprimarea unei alarme specifice din sistem. Cand o alar
+2026-05-20 13:05:03,327  INFO      22883 0x285C:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:04,807  INFO        -> new: Afiseaza masca de subnet activa pentru interfata PROFINET. Este un parametru de 
+2026-05-20 13:05:04,907  INFO      23296 0x2382:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:05,763  INFO        -> new: Seteaza pragul de turatie pentru detectia pierderii semnalului encoder HTL. Daca
+2026-05-20 13:05:05,864  INFO      22781 0x2633:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:06,278  INFO        -> new: Activeaza functia Safe Torque Off (STO). STO opreste alimentarea motorului in si
+2026-05-20 13:05:06,379  INFO      23499 0x400D (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:07,353  INFO        -> new: Definește ce obiect din dicționarul CANopen este transmis prin TPDO A in modul d
+2026-05-20 13:05:07,453  INFO      22989 0x1A03:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:08,808  INFO        -> new: Defineste o referinta catre parametrul P530 folosind format de index si subindex
+2026-05-20 13:05:08,909  INFO      23091 0x232D (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:09,293  INFO        -> new: Definește a treia intrare pentru suprimarea alarmei. Permite dezactivarea tempor
+2026-05-20 13:05:09,394  INFO      22884 0x285C:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:10,229  INFO        -> new: Selecteaza sursa pentru protectia termica a motorului. Cand se utilizeaza cardul
+2026-05-20 13:05:10,330  INFO      3158 1-90 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:12,141  INFO        -> new: Seteaza durata de resetare pentru componenta integrala (I) a controllerului de p
+2026-05-20 13:05:12,242  INFO      22684 0x4049 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:13,757  INFO        -> new: Afiseaza adresa gateway-ului pentru comunicatia PROFINET. Aceasta adresa permite
+2026-05-20 13:05:13,857  INFO      23297 0x2382:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:14,227  INFO        -> new: Afiseaza valoarea actuala a vitezei in unitati de aplicatie. Este un parametru d
+2026-05-20 13:05:14,327  INFO      23500 0x2B0E (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:15,158  INFO        -> new: Defineste continutul mesajului TPDO (A) pentru modul de functionare CiA 402 "Vel
+2026-05-20 13:05:15,258  INFO      22990 0x1A03:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:15,669  INFO        -> new: Afiseaza codul de verificare pentru comunicatia Modbus. Este un parametru doar p
