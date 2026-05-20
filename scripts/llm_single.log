@@ -4293,3 +4293,4 @@
 2026-05-20 13:36:19,814  INFO        -> rewrite: Activeaza sau dezactiveaza controlul feedforward pentru controllerul de curent. 
 2026-05-20 13:36:19,915  INFO      19222 0x2942:001 (Lenze_i950)  existing_len=0  qc=rewrite
 2026-05-20 13:36:20,466  INFO        -> rewrite: Permite introducerea unui text personalizat care poate fi afisat pe ecranul graf
+2026-05-20 13:36:22,267  INFO        -> rewrite: Definește care parametru VFD este transmis in primul obiect TPDO. TPDO-urile sun
