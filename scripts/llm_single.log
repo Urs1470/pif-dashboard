@@ -7332,3 +7332,32 @@
 2026-05-20 14:53:31,478  INFO        -> rewrite: Defineste timpul de integrare pentru componenta I a regulatorului PID. Cu cat va
 2026-05-20 14:53:31,579  INFO      22685 0x404B (Lenze_i550)  existing_len=260  qc=rewrite
 2026-05-20 14:53:38,410  INFO        -> rewrite: Defineste referinta de pozitie pentru sincronizarea prin fieldbus. Parametrul es
+2026-05-20 14:53:41,254  INFO        -> rewrite: Seteaza timpul de accelerare si decelerare pentru referinta controllerului PID, 
+2026-05-20 14:53:41,300  INFO        -> rewrite: Seteaza unghiul pozitiei polului pentru validarea identificarii pozitiei in grad
+2026-05-20 14:53:41,327  INFO        Committed + pushed
+2026-05-20 14:53:41,354  INFO      22686 0x404C:001 (Lenze_i550)  existing_len=279  qc=rewrite
+2026-05-20 14:53:41,400  INFO      24472 0x2C61:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:53:41,427  INFO      3556 16-89 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:53:47,944  INFO        -> rewrite: Acest parametru afiseaza cuvantul binar configurabil de alarme si avertismente. 
+2026-05-20 14:53:48,044  INFO      3557 16-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:53:49,172  INFO        -> rewrite: Cand triggerul din 0x2631:048 este TRUE, influenta PID se modifica treptat folos
+2026-05-20 14:53:49,272  INFO      22687 0x404E:001 (Lenze_i550)  existing_len=237  qc=rewrite
+2026-05-20 14:53:49,765  INFO        -> rewrite: Seteaza amplitudinea curentului de identificare a pozitiei polilor motorului in 
+2026-05-20 14:53:49,866  INFO      24473 0x2C61:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:53:54,934  INFO        -> rewrite: Defineste valoarea minima a referintei pentru controllerul PID. Limiteaza setpoi
+2026-05-20 14:53:55,035  INFO      22688 0x404E:002 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 14:53:56,651  INFO        -> rewrite: Afiseaza cuvantul de alarma in format hexazecimal transmis prin portul de comuni
+2026-05-20 14:53:56,751  INFO      3558 16-93 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:53:58,491  INFO        -> rewrite: Afiseaza pozitia actuala a polilor motorului in grade electrice. Identificarea p
+2026-05-20 14:53:58,592  INFO      24474 0x2C63:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:54:01,806  INFO        -> rewrite: Afiseaza cuvantul de avertizare receptionat prin portul de comunicatie seriala, 
+2026-05-20 14:54:01,907  INFO      3559 16-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:54:04,490  INFO        -> rewrite: Defineste limita superioara a referintei pentru regulatorul PID. Valoarea setpoi
+2026-05-20 14:54:04,590  INFO      22689 0x4023:001 (Lenze_i550)  existing_len=255  qc=rewrite
+2026-05-20 14:54:10,101  INFO        -> rewrite: Afiseaza cuvantul de stare extins 2 al variatorului. Contine informatii binare s
+2026-05-20 14:54:10,202  INFO      3560 17-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:54:10,217  INFO        -> rewrite: Defineste factorul de ajustare a curentului in timpul functionarii PPI fara misc
+2026-05-20 14:54:10,318  INFO      24475 0x2C64:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:54:15,123  INFO        -> rewrite: Defineste tipul de semnal analogic pentru intrarea selectata. Valoarea 0 = tensi
+2026-05-20 14:54:15,223  INFO      3561 17-20 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:54:15,283  INFO        -> rewrite: Activeaza functia de repaus (sleep mode) a variatorului pentru economisire de en
