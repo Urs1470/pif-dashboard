@@ -6728,3 +6728,36 @@
 2026-05-20 14:38:49,108  INFO        -> rewrite: Defineste factorul de netezire a formelor rampei de accelerare si decelerare. Cu
 2026-05-20 14:38:49,125  INFO        -> rewrite: Seteaza pozitia tinta pentru o axa folosind protocolul HIPERFACE. Aceasta comand
 2026-05-20 14:38:49,208  INFO      22584 0x2601:002 (Lenze_i550)  existing_len=276  qc=rewrite
+2026-05-20 14:38:51,921  INFO        Committed + pushed
+2026-05-20 14:38:52,022  INFO      24371 0x2822:039 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:53,029  INFO        -> rewrite: Defineste expresia de comparatie pentru Comparatorul 2. Permite crearea de logic
+2026-05-20 14:38:53,129  INFO      3449 18-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:59,583  INFO        -> rewrite: Afiseaza eroarea curenta a controllerului PID de proces. Eroarea reprezinta dife
+2026-05-20 14:38:59,683  INFO      3450 18-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:39:00,743  INFO        -> rewrite: Seteaza valoarea implicita a referintei PID din keypad. Reprezinta punctul de co
+2026-05-20 14:39:00,844  INFO      22585 0x2911:010 (Lenze_i550)  existing_len=227  qc=rewrite
+2026-05-20 14:39:02,640  INFO        -> rewrite: Seteaza comanda de pozitie pentru axa A prin protocolul HIPERFACE. Protocolul HI
+2026-05-20 14:39:02,741  INFO      24372 0x2C01:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:39:04,417  INFO        -> rewrite: Afiseaza valoarea curenta a iesirii controllerului PID de proces, exprimata in p
+2026-05-20 14:39:04,518  INFO      3451 13-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:39:10,666  INFO        -> rewrite: Defineste operandul de SET pentru flip-flop-ul RS logic. Selecteaza intrarea dig
+2026-05-20 14:39:10,767  INFO      3452 13-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:39:13,814  INFO        -> rewrite: Seteaza frecventa preset 10 pentru controlul vitezei motorului. Poate fi selecta
+2026-05-20 14:39:13,914  INFO      22586 0x2911:011 (Lenze_i550)  existing_len=222  qc=rewrite
+2026-05-20 14:39:13,933  INFO        -> rewrite: Afiseaza numarul de perechi de poli ai motorului. Valoarea este calculata automa
+2026-05-20 14:39:14,034  INFO      24373 0x2C01:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:39:20,230  INFO        -> rewrite: Selecteaza prima intrare booleana (adevarat sau fals) pentru o regula logica def
+2026-05-20 14:39:20,263  INFO        -> rewrite: Seteaza valoarea presetata a frecventei pentru presetul 11. Poate fi selectata r
+2026-05-20 14:39:20,331  INFO      3453 13-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:39:20,363  INFO      22587 0x2911:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:39:21,708  INFO        -> rewrite: Seteaza turatia nominala a motorului in rpm conform datelor de pe placuta indica
+2026-05-20 14:39:21,808  INFO      24374 0x2C01:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:39:29,133  INFO        -> rewrite: Seteaza valoarea presetului de frecventa 12 pentru motor in Hz. Acest preset poa
+2026-05-20 14:39:29,234  INFO      22588 0x2911:013 (Lenze_i550)  existing_len=276  qc=rewrite
+2026-05-20 14:39:30,037  INFO        -> rewrite: Seteaza frecventa nominala a motorului in Hertzi. Aceasta valoare defineste punc
+2026-05-20 14:39:30,138  INFO      24375 0x2C01:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:39:31,412  INFO        -> rewrite: Defineste a doua intrare booleana pentru o regula logica. Se utilizeaza impreuna
+2026-05-20 14:39:31,513  INFO      3454 13-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:39:36,180  INFO        -> rewrite: Seteaza puterea nominala a motorului in kilowatti. Acest parametru este esential
+2026-05-20 14:39:36,197  INFO        -> rewrite: Selecteaza primul operator logic pentru regulile de control din grupul 13-**. Op
+2026-05-20 14:39:36,281  INFO      24376 0x2C01:007 (Lenze_i950)  existing_len=0  qc=rewrite
