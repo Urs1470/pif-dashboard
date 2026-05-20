@@ -149,6 +149,13 @@ function migrateCreditScadentar(data) {
   if (!data.credit) data.credit = cloneObj(DATI_INITIALE.credit);
   if (!Array.isArray(data.credit.scadentar) || data.credit.scadentar.length === 0) {
     data.credit.scadentar = cloneObj(SCADENTAR_REAL_DEFAULT);
+    return;
+  }
+  // Inject the already-paid May instalment if missing (schedule export only
+  // carried the remaining payments from June onward).
+  var hasMai = data.credit.scadentar.some(function(p) { return (p.data || '') === '2026-05-18'; });
+  if (!hasMai) {
+    data.credit.scadentar.unshift({ data: '2026-05-18', suma: 1793.9, dobanda: 682.11, principal: 1111.79, soldFinal: 81935.69, asigurare: 146.99 });
   }
 }
 
@@ -419,6 +426,7 @@ var REGULI_CATEGORIZARE_DEFAULT = [
 
 // --- Scadentar real (sursa: ING Home'Bank scadenţar 19.05.2026) ---
 var SCADENTAR_REAL_DEFAULT = [
+  { data: "2026-05-18", suma: 1793.9, dobanda: 682.11, principal: 1111.79, soldFinal: 81935.69, asigurare: 146.99 },
   { data: "2026-06-18", suma: 1793.9, dobanda: 682.11, principal: 1111.79, soldFinal: 80823.9, asigurare: 145.0 },
   { data: "2026-07-18", suma: 1793.9, dobanda: 672.86, principal: 1121.04, soldFinal: 79702.86, asigurare: 142.99 },
   { data: "2026-08-18", suma: 1786.52, dobanda: 663.53, principal: 1122.99, soldFinal: 78579.87, asigurare: 140.97 },
