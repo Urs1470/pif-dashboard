@@ -1,0 +1,46 @@
+2026-05-20 12:44:58,515  INFO      START: Lenze_i550/explicatie  batch_size=1  dry=False
+2026-05-20 12:44:59,109  INFO      4222 0x6080 (Lenze_i550)  existing_len=256  qc=keep
+2026-05-20 12:44:59,109  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,109  INFO      18661 0x4018:003 (Lenze_i550)  existing_len=292  qc=keep
+2026-05-20 12:44:59,109  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,109  INFO      18662 0x4018:004 (Lenze_i550)  existing_len=352  qc=keep
+2026-05-20 12:44:59,109  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18663 0x4018:005 (Lenze_i550)  existing_len=184  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18664 0x4018:006 (Lenze_i550)  existing_len=241  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18665 0x4018:007 (Lenze_i550)  existing_len=194  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18667 0x4016:003 (Lenze_i550)  existing_len=276  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18668 0x4016:004 (Lenze_i550)  existing_len=371  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18669 0x4016:005 (Lenze_i550)  existing_len=199  qc=keep
+2026-05-20 12:44:59,110  INFO        -> keep (existing OK)
+2026-05-20 12:44:59,110  INFO      18670 0x4016:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:09,410  INFO        -> new: Afiseaza starea logica a semnalului de declansare pentru iesirea digitala 1, ina
+2026-05-20 12:45:09,510  INFO      18679 0x4017:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:19,201  INFO        -> new: Seteaza intarzierea de dezactivare pentru iesirea digitala 2 in secunde. Valoare
+2026-05-20 12:45:19,302  INFO      18680 0x4017:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:29,688  INFO        -> new: Seteaza intarzierea la conectare pentru iesirea digitala 2 in secunde. Daca iesi
+2026-05-20 12:45:29,789  INFO      18681 0x4017:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:34,989  INFO        -> new: Afiseaza starea logica a terminalului de iesire digitala X3/DO2. Valoarea 0 = ie
+2026-05-20 12:45:35,090  INFO      18682 0x4017:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:43,932  INFO        -> new: Afiseaza starea logica bruta a semnalului de trigger pentru iesirea digitala 2. 
+2026-05-20 12:45:44,033  INFO      18764 0x1400:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:45:51,948  INFO        -> new: Seteaza numarul maxim de sub-indecsi obiectului RPDO1 (Receive PDO 1). Valoarea 
+2026-05-20 12:45:52,048  INFO      18774 0x1800:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:01,068  INFO        -> new: Defineste cel mai mare sub-indice pentru parametrii de comunicare TPDO1. Valoare
+2026-05-20 12:46:01,169  INFO      18779 0x1801:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:10,109  INFO        -> new: Indicele maxim al sub-indicilor definit pentru TPDO2 (Transmit Process Data Obje
+2026-05-20 12:46:10,209  INFO      18784 0x1802:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:20,995  INFO        -> new: Reprezinta numarul maxim de sub-indecsi definiti pentru obiectul de comunicatie 
+2026-05-20 12:46:21,096  INFO      18790 0x1600:000 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:28,856  INFO        -> new: Defineste numarul de obiecte CANopen mapate in RPDO1 (Receive Process Data Objec
+2026-05-20 12:46:28,956  INFO      18791 0x1600:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:38,360  INFO        -> new: Defineste primul obiect aplicatie mapat in RPDO1 (Receive PDO 1). Acest parametr
+2026-05-20 12:46:38,461  INFO      18792 0x1600:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:46,260  INFO        -> new: Configureaza al doilea obiect de aplicatie care va fi receptionat prin RPDO1. Fi
+2026-05-20 12:46:46,361  INFO      18793 0x1600:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 12:46:56,865  INFO        -> new: Defineste care obiect din dictionarul CANopen este mapat pe pozitia 3 in telegra
+2026-05-20 12:46:56,966  INFO      18794 0x1600:004 (Lenze_i550)  existing_len=0  qc=new

@@ -207,7 +207,7 @@ def parse_single_response(text):
     return result
 
 
-def get_rows(familie, field):
+def get_rows(familie, field, offset=0, limit=None):
     conn = sqlite3.connect("pif_dashboard.db")
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
@@ -217,6 +217,8 @@ def get_rows(familie, field):
         sql += " WHERE familie = ?"
         args.append(familie)
     sql += " ORDER BY familie, id"
+    if limit is not None:
+        sql += f" LIMIT {limit} OFFSET {offset}"
     cur.execute(sql, args)
     while True:
         rows = cur.fetchmany(50)
@@ -282,12 +284,13 @@ def main():
                     choices=["explicatie", "influenteaza", "categorie"])
     ap.add_argument("--batch-size", type=int, default=1)  # default 1 = single
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--offset", type=int, default=0)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--log", default="scripts/llm_single.log")
     args = ap.parse_args()
 
     lg = setup_log(args.log)
-    lg.info(f"START: {args.familie}/{args.field}  batch_size={args.batch_size}  dry={args.dry_run}")
+    lg.info(f"START: {args.familie}/{args.field}  offset={args.offset} limit={args.limit} batch_size={args.batch_size}  dry={args.dry_run}")
 
     client = anthro_client()
     total = 0
@@ -295,7 +298,7 @@ def main():
     decisions = {"keep": 0, "rewrite": 0, "new": 0, "error": 0}
     commit_counter = 0
 
-    for row in get_rows(args.familie, args.field):
+    for row in get_rows(args.familie, args.field, offset=args.offset, limit=args.limit):
         pid = row["id"]
         pcode = row["parametru"]
         existing_val = row.get(args.field)
