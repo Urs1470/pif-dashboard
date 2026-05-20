@@ -432,6 +432,7 @@ def generate_pv_service(proiect, echipament, form_data):
     Returneaza bytes DOCX.
     """
     doc = Document(SERVICE_TEMPLATE)
+    _fix_footer_overlap(doc)
 
     client = (proiect.get('client') or '').strip()
     locatie = (proiect.get('locatie') or '').strip()
@@ -848,6 +849,21 @@ def _build_images_block(doc, group, after_paragraph=None):
     return table
 
 
+def _fix_footer_overlap(doc, bottom_cm=3.8):
+    """
+    Footer-ul firmei (sigla + bara de contact, ~11 paragrafe) e inalt.
+    Daca bottom_margin e prea mic, textul corpului se suprapune cu footer-ul
+    la trecerea pe pagina noua. Marim marginea de jos ca sa rezervam spatiu.
+    """
+    for section in doc.sections:
+        try:
+            cur = section.bottom_margin
+            if cur is None or cur < Cm(bottom_cm):
+                section.bottom_margin = Cm(bottom_cm)
+        except Exception:
+            section.bottom_margin = Cm(bottom_cm)
+
+
 def _group_images_ordered(images):
     """
     images: lista [{file, caption, anchor, width}].
@@ -886,6 +902,7 @@ def generate_pv_pif(proiect, form_data):
         rep_client (str), rep_eg (str default 'Ing. Ion Ursu')
     """
     doc = Document(PIF_TEMPLATE)
+    _fix_footer_overlap(doc)
 
     client = (proiect.get('client') or '').strip()
     obiectiv = (proiect.get('nume') or '').strip()
