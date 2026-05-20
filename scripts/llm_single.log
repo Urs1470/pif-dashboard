@@ -6134,3 +6134,580 @@
 2026-05-20 14:23:15,880  INFO        Committed + pushed
 2026-05-20 14:23:15,981  INFO      20222 0x2632:002 (Lenze_i550)  existing_len=0  qc=rewrite
 2026-05-20 14:23:18,956  INFO        -> rewrite: Seteaza limitarea variatiei acceleratiei (jerk) pentru referinta de cuplu. Limit
+2026-05-20 14:23:21,232  INFO        -> rewrite: Seteaza valoarea de referinta sau feedback care corespunde nivelului minim al se
+2026-05-20 14:23:21,333  INFO      3359 6-15 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:21,707  INFO        Committed + pushed
+2026-05-20 14:23:21,808  INFO      19541 0x2D4C:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:25,223  INFO        -> rewrite: Activeaza inversarea logica a intrarii digitale 2. Cand este setat pe 1, semnalu
+2026-05-20 14:23:25,324  INFO      20223 0x2632:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:29,756  INFO        -> rewrite: Seteaza constanta de timp termica pentru infasurarea motorului in modelul I²×t. 
+2026-05-20 14:23:29,856  INFO      19542 0x2D4C:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:32,620  INFO        -> rewrite: Activeaza logica inversata pentru intrarea digitala 3. Cand este setat pe 1, un 
+2026-05-20 14:23:32,720  INFO      20224 0x2632:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:33,385  INFO        -> rewrite: Defineste valoarea maxima a referintei sau a feedback-ului care corespunde semna
+2026-05-20 14:23:33,485  INFO      3360 6-13 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:39,533  INFO        -> rewrite: Activeaza inversarea logicii pentru intrarea digitala 4. Cand este setat pe 1, s
+2026-05-20 14:23:39,633  INFO      20225 0x2632:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:42,666  INFO        -> rewrite: Seteaza constanta de timp termica pentru miezul magnetic statoric in modelul i²x
+2026-05-20 14:23:42,767  INFO      19543 0x2D4C:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:44,244  INFO        -> rewrite: Seteaza valoarea curentului corespunzatoare limitei superioare pentru intrarea a
+2026-05-20 14:23:44,345  INFO      3361 6-21 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:46,050  INFO        -> rewrite: Activeaza inversarea logicii pentru intrarea digitala 5. Cand este activata, un 
+2026-05-20 14:23:46,150  INFO      20226 0x2632:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:23:51,571  INFO        -> rewrite: Seteaza nivelul de tensiune maxim pentru intrarea analogica de la terminalul 54.
+2026-05-20 14:23:51,671  INFO      3362 6-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:23:54,147  INFO        -> rewrite: Defineste valoarea initiala pentru modelul termic al motorului bazat pe functia 
+2026-05-20 14:23:54,248  INFO      19544 0x2D4D:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:23:54,699  INFO        -> rewrite: Seteaza inversarea logica pentru intrarea digitala 6. Cu inversare activata, un 
+2026-05-20 14:23:54,800  INFO      20227 0x2632:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:01,953  INFO        -> rewrite: Activeaza inversarea logica pentru intrarea digitala 7. Cand este activat, un se
+2026-05-20 14:24:02,053  INFO      20228 0x2636:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:03,088  INFO        -> rewrite: Seteaza valoarea de scalare a intrarii analogice de la borna 54 care corespunde 
+2026-05-20 14:24:03,188  INFO      3363 6-23 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:06,906  INFO        -> rewrite: Defineste primul punct de viteza (x1) pe caracteristica i²xt pentru evaluarea de
+2026-05-20 14:24:07,007  INFO      19545 0x2D4D:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:24:10,794  INFO        -> rewrite: Seteaza valoarea curentului maxim pentru intrarea analogica Terminal 54. Aceasta
+2026-05-20 14:24:10,894  INFO      3364 6-30 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:12,621  INFO        -> rewrite: Seteaza pragul de monitorizare pentru intrarea analogica 1. La 100% corespunde 1
+2026-05-20 14:24:12,722  INFO      20229 0x2636:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:16,349  INFO        -> rewrite: Seteaza nivelul de tensiune de la borna X30/11 care corespunde valorii minime de
+2026-05-20 14:24:16,449  INFO      3365 6-31 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:17,710  INFO        -> rewrite: Defineste valoarea y1 pentru caracteristica i²xt a modelului termic al motorului
+2026-05-20 14:24:17,811  INFO      19546 0x2D4D:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:24:22,217  INFO        -> rewrite: Seteaza conditia de monitorizare pentru intrarea analogica 1. Cand conditia sele
+2026-05-20 14:24:22,317  INFO      20230 0x2636:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:25,707  INFO        -> rewrite: Seteaza nivelul de tensiune corespunzator pentru capatul superior al scalarii in
+2026-05-20 14:24:25,807  INFO      3366 6-34 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:26,318  INFO        -> rewrite: Seteaza un punct specific pe curba caracteristica termica a motorului, definind 
+2026-05-20 14:24:26,419  INFO      19547 0x2D4D:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:24:29,473  INFO        -> rewrite: Defineste actiunea driverei cand este detectata o eroare pe intrarea analogica 1
+2026-05-20 14:24:29,574  INFO      20231 0x2637:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:31,037  INFO        -> rewrite: Seteaza valoarea de scalare pentru punctul inferior al intrarii analogice X30/11
+2026-05-20 14:24:31,138  INFO      3367 6-35 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:40,345  INFO        -> rewrite: Defineste pragul de monitorizare pentru intrarea analogica 2. Valoarea de 100% c
+2026-05-20 14:24:40,407  INFO        -> rewrite: Seteaza valoarea de scalare pentru intrarea analogica de la terminalul X30/11 ca
+2026-05-20 14:24:40,432  INFO        -> rewrite: Definește valoarea y2 a curbei caracteristice pentru protecția termică a motorul
+2026-05-20 14:24:40,446  INFO      20232 0x2637:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:40,508  INFO      3368 6-40 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:40,532  INFO      19548 0x2D4D:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:24:47,456  INFO        -> rewrite: Afiseaza starea termica a motorului calculata pe baza curentului patrat si a tim
+2026-05-20 14:24:47,556  INFO      19549 0x2D4D:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:24:50,711  INFO        -> rewrite: Seteaza conditia de monitorizare pentru intrarea analogica 2. Când conditia sele
+2026-05-20 14:24:50,812  INFO      20233 0x2637:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:52,509  INFO        -> rewrite: Seteaza tensiunea de intrare analogica minima pentru scalare pe borna X30/12. Ac
+2026-05-20 14:24:52,609  INFO      3369 6-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:24:55,452  INFO        -> rewrite: Defineste actiunea care se executa cand intrarea analogica 2 (AI2) are eroare ti
+2026-05-20 14:24:55,552  INFO      20234 0x4008:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:24:57,938  INFO        -> rewrite: Defineste valoarea y3 pe curba i²xt pentru protectia termica a motorului. Aceast
+2026-05-20 14:24:58,039  INFO      19550 0x2D4D:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:03,347  INFO        -> rewrite: Seteaza nivelul de tensiune maxim pentru intrarea analogica X30/12. Aceasta tens
+2026-05-20 14:25:03,448  INFO      3370 6-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:03,794  INFO        -> rewrite: Defineste punctul x4 al caracteristicii termice i²xt pentru protectia motorului.
+2026-05-20 14:25:03,894  INFO      19551 0x2D4D:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:04,203  INFO        -> rewrite: Cuvant de date mappabil pentru controlul invertorului prin comunicatie de retea.
+2026-05-20 14:25:04,304  INFO      20235 0x4008:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:08,431  INFO        -> rewrite: Seteaza valoarea de referinta sau feedback in unitati de proces care corespunde 
+2026-05-20 14:25:08,531  INFO      3371 6-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:10,619  INFO        -> rewrite: Defineste punctul y4 din caracteristica termica i²xt a motorului. Impreuna cu y1
+2026-05-20 14:25:10,720  INFO      23696 0x2885:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:15,189  INFO        -> rewrite: Defineste al doilea cuvant de intrare din retea pentru controlul procesului. Per
+2026-05-20 14:25:15,289  INFO      20236 0x2644:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:17,146  INFO        -> rewrite: Seteaza valoarea de referinta sau feedback care corespunde tensiunii ridicate de
+2026-05-20 14:25:17,247  INFO      3372 6-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:20,841  INFO        -> rewrite: Defineste valoarea maxima a compensatiei de alunecare pe rotatie de motor. Setea
+2026-05-20 14:25:20,941  INFO      23697 0x2885:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:24,279  INFO        -> rewrite: Seteaza frecventa minima pentru iesirea pulsei de pe DO1. Defineste marginea inf
+2026-05-20 14:25:24,379  INFO      20237 0x2644:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:28,846  INFO        -> rewrite: Seteaza scara maxima pentru iesirea analogica de la borna 42. Daca este necesar 
+2026-05-20 14:25:28,947  INFO      3373 6-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:30,854  INFO        -> rewrite: Activeaza sau dezactiveaza compensarea alunecarii (slip) in zonele extreme de fu
+2026-05-20 14:25:30,955  INFO      23698 0x2883 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:35,652  INFO        -> rewrite: Defineste variabila care este transmisa pe iesirea analogica a terminalului 42 i
+2026-05-20 14:25:35,752  INFO      3374 6-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:35,992  INFO        -> rewrite: Seteaza frecventa maxima a semnalului de iesire pe iesirea digitala DO1 cand est
+2026-05-20 14:25:36,092  INFO      20238 0x2644:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:42,148  INFO        -> rewrite: Seteaza valoarea minima (scalarea inferioara) pentru iesirea analogica de pe ter
+2026-05-20 14:25:42,248  INFO      3375 6-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:43,178  INFO        -> rewrite: Defineste sursa care declanseaza functia de homing sigur. Poate fi o intrare dig
+2026-05-20 14:25:43,279  INFO      23699 0x2884:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:46,547  INFO        -> rewrite: Afiseaza frecventa actuala de iesire a convertizorului catre motor masurata in H
+2026-05-20 14:25:46,648  INFO      20239 0x2644:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:50,104  INFO        -> rewrite: Seteaza nivelul de detectie pentru pozitiile de diagnostic SHom. Functia defines
+2026-05-20 14:25:50,205  INFO      23700 0x2884:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:25:53,629  INFO        -> rewrite: Seteaza valoarea semnalului analogic corespunzatoare frecventei minime la iesire
+2026-05-20 14:25:53,730  INFO      20240 0x2644:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:25:53,949  INFO        -> rewrite: Seteaza nivelul de iesire al terminalului 42 cand acesta este controlat prin bus
+2026-05-20 14:25:54,050  INFO      3376 6-54 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:25:57,336  INFO        -> rewrite: Defineste pozitia minima pentru functia de diagnosticare SHom (Safe Homing). Ace
+2026-05-20 14:25:57,437  INFO      23701 0x2884:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:00,491  INFO        -> rewrite: Defineste valoarea semnalului care corespunde frecventei maxime la iesirea digit
+2026-05-20 14:26:00,558  INFO        -> rewrite: Seteaza nivelul prestabilit al iesirii analogice 42 cand apare un timeout pe bus
+2026-05-20 14:26:00,592  INFO      20241 0x2639:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:00,658  INFO      3377 6-55 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:03,238  INFO        -> rewrite: Seteaza pozitia superioara pentru functia de diagnosticare SHom. Aceasta defines
+2026-05-20 14:26:03,339  INFO      23702 0x2884:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:06,732  INFO        -> rewrite: Activeaza filtrul pentru semnalul analogic de iesire. Cand este pornit, netezest
+2026-05-20 14:26:06,833  INFO      3378 6-60 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:12,780  INFO        -> rewrite: Defineste gama de iesire pentru iesirea analogica 1. In configuratiile cu raza s
+2026-05-20 14:26:12,880  INFO      20242 0x2639:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:13,042  INFO        -> rewrite: Defineste functia asignata terminalului digital X30/8. Selecteaza ce semnal este
+2026-05-20 14:26:13,142  INFO      3379 6-62 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:14,682  INFO        -> rewrite: Seteaza toleranta permisa pentru pozitiile de diagnostic SHom (Safe Homing). Ace
+2026-05-20 14:26:14,783  INFO      23703 0x2890 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:22,513  INFO        -> rewrite: Configureaza iesirea analogica 1 (X3 AO1) pentru a afisa frecventa de iesire a m
+2026-05-20 14:26:22,613  INFO      20243 0x2639:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:23,272  INFO        -> rewrite: Selecteaza care intrare digitala safety este folosita ca sursa de declansare pen
+2026-05-20 14:26:23,372  INFO      23704 0x2891 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:24,224  INFO        -> rewrite: Seteaza scara maxima pentru iesirea analogica de pe terminalul X30/8. Valoarea p
+2026-05-20 14:26:24,324  INFO      3380 6-63 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:28,596  INFO        -> rewrite: Defineste valoarea minima a semnalului de la iesirea analogica 1. In configurati
+2026-05-20 14:26:28,696  INFO      20244 0x2639:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:29,874  INFO        -> rewrite: Selecteaza bus-ul de siguranta ca sursa de declansare pentru functia STO (Safe T
+2026-05-20 14:26:29,974  INFO      23705 0x2893 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:35,430  INFO        -> rewrite: Defineste iesirea digitala care semnaleaza starea activa a functiei STO (Safe To
+2026-05-20 14:26:35,531  INFO      23706 0x2897:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:36,986  INFO        -> rewrite: Seteaza valoarea de iesire a terminalului digital X30/8 atunci cand este control
+2026-05-20 14:26:37,087  INFO      3381 6-64 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:38,738  INFO        -> rewrite: Defineste valoarea semnalului care corespunde valorii maxime la iesirea analogic
+2026-05-20 14:26:38,839  INFO      20245 0x2DAA:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:44,788  INFO        -> rewrite: Seteaza valoarea presetata a iesirii X30/8 in cazul unui timeout de comunicatie 
+2026-05-20 14:26:44,889  INFO      3382 6-70 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:46,015  INFO        -> rewrite: Afiseaza tensiunea actuala la iesirea analogica 1 (X3/AO1). Este un parametru do
+2026-05-20 14:26:46,115  INFO      20246 0x2DAA:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:26:46,227  INFO        -> rewrite: Defineste conditia care activeaza functia Safe Stop 1 (SS1). Cand se activeaza, 
+2026-05-20 14:26:46,328  INFO      23707 0x2897:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:51,994  INFO        -> rewrite: Configureaza iesirea de curent de pe terminalul X45/1. Semnalul iese proportiona
+2026-05-20 14:26:52,094  INFO      3383 6-72 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:26:53,240  INFO        -> rewrite: Seteaza timpul de intarziere dupa detectarea vitezei zero (n=0) pana la activare
+2026-05-20 14:26:53,341  INFO      23708 0x2894:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:26:56,499  INFO        -> rewrite: Afiseaza valoarea curenta masurata la iesirea analogica AO1 (terminalul X3) in m
+2026-05-20 14:26:56,600  INFO      20286 0x60FF (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:02,333  INFO        -> rewrite: Timpii de oprire monitorizati pentru functiile de oprire sigura SS1 si SS2. Masu
+2026-05-20 14:27:02,364  INFO        -> rewrite: Seteaza scara maxima pentru iesirea analogica de curent la terminalul X45/1. Dac
+2026-05-20 14:27:02,433  INFO      23709 0x2894:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:02,464  INFO      3384 6-71 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:03,894  INFO        -> rewrite: Seteaza viteza de referinta a motorului ca valoare pe 32 de biti. Aceasta optiun
+2026-05-20 14:27:03,995  INFO      22507 0x261C:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:08,253  INFO        -> rewrite: Defineste valoarea minima a semnalului analogic de iesire la terminalul X45/1 ca
+2026-05-20 14:27:08,353  INFO      3385 6-73 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:10,230  INFO        -> rewrite: Defineste timpul de netezire S-rampa pentru rampa de decelerare in cazul functii
+2026-05-20 14:27:10,330  INFO      23710 0x2894:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:13,979  INFO        -> rewrite: Defineste primul parametru din lista Favorites afisata pe panoul operatorului. V
+2026-05-20 14:27:14,079  INFO      22508 0x261C:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:18,222  INFO        -> rewrite: Defineste nivelul semnalului pentru iesirea analogica 3 (borna X45/1) atunci can
+2026-05-20 14:27:18,322  INFO      3386 6-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:20,703  INFO        -> rewrite: Defineste offsetul de viteza la inceputul monitorizarii rampei pentru opririle d
+2026-05-20 14:27:20,766  INFO        -> rewrite: Permite selectarea celui de-al doilea parametru din lista de preferinte. Utiliza
+2026-05-20 14:27:20,803  INFO      23711 0x28C5:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:20,867  INFO      22509 0x261C:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:26,621  INFO        -> rewrite: Acest parametru permite setarea celui de-al treilea parametru in lista de favori
+2026-05-20 14:27:26,722  INFO      22510 0x261C:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:27,783  INFO        -> rewrite: Defineste actiunea care trebuie executata atunci cand viteza motorului depaseste
+2026-05-20 14:27:27,884  INFO      23712 0x28B2:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:32,135  INFO        -> rewrite: Configureaza functia atribuita iesirii digitale de pe terminalul X45/3. Valoarea
+2026-05-20 14:27:32,152  INFO        -> rewrite: Seteaza al patrulea parametru din lista de favorite afisata pe panoul de operare
+2026-05-20 14:27:32,235  INFO      3387 6-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:32,253  INFO      22511 0x261C:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:36,668  INFO        -> rewrite: Seteaza pragul de viteza pentru functia SSM (Speed Switch Monitoring). Cand vite
+2026-05-20 14:27:36,769  INFO      23713 0x28BA:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:41,086  INFO        -> rewrite: Seteaza scara valorii maxime a semnalului analogic de iesire pe terminalul X45/3
+2026-05-20 14:27:41,186  INFO      3388 6-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:41,333  INFO        -> rewrite: Seteaza al 5-lea parametru din lista de favorite. Permite adaugarea rapida a par
+2026-05-20 14:27:41,433  INFO      22512 0x261C:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:45,400  INFO        -> rewrite: Defineste pragul de toleranta pentru functia SDI, specificand cu cate incrementi
+2026-05-20 14:27:45,500  INFO      23714 0x28D2:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:49,717  INFO        -> rewrite: Stocheaza al saselea parametru din lista de favoriti. Aceasta functie permite cr
+2026-05-20 14:27:49,818  INFO      22513 0x261C:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:50,018  INFO        -> rewrite: Seteaza nivelul de iesire al terminalului X45/3 atunci cand acesta este controla
+2026-05-20 14:27:50,118  INFO      3389 6-84 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:27:54,785  INFO        -> rewrite: Seteaza limita inferioara a pozitiei pentru canalul SLP4. Când pozitia curenta a
+2026-05-20 14:27:54,886  INFO      23715 0x28D3:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:27:58,004  INFO        -> rewrite: Definește al șaptelea parametru din lista de favorite. Permite acces rapid la pa
+2026-05-20 14:27:58,105  INFO      22514 0x261C:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:27:59,374  INFO        -> rewrite: Seteaza nivelul de iesire prestabilit pentru iesirea 4 (X45/3) in cazul unei int
+2026-05-20 14:27:59,475  INFO      3390 7-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:05,584  INFO        -> rewrite: Defineste limita superioara de pozitie pentru functia SLP4. Când pozitia actuala
+2026-05-20 14:28:05,647  WARNING     Bad categorie 'Altol' for 0x261C:008, retry
+2026-05-20 14:28:05,684  INFO      23716 0x28D4:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:10,331  INFO        -> rewrite: Seteaza reducerea de turatie la sarcina nominala. La sarcina 100%, turatia scade
+2026-05-20 14:28:10,431  INFO      3391 7-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:14,890  INFO        -> rewrite: Seteaza parametrul care va aparea in pozitia 8 a listei de favoriti. Acces rapid
+2026-05-20 14:28:14,990  INFO      22515 0x261C:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:18,384  INFO        -> rewrite: Defineste actiunea invertorului cand senzorul SLP4 depaseste limita de pozitie s
+2026-05-20 14:28:18,485  INFO      23717 0x28D4:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:18,892  INFO        -> rewrite: Defineste castigul proportional pentru bucla PID de viteza. Control rapid se obt
+2026-05-20 14:28:18,993  INFO      3392 30-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:23,071  INFO        -> rewrite: Seteaza parametru in pozitia 9 a listei de favoriti. Aceasta functie permite per
+2026-05-20 14:28:23,172  INFO      22516 0x261C:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:28,503  INFO        -> rewrite: Seteaza castigul proportional al regulatorului PID pentru controlul vitezei. Val
+2026-05-20 14:28:28,604  INFO      3393 7-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:28,875  INFO        -> rewrite: Definește acțiunea de răspuns când limita de poziție SLP1 este depășită. Opțiuni
+2026-05-20 14:28:28,975  INFO      23718 0x28DE:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:31,412  INFO        -> rewrite: Defineste al 10-lea parametru din lista de preferinte ale utilizatorului. Aceast
+2026-05-20 14:28:31,512  INFO      22517 0x261C:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:37,224  INFO        -> rewrite: Defineste limita inferioara de pozitie pentru functia de pozitionare. In sistemu
+2026-05-20 14:28:37,324  INFO      23719 0x28DE:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:38,977  INFO        -> rewrite: Seteaza raportul de inmultire al semnalului de feedback de viteza in bucla PID. 
+2026-05-20 14:28:39,078  INFO      3394 7-09 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:39,428  INFO        -> rewrite: Defineste parametru continut in pozitia 11 a meniului Favoriti. Acest parametru 
+2026-05-20 14:28:39,528  INFO      22518 0x261C:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:47,275  INFO        -> rewrite: Defineste limita inferioara SCS pentru sistemul PDSS. Daca valoarea este mai mic
+2026-05-20 14:28:47,376  INFO      23720 0x2880:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:48,132  INFO        -> rewrite: Definește care parametru este al 12-lea in lista de preferințe. Permite organiza
+2026-05-20 14:28:48,232  INFO      22519 0x261C:013 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:50,278  INFO        -> rewrite: Seteaza pragul de eroare de viteza pentru corectie cu rampa. Daca diferenta dint
+2026-05-20 14:28:50,378  INFO      3395 7-16 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:28:56,225  INFO        -> rewrite: Defineste sursa care declanseaza functia de homing (revenire la pozitia de refer
+2026-05-20 14:28:56,326  INFO      23721 0x28D8:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:28:57,484  INFO        -> rewrite: Defineste al 13-lea parametru din lista de preferinte. Permite acces rapid la pa
+2026-05-20 14:28:57,585  INFO      22520 0x261C:014 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:28:59,430  INFO        -> rewrite: Seteaza constanta de timp pentru filtrul de netezire a controlului cuplului. O v
+2026-05-20 14:28:59,530  INFO      3396 7-18 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:29:07,115  INFO        -> rewrite: Seteaza parametrul care va aparea ca optiunea 14 in meniul de favorite. Utilizat
+2026-05-20 14:29:07,216  INFO      22521 0x261C:015 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:07,750  INFO        -> rewrite: Defineste limita inferioara de pozitie pentru functia SCA1 (CAM sincron). In sis
+2026-05-20 14:29:07,850  INFO      23722 0x28D8:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:09,478  INFO        -> rewrite: Seteaza factorul de feedforward pentru bucla PI de cuplu. Cu cat valoarea este m
+2026-05-20 14:29:09,579  INFO      3397 7-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:29:15,728  INFO        -> rewrite: Stocheaza o referinta catre al 15-lea parametru din lista de preferinte ale util
+2026-05-20 14:29:15,829  INFO      22522 0x261C:016 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:16,271  INFO        -> rewrite: Seteaza limita inferioara a pozitiei pentru canalul SCA4 (pozitioner inteligent)
+2026-05-20 14:29:16,371  INFO      23723 0x2878:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:20,981  INFO        -> rewrite: Seteaza castigul proportional pentru bucla PID de proces. Inmulteste eroarea din
+2026-05-20 14:29:21,082  INFO      3398 7-38 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:29:25,640  INFO        -> rewrite: Seteaza timpul de raspuns pentru encoderul motorului in functiile de siguranta. 
+2026-05-20 14:29:25,659  INFO        -> rewrite: Reprezinta setarea numarul 16 din meniul de preferinte sau favoriti. Acest param
+2026-05-20 14:29:25,741  INFO      24310 0x261C:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:25,760  INFO      22523 0x261C:017 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:31,804  INFO        -> rewrite: Defineste primul parametru din lista de favorite. Acest parametru permite acces 
+2026-05-20 14:29:31,905  INFO      24311 0x261C:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:31,933  INFO        -> rewrite: Seteaza factorul feed forward pentru controlul PID. Trimite o fractie constanta 
+2026-05-20 14:29:32,034  INFO      3399 7-41 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:29:32,894  INFO        -> rewrite: Seteaza al 17-lea parametru din lista de favoriti. Acest parametru creeaza o scu
+2026-05-20 14:29:32,995  INFO      22524 0x261C:018 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:37,671  INFO        -> rewrite: Selecteaza care parametru este afisat ca favorit numarul 2 in lista parametrilor
+2026-05-20 14:29:37,772  INFO      24312 0x261C:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:38,836  INFO        -> rewrite: Aceasta seteaza parametrul care va aparea ca favoritul numarul 18 in meniul de f
+2026-05-20 14:29:38,937  INFO      22525 0x261C:019 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:45,834  INFO        -> rewrite: Acest parametru permite salvarea unei referinte rapide catre un parametru select
+2026-05-20 14:29:45,935  INFO      22526 0x261C:020 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:47,176  INFO        -> rewrite: Reprezinta al treilea slot din lista de parametrilor preferati. Permite salvarea
+2026-05-20 14:29:47,276  INFO      24313 0x261C:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:29:52,910  INFO        -> rewrite: Seteaza referinta la parametrul 20 in lista de favoriti. Permite utilizatorului 
+2026-05-20 14:29:53,011  INFO      22527 0x261C:021 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:29:57,349  INFO        -> rewrite: Defineste cel de-al patrulea parametru din lista de favoriti. Permite utilizator
+2026-05-20 14:29:57,449  INFO      24314 0x261C:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:03,503  INFO        -> rewrite: Defineste care parametru este atribuit pozitiei 21 in lista de favorite a drive-
+2026-05-20 14:30:03,603  INFO      22528 0x261C:022 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:07,363  INFO        -> rewrite: Reprezinta al cincilea parametru din lista de favoriti ai utilizatorului. Acest 
+2026-05-20 14:30:07,464  INFO      24315 0x261C:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:10,333  INFO        -> rewrite: Seteaza care parametru este inclus in meniul de favorite pe pozitia 22. Acces ra
+2026-05-20 14:30:10,434  INFO      22529 0x261C:023 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:17,004  INFO        -> rewrite: Stocheaza codul sau numarul celui de-al 6-lea parametru din lista de favoriti. U
+2026-05-20 14:30:17,104  INFO      24316 0x261C:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:19,330  INFO        -> rewrite: Seteaza parametru 23 in meniul de favoriti. Permite personalizarea accesului rap
+2026-05-20 14:30:19,431  INFO      22530 0x261C:024 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:22,515  INFO        -> rewrite: Stocheaza referinta catre al saputelea parametru adaugat in lista de favorite. A
+2026-05-20 14:30:22,616  INFO      24317 0x261C:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:31,943  INFO        -> rewrite: Definește al 8-lea parametru din lista de favorite a utilizatorului. Acest param
+2026-05-20 14:30:32,044  INFO      24318 0x261C:009 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:32,061  INFO        -> rewrite: Seteaza care parametru este asociat slotului cu numarul 24 in lista de favorite.
+2026-05-20 14:30:32,162  INFO      22531 0x261C:025 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:40,140  INFO        -> rewrite: Stocheaza referinta catre al 9-lea parametru din lista de favorite. Valoarea ind
+2026-05-20 14:30:40,241  INFO      24319 0x261C:010 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:41,453  INFO        -> rewrite: Seteaza cel de-al 25-lea parametru din lista de favorite. Utilizatorul poate per
+2026-05-20 14:30:41,553  INFO      22532 0x261C:026 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:41,934  WARNING     Incomplete response for 7-41: retry 1/3
+2026-05-20 14:30:47,408  INFO        -> rewrite: Seteaza al zecelea parametru din lista de preferinte. Permite utilizatorului sa 
+2026-05-20 14:30:47,509  INFO      24320 0x261C:011 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:30:52,246  INFO        -> rewrite: Configureaza setarile pentru functia de favoriti. Permite selectarea parametrilo
+2026-05-20 14:30:52,347  INFO      22533 0x261C:027 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:30:56,886  WARNING     Bad categorie 'Control' for 7-41, retry
+2026-05-20 14:30:57,354  INFO        -> rewrite: Selecteaza parametrul VFD care apare in pozitia 11 a meniului de favorite pentru
+2026-05-20 14:30:57,456  INFO      24321 0x261C:012 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:02,064  INFO        -> rewrite: Defineste ce parametru este asignat in pozitia 27 a listei de favorite. Aceasta 
+2026-05-20 14:31:02,164  INFO      22534 0x261C:028 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:03,114  INFO        -> rewrite: Defineste al 12-lea parametru salvat in lista de favoriti. Permite acces rapid l
+2026-05-20 14:31:03,214  INFO      24322 0x261C:013 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:07,001  INFO        -> rewrite: Seteaza limita inferioara (negativa) pentru iesirea controllerului PID de proces
+2026-05-20 14:31:07,102  INFO      3400 7-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:09,587  INFO        -> rewrite: Definește parametrul 28 din grupul de favorites. Permis selectarea rapida a para
+2026-05-20 14:31:09,688  INFO      22535 0x261C:029 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:12,172  INFO        -> rewrite: Reprezinta parametru al treisprezecelea din lista de favorite. Permite setarea u
+2026-05-20 14:31:12,272  INFO      24323 0x261C:014 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:16,594  WARNING     Bad categorie 'Altol' for 0x261C:029, retry
+2026-05-20 14:31:17,313  INFO        -> rewrite: Seteaza limita superioara pentru iesirea pozitiva a controllerului PID de proces
+2026-05-20 14:31:17,413  INFO      3401 7-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:22,525  INFO        -> rewrite: Stocheaza indicele sau numarul parametrului care apare pe pozitia 14 in lista de
+2026-05-20 14:31:22,626  INFO      24324 0x261C:015 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:26,784  INFO        -> rewrite: Defineste parametru VFD atribuit slotului 29 din lista de favorite. Utilizatorul
+2026-05-20 14:31:26,885  INFO      22536 0x261C:030 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:27,071  INFO        -> rewrite: Seteaza un procent de scalare care se aplica la iesirea PID-ului proces atunci c
+2026-05-20 14:31:27,171  INFO      3402 7-44 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:30,400  INFO        -> rewrite: Stocheaza codul parametrului care va fi afisat ca al 15-lea element in lista de 
+2026-05-20 14:31:30,501  INFO      24325 0x261C:016 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:32,446  INFO        -> rewrite: Seteaza procentul de scalare aplicat iesirii PID de proces cand motorul function
+2026-05-20 14:31:32,531  INFO        -> rewrite: Configureaza care parametru din grupul 30 este inclus in lista de favorite. Perm
+2026-05-20 14:31:32,547  INFO      3403 8-42 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:32,632  INFO      22537 0x261C:031 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:39,870  INFO        -> rewrite: Defineste care parametru va aparea ca al 16-lea in lista de favorite. Utilizator
+2026-05-20 14:31:39,970  INFO      24326 0x261C:017 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:41,496  INFO        -> rewrite: Configureaza functia de favorite pentru parametrul 31. Permite salvarea rapida a
+2026-05-20 14:31:41,596  INFO      22538 0x261C:032 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:42,967  INFO        -> rewrite: Configureaza parametrii care vor fi scrisi prin telegramele PCD (Process Data) i
+2026-05-20 14:31:43,068  INFO      3404 7-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:45,542  INFO        -> rewrite: Reprezinta al 17-lea parametru din lista de favoriti. Aceasta functie permite sa
+2026-05-20 14:31:45,643  INFO      24327 0x261C:018 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:31:51,330  INFO        -> rewrite: Stocheaza referinta catre parametrul 32 in lista de parametri favoriti. Permite 
+2026-05-20 14:31:51,430  INFO      22539 0x261C:033 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:31:53,836  INFO        -> rewrite: Contine valoarea feed forward pentru bucla PID proces. Aceasta valoare este prel
+2026-05-20 14:31:53,938  INFO      3405 7-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:31:54,737  INFO        -> rewrite: Acest parametru memoreaza referinta catre unul dintre parametrii favoritii utili
+2026-05-20 14:31:54,838  INFO      24328 0x261C:019 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:03,394  INFO        -> rewrite: Defineste care parametru este salvat in pozitia 19 a listei de favorite. Aceasta
+2026-05-20 14:32:03,411  INFO        -> rewrite: Defineste care parametru este afisat in pozitia 33 a listei de favorite. Permite
+2026-05-20 14:32:03,442  INFO        -> rewrite: Selecteaza modul de functionare al factorului feed-forward in bucla PID. La seta
+2026-05-20 14:32:03,495  INFO      24329 0x261C:020 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:03,511  INFO      22540 0x261C:034 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:03,542  INFO      3406 7-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:11,822  INFO        -> rewrite: Selecteaza intrarea convertizorului de frecventa care va fi utilizata ca factor 
+2026-05-20 14:32:11,835  INFO        -> rewrite: Aceasta intrare defineste al 20-lea parametru din lista de favorite. Permite sal
+2026-05-20 14:32:11,923  INFO      3407 7-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:11,935  INFO      24330 0x261C:021 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:15,292  INFO        -> rewrite: Defineste setarea preferata pentru parametrul 34. Permite salvarea rapida a para
+2026-05-20 14:32:15,393  INFO      22541 0x261C:035 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:20,277  INFO        -> rewrite: Selecteaza parametrul 21 ca favorit pentru acces rapid din meniu. Parametrii mar
+2026-05-20 14:32:20,377  INFO      24331 0x261C:022 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:24,811  INFO        -> rewrite: Castigul feed-forward completeaza controlerul PID prin compensarea partii cunosc
+2026-05-20 14:32:24,835  INFO        -> rewrite: Defineste al 35-lea parametru din lista de favoriti. Aceasta functie permite per
+2026-05-20 14:32:24,912  INFO      3408 7-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:24,936  INFO      22542 0x261C:036 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:29,230  INFO        -> rewrite: Reprezinta o setare pentru meniul de preferinte care defineste continutul slotul
+2026-05-20 14:32:29,330  INFO      24332 0x261C:023 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:31,515  INFO        -> rewrite: Seteaza ce parametru este afisat ca preferinta numarul 36 in meniul de favorite 
+2026-05-20 14:32:31,615  INFO      22543 0x261C:037 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:32,815  INFO        -> rewrite: Controleaza dinamica semnalului feed-forward la accelerare in cadrul controlului
+2026-05-20 14:32:32,916  INFO      3409 7-53 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:40,268  INFO        -> rewrite: Controloaza dinamica semnalului feed-forward in timpul rampei de decelerare. Un 
+2026-05-20 14:32:40,369  INFO      3410 7-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:40,675  INFO        -> rewrite: Selecteaza parametrul care va fi afisat ca al 23-lea in lista de favoriti. Utili
+2026-05-20 14:32:40,775  INFO      24333 0x261C:024 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:44,763  INFO        -> rewrite: Configureaza afisarea parametrului 37 in meniul Favorites. Permite adaugarea sau
+2026-05-20 14:32:44,863  INFO      22544 0x261C:038 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:46,066  INFO        -> rewrite: Selecteaza sursa semnalului de feedback pentru bucla de pozitie PI. Aceasta defi
+2026-05-20 14:32:46,166  INFO      3411 7-92 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:48,864  INFO        -> rewrite: Definește parametru #24 din lista de favorite. Indică adresahex a parametrului p
+2026-05-20 14:32:48,964  INFO      24334 0x261C:025 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:32:52,841  INFO        -> rewrite: Definește care parametru este afișat ca elementul 38 în lista de favoritate. Per
+2026-05-20 14:32:52,942  INFO      22545 0x261C:039 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:32:54,215  INFO        -> rewrite: Defineste castigul proportional pentru bucla de control PI de pozitie. O valoare
+2026-05-20 14:32:54,316  INFO      3412 7-95 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:32:59,568  INFO        -> rewrite: Seteaza care parametru va fi salvat ca elementul 25 in lista de favoriti. Permit
+2026-05-20 14:32:59,669  INFO      24335 0x261C:026 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:00,466  INFO        -> rewrite: Configureaza care parametru (numarul 39) apare in lista de parametri favoriti sa
+2026-05-20 14:33:00,567  INFO      22546 0x261C:040 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:05,684  INFO        -> rewrite: Seteaza numitorul pentru scalarea semnalului de feedback in bucla PI de pozitie.
+2026-05-20 14:33:05,784  INFO      3413 7-97 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:09,368  INFO        -> rewrite: Selecteaza care parametru este afisat ca al 26-lea favorit in meniu. Utilizatoru
+2026-05-20 14:33:09,469  INFO      24336 0x261C:027 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:10,577  INFO        -> rewrite: Definește care parametru este inclus în lista de preferinte/utilizator. Permite 
+2026-05-20 14:33:10,678  INFO      22547 0x261C:041 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:15,422  INFO        -> rewrite: Seteaza viteza maxima permisa pentru controlerul PI de pozitie atunci cand motor
+2026-05-20 14:33:15,523  INFO      3414 8-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:19,031  INFO        -> rewrite: Seteaza care parametru VFD este asociat cu pozitia 41 in lista de favorite pentr
+2026-05-20 14:33:19,131  INFO      22548 0x261C:042 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:20,937  INFO        -> rewrite: Seteaza al 27-lea parametru din lista de favoriti pentru acces rapid de pe panou
+2026-05-20 14:33:21,038  INFO      24337 0x261C:028 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:25,969  INFO        -> rewrite: Seteaza care parametru este memorat in pozitia 42 din lista de favorite. Permite
+2026-05-20 14:33:26,070  INFO      22549 0x261C:043 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:26,159  INFO        -> rewrite: Selecteaza modul de primire al comenzilor de control pentru VFD. Cand este setat
+2026-05-20 14:33:26,259  INFO      3415 8-50 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:31,938  INFO        -> rewrite: Configureaza salvarea parametrului 43 in lista de favorite. Permite acces rapid 
+2026-05-20 14:33:32,038  INFO      22550 0x261C:044 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:32,752  INFO        -> rewrite: Configureaza continutul slotului 28 din lista de parametri preferati. Permite ac
+2026-05-20 14:33:32,853  INFO      24338 0x261C:029 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:35,487  INFO        -> rewrite: Selecteaza intrarea digitala care activeaza functia de mers in inertie (coasting
+2026-05-20 14:33:35,587  INFO      3416 8-56 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:40,499  INFO        -> rewrite: Seteaza care parametru va aparea ca elementul 44 in lista de favorite. Valoarea 
+2026-05-20 14:33:40,520  INFO        -> rewrite: Definește care parametru este asignat ca favorit numarul 29 in meniul de acces r
+2026-05-20 14:33:40,600  INFO      22551 0x261C:045 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:40,620  INFO      24339 0x261C:030 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:46,043  INFO        -> rewrite: Defineste parametrul 45 care apare in meniul de favoriti. Utilizatorul poate per
+2026-05-20 14:33:46,143  INFO      22552 0x261C:046 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:48,406  INFO        -> rewrite: Defineste ce intrare sau functie declanseaza selectia referintelor presetate de 
+2026-05-20 14:33:48,507  INFO      3417 8-04 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:49,562  INFO        -> rewrite: Seteaza parametrul care va fi salvat in pozitia 30 a meniului de parametri prefe
+2026-05-20 14:33:49,663  INFO      24340 0x261C:031 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:52,443  INFO        -> rewrite: Reprezinta al 46-lea parametru din lista de favorite. Acest parametru stocheaza 
+2026-05-20 14:33:52,544  INFO      22553 0x261C:047 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:33:56,122  INFO        -> rewrite: Seteaza care parametru este salvat ca al 31-lea favorit in lista de favorite. Pe
+2026-05-20 14:33:56,223  INFO      24341 0x261C:032 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:33:57,850  INFO        -> rewrite: Defineste actiunea drive-ului cand comunicatia de control word este intrerupta s
+2026-05-20 14:33:57,951  INFO      3418 8-03 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:33:59,206  INFO        -> rewrite: Definește care parametru este afișat în slotul 47 din lista de favorite. Vă perm
+2026-05-20 14:33:59,306  INFO      22554 0x261C:048 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:01,883  INFO        -> rewrite: Stocheaza referinta catre parametrul atribuit ca favorit numarul 32 in meniul de
+2026-05-20 14:34:01,983  INFO      24342 0x261C:033 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:05,872  INFO        -> rewrite: Seteaza timpul maxim in secunde intre receptionarea a doua telegrame consecutive
+2026-05-20 14:34:05,973  INFO      3419 8-05 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:07,150  INFO        -> rewrite: Defineste care parametru VFD trebuie salvat ca favorit numarul 48 in lista utili
+2026-05-20 14:34:07,251  INFO      22555 0x261C:049 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:09,618  INFO        -> rewrite: Acest parametru defineste care parametru VFD este salvat in lista de favorite pe
+2026-05-20 14:34:09,718  INFO      24343 0x261C:034 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:16,415  INFO        -> rewrite: Defineste continutul slotului 49 din meniul Favorites. Acest parametru permite s
+2026-05-20 14:34:16,515  INFO      22556 0x261C:050 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:16,885  INFO        -> rewrite: Seteaza care parametru este memorat in pozitia 34 a meniului de favorite. Acces 
+2026-05-20 14:34:16,986  INFO      24344 0x261C:035 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:19,589  INFO        -> rewrite: Definește funcția executată când expiră temporizarea pentru Control Word. Când a
+2026-05-20 14:34:19,690  INFO      3420 8-06 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:21,186  INFO        -> rewrite: Reprezinta un link catre parametrul 50 care este salvat in lista de favorite. Ac
+2026-05-20 14:34:21,287  INFO      22557 0x2829 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:27,379  INFO        -> rewrite: Controleaza daca configuratia din 8-04 ramane activa dupa un timeout al cuvantul
+2026-05-20 14:34:27,480  INFO      3421 8-07 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:27,668  INFO        -> rewrite: Permite selectarea parametrului care va fi afisat ca intrarea 35 in meniul Favor
+2026-05-20 14:34:27,769  INFO      24345 0x261C:036 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:31,350  INFO        -> rewrite: Activeaza salvarea automata a parametrilor in modulul de memorie al invertorului
+2026-05-20 14:34:31,450  INFO      22558 0x2001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:33,087  INFO        -> rewrite: Seteaza conditia care declanseaza o actiune de diagnosticare. Poate fi setat sa 
+2026-05-20 14:34:33,188  INFO      3422 16-22 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:36,617  INFO        -> rewrite: Permite setarea unui nume de identificare pentru dispozitiv. Util pentru identif
+2026-05-20 14:34:36,718  INFO      22559 0x2540:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:38,493  INFO        -> rewrite: Acest parametru memoreaza referinta catre parametrul care este salvat ca favorit
+2026-05-20 14:34:38,594  INFO      24346 0x261C:037 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:42,613  INFO        -> rewrite: Afiseaza cuplul motorului ca procent din cuplul nominal. Valoarea pozitiva indic
+2026-05-20 14:34:42,713  INFO      3423 16-25 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:44,146  INFO        -> rewrite: Seteaza pragul de avertizare pentru subtensiune in busul DC. Daca tensiunea cont
+2026-05-20 14:34:44,247  INFO      22560 0x2540:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:49,069  INFO        -> rewrite: Defines which parameter is stored as favorite number 37 in the quick access menu
+2026-05-20 14:34:49,170  INFO      24347 0x261C:038 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:34:52,295  INFO        -> rewrite: Afiseaza cuplul motorului in Newton-metri. Aceasta valoare poate fi mai mare dec
+2026-05-20 14:34:52,396  INFO      3424 8-10 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:34:53,120  INFO        -> rewrite: Defineste pragul de tensiune minima admisa in bus-ul DC. Daca tensiunea continua
+2026-05-20 14:34:53,221  INFO      22561 0x2540:004 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:34:54,264  INFO        -> rewrite: Stocheaza numarul parametrului care apare in pozitia 38 a meniului de favoriti. 
+2026-05-20 14:34:54,365  INFO      24348 0x261C:039 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:02,549  INFO        -> rewrite: Seteaza parametrul 39 ca favorit pentru acces rapid. Permice маркираrea parametr
+2026-05-20 14:35:02,649  INFO      24349 0x261C:040 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:03,229  INFO        -> rewrite: Afiseaza pragul fix de resetare pentru monitorizarea subtensiunii in circuitul D
+2026-05-20 14:35:03,330  INFO      22562 0x2540:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:03,672  INFO        -> rewrite: Defineste profilul cuvantului de control care stabileste structura si functia bi
+2026-05-20 14:35:03,773  INFO      3425 42-24 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:12,146  WARNING     Bad categorie 'Altol' for 0x261C:040, retry
+2026-05-20 14:35:13,599  INFO        -> rewrite: Seteaza pragul de avertizare pentru supravoltaj in busul DC. Când tensiunea DC d
+2026-05-20 14:35:13,699  INFO      22563 0x2540:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:14,877  INFO        -> rewrite: Controleaza comportarea VFD dupa activarea unei functii de siguranta. Cand o fun
+2026-05-20 14:35:14,977  INFO      3426 8-33 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:22,887  INFO        -> rewrite: Afiseaza pragul fix pentru monitorizarea supratensiunii in busul DC. Daca tensiu
+2026-05-20 14:35:22,927  INFO        -> rewrite: Defineste cel de-al patruleazea parametru din lista de favorite. Aceasta functie
+2026-05-20 14:35:22,987  INFO      22564 0x2540:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:23,028  INFO      24350 0x261C:041 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:25,248  INFO        -> rewrite: Seteaza formatul cadrului de date pentru comunicatia seriala RS-485/Modbus RTU. 
+2026-05-20 14:35:25,349  INFO      3427 8-45 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:30,925  INFO        -> rewrite: Reprezinta un parametru din lista de favorite. Acest camp selecteaza sau afiseaz
+2026-05-20 14:35:31,025  INFO      24351 0x261C:042 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:35,635  INFO        -> rewrite: Afiseaza pragul fix de resetare pentru monitorizarea supratensiunii pe busul DC.
+2026-05-20 14:35:35,735  INFO      22565 0x2D43:001 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:36,306  INFO        -> rewrite: Activeaza comanda de tranzactie pentru modulul BTM (Bluetooth/Bus Terminal Modul
+2026-05-20 14:35:36,407  INFO      3428 8-46 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:37,322  INFO        -> rewrite: Acest parametru defineste care parametru este afisat ca intrarea 42 in meniul de
+2026-05-20 14:35:37,423  INFO      24352 0x261C:043 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:44,079  INFO        -> rewrite: Afiseaza starea curenta a tranzactiei BTM (Bluetooth Module). Valoarea 0 indica 
+2026-05-20 14:35:44,179  INFO      3429 8-47 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:46,904  INFO        -> rewrite: Acest parametru permite selectarea carei functii sau parametru VFD va fi afisat 
+2026-05-20 14:35:47,005  INFO      24353 0x261C:044 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:35:47,126  INFO        -> rewrite: Selecteaza caracteristica de sarcina a invertorului. Optiunea "High dynamic" est
+2026-05-20 14:35:47,226  INFO      22566 0x2838:002 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:54,408  INFO        -> rewrite: Seteaza timpul de asteptare in secunde dupa care VFD revine la control local can
+2026-05-20 14:35:54,508  INFO      3430 8-48 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:35:57,060  INFO        -> rewrite: Configureaza comportarea invertorului la aplicarea tensiunii de alimentare. Cand
+2026-05-20 14:35:57,161  INFO      22567 0x2634:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:35:57,387  INFO        -> rewrite: Configureaza parametrul care apare pe pozitia 44 in lista de favorite pe afisaju
+2026-05-20 14:35:57,488  INFO      24354 0x261C:045 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:06,156  INFO        -> rewrite: Selecteaza semnalul trigger care controleaza iesirea digitala 2 (X3/DO2). Iesire
+2026-05-20 14:36:06,256  INFO      22568 0x2917 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:07,091  INFO        -> rewrite: Selecteaza parametru cu numarul 45 din lista de favorite. Acest camp permite def
+2026-05-20 14:36:07,192  INFO      24355 0x261C:046 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:07,798  INFO        -> rewrite: Defineste numarul maxim de erori permise in modul de transfer bulk inainte ca si
+2026-05-20 14:36:07,898  INFO      3431 8-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:36:12,702  INFO        -> rewrite: Stocheaza o referinta catre parametru 46 din lista de preferinte. Aceasta intrar
+2026-05-20 14:36:12,803  INFO      24356 0x261C:047 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:14,454  INFO        -> rewrite: Defineste timpul necesar motorului pentru a accelera de la frecventa minima la f
+2026-05-20 14:36:14,555  INFO      22569 0x2918 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:18,923  INFO        -> rewrite: Selecteaza actiunea drive-ului cand semnalul de oprire rapida este activat. Opti
+2026-05-20 14:36:19,023  INFO      3432 8-52 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:36:22,425  INFO        -> rewrite: Seteaza timpul necesar pentru ca motorul sa decelerzeze de la viteza maxima pana
+2026-05-20 14:36:22,526  INFO      22570 0x2631:005 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:23,430  INFO        -> rewrite: Defineste care parametru este memorat in slotul 47 al listei de favorite. Permit
+2026-05-20 14:36:23,531  INFO      24357 0x261C:048 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:28,761  INFO        -> rewrite: Activeaza functia de franare DC la oprirea motorului. Cand este activata, VFD-ul
+2026-05-20 14:36:28,861  INFO      3433 8-57 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:36:31,623  INFO        -> rewrite: Atribuie un trigger (intrare digitala) pentru functia de franare DC. Cand trigge
+2026-05-20 14:36:31,723  INFO      22571 0x2631:003 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:33,541  INFO        -> rewrite: Definește care parametru VFD este memorat ca al 48-lea element in lista de favor
+2026-05-20 14:36:33,642  INFO      24358 0x261C:049 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:37,582  INFO        -> rewrite: Selecteaza sursa comenzii OFF2 in profilul Profidrive. OFF2 este o comanda de op
+2026-05-20 14:36:37,683  INFO      3434 8-58 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:36:38,866  INFO        -> rewrite: Defineste functia unui intrare digitale pentru controlul motorului. Permite porn
+2026-05-20 14:36:38,966  INFO      22572 0x2631:006 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:43,117  INFO        -> rewrite: Acest parametru stocheaza referinta catre cel de-al 49-lea parametru din lista d
+2026-05-20 14:36:43,217  INFO      24359 0x261C:050 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:47,949  INFO        -> rewrite: Seteaza sursa comenzii OFF3 pentru profilul Profidrive. OFF3 este o comanda de o
+2026-05-20 14:36:48,050  INFO      3435 8-80 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:36:48,624  INFO        -> rewrite: Configureaza intrarea digitala pentru comanda de start in sens orar (CW). Valoar
+2026-05-20 14:36:48,725  INFO      22573 0x2631:007 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:36:54,834  INFO        -> rewrite: Seteaza care parametru este salvat in pozitia 50 a listei de favorite. Permite o
+2026-05-20 14:36:54,935  INFO      24360 0x4000 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:36:55,580  INFO        -> rewrite: Acest parametru afiseaza numarul de telegrame valide receptionate pe bus-ul de c
+2026-05-20 14:36:55,680  INFO      3436 8-81 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:01,091  INFO        -> rewrite: Selecteaza sursa semnalului digital pentru comanda de rotire in sens invers (ant
+2026-05-20 14:37:01,192  INFO      22574 0x2631:008 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:37:04,621  INFO        -> rewrite: Afiseaza numarul total de telegrame cu erori detectate pe bus-ul de comunicatie.
+2026-05-20 14:37:04,722  INFO      3437 8-82 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:05,037  INFO        -> rewrite: Selecteaza aplicatia predefinita pentru VFD. Optiunile includ pompa, ventilator,
+2026-05-20 14:37:05,137  INFO      24361 0x2540:001 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:37:10,015  INFO        -> rewrite: Comanda de start pentru rotatia motorului in sens orar (CW). Trimite valoarea 1 
+2026-05-20 14:37:10,115  INFO      22575 0x2631:009 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:37:10,787  INFO        -> rewrite: Contorizeaza numarul de telegrame valide adresate slave-ului primite de converti
+2026-05-20 14:37:10,887  INFO      3438 8-83 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:15,583  INFO        -> rewrite: Defineste tensiunea nominala a retelei de alimentare la care este conectat inver
+2026-05-20 14:37:15,684  INFO      24362 0x2540:002 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:37:16,899  INFO        -> rewrite: Afiseaza numarul de telegrame de eroare receptionate de la dispozitivele slave p
+2026-05-20 14:37:17,000  INFO      3439 8-90 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:19,452  WARNING     Bad categorie 'Control' for 0x2631:009, retry
+2026-05-20 14:37:25,937  INFO        -> rewrite: Seteaza viteza de jog 1 cand functia este activata prin port serial sau fieldbus
+2026-05-20 14:37:26,038  INFO      3440 8-91 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:26,184  INFO        -> rewrite: Seteaza pragul de avertizare pentru subtensiune in busul DC. Daca tensiunea cont
+2026-05-20 14:37:26,285  INFO      24363 0x2540:003 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:37:34,962  INFO        -> rewrite: Seteaza sursa de control pentru comanda pornire, oprire si sens direct/invers al
+2026-05-20 14:37:35,063  INFO      22576 0x2631:010 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:37:38,375  INFO        -> rewrite: Afiseaza pragul fix de subtensiune pentru magistrala DC. Daca tensiunea DC scade
+2026-05-20 14:37:38,476  INFO      24364 0x2540:004 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:37:38,494  INFO        -> rewrite: Defineste viteza de jog 2 in RPM cand aceasta functie este activata prin port se
+2026-05-20 14:37:38,594  INFO      3441 13-11 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:45,700  INFO        -> rewrite: Taste de Jog Reverse de pe tastatura porneste motorul in sens trigonometric la v
+2026-05-20 14:37:45,801  INFO      22577 0x2631:011 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:37:45,843  INFO        -> rewrite: Defineste operatorul de comparatie pentru functionarea comparatorului. Selecteaz
+2026-05-20 14:37:45,943  INFO      3442 13-43 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:49,494  INFO        -> rewrite: Afiseaza pragul fix de resetare pentru monitorizarea subtensiunii pe bus-ul DC. 
+2026-05-20 14:37:49,594  INFO      24365 0x2540:005 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:37:51,956  INFO        -> rewrite: Selecteaza al doilea operator logic pentru combinarea intrarilor booleene defini
+2026-05-20 14:37:52,056  INFO      3443 13-51 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:37:59,191  INFO        -> rewrite: Controleaza functia de Jog (miscare lenta a motorului). Daca functia Jog este ac
+2026-05-20 14:37:59,292  INFO      22578 0x283A (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:37:59,495  INFO        -> rewrite: Seteaza pragul de avertizare pentru supratensiune pe busul DC. Invertorul va gen
+2026-05-20 14:37:59,595  INFO      24366 0x2540:006 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:03,524  INFO        -> rewrite: Restrictioneaza directia de rotatie a motorului. Cand este activata, motorul poa
+2026-05-20 14:38:03,625  INFO      22579 0x2631:012 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:38:04,492  INFO        -> rewrite: Defineste evenimentul care activeaza o actiune in Controlerul Smart Logic (SLC).
+2026-05-20 14:38:04,593  INFO      3444 13-01 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:12,240  INFO        -> rewrite: Seteaza pragul de supratensiune pentru bus-ul DC. Daca tensiunea continua depase
+2026-05-20 14:38:12,341  INFO      24367 0x2540:007 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:13,283  INFO        -> rewrite: Activeaza controlul direct al motorului de la tastatura VFD. Cand este selectat,
+2026-05-20 14:38:13,384  INFO      22580 0x2631:037 (Lenze_i550)  existing_len=0  qc=rewrite
+2026-05-20 14:38:14,355  INFO        -> rewrite: Selecteaza intrarea booleana care activeaza controlul inteligent logic (SLC). Ca
+2026-05-20 14:38:14,456  INFO      3445 13-02 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:22,468  INFO        -> rewrite: Defineste evenimentul care opreste functionarea variatorului. Optiunile sunt sim
+2026-05-20 14:38:22,502  INFO        -> rewrite: Afiseaza pragul de tensiune DC la care se reseteaza protectia de supratensiune a
+2026-05-20 14:38:22,569  INFO      3446 13-00 (Danfoss_VLT_FC302)  existing_len=0  qc=rewrite
+2026-05-20 14:38:22,603  INFO      24368 0x2540:008 (Lenze_i950)  existing_len=0  qc=rewrite
+2026-05-20 14:38:23,581  INFO        -> rewrite: Activeaza selectia sursei de comanda pentru VFD intre retea si tastatura. Bit 1 
