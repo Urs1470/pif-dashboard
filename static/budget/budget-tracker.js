@@ -1222,10 +1222,13 @@ function tezaurMetrics(t) {
   var suma = parseRON(t.suma) || 0;
   var dobPct = parseRON(t.dobanda) || 0;
   var luni = maturitateLuni(t.maturitate);
-  var dataScad = t.dataScadenta || (t.dataSubscriere ? addMonthsIso(t.dataSubscriere, luni) : '');
+  // Always derive scadenta from subscriere + maturitate (it is read-only in the
+  // UI); fall back to a stored value only when no subscription date exists.
+  var dataScad = t.dataSubscriere ? addMonthsIso(t.dataSubscriere, luni) : (t.dataScadenta || '');
   var dobandaAnuala = suma * dobPct / 100;
   var dobandaTotala = dobandaAnuala * luni / 12;
   var today = todayIso();
+  var neinceput = !!(t.dataSubscriere && t.dataSubscriere > today);
   var zileTotal = (t.dataSubscriere && dataScad) ? daysBetween(t.dataSubscriere, dataScad) : 0;
   var zileTrecute = t.dataSubscriere ? Math.max(0, daysBetween(t.dataSubscriere, today)) : 0;
   var fractie = zileTotal > 0 ? Math.min(1, zileTrecute / zileTotal) : 0;
@@ -1237,7 +1240,7 @@ function tezaurMetrics(t) {
     dobandaAnuala: dobandaAnuala, dobandaTotala: round2(dobandaTotala),
     dobandaAcumulata: dobandaAcumulata, valoareAzi: round2(suma + dobandaAcumulata),
     valoareLaScadenta: round2(suma + dobandaTotala),
-    matur: matur, zileRamase: zileRamase, progres: Math.round(fractie * 100)
+    matur: matur, neinceput: neinceput, zileRamase: zileRamase, progres: Math.round(fractie * 100)
   };
 }
 
@@ -1419,8 +1422,6 @@ function renderSetari() {
   html += '    <input type="text" class="input w-full" value="' + esc(d.profil.nume || '') + '" onchange="updateProfil(\'nume\', this.value)"></div>';
   html += '  <div class="field"><label class="field-label">Salariu net (RON)</label>';
   html += '    <input type="number" class="input num w-full" value="' + (d.profil.salariuNet || 0) + '" onchange="updateProfil(\'salariuNet\', this.value)"></div>';
-  html += '  <div class="field"><label class="field-label">Bonus mediu (RON)</label>';
-  html += '    <input type="number" class="input num w-full" value="' + (d.profil.bonusMedie || 0) + '" onchange="updateProfil(\'bonusMedie\', this.value)"></div>';
   html += '  <div class="field"><label class="field-label">Lună start buget</label>';
   html += startMonthPicker(d.profil.startMonth || '2026-05');
   html += '  </div>';
@@ -2031,10 +2032,12 @@ function renderFondUrgenta() {
     html += '<td class="num">' + formatRON(m.valoareAzi) + '</td>';
     html += '<td class="num accent">' + formatRON(m.valoareLaScadenta) + '</td>';
     if (m.matur) {
-      html += '<td><span class="tag" style="background:var(--success-soft);color:var(--success);"><i data-lucide="check"></i> maturat</span></td>';
+      html += '<td><span class="tag" style="background:var(--success-soft);color:var(--success);"><i data-lucide="check"></i> Maturat</span></td>';
+    } else if (m.neinceput) {
+      html += '<td><span class="tag" style="background:var(--bg-elev3);color:var(--text-mid);"><i data-lucide="clock"></i> Programat</span></td>';
     } else if (m.dataScad) {
       var urgent = m.zileRamase <= 30;
-      html += '<td><span class="tag" style="background:' + (urgent ? 'var(--warning-soft);color:var(--warning)' : 'var(--accent-soft);color:var(--accent)') + ';">' + m.progres + '% · ' + m.zileRamase + ' z</span></td>';
+      html += '<td><span class="tag" style="background:' + (urgent ? 'var(--warning-soft);color:var(--warning)' : 'var(--accent-soft);color:var(--accent)') + ';">' + m.progres + '% · ' + m.zileRamase + ' zile</span></td>';
     } else {
       html += '<td><span class="text-dim">—</span></td>';
     }
