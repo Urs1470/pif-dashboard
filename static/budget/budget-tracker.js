@@ -162,6 +162,17 @@ function migrateEmisiuniTezaur(data) {
   data.emisiuniTezaur = cloneObj(DATI_INITIALE.emisiuniTezaur);
 }
 
+// One-shot: if emisiuniTezaur is still exactly the old 5-item default,
+// reduce it to just "Tezaur 1 an". Skipped if the user customised the list.
+function migrateEmisiuniReduce(data) {
+  if (!data || !Array.isArray(data.emisiuniTezaur)) return;
+  var cur = data.emisiuniTezaur.map(function(e) { return (e && e.label) || ''; }).sort().join('|');
+  var oldDefault = ['Tezaur 1 an', 'Tezaur 3 ani', 'Tezaur 5 ani', 'Fidelis RON', 'Fidelis EUR'].sort().join('|');
+  if (cur === oldDefault) {
+    data.emisiuniTezaur = [{ id: 1, label: 'Tezaur 1 an' }];
+  }
+}
+
 // Ensure d.categoriiVenit exists; migrate legacy bonuri/bonus/diurna keys to labels
 function migrateCategoriiVenit(data) {
   if (!data) return;
@@ -487,10 +498,6 @@ var DATI_INITIALE = {
   ],
   emisiuniTezaur: [
     { id: 1, label: 'Tezaur 1 an' },
-    { id: 2, label: 'Tezaur 3 ani' },
-    { id: 3, label: 'Tezaur 5 ani' },
-    { id: 4, label: 'Fidelis RON' },
-    { id: 5, label: 'Fidelis EUR' },
   ],
   credit: {
     suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1786.52, asigurare: 145,
@@ -562,6 +569,7 @@ async function loadData() {
       ensureCategorieVar(state.data, 'Mâncare restaurant');
       migrateCategoriiVenit(state.data);
       migrateEmisiuniTezaur(state.data);
+      migrateEmisiuniReduce(state.data);
       migrateCreditScadentar(state.data);
       migrateReguliCategorizare(state.data);
       ensureRegula(state.data, 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', 'Mâncare restaurant', true);
@@ -1132,6 +1140,14 @@ function soldDupaPlatiTrecute(scadentar, refIso, sumaInitiala) {
   return trec[trec.length - 1].soldFinal;
 }
 
+// Current credit balance: user-entered real value wins; otherwise derive
+// from the amortisation schedule.
+function getSoldCurent(d) {
+  var manual = parseRON(d && d.credit && d.credit.soldActual);
+  if (manual > 0) return manual;
+  return soldDupaPlatiTrecute(getScadentar(d), todayIso(), (d && d.credit && d.credit.suma) || 0);
+}
+
 function todayIso() {
   var d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -1225,7 +1241,7 @@ function renderBugetLunar() {
   var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var buffer = Object.keys(d.evolutie).reduce(function(s, l) { return s + (d.evolutie[l].buffer || 0); }, 0);
   var totalActive = totalTezaur + totalFond + buffer;
-  var soldCredit = soldDupaPlatiTrecute(getScadentar(d), todayIso(), d.credit.suma);
+  var soldCredit = getSoldCurent(d);
   var avereNeta = totalActive - soldCredit;
 
   var html = '';
@@ -1585,7 +1601,7 @@ function renderCredite() {
   var today = todayIso();
   var trec = platiTrecute(scad, today);
   var viit = platiViitoare(scad, today);
-  var soldEstimat = soldDupaPlatiTrecute(scad, today, cr.suma);
+  var soldCurent = getSoldCurent(d);
   var totalPlatit = trec.reduce(function(s, p) { return s + (p.suma || 0) + (p.asigurare || 0); }, 0);
   var totalRamas = viit.reduce(function(s, p) { return s + (p.suma || 0) + (p.asigurare || 0); }, 0);
   var totalDobandaRamasa = viit.reduce(function(s, p) { return s + (p.dobanda || 0); }, 0);
@@ -1596,8 +1612,8 @@ function renderCredite() {
   html += '<div class="section">';
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="landmark"></i> Credit activ — scadenţar ING Home\'Bank</div></div>';
   html += '<div class="stat-grid">';
-  html += statCard('banknote', 'Sold rămas', formatRON(soldEstimat), trec.length + ' / ' + scad.length + ' rate plătite', 'danger');
-  html += statCard('calendar-clock', 'Luni rămase', viit.length, 'din ' + scad.length + ' total', 'warning');
+  html += statCard('banknote', 'Sold curent', formatRON(soldCurent), 'introdus manual / scadenţar', 'danger');
+  html += statCard('calendar-clock', 'Rate rămase', viit.length, 'din ' + scad.length + ' total', 'warning');
   html += statCard('coins', 'Total rămas de plătit', formatRON(totalRamas), 'capital + dobandă + asigurare', 'danger');
   html += statCard('trending-down', 'Dobândă viitoare', formatRON(totalDobandaRamasa), 'rămasă până la final', 'warning');
   html += '</div></div>';
@@ -1611,7 +1627,8 @@ function renderCredite() {
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="file-text"></i> Detalii credit</div></div>';
   if (cr.contract) html += '<div class="stat-row"><span>Contract</span><span class="mono">' + esc(cr.contract) + ' / ' + esc(cr.dataContract || '') + '</span></div>';
   html += '<div class="stat-row"><span>Sumă inițială</span><span class="stat-val danger">' + formatRON(cr.suma) + '</span></div>';
-  html += '<div class="stat-row"><span>Sold rămas azi</span><span class="stat-val danger">' + formatRON(soldEstimat) + '</span></div>';
+  html += '<div class="stat-row"><span>Sold curent (real)</span>';
+  html += '<input type="number" step="0.01" class="input num w-28" value="' + (cr.soldActual || '') + '" placeholder="' + soldCurent.toFixed(2) + '" onchange="updateCreditSold(this.value)"></div>';
   html += '<div class="stat-row"><span>Dobândă anuală</span><span class="mono">' + cr.dobanda + ' %</span></div>';
   html += '<div class="stat-row"><span>DAE</span><span class="mono">' + cr.dae + ' %</span></div>';
   html += '<div class="stat-row"><span>Rată standard</span><span class="stat-val danger">' + formatRON(cr.rata) + '</span></div>';
@@ -1626,7 +1643,7 @@ function renderCredite() {
   html += '<div class="panel accent">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="calculator"></i> Simulare rambursare anticipată</div></div>';
   html += '<div class="field"><label class="field-label">Sold credit curent (RON)</label>';
-  html += '<input type="number" id="sim-sold" class="input num w-full" value="' + soldEstimat.toFixed(2) + '" oninput="recalcSimulare()"></div>';
+  html += '<input type="number" id="sim-sold" class="input num w-full" value="' + soldCurent.toFixed(2) + '" oninput="recalcSimulare()"></div>';
   html += '<div class="field"><label class="field-label">Sumă rambursare (RON)</label>';
   html += '<input type="number" id="sim-suma" class="input num w-full" value="5000" oninput="recalcSimulare()"></div>';
   html += '<div class="field"><label class="field-label">Luni rămase</label>';
@@ -2002,14 +2019,18 @@ function renderFondUrgenta() {
   html += '</div>';
   html += '</div></div>';
 
-  // Proiecție avere netă — calculată automat din active curente + scadenar credit
+  // Proiecție avere netă — active curente − sold credit, aliniat la soldul real
   var totalFondCurent = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
   var totalTezaurCurent = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
   var activeCurente = totalFondCurent + totalTezaurCurent;
   var scadEv = getScadentar(d);
+  // Offset: how far the theoretical schedule sits above the real balance
+  var soldRealAzi = getSoldCurent(d);
+  var soldScadAzi = soldDupaPlatiTrecute(scadEv, todayIso(), d.credit.suma);
+  var offsetSold = soldScadAzi - soldRealAzi;
   var averePts = LUNI_KEYS.map(function(lk, i) {
     var refIso = lk + '-28';
-    var sold = soldDupaPlatiTrecute(scadEv, refIso, d.credit.suma);
+    var sold = Math.max(0, soldDupaPlatiTrecute(scadEv, refIso, d.credit.suma) - offsetSold);
     return { x: i, y: activeCurente - sold, label: LUNI[i] };
   });
   var averePrima = averePts.length ? averePts[0].y : 0;
