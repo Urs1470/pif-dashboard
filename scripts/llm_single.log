@@ -3321,3 +3321,67 @@
 2026-05-20 13:04:03,066  INFO      22775 0x6072 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 13:04:03,517  WARNING     Bad categorie 'Control' for 0x4020:001, retry
 2026-05-20 13:04:04,073  INFO        -> new: Inregistrare din buffer-ul de istoric al erorilor. Afiseaza informatii despre a 
+2026-05-20 13:04:04,837  INFO        -> new: Stocheaza mesajul de diagnostic 24 din istoricul VFD-ului. Contine informatii de
+2026-05-20 13:04:04,938  INFO      24268 0x10F3:031 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:05,398  INFO        -> new: Seteaza tensiunea target pe busul DC in timpul unei caderi de retea. Cand tensiu
+2026-05-20 13:04:05,498  INFO      23493 0x2D66:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:05,691  INFO        -> new: Defineste actiunea variatorului cand se declanseaza monitorizarea accesului la p
+2026-05-20 13:04:05,792  INFO      22877 0x2552:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:06,394  INFO        -> new: Afiseaza codul de produs al invertorului. Este utilizat pentru identificare in c
+2026-05-20 13:04:06,495  INFO      22982 0x1018:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:06,757  INFO        Committed + pushed
+2026-05-20 13:04:06,757  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 84, 'error': 16} cost=$0.1368
+2026-05-20 13:04:07,898  INFO        -> new: Afiseaza starea curenta a retelei EtherNet/IP activa. Parametrul este doar pentr
+2026-05-20 13:04:07,999  INFO      23084 0x2320 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:08,150  INFO        -> new: Afiseaza numarul total de cicluri de date proces receptionate prin PROFIBUS. Con
+2026-05-20 13:04:08,251  INFO      23288 0x2380 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:10,188  INFO        -> new: Acest parametru afiseaza mesajul de diagnostic numarul 25 din istoricul de diagn
+2026-05-20 13:04:10,289  INFO      24269 0x10F3:032 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:11,358  INFO        -> new: Seteaza cuplul maxim simetric permis exprimat ca procent din cuplul nominal al m
+2026-05-20 13:04:11,459  INFO      22776 0x4007:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:11,951  INFO        -> new: Defineste principiul de control al motorului. Modul vector fara senzor ofera pre
+2026-05-20 13:04:12,051  INFO      3083 30-00 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:04:13,078  INFO        -> new: Afiseaza versiunea firmware a convertizatorului, incluzand numarul principal si 
+2026-05-20 13:04:13,178  INFO      22983 0x1018:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:14,156  INFO        -> new: Selecteaza actiunea care va fi executata daca monitorizarea accesului la paramet
+2026-05-20 13:04:14,257  INFO      22878 0x2552:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:14,869  INFO        -> new: Comanda pentru repornirea sau oprirea comunicatiei PROFINET. Repornirea folosest
+2026-05-20 13:04:14,969  INFO      23289 0x2381:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:15,360  INFO        -> new: Contorizeaza intreruperile in schimbul ciclic de date prin reteaua de comunicati
+2026-05-20 13:04:15,461  INFO      23397 0x1860 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:15,543  INFO        -> new: Activeaza functia PID controller pentru control automat al procesului reglat. Ca
+2026-05-20 13:04:15,644  INFO      22679 0x4020:005 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:16,273  INFO        -> new: Activeaza modul de oscilatie a frecventei de iesire pentru aplicatii de infasura
+2026-05-20 13:04:16,327  INFO        -> new: Seteaza aceasta parametru la 1 pentru a reporni comunicatia Modbus. Modificarile
+2026-05-20 13:04:16,374  INFO      3084 1-55 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:04:16,428  INFO      23085 0x2321:001 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:16,464  INFO        -> new: Defineste timpul de accelerare pentru referinta de tensiune setata in 0x2D66:005
+2026-05-20 13:04:16,564  INFO      23494 0x2D66:008 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:16,617  INFO        -> new: Afiseaza numarul de serie al convertizorului de frecventa. Acest cod este unic s
+2026-05-20 13:04:16,702  INFO        -> new: Stocheaza mesajul de diagnostic cu numarul 26 din istoricul de diagnostice. Aces
+2026-05-20 13:04:16,718  INFO      22984 0x2360 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:16,802  INFO      24270 0x10F3:033 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:20,806  INFO        -> new: Seteaza adresa IP pentru interfata PROFINET. Valoarea modificata va fi aplicata 
+2026-05-20 13:04:20,907  INFO      23290 0x2381:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:21,426  INFO        -> new: Seteaza pragul de curent aparent al motorului pentru detectia suprasarcinii. Can
+2026-05-20 13:04:21,526  INFO      22777 0x4007:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:22,012  INFO        -> new: Seteaza raspunsul invertorului cand functia de monitorizare ramane activa. Cand 
+2026-05-20 13:04:22,113  INFO      22879 0x2552:007 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:22,201  INFO        -> new: Seteaza adresa nodului Modbus pentru comunicatie in retea. Daca intrerupatoarele
+2026-05-20 13:04:22,301  INFO      23086 0x2321:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:22,627  INFO        -> new: Acest parametru semnaleaza o eroare de initializare a retelei de comunicatie. Ap
+2026-05-20 13:04:22,727  INFO      23398 0x1861 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:25,655  INFO        -> new: Comanda care restarteaza comunicatia EtherCAT. Dupa executarea cu succes a comen
+2026-05-20 13:04:25,755  INFO      22985 0x2361:004 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:26,143  INFO        -> new: Seteaza limita minima de viteza pentru controlerul de proces PID. Valoarea de 10
+2026-05-20 13:04:26,169  INFO        -> new: Afiseaza mesajul de diagnostic numarul 27 din istoricul de erori al convertizoru
+2026-05-20 13:04:26,244  INFO      22680 0x4020:006 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:26,269  INFO      24271 0x10F3:034 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:26,672  INFO        -> new: Seteaza pragul de frecventa al retelei pentru protectia la repornire dupa cadere
+2026-05-20 13:04:26,773  INFO      23495 0x2D66:009 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:27,132  INFO        -> new: Seteaza masca de subretea pentru comunicatia PROFINET. Valoarea modificata va fi
+2026-05-20 13:04:27,233  INFO      23291 0x2381:003 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:04:27,971  ERROR       Error 0x10F3:034: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cba2bf4f66d716dc5f26143ca1b40'}
+2026-05-20 13:04:27,984  ERROR       Error 0x4020:006: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cba2b9f3d0f19049784d6c54d243f'}
+2026-05-20 13:04:28,463  INFO        -> new: Semaforul indica o eroare de comunicatie pe retea. Datele ciclice procesate sunt
+2026-05-20 13:04:28,641  ERROR       Error 0x2D66:009: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': 'The Token Plan is designed for individual, interactive developer workflows. Traffic is currently high—please retry shortly. For higher concurrency or automated workloads, consider upgrading to a higher-tier plan or using the pay-as-you-go API. (2062)'}, 'request_id': '065cba2cd3be158bb73ad639ef7a780b'}
