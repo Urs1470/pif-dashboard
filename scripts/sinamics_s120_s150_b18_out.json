@@ -1,0 +1,1103 @@
+[
+  {
+    "id": 13566,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4267",
+    "descriere_scurta": "TM15 set/reset time digital output 17",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 17 a TM15. Valorile sunt exprimate ca octeti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4266, r4268",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13568,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4268",
+    "descriere_scurta": "TM15 set/reset time digital output 18",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 18 a TM15. Structura identica cu parametrii precedenti din seria r4267.",
+      "influenteaza": "r4267, r4269",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13569,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4269",
+    "descriere_scurta": "TM15 set/reset time digital output 19",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 19 a TM15. Format de 8 biti cu rezolutie de 64 microsecunde pentru sincronizare precisa.",
+      "influenteaza": "r4268, r4270",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13570,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4270",
+    "descriere_scurta": "TM15 set/reset time digital output 20",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 20 a TM15. Valorile permit diagnosticarea comportamentului temporal al iesirilor digitale.",
+      "influenteaza": "r4269, r4271",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13571,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4271",
+    "descriere_scurta": "TM15 set/reset time digital output 21",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 21 a TM15. Rezolutia de 64 microsecunde asigura precizie pentru aplicatii de sincronizare.",
+      "influenteaza": "r4270, r4272",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13573,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4272",
+    "descriere_scurta": "TM15 set/reset time digital output 22",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru iesirea digitala 22 a TM15. Structura identica cu parametrii precedenti din seria r4250-r4273.",
+      "influenteaza": "r4271, r4273",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13574,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4273",
+    "descriere_scurta": "TM15 set/reset time digital output 23",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpii de setare si resetare pentru ultima iesire digitala (23) a TM15. Ultimul parametru din seria de timpi de comutare a iesirilor digitale ale TM15.",
+      "influenteaza": "r4272",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13575,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4301",
+    "descriere_scurta": "TM15 module synchronization",
+    "GENERATED": {
+      "explicatie": "r=read-only. Utilizat pentru sincronizarea timerului TM15 cu timpul de sistem al masterului DP. Bitii 12-15 indica semnul de viata al modulului dupa sincronizare, bitul 0 indica alinierea la sistemul de timp, bitul 9 indica un defect.",
+      "influenteaza": "r4201",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 13577,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4304",
+    "descriere_scurta": "TM15 status digital input 0 ... 15",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea intrarilor digitale 0 pana la 15 ale Terminal Module 15 (TM15). Fiecare bit corespunde unei intrari digitale, permitand diagnosticarea starii fizice a intrarilor.",
+      "influenteaza": "r4305",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13579,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4305",
+    "descriere_scurta": "TM15 status digital input 16 ... 23",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea intrarilor digitale 16 pana la 23 ale TM15. Completeaza r4304 pentru monitorizarea completa a tuturor intrarilor digitale ale modulului.",
+      "influenteaza": "r4304",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13580,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4311",
+    "descriere_scurta": "TM15 edge status digital input 0 ... 7",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea de front detectata pentru intrarile digitale 0-7 ale TM15. Fiecare pereche de biti indica daca a fost detectat un front: niciunul, primul front, al doilea front sau ambele fronturi.",
+      "influenteaza": "r4211, r4312",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13582,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4312",
+    "descriere_scurta": "TM15 edge status digital input 8 ... 15",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea de front detectata pentru intrarile digitale 8-15 ale TM15. Structura bitilor identica cu r4311, aplicata grupului de intrari 8-15.",
+      "influenteaza": "r4311, r4313",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13584,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4313",
+    "descriere_scurta": "TM15 edge status digital input 16 ... 23",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea de front detectata pentru intrarile digitale 16-23 ale TM15. Completeaza r4311 si r4312 pentru monitorizarea completa a fronturilor de pe toate intrarile TM15.",
+      "influenteaza": "r4311, r4312",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13585,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4350",
+    "descriere_scurta": "TM15 edge times digital input 0",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de timp la care au fost detectate primul si al doilea front al intrarii digitale 0 a TM15. Cei doi timpi sunt exprimate ca octeti cu rezolutie de 64 microsecunde, esentiale pentru masurarea precisa a timpilor.",
+      "influenteaza": "r4311, r4351",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13587,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4351",
+    "descriere_scurta": "TM15 edge times digital input 1",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de timp la care au fost detectate fronturile intrarii digitale 1 a TM15. Rezolutia de 64 microsecunde permite masurarea precisa a timpilor de raspuns.",
+      "influenteaza": "r4311, r4350, r4352",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13590,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4352",
+    "descriere_scurta": "TM15 edge times digital input 2",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 2 a TM15. Structura identica cu r4350-r4351, aplicata intrarii 2.",
+      "influenteaza": "r4351, r4353",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13592,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4353",
+    "descriere_scurta": "TM15 edge times digital input 3",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 3 a TM15. Valorile sunt utile pentru diagnosticarea timpilor de intrare in aplicatii de sincronizare precisa.",
+      "influenteaza": "r4352, r4354",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13595,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4354",
+    "descriere_scurta": "TM15 edge times digital input 4",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 4 a TM15. Format de 8 biti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4353, r4355",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13597,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4355",
+    "descriere_scurta": "TM15 edge times digital input 5",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 5 a TM15. Structura identica cu parametrii precedenti din seria r4350.",
+      "influenteaza": "r4354, r4356",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13600,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4356",
+    "descriere_scurta": "TM15 edge times digital input 6",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 6 a TM15. Rezolutia de 64 microsecunde asigura precizia necesara pentru sincronizarea proceselor industriale.",
+      "influenteaza": "r4355, r4357",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13602,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4357",
+    "descriere_scurta": "TM15 edge times digital input 7",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 7 a TM15. Ultimul parametru din primul grup de timpi de front al intrarilor TM15.",
+      "influenteaza": "r4356, r4358",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13605,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4358",
+    "descriere_scurta": "TM15 edge times digital input 8",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 8 a TM15. Primul parametru din grupul de timpi de front al intrarilor superioare TM15.",
+      "influenteaza": "r4357, r4359",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13607,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4359",
+    "descriere_scurta": "TM15 edge times digital input 9",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 9 a TM15. Valorile sunt exprimate ca octeti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4358, r4360",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13610,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4360",
+    "descriere_scurta": "TM15 edge times digital input 10",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 10 a TM15. Structura identica cu parametrii precedenti.",
+      "influenteaza": "r4359, r4361",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13612,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4361",
+    "descriere_scurta": "TM15 edge times digital input 11",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 11 a TM15. Util pentru diagnosticarea precisa a timpilor de comutare ai intrarilor.",
+      "influenteaza": "r4360, r4362",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13615,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4362",
+    "descriere_scurta": "TM15 edge times digital input 12",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 12 a TM15. Format de 8 biti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4361, r4363",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13617,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4363",
+    "descriere_scurta": "TM15 edge times digital input 13",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 13 a TM15. Structura identica cu parametrii precedenti din seria r4350-r4373.",
+      "influenteaza": "r4362, r4364",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13620,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4364",
+    "descriere_scurta": "TM15 edge times digital input 14",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 14 a TM15. Rezolutia de 64 microsecunde este esentiala pentru aplicatii de masurare a timpilor.",
+      "influenteaza": "r4363, r4365",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13622,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4365",
+    "descriere_scurta": "TM15 edge times digital input 15",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 15 a TM15. Ultimul parametru din primul grup de timpi de front al intrarilor TM15 (0-15).",
+      "influenteaza": "r4364, r4366",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13625,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4366",
+    "descriere_scurta": "TM15 edge times digital input 16",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 16 a TM15. Primul parametru din grupul extins de timpi de front al intrarilor TM15 (16-23).",
+      "influenteaza": "r4365, r4367",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13626,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4367",
+    "descriere_scurta": "TM15 edge times digital input 17",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 17 a TM15. Valorile sunt exprimate ca octeti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4366, r4368",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13627,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4368",
+    "descriere_scurta": "TM15 edge times digital input 18",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 18 a TM15. Structura identica cu parametrii precedenti din seria r4366.",
+      "influenteaza": "r4367, r4369",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13628,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4369",
+    "descriere_scurta": "TM15 edge times digital input 19",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 19 a TM15. Format de 8 biti cu rezolutie de 64 microsecunde.",
+      "influenteaza": "r4368, r4370",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13630,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4370",
+    "descriere_scurta": "TM15 edge times digital input 20",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 20 a TM15. Valorile permit diagnosticarea timpilor de intrare in aplicatii complexe de sincronizare.",
+      "influenteaza": "r4369, r4371",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13631,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4371",
+    "descriere_scurta": "TM15 edge times digital input 21",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 21 a TM15. Rezolutia de 64 microsecunde asigura precizia pentru masurarea timpilor in aplicatii industriale.",
+      "influenteaza": "r4370, r4372",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13632,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4372",
+    "descriere_scurta": "TM15 edge times digital input 22",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru intrarea digitala 22 a TM15. Structura identica cu parametrii precedenti din seria r4366-r4373.",
+      "influenteaza": "r4371, r4373",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13633,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4373",
+    "descriere_scurta": "TM15 edge times digital input 23",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza momentele de detectare a fronturilor pentru ultima intrare digitala (23) a TM15. Ultimul parametru din seria de timpi de front ai intrarilor TM15.",
+      "influenteaza": "r4372",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 13639,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4403",
+    "descriere_scurta": "TM41 encoder emulation operating mode active",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza modul de operare activ al Terminal Module 41 (TM41) in functia de emulare encoder. Permite verificarea modului de emulare efectiv al TM41.",
+      "influenteaza": "r4419",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13644,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4419",
+    "descriere_scurta": "TM41 encoder emulation diagnostics position setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza setpointul de pozitie dupa luarea in calcul a raportului de multiplicare/divizare. Formatul este definit de p0408 si p0418, permitand diagnosticarea emularii encoder pe TM41.",
+      "influenteaza": "r4403",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13663,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4651",
+    "descriere_scurta": "Encoder functional reserve",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza rezerva functionala a encoderului selectat prin p4650, exprimata procentual. Valori sub 25% indica atingerea limitei functionale, recomandindu-se service; valorile intre 26-100% indica functionare normala.",
+      "influenteaza": "p4650",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13666,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4653",
+    "descriere_scurta": "XIST1_ERW actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire de conector valoarea reala XIST1_ERW a encoderului extins. Aceasta valoare reprezinta pozitia absoluta extinsa transmisa prin protocolul encoder specific.",
+      "influenteaza": "r4654",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13670,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4654",
+    "descriere_scurta": "XIST1_ERW status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire binector starea XIST1_ERW, utilizata pentru resetarea valorii extinse de pozitie. Permite controlul si diagnosticarea functionalitatii encoderului extins.",
+      "influenteaza": "r4653",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13675,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4666",
+    "descriere_scurta": "Encoder characteristic K3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coeficientul K3 utilizat la calculul caracteristicii encoderului definita in p4662. Coeficientii caracteristicii influenteaza precizia evaluarii semnalului encoder analogic.",
+      "influenteaza": "p4662",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13683,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4675",
+    "descriere_scurta": "Analog sensor channel B voltage per encoder period",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza domeniul tensiunii de iesire a senzorului analogic pe canal B per perioada encoder. Impreuna cu p4674 (tensiunea la valoarea 0) defineste corespondenta tensiune-pozitie a senzorului analog.",
+      "influenteaza": "p4674",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13696,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4681",
+    "descriere_scurta": "Zero mark monitoring tolerance window limit 1 positive",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de toleranta pozitiva (in impulsuri encoder) pentru limita 1 a monitorizarii marcajului zero. Daca deviatia depaseste aceasta limita se declanseaza defectul F3x131.",
+      "influenteaza": "p4682, p4684, p4688",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13701,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4684",
+    "descriere_scurta": "Zero mark monitoring tolerance window alarm threshold negative",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de toleranta negativa pentru limita 2 a monitorizarii marcajului zero. Daca F3x131 este reparametrizat la alarma si acumulatorul p4688 depaseste aceasta valoare, se genereaza alarma A3x422.",
+      "influenteaza": "p4681, p4688",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13702,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4689",
+    "descriere_scurta": "Squarewave encoder diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea encoderului cu semnal dreptunghiular conform protocolului PROFIdrive. Permite diagnosticarea unui encoder incremental cu iesire TTL/HTL conectat la antrenament.",
+      "influenteaza": "p4681",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13706,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4694",
+    "descriere_scurta": "SMI spare part data backup motor order number",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul de comanda al motorului (MLFB) al backup-ului de date selectat cu p4693. Util pentru identificarea motorului asociat backup-ului de date al SMI.",
+      "influenteaza": "p4693",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13707,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4700",
+    "descriere_scurta": "Trace control",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza controlul functiei trace pentru inregistrarea semnalelor interne ale antrenamentului. Permite pornirea, oprirea si configurarea generala a functiei de trace.",
+      "influenteaza": "p4710, r4706",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13709,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4706",
+    "descriere_scurta": "Measuring function status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea actuala a functiei de masurare. Permite monitorizarea progresului si rezultatelor procedurilor de masurare si identificare ale antrenamentului.",
+      "influenteaza": "p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13711,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4799",
+    "descriere_scurta": "Trace memory location free",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza memoria disponibila pentru functia trace exprimata in octeti. Permite verificarea spatiului liber inainte de configurarea unui nou trace.",
+      "influenteaza": "r4708, p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13712,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4710",
+    "descriere_scurta": "Trace trigger condition",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza conditia de trigger pentru functia trace. Defineste evenimentul sau conditia care declanseaza inceperea inregistrarii datelor in bufferul trace.",
+      "influenteaza": "p4700, r4706",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13719,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4760",
+    "descriere_scurta": "Trace 0 trace buffer signal 0",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza bufferul trace (buffer de inregistrare) pentru trace 0 si semnalul 0 ca numar intreg. Continutul bufferului poate fi citit dupa finalizarea inregistrarii trace.",
+      "influenteaza": "p4700, p4710",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13723,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4753",
+    "descriere_scurta": "Trace 1 trace buffer signal 3 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza bufferul trace pentru trace 1 si semnalul 3 in format virgula mobila. Permite citirea valorilor reale inregistrate ale semnalului 3 din trace-ul 1.",
+      "influenteaza": "p4700, p4710",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13724,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4708",
+    "descriere_scurta": "Trace memory space required",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza memoria necesara in octeti pentru parametrizarea actuala a trace-ului. Permite verificarea daca memoria disponibila (r4799) este suficienta pentru configuratia trace dorita.",
+      "influenteaza": "r4799, p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13726,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4805",
+    "descriere_scurta": "Function generator status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea actuala a generatorului de functii. Permite monitorizarea operatiunilor generatorului de semnale test utilizat la punerea in functiune si diagnosticare.",
+      "influenteaza": "r4818",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13727,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4818",
+    "descriere_scurta": "Function generator output signal",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza semnalul de iesire al generatorului de functii. Valoarea reprezinta semnalul generat care poate fi utilizat ca setpoint pentru testarea si optimizarea regulatoarelor.",
+      "influenteaza": "r4805",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13751,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4844",
+    "descriere_scurta": "MTrace ring buffer files number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de fisiere ring-buffer pentru rezultatele de masurare ale functiei multiple trace (MTrace). Permite configurarea capacitatii de stocare a inregistrarilor trace ciclice.",
+      "influenteaza": "r4841",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13752,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4841",
+    "descriere_scurta": "MTrace cycle actual display",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza ciclul curent al functiei MTrace inclusiv timpul mort. Permite monitorizarea progresului inregistrarilor multiple trace in desfasurare.",
+      "influenteaza": "p4844",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13753,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4899",
+    "descriere_scurta": "Status word sequence control",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza cuvantul de stare al controlului secvential al Terminal Module 41 (TM41). Bitii cuvantului de stare reflecta starea curenta a secventei de control a TM41.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13754,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4950",
+    "descriere_scurta": "OA DO-specific number",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul de aplicatii OA (Open Architecture) instalate pe acest obiect de antrenament. Permite verificarea aplicatiilor OA active pe drive object.",
+      "influenteaza": "r4951, r4952",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13755,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4960",
+    "descriere_scurta": "OA DO-specific GUID drive object",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza GUID-urile specifice obiectului de antrenament ale aplicatiilor OA instalate pe cardul de memorie. Permite identificarea unica a fiecarei aplicatii OA per drive object.",
+      "influenteaza": "r4959, r4952",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13756,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4952",
+    "descriere_scurta": "OA DO-specific GUID total length",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza lungimea totala a GUID-urilor aplicatiilor OA instalate pe acest obiect de antrenament. Valoarea este necesara pentru citirea corecta a datelor GUID din r4960.",
+      "influenteaza": "r4950, r4960",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13757,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4951",
+    "descriere_scurta": "OA DO-specific identifier total length",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza lungimea totala a identificatorilor aplicatiilor OA instalate pe acest obiect de antrenament. Valoarea este utilizata pentru citirea corecta a identificatorilor aplicatiilor OA.",
+      "influenteaza": "r4950, r4960",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13764,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4959",
+    "descriere_scurta": "OA DO-specific GUID",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza GUID-urile aplicatiilor OA instalate pe acest obiect de antrenament. Fiecare aplicatie OA este identificata printr-un GUID unic de 16 octeti plus informatii de versiune.",
+      "influenteaza": "r4960, r4951",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13766,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4975",
+    "descriere_scurta": "OA invalid number",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul de aplicatii OA invalide instalate pe cardul de memorie sau memoria dispozitivului. Prezenta aplicatiilor OA invalide poate indica probleme cu cardul de memorie sau cu aplicatiile instalate.",
+      "influenteaza": "r4976, r4979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13767,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4976",
+    "descriere_scurta": "OA invalid identifier total length",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza lungimea totala a ID-urilor tuturor aplicatiilor OA invalide instalate pe cardul de memorie. Util pentru citirea completa a identificatorilor aplicatiilor invalide.",
+      "influenteaza": "r4975, r4979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13768,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4979",
+    "descriere_scurta": "OA invalid error code",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza codul de eroare al aplicatiilor OA invalide instalate pe cardul de memorie. Permite diagnosticarea cauzei invalidarii aplicatiilor OA.",
+      "influenteaza": "r4975, r4976",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13771,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4985",
+    "descriere_scurta": "OA number",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul total de aplicatii OA instalate pe cardul de memorie sau memoria dispozitivului. Permite verificarea numarului de aplicatii OA disponibile.",
+      "influenteaza": "r4986, r4987",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13772,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4994",
+    "descriere_scurta": "OA properties",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza proprietatile tuturor aplicatiilor OA instalate pe cardul de memorie. Fiecare index corespunde versiunii unei aplicatii OA.",
+      "influenteaza": "r4985",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13773,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4987",
+    "descriere_scurta": "OA GUID total length",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza lungimea totala a GUID-urilor tuturor aplicatiilor OA instalate pe cardul de memorie. Necesar pentru citirea corecta a GUID-urilor din r4989.",
+      "influenteaza": "r4985",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13774,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4986",
+    "descriere_scurta": "OA identifier total length",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza lungimea totala a ID-urilor tuturor aplicatiilor OA instalate pe cardul de memorie sau memoria dispozitivului. Utilizat la citirea identificatorilor aplicatiilor.",
+      "influenteaza": "r4985",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13782,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5000",
+    "descriere_scurta": "Spindle properties/status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza proprietatile suportate de hardware-ul arborelui principal si starea curenta. Permite diagnosticarea capabilitatilor functionale ale unitatii spindle conectate.",
+      "influenteaza": "r5001, r5002",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13785,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5002",
+    "descriere_scurta": "Spindle analog sensor S1 measured value",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire de conector valoarea masurata de senzorul analogic S1 al arborelui principal (1 increment = 1 mV). Utilizat pentru monitorizarea starii de blocare/deblocare a sculei.",
+      "influenteaza": "r5001, p5041",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13786,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5003",
+    "descriere_scurta": "Spindle digital sensors status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire de conector starea senzorilor digitali ai arborelui principal. Permite monitorizarea semnalelor digitale de la echipamentele periferice ale arborelui.",
+      "influenteaza": "r5000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13787,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5005",
+    "descriere_scurta": "Spindle file system status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea sistemului de fisiere de pe memoria non-volatila a arborelui principal. Datele de rezultate si caracteristicile sunt stocate in fisiere corespunzatoare.",
+      "influenteaza": "r5000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13790,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1982",
+    "descriere_scurta": "PolID selection",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza rutina de identificare a pozitiei polului pentru determinarea unghiului de comutatie si efectuarea unui control de plauzibilitate. Necesara la punerea in functiune a motoarelor sincrone fara encoder absolut.",
+      "influenteaza": "p1980, p0329",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13793,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5020",
+    "descriere_scurta": "Spindle manufacturer",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza codul producatorului arborelui principal. Valoarea permite identificarea furnizorului unitatii spindle si este utilizata in procesul de configurare automata.",
+      "influenteaza": "r5000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13795,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5032",
+    "descriere_scurta": "Maximum spindle speed",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza viteza maxima a arborelui principal citita din datele specifice ale spindle-ului. Aceasta limita hardware trebuie respectata la configurarea limitelor de viteza prin p1082.",
+      "influenteaza": "p1082",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 13797,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5033",
+    "descriere_scurta": "Spindle angular commutation offset",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza offsetul unghiular de comutatie pentru encoderul arborelui principal. Aceasta valoare este esentiala pentru comutarea corecta a motorului arborelui principal.",
+      "influenteaza": "p1982",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13798,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5034",
+    "descriere_scurta": "Spindle current controller sampling time maximum",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpul de esantionare maxim recomandat pentru regulatorul de curent al arborelui principal. Daca p0115[0] depaseste aceasta valoare, se genereaza alarma A7140.",
+      "influenteaza": "p0112, p0115",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13799,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5041",
+    "descriere_scurta": "Spindle voltage threshold values",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragurile de tensiune pentru arborele principal pe 6 indecsi corespunzand starilor: eliberat superior/inferior, blocat cu scula superior/inferior, blocat fara scula superior/inferior. Influenteaza detectia starii de blocare.",
+      "influenteaza": "r5001, r5002, p5040",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13800,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5001",
+    "descriere_scurta": "Spindle clamp state",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire de conector starea de blocare a sculei la arborele principal. Valorile 2 si 11 genereaza mesajul A3x940; pragurile de tensiune sunt configurate in p5041.",
+      "influenteaza": "r5002, p5041",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13802,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5044",
+    "descriere_scurta": "Maximum permissible spindle velocity limit",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza limita maxima de viteza permisa pentru arborele principal. Aceasta valoare ia in considerare limitele hardware ale spindle-ului si trebuie respectata la configurarea setpointurilor de viteza.",
+      "influenteaza": "r5032, p1082",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 13805,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5171",
+    "descriere_scurta": "HF damping voltage actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza valoarea reala a tensiunii de amortizare a modulului HF Damping. Aceasta tensiune este aplicata pentru reducerea interferentelor de inalta frecventa.",
+      "influenteaza": "r5173",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13807,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5173",
+    "descriere_scurta": "HF Damping Module I2t overload",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza suprasarcina condensatoarelor de filtru ale modulului HF Damping determinata prin calculul I2t. Valorile ridicate pot indica o solicitare termica excesiva a modulului de filtrare.",
+      "influenteaza": "r5171",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13857,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5260",
+    "descriere_scurta": "Cogging torque compensation force table",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Afiseaza sau seteaza valorile de compensare pentru compensarea cuplului de cogging (ripplu de cuplu). Compensarea corecta reduce variatiile periodice ale cuplului cauzate de constructia motorului.",
+      "influenteaza": "r1480",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13871,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5275",
+    "descriere_scurta": "Onlinetuning dynamic time constant",
+    "GENERATED": {
+      "epicatie": "p=parametru setabil. Seteaza constanta de timp pentru simetrizarea precomenzii in cadrul onlinetuning. Antrenamentului i se atribuie un raspuns dinamic definit prin precomanda; pentru antrenamente care interpoleaza impreuna, trebuie introdusa aceeasi valoare.",
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp pentru simetrizarea precomenzii in cadrul onlinetuning. Antrenamentului i se atribuie un raspuns dinamic definit; pentru antrenamente care interpoleaza impreuna trebuie introdusa aceeasi valoare.",
+      "influenteaza": "r5293",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13874,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5285",
+    "descriere_scurta": "Current setpoint filter adaptation actual frequency",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza frecventa actuala a filtrului de setpoint de curent adaptat. Valoarea reflecta frecventa de lucru a filtrului dupa adaptarea automata la rezonantele mecanice ale axei.",
+      "influenteaza": "r5293",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13880,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5293",
+    "descriere_scurta": "Velocity controller gain identified",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza castigul maxim posibil Kp al regulatorului de viteza calculat din masurarea FFT. Aceasta valoare este un reper pentru setarea optima a parametrului de amplificare al regulatorului de viteza.",
+      "influenteaza": "p5275",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13888,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5307",
+    "descriere_scurta": "Test signal activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza semnalul de test pentru identificare si optimizare. Bitul 01 utilizeaza viteza nominala ca setpoint alternand pozitiv si negativ; activarea necesita p5308>0, p5309>0 si encoder motor.",
+      "influenteaza": "p5308, p5309",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13890,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5309",
+    "descriere_scurta": "Test signal duration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza durata secventei semnalului de test (mai multe operatiuni de accelerare). Impreuna cu p5307 si p5308, controleaza comportamentul semnalului de test utilizat la identificarea parametrilor mecanici.",
+      "influenteaza": "p5307, p5308",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 13891,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5308",
+    "descriere_scurta": "Test signal traversing range limiting",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Limiteaza domeniul de deplasare la +/- p5308 grade cand semnalul de test este activat (p5307.1). 360 grade corespund unei rotatii complete a motorului; pozitia la activare devine punctul zero.",
+      "influenteaza": "p5307, p5309",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 13893,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5397",
+    "descriere_scurta": "Mot_temp_mod 3 ambient temperature image p0613",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza temperatura ambianta pentru modelul de temperatura motor 3, utilizata la calculul afisajului de utilizare (p0034). Aceasta valoare este o imagine a p0613.",
+      "influenteaza": "p0613, p0034",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13895,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5402",
+    "descriere_scurta": "Line droop control status word",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza cuvantul de stare al controlului de droop de retea pentru alimentare. Bitii reflecta starea functionalitatii de reglare a puterii active si reactive in raport cu frecventa si tensiunea retelei.",
+      "influenteaza": "r5410, r5420",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13900,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3467",
+    "descriere_scurta": "Infeed current alpha/beta",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire de conector curentul de linie in componentele alfa/beta. Indexii 0 si 1 reprezinta componentele alfa si beta ale curentului de linie utilizate in transformarile de coordonate ale regulatoarelor.",
+      "influenteaza": "r3606, r3608",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13907,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5410",
+    "descriere_scurta": "Line droop control frequency droop output",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza frecventa de iesire filtrata a droop-ului de putere activa frecventa. Aceasta frecventa este integrata pentru a obtine unghiul de retea al controlului droop (r5412).",
+      "influenteaza": "r5412, r5402",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13908,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5412",
+    "descriere_scurta": "Line droop control line angle",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza unghiul real de retea pentru controlul droop. Valoarea este calculata prin integrarea frecventei de iesire a droop-ului de putere activa (r5410).",
+      "influenteaza": "r5410, r5402",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13916,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5420",
+    "descriere_scurta": "Line droop control voltage droop output",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza tensiunea de iesire filtrata a droop-ului de curent reactiv tensiune. Aceasta valoare este utilizata pentru reglarea tensiunii in cadrul functiei de control droop de retea.",
+      "influenteaza": "r5402, r5429",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13926,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r5429",
+    "descriere_scurta": "Line droop control voltage control output",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza iesirea regulatorului de tensiune la punctul de conexiune al controlului droop de retea. Valoarea indica efortul de control al regulatorului de tensiune al alimentarii.",
+      "influenteaza": "r5420, r5402",
+      "categorie": "Diagnostic"
+    }
+  }
+]

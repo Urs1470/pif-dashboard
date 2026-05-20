@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 14411,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9481",
+    "descriere_scurta": "Number of BICO interconnections",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul de interconectari BICO (receptori de semnal) din configuratia curenta. Aceasta valoare este utilizata ca referinta pentru citirea listelor complete de interconectari din r9482 si r9483.",
+      "influenteaza": "r9482, r9483",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14413,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9482",
+    "descriere_scurta": "BICO interconnections BI/CI parameters",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza receptorii de semnal (intrari binector/conector, parametri BI/CI) ai interconectarilor BICO. Numarul total de interconectari BICO este afisat in r9481.",
+      "influenteaza": "r9481, r9483",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14415,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9486",
+    "descriere_scurta": "BICO interconnections signal source search first index",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza primul index al sursei de semnal cautate in interconectarile BICO. Utilizat impreuna cu functia de cautare a surselor de semnal BICO pentru diagnosticarea interconectarilor.",
+      "influenteaza": "r9482, r9483",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14419,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9499",
+    "descriere_scurta": "BICO BO/CO parameters to de-activated drive objects",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza parametrii BO/CO (sursa de semnal) salvati care se afla pe obiecte de antrenament dezactivate sau inoperabile. Permite identificarea interconectarilor BICO invalide care pot cauza comportament nedorit.",
+      "influenteaza": "r9481, r9482",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14446,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9522",
+    "descriere_scurta": "SI Motion gearbox encoder/load numerator (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numaratorul reductiei dintre encoder si sarcina pentru monitorizarea de siguranta pe Control Unit. Impreuna cu p9521 defineste raportul de transmisie utilizat la calculul vitezei sigure de sarcina.",
+      "influenteaza": "p9521",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14447,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9521",
+    "descriere_scurta": "SI Motion gearbox encoder/load denominator (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numitorul reductiei dintre encoder si sarcina pentru monitorizarea de siguranta pe Control Unit. Valori pe 8 indecsi pentru 8 trepte de viteza comutabile prin PROFIsafe.",
+      "influenteaza": "p9522",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 14461,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9537",
+    "descriere_scurta": "SI Motion SCA (SN) plus cam position (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pozitia camei minus pentru functia SCA (Safe Cam) pe Control Unit. Pozitia de cam minus defineste limita inferioara a zonei de cam sigura pe care o monitorizeaza functia SCA.",
+      "influenteaza": "p9536",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14462,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9536",
+    "descriere_scurta": "SI Motion SCA (SN) plus cam position (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pozitia camei plus pentru functia SCA (Safe Cam) pe Control Unit, pe pana la 30 indecsi corespunzand camelor SCA1-SCA30. Defineste limita superioara a ferestrelor de pozitie sigura monitorizate.",
+      "influenteaza": "p9537",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14500,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9535",
+    "descriere_scurta": "SI Motion SLP (SE) lower limit values (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita inferioara pentru functia SLP (Safely-Limited Position) la nivelul Control Unit, pe 2 indecsi corespunzand SLP1 si SLP2. Depasirea acestei limite declansa reactia de oprire configurata in p9562.",
+      "influenteaza": "p9562",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14512,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9571",
+    "descriere_scurta": "SI Motion acceptance test status (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea modului de test de acceptanta la nivelul Control Unit. Testul de acceptanta trebuie efectuat si documentat dupa orice modificare a parametrilor Safety Integrated.",
+      "influenteaza": "r9371",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14532,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9890",
+    "descriere_scurta": "SI version (Sensor Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza versiunea Safety Integrated de pe Sensor Module pe 3 indecsi (major, minor, baselevel/patch). Permite verificarea compatibilitatii versiunii de siguranta a Sensor Module cu restul sistemului.",
+      "influenteaza": "r9870",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14540,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9825",
+    "descriere_scurta": "SI HLA shutoff valve wait time (MM)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpii de intarziere pentru comutarea ventilului de inchidere in aplicatii hidraulice (HLA) pe Motor Module. Indexul 0 este pentru activare, indexul 1 pentru dezactivare; valorile minime specifice ventilului trebuie respectate.",
+      "influenteaza": "p9625",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14551,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9660",
+    "descriere_scurta": "SI forced checking procedure remaining time",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpul ramas pana la dinamizarea si testarea cailor de oprire de siguranta (procedura de verificare fortata). Dupa expirarea acestui timp, procedura de verificare trebuie executata.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14552,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9670",
+    "descriere_scurta": "SI module identification Control Unit",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza identificatorului de nod al Control Unit. Aceasta suma de control este utilizata pentru verificarea integritatii identificarii modulelor in sistemul Safety Integrated.",
+      "influenteaza": "r9672, r9673",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14555,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9672",
+    "descriere_scurta": "SI module identifier Power Module",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza identificatorului de nod al Power Module. Utilizat in verificarea identificarii modulelor in sistemul Safety Integrated pentru asigurarea integritatii hardware.",
+      "influenteaza": "r9670",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14556,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9673",
+    "descriere_scurta": "SI module identifier Sensor Module channel 1",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza identificatorului de nod al Sensor Module utilizat de primul canal de monitorizare. Verifica integritatea hardware in configuratia Safety Integrated.",
+      "influenteaza": "r9670, r9674",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14557,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9674",
+    "descriere_scurta": "SI module identifier Sensor Module channel 2",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza identificatorului de nod al Sensor Module utilizat de al doilea canal de monitorizare. Asigura verificarea integritatii redundantei in sistemul Safety Integrated.",
+      "influenteaza": "r9673",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14558,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9675",
+    "descriere_scurta": "SI module identifier sensor channel 1",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza numarului de serie al encoderului utilizat de primul canal de monitorizare. Permite verificarea identitatii encoderului in configuratia Safety Integrated.",
+      "influenteaza": "r9676",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14559,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9676",
+    "descriere_scurta": "SI module identifier sensor channel 2",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza CRC-ul calculat pe baza numarului de serie al encoderului utilizat de al doilea canal de monitorizare. Verificarea redundantei encoderelor in sistemul Safety Integrated.",
+      "influenteaza": "r9675",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14568,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9713",
+    "descriere_scurta": "SI Motion diagnostics position actual value load side",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza valorile reale de pozitie ale sarcinii pentru ambele canale de monitorizare si diferentele dintre ele. Permite diagnosticarea preciziei si coerentei valorilor de pozitie sigura in functia SI Motion.",
+      "influenteaza": "r9712",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14570,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9712",
+    "descriere_scurta": "SI motion diagnostics position actual value on the actuator side",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza valoarea reala de pozitie pe partea actuatorului pentru functiile de monitorizare a miscarii pe Control Unit. Permite diagnosticarea pozitiei sigure a axei pe partea motorului.",
+      "influenteaza": "r9713",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14572,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9732",
+    "descriere_scurta": "SI Motion velocity resolution",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza rezolutia vitezei pentru functiile de monitorizare sigura a miscarii. Indexul 0 arata rezolutia actuala a vitezei sigure pe partea de sarcina, indexul 1 rezolutia minima bazata pe precizia encoderului.",
+      "influenteaza": "r9731, r9730",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14575,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9727",
+    "descriere_scurta": "SI Motion user agreement inside the drive",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea interna a acordului utilizatorului. Valoarea 0 indica acord neutrus, valoarea AC hex indica acordul utilizatorului setat, necesar pentru activarea functiei SI Motion.",
+      "influenteaza": "r9741",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14577,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9728",
+    "descriere_scurta": "SI Motion actual checksum SI parameters",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza suma de control actuala a parametrilor SI verificati pentru functiile de monitorizare a miscarii pe Control Unit. Aceasta valoare trebuie sa corespunda cu suma de control de referinta din p9399.",
+      "influenteaza": "p9399",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14578,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9730",
+    "descriere_scurta": "SI Motion Safe maximum velocity",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza viteza maxima sigura permisa pe partea de sarcina pentru functiile de monitorizare sigura a miscarii. Viteze de sarcina mai mari decat aceasta valoare nu mai pot fi detectate corect de encoderele sigure.",
+      "influenteaza": "r9731, r9732",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 14579,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9731",
+    "descriere_scurta": "SI Motion safe position accuracy",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza precizia de pozitie sigura pe partea de sarcina realizabila ca maxim prin senzorizarea valorilor reale. In cazul sistemului cu doi encoderi, se afiseaza precizia encoderului mai slab.",
+      "influenteaza": "r9730, r9732",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14584,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9741",
+    "descriere_scurta": "SI Motion user agreement inside the drive MM",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea interna a acordului utilizatorului pe Motor Module. Valoarea AC hex indica acordul setat; corespunzator r9727 de pe Control Unit dar specific Motor Module.",
+      "influenteaza": "r9727",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14587,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9756",
+    "descriere_scurta": "SI message time removed in days",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza durata relativa de rulare a sistemului in zile la momentul retragerii mesajului de siguranta. Permite urmarirea istoricului evenimentelor de siguranta in timp.",
+      "influenteaza": "r9744",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14588,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9744",
+    "descriere_scurta": "SI message buffer changes, counter",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza modificarile bufferului de mesaje de siguranta. Contorul este incrementat la fiecare modificare a bufferului de mesaje SI, permitand detectia schimbarilor de stare de siguranta.",
+      "influenteaza": "r9756",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14597,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9768",
+    "descriere_scurta": "SI PROFIsafe receive control words (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza telegrama PROFIsafe receptionata pe Control Unit pe 8 indecsi corespunzand cuvintelor PZD 1-8. Permite diagnosticarea datelor de siguranta primite prin interfata PROFIsafe.",
+      "influenteaza": "r9772",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14598,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9771",
+    "descriere_scurta": "SI common functions (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza functiile de monitorizare Safety Integrated suportate pe ambele canale de monitorizare, determinate de Control Unit. Permite verificarea capabilitatilor de siguranta ale configuratiei curente.",
+      "influenteaza": "r9871",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14599,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9871",
+    "descriere_scurta": "SI common functions (Motor Module",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza functiile de monitorizare Safety Integrated suportate pe ambele canale, determinate de Motor Module. Corespunde r9771 dar specific Motor Module; ambele trebuie verificate pentru capabilitatile complete de siguranta.",
+      "influenteaza": "r9771",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14602,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9773",
+    "descriere_scurta": "SI status (Control Unit + Hydraulic Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea Safety Integrated pe antrenament pentru combinatia Control Unit si Hydraulic Module. Bitii cuvantului de stare reflecta starea functionalitatilor de siguranta active.",
+      "influenteaza": "r9772",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14603,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9793",
+    "descriere_scurta": "SI diagnostics component replacement",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul componentei pentru primele 10 componente de siguranta inlocuite. Permite urmarirea inlocuirilor de componente relevante pentru siguranta in scopul mentinerii conformitatii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14604,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9776",
+    "descriere_scurta": "SI diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Parametru utilizat pentru diagnosticarea sistemului Safety Integrated. Afiseaza informatii de diagnosticare interne ale functiei SI care pot fi utilizate la investigarea problemelor de siguranta.",
+      "influenteaza": "r9773, r9772",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14605,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9880",
+    "descriere_scurta": "SI monitoring clock cycle (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza ciclul de ceas al functiilor Safety Integrated Basic pe Motor Module. Aceasta valoare este esentiala pentru sincronizarea corecta a monitorizarii intre Control Unit si Motor Module.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14608,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9787",
+    "descriere_scurta": "SI Motion diagnostics sensorless velocity deviation",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza deviatia actuala de viteza pentru senzorizarea valorilor reale fara encoder. Calculata la setarea p9585/p9385, valoarea indica precizia realizabila a vitezei sigure fara encoder.",
+      "influenteaza": "r9785",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14611,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9898",
+    "descriere_scurta": "SI actual checksum SI parameters (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza suma de control actuala a parametrilor Safety Integrated verificati pe Motor Module. Trebuie sa corespunda cu suma de control de referinta pentru validarea configuratiei de siguranta.",
+      "influenteaza": "p9399",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14622,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9625",
+    "descriere_scurta": "SI HLA shutoff valve wait time (CU)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpii de intarziere pentru comutarea ventilului de inchidere in aplicatii hidraulice la nivelul Control Unit. Indexul 0 este pentru activare, indexul 1 pentru dezactivare; valorile sunt limitate la 2000 ms.",
+      "influenteaza": "p9825",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14634,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9772",
+    "descriere_scurta": "SI status (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea Safety Integrated pe Control Unit. Bitii cuvantului de stare reflecta starea actuala a tuturor functiilor de siguranta active pe Control Unit.",
+      "influenteaza": "r9773, r9771",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14636,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9870",
+    "descriere_scurta": "SI version drive-integrated safety function (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza versiunea Safety Integrated a functiei de siguranta integrate pe Motor Module pe 4 indecsi (major, minor, baselevel/patch, hotfix). Permite verificarea versiunii de firmware de siguranta.",
+      "influenteaza": "r9890",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14641,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9900",
+    "descriere_scurta": "Actual topology number of indices",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza numarul de indecsi ai topologiei actuale DRIVE-CLiQ. Aceasta valoare indica numarul de componente detectate in topologia hardware reala a sistemului.",
+      "influenteaza": "p9902",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14643,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9902",
+    "descriere_scurta": "Target topology number of indices",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de indecsi ai topologiei tinta DRIVE-CLiQ. Defineste configuratia hardware asteptata; nepotrivirea cu topologia actuala (r9900) genereaza alarme de topologie.",
+      "influenteaza": "r9900",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 14656,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9926",
+    "descriere_scurta": "Firmware check status",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea verificarii firmware-ului la pornirea sistemului. Valorile posibile: 0=neverificat, 1=verificare in desfasurare, 2=verificare finalizata cu succes, 3=verificare cu eroare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14664,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9943",
+    "descriere_scurta": "DRIVE-CLiQ detailed diagn. individual connection error counter",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza erorile de conexiune ale conexiunii individuale DRIVE-CLiQ aparute in intervalul de timp (p9939). Diagnosticarea detaliata se activeaza prin p9938 > 0 si se selecteaza prin p9942.",
+      "influenteaza": "p9938, p9939, p9942",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14665,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9981",
+    "descriere_scurta": "Sampling times utilization measured",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza utilizarile masurate pentru timpii de esantionare activi. Perechile de indecsi arata utilizarea neta si totala pentru fiecare ciclu de esantionare; valorile ridicate indica supraincarcarea procesorului.",
+      "influenteaza": "r9979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14666,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9979",
+    "descriere_scurta": "Sampling time with largest total utilization",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpul de esantionare cu cea mai mare utilizare totala a procesorului. Util pentru identificarea ciclului de calcul cel mai solicitat si optimizarea parametrilor de timp ai sistemului de control.",
+      "influenteaza": "r9981",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14669,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10000",
+    "descriere_scurta": "SI TM54F communication clock cycle",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza ciclul de comunicatie de siguranta cu care TM54F comunica cu un antrenament. Trebuie sa corespunda cu ciclul de monitorizare de siguranta al antrenamentului; TM54F suporta un singur ciclu pentru toate antrenamentele.",
+      "influenteaza": "r10015, p10010",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14685,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10014",
+    "descriere_scurta": "SI TM54F Motor/Hydraulic Module Node Identifier Word 3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza identificatorul de nod (cuvantul 3, bitii 64-95) pentru Motor/Hydraulic Module-urile conectate la TM54F. Fiecare index corespunde unui antrenament din cele 6 posibile.",
+      "influenteaza": "p10012",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14686,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10012",
+    "descriere_scurta": "SI TM54F Motor/Hydraulic Module Node Identifier Word 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza identificatorul de nod (cuvantul 1, bitii 0-31) pentru Motor/Hydraulic Module-urile conectate la TM54F. Impreuna cu p10013 si p10014 formeaza identificatorul complet de 96 biti al nodului.",
+      "influenteaza": "p10014",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14688,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10015",
+    "descriere_scurta": "SI TM54F sampling time",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza timpul de esantionare activ al TM54F. In acest ciclu sunt evaluate F-DI-urile debounced si sunt controlate F-DO-urile; corespunde celui mai mic ciclu de comunicatie introdus in p10000.",
+      "influenteaza": "p10000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14703,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10021",
+    "descriere_scurta": "SI TM54F Emergency Stop stop response",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza reactia de oprire pentru grupul de antrenamente la Oprire de Urgenta prin TM54F. Valori posibile: 0=STO, 1=SS1, 2=SS2; configurat pe 4 indecsi corespunzand celor 4 grupuri de antrenamente.",
+      "influenteaza": "p10000, p10010",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 14713,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10049",
+    "descriere_scurta": "SI Motion F-DI monitoring status (processor 1)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea de monitorizare a intrarilor digitale fail-safe (F-DI) utilizate de functiile Safety Integrated pe procesorul 1. Permite diagnosticarea starii intrarilor de siguranta.",
+      "influenteaza": "r10149",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14715,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10151",
+    "descriere_scurta": "SI Motion digital inputs status (processor 2)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire BICO starea debounced monocanal a intrarilor digitale DI 17, DI 19 si DI 21 pe procesorul 2. Permite accesul la starea intrarilor digitale de siguranta ale celui de-al doilea procesor.",
+      "influenteaza": "r10049",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 14717,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10054",
+    "descriere_scurta": "SI TM54F failsafe events active",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza evenimentele care duc la transmiterea semnalelor fail-safe catre toate antrenamentele atribuite TM54F. Permite diagnosticarea cauzelor care activeaza starea fail-safe a TM54F.",
+      "influenteaza": "p10000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14718,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10010",
+    "descriere_scurta": "SI TM54F drive object assignment",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul obiectului de antrenament pentru fiecare antrenament disponibil conectat la TM54F. Fiecare index (0-5) reprezinta unul din cele 6 antrenamente controlabile prin TM54F.",
+      "influenteaza": "p10000",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 14744,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10149",
+    "descriere_scurta": "SI Motion F-DI monitoring status (processor 2)",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea de monitorizare a intrarilor digitale fail-safe (F-DI) pe procesorul 2. Completeaza r10049 pentru monitorizarea completa a intrarilor de siguranta in sistemul redundant.",
+      "influenteaza": "r10049",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14758,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10231",
+    "descriere_scurta": "SI Motion SBT control word diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza bitii de diagnosticare ai cuvantului de control pentru testul de frana sigura (SBT - Safe Brake Test). Permite monitorizarea si diagnosticarea procesului de testare a franei sigure.",
+      "influenteaza": "r10240, r10241",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14761,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10240",
+    "descriere_scurta": "SI Motion SBT test torque diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza cuplul maxim de test efectiv pe partea motorului pentru testul de frana sigura (SBT). Aceasta valoare este utilizata in evaluarea rezultatelor testului de frana.",
+      "influenteaza": "r10241, r10242",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14763,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10241",
+    "descriere_scurta": "SI Motion SBT load torque diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza cuplul de sarcina la initierea testului de frana sigura (SBT). Aceasta valoare reflecta cuplul disponibil la antrenament la momentul inceperii testului de frana.",
+      "influenteaza": "r10240, r10242",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14765,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10242",
+    "descriere_scurta": "SI Motion SBT state diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza starea actuala a testului de frana sigura (SBT). Valorile de stare (0-16) indica progresul procedurii de testare a franei si pot fi utilizate la diagnosticarea problemelor SBT.",
+      "influenteaza": "r10231, r10240",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 14766,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10251",
+    "descriere_scurta": "SI Safety Control Channel control word S_STW1B diagnostics /",
+    "GENERATED": {
+      "explicatie": "r=read-only. Afiseaza si furnizeaza ca iesire BICO bitii de diagnosticare ai cuvantului de control S_STW1B al canalului de control de siguranta. Permite diagnosticarea comenzilor de siguranta primite.",
+      "influenteaza": "r9768",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15970,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0108",
+    "descriere_scurta": "Drive objects function module",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Inregistreaza modulele functionale ale unui obiect de antrenament existent la fiecare index. Pentru Control Unit (Index 0) sunt disponibili biti pentru blocuri de functii libere, CAN, COMM BOARD si PROFINET.",
+      "influenteaza": "p0101, p0107",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15971,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2196",
+    "descriere_scurta": "Torque utilization scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de scalare pentru afisajul de utilizare al cuplului (r0033). Permite calibrarea afisajului procentual al utilizarii cuplului in raport cu o referinta definita de utilizator.",
+      "influenteaza": "r0033",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15972,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0103",
+    "descriere_scurta": "Application-specific view",
+    "GENERATED": {
+      "explicatie": "r=read-only. Inregistreaza vizualizarea specifica aplicatiei a unui obiect de antrenament existent la fiecare index. Parametrul nu poate fi modificat si reflecta configuratia hardware a dispozitivului.",
+      "influenteaza": "p0101",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15973,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0121",
+    "descriere_scurta": "Power unit component number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza setul de date al unitatii de putere la o unitate de putere fizica folosind numarul unic de componenta atribuit la parametrizarea topologiei. Pot fi introduse numai numere corespunzatoare unitatilor de putere.",
+      "influenteaza": "p0131",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15974,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0124",
+    "descriere_scurta": "Power unit detection via LED",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Detecteaza unitatea de putere asignata acestui antrenament si set de date prin aprinderea LED-ului de identificare. Util pentru identificarea fizica a componentelor in tablouri cu mai multe module.",
+      "influenteaza": "p0121",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15975,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0125",
+    "descriere_scurta": "Activate/de-activate power unit components",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza activarea sau dezactivarea unei componente unitati de putere. Dezactivarea componentei permite scoaterea din functiune a unui modul de putere fara a modifica topologia configurata.",
+      "influenteaza": "p0121, p0124",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15976,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0131",
+    "descriere_scurta": "Motor component number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza setul de date al motorului la un motor fizic folosind numarul unic de componenta atribuit la parametrizarea topologiei. Pot fi introduse numai numere corespunzatoare motoarelor.",
+      "influenteaza": "p0121, p0186",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15977,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0133",
+    "descriere_scurta": "Motor configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza motorul la punerea in functiune a motorului. Bitii acestui parametru definesc configuratia si optiunile de comisionare ale motorului, inclusiv directia de rotatie si tipul de identificare.",
+      "influenteaza": "p0131",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15978,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0141",
+    "descriere_scurta": "VSM component number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza setul de date VSM la un modul VSM fizic folosind numarul unic de componenta. Configurarea corecta este necesara pentru evaluarea semnalelor de tensiune de la VSM.",
+      "influenteaza": "p3665",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15979,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0142",
+    "descriere_scurta": "Encoder component number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza setul de date encoder la un encoder fizic folosind numarul unic de componenta atribuit la parametrizarea topologiei. Pot fi introduse numai numere corespunzatoare encoderelor.",
+      "influenteaza": "p0188",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15980,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0144",
+    "descriere_scurta": "Voltage Sensing Module detection via LED",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Detecteaza Voltage Sensing Module (VSM) asignat acestei alimentari (infeed) prin aprinderea LED-ului. Util pentru identificarea fizica a VSM in tablouri cu mai multe module.",
+      "influenteaza": "p0141",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15981,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0186",
+    "descriere_scurta": "Motor Data Sets (MDS) number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza fiecarui Drive Data Set (index) Motor Data Set-ul corespunzator. Valoarea parametrului indica numarul setului de date al motorului atribuit si permite configurarea multi-set pentru comutarea motoarelor.",
+      "influenteaza": "p0131, p0188",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15982,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0188",
+    "descriere_scurta": "Encoder 2 encoder data set number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza fiecarui drive data set (index) setul de date encoder corespunzator pentru encoderul 2. Valoarea indica numarul setului de date encoder utilizat ca al doilea encoder in sistemele cu encodere multiple.",
+      "influenteaza": "p0142, p0186",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15983,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0201",
+    "descriere_scurta": "Power unit code number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de cod al unitatii de putere utilizate, preluat din r0200 la prima punere in functiune. Confirma recunoasterea unitatii de putere si trebuie sa corespunda cu codul afisa in r0200.",
+      "influenteaza": "r0200, r0207",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15984,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0206",
+    "descriere_scurta": "Valve transition point flow rate",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza debitul la punctul de tranzitie al ventilului hidraulic. Aceasta valoare defineste punctul de comutatare in caracteristica de curgere a ventilului servo hidraulic.",
+      "influenteaza": "p0207",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15985,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0207",
+    "descriere_scurta": "Valve transition point voltage",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tensiunea la punctul de tranzitie al ventilului hidraulic. Defineste tensiunea de comanda corespunzatoare punctului de comutatare al caracteristicii ventilului.",
+      "influenteaza": "p0206",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 15987,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0209",
+    "descriere_scurta": "Valve rated pressure drop",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza caderea de presiune nominala per muchie de control a ventilului hidraulic. Valoarea corecta este necesara pentru calculul corectat al debitul ventilului in functie de presiunea sistemului.",
+      "influenteaza": "p0206",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15988,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0216",
+    "descriere_scurta": "Valve natural frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa naturala a ventilului hidraulic utilizata in modelul dinamic al sistemului de reglare hidraulic. Valoarea influenteaza filtrul de compensare a dinamicii ventilului.",
+      "influenteaza": "p0232",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15989,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0218",
+    "descriere_scurta": "Cylinder safety configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia circuitului de siguranta al cilindrului hidraulic. Bitii parametrului definesc functionalitatile de siguranta specifice configuratiei de actionare hidraulica.",
+      "influenteaza": "p0232",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15991,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0232",
+    "descriere_scurta": "Valve monitoring time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de monitorizare al ventilului hidraulic. Daca ventilul nu raspunde in acest interval la o comanda, se genereaza o alarma sau defect de monitorizare al ventilului.",
+      "influenteaza": "p0216, p0218",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 15992,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0240",
+    "descriere_scurta": "Pressure sensor A reference value at 10 V",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea de referinta a presiunii pentru senzorul A la tensiunea maxima de 10 V. Defineste corespondenta tensiune-presiune si permite calibrarea senzorului de presiune al cilindrului parte A.",
+      "influenteaza": "p0244",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15993,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0244",
+    "descriere_scurta": "Pressure sensor P reference value at 10 V",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea de referinta a presiunii sistemului (sensor P) la tensiunea maxima de 10 V. Calibreaza senzorul de presiune al sistemului hidraulic pentru masurarea corecta a presiunii de alimentare.",
+      "influenteaza": "p0240",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 15994,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0254",
+    "descriere_scurta": "Operating hours counter power unit fan inside the converter",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Afiseaza orele de functionare ale ventilatorului intern al unitatii de putere. Poate fi resetat la 0 dupa inlocuirea ventilatorului; util pentru planificarea mentenantei preventive.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 15995,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0304",
+    "descriere_scurta": "Rated motor voltage",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tensiunea nominala a motorului conform placutei de identificare. Parametrul este esential pentru calculul corectat al valorilor motorului si al functiilor de protectie la supratensiune.",
+      "influenteaza": "p0305, p0307",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15996,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0306",
+    "descriere_scurta": "Number of motors connected in parallel",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de motoare operate in paralel cu un singur set de date motor. Pe baza numarului introdus, se calculeaza intern un motor echivalent; rezistentele si inductantele trebuie introduse pentru un singur motor.",
+      "influenteaza": "p0305, p0304",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15997,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0308",
+    "descriere_scurta": "Rated motor power factor",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de putere nominal al motorului (cos phi) din placuta de identificare. La valoarea 0.000 factorul de putere este calculat intern si afisat in r0332.",
+      "influenteaza": "p0307, p0309",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15998,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0309",
+    "descriere_scurta": "Rated motor efficiency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza randamentul nominal al motorului din placuta de identificare. La valoarea 0.0 randamentul este calculat intern si afisat in r0332; influenteaza modelul termic al motorului.",
+      "influenteaza": "p0308, p0307",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 15999,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0310",
+    "descriere_scurta": "Cylinder piston diameter",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza diametrul pistonului cilindrului hidraulic. Aceasta valoare este utilizata la calculul ariei active a pistonului si al fortei hidraulice in sistemele de actionare hidraulica.",
+      "influenteaza": "p0311, p0313",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16000,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0311",
+    "descriere_scurta": "Cylinder piston rod diameter A side",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza diametrul tijei pistonului pe partea A a cilindrului hidraulic. Impreuna cu p0310 determina aria activa pe partea A utilizata la calculul fortei si vitezei.",
+      "influenteaza": "p0310, p0312",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16001,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0312",
+    "descriere_scurta": "Cylinder piston rod diameter B side",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza diametrul tijei pistonului pe partea B a cilindrului hidraulic. Influenteaza calculul ariei active pe partea B si asimetria fortei intre cursele de avans si retragere.",
+      "influenteaza": "p0310, p0311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16002,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0313",
+    "descriere_scurta": "Cylinder piston stroke",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza cursa pistonului cilindrului hidraulic. Aceasta valoare este utilizata la calculul volumului cilindrului si al limitelor de pozitie in sistemul de control hidraulic.",
+      "influenteaza": "p0310, p0315",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16003,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0315",
+    "descriere_scurta": "Cylinder dead volume B side",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza volumul mort pe partea B a cilindrului hidraulic. Volumul mort influenteaza rigiditatea hidraulica a sistemului si comportamentul dinamic al axei hidraulice.",
+      "influenteaza": "p0313",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16004,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0318",
+    "descriere_scurta": "Motor stall current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul de blocare pentru motoarele sincrone (p0300 = 2xx). Reprezinta curentul la viteza zero care genereaza cuplul maxim static, esential pentru configurarea limitelor de curent.",
+      "influenteaza": "p0319, p0323",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16005,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0319",
+    "descriere_scurta": "Motor stall torque",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza cuplul de blocare (stall torque) pentru motoarele sincrone rotative (p0300 = 2xx). Reprezinta cuplul maxim disponibil la viteza zero, utilizat ca referinta pentru configurarea limitelor de cuplu.",
+      "influenteaza": "p0318, p0323",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16006,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0323",
+    "descriere_scurta": "Maximum motor current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul maxim permis al motorului, de exemplu curentul de demagnetizare pentru motoarele sincrone. Valoarea limiteaza curentul maxim in orice conditii si protejeaza motorul impotriva supracurentilor.",
+      "influenteaza": "p0318, p0319",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 16007,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0324",
+    "descriere_scurta": "Winding maximum speed",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza viteza maxima pentru infasurarea motorului. La calculul vitezei maxime (p1082) se utilizeaza minimul dintre p0324 si p0532 atunci cand ambele sunt diferite de zero.",
+      "influenteaza": "p1082, p0322",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 16008,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0354",
+    "descriere_scurta": "Axis natural frequency B side",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa naturala a axei hidraulice pe partea B. Impreuna cu parametrul de amortizare influenteaza modelul dinamic al sistemului de reglare hidraulica pe aceasta parte a cilindrului.",
+      "influenteaza": "p0350",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16009,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0329",
+    "descriere_scurta": "Motor pole position identification current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul pentru rutina de identificare a pozitiei polului (p1980 = 1). Pentru tehnica in doua etape (p1980 = 4), este curentul din etapa a 2-a; curentul din etapa 1 se seteaza in p0325.",
+      "influenteaza": "p1980, p0325",
+      "categorie": "Motor"
+    }
+  }
+]

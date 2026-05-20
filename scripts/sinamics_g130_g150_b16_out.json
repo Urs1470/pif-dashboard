@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 26957,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1456",
+    "descriere_scurta": "Speed controller P gain adaptation lower starting point",
+    "GENERATED": {
+      "explicatie": "p - Seteaza punctul inferior de start al intervalului de adaptare suplimentara a castigului P al regulatorului de viteza. Valoarea este exprimata in procente si se refera la sursa semnalului de adaptare selectata.",
+      "influenteaza": "p1457, p1458, p1460",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26958,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1457",
+    "descriere_scurta": "Speed controller P gain adaptation upper starting point",
+    "GENERATED": {
+      "explicatie": "p - Seteaza punctul superior de start al intervalului de adaptare suplimentara a castigului P al regulatorului de viteza. Valoarea este exprimata in procente si se refera la sursa semnalului de adaptare selectata.",
+      "influenteaza": "p1456, p1458, p1460",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26959,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1458",
+    "descriere_scurta": "Adaptation factor, lower",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de adaptare inainte de intervalul de adaptare (0 % ... p1456) pentru a adapta suplimentar castigul P al regulatorului de viteza/pozitie. Valoarea implicita este 100%, adica fara modificare.",
+      "influenteaza": "p1456, p1457, p1460",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26960,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1461",
+    "descriere_scurta": "Speed controller Kp adaptation speed, upper scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul P al regulatorului de viteza pentru intervalul superior de adaptare (deasupra p1465). Valoarea este exprimata ca procent din castigul P pentru intervalul inferior de adaptare (% raportat la p1460).",
+      "influenteaza": "p1460, p1465, p1463",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26961,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1463",
+    "descriere_scurta": "Speed controller Tn adaptation speed, upper scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de integrare al regulatorului de viteza dupa intervalul de adaptare (deasupra p1465). Valoarea este exprimata ca procent din timpul de integrare pentru intervalul inferior de adaptare (% raportat la p1462).",
+      "influenteaza": "p1462, p1465, p1461",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26962,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1464",
+    "descriere_scurta": "Speed controller adaptation speed, lower",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza inferioara de adaptare a regulatorului de viteza in rpm. Sub aceasta viteza nu se aplica nicio adaptare a parametrilor regulatorului.",
+      "influenteaza": "p1460, p1462, p1465",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26963,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1466",
+    "descriere_scurta": "Speed controller P-gain scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea castigului P al regulatorului de viteza. Permite scalarea dinamica a castigului P efectiv (inclusiv adaptarile) din surse externe.",
+      "influenteaza": "p1460, p1461",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26964,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1470",
+    "descriere_scurta": "Speed controller encoderless operation P-gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al regulatorului de viteza pentru modul de functionare fara encoder (SLVC). Valoarea influenteaza comportamentul dinamic al reglarii de viteza la viteze mici fara senzor.",
+      "influenteaza": "p1472, p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26965,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1472",
+    "descriere_scurta": "Speed controller encoderless operation integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de integrare al regulatorului de viteza pentru modul de functionare fara encoder. Influenteaza capacitatea de eliminare a erorii statice in regimul SLVC.",
+      "influenteaza": "p1470, p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26966,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1475",
+    "descriere_scurta": "Speed controller torque setting value for motor holding brake",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru valoarea de consemn a cuplului la pornire cu frana de mentinere a motorului. Asigura o tranzitie lina fara soc la ridicarea franei.",
+      "influenteaza": "p1476, p1520, p1521",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26967,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1476",
+    "descriere_scurta": "Speed controller hold integrator",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru blocarea integratorului regulatorului de viteza. Cand semnalul este activ (1), integratorul este oprit si mentine valoarea curenta, util la tranzitii de control.",
+      "influenteaza": "p1475, p1479",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26968,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1479",
+    "descriere_scurta": "Speed controller integrator setting value scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea valorii de initializare a integratorului (p1478) al regulatorului de viteza. Permite o initializare controlata a integratorului din sursa externa.",
+      "influenteaza": "p1476, p1478",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26969,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1487",
+    "descriere_scurta": "Droop compensation torque scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare pentru cuplul de compensare in calculul droop. Functia droop permite partajarea sarcinii intre mai multe convertoare care antreneaza aceeasi sarcina.",
+      "influenteaza": "p1488, p1489",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26970,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1488",
+    "descriere_scurta": "Droop input source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de reactie pentru functia droop. Valoarea aleasa determina ce semnal este folosit ca feedback pentru calculul compensarii droop in reglarea de viteza.",
+      "influenteaza": "p1487, p1489",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26971,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1489",
+    "descriere_scurta": "Droop feedback scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare pentru semnalul de reactie droop. Ajustarea acestui parametru determina proportia cu care deviatia de cuplu influenteaza consemnul de viteza in cadrul functiei droop.",
+      "influenteaza": "p1487, p1488",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26972,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1495",
+    "descriere_scurta": "Acceleration pre-control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru precomanda de acceleratie a regulatorului de viteza/pozitie. Precomanda imbunatateste raspunsul dinamic la variatii rapide ale consemnului de viteza.",
+      "influenteaza": "r1518, p1497, p1499",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26973,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1518",
+    "descriere_scurta": "= acceleration (% of p2007) / 100 % * (p2007 * 60 s) / p0311 * r0345 / 1 s * r0333",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza scalarea pentru precomanda de acceleratie a regulatorului de viteza/pozitie. Valoarea este calculata din parametrii motorului si ai rampei de acceleratie.",
+      "influenteaza": "p1495, p1497",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26974,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1497",
+    "descriere_scurta": "Moment of inertia, scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea momentului de inertie folosit in precomanda de acceleratie. Permite ajustarea dinamica a momentului de inertie din sursa externa.",
+      "influenteaza": "p1495, r1518",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26975,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1499",
+    "descriere_scurta": "Accelerating for torque control, scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea integratorului de acceleratie la viteze mici, utilizata exclusiv in controlul de cuplu fara encoder (SLVC). Valoarea este exprimata in procente.",
+      "influenteaza": "p1495, p1497",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26976,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1500",
+    "descriere_scurta": "Macro Connector Inputs (CI) for torque setpoints",
+    "GENERATED": {
+      "explicatie": "p - Ruleaza fisierele macro corespunzatoare pentru interconectarea intrarilor conector (CI) ale consemnelor de cuplu. Fisierul macro selectat trebuie sa existe pe cardul de memorie al drive-ului.",
+      "influenteaza": "p1503, p1512, p1513",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26977,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1503",
+    "descriere_scurta": "Torque setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru consemnul de cuplu in modul de control al cuplului. Permite interconectarea cu semnale interne sau externe pentru reglarea directa a cuplului motorului.",
+      "influenteaza": "p1512, p1513, p1520, p1521",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26978,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1512",
+    "descriere_scurta": "Supplementary torque 1 scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea cuplului suplimentar 1, care se adauga la consemnul principal de cuplu. Permite ajustarea dinamica a contributiei cuplului suplimentar 1.",
+      "influenteaza": "p1503, p1513, p1514",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26979,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1513",
+    "descriere_scurta": "Supplementary torque 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru cuplul suplimentar 2, care se adauga la consemnul principal de cuplu. Utilizat pentru compensari suplimentare de cuplu in aplicatii complexe.",
+      "influenteaza": "p1514, p1503, p1512",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26980,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1514",
+    "descriere_scurta": "Supplementary torque 2 scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare fix pentru cuplul suplimentar 2 (p1513). Valoarea 100% corespunde scalarii nominale; valorile negative inverseaza sensul contributiei.",
+      "influenteaza": "p1513, p1503",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26981,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1518",
+    "descriere_scurta": "+ r1515).",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire a cuplului de acceleratie. O valoare mai mare reduce oscilatiile la schimbarile bruste ale consemnului, dar reduce si viteza de raspuns a sistemului.",
+      "influenteaza": "p1495, p1503",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26982,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1520",
+    "descriere_scurta": "Torque limit upper",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita superioara fixa de cuplu in Nm. Motorul nu va putea furniza un cuplu mai mare decat aceasta valoare, protejand sarcina si mecanismul antrenat.",
+      "influenteaza": "p1521, p1522, p1524, p1528",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26983,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1521",
+    "descriere_scurta": "Torque limit lower",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita inferioara fixa de cuplu in Nm (valoare negativa pentru functionare generatoare). Limiteaza cuplul de frana aplicat de motor, protejand sarcina.",
+      "influenteaza": "p1520, p1523, p1525",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26984,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1522",
+    "descriere_scurta": "Torque limit upper",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru limita superioara de cuplu, implicit legata la p1520. Permite ca limita superioara de cuplu sa fie furnizata dinamic dintr-o sursa externa sau parametru intern.",
+      "influenteaza": "p1520, p1524, p1528",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26985,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1524",
+    "descriere_scurta": "Torque limit upper scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare fix pentru limita superioara de cuplu (p1522). Valoarea 100% corespunde valorii nemodificate; poate fi folosit pentru ajustari fine ale limitarii.",
+      "influenteaza": "p1522, p1528",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26986,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1525",
+    "descriere_scurta": "Torque limit lower scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare fix pentru limita inferioara de cuplu. Permite ajustarea proportionala a limitei de cuplu minima fara a modifica valoarea de baza.",
+      "influenteaza": "p1521, p1523",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26987,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1528",
+    "descriere_scurta": "Torque limit upper scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea limitei superioare de cuplu din p1522. Atentie: valorile negative ale semnalului pot cauza accelerarea necontrolata a motorului daca p1400.4 = 0.",
+      "influenteaza": "p1522, p1524",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26988,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1530",
+    "descriere_scurta": "Power limit motoring",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de putere in kW in modul motor (motoring). Convertorul reduce cuplul automat daca puterea absorbita depaseste aceasta limita, protejand sursa de alimentare.",
+      "influenteaza": "p1531, p1555, p1556",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26989,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1536",
+    "descriere_scurta": "Current limit maximum torque-generating current",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limita maxima calculata pentru componenta de curent generatoare de cuplu (Iq). Valoarea rezulta din limitele de curent ale modulului motor si parametrizarea din p0640.",
+      "influenteaza": "r1537, p0640",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26990,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1537",
+    "descriere_scurta": "Current limit minimum torque-generating current",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limita minima calculata pentru componenta de curent generatoare de cuplu (Iq). Valoarea reflecta limitarile impuse de modulul motor in regim regenerativ.",
+      "influenteaza": "r1536, p0640",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26991,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1541",
+    "descriere_scurta": "Torque limit. speed controller lower scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea limitarii inferioare a iesirii regulatorului de viteza. Permite ajustarea dinamica a limitei de cuplu inferioare aplicate la iesirea regulatorului.",
+      "influenteaza": "p1521, p1523, p1554",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26992,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1545",
+    "descriere_scurta": "Activates travel to a fixed stop",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru activarea/dezactivarea functiei de deplasare pana la opritor fix. La valoare 1 functia este activa si cuplul este limitat la o valoare mica pentru a detecta oprirea mecanica.",
+      "influenteaza": "p1520, p1521",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26993,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1547",
+    "descriere_scurta": "Torque limit for speed controller output",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limitele de cuplu aplicate iesirii regulatorului de viteza, atat superioara [0] cat si inferioara [1]. Aceste valori rezulta din combinatia tuturor limitarilor active de cuplu.",
+      "influenteaza": "p1520, p1521, p1522",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26994,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1548",
+    "descriere_scurta": "Stall current limit torque-generating maximum",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limita de curent generator de cuplu calculata prin algoritmul anti-blocare, tinand cont si de limita de curent a modulului motor si p0640. Indexul [0] este limita superioara, [1] inferioara.",
+      "influenteaza": "p0640, r1536",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26995,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1552",
+    "descriere_scurta": "Torque limit upper scaling without offset",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea limitei superioare de cuplu a iesirii regulatorului de viteza, fara a lua in considerare limitele de curent si putere. Permite limitare de cuplu pura.",
+      "influenteaza": "p1554, p1522",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26996,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1554",
+    "descriere_scurta": "Torque limit lower scaling without offset",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru scalarea limitei inferioare de cuplu a iesirii regulatorului de viteza, fara a considera limitele de curent si putere.",
+      "influenteaza": "p1552, p1541",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26997,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1555",
+    "descriere_scurta": "Power limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru limita de putere in regim motor si regenerativ negativ. Permite ca limita de putere sa fie furnizata dinamic dintr-un parametru intern sau sursa externa.",
+      "influenteaza": "p1530, p1531, p1556",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26998,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1556",
+    "descriere_scurta": "Power limit scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare al semnalului sursa pentru limita de putere in regim motor si regenerativ negativ. Valoarea 0 dezactiveaza limitarea de putere.",
+      "influenteaza": "p1555, p1530",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26999,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1569",
+    "descriere_scurta": "Supplementary torque 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru cuplul suplimentar 3, care se adauga la consemnul principal de cuplu. Implicit este conectat la r3841[0], semnal de precomanda a cuplului de acceleratie.",
+      "influenteaza": "p1503, p1512, p1513",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27000,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1570",
+    "descriere_scurta": "Flux setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza consemnul de flux al motorului exprimat ca procent din fluxul nominal. Valoarea 100% corespunde functionarii la flux nominal; reducerea fluxului este utila la viteze mari (defluxare).",
+      "influenteaza": "p1571, p1572, p1580, p1582",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27001,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1571",
+    "descriere_scurta": "Supplementary flux setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa de semnal pentru consemnul de flux suplimentar adaugat la consemnul principal. Permite ajustarea dinamica a fluxului motorului din surse externe.",
+      "influenteaza": "p1570, p1572",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27002,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1572",
+    "descriere_scurta": "Supplementary flux setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea fixa a consemnului de flux suplimentar pentru regulatorul de flux, raportat la fluxul nominal al motorului. Aceasta valoare se adauga la consemnul principal de flux.",
+      "influenteaza": "p1570, p1571",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27003,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1577",
+    "descriere_scurta": "Flux boost adaptation speed, upper",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza superioara de adaptare pentru amplificarea de flux (flux boost). Peste aceasta viteza, fluxul nominal al motorului (100%) este utilizat ca referinta, eliminand amplificarea de flux.",
+      "influenteaza": "p1570, p1580",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27004,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1580",
+    "descriere_scurta": "Efficiency optimization",
+    "GENERATED": {
+      "explicatie": "p - Seteaza nivelul de optimizare a eficientei energetice a motorului. La p1580 = 100%, in mers in gol, fluxul este redus la 50% din valoarea nominala, economisind energie la sarcini partiale.",
+      "influenteaza": "p1570, p1582",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27005,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1582",
+    "descriere_scurta": "Flux setpoint smoothing time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire (filtrare PT1) pentru consemnul de flux. O valoare mai mare reduce oscilatiile dar incetineste raspunsul la modificari ale consemnului de flux.",
+      "influenteaza": "p1570, p1584",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27006,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1584",
+    "descriere_scurta": "Field weakening operation, flux setpoint smoothing time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire a consemnului de flux in zona de defluxare. Permite un comportament diferit de netezire a fluxului in regimul de viteza ridicata (camp slabit).",
+      "influenteaza": "p1582, p1586",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27007,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1586",
+    "descriere_scurta": "Field weakening characteristic, scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea caracteristicii de precomanda pentru inceperea defluxarii. Valori peste 100% decaleaza inceperea defluxarii spre viteze mai mari la sarcini partiale, imbunatatind cuplul disponibil.",
+      "influenteaza": "p1582, p1590",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27008,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1590",
+    "descriere_scurta": "Flux controller P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al regulatorului de flux. O valoare mai mare creste viteza de raspuns a regulatorului de flux, dar poate introduce instabilitate daca este prea mare.",
+      "influenteaza": "p1592, p1596",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27009,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1592",
+    "descriere_scurta": "Flux controller integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de integrare al regulatorului de flux in ms. O valoare mai mica accelereaza eliminarea erorii statice a fluxului, dar poate cauza supraoscilatie.",
+      "influenteaza": "p1590, p1596",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27010,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1593",
+    "descriere_scurta": "Field weakening controller / flux controller output",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza iesirea regulatorului de camp slabit (motor sincron) sau a regulatorului de flux (motor asincron/sincron cu excitatie separata). Indexul [0] este iesirea PI, [1] este iesirea I.",
+      "influenteaza": "p1590, p1592, p1594",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27011,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1594",
+    "descriere_scurta": "Field-weakening controller, P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al regulatorului de defluxare (field weakening) pentru motoarele sincrone cu magneti permanenti. Ajusteaza viteza de raspuns la intrarea in zona de defluxare.",
+      "influenteaza": "p1596, p1590",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27012,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1596",
+    "descriere_scurta": "Field weakening controller integral-action time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de actiune integrala al regulatorului de defluxare. Controleaza viteza cu care regulatorul elimina eroarea statica in zona de functionare cu camp slabit.",
+      "influenteaza": "p1594, p1590",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27013,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1599",
+    "descriere_scurta": "Flux controller, excitation current difference",
+    "GENERATED": {
+      "explicatie": "p - Seteaza diferenta maxima admisibila intre curentul de excitatie real si cel de referinta. In afara acestei benzi, componenta I a regulatorului de curent de excitatie este mentinuta constanta si se comuta un regulator I suplimentar.",
+      "influenteaza": "p1590, p1592, r0384",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27014,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1600",
+    "descriere_scurta": "P flux controller, P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al regulatorului de flux de tip P pentru motoarele sincrone cu excitatie separata. Parametrul se utilizeaza doar pentru aceasta topologie specifica de motor.",
+      "influenteaza": "p1590, p1592",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27015,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1605",
+    "descriere_scurta": "Pulse technique pattern configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia sabloanelor de impulsuri utilizate pentru estimarea continua a pozitiei rotorului prin tehnica de impulsuri. Activarea tehnicii se face prin p1750.",
+      "influenteaza": "p1607, p1750",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27016,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1607",
+    "descriere_scurta": "Pulse technique stimulus",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amplitudinea excitarii (impuls tensiune-timp) pentru tehnica de impulsuri folosita la estimarea continua a pozitiei rotorului. Valoarea este in mVs.",
+      "influenteaza": "p1605, r1608",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27017,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1608",
+    "descriere_scurta": "Pulse technique response",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza raspunsurile de semnal la excitarea prin tehnica de impulsuri, pe mai multi indici (faze R, S, D estimat, Q estimat, componente AC, lungime pointer). Util pentru diagnosticarea estimarii pozitiei rotorului.",
+      "influenteaza": "p1607, p1605",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27018,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1609",
+    "descriere_scurta": "Current setpoint for I/f operation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza consemnul de curent stator pentru functionarea motoarelor sincrone cu excitatie separata in modul I/f (p1300 = 18). Valoarea este in Amperi eficace.",
+      "influenteaza": "p1300, p1612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27019,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1611",
+    "descriere_scurta": "Supplementary accelerating torque (SLVC)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza consemnul dinamic de cuplu pentru plaja de viteze mici in controlul vectorial fara encoder (SLVC). Valoarea este exprimata ca procent din cuplul nominal al motorului (r0333).",
+      "influenteaza": "p1470, p1472, r0333",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27020,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1612",
+    "descriere_scurta": "Current setpoint magnetizing open-loop controlled",
+    "GENERATED": {
+      "explicatie": "p - Seteaza consemnul de curent de magnetizare in modul de functionare in bucla deschisa fara encoder. Valoarea este valida doar in timpul orientarii bazate pe modelul de curent.",
+      "influenteaza": "p1609, p1611",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27021,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1616",
+    "descriere_scurta": "Current setpoint smoothing time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire pentru consemnul de curent/cuplu in plaja de functionare in bucla deschisa la controlul vectorial fara senzor. O valoare mai mare reduce oscilatiile.",
+      "influenteaza": "p1611, p1612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27022,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1619",
+    "descriere_scurta": "Setpoint/actual value tracking threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul pentru urmarirea consemn/valoare reala a curentului stator in directia q a modelului de curent. Controleaza activarea mecanismului de urmarire in regim encoderless.",
+      "influenteaza": "p1612, p1616",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27023,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1621",
+    "descriere_scurta": "Changeover speed, inner cos phi = 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de comutare de la cos phi = 1 interior la cos phi = 1 exterior. Daca valoarea depaseste viteza nominala, se utilizeaza cos phi = 1 interior pe intreaga plaja de viteze.",
+      "influenteaza": "p1622",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27024,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1622",
+    "descriere_scurta": "Field-generating current setpoint smoothing time constant",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire pentru consemnul componentei de curent generatoare de flux. Curentul filtrat este utilizat in calculul factorului de putere cos phi.",
+      "influenteaza": "p1621, p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27025,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1625",
+    "descriere_scurta": "Excitation current setpoint calibration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de castig pentru ponderarea consemnului de curent de excitatie. Permite calibrarea fina a curentului de excitatie de referinta folosit in reglarea fluxului.",
+      "influenteaza": "p1640, r1641",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27026,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1628",
+    "descriere_scurta": "Current model controller, dynamic factor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul dinamic al controlerului de model in modelul de curent. Influenteaza viteza de raspuns a controlului bazat pe modelul de curent in regimul fara encoder.",
+      "influenteaza": "p1629, p1630",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27027,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1629",
+    "descriere_scurta": "Current model controller P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al controlerului de model de curent. Valoarea este presetata automat prin p3900 sau p0340 la finalizarea parametrizarii initiale.",
+      "influenteaza": "p1628, p1630",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27028,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1630",
+    "descriere_scurta": "Current model controller integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de integrare al controlerului de model de curent. Valoarea este presetata automat prin p3900 sau p0340 la finalizarea comisionarii.",
+      "influenteaza": "p1628, p1629",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27029,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1640",
+    "descriere_scurta": "Excitation current actual value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru valoarea reala a curentului de excitatie, utilizata in monitorizarea si reglarea excitarii pentru motoarele sincrone cu excitatie separata.",
+      "influenteaza": "r1641, p1625",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27030,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1641",
+    "descriere_scurta": "Excitation current actual value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea reala citita a curentului de excitatie, provenita din sursa configurata in p1640. Utilizat pentru monitorizarea si diagnosticarea sistemului de excitare.",
+      "influenteaza": "p1640, p1625",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27031,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1643",
+    "descriere_scurta": "Gain factor, minimum excitation current closed-loop control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de castig pentru reglarea curentului minim de excitatie, activ cand curentul de excitatie este sub 75% din p1642. Protejeaza motorul in conditii de excitare insuficienta.",
+      "influenteaza": "p1640, r1641",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27032,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1648",
+    "descriere_scurta": "and r1648.3 are reset at the end of the delay time.",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuvantul de control pentru echipamentul de excitare al motorului sincron cu excitatie separata. Bitii individuali indica starea comenzilor catre convertorul de excitatie.",
+      "influenteaza": "p1640, r1641",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27033,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1653",
+    "descriere_scurta": "Current setpoint torque-generating smoothing time minimum",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp minima de netezire pentru consemnul componentei de curent generatoare de cuplu. Reprezinta limita inferioara a timpului de netezire variabil in functie de viteza.",
+      "influenteaza": "p1654, p1717",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27034,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1654",
+    "descriere_scurta": "Curr. setpoint torque-gen. smoothing time field weakening range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire pentru consemnul componentei de curent generatoare de cuplu in zona de defluxare (viteze mari). Controleaza filtrajul la viteze ridicate.",
+      "influenteaza": "p1653, p1717",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27035,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1656",
+    "descriere_scurta": "Activates current setpoint filter",
+    "GENERATED": {
+      "explicatie": "p - Seteaza activarea/dezactivarea filtrelor pentru consemnul de curent. Fiecare bit corespunde unui filtru specific; activarea filtrelor reduce oscilatiile la frecvente de rezonanta mecanica.",
+      "influenteaza": "p1657, p1662",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27036,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1657",
+    "descriere_scurta": "Current setpoint filter 1 type",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul filtrului 1 de consemn de curent: 1 = filtru trece-jos PT2, 2 = filtru general de ordinul 2 extins. Tipul influenteaza comportamentul filtrului la frecvente de rezonanta.",
+      "influenteaza": "p1658, p1659, p1660, p1661, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27037,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1658",
+    "descriere_scurta": "Current setpoint filter 1 denominator natural frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa naturala a numitorului pentru filtrul 1 de consemn de curent (PT2 sau filtru general). Aceasta frecventa determina punctul de atenuare al filtrului.",
+      "influenteaza": "p1657, p1659, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27038,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1659",
+    "descriere_scurta": "Current setpoint filter 1 denominator damping",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea numitorului pentru filtrul 1 de consemn de curent. Valoarea influenteaza ascurimea filtrului la frecventa naturala stabilita in p1658.",
+      "influenteaza": "p1658, p1657, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27039,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1660",
+    "descriere_scurta": "Current setpoint filter 1 numerator natural frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa naturala a numaratorului pentru filtrul general de ordinul 2 (filtru 1 de consemn de curent). Utilizat impreuna cu p1661 pentru a crea un filtru tip notch.",
+      "influenteaza": "p1661, p1658, p1657",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27040,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1661",
+    "descriere_scurta": "Current setpoint filter 1 numerator damping",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea numaratorului pentru filtrul general de ordinul 2 (filtrul 1 de consemn de curent). Influenteaza caracteristica de atenuare selectiva la frecvente de rezonanta.",
+      "influenteaza": "p1660, p1658, p1657",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27041,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1662",
+    "descriere_scurta": "Current setpoint filter 2 type",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul filtrului 2 de consemn de curent: 1 = filtru trece-jos PT2, 2 = filtru general de ordinul 2. Al doilea filtru poate fi utilizat pentru atenuarea unei a doua frecvente de rezonanta.",
+      "influenteaza": "p1663, p1664, p1665, p1666, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27042,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1663",
+    "descriere_scurta": "Current setpoint filter 2 denominator natural frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa naturala a numitorului pentru filtrul 2 de consemn de curent (PT2 sau filtru general). Determina punctul de atenuare al celui de-al doilea filtru.",
+      "influenteaza": "p1664, p1662, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27043,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1664",
+    "descriere_scurta": "Current setpoint filter 2 denominator damping",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea numitorului pentru filtrul 2 de consemn de curent. Valoarea influenteaza ascurimea filtrului 2 la frecventa naturala definita de p1663.",
+      "influenteaza": "p1663, p1662, p1656",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27044,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1665",
+    "descriere_scurta": "Current setpoint filter 2 numerator natural frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa naturala a numaratorului pentru filtrul general de ordinul 2 (filtrul 2 de consemn de curent). Utilizat pentru crearea unui filtru tip notch la o a doua frecventa de rezonanta.",
+      "influenteaza": "p1666, p1663, p1662",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27045,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1666",
+    "descriere_scurta": "Current setpoint filter 2 numerator damping",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea numaratorului pentru filtrul general de ordinul 2 (filtrul 2 de consemn de curent). Influenteaza caracteristica de atenuare selectiva a celui de-al doilea filtru.",
+      "influenteaza": "p1665, p1663, p1662",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27046,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1703",
+    "descriere_scurta": "Isq current controller pre-control scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea precomenzii dinamice a regulatorului de curent pentru componenta Isq generatoare de cuplu/forta. Ajustarea acestui parametru optimizeaza raspunsul dinamic al reglarii de curent.",
+      "influenteaza": "p1717, p1705",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27047,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1705",
+    "descriere_scurta": "Flux setpoint/actual value tracking threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul pentru urmarirea consemn-valoare reala a precomenzii EMF pentru regulatorul de curent Isq. Controleaza cand se activeaza mecanismul de urmarire a fluxului.",
+      "influenteaza": "p1703, p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27048,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1717",
+    "descriere_scurta": "Current controller integral-action time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de actiune integrala al regulatorului de curent in ms. Aceasta valoare este presetata automat la comisionare si determina viteza de eliminare a erorii statice de curent.",
+      "influenteaza": "p1703, p1726",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27049,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1726",
+    "descriere_scurta": "Quadrature arm decoupling, scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea decuplarii axei in cuadratura a regulatorului de curent. Decuplarea reduce interferenta dintre componentele d si q ale curentului, imbunatatind dinamica reglarii.",
+      "influenteaza": "p1717, p1703",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27050,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1733",
+    "descriere_scurta": "Quadrature-axis voltage setpoint",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza componenta in cuadratura (Uq) a consemnului de tensiune al regulatorului de curent. Indexul [0] este valoarea nefiltrara, [1] este valoarea filtrata cu constanta p0045.",
+      "influenteaza": "p1717, p1726",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27051,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1740",
+    "descriere_scurta": "Gain resonance damping for encoderless closed loop control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul regulatorului de amortizare a rezonantei pentru functionarea in regim de control inchis fara encoder, in domeniul in care se imprima curentul. Reduce oscilatiile mecanice.",
+      "influenteaza": "p1470, p1472",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27052,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1744",
+    "descriere_scurta": "Motor model speed threshold stall detection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de viteza pentru detectarea blocarii motorului in regim encoderless. Daca iesirea regulatorului de adaptare depaseste aceasta diferenta de viteza, bitul 11 din p1408 este setat.",
+      "influenteaza": "p1745, p1408",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27053,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1745",
+    "descriere_scurta": "Motor model error threshold stall detection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de eroare pentru detectarea blocarii motorului. Daca semnalul de eroare (r1746) depaseste acest prag, bitul 12 din cuvantul de stare p1408 este setat.",
+      "influenteaza": "p1744, p1408, r1746",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27054,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1748",
+    "descriere_scurta": "Motor model lower changeover speed n_set -> n_act",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza inferioara pentru tranzitia de la modelul bazat pe consemn la modelul bazat pe valoarea reala in functionare encoderless. Valoarea este un procent din p1749.",
+      "influenteaza": "p1749, p1766",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27055,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1749",
+    "descriere_scurta": "Motor model upper changeover speed n_set -> n_act",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza superioara pentru tranzitia de la controlul in bucla deschisa la cel in bucla inchisa in regim fara senzor. Valoarea este exprimata ca procent din p1755.",
+      "influenteaza": "p1748, p1755, p1766",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27056,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1753",
+    "descriere_scurta": "Motor model changeover speed hysteresis operation with encoder /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza histereza vitezei de comutare a modelului motor pentru functionarea cu encoder de viteza. Histereza previne comutarile frecvente intre modelul de curent si cel de tensiune.",
+      "influenteaza": "p1755, p1748",
+      "categorie": "Motor"
+    }
+  }
+]

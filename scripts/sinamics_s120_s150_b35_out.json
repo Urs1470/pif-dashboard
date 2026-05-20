@@ -1,0 +1,1091 @@
+[
+  {
+    "id": 28023,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8875",
+    "descriere_scurta": "IF2 diagnostics telegram offset PZD receive",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza offsetul in bytes al fiecarui PZD in telegrama de receptie, pana la 10 PZD-uri. Permite verificarea structurii exacte a telegramei receptionate prin interfata 2.",
+      "influenteaza": "r8874, r8876, r8867",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28024,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8876",
+    "descriere_scurta": "IF2 diagnostics telegram offset PZD send",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza offsetul in bytes al fiecarui PZD in telegrama de transmisie, pana la 10 PZD-uri. Util pentru verificarea structurii telegramei trimise si a alinierii corecte a datelor de proces.",
+      "influenteaza": "r8875, r8867, r8853",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28025,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8891",
+    "descriere_scurta": "IF2 PZD2 receive bit-serial",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza iesire binector pentru interconectarea bit-seriala a PZD2 receptionat prin interfata 2. Permite utilizarea bitilor individuali din PZD2 ca semnale de intrare binector in logica BICO.",
+      "influenteaza": "r8892, r8894, r8895",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28026,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8892",
+    "descriere_scurta": "IF2 PZD3 receive bit-serial",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza iesire binector pentru interconectarea bit-seriala a PZD3 receptionat prin interfata 2. Similar cu r8891, permite utilizarea bitilor individuali din PZD3 ca semnale binector.",
+      "influenteaza": "r8891, r8894, r8895",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28027,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8894",
+    "descriere_scurta": "IF2 connector-binector converter binector output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza iesire binector pentru interconectarea bit-seriala a unui cuvant PZD selectat prin p8899[0], receptionat prin interfata 2. Ofera flexibilitate in alegerea cuvantului PZD de convertit.",
+      "influenteaza": "r8891, r8892, r8895, p8899",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28028,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8895",
+    "descriere_scurta": "IF2 connector-binector converter binector output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza iesire binector pentru interconectarea bit-seriala a unui cuvant PZD selectat prin p8899[1], receptionat prin interfata 2. Al doilea canal de convertor connector-binector disponibil.",
+      "influenteaza": "r8891, r8892, r8894, p8899",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28029,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8910",
+    "descriere_scurta": "IE Name of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numele activ al statiei pentru interfata Industrial Ethernet (X127) a Unitatii de Control. Numele statiei este utilizat pentru identificarea dispozitivului in reteaua Ethernet industriala.",
+      "influenteaza": "r8911, r8913, r8915",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28030,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8911",
+    "descriere_scurta": "IE IP Address of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP activa pentru interfata Industrial Ethernet (X127) a Unitatii de Control. Adresa IP este necesara pentru comunicatia pe retea si accesul la serviciile web ale convertorului.",
+      "influenteaza": "r8910, r8913, r8915",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28031,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8913",
+    "descriere_scurta": "IE Subnet Mask of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza masca de subretea activa pentru interfata Industrial Ethernet (X127) a Unitatii de Control. Masca de subretea defineste reteaua locala in care este inclus dispozitivul.",
+      "influenteaza": "r8910, r8911, r8915",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28032,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8915",
+    "descriere_scurta": "IE MAC Address of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa MAC pentru interfata Industrial Ethernet (X127) a Unitatii de Control. Adresa MAC este adresa fizica unica a interfetei de retea, utila la configurarea retelei si diagnoza.",
+      "influenteaza": "r8910, r8911, r8913",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28033,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8930",
+    "descriere_scurta": "PN Name of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numele activ al statiei pentru interfata PROFINET integrata a Unitatii de Control. Numele statiei PROFINET este utilizat de controllerul PLC pentru identificarea dispozitivului in retea.",
+      "influenteaza": "r8931, r8932, r8933, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28034,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8931",
+    "descriere_scurta": "PN IP Address of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP activa pentru interfata PROFINET integrata a Unitatii de Control. Adresa IP PROFINET este configurata de controllerul PLC si este necesara pentru comunicatia ciclica PROFIdrive.",
+      "influenteaza": "r8930, r8932, r8933, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28035,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8932",
+    "descriere_scurta": "PN Default Gateway of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza gateway-ul implicit activ pentru interfata PROFINET integrata a Unitatii de Control. Gateway-ul este utilizat pentru rutarea traficului PROFINET in afara subretelei locale.",
+      "influenteaza": "r8930, r8931, r8933, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28036,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8933",
+    "descriere_scurta": "PN Subnet Mask of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza masca de subretea activa pentru interfata PROFINET integrata a Unitatii de Control. Masca de subretea este configurata automat de controllerul PLC la initializarea conexiunii PROFINET.",
+      "influenteaza": "r8930, r8931, r8932, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28037,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8935",
+    "descriere_scurta": "PN MAC Address of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa MAC pentru interfata PROFINET integrata a Unitatii de Control. Adresa MAC este unica si determina identitatea fizica a interfetei PROFINET in retea.",
+      "influenteaza": "r8930, r8931, r8932, r8933",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28038,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8936",
+    "descriere_scurta": "PN state cyclic connections",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea conexiunilor ciclice PROFINET. Permite monitorizarea statusului conexiunilor cu controllerele PROFINET, inclusiv in configuratii Shared Device cu doua conexiuni.",
+      "influenteaza": "r8937, r8930, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28039,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8937",
+    "descriere_scurta": "PN diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatii de diagnoza pentru conexiunile ciclice PROFINET: numarul de conexiuni, subslot-uri, date nete si tipul conexiunii (RT sau IRT). Util la depanarea problemelor de comunicatie PROFINET.",
+      "influenteaza": "r8936, r8930, r8960",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28040,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8950",
+    "descriere_scurta": "CBE2x Name of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numele activ al statiei pentru placa de comunicatie Ethernet CBE20/CBE25. Echivalent cu r8930 dar pentru modulul optional de comunicatie, nu pentru interfata PROFINET integrata.",
+      "influenteaza": "r8951, r8952, r8953, r8955",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28041,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8951",
+    "descriere_scurta": "CBE2x IP Address of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP activa pentru placa de comunicatie Ethernet CBE20/CBE25. Este necesara pentru comunicatia prin interfata PROFINET optionala pe aceasta placa.",
+      "influenteaza": "r8950, r8952, r8953, r8955",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28042,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8952",
+    "descriere_scurta": "CBE2x Default Gateway of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza gateway-ul implicit activ pentru placa de comunicatie Ethernet CBE20/CBE25. Utilizat pentru rutarea traficului PROFINET prin modulul optional de comunicatie.",
+      "influenteaza": "r8950, r8951, r8953, r8955",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28043,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8953",
+    "descriere_scurta": "CBE2x Subnet Mask of Station active",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza masca de subretea activa pentru placa de comunicatie Ethernet CBE20/CBE25. Defineste subreteaua locala pentru comunicatia prin interfata PROFINET optionala.",
+      "influenteaza": "r8950, r8951, r8952, r8955",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28044,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8955",
+    "descriere_scurta": "CBE2x MAC Address of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa MAC pentru placa de comunicatie Ethernet CBE20/CBE25. Identifica unic modulul optional de comunicatie in reteaua Ethernet.",
+      "influenteaza": "r8950, r8951, r8952, r8953",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28045,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8956",
+    "descriere_scurta": "CBE25 cyclic connection state",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea conexiunilor ciclice PROFINET prin placa CBE25. Permite monitorizarea statusului conexiunilor stabilite prin modulul optional de comunicatie CBE25.",
+      "influenteaza": "r8957, r8950, r8955",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28046,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8957",
+    "descriere_scurta": "CBE25 diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatii de diagnoza pentru conexiunile ciclice PROFINET prin CBE25: numar conexiuni, subslot-uri, date nete si tipul conexiunii (RT sau IRT). Util la depanarea problemelor cu modulul CBE25.",
+      "influenteaza": "r8956, r8950, r8970",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28047,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8960",
+    "descriere_scurta": "PN subslot controller assignment",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza atribuirea controllerului pentru subslot-urile PROFINET ale obiectului de actionare actual: PROFIsafe (subslot 2), telegrama PZD (subslot 3) si date suplimentare PZD (subslot 4).",
+      "influenteaza": "r8937, r8961, r8936",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28048,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8961",
+    "descriere_scurta": "PN IP Address Remote Controller 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP a primului controller PROFINET conectat cu dispozitivul prin interfata PN integrata. Util la identificarea controllerului PLC care gestioneaza dispozitivul.",
+      "influenteaza": "r8960, r8937, r8930",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28049,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8970",
+    "descriere_scurta": "CBE2x subslot controller assignment",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza atribuirea controllerului pentru subslot-urile PROFINET prin CBE20/CBE25: PROFIsafe (subslot 2), telegrama PZD (subslot 3) si date suplimentare PZD (subslot 4).",
+      "influenteaza": "r8971, r8957, r8956",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28050,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8971",
+    "descriere_scurta": "CBE2x IP Address Remote Controller 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP a primului controller PROFINET conectat cu dispozitivul prin CBE20/CBE25. Permite identificarea controllerului PLC care comunica prin modulul optional de comunicatie.",
+      "influenteaza": "r8970, r8957, r8950",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28051,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9206",
+    "descriere_scurta": "Topology direct access",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza datele de acces direct la proprietatile topologiei: index 0 selecteaza topologia actuala sau tinta, index 1 seteaza numarul componentei, index 2 defineste proprietatea dorita (nume, tip, versiune etc.). Rezultatul este afisat in r9207 sau r9208.",
+      "influenteaza": "r9208, r9901",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28052,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9208",
+    "descriere_scurta": "Topology direct access string",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de tip string pentru proprietatea selectata in p9206. Valoarea este afisata numai pentru proprietatile de tip string (cum ar fi numele componentei sau numarul de serie).",
+      "influenteaza": "p9206, r9901",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28053,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9222",
+    "descriere_scurta": "Statistic Drive-CLiQ acyclic communication",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza statistici ale comunicatiei aciclice DRIVE-CLiQ pentru componenta setata in p9221: ID parametru, numar mesaje trimise, timpii minim, maxim si mediu pentru cererile aciclice. Unitatea de timp este 10 microsecunde.",
+      "influenteaza": "p9221, r9901",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28054,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9390",
+    "descriere_scurta": "SI Motion version safety motion monitoring (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza versiunea Safety Integrated pentru functiile de monitorizare sigura a miscarii pe Motor Module. Include numerele de revizie major, minor, patch si hotfix ale firmware-ului de siguranta.",
+      "influenteaza": "r9770, r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28055,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9450",
+    "descriere_scurta": "Reference value change parameter with unsuccessful calculation /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza parametrii pentru care recalcularea a esuat dupa o modificare interna a valorii de referinta a sistemului. Util la depanarea problemelor de scalare dupa modificarea parametrilor de referinta.",
+      "influenteaza": "r9451",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28056,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9451",
+    "descriere_scurta": "Units changeover adapted parameters",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza parametrii ale caror valori ar trebui modificate in timpul unei schimbari de unitati de masura. Util la diagnoza impactului modificarii sistemului de unitati (ex. SI vs imperial) asupra setarilor existente.",
+      "influenteaza": "r9450",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28057,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9485",
+    "descriere_scurta": "BICO interconnections signal source search count",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul de interconectari BICO catre semnalul sursa cautat. Util la analiza utilizarii unui semnal sursa specific in configuratia BICO a convertorului.",
+      "influenteaza": "r9491",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28058,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9491",
+    "descriere_scurta": "BI/CI of BICO interconnections to other drives",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza lista receptorilor de semnal (BI/CI) pentru primele interconectari BICO intre acest obiect de actionare si alte drive-uri. Util la diagnoza interconectarilor BICO intre obiecte diferite.",
+      "influenteaza": "r9485, p9498",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28059,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9498",
+    "descriere_scurta": "BICO BI/CI parameters to de-activated drive objects",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Afiseaza parametrii BI/CI salvati ai caror sursa se afla pe obiecte de actionare dezactivate sau ne-operabile. Permite identificarea interconectarilor BICO invalide din cauza componentelor dezactivate.",
+      "influenteaza": "r9491, r9485",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28060,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9671",
+    "descriere_scurta": "SI module identifier Hydraulic Module",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza CRC-ul calculat pe baza identificatorului de nod al Hydraulic Module-ului. Utilizat in functiile Safety Integrated pentru verificarea integritatii identificarii modulului hidraulic.",
+      "influenteaza": "r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28061,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9707",
+    "descriere_scurta": "SI Motion diagnostics encoder position actual value GX_XIST1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala GX_Xist1 a encoderului, valoarea blocata pentru referentiere si diferenta dintre acestea in ciclul de referentiere. Parametrul este relevant la functiile de siguranta cu encodere absolute si referentiere prin SCC.",
+      "influenteaza": "r9708, r9714, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28062,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9708",
+    "descriere_scurta": "SI Motion diagnostics safe position",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile actuale ale pozitiei pe partea de sarcina pentru ambele canale de monitorizare si diferenta dintre acestea. Include si pozitia sigura transmisa prin PROFIsafe si devierea maxima inregistrata.",
+      "influenteaza": "r9707, r9714, r9721, r9725",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28063,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9710",
+    "descriere_scurta": "SI Motion diagnostics result list 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza lista de rezultate 1 care a condus la defectul de comparatie incrucisata intre canalele de monitorizare. Index 0 este lista celui de-al doilea canal, index 1 este lista drive-ului.",
+      "influenteaza": "r9711, r9725, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28064,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9711",
+    "descriere_scurta": "SI Motion diagnostics result list 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza lista de rezultate 2 care a condus la defectul de comparatie incrucisata intre canalele de monitorizare. Completeaza informatia din r9710 pentru diagnoza detaliata a STOP F.",
+      "influenteaza": "r9710, r9725, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28065,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9714",
+    "descriere_scurta": "SI motion diagnostics velocity",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile actuale de viteza pentru functiile de monitorizare a miscarii pe Unitatea de Control: viteza actuala, limita SAM/SBR activa si limita SLS activa. Util la diagnoza declansarilor functiilor Safety Integrated in miscare.",
+      "influenteaza": "r9708, r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28066,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9718",
+    "descriere_scurta": "SI Motion control signals 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnalele de control 1 pentru functiile de monitorizare a miscarii relevante pentru siguranta. Permite diagnoza starii comenzilor de siguranta active in sistem.",
+      "influenteaza": "r9719, r9720, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28067,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9719",
+    "descriere_scurta": "SI Motion control signals 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnalele de control 2 pentru functiile de monitorizare a miscarii relevante pentru siguranta. Completeaza informatia din r9718 pentru diagnoza completa a starii comenzilor de siguranta.",
+      "influenteaza": "r9718, r9720, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28068,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9720",
+    "descriere_scurta": "SI Motion control signals integrated in the drive",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnalele de control pentru functiile de monitorizare sigura a miscarii integrate in drive (Motor Module). Distinct de r9718 care arata semnalele de pe Unitatea de Control.",
+      "influenteaza": "r9718, r9719, r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28069,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9721",
+    "descriere_scurta": "SI Motion status signals (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru semnalele de status ale functiilor de monitorizare sigura a miscarii pe canalul de monitorizare 1 (Unitatea de Control). Include STO, SS1, SS2, SOS, SLS, SDI etc.",
+      "influenteaza": "r9722, r9708, r9714, r9734",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28070,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9722",
+    "descriere_scurta": "SI Motion drive-integrated status signals (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnale de status pentru functiile de monitorizare sigura a miscarii integrate in drive, pe canalul de monitorizare 1. Indica starea functiilor de siguranta executate direct pe Motor Module.",
+      "influenteaza": "r9721, r9720, r9723",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28071,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9723",
+    "descriere_scurta": "SI Motion diagnostic signals integrated in the drive",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnalele de diagnoza pentru functiile de monitorizare sigura a miscarii integrate in drive. Furnizeaza informatii detaliate pentru depanarea problemelor de siguranta integrate in Motor Module.",
+      "influenteaza": "r9722, r9720, r9725",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28072,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9725",
+    "descriere_scurta": "SI Motion diagnostics STOP F",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea mesajului care a cauzat STOP F pe drive: 0 inseamna CU a semnalizat STOP F, 1-999 indica numarul datei incorecte in comparatia incrucisata, >=1000 valori diagnostice suplimentare. Include valorile din ambele canale.",
+      "influenteaza": "r9710, r9711, r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28073,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9734",
+    "descriere_scurta": "SI Safety Info Channel status word S_ZSW1B",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru cuvantul de stare S_ZSW1B al canalului de informatii de siguranta (Safety Info Channel). Transmis prin PROFIsafe catre controllerul de siguranta.",
+      "influenteaza": "r9743, r9721, r9769",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28074,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9743",
+    "descriere_scurta": "SI Safety Info Channel status word S_ZSW2B",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru cuvantul de stare S_ZSW2B al canalului de informatii de siguranta. Completeaza informatia din r9734 pentru un status complet al functiilor de siguranta.",
+      "influenteaza": "r9734, r9721, r9769",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28075,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9745",
+    "descriere_scurta": "SI components",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza componenta care a generat mesajul de siguranta activ. Permite identificarea exacta a modulului hardware responsabil pentru evenimentul de siguranta.",
+      "influenteaza": "r9747, r9748, r9749, r9750",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28076,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9747",
+    "descriere_scurta": "SI message code",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza codurile numerice ale mesajelor de siguranta aparute. Codul mesajului permite identificarea rapida a tipului de eveniment de siguranta in logul de siguranta al convertorului.",
+      "influenteaza": "r9745, r9748, r9749, r9750",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28077,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9748",
+    "descriere_scurta": "SI message time received in milliseconds",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza timpul relativ de executie al sistemului in milisecunde la momentul aparitiei mesajului de siguranta. Permite corelarea temporala precisa a evenimentelor de siguranta.",
+      "influenteaza": "r9745, r9747, r9754, r9755",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28078,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9749",
+    "descriere_scurta": "SI message value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatii suplimentare despre mesajul de siguranta aparut, ca numar intreg. Valoarea complementeaza codul mesajului din r9747 cu detalii contextuale despre eveniment.",
+      "influenteaza": "r9745, r9747, r9748, r9753",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28079,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9750",
+    "descriere_scurta": "SI diagnostic attributes",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza atributele de diagnoza ale mesajelor de siguranta aparute. Atributele indica caracteristicile mesajului: daca este un defect, o alarma sau un mesaj informational de siguranta.",
+      "influenteaza": "r9745, r9747, r9748, r9749",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28080,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9753",
+    "descriere_scurta": "SI message value for float values",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatii suplimentare despre mesajul de siguranta aparut, pentru valori de tip virgula mobila (float). Complementeaza r9749 pentru mesajele care contin valori fizice continue.",
+      "influenteaza": "r9749, r9747, r9748",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28081,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9754",
+    "descriere_scurta": "SI message time received in days",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza timpul relativ de executie al sistemului in zile la momentul aparitiei mesajului de siguranta. Impreuna cu r9748 (milisecunde), ofera o referinta temporala completa a evenimentului.",
+      "influenteaza": "r9748, r9755, r9747",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28082,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9755",
+    "descriere_scurta": "SI message time removed in milliseconds",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza timpul relativ de executie al sistemului in milisecunde la momentul inlaturarii (resetarii) mesajului de siguranta. Permite calculul duratei evenimentului de siguranta.",
+      "influenteaza": "r9748, r9754, r9747",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28083,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9769",
+    "descriere_scurta": "SI PROFIsafe send status words (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza telegrama PROFIsafe trimisa de Unitatea de Control, pana la 8 cuvinte PZD de 16 bit. Permite verificarea datelor de siguranta transmise efectiv catre controllerul F (Safety PLC).",
+      "influenteaza": "r9734, r9743, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28084,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9770",
+    "descriere_scurta": "SI version drive-integrated safety function (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza versiunea Safety Integrated pentru functiile de siguranta integrate in drive pe Unitatea de Control. Include numerele de revizie major, minor, patch si hotfix ale firmware-ului de siguranta al CU.",
+      "influenteaza": "r9390, r9781, r9782",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28085,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9774",
+    "descriere_scurta": "SI status (group STO)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza statusul Safety Integrated al grupului de drive-uri din care face parte acest actionare. Semnalele sunt rezultatul operatiei AND logica a semnalelor de status individuale ale tuturor drive-urilor din grup.",
+      "influenteaza": "r9721, r9722",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28086,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9781",
+    "descriere_scurta": "SI checksum to check changes (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma de verificare pentru urmarirea modificarilor Safety Integrated: index 0 pentru modificari functionale, index 1 pentru modificari hardware. Utilizat ca fingerprint in jurnalul de siguranta la audit.",
+      "influenteaza": "r9782, r9770",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28087,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9782",
+    "descriere_scurta": "SI time stamps to check changes (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza timestamp-urile sumelor de verificare pentru urmarirea modificarilor Safety Integrated: index 0 pentru modificari functionale, index 1 pentru modificari hardware. Permite localizarea temporala a modificarilor de siguranta.",
+      "influenteaza": "r9781, r9770",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28088,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9784",
+    "descriere_scurta": "SI Motion diagnostics sensorless acceleration",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile de acceleratie pentru detectia senzorless a valorilor actuale: index 0 valoarea de acceleratie setpoint, index 1 valoarea de acceleratie actuala. Util la diagnoza functiei de monitorizare sigura fara encoder.",
+      "influenteaza": "r9786, r9714, r9708",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28089,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9786",
+    "descriere_scurta": "SI Motion diagnostics sensorless angle",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza unghiurile pentru detectia senzorless a valorilor actuale: unghi de plauzibilitate, unghi de tensiune si unghi de curent. Permite diagnoza preciziei detectiei pozitiei in modul senzorless de siguranta.",
+      "influenteaza": "r9784, r9714, r9708",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28090,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9794",
+    "descriere_scurta": "SI crosswise comparison list (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul datelor comparate in prezent incrucisate pe Unitatea de Control. Lista de date comparate depinde de aplicatia specifica. Util la diagnoza comparatiei incrucisate intre canalele de monitorizare.",
+      "influenteaza": "r9710, r9711, r9725",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28091,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9881",
+    "descriere_scurta": "SI Motion Sensor Module Node Identifier second channel",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza identificatorul nodului modulului senzor utilizat de canalul al doilea pentru functiile de monitorizare a miscarii. Folosit in verificarea integritatii configuratiei encoderului de siguranta.",
+      "influenteaza": "r9707, r9708, r9721",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28092,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9894",
+    "descriere_scurta": "= 1 (monitoring clock cycle)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul datei din comparatia incrucisata care a cauzat STOP F pe Motor Module sau Hydraulic Module. Permite identificarea exacta a sursei discrepantei care a declansat STOP F.",
+      "influenteaza": "r9710, r9711, r9725",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28093,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9901",
+    "descriere_scurta": "Actual topology",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza topologia actuala a unitatii de actionare in format structurat. Contine date generale despre topologie (versiune, numar componente) si date detaliate despre fiecare componenta DRIVE-CLiQ si conexiunile sale.",
+      "influenteaza": "p9206, r9208",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28094,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9920",
+    "descriere_scurta": "Licensing enter license key",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Introduce cheia de licenta pentru aceasta unitate de actionare. Cheia de licenta activeaza functionalitati optionale sau avansate ale sistemului SINAMICS care necesita licenta specifica.",
+      "influenteaza": "r9925, r4993",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 28095,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9925",
+    "descriere_scurta": "Firmware file incorrect",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza directorul si numele fisierului a carui stare la livrarea din fabrica a fost identificata ca neadmisa. Prezenta unui fisier identificat indica o problema de integritate a firmware-ului.",
+      "influenteaza": "p9920",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28096,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9935",
+    "descriere_scurta": "POWER ON delay signal",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire binector pentru semnalul de intarziere dupa POWER ON. Dupa pornire, bitul r9935.0 este setat la inceputul primului ciclu de esantionare si resetat dupa aproximativ 100 ms.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28097,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9936",
+    "descriere_scurta": "DRIVE-CLiQ diagnostic error counter connection",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza contorul de erori pentru fiecare conexiune/cablu DRIVE-CLiQ individual. Index 0 este suma totala, indexurile 2-199 corespund componentelor cu numarul respectiv. Util la detectia cablurilor DRIVE-CLiQ defecte.",
+      "influenteaza": "r9901",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28098,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9975",
+    "descriere_scurta": "System utilization measured",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea masurata a sistemului in timp real. Cu cat valoarea este mai mare, cu atat incarcarea procesorului este mai mare. Valori aproape de 100% pot indica risc de depasire a capacitatii de calcul.",
+      "influenteaza": "r9976, r9980",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28099,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9976",
+    "descriere_scurta": "System utilization",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea sistemului per transel de calcul. La depasirea valorii de 100%, este generat defectul F01054. Index 1 indica utilizarea timpului de calcul, index 5 indica cea mai mare utilizare totala.",
+      "influenteaza": "r9975, r9980",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28100,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9980",
+    "descriere_scurta": "Sampling times utilization calculated",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarile calculate pentru timpii de esantionare activi bazate pe topologia tinta existenta, pentru pana la 27 transsele cu utilizare neta si totala. Util la optimizarea configuratiei temporale a sistemului.",
+      "influenteaza": "r9975, r9976, r7901",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28101,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9982",
+    "descriere_scurta": "Data memory utilization",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza ratele calculate de utilizare a memoriei de date pentru memoriile rapide 1-4, bazate pe topologia tinta existenta. Permite planificarea utilizarii memoriei in proiectele complexe.",
+      "influenteaza": "r9983, r9984, r9991",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28102,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9983",
+    "descriere_scurta": "Measured data memory utilization (actual load)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza ratele masurate de utilizare a memoriei de date bazate pe topologia tinta existenta, inclusiv memoria Heap. Valorile masurate reflecta sarcina reala fata de valorile calculate din r9982.",
+      "influenteaza": "r9982, r9984, r9991",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28103,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9984",
+    "descriere_scurta": "Data memory utilization OA",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea memoriei de date de catre aplicatiile OA (Open Architecture), pentru memoriile rapide 1-4. Permite evaluarea impactului aplicatiilor OA instalate asupra resurselor de memorie disponibile.",
+      "influenteaza": "r9982, r9983, r4955",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28104,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9986",
+    "descriere_scurta": "DRIVE-CLiQ system load",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza incarcarea calculata a sistemului DRIVE-CLiQ bazata pe topologia tinta existenta, pentru porturile X100-X107. Valorile sunt disponibile dupa atingerea starii RUNUP READY (starea 800).",
+      "influenteaza": "r9987, r9988, r9936",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28105,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9987",
+    "descriere_scurta": "DRIVE-CLiQ bandwidth load",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza incarcarea calculata a latimii de banda DRIVE-CLiQ bazata pe topologia tinta existenta, pentru porturile X100-X107. Util la evaluarea limitarilor de banda in configuratii complexe cu multe componente.",
+      "influenteaza": "r9986, r9988",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28106,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9988",
+    "descriere_scurta": "DRIVE-CLiQ DPRAM load",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza incarcatura calculata a memoriei DPRAM DRIVE-CLiQ bazata pe topologia tinta, pentru porturile X100-X107. DPRAM este memoria partajata pentru comunicatia ciclica intre CU si componentele DRIVE-CLiQ.",
+      "influenteaza": "r9986, r9987",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28107,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9991",
+    "descriere_scurta": "Memory usage drive object actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea memoriei pentru fiecare obiect de actionare, ca valori actuale, pentru memoriile rapide 1-4 si memoria Heap. Permite comparatia cu valorile de referinta din r9992.",
+      "influenteaza": "r9992, r9982, r9983",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28108,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9992",
+    "descriere_scurta": "Memory usage drive object reference value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea memoriei pentru fiecare obiect de actionare, ca valori de referinta, pentru memoriile rapide 1-4 si Heap. Compararea cu r9991 permite detectia cresterii anormale a utilizarii memoriei.",
+      "influenteaza": "r9991, r9982, r9983",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28109,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9993",
+    "descriere_scurta": "Memory usage OA application",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza utilizarea memoriei de catre o aplicatie OA, pentru memoriile rapide 1-4 si Heap. Permite evaluarea consumului de memorie al fiecarei aplicatii OA instalate pe convertor.",
+      "influenteaza": "r9984, r9991, r9992",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28110,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r9999",
+    "descriere_scurta": "Software error internal supplementary diagnostics",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatii suplimentare pentru diagnoza erorilor interne de software ale convertorului. Parametrul este utilizat exclusiv de Siemens la analiza defectelor de firmware; nu este destinat uzului curent al utilizatorului final.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 28111,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10004",
+    "descriere_scurta": "SI TM54F parameter actual checksum",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma de verificare actuala a parametrilor verificati prin CRC pentru TM54F (Terminal Module 54F): index 0 pentru parametri hardware-independenti, index 1 pentru parametri hardware-dependenti (MM).",
+      "influenteaza": "r9781, r9782",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28112,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10051",
+    "descriere_scurta": "SI Motion digital inputs status (processor 1)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru starea debounced a intrarilor digitale DI 16, DI 18 si DI 20, canal unic, de pe procesorul 1. Utilizat pentru monitorizarea intrarilor de siguranta ale TM54F.",
+      "influenteaza": "r10052, r10053, r10056",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 28113,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10052",
+    "descriere_scurta": "SI Motion digital outputs status (processor 1)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea iesirii digitale DO 16+ (X131.5) de pe procesorul 1. Permite verificarea starii active a iesirilor de siguranta controlate de procesorul 1 al TM54F.",
+      "influenteaza": "r10051, r10118, r10056",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 28114,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10053",
+    "descriere_scurta": "SI TM54F digital inputs 20 ... 23 status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea intrarilor digitale 20 pana la 23 ale TM54F (Terminal Module 54F). Aceste intrari sunt utilizate pentru comenzile de siguranta din exterior catre functiile SI Motion.",
+      "influenteaza": "r10051, r10055, r10056",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 28115,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10055",
+    "descriere_scurta": "SI TM54F communication status drive-specific",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea comunicatiei drive-urilor individuale atribuite cu TM54F. Valoarea 0 indica ca toate drive-urile atribuite in p10010 comunica corect cu TM54F.",
+      "influenteaza": "r10056, p10010, r10051",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28116,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10056",
+    "descriere_scurta": "SI TM54F status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru starea generala a TM54F (Terminal Module 54F). Indica starea functiunilor de siguranta si comunicatia cu drive-urile atribuite.",
+      "influenteaza": "r10051, r10053, r10055, r10090",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28117,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10090",
+    "descriere_scurta": "SI TM54F version",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza versiunea Safety Integrated pentru TM54F (Terminal Module 54F): numere de revizie major, minor, patch si hotfix ale firmware-ului de siguranta al modulului.",
+      "influenteaza": "r9390, r9770",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28118,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10152",
+    "descriere_scurta": "SI Motion digital outputs status (processor 2)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea iesirii digitale DO 16- (X131.6) de pe procesorul 2. Impreuna cu r10052 (procesorul 1), permite verificarea starii complete a iesirilor digitale de siguranta ale TM54F.",
+      "influenteaza": "r10052, r10056",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 28119,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r10234",
+    "descriere_scurta": "SI Safety Info Channel status word S_ZSW3B",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza iesire BICO pentru cuvantul de stare S_ZSW3B al canalului de informatii de siguranta. Completeaza cuvintele de stare S_ZSW1B (r9734) si S_ZSW2B (r9743) pentru un status complet al canalului de siguranta.",
+      "influenteaza": "r9734, r9743, r9721, r9769",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 28120,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r61000",
+    "descriere_scurta": "PROFINET Name of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numele statiei PROFINET al convertorului, asa cum este configurat in reteaua PROFINET. Parametrul este utilizat in aplicatii pentru identificarea dispozitivului la comunicatia cu PLC-ul.",
+      "influenteaza": "r61001, r8930",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 28121,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r61001",
+    "descriere_scurta": "PROFINET IP of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP PROFINET a convertorului. Parametrul reflecta adresa IP activa utilizata in comunicatia ciclica PROFIdrive cu controllerul PLC prin reteaua PROFINET.",
+      "influenteaza": "r61000, r8931",
+      "categorie": "Comunicatii"
+    }
+  }
+]

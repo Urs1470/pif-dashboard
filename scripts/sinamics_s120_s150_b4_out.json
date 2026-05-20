@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 1007,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2548",
+    "descriere_scurta": "LR cam switching position 2",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pozitia celui de-al doilea cam de comutare pentru generarea de semnale de iesire sincronizate cu pozitia axei. Permite doua pozitii de comutare distincte pentru sincronizarea a doua actiuni diferite pe ciclu. Utilizat impreuna cu p2547 in masini cu mai multe puncte de comutare.",
+      "influenteaza": "p2547",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1008,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2549",
+    "descriere_scurta": "LR enable 1",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea 1 a regulatorului de pozitie. Semnalul 1 permite regulatorului de pozitie sa calculeze si sa furnizeze setpointul de viteza. Ambele intrari de enable (p2549 si p2550) trebuie sa fie 1 pentru functionarea completa a regulatorului.",
+      "influenteaza": "p2550",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1009,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2550",
+    "descriere_scurta": "LR enable 2",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea 2 a regulatorului de pozitie. Semnalul 0 dezactiveaza regulatorul de pozitie. Utilizat impreuna cu p2549 prin logica AND pentru activarea regulatorului de pozitie.",
+      "influenteaza": "p2549",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1010,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2551",
+    "descriere_scurta": "LR setpoint signal fixed",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru indicarea finalizarii setpointului de pozitionare. Semnalul 1 indica sfarsitul operatiei de pozitionare pe latura setpointului si activeaza monitorizarile de pozitie si standstill. Semnalul 0 semnalizeaza inceperea unei noi pozitionari sau mod tracking.",
+      "influenteaza": "p2542, p2544, p2554",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1011,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2552",
+    "descriere_scurta": "LR signal travel to fixed stop active",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului care indica ca deplasarea pana la stop fix este activa. La activare, detectia stop fix prin eroarea de urmire maxima (p2634) este pornita. Necesar in aplicatii de presare sau strangere unde axul trebuie sa apese cu forta constanta.",
+      "influenteaza": "p2553, p2635, p1544",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1012,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2553",
+    "descriere_scurta": "LR signal fixed stop reached",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului care indica ca stopul fix a fost atins. La semnalul 1, monitorizarea ferestrei de stop fix este activata pentru a controla ca pozitia ramane in fereastra stabilita. Confirma ca axul este in contact cu stopul fizic.",
+      "influenteaza": "p2552, p2635",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1013,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2554",
+    "descriere_scurta": "LR signal traversing command active",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului care indica ca o comanda de pozitionare este activa. La semnalul 1, monitorizarile de pozitionare nu se activeaza odata cu semnalul de setpoint fix p2551. Previne alarme false de pozitionare in timpul miscarii active.",
+      "influenteaza": "p2551",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1014,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2555",
+    "descriere_scurta": "LR LU/revolution LU/mm",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru referinta intre unitatile de lungime interne LU si revolutia motorului (encoder rotativ) sau mm (encoder liniar). Determina rezolutia si scara sistemului de pozitionare. Influenteaza toate pozitiile, vitezele si ferestelede monitorizare in unitati LU.",
+      "influenteaza": "p2530, p2542, p2544",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1015,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2568",
+    "descriere_scurta": "EPOS STOP cam activation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea functiei de STOP cam in EPOS (Easy POSitioning). La semnalul 1, evaluarea cam-urilor STOP minus si plus este activa, limitand deplasarea la finele de cursa software. Protejeaza axa impotriva depasirii limitelor mecanice.",
+      "influenteaza": "p2569, p2570",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1016,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2569",
+    "descriere_scurta": "EPOS STOP cam minus",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru cam-ul STOP in directia negativa de deplasare. Semnalul 0 indica atingerea cam-ului STOP si opreste miscarea in directia negativa. Tipic conectat la un senzor de pozitie sau fine de cursa hardware.",
+      "influenteaza": "p2568, p2570",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1018,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2571",
+    "descriere_scurta": "= min(|r1084|, |r1087|)[rpm] x p2505/p2504 x p2506",
+    "GENERATED": {
+      "explicatie": "p=Seteaza acceleratia maxima pentru functia pozitionatorului de baza EPOS exprimata in LU/s^2. Valoarea maxima admisa este limitata de viteza maxima, raportul transmisiei si factorul de scalare. Acceleratia mare reduce durata ciclului dar creste solicitarile mecanice.",
+      "influenteaza": "p2573, p2574, p2505",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1020,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2573",
+    "descriere_scurta": "EPOS maximum deceleration",
+    "GENERATED": {
+      "explicatie": "p=Seteaza deceleratia maxima pentru functia pozitionatorului de baza EPOS. Deceleratia este limitata similar cu p2571. Valoarea determina distanta de franare necesara si trebuie corelata cu fereastra de pozitionare p2544.",
+      "influenteaza": "p2571, p2574",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1021,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2574",
+    "descriere_scurta": "EPOS jerk limiting",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea maxima a jerk-ului (derivata acceleratiei) pentru limitarea jerk in EPOS. Limitarea jerk produce un profil de miscare mai neted, reducand vibratiile si solicitarile mecanice. Activata prin p2575.",
+      "influenteaza": "p2575, p2571, p2573",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1022,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2575",
+    "descriere_scurta": "EPOS jerk limiting activation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea limitarii jerk in EPOS. La semnalul 1, limitarea jerk din p2574 este activa. Poate fi activata si prin comanda JERK din blocurile de traversare cand semnalul binar este 0.",
+      "influenteaza": "p2574",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1023,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2576",
+    "descriere_scurta": "EPOS modulo correction modulo range",
+    "GENERATED": {
+      "explicatie": "p=Seteaza domeniul modulo pentru axele cu corectie modulo. Valoarea tipica de 360000 LU corespunde unei rotatii complete (360 grade x 1000 LU/grad). La atingerea limitei, pozitia este resetata automat la inceputul domeniului.",
+      "influenteaza": "p2577",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1024,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2577",
+    "descriere_scurta": "EPOS modulo correction activation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea corectiei modulo in EPOS. La activare, pozitia axei este intoarsa modulo in domeniul definit de p2576. Utilizat la axele rotative cu rotatie continua care necesita coordonate normalizate.",
+      "influenteaza": "p2576",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1025,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2578",
+    "descriere_scurta": "EPOS software limit switch minus signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru limita software minus in EPOS. Implicit este interconectat la valoarea fixa p2580. Permite utilizarea unei valori dinamice de limitare din controlerul superior.",
+      "influenteaza": "p2580, p2582",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1026,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2579",
+    "descriere_scurta": "EPOS software limit switch plus signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru limita software plus in EPOS. Implicit interconectat la valoarea fixa p2581. Permite varierea dinamica a limitei software plus.",
+      "influenteaza": "p2581, p2582",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1027,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2580",
+    "descriere_scurta": "EPOS software limit switch minus",
+    "GENERATED": {
+      "explicatie": "p=Seteaza limita software in directia negativa de deplasare pentru EPOS. Axa nu poate trece sub aceasta pozitie cand limitele software sunt activate prin p2582. Trebuie setata in interiorul limitelor hardware ale axei.",
+      "influenteaza": "p2578, p2582",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1028,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2581",
+    "descriere_scurta": "EPOS software limit switch plus",
+    "GENERATED": {
+      "explicatie": "p=Seteaza limita software in directia pozitiva de deplasare pentru EPOS. Axa nu poate depasi aceasta pozitie cand limitele software sunt activate. Impreuna cu p2580 defineste domeniul de deplasare sigur al axei.",
+      "influenteaza": "p2579, p2582",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1029,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2582",
+    "descriere_scurta": "EPOS software limit switch activation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea limitelor software in EPOS. La semnalul 1, limitele p2580 si p2581 sunt active si axa este franata automat la apropierea de limite. Trebuie activata dupa referentiere cand pozitia este cunoscuta.",
+      "influenteaza": "p2578, p2579, p2580, p2581",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1030,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2583",
+    "descriere_scurta": "EPOS backlash compensation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea jocului mecanic (backlash) pentru compensarea automata in EPOS. La inversarea directiei, eroarea de pozitie este compensata cu aceasta valoare. Valoarea pozitiva reprezinta backlash normal, valoarea negativa reprezinta backlash negativ (encoder conduce efectivul).",
+      "influenteaza": "p2530, p2532",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1031,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2585",
+    "descriere_scurta": "EPOS jog 1 setpoint velocity",
+    "GENERATED": {
+      "explicatie": "p=Seteaza viteza de setpoint pentru modul jog 1 in EPOS. Viteza poate fi pozitiva sau negativa pentru controlul directiei in modul jog. Utilizat pentru deplasari lente de pozitionare manuala sau de inspecite.",
+      "influenteaza": "p2586, p2589",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1032,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2586",
+    "descriere_scurta": "EPOS jog 2 setpoint velocity",
+    "GENERATED": {
+      "explicatie": "p=Seteaza viteza de setpoint pentru modul jog 2 in EPOS. Permite doua viteze de jog diferite pentru deplasari fine sau rapide. Se activeaza prin p2590.",
+      "influenteaza": "p2585, p2590",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1033,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2587",
+    "descriere_scurta": "EPOS jog 1 traversing distance",
+    "GENERATED": {
+      "explicatie": "p=Seteaza distanta de deplasare pentru jog incremental 1 in EPOS. In modul jog incremental, fiecare activare a semnalului jog deplaseaza axa cu aceasta distanta. Utilizat pentru avans incremental precis in proceduri de aliniere.",
+      "influenteaza": "p2591, p2589",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1034,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2588",
+    "descriere_scurta": "EPOS jog 2 traversing distance",
+    "GENERATED": {
+      "explicatie": "p=Seteaza distanta de deplasare pentru jog incremental 2 in EPOS. Permite o a doua distanta incrementala pentru avans pas cu pas. Se utilizeaza cu p2591 pentru activare incrementala.",
+      "influenteaza": "p2591, p2590",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1035,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2589",
+    "descriere_scurta": "EPOS jog 1 signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea jog 1 in EPOS. La semnalul activ, axa se deplaseaza cu viteza p2585 sau distanta p2587 (in mod incremental). Tipic conectat la un buton de jog pe panoul operator.",
+      "influenteaza": "p2585, p2587, p2591",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1036,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2590",
+    "descriere_scurta": "EPOS jog 2 signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea jog 2 in EPOS. La activare, axa se deplaseaza cu viteza p2586 sau distanta p2588 (in mod incremental). Permite control direct al celui de-al doilea mod de jog.",
+      "influenteaza": "p2586, p2588, p2591",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1037,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2591",
+    "descriere_scurta": "EPOS jogging incremental",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea modului de jog incremental. La semnalul 1, jog-ul functioneaza incremental (distanta fixa pe activare) in loc de continuu (cat timp semnalul este activ). Comuta intre modul jog continuu si jog incremental.",
+      "influenteaza": "p2587, p2588, p2589, p2590",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1038,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2593",
+    "descriere_scurta": "EPOS LU/revolution LU/mm",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru referinta LU/revolutie sau LU/mm in EPOS. Determina relatia intre unitatile interne de lungime si miscare fizica. Implicit conectat la p2524 care contine valoarea calculata pe baza encoderului si mecanicii.",
+      "influenteaza": "p2571, p2573, p2580, p2581",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1040,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2595",
+    "descriere_scurta": "EPOS referencing start",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru pornirea cautarii de referinta sau a referentierii in zbor. Frontul 0->1 porneste referentierea, frontul 1->0 o intrerupe. Referentierea trebuie executata la pornire pentru a stabili originea sistemului de coordonate.",
+      "influenteaza": "p2596, p2597, p2599",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1041,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2596",
+    "descriere_scurta": "EPOS set reference point",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru comanda de setare a punctului de referinta. La activarea semnalului, pozitia actuala este setata ca punct de referinta cu valoarea din p2599. Permite referentierea rapida prin setarea directa a pozitiei curente.",
+      "influenteaza": "p2595, p2599",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1042,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2597",
+    "descriere_scurta": "EPOS referencing type selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru selectia tipului de referentiere in EPOS. Semnalul 1 selecteaza referentierea in zbor (flying referencing), semnalul 0 selecteaza cautarea de referinta cu cam. Tipul de referentiere depinde de constructia mecanica a axei.",
+      "influenteaza": "p2595, p2604, p2612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1044,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2599",
+    "descriere_scurta": "EPOS reference point coordinate value",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea de pozitie care va fi atribuita dupa referentiere sau ajustare. Aceasta valoare este setata ca pozitia actuala dupa detectia marcajului de referinta sau a cam-ului. Permite definirea originii sistemului de coordonate al axei.",
+      "influenteaza": "p2595, p2596",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1045,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2600",
+    "descriere_scurta": "EPOS search for reference reference point offset",
+    "GENERATED": {
+      "explicatie": "p=Seteaza offsetul punctului de referinta pentru cautarea de referinta. Dupa detectia marcajului de zero, axa se deplaseaza cu aceasta distanta inainte de setarea pozitiei de referinta. Permite pozitionarea punctului zero la o distanta precisa fata de marcajul de zero.",
+      "influenteaza": "p2595, p2599",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1046,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2601",
+    "descriere_scurta": "EPOS flying referencing inner window",
+    "GENERATED": {
+      "explicatie": "p=Seteaza fereastra interioara pentru referentierea in zbor. Marcajul de zero este evaluat numai cand pozitia actuala se afla in aceasta fereastra interioara. Valoarea 0 dezactiveaza evaluarea ferestrei interioare.",
+      "influenteaza": "p2602, p2595",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1047,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2602",
+    "descriere_scurta": "EPOS flying referencing outer window",
+    "GENERATED": {
+      "explicatie": "p=Seteaza fereastra exterioara pentru referentierea in zbor. Marcajul de zero este evaluat numai cand pozitia actuala se afla in fereastra exterioara. Valoarea 0 dezactiveaza evaluarea ferestrei exterioare.",
+      "influenteaza": "p2601, p2595",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1049,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2604",
+    "descriere_scurta": "EPOS search for reference start direction",
+    "GENERATED": {
+      "explicatie": "p=Seteaza directia de pornire a cautarii de referinta. Semnalul 1 porneste miscarea in directia negativa, semnalul 0 porneste in directia pozitiva. Selectia corecta depinde de pozitia cam-ului de referinta fata de pozitia initiala a axei.",
+      "influenteaza": "p2595, p2605",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1050,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2605",
+    "descriere_scurta": "EPOS search for reference approach velocity reference cam",
+    "GENERATED": {
+      "explicatie": "p=Seteaza viteza de abordare a cam-ului de referinta in cautarea de referinta. Viteza mai mica creste precizia dar mareste durata referentierii. Trebuie corelata cu distanta de accelerare si decelerare a axei.",
+      "influenteaza": "p2604, p2608, p2606",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1051,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2606",
+    "descriere_scurta": "EPOS search for reference reference cam maximum distance",
+    "GENERATED": {
+      "explicatie": "p=Seteaza distanta maxima parcursa de la pornirea cautarii de referinta pana la detectia cam-ului. Daca cam-ul nu este detectat in aceasta distanta, se genereaza un defect. Previne cautarea infinita la lipsa cam-ului sau senzorului defect.",
+      "influenteaza": "p2604, p2605",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1052,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2607",
+    "descriere_scurta": "EPOS search for reference reference cam present",
+    "GENERATED": {
+      "explicatie": "p=Seteaza daca este prezent un cam de referinta pentru cautarea de referinta. Valoarea 1 indica prezenta cam-ului, valoarea 0 indica absenta cam-ului (referentiere directa la marcajul de zero). Determina secventa de cautare utilizata in procedura de referentiere.",
+      "influenteaza": "p2595, p2612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1053,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2608",
+    "descriere_scurta": "EPOS search for reference approach velocity zero mark",
+    "GENERATED": {
+      "explicatie": "p=Seteaza viteza de abordare a marcajului de zero dupa detectia cam-ului de referinta. Viteza mica la apropierea marcajului de zero asigura precizie de referentiere buna. Trebuie setata semnificativ mai mica decat p2605 pentru precizie.",
+      "influenteaza": "p2605, p2609",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1054,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2609",
+    "descriere_scurta": "EPOS search for reference max distance ref cam and zero mark",
+    "GENERATED": {
+      "explicatie": "p=Seteaza distanta maxima dupa parasirea cam-ului de referinta pana la detectia marcajului de zero. Daca marcajul de zero nu este detectat in aceasta distanta, se genereaza un defect. Trebuie setata mai mare decat distanta reala cam-zero.",
+      "influenteaza": "p2608, p2610",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1055,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2610",
+    "descriere_scurta": "EPOS search for ref. tol. bandwidth for distance to zero mark",
+    "GENERATED": {
+      "explicatie": "p=Seteaza banda de toleranta pentru distanta pana la marcajul de zero. Marcajul de zero este evaluat in zona p2609 minus p2610, filtrând marcajele false aproape de capatul intervalului. Previne referentieri accidentale la marcaje de zero din afara zonei valide.",
+      "influenteaza": "p2609",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1056,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2611",
+    "descriere_scurta": "EPOS search for reference approach velocity reference point",
+    "GENERATED": {
+      "explicatie": "p=Seteaza viteza de abordare a punctului de referinta dupa detectia marcajului de zero. Aceasta este viteza finala de pozitionare la punctul de referinta. Trebuie setata la o valoare mica pentru pozitionare precisa.",
+      "influenteaza": "p2608, p2599",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1057,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2612",
+    "descriere_scurta": "EPOS search for reference reference cam",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru detectia cam-ului de referinta. Tipic conectat la un senzor de proximitate sau un limitator mecanic. Semnalul 1 indica prezenta cam-ului, semnalul 0 indica absenta.",
+      "influenteaza": "p2604, p2607, p2613, p2614",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1058,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2613",
+    "descriere_scurta": "EPOS search for reference reversing cam minus",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru cam-ul de inversare in directia negativa. Semnalul 0 indica atingerea cam-ului de inversare, declansand schimbarea directiei de cautare. Previne depasirea limitelor mecanice in directia negativa in timpul cautarii.",
+      "influenteaza": "p2612, p2614",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1059,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2614",
+    "descriere_scurta": "EPOS search for reference reversing cam plus",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru cam-ul de inversare in directia pozitiva. Semnalul 0 indica atingerea limitei in directia pozitiva, determinand inversarea directiei de cautare. Asigura cautarea sistematica pe intreaga cursa a axei.",
+      "influenteaza": "p2612, p2613",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1060,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2615",
+    "descriere_scurta": "EPOS maximum number of traversing blocks",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul maxim de blocuri de traversare disponibile in tabela EPOS. Reduce numarul disponibil de la maximul de 64 la valoarea necesara aplicatiei. Optimizarea numarului de blocuri economia memoria disponibila in Control Unit.",
+      "influenteaza": "p2625, p2626, p2627",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1061,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2624",
+    "descriere_scurta": "EPOS traversing block sorting",
+    "GENERATED": {
+      "explicatie": "p=Declanseaza sortarea blocurilor de traversare dupa numarul lor de bloc. Procedura: setare p2624 de la 0 la 1 si sortarea porneste automat, iar parametrul se reseteaza la 0 la finalizare. Asigura executia ordonata a blocurilor de traversare.",
+      "influenteaza": "p2625, p2615",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1062,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2625",
+    "descriere_scurta": "EPOS traversing block selection bit 0",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 0 de selectie a blocului de traversare. Combinatia bitilor p2625-p2630 selecteaza blocul de traversare care va fi executat la comanda de start. Permite selectia dinamica a blocurilor de traversare din controlerul superior.",
+      "influenteaza": "p2626, p2627, p2628, p2629, p2630, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1063,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2626",
+    "descriere_scurta": "EPOS traversing block selection bit 1",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 1 de selectie a blocului de traversare. Bitul 1 al selectiei binare a blocului de traversare. Se combina cu p2625 si ceilalti biti pentru selectia blocului dorit.",
+      "influenteaza": "p2625, p2627, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1064,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2627",
+    "descriere_scurta": "EPOS traversing block selection bit 2",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 2 de selectie a blocului de traversare. Contribuie la selectia binara a numarului blocului de traversare din tabela EPOS. Se combina cu bitii 0, 1 si 3-5.",
+      "influenteaza": "p2625, p2626, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1065,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2628",
+    "descriere_scurta": "EPOS traversing block selection bit 3",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 3 de selectie a blocului de traversare. Permite selectia dintre 16 blocuri cu bitii 0-3. Se combina cu ceilalti biti de selectie pentru adresarea blocului.",
+      "influenteaza": "p2625, p2629, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1066,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2629",
+    "descriere_scurta": "EPOS traversing block selection bit 4",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 4 de selectie a blocului de traversare. Cu bitul 4, selectia poate adresa pana la 32 blocuri diferite. Se combina cu toti ceilalti biti de selectie.",
+      "influenteaza": "p2625, p2630, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1067,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2630",
+    "descriere_scurta": "EPOS traversing block selection bit 5",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru bitul 5 de selectie a blocului de traversare. Cu toti 6 biti (p2625-p2630) se pot selecta pana la 64 blocuri de traversare. Bitul 5 este MSB-ul selectiei blocului.",
+      "influenteaza": "p2625, p2629, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1068,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2631",
+    "descriere_scurta": "EPOS activate traversing task (0 -> 1)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru pornirea blocului de traversare selectat. Frontul 0->1 al semnalului porneste executia blocului selectat prin p2625-p2630. Comanda principala de pornire a pozitionarilor EPOS din blocuri de traversare.",
+      "influenteaza": "p2625, p2626, p2627, p2628, p2629, p2630",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1069,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2632",
+    "descriere_scurta": "EPOS external block change evaluation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza modul de evaluare a comenzii de schimbare externa a blocului. Valoarea 0 dezactiveaza evaluarea, valoarea 1 activeaza evaluarea comenzii externe de salt la blocul urmator. Permite sincronizarea schimbarilor de bloc cu evenimente externe.",
+      "influenteaza": "p2633, p2631",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1070,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2633",
+    "descriere_scurta": "EPOS external block change (0 -> 1)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru schimbarea externa a blocului de traversare. Frontul 0->1 declanseaza saltul la urmatorul bloc de traversare. Utilizat pentru sincronizarea schimbarilor de bloc cu evenimente externe ale procesului.",
+      "influenteaza": "p2632",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1071,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2635",
+    "descriere_scurta": "EPOS fixed stop monitoring window",
+    "GENERATED": {
+      "explicatie": "p=Seteaza fereastra de monitorizare a pozitiei actuale dupa atingerea stopului fix. Daca pozitia axei iese din aceasta fereastra in timp ce este aplicata comanda de stop fix, se genereaza un defect. Fereastra mica asigura monitorizare stricta a pozitiei de apasare.",
+      "influenteaza": "p2552, p2553",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1072,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2637",
+    "descriere_scurta": "EPOS fixed stop reached",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica atingerea stopului fix. Semnalul 1 indica ca stopul fix a fost atins si activeaza monitorizarea ferestrei p2635. Implicit interconectat la semnalul de stop fix al regulatorului de pozitie.",
+      "influenteaza": "p2635, p2638",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1073,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2638",
+    "descriere_scurta": "EPOS fixed stop outside the monitoring window",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica depasirea ferestrei de monitorizare a stopului fix. Semnalul 1 indica ca pozitia a iesit din fereastra definita in p2635. Utilizat pentru detectia alunecarii axei de pe stopul fix.",
+      "influenteaza": "p2635, p2637",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1074,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2639",
+    "descriere_scurta": "EPOS torque limit reached",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica atingerea limitei de cuplu la deplasarea spre stop fix. Semnalul 1 confirma ca limita de cuplu a fost atinsa la apasarea pe stop. Utilizat pentru confirmarea contactului mecanic la operatii de strangere.",
+      "influenteaza": "p2552, p1544",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1075,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2640",
+    "descriere_scurta": "EPOS intermediate stop (0 signal)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru stop intermediar al blocului de traversare in EPOS. Semnalul 1 permite miscarea, semnalul 0 activeaza stop intermediar (motorul se deceleraeza). La revenirea semnalului 1, miscarea este reluata din starea actuala.",
+      "influenteaza": "p2641, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1076,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2641",
+    "descriere_scurta": "EPOS reject traversing task (0 signal)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru anularea task-ului de traversare in EPOS. Semnalul 1 permite executia, semnalul 0 anuleaza task-ul curent si motorul se opreste. Diferit de stop intermediar prin faptul ca task-ul este complet anulat.",
+      "influenteaza": "p2640, p2631",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1077,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2642",
+    "descriere_scurta": "EPOS direct setpoint input/MDI position setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru setpointul de pozitie in modul MDI (Manual Data Input). In modul MDI, setpointul de pozitie poate fi transmis direct fara tabela de blocuri. Implicit conectat la valoarea fixa p2690.",
+      "influenteaza": "p2643, p2644, p2645, p2647",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1078,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2643",
+    "descriere_scurta": "EPOS direct setpoint input/MDI velocity setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru setpointul de viteza in modul MDI. Permite specificarea vitezei de deplasare direct in modul MDI. Implicit interconectat la valoarea fixa p2691.",
+      "influenteaza": "p2642, p2644, p2647",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1079,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2644",
+    "descriere_scurta": "EPOS direct setpoint input/MDI acceleration override",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru override-ul acceleratiei in modul MDI. Permite scalarea acceleratiei maxime (p2571) cu un factor procentual in modul MDI. Implicit interconectat la valoarea fixa p2692.",
+      "influenteaza": "p2642, p2571, p2647",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1080,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2645",
+    "descriere_scurta": "EPOS direct setpoint input/MDI deceleration override",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru override-ul deceleratiei in modul MDI. Scala deceleratia maxima (p2573) cu un factor procentual. Implicit interconectat la valoarea fixa p2693.",
+      "influenteaza": "p2642, p2573, p2647",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1081,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2646",
+    "descriere_scurta": "EPOS velocity override",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru override-ul vitezei in EPOS activ in modurile MDI, blocuri de traversare, jog si cautare referinta. Permite reducerea procentuala a tuturor vitezelor din EPOS pentru operare in viteza redusa. Valoarea 1.0 = 100% (fara override).",
+      "influenteaza": "p2605, p2608, p2611",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1082,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2647",
+    "descriere_scurta": "EPOS direct setpoint input/MDI selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru selectia modului de operare MDI (Direct Setpoint Input). La semnalul 1, modul MDI este activ si setpointurile p2642, p2643 sunt utilizate direct. La semnalul 0, modul de blocuri de traversare este activ.",
+      "influenteaza": "p2642, p2643, p2644, p2645",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1083,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2648",
+    "descriere_scurta": "EPOS direct setpoint input/MDI positioning type",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru tipul de pozitionare in modul MDI. Semnalul 1 selecteaza pozitionare absoluta, semnalul 0 selecteaza pozitionare relativa. Permite selectia dinamica a tipului de pozitionare in modul MDI.",
+      "influenteaza": "p2647, p2651, p2652",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1084,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2649",
+    "descriere_scurta": "EPOS direct setpoint input/MDI transfer type selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru modul de transfer al valorilor in MDI. Semnalul 1 transfera valorile continuu (setpointul se actualizeaza in timp real), semnalul 0 transfera la frontul 0->1 al p2650. Modul continuu este folosit pentru urmarire dinamica.",
+      "influenteaza": "p2650, p2647",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1085,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2650",
+    "descriere_scurta": "EPOS direct setpoint input/MDI setpoint acceptance edge",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru acceptarea valorilor in modul MDI cu transfer pe front (p2649=0). Frontul 0->1 capteaza noile valori de setpoint din p2642, p2643 pentru pozitionare. Permite actualizari sincronizate ale setpointului MDI.",
+      "influenteaza": "p2649, p2647",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1086,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2651",
+    "descriere_scurta": "EPOS direct setpoint input/MDI direction selection, positive",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru selectia directiei pozitive in modul MDI cu pozitionare absoluta. Semnalul 1 forteaza deplasarea in directia pozitiva indiferent de pozitia curenta. Utilizat pentru selectia directiei la pozitionarea cu depasire modulo.",
+      "influenteaza": "p2648, p2652, p2647",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1087,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2652",
+    "descriere_scurta": "EPOS direct setpoint input/MDI direction selection negative",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru selectia directiei negative in modul MDI. Semnalul 1 forteaza deplasarea in directia negativa. Utilizat impreuna cu p2651 pentru controlul directiei in aplicatii cu pozitionare modulo.",
+      "influenteaza": "p2648, p2651, p2647",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1088,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2653",
+    "descriere_scurta": "EPOS direct setpoint input/MDI setting-up selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru selectia modului setup in MDI. Semnalul 1 selecteaza modul setup (deplasare la viteza redusa fara monitorizare de pozitionare), semnalul 0 selecteaza modul de pozitionare normal. Utilizat pentru ajustare manuala fina.",
+      "influenteaza": "p2647, p2648",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1089,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2654",
+    "descriere_scurta": "EPOS direct setpoint input/MDI mode adaptation",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru adaptarea modului MDI prin telegrama PROFIBUS 110. La CI:p2654=0, intrarile binare sunt evaluate normal. La CI:p2654>0, intrarile p2648, p2651, p2652 sunt inlocuite cu bitii din CI. Permite integrarea completa MDI prin telegram PROFIBUS.",
+      "influenteaza": "p2647, p2648, p2651, p2652",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1091,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2656",
+    "descriere_scurta": "EPOS enable basic positioner",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru activarea pozitionatorului de baza EPOS. Semnalul 1 activeaza EPOS si permite executia comenzilor de pozitionare. Semnalul 0 dezactiveaza EPOS, setpointul de viteza reverind la reglarea standard de viteza.",
+      "influenteaza": "p2549, p2550",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1092,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2657",
+    "descriere_scurta": "EPOS position actual value/position setting value",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru valoarea actuala de pozitie in EPOS. Implicit conectat la registrul de pozitie al encoderului (p2521). Determina feedback-ul de pozitie utilizat de pozitionatorul EPOS.",
+      "influenteaza": "p2656, p2658",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1093,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2658",
+    "descriere_scurta": "EPOS pos. actual value valid feedback signal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica validitatea valorii actuale de pozitie. Semnalul 1 indica ca valoarea din p2657 este valida si poate fi utilizata de EPOS. Semnalul 0 indica o valoare invalida, EPOS suspendand operatia.",
+      "influenteaza": "p2657, p2656",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1094,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2659",
+    "descriere_scurta": "EPOS referencing active feedback signal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica ca referentierea este activa in EPOS. Semnalul 1 indica ca procedura de cautare referinta sau referentiere in zbor este in curs de executie. Utilizat pentru sincronizarea controlerului superior cu starea referentierii.",
+      "influenteaza": "p2595, p2658",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1095,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2660",
+    "descriere_scurta": "EPOS measured value referencing",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru valoarea masurata utilizata in functia de referentiere EPOS. Valoarea masurata este utilizata ca noua valoare de pozitie la activarea frontului de referentiere. Implicit conectat la registrul de masura al encoderului (p2523).",
+      "influenteaza": "p2659, p2661, p2595",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1096,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2661",
+    "descriere_scurta": "EPOS measured value valid feedback signal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica validitatea valorii masurate din p2660. Semnalul 1 indica ca valoarea masurata este valida si poate fi utilizata pentru referentiere. EPOS utilizeaza valoarea numai cand acest semnal este activ.",
+      "influenteaza": "p2660, p2659",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1097,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2662",
+    "descriere_scurta": "EPOS adjustment value valid feedback signal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica validitatea valorii de ajustare din p2660. Semnalul 1 indica ca valoarea de ajustare este valida. Distinct de p2661, permite diferentierea intre valorile de masura si cele de ajustare.",
+      "influenteaza": "p2660, p2661",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1098,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2663",
+    "descriere_scurta": "EPOS clamping active feedback signal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de feedback care indica ca clamping-ul este activ pentru deplasarea spre stop fix. Semnalul 1 indica ca functia de clamping (mentinere pozitie cu forta controlata) este activa. Utilizat pentru confirmarea starii clamping in logica de control.",
+      "influenteaza": "p2552, p2553",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1099,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2690",
+    "descriere_scurta": "EPOS position fixed setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza o valoare fixa de setpoint pentru pozitie in modul MDI al EPOS. Reprezinta pozitia tinta pentru o deplasare absoluta sau offset pentru deplasare relativa. Se utilizeaza cand setpointul de pozitie nu provine din sistemul de comunicatie.",
+      "influenteaza": "p2642",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1100,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2691",
+    "descriere_scurta": "EPOS velocity fixed setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza o valoare fixa de setpoint pentru viteza in modul MDI al EPOS. Determina viteza maxima de deplasare in modul MDI. Se utilizeaza ca valoare default cand viteza nu este specificata din controllerul superior.",
+      "influenteaza": "p2643, p2646",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1101,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2692",
+    "descriere_scurta": "EPOS acceleration override, fixed setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea fixa de override pentru acceleratie in modul MDI. Valoarea 100% corespunde acceleratiei maxime din p2571, valori sub 100% reduc acceleratia. Se utilizeaza cand override-ul de acceleratie nu provine din comunicatie.",
+      "influenteaza": "p2644, p2571",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1102,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2693",
+    "descriere_scurta": "EPOS deceleration override, fixed setpoint",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea fixa de override pentru deceleratie in modul MDI. Valoarea 100% corespunde deceleratiei maxime din p2573, valori sub 100% reduc deceleratia. Se utilizeaza ca default cand override-ul de deceleratie nu este disponibil din comunicatie.",
+      "influenteaza": "p2645, p2573",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1106,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2900",
+    "descriere_scurta": "Fixed value 1 [%]",
+    "GENERATED": {
+      "explicatie": "p=Seteaza o valoare fixa procentuala care poate fi utilizata ca sursa de semnal conector in interconectarile BICO. Furnizeaza un semnal de valoare constanta pentru scopuri de intertconectare si testare. Util pentru definirea offseturilor sau scalari fixe in logica BICO.",
+      "influenteaza": "p2901",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1107,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2901",
+    "descriere_scurta": "Fixed value 2 [%]",
+    "GENERATED": {
+      "explicatie": "p=Seteaza o a doua valoare fixa procentuala disponibila ca sursa de semnal conector in BICO. Permite doua valori fixe independente pentru utilizare in logica de interconectare. Util impreuna cu p2900 pentru definirea a doua constante diferite.",
+      "influenteaza": "p2900",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1108,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3016",
+    "descriere_scurta": "MotId torque constant identified",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza constanta de cuplu a motorului sincron determinata prin identificarea datelor motorului. Valoarea poate fi modificata dupa identificare si acceptata in p0316 prin executarea p1910/p1960=-3. Compararea cu datele de placa permite verificarea rezultatelor identificarii.",
+      "influenteaza": "p0316, p1900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1109,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3017",
+    "descriere_scurta": "MotId voltage constant identified",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza constanta de tensiune a motorului sincron determinata prin identificare. Unitate: Vrms/(1000 rpm) masurare faza-faza. Valoarea identificata poate fi acceptata in p0317 prin p1910/p1960=-3.",
+      "influenteaza": "p0317, p1900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1110,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3020",
+    "descriere_scurta": "MotId magnetizing current identified",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza curentul de magnetizare al motorului de inductie determinat prin identificarea datelor. Curentul de magnetizare identificat poate fi acceptat in p0320 prin p1910/p1960=-3. Valoarea corecta este esentiala pentru functionarea optima a regulatorului de flux.",
+      "influenteaza": "p0320, p1900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1111,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3027",
+    "descriere_scurta": "MotId optimum load angle identified",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza unghiul optim de sarcina al motorului sincron determinat prin identificarea datelor. Unghiul optim asigura maximizarea cuplului la curent de stator minim. Valoarea poate fi acceptata in p0327 prin p1910/p1960=-3.",
+      "influenteaza": "p0327, p1900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1112,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3028",
+    "descriere_scurta": "MotId reluctance torque constant identified",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza constanta de cuplu de reluctanta a motorului sincron identificata prin identificarea datelor. Curentul de reluctanta determina componenta de cuplu suplimentar in motoarele sincrone cu reluctanta (IPM). Poate fi acceptata in p0328 prin p1910/p1960=-3.",
+      "influenteaza": "p0328, p1900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1113,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3030",
+    "descriere_scurta": "ChId factor plane adaptation positive",
+    "GENERATED": {
+      "explicatie": "p=Seteaza factorul pentru compensarea planului in directia pozitiva din identificarea caracteristicii. Corespunde valorii p1830 din setul de date de drive selectat pentru identificare. Utilizat pentru compensarea asimetriei valorilor de comutare in directia pozitiva.",
+      "influenteaza": "p1830, p3031",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1114,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3031",
+    "descriere_scurta": "ChId factor plane adaptation negative",
+    "GENERATED": {
+      "explicatie": "p=Seteaza factorul pentru compensarea planului in directia negativa din identificarea caracteristicii. Corespunde valorii p1831 din setul de date de drive selectat pentru identificare. Impreuna cu p3030 defineste compensatia simetrica a asimetriei de comutare.",
+      "influenteaza": "p1831, p3030",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1115,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3033",
+    "descriere_scurta": "ChId transition point compensation Q1 positive zero range",
+    "GENERATED": {
+      "explicatie": "p=Afiseaza debitul Q pentru punctul 1 pozitiv (zona zero) al compensatiei punctului de tranzitie din identificarea caracteristicii. Corespunde p1833 din setul de date de drive selectat pentru identificare. Utilizat pentru compensarea neliniaritatilor la tranzitia prin zero a curbei caracteristice.",
+      "influenteaza": "p1833, p3030, p3031",
+      "categorie": "Motor"
+    }
+  }
+]

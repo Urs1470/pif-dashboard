@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 1634,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8504",
+    "descriere_scurta": "Input signal word-serially 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru semnalele de intrare seriale pe cuvant, canalul 2. Valoarea este disponibila la iesirea de conector r8514 pentru interconectare. Al treilea canal de intrare seriala, parte din interfata IF1/IF2.",
+      "influenteaza": "r8514",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1635,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8505",
+    "descriere_scurta": "Input signal word-serially 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru semnalele de intrare seriale pe cuvant, canalul 3. Valoarea este disponibila la iesirea de conector r8515 pentru interconectare. Al patrulea canal de intrare seriala pe cuvant.",
+      "influenteaza": "r8515",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1636,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8550",
+    "descriere_scurta": "AOP LOCAL/REMOTE",
+    "GENERATED": {
+      "explicatie": "p - Seteaza salvarea configuratiei actuale a panoului operator avansat (AOP). Stocheaza starea curenta LOCAL/REMOTE a AOP in memorie non-volatila. Asigura pastrarea modului de operare selectat dupa repornire.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1637,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8602",
+    "descriere_scurta": "CAN SYNC object",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrul obiectului SYNC pentru obiectele CANopen (1005 hex: COB-ID). Defineste ID-ul mesajului de sincronizare CAN pentru comunicatia CANopen sincronizata. Trebuie configurat identic pe toate nodurile CANopen ale retelei.",
+      "influenteaza": "p8620, p8622",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1638,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8603",
+    "descriere_scurta": "CAN COB-ID Emergency Message",
+    "GENERATED": {
+      "explicatie": "p - Seteaza COB-ID pentru mesajul de urgenta (telegrama de eroare) CANopen. Corespunde obiectului CANopen 1014 hex: COB-ID. Configureaza adresa CAN a mesajelor de defect generate de acest nod.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1640,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8606",
+    "descriere_scurta": "CAN Producer Heartbeat Time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de trimitere ciclica a telegramelor heartbeat CAN. Ciclul minim este 100 ms; la p8606 = 0 telegramele heartbeat nu sunt trimise. Permite monitorizarea continua a disponibilitatii nodului CAN de catre controller.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1645,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8620",
+    "descriere_scurta": "CAN Node-ID",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza sau seteaza Node ID-ul CANopen. Poate fi setat prin comutatorul de adresa de pe CU (prioritate) sau prin acest parametru daca adresa comutatorului este 0. Modificarile devin efective dupa salvare si POWER ON.",
+      "influenteaza": "p8622, p8602",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1646,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8622",
+    "descriere_scurta": "CAN bit rate",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rata de biti pentru bus-ul CAN. Bitii de temporizare corespunzatori sunt selectati din p8623. Valorile corespund standardelor comune CANopen (ex: 6 = 500 kbps). Toate nodurile CAN trebuie sa aiba aceeasi rata configurata.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1649,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8641",
+    "descriere_scurta": "CAN Abort Connection Option Code",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul drive-ului la aparitia unei erori de comunicatie CAN. Diferitele valori corespund la OFF2 (frana libera), OFF1 (frana controlata) etc. Determina reactia de siguranta la pierderea comunicatiei CANopen.",
+      "influenteaza": "p8699",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1650,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8684",
+    "descriere_scurta": "CAN NMT state after booting",
+    "GENERATED": {
+      "explicatie": "p - Seteaza starea NMT CANopen efectiva dupa boot. Valoarea 127 corespunde starii 'Pre-operational'; valoarea 5 corespunde starii 'Operational'. Determina comportamentul initial al comunicatiei CAN la pornire.",
+      "influenteaza": "p8685",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1651,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8685",
+    "descriere_scurta": "CAN NMT states",
+    "GENERATED": {
+      "explicatie": "p - Seteaza si afiseaza starea NMT CANopen. Permite comanda manuala a starii masinii de stare NMT (Initialization, Pre-operational, Operational, Stopped). Utilizat pentru diagnosticarea si controlul comunicatiei CANopen.",
+      "influenteaza": "p8684",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1652,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8699",
+    "descriere_scurta": "CAN: RPDO monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru datele de proces primite via bus-ul CAN. Daca nu se primesc date in acest interval, se genereaza defect F08702. La valoare 0 monitorizarea este dezactivata.",
+      "influenteaza": "p8641",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1685,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8744",
+    "descriere_scurta": "CAN PDO mapping configuration",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza maparea PDO (Process Data Object) pentru CANopen. Valoarea 1 si 2 corespund diferitelor configuratii predefinite de mapare. Determina ce semnale sunt incluse in telegramele ciclice CAN.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1689,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8786",
+    "descriere_scurta": "CAN status word bit 14",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru bitul 14 al cuvantului de stare CANopen. Permite asignarea unui semnal BICO personalizat la acest bit al cuvantului de stare transmis. Extinde informatia de stare disponibila via CANopen.",
+      "influenteaza": "p8787",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1690,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8787",
+    "descriere_scurta": "CAN status word bit 15",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru bitul 15 al cuvantului de stare CANopen. Permite asignarea unui semnal BICO la ultimul bit disponibil al cuvantului de stare. Ofera informatii personalizate de stare via CANopen.",
+      "influenteaza": "p8786",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1691,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8790",
+    "descriere_scurta": "CAN control word - auto interconnection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza interconectarea BICO automata a cuvantului de control CANopen. La valoare 1 cuvantul de control CANopen este interconectat automat la sursele de control ale drive-ului. Simplifica configurarea controlului via CANopen.",
+      "influenteaza": "p8791",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1692,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8791",
+    "descriere_scurta": "CAN stop option code",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia bitului 8 'Stop' al cuvantului de control CANopen (STW.8). La -1 functia stop este dezactivata; valorile 0-3 determina tipul de oprire. Permite configurarea comportamentului la comanda STOP via CANopen.",
+      "influenteaza": "p8790",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1694,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8805",
+    "descriere_scurta": "Identification and maintenance 4 configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru continutul identificarii si mentenantei 4 (I&M 4, p8809). Determina ce informatii de identificare si mentenanta sunt incluse in blocul I&M 4. Utilizat pentru integrarea in sisteme de management al activelor (PROFINET).",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1699,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8811",
+    "descriere_scurta": "SINAMICS Link project selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza selectia proiectului pentru SINAMICS Link. Permite selectarea configuratiei specifice a legaturilor SINAMICS Link intre drive-uri. Utilizat in sisteme cu comunicatie rapida directa intre drive-uri via CBE20.",
+      "influenteaza": "p8836",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1703,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8835",
+    "descriere_scurta": "CBE20 firmware selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza versiunea de firmware pentru CBE20 (Communication Board Ethernet 20). Permite alegerea firmwarelui specific functionalitatii dorite. Modificarea necesita reinitializare pentru a intra in vigoare.",
+      "influenteaza": "p8836",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1704,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8836",
+    "descriere_scurta": "SINAMICS Link address",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa nodului in reteaua SINAMICS Link. Fiecare drive dintr-o retea SINAMICS Link trebuie sa aiba o adresa unica. Configureaza pozitia acestui drive in topologia SINAMICS Link.",
+      "influenteaza": "p8811",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1707,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8840",
+    "descriere_scurta": "COMM BOARD monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru datele de proces primite via COMM BOARD. Daca CU nu primeste date de la COMM BOARD in acest interval, se genereaza un mesaj corespunzator. Protejeaza impotriva pierderii comunicatiei cu placa de comunicatie.",
+      "influenteaza": "p8842",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1709,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8842",
+    "descriere_scurta": "Activate COMM BOARD send configuration",
+    "GENERATED": {
+      "explicatie": "p - Activeaza o configuratie de trimitere modificata pentru COMM BOARD. La p8842 = 1, valorile din p8841 sunt transferate si activate pe COMM BOARD; ulterior p8842 este resetat automat la zero. Utilizat la reconfigurarea dinamica a comunicatiei.",
+      "influenteaza": "p8840",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1710,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8844",
+    "descriere_scurta": "IF2 fault delay",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pana la initierea defectului F01910 dupa o cadere a setpoint-ului IF2. Ofera timp aplicatiei sa raspunda la cadere (ex: retragere de urgenta) in timp ce drive-ul inca functioneaza. Esential in aplicatii cu cerinte de retragere sigura.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1711,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8848",
+    "descriere_scurta": "IF2 PZD sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza perioada de esantionare pentru interfata ciclica 2 (IF2). Determina frecventa de actualizare a datelor de proces pe interfata IF2. O valoare mai mica ofera sincronizare mai rapida dar creste traficul de comunicatie.",
+      "influenteaza": "p8844",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1736,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8904",
+    "descriere_scurta": "IE DHCP mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul DHCP pentru interfata Industrial Ethernet (X127) de pe CU. Determina daca adresa IP este obtinuta dinamic (DHCP) sau configurata static. Influenteaza modul de adresare al drive-ului in reteaua Ethernet industriala.",
+      "influenteaza": "p8905",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1737,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8905",
+    "descriere_scurta": "IE Interface configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza activarea configuratiei interfetei pentru portul Industrial Ethernet (X127). La scrierea valorii 1, configuratia de retea este activata. Necesara dupa modificarea setarilor de adresa IP ale interfetei Ethernet.",
+      "influenteaza": "p8904",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1738,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8908",
+    "descriere_scurta": "Activate FTP",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza serverul FTP al drive-ului. FTP permite transferul fisierelor de parametri, firmware si trace via retea Ethernet. Trebuie dezactivat in aplicatii cu cerinte ridicate de securitate cibernetica.",
+      "influenteaza": "p8904",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1743,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8924",
+    "descriere_scurta": "PN DHCP Mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul DHCP pentru interfata PROFINET integrata de pe CU. Modul activ DHCP este afisat in r8934. Permite configurarea automata a adresei IP pentru conexiunea PROFINET.",
+      "influenteaza": "p8925",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1744,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8925",
+    "descriere_scurta": "PN interface configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza activarea configuratiei interfetei pentru portul PROFINET integrat. La scrierea unei valori nenule, configuratia PROFINET este aplicata. Necesara dupa modificarea setarilor de adresa PROFINET.",
+      "influenteaza": "p8924",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1745,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8929",
+    "descriere_scurta": "PN remote controller number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de controllere remote asteptate pentru PROFINET integrat. La valoare 2 se activeaza 'Shared Device' - drive-ul este accesat simultan de controllerul de automatizare si controllerul de siguranta F-CPU. Esential pentru sisteme Safety cu PROFINET.",
+      "influenteaza": "p8924, p8925",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1750,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8944",
+    "descriere_scurta": "CBE2x DHCP Mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul DHCP pentru placa de comunicatie CBE20/CBE25. Determina modul de obtinere a adresei IP pentru portul Ethernet al CBE. Permite configurarea flexibila a adresarii retelei pe placa de comunicatie.",
+      "influenteaza": "p8945",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1751,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8945",
+    "descriere_scurta": "CBE2x interface configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza activarea configuratiei interfetei pentru CBE20/CBE25. Aplica noile setari de retea la placa de comunicatie. Necesar dupa modificarea adresarii IP sau a configuratiei CBE.",
+      "influenteaza": "p8944",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1752,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8969",
+    "descriere_scurta": "PROFIsafe wait for clock synchronization",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul conexiunii PROFIsafe in functie de o alta conexiune de comunicatie izocrona. Permite sincronizarea initierii PROFIsafe cu sincronizarea de ceas a sistemului. Esential pentru aplicatii Safety cu cerinte stricte de sincronizare temporala.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1753,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8986",
+    "descriere_scurta": "Web server configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza activarea si configurarea serverului web integrat in drive. Accesul se face via interfetele Ethernet si PROFINET ale drive-ului prin adresa IP configurata. Permite monitorizarea si diagnosticarea drive-ului printr-un browser web standard.",
+      "influenteaza": "p8904, p8924",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1756,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9210",
+    "descriere_scurta": "Flashing component number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul componentei care trebuie sa clipeasca LED-ul sau de stare. Permite identificarea vizuala a unei componente specifice din sistem. Utilizat la localizarea fizica a unui modul intr-un cabinet cu mai multe componente.",
+      "influenteaza": "p9211",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1757,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9211",
+    "descriere_scurta": "Flash function",
+    "GENERATED": {
+      "explicatie": "p - Seteaza functia pentru componenta selectata in p9210. Dupa initierea functiei, parametrul este resetat automat. Permite pornirea/oprirea functiei de indicare optica a componentei selectate.",
+      "influenteaza": "p9210",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1758,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9221",
+    "descriere_scurta": "Statistic components Id",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza ID-ul componentei ale carei statistici sa fie afisate in p9222. Permite accesul la date statistice individuale pentru fiecare componenta din sistem. Utilizat in diagnosticarea performantei si in monitorizarea starii componentelor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1759,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9300",
+    "descriere_scurta": "SI Motion monitoring clock cycle (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul de ceas de monitorizare pentru monitorizarea miscarilor sigure pe modulul motor. Determina frecventa executiei algoritmilor Safety Integrated pe procesorul dedicat. Valori mai mici ofera reactie mai rapida dar cresc incarcarea procesorului.",
+      "influenteaza": "p9301, p9311",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1760,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9301",
+    "descriere_scurta": "SI Motion enable safety functions (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnalele de activare pentru monitorizarea miscarilor sigure. Bitii individuali activeaza functii specifice Safety Integrated (STO, SS1, SBC, SOS, SSM, SDI, SLS). Necesita confirmarea cu p9801 dupa modificare.",
+      "influenteaza": "p9300, p9306",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1761,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9302",
+    "descriere_scurta": "SI Motion axis type (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul axei (ax liniar sau ax rotativ/arbore). Influenteaza unitatile de masura utilizate in parametrii Safety (mm/min vs rpm). Trebuie setat corect conform tipului de motor si aplicatiei.",
+      "influenteaza": "p9300, p9317, p9318",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1762,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9305",
+    "descriere_scurta": "SI Motion SP modulo value (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea modulo in grade pentru axele rotative ale functiei 'Safe position'. Activata la referentiere sigura si la transferul pozitiei via PROFIsafe. La valoare 0 functia modulo este dezactivata; trebuie setat la 2^n revolutii pentru corectitudine.",
+      "influenteaza": "p9301, p9302",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1763,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9306",
+    "descriere_scurta": "SI Motion function specification (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza specificatia functiei pentru monitorizarea miscarilor sigure. Determina setul de functii Safety disponibile si modul de operare global. Trebuie configurat conform cerintelor de siguranta ale aplicatiei.",
+      "influenteaza": "p9301, p9307",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1764,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9307",
+    "descriere_scurta": "SI Motion function configuration MM",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia detaliata a functiilor de monitorizare a miscarilor sigure. Bitii controleaza aspecte specifice ale functiilor Safety Integrated. Permite personalizarea avansata a comportamentului functiilor Safety.",
+      "influenteaza": "p9306, p9301",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1765,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9309",
+    "descriere_scurta": "SI Motion behavior during pulse suppression (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul functiilor de siguranta si feedback-ului acestora la suprimarea pulsurilor in operarea fara encoder. Permite configurarea reactiei Safety la situatia speciala de pulsuri suprimate. Important la comanda STO in sisteme sensorless.",
+      "influenteaza": "p9301",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1766,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9311",
+    "descriere_scurta": "SI Motion actual value sensing clock cycle (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul de ceas al captarii valorii actuale pentru monitorizarea miscarilor sigure. Un ciclu mai lent reduce viteza maxima permisa dar diminueaza incarcarea CU. Viteza maxima admisa este afisata in r9730; la 0 ms se utilizeaza ciclul isochronous.",
+      "influenteaza": "p9300",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1767,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9312",
+    "descriere_scurta": "Select SI Motion safety functions without selection (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza functiile de siguranta fara selectie (permanent active). Trebuie activate mai intai prin p9601.5/p9801.5. Permite selectarea permanenta a unor functii (SLS, SDI +/- ) care nu necesita selectie dinamica.",
+      "influenteaza": "p9301",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1768,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9313",
+    "descriere_scurta": "SI Motion non safety-relevant measuring steps POS1 (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pasii de masurare non-Safety ai valorii de pozitie POS1. Encoderele utilizate pentru monitorizarea Safety pe procesorul 2 trebuie parametrizate aici. Definesterezolutia pozitiei folosita de algoritmii de comparare crosswise.",
+      "influenteaza": "p9315, p9326",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1769,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9314",
+    "descriere_scurta": "SI Motion absolute encoder linear measuring steps (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rezolutia pozitiei absolute pentru un encoder absolut liniar. Encoderele utilizate pentru monitorizarea Safety pe MM trebuie parametrizate in acest parametru. Determina granularitatea masuratoriide pozitie a encoderului absolut.",
+      "influenteaza": "p9316, p9326",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1770,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9315",
+    "descriere_scurta": "SI Motion coarse position value configuration (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia encoderului pentru valoarea de pozitie grosiera redundanta. Encoderele utilizate pentru monitorizarea Safety pe MM trebuie parametrizate. Defineste caracteristicile sursei de pozitie grosiera utilizate in compararea crosswise.",
+      "influenteaza": "p9313, p9316",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1771,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9316",
+    "descriere_scurta": "SI Motion encoder configuration, safety functions (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia encoderului si a valorii actuale de pozitie pentru functiile Safety pe MM/HM. Bitii controleaza aspecte ca directia encoderului, tipul si source-ul pozitiei. Determina cum este interpretat semnalul encoderului pentru Safety.",
+      "influenteaza": "p9313, p9315",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1772,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9317",
+    "descriere_scurta": "SI Motion linear scale grid division (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza divizia de grila pentru un encoder liniar in monitorizarea Safety. Defineste distanta fizica intre doua linii succesive ale scalei lineare. Esential pentru calculul corect al pozitiei si vitezei in aplicatii liniare.",
+      "influenteaza": "p9316, p9302",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1773,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9318",
+    "descriere_scurta": "SI Motion encoder pulses per revolution (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de impulsuri ale encoderului pe revolutie pentru encodere rotative in monitorizarea Safety. Encoderele utilizate pentru functiile Safety pe MM trebuie parametrizate. Determina rezolutia unghiulara a masuratoriide pozitie Safety.",
+      "influenteaza": "p9316, p9302",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1774,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9319",
+    "descriere_scurta": "SI Motion fine resolution G1_XIST1 (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rezolutia fina pentru G1_XIST1 in biti pentru monitorizarea Safety. Encoderele utilizate pentru functiile Safety pe MM trebuie parametrizate. Determina numarul de biti de rezolutie fina utilizati in calculul pozitiei Safety.",
+      "influenteaza": "p9316, p9313",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1775,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9320",
+    "descriere_scurta": "SI Motion spindle pitch (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza raportul de transmisie intre encoder si sarcina in mm/revolutie pentru un ax liniar cu encoder rotativ. Encoderele utilizate pentru Safety pe MM trebuie parametrizate. Convetreste miscarea unghiulara a motorului in deplasare liniara a sarcinii.",
+      "influenteaza": "p9316, p9302",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1778,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9323",
+    "descriere_scurta": "SI Motion red. coarse position value valid bits (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de biti valizi ai valorii de pozitie grosiera redundante. Encoderele utilizate pentru Safety pe MM trebuie parametrizate. Defineste cati biti ai cuvantului de pozitie grosiera sunt valizi pentru compararea Safety.",
+      "influenteaza": "p9315, p9324",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1779,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9324",
+    "descriere_scurta": "SI Motion redundant coarse pos. value fine resolution bits (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de biti valizi pentru rezolutia fina a valorii de pozitie grosiera redundante. Completeaza configuratia encoderului pentru pozitia grosiera Safety. Determina precizia pozitiei grosiere utilizata in algoritmii Safety.",
+      "influenteaza": "p9323, p9315",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1780,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9325",
+    "descriere_scurta": "SI Motion redundant coarse pos. value relevant bits (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de biti relevanti ai valorii de pozitie grosiera redundante. Defineste dimensiunea campului de pozitie grosiera utilizat in compararea crosswise Safety. Face parte din tripletul de parametrizare p9323+p9324+p9325.",
+      "influenteaza": "p9323, p9324",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1781,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9326",
+    "descriere_scurta": "SI Motion encoder assignment (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul encoderului utilizat pe modulul motor pentru functiile de monitorizare a miscarilor sigure. Permite selectarea encoderului 1, 2 sau 3 pentru monitorizarea Safety. De obicei se utilizeaza un encoder diferit de cel de control principal.",
+      "influenteaza": "p9313, p9316",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1783,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9329",
+    "descriere_scurta": "SI Motion Gx_XIST1 coarse pos safe most significant bit (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul bitului cel mai semnificativ sigur (MSB) al pozitiei grosiere Gx_XIST1. Encoderele utilizate pentru Safety pe MM trebuie parametrizate. Defineste limita superioara a campului de pozitie grosiera sigura.",
+      "influenteaza": "p9323, p9315",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1784,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9330",
+    "descriere_scurta": "SI Motion standstill tolerance (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta pentru functia 'Safe Operating Stop' (SOS). Defineste fereastra de pozitie in care axul poate ramane in repaus sigur. Depasirea acestei tolerante in modul SOS declanseaza un raspuns Safety.",
+      "influenteaza": "p9351, p9352",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1789,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9341",
+    "descriere_scurta": "SI Motion encoder comparison algorithm (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza algoritmul de comparare pentru functiile de monitorizare a pozitiei encoderului in Safety. Permite selectarea metodei de comparare crosswise intre cele doua canale de monitorizare. Influenteaza detectia inconsistentelor intre valorile de pozitie.",
+      "influenteaza": "p9342, p9344",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1790,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9342",
+    "descriere_scurta": "SI Motion act val comparison tol (crosswise) (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta pentru compararea crosswise a pozitiei actuale intre cele doua canale de monitorizare Safety. Daca devierea depaseste aceasta valoare, se initiaza un raspuns Safety. Valoarea trebuie sa acomodeze jocul mecanic si erorile de encoder.",
+      "influenteaza": "p9341, p9343",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1791,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9343",
+    "descriere_scurta": "SI Motion gearbox switching position tolerance (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de crestere a tolerantei la compararea crosswise in timp ce treapta de viteza este comutata. Factorul este aplicat in functie de starea sincronizarii valorii actuale. Previne false alarme Safety la comutarea treptei de viteza.",
+      "influenteaza": "p9342",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1792,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9344",
+    "descriere_scurta": "SI Motion actual value comparison tolerance (referencing) (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta pentru verificarea valorilor actuale la referentiere (encoder incremental) sau la pornire (encoder absolut). Comparatia Safety intre valorile actuale trebuie sa se incadreze in aceasta toleranta. Detecteaza inconsistente la initializare.",
+      "influenteaza": "p9341, p9342",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1793,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9345",
+    "descriere_scurta": "SI Motion SSM filter time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de filtrare pentru semnalul de feedback SSM pentru detectia standstill. Filtreaza variatiile rapide ale semnalului de viteza pentru o detectie stabila a standstill. Influenteaza latenta raspunsului SSM la tranzitii viteza/standstill.",
+      "influenteaza": "p9346, p9347",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1794,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9346",
+    "descriere_scurta": "SI Motion SSM velocity limit (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de viteza pentru semnalul SSM de detectie standstill (n < nx). La subcotirea acestei limite se seteaza semnalul 'SSM feedback activ'. La p9368 = p9546 = 0 valoarea este aplicabila si pentru SAM.",
+      "influenteaza": "p9345, p9347",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1795,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9347",
+    "descriere_scurta": "SI Motion SSM velocity hysteresis (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza histerezisul de viteza pentru semnalul SSM de detectie standstill. Previne comutarea frecventa a semnalului SSM cand viteza oscileaza in jurul limitei p9346. Asigura stabilitate in zona de tranzitie viteza/standstill.",
+      "influenteaza": "p9345, p9346",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1796,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9348",
+    "descriere_scurta": "SI Motion SAM actual velocity tolerance (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta de viteza pentru functia SAM (Safe Acceleration Monitor). Limiteaza acceleratia considerata sigura in timpul monitorizarii SAM. Depasirea acestei tolerante initiaza un raspuns Safety.",
+      "influenteaza": "p9368",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1797,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9349",
+    "descriere_scurta": "SI Motion slip velocity tolerance (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta de viteza pentru compararea crosswise intre cele doua canale de monitorizare intr-un sistem cu 2 encodere. Acomodata diferentele de viteza datorate alunecarii mecanice. Previne declansari false din cauza jocului cinematic al transmisiei.",
+      "influenteaza": "p9342",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1798,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9351",
+    "descriere_scurta": "SI Motion SLS(SG) changeover/SOS (SBH) delay time (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru comutarea SLS si activarea SOS. In acest interval la comutarea la o viteza mai mica, nivelul anterior ramane activ. Permite braking-ul axei la noul nivel de viteza inainte de aplicarea restrictiei.",
+      "influenteaza": "p9330, p9352",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1799,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9352",
+    "descriere_scurta": "SI Motion transition time STOP C to SOS (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP C la 'Safe Operating Stop' (SOS). In acest interval axul trebuie sa decelereze si sa se stabilizeze. Depasirea timpului de tranzitie sau a tolerantei SOS declansaza STOP B.",
+      "influenteaza": "p9330, p9351",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1800,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9353",
+    "descriere_scurta": "SI Motion transition time STOP D to SOS (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP D la 'Safe Operating Stop' (SOS). Defineste intervalul maxim in care axul trebuie sa atinga pozitia de standstill sigur. Depasirea initiaza o reactie Safety mai severa.",
+      "influenteaza": "p9330, p9351",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1801,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9354",
+    "descriere_scurta": "SI Motion transition time STOP E to SOS (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP E la 'Safe Operating Stop' (SOS). Permite axei sa decelereze controlat la standstill sigur. Dupa expirare, pozitia trebuie sa fie in toleranta p9330.",
+      "influenteaza": "p9330, p9351",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1802,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9355",
+    "descriere_scurta": "SI Motion transition time STOP F to STOP B (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP F la STOP B. Defineste intervalul in care sistemul trebuie sa ajunga la starea STOP B. Permite timp suficient pentru tranzitia controlata intre starile Safety.",
+      "influenteaza": "p9356",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1803,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9356",
+    "descriere_scurta": "SI Motion STOP A delay time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru STOP A dupa STOP B/SS1. In acest interval SS1 realizeaza decelerarea controlata inainte de STO. Valoarea implicita foarte mare (100 secunde) nu limiteaza practic decelerarea SS1.",
+      "influenteaza": "p9360, p9357",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1804,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9357",
+    "descriere_scurta": "SI Motion STO test time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul dupa care STO trebuie sa fie activ la initierea test stop-ului. Verifica functionarea corecta a circuitelor STO. Daca STO nu este confirmat in acest interval, se genereaza un defect Safety.",
+      "influenteaza": "p9356",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1805,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9358",
+    "descriere_scurta": "SI Motion acceptance test mode time limit (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima a modului de test de acceptanta. Daca testul depaseste aceasta limita, modul este terminat automat. Previne functionarea indelungata in modul de test de acceptanta.",
+      "influenteaza": "p9370",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1806,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9360",
+    "descriere_scurta": "SI Motion STO shutdown velocity (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de oprire pentru activarea STO. Sub aceasta viteza se considera standstill si STO este selectat in STOP B/SS1. Valoarea trebuie sa fie suficient de mica pentru o activare sigura a STO.",
+      "influenteaza": "p9356, p9346",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1809,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9364",
+    "descriere_scurta": "SI Motion SDI tolerance (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta pentru functia 'Safe motion direction' (SDI). Aceasta miscare in directia monitorizata este inca permisa inainte de initierea mesajului C30716. Permite mici miscari in directia interzisa fara declansare imediata.",
+      "influenteaza": "p9365, p9366",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1810,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9365",
+    "descriere_scurta": "SI Motion SDI delay time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru functia SDI dupa selectare. In aceasta perioada miscarea in directia monitorizata este inca permisa pentru decelerare. Permite braking-ul axei inainte de aplicarea restrictiei de directie.",
+      "influenteaza": "p9364, p9366",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1811,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9366",
+    "descriere_scurta": "SI Motion SDI stop response (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza raspunsul de oprire pentru functia SDI. Aceasta setare se aplica ambelor directii de miscare monitorizate. Valoarea determina tipul de reactie Safety la depasirea tolerantei SDI.",
+      "influenteaza": "p9364, p9365",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1812,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9368",
+    "descriere_scurta": "SI Motion SAM velocity limit (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de viteza pentru functia SAM. SAM este dezactivata dupa ce viteza scade sub aceasta limita. Determina cand monitorizarea SAM este considerata incheiata cu succes.",
+      "influenteaza": "p9348, p9346",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1813,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9370",
+    "descriere_scurta": "SI Motion acceptance test mode (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza selectarea si deselectarea modului de test de acceptanta Safety. In modul de test, functiile Safety pot fi testate manual. Obligatoriu la prima punere in functiune si la orice modificare a configuratiei Safety.",
+      "influenteaza": "p9358",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1814,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9374",
+    "descriere_scurta": "SI Motion safe position scaling (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare pentru transferul pozitiei sigure via PROFIsafe in format 16 biti. Permite ajustarea rezolutiei si gamei pozitiei transmise catre controllerul de siguranta. Trebuie corelat cu interpretarea din controllerul F-CPU.",
+      "influenteaza": "p9305",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1815,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9377",
+    "descriere_scurta": "SI Motion SLP delay time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea la selectarea functiei SLP si la comutarea intre doua game SLP active cand noua gama nu este inclusa in cea veche. Permite axei sa paraseasca zona interzisa inainte de activarea monitorizarii pozitiei. Utilizat in configurarea limitatoarelor software de calatorie.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1816,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9380",
+    "descriere_scurta": "SI Motion STO delay bus failure (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea dupa care STO este executat la caderea bus-ului. In acest interval aplicatia poate realiza o retragere de urgenta. Asigura activarea sigura a STO in caz de pierdere a comunicatiei Safety.",
+      "influenteaza": "p9356",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1817,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9381",
+    "descriere_scurta": "SI Motion brake ramp reference value (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta pentru definirea rampei de franare Safety (SS2/STOP B). Rata de crestere a rampei depinde de p9381 (valoarea de referinta) si p9383 (timpul de monitorizare). Trebuie setat la viteza nominala tipica sau maxima a aplicatiei.",
+      "influenteaza": "p9382, p9383",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1818,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9382",
+    "descriere_scurta": "SI Motion brake ramp delay time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru monitorizarea rampei de franare Safety. Monitorizarea rampei incepe dupa expirarea intarzierii. Permite un interval initial inainte de inceperea monitorizarii decelerarii.",
+      "influenteaza": "p9381, p9383",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1819,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9383",
+    "descriere_scurta": "SI Motion brake ramp monitoring time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru definirea rampei de franare Safety. Rata de crestere a rampei depinde de p9381 si p9383. La expirare, viteza trebuie sa fi scazut la zero sau sub limita SSM.",
+      "influenteaza": "p9381, p9382",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1820,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9385",
+    "descriere_scurta": "SI Motion actual value sensing sensorless fault tolerance (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta monitorizarii plauzibilitatii unghiului de curent si tensiune pentru captarea sensorless. O valoare mai mare creste robustetea la inversari la viteze mici si in gama de slabire a campului. Influenteaza calitatea captarii vitezei sensorless in Safety.",
+      "influenteaza": "p9387, p9388",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1822,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9387",
+    "descriere_scurta": "SI Motion actual value sensing sensorless filter time (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de filtrare pentru netezirea valorii actuale la captarea sensorless Safety. Un filtru mai lent reduce zgomotul dar introduce intarziere. Influenteaza stabilitatea captarii vitezei sensorless in algoritmii Safety.",
+      "influenteaza": "p9385, p9388",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1823,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9388",
+    "descriere_scurta": "SI Motion actual value sensing sensorless minimum current (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul minim pentru captarea sensorless a valorii actuale Safety referit la 1 A. Trebuie crescut daca C30711 apare cu valoarea 1042; scazut daca apare cu 1041. Conditie: |p0305 * p9783| >= p9388 * 1.2 pentru motoare sincrone.",
+      "influenteaza": "p9385, p9387",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1824,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9389",
+    "descriere_scurta": "SI Motion actual value sensing sensorless accel. limit (MM)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de acceleratie pentru filtrarea fluctuatiilor de viteza la captarea sensorless Safety. Valori mai mici atenueaza varfurile de viteza la accelerare; valori mai mari permit fluctuatii mai mari. Ajustat daca C30711 apare cu valoarea 1043.",
+      "influenteaza": "p9385, p9387",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1826,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9484",
+    "descriere_scurta": "BICO interconnections search signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului (parametru BO/CO, codat BICO) cautata in signal sinks. Raspunde la intrebarea: de cate ori este facuta o conexiune la o sursa de semnal in obiectul de drive si de la ce index sunt salvate aceste interconexiuni in r9482 si r9483.",
+      "influenteaza": "r9482, r9483",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1829,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9496",
+    "descriere_scurta": "BICO behavior when activating drive objects",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul la activarea interconexiunilor BICO catre obiecte de drive neoperationale sau dezactivate. Determina daca interconexiunile invalide sunt raportate ca erori sau ignorate. Important in configuratii cu obiecte de drive optionale.",
+      "influenteaza": "p9497",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1830,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9497",
+    "descriere_scurta": "BICO interconnections to de-activated drive objects number",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza numarul interconexiunilor BICO salvate catre obiecte de drive neoperationale sau dezactivate. Parametrii BO/CO sunt pe obiectul de drive dezactivat (sursa de semnal). Utilizat pentru auditarea configuratiei BICO si detectia interconexiunilor invalide.",
+      "influenteaza": "p9496",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1833,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9500",
+    "descriere_scurta": "SI Motion monitoring clock cycle (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul de ceas de monitorizare pentru monitorizarea miscarilor sigure pe Control Unit. Analogul lui p9300 dar pentru procesorul Safety de pe CU. Trebuie sincronizat cu p9300 pentru functionarea corecta a algoritmilor Safety.",
+      "influenteaza": "p9501, p9511",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1834,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9501",
+    "descriere_scurta": "SI Motion enable safety functions (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnalele de activare pentru monitorizarea miscarilor sigure pe Control Unit. Trebuie setat identic cu p9301 de pe modulul motor. Necesita confirmare cu p9801 dupa modificare; modificarile intra in vigoare la urmatorul POWER ON.",
+      "influenteaza": "p9500, p9506",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1835,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9502",
+    "descriere_scurta": "SI Motion axis type (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul axei (liniar sau rotativ/arbore) pe Control Unit. Trebuie setat identic cu p9302 de pe modulul motor. Influenteaza unitatile de masura utilizate in parametrii Safety pe CU.",
+      "influenteaza": "p9500, p9517",
+      "categorie": "Protectii"
+    }
+  }
+]

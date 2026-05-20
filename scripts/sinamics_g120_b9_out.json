@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 25958,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1496",
+    "descriere_scurta": "Acceleration pre-control scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al pre-controlului de acceleratie al regulatorului de viteza. La valoarea 0% pre-controlul de acceleratie este dezactivat, la 100% actioneaza complet. Imbunatateste dinamica la accelerari prin compensarea inertiala anticipativa.",
+      "influenteaza": "p1499",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25959,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1499",
+    "descriere_scurta": "Accelerating for torque control scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al integratorului de acceleratie la viteze mici pentru controlul de cuplu sensorless. Activ doar in modul de control de cuplu fara encoder. Compenseaza comportamentul dinamic la acceleratii in zona de viteze mici.",
+      "influenteaza": "p1496",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25960,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1500",
+    "descriere_scurta": "Torque setpoint selection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza sursa setpointului de cuplu al actionarii. Valorile cu o singura cifra definesc setpointul principal de cuplu, valorile cu doua cifre definesc si setpointul suplimentar. Surse posibile: fieldbus, intrare analogica sau referinte interne.",
+      "influenteaza": "p1503, p1512, p1513",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25961,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1501",
+    "descriere_scurta": "Change over between closed-loop speed/torque control",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru comutarea intre controlul de viteza si controlul de cuplu. La semnalul 1, actionarea trece in mod control de cuplu. Permite comutarea dinamica a modului de control in aplicatii de infasurare sau extrudare.",
+      "influenteaza": "p1500, p1503",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25962,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1503",
+    "descriere_scurta": "Torque setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului de cuplu in modul de control de cuplu. Semnalul interconectat defineste valoarea cuplului tinta pentru motorul controlat. Activ in modul de control de cuplu selectat prin p1501.",
+      "influenteaza": "p1500, p1501",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25963,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1512",
+    "descriere_scurta": "Supplementary torque 1 scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare al cuplului suplimentar 1. Permite ajustarea dinamica a amplitudinii cuplului suplimentar 1 prin interconectare BICO. Utlizat pentru compensari fine ale cuplului in aplicatii avansate de control.",
+      "influenteaza": "p1513, p1514",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25964,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1513",
+    "descriere_scurta": "Supplementary torque 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa cuplului suplimentar 2 adaugat la setpointul de cuplu. Permite adaugarea unui offset de cuplu din o sursa externa sau interna prin BICO. Util pentru compensari de frecare, gravitatie sau alte forte perturbatoare.",
+      "influenteaza": "p1514, p1512",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25965,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1514",
+    "descriere_scurta": "Supplementary torque 2 scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al cuplului suplimentar 2. Permite ajustarea procentuala a amplitudinii cuplului suplimentar 2 intre -2000% si +2000%. Valorile negative inverseaza directia cuplului suplimentar.",
+      "influenteaza": "p1513",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25966,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1518",
+    "descriere_scurta": "+ r1515).",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp de netezire a cuplului de acceleratie. Filtreaza variatiile rapide ale cuplului de acceleratie calculat pentru pre-controlul regulatorului de viteza. Valori mai mari produc un pre-control mai lin dar cu intarziere mai mare.",
+      "influenteaza": "r1518, p1496",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25967,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1518",
+    "descriere_scurta": "Accelerating torque",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuplul de acceleratie calculat pentru pre-controlul regulatorului de viteza. Indicele [0] afiseaza valoarea nefilata, indicele [1] afiseaza valoarea filtrata cu p0045. Util pentru analiza dinamicii si ajustarea pre-controlului de acceleratie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25968,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1521",
+    "descriere_scurta": "Torque limit lower",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita fixa de cuplu inferioara. Valoarea negativa indica cuplu in directia de franare/generatoare. Protejeaza impotriva cuplurilor excesive in directia negativa care ar putea deteriora mecanismul actionat.",
+      "influenteaza": "p1523, p1529",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25969,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1523",
+    "descriere_scurta": "Torque limit lower",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru limita inferioara de cuplu. In mod implicit este conectat la p1521 (limita fixa). Permite ajustarea dinamica a limitei inferioare de cuplu prin interconectare BICO cu o sursa variabila.",
+      "influenteaza": "p1521, p1529",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25970,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1524",
+    "descriere_scurta": "Torque limit upper/motoring scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare procentual al limitei superioare de cuplu sau al limitei de cuplu in mod motor. Permite ajustarea nivelului limitei de cuplu superior fata de valoarea setata in p1522. Valorile negative pot cauza accelerare necontrolata.",
+      "influenteaza": "p1522, p1528",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25971,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1528",
+    "descriere_scurta": "Torque limit upper scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare al limitei superioare de cuplu din p1522. Permite ajustarea dinamica a limitei de cuplu superior prin interconectare BICO. Atentie: valorile negative din sursa de semnal pot cauza accelerare necontrolata la p1400.4=0.",
+      "influenteaza": "p1522, p1524",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25972,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1529",
+    "descriere_scurta": "Torque limit lower scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare al limitei inferioare de cuplu din p1523. Permite ajustarea dinamica a limitei de cuplu inferior prin interconectare BICO. Atentie: valorile pozitive din sursa de semnal pot cauza accelerare necontrolata la p1400.4=0.",
+      "influenteaza": "p1523, p1521",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25973,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1530",
+    "descriere_scurta": "Power limit motoring",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita de putere in mod motor. Limiteaza puterea mecanica absorbita de motor la valoarea setata in kW. Valoarea 0 dezactiveaza limita de putere motoriala. Protejeaza alimentarea si transformatorul de suprasarcini de putere.",
+      "influenteaza": "p1521, p1522",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25974,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1548",
+    "descriere_scurta": "Stall current limit torque-generating maximum",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza limita calculata pentru componenta de curent generatoare de cuplu. Limita considera calcului de stall, limita de curent a invertorului si setarea p0640. Indicele [0] afiseaza limita superioara, indicele [1] afiseaza limita inferioara.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25975,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1552",
+    "descriere_scurta": "Torque limit upper scaling without offset",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare pentru limita superioara de cuplu fara a lua in calcul limitele de curent si putere. Limiteaza direct iesirea regulatorului de viteza. Util pentru limitarea precisa a cuplului de iesire indiferent de conditiile de incarcare.",
+      "influenteaza": "p1554",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25976,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1553",
+    "descriere_scurta": "Stall limit scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al limitei de stall pentru inceperea slabirii campului. Valorile mai mari decat 100% permit cresterea limitei de stall dar pot cauza histereza la incarcare/descarcare. Atentie la depasirera limitei de stall pentru motoare de inductie.",
+      "influenteaza": "r1548",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25977,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1554",
+    "descriere_scurta": "Torque limit lower scaling without offset",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare pentru limita inferioara de cuplu fara a lua in calcul limitele de curent si putere. Limiteaza direct iesirea regulatorului de viteza in directia negativa. Permite controlul precis al cuplului de franare.",
+      "influenteaza": "p1552",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25978,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1570",
+    "descriere_scurta": "Flux setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste setpointul de flux al motorului raportat la fluxul nominal. La 100% motorul functioneaza cu flux nominal. Valorile sub 100% reduc consumul la sarcina partiala (eficienta), valorile peste 100% cresc cuplul disponibil dar pot satura magnetic motorul.",
+      "influenteaza": "p1573, p1580, p1401",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25979,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1573",
+    "descriere_scurta": "Flux threshold value magnetizing",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de flux necesar pentru validarea setpointului de viteza si declararea finalizarii magnetizarii (r0056.4). La atingerea acestui nivel de flux, motorul este considerat magnetizat si poate fi accelerat. O valoare prea mica poate permite pornirea cu motor insuficient magnetizat.",
+      "influenteaza": "p1570, p1401",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25980,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1574",
+    "descriere_scurta": "Voltage reserve dynamic",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste o rezerva dinamica de tensiune in tensiunile de iesire ale invertorului. Aceasta rezerva asigura stabilitatea regulatorului de curent in conditii de tensiune de retea variabila. O valoare prea mica poate destabiliza bucla de control a curentului.",
+      "influenteaza": "p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25981,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1580",
+    "descriere_scurta": "Efficiency optimization",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care activeaza si defineste nivelul de optimizare a eficientei energetice. La p1580=100%, la sarcina zero fluxul este redus la 50% din valoarea nominala. Reduce consumul la functionare fara sarcina sau cu sarcina partiala in aplicatii cu variatie mare de sarcina.",
+      "influenteaza": "p1570, p1401",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25982,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1584",
+    "descriere_scurta": "Field weakening operation flux setpoint smoothing time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp de netezire a setpointului de flux in zona de slabire a campului. Reduce variatiile bruste ale setpointului de flux la intrarea in si la iesirea din zona de slabire a campului. Imbunatateste stabilitatea tranzitiei in slabire de camp.",
+      "influenteaza": "p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25983,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1593",
+    "descriere_scurta": "Field weakening controller / flux controller output",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza iesirea regulatorului de slabire a campului sau regulatorului de flux. Indicele [0] afiseaza iesirea PI completa, indicele [1] afiseaza componenta integrala. Util pentru diagnosticarea functionarii regulatorului de flux si optimizarea setarilor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25984,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1594",
+    "descriere_scurta": "Field-weakening controller P gain",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului de slabire a campului. Valori mai mari produc o tranzitie mai rapida in slabire de camp dar pot cauza instabilitate. Setarea corecta asigura tranzitii line si stabile in zona de slabire a campului.",
+      "influenteaza": "p1596",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25985,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1596",
+    "descriere_scurta": "Field weakening controller integral-action time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de slabire a campului. Impreuna cu p1594 defineste comportamentul PI al regulatorului de slabire a campului. Valori mai mici cresc viteza de compensare a erorilor de flux in zona de slabire a campului.",
+      "influenteaza": "p1594",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25986,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1611",
+    "descriere_scurta": "Supplementary accelerating torque (SLVC)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste cuplul dinamic suplimentar la viteze mici pentru controlul vectorial sensorless (SLVC). Valoarea se exprima ca procent din cuplul nominal al motorului (r0333). Asigura cuplu suficient in zona de viteze mici unde modelul de motor are precizie redusa.",
+      "influenteaza": "p1616",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25987,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1616",
+    "descriere_scurta": "Current setpoint smoothing time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp de netezire a setpointului de curent. Setpointul de curent este generat din p1610 si p1611 pentru operatia la viteze mici in controlul vectorial sensorless. Filtrarea reduce solicitarile mecanice cauzate de variatii bruste ale curentului.",
+      "influenteaza": "p1611",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25988,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1623",
+    "descriere_scurta": "Field-generating current setpoint (steady-state)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza setpointul de curent generator de flux in regim stationar (Id_set). Valoarea reflecta curentul de magnetizare necesar pentru fluxul setat. Util pentru analiza functionarii in zona de slabire a campului si verificarea modelului de motor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25989,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1654",
+    "descriere_scurta": "Curr. setpoint torque-gen. smoothing time field weakening range",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp de netezire a componentei de curent generatoare de cuplu in zona de slabire a campului. Reduce variatiile bruste ale setpointului de curent Isq in zone de slabire de camp. Imbunateste stabilitatea si reduce zgomotul de comutatie.",
+      "influenteaza": "p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25990,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1702",
+    "descriere_scurta": "Isd current controller pre-control scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al pre-controlului dinamic al regulatorului de curent pentru componenta Isd (generatoare de flux). Valorile mai mari reduc eroarea dinamica a curentului d la variatii rapide ale setpointului de flux. Echilibreaza performanta cu stabilitatea regulatorului de curent.",
+      "influenteaza": "p1703, p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25991,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1703",
+    "descriere_scurta": "Isq current controller pre-control scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al pre-controlului dinamic al regulatorului de curent pentru componenta Isq (generatoare de cuplu). Imbunatateste raspunsul la variatii rapide ale cuplului solicitat. Impreuna cu p1702 optimizeaza performanta dinamica a controlului de curent.",
+      "influenteaza": "p1702, p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25992,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1715",
+    "descriere_scurta": "Current controller P gain",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului de curent. Valoarea este presetata automat prin comisioning (p3900 sau p0340). Un castig prea mare poate destabiliza bucla de curent, un castig prea mic reduce performanta dinamica.",
+      "influenteaza": "p1717, p1702, p1703",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25993,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1717",
+    "descriere_scurta": "Current controller integral-action time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de curent. Impreuna cu p1715 defineste comportamentul PI al buclei de curent. Valori mai mici cresc viteza de compensare a erorilor de curent dar pot introduce instabilitate la inductante mici.",
+      "influenteaza": "p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25994,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1726",
+    "descriere_scurta": "Quadrature arm decoupling scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al decuplajului pe axa cuadratura in regulatorul de curent. Decuplajul compenseza interactiunea intre axele d si q ale regulatorului de curent. Valoarea optima depinde de viteza de operare si de parametrii motorului identificati.",
+      "influenteaza": "p1727",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25995,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1727",
+    "descriere_scurta": "Quadrature arm decoupling at voltage limit scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al decuplajului pe axa cuadratura cand s-a atins limita de tensiune. La limita de modulatie, decuplajul este redus pentru a imbunatati stabilitatea. Optimizeaza comportamentul regulatorului de curent in zona de slabire a campului.",
+      "influenteaza": "p1726",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25996,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1730",
+    "descriere_scurta": "Isd controller integral component shutdown threshold",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de viteza deasupra caruia componenta integrala a regulatorului Isd este dezactivata. Deasupra acestui prag, regulatorul Isd functioneaza doar ca P-controller, iar decuplajul pe axa cuadratura preia rolul integral. Imbunatateste stabilitatea la viteze mari.",
+      "influenteaza": "p1726",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25997,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1731",
+    "descriere_scurta": "Isd controller combination current time component",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp pentru calculul diferentei componentei DC a curentului d (curent de combinatie) adaugata la valoarea actuala a regulatorului Isd. Valoarea 0 dezactiveaza aceasta intrare suplimentara. Imbunatateste precizia de reglare in tranzitii rapide ale curentului d.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25998,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1732",
+    "descriere_scurta": "Direct-axis voltage setpoint",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza setpointul de tensiune pe axa directa Ud. Indicele [0] afiseaza valoarea nefilata, indicele [1] afiseaza valoarea filtrata cu constanta p0045. Util pentru analiza comportamentului regulatorului de curent si diagnosticarea problemelor de tensiune.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25999,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1733",
+    "descriere_scurta": "Quadrature-axis voltage setpoint",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza setpointul de tensiune pe axa cuadratura Uq. Indicele [0] afiseaza valoarea nefilata, indicele [1] afiseaza valoarea filtrata cu constanta p0045. Impreuna cu r1732 permite analiza vectorului de tensiune generat de regulatorul de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26000,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1740",
+    "descriere_scurta": "Gain resonance damping for encoderless closed-loop control",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul regulatorului pentru amortizarea rezonantei in controlul vectorial sensorless in zona de injectie de curent. Valori mai mari produc o amortizare mai eficienta a oscilatiilor dar pot destabiliza controlul. Util pentru reducerea vibratiilor la viteze mici in controlul sensorless.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26001,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1745",
+    "descriere_scurta": "Motor model error threshold stall detection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de eroare al modelului de motor pentru detectarea blocajului (stall). Daca eroarea (r1746) depaseste acest prag, bitul de stare r1408.12 este setat la 1 indicand posibil blocaj. O valoare prea mica poate genera false alarme de blocaj.",
+      "influenteaza": "r1408",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26002,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1749",
+    "descriere_scurta": "Motor model increase changeover speed encoderless operation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste procentul de crestere a frecventei minime de operare stabila in controlul sensorless. Daca valoarea minima calculata depaseste limita inferioara de comutare (p1755 * (1 - 2*p1756)), diferenta este afisata prin p1749 * p1755. Valoarea parametrului nu poate fi modificata.",
+      "influenteaza": "p1755, p1756",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26003,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1750",
+    "descriere_scurta": "Motor model configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza comportamentul modelului motorului in diferite scenarii. Bitii controleaza: pornire fortata in bucla deschisa, traversarea frecventei zero in bucla deschisa, ramane in control cu bucla inchisa la frecventa zero, evaluarea caracteristicii de saturatie si altele. Configuratia influenteaza stabilitatea la viteze mici.",
+      "influenteaza": "p1755, p1756, p1758, p1759",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26004,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1758",
+    "descriere_scurta": "Motor model changeover delay time closed/open-loop control",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul minim petrecut sub viteza de comutare inainte de a trece din control cu bucla inchisa in control cu bucla deschisa. Previne comutatii repetitive (hunting) in jurul vitezei de tranzitie. O valoare mai mare creste stabilitatea tranzitiei intre modele.",
+      "influenteaza": "p1759, p1750, p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26005,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1759",
+    "descriere_scurta": "Motor model changeover delay time open/closed-loop control",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul minim dupa depasirea vitezei de comutare inferioare inainte de a trece din control cu bucla deschisa in control cu bucla inchisa. Asigura o tranzitie stabila de la modelul la joasa viteza la modelul la viteza medie. Valoarea 0 permite tranzitie imediata.",
+      "influenteaza": "p1758, p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26006,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1762",
+    "descriere_scurta": "Motor model deviation component 1",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza deviatia sistemului in circuitul de adaptare al modelului motorului. Pentru motoare ASM afiseaza deviatia imaginara raportata, pentru motoare PESM afiseaza deviatia unghiulara a FEM estimate. Indicele [0] = deviatia modelului 1, [1] = deviatia modelului 2.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26007,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1764",
+    "descriere_scurta": "Motor model without encoder speed adaptation Kp",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului de adaptare a vitezei fara encoder din modelul motorului. Valori mai mari cresc viteza de convergenta a estimarii vitezei dar pot destabiliza adaptarea. Valoarea implicita de 1000 este potrivita pentru majoritatea motoarelor.",
+      "influenteaza": "p1767",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26008,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1767",
+    "descriere_scurta": "Motor model without encoder speed adaptation Tn",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de adaptare a vitezei fara encoder. Impreuna cu p1764 defineste caracteristica PI a adaptarii vitezei in modelul motorului sensorless. Valori mai mici cresc dinamica adaptarii dar pot introduce oscilatii in estimarea vitezei.",
+      "influenteaza": "p1764",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26009,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1773",
+    "descriere_scurta": "Motor model slip speed",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza semnalele de viteza estimate ale modelului motorului. Indicele [0] afiseaza alunecarea mecanica estimata, indicele [1] afiseaza viteza de intrare estimata. Util pentru analiza si validarea preciziei modelului de motor sensorless.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26010,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1774",
+    "descriere_scurta": "Motor model offset voltage compensation alpha",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste tensiunea de offset in directia alfa pentru compensarea tensiunilor de offset ale invertorului la viteze mici. Valoarea este valabila la frecventa de impuls nominala a invertorului. Compensarea corecta imbunatateste precizia modelului la viteze mici.",
+      "influenteaza": "p1775",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26011,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1775",
+    "descriere_scurta": "Motor model offset voltage compensation beta",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste tensiunea de offset in directia beta pentru compensarea tensiunilor de offset ale invertorului la viteze mici. Impreuna cu p1774 reduce erorile de estimare a fluxului cauzate de tensiunile de offset ale IGBT-urilor la viteze reduse.",
+      "influenteaza": "p1774",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26012,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1776",
+    "descriere_scurta": "Motor model status signals",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza semnalele de stare interne ale modelului motorului. Indicii afiseaza rampele de comutare intre modelele la curent si tensiune, rampele de urmarire a modelului si rampele pentru zona frecventei zero. Util pentru diagnosticarea detaliata a tranzitiilor modelului motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26013,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1780",
+    "descriere_scurta": "Motor model adaptation configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza circuitul de adaptare al modelului motorului. Pentru motoare ASM permite adaptarea Rs, Lh si compensarea de offset. Pentru motoare PESM configureaza adaptarea kT. Bitii individuali activeaza sau dezactiveaza componentele specifice de adaptare.",
+      "influenteaza": "p1785, p1786, p1795",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26014,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1784",
+    "descriere_scurta": "Motor model feedback scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare pentru feedbackul erorilor modelului motorului. Controleaza cat de mult sunt luate in considerare erorile detectate la corectia parametrilor modelului. Valoarea 0 dezactiveaza feedbackul erorilor modelului.",
+      "influenteaza": "p1780",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26015,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1785",
+    "descriere_scurta": "Motor model Lh adaptation Kp",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional pentru adaptarea inductantei de magnetizare Lh in modelul motorului ASM. Adaptarea corecteaza valoarea Lh in timp real pentru a compensa saturatia magnetica. Valori mai mari cresc viteza de adaptare dar pot destabiliza procesul.",
+      "influenteaza": "p1786, p1780",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26016,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1786",
+    "descriere_scurta": "Motor model Lh adaptation integral time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral pentru adaptarea inductantei de magnetizare Lh in modelul motorului ASM. Impreuna cu p1785 formeaza regulatorul PI de adaptare Lh. Valori mai mici cresc viteza adaptarii parametrului de magnetizare.",
+      "influenteaza": "p1785, p1780",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26017,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1787",
+    "descriere_scurta": "Motor model Lh adaptation corrective value",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea corectiva aplicata de adaptarea Lh a modelului motorului ASM. Indica cat de mult a fost modificata inductanta de magnetizare fata de valoarea identificata initial. Util pentru monitorizarea procesului de adaptare si detectarea variatiilor de saturatie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26018,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1795",
+    "descriere_scurta": "Motor model kT adaptation integral time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral pentru adaptarea constantei de cuplu kT a modelului motorului sincron cu magneti permanenti (PEM). Adaptarea kT corecteaza variatiile constantei de cuplu cu temperatura magnetilor. Valori mai mici cresc viteza adaptarii kT.",
+      "influenteaza": "r1797, p1780",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26019,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1797",
+    "descriere_scurta": "Motor model kT adaptation corrective value",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea corectiva aplicata de adaptarea kT a modelului motorului sincron cu magneti permanenti (PEM). Indica abaterea constante de cuplu fata de valoarea initiala identificata. Util pentru monitorizarea uzurii magnetilor si a variatiei termice a motorului PESM.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26020,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1801",
+    "descriere_scurta": "Pulse frequency",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza frecventa actuala de comutatie a invertorului. Indicele [0] afiseaza valoarea actuala, indicele [1] afiseaza valoarea minima a modulatorului. Frecventa de comutatie influenteaza pierderile in invertor si nivelul armonicilor de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26021,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1803",
+    "descriere_scurta": "Maximum modulation depth",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste adancimea maxima de modulatie a invertorului. Valoarea standard de 115% permite utilizarea modulatiei supraunitare (overmodulation) pentru maximizarea tensiunii de iesire. Valori mai mici limiteaza tensiunea de iesire dar reduc armonicile de curent.",
+      "influenteaza": "p1574",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26022,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1806",
+    "descriere_scurta": "Filter time constant Vdc correction",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp a filtrului aplicat tensiunii circuitului DC utilizata pentru calculul adancimii de modulatie. Filtreaza fluctuatiile rapide ale tensiunii DC pentru un calcul mai stabil al modulatiei. Valoarea 0 dezactiveaza filtrarea.",
+      "influenteaza": "p1803",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26023,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1820",
+    "descriere_scurta": "Reverse the output phase sequence",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care inverseza succesiunea fazelor de iesire ale invertorului fara modificarea setpointului de viteza. La valoarea 1, motorul se roteste in sens invers fata de normal. Permite corectarea sensului de rotatie al motorului fara recablare fizica.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26024,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1909",
+    "descriere_scurta": "Motor data identification control word",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza modul de identificare a datelor motorului. Bitii controleaza ce parametri sunt identificati si cum se desfasoara procesul de identificare. Dupa identificare, parametrii motorului sunt actualizati automat pentru optimizarea performantei.",
+      "influenteaza": "r1912, r1913, r1914, r1915",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26025,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1912",
+    "descriere_scurta": "Identified stator resistance",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza rezistenta statorica identificata pe fiecare faza (U, V, W). Valorile sunt masurate in timpul identificarii datelor motorului si utilizate in modelul de motor. Dezechilibre semnificative intre faze pot indica probleme de cablu sau de motor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26026,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1913",
+    "descriere_scurta": "Identified rotor time constant",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza constanta de timp rotorica identificata per faza (U, V, W). Este un parametru esential pentru modelul vectorial al motorului de inductie. Valoarea corecta asigura orientarea precisa a fluxului in controlul vectorial.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26027,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1914",
+    "descriere_scurta": "Identified total leakage inductance",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta totala de dispersie identificata per faza. Aceasta valoare este utilizata in calculul castigului regulatorului de curent. Variatie mare intre faze poate indica asimetrii in infasurarile motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26028,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1915",
+    "descriere_scurta": "Identified nominal stator inductance",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta statorica nominala identificata in caracteristica de saturatie. Valoarea este utilizata ca referinta in modelul magnetic al motorului. Esentiala pentru calculul precis al fluxului in controlul vectorial.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26029,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1916",
+    "descriere_scurta": "Identified stator inductance 1",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta statorica identificata pentru primul punct al caracteristicii de saturatie. Face parte din modelul neliniar de saturatie al motorului ASM. Impreuna cu celelalte puncte ale caracteristicii defineste comportamentul magnetic al motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26030,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1917",
+    "descriere_scurta": "Identified stator inductance 2",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta statorica identificata pentru al doilea punct al caracteristicii de saturatie. Defineste comportamentul magnetic al motorului la un al doilea nivel de magnetizare. Util pentru analiza caracteristicii de saturatie a motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26031,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1918",
+    "descriere_scurta": "Identified stator inductance 3",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta statorica identificata pentru al treilea punct al caracteristicii de saturatie. Completeaza modelul neliniar al motorului in zona de saturatie medie. Valorile sunt masurate automat in timpul identificarii datelor motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26032,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1919",
+    "descriere_scurta": "Identified stator inductance 4",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza inductanta statorica identificata pentru al patrulea punct al caracteristicii de saturatie. Defineste comportamentul motorului in zona de saturatie profunda. Impreuna cu r1915-r1918 formeaza caracteristica completa de saturatie folosita in model.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26033,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1925",
+    "descriere_scurta": "Identified threshold voltage",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza tensiunea de prag a IGBT-urilor identificata per faza (U, V, W). Valoarea este utilizata pentru compensarea tensiunii moarte a invertorului la viteze mici. Precizia acestei compensari influenteaza calitatea controlului la viteze mici.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26034,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1926",
+    "descriere_scurta": "Identified effective valve lockout time",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza timpul efectiv de interblocare (dead-time) al ventilelor identificat per faza. Utilizat pentru compensarea efectelor timpului mort al IGBT-urilor asupra tensiunii de iesire. Precizia compensarii influenteaza calitatea tensiunii si calitatea controlului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26035,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1927",
+    "descriere_scurta": "Identified rotor resistance",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza rezistenta rotorica identificata per faza (sau rezistenta de amortizare la motoare sincrone cu excitatie separata). Valoarea este esentiala pentru calculul constantei de timp rotorice. Variatia cu temperatura afecteaza precizia controlului vectorial la regim termic.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26036,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1970",
+    "descriere_scurta": "Speed_ctrl_opt vibration test vibration frequency determined",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza frecventele de vibratie determinate prin testul de vibratie in optimizarea regulatorului de viteza. Indicele [0] afiseaza frecventa joasa, indicele [1] afiseaza frecventa inalta. Utilizat in procesul automat de optimizare a parametrilor regulatorului de viteza.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26037,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1974",
+    "descriere_scurta": "Speed_ctrl_opt saturation characteristic maximum rotor flux",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste setpointul maxim de flux pentru masurarea caracteristicii de saturatie in cadrul procesului de optimizare a regulatorului de viteza. Valoarea limiteaza nivelul maxim de magnetizare in timpul masurarii. Influenteaza acuratetea caracteristicii de saturatie obtinute.",
+      "influenteaza": "p1909",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26038,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1980",
+    "descriere_scurta": "PolID technique",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza tehnica de identificare a pozitiei polilor (PolID) pentru motoare sincrone cu magneti permanenti. Diferite valori corespund unor tehnici diferite (injectie de curent, modele etc.). Selectia corecta asigura identificarea precisa a pozitiei rotorului la pornire.",
+      "influenteaza": "p1999",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26039,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1999",
+    "descriere_scurta": "Ang. commutation offset calibr. and PollD scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al timpului de rulare al tehnicii de identificare PolID cu injectie de curent. Valori mai mari cresc durata identificarii dar pot imbunatati precizia. Afecteaza durata secventei de identificare a pozitiei polilor la pornire.",
+      "influenteaza": "p1980",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26040,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2019",
+    "descriere_scurta": "Comm IF error statistics",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza statisticile erorilor de receptie la interfata de punere in functiune (USS, RS232). Indicii afiseaza numarul de telegrame valide, telegrame respinse, erori de cadraj, suprascrieri, erori de paritate, erori de caracter de start, erori de checksum si erori de lungime. Util pentru diagnosticarea calitatii comunicatiei seriale.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26041,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2024",
+    "descriere_scurta": "Fieldbus interface times",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpii de comunicatie pentru interfata fieldbus. Pentru MODBUS, indicele [0] defineste timpul maxim de procesare al telegramei, iar indicele [2] defineste pauza intre telegrame. Setarile corecte previn timeout-uri si asigura comunicatie fiabila cu mastera Modbus.",
+      "influenteaza": "r2029",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26042,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2029",
+    "descriere_scurta": "Field bus int error statistics",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza statisticile erorilor de receptie pe interfata fieldbus (RS485). Structura este similara cu r2019 dar pentru interfata PROFIBUS/MODBUS. Permite diagnosticarea calitatii comunicatiei fieldbus si identificarea tipului de probleme de comunicatie.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26043,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2043",
+    "descriere_scurta": "PROFIdrive PZD state",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea PZD (Process Data) a interfetei PROFIdrive. Indica starea ciclului de date de proces din protocolul PROFIdrive. Util pentru diagnosticarea comunicatiei ciclice cu controllerul PROFIBUS sau PROFINET.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26044,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2053",
+    "descriere_scurta": "PROFIdrive diagnostics send PZD word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvintele PZD (valori actuale) trimise catre controllerul fieldbus in format word. Indicii de la [0] la [13] corespund PZD 1 pana la PZD 14. Permite verificarea valorilor transmise catre PLC in comunicatia PROFIdrive ciclica.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26045,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2055",
+    "descriere_scurta": "PROFIBUS diagnostics standard",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza informatii de diagnosticare standard pentru interfata PROFIBUS. Indicele [0] afiseaza adresa masterului, indicele [1] lungimea totala a datelor de intrare, indicele [2] lungimea totala a datelor de iesire. Util pentru verificarea configuratiei PROFIBUS.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26046,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2060",
+    "descriere_scurta": "PROFIdrive PZD receive double word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza setpointurile PZD primite de la controllerul fieldbus in format double word (32 biti). Permite interconectarea valorilor primite in format extins la regulatoarele interne. Util pentru transmiterea datelor cu precizie ridicata in comunicatia PROFIdrive.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26047,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2061",
+    "descriere_scurta": "PROFIBUS PZD send double word",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza valorile actuale PZD in format double word (32 biti) de trimis catre controllerul fieldbus. Permite transmiterea datelor cu precizie ridicata catre PLC. Indicii corespund perechilor de cuvinte PZD consecutive.",
+      "influenteaza": "r2063",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26048,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2063",
+    "descriere_scurta": "PROFIdrive diagnostics PZD send double word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza datele PZD in format double word trimise efectiv catre controllerul fieldbus. Permite verificarea valorilor transmise in format extins. Util pentru diagnosticarea comunicatiei cu date de inalta precizie in PROFIdrive.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26049,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2067",
+    "descriere_scurta": "PZD maximum interconnected",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza numarul maxim de PZD-uri interconectate in directia de receptie si transmisie. Indicele [0] afiseaza directia de receptie (r2050, r2060), indicele [1] afiseaza directia de transmisie (p2051, p2061). Util pentru verificarea configuratiei complete de comunicatie fieldbus.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26050,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2071",
+    "descriere_scurta": "PROFIdrive SIC start send",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pozitia de start a telegramei SIC (Safety Integrated Communication) in cuvintele de transmisie PZD. Permite integrarea datelor de safety in telegrama PROFIdrive ciclica. Necesar pentru aplicatii cu functii de siguranta integrate.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26051,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2074",
+    "descriere_scurta": "PROFIdrive diagnostics bus address PZD receive",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza adresa PROFIBUS a expeditorului de la care este primit fiecare PZD. Indicii corespund PZD 1 pana la PZD 12. Util pentru diagnosticarea configuratiei peer-to-peer si verificarea sursei datelor PZD.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26052,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2075",
+    "descriere_scurta": "PROFIdrive diagnostics telegram offset PZD receive",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza offset-ul in bytes al fiecarui PZD in telegrama de receptie PROFIdrive (iesire controler). Permite verificarea pozitiei exacte a fiecarui cuvant de date in telegrama ciclica. Util pentru diagnosticarea configuratiei de mapare a datelor.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26053,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2076",
+    "descriere_scurta": "PROFIdrive diagnostics telegram offset PZD send",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza offset-ul in bytes al fiecarui PZD in telegrama de transmisie PROFIdrive (intrare controler). Permite verificarea pozitiei datelor trimise catre PLC. Util pentru diagnosticarea mappingului datelor in telegrama ciclica de transmisie.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26054,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2077",
+    "descriere_scurta": "PROFIBUS diagnostics peer-to-peer data transfer addresses",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza adresele slave-urilor PROFIBUS de la care se primesc date in configuratia peer-to-peer. Permite verificarea topologiei de comunicatie directa intre slave-uri PROFIBUS. Util pentru diagnosticarea retelelor cu transfer de date slave-to-slave.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26055,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2082",
+    "descriere_scurta": "Binector-connector converter status word 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza bitii ce vor fi transmisi catre controllerul PROFIdrive in cuvantul de stare liber 3. Pana la 6 biti pot fi combinati pentru a forma cuvantul de stare. Permite transmiterea de semnale binare interne catre PLC prin fieldbus.",
+      "influenteaza": "p2083, p2084",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26056,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2083",
+    "descriere_scurta": "Binector-connector converter status word 4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza pana la 16 biti ce vor fi transmisi catre controllerul PROFIdrive in cuvantul de stare liber 4. Ofera mai multi biti disponibili decat p2082 pentru status word. Permite transmiterea unui set mai complet de semnale binare catre PLC.",
+      "influenteaza": "p2082, p2084",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26057,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2084",
+    "descriere_scurta": "Binector-connector converter status word 5",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza pana la 11 biti ce vor fi transmisi catre controllerul PROFIdrive in cuvantul de stare liber 5. Completeaza seria de cuvinte de stare libere pentru transmiterea semnalelor binare. Impreuna cu p2082 si p2083 permite transmiterea unui set complet de semnale de stare.",
+      "influenteaza": "p2082, p2083",
+      "categorie": "Comunicatii"
+    }
+  }
+]

@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 25858,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1110",
+    "descriere_scurta": "Inhibit negative direction",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru dezactivarea directiei negative de rotatie. La semnalul activ, setpointul negativ este blocat la zero, permitand functionarea doar in directia pozitiva. Util pentru aplicatii cu transmisii unidirectionale sau procese care nu permit inversarea directiei.",
+      "influenteaza": "p1111, p1085, p1088",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25859,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1111",
+    "descriere_scurta": "Inhibit positive direction",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru dezactivarea directiei pozitive de rotatie. La semnalul activ, setpointul pozitiv este blocat la zero, permitand functionarea doar in directia negativa. Util pentru aplicatii cu directie unica de operare sau constrangeri mecanice.",
+      "influenteaza": "p1110, p1085, p1088",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25860,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1113",
+    "descriere_scurta": "Setpoint inversion",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru inversarea setpointului de viteza. La semnalul activ, semnul setpointului este negat, inversand directia de rotatie fara a modifica valoarea absoluta a vitezei. Corespunde bitului STW1.11 din profilul PROFIdrive.",
+      "influenteaza": "p1110, p1111",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25861,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1122",
+    "descriere_scurta": "Bypass ramp-function generator",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru ocolirea generatorului de rampa. La semnalul activ, timpii de crestere si scadere ai rampei sunt setati la zero, permitand modificari instantanee ale setpointului. Utilizat in aplicatii avansate sau pentru testare.",
+      "influenteaza": "p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25862,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1123",
+    "descriere_scurta": "Ramp-function generator minimum ramp-up time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul minim de crestere al rampei. Chiar daca p1120 este setat mai mic, generatorul de rampa utilizeaza cel putin aceasta valoare. Protejeaza mecanismele de acceleratii excesive cauzate de setari gresite ale rampei principale.",
+      "influenteaza": "p1120",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25863,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1127",
+    "descriere_scurta": "Ramp-function generator minimum ramp-down time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul minim de scadere al rampei. Chiar daca p1121 este setat mai mic, generatorul de rampa utilizeaza cel putin aceasta valoare. Protejeaza mecanismele de deceleratii bruste cauzate de setari gresite ale rampei principale.",
+      "influenteaza": "p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25864,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1130",
+    "descriere_scurta": "Ramp-function generator initial rounding-off time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de racordare initiala (S-ramp) a generatorului de rampa extins. Valoarea se aplica atat la crestere cat si la scadere pentru un profil de accelerare mai lin. Reduce socurile mecanice la pornirea si oprirea actionarii.",
+      "influenteaza": "p1131, p1134, p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25865,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1131",
+    "descriere_scurta": "Ramp-function generator final rounding-off time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de racordare finala (S-ramp) a generatorului de rampa extins. Valoarea se aplica atat la crestere cat si la scadere pentru o tranzitie lina la viteza tinta. Impreuna cu p1130 defineste profilul S al rampei pentru reducerea socurilor mecanice.",
+      "influenteaza": "p1130, p1134, p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25866,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1134",
+    "descriere_scurta": "Ramp-function generator rounding-off type",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza tipul de racordare pentru generatorul de rampa extins. Valoarea 0 = comportament standard la OFF1, valoarea 1 = comportament lin la OFF1 si setpoint redus. Influenteaza profilul de decelerare la comanda OFF1.",
+      "influenteaza": "p1130, p1131",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25867,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1135",
+    "descriere_scurta": "OFF3 ramp-down time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de decelerare la comanda de oprire rapida OFF3 de la viteza maxima la zero. Dupa atingerea vitezei zero, pulsurile sunt blocate si se seteaza inhibarea conectarii. O valoare prea mica poate suprasolicita circuitul DC al invertorului.",
+      "influenteaza": "p0848, p0849",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25868,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1136",
+    "descriere_scurta": "OFF3 initial rounding-off time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de racordare initiala a rampei de decelerare OFF3 in generatorul de rampa extins. Creeaza un profil mai lin la inceputul decelerarii OFF3. Reduce socurile mecanice la inceputul opririi rapide.",
+      "influenteaza": "p1135, p1137",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25869,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1137",
+    "descriere_scurta": "OFF3 final rounding-off time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de racordare finala a rampei de decelerare OFF3 in generatorul de rampa extins. Creeaza un profil mai lin la sfarsitul decelerarii OFF3 apropiindu-se de viteza zero. Impreuna cu p1136 defineste profilul S al rampei de oprire rapida.",
+      "influenteaza": "p1135, p1136",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25870,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1138",
+    "descriere_scurta": "Up ramp scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare a rampei de crestere. Permite ajustarea dinamica a timpului de accelerare prin interconectare BICO cu un semnal intern sau extern. Valoarea implicita 1 (100%) corespunde timpului de rampa setat in p1120.",
+      "influenteaza": "p1120",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25871,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1139",
+    "descriere_scurta": "Down ramp scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare a rampei de scadere. Permite ajustarea dinamica a timpului de decelerare prin interconectare BICO. Valoarea implicita 1 (100%) corespunde timpului de rampa setat in p1121.",
+      "influenteaza": "p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25872,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1143",
+    "descriere_scurta": "Ramp-function generator, accept setting value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru acceptarea valorii de setare a generatorului de rampa. La semnalul activ, generatorul de rampa preia valoarea definita in p1144. Permite preincarcarea rampei cu o valoare arbitrara in aplicatii de sincronizare.",
+      "influenteaza": "p1144",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25873,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1144",
+    "descriere_scurta": "Ramp-function generator setting value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa valorii de setare preincarcata in generatorul de rampa. Valoarea este aplicata la primirea semnalului de acceptare din p1143. Utilizat pentru sincronizarea generatorului de rampa cu valori curente de viteza in aplicatii avansate.",
+      "influenteaza": "p1143",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25874,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1145",
+    "descriere_scurta": "Ramp-function generator tracking intensity.",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste intensitatea urmaririi (tracking) generatorului de rampa in raport cu acceleratia maxima posibila a actionarii. Iesirea rampei este corectata proportional cu devierea la intrarea regulatorului de viteza necesara atingerii limitei de cuplu. Valoarea 0 dezactiveaza urmarirea.",
+      "influenteaza": "p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25875,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1148",
+    "descriere_scurta": "Ramp-function gen. tolerance for ramp-up and ramp-down active",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste toleranta de viteza pentru detectarea starii active a rampei de crestere/scadere. Daca diferenta dintre intrarea si iesirea rampei este mai mica decat aceasta toleranta, bitii de stare nu sunt activati. Previne semnalizari false de rampa activa la variatii mici ale setpointului.",
+      "influenteaza": "r1199",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25876,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1155",
+    "descriere_scurta": "Speed controller speed setpoint 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului de viteza 1 al regulatorului de viteza. Permite interconectarea directa a unui semnal de viteza la intrarea regulatorului de viteza ocolind canalul standard de setpoint. Utilizat in aplicatii avansate de control.",
+      "influenteaza": "p1160",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25877,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1160",
+    "descriere_scurta": "Speed controller speed setpoint 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului de viteza 2 al regulatorului de viteza. Permite interconectarea unui al doilea semnal de viteza la intrarea regulatorului. Utilizat in configuratii master-slave sau sincronizare avansata.",
+      "influenteaza": "p1155",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25878,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1199",
+    "descriere_scurta": "Ramp-function generator status word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al generatorului de rampa (RFG). Indica daca rampa de crestere sau scadere este activa si alte stari ale generatorului de rampa. Util pentru diagnosticarea functionarii rampei si pentru logica de secventa a aplicatiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25879,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1200",
+    "descriere_scurta": "Flying restart operating mode",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza modul de operare pentru functia flying restart (pornire in zbor). Aceasta functie permite conectarea invertorului la un motor deja in rotatie fara soc. Diferite moduri determina strategia de cautare a vitezei motorului in functie de tipul de control (U/f sau vectorial).",
+      "influenteaza": "p1201, p1202, p1203",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25880,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1201",
+    "descriere_scurta": "Flying restart enable signal source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului de activare a functiei flying restart. Valoarea implicita 1 (permanent activ) permite flying restart la fiecare pornire. Dezactivarea acestei functii previne cautarea vitezei motorului si presupune pornire de la zero viteza.",
+      "influenteaza": "p1200, p1202, p1203",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25881,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1202",
+    "descriere_scurta": "Flying restart search current",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste curentul de cautare utilizat in functia flying restart, raportat la curentul de magnetizare al motorului. Curentul mai mare reduce timpul de cautare dar creste solicitarile termice. Valoarea tipica de 90% asigura un compromis bun intre viteza de detectie si solicitare termica.",
+      "influenteaza": "p1200, p1203",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25882,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1203",
+    "descriere_scurta": "Flying restart search rate factor",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare a ratei de cautare a vitezei in functia flying restart. Valori mai mari produc un timp de cautare mai lung dar mai precis. Valoarea de 150% din implicit asigura o cautare mai prudenta a vitezei motorului in rotatie.",
+      "influenteaza": "p1200, p1202",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25883,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1204",
+    "descriere_scurta": "Flying restart U/f control status",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea interna a functiei flying restart in modul de control U/f. Indica fazele procesului de cautare a vitezei motorului in zbor pentru controlul scalar. Util pentru diagnosticarea functionarii flying restart in aplicatii U/f.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25884,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1205",
+    "descriere_scurta": "Flying restart vector control status",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea interna a functiei flying restart in modul de control vectorial. Indica fazele procesului de cautare a vitezei motorului in zbor pentru controlul vectorial. Util pentru diagnosticarea functionarii flying restart in aplicatii vectoriale.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25885,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1213",
+    "descriere_scurta": "Automatic restart monitoring time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de monitorizare al repornirii automate. Indicele [0] defineste intervalul de timp pentru repornire, iar indicele [1] defineste resetarea contorului de start. Daca repornirea nu are loc in intervalul setat, se genereaza un defect.",
+      "influenteaza": "r1214",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25886,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1214",
+    "descriere_scurta": "Automatic restart status",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea curenta a functiei de repornire automata (AR). Indica daca repornirea automata este activa, in asteptare sau finalizata. Util pentru diagnosticarea secventei de repornire automata dupa defecte.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25887,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1226",
+    "descriere_scurta": "Threshold for zero speed detection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de viteza sub care se considera ca motorul este la standstill (viteza zero). Aceasta valoare influenteaza detectia standstill-ului la decelerare cu OFF1 sau OFF3. O valoare prea mare poate detecta fals standstill-ul la viteze reduse.",
+      "influenteaza": "p1231",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25888,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1230",
+    "descriere_scurta": "DC braking activation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului de activare a franarii DC. La semnalul activ, motorul este franat prin injectie de curent continuu in infasurarea statorica. Eficienta franarii DC depinde de curentul setat in p1232.",
+      "influenteaza": "p1231, p1232, p1233",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25889,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1231",
+    "descriere_scurta": "DC braking configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza modul de operare al franarii DC. Valorile posibile definesc cand si cum este aplicata franarea DC (la OFF1, la oprire, la sub-prag de viteza, etc). Configuratia corecta asigura o franare eficienta si sigura.",
+      "influenteaza": "p1230, p1232, p1233, p1226",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25890,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1232",
+    "descriere_scurta": "DC braking braking current",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste curentul de franare injectat in infasurarea statorica in timpul franarii DC. Curentul mai mare produce o franare mai eficienta dar si mai multa caldura in motor. Valoarea trebuie sa fie compatibila cu curentul nominal al motorului.",
+      "influenteaza": "p1230, p1231",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25891,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1233",
+    "descriere_scurta": "DC braking time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste durata franarii DC aplicata ca raspuns la un defect. Dupa expirarea timpului setat, pulsurile sunt blocate. Valoarea trebuie aleasa astfel incat motorul sa atinga viteza zero inainte de expirarea timpului.",
+      "influenteaza": "p1230, p1231, p1232",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25892,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1240",
+    "descriere_scurta": "Vdc controller configuration (vector control)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza regulatorul tensiunii circuitului DC (Vdc) in modul de control vectorial. Permite selectia intre kinetic buffering (Vdc_min) si rampare la supratensiune (Vdc_max) sau combinatii ale acestora. Configuratia corecta protejeaza circuitul DC la fluctuatii de retea.",
+      "influenteaza": "p1250, p1251, p1255, p1256",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25893,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1247",
+    "descriere_scurta": "Vdc_min controller dynamic factor (kinetic buffering)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul dinamic al regulatorului Vdc_min (kinetic buffering). La 100%, parametrii p1250, p1251, p1252 actioneaza la valorile lor nominale. Factori mai mari cresc agresivitatea controlului kinetic buffering la caderi de tensiune.",
+      "influenteaza": "p1250, p1251, p1240",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25894,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1250",
+    "descriere_scurta": "Vdc controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului tensiunii circuitului DC (Vdc_min si Vdc_max). Valori mai mari asigura un raspuns mai rapid la variatiile tensiunii DC dar pot destabiliza regulatorul. Setarea corecta asigura protectia eficienta a circuitului DC.",
+      "influenteaza": "p1251, p1240, p1247",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25895,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1251",
+    "descriere_scurta": "Vdc controller integral time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului tensiunii circuitului DC. Valori mai mici cresc viteza de raspuns a componentei integrale la erori de tensiune DC. Trebuie echilibrat cu p1250 pentru stabilitate optima a regulatorului Vdc.",
+      "influenteaza": "p1250, p1240",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25896,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1255",
+    "descriere_scurta": "Vdc_min controller time threshold",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita de timp pentru regulatorul Vdc_min (kinetic buffering). Daca aceasta durata este depasita continuu, se genereaza un defect cu raspunsul configurat. Activ doar cand p1256 = 1 este setat pentru monitorizarea timpului.",
+      "influenteaza": "p1256, p1240",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25897,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1256",
+    "descriere_scurta": "Vdc_min controller response (kinetic buffering)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza raspunsul la depasirea limitei de timp a regulatorului Vdc_min in kinetic buffering. Valoarea 0 nu genereaza defect, valoarea 1 activeaza monitorizarea si genereaza defect la depasirea timpului din p1255. Protejeaza actionarea la caderi prelungite de tensiune.",
+      "influenteaza": "p1255, p1257",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25898,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1257",
+    "descriere_scurta": "Vdc_min controller speed threshold",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de viteza al regulatorului Vdc_min (kinetic buffering). La depasirea acestui prag se genereaza un defect cu raspunsul configurabil. Protejeaza sistemul cand viteza scade excesiv in timpul kinetic buffering.",
+      "influenteaza": "p1256, p1255",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25899,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1280",
+    "descriere_scurta": "Vdc controller configuration (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza regulatorul tensiunii circuitului DC (Vdc) in modul de control U/f. Valoarea 0 dezactiveaza regulatorul, valoarea 1 activeaza controlul Vdc_max (anti-supratensiune). Diferit de p1240 care se aplica controlului vectorial.",
+      "influenteaza": "p1290, p1291, p1285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25900,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1284",
+    "descriere_scurta": "Vdc_max controller time threshold (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de monitorizare al regulatorului Vdc_max in modul U/f. Daca rampa de decelerare este tinuta mai mult decat timpul setat, se genereaza defectul F7404. Protejeaza circuitul DC de supratensiuni prelungite in modul U/f.",
+      "influenteaza": "p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25901,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1285",
+    "descriere_scurta": "Vdc_min controller switch-in level (kinetic buffering) (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste nivelul de tensiune la care se activeaza regulatorul Vdc_min (kinetic buffering) in modul U/f, exprimat ca procent din tensiunea de retea. Valoarea este calculata relativ la tensiunea nominala a retelei p0210. Nivelul mai ridicat activeaza kinetic buffering mai devreme la caderi de tensiune.",
+      "influenteaza": "p1286, p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25902,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1286",
+    "descriere_scurta": "= p1285[%] * sqrt(2) * p0210",
+    "GENERATED": {
+      "explicatie": "p - parametru read-only care afiseaza nivelul de tensiune de activare al regulatorului Vdc_min calculat din formula p1285 * sqrt(2) * p0210. Indica valoarea absoluta a tensiunii DC la care se activeaza kinetic buffering. Util pentru verificarea nivelului efectiv de protectie.",
+      "influenteaza": "p1285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25903,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1288",
+    "descriere_scurta": "Vdc_max controller feedback coupling factor ramp-fct. gen. (U/f) /",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de cuplaj feedback al regulatorului Vdc_max asupra timpilor de rampa ai generatorului de rampa in modul U/f. Un factor mai mare produce o desacelera mai agresiva a rampei la supratensiune DC. Echilibreaza viteza de reactie a protectiei la supratensiune.",
+      "influenteaza": "p1280, p1290",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25904,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1290",
+    "descriere_scurta": "Vdc controller proportional gain (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului tensiunii DC in modul U/f. Valori mai mari produc un raspuns mai rapid la variatiile tensiunii DC dar pot cauza oscilatii. Setarea corecta asigura stabilitate in controlul tensiunii DC in modul scalar.",
+      "influenteaza": "p1291, p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25905,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1291",
+    "descriere_scurta": "Vdc controller integral time (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului tensiunii DC in modul U/f. Valori mai mici cresc viteza de raspuns a componentei integrale. Trebuie calibrat impreuna cu p1290 pentru un comportament stabil al regulatorului Vdc in modul scalar.",
+      "influenteaza": "p1290, p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25906,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1293",
+    "descriere_scurta": "Vdc min controller output limit (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita de iesire a regulatorului Vdc_min (regulator de subtensiune DC) in modul U/f. Limita se exprima in Hz si restrictioneaza influenta maxima a regulatorului de subtensiune asupra frecventei de iesire. Previne reducerea excesiva a frecventei in kinetic buffering.",
+      "influenteaza": "p1280, p1285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25907,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1295",
+    "descriere_scurta": "Vdc_min controller time threshold (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de timp pentru regulatorul Vdc_min in modul U/f. La depasirea timpului setat se genereaza un defect cu raspunsul configurat. Este echivalentul lui p1255 dar pentru modul de control U/f.",
+      "influenteaza": "p1296, p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25908,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1296",
+    "descriere_scurta": "Vdc_min controller response (kinetic buffering) (U/f",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza raspunsul la depasirea limitei de timp a regulatorului Vdc_min in modul U/f. Valoarea 1 activeaza monitorizarea si genereaza defect la depasirea p1295. Echivalentul lui p1256 pentru modul de control U/f.",
+      "influenteaza": "p1295, p1297",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25909,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1297",
+    "descriere_scurta": "Vdc_min controller speed threshold (U/f)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de viteza al regulatorului Vdc_min in modul U/f. La depasirea acestui prag se genereaza un defect cu raspunsul configurabil. Protejeaza aplicatia cand viteza scade sub valoarea minima acceptabila in kinetic buffering modul U/f.",
+      "influenteaza": "p1296, p1295",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25910,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1302",
+    "descriere_scurta": "U/f control configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza diverse aspecte ale controlului U/f prin setarea individuala a bitilor. Permite activarea sau dezactivarea functii precum compensarea de alunecare, controlul FCC sau alte optiuni de optimizare. Configuratia corecta adapteaza comportamentul U/f la tipul de sarcina.",
+      "influenteaza": "p1310, p1312, p1333, p1334, p1336",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25911,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1310",
+    "descriere_scurta": "Voltage boost permanent",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste procentul de crestere permanenta a tensiunii in modul U/f raportat la curentul nominal al motorului. Boosting-ul de tensiune imbunatateste cuplul de pornire al motorului asincron. Valoarea se reduce automat la frecventa nominala pentru a nu depasi tensiunea nominala.",
+      "influenteaza": "p1312, p1302",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25912,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1312",
+    "descriere_scurta": "Voltage boost when starting",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste procentul de crestere suplimentara a tensiunii numai la prima faza de accelerare. Boosting-ul suplimentar dispare dupa atingerea setpointului. Utl pentru porniri cu sarcina ridicata care necesita cuplu de demaraj suplimentar temporar.",
+      "influenteaza": "p1310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25913,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1321",
+    "descriere_scurta": "U/f control programmable characteristic voltage 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste tensiunea primului punct al caracteristicii U/f programabile. Caracteristica este definita prin 4 puncte plus origina (0 Hz / p1310). Permite adaptarea profilului U/f la motoare speciale sau sarcini neconventionale.",
+      "influenteaza": "p1322, p1323, p1324, p1325, p1326",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25914,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1322",
+    "descriere_scurta": "U/f control programmable characteristic frequency 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa celui de-al doilea punct al caracteristicii U/f programabile. Impreuna cu p1323 (tensiunea corespunzatoare) defineste cel de-al doilea punct al curbei de control. Permite configurarea unui profil U/f personalizat.",
+      "influenteaza": "p1321, p1323, p1324, p1325",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25915,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1323",
+    "descriere_scurta": "U/f control programmable characteristic voltage 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste tensiunea celui de-al doilea punct al caracteristicii U/f programabile. Corespunde frecventei definite in p1322. Permite ajustarea fina a profilului de tensiune al controlului scalar.",
+      "influenteaza": "p1322, p1321, p1324",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25916,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1324",
+    "descriere_scurta": "U/f control programmable characteristic frequency 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa celui de-al treilea punct al caracteristicii U/f programabile. Impreuna cu p1325 (tensiunea corespunzatoare) defineste al treilea punct al curbei. Permite o aproximare mai precisa a profilului de tensiune dorit.",
+      "influenteaza": "p1323, p1325, p1326",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25917,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1325",
+    "descriere_scurta": "U/f control programmable characteristic voltage 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste tensiunea celui de-al treilea punct al caracteristicii U/f programabile. Corespunde frecventei definite in p1324. Permite configurarea unui profil de tensiune precis pe domeniul de frecventa al aplicatiei.",
+      "influenteaza": "p1324, p1326",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25918,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1326",
+    "descriere_scurta": "U/f control programmable characteristic frequency 4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa celui de-al patrulea si ultim punct al caracteristicii U/f programabile. Punctul 4 al curbei este cel mai inalt ca frecventa in caracteristica programabila. Dupa aceasta frecventa tensiunea ramane constanta la valoarea nominala.",
+      "influenteaza": "p1325",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25919,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1330",
+    "descriere_scurta": "U/f control independent voltage setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului de tensiune independent pentru modul U/f cu setpoint de tensiune independent (p1300=19). Permite controlul direct al tensiunii de iesire indiferent de frecventa. Utilizat in aplicatii speciale de testare sau in surse de putere reglabile.",
+      "influenteaza": "p1302",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25920,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1333",
+    "descriere_scurta": "U/f control FCC starting frequency",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa de pornire la care este activat controlul FCC (Flux Current Control) in modul U/f. FCC imbunatateste stabilitatea si eficienta la sarcini variabile. Sub aceasta frecventa FCC este inactiv.",
+      "influenteaza": "p1302",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25921,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1334",
+    "descriere_scurta": "U/f control slip compensation starting frequency",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa de pornire pentru compensarea alunecarii in modul U/f. Sub aceasta frecventa compensarea de alunecare este inactiva. Compensarea alunecarii corecteaza diferenta intre viteza de sincronism si viteza reala a motorului.",
+      "influenteaza": "p1336, p1302",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25922,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1336",
+    "descriere_scurta": "Slip compensation limit value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea limita a compensarii de alunecare exprimata ca procent din alunecarea nominala a motorului (r0330). Previne compensari excesive care ar putea destabiliza controlul U/f. Valorile tipice sunt in jur de 250% din alunecarea nominala.",
+      "influenteaza": "p1334",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25923,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1339",
+    "descriere_scurta": "U/f mode resonance damping filter time constant",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp a filtrului pentru amortizarea rezonantei in modul U/f. O valoare mai mica creste viteza de raspuns a amortizarii dar poate introduce instabilitate. Amortizarea rezonantei previne vibratiile mecanice la anumite frecvente de operare.",
+      "influenteaza": "p1349",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25924,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1341",
+    "descriere_scurta": "= 0: I_max frequency controller de-activated and I_max voltage controller activated over the complete speed",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de frecventa I_max. Valoarea 0 dezactiveaza regulatorul de frecventa I_max si activeaza regulatorul de tensiune I_max pe intreaga plaja de viteze. Acest regulator limiteaza curentul de iesire prin reducerea frecventei la suprasarcina.",
+      "influenteaza": "p1345",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25925,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1345",
+    "descriere_scurta": "I_max voltage controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului de tensiune I_max. Regulatorul de tensiune I_max reduce tensiunea de iesire la atingerea limitei de curent. Un castig mai mare produce un raspuns mai rapid dar poate cauza oscilatii de tensiune.",
+      "influenteaza": "p1341",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25926,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1349",
+    "descriere_scurta": "U/f mode resonance damping maximum frequency",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa maxima de iesire pana la care este activa amortizarea rezonantei in modul U/f. Deasupra acestei frecvente, amortizarea rezonantei este dezactivata automat. Limiteaza domeniul de actiune al amortizarii pentru a nu interfera cu operarea la viteze mari.",
+      "influenteaza": "p1339",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25927,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1350",
+    "descriere_scurta": "Soft starting",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza comportamentul de pornire lenta (soft start). La p1350=1 tensiunea creste progresiv in faza de magnetizare, la p1350=0 tensiunea sare direct la nivelul de boosting. Pornirea lenta reduce socurile de curent la pornire in aplicatii sensibile.",
+      "influenteaza": "p1310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25928,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1351",
+    "descriere_scurta": "Motor holding brake starting frequency",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste frecventa de pornire la iesirea compensarii de alunecare pentru pornire cu frana de retinere activa. Permite crearea unui cuplu de retinere inainte de eliberarea franei mecanice. Previne alunecarea sarcini la pornire verticala cu frana.",
+      "influenteaza": "p1334",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25929,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1400",
+    "descriere_scurta": "Speed control configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza diverse aspecte ale reglarii de viteza in bucla inchisa. Bitii individuali activeaza functii precum adaptarea parametrilor regulatorului, limitarea cuplului sau alte optiuni avansate de control vectorial. Configuratia corecta optimizeaza performanta dinamica a actionarii.",
+      "influenteaza": "p1470, p1472, p1521, p1522",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25930,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1401",
+    "descriere_scurta": "Flux control configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza controlul setpointului de flux al motorului. Bitii individuali selecteaza sursa setpointului de flux si activeaza sau dezactiveaza functii legate de controlul fluxului. Configuratia influenteaza eficienta si dinamica controlului vectorial.",
+      "influenteaza": "p1570, p1573",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25931,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1402",
+    "descriere_scurta": "Closed-loop current control and motor model configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza regulatorul de curent in bucla inchisa si modelul motorului. Bitii individuali activeaza sau dezactiveaza diverse optiuni ale controlului de curent si ale algoritmului de model al motorului. Configuratia influenteaza precizia si stabilitatea controlului vectorial.",
+      "influenteaza": "p1715, p1717, p1750",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25932,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1406",
+    "descriere_scurta": "Control word speed controller",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de control al regulatorului de viteza. Bitii indica starea diferitelor functii si comenzi active ale regulatorului de viteza. Util pentru diagnosticarea detaliata a comportamentului regulatorului de viteza.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25933,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1407",
+    "descriere_scurta": "Status word speed controller",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al regulatorului de viteza. Indica stari precum limita de cuplu atinsa, regulator saturat, sau alte conditii de stare ale buclei de viteza. Util pentru diagnosticarea problemelor de reglare si optimizarea parametrilor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25934,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1408",
+    "descriere_scurta": "Status word current controller",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al regulatorului de curent. Include indicatori pentru atingerea limitelor de tensiune, detectia blocajului motorului si alte stari ale buclei de curent. Util pentru diagnosticarea problemelor la nivel de regulator de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25935,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1416",
+    "descriere_scurta": "Speed setpoint filter 1 time constant",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp a filtrului PT1 pentru setpointul de viteza 1. Filtrul reduce zgomotul si variatiile bruste ale setpointului de viteza inainte de a fi preluat de regulatorul de viteza. Valorile mai mari produc un setpoint mai lin dar introduc intarziere.",
+      "influenteaza": "p1155",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25936,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1455",
+    "descriere_scurta": "Speed controller P gain adaptation signal",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului de adaptare suplimentara a castigului P al regulatorului de viteza. Permite modificarea dinamica a castigului P in functie de o variabila de proces. Util pentru optimizarea comportamentului regulatorului de viteza in conditii variabile de incarcare.",
+      "influenteaza": "p1456, p1457, p1458, p1459",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25937,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1456",
+    "descriere_scurta": "Speed controller P gain adaptation lower starting point",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste punctul de pornire inferior al domeniului de adaptare pentru castigul P al regulatorului de viteza. Sub aceasta valoare se aplica factorul de adaptare inferiora p1458. Valorile se exprima in procente din semnalul de adaptare.",
+      "influenteaza": "p1455, p1457, p1458",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25938,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1457",
+    "descriere_scurta": "Speed controller P gain adaptation upper starting point",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste punctul de pornire superior al domeniului de adaptare pentru castigul P al regulatorului de viteza. Deasupra acestei valori se aplica factorul de adaptare superioara p1459. Valorile se exprima in procente din semnalul de adaptare.",
+      "influenteaza": "p1455, p1456, p1459",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25939,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1458",
+    "descriere_scurta": "Adaptation factor lower",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de adaptare aplicat castigului P al regulatorului de viteza sub domeniul de adaptare (0 pana la p1456). Valoarea de 100% inseamna fara modificare a castigului P in aceasta zona. Permite ajustarea comportamentului regulatorului la viteze mici.",
+      "influenteaza": "p1456, p1470",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25940,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1459",
+    "descriere_scurta": "Adaptation factor upper",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de adaptare aplicat castigului P al regulatorului de viteza deasupra domeniului de adaptare (peste p1457). Valoarea de 100% inseamna fara modificare a castigului P in aceasta zona. Permite ajustarea comportamentului regulatorului la viteze mari.",
+      "influenteaza": "p1457, p1470",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25941,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1461",
+    "descriere_scurta": "Speed controller Kp adaptation speed upper scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul P al regulatorului de viteza pentru domeniul superior de viteza de adaptare (peste p1465), exprimat in procente fata de castigul din domeniul inferior (p1470). Permite setarea unui castig P diferit la viteze mari comparativ cu vitezele mici. Imbunateste stabilitatea la viteze ridicate.",
+      "influenteaza": "p1465, p1470",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25942,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1463",
+    "descriere_scurta": "Speed controller Tn adaptation speed upper scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de viteza pentru domeniul superior de viteza de adaptare (peste p1465), exprimat in procente fata de valoarea din domeniul inferior (p1472). Permite setarea unui timp integral diferit la viteze mari. Optimizeaza comportamentul regulatorului pe tot domeniul de viteza.",
+      "influenteaza": "p1465, p1472",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25943,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1464",
+    "descriere_scurta": "Speed controller adaptation speed lower",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste viteza inferioara de adaptare a regulatorului de viteza. Sub aceasta viteza nu se aplica nicio adaptare a parametrilor regulatorului. Permite setarea pragului inferior al domeniului de adaptare pentru optimizarea performantei.",
+      "influenteaza": "p1461, p1463, p1465",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25944,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1465",
+    "descriere_scurta": "Speed controller adaptation speed upper",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste viteza superioara de adaptare a regulatorului de viteza. Deasupra acestei viteze se aplica factorii de scalare superiori p1461 si p1463 pentru castigul P si timpul integral. Impreuna cu p1464 defineste domeniul de adaptare al parametrilor regulatorului.",
+      "influenteaza": "p1461, p1463, p1464",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25945,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1466",
+    "descriere_scurta": "Speed controller P-gain scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare al castigului P al regulatorului de viteza. Permite scalarea dinamica a castigului P inclusiv dupa aplicarea adaptarilor. Util pentru ajustari fine ale raspunsului regulatorului de viteza prin interconectare BICO.",
+      "influenteaza": "p1470",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25946,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1470",
+    "descriere_scurta": "Speed controller encoderless operation P-gain",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste castigul proportional al regulatorului de viteza in operare fara encoder. Este unul dintre parametrii de reglare principali ai buclei de viteza pentru controlul vectorial sensorless. Valoarea corecta asigura un raspuns dinamic adecvat fara oscilatii.",
+      "influenteaza": "p1472, p1461, p1466",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25947,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1472",
+    "descriere_scurta": "Speed controller encoderless operation integral time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul integral al regulatorului de viteza in operare fara encoder. Impreuna cu p1470 defineste comportamentul dinamic al buclei de viteza pentru controlul sensorless. Valori mai mici produc o compensare mai rapida a erorilor de viteza.",
+      "influenteaza": "p1470, p1463",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25948,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1475",
+    "descriere_scurta": "Speed controller torque setting value for motor holding brake",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa valorii de setare a cuplului la pornire cu frana de retinere activa. Permite preincarcarea regulatorului de viteza cu un cuplu de retinere inainte de eliberarea franei. Previne alunecarea sarcinilor suspendate la pornire cu frana.",
+      "influenteaza": "p1476, p1477",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25949,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1476",
+    "descriere_scurta": "Speed controller hold integrator",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru blocarea integratorului regulatorului de viteza. La semnalul activ, componenta integrala este mentinuta la valoarea curenta. Util in aplicatii de sincronizare sau la tranzitii de control.",
+      "influenteaza": "p1477, p1478",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25950,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1477",
+    "descriere_scurta": "Speed controller set integrator value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru setarea valorii integratorului regulatorului de viteza la valoarea p1478. La semnalul activ, integratorul este reincarcat cu valoarea de setare definita. Permite reinitializarea integratorului la valori predefinite.",
+      "influenteaza": "p1476, p1478",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25951,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1478",
+    "descriere_scurta": "Speed controller integrator setting value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa valorii de setare a integratorului regulatorului de viteza. Valoarea este aplicata la primirea semnalului din p1477. Permite preincarcarea integratorului cu o valoare de cuplu predefinita pentru tranzitii controlate.",
+      "influenteaza": "p1477, p1479",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25952,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1479",
+    "descriere_scurta": "Speed controller integrator setting value scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare a valorii de setare a integratorului regulatorului de viteza (p1478). Permite ajustarea dinamica a nivelului de preincarcarte al integratorului. Util in configuratii avansate de control al cuplului la pornire.",
+      "influenteaza": "p1478",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25953,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1486",
+    "descriere_scurta": "Droop compensation torque",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa cuplului de compensare pentru calculul droop. Ar trebui interconectat cu setpointul de cuplu al actionarii pentru care se doreste egalizarea sarcinii. Util in aplicatii cu actionari multiple cuplate mecanic pentru egalizarea incarcarilor.",
+      "influenteaza": "p1487, p1488, p1489, p1492",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25954,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1487",
+    "descriere_scurta": "Droop compensation torque scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al cuplului de compensare in calculul droop. Permite ajustarea ponderii cuplului de compensare in algoritmul de droop. Valorile negative inverseaza directia compensarii pentru configuratii specifice.",
+      "influenteaza": "p1486, p1489",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25955,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1488",
+    "descriere_scurta": "Droop input source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza sursa pentru feedbackul droop. La cresterea cuplului, setpointul de viteza este redus pentru a realiza egalizarea sarcinii intre actionari cuplate mecanic. Valoarea 0 selecteaza cuplul motor intern ca sursa de droop.",
+      "influenteaza": "p1489, p1492, p1486",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25956,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1489",
+    "descriere_scurta": "Droop feedback scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste factorul de scalare al feedbackului droop. Determina cat de mult este redus setpointul de viteza la o anumita crestere a cuplului. Valori mai mari produc o egalizare mai agresiva a sarcinii dar pot reduce precizia de viteza.",
+      "influenteaza": "p1488, p1492",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25957,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1492",
+    "descriere_scurta": "Droop feedback enable",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului de activare a functiei droop. La semnalul activ, feedbackul droop este aplicat setpointului de viteza. Dezactivarea droop permite functionarea fara egalizarea sarcinii in cazuri specifice.",
+      "influenteaza": "p1488, p1489",
+      "categorie": "Motor"
+    }
+  }
+]

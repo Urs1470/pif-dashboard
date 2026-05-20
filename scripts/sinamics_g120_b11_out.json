@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 26158,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2253",
+    "descriere_scurta": "Technology controller setpoint 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza prima sursa de setpoint pentru regulatorul tehnologic (PID). Sursa poate fi un semnal analog, o valoare fixa sau iesirea potentiometrului motorized; regulatorul compara aceasta valoare cu valoarea reala p2264 pentru a calcula eroarea.",
+      "influenteaza": "p2264, p2200, p2296",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26159,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2264",
+    "descriere_scurta": "Technology controller actual value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza sursa valorii reale (feedback) pentru regulatorul tehnologic. In aplicatii de presiune constantă, aceasta este tipic iesirea unui traductor de presiune conectat la intrarea analogica; regulatorul compara aceasta cu setpoint-ul p2253.",
+      "influenteaza": "p2253, p2200, p2296",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26160,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2289",
+    "descriere_scurta": "Technology controller pre-control signal",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza semnalul de precontrol (feed-forward) al regulatorului tehnologic. Valoarea de precontrol este adaugata direct la iesirea regulatorului PID, imbunatatind raspunsul dinamic si reducand eroarea tranzitorie.",
+      "influenteaza": "p2253, p2264, p2296",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26161,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2296",
+    "descriere_scurta": "Technology controller output scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza factorul de scalare pentru iesirea regulatorului tehnologic. Valoarea implicita 2295[0] utilizeaza setpoint-ul maxim al regulatorului ca factor de scalare; permite adaptarea iesirilor la plaja de valori a setpoint-ului de viteza.",
+      "influenteaza": "p2253, p2297, p2298",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26162,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2297",
+    "descriere_scurta": "Technology controller maximum limit signal source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza sursa limitei maxime de iesire a regulatorului tehnologic. Valoarea implicita 1084[0] utilizeaza setpoint-ul maxim de viteza ca limita superioara, prevenind iesiri excesive ale regulatorului PID.",
+      "influenteaza": "p2298, p2296, p2200",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26163,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2298",
+    "descriere_scurta": "Technology controller minimum limit signal source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza sursa limitei minime de iesire a regulatorului tehnologic. Valoarea implicita 1087[0] utilizeaza setpoint-ul minim de viteza ca limita inferioara, asigurand ca regulatorul nu poate comanda o viteza sub minimul permis.",
+      "influenteaza": "p2297, p2299, p2200",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26164,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2299",
+    "descriere_scurta": "Technology controller limit offset",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza sursa de offset pentru limitele de iesire ale regulatorului tehnologic. Permite deplasarea dinamica a limitelor de iesire ale regulatorului in functie de conditiile de proces.",
+      "influenteaza": "p2297, p2298",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26165,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2900",
+    "descriere_scurta": "Fixed value 1 [%]",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza o valoare fixa procentuala disponibila ca sursa de semnal in sistemul BICO. Poate fi utilizata ca setpoint fix sau offset in diverse interconectari; accesibila ca CO pentru conexiuni la alti parametri.",
+      "influenteaza": "p2901",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26166,
+    "familie": "SINAMICS_G120",
+    "parametru": "p2901",
+    "descriere_scurta": "Fixed value 2 [%]",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza a doua valoare fixa procentuala disponibila ca sursa de semnal in sistemul BICO. Impreuna cu p2900 ofera doua valori fixe libere configurabile de utilizator pentru diverse aplicatii de scalare sau offset.",
+      "influenteaza": "p2900",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26167,
+    "familie": "SINAMICS_G120",
+    "parametru": "r2902",
+    "descriere_scurta": "Fixed values [%]",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Ofera surse de semnal BICO cu valori procentuale standard predefinite (0%, +/-5%, +/-10%, +/-20%, +/-50%, +/-100%, +/-150%, +/-200%). Eliminand necesitatea parametrizarii individuale pentru constante comune.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26168,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3111",
+    "descriere_scurta": "External fault 3 enable",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Semnalul de enable pentru defectul extern 3; defectul F07862 apare cand: p2108=0 (negat) SI p3111=1 (enable activ) SI p3112=0 (negat). Valoarea 1 (implicit constant) mentine enable-ul activ permanent.",
+      "influenteaza": "p2108, p3112",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26169,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3112",
+    "descriere_scurta": "External fault 3 enable negated",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Semnalul de enable negat pentru defectul extern 3; defectul este generat cand p3112=0 (negat activ). Impreuna cu p2108 si p3111 formeaza o logica AND cu 3 conditii pentru generarea defectului F07862.",
+      "influenteaza": "p2108, p3111",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26170,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3113",
+    "descriere_scurta": "NAMUR message bit bar",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea curenta a bitilor de semnal NAMUR (standard pentru industria de proces). Defectele si alarmele sunt alocate claselor de mesaje corespunzatoare NAMUR NE107, influentand bitii specifici.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26171,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3230",
+    "descriere_scurta": "Load monitoring speed actual value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Conecteaza sursa valorii reale de viteza pentru monitorizarea sarcinii (modul p2193=2). Aceasta viteza este comparata cu setpoint-ul pentru detectia devierii excesive indicand pierderea sarcinii sau blocare.",
+      "influenteaza": "p3231, p2193",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26172,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3231",
+    "descriere_scurta": "Load monitoring speed deviation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza deviatia maxima admisa de viteza in mode monitorizare sarcina cu deviatie (p2193=2). Daca diferenta intre viteza reala si setpoint depaseste aceasta valoare, se genereaza mesajul configurat in p2181.",
+      "influenteaza": "p3230, p2193, p2181",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26173,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3232",
+    "descriere_scurta": "Load monitoring failure detection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Sursa de semnal pentru detectia externa a unei avarii in procesul de monitorizare a sarcinii. Cand semnalul devine 0, se considera o avarie detectata extern si se proceseaza conform reactiei configurate in p2181.",
+      "influenteaza": "p2181, p2193",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26174,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3233",
+    "descriere_scurta": "Torque actual value filter time constant",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza constanta de timp a filtrului PT1 pentru netezirea valorii reale de cuplu folosita in comparatiile de monitorizare. Valoarea mai mare reduce sensibilitatea la varfuri de cuplu dar intarzie detectia suprasarcinilor.",
+      "influenteaza": "p2174, p2194, r2198",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26175,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3320",
+    "descriere_scurta": "Fluid flow machine power point 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste puterea (in %) in punctul 1 al caracteristicii P=f(n) pentru masina cu fluid (pompa/ventilator). Aceasta curba cu 5 puncte este necesara pentru afisarea economiei de energie comparativ cu functionarea la frecventa fixa.",
+      "influenteaza": "p3323, p3326",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26176,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3326",
+    "descriere_scurta": "/ p3327 --> point 4 (P4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste puterea (in %) in punctul 2 al caracteristicii P=f(n) pentru masina cu fluid. Impreuna cu p3323 (viteza punct 2) formeaza al doilea punct al curbei de caracteristica utilizata pentru calculul economiei de energie.",
+      "influenteaza": "p3323, p3320",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26177,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3323",
+    "descriere_scurta": "Fluid flow machine speed point 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste viteza (in %) in punctul 2 al caracteristicii P=f(n) pentru masina cu fluid. Formeaza impreuna cu p3326 (puterea aferenta) al doilea punct al curbei de caracteristica pentru calculul economiei de energie.",
+      "influenteaza": "p3326, p3320",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26178,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3324",
+    "descriere_scurta": "Fluid flow machine power point 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste puterea (in %) in punctul 3 al caracteristicii P=f(n) pentru masina cu fluid. Impreuna cu p3325 (viteza punct 3) formeaza al treilea punct al curbei de caracteristica utilizata pentru afisajul de economie energetica.",
+      "influenteaza": "p3325, p3323",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26179,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3325",
+    "descriere_scurta": "Fluid flow machine speed point 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste viteza (in %) in punctul 3 al caracteristicii P=f(n) pentru masina cu fluid. Impreuna cu p3324 (puterea aferenta) formeaza al treilea punct al curbei de caracteristica a pompei sau ventilatorului.",
+      "influenteaza": "p3324, p3326",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26180,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3327",
+    "descriere_scurta": "Fluid flow machine speed point 4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste viteza (in %) in punctul 4 al caracteristicii P=f(n) pentru masina cu fluid. Impreuna cu puterea corespunzatoare (p3326 utilizat ca P4) formeaza al patrulea punct al curbei de caracteristica energetica.",
+      "influenteaza": "p3325, p3328",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26181,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3328",
+    "descriere_scurta": "Fluid flow machine power point 5",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Defineste puterea (in %) in punctul 5 (final) al caracteristicii P=f(n) pentru masina cu fluid. Valoarea implicita 100% corespunde vitezei nominale; punctul 5 impreuna cu p3327 incheie curba de caracteristica energetica.",
+      "influenteaza": "p3327, p3324",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26182,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3331",
+    "descriere_scurta": "2/3 wire control command 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Sursa semnalului de comanda 2 pentru modul de control 2/3 fire. In configuratia 3 fire, aceasta intrare este tipic folosita pentru comanda de STOP (contactul de oprire), impreuna cu p0840 (RUN) si p3332.",
+      "influenteaza": "p3332, p0015, r3333",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26183,
+    "familie": "SINAMICS_G120",
+    "parametru": "p3332",
+    "descriere_scurta": "2/3 wire control command 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Sursa semnalului de comanda 3 pentru modul de control 2/3 fire. In configuratia 3 fire, aceasta intrare este tipic folosita pentru comanda de inversare directie (REVERSE), completand logica de control local.",
+      "influenteaza": "p3331, p0015, r3333",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26184,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3333",
+    "descriere_scurta": "2/3 wire control control word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza cuvantul de comanda generat de logica de control 2/3 fire configurata prin p0015. Semnalele rezultate din starea intrarilor digitale si modul de control selectat sunt vizibile in acest registru de diagnosticare.",
+      "influenteaza": "p3331, p3332, p0015",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26185,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3926",
+    "descriere_scurta": "Voltage generation alternating base voltage amplitude",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza tensiunea de baza pentru generarea tensiunilor alternative in contextul identificarii datelor motorului (MotID). Valoarea 0 indica functie dezactivata; valorile negative indica determinare automata; valorile pozitive indica tensiunea in volti.",
+      "influenteaza": "r3927",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26186,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3927",
+    "descriere_scurta": "Motor data identification control word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza componentele finalizate cu succes ale ultimei identificari a datelor motorului (MotID). Bitii individuali indica care masuratori au fost efectuate (rezistenta stator, inductante, etc.).",
+      "influenteaza": "p1900, r3928",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26187,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3928",
+    "descriere_scurta": "Rotating measurement configuration",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza configuratia componentelor finalizate cu succes ale ultimei masuratori in rotatie (rotating measurement). Indica masuratorile efectuate la viteza nominala in cadrul identificarii rotative a motorului.",
+      "influenteaza": "p1960, r3927",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26188,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3929",
+    "descriere_scurta": "Motor data identification modulated voltage generation",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza configuratia generarii tensiunii modulate pentru diferitele sectiuni ale MotID in cadrul ultimei identificari de succes. Util pentru diagnosticarea metodei de excitatie utilizate in fiecare faza a identificarii.",
+      "influenteaza": "r3927, r3926",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26189,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3930",
+    "descriere_scurta": "Power unit EEPROM characteristics",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza caracteristicile stocate in EEPROM-ul unitatii de putere (numarul A5E si versiunile fisierelor de date). Util pentru identificarea exacta a hardware-ului Power Module si verificarea compatibilitatii firmware.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26190,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3960",
+    "descriere_scurta": "Control Unit temperature measured",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza temperatura masurata a unitatii de control (CU): indexul [0] valoarea curenta, indexul [1] valoarea maxima inregistrata. La depasirea 87 grade C se genereaza un mesaj de avertizare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26191,
+    "familie": "SINAMICS_G120",
+    "parametru": "r3988",
+    "descriere_scurta": "Boot state",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea de initializare (boot) a variatorului: indexul [0] starea de boot principala, indexul [1] starea de boot partiala. Valoarea 800 indica initializare completa si functionare normala.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26192,
+    "familie": "SINAMICS_G120",
+    "parametru": "r7758",
+    "descriere_scurta": "KHP Control Unit serial number",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numarul de serie real al unitatii de control in cod ASCII (un caracter per index). Utilizat pentru identificarea unica a CU-ului in contextul know-how protection (KHP) si a auditului echipamentelor.",
+      "influenteaza": "p7764",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26193,
+    "familie": "SINAMICS_G120",
+    "parametru": "p7764",
+    "descriere_scurta": "KHP OEM exception list",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Lista de exceptii OEM pentru know-how protection (KHP): parametrii specificati in aceasta lista raman accesibili chiar si cand KHP este activata. Permite OEM-ului sa expuna selectiv parametrii de baza fara a dezvalui setarile protejate.",
+      "influenteaza": "p7763, r7758",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26194,
+    "familie": "SINAMICS_G120",
+    "parametru": "r7841",
+    "descriere_scurta": "Power Module serial number",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numarul de serie real al modulului de putere (Power Module) in cod ASCII. Utilizat pentru identificarea unica a hardware-ului PM in scopuri de service, garantie si urmarire a componentelor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26195,
+    "familie": "SINAMICS_G120",
+    "parametru": "r7843",
+    "descriere_scurta": "Memory card serial number",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numarul de serie al cardului de memorie instalat, in cod ASCII. Permite verificarea identitatii cardului de memorie utilizat pentru backup/restore de parametri sau transfer de firmware.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26196,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8570",
+    "descriere_scurta": "Macro drive object",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza fisierul macro salvat in directorul corespunzator pe cardul de memorie sau memoria interna a dispozitivului. Macrourile permit incarcarea rapida a unor configuratii predefinite ale variatorului.",
+      "influenteaza": "r8571, r8572",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26197,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8571",
+    "descriere_scurta": "Macro Binector Input (BI)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza fisierul ACX cu configuratiile intrarilor binector (BI) salvat in memoria non-volatila. Fisierele ACX stocheaza interconectarile BICO specifice aplicatiei pentru transfer intre variatoare.",
+      "influenteaza": "r8570, r8572",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26198,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8572",
+    "descriere_scurta": "Macro Connector Inputs (CI) for speed setpoints",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza fisierul ACX cu configuratiile intrarilor conector (CI) pentru setpoint-urile de viteza, salvat in memoria non-volatila. Permite vizualizarea interconectarilor BICO active pentru canalul de setpoint viteza.",
+      "influenteaza": "r8570, r8571, r8573",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26199,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8573",
+    "descriere_scurta": "Macro Connector Inputs (CI) for torque setpoints",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza fisierul ACX cu configuratiile intrarilor conector (CI) pentru setpoint-urile de cuplu, salvat in memoria non-volatila. Permite vizualizarea interconectarilor BICO active pentru canalul de setpoint cuplu.",
+      "influenteaza": "r8570, r8572",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26200,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8854",
+    "descriere_scurta": "PROFINET state",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea curenta a interfetei PROFINET integrate. Valorile specifice indica starea conexiunii: 0=offline, valorile superioare indica diferite stadii de initializare si functionare PROFINET.",
+      "influenteaza": "r8858, r8859",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26201,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8858",
+    "descriere_scurta": "PROFINET read diagnostics channel",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza datele de diagnosticare PROFINET disponibile prin canalul de diagnosticare. Contine informatii despre alarme si starea comunicatiei PROFINET pentru analiza erorilor de retea.",
+      "influenteaza": "r8854, r8859",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26202,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8859",
+    "descriere_scurta": "PROFINET identification data",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza datele de identificare PROFINET: versiunile interfetei si driver-ului, codul companiei, tipul CB, versiunea si data firmware-ului. Esential pentru diagnosticarea compatibilitatii in retele PROFINET cu multiple dispozitive.",
+      "influenteaza": "r8854, r8858",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26203,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8930",
+    "descriere_scurta": "PN Name of Station active",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numele de statie activ al interfetei PROFINET onboard de pe Control Unit. Numele statiei este utilizat de controlerul PROFINET (PLC) pentru identificarea si adresarea variatorului in retea.",
+      "influenteaza": "r8931, r8935",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26204,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8931",
+    "descriere_scurta": "PN IP Address of Station active",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza adresa IP activa a interfetei PROFINET onboard. Adresa poate fi atribuita static sau prin DCP (PROFINET Discovery and Configuration Protocol) de catre inginerul de retea sau PLC.",
+      "influenteaza": "r8932, r8933, r8930",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26205,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8932",
+    "descriere_scurta": "PN Default Gateway of Station active",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza gateway-ul implicit activ al interfetei PROFINET onboard. Necesar pentru comunicatia cu dispozitive din alte subnete; de obicei adresa routerului de nivel 3 din reteaua industriala.",
+      "influenteaza": "r8931, r8933",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26206,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8933",
+    "descriere_scurta": "PN Subnet Mask of Station active",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza masca de subretea activa a interfetei PROFINET onboard. Impreuna cu adresa IP r8931 si gateway-ul r8932, defineste complet configuratia de retea a variatorului in infrastructura PROFINET.",
+      "influenteaza": "r8931, r8932",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26207,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8935",
+    "descriere_scurta": "PN MAC Address of Station",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza adresa MAC a interfetei PROFINET onboard de pe Control Unit. Adresa MAC este unica si permanenta, utilizata pentru identificarea fizica a dispozitivului in reteaua Ethernet/PROFINET.",
+      "influenteaza": "r8930, r8931",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26208,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8960",
+    "descriere_scurta": "PN subslot controller assignment",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza asignarea controlerului pentru fiecare subslot PROFINET al drive object-ului activ: subslot 2 (PROFIsafe), subslot 3 (telegrama PZD), subslot 4 (date suplimentare PZD). Util pentru diagnosticarea configuratiei PROFINET.",
+      "influenteaza": "r8961, r8854",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26209,
+    "familie": "SINAMICS_G120",
+    "parametru": "r8961",
+    "descriere_scurta": "PN IP Address Remote Controller 1",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza adresa IP a primului controlor PROFINET conectat la dispozitiv prin interfata PN onboard. Permite identificarea PLC-ului sau a sistemului SCADA care controleaza activ variatorul.",
+      "influenteaza": "r8960, r8931",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26210,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9321",
+    "descriere_scurta": "SI Motion gearbox motor/load denominator (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza numitorul raportului de transmisie intre motor si sarcina pentru functiile Safety Integrated Motion pe procesorul 2. Impreuna cu p9322 (numaratorul) defineste raportul exact al reductorului pentru calculul vitezelor sigure la sarcina.",
+      "influenteaza": "p9322, p9331",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26211,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9322",
+    "descriere_scurta": "SI Motion gearbox motor/load numerator (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza numaratorul raportului de transmisie intre motor si sarcina pentru functiile Safety Integrated Motion pe procesorul 2. Impreuna cu p9321 defineste raportul de transmisie; valorile trebuie sa corespunda exact cu raportul reductorului mecanic.",
+      "influenteaza": "p9321, p9331",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26212,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9331",
+    "descriere_scurta": "SI Motion SLS limit values (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza limitele de viteza pentru functia Safely-Limited Speed (SLS) pe procesorul 2. Cand SLS este activata, viteza motorului nu poate depasi aceste limite; modificarea necesita confirmare prin suma de control p9399.",
+      "influenteaza": "p9363, p9399, p9321, p9322",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26213,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9363",
+    "descriere_scurta": "SI Motion SLS stop response (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza reactia la depasirea limitei SLS pe procesorul 2: 0=STOP A (oprire libera), 1=STOP B (oprire controlata). Aceasta setare se aplica individual fiecarui nivel de limita SLS configurat in p9331.",
+      "influenteaza": "p9331, p9399",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26214,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9385",
+    "descriere_scurta": "SI Motion actual value sensing sensorless fault tolerance (MM)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza toleranta monitorizarii de plauzibilitate a unghiurilor de curent si tensiune pentru detectia vitezei fara encoder pe modulul motor (MM). Valori mai mari cresc robustetea la inversare viteze mici si la sarcini variabile; -1 = automat.",
+      "influenteaza": "r9787, p9399",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26215,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9398",
+    "descriere_scurta": "SI Motion actual checksum SI parameters (processor 2)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza suma de control calculata peste parametrii Safety Integrated verificati pe procesorul 2. Trebuie sa corespunda cu suma de control de referinta p9399 dupa orice modificare a parametrilor SI Motion.",
+      "influenteaza": "p9399",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26216,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9399",
+    "descriere_scurta": "SI Motion setpoint checksum SI parameters (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Stocheaza suma de control de referinta pentru parametrii Safety Integrated pe procesorul 2. Dupa orice modificare a parametrilor SI, suma calculata r9398 trebuie copiata in p9399 pentru a confirma si valida noua configuratie de securitate.",
+      "influenteaza": "r9398, p9331, p9363",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26217,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9406",
+    "descriere_scurta": "PS file parameter number parameter not transferred",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numerele parametrilor care nu au putut fi transferati la citirea fisierelor de backup (PS files) din memoria non-volatila. Util pentru diagnosticarea incompatibilitatilor de versiune la restaurarea unui backup.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26218,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9451",
+    "descriere_scurta": "Units changeover adapted parameters",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza parametrii care ar trebui modificati in cazul unei schimbari a sistemului de unitati de masura. Permite identificarea parametrilor afectati inainte de efectuarea schimbarii sistemului de unitati.",
+      "influenteaza": "p0505",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26219,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9521",
+    "descriere_scurta": "SI Motion gearbox motor/load denominator (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza numitorul raportului de transmisie intre motor si sarcina pentru functiile Safety Integrated Motion pe procesorul 1 (CU). Trebuie sa fie identic cu p9321 (procesor 2) pentru a asigura coerenta comparatiei intre cele doua canale.",
+      "influenteaza": "p9522, p9531, p9321",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26220,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9522",
+    "descriere_scurta": "SI Motion gearbox motor/load numerator (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza numaratorul raportului de transmisie intre motor si sarcina pentru SI Motion pe procesorul 1 (CU). Trebuie sa fie identic cu p9322 (procesor 2); discrepanta intre cei doi procesori genereaza defect de comparatie incrucisata.",
+      "influenteaza": "p9521, p9531, p9322",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26221,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9531",
+    "descriere_scurta": "SI Motion SLS limit values (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza limitele de viteza pentru functia Safely-Limited Speed pe procesorul 1 (CU). Trebuie sa fie identic cu p9331 (procesor 2); valorile sunt comparate incrucis intre procesoare pentru a detecta erori hardware.",
+      "influenteaza": "p9563, p9729, p9521, p9522",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26222,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9563",
+    "descriere_scurta": "SI Motion SLS-specific stop response (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza reactia specifica SLS la depasirea limitei pe procesorul 1: 0=STOP A, 1=STOP B. Trebuie sa fie identic cu p9363 (procesor 2); discrepanta genereaza o eroare de comparatie incrucisata a functiei de securitate.",
+      "influenteaza": "p9531, p9729, p9363",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26223,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9575",
+    "descriere_scurta": "SI Motion acceptance test mode (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Activeaza sau dezactiveaza modul de test de acceptanta pentru SLP (Safe Limited Position) pe procesorul 1. Modul de test permite verificarea functionarii corecte a monitorizarii pozitiei sigure in conditii controlate.",
+      "influenteaza": "p9729",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26224,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9585",
+    "descriere_scurta": "SI Motion actual value sensing sensorless fault tolerance (CU)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Seteaza toleranta monitorizarii de plauzibilitate unghiulara pentru detectia vitezei fara encoder pe Control Unit (procesorul 1). Trebuie sa fie identic cu p9385 (procesor 2); valori mai mari cresc robustetea in zona vitezelor mici.",
+      "influenteaza": "r9787, p9729, p9385",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26225,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9590",
+    "descriere_scurta": "SI Motion version safety motion monitoring (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza versiunea Safety Integrated pentru functiile de monitorizare a miscarii sigure pe procesorul 1: versiunea majora, minora, baselevel si hotfix. Necesar pentru documentatia de securitate si compatibilitatea cu standardele SIL.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26226,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9708",
+    "descriere_scurta": "SI Motion diagnostics safe position",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza valorile reale de pozitie de pe partea sarcinii pentru ambele canale de monitorizare si diferenta dintre ele. Diferenta maxima inregistrata (indexul [3]) este cheia pentru validarea testului de acceptanta SI.",
+      "influenteaza": "r9713, r9714",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26227,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9710",
+    "descriere_scurta": "SI Motion diagnostics result list 1",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza lista de rezultate 1 a comparatiei incrucisate intre canalele de monitorizare care a generat defectul. Indexul [0] contine rezultatele de pe procesorul 2, indexul [1] de pe procesorul 1.",
+      "influenteaza": "r9725, r9728",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26228,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9713",
+    "descriere_scurta": "SI Motion diagnostics position actual value load side",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza valorile de pozitie de pe partea sarcinii de pe ambii procesori (P1 si P2), diferenta lor curenta si maxima. Diferenta maxima (indexul [3]) trebuie sa fie sub toleranta admisa pentru functia de securitate.",
+      "influenteaza": "r9708, r9714",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26229,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9714",
+    "descriere_scurta": "SI Motion diagnostics velocity (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza valorile de viteza pentru functiile de monitorizare a miscarii pe procesorul 1: viteza reala pe partea sarcinii, limita actuala SAM/SBR si limita actuala SLS. Util pentru diagnosticarea activarii corecte a limitelor de viteza sigura.",
+      "influenteaza": "p9531, r9708",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26230,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9720",
+    "descriere_scurta": "SI Motion control signals integrated in the drive",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza semnalele de control pentru functiile de monitorizare a miscarii sigure integrate in variator. Permite vizualizarea starii curente a comenzilor active de securitate (STO, SS1, SLS, SDI, SLP).",
+      "influenteaza": "r9722, r9723",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26231,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9722",
+    "descriere_scurta": "SI Motion status signals integrated in the drive",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza semnalele de stare pentru functiile de monitorizare a miscarii sigure integrate. Bitii indica starea activa a fiecarei functii SI (STO activ, SS1 activ, SLS activ, etc.) si pot fi transmisi catre PLC via PROFIsafe.",
+      "influenteaza": "r9720, r9723",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26232,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9723",
+    "descriere_scurta": "SI Motion diagnostic signals integrated in the drive",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza semnalele de diagnosticare pentru functiile de monitorizare a miscarii sigure. Bitii indica stari interne de diagnosticare (STOP F activ, test de forta in curs, etc.) pentru analiza detaliata a sistemului SI.",
+      "influenteaza": "r9720, r9722, r9725",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26233,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9725",
+    "descriere_scurta": "SI Motion diagnostics STOP F",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza valoarea mesajului care a cauzat STOP F: 0 indica ca procesorul 1 a semnalat STOP F, 1-999 indica numarul de date incorecte din comparatia incrucisata, >=1000 valori de diagnosticare suplimentare.",
+      "influenteaza": "r9710, r9728",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26234,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9728",
+    "descriere_scurta": "SI Motion actual checksum SI parameters (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza suma de control calculata peste parametrii Safety Integrated pe procesorul 1: suma pentru monitorizarea miscarii (index 0), pentru valorile reale (index 1) si pentru hardware (index 2).",
+      "influenteaza": "p9729",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26235,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9729",
+    "descriere_scurta": "SI Motion setpoint checksum SI parameters (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Stocheaza suma de control de referinta pentru parametrii Safety Integrated pe procesorul 1. Dupa orice modificare a parametrilor SI, suma calculata r9728 trebuie copiata in p9729 pentru validarea noii configuratii de securitate.",
+      "influenteaza": "r9728, p9531, p9563",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26236,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9733",
+    "descriere_scurta": "SI Motion setpoint speed limit effective",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza limita de viteza setpoint efectiva rezultata din functiile de monitorizare selectate, pe partea motorului. Indexul [0] limita pozitiva, [1] negativa, [2] absoluta; spre deosebire de p9531, aceasta este limita de pe partea motorului.",
+      "influenteaza": "p9531, p9521, p9522",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26237,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9734",
+    "descriere_scurta": "SI Safety Info Channel status word S_ZSW1B",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza si ofera iesire BICO pentru cuvantul de stare S_ZSW1B al canalului de informatii de securitate. Transmis catre controlerul de securitate prin PROFIsafe; contine starea functiilor SI active.",
+      "influenteaza": "r9722, r9720",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26238,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9742",
+    "descriere_scurta": "SI Motion drive-integrated status signals (processor 2)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza semnalele de stare ale functiilor de monitorizare a miscarii sigure de pe procesorul 2. Complementar cu r9722 (procesor 1), permite compararea starii functiilor SI intre cele doua canale de monitorizare.",
+      "influenteaza": "r9722, r9720",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26239,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9768",
+    "descriere_scurta": "SI PROFIsafe receive control words (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza telegrama PROFIsafe primita de procesorul 1, cuprinzand pana la 5 cuvinte PZD. Permite verificarea datelor de control de securitate transmise de controlerul PLC catre variator prin canalul PROFIsafe.",
+      "influenteaza": "r9720, r9722",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26240,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9770",
+    "descriere_scurta": "SI version drive-integrated safety function (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza versiunea Safety Integrated pentru functiile de securitate integrate in variator pe procesorul 1 (major, minor, baselevel, hotfix). Necesar pentru documentatia SIL si verificarea conformitatii cu standardele de securitate.",
+      "influenteaza": "r9590",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26241,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9772",
+    "descriere_scurta": "SI status (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea Safety Integrated pe procesorul 1 (CU). Bitii individuali indica starea functiilor SI (STO activ, SS1 activ, testul de forta in curs, etc.); esential pentru diagnosticarea sistemului de securitate.",
+      "influenteaza": "r9773, r9872",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26242,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9773",
+    "descriere_scurta": "SI status (processor 1 + processor 2)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea combinata Safety Integrated pentru ambii procesori (P1 + P2). Reprezinta starea globala a sistemului de securitate al variatorului; o stare fara defecte pe ambii procesori este necesara pentru functionare normala.",
+      "influenteaza": "r9772, r9872",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26243,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9781",
+    "descriere_scurta": "SI checksum to check changes (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza suma de control pentru urmarirea modificarilor parametrilor SI (fingerprint pentru jurnalul de securitate): indexul [0] pentru modificari functionale, indexul [1] pentru modificari hardware specifice.",
+      "influenteaza": "r9782, p9729",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26244,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9782",
+    "descriere_scurta": "SI time stamp to check changes (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza marcajele temporale ale sumelor de control pentru urmarirea modificarilor parametrilor SI: indexul [0] pentru ultima modificare functionala, indexul [1] pentru ultima modificare hardware. Completeaza jurnalul de securitate.",
+      "influenteaza": "r9781",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26245,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9784",
+    "descriere_scurta": "SI Motion diagnostics sensorless acceleration",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza valorile de acceleratie pentru diagnosticarea captarii valorilor reale fara encoder: indexul [0] valoarea de acceleratie setpoint, indexul [1] valoarea de acceleratie reala masurata.",
+      "influenteaza": "p9585, r9787",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26246,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9785",
+    "descriere_scurta": "SI Motion diagnostics sensorless minimum current",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza curentii pentru diagnosticarea captarii valorilor reale fara encoder: indexul [0] curentul minim parametrizat, indexul [1] curentul minim masurat. Diferenta indica calitatea semnalului de viteza estimat.",
+      "influenteaza": "p9585, r9786",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26247,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9786",
+    "descriere_scurta": "SI Motion diagnostics sensorless angle",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza unghiurile pentru diagnosticarea captarii valorilor reale fara encoder: indexul [0] unghiul de plauzibilitate, [1] unghiul tensiunii, [2] unghiul curentului. Discrepante mari indica probleme cu modelul motorului.",
+      "influenteaza": "p9585, r9785, r9787",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26248,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9787",
+    "descriere_scurta": "SI Motion diagnostics sensorless velocity deviation",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza deviatia de viteza actuala a captarii fara encoder; valoarea este calculata si utilizata in setarea p9585/p9385. Viteza reala poate devia cu +/- r9787 in 6ms * p9585/p9385 intr-o fereastra de monitorizare de 1 secunda.",
+      "influenteaza": "p9585, p9385",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26249,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9794",
+    "descriere_scurta": "SI crosswise comparison list (processor 1)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza numerele datelor comparate incrucisat pe procesorul 1. Continutul listei depinde de aplicatie si configuratia SI activa; util pentru intelegerea detaliata a mecanismului de comparatie incrucisata.",
+      "influenteaza": "r9710, r9725",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26250,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9872",
+    "descriere_scurta": "SI status (processor 2)",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza starea Safety Integrated pe procesorul 2 (MM). Complementar cu r9772 (procesor 1); ambii procesori trebuie sa fie in stare normala pentru ca variatiorul sa functioneze fara defecte SI.",
+      "influenteaza": "r9772, r9773",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26251,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9925",
+    "descriere_scurta": "Firmware file incorrect",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza directorul si numele fisierului al carui status la iesirea din fabrica a fost identificat ca inadmisibil. Indica o potentiala coruptie a firmware-ului sau o versiune incompatibila care trebuie investigata.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26252,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9930",
+    "descriere_scurta": "System logbook activation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Folosit exclusiv in scopuri de service pentru activarea jurnalului de sistem intern. Indexul [0] selecteaza nivelul de detaliu al jurnalului; indexul [8] seteaza dimensiunea fisierului jurnal (multipli de 10 kB). Nu trebuie modificat in exploatare normala.",
+      "influenteaza": "p9931",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26253,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9931",
+    "descriere_scurta": "System logbook module selection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil. Folosit exclusiv in scopuri de service pentru selectarea modulelor incluse in jurnalul de sistem. Valoarea implicita FFFFh include toate modulele. Nu trebuie modificat in afara activitatilor de service Siemens.",
+      "influenteaza": "p9930",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26254,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9935",
+    "descriere_scurta": "POWER ON delay signal",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Ofera iesire binector pentru semnalul de intarziere dupa POWER ON. Bitul r9935.0 este setat la prima perioada de esantionare dupa pornire si resetat dupa aproximativ 100 ms; utilizat pentru sincronizarea initializarii in logica BICO.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26255,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9975",
+    "descriere_scurta": "System utilization measured",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza utilizarea masurata a sistemului de calcul: indexurile [0-2] utilizarea timpului de calcul (min/mediu/max), indexurile [3-5] utilizarea totala maxima. Valori aproape de 100% indica risc de depasire a capacitatii de calcul.",
+      "influenteaza": "r9976",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26256,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9976",
+    "descriere_scurta": "System utilization",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza utilizarea globala a sistemului in procente. Daca valoarea depaseste 100%, variatiorul genereaza defectul F01054 (suprasolicitare calculator); utilizat pentru evaluarea incarcarii sistemului in configuratii cu multe functii active.",
+      "influenteaza": "r9975",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26257,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9999",
+    "descriere_scurta": "Software error internal supplementary diagnostics",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only (afisaj). Afiseaza informatii suplimentare de diagnosticare pentru erorile interne de software. Destinat exclusiv personalului de service Siemens; valorile afisate sunt coduri interne utile doar cu documentatia tehnica interna.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  }
+]

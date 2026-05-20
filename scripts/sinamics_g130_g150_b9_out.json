@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 7679,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9563",
+    "descriere_scurta": "SI Motion SLS (SG)-specific stop response (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza reactia de oprire specifica fiecarei trepte SLS individuale pentru functia Safely-Limited Speed pe Control Unit. Permite configurarea unor reactii diferite pentru fiecare limita de viteza SLS1...SLS4. La monitorizare fara encoder, numai valorile 0 sau 1 sunt permise.",
+      "influenteaza": "p9531, p9561",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7680,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9530",
+    "descriere_scurta": "SI Motion standstill tolerance (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta de pozitie pentru functia Safe Operating Stop (SOS) pe Control Unit. Daca pozitia se abate mai mult decat aceasta toleranta in starea SOS activa, se genereaza un stop de siguranta. Trebuie sa fie identic cu p9330 de pe Motor Module.",
+      "influenteaza": "p9330",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7682,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9533",
+    "descriere_scurta": "SI Motion SLS setpoint velocity limiting (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de evaluare procentual pentru derivarea limitei de consemn din limita SLS activa. Limita activa SLS este multiplicata cu acest factor pentru a obtine o limita de consemn de viteza disponibila in r9733. Valoarea tipica este 80% pentru a asigura margine de siguranta.",
+      "influenteaza": "p9531, r9733",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7689,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9540",
+    "descriere_scurta": "SI Motion SCA (SN) tolerance (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta functiei Safe Cam (SCA) pe Control Unit. In fereastra de toleranta, cele doua canale de monitorizare pot semnala stari diferite ale aceleiasi came sigure fara a genera defect. Trebuie setat mai mare decat posibilele erori de pozitie.",
+      "influenteaza": "p9503, p9536, p9537",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7695,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9544",
+    "descriere_scurta": "SI Motion actual value comparison tolerance (referencing) (CU)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta pentru verificarea valorilor actuale dupa referentiere (encoder incremental) sau la pornire (encoder absolut) pe Control Unit. O toleranta prea mica poate cauza erori false la pornire. Valoarea implicita este 0.01 mm.",
+      "influenteaza": "p9516",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7700,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9547",
+    "descriere_scurta": "SI Motion SSM (SGA n < nx) velocity hysteresis (CU)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza histereza de viteza pentru semnalul SSM pe Control Unit. Semnalul SSM devine inactiv cand viteza depaseste suma p9546 + p9547. Previne oscilarea semnalului SSM in jurul pragului de detectie standstill.",
+      "influenteaza": "p9546, p9347",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7705,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9549",
+    "descriere_scurta": "SI Motion slip velocity tolerance (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta de viteza pentru verificarea incrucisata intre cele doua canale de monitorizare intr-un sistem cu 2 encodere pe Control Unit. Permite diferente cauzate de alunecare sau erori de masurare. Trebuie sa fie identic cu p9349 de pe Motor Module.",
+      "influenteaza": "p9349",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7706,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9550",
+    "descriere_scurta": "SI Motion SGE changeover tolerance time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza fereastra de toleranta pentru comutarea intrarilor de siguranta (SGE) pe Control Unit. In acest interval de timp dupa o comutare, discrepantele intre canalele SGE nu sunt semnalate ca erori. Previne semnalele false la comutarea rapida a intrarilor.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7709,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9553",
+    "descriere_scurta": "SI Motion transition time STOP D to SOS (SBH) (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP D la Safe Operating Stop (SOS) pe Control Unit. In acest interval drive-ul trebuie sa decelereze si sa atinga standstill. Trebuie sa fie identic cu p9353 de pe Motor Module.",
+      "influenteaza": "p9353",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7711,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9555",
+    "descriere_scurta": "SI Motion transition time STOP F to STOP B (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de tranzitie de la STOP F la STOP B pe Control Unit. Valoarea 0 determina tranzitie imediata. Trebuie sa fie consistent cu p9355 de pe Motor Module pentru functionarea corecta a canalelor duale.",
+      "influenteaza": "p9355",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7712,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9560",
+    "descriere_scurta": "SI Motion pulse suppression shutdown velocity (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de decizie pentru supresie impulsuri pe Control Unit. Sub aceasta viteza, impulsurile sunt suprimate la STOP B/SS1. Pentru monitorizare fara encoder valoarea trebuie sa fie > 0 (recomandat 10). Trebuie sa corespunda cu p9360.",
+      "influenteaza": "p9360",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7713,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9557",
+    "descriere_scurta": "SI Motion pulse suppression test time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul dupa care impulsurile trebuie sa fi fost suprimate la initierea test stop-ului pe Control Unit. Trebuie sa fie identic cu p9357 de pe Motor Module. Utilizat in procedura de verificare fortata a caii de oprire sigura.",
+      "influenteaza": "p9357",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7715,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9559",
+    "descriere_scurta": "SI Motion forced checking procedure timer (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul maxim de timp in care trebuie executata procedura de verificare fortata a functiilor SI Motion. In acest interval, functia STO trebuie dezactivata cel putin o data. La expirare fara testare, se genereaza o alarma. Exprimat in ore.",
+      "influenteaza": "p9705, p9659",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7716,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9705",
+    "descriere_scurta": "SI Motion: Test stop signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru test stop-ul functiilor SI Motion. Semnalul poate proveni dintr-o intrare digitala sau printr-o interconectare BICO. La schimbarea de semnal 1->0 sau 0->1 este initiat test stop-ul.",
+      "influenteaza": "p9559",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7718,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9561",
+    "descriere_scurta": "SI Motion SLS (SG) stop response (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza reactia de oprire generala pentru functia SLS aplicabila tuturor limitelor de viteza SLS. Valorile sub 5 reprezinta protectia personalului, valorile de la 10 in sus reprezinta protectia masinii. Poate fi suprascris per treapta prin p9563.",
+      "influenteaza": "p9531, p9563",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7719,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9580",
+    "descriere_scurta": "SI Motion pulse suppression delay time after bus failure (CU)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea dupa care impulsurile sunt suprimate sigur in urma unui esec al magistralei de comunicatie pe Control Unit. Valoarea 0 determina supresie imediata. Trebuie sa fie consistent cu p9380 de pe Motor Module.",
+      "influenteaza": "p9380",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7725,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9568",
+    "descriere_scurta": "SI Motion SBR velocity limit (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de viteza pentru functia SBR pe Control Unit. Monitorizarea SBR este dezactivata cand viteza coboara sub aceasta limita. Valoarea 0 face ca p9546 sa fie utilizat si pentru SBR. Trebuie sa corespunda cu p9368.",
+      "influenteaza": "p9546, p9368",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7727,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9570",
+    "descriere_scurta": "SI Motion acceptance test mode (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza sau deselecteaza modul de test de acceptanta al functiilor SI Motion pe Control Unit. Utilizat in timpul punerii in functiune pentru validarea comportamentului functiilor de siguranta. Trebuie corelat cu p9370 de pe Motor Module.",
+      "influenteaza": "p9558, r9571",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7729,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9571",
+    "descriere_scurta": "SI Motion acceptance test status (Control Unit)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea modului de test de acceptanta pe Control Unit. Valorile hexadecimale indica faza curenta sau rezultatele testelor de siguranta. Trebuie citit impreuna cu r9371 de pe Motor Module pentru verificarea completa.",
+      "influenteaza": "p9570",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7741,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9583",
+    "descriere_scurta": "SI Motion brake ramp monitoring time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru definirea rampei de franare sigura pe Control Unit, exprimat in secunde. Impreuna cu p9581 (valoare referinta) determina panta rampei de franare monitorizate. Trebuie sa fie consistent cu p9383 de pe Motor Module.",
+      "influenteaza": "p9581, p9582, p9383",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7742,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9581",
+    "descriere_scurta": "SI Motion brake ramp reference value (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de referinta pentru rampa de franare sigura pe Control Unit, exprimata in mm/min. Impreuna cu p9583 defineste panta maxima admisa a rampei de decelerare sigura. Trebuie sa fie consistent cu p9381 de pe Motor Module.",
+      "influenteaza": "p9583, p9381",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7743,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9582",
+    "descriere_scurta": "SI Motion brake ramp delay time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea dupa care incepe monitorizarea rampei de franare pe Control Unit. In intervalul de intarziere viteza poate fi la valoarea initiala. Trebuie sa fie consistent cu p9382 de pe Motor Module.",
+      "influenteaza": "p9583, p9382",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7747,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9587",
+    "descriere_scurta": "SI Motion act val sensing encoderless filter time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp a filtrului pentru netezirea valorii actuale la achizitia fara encoder pe Control Unit. Trebuie sa fie consistent cu p9387 de pe Motor Module. Valori mai mari reduc zgomotul dar introduc intarziere in detectia vitezei.",
+      "influenteaza": "p9506, p9387",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7750,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9589",
+    "descriere_scurta": "SI Motion voltage tolerance acceleration (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza toleranta de tensiune pentru suprimarea varfurilor la accelerare la achizitia fara encoder pe Control Unit. Creste valoarea la aparitia C1711 cu mesaj 1042. Scade valoarea la viteze sigure excesive la accelerare. Trebuie sa corespunda cu p9389.",
+      "influenteaza": "p9506, p9389",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7754,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9602",
+    "descriere_scurta": "SI enable Safe Brake Control (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza functia Safe Brake Control (SBC) pe Control Unit. Valoarea 1 activeaza SBC; comanda frana este controlata sigur in sincronizare cu STO. Necesita confirmare cu p9701 dupa modificare.",
+      "influenteaza": "p9701",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7755,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9610",
+    "descriere_scurta": "SI PROFIsafe address (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa PROFIsafe a Control Unit pentru comunicatia de siguranta prin PROFIBUS sau PROFINET. Adresa trebuie sa fie unica in reteaua PROFIsafe. Necesita confirmare SI dupa modificare.",
+      "influenteaza": "p9701",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7761,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9651",
+    "descriere_scurta": "SI STO/SBC/SS1 debounce time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima a unui impuls parasit pe intrarile F-DI ale Control Unit care nu trebuie sa afecteze semnalele de siguranta. Valoarea se rotunjeste la milisecunde intregi. Creste valoarea pentru reducerea alarme false in medii cu zgomot ridicat.",
+      "influenteaza": "p9620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7762,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9652",
+    "descriere_scurta": "SI Safe Stop 1 delay time (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea supresiei impulsurilor pentru functia Safe Stop 1 (SS1) pe Control Unit. In acest interval drive-ul faneaza pe rampa OFF3 (p1135). La expirare impulsurile sunt suprimate. Exprimat in secunde, domeniu 0...300 s.",
+      "influenteaza": "p1135, p9852",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7763,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9858",
+    "descriere_scurta": "SI transition time STOP F to STOP A (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de tranzitie de la STOP F la STOP A pe Motor Module (parametru pe CU). Valoarea 0 determina tranzitie imediata. Trebuie sa fie consistent cu p9658 si corelat cu comportamentul dorit in caz de defect de siguranta.",
+      "influenteaza": "p9658",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7764,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9658",
+    "descriere_scurta": "SI transition time STOP F to STOP A (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de tranzitie de la STOP F la STOP A pe Control Unit, exprimat in milisecunde. Valoarea 0 determina tranzitie imediata. Domeniu 0...30000 ms. Trebuie sa fie consistent cu p9858.",
+      "influenteaza": "p9858",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7765,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9659",
+    "descriere_scurta": "SI forced checking procedure timer",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul maxim in ore intre doua proceduri de verificare fortata a cailor de oprire STO. In interval STO trebuie dezactivat cel putin o data pentru a reseta temporizatorul. La expirare fara test, se genereaza alarma C01799. Exprimat in ore.",
+      "influenteaza": "p9559",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7766,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9660",
+    "descriere_scurta": "SI forced checking procedure remaining time",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza timpul ramas pana la urmatoarea procedura obligatorie de verificare fortata a cailor de oprire sigure. Valoarea scade de la p9659 la 0. La atingerea valorii 0 se genereaza alarma C01799 daca procedura nu a fost efectuata.",
+      "influenteaza": "p9659",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7775,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9700",
+    "descriere_scurta": "SI Motion copy function",
+    "GENERATED": {
+      "explicatie": "p - Initiaza copierea parametrilor SI de pe Control Unit catre Motor Module. Dupa finalizare parametrul este resetat automat la 0. Utilizat pentru sincronizarea configuratiei SI intre cele doua canale ale drive-ului.",
+      "influenteaza": "p9701",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7777,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9701",
+    "descriere_scurta": "Acknowledge SI Motion data",
+    "GENERATED": {
+      "explicatie": "p - Transfera sumele de control de referinta din sumele actuale dupa modificarea parametrilor SI sau hardware. Dupa transfer, parametrul este resetat automat la 0. Necesar dupa orice modificare a parametrilor SI pentru confirmare.",
+      "influenteaza": "p9799, p9899",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7779,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9899",
+    "descriere_scurta": "SI reference checksum SI parameters (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza suma de control de referinta pentru parametrii SI verificati pe Motor Module. Aceasta suma este comparata periodic cu suma actuala (r9898) pentru detectarea modificarilor neautorizate. Trebuie actualizat dupa orice modificare intentionata a parametrilor SI.",
+      "influenteaza": "r9898, p9701",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7782,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9712",
+    "descriere_scurta": "SI Motion diagnostics position action value motor side",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea actuala de pozitie pe partea motorului pentru functiile de monitorizare sigura pe Control Unit. Utilizat impreuna cu r9713 (partea sarcinii) pentru diagnosticarea lantului de masurare SI. Permite verificarea conversiei pozitie motor - pozitie sarcina.",
+      "influenteaza": "r9713",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7785,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9727",
+    "descriere_scurta": "SI Motion user agreement, inside the drive",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea interna a acordului utilizatorului pentru modificarea parametrilor SI Motion. Valoarea 0 indica ca acordul nu este setat, valoarea 0xAC indica acord activ. Permite accesul la modificarea parametrilor SI in modul de punere in functiune.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7787,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9728",
+    "descriere_scurta": "SI Motion actual checksum, SI parameters",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza suma de control actuala calculata peste parametrii SI Motion verificati. Indicele [0] este suma pentru monitorizarea miscarii, [1] pentru valorile actuale, [2] pentru hardware. Utilizat pentru verificarea integritatii configuratiei SI.",
+      "influenteaza": "p9799",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7788,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9730",
+    "descriere_scurta": "SI Motion Safe maximum velocity",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza viteza maxima sigura permisa pe partea sarcinii, determinata de configuratia achizitiei valorii actuale. Daca siguranta nu este activata valoarea este 0. Utilizat pentru verificarea ca setarile SLS nu depasesc limita maxima sigura.",
+      "influenteaza": "p9511, p9531",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7789,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9731",
+    "descriere_scurta": "SI Motion safe position accuracy",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza acuratetea maxima a pozitiei sigure pe partea sarcinii, determinata de configuratia achizitiei valorii actuale. Utilizat pentru verificarea ca tolerantele SCA si SOS sunt mai mari decat aceasta valoare. Daca SI nu este activ, valoarea este 0.",
+      "influenteaza": "p9511, p9530",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7796,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9744",
+    "descriere_scurta": "SI message buffer changes, counter",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza un contor incrementat la fiecare modificare a buffer-ului de mesaje de siguranta. Permite detectarea prin polling a aparitiei de noi mesaje SI. Util pentru sincronizarea citirii buffer-ului de mesaje SI in aplicatii de monitorizare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7800,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9752",
+    "descriere_scurta": "SI message cases, counter",
+    "GENERATED": {
+      "explicatie": "p - Numara mesajele de siguranta aparute de la ultima resetare. Valoarea poate fi resetata la 0 prin setare directa. Permite monitorizarea frecventei evenimentelor de siguranta in timp pentru analiza tendintelor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7803,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9761",
+    "descriere_scurta": "SI password input",
+    "GENERATED": {
+      "explicatie": "p - Introduce parola Safety Integrated pentru deblocarea accesului la modificarea parametrilor SI. Parola implicita este 0xFFFF. Dupa introducere corecta modificarile parametrilor SI sunt permise temporar pana la urmatoarea confirmare.",
+      "influenteaza": "p9763",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7804,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9763",
+    "descriere_scurta": "SI password acknowledgement",
+    "GENERATED": {
+      "explicatie": "p - Confirma noua parola Safety Integrated setata in p9762. Introdu aceeasi valoare ca in p9762 pentru confirmarea schimbarii. Parola trebuie confirmata pentru a fi salvata si aplicata.",
+      "influenteaza": "p9761",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7809,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9872",
+    "descriere_scurta": "SI status list (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza lista de stare a Safety Integrated pe Motor Module. Bitii individuali indica stari precum STO activ, SBC activ, SS1 activ, alarme SI etc. Utilizat de PLC pentru monitorizarea detaliata a starii functiilor SI de pe Motor Module.",
+      "influenteaza": "r9773",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7810,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9773",
+    "descriere_scurta": "SI status (Control Unit + Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea combinata Safety Integrated a drive-ului (Control Unit + Motor Module). Bitii reflecta starea functiilor SI active: STO, SBC, SS1, alarme SI etc. Parametrul principal de monitorizare SI pentru PLC.",
+      "influenteaza": "r9872",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7812,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9880",
+    "descriere_scurta": "SI monitoring clock cycle (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza ciclul de clock efectiv al functiilor Safety Integrated Basic pe Motor Module. Permite verificarea ca ciclul de monitorizare corespunde cu configuratia dorita. Utilizat in diagnosticarea performantei sistemului SI.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7814,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9588",
+    "descriere_scurta": "SI Motion min current act val sensing encoderless (Control Unit) /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul minim necesar pentru achizitia sigura a valorii actuale fara encoder pe Control Unit. Scaderea valorii poate afecta negativ achizitia. Creste la C1711 mesaj 1042, scade la C1711 mesaj 1041. Trebuie sa corespunda cu configuratia de pe Motor Module.",
+      "influenteaza": "p9506",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7819,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9776",
+    "descriere_scurta": "SI Motion diagnostics",
+    "GENERATED": {
+      "explicatie": "r - Parametru de diagnosticare interna a functiilor SI Motion, utilizat in principal de inginerii Siemens pentru depanare avansata. Valorile individuale ale bitilor indica stari interne ale monitoringului de siguranta. Nivel acces 4 (Siemens service).",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7822,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9898",
+    "descriere_scurta": "SI actual checksum SI parameters (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza suma de control actuala calculata peste parametrii SI verificati pe Motor Module. Aceasta valoare este comparata cu suma de referinta p9899 la fiecare ciclu de monitorizare. O diferenta indica modificarea neautorizata a parametrilor SI.",
+      "influenteaza": "p9899",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7823,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9799",
+    "descriere_scurta": "SI reference checksum SI parameters (Control Unit)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza suma de control de referinta pentru parametrii SI verificati pe Control Unit. Este comparata periodic cu suma actuala (r9728[0]) pentru detectarea modificarilor neautorizate. Trebuie actualizat prin p9701 dupa orice modificare intentionata.",
+      "influenteaza": "r9728, p9701",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7825,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9802",
+    "descriere_scurta": "= 1) is not practical if there is no motor holding brake.",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de deschidere a franei de mentinere a motorului. Dupa comanda de deschidere frana, consemnul de viteza ramane la zero pe durata acestui timp, permitand franei sa se deschida complet. Util pentru sisteme cu frana mecanica integrata.",
+      "influenteaza": "p1215",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7831,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9851",
+    "descriere_scurta": "SI STO/SBC/SS1 debounce time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima a unui impuls parasit pe terminalul EP al Motor Module care nu trebuie sa afecteze semnalele de siguranta. Valoarea se rotunjeste la milisecunde intregi. Creste pentru reducerea alarmelor false in medii cu zgomot electromagnetic.",
+      "influenteaza": "p9651",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7832,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9852",
+    "descriere_scurta": "SI Safe Stop 1 delay time (Motor Module)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea supresiei impulsurilor pentru functia SS1 pe Motor Module. In acest interval drive-ul franeaza pe rampa OFF3. Trebuie sa fie consistent cu p9652 de pe Control Unit. Exprimat in milisecunde.",
+      "influenteaza": "p9652, p1135",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7833,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9895",
+    "descriere_scurta": "SI diagnostics STOP F (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul datelor verificate incrucis care au cauzat STOP F pe Motor Module. Permite identificarea precisa a cauzei unui STOP F pentru diagnosticare. Utilizat in analiza incidentelor de siguranta.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7837,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9870",
+    "descriere_scurta": "SI version safety functions integrated in drive (Motor Module)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza versiunea Safety Integrated pentru functiile integrate in drive pe Motor Module. Indicii corespund: [0] major, [1] minor, [2] baselevel/patch, [3] hotfix. Utilizat pentru verificarea compatibilitatii versiunilor SI intre CU si MM.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7845,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9902",
+    "descriere_scurta": "Target topology number of indices",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de indecsi ai topologiei tinta DRIVE-CLiQ. Trebuie sa corespunda cu numarul de componente DRIVE-CLiQ asteptate in topologia proiectata. Utilizat la configurarea si verificarea topologiei sistemului.",
+      "influenteaza": "r9900",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7847,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9904",
+    "descriere_scurta": "Topology comparison, acknowledge differences",
+    "GENERATED": {
+      "explicatie": "p - Initiaza o noua comparatie a topologiei cu confirmarea erorilor acceptabile detectate. Erorile care pot fi confirmate includ componente deplasate sau cu numar de serie diferit. Permite repornirea sistemului cu mici diferente topologice acceptate.",
+      "influenteaza": "p9906, p9905",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7848,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9905",
+    "descriere_scurta": "Device specialization",
+    "GENERATED": {
+      "explicatie": "p - Transfera numerele de serie si versiunile hardware din topologia actuala in cea tinta. Valoarea 1 transfera seria si hardware, valoarea 2 transfera si numerele de comanda. Utilizat la inlocuirea componentelor sau la prima pornire dupa configurare.",
+      "influenteaza": "p9904, p9906",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7849,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9906",
+    "descriere_scurta": "Topology comparison, comparison stage of all components",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul de comparatie intre topologia actuala si cea tinta pentru toate componentele. Comparatia este initiata la setarea valorii dorite. Diferite niveluri de comparatie verifica diferite aspecte ale topologiei (ordine, serie, hardware).",
+      "influenteaza": "p9908, p9905",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7850,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9908",
+    "descriere_scurta": "Topology comparison, comparison stage of a component",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul de comparatie pentru o componenta individuala din topologia tinta cu cea actuala. Permite verificarea selectiva a unei singure componente. Util pentru diagnosticarea problemelor cu o componenta specifica din topologie.",
+      "influenteaza": "p9906",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7854,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9910",
+    "descriere_scurta": "Transfer additional components into the target topology",
+    "GENERATED": {
+      "explicatie": "p - Transfera componentele DRIVE-CLiQ suplimentare detectate in topologia actuala in topologia tinta si adauga obiectele drive corespunzatoare. Valori 0-6 corespund diferitelor moduri de transfer. Utilizat la extinderea sistemului cu noi componente.",
+      "influenteaza": "p9902",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7855,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9915",
+    "descriere_scurta": "DRIVE-CLiQ data transfer error shutdown threshold master",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de erori de transfer de date DRIVE-CLiQ pentru master inainte de declansarea unui defect. Parametru rezervat pentru service Siemens intern (nivel acces 4). Modificarea neautorizata poate afecta comunicatia DRIVE-CLiQ.",
+      "influenteaza": "p9916",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7856,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9916",
+    "descriere_scurta": "DRIVE-CLiQ data transfer error shutdown threshold slave",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de erori de transfer de date DRIVE-CLiQ pentru slave inainte de declansarea unui defect. Parametru rezervat pentru service Siemens intern (nivel acces 4). Modificarea neautorizata poate destabiliza comunicatia DRIVE-CLiQ.",
+      "influenteaza": "p9915",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7861,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9920",
+    "descriere_scurta": "Licensing, enter license key",
+    "GENERATED": {
+      "explicatie": "p - Introduce cheia de licenta pentru unitatea drive, caracter cu caracter codat ASCII. Fiecare index corespunde unui caracter din cheia de licenta (maxim 20 caractere). Prin STARTER caracterele pot fi introduse direct in format ASCII.",
+      "influenteaza": "p9921",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7862,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9926",
+    "descriere_scurta": "Firmware check status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea verificarii firmware-ului la pornirea sistemului. Valorile: 0=neverificat, 1=verificare in curs, 2=finalizat cu succes, 3=eroare detectata. Util pentru diagnosticarea problemelor de integritate a firmware-ului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7864,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9932",
+    "descriere_scurta": "Save system logbook EEPROM",
+    "GENERATED": {
+      "explicatie": "p - Initiaza salvarea jurnalului de sistem in EEPROM. Parametru rezervat exclusiv pentru scopuri de service Siemens (nivel acces 4). Utilizat de inginerii de service pentru captura starii interne la momentul unui incident.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7868,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9941",
+    "descriere_scurta": "Target topology feature delete all components",
+    "GENERATED": {
+      "explicatie": "p - Scrie valoarea 1 pentru a sterge numerele de serie ale tuturor componentelor din topologia tinta. Permite reasignarea componentelor din topologia actuala la componentele din topologia tinta la urmatoarea pornire. Utilizat dupa inlocuiri multiple de componente.",
+      "influenteaza": "p9905",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7871,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9981",
+    "descriere_scurta": "Sampling times utilization measured",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza gradul de utilizare masurat pentru timpii de esantionare activi, separat per nivel (net si total). Pana la 7 niveluri de esantionare sunt monitorizate cu cate 2 indecsi fiecare. Valorile peste 100% indica supraincarcarea nivelului respectiv.",
+      "influenteaza": "r9976",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7872,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9976",
+    "descriere_scurta": "System utilization",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza gradul de utilizare al sistemului CPU. Indicele [1] afiseaza utilizarea timpului de calcul; daca depaseste 100% se genereaza defectul F01054. Indicele [5] afiseaza cea mai mare utilizare totala. Utilizat pentru evaluarea capacitatii CPU.",
+      "influenteaza": "r9981",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7873,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9990",
+    "descriere_scurta": "DO selection for memory usage actual value determination /",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza obiectul drive sau sistemul complet pentru determinarea utilizarii memoriei. La citire returneaza numarul de zone de memorie monitorizate. La scriere se specifica ID-ul obiectului drive dorit sau 65535 pentru sistemul complet.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7874,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10000",
+    "descriere_scurta": "SI sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de esantionare al modulului Terminal Module 54F (TM54F) pentru procesarea semnalelor de siguranta. Domeniu: 1...25 ms, valoare implicita 12 ms. O valoare mai mica creste reactivitatea functiilor SI dar mareste incarcarea CPU.",
+      "influenteaza": "p10001, p10002",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7875,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10001",
+    "descriere_scurta": "SI delay time for test stop at DO 0 ... DO 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de asteptare pentru testarea iesirilor digitale DO 0...3 in cadrul verificarii fortate TM54F. In acest interval semnalul de feedback trebuie detectat prin intrarea digitala corespunzatoare DI 20...23. Domeniu: 2...2000 ms.",
+      "influenteaza": "p10000, p10046",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7877,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10002",
+    "descriere_scurta": "SI discrepancy monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de timp in care starea celor doua intrari asociate F-DI trebuie sa fie identica. O discrepanta persistenta mai lunga decat acest timp genereaza un mesaj de eroare. Domeniu: 1...2000 ms, valoare implicita 500 ms.",
+      "influenteaza": "p10040",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7878,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10046",
+    "descriere_scurta": "SI test sensor feedback signal input DI 20 ... 23",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia testului liniei de feedback pentru procedura de verificare fortata pe TM54F. Fiecare bit corespunde unui canal de feedback DI 20...23. Permite activarea selectiva a testului pentru fiecare canal de feedback.",
+      "influenteaza": "p10001",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7879,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10006",
+    "descriere_scurta": "SI acknowledgement internal event input terminal",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza intrarea digitala de siguranta pentru semnalul de confirmare eveniment intern (defect intern SI). Frontul descendent la aceasta intrare reseteaza starea de eveniment intern in toate drive-urile asignate. Domeniu: 0...255, indicand numarul terminalului.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7881,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10008",
+    "descriere_scurta": "SI operating mode TM54F",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de operare al modulului Terminal Module 54F. Valoarea 0 dezactiveaza modul de siguranta, valoarea 1 activeaza modul standard cu verificare incrucisata. Necesita confirmare dupa modificare. Nivel acces 4.",
+      "influenteaza": "p10000",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7884,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10014",
+    "descriere_scurta": "SI Motor Module Node Identifier Word 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza Word 3 (biti 64-95) al identificatorului de nod curent al Motor Module-urilor in configuratia TM54F. Fiecare index corespunde unui drive (maxim 6 drive-uri). Utilizat la configurarea asocierii TM54F cu Motor Module-urile controlate.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7885,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0799",
+    "descriere_scurta": "CU inputs/outputs, sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de esantionare pentru intrarile si iesirile Control Unit. Indicele [0] este pentru DI/DO, indicii [1] si [2] nu sunt disponibili pentru AI/AO pe CU standard. Valoarea influenteaza reactivitatea la semnalele externe.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7887,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10017",
+    "descriere_scurta": "SI digital inputs debounce time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima a unui impuls parasit pe F-DI-urile si DI-urile single-channel ale TM54F care nu trebuie sa afecteze semnalele SGE. Se rotunjeste la milisecunde intregi. Creste pentru medii cu zgomot electromagnetic ridicat.",
+      "influenteaza": "p10002",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7889,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10021",
+    "descriere_scurta": "SI Emergency Stop stop response",
+    "GENERATED": {
+      "explicatie": "p - Seteaza reactia de oprire pentru grupul de drive-uri la activarea Emergency Stop. Valori: 0=STO, 1=SS1, 2=SS2. Terminalul de intrare ES este setat in p10038. Se aplica la toate drive-urile asignate grupului.",
+      "influenteaza": "p10038",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7890,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10040",
+    "descriere_scurta": "SI F-DI input mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de operare al intrarilor de siguranta F-DI din seria 2 a terminalelor TM54F. Fiecare bit configureaza modul unui canal de intrare (single-channel vs. dual-channel). Determina modul de procesare a semnalelor de siguranta.",
+      "influenteaza": "p10002",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7891,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10041",
+    "descriere_scurta": "SI F-DI enable for test",
+    "GENERATED": {
+      "explicatie": "p - Activeaza includerea F-DI-urilor individuale in testul alimentarii senzorilor (forced checking procedure). Fiecare bit corespunde unui canal F-DI. Numai canalele activate sunt incluse in testul periodic al circuitelor de alimentare.",
+      "influenteaza": "p10046",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7892,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10047",
+    "descriere_scurta": "SI selection of test mode for test stop",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de selectie a testului pentru procedura test stop pe TM54F. Valorile valide sunt 1, 2 sau 3 (codate binar). Determina secventa si metodologia testului de oprire sigura efectuat la verificarea fortata.",
+      "influenteaza": "p10001",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7895,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r10054",
+    "descriere_scurta": "SI TM54F failsafe events active",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza evenimentele active care determina TM54F sa transmita semnale failsafe catre toate drive-urile asignate. Posibilitati de rezolvare: eroare test stop - efectuati test stop corect; eroare software interna sau sincronizare - POWER ON; alte cauze - eliminati cauza si efectuati confirmare SI.",
+      "influenteaza": "p10006",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7897,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10063",
+    "descriere_scurta": "SI password acknowledgement TM54F",
+    "GENERATED": {
+      "explicatie": "p - Confirma noua parola Safety Integrated pentru modulul TM54F. Trebuie sa contina aceeasi valoare introdusa in p10062 pentru confirmarea modificarii parolei. Parola implicita este 0xFFFF.",
+      "influenteaza": "p10062",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7898,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p10062",
+    "descriere_scurta": "SI password new TM54F",
+    "GENERATED": {
+      "explicatie": "p - Introduce noua parola Safety Integrated pentru modulul Terminal Module 54F. Parola trebuie confirmata in p10063 pentru a fi aplicata. Parola implicita este 0xFFFF. Schimbarea parolei necesita confirmare SI ulterioar.",
+      "influenteaza": "p10063",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 16878,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0016",
+    "descriere_scurta": "Activate BOP user-defined list",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza lista de parametri definita de utilizator pentru panoul de operare de baza (BOP). Cand p0016=1, prin BOP sunt accesibili numai parametrii din lista p0013. Limiteaza accesul operatorilor la un set restrans de parametri importanti.",
+      "influenteaza": "p0013",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 16879,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0040",
+    "descriere_scurta": "Reset energy consumption display",
+    "GENERATED": {
+      "explicatie": "p - Reseteaza afisajul consumului de energie (r0039) prin setarea valorii de la 0 la 1. Dupa resetare parametrul este automat readus la 0. Util pentru masurarea consumului pe perioade specifice de productie.",
+      "influenteaza": "r0039",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 16881,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0097",
+    "descriere_scurta": "Select drive object type",
+    "GENERATED": {
+      "explicatie": "p - Executa o configurare automata a dispozitivului in functie de tipul de obiect drive selectat. La executie, seteaza automat p0099, p0107 si p0108 corespunzator. Simplifica procesul de configurare initiala a unui nou obiect drive.",
+      "influenteaza": "p0099, p0107, p0108",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 16883,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0117",
+    "descriere_scurta": "Current controller computing dead time mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul pentru gestionarea timpului mort de calcul al regulatorului de curent. Valori 0-2 utilizeaza setare automata cu diferite moduri de clocking; 2 permite setare manuala cu transfer rapid; 4-6 sunt similare cu 0-2 dar fara transferuri rapide pentru vectori. Influenteaza stabilitatea buclei de curent.",
+      "influenteaza": "p0115",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16885,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0233",
+    "descriere_scurta": "Power unit motor reactor",
+    "GENERATED": {
+      "explicatie": "p - Introduce inductanta filtrului sau reactorului motor conectat la iesirea unitatii de putere, exprimata in mH. Aceasta valoare este utilizata de regulatoarele interne pentru compensarea impedantei adaugate. Trebuie setat la inductanta reala a reactorului instalat.",
+      "influenteaza": "p0350",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16887,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0252",
+    "descriere_scurta": "Maximum operating time power unit fan",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima de functionare a ventilatorului unitatii de putere inainte de alarma preventiva. Alarma este emisa cu 500 de ore inainte de atingerea valorii setate. Valoarea 0 dezactiveaza monitorizarea. Exprimat in ore.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 16888,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0260",
+    "descriere_scurta": "Cooling system, starting time 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza primul timp de pornire pentru monitorizarea sistemului de racire dupa comanda de pornire. In intervalul setat trebuie sa apara semnalele RKA pornit si lichid de racire OK. La depasire se genereaza un mesaj de eroare.",
+      "influenteaza": "p0262",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 16889,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0262",
+    "descriere_scurta": "Cooling system, fault conductivity delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru defectul de conductivitate excesiva a lichidului de racire in timpul functionarii. Defectul este generat numai daca conductivitatea ramane ridicata mai mult decat durata setata. Previne declansari false cauzate de varfuri tranzitorii.",
+      "influenteaza": "p0260",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 16890,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0295",
+    "descriere_scurta": "Fan run-on time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata de functionare a ventilatorului unitatii de putere dupa anularea impulsurilor. Ventilatorul continua sa functioneze pentru racire suplimentara dupa oprire. Valoarea 0 opreste imediat ventilatorul odata cu drive-ul.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 16891,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0488",
+    "descriere_scurta": "Measuring probe 1 input terminal",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare pentru conectarea sondei de masurare 1. Valorile 1...8 corespund terminalelor fizice disponibile, 0 dezactiveaza sonda. Sonda de masurare este utilizata pentru capturarea instantanee a pozitiei la evenimente externe.",
+      "influenteaza": "p0495",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 16892,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0495",
+    "descriere_scurta": "Equivalent zero mark, input terminal",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza terminalul de intrare pentru conectarea unui marcaj zero echivalent (marcaj zero encoder extern). Utilizat pentru referentierea encoderelor incrementale din surse externe. Valoarea 0 dezactiveaza aceasta functie.",
+      "influenteaza": "p0488",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 16893,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0573",
+    "descriere_scurta": "Inhibit automatic reference value calculation",
+    "GENERATED": {
+      "explicatie": "p - Inhiba calculul automat al parametrilor de referinta (cum ar fi p2000) la calculul automat al parametrilor motorului si regulatoarelor (p0340, p3900). Util cand valorile de referinta trebuie pastrate la valorile setate manual. Valoarea 1 blocheaza recalculul.",
+      "influenteaza": "p0340, p3900, p2000",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 16894,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0603",
+    "descriere_scurta": "Motor temperature signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de temperatura motor printr-o interconectare BICO. Permite conectarea valorii de temperatura din diverse surse (TM31, senzor integrat, etc.) la functia de protectie termica a motorului. Influenteaza protectia termica a motorului.",
+      "influenteaza": "p0604, p0605",
+      "categorie": "Protectii"
+    }
+  }
+]

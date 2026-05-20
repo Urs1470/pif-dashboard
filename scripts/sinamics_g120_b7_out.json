@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 25758,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0634",
+    "descriere_scurta": "Q flux flux constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste componenta nesaturata a functiei de flux pe axa q in modelul neliniar al motorului. Valoarea este un coeficient utilizat pentru reprezentarea curba de saturatie a inductantei pe axa de cuadratura. Setarea corecta imbunatateste precizia controlului vectorial al motorului.",
+      "influenteaza": "p0635, p0636, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25759,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0635",
+    "descriere_scurta": "Q flux quadrature axis current constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care descrie interdependenta componentei nesaturate a curentului pe axa q in modelul neliniar al motorului. Este utilizat impreuna cu ceilalti 4 coeficienti pentru a defini functia de flux pe axa cuadratura. Setarea corecta asigura un model motor precis in controlul vectorial.",
+      "influenteaza": "p0634, p0636, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25760,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0636",
+    "descriere_scurta": "Q flux direct axis current constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care descrie interdependenta componentei nesaturate a curentului pe axa directa d in modelul neliniar al motorului. Coeficientul este parte din modelul fluxului pe axa q pentru motoare cu saturatie. Valorile corecte reduc erorile de estimare a fluxului in regim dinamic.",
+      "influenteaza": "p0634, p0635, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25761,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0637",
+    "descriere_scurta": "Q flux flux gradient saturated",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care descrie gradientul componentei saturate a fluxului in functie de curentul pe axa q. Reprezinta al 4-lea coeficient din modelul neliniar al fluxului pe axa cuadratura. O valoare corecta imbunatateste stabilitatea reglarii in zona de saturatie magnetica.",
+      "influenteaza": "p0634, p0635, p0636",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25762,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0641",
+    "descriere_scurta": "Current limit variable",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru limita variabila a curentului motorului. Valoarea este raportata la limita de curent fixa setata in p0640. Permite adaptarea dinamica a limitei de curent in functie de conditiile de operare.",
+      "influenteaza": "p0640",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25763,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0650",
+    "descriere_scurta": "Actual motor operating hours",
+    "GENERATED": {
+      "explicatie": "p - contor de ore de functionare al motorului, incrementat cat timp pulsurile sunt activate. Valoarea este salvata la retragerea comenzii de enable. Utilizat pentru planificarea intervalelor de mentenanta preventiva.",
+      "influenteaza": "p0651",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25764,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0651",
+    "descriere_scurta": "Motor operating hours maintenance interval",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste intervalul de mentenanta in ore pentru motor. La atingerea numarului de ore setat, este generat un mesaj de alarma sau defect. Valoarea 0 dezactiveaza monitorizarea intervalului de mentenanta.",
+      "influenteaza": "p0650",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25765,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0720",
+    "descriere_scurta": "CU number of inputs and outputs",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza numarul total de intrari si iesiri disponibile pe unitatea de control CU. Informatia reflecta configuratia hardware a modulului de control. Util pentru verificarea configuratiei I/O disponibile.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25766,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0722",
+    "descriere_scurta": "CU digital inputs status",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea binara a tuturor intrarilor digitale de pe unitatea de control CU. Fiecare bit corespunde unei intrari digitale distincte. Util pentru diagnosticarea semnalelor de comanda si depanarea logicii de control.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25767,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0723",
+    "descriere_scurta": "CU digital inputs status inverted",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea inversata a intrarilor digitale de pe unitatea de control CU. Permite citirea complementului logic al starii intrarilor digitale. Util in configuratii BICO unde este necesara logica negata.",
+      "influenteaza": "r0722",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25768,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0751",
+    "descriere_scurta": "CU analog inputs status word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al intrarilor analogice de pe unitatea de control CU. Bitii indica starea de functionare, eventuale erori sau rupturi de cablu la intrarile analogice. Util pentru diagnosticarea semnalelor analogice de setpoint.",
+      "influenteaza": "r0752, r0755",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25769,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0752",
+    "descriere_scurta": "CU analog inputs input voltage/current actual",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea actuala a tensiunii in V sau a curentului in mA la intrarile analogice AI0 si AI1. Valorile sunt disponibile per indice: [0]=AI0, [1]=AI1. Util pentru verificarea nivelului semnalului analogic aplicat la borne.",
+      "influenteaza": "p0757, p0758, p0760",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25770,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0753",
+    "descriere_scurta": "CU analog inputs smoothing time constant",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp a filtrului trece-jos de ordinul 1 aplicat intrarilor analogice. Valori mai mari reduc zgomotul dar introduc intarziere in raspunsul la setpoint. Disponibil per canal: [0]=AI0, [1]=AI1.",
+      "influenteaza": "r0752, r0755",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25771,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0755",
+    "descriere_scurta": "CU analog inputs actual value in percent",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea procentuala actuala a intrarilor analogice raportata la marimile de referinta p200x si p205x. Indica valoarea scalata dupa aplicarea caracteristicii de transfer. Disponibil per canal: [0]=AI0, [1]=AI1.",
+      "influenteaza": "p0757, p0758, p0759, p0760, p0753",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25772,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0757",
+    "descriere_scurta": "CU analog inputs characteristic value x1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste coordonata x (in V sau mA) a primului punct al caracteristicii de scalare a intrarilor analogice. Impreuna cu p0758, p0759 si p0760 defineste dreapta de scalare liniara a intrarilor analogice. Permite adaptarea la diferite tipuri de traductoare.",
+      "influenteaza": "p0758, p0759, p0760, r0755",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25773,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0758",
+    "descriere_scurta": "CU analog inputs characteristic value y1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste coordonata y in procente a primului punct al caracteristicii de scalare a intrarilor analogice. Valoarea reprezinta iesirea procentuala corespunzatoare valorii electrice x1 definite in p0757. Permite scalare custom pentru diferite plaje de semnal.",
+      "influenteaza": "p0757, p0759, p0760, r0755",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25774,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0760",
+    "descriere_scurta": "CU analog inputs characteristic value y2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste coordonata y in procente a celui de-al doilea punct al caracteristicii de scalare a intrarilor analogice. Impreuna cu p0759 stabileste valoarea procentuala maxima la care se mapeaza semnalul electric maxim. Permite scalare completa a plajei de semnal analog.",
+      "influenteaza": "p0757, p0758, p0759, r0755",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25775,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0761",
+    "descriere_scurta": "CU analog inputs wire breakage monitoring response threshold",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste pragul de raspuns al monitorizarii rupturii de cablu la intrarile analogice. Unitatea depinde de tipul de intrare configurat (tensiune sau curent). La detectarea rupturii de cablu (semnal sub prag) se genereaza un mesaj de defect.",
+      "influenteaza": "r0751",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25776,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0771",
+    "descriere_scurta": "CU analog outputs signal source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza sursa semnalului pentru iesirile analogice ale unitatii de control. Permite interconectarea oricarei valori interne (viteza, curent, frecventa, etc.) la iesirile analogice prin mecanismul BICO. Disponibil per canal: [0]=AO0, [1]=AO1.",
+      "influenteaza": "r0772, r0774, p0773",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25777,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0772",
+    "descriere_scurta": "CU analog outputs output value currently referred",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea procentuala actuala la iesirile analogice inainte de conversia in tensiune sau curent. Reflecta semnalul selectat prin p0771 dupa scalare interna. Disponibil per canal: [0]=AO0, [1]=AO1.",
+      "influenteaza": "r0774, p0771",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25778,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0773",
+    "descriere_scurta": "CU analog outputs smoothing time constant",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste constanta de timp a filtrului trece-jos aplicat iesirilor analogice. Valori mai mari reduc zgomotul semnalului de iesire analogic dar introduc intarziere. Disponibil per canal: [0]=AO0, [1]=AO1.",
+      "influenteaza": "r0774, p0771",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25779,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0774",
+    "descriere_scurta": "CU analog outputs output voltage/current actual",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza valoarea electrica actuala (tensiune in V sau curent in mA) la bornele iesirilor analogice. Reflecta semnalul fizic masurat la terminalele AO0 si AO1. Util pentru verificarea valorii transmise catre instrumentatie externa.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25780,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0782",
+    "descriere_scurta": "CU analog outputs invert signal source",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza sursa semnalului pentru inversarea semnalelor de iesire analogica. Permite negarea logica a valorii transmise la iesirile analogice prin interconectare BICO. Disponibil per canal: [0]=AO0, [1]=AO1.",
+      "influenteaza": "p0771, r0772",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25781,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0785",
+    "descriere_scurta": "CU analog outputs status word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al iesirilor analogice de pe unitatea de control CU. Indica starea de functionare si eventuale erori ale canalelor de iesire analogica. Util pentru diagnosticarea iesirilor analogice.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25782,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0797",
+    "descriere_scurta": "CU analog inputs simulation mode",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care activeaza modul de simulare pentru intrarile analogice. In modul simulare (valoare 1), valoarea fizica de la borne este ignorata si se utilizeaza valoarea setata in p0798. Util pentru testarea aplicatiei fara semnal fizic conectat.",
+      "influenteaza": "p0798",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25783,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0798",
+    "descriere_scurta": "CU analog inputs simulation mode setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea simulata a intrarilor analogice in modul de simulare activat prin p0797. Valoarea este exprimata in unitatile electrice ale intrarii (V sau mA). Disponibil per canal: [0]=AI0, [1]=AI1.",
+      "influenteaza": "p0797",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25784,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0807",
+    "descriere_scurta": "Master control active",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care indica care sursa are controlul master al actionarii. Poate indica controlul prin interconectare BICO sau prin software extern de punere in functiune. Util pentru diagnosticarea conflictelor de control in sisteme cu mai multe surse de comanda.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25785,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0809",
+    "descriere_scurta": "Copy Command Data Set CDS",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil utilizat pentru copierea unui Command Data Set (CDS) intr-un alt CDS. Indicii [0] si [1] specifica sursa si destinatia, iar indicele [2] porneste procedura de copiere. Faciliteaza comutarea rapida intre configuratii de comanda predefinite.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25786,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0819",
+    "descriere_scurta": "Copy Drive Data Set DDS",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil utilizat pentru copierea unui Drive Data Set (DDS) intr-un alt DDS. Indicii [0] si [1] specifica sursa si destinatia, iar indicele [2] porneste procedura de copiere. Util pentru configurarea rapida a mai multor seturi de parametri ai actionarii.",
+      "influenteaza": "p0821, p0826",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25787,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0821",
+    "descriere_scurta": "Drive Data Set selection DDS bit 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru bitul 1 de selectie a Drive Data Set-ului activ. Prin combinarea bitilor de selectie se poate comuta intre pana la 4 seturi de parametri ai actionarii. Comutarea DDS permite adaptarea parametrilor motorului pentru diferite scenarii de operare.",
+      "influenteaza": "r0835, r0837",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25788,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0826",
+    "descriere_scurta": "Motor changeover motor number",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste numarul de motor asociat unui Drive Data Set pentru comutarea intre motoare. Daca acelasi motor este controlat de mai multe DDS-uri, trebuie introdus acelasi numar de motor. Comutarea intre motoare diferite este permisa doar cu inhibarea pulsurilor.",
+      "influenteaza": "p0819, r0835, r0837",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25789,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0835",
+    "descriere_scurta": "Data set changeover status word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al comutarii Drive Data Set-ului. Indica starea procesului de comutare intre seturi de date ale actionarii. Util pentru diagnosticarea si confirmarea comutarii corecte a DDS-ului activ.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25790,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0837",
+    "descriere_scurta": "Drive Data Set DDS selected",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza numarul Drive Data Set-ului selectat prin intrarea binectoare. Valoarea indica DDS-ul activ curent utilizat de actionare. Util pentru confirmare vizuala a setului de parametri activ.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25791,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0840",
+    "descriere_scurta": "ON / OFF (OFF1)",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru comanda ON/OFF1 a actionarii. Comanda OFF1 decelereza motorul pe rampa normala pana la oprire, apoi blocheaza pulsurile. Corespunde bitului STW1.0 din profilul PROFIdrive.",
+      "influenteaza": "p0844, p0848, p0852",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25792,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0844",
+    "descriere_scurta": "No coast-down / coast-down (OFF2) signal source 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste prima sursa de semnal pentru comanda OFF2 (blocare imediata a pulsurilor fara decelerare controlata). Semnalul este operat in AND cu p0845; valoarea 0 la oricare dintre ele activeaza OFF2. Corespunde bitului STW1.1 din profilul PROFIdrive.",
+      "influenteaza": "p0845",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25793,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0845",
+    "descriere_scurta": "No coast-down / coast-down (OFF2) signal source 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste a doua sursa de semnal pentru comanda OFF2. Semnalul este operat in AND cu p0844; amandoua trebuie sa fie 1 pentru a permite functionarea fara OFF2. Valoarea implicita 1 dezactiveaza aceasta a doua sursa.",
+      "influenteaza": "p0844",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25794,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0848",
+    "descriere_scurta": "No Quick Stop / Quick Stop (OFF3) signal source 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste prima sursa de semnal pentru comanda OFF3 (oprire rapida pe rampa p1135 urmata de blocare pulsuri). Semnalul este operat in AND cu p0849; valoarea 0 la oricare activeaza OFF3. Corespunde bitului STW1.2 din profilul PROFIdrive.",
+      "influenteaza": "p0849, p1135",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25795,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0849",
+    "descriere_scurta": "No Quick Stop / Quick Stop (OFF3) signal source 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste a doua sursa de semnal pentru comanda OFF3. Semnalul este operat in AND cu p0848; amandoua trebuie sa fie 1 pentru a preveni oprirea rapida. Valoarea implicita 1 dezactiveaza aceasta a doua sursa.",
+      "influenteaza": "p0848, p1135",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25796,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0852",
+    "descriere_scurta": "Enable operation/inhibit operation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru comanda de activare/inhibare a functionarii. Semnalul 0 suprima pulsurile inversorului, iar semnalul 1 permite activarea pulsurilor. Corespunde bitului STW1.3 din profilul PROFIdrive.",
+      "influenteaza": "p0840",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25797,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0855",
+    "descriere_scurta": "Unconditionally open holding brake",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru deschiderea neconditionata a franei de retinere. Comanda ignora secventa normala de eliberare a franei si deschide frana imediat. Utilizat in situatii speciale de control al franei.",
+      "influenteaza": "p0858",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25798,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0856",
+    "descriere_scurta": "Speed controller enable",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru activarea regulatorului de viteza. La semnalul 0, componenta I si iesirea regulatorului de viteza sunt setate la zero. Semnalul 1 activeaza regulatorul de viteza in functionare normala.",
+      "influenteaza": "p1470, p1472",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25799,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0858",
+    "descriere_scurta": "Unconditionally close holding brake",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru inchiderea neconditionata a franei de retinere. Comanda aplica frana imediat ignorand secventa normala de inchidere. Utilizat pentru protectia mecanismului in situatii de urgenta.",
+      "influenteaza": "p0855",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25800,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0860",
+    "descriere_scurta": "Line contactor feedback signal",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului de feedback de la contactorul de retea. Semnalul este monitorizat in fereastra de timp setata in p0861 dupa fiecare comutare a contactorului. Absenta feedbackului in timp genereaza un mesaj de defect.",
+      "influenteaza": "p0861, r0863",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25801,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0861",
+    "descriere_scurta": "Line contactor monitoring time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de monitorizare al contactorului de retea dupa fiecare comutare. Daca feedbackul nu este primit in intervalul setat, se genereaza un mesaj de defect. O valoare adecvata previne false alarme cauzate de intarzierile mecanice ale contactorului.",
+      "influenteaza": "p0860, r0863",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25802,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0863",
+    "descriere_scurta": "Drive coupling status word/control word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvintele de stare si control ale cuplajului actionarii cu elementele externe (contactor retea, frana). Bitii individuali indica starea diferitelor semnale de cuplaj. Util pentru diagnosticarea functiilor de comanda a echipamentelor periferice.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25803,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0945",
+    "descriere_scurta": "Fault code",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza codul defectului activ sau al ultimelor defecte inregistrate in buffer. Fiecare cod corespunde unui defect specific documentat in manualul actionarii. Primul pas in diagnosticarea oricarei probleme de functionare.",
+      "influenteaza": "r0946, r0948",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25804,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0946",
+    "descriere_scurta": "Fault code list",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care listeaza codurile defectelor stocate in memoria actionarii. Indicii sunt accesibili doar cu un cod de defect valid. Permite analiza istoricului defectelor pentru diagnosticare si mentenanta.",
+      "influenteaza": "r0945, r0948",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25805,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0948",
+    "descriere_scurta": "Fault time received in milliseconds",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza timpul de rulare al sistemului in milisecunde la momentul aparitiei defectului. Permite corelarea temporala a defectelor cu alte evenimente din sistem. Util pentru analiza secventei de evenimente care a condus la defect.",
+      "influenteaza": "r0945, r0946",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25806,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0964",
+    "descriere_scurta": "Device identification",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza informatiile de identificare ale dispozitivului: producator (Siemens=42), tip dispozitiv, versiune firmware, data firmware si numarul obiectelor de actionare. Utilizat pentru identificarea hardware si software in sisteme cu mai multe dispozitive. Esential pentru compatibilitatea cu unelte de configurare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25807,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0989",
+    "descriere_scurta": "List of existing parameters 10",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza lista parametrilor existenti pentru aceasta actionare (pagina 10 din lista). Permite enumerarea programatica a parametrilor disponibili in dispozitiv. Util pentru uneltele de configurare automata si verificarea setului de functii disponibile.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25808,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0990",
+    "descriere_scurta": "List of modified parameters 1",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza parametrii care au valori diferite fata de setarile din fabrica (pagina 1 din lista). Permite identificarea rapida a tuturor parametrilor modificati in raport cu configuratia implicita. Util pentru documentarea configuratiei si depanare.",
+      "influenteaza": "r0991, r0999",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25809,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0991",
+    "descriere_scurta": "List of modified parameters 2",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza parametrii care au valori diferite fata de setarile din fabrica (pagina 2 din lista). Continua lista inceputa la r0990 pentru actionarile cu multe modificari fata de implicit. Util pentru documentarea completa a configuratiei actionarii.",
+      "influenteaza": "r0990, r0999",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25810,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0999",
+    "descriere_scurta": "List of modified parameters 10",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza parametrii cu valori diferite fata de setarile din fabrica (pagina 10 din lista). Este ultima pagina din seria de liste de parametri modificati. Impreuna cu r0990-r0998 formeaza lista completa a modificarilor fata de configuratia implicita.",
+      "influenteaza": "r0990, r0991",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25811,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1000",
+    "descriere_scurta": "Speed setpoint selection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care selecteaza sursa setpointului de viteza al actionarii. Valoarea cu o singura cifra defineste setpointul principal, iar valorile cu doua cifre definesc si setpointul suplimentar. Surse posibile: intrare analogica, fieldbus, setpointuri fixe, potentiometru motorized.",
+      "influenteaza": "p1002, p1004, p1020, p1071, p1075",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25812,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1002",
+    "descriere_scurta": "Fixed speed setpoint 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 2 disponibila in lista de setpointuri fixe. Valoarea este utilizata cand selectia setpointului fix indica setpointul 2. Permite definirea unor viteze predefinite de operare fara sursa analogica.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25813,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1004",
+    "descriere_scurta": "Fixed speed setpoint 4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 4. Este selectabila prin combinarea bitilor de selectie setpoint fix p1020, p1021, p1022. Permite configurarea de viteze predefinite pentru aplicatii cu mai multe viteze de operare.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25814,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1005",
+    "descriere_scurta": "Fixed speed setpoint 5",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 5. Este selectabila prin combinarea bitilor de selectie setpoint fix. Permite configurarea de viteze predefinite pentru aplicatii multi-viteza.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25815,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1006",
+    "descriere_scurta": "Fixed speed setpoint 6",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 6. Este selectabila prin combinarea bitilor de selectie setpoint fix. Permite configurarea de viteze predefinite suplimentare.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25816,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1007",
+    "descriere_scurta": "Fixed speed setpoint 7",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 7. Este selectabila prin combinarea bitilor de selectie setpoint fix. Disponibil pentru aplicatii care necesita mai mult de 4 viteze predefinite.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25817,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1008",
+    "descriere_scurta": "Fixed speed setpoint 8",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 8. Este selectabila prin combinarea bitilor de selectie setpoint fix (3 biti = 8 combinatii). Permite acoperirea unui spectru larg de viteze predefinite.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25818,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1009",
+    "descriere_scurta": "Fixed speed setpoint 9",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 9. Disponibil in actionarile cu suport extins de setpointuri fixe. Permite configurarea de viteze predefinite dincolo de cele 8 de baza.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25819,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1010",
+    "descriere_scurta": "Fixed speed setpoint 10",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 10. Parte din seria extinsa de setpointuri fixe. Permite definirea de viteze predefinite suplimentare pentru aplicatii complexe multi-viteza.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25820,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1011",
+    "descriere_scurta": "Fixed speed setpoint 11",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 11. Parte din seria extinsa de setpointuri fixe. Ofera flexibilitate maxima pentru aplicatii cu multe trepte de viteza predefinite.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25821,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1012",
+    "descriere_scurta": "Fixed speed setpoint 12",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 12. Disponibil in seria extinsa de setpointuri fixe ale actionarii. Permite configurare detaliata a treptelor de viteza pentru procese industriale complexe.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25822,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1013",
+    "descriere_scurta": "Fixed speed setpoint 13",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 13. Parte din seria completa de 15 setpointuri fixe disponibile. Permite acoperirea unui numar mare de scenarii de viteza predefinita.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25823,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1014",
+    "descriere_scurta": "Fixed speed setpoint 14",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 14. Penultimul setpoint fix din seria maxima. Permite configurarea aproape a oricarui profil de viteza predefinita discreta.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25824,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1015",
+    "descriere_scurta": "Fixed speed setpoint 15",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea vitezei fixe numarul 15, ultimul din seria completa de setpointuri fixe. Permite configurarea celei mai inalte trepte de viteza predefinita. Actionarile cu 4 biti de selectie pot accesa toate cele 15 setpointuri fixe.",
+      "influenteaza": "p1020, p1021, p1022",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25825,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1020",
+    "descriere_scurta": "Fixed speed setpoint selection Bit 0",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru bitul 0 de selectie a setpointului fix de viteza. Prin combinarea bitilor p1020, p1021 si p1022 se selecteaza unul din cele 15 setpointuri fixe definite in p1002-p1015. Sursa tipica este o intrare digitala sau un bit de control din fieldbus.",
+      "influenteaza": "p1021, p1022, p1002, p1015, r1025",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25826,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1021",
+    "descriere_scurta": "Fixed speed setpoint selection Bit 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru bitul 1 de selectie a setpointului fix de viteza. Impreuna cu p1020 si p1022 formeaza codul binar de selectie a unuia din cele 15 setpointuri fixe. Permite selectie programabila a treptelor de viteza.",
+      "influenteaza": "p1020, p1022, r1025",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25827,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1022",
+    "descriere_scurta": "Fixed speed setpoint selection Bit 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru bitul 2 de selectie a setpointului fix de viteza. Bitul cu cea mai mare pondere in codul de selectie a setpointului fix. Impreuna cu p1020 si p1021 permite selectia a pana la 7 setpointuri fixe distincte.",
+      "influenteaza": "p1020, p1021, r1025",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25828,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1025",
+    "descriere_scurta": "Fixed speed setpoint status",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza starea selectiei setpointului fix de viteza, indicand care setpoint fix este activ curent. Reflecta valoarea binara rezultata din combinarea bitilor p1020, p1021 si p1022. Util pentru diagnosticarea logicii de selectie a treptei de viteza.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25829,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1030",
+    "descriere_scurta": "Motorized potentiometer configuration",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care configureaza comportamentul potentiometrului motorized (MOP). Bitii individuali activeaza functii precum stocarea valorii la oprire sau initializarea cu ultima valoare salvata. Configuratia corecta asigura un comportament predictibil al potentiometrului motorized.",
+      "influenteaza": "p1036, p1037, p1038, p1040",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25830,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1036",
+    "descriere_scurta": "Motorized potentiometer lower setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru reducerea continua a setpointului potentiometrului motorized. Viteza de reducere depinde de rampa de decelerare p1048 si de durata semnalului activ. Activ logic permite simularea unui potentiometru fizic prin comenzi digitale.",
+      "influenteaza": "p1048, p1030",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25831,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1037",
+    "descriere_scurta": "Motorized potentiometer maximum speed",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita maxima de viteza a potentiometrului motorized. Setpointul generat de MOP nu poate depasi aceasta valoare indiferent de durata semnalului de ridicare. Permite limitarea domeniului de lucru al potentiometrului motorized.",
+      "influenteaza": "p1038, p1040",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25832,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1038",
+    "descriere_scurta": "Motorized potentiometer minimum speed",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita minima de viteza a potentiometrului motorized. Setpointul generat de MOP nu poate cobori sub aceasta valoare. Permite definirea unui nivel minim de functionare pentru aplicatii care nu permit oprirea completa.",
+      "influenteaza": "p1037, p1040",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25833,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1039",
+    "descriere_scurta": "Motorized potentiometer inversion",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru inversarea limitelor minim/maxim ale potentiometrului motorized. Semnalul activ inverseaza directia de crestere a setpointului. Util pentru aplicatii care necesita inversarea dinamica a sensului de crestere a setpointului.",
+      "influenteaza": "p1037, p1038",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25834,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1040",
+    "descriere_scurta": "Motorized potentiometer starting value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste valoarea initiala a setpointului potentiometrului motorized dupa alimentarea actionarii. Valoarea devine activa la pornirea sistemului sau la o noua initializare MOP. Permite pornirea de la o viteza predefinita fara a parcurge rampa de la zero.",
+      "influenteaza": "p1030, p1037, p1038",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25835,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1041",
+    "descriere_scurta": "Motorized potentiometer manual/automatic",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru comutarea intre modul manual si automat al potentiometrului motorized. In modul manual, setpointul se modifica prin semnale de ridicare/coborare. In modul automat, setpointul este preluat dintr-o sursa externa prin p1042.",
+      "influenteaza": "p1042, p1036",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25836,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1042",
+    "descriere_scurta": "Motorized potentiometer automatic setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului in modul automat al potentiometrului motorized. Este activ cand p1041 indica modul automat. Permite preluarea unui setpoint extern continuu in locul comenzilor discretere de ridicare/coborare.",
+      "influenteaza": "p1041",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25837,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1044",
+    "descriere_scurta": "Motorized potentiometer setting value",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa valorii de setare (preset) pentru potentiometrului motorized. Permite incarcarea unei valori predefinite in registrul MOP la un semnal extern. Util pentru sincronizarea rapida a setpointului MOP cu o valoare cunoscuta.",
+      "influenteaza": "p1041, p1040",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25838,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1047",
+    "descriere_scurta": "Motorized potentiometer ramp-up time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de crestere a generatorului de rampa intern al potentiometrului motorized. Setpointul creste de la zero la limita de viteza p1082 in acest interval de timp. Determina rata de crestere a setpointului la semnalul de ridicare MOP.",
+      "influenteaza": "p1048, p1082",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25839,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1048",
+    "descriere_scurta": "Motorized potentiometer ramp-down time",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste timpul de scadere a generatorului de rampa intern al potentiometrului motorized. Setpointul scade de la limita de viteza p1082 la zero in acest interval de timp. Determina rata de scadere a setpointului la semnalul de coborare MOP.",
+      "influenteaza": "p1047, p1082",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 25840,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1051",
+    "descriere_scurta": "Speed limit RFG positive direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa limitei de viteza pentru directia pozitiva la intrarea generatorului de rampa RFG. In mod implicit este conectat la p1083 care defineste limita maxima de viteza. Permite limitarea dinamica a vitezei maxime in directia pozitiva.",
+      "influenteaza": "p1083, p1052",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25841,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1052",
+    "descriere_scurta": "Speed limit RFG negative direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa limitei de viteza pentru directia negativa la intrarea generatorului de rampa RFG. In mod implicit este conectat la p1086 care defineste limita de viteza negativa. Permite limitarea dinamica a vitezei maxime in directia negativa.",
+      "influenteaza": "p1086, p1051",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25842,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1056",
+    "descriere_scurta": "Jog bit 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru comanda de jog 2. Functia jog permite miscarea incrementala a motorului cat timp semnalul este activ. Jog 2 utilizeaza setpointul de viteza definit separat fata de jog 1.",
+      "influenteaza": "p1058",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 25843,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1058",
+    "descriere_scurta": "Jog 1 speed setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste viteza de lucru in modul jog 1. Motorul se misca la aceasta viteza cat timp comanda de jog 1 este activa. Permite reglarea fina a vitezei de jog pentru manevrare precisa a echipamentului.",
+      "influenteaza": "p1056",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25844,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1063",
+    "descriere_scurta": "Speed limit setpoint channel",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste limita de viteza efectiva in canalul de setpoint, inainte de aplicarea rampelor. Limiteaza amplitudinea setpointului inainte de intrarea in generatorul de rampa. Util pentru protejarea procesului de viteze excesive chiar si in tranzitii rapide.",
+      "influenteaza": "p1082, p1083, p1086",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25845,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1071",
+    "descriere_scurta": "Main setpoint scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare a setpointului principal de viteza. Permite scalarea dinamica a setpointului principal prin interconectare BICO cu un semnal intern. Util pentru ajustari fine ale setpointului sau normalizari specifice aplicatiei.",
+      "influenteaza": "p1000",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25846,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1075",
+    "descriere_scurta": "Supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului suplimentar de viteza, adaugat la setpointul principal. Permite adaugarea unui offset de viteza dinamic la setpointul principal pentru compensari fine. Activ cand selectia setpointului (p1000) indica o valoare cu doua cifre.",
+      "influenteaza": "p1000",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25847,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1085",
+    "descriere_scurta": "Speed limit in positive direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa limitei de viteza in directia pozitiva. In mod implicit este conectat la p1083 care defineste limita maxima de viteza. Permite limitarea dinamica a vitezei maxime admise in directia pozitiva de rotatie.",
+      "influenteaza": "p1083, p1088",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25848,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1088",
+    "descriere_scurta": "Speed limit in negative direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa limitei de viteza in directia negativa. In mod implicit este conectat la p1086 care defineste limita de viteza negativa. Permite limitarea dinamica a vitezei maxime admise in directia negativa de rotatie.",
+      "influenteaza": "p1086, p1085",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25849,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1091",
+    "descriere_scurta": "Skip speed 1",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste prima viteza de ocolire (skip speed) pentru evitarea rezonantelor mecanice. Actionarea va trece rapid prin zona definita de p1091 +/- p1101. Utilizat pentru evitarea vibratiilor la frecventele de rezonanta ale structurii mecanice.",
+      "influenteaza": "p1101, p1092, p1093, p1094",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25850,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1092",
+    "descriere_scurta": "Skip speed 2",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste a doua viteza de ocolire pentru evitarea rezonantelor mecanice. Impreuna cu banda definita in p1101, aceasta zona de viteza va fi traversata rapid. Util pentru aplicatii cu mai multe frecvente de rezonanta.",
+      "influenteaza": "p1101, p1091, p1093, p1094",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25851,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1093",
+    "descriere_scurta": "Skip speed 3",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste a treia viteza de ocolire pentru evitarea rezonantelor mecanice. Permite configurarea unui al treilea punct de ocolire in spectrul de viteze. Util pentru sisteme mecanice cu mai multe moduri de rezonanta.",
+      "influenteaza": "p1101, p1091, p1092, p1094",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25852,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1094",
+    "descriere_scurta": "Skip speed 4",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste a patra viteza de ocolire pentru evitarea rezonantelor mecanice. Este ultima din cele 4 viteze de ocolire disponibile. Permite protectia completa a sistemului impotriva celor mai frecvente frecvente de rezonanta.",
+      "influenteaza": "p1101, p1091, p1092, p1093",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25853,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1098",
+    "descriere_scurta": "Skip speed scaling",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa factorului de scalare a vitezelor de ocolire. Permite ajustarea dinamica a vitezelor de ocolire prin interconectare BICO. Util cand vitezele de rezonanta variaza cu conditiile de operare.",
+      "influenteaza": "p1091, p1092, p1093, p1094",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25854,
+    "familie": "SINAMICS_G120",
+    "parametru": "r1099",
+    "descriere_scurta": "Skip band status word",
+    "GENERATED": {
+      "explicatie": "r - parametru read-only care afiseaza cuvantul de stare al benzilor de ocolire (skip bands). Indica daca actionarea se afla in prezent intr-o zona de ocolire si care zona este activa. Util pentru diagnosticarea tranzitiilor prin zonele de rezonanta mecanica.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25855,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1101",
+    "descriere_scurta": "Skip speed bandwidth",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste latimea de banda a zonelor de ocolire aplicate tuturor celor 4 viteze de ocolire (p1091-p1094). Zona de ocolire se extinde cu +/- p1101 in jurul vitezei centrale. O valoare prea mica poate fi ineficienta, o valoare prea mare reduce gama de viteze utilizabila.",
+      "influenteaza": "p1091, p1092, p1093, p1094",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25856,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1108",
+    "descriere_scurta": "Total setpoint selection",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa semnalului pentru selectia setpointului total. La semnalul 1, setpointul total este preluat direct din p1109 ocolind canalul normal de setpoint. Permite injectia directa a unui setpoint de viteza extern in regulatorul de viteza.",
+      "influenteaza": "p1109",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25857,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1109",
+    "descriere_scurta": "Total setpoint",
+    "GENERATED": {
+      "explicatie": "p - parametru setabil care defineste sursa setpointului total de viteza utilizat cand p1108 = 1. Permite preluarea directa a setpointului de viteza ocolind generatorul de rampa si alte blocuri de procesare. Utilizat in aplicatii avansate de sincronizare sau control master-slave.",
+      "influenteaza": "p1108",
+      "categorie": "Altul"
+    }
+  }
+]

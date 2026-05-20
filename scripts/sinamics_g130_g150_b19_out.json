@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 27257,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3671",
+    "descriere_scurta": "VSM 10 V input CT 1 actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala a curentului masurata de traductorul de curent (CT) 1 conectat la intrarea de 10 V a modulului VSM (Voltage Sensing Module). Utilizata pentru monitorizarea semnalului analogic de curent de la senzorul extern.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27258,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3672",
+    "descriere_scurta": "VSM 10 V input CT 2 actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala a curentului masurata de traductorul de curent (CT) 2 conectat la intrarea de 10 V a modulului VSM. Parametrul permite urmarirea celui de-al doilea canal de masura al curentului pe modulul VSM.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27259,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3673",
+    "descriere_scurta": "VSM 10 V input 1 actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de tensiune masurata la intrarea 1 de 10 V a modulului VSM. Permite verificarea tensiunii analogice aplicate pe primul canal de intrare al VSM.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27260,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3674",
+    "descriere_scurta": "VSM 10 V input 2 actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de tensiune masurata la intrarea 2 de 10 V a modulului VSM. Permite verificarea tensiunii analogice aplicate pe al doilea canal de intrare al VSM.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27261,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3784",
+    "descriere_scurta": "Sync-line-drive external increase voltage",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal (intrare binara BI) pentru comanda de crestere a tensiunii in cadrul sincronizarii externe retea-motor. Un semnal 1 pe aceasta intrare determina cresterea tensiunii de iesire in procesul de sincronizare.",
+      "influenteaza": "p3785, p3800, p3809",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27262,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3785",
+    "descriere_scurta": "Sync-line-drive external decrease voltage",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal (intrare binara BI) pentru comanda de scadere a tensiunii in procesul de sincronizare externa retea-motor. Un semnal 1 pe aceasta intrare determina reducerea tensiunii de iesire.",
+      "influenteaza": "p3784, p3800, p3809",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27263,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3800",
+    "descriere_scurta": "Sync-line-drive activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza sau dezactiveaza functia de sincronizare retea-motor (line-drive synchronization). Valoarea 1 porneste procesul de sincronizare a fazei si tensiunii cu reteaua electrica.",
+      "influenteaza": "p3801, p3809, p3811, p3813, p3815",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27264,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3801",
+    "descriere_scurta": "Sync-line-drive, drive object number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul obiectului de actionare (drive object) al modulului VSM utilizat pentru sincronizarea retea-motor. Valoarea corecta este necesara pentru identificarea corecta a sursei de semnal VSM in sistem.",
+      "influenteaza": "p3800",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27265,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3803",
+    "descriere_scurta": "Sync-line-drive control word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cuvantul de control activ pentru functia de sincronizare retea-motor. Valoarea afisata indica starea comenzilor interne ale regulatorului de sincronizare (faza, tensiune).",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27266,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3809",
+    "descriere_scurta": "Sync-line-drive phase setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea de referinta a unghiului de faza (in grade) pentru regulatorul de sincronizare retea-motor. O valoare diferita de zero introduce un decalaj de faza intentionat fata de reteaua electrica.",
+      "influenteaza": "p3800, p3811, p3813",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27267,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3811",
+    "descriere_scurta": "Sync-line-drive frequency limiting",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limitarea frecventei la iesirea regulatorului de faza pentru sincronizarea retea-motor. Aceasta limita previne variatiile bruste de frecventa in procesul de sincronizare.",
+      "influenteaza": "p3800, p3809",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27268,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3813",
+    "descriere_scurta": "Sync-line-drive phase synchronism threshold value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de diferenta de faza (in grade) sub care conditia de sincronism de faza este considerata indeplinita. O valoare mai mica impune o sincronizare mai precisa inainte de conectarea la retea.",
+      "influenteaza": "p3800, p3815",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27269,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3815",
+    "descriere_scurta": "Sync-line-drive voltage difference threshold value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul maxim de diferenta de tensiune (in procente) acceptabil pentru indeplinirea conditiei de sincronism de tensiune. Conditia de sincronism de tensiune este satisfacuta daca diferenta este sub aceasta valoare.",
+      "influenteaza": "p3800, p3813",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27270,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3820",
+    "descriere_scurta": "Friction characteristic, value n0",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a primei perechi de valori din caracteristica de frecare. Caracteristica de frecare (10 perechi n-M) este utilizata de regulatorul de viteza pentru compensarea momentului de frecare al sarcinii.",
+      "influenteaza": "p3830, p3821, p3831",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27271,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3821",
+    "descriere_scurta": "Friction characteristic, value n1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a doua de valori din caracteristica de frecare. Impreuna cu p3831, formeaza al doilea punct de calibrare al curbei de compensare a frecarii.",
+      "influenteaza": "p3831, p3820, p3830",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27272,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3822",
+    "descriere_scurta": "Friction characteristic, value n2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a treia de valori din caracteristica de frecare. Impreuna cu p3832, formeaza al treilea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3832",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27273,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3823",
+    "descriere_scurta": "Friction characteristic, value n3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a patra de valori din caracteristica de frecare. Impreuna cu p3833, formeaza al patrulea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3833",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27274,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3824",
+    "descriere_scurta": "Friction characteristic, value n4",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a cincea de valori din caracteristica de frecare. Impreuna cu p3834, formeaza al cincilea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3834",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27275,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3825",
+    "descriere_scurta": "Friction characteristic, value n5",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a sasea de valori din caracteristica de frecare. Impreuna cu p3835, formeaza al saselea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3835",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27276,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3826",
+    "descriere_scurta": "Friction characteristic, value n6",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a saptea de valori din caracteristica de frecare. Impreuna cu p3836, formeaza al saptelea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3836",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27277,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3827",
+    "descriere_scurta": "Friction characteristic, value n7",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a opta de valori din caracteristica de frecare. Impreuna cu p3837, formeaza al optulea punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3837",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27278,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3828",
+    "descriere_scurta": "Friction characteristic, value n8",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a perechii a noua de valori din caracteristica de frecare. Impreuna cu p3838, formeaza al nouaela punct al curbei de compensare a frecarii.",
+      "influenteaza": "p3838",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27279,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3829",
+    "descriere_scurta": "Friction characteristic, value n9",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de viteza (rpm) a celei de-a zecea perechi de valori din caracteristica de frecare, reprezentand viteza maxima din curba de compensare. La inregistrarea automata, aceasta viteza este atinsa prima.",
+      "influenteaza": "p3839, p3847",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27280,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3830",
+    "descriere_scurta": "Friction characteristic, value M0",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a primei perechi de valori din caracteristica de frecare, corespunzatoare vitezei p3820. Valoarea reprezinta momentul de frecare la viteza minima din caracteristica.",
+      "influenteaza": "p3820",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27281,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3831",
+    "descriere_scurta": "Friction characteristic, value M1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a doua de valori din caracteristica de frecare, corespunzatoare vitezei p3821. Valoarea reprezinta momentul de frecare la a doua viteza din caracteristica.",
+      "influenteaza": "p3821",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27282,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3832",
+    "descriere_scurta": "Friction characteristic, value M2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a treia de valori din caracteristica de frecare, corespunzatoare vitezei p3822.",
+      "influenteaza": "p3822",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27283,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3833",
+    "descriere_scurta": "Friction characteristic, value M3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a patra de valori din caracteristica de frecare, corespunzatoare vitezei p3823.",
+      "influenteaza": "p3823",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27284,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3834",
+    "descriere_scurta": "Friction characteristic, value M4",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a cincea de valori din caracteristica de frecare, corespunzatoare vitezei p3824.",
+      "influenteaza": "p3824",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27285,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3835",
+    "descriere_scurta": "Friction characteristic, value M5",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a sasea de valori din caracteristica de frecare, corespunzatoare vitezei p3825.",
+      "influenteaza": "p3825",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27286,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3836",
+    "descriere_scurta": "Friction characteristic, value M6",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a saptea de valori din caracteristica de frecare, corespunzatoare vitezei p3826.",
+      "influenteaza": "p3826",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27287,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3837",
+    "descriere_scurta": "Friction characteristic, value M7",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a opta de valori din caracteristica de frecare, corespunzatoare vitezei p3827.",
+      "influenteaza": "p3827",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27288,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3838",
+    "descriere_scurta": "Friction characteristic, value M8",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste coordonata de moment (Nm) a perechii a noua de valori din caracteristica de frecare, corespunzatoare vitezei p3828.",
+      "influenteaza": "p3828",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27289,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3840",
+    "descriere_scurta": "Friction characteristic, status word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cuvantul de stare al caracteristicii de frecare, indicand daca masurarea automata este activa, finalizata sau daca exista erori. Utilizat pentru urmarirea progresului inregistrarii automate a caracteristicii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27290,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3847",
+    "descriere_scurta": "Friction characteristic record warm-up time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de incalzire (warm-up) in secunde pentru inregistrarea automata a caracteristicii de frecare. In acest interval, actionarea mentine viteza maxima (p3829) inainte de a incepe masurarea propriu-zisa.",
+      "influenteaza": "p3829",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27291,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3901",
+    "descriere_scurta": "Power unit EEPROM Vdc offset calibration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tensiunea diferentiala de calibrare a offset-ului pentru masurarea tensiunii circuitului DC. Permite compensarea erorilor de masura ale tensiunii de circuit intermediar (DC link) la nivel hardware.",
+      "influenteaza": "r0070",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27292,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3927",
+    "descriere_scurta": "Motor data identification control word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cuvantul de control cu componentele identificate cu succes la ultima procedura de identificare a datelor motorului. Fiecare bit corespunde unui set de parametri ai motorului care a fost determinat.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27293,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3928",
+    "descriere_scurta": "Rotating measurement configuration",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza componentele finalizate cu succes la ultima masurare rotativa a motorului. Fiecare bit al cuvantului indica un set specific de parametri determinati in cursul masurarii rotative.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27294,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3988",
+    "descriere_scurta": "Boot state",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea de pornire (boot) a unitatii de actionare, indicand faza din secventa de initializare in care se afla sistemul. Indexul 0 indica starea globala de boot, indexul 1 indica starea de boot partial.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27295,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4052",
+    "descriere_scurta": "TB30 analog inputs, current input voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea de intrare actuala la intrarile analogice AI 0 si AI 1 ale placii de terminale TB30. Permite verificarea in timp real a semnalelor analogice aplicate pe TB30.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27296,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4053",
+    "descriere_scurta": "TB30 analog inputs, smoothing time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp (ms) a filtrului trece-jos de ordinul 1 aplicat pe intrarile analogice AI 0 si AI 1 ale TB30. O valoare mai mare filtreaza mai eficient zgomotul dar introduce o intarziere mai mare in raspuns.",
+      "influenteaza": "r4052, r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27297,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4055",
+    "descriere_scurta": "TB30 analog inputs, actual value in percent",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea relativa (procentuala) a semnalelor de la intrarile analogice TB30 dupa aplicarea caracteristicii de scalare. Valoarea este raportata la marimile de referinta p200x si p205x.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27298,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4056",
+    "descriere_scurta": "TB30 analog inputs, type",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul intrarilor analogice ale TB30, indicand modul de conectare hardware (tensiune sau curent). Valoarea fixa 4 indica tipul de intrare implementat pe aceasta placa.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27299,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4057",
+    "descriere_scurta": "TB30 analog inputs, characteristic value x1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata x (tensiunea de intrare in V) a primului punct de calibrare al caracteristicii de scalare pentru intrarile analogice TB30. Impreuna cu p4058 si p4059/p4060, defineste panta si offset-ul scalarii.",
+      "influenteaza": "p4059, p4060, r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27300,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4059",
+    "descriere_scurta": "TB30 analog inputs, characteristic value x2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata x (tensiunea de intrare in V) a celui de-al doilea punct al caracteristicii de scalare pentru intrarile analogice TB30. Defineste capatul superior al plajei de tensiune mapata pe scala procentuala.",
+      "influenteaza": "p4057, p4060, r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27301,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4060",
+    "descriere_scurta": "TB30 analog inputs, characteristic value y2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata y (valoarea procentuala) a celui de-al doilea punct al caracteristicii de scalare pentru intrarile analogice TB30. Defineste valoarea procentuala corespunzatoare tensiunii maxime de intrare (p4059).",
+      "influenteaza": "p4057, p4059, r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27302,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4063",
+    "descriere_scurta": "TB30 analog inputs offset",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea de offset (in V) adaugata la semnalul de intrare analogic inainte de aplicarea caracteristicii de scalare pe intrarile TB30. Permite compensarea unui offset de semnal hardware.",
+      "influenteaza": "p4057, p4059, r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27303,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4066",
+    "descriere_scurta": "TB30 analog inputs, activate absolute value generation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza generarea valorii absolute pentru semnalele de intrare analogice ale TB30. Cand este activ, semnul semnalului de intrare este ignorat si se utilizeaza doar modulul valorii.",
+      "influenteaza": "r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27304,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4067",
+    "descriere_scurta": "TB30 analog inputs invert signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal (intrare binara BI) pentru inversarea semnalelor de intrare analogice AI 0 si AI 1 ale TB30. Un semnal 1 inverseaza polaritatea semnalului analogic selectat.",
+      "influenteaza": "r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27305,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4068",
+    "descriere_scurta": "TB30 analog inputs, window to suppress noise",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de histereza (in procente) pentru suprimarea zgomotului pe intrarile analogice TB30. Variatiile semnalului mai mici decat aceasta fereastra sunt ignorate, prevenind oscilarea semnalului.",
+      "influenteaza": "r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27306,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4069",
+    "descriere_scurta": "TB30 analog inputs, signal source for enable",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal (intrare binara BI) pentru validarea (enable) intrarilor analogice individuale ale TB30. Permite activarea/dezactivarea conditionata a fiecarui canal analogic.",
+      "influenteaza": "r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27307,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4072",
+    "descriere_scurta": "TB30 analog outputs, output value currently referred",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de iesire actuala relativa (procentuala) a iesirilor analogice AO 0 si AO 1 ale TB30. Permite verificarea semnalului de iesire inainte de conversia sa in tensiune.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27308,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4074",
+    "descriere_scurta": "TB30 analog outputs, current output voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea de iesire actuala la bornele iesirilor analogice AO 0 si AO 1 ale TB30. Permite verificarea semnalului analogic transmis catre instrumentatia externa.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27309,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4076",
+    "descriere_scurta": "TB30 analog outputs, type",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul iesirilor analogice ale TB30, indicand modul de conectare hardware implementat. Valoarea fixa 4 indica tipul de iesire disponibil pe aceasta placa.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27310,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4080",
+    "descriere_scurta": "TB30 analog outputs, characteristic value y2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata y (tensiunea de iesire in V) a celui de-al doilea punct al caracteristicii de scalare pentru iesirile analogice AO 0 si AO 1 ale TB30. Defineste tensiunea maxima de iesire corespunzatoare valorii maxime a semnalului.",
+      "influenteaza": "r4074, r4072",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27311,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4098",
+    "descriere_scurta": "TB30 analog inputs simulation mode setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tensiunea de intrare simulata (in V) pentru modul de simulare al intrarilor analogice AI 0 si AI 1 ale TB30. Utilizat pentru testarea configuratiei de scalare fara semnal analogic real aplicat.",
+      "influenteaza": "r4055",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27312,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4600",
+    "descriere_scurta": "Motor temperature sensor 1 sensor type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 1 utilizat pentru monitorizarea temperaturii motorului (ex: KTY84, PTC, PT100). Selectia corecta a tipului de senzor este esentiala pentru interpretatrea corecta a semnalului de temperatura.",
+      "influenteaza": "p4601, p4610, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27313,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4601",
+    "descriere_scurta": "Motor temperature sensor 2 sensor type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 2 pentru monitorizarea temperaturii motorului. Permite configurarea unui al doilea canal de masura a temperaturii, independent de primul senzor.",
+      "influenteaza": "p4600, p4611, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27314,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4603",
+    "descriere_scurta": "Motor temperature sensor 4 sensor type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 4 pentru monitorizarea temperaturii motorului. Configureaza cel de-al patrulea canal de masura a temperaturii disponibil in sistem.",
+      "influenteaza": "p4600, p4613, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27315,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4610",
+    "descriere_scurta": "Motor temperature sensor 1 sensor type MDS",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 1 al motorului la nivelul setului de date al motorului (MDS). Valoarea implicita 10 corespunde unui senzor KTY84, specific datelor stocate in setul MDS activ.",
+      "influenteaza": "p4600, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27316,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4611",
+    "descriere_scurta": "Motor temperature sensor 2 sensor type MDS",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 2 al motorului la nivelul setului de date MDS. Permite configurarea distincta a tipului de senzor pentru canalul 2, separat de configuratia generala a senzorului.",
+      "influenteaza": "p4601, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27317,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4612",
+    "descriere_scurta": "Motor temperature sensor 3 sensor type MDS",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 3 al motorului la nivelul setului de date MDS. Configureaza canalul 3 de masura a temperaturii la nivel de set de date motor.",
+      "influenteaza": "r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27318,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4613",
+    "descriere_scurta": "Motor temperature sensor 4 sensor type MDS",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul senzorului de temperatura 4 al motorului la nivelul setului de date MDS. Configureaza canalul 4 de masura a temperaturii la nivel de set de date motor.",
+      "influenteaza": "p4603, r4620",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27319,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4620",
+    "descriere_scurta": "Motor temperature measured",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperaturile actuale masurate in motor prin cele 4 canale de temperatura (indexuri 0-3). Valorile sunt utilizate de sistemul de protectie la supraincalzire si de algoritmul de derating termic al motorului.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27320,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4640",
+    "descriere_scurta": "Encoder diagnostics state machine",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea masinii de stare a diagnosticii encoderului prin interfata Profidrive. Utilizat de service pentru analiza comportamentului encoderului la nivel intern de protocol.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27321,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4670",
+    "descriere_scurta": "Analog sensor configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia evaluarii senzorului analogic, inclusiv modul de operare si optiunile de monitorizare. Bitii individuali ai cuvantului de configurare controleaza aspecte specifice ale evaluarii senzorului analogic.",
+      "influenteaza": "p4671, p4673, p4676, p4677",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27322,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4671",
+    "descriere_scurta": "Analog sensor input",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza circuitul de intrare utilizat pentru senzorul analogic, selectand unul din cele 4 circuite disponibile. Alegerea corecta determina care intrare hardware este asociata senzorului analogic.",
+      "influenteaza": "p4670, p4673",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27323,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4673",
+    "descriere_scurta": "Analog sensor channel A voltage per encoder period",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tensiunea de iesire (V) per perioada de encoder pentru canalul A al senzorului analogic. Impreuna cu p4672, defineste plaja de tensiune mapata pe valoarea reala a pozitiei.",
+      "influenteaza": "p4670, p4671",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27324,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4676",
+    "descriere_scurta": "Analog sensor range limit threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul (in procente) pentru monitorizarea limitei de domeniu a valorii absolute de pe senzorul analogic. Daca valoarea actuala depaseste acest prag, se genereaza o avarie sau alarma conform p4670.9.",
+      "influenteaza": "p4670",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27325,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4677",
+    "descriere_scurta": "Analog sensor LVDT configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia modului LVDT (Linear Variable Differential Transformer) pentru senzorul analogic. Bitii de configurare activeaza functionalitati specifice prelucrarii semnalului LVDT.",
+      "influenteaza": "p4670",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27326,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4680",
+    "descriere_scurta": "Zero mark monitoring tolerance permissible",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza toleranta permisa (in impulsuri de encoder) pentru monitorizarea marcii zero (zero mark). O valoare mai mare reduce frecventa aparitiei defectului F3x100, acceptand mici abateri in distanta dintre marcile zero.",
+      "influenteaza": "p4681, p4682",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27327,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4681",
+    "descriere_scurta": "Zero mark monitoring, tolerance window limit 1 positive",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de toleranta pozitiva (impulsuri encoder) pentru limita 1 a monitorizarii marcii zero. Daca abaterea depaseste aceasta valoare, se declanseaza defectul F3x131 sau se adauga in acumulator (r4688).",
+      "influenteaza": "p4680, p4682, p4683",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27328,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4682",
+    "descriere_scurta": "Zero mark monitoring, tolerance window limit 1 negative",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de toleranta negativa (impulsuri encoder) pentru limita 1 a monitorizarii marcii zero. Functioneaza simetric cu p4681 pentru directia negativa a abaterii.",
+      "influenteaza": "p4680, p4681, p4683",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27329,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4683",
+    "descriere_scurta": "Zero mark monitoring tolerance window alarm threshold positive",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul pozitiv al ferestrei de toleranta pentru limita 2 a monitorizarii marcii zero. Daca acumulatorul r4688 depaseste aceasta valoare, se genereaza alarma A3x422 timp de 5 secunde.",
+      "influenteaza": "p4681, p4682",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27330,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4685",
+    "descriere_scurta": "Speed actual value mean value generation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de perioade ale controllerului de curent utilizate pentru calculul mediei valorii actuale de viteza. O valoare mai mare produce o medie mai stabila dar cu reactie mai lenta.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27331,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4686",
+    "descriere_scurta": "Zero mark minimum length",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza lungimea minima (in perioade de impulsuri) a marcii zero a encoderului. Valori mai mari asigura o detectie mai robusta a marcii zero, ignorand impulsurile parasite.",
+      "influenteaza": "p4680",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27332,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4693",
+    "descriere_scurta": "SMI spare part data backup directory",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza directorul (0-399) utilizat pentru descarcarea si salvarea datelor de backup ale componentelor SMI (encoder inteligent). Permite organizarea datelor de schimb si restaurare ale encoderelor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27333,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4705",
+    "descriere_scurta": "Trace status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea actuala a functiei trace (inregistrare), indicand daca inregistrarea este inactiva, activa, asteptand trigger sau finalizata. Valoarea 0 indica trace inactiv, 4 indica inregistrare finalizata.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27334,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4708",
+    "descriere_scurta": "Trace memory space required",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza memoria necesara in bytes pentru parametrizarea actuala a functiei trace pentru trace 0 si trace 1. Permite verificarea disponibilitatii memoriei inainte de lansarea unei inregistrari.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27335,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4709",
+    "descriere_scurta": "Trace memory space required for measuring functions",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza memoria necesara in bytes pentru utilizarea trace-ului in contextul functiilor de masura. Valoarea difera de r4708 deoarece functiile de masura pot necesita o structura de date diferita.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27336,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4710",
+    "descriere_scurta": "Trace trigger condition",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza conditia de trigger pentru pornirea inregistrarii trace. Valorile 1-7 corespund diferitelor tipuri de triggere (ex: manual, pe semnal, pe eroare, pe fereastra de toleranta).",
+      "influenteaza": "p4714, r4705",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27337,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4714",
+    "descriere_scurta": "Trace tolerance band trigger threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza al doilea prag de trigger pentru modul de trigger pe fereastra de toleranta al functiei trace. Impreuna cu primul prag, defineste banda in care semnalul trebuie sa se incadreze pentru a declansa inregistrarea.",
+      "influenteaza": "p4710",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27338,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4724",
+    "descriere_scurta": "Trace average in the time range",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza optiunea de mediere a datelor in intervalul de timp al functiei trace. Activarea mediei reduce rezolutia temporala dar produce valori mai stabile pentru semnalele zgomotoase.",
+      "influenteaza": "r4729",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27339,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4725",
+    "descriere_scurta": "Trace, data type 1 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al primului semnal inregistrat in buffer-ul trace. Informatia despre tipul de date este necesara pentru interpretarea corecta a valorilor stocate in buffer.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27340,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4726",
+    "descriere_scurta": "Trace, data type 2 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al doilea semnal inregistrat in buffer-ul trace. Utilizat pentru interpretarea corecta a valorilor din buffer-ul trace corespunzatoare semnalului 2.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27341,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4727",
+    "descriere_scurta": "Trace, data type 3 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al treilea semnal inregistrat in buffer-ul trace. Utilizat pentru interpretarea corecta a valorilor din buffer-ul trace corespunzatoare semnalului 3.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27342,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4728",
+    "descriere_scurta": "Trace, data type 4 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al patrulea semnal inregistrat in buffer-ul trace. Utilizat pentru interpretarea corecta a valorilor din buffer-ul trace corespunzatoare semnalului 4.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27343,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4729",
+    "descriere_scurta": "Trace number of recorded values",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul de valori inregistrate pentru fiecare semnal in buffer-ul trace 0 si trace 1. Valoarea este utila pentru determinarea dimensiunii efective a inregistrarii disponibile pentru citire.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27344,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4737",
+    "descriere_scurta": "Trace record signal 7",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Selecteaza al optulea semnal de inregistrat in functia trace, specificat in format BICO sau referinta PIN. Permite configurarea canalului 7 (indexul 0...5) al celor doua trace-uri disponibile.",
+      "influenteaza": "r4747, r4777",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27345,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4740",
+    "descriere_scurta": "Trace 0 trace buffer signal 0 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 0, in format float. Buffer-ul este impartit in bancuri de 16384 valori; selectia bancului se face cu p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27346,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4741",
+    "descriere_scurta": "Trace 0 trace buffer signal 1 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 1, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27347,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4742",
+    "descriere_scurta": "Trace 0 trace buffer signal 2 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 2, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27348,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4743",
+    "descriere_scurta": "Trace 0 trace buffer signal 3 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 3, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27349,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4744",
+    "descriere_scurta": "Trace 0 trace buffer signal 4 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 4, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27350,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4745",
+    "descriere_scurta": "Trace 0 trace buffer signal 5 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 5, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27351,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4746",
+    "descriere_scurta": "Trace 0 trace buffer signal 6 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 6, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27352,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4747",
+    "descriere_scurta": "Trace 0 trace buffer signal 7 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 7, in format float. Citirea se face pe bancuri de 16384 valori, selectate prin p4795.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27353,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4750",
+    "descriere_scurta": "Trace 1 trace buffer signal 0 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 0, in format float. Trace 1 este independent de trace 0 si permite inregistrarea simultana a unui set diferit de semnale.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27354,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4751",
+    "descriere_scurta": "Trace 1 trace buffer signal 1 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 1, in format float.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27355,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4752",
+    "descriere_scurta": "Trace 1 trace buffer signal 2 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 2, in format float.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27356,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4754",
+    "descriere_scurta": "Trace 1 trace buffer signal 4 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 4, in format float.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  }
+]

@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 26458,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20207",
+    "descriere_scurta": "DFR 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei DFR 1 in cadrul grupului de executie setat in p20206. Valoarea implicita este 560.",
+      "influenteaza": "p20206",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26459,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20208",
+    "descriere_scurta": "BSW 0 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor de intrare I0 si I1 ale instantei BSW 0 a comutatorului binar de transfer din FFB. In functie de pozitia comutatorului I, iesirea Q preia valoarea I0 sau I1.",
+      "influenteaza": "p20209, r20210, p20211",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26460,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20209",
+    "descriere_scurta": "BSW 0 switch setting I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de selectie I al instantei BSW 0 a comutatorului binar de transfer din FFB. I = 0 selecteaza intrarea I0, I = 1 selecteaza intrarea I1 la iesire.",
+      "influenteaza": "r20210, p20208",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26461,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20210",
+    "descriere_scurta": "BSW 0 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei BSW 0 a comutatorului binar de transfer. Q = I0 cand I = 0, respectiv Q = I1 cand I = 1.",
+      "influenteaza": "p20208, p20209",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26462,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20211",
+    "descriere_scurta": "BSW 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta BSW 0 a comutatorului binar de transfer din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20212, r20210",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26463,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20212",
+    "descriere_scurta": "BSW 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei BSW 0 in cadrul grupului de executie setat in p20211. Valoarea implicita este 580; domeniu maxim 7999.",
+      "influenteaza": "p20211",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26464,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20213",
+    "descriere_scurta": "BSW 1 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor de intrare I0 si I1 ale instantei BSW 1 a comutatorului binar de transfer din FFB. Instanta independenta fata de BSW 0.",
+      "influenteaza": "p20214, r20215, p20216",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26465,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20214",
+    "descriere_scurta": "BSW 1 switch setting I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de selectie I al instantei BSW 1 a comutatorului binar de transfer din FFB. I = 0 selecteaza I0, I = 1 selecteaza I1 la iesire.",
+      "influenteaza": "r20215, p20213",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26466,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20215",
+    "descriere_scurta": "BSW 1 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei BSW 1 a comutatorului binar de transfer. Valoarea este I0 sau I1 in functie de semnalul de selectie I.",
+      "influenteaza": "p20213, p20214",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26467,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20216",
+    "descriere_scurta": "BSW 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta BSW 1 a comutatorului binar de transfer din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20217, r20215",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26468,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20217",
+    "descriere_scurta": "BSW 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei BSW 1 in cadrul grupului de executie setat in p20216. Valoarea implicita este 590; domeniu maxim 7999.",
+      "influenteaza": "p20216",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26469,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20218",
+    "descriere_scurta": "NSW 0 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor numerice X0 si X1 ale instantei NSW 0 a comutatorului numeric de transfer din FFB. Iesirea Y este X0 sau X1 in functie de semnalul de selectie I.",
+      "influenteaza": "p20219, r20220, p20221",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26470,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20219",
+    "descriere_scurta": "NSW 0 switch setting I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de selectie I al instantei NSW 0 a comutatorului numeric de transfer. I = 0 comuta pe X0, I = 1 comuta pe X1.",
+      "influenteaza": "r20220, p20218",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26471,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20220",
+    "descriere_scurta": "NSW 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea numerica Y a instantei NSW 0 a comutatorului numeric de transfer. Y = X0 cand I = 0, Y = X1 cand I = 1.",
+      "influenteaza": "p20218, p20219",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26472,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20221",
+    "descriere_scurta": "NSW 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NSW 0 a comutatorului numeric de transfer din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20222, r20220",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26473,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20222",
+    "descriere_scurta": "NSW 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NSW 0 in cadrul grupului de executie setat in p20221. Valoarea implicita este 610.",
+      "influenteaza": "p20221",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26474,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20223",
+    "descriere_scurta": "NSW 1 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor numerice X0 si X1 ale instantei NSW 1 a comutatorului numeric de transfer din FFB. Instanta independenta fata de NSW 0.",
+      "influenteaza": "p20224, r20225, p20226",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26475,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20224",
+    "descriere_scurta": "NSW 1 switch setting I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de selectie I al instantei NSW 1 a comutatorului numeric de transfer. Selecteaza X0 sau X1 la iesire.",
+      "influenteaza": "r20225, p20223",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26476,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20225",
+    "descriere_scurta": "NSW 1 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea numerica Y a instantei NSW 1 a comutatorului numeric de transfer. Valoarea depinde de pozitia semnalului de selectie I configurat in p20224.",
+      "influenteaza": "p20223, p20224",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26477,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20226",
+    "descriere_scurta": "NSW 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NSW 1 a comutatorului numeric de transfer din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20227, r20225",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26478,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20227",
+    "descriere_scurta": "NSW 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NSW 1 in cadrul grupului de executie setat in p20226. Valoarea implicita este 620.",
+      "influenteaza": "p20226",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26479,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20228",
+    "descriere_scurta": "LIM 0 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului numeric de intrare X al instantei LIM 0 a limitatorului din FFB. Semnalul conectat va fi limitat intre valorile LL si LU configurate.",
+      "influenteaza": "p20229, p20230, r20231, r20232, r20233",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26480,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20229",
+    "descriere_scurta": "LIM 0 upper limit value LU",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita superioara LU a instantei LIM 0 a limitatorului din FFB. Cand intrarea X >= LU, iesirea Y este fixata la LU si semnalul QU este setat la 1.",
+      "influenteaza": "r20231, r20232, p20228",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26481,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20230",
+    "descriere_scurta": "LIM 0 lower limit value LL",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita inferioara LL a instantei LIM 0 a limitatorului din FFB. Cand intrarea X <= LL, iesirea Y este fixata la LL si semnalul QL este setat la 1.",
+      "influenteaza": "r20231, r20233, p20228",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26482,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20231",
+    "descriere_scurta": "LIM 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea limitata Y a instantei LIM 0 a limitatorului. Y este egala cu X daca X se afla intre LL si LU, altfel este clipata la limita atinsa.",
+      "influenteaza": "p20228, p20229, p20230",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26483,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20232",
+    "descriere_scurta": "LIM 0 input quantity at the upper limit QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QU = 1 indica ca intrarea X a instantei LIM 0 a atins sau depasit limita superioara LU. Poate fi utilizat in logici de protectie sau alarma.",
+      "influenteaza": "p20229, r20231",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26484,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20233",
+    "descriere_scurta": "LIM 0 input quantity at the lower limit QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QL = 1 indica ca intrarea X a instantei LIM 0 a atins sau coborat sub limita inferioara LL. Util pentru detectia saturatiei negative.",
+      "influenteaza": "p20230, r20231",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26485,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20234",
+    "descriere_scurta": "LIM 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta LIM 0 a limitatorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20235, r20231",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26486,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20235",
+    "descriere_scurta": "LIM 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei LIM 0 in cadrul grupului de executie setat in p20234. Valoarea implicita este 640.",
+      "influenteaza": "p20234",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26487,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20236",
+    "descriere_scurta": "LIM 1 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului numeric de intrare X al instantei LIM 1 a limitatorului din FFB. Instanta independenta fata de LIM 0; semnalul va fi limitat intre LL si LU.",
+      "influenteaza": "p20237, p20238, r20239, r20240, r20241",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26488,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20237",
+    "descriere_scurta": "LIM 1 upper limit value LU",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita superioara LU a instantei LIM 1 a limitatorului din FFB. Cand X >= LU, iesirea Y este limitata la LU si semnalul QU devine 1.",
+      "influenteaza": "r20239, r20240, p20236",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26489,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20238",
+    "descriere_scurta": "LIM 1 lower limit value LL",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita inferioara LL a instantei LIM 1 a limitatorului din FFB. Cand X <= LL, iesirea Y este fixata la LL si semnalul QL devine 1.",
+      "influenteaza": "r20239, r20241, p20236",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26490,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20239",
+    "descriere_scurta": "LIM 1 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea limitata Y a instantei LIM 1 a limitatorului. Iesirea Y este clipata la LU sau LL cand intrarea depaseste intervalul permis.",
+      "influenteaza": "p20236, p20237, p20238",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26491,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20240",
+    "descriere_scurta": "LIM 1 input quantity at the upper limit QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QU = 1 indica ca intrarea X a instantei LIM 1 a atins sau depasit limita superioara LU. Util in logici de alarma sau protectie.",
+      "influenteaza": "p20237, r20239",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26492,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20241",
+    "descriere_scurta": "LIM 1 input quantity at the lower limit QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QL = 1 indica ca intrarea X a instantei LIM 1 a coborat la sau sub limita inferioara LL. Poate fi conectat la alte blocuri logice prin BICO.",
+      "influenteaza": "p20238, r20239",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26493,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20242",
+    "descriere_scurta": "LIM 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta LIM 1 a limitatorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20243, r20239",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26494,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20243",
+    "descriere_scurta": "LIM 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei LIM 1 in cadrul grupului de executie setat in p20242. Valoarea implicita este 650.",
+      "influenteaza": "p20242",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26495,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20244",
+    "descriere_scurta": "PT1 0 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele pentru intrarea X si valoarea de setare SV ale instantei PT1 0 a elementului de netezire din FFB. Blocul implementeaza un filtru trece-jos de ordinul intai.",
+      "influenteaza": "p20245, p20246, r20247, p20248",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26496,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20245",
+    "descriere_scurta": "PT1 0 accept setting value S",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de acceptare a valorii de setare SV al instantei PT1 0. Cand semnalul S este activ, iesirea Y este preincarcata cu valoarea SV.",
+      "influenteaza": "r20247, p20244",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26497,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20246",
+    "descriere_scurta": "PT1 0 smoothing time constant in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp T in milisecunde a filtrului PT1 al instantei 0 a elementului de netezire. O valoare mai mare produce o netezire mai puternica a semnalului de intrare.",
+      "influenteaza": "r20247, p20244",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26498,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20247",
+    "descriere_scurta": "PT1 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea netezita Y a instantei PT1 0 a elementului de netezire. Semnalul de iesire urmareste intrarea X cu o intarziere determinata de constanta de timp T.",
+      "influenteaza": "p20244, p20246",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26499,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20248",
+    "descriere_scurta": "PT1 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PT1 0 a elementului de netezire din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20249, r20247",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26500,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20249",
+    "descriere_scurta": "PT1 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PT1 0 in cadrul grupului de executie setat in p20248. Valoarea implicita este 670.",
+      "influenteaza": "p20248",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26501,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20250",
+    "descriere_scurta": "PT1 1 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele pentru intrarea X si valoarea de setare SV ale instantei PT1 1 a elementului de netezire din FFB. Instanta independenta fata de PT1 0.",
+      "influenteaza": "p20251, p20252, r20253, p20254",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26502,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20251",
+    "descriere_scurta": "PT1 1 accept setting value S",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de acceptare a valorii de setare SV al instantei PT1 1 a elementului de netezire. Cand activ, iesirea Y se preincarca cu SV.",
+      "influenteaza": "r20253, p20250",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26503,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20252",
+    "descriere_scurta": "PT1 1 smoothing time constant in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp T in milisecunde a filtrului PT1 al instantei 1 a elementului de netezire. Mareste sau reduce intarzierea de raspuns a iesitrii fata de intrare.",
+      "influenteaza": "r20253, p20250",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26504,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20253",
+    "descriere_scurta": "PT1 1 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea netezita Y a instantei PT1 1 a elementului de netezire. Raspunsul este filtrat conform constantei de timp T definita in p20252.",
+      "influenteaza": "p20250, p20252",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26505,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20254",
+    "descriere_scurta": "PT1 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PT1 1 a elementului de netezire din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20255, r20253",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26506,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20255",
+    "descriere_scurta": "PT1 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PT1 1 in cadrul grupului de executie setat in p20254. Valoarea implicita este 680.",
+      "influenteaza": "p20254",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26507,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20256",
+    "descriere_scurta": "INT 0 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele pentru intrarea X si valoarea de setare SV ale instantei INT 0 a integratorului din FFB. Blocul acumuleaza intrarea in timp cu constanta Ti.",
+      "influenteaza": "p20257, p20258, p20259, p20260, r20261, r20262, r20263",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26508,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20257",
+    "descriere_scurta": "INT 0 upper limit value LU",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita superioara LU a integratorului INT 0 din FFB. Cand iesirea Y atinge LU, integratorul se satureaza si semnalul QU devine 1.",
+      "influenteaza": "r20261, r20262, p20256",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26509,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20258",
+    "descriere_scurta": "INT 0 lower limit value LL",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita inferioara LL a integratorului INT 0 din FFB. Cand iesirea Y atinge LL, integratorul se satureaza si semnalul QL devine 1.",
+      "influenteaza": "r20261, r20263, p20256",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26510,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20259",
+    "descriere_scurta": "INT 0 integrating time constant in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de integrare Ti in milisecunde a instantei INT 0 a integratorului din FFB. O valoare mai mica produce o integrare mai rapida.",
+      "influenteaza": "r20261, p20256",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26511,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20260",
+    "descriere_scurta": "INT 0 accept setting value S",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de acceptare a valorii de setare SV al instantei INT 0. Cand S este activ, iesirea Y a integratorului este preincarcata cu valoarea SV.",
+      "influenteaza": "r20261, p20256",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26512,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20261",
+    "descriere_scurta": "INT 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea integratorului INT 0 din FFB. Valoarea Y creste sau scade proportional cu intrarea X si constanta Ti; daca LL >= LU, Y = LU.",
+      "influenteaza": "p20256, p20257, p20258, p20259",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26513,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20262",
+    "descriere_scurta": "INT 0 integrator at the upper limit QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QU = 1 indica ca iesirea Y a integratorului INT 0 a atins limita superioara LU. Semnalul poate fi folosit pentru a detecta saturatia pozitiva.",
+      "influenteaza": "r20261, p20257",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26514,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20263",
+    "descriere_scurta": "INT 0 integrator at the lower limit QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QL = 1 indica ca iesirea Y a integratorului INT 0 a coborat la limita inferioara LL. Util in logici de protectie pentru detectia saturatiei negative.",
+      "influenteaza": "r20261, p20258",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26515,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20264",
+    "descriere_scurta": "INT 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta INT 0 a integratorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20265, r20261",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26516,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20265",
+    "descriere_scurta": "INT 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei INT 0 in cadrul grupului de executie setat in p20264. Valoarea implicita este 700.",
+      "influenteaza": "p20264",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26517,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20266",
+    "descriere_scurta": "LVM 0 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului numeric de intrare X al instantei LVM 0 a limitatorului bidirectional din FFB. Semnalul este comparat cu intervalul definit de M, L si HY.",
+      "influenteaza": "p20267, p20268, p20269, r20270, r20271, r20272",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26518,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20267",
+    "descriere_scurta": "LVM 0 interval average value M",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea medie M a intervalului de monitorizare al instantei LVM 0 a limitatorului bidirectional. Intervalul este definit de M +/- L cu histerezis HY.",
+      "influenteaza": "r20270, r20271, r20272, p20266",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26519,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20268",
+    "descriere_scurta": "LVM 0 interval limit L",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza semilargimea intervalului L al instantei LVM 0 a limitatorului bidirectional. Intervalul de lucru este cuprins intre M - L si M + L.",
+      "influenteaza": "r20270, r20271, r20272, p20267",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26520,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20269",
+    "descriere_scurta": "LVM 0 hyst HY",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza histerezisul HY al instantei LVM 0 a limitatorului bidirectional. Histerezisul previne comutarile repetate la trecerea semnalului prin limita intervalului.",
+      "influenteaza": "r20270, r20272, p20267, p20268",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26521,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20270",
+    "descriere_scurta": "LVM 0 input quantity above interval QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QU = 1 indica ca intrarea X a instantei LVM 0 a depasit cel putin o data limita superioara M + L si inca se mentine >= M + L - HY. Incorporeaza histerezis.",
+      "influenteaza": "p20266, p20267, p20268, p20269",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26522,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20271",
+    "descriere_scurta": "LVM 0 input quantity within interval QM",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QM = 1 indica ca intrarea X a instantei LVM 0 se afla in interiorul intervalului definit de M si L. Complementar cu QU si QL.",
+      "influenteaza": "p20266, p20267, p20268",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26523,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20272",
+    "descriere_scurta": "LVM 0 input quantity below interval QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QL = 1 indica ca intrarea X a instantei LVM 0 a coborat cel putin o data sub limita inferioara M - L si inca se mentine <= M - L + HY. Incorporeaza histerezis.",
+      "influenteaza": "p20266, p20267, p20268, p20269",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26524,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20273",
+    "descriere_scurta": "LVM 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta LVM 0 a limitatorului bidirectional din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20274, r20270",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26525,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20274",
+    "descriere_scurta": "LVM 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei LVM 0 in cadrul grupului de executie setat in p20273. Valoarea implicita este 720; domeniu maxim 7999.",
+      "influenteaza": "p20273",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26526,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20275",
+    "descriere_scurta": "LVM 1 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare X al instantei LVM 1 a limitatorului bidirectional din FFB. Instanta independenta fata de LVM 0.",
+      "influenteaza": "p20276, p20277, p20278, r20279, r20280, r20281",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26527,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20276",
+    "descriere_scurta": "LVM 1 interval average value M",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea medie M a intervalului de monitorizare al instantei LVM 1. Centrul intervalului de referinta este la valoarea M.",
+      "influenteaza": "r20279, r20280, r20281, p20275",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26528,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20277",
+    "descriere_scurta": "LVM 1 interval limit L",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza semilargimea intervalului L al instantei LVM 1 a limitatorului bidirectional. Intervalul de monitorizare este M - L ... M + L.",
+      "influenteaza": "r20279, r20280, r20281, p20276",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26529,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20278",
+    "descriere_scurta": "LVM 1 hyst HY",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza histerezisul HY al instantei LVM 1 a limitatorului bidirectional. Histerezisul reduce sensibilitatea la zgomot pe semnalul de intrare in zona limitelor.",
+      "influenteaza": "r20279, r20281, p20276, p20277",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26530,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20279",
+    "descriere_scurta": "LVM 1 input quantity above interval QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QU = 1 indica ca intrarea X a instantei LVM 1 a depasit limita superioara M + L si inca este >= M + L - HY. Semnalul include histerezis.",
+      "influenteaza": "p20275, p20276, p20277, p20278",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26531,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20280",
+    "descriere_scurta": "LVM 1 input quantity within interval QM",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QM = 1 indica ca intrarea X a instantei LVM 1 se afla in interiorul intervalului definit de M si L. Acest semnal este complementar cu QU si QL.",
+      "influenteaza": "p20275, p20276, p20277",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26532,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20281",
+    "descriere_scurta": "LVM 1 input quantity below interval QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. QL = 1 indica ca intrarea X a instantei LVM 1 a coborat sub limita inferioara M - L si inca este <= M - L + HY. Semnalul include histerezis.",
+      "influenteaza": "p20275, p20276, p20277, p20278",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26533,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20282",
+    "descriere_scurta": "LVM 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta LVM 1 a limitatorului bidirectional din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20283, r20279",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26534,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20283",
+    "descriere_scurta": "LVM 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei LVM 1 in cadrul grupului de executie setat in p20282. Valoarea implicita este 730; domeniu maxim 7999.",
+      "influenteaza": "p20282",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26535,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20284",
+    "descriere_scurta": "DIF 0 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului numeric de intrare X al instantei DIF 0 a elementului de diferentiere din FFB. Blocul calculeaza derivata semnalului de intrare in raport cu timpul.",
+      "influenteaza": "p20285, r20286, p20287",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26536,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20285",
+    "descriere_scurta": "DIF 0 differentiating time constant in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de diferentiere Td in milisecunde a instantei DIF 0 a elementului de diferentiere din FFB. Determina amplitudinea si durata raspunsului la variatii ale intrararii.",
+      "influenteaza": "r20286, p20284",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26537,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20286",
+    "descriere_scurta": "DIF 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea diferentiata Y a instantei DIF 0 a elementului de diferentiere. Iesirea este proportionala cu rata de variatie a intrarii X pe constanta Td.",
+      "influenteaza": "p20284, p20285",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26538,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20287",
+    "descriere_scurta": "DIF 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta DIF 0 a elementului de diferentiere din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20288, r20286",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26539,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20288",
+    "descriere_scurta": "DIF 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei DIF 0 in cadrul grupului de executie setat in p20287. Valoarea implicita este 750.",
+      "influenteaza": "p20287",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26540,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20300",
+    "descriere_scurta": "NOT 4 input I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului binar de intrare I al instantei NOT 4 a inversorului logic din FFB. Blocul calculeaza negarea logica a semnalului de intrare.",
+      "influenteaza": "r20301, p20302",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26541,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20301",
+    "descriere_scurta": "NOT 4 inverted output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea inversa a instantei NOT 4 a inversorului logic din FFB. Daca intrarea I = 1, iesirea = 0 si invers.",
+      "influenteaza": "p20300, p20302",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26542,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20302",
+    "descriere_scurta": "NOT 4 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NOT 4 a inversorului logic din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20303, r20301",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26543,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20303",
+    "descriere_scurta": "NOT 4 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NOT 4 in cadrul grupului de executie setat in p20302. Valoarea implicita este 770.",
+      "influenteaza": "p20302",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26544,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20304",
+    "descriere_scurta": "NOT 5 input I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului binar de intrare I al instantei NOT 5 a inversorului logic din FFB. Instanta independenta fata de NOT 4.",
+      "influenteaza": "r20305, p20306",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26545,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20305",
+    "descriere_scurta": "NOT 5 inverted output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea inversa a instantei NOT 5 a inversorului logic din FFB. Iesirea este complementul logic al semnalului de intrare I.",
+      "influenteaza": "p20304, p20306",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26546,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20306",
+    "descriere_scurta": "NOT 5 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NOT 5 a inversorului logic din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20307, r20305",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26547,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20307",
+    "descriere_scurta": "NOT 5 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NOT 5 in cadrul grupului de executie setat in p20306. Valoarea implicita este 780.",
+      "influenteaza": "p20306",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26548,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20308",
+    "descriere_scurta": "ADD 2 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor X0, X1, X2, X3 ale instantei ADD 2 a sumatorului din FFB. Iesirea Y este suma tuturor celor patru intrari.",
+      "influenteaza": "r20309, p20310",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26549,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20309",
+    "descriere_scurta": "ADD 2 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma Y = X0 + X1 + X2 + X3 calculata de instanta ADD 2 a sumatorului din FFB. Rezultatul poate fi utilizat ca sursa BICO.",
+      "influenteaza": "p20308, p20310",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26550,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20310",
+    "descriere_scurta": "ADD 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta ADD 2 a sumatorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20311, r20309",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26551,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20311",
+    "descriere_scurta": "ADD 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei ADD 2 in cadrul grupului de executie setat in p20310. Valoarea implicita este 800.",
+      "influenteaza": "p20310",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26552,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20312",
+    "descriere_scurta": "NCM 0 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor numerice X0 si X1 ale instantei NCM 0 a comparatorului numeric din FFB. Blocul compara cele doua intrari si genereaza semnale QU, QE, QL.",
+      "influenteaza": "r20313, r20314, r20315, p20316",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26553,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20313",
+    "descriere_scurta": "NCM 0 output QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QU = 1 al instantei NCM 0 indica ca X0 > X1. Poate fi utilizat in logici conditionale sau pentru comutare pe baza comparatiei.",
+      "influenteaza": "p20312, r20314, r20315",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26554,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20314",
+    "descriere_scurta": "NCM 0 output QE",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QE = 1 al instantei NCM 0 indica ca X0 = X1. In practica cu semnale analogice, egalitatea exacta este rara; semnalul este mai util pentru semnale discrete.",
+      "influenteaza": "p20312, r20313, r20315",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26555,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20315",
+    "descriere_scurta": "NCM 0 output QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QL = 1 al instantei NCM 0 indica ca X0 < X1. Complementar cu QU si QE pentru logici de comparatie.",
+      "influenteaza": "p20312, r20313, r20314",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26556,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20316",
+    "descriere_scurta": "NCM 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NCM 0 a comparatorului numeric din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20317, r20313",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26557,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20317",
+    "descriere_scurta": "NCM 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NCM 0 in cadrul grupului de executie setat in p20316. Valoarea implicita este 820.",
+      "influenteaza": "p20316",
+      "categorie": "Altul"
+    }
+  }
+]

@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 20750,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9583",
+    "descriere_scurta": "SI Motion brake ramp monitoring time (processor 1)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste timpul de monitorizare a rampei de franare sigura pe procesorul 1. Impreuna cu p9581 determina panta rampei monitorizate. Trebuie sa corespunda cu p9383 (procesor 2).",
+      "influenteaza": "p9581, p9383",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20752,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9587",
+    "descriere_scurta": "SI Motion actual value sensing sensorless filter time (P1)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste constanta de timp a filtrului de netezire a valorii actuale in sensorizarea sensorless pe procesorul 1. Trebuie sa corespunda cu p9387 (procesor 2). Valori mai mari reduc zgomotul dar afecteaza dinamica.",
+      "influenteaza": "p9387",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20753,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9588",
+    "descriere_scurta": "SI Motion actual value sensing sensorless minimum current (P1)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul minim pentru sensorizarea sensorless pe procesorul 1. Se ajusteaza in functie de mesajele C01711 (1041/1042). Trebuie sa corespunda cu p9388 (procesor 2). Conditia p0305 x p9783 >= p9588 x 1.2 trebuie respectata la motoare sincrone.",
+      "influenteaza": "p9388, p0305",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20754,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9589",
+    "descriere_scurta": "SI Motion actual value sensing sensorless accel. limit (P1)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste limita de acceleratie pentru filtrarea fluctuatiilor de viteza in sensorizarea sensorless pe procesorul 1. Trebuie sa corespunda cu p9389 (procesor 2). Se ajusteaza conform mesajelor C01711 (1043) sau in caz de varfuri de viteza excesive la accelerare.",
+      "influenteaza": "p9389, p9588",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20756,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9660",
+    "descriere_scurta": "SI forced checking procedure remaining time",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al timpului ramas pana la urmatoarea procedura de verificare fortata (dinamizare si testare a cailor de oprire sigura). La expirare, daca testul nu a fost efectuat, se genereaza avertizare. Intervalul maxim se seteaza in p9559.",
+      "influenteaza": "p9559",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20757,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9705",
+    "descriere_scurta": "SI Motion: Test stop signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil (BICO) care selecteaza sursa semnalului pentru initierea procedurii de test stop (forced checking procedure) a functiilor SI Motion. Se conecteaza de obicei la un semnal de comanda din PLC sau la o intrare digitala dedicata. Testul trebuie executat la intervalul definit de p9559.",
+      "influenteaza": "p9559, r9660",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20759,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9712",
+    "descriere_scurta": "SI Motion diagnostics pos. act. val. motor side (processor 1) /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al valorii actuale de pozitie pe partea motorului pentru functiile de monitorizare a miscarii pe procesorul 1. Valoarea este exprimata ca un contor pe 32 biti si este utilizata intern de functiile SI Motion. Util pentru diagnosticarea comportamentului monitorizarii de pozitie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 20762,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9724",
+    "descriere_scurta": "SI Motion crosswise comparison clock cycle",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al ciclului de comparare incrucisata a datelor CDC (Cross-Data Communication) intre cele doua canale de monitorizare. Valoarea indica cu ce frecventa fiecare valoare CDC este comparata intre procesoarele 1 si 2. Relevant pentru evaluarea latentei sistemului de siguranta.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 20766,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9732",
+    "descriere_scurta": "SI Motion velocity resolution",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezolutiei de viteza sigure (index 0 = actuala, index 1 = minima). Limitele de viteza sub aceasta rezolutie nu sunt efective. Valoarea depinde de encoder si de configuratia Safety. Permite evaluarea preciziei monitorizarii de viteza sigura.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 20773,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9798",
+    "descriere_scurta": "SI actual checksum SI parameters (processor 1)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al sumei de control actuale a parametrilor Safety Integrated pe procesorul 1. Se compara cu suma de control de referinta pentru detectia modificarilor neautorizate. Se verifica la fiecare punere in functiune si dupa orice modificare de parametri SI.",
+      "influenteaza": "r9898",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 20775,
+    "familie": "SINAMICS_G120",
+    "parametru": "r9926",
+    "descriere_scurta": "Firmware check status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al starii verificarii firmware-ului la pornire: 0=neverificat, 1=verificare in curs, 2=OK, 3=eroare. Valoarea 3 indica coruptie firmware si necesita interventie service. Se verifica la prima pornire dupa o actualizare de firmware.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 20778,
+    "familie": "SINAMICS_G120",
+    "parametru": "p9932",
+    "descriere_scurta": "Save system logbook EEPROM",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil rezervat exclusiv utilizarii de catre personalul de service Siemens. Permite salvarea manuala a jurnalului de sistem in EEPROM. Nu se modifica in cadrul punerii in functiune normale; modificarea gresita poate afecta integritatea datelor de diagnostic.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25670,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0037",
+    "descriere_scurta": "Power unit temperatures",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al temperaturilor din unitatea de putere, indexat pe mai multe puncte de masura (radiatoare, semiconductoare, redresor, admisie aer). Monitorizarea continua previne supraincalzirile. Depasirea pragurilor din p0292 genereaza alarme sau avarii.",
+      "influenteaza": "p0292, p0290",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25671,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0050",
+    "descriere_scurta": "Command Data Set CDS effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al setului de date de comanda (CDS) activ in prezent. CDS-ul activ determina configuratia comenzii, inclusiv sursa consemnului si maparea intrarilor/iesirilor. Se schimba la cerere prin p0810/p0811.",
+      "influenteaza": "p0810, p0811",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25672,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0051",
+    "descriere_scurta": "Drive Data Set DDS effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al setului de date drive (DDS) activ. DDS-ul activ determina parametrii de motor si regulatie utilizati. Comutarea intre DDS-uri permite schimbarea motorului sau a modului de control in functie de aplicatie.",
+      "influenteaza": "p0820, p0821",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25673,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0052",
+    "descriere_scurta": "Status word 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj si iesire conector pentru cuvantul de stare 1 (STW1/ZSW1) al convertorului conform PROFIdrive. Bitii indica starea generala: gata de functionare, in mers, avarie, alarma, directie, etc. Cel mai frecvent consultat cuvant de stare in diagnosticare.",
+      "influenteaza": "r0053, r2032",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25674,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0053",
+    "descriere_scurta": "Status word 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj si iesire BICO pentru cuvantul de stare 2 conform PROFIdrive. Contine informatii suplimentare despre starea convertorului: standstill, viteza atinsa, limitari active etc. Se transmite ca ZSW2 in telegrameele PROFIdrive.",
+      "influenteaza": "r0052",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25675,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0054",
+    "descriere_scurta": "Control word 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al cuvantului de comanda 1 (STW1) primit de convertor. Permite verificarea comenzilor efectiv receptionate: pornire, franare, directie, confirmare avarie etc. Util pentru diagnosticarea lantului de comanda din PLC.",
+      "influenteaza": "r0055",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25676,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0055",
+    "descriere_scurta": "Supplementary control word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al cuvantului de comanda suplimentar primit de convertor. Contine biti de comanda aditionali dincolo de STW1 standard (de ex. selectia CDS/DDS, comenzi speciale). Se consulta la diagnosticarea comenzilor avansate.",
+      "influenteaza": "r0054",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25677,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0068",
+    "descriere_scurta": "Absolute current actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al curentului absolut actual (valoarea absoluta a curentului de faza). Index 0 = nefliltrat, index 1 = filtrat cu constanta p0045. Se compara cu p2170 (prag de curent) pentru monitorizarea si protectia la suprasarcina.",
+      "influenteaza": "p0045, p2170, p2171",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25678,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0069",
+    "descriere_scurta": "Phase current actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al curentilor de faza massurati ca valori de varf (peak value) pentru fazele U, V, W, inclusiv offset-urile si suma totala. Permite detectia dezechilibrelor de faze si verificarea calibrarii senzorilor de curent. Util la diagnosticarea avansata a convertorului.",
+      "influenteaza": "r0068",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25679,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0080",
+    "descriere_scurta": "Torque actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj si iesire conector pentru cuplul actual al motorului. Index 0 = nefiltrat, index 1 = filtrat cu constanta p0045. Valoarea pozitiva indica cuplu motor, valoarea negativa indica franare regenerativa. Se foloseste ca feedback in aplicatii cu reglare de cuplu.",
+      "influenteaza": "p0045",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25680,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0082",
+    "descriere_scurta": "Active power actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al puterii active instantanee la bornele de iesire ale convertorului. Index 2 arata puterea electrica la intrarea invertorului. Util pentru monitorizarea consumului energetic si calculul eficientei procesului.",
+      "influenteaza": "r0039",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25681,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0084",
+    "descriere_scurta": "Flux actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al valorii actuale a fluxului magnetic al motorului, exprimat ca procent din fluxul nominal. Index 0 = nefiltrat, index 1 = filtrat. Monitorizarea fluxului este esentiala in controlul vectorial pentru verificarea magnetizarii corecte.",
+      "influenteaza": "r1583, r1598",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25682,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0089",
+    "descriere_scurta": "Actual phase voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al tensiunilor de faza actuale la iesirea invertorului pentru fazele U, V, W. Permite detectia dezechilibrelor de tensiune si verificarea functionarii corecte a invertorului. Relevant la diagnosticarea problemelor de tensiune de iesire.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25683,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0124",
+    "descriere_scurta": "CU detection via LED",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care activeaza identificarea vizuala a Control Unit-ului prin clipirea LED-ului de stare. La valoarea 1, LED-ul clipeste pentru a facilita identificarea fizica a convertorului in tablou. Se dezactiveaza automat sau manual prin revenire la 0.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25684,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0133",
+    "descriere_scurta": "Motor configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil (bitmask) care defineste configuratia motorului la punerea in functiune. Permite specificarea optiunilor de configurare specifice motorului. Se seteaza de obicei automat prin asistentul de punere in functiune.",
+      "influenteaza": "p0300, p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25685,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0199",
+    "descriere_scurta": "Drive object name",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care stocheaza un nume liber atribuit obiectului drive. In software-ul de parametrizare (STARTER), numele se seteaza in asistentul de configurare. Permite identificarea usoara a convertorului in sisteme multi-drive.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 25686,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0200",
+    "descriere_scurta": "Power unit code number actual",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al numarului unic de cod al unitatii de putere detectate. Codul identifica tipul, marimea si caracteristicile invertorului. La punerea in functiune, valoarea se transfera in p0201 pentru confirmare.",
+      "influenteaza": "p0201",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25687,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0201",
+    "descriere_scurta": "Power unit code number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care confirma codul unitatii de putere utilizate, preluat din r0200. La prima punere in functiune, valoarea este transferata automat. Diferenta intre r0200 si p0201 indica o schimbare a invertorului neconfirmata.",
+      "influenteaza": "r0200",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25688,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0203",
+    "descriere_scurta": "Actual power unit type",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al tipului de unitate de putere identificata (2-400). Valoarea codifica tipul de invertor (monofazat, trifazat, tip special). Se verifica la punerea in functiune pentru a confirma hardware-ul corect.",
+      "influenteaza": "p0201",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25689,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0204",
+    "descriere_scurta": "Power unit hardware properties",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al proprietatilor hardware suportate de unitatea de putere, ca bitmask. Indica prezenta optiunilor hardware: senzori de temperatura suplimentari, frana de retinere incorporata, modulul Safe Brake Control etc. Relevant la configurarea functionalitatlor optionale.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25690,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0207",
+    "descriere_scurta": "Rated power unit current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al curentilor nominali ai unitatii de putere pentru diferite cicluri de sarcina (nominal, suprasarcina mica LO, suprasarcina mare HO). Valorile sunt referinta pentru setarea limitelor de curent. Se verifica la selectia convertorului pentru aplicatie.",
+      "influenteaza": "p0640",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25691,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0301",
+    "descriere_scurta": "Motor code number selection",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care selecteaza motorul dintr-o lista interna de motoare Siemens. La schimbarea codului (exceptand valoarea 0), toti parametrii motorului sunt preincarcati automat din lista interna. Simplifica drastica punerea in functiune cu motoare Siemens standard.",
+      "influenteaza": "p0304, p0305, p0307, p0310, p0311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25692,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0304",
+    "descriere_scurta": "Rated motor voltage",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste tensiunea nominala a motorului de pe placa de identificare. Valoarea corecta este esentiala pentru calculul caracteristicii U/f si al tensiunilor de iesire. Se seteaza conform conexiunii motorului (stea/triunghi) si tensiunii de retea.",
+      "influenteaza": "p0305, p0307, p0310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25693,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0305",
+    "descriere_scurta": "Rated motor current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul nominal al motorului de pe placa de identificare. Valoarea este baza pentru calculul limitelor de curent, protectiei I2t si a celorlalti parametri derivati. Supra sau subevaluarea duce la protectii incorecte.",
+      "influenteaza": "p0640, p0611, p0304",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25694,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0307",
+    "descriere_scurta": "Rated motor power",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste puterea nominala a motorului de pe placa de identificare, in kW (IEC) sau CP (NEMA). Valoarea este folosita la calculul cuplului nominal si al caracteristicilor de control. Se seteaza conform tipului de standard ales in p0100.",
+      "influenteaza": "p0100, p0304, p0305",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25695,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0308",
+    "descriere_scurta": "Rated motor power factor",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste factorul de putere nominal (cos phi) al motorului de pe placa de identificare. La valoarea 0, factorul de putere este calculat intern si afisat in r0332. Influenteaza calculul curentului de magnetizare si al eficientei.",
+      "influenteaza": "r0332",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25696,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0309",
+    "descriere_scurta": "Rated motor efficiency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste randamentul nominal al motorului, folosit in special pentru motoare NEMA (p0100=1). La valoarea 0, randamentul este calculat intern. Utilizat in ecranele de economisire energie ale convertorului.",
+      "influenteaza": "p0100, r0332",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25697,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0312",
+    "descriere_scurta": "Rated motor torque",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste cuplul nominal al motorului de pe placa de identificare. Se foloseste ca referinta pentru limitele de cuplu relative. Daca nu se introduce manual, valoarea este calculata automat din p0307 si turatia nominala.",
+      "influenteaza": "p0307, r0333",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25698,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0313",
+    "descriere_scurta": "Motor pole pair number, actual (or calculated)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al numarului de perechi de poli al motorului, calculat intern sau preluat din p0314. Valoarea este folosita pentru toate calculele de conversie viteza-frecventa. O valoare incorecta duce la erori sistematice de viteza.",
+      "influenteaza": "p0314, p0310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25699,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0314",
+    "descriere_scurta": "Motor pole pair number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste numarul de perechi de poli al motorului. Valoarea 0 indica calculul automat din frecventa nominala si turatia nominala. Esential pentru conversia corecta viteza-frecventa in toate modurile de control.",
+      "influenteaza": "r0313, p0310, p0311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25700,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0316",
+    "descriere_scurta": "Motor torque constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste constanta de cuplu a motorului sincron (Nm/A). Determina relatia intre curentul de cuplu Iq si cuplul mecanic produs. Valoarea corecta este esentiala pentru calibrarea cuplului in aplicatii de precizie.",
+      "influenteaza": "r0334, p0300",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25701,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0318",
+    "descriere_scurta": "Motor stall current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul de blocare al motorului sincron permanent (p0300=2xx). Valoarea este folosita pentru protectia la suprasarcina la standstill. Nu se aplica la motoare asincrone.",
+      "influenteaza": "p0300, p0305",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25702,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0322",
+    "descriere_scurta": "Maximum motor speed",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste viteza maxima absoluta admisa a motorului. Aceasta limita hardware este respectata inaintea tuturor celorlalte limite de viteza. Se seteaza conform specificatiilor mecanice si limitarilor de licenta ale motorului.",
+      "influenteaza": "p1082",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25703,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0323",
+    "descriere_scurta": "Maximum motor current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul maxim admis al motorului (de ex. curentul de demagnetizare la motoare sincrone). Limiteaza curentul total independent de alte limite de curent. Protejeaza motorul impotriva curentilor excesivi in toate conditiile.",
+      "influenteaza": "p0640, p0305",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 25704,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0325",
+    "descriere_scurta": "Motor pole position identification current 1st phase",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul pentru prima faza a tehnicii in doi pasi de identificare PolID. Curentul din a doua faza se seteaza in p0329. Tehnica in doi pasi se selecteaza cu p1980=4.",
+      "influenteaza": "p0329, p1980",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25705,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0327",
+    "descriere_scurta": "Optimum motor load angle",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste unghiul de sarcina optim pentru motoare sincrone cu cuplu de reluctanta. Unghiul este masurat la curentul nominal al motorului. Valoarea corecta maximizeaza cuplul total disponibil al motorului sincron cu reluctanta.",
+      "influenteaza": "p0300, p0328",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25706,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0328",
+    "descriere_scurta": "Motor reluctance torque constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste constanta de cuplu de reluctanta pentru motoare sincrone cu reluctanta (de ex. 1FE...). Valoarea determina contributia componentei de reluctanta la cuplul total. Nu are efect la motoare asincrone standard.",
+      "influenteaza": "p0316, p0327, p0300",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25707,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0329",
+    "descriere_scurta": "Motor pole position identification current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste curentul pentru procedura PolID (p1980=1). In tehnica in doi pasi (p1980=4), este curentul pentru faza a doua, prima faza folosind p0325. Valoarea corecta asigura o identificare precisa a pozitiei polilor la pornire.",
+      "influenteaza": "p0325, p1980",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25708,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0330",
+    "descriere_scurta": "Rated motor slip",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al alunecarii nominale calculate a motorului asincron. Valoarea este calculata din datele de placa si este folosita ca referinta (100%) pentru afisajul alunecarii in r1337. Relevant pentru compensarea de alunecare in modul U/f.",
+      "influenteaza": "r1337, p1335",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25709,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0331",
+    "descriere_scurta": "Actual motor magnetizing current/short-circuit current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al curentului de magnetizare nominal (motoare asincrone) sau al curentului de scurtcircuit (motoare sincrone). Valoarea este preluata din p0320 sau calculata intern. Reprezinta componenta de curent Id in regim nominal.",
+      "influenteaza": "p0320, r0332",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25710,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0332",
+    "descriere_scurta": "Rated motor power factor",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al factorului de putere nominal calculat sau convertit din parametrii motorului. Pentru IEC (p0100=0), se afiseaza p0308 daca este diferit de zero, altfel valoarea calculata. Util pentru verificarea corespondentei cu placa de identificare.",
+      "influenteaza": "p0308, p0309",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25711,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0333",
+    "descriere_scurta": "Rated motor torque",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al cuplului nominal calculat al motorului. Valoarea este calculata din puterea nominala (p0307) si turatia nominala (p0311). Se foloseste ca referinta pentru limitele de cuplu relative si pentru verificarea datelor introduse.",
+      "influenteaza": "p0307, p0311, p0312",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25712,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0334",
+    "descriere_scurta": "Actual motor-torque constant",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al constantei de cuplu efectiv utilizata pentru motorul sincron. Valoarea poate diferi de p0316 datorita calculelor interne sau identificarii. Determina relatia intre curentul Iq si cuplul produs de motor.",
+      "influenteaza": "p0316",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25713,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0335",
+    "descriere_scurta": "Motor cooling type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste tipul de racire al motorului (auto-ventilat, ventilatie fortata, racire cu apa etc.). Valoarea influenteaza modelul termic al motorului si capacitatea de suprasarcina permisa la viteze mici. Setarea corecta previne supraevaluarea capacitatii termice.",
+      "influenteaza": "p0611, p0612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25714,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0337",
+    "descriere_scurta": "Rated motor EMF",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al tensiunii electromotoare nominale (EMF) a motorului. Valoarea este calculata intern si reprezinta tensiunea indusa la turatia nominala. Relevanta pentru calculele de slabire de camp la viteze supranominale.",
+      "influenteaza": "p0304, p0311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25715,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0340",
+    "descriere_scurta": "Automatic calculation motor/control parameters",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care activeaza calculul automat al parametrilor motorului si ai regulatoarelor din datele de placa. Valoarea 1 calculeaza parametrii motor, 2 adauga parametrii regulatoarelor, 5 calculeaza tot inclusiv optimizarea regulatoarelor. Esential la punerea initiala in functiune.",
+      "influenteaza": "p0350, p0354, p0356, p1460, p1462",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25716,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0343",
+    "descriere_scurta": "Rated motor current identified",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al curentului nominal identificat prin procedura de identificare a datelor motorului. Valoarea poate diferi de p0305 indicand o diferenta intre datele de placa si cele reale. Se verifica dupa identificarea motorului.",
+      "influenteaza": "p0305, p1910",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25717,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0345",
+    "descriere_scurta": "Nominal motor starting time",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al timpului de pornire nominal al motorului, calculat ca durata de la standstill la turatia nominala cu cuplu nominal (r0333). Valoarea este utilizata intern pentru optimizarea regulatiei. Permite evaluarea dinamicii motorului.",
+      "influenteaza": "p0307, p0311, r0333",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25718,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0346",
+    "descriere_scurta": "Motor excitation build-up time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste timpul de magnetizare a motorului inaintea activarii generatorului de rampa. In acest interval pulsurile sunt activate dar rampa este blocata, permitand magnetizarea completa. Valoarea 0 activeaza magnetizarea rapida automata.",
+      "influenteaza": "p0347",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25719,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0347",
+    "descriere_scurta": "Motor de-excitation time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste timpul de demagnetizare a motorului dupa anularea pulsurilor. In aceasta fereastra de timp nu este posibila repornirea convertorului, prevenind pornirea unui motor inca magnetizat. Valoarea se seteaza conform timpului de decadere a fluxului motorului.",
+      "influenteaza": "p0346",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25720,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0350",
+    "descriere_scurta": "Motor stator resistance cold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste rezistenta statorica a motorului la temperatura ambianta definita in p0625. Valoarea influenteaza compensarea de tensiune la viteze mici si modelul termic. Se poate masura automat prin procedura de identificare (p1910).",
+      "influenteaza": "p0625, p1910, p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25721,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0352",
+    "descriere_scurta": "Cable resistance",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste rezistenta cablului de putere intre invertor si motor. Valoarea se adauga la rezistenta statorica pentru compensarea corecta a tensiunii. Influenteaza calitatea reglarii la viteze mici, mai ales in modul U/f cu compensare.",
+      "influenteaza": "p0350, r0372",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25722,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0354",
+    "descriere_scurta": "Motor rotor resistance cold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste rezistenta rotorica la temperatura ambianta. Influenteaza modelul de motor si calculul alunecarii nominale. Se calculeaza automat prin p0340=1 sau prin identificarea motorului (p1910).",
+      "influenteaza": "p0628, p0625, r0330",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25723,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0356",
+    "descriere_scurta": "Motor stator leakage inductance",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste inductanta de dispersie statorica a motorului asincron sau inductanta de axa q a motorului sincron. Parametrul influenteaza comportamentul dinamic al regulatoarelor de curent. Se calculeaza prin p0340 sau identificare (p1910).",
+      "influenteaza": "p0358, p0360",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25724,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0357",
+    "descriere_scurta": "Motor stator inductance d axis",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste inductanta de axa directa (d) a motorului sincron. La motoarele sincrone cu magnet permanent, Ld poate diferi de Lq datorita constructiei rotorului. Influenteaza comportamentul la slabire de camp si cuplul de reluctanta.",
+      "influenteaza": "p0356, p0360",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25725,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0358",
+    "descriere_scurta": "Motor rotor leakage inductance",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste inductanta de dispersie rotorica a motorului. Impreuna cu inductanta statorica determina inductanta totala de dispersie. Se calculeaza automat prin p0340 sau prin identificarea motorului.",
+      "influenteaza": "p0356, p0360",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25726,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0360",
+    "descriere_scurta": "Motor magnetizing inductance",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste inductanta de magnetizare a motorului asincron. Valoarea este esentiala pentru modelul de motor in controlul vectorial. Se calculeaza automat prin p0340 sau prin identificarea motorului (p1910).",
+      "influenteaza": "p0356, p0358",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25727,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0362",
+    "descriere_scurta": "Motor saturation characteristic flux 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste primul punct al caracteristicii de saturatie (flux vs. curent de magnetizare), ca procent din fluxul nominal. Caracteristica este definita prin 4 puncte si permite modelarea saturatiei magnetice a motorului. Imbunatateste precizia la niveluri ridicate de magnetizare.",
+      "influenteaza": "p0363, p0364, p0365, p0366",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25728,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0363",
+    "descriere_scurta": "Motor saturation characteristic flux 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste al doilea punct de flux (y) al caracteristicii de saturatie, ca procent din fluxul nominal. Impreuna cu p0362, p0364, p0365 si p0366 defineste curba de saturatie a motorului. Valorile corecte imbunatatesc modelul de motor.",
+      "influenteaza": "p0362, p0364, p0365, p0366",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25729,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0366",
+    "descriere_scurta": "Motor saturation characteristic I_mag 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste primul punct de curent de magnetizare (x) al caracteristicii de saturatie, ca procent din curentul nominal de magnetizare r0331. Impreuna cu fluxul corespunzator (p0362) formeaza prima pereche de valori ale curbei de saturatie.",
+      "influenteaza": "p0362, p0363",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25730,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0372",
+    "descriere_scurta": "Cable resistance",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei totale a cablului intre unitatea de putere si motor, incluzand si rezistenta interna a invertorului. Valoarea combinata din p0352 si rezistentele interne este utilizata in compensarea de tensiune. Util pentru verificarea valorii efective utilizate.",
+      "influenteaza": "p0352, p0350",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25731,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0373",
+    "descriere_scurta": "Motor rated stator resistance",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei statorice nominale la temperatura de functionare nominala (suma p0625 si p0627). Reprezinta valoarea de referinta la temperaturi normale de functionare. Se compara cu r0395 (valoarea actuala) pentru diagnosticarea modelului termic.",
+      "influenteaza": "p0625, p0627, r0395",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25732,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0374",
+    "descriere_scurta": "Motor rotor resistance cold",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei rotorice la temperatura ambianta p0625. Valoarea este utilizata intern in modelul motorului si in calculul alunecarii. Relevant pentru diagnosticarea modelului termic al rotorului.",
+      "influenteaza": "p0354, p0625",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25733,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0376",
+    "descriere_scurta": "Rated motor rotor resistance",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei rotorice nominale la temperatura de functionare (suma p0625 si p0628). Reprezinta valoarea de referinta la temperaturi normale. Se compara cu r0396 (valoarea actuala) pentru evaluarea adaptarii termice a rotorului.",
+      "influenteaza": "p0628, p0625, r0396",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25734,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0377",
+    "descriere_scurta": "Motor leakage inductance total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al inductantei totale de dispersie statorica a motorului, incluzand si reactantele reactorului de motor (p0233). Valoarea efectiva utilizata de regulatoarele de curent. Diferenta fata de p0356 indica influenta reactorului de motor.",
+      "influenteaza": "p0356, p0233",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25735,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0378",
+    "descriere_scurta": "Motor stator inductance d axis",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al inductantei de axa d (longitudinala) efective a motorului sincron, incluzand reactorul de motor. Valoarea efectiva este folosita de regulatoarele de curent. Se compara cu p0357 pentru verificarea influentei reactorului.",
+      "influenteaza": "p0357, p0233",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25736,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0382",
+    "descriere_scurta": "Motor magnetizing inductance transformed",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al inductantei de magnetizare transformate, utilizata intern de modelul motorului. Valoarea poate diferi de p0360 datorita transformarilor de referinta. Relevant pentru diagnosticarea avansata a modelului de motor.",
+      "influenteaza": "p0360",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25737,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0386",
+    "descriere_scurta": "Motor stator leakage time constant",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al constantei de timp a dispersiei statorice, calculata din inductanta si rezistenta statorica. Valoarea influenteaza selectia benzii de trecere optime a regulatoarelor de curent. Relevant la optimizarea manuala a parametrilor de reglare.",
+      "influenteaza": "p0356, p0350",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25738,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0395",
+    "descriere_scurta": "Actual stator resistance",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei statorice actuale (valoare de faza), incluzand si rezistenta cablului. Valoarea variaza cu temperatura conform modelului termic. Diferenta fata de p0350 indica incalzirea statorului in raport cu temperatura ambianta.",
+      "influenteaza": "p0350, p0352",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25739,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0396",
+    "descriere_scurta": "Actual rotor resistance",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al rezistentei rotorice actuale, afectata de modelul termic al motorului. Valoarea creste cu temperatura rotorului si este utilizata in calculul alunecarii si al compensarilor. Relevant pentru diagnosticarea modelului termic al motorului.",
+      "influenteaza": "p0354, p0628",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25740,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0422",
+    "descriere_scurta": "Absolute encoder linear measuring step resolution",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste rezolutia pozitiei absolute pentru un encoder linear absolut, exprimata in nanometri pe pas de masurare. Valoarea corecta este esentiala pentru acuratetea masurarii pozitiei. Se seteaza conform specificatiilor tehnice ale encoderului.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25741,
+    "familie": "SINAMICS_G120",
+    "parametru": "p1802",
+    "descriere_scurta": "and p1803 are only changed, in all cases, if a sine-wave output filter (p0230 = 3, 4) has not been selected.",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste sistemul de unitati utilizat (1-4). Valoarea determina unele setari de modulatie. Parametrul este modificat automat doar daca nu este selectat un filtru sinusoidal de iesire (p0230=3 sau 4). Influenteaza p1803.",
+      "influenteaza": "p1803, p0230",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25742,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0601",
+    "descriere_scurta": "Motor temperature sensor type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care selecteaza tipul de senzor de temperatura al motorului: 0=niciun senzor, 1=PTC, 2=KTY84, 3=PTC digital (bimetal), 4=PT100. Selectia corecta este necesara pentru interpretarea corecta a semnalului de temperatura. Influenteaza protectia termica a motorului.",
+      "influenteaza": "p0604, p0605",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25743,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0604",
+    "descriere_scurta": "Mot_temp_mod 2/KTY alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste pragul de alarma pentru monitorizarea temperaturii motorului (model 2 sau senzor KTY). La depasire se genereaza alarma A07910 si se porneste timer-ul p0606. Daca temperatura nu scade sub prag in timpul definit, se genereaza avaria F07011.",
+      "influenteaza": "p0605, p0606, p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25744,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0605",
+    "descriere_scurta": "Mot_temp_mod 1/2 threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste pragul de avarie/alarma pentru monitorizarea temperaturii motorului. La modelul 1, este prag de alarma (A07012); la modelul 2 sau KTY, este prag de avarie (F07011). Se seteaza conform clasei de izolatie a motorului.",
+      "influenteaza": "p0604, p0612",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25745,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0606",
+    "descriere_scurta": "Mot_temp_mod 2/KTY timer",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste timer-ul de intarziere dintre alarma de temperatura (p0604) si declansarea avariei F07011. Permite motorului sa se raceasca singur inainte de avarie. La valoarea 0, avaria se genereaza imediat ce pragul este depasit.",
+      "influenteaza": "p0604, p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25746,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0607",
+    "descriere_scurta": "Temperature sensor fault timer",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste intarzierea intre detectarea defectului senzorului de temperatura si generarea avariei corespunzatoare. Filtreaza defectele tranziente ale senzorului. La expirarea timer-ului cu defect persistent, se genereaza avaria de senzor.",
+      "influenteaza": "p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25747,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0611",
+    "descriere_scurta": "I2t motor model thermal time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste constanta de timp termica a infasurarii statorice pentru modelul I2t al motorului. Reprezinta durata pana la atingerea a 63% din supraincalzirea permisa la curent de standstill. Valoarea corecta asigura o protectie termica precisa.",
+      "influenteaza": "p0612, p0605",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25748,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0612",
+    "descriere_scurta": "Mot_temp_mod activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil (bitmask) care activeaza modelul termic al motorului. Bit 0 = modelul 1 (I2t), bit 1 = modelul 2 (cu adaptare termica completa). Modelul termic activ permite protectia motorului chiar si fara senzor de temperatura extern.",
+      "influenteaza": "p0611, p0601, p0604",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 25749,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0614",
+    "descriere_scurta": "Thermal resistance adaptation reduction factor",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste factorul de reducere pentru supraincalzirea la adaptarea termica a rezistentelor stator/rotor. Este valoarea de start la pornire; intern, dupa pornire, factorul se modifica conform constantei de timp termice. Influenteaza corectia de rezistenta la pornire.",
+      "influenteaza": "p0350, p0354",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25750,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0621",
+    "descriere_scurta": "Identification stator resistance after restart",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care selecteaza modul de identificare a rezistentei statorice la repornire (numai pentru control vectorial). Identificarea masoara rezistenta actuala si calculeaza temperatura medie a infasurarii statorice pentru initializarea modelului termic. Imbunatateste precizia la porniri repetate.",
+      "influenteaza": "p0350, p0625, r0623",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25751,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0626",
+    "descriere_scurta": "Motor overtemperature, stator core",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste supraincalzirea nominala a miezului statorului fata de temperatura ambianta. Valoarea este utilizata in modelul termic pentru calculul temperaturii statorului. Se seteaza conform datelor din fisa tehnica a motorului.",
+      "influenteaza": "p0625, p0612",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25752,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0627",
+    "descriere_scurta": "Motor overtemperature, stator winding",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste supraincalzirea nominala a infasurarii statorice fata de temperatura ambianta. Valoarea determina rezistenta statorica nominala la temperatura de functionare. Se seteaza conform clasei de izolatie si coeficientilor termici ai infasurarii.",
+      "influenteaza": "p0625, r0373",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25753,
+    "familie": "SINAMICS_G120",
+    "parametru": "p0628",
+    "descriere_scurta": "Motor overtemperature rotor winding",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil care defineste supraincalzirea nominala a infasurarii rotorice fata de temperatura ambianta. Valoarea influenteaza rezistenta rotorica la temperatura de functionare si calculul alunecarii. Se seteaza conform datelor tehnice ale motorului.",
+      "influenteaza": "p0625, r0376",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 25754,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0630",
+    "descriere_scurta": "Mot_temp_mod ambient temperature",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al temperaturii ambiante utilizate de modelul termic al motorului. Valoarea este preluata din senzorul extern de temperatura ambianta sau din parametrul p0625. Influenteaza direct calculele de supraincalzire ale modelului termic.",
+      "influenteaza": "p0625",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25755,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0631",
+    "descriere_scurta": "Mot_temp_mod stator iron temperature",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al temperaturii miezului statorului calculata de modelul termic al motorului. Se compara cu temperatura de alarma pentru protectia termica. Util pentru verificarea functionarii corecte a modelului termic.",
+      "influenteaza": "p0626, p0605",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25756,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0632",
+    "descriere_scurta": "Mot_temp_mod stator winding temperature",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al temperaturii infasurarii statorice calculata de modelul termic. Reprezinta temperatura estimata a infasurarii statorice in regim de functionare. Se monitorizeaza impotriva pragurilor din p0604 si p0605.",
+      "influenteaza": "p0627, p0604, p0605",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 25757,
+    "familie": "SINAMICS_G120",
+    "parametru": "r0633",
+    "descriere_scurta": "Mot_temp_mod rotor temperature",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj al temperaturii rotorului calculata de modelul termic al motorului. Reprezinta temperatura estimata a infasurarii rotorice in regim de functionare. Influenteaza rezistenta rotorica actuala (r0396) utilizata in calculul alunecarii.",
+      "influenteaza": "p0628, r0396",
+      "categorie": "Diagnostic"
+    }
+  }
+]

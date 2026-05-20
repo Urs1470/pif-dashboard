@@ -1,0 +1,1103 @@
+[
+  {
+    "id": 7114,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4095",
+    "descriere_scurta": "TB30 digital inputs, simulation mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de simulare pentru intrarile digitale ale placii TB30. Permite testarea logicii de control fara semnale fizice reale pe borne. Util in timpul punerii in functiune pentru verificarea interconectarilor.",
+      "influenteaza": "p4096",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7115,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4096",
+    "descriere_scurta": "TB30 digital inputs, simulation mode setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de consemn pentru semnalele de intrare in modul de simulare al intrarilor digitale TB30. Fiecare bit corespunde unui canal de intrare digitala simulat. Se utilizeaza impreuna cu p4095.",
+      "influenteaza": "p4095",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7118,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4097",
+    "descriere_scurta": "TB30 analog inputs simulation mode",
+    "GENERATED": {
+      "explicatie": "p - Activeaza modul de simulare pentru intrarile analogice ale modulului TB30. In modul simulare, valoarea reala a intrarii analogice este inlocuita cu o valoare setata intern. Util pentru testarea fara senzori conectati.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7119,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4099",
+    "descriere_scurta": "TB30 inputs/outputs, sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de esantionare pentru intrarile si iesirile modulului TB30 (digitale, analogice intrare si analogice iesire). O valoare mai mica creste reactivitatea dar si incarcarea procesorului. Necesita POWER ON pentru activare.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7120,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4100",
+    "descriere_scurta": "TM31 temperature evaluation, sensor type",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza tipul senzorului de temperatura conectat la modulul TM31 si activeaza evaluarea acestuia. Tipul ales determina modul de interpretare a rezistentei masurate. Trebuie setat corect pentru a obtine valori de temperatura precise.",
+      "influenteaza": "p4102, p4103, r4101, r4105",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7121,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4101",
+    "descriere_scurta": "TM31 temperature evaluation, sensor resistance",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea rezistentei actuale a senzorului de temperatura conectat la modulul TM31. Valoarea este utilizata intern pentru calculul temperaturii afisate in r4105. Permite diagnosticarea starii senzorului.",
+      "influenteaza": "r4105",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7123,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4104",
+    "descriere_scurta": "TM31 temperature evaluation, status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea evaluarii temperaturii pe modulul TM31, indicand daca pragul de alarma sau de defect a fost depasit. Valorile individuale ale bitilor indica starea fiecarui prag configurat. Utilizat pentru diagnosticare rapida.",
+      "influenteaza": "p4102, p4103",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7124,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4103",
+    "descriere_scurta": "TM31 temperature evaluation timer",
+    "GENERATED": {
+      "explicatie": "p - Seteaza temporizatorul pentru iesirea de defect a evaluarii de temperatura TM31. Daca temperatura depaseste pragul de alarma si ramane ridicata pe toata durata acestui timer, se declansaza defectul F35207. O valoare de 0 dezactiveaza temporizatorul.",
+      "influenteaza": "p4102, r4104, r4105",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7126,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4102",
+    "descriere_scurta": "TM31 temperature evaluation fault/alarm threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragurile de alarma si de defect pentru evaluarea temperaturii TM31, cu indecsi separati pentru alarma si defect. Depasirea pragului [0] genereaza alarma A35211, iar a pragului [1] genereaza defectul F35207. Histereza fixa este de 5 grade C.",
+      "influenteaza": "p4103, r4104, r4105",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7131,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4105",
+    "descriere_scurta": "TM31 temperature evaluation, actual value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea actuala a temperaturii calculata de modulul TM31 pe baza rezistentei senzorului conectat. Aceasta valoare este comparata cu pragurile din p4102 pentru generarea de alarme si defecte. Unitatea este grade C.",
+      "influenteaza": "p4102, p4103",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7155,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4651",
+    "descriere_scurta": "Encoder functional reserve",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezerva functionala a encoderului selectat prin p4650, exprimata procentual. O valoare intre 0 si 25% indica ca limita functionala a fost atinsa si se recomanda service. Indicele arata tipul de pista monitorizata.",
+      "influenteaza": "p4650",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7160,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4660",
+    "descriere_scurta": "Sensor module filter bandwidth",
+    "GENERATED": {
+      "explicatie": "p - Seteaza latimea de banda a filtrului pentru modulele senzor SMx10 (resolver) si SMx20 (encoder sin/cos). Valorile acceptate de hardware sunt discrete: 0 (implicit), 50 kHz, 170 kHz, 500 kHz si nelimitat. Valoarea efectiva este afisata in r4661.",
+      "influenteaza": "r4661",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7163,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4661",
+    "descriere_scurta": "Sensor Module filter bandwidth display",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza latimea de banda efectiva a filtrului setata pe modulul senzor SMx10 sau SMx20. Valoarea poate diferi de p4660 deoarece hardware-ul accepta doar anumite valori discrete. Util pentru verificarea configuratiei modulului senzor.",
+      "influenteaza": "p4660",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7177,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4675",
+    "descriere_scurta": "Analog sensor channel B voltage per encoder period",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea pe perioada de encoder pentru canalul B al senzorului analogic conectat. Impreuna cu p4674, defineste domeniul de tensiune de iesire mapat pentru senzor. Utilizat la configurarea senzorilor analogici de pozitie.",
+      "influenteaza": "p4674",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7183,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4688",
+    "descriere_scurta": "Zero mark monitoring, differential pulse count",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza numarul de impulsuri diferentiale acumulate de monitoringul marcii zero a encoderului. Daca defectul F3x131 este reparametrizat ca alarma sau mesaj nul, impulsurile necorectate se aduna in acest acumulator. Valoarea este resetata la 0 dupa confirmare.",
+      "influenteaza": "p4681, p4682, p4684",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7191,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4684",
+    "descriere_scurta": "Zero mark monitoring tolerance window alarm threshold negative",
+    "GENERATED": {
+      "explicatie": "p - Seteaza fereastra de toleranta negativa (limita 2) pentru monitoringul marcii zero al encoderului. Daca acumulatorul p4688 atinge aceasta valoare, alarma A3x422 este emisa timp de 5 secunde. Se utilizeaza cand defectul F3x131 este reparametrizat ca alarma.",
+      "influenteaza": "p4681, p4682, p4688",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7192,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4689",
+    "descriere_scurta": "Squarewave encoder, diagnostics",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea encoderului dreptunghiular conform standardului PROFIdrive. Permite diagnosticarea rapida a encoderelor TTL/HTL conectate la drive. Valorile bitilor indica stari specifice precum erori de comunicatie sau defecte hardware.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7193,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4690",
+    "descriere_scurta": "SMI spare part component number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de componenta al modului SMI sau DQI pentru care se salveaza, sterge sau descarca datele motorului si/sau encoderului. Este utilizat impreuna cu p4691 pentru operatiile de backup piesa de schimb. Numarul corespunde topologiei DRIVE-CLiQ.",
+      "influenteaza": "p4691, p4692",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7195,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4691",
+    "descriere_scurta": "Save/download SMI spare part data",
+    "GENERATED": {
+      "explicatie": "p - Controleaza salvarea, descarcarea sau stergerea datelor motorului si encoderului pentru componenta specificata in p4690. Backup-ul se face automat la salvarea in memoria nevolatila (p0977=1). La inlocuirea unei componente, datele pot fi reincarcate.",
+      "influenteaza": "p4690, p0977",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7196,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4692",
+    "descriere_scurta": "Save SMI spare part data of all SMIs",
+    "GENERATED": {
+      "explicatie": "p - Seteaza actiunea de backup pentru datele tuturor modulelor SMI si DQI din topologia tinta. Permite salvarea in bloc a datelor tuturor componentelor inteligente conectate prin DRIVE-CLiQ. Util pentru proceduri de backup preventiv.",
+      "influenteaza": "p4690, p4691",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7197,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4694",
+    "descriere_scurta": "SMI spare part data backup motor order number",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de comanda al motorului (MLFB) din backup-ul de date selectat prin p4693. Permite verificarea identitatii motorului asociat cu un anumit backup de piesa de schimb. Utilizat in proceduri de verificare a compatibilitatii componentelor.",
+      "influenteaza": "p4693",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7198,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4700",
+    "descriere_scurta": "Trace control",
+    "GENERATED": {
+      "explicatie": "p - Controleaza pornirea si oprirea functiei Trace pentru inregistrarea semnalelor interne. Valoarea 1 porneste inregistrarea, iar 0 o opreste. Trace-ul este util pentru diagnosticare si optimizare in timpul punerii in functiune.",
+      "influenteaza": "r4799, p4795",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7199,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4799",
+    "descriere_scurta": "Trace memory location free",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza memoria disponibila pentru functia Trace exprimata in octeti. O valoare scazuta indica faptul ca buffer-ul de inregistrare este aproape plin. Parametrul ajuta la planificarea sesiunilor de trace inainte de pornire.",
+      "influenteaza": "p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7202,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4717",
+    "descriere_scurta": "Measuring function, number of averaging operations",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de operatii de mediere efectuate de functia de masurare interna. O valoare mai mare reduce zgomotul din masuratori dar creste timpul necesar. Valoarea 0 dezactiveaza medierea si utilizeaza valori instantanee.",
+      "influenteaza": "p4718",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7203,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4718",
+    "descriere_scurta": "Measuring function, number of stabilizing periods",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de perioade de stabilizare inainte de inceperea masurarilor in cadrul functiei de masurare interna. Perioadele de stabilizare permit drive-ului sa atinga starea stationara inainte de colectarea datelor. Influenteaza precizia identificarii.",
+      "influenteaza": "p4717",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7204,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4795",
+    "descriere_scurta": "Trace memory bank changeover",
+    "GENERATED": {
+      "explicatie": "p - Comuta banca de memorie pentru a citi continutul buffer-ului Trace. Parametrul selecteaza care segment al memoriei de inregistrare este accesat pentru citire. Permite accesul secvential la datele inregistrate fara pierderea acestora.",
+      "influenteaza": "p4700, r4799",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7208,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4760",
+    "descriere_scurta": "Trace 0 trace buffer signal 0",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza continutul buffer-ului de inregistrare pentru Trace 0, semnalul 0, ca numar intreg. Datele sunt stocate in format Unsigned32 si reprezinta valorile semnalului capturate la momentele de esantionare. Utilizat pentru analiza post-trace.",
+      "influenteaza": "p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7212,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4753",
+    "descriere_scurta": "Trace 1 trace buffer signal 3 floating point",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza continutul buffer-ului de inregistrare pentru Trace 1, semnalul 3, in format virgula mobila. Valorile reprezinta esantioanele semnalului selectat capturat in timpul sesiunii de trace. Utilizat pentru analiza detaliata a formelor de unda.",
+      "influenteaza": "p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7214,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4719",
+    "descriere_scurta": "Trace trigger index",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza indicele din buffer-ul Trace la care s-a produs evenimentul de trigger. Permite identificarea pozitiei exacte a evenimentului declansator in datele inregistrate. Indicele [0] corespunde Trace 0, iar [1] Trace 1.",
+      "influenteaza": "p4700",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7216,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4819",
+    "descriere_scurta": "Function generator control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de control pentru generatorul de functii intern. Un semnal 0 de la intrarea BI opreste generarea semnalului si reseteaza p4800 la zero. Sursa poate fi o intrare digitala sau o interconectare BICO.",
+      "influenteaza": "p4800, r4805",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7217,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4805",
+    "descriere_scurta": "Function generator status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea actuala a generatorului de functii intern. Valorile de la 0 la 6 indica diferite faze de operare precum oprit, pornit, in rampa sau in stabilizare. Utilizat pentru monitorizarea desfasurarii testelor automate.",
+      "influenteaza": "p4819",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7218,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4818",
+    "descriere_scurta": "Function generator output signal",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalul de iesire actual al generatorului de functii exprimat in procente. Aceasta valoare poate fi interconectata prin BICO catre alte functii ale drive-ului. Permite verificarea formei de unda generate inainte de aplicare.",
+      "influenteaza": "p4819, p4824, p4826",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7219,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4812",
+    "descriere_scurta": "Function generator physical address",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica unde generatorul de functii va fi conectat direct in memoria drive-ului. Aceasta adresa permite scrierea directa a semnalului generat intr-un registru intern. Utilizat pentru teste avansate de control in bucla deschisa.",
+      "influenteaza": "p4810",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7220,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4813",
+    "descriere_scurta": "Function generator physical address reference value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta corespunzatoare la 100% pentru intrarile relative ale generatorului de functii. Aceasta valoare scalara permite conversia corecta a amplitudinilor procentuale in unitati fizice. Influenteaza interpretarea parametrilor de amplitudine.",
+      "influenteaza": "p4812, p4824, p4825",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7226,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4830",
+    "descriere_scurta": "Function generator time slice cycle",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul de timp in care este apelat generatorul de functii intern. O valoare mai mica creste rezolutia temporala a semnalului generat dar mareste incarcarea procesorului. Valoarea minima este 0.03125 ms.",
+      "influenteaza": "p4821, p4822",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7227,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4821",
+    "descriere_scurta": "Function generator period",
+    "GENERATED": {
+      "explicatie": "p - Seteaza perioada semnalului generat de generatorul de functii intern, exprimata in milisecunde. Impreuna cu p4822 (durata impulsului), defineste forma de unda in timp. Aplicabil pentru semnale periodice sinusoidale, dreptunghiulare sau triunghiulare.",
+      "influenteaza": "p4822, p4830",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7228,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4822",
+    "descriere_scurta": "Function generator pulse width",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata impulsului (timpul activ) al semnalului generat de generatorul de functii. Raportul dintre durata impulsului si perioada (p4821) determina factorul de umplere pentru semnale dreptunghiulare. Trebuie sa fie mai mic decat p4821.",
+      "influenteaza": "p4821, p4830",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7229,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4823",
+    "descriere_scurta": "Function generator bandwidth",
+    "GENERATED": {
+      "explicatie": "p - Seteaza latimea de banda a semnalului generat de generatorul de functii in Hz. Parametrul este utilizat pentru semnale de tip PRBS sau albe. Defineste continutul spectral al semnalului de test utilizat la identificarea sistemului.",
+      "influenteaza": "p4810, p4830",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7230,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4824",
+    "descriere_scurta": "Function generator amplitude",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amplitudinea primara a semnalului generat, exprimata in procente din valoarea de referinta p4813. Aceasta valoare determina excursia maxima a semnalului de iesire. Poate fi negativa pentru semnale inversate.",
+      "influenteaza": "p4813, p4825, p4826",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7231,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4825",
+    "descriere_scurta": "Function generator 2nd amplitude",
+    "GENERATED": {
+      "explicatie": "p - Seteaza a doua amplitudine a semnalului generat, utilizata pentru anumite tipuri de forme de unda care necesita doua niveluri de amplitudine distincte. Exprimata in procente din valoarea de referinta p4813. Functioneaza impreuna cu p4824.",
+      "influenteaza": "p4824, p4813",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7232,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4826",
+    "descriere_scurta": "Function generator offset",
+    "GENERATED": {
+      "explicatie": "p - Seteaza componenta de curent continuu (offset) a semnalului generat, exprimata in procente. Semnalul de iesire va fi centrat in jurul acestei valori de offset. Util pentru testarea raspunsului la perturbatii cu nivel de baza nenul.",
+      "influenteaza": "p4824, p4827",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7234,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4827",
+    "descriere_scurta": "Function generator ramp-up time to offset",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de crestere in rampa pana la valoarea de offset la pornirea generatorului de functii. O valoare mai mare reduce socurile la activare. Valoarea 0 determina un salt brusc la valoarea de offset.",
+      "influenteaza": "p4826",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7235,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4828",
+    "descriere_scurta": "Function generator lower limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita inferioara a semnalului de iesire al generatorului de functii, exprimata in procente. Semnalul generat este taiat la aceasta valoare minima. Protejeaza impotriva depasirilor negative ale semnalului de test.",
+      "influenteaza": "p4829, p4824",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 7236,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4829",
+    "descriere_scurta": "Function generator upper limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita superioara a semnalului de iesire al generatorului de functii, exprimata in procente. Semnalul generat este taiat la aceasta valoare maxima. Protejeaza impotriva depasirilor pozitive ale semnalului de test.",
+      "influenteaza": "p4828, p4824",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 7238,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4831",
+    "descriere_scurta": "Function generator amplitude scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare al amplitudinii pentru toate canalele de iesire ale generatorului de functii, exprimat in procente. Poate fi modificat in timp real in timpul rularii. Valoarea 100% inseamna fara scalare, 50% reduce amplitudinea la jumatate.",
+      "influenteaza": "p4824, p4825",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7239,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4810",
+    "descriere_scurta": "Function generator mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de operare al generatorului de functii intern, selectand tipul formei de unda generate (sinusoida, dreptunghi, triunghi, PRBS etc.). Fiecare valoare numerica corespunde unui tip specific de semnal. Trebuie setat inainte de pornirea generatorului.",
+      "influenteaza": "p4819, p4821, p4822, p4823",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7241,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4950",
+    "descriere_scurta": "OA application count",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de aplicatii OA (Open Architecture) instalate pe cardul de memorie sau memoria dispozitivului. Permite verificarea rapida a configuratiei aplicatiilor optionale instalate pe drive. Valoarea maxima este 10 aplicatii.",
+      "influenteaza": "r4951, r4959, r4960",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7242,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4951",
+    "descriere_scurta": "OA application identifier, total length",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza lungimea totala in octeti a identificatorilor tuturor aplicatiilor OA instalate. Folosit pentru alocarea bufferelor de citire a identificatorilor. Corespunde sumei lungimilor individuale ale ID-urilor fiecarei aplicatii.",
+      "influenteaza": "r4950",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7243,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4960",
+    "descriere_scurta": "OA application GUID drive object",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza GUID-urile obiectelor drive ale aplicatiilor OA instalate pe card de memorie. Fiecare aplicatie OA ocupa 18 indecsi (16 octeti GUID + major + minor). Utilizat pentru identificarea si verificarea versiunilor aplicatiilor instalate.",
+      "influenteaza": "r4950, r4951",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7249,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4952",
+    "descriere_scurta": "OA application GUID, total length",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza lungimea totala in octeti a GUID-urilor tuturor aplicatiilor OA instalate. Este utilizat pentru a determina dimensiunea bufferului necesar la citirea r4959. Valoarea maxima este 180 octeti.",
+      "influenteaza": "r4950, r4959",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7251,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4959",
+    "descriere_scurta": "OA application GUID",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza GUID-urile aplicatiilor OA instalate pe cardul de memorie sau memoria dispozitivului. Fiecare aplicatie OA ocupa 18 indecsi succesivi. Permite identificarea unica a fiecarei aplicatii OA instalate.",
+      "influenteaza": "r4950, r4952",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7253,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4975",
+    "descriere_scurta": "OA application invalid number",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de aplicatii OA invalide detectate pe cardul de memorie sau memoria dispozitivului. O valoare nenula indica probleme cu una sau mai multe aplicatii instalate. Codurile de eroare specifice pot fi citite din r4979.",
+      "influenteaza": "r4976, r4979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7255,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4976",
+    "descriere_scurta": "OA application invalid identifier, total length",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza lungimea totala in octeti a identificatorilor tuturor aplicatiilor OA invalide. Valoarea este utilizata pentru alocarea bufferului la citirea ID-urilor aplicatiilor invalide. Corespunde r4975 aplicatii invalide.",
+      "influenteaza": "r4975, r4979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7256,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4979",
+    "descriere_scurta": "OA application invalid error code",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza codurile de eroare ale aplicatiilor OA invalide detectate pe card. Fiecare index corespunde unei aplicatii invalide diferite. Codurile ajuta la identificarea cauzei invalidarii aplicatiei (coruptie, incompatibilitate de versiune etc.).",
+      "influenteaza": "r4975",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7270,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1460",
+    "descriere_scurta": "Speed controller P gain adaptation speed, lower",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al regulatorului de viteza pentru domeniul de viteza sub p1464 (inainte de adaptare). Aceasta valoare reprezinta setarea de baza a castigului P fara adaptare (p1461 = 100%). Influenteaza direct raspunsul dinamic al buclei de viteza.",
+      "influenteaza": "p1461, p1462, p1464",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7309,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7001",
+    "descriere_scurta": "Par_circuit power units enable",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza unitatile de putere intr-o configuratie de circuit paralel. Permite activarea si dezactivarea individuala a modulelor Motor Module in sistemele cu mai multe convertoare in paralel. Nu este disponibil pentru configuratii cu bobinaj multiplu (p7003=1).",
+      "influenteaza": "p7003, p7010",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7310,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7003",
+    "descriere_scurta": "Par_circuit winding system",
+    "GENERATED": {
+      "explicatie": "p - Specifica tipul sistemului de bobinaj intr-o configuratie de circuit paralel (un singur sistem de bobinaj sau sisteme separate). Alegerea influenteaza modul de identificare a rezistentei, activarea simetriei de curent si posibilitatea modulatiei de margine. Necesita POWER ON dupa modificare.",
+      "influenteaza": "p7001, p0352, p1910, p7035, p1802",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7313,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7010",
+    "descriere_scurta": "Par_circuit current dissymmetry alarm threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de alarma pentru detectarea disimetriei de curent in configuratia de circuit paralel, exprimat procentual fata de curentul nominal al unitatii de putere. Depasirea acestui prag genereaza o alarma de disimetrie. Valoarea minima recomandata este 2%.",
+      "influenteaza": "r7020, r7021, p7251",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7314,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0121",
+    "descriere_scurta": "Power unit component number",
+    "GENERATED": {
+      "explicatie": "p - Asigneaza un set de date al unitatii de putere la componenta fizica corespunzatoare prin numarul unic de componenta din topologie. Permite configurarea mai multor unitati de putere in sisteme cu module paralele. Numarul de componenta este atribuit automat la configurarea topologiei.",
+      "influenteaza": "p7001",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7317,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7026",
+    "descriere_scurta": "Par_circuit max. deviation currents phase V",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza devierea maxima absoluta a valorilor actuale de curent pe faza V in raport cu media, ca valoare de varf. Permite monitorizarea gradului de disimetrie pe aceasta faza in configuratiile paralele. Valorile ridicate pot indica probleme de echilibrare a unitatilor de putere.",
+      "influenteaza": "p7010, r7021",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7319,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7025",
+    "descriere_scurta": "Par_circuit max. deviation currents phase U",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza devierea maxima absoluta a valorilor actuale de curent pe faza U in raport cu media, ca valoare de varf. Permite evaluarea gradului de disimetrie pe faza U in configuratiile cu module paralele. Valori mari indica dezechilibre intre unitatile de putere.",
+      "influenteaza": "p7010, r7020",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7324,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7031",
+    "descriere_scurta": "Par_circuit DC link voltage maximum deviation",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza devierea maxima absoluta a tensiunii din circuitul DC fata de media tuturor modulelor in paralel. Valori ridicate indica dezechilibre in incarcarea circuitelor intermediare. Monitorizat impreuna cu r7030 pentru diagnostic in timp real.",
+      "influenteaza": "r7030",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7332,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1829",
+    "descriere_scurta": "Compensation valve lockout time phase V",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de blocare al supapei de compensare pentru faza V a convertorului. Ajusteaza compensarea timpilor morti ai IGBT-urilor pentru a reduce distorsiunile de tensiune pe faza V. Valoarea optima se determina experimental in timpul punerii in functiune.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7338,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7103",
+    "descriere_scurta": "Par_circuit ring buffer fault/alarm gone",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza buffer-ul circular cu momentele la care defectele sau alarmele unitatilor de putere paralele au disparut. Valorile reprezinta timpul relativ de sistem la momentul revenirii. Permite analiza istoricului evenimentelor in configuratiile paralele.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7395,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7770",
+    "descriere_scurta": "NVRAM action",
+    "GENERATED": {
+      "explicatie": "p - Seteaza actiunea de executat asupra datelor din memoria NVRAM. La sfarsitul actiunii, valoarea este resetata automat la 0. Permite operatii de stergere sau backup al datelor stocate in memoria nevolatila.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7399,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7788",
+    "descriere_scurta": "Sign-of-life monitoring tolerance window /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza dimensiunea ferestrei pentru monitorizarea erorilor sign-of-life pe unitatea de putere. O valoare mai mare permite mai multe erori inainte de declansarea unui defect. Parametrul este la nivel avansat de acces (nivel 4).",
+      "influenteaza": "p7789",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7400,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7789",
+    "descriere_scurta": "Sign-of-life monitoring fault threshold /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de erori consecutive sign-of-life tolerate pe unitatea de putere inainte de generarea unui defect. Valoarea 0 inseamna ca nicio eroare nu este tolerata. Creste robustetea comunicatiei in medii cu zgomot electromagnetic ridicat.",
+      "influenteaza": "p7788",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7404,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7823",
+    "descriere_scurta": "DRIVE-CLiQ component read parameter value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea parametrului citit de la componenta DRIVE-CLiQ selectata. Valoarea corespunde parametrului specificat in p7821 de pe componenta DRIVE-CLiQ selectata. Utilizat pentru diagnosticare avansata a componentelor DRIVE-CLiQ.",
+      "influenteaza": "p7821",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7405,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7821",
+    "descriere_scurta": "DRIVE-CLiQ component parameter number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul parametrului care va fi accesat pe o componenta DRIVE-CLiQ. Valoarea citita este afisata in r7823. Permite accesul direct la parametrii interni ai componentelor DRIVE-CLiQ pentru diagnosticare.",
+      "influenteaza": "r7823",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7406,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7828",
+    "descriere_scurta": "Firmware download component number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul componentei DRIVE-CLiQ pentru care se efectueaza descarcarea firmware-ului sau se vizualizeaza versiunea de referinta. Indicele [0] este pentru descarcarea firmware-ului, iar [1] pentru afisarea versiunii de referinta din r7825.",
+      "influenteaza": "r7825, p7829",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7407,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7826",
+    "descriere_scurta": "Firmware update automatic",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul pentru actualizarea automata a firmware-ului componentelor DRIVE-CLiQ. Valoarea 0 dezactiveaza actualizarea automata, 1 o activeaza, iar 2 permite actualizarea numai in sens crescator de versiune. Necesita POWER ON dupa actualizare.",
+      "influenteaza": "p7828, p7829",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7408,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7825",
+    "descriere_scurta": "DRIVE-CLiQ component versions",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza versiunile de firmware si EPROM ale componentei DRIVE-CLiQ selectate prin p7828[1]. Indicele [0] arata versiunea de referinta, [1] versiunea actuala, iar [2]-[6] versiunile EPROM. Permite verificarea compatibilitatii firmware-ului.",
+      "influenteaza": "p7828",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7409,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7829",
+    "descriere_scurta": "Activate firmware download",
+    "GENERATED": {
+      "explicatie": "p - Activeaza descarcarea firmware-ului catre componentele DRIVE-CLiQ specificate in p7828. Valoarea 1 initiaza descarcarea, iar 0 indica finalizarea cu succes. Valorile mai mari ca 1 reprezinta coduri de eroare specifice esecului descarcarii.",
+      "influenteaza": "p7828, r7825",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7411,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7831",
+    "descriere_scurta": "Telegram diagnostics signals",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalele continute in telegrama selectata prin p7830. Permite verificarea configuratiei telegramei de proces active. Utilizat pentru diagnosticarea configuratiei de comunicatie cu PLC-ul.",
+      "influenteaza": "p7830",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7412,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p9921",
+    "descriere_scurta": "Licensing, activate license key",
+    "GENERATED": {
+      "explicatie": "p - Activeaza cheia de licenta introdusa prin p9920. La activare se verifica suma de control, se salveaza cheia pe cardul de memorie si se reface introducerea. Necesar pentru activarea functiilor optionale licentiate ale drive-ului.",
+      "influenteaza": "p9920",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7413,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7853",
+    "descriere_scurta": "Component available/not available",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza pentru fiecare componenta DRIVE-CLiQ din topologia tinta daca aceasta este prezenta fizic sau nu. Octetul superior indica numarul componentei, iar octetul inferior indica disponibilitatea (0=absent, 1=prezent). Utilizat la diagnosticarea topologiei.",
+      "influenteaza": "p7852",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7414,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7852",
+    "descriere_scurta": "Number of indices for r7853",
+    "descriere_scurta": "Number of indices for r7853",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de indecsi ai parametrului r7853, corespunzand numarului de componente DRIVE-CLiQ din topologia tinta. Ajusteaza dimensiunea listei de componente monitorizate pentru disponibilitate. Valoarea trebuie sa corespunda topologiei configurate.",
+      "influenteaza": "r7853",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7417,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7870",
+    "descriere_scurta": "Configuration changes global",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza modificarile de configuratie ale tuturor obiectelor drive din unitatea completa. Indicele [0] este suma tuturor indicilor urmatori. La fiecare modificare de configuratie valoarea indicelui corespunzator este incrementata.",
+      "influenteaza": "r7867, r7868",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7418,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7867",
+    "descriere_scurta": "Status/configuration changes global",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza un contor incrementat la fiecare modificare de stare sau configuratie a oricarui obiect drive din unitatea completa. Permite detectarea rapida a modificarilor prin polling periodic. Util in aplicatii SCADA pentru sincronizarea configuratiei.",
+      "influenteaza": "r7870",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7420,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7868",
+    "descriere_scurta": "Configuration changes drive object reference",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza referinta la obiectele drive a caror configuratie s-a modificat. Indicele [0] contorizeaza modificarile totale, iar indicii [1...n] corespund obiectelor cu numarul din p0101. Permite identificarea precisa a obiectelor care au suferit modificari.",
+      "influenteaza": "r7867, r7870",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7421,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r9900",
+    "descriere_scurta": "Actual topology number of indices",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de indecsi ai topologiei actuale DRIVE-CLiQ detectata la pornire. Reprezinta numarul de componente fizice recunoscute in reteaua DRIVE-CLiQ. Permite verificarea completitudinii topologiei fata de cea tinta.",
+      "influenteaza": "p9902",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7427,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8510",
+    "descriere_scurta": "Data transfer 0 receive bitwise",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalele de date primite prin transferul binar 0, interconectate via BI p8500[0...7]. Fiecare bit reprezinta un semnal individual primit. Permite rutarea semnalelor binare intre obiecte drive diferite prin mecanismul BICO.",
+      "influenteaza": "p8500",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7428,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7903",
+    "descriere_scurta": "Hardware sampling times still cannot be assigned",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de timpi de esantionare hardware disponibili care pot fi inca atribuiti aplicatiilor OA (DCC, FBLOCKS). O valoare de 0 indica ca nu mai sunt resurse de timp de esantionare disponibile. Util la planificarea resurselor pentru aplicatii personalizate.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7429,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8511",
+    "descriere_scurta": "Data transfer 1 receive bitwise",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalele de date primite prin transferul binar 1, interconectate via BI p8501[0...15]. Suporta pana la 22 semnale binare individuale (bitii 0-21). Permite rutarea semnalelor binare intre obiecte drive distincte.",
+      "influenteaza": "p8501",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7430,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8502",
+    "descriere_scurta": "Data transfer 0 wordwise",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru transferul de date pe cuvant (process signal) 0. Valoarea semnalului este disponibila in CO r8512 pentru interconectare ulterioara. Permite transferul valorilor analogice scalare intre obiecte drive.",
+      "influenteaza": "r8512",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7431,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8503",
+    "descriere_scurta": "Data transfer 1 wordwise",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru transferul de date pe cuvant 1. Valoarea semnalului este disponibila in CO r8513 pentru interconectare ulterioara. Utilizat pentru rutarea valorilor de proces intre obiecte drive diferite.",
+      "influenteaza": "r8513",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7432,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8514",
+    "descriere_scurta": "Data transfer 2 receive wordwise",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalele de date primite prin transferul pe cuvant 2, interconectate via CI p8504. Valoarea reprezinta semnalul de proces primit de la un alt obiect drive. Permite citirea valorilor analogice transferate prin mecanismul de transfer de date.",
+      "influenteaza": "p8504",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7433,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8505",
+    "descriere_scurta": "Data transfer 3 wordwise",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru transferul de date pe cuvant 3. Valoarea semnalului este disponibila in CO r8515 pentru interconectare. Extinde capacitatea de transfer de semnale de proces intre obiecte drive.",
+      "influenteaza": "r8515",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7434,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8500",
+    "descriere_scurta": "Data transfer 0 bitwise",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele semnalelor pentru transferul binar 0, cu 8 indecsi pentru 8 semnale binare individuale. Semnalele sunt disponibile in BO r8510.0...7 pentru interconectare. Permite rutarea semnalelor de tip on/off intre obiecte drive.",
+      "influenteaza": "r8510",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7436,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8501",
+    "descriere_scurta": "Data transfer 1 bitwise",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele semnalelor pentru transferul binar 1, cu 22 indecsi pentru 22 semnale binare individuale. Semnalele sunt disponibile in BO r8511.0...21. Ofera o capacitate extinsa de transfer binar fata de p8500.",
+      "influenteaza": "r8511",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7437,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8513",
+    "descriere_scurta": "Data transfer 1 receive wordwise",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalul de date primit prin transferul pe cuvant 1, interconectat via CI p8503. Reprezinta valoarea analogica scalara primita de la sursa configurata. Disponibil pentru interconectare ulterioara ca semnal de intrare.",
+      "influenteaza": "p8503",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7441,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8550",
+    "descriere_scurta": "AOP LOCAL/REMOTE",
+    "GENERATED": {
+      "explicatie": "p - Salveaza configuratia actuala a panourilor de operare avansate (AOP) in ceea ce priveste modul LOCAL/REMOTE. Parametrul retine starea dupa POWER OFF pentru a restaura configuratia la repornire. Modificarea directa este restrictiata (nivel acces 4).",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7444,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8585",
+    "descriere_scurta": "Actual macro running",
+    "GENERATED": {
+      "explicatie": "r - Indica care macro este in curs de executie in obiectul drive curent. Valoarea 0 inseamna ca niciun macro nu ruleaza activ. Util pentru monitorizarea executiei macrocomenzilor de configurare automata.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7445,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8600",
+    "descriere_scurta": "CAN device type",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza toate dispozitivele detectate pe magistrala CAN dupa pornire, codificate intr-un format hexadecimal. Valoarea 0 indica nicio unitate detectata, FFFF0192 hex indica mai multe drive-uri de tip vector/servo/ALM. Util pentru diagnosticarea retelei CANopen.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7448,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8602",
+    "descriere_scurta": "CAN SYNC object",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii pentru obiectul SYNC CANopen (COB-ID). Obiectul SYNC este utilizat pentru sincronizarea comunicatiei ciclice pe magistrala CANopen. Configurarea corecta este esentiala pentru comunicatia izocrona.",
+      "influenteaza": "p8620, p8622",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7449,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8606",
+    "descriere_scurta": "CAN Producer Heartbeat Time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de timp in ms pentru trimiterea ciclica a telegramelor heartbeat CANopen. Valoarea minima este 100 ms, iar valoarea 0 dezactiveaza trimiterea heartbeat. Heartbeat-ul permite detectarea pierderii comunicatiei cu nodul drive.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7452,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8743",
+    "descriere_scurta": "CAN assignment drive/drive ID",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza ID-ul de drive CANopen asociat fiecarui drive detectat, cu cate un index per drive (maxim 8 drive-uri). Permite identificarea adreselor logice CAN ale drive-urilor conectate. Util pentru configurarea si diagnosticarea retelei CANopen.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7453,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8620",
+    "descriere_scurta": "CAN Node-ID",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa nodului CANopen (Node-ID). Poate fi setat prin comutatoarele DIP sau prin acest parametru daca toate DIP-urile sunt pe ON sau OFF. Adresa implicita este 126. Modificarea devine efectiva dupa salvare si POWER ON.",
+      "influenteaza": "p8622, p8685",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7455,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8622",
+    "descriere_scurta": "CAN baud rate",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de transfer a magistralei CAN. Valorile de la 0 la 7 corespund diferitelor rate baud standard CANopen (10k, 20k, 50k, 125k, 250k, 500k, 800k, 1000k bps). Valoarea implicita 6 corespunde la 800 kbps. Necesita POWER ON.",
+      "influenteaza": "p8620, p8685",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 7458,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8685",
+    "descriere_scurta": "CAN NMT states",
+    "GENERATED": {
+      "explicatie": "p - Seteaza si afiseaza starea NMT (Network Management) CANopen a nodului. Valoarea 127 (operational) permite comunicatia completa de proces. Starea NMT controleaza daca nodul accepta sau nu traficul de date de proces.",
+      "influenteaza": "p8620",
+      "categorie": "Comunicatii"
+    }
+  }
+]

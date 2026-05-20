@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 1116,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3034",
+    "descriere_scurta": "ChID transition point compensation U1 positive zero range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 1 pozitiv (zona zero) al compensarii punctelor de tranzitie din identificarea caracteristicii. Valoarea corespunde p1834 din setul de date al drive-ului selectat pentru identificare. Utilizat la calibrarea precisa a compensarii in zona de zero a inverterului.",
+      "influenteaza": "p1834, p3035, p3036",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1117,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3035",
+    "descriere_scurta": "ChID transition point compensation rounding 1 pos. zero range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rotunjirea pentru punctul 1 pozitiv (zona zero) al compensarii punctelor de tranzitie din identificarea caracteristicii. Valoarea corespunde p1835 din setul de date selectat pentru identificare. Controleaza netezimea tranzitiei in zona de zero a caracteristicii de comutatie.",
+      "influenteaza": "p1835, p3034, p3036",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1118,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3036",
+    "descriere_scurta": "ChId transition point compensation Q1 negative zero range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 1 negativ (zona zero) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1836 din setul de date selectat pentru identificare. Asigura compensarea corecta in zona de zero pentru directia negativa.",
+      "influenteaza": "p1836, p3037, p3038",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1119,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3037",
+    "descriere_scurta": "ChId transition point compensation U1 negative zero range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 1 negativ (zona zero) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1837 din setul de date selectat. Asigura simetria compensarii in zona de zero pentru ambele directii.",
+      "influenteaza": "p1837, p3036, p3038",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1120,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3038",
+    "descriere_scurta": "ChId transition point compensation rounding 1 neg. zero range",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rotunjirea pentru punctul 1 negativ (zona zero) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1838 din setul de date selectat. Influenteaza netezimea caracteristicii de comutatie in semiciclul negativ.",
+      "influenteaza": "p1838, p3036, p3037",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1121,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3039",
+    "descriere_scurta": "ChId transition point compensation Q2 positive",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 2 pozitiv al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1839 din setul de date selectat. Defineste al doilea punct de calibrare in zona pozitiva a caracteristicii de comutatie.",
+      "influenteaza": "p1839, p3040, p3041",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1122,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3040",
+    "descriere_scurta": "ChId transition point compensation U2 positive",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 2 pozitiv al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1840 din setul de date selectat. Al doilea punct de tensiune din caracteristica pozitiva de compensare.",
+      "influenteaza": "p1840, p3039, p3041",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1123,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3041",
+    "descriere_scurta": "ChId transition point compensation rounding 2 positive",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rotunjirea pentru punctul 2 pozitiv al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1841 din setul de date selectat. Controleaza netezimea in al doilea punct al caracteristicii pozitive de compensare.",
+      "influenteaza": "p1841, p3039, p3040",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1124,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3042",
+    "descriere_scurta": "ChId transition point compensation Q2 negative",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 2 negativ al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1842 din setul de date selectat. Defineste al doilea punct de calibrare in zona negativa.",
+      "influenteaza": "p1842, p3043, p3044",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1125,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3043",
+    "descriere_scurta": "ChId transition point compensation U2 negative",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 2 negativ al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1843 din setul de date selectat. Calibreaza al doilea punct de tensiune in semiciclul negativ al caracteristicii.",
+      "influenteaza": "p1843, p3042, p3044",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1126,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3044",
+    "descriere_scurta": "ChId transition point compensation rounding 2 negative",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rotunjirea pentru punctul 2 negativ al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1844 din setul de date selectat. Asigura tranzitie lina in al doilea punct al caracteristicii negative.",
+      "influenteaza": "p1844, p3042, p3043",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1127,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3045",
+    "descriere_scurta": "ChId transition point compensation Q3 positive saturation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 3 pozitiv (saturatie) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1845. Defineste limita superioara a zonei de saturatie in caracteristica pozitiva.",
+      "influenteaza": "p1845, p3046",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1128,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3046",
+    "descriere_scurta": "ChId transition point compensation U3 positive saturation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 3 pozitiv (saturatie) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1846. Reprezinta tensiunea la saturatie pentru directia pozitiva.",
+      "influenteaza": "p1846, p3045",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1129,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3047",
+    "descriere_scurta": "ChId transition point compensation Q3 negative saturation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 3 negativ (saturatie) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1845 (simetric). Limita inferioara a zonei de saturatie in caracteristica negativa.",
+      "influenteaza": "p1845, p3048",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1130,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3048",
+    "descriere_scurta": "ChId transition point compensation U3 negative saturation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea U pentru punctul 3 negativ (saturatie) al compensarii punctelor de tranzitie din identificarea caracteristicii. Corespunde p1848. Tensiunea de saturatie pentru directia negativa a caracteristicii.",
+      "influenteaza": "p1848, p3047",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1131,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3070",
+    "descriere_scurta": "MotId voltage emulation error final value identified",
+    "GENERATED": {
+      "explicatie": "p - Valoarea finala a erorii de emulare a tensiunii determinata de identificarea datelor motorului. Poate fi modificata dupa identificare si acceptata in p1952 cu p1910/p1960 = -3. Corecteaza deviatia tensiunii la iesire cauzata de timpii morti ai IGBT.",
+      "influenteaza": "p1952, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1132,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3071",
+    "descriere_scurta": "MotId voltage emulation error current offset identified",
+    "GENERATED": {
+      "explicatie": "p - Offset-ul de curent al erorii de emulare a tensiunii determinat de identificarea datelor motorului. Poate fi modificat dupa identificare si acceptat in p1953 cu p1910/p1960 = -3. Defineste pragul de curent de la care incepe corectia erorii de tensiune.",
+      "influenteaza": "p1953, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1133,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3075",
+    "descriere_scurta": "ChId velocity controller loop gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul in bucla al regulatorului de viteza din identificarea caracteristicii. Valoarea corespunde r1475 din setul de date selectat pentru identificare. Determina rigiditatea controlului de viteza in aplicatiile cu caracteristica identificata.",
+      "influenteaza": "r1475, p3083, p3086",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1134,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3080",
+    "descriere_scurta": "MotId flux controller P gain identified",
+    "GENERATED": {
+      "explicatie": "p - Castigul P al regulatorului de flux pentru un motor asincron determinat de identificarea datelor motorului. Poate fi acceptat in p1590 cu p1910/p1960 = -3. Influenteaza stabilitatea si dinamica controlului de flux al motorului.",
+      "influenteaza": "p1590, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1135,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3081",
+    "descriere_scurta": "MotId flux controller integral time identified",
+    "GENERATED": {
+      "explicatie": "p - Timpul integral al regulatorului de flux pentru un motor asincron determinat de identificarea datelor motorului. Poate fi acceptat in p1592 cu p1910/p1960 = -3. Determina viteza de eliminare a erorii statice in controlul de flux.",
+      "influenteaza": "p1592, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1136,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3082",
+    "descriere_scurta": "MotId current controller P gain identified",
+    "GENERATED": {
+      "explicatie": "p - Castigul P al regulatorului de curent determinat de identificarea datelor motorului. Poate fi acceptat in p1715 cu p1910/p1960 = -3. Determina largimea de banda a buclei de curent si influenteaza direct calitatea controlului vectorial.",
+      "influenteaza": "p1715, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1137,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3083",
+    "descriere_scurta": "ChId maximum positive velocity",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza viteza maxima pentru directia pozitiva din identificarea caracteristicii. Valoarea corespunde valorii maxime posibile din p1083 a setului de date selectat. Limiteaza miscarea in directia pozitiva conform rezultatelor identificarii.",
+      "influenteaza": "p1083",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1138,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3086",
+    "descriere_scurta": "ChId maximum negative velocity",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza viteza maxima pentru directia negativa din identificarea caracteristicii. Corespunde valorii minime posibile din p1086 a setului de date selectat. Limiteaza miscarea in directia negativa conform identificarii.",
+      "influenteaza": "p1086",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1139,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3088",
+    "descriere_scurta": "MotId Motor model changeover speed operation with encoder ident. /",
+    "GENERATED": {
+      "explicatie": "p - Viteza de comutare a modelului motorului cu encoder determinata de identificarea datelor motorului. Poate fi acceptata in p1752 cu p1910/p1960 = -3. Sub aceasta viteza se foloseste modelul la viteza mica, peste ea modelul la viteza mare.",
+      "influenteaza": "p1752, p1910, p1960",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1140,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3100",
+    "descriere_scurta": "RTC time stamp mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul pentru marcajul de timp al ceasului in timp real (RTC). Controleaza cum sunt generate si stocate marcajele de timp pentru evenimentele din buffer-ul de defecte si alarme. Esential pentru diagnosticarea corecta si corelarea temporala a evenimentelor.",
+      "influenteaza": "p3103, p3104",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1142,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3103",
+    "descriere_scurta": "RTC synchronization source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa si tehnica de sincronizare a ceasului in timp real. Permite sincronizarea RTC cu o sursa externa (ex: PROFIBUS, PROFINET sau semnal digital). Asigura coerenta temporala in sisteme cu mai multe drive-uri.",
+      "influenteaza": "p3100, p3104, p3109",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1143,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3104",
+    "descriere_scurta": "RTC real time synchronization PING",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru evenimentul PING folosit la setarea timpului UTC. La un front activ al semnalului selectat, RTC-ul este sincronizat cu ora UTC setata extern. Utilizat pentru sincronizare precisa a timpului in retele industriale.",
+      "influenteaza": "p3100, p3103",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1144,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3109",
+    "descriere_scurta": "RTC real time synchronization tolerance window",
+    "GENERATED": {
+      "explicatie": "p - Seteaza fereastra de toleranta pentru sincronizarea timpului. Daca aceasta fereastra este depasita, se genereaza o alarma corespunzatoare. Protejeaza impotriva desincronizarilor mari ale ceasului de timp real.",
+      "influenteaza": "p3103, p3104",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1145,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3110",
+    "descriere_scurta": "External fault 3 power-up delay",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de intarziere pentru defectul extern 3 dupa pornirea alimentarii. Permite echipamentelor externe sa se initializeze inainte ca defectul sa devina activ. Previne declansari false la pornire din cauza semnalelor externe instabile.",
+      "influenteaza": "p3111, p3112",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1146,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3111",
+    "descriere_scurta": "External fault 3 enable",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de activare pentru defectul extern 3. Defectul extern 3 este initiat printr-o operatie logica AND: p2108 negat, p3111 si p3112 negat. Permite integrarea unui semnal de defect extern in logica de protectie a drive-ului.",
+      "influenteaza": "p3110, p3112, p2108",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1147,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3112",
+    "descriere_scurta": "External fault 3 enable negated",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de activare negat pentru defectul extern 3. Face parte din conditia AND de declansare impreuna cu p2108 si p3111. Ofera flexibilitate in logica de activare a defectului extern 3.",
+      "influenteaza": "p3110, p3111, p2108",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1148,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3116",
+    "descriere_scurta": "Acknowledgement automatically suppressed",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru confirmarea automata pe obiectul de drive dispozitiv. La semnal 0, defectele active sunt confirmate automat pe obiectul dispozitiv; la semnal 1, confirmarea automata este inhibata. Controleaza propagarea defectelor locale catre primul obiect de drive activ.",
+      "influenteaza": "p3117",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1149,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3117",
+    "descriere_scurta": "Change safety message type",
+    "GENERATED": {
+      "explicatie": "p - Seteaza reparametrizarea tuturor mesajelor de siguranta pentru defecte si alarme. La valoare 1, mesajele de siguranta sunt reparametrizate; la valoare 0 ramane configuratia curenta. Utilizat la schimbarea configuratiei functiilor Safety Integrated.",
+      "influenteaza": "p3116",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1150,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3135",
+    "descriere_scurta": "Suppress active fault",
+    "GENERATED": {
+      "explicatie": "p - Seteaza suprimarea bitului r2139.3 'Fault present' pentru anumite raspunsuri la defect. Permite mascarea temporara a indicatiei de defect activ pentru anumite categorii de defecte. Utilizat in configuratii speciale unde reactia la defect este gestionata de aplicatie.",
+      "influenteaza": "r2139",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1151,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3235",
+    "descriere_scurta": "Phase failure signal motor monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru detectia ruperii de faza a motorului. Daca o asimetrie de faza persista mai mult decat acest timp, se genereaza un defect. Protejeaza motorul impotriva functionarii monofazate accidentale.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1152,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3290",
+    "descriere_scurta": "Variable signaling function start",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de start/stop si tipul de comparatie pentru functia de semnalizare variabila. Determina daca semnalizarea este activa la depasire sau la subcotire a pragului setat. Configureaza comportamentul de baza al functiei de comparatie variabila.",
+      "influenteaza": "p3291, p3295, p3296",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1153,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3291",
+    "descriere_scurta": "Variable signaling function signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru functia de semnalizare variabila. Permite conectarea oricarui parametru de tip conector ca intrare pentru comparatia variabila. Ofera flexibilitate maxima in configurarea semnalizarilor personalizate.",
+      "influenteaza": "p3290, p3292, p3295",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1154,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3292",
+    "descriere_scurta": "Variable signaling function signal source address",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa sursei semnalului pentru functia de semnalizare variabila. Permite accesul direct la adresa fizica a unui parametru ca sursa de semnal. Utilizat in configuratii avansate unde selectia prin BICO nu este suficienta.",
+      "influenteaza": "p3291, p3293",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1155,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3293",
+    "descriere_scurta": "Variable signaling function signal source data type",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul de date al sursei semnalului pentru functia de semnalizare variabila. Defineste formatul datelor (intreg, virgula mobila etc) al semnalului sursa. Necesar pentru interpretarea corecta a valorii comparate cu pragul.",
+      "influenteaza": "p3291, p3292",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1156,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3295",
+    "descriere_scurta": "Variable signaling function threshold value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de prag pentru functia de semnalizare variabila. Semnalizarea se activeaza cand semnalul sursa depaseste sau coboara sub aceasta valoare, in functie de configuratia din p3290. Valoarea centrala in jurul careia actioneaza histerezisul p3296.",
+      "influenteaza": "p3290, p3296, p3297",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1157,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3296",
+    "descriere_scurta": "Variable signaling function hysteresis",
+    "GENERATED": {
+      "explicatie": "p - Seteaza histerezisul pentru functia de semnalizare variabila. Previne oscilatiile semnalizarii atunci cand valoarea masurata este apropiata de prag. O valoare mai mare reduce sensibilitatea dar elimina fluctuatiile nedorite.",
+      "influenteaza": "p3295, p3290",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1158,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3297",
+    "descriere_scurta": "Variable signaling function pickup delay",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea de actionare pentru functia de semnalizare variabila. Semnalizarea se activeaza doar daca conditia de prag este mentinuta mai mult decat aceasta durata. Filtreaza perturbatiile scurte si evita semnalizari false.",
+      "influenteaza": "p3295, p3298, p3290",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1159,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3298",
+    "descriere_scurta": "Variable signaling function dropout delay",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea de revenire pentru functia de semnalizare variabila. Semnalizarea se dezactiveaza dupa ce conditia de prag nu mai este indeplinita timp de aceasta durata. Asigura stabilitate la dezactivarea semnalizarii.",
+      "influenteaza": "p3295, p3297, p3290",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1160,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3299",
+    "descriere_scurta": "Variable signaling function sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza perioada de esantionare pentru functia de semnalizare variabila. Determina cat de frecvent este evaluata comparatia cu pragul. O perioada mai mica creste reactivitatea dar si incarcarea procesorului.",
+      "influenteaza": "p3290, p3291",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1161,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3400",
+    "descriere_scurta": "Infeed configuration word",
+    "GENERATED": {
+      "explicatie": "p - Seteaza cuvantul de configurare al modulului de alimentare (infeed). Bitii individuali activeaza sau dezactiveaza diverse functii ale circuitului de alimentare. Parametru fundamental in configurarea comportamentului ALM/SLM.",
+      "influenteaza": "p3409, p3410, p3421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1162,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3409",
+    "descriere_scurta": "Infeed line frequency setting",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de detectare a frecventei retelei de alimentare. La valoare 1 frecventa este detectata automat; la valoare 0 se foloseste valoarea nominala. Detectia corecta a frecventei este critica pentru sincronizarea PLL a alimentatorului.",
+      "influenteaza": "p3400, p0211",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1163,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3410",
+    "descriere_scurta": "Infeed identification method",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rutina de identificare a parametrilor retelei si DC link pentru modulul de alimentare. Diferitele valori corespund diferitelor proceduri de masurare (inductanta, capacitate DC link). Trebuie executata la prima punere in functiune sau la modificari hardware.",
+      "influenteaza": "p3421, p3422, p3424",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1165,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3416",
+    "descriere_scurta": "Infeed excitation amplitude C identification",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amplitudinea frecventei de excitatie pentru identificarea capacitatii totale a DC link. Amplitudinea este indicata ca procent din tensiunea nominala DC (Vdc = p0210 * p3510). Valorile prea mari pot perturba functionarea in timpul identificarii.",
+      "influenteaza": "p3417, p3410",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1166,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3417",
+    "descriere_scurta": "Infeed excitation frequency C identification",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa de excitatie pentru identificarea capacitatii totale a DC link. Frecventa trebuie aleasa astfel incat sa fie clar separata de frecventa retelei si armonicile sale. Influenteaza acuratetea masurarii capacitatii DC link.",
+      "influenteaza": "p3416, p3410",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1167,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3421",
+    "descriere_scurta": "Infeed inductance",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inductanta efectiva totala pentru controlul in bucla inchisa al curentului, suma dintre inductanta retelei si inductanta reactantei de retea. Este pre-setata cu suma p0223 si p0225. Influenteaza direct parametrii regulatorului de curent al alimentatorului.",
+      "influenteaza": "p0223, p0225, p3615, p3617",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1168,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3422",
+    "descriere_scurta": "= p0227 and p3425[0...1] = 100 %. Further, before the measurements are carried out, a brief identification run",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza inductanta totala identificata intre reteaua rigida si bornele de intrare ale alimentatorului. Valorile sunt stocate pe doua indexuri corespunzatoare celor doua masuratori. Utilizat pentru verificarea calitatii identificarii inductantei de retea.",
+      "influenteaza": "p3421, p3410",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1169,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3424",
+    "descriere_scurta": "Infeed line supply inductance",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inductanta retelei de alimentare. Parametrul este pre-setat cu valoarea din p0225. Impreuna cu inductanta reactantei de retea formeaza inductanta totala utilizata in controlul curentului.",
+      "influenteaza": "p0225, p3421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1178,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3462",
+    "descriere_scurta": "Infeed line fault maximum time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul maxim permis de asteptare pentru revenirea retelei dupa detectia unui defect de retea. Daca reteaua nu revine in acest interval, se declansaza un defect permanent. Valoarea 0 dezactiveaza monitorizarea timpului de asteptare.",
+      "influenteaza": "p3463",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1179,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3463",
+    "descriere_scurta": "Infeed line angle change phase failure detection",
+    "GENERATED": {
+      "explicatie": "p - Daca unghiul retelei se modifica brusc cu aceasta valoare, se presupune o rupere de faza si pulsurile sunt inhibate timp de 10 ms. Protejeaza impotriva decalajelor brusce de faza care pot indica o intrerupere monofazata. Valori tipice intre 10 si 30 de grade.",
+      "influenteaza": "p3462",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1187,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3481",
+    "descriere_scurta": "Infeed standby controller dynamic response",
+    "GENERATED": {
+      "explicatie": "p - Seteaza raspunsul dinamic al regulatorului de rezerva pentru adancimea de modulatie. Cu cat timpul de netezire este mai mare, cu atat urmarirea tensiunii DC link devine mai lenta. Controleaza rezerva minima de tensiune pentru a mentine controlul liniar al curentului.",
+      "influenteaza": "p3560, p3562",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1188,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3490",
+    "descriere_scurta": "Infeed delay time OFF1 command",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de intarziere pentru comanda ON/OFF1 a alimentatorului. Dupa OFF1 = 0, alimentatorul ramane in functiune pe durata specificata. Permite drive-urilor axe sa opreasca motoarele inainte ca alimentatorul sa se opreasca.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1189,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3491",
+    "descriere_scurta": "Infeed I-offset measurement monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare pentru masurarea offset-ului de curent al unitatii de putere. Daca masurarea nu este valida in perioada de monitorizare (curenti de faza prea mari), se genereaza un mesaj. Asigura calibrarea corecta a offset-urilor de curent la pornire.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1190,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3492",
+    "descriere_scurta": "Infeed, line supply undervoltage delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de intarziere pentru oprire la subtensiunea retelei (F06100). Dupa detectia subtensiunii, unitatea de putere este oprita dupa expirarea acestui timp. Daca subtensiunea dispare in acest interval, oprirea nu are loc.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1191,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3508",
+    "descriere_scurta": "Infeed step-up factor maximum",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul maxim admis de ridicare a tensiunii (step-up) pentru unitatea de putere utilizata cu filtrul de retea parametrizat in p0220[0]. Limiteaza suprainaltarea tensiunii DC link fata de tensiunea de retea. Valori tipice intre 1.6 si 3.",
+      "influenteaza": "p0220, p3510",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1192,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3510",
+    "descriere_scurta": "Infeed DC link voltage setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta pentru tensiunea DC link. Aceasta determina nivelul tensiunii continue la care functioneaza intregul sistem de axe. Influenteaza direct capacitatea de suprasarcina si rezerva de tensiune pentru motoare.",
+      "influenteaza": "p3511, p3560, p3562",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1193,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3511",
+    "descriere_scurta": "Infeed DC link voltage supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru setpoint-ul suplimentar al tensiunii DC link. Permite ajustarea dinamica a tensiunii DC link din exterior. Utilizat in aplicatii cu cerinte variabile de tensiune DC.",
+      "influenteaza": "p3510, p3560",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1194,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3513",
+    "descriere_scurta": "Voltage-controlled operation inhibit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru inhibarea modului de functionare controlat in tensiune al alimentatorului. La semnal 1 modulul functioneaza in mod curent-controlat. Utilizat in configuratii speciale master/slave sau la comutarea modului de functionare.",
+      "influenteaza": "p3510, p3511",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1195,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3514",
+    "descriere_scurta": "Infeed supplementary active current steady-state",
+    "GENERATED": {
+      "explicatie": "p - Seteaza un setpoint suplimentar in regim permanent pentru curentul activ al retelei. Permite decalarea punctului de functionare al controlului de curent activ. Utilizat pentru compensarea pierderilor sau pentru distribuirea sarcinii in configuratii paralele.",
+      "influenteaza": "p3515, p3530, p3531",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1196,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3515",
+    "descriere_scurta": "Infeed supplementary active current",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru setpoint-ul suplimentar al curentului activ. Permite adaugarea unui offset dinamic la referinta curentului activ din retea. Utilizat in aplicatii de compensare activa sau distributie de sarcina.",
+      "influenteaza": "p3514, p3530",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1197,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3516",
+    "descriere_scurta": "Infeed current distribution factor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul cu care se inmulteste setpoint-ul curentului activ pentru regulatorul de curent. Permite scalarea curentului activ in configuratii cu mai multe alimentatoare. La 100% intregul setpoint este utilizat, la valori mai mici se reduce contributia acestui alimentator.",
+      "influenteaza": "p3570, p3579",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1203,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3525",
+    "descriere_scurta": "Infeed inductive reactive current limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru curentul reactiv inductiv controlat (r0076 < 0). Valoarea este referita la curentul maxim al unitatii de putere r0209[0]. Limiteaza consumul inductiv de putere reactiva de la retea.",
+      "influenteaza": "p3526, p3527",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1204,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3526",
+    "descriere_scurta": "Infeed capacitive reactive current limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru curentul reactiv capacitiv controlat (r0076 > 0). Valoarea este referita la curentul maxim al unitatii de putere r0209[0]. Limiteaza injectia capacitiva de putere reactiva in retea.",
+      "influenteaza": "p3525, p3527",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1205,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3527",
+    "descriere_scurta": "Infeed absolute apparent current limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru curentul aparent controlat (r0068). Valoarea este referita la curentul maxim al unitatii de putere r0209[0]. Protejeaza unitatea de putere impotriva depasirii curentului total.",
+      "influenteaza": "p3525, p3526",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1206,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3528",
+    "descriere_scurta": "Infeed current limit motoring scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru scalarea limitei de curent in mod motor (p3530). Permite ajustarea dinamica a limitei de curent activ in regim motor. Utilizat in aplicatii cu cerinte variabile de putere.",
+      "influenteaza": "p3530, p3529",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1207,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3529",
+    "descriere_scurta": "Infeed current limit regenerative scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru scalarea limitei de curent in mod generator (p3531). Permite ajustarea dinamica a limitei de curent activ in regim regenerativ. Utilizat in aplicatii cu frana regenerativa variabila.",
+      "influenteaza": "p3531, p3528",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1208,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3530",
+    "descriere_scurta": "Infeed current limit motoring",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de motor pentru curentul activ de retea. Limita efectiva curenta este afisata in r0067[0]. Protejeaza reteaua si unitatea de putere la preluarea de energie din retea.",
+      "influenteaza": "p3528, r0067",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1209,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3531",
+    "descriere_scurta": "Infeed current limit regenerative",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru curentul activ de retea in regim generator. Limita efectiva curenta este afisata in r0067[1]. Protejeaza reteaua la injectia de energie din sistemul de actionare.",
+      "influenteaza": "p3529, r0067",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1210,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3532",
+    "descriere_scurta": "Infeed inhibit motoring",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru inhibarea modului motor al alimentatorului. La semnal 1 alimentatorul nu mai poate absorbi energie din retea. Utilizat in aplicatii unde functionarea motor a alimentatorului trebuie blocata extern.",
+      "influenteaza": "p3533, p3530",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1211,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3533",
+    "descriere_scurta": "Infeed inhibit generator mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru inhibarea modului generator al alimentatorului. La semnal 1 alimentatorul nu mai poate injecta energie in retea. Utilizat cand regenerarea trebuie blocata din motive ale retelei.",
+      "influenteaza": "p3532, p3531",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1213,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3560",
+    "descriere_scurta": "Infeed Vdc controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional scalat pentru regulatorul de tensiune DC link (regulator Vdc). Valori mai mari cresc rapiditatea de raspuns dar pot cauza instabilitate. Influenteaza direct calitatea reglarii tensiunii DC.",
+      "influenteaza": "p3561, p3562",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1214,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3561",
+    "descriere_scurta": "Infeed Vdc controller proportional gain scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru scalarea castigului proportional al regulatorului de tensiune DC link. Permite ajustarea dinamica a parametrilor regulatorului Vdc. Utilizat in aplicatii adaptative.",
+      "influenteaza": "p3560, p3562",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1215,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3562",
+    "descriere_scurta": "Infeed Vdc controller integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul integral scalat pentru regulatorul de tensiune DC link (Vdc). Valori mai mici cresc rapiditatea eliminarii erorii statice dar pot cauza suprareglaj. Determina viteza de revenire la setpoint dupa perturbatii.",
+      "influenteaza": "p3560, p3561",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1216,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3564",
+    "descriere_scurta": "Infeed Vdc monitor time constant",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp a filtrului pentru monitorul de tensiune DC link (Vdc). O valoare mai mare reduce zgomotul de masura dar introduce intarziere in detectia variatiilor. Influenteaza reactia la oscilatiile tensiunii DC.",
+      "influenteaza": "p3560, p3562",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1217,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3566",
+    "descriere_scurta": "Infeed Vdc ramp duration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza rampa de timp pentru tensiunea DC link la pornire si oprire. La pornire, tensiunea creste de la valoarea de preIncarcare la setpoint in acest timp; la oprire, tensiunea scade la valoarea redresata. Previne socuri de tensiune la modificarile starii alimentatorului.",
+      "influenteaza": "p3510, p3560",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 1218,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3570",
+    "descriere_scurta": "Master/slave active current setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului setpoint-ului curentului activ pentru controlul slave. Semnalul este receptionat de la alimentatorul master (ex: via multiplexor). Esential pentru configuratia master/slave a alimentatoarelor in paralel.",
+      "influenteaza": "p3572, p3579",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1220,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3572",
+    "descriere_scurta": "Master/slave active current setpoint multiplexer selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru selectarea intrarii necesare a multiplexorului. Valorile valide sunt 0, 1, 2, 3; alte valori genereaza defect F06320. Permite selectarea dinamica a setpoint-ului de curent activ intre mai multe surse.",
+      "influenteaza": "p3570",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1223,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3577",
+    "descriere_scurta": "Master/slave current distribution factor multiplexer selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru selectarea intrarii multiplexorului pentru factorul de distributie a curentului. Valorile valide sunt 0-5; alte valori genereaza F06321. Permite selectarea dinamica a factorului de distributie a curentului.",
+      "influenteaza": "p3579",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1224,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3579",
+    "descriere_scurta": "Master/Slave current distribution factor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul cu care se inmulteste setpoint-ul curentului activ pentru regulatorul de curent in configuratia master/slave. Valoarea redusa se distribuie catre axele slave. Mentine castigul total al regulatorului de tensiune constant.",
+      "influenteaza": "p3570, p3577, p3516",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1225,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3603",
+    "descriere_scurta": "Infeed current pre-control factor D component",
+    "GENERATED": {
+      "explicatie": "p - Componenta D a precontrolului de curent este determinata din datele dispozitivului filtrului. Permite ponderarea componentei D precalculate. La valoare 0 precontrolul dinamic este dezactivat.",
+      "influenteaza": "p3604",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1226,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3604",
+    "descriere_scurta": "Infeed current pre-control factor D component scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru scalarea precontrolului de curent. Permite ajustarea dinamica a amplitudinii precontrolului din exterior. Utilizat in aplicatii cu sarcini variabile pe DC link.",
+      "influenteaza": "p3603",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1227,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3610",
+    "descriere_scurta": "Infeed reactive current fixed setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza setpoint-ul fix pentru curentul reactiv. Valoarea absoluta maxima admisa este curentul nominal al dispozitivului r0207. Permite compensarea puterii reactive a instalatiei direct din alimentatorul regenerativ.",
+      "influenteaza": "p3612, p3525, p3526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1229,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3612",
+    "descriere_scurta": "Infeed reactive power precontrol",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru precontrolul puterii reactive. Permite adaugarea unui termen de precontrol dinamic la controlul puterii reactive. Imbunatateste raspunsul tranzitoriu la variatiide sarcina reactiva.",
+      "influenteaza": "p3610",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1231,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3615",
+    "descriere_scurta": "Infeed current controller P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul P scalat pentru controlul in bucla inchisa al curentului alimentatorului. Valori mai mari cresc rapiditatea de raspuns dar pot cauza oscilatie. Influenteaza direct calitatea controlului curentului de retea.",
+      "influenteaza": "p3616, p3617",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1232,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3616",
+    "descriere_scurta": "Infeed current controller P gain scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru scalarea castigului proportional al regulatorului de curent. Permite ajustarea dinamica a parametrilor regulatorului de curent. Utilizat in aplicatii de control adaptativ.",
+      "influenteaza": "p3615, p3617",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1233,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3617",
+    "descriere_scurta": "Infeed current controller integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul integral scalat pentru regulatorul de curent al alimentatorului. Determina viteza de eliminare a erorii statice de curent. Trebuie echilibrat cu castigul P pentru o stabilitate optima.",
+      "influenteaza": "p3615, p3616",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1234,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3620",
+    "descriere_scurta": "Infeed current controller adaptation lower application threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de start pentru adaptarea regulatorului de curent. De la acest prag, valoarea inductantei utilizata in control scade liniar cu valoarea curentului. Compenseaza saturatia inductantei reactantei de retea la curenti mari.",
+      "influenteaza": "p3622, p3421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1235,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3622",
+    "descriere_scurta": "Infeed current controller adaptation reduction factor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inductanta reactantei de retea la curentul maxim al unitatii de putere ca procent din inductanta la pragul de start (p3620). Defineste amplitudinea adaptarii inductantei pentru compensarea saturatiei. Valoarea tipica 80-90%.",
+      "influenteaza": "p3620, p3421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1238,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3639",
+    "descriere_scurta": "Negative phase-sequence system control integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul integral pentru controlul componentei de secventa negativa a curentului. Determina viteza de eliminare a dezechilibrului de curent cauzat de asimetria retelei. Valori mai mici imbunatatesc eliminarea dezechilibrului dar pot cauza instabilitate.",
+      "influenteaza": "p3640",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1239,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3640",
+    "descriere_scurta": "Negative phase-sequence system control operating mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de functionare al controlului componentei de secventa negativa. Controleaza componenta de secventa negativa din curentul de retea cu setpoint suplimentar p3641. Util la retele dezechilibrate pentru imbunatatirea calitatii curentului.",
+      "influenteaza": "p3639",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1241,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3645",
+    "descriere_scurta": "Neg. phase-seq. control system Vdc actual value filter damping",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea numitorului pentru filtrul de strangulare al valorii actuale Vdc la dublul frecventei retelei. Utilizat pentru eliminarea ondularii de tensiune DC la 100/120 Hz cauzata de dezechilibrul retelei. Influenteaza calitatea semnalului Vdc in controlul de secventa negativa.",
+      "influenteaza": "p3640",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1242,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3649",
+    "descriere_scurta": "Transformer DC component controller integral time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul integral Tn al regulatorului componentei DC. Determina viteza de eliminare a componentei DC din curentul transformatorului. Utilizat la alimentatoare conectate la transformatoare pentru a preveni saturatia magnetica.",
+      "influenteaza": "p3650, p3651",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1243,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3650",
+    "descriere_scurta": "Transformer DC component controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional Kp al regulatorului componentei DC. Regulatorul calculeaza o tensiune suplimentara la iesire pentru a contracara orice componenta DC din curent. Proiectat analitic bazat pe model cu convertorul, filtrul de retea si transformatorul.",
+      "influenteaza": "p3649, p3651",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1244,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3651",
+    "descriere_scurta": "Transformer DC component controller limiting",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru tensiunea de iesire a regulatorului componentei DC. Valoarea este referita la tensiunea de alimentare a dispozitivului (p0210). Previne saturatia regulatorului si mentine stabilitatea sistemului.",
+      "influenteaza": "p3649, p3650",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 1245,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3654",
+    "descriere_scurta": "Transformer DC component controller PT2 limit frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa limita pentru filtrul PT2 lowpass al regulatorului componentei DC. Filtrul limiteaza banda de trecere a regulatorului pentru a evita interactiunile cu alte bucle de control. Valori tipice intre 4 si 10 Hz.",
+      "influenteaza": "p3649, p3650",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1246,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3660",
+    "descriere_scurta": "VSM input line supply voltage voltage scaler",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare a tensiunii pentru Modulul de Sesizare a Tensiunii (VSM). Permite calibrarea masuratoriide tensiune de retea la intrarea VSM. Trebuie setat corect pentru masurarea precisa a tensiunii de retea.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  }
+]

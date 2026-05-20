@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 5705,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0499",
+    "descriere_scurta": "Encoder diagnostic signal high word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza componenta high (cuvantul superior) a semnalului de trace selectat pentru diagnosticarea encoderului. Semnalul de afisat este selectat prin p0496. Impreuna cu r0497 si r0498 permite vizualizarea completa a semnalelor de diagnosticare.",
+      "influenteaza": "p0496, r0497, r0498",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5706,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0497",
+    "descriere_scurta": "Encoder diagnostic signal double word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza semnalul de trace in format double word (32 biti) pentru diagnosticarea encoderului. Semnalul de afisat este selectat prin p0496. Permite analiza simultana a tuturor bitilor unui semnal de encoder de 32 de biti.",
+      "influenteaza": "p0496, r0498, r0499",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5710,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0500",
+    "descriere_scurta": "Technology application",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul aplicatiei tehnologice (pompa/ventilator, actionare generala sau compresoare). Influenteaza calculul automat al parametrilor de reglaj initiati de p0578. Valoarea corecta optimizeaza parametrii regulatorului pentru tipul de sarcina.",
+      "influenteaza": "p0578, p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5716,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0528",
+    "descriere_scurta": "Controller gain, system of units",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sistemul de unitati pentru castigurile regulatorilor. Valoarea 0 utilizeaza unitati ingineresti (Nm/rpm, Arms/rpm), valoarea 1 unitati normalizate. Influenteaza interpretarea castigurilor p1460, p1462, p1715.",
+      "influenteaza": "p1460, p1462, p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5722,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0571",
+    "descriere_scurta": "Inhibit list, motor/closed-loop control parameter calculation",
+    "GENERATED": {
+      "explicatie": "p - Lista parametrilor exclusi din calculul automat al parametrilor motor si regulator (p0340, p0578). Numarul de parametri activi in lista este setat in p0570. Permite protejarea valorilor manuale ale parametrilor specifici.",
+      "influenteaza": "p0570, p0340, p0578",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5729,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0578",
+    "descriere_scurta": "Calculate parameters that are dependent on the technology/units",
+    "GENERATED": {
+      "explicatie": "p - Calculeaza toti parametrii dependenti de tipul aplicatiei (p0500) si de unitatile selectate. Echivalent cu p0340=5 ca set de parametri calculati. Utilizat dupa modificarea aplicatiei sau a unitatilor fara recalcularea parametrilor motor.",
+      "influenteaza": "p0500, p0340, p0571",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5733,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0596",
+    "descriere_scurta": "Reference quantity, technological units",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta pentru unitatile tehnologice ale regulatorului PID. La comutarea la unitati absolute (p0595), toti parametrii relativi se raporteaza la aceasta referinta. Trebuie setata conform domeniului de masurare al procesului.",
+      "influenteaza": "p0595, p2200, p2268",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 5737,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0602",
+    "descriere_scurta": "Par_circuit power unit number, temperature sensor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul unitatii de putere la care este conectat senzorul de temperatura motor in configuratii paralele. Valoarea corespunde numarului Power unit Data Set (PDS). Permite monitorizarea corecta a temperaturii in circuite de putere paralele.",
+      "influenteaza": "p0120, p0600, p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5742,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0605",
+    "descriere_scurta": "Motor temperature fault threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de temperatura la care este generat defectul de supraincalzire motor. La depasire drive-ul se opreste cu defect F07011. Trebuie setat conform limitei termice admise de motorul instalat (de regula mai mic decat temperatura maxima admisibila).",
+      "influenteaza": "p0604, p0600, r0035",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5751,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0615",
+    "descriere_scurta": "I2t motor model fault threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de temperatura de defect pentru monitorizarea prin modelul termic I2t. La atingerea acestei valori este generat defectul de supraincalzire motor in absenta unui senzor fizic. Trebuie setat sub temperatura maxima admisa de motor.",
+      "influenteaza": "p0612, r0034",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5759,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0623",
+    "descriere_scurta": "Stator resistance of Rs identification after powering up again",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezistenta statorica identificata dupa repornire prin rutina de identificare Rs online. Valoarea este utilizata pentru compensarea variatiei rezistentei cu temperatura. Util pentru diagnosticarea calitatii identificarii online a rezistentei statorice.",
+      "influenteaza": "p0350, p0621",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5773,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0634",
+    "descriere_scurta": "Q flux flux constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coeficientul componentei nesaturate a functiei de flux pe axa q pentru motoarele sincrone cu PM. Unul din cei 4 coeficienti care definesc functia nelineara si cu cuplaj incrucsat a fluxului q. Necesar pentru modelarea exacta a motoarelor sincrone moderne.",
+      "influenteaza": "p0635, p0636, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5778,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0636",
+    "descriere_scurta": "Q flux direct axis current constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - Descrie interdependenta componentei nesaturate a curentului pe axa d in functia de flux q pentru motoarele sincrone PM. Parametru al modelului de cuplu nelinear. Influenteaza acuratetea compensarii curentului Id in calculul fluxului q.",
+      "influenteaza": "p0634, p0635, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5782,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1573",
+    "descriere_scurta": "Flux threshold value magnetizing",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de flux pentru activarea setpoint-ului de viteza si terminarea magnetizarii (r0056.4). Drive-ul nu accepta setpoint de viteza pana cand fluxul nu atinge acest prag. Valori prea mici pot cauza pornire prematura cu flux insuficient.",
+      "influenteaza": "r0056, p0346",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5783,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0650",
+    "descriere_scurta": "Actual motor operating hours",
+    "GENERATED": {
+      "explicatie": "p - Contorizeaza orele de functionare ale motorului (contorul ruleaza cand impulsurile sunt activate). Valoarea este salvata la fiecare retragere a enable-ului de impulsuri. Utilizat pentru planificarea mentenantei si monitorizarea duratei de viata.",
+      "influenteaza": "p0651",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5786,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0651",
+    "descriere_scurta": "Motor operating hours maintenance interval",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de mentenanta in ore de functionare pentru motor. La atingerea intervalului setat este generat un defect corespunzator pentru planificarea mentenantei. Valoarea 0 dezactiveaza monitorizarea intervalului de mentenanta.",
+      "influenteaza": "p0650",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5791,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0380",
+    "descriere_scurta": "Motor damping inductance, d axis",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza inductanta de amortizare a motorului sincron separat excitat pe axa d (directia rotorului). Parametru specific motoarelor sincrone cu rotor aparent. Utilizat in calculul avansatat al modelului motor pentru control vectorial precis.",
+      "influenteaza": "r0381, p0375",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5796,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0681",
+    "descriere_scurta": "Central measuring probe, synchronizing signal signal source /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de sincronizare (SYN) al functiei centrale de evaluare a sondelor de masura. Semnalul sincronizeaza timpul comun al sistemului intre master si slave. Necesar in configuratii multi-drive cu masuratori de pozitie centralizate.",
+      "influenteaza": "p0682, r0685",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5797,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0682",
+    "descriere_scurta": "Central measuring probe, control word signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru cuvantul de control al functiei centrale de evaluare a sondelor de masura. Permite transmiterea comenzilor de triggerare a sondei din fieldbus sau I/O. Necesar pentru aplicatii de masurare centralizata a pozitiei.",
+      "influenteaza": "p0681, r0685",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5798,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0922",
+    "descriere_scurta": "PROFIdrive telegram selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul telegramei PROFIdrive pentru comunicatia cu masterul fieldbus. Telegrama determina structura datelor de proces (PZD) transmise si primite. Valoarea 999 utilizeaza telegrama libera definita de utilizator.",
+      "influenteaza": "p0923, p0924",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5799,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0685",
+    "descriere_scurta": "Central measuring probe, control word display",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuvantul de control activ al functiei centrale de evaluare a sondelor de masura. Permite verificarea starii comenzilor de control primite de la sursa configurata in p0682. Util pentru diagnosticarea functionarii sondelor de masura.",
+      "influenteaza": "p0682, p0681",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5800,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1626",
+    "descriere_scurta": "Excitation current setpoint",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul de curent de excitatie calculat pentru motoarele sincrone separat excitate. Valoarea este generata de regulatorul de flux si transmisa redresorului de excitatie extern. Util pentru diagnosticarea reglarii fluxului motor.",
+      "influenteaza": "p0390, p1620",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5803,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0390",
+    "descriere_scurta": "Rated excitation current",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul nominal al redresorului de excitatie controlat pentru motoare sincrone separat excitate. Valoarea este utilizata in calculul regulatorului de curent de excitatie. Trebuie setat conform curentului de excitatie nominal al motorului.",
+      "influenteaza": "r1626, p1620",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5814,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0700",
+    "descriere_scurta": "Macro Binector Input (BI)",
+    "GENERATED": {
+      "explicatie": "p - Ruleaza fisierul macro pentru interconectarea automata a intrarilor binectoare (BI) ale setului de date de comanda curent. Fisierul macro trebuie sa existe pe cardul de memorie. Simplifica configurarea conexiunilor BICO pentru aplicatii standard.",
+      "influenteaza": "r8571, p0015",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5815,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8571",
+    "descriere_scurta": "Macro Binector Input (BI)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza fisierele ACX salvate in directorul corespunzator din memoria non-volatila a dispozitivului. Informatii despre macro-urile disponibile pentru interconectare automata a intrarilor binectoare. Util pentru verificarea macro-urilor instalate.",
+      "influenteaza": "p0700, r8570",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5816,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0723",
+    "descriere_scurta": "CU digital inputs, status inverted",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea inversa a intrarilor digitale ale Control Unit. Util pentru verificarea logicii de negare a intrarilor digitale configurate. Fiecare bit corespunde starii inverse a unei intrari digitale specifice.",
+      "influenteaza": "r0722, p0724",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5817,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0748",
+    "descriere_scurta": "CU, invert digital outputs",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inversarea semnalelor la iesirile digitale ale Control Unit. Fiecare bit setat inverseaza semnalul corespunzatoarei iesiri digitale. Util pentru adaptarea la logica externa negativa fara modificarea schemei BICO.",
+      "influenteaza": "r0747, p0738",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5818,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0729",
+    "descriere_scurta": "CU digital outputs access authority",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza autoritatea de acces la iesirile digitale. Bitul 1 indica controlul PLC prin PROFIBUS sau acces direct, bitul 0 indica controlul drive-ului sau terminal nesetat ca iesire. Util pentru diagnosticarea conflictelor de control la iesiri.",
+      "influenteaza": "p0748, r0747",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5820,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0739",
+    "descriere_scurta": "CU, signal source for terminal DI/DO 9",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul bidirecctional DI/DO 9 (X122.8) configurat ca iesire digitala. Permite interconectarea BICO a oricarei marimi interne la aceasta iesire. Activ doar cand terminalul este setat ca iesire in p0728.",
+      "influenteaza": "p0728, r0747",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5821,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0740",
+    "descriere_scurta": "CU, signal source for terminal DI/DO 10",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul bidirecctional DI/DO 10 (X122.10) configurat ca iesire. Permite rutarea oricarui semnal BICO intern la aceasta iesire digitala. Activ doar cand terminalul este configurat ca iesire in p0728.",
+      "influenteaza": "p0728, r0747",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5822,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0741",
+    "descriere_scurta": "CU, signal source for terminal DI/DO 11",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul bidirecctional DI/DO 11 (X122.11) configurat ca iesire. Permite rutarea oricarui semnal BICO intern la aceasta iesire digitala. Activ doar cand terminalul este configurat ca iesire in p0728.",
+      "influenteaza": "p0728, r0747",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5824,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0743",
+    "descriere_scurta": "CU, signal source for terminal DI/DO 13",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul bidirecctional DI/DO 13 (X132.8) configurat ca iesire. Permite rutarea oricarui semnal BICO intern la aceasta iesire digitala. Activ doar cand terminalul este configurat ca iesire in p0728.",
+      "influenteaza": "p0728, r0747",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5825,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0744",
+    "descriere_scurta": "CU, signal source for terminal DI/DO 14",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul bidirecctional DI/DO 14 (X132.10) configurat ca iesire. Permite rutarea oricarui semnal BICO intern la aceasta iesire digitala. Activ doar cand terminalul este configurat ca iesire in p0728.",
+      "influenteaza": "p0728, r0747",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5827,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0747",
+    "descriere_scurta": "CU, digital outputs status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea actuala a iesirilor digitale ale Control Unit. Fiecare bit reflecta starea logica a iesirilor corespunzatoare (inainte de inversare). Util pentru diagnosticarea starii iesirilor digitale in timp real.",
+      "influenteaza": "p0738, p0748",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5830,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0790",
+    "descriere_scurta": "Test sockets physical address signal value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea actuala a unui semnal determinat prin adresa fizica la socketurile de test T0, T1, T2. Util pentru diagnosticarea semnalelor interne prin masurare directa la socketuri. Indexurile [0..2] corespund T0, T1, T2.",
+      "influenteaza": "p0783, p0785, r0786",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5832,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0784",
+    "descriere_scurta": "Test socket limit on/off",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limitarea amplitudinii semnalului de test la socketurile analogice. Valoarea 1 activeaza limitarea semnalului la ±10V pentru a proteja instrumentele de masura conectate. Dezactivarea permite toata amplitudinea semnalului.",
+      "influenteaza": "p0783, r0786",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5834,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0795",
+    "descriere_scurta": "CU digital inputs simulation mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de simulare pentru intrarile digitale ale Control Unit. In modul simulare, starea intrarilor este controlata software prin p0796. Util pentru testarea schemelor BICO fara conexiuni hardware fizice.",
+      "influenteaza": "p0796, r0722",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5836,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0807",
+    "descriere_scurta": "Master control active",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cine detine controlul master al drive-ului: interconectarea BICO sau sursa externa (software de configurare). In modul control extern, comanda de la PLC prin fieldbus poate fi suprapusa. Util pentru diagnosticarea conflictelor de control.",
+      "influenteaza": "p0806",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5838,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0811",
+    "descriere_scurta": "Command data set selection CDS bit 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru selectia bitului 1 al setului de date de comanda (CDS). Impreuna cu p0810 (bit 0) permite selectia intre 4 seturi de date de comanda. Utilizat pentru comutarea dinamica a configuratiei I/O in aplicatii complexe.",
+      "influenteaza": "p0810, r0836",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5839,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0837",
+    "descriere_scurta": "Drive Data Set DDS selected",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setul de date drive (DDS) selectat curent prin intrarea binectoare. Permite verificarea setului de parametri de reglaj activ la un moment dat. Util pentru diagnosticarea configuratiei active in aplicatii cu seturi de date comutabile.",
+      "influenteaza": "p0820, p0821, p0180",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5848,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0833",
+    "descriere_scurta": "Data set changeover configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru comutarea motorului si encoderului in aplicatii multi-motor. Bitii configureaza comportamentul la comutare (sincron, cu contactor, cu intarziere etc.). Esential pentru comutarile sigure in aplicatii cu motoare comutabile.",
+      "influenteaza": "p0830, p0831, p0839",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5849,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0831",
+    "descriere_scurta": "Motor changeover, contactor feedback",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru confirmarea contacotrelor la comutarea motorului. Exista o corespondenta fixa intre comanda contactorului si semnalul de confirmare. Lipsa confirmarii in timpul setat genereaza defect de comutare.",
+      "influenteaza": "p0833, p0839",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5850,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0827",
+    "descriere_scurta": "Motor changeover status word bit number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul bitului din cuvantul de stare pentru fiecare set de date motor in scenariile de comutare. Permite indicarea clarei a starii fiecarui motor in aplicatii cu motoare comutabile. Util pentru monitorizarea din HMI sau PLC.",
+      "influenteaza": "p0833, p0831",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5852,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0824",
+    "descriere_scurta": "Drive Data Set selection DDS bit 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru selectia bitului 4 al setului de date drive (DDS). Impreuna cu p0820-p0823 permite selectia intre maxim 32 de seturi de date drive. Utilizat in aplicatii cu profiluri multiple de reglaj.",
+      "influenteaza": "p0820, p0821, p0822, p0823",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5853,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0839",
+    "descriere_scurta": "Motor changeover contactor control delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea comenzii contaoctorului la comutarea motorului. Intarzierea se aplica atat la deschiderea contactorului anterior cat si la inchiderea celui nou. Dimensionata pentru a asigura demagnetizarea motorului inainte de conectarea celui nou.",
+      "influenteaza": "p0833, p0831",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 5854,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1056",
+    "descriere_scurta": "Jog bit 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru activarea functiei jog 2 (incremental). Joggingul este triggercat nivel si permite miscarea incrementala a motorului. Se utilizeaza impreuna cu p1059 (jog 2 speed) pentru pozitionare manuala.",
+      "influenteaza": "p1059, p1055, p1058",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5867,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0854",
+    "descriere_scurta": "Master ctrl by PLC",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru bitul 10 al cuvantului de comanda 1 (master control by PLC). Valoarea 1 permite PLC-ului sa preia controlul principal al drive-ului prin fieldbus. Esential pentru sisteme cu control automatizat principal de la PLC.",
+      "influenteaza": "r0899, p0852",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5869,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0864",
+    "descriere_scurta": "Infeed operation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de operare al unitatii de alimentare Active Infeed. Semnalul confirma ca infeed-ul este operational si pregatit sa furnizeze energie. Utilizat in topologii cu Active Infeed pentru sincronizarea pornirii drive-ului.",
+      "influenteaza": "r0863, p0857",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5871,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0857",
+    "descriere_scurta": "Power unit monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare al unitatii de putere dupa comanda de pornire. Daca unitatea de putere nu returneaza semnal READY in aceasta perioada, este generat defectul F06000 sau F07802. Dimensionat in functie de timpul de pornire al hardware-ului.",
+      "influenteaza": "p0864, r0863",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5873,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0860",
+    "descriere_scurta": "Line cont. fdbk sig",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de confirmare al contactorului de retea. Valoarea implicita 863.1 conecteaza feedback-ul la starea bit 1 al r0863 (stare contactor retea). Monitorizat cu temporizatorul p0861 pentru detectia problemelor la contactor.",
+      "influenteaza": "p0861, r0863",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5874,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0861",
+    "descriere_scurta": "Line contactor monitoring time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de monitorizare al contactorului de retea la fiecare comutare (r0863.1). Lipsa semnalului de confirmare in aceasta perioada genereaza un mesaj de defect. Dimensionat in functie de timpul de raspuns al contactorului fizic.",
+      "influenteaza": "p0860, r0863",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5875,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0863",
+    "descriere_scurta": "of a drive can also be selected as signal source.",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru prima comanda OFF2 (oprire prin golire). Operatia logica AND intre prima si a doua OFF2 formeaza bitul 1 al cuvantului de comanda 1. Valoarea 1 implicit mentine comanda OFF2 activa (motor poate functiona).",
+      "influenteaza": "p0849, r0899",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5879,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0868",
+    "descriere_scurta": "Power unit DC switch debounce time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de antebounce al intreruptorului DC pentru Motor Modules in format chassis. Filtreaza tranzitoriile scurte ale semnalului intreruptorului DC. Valoarea implicita 65000 ms asigura debouncing maxim.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 5890,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0918",
+    "descriere_scurta": "PROFIBUS address",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sau afiseaza adresa PROFIBUS a interfetei Control Unit. Adresa poate fi setata prin switch-ul fizic sau prin parametru (daca switch-ul este la 00h, 7Fh, 80h sau FFh). Modificarile devin active dupa POWER ON si sunt salvate non-volatil.",
+      "influenteaza": "r0963, p0092",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5898,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2065",
+    "descriere_scurta": "PROFIdrive master sign-of-life, diagnostics",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza de cate ori semnalul sign-of-life al masterului fieldbus izocrono a esuat. Depasirea tolerantei setate in p0925 genereaza defect de comunicatie. Util pentru diagnosticarea stabilitatii comunicatiei izocrono PROFIBUS/PROFINET.",
+      "influenteaza": "p0925, p0092",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5899,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0925",
+    "descriere_scurta": "PROFIdrive clock synchronous sign-of-life tolerance",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de erori consecutive ale semnalului sign-of-life acceptate inainte de generarea unui defect. Semnalul sign-of-life este primit normal in PZD4 de la master. Valori mai mari reduc sensibilitatea la intreruperi scurte de comunicatie.",
+      "influenteaza": "r2065, p0092",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5900,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0930",
+    "descriere_scurta": "PROFIdrive operating mode",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza modul de operare PROFIdrive activ: 1=control viteza cu RFG, 2=control pozitie, 3=control viteza fara RFG. Modul este determinat de telegrama selectata si configuratia drive-ului. Util pentru verificarea configuratiei fieldbus.",
+      "influenteaza": "p0922",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5901,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0944",
+    "descriere_scurta": "Counter for fault buffer changes",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de modificari ale buffer-ului de defecte. Contorul se incrementeaza la fiecare noua intrare in buffer-ul de defecte. Util pentru detectarea automata a aparitiei de noi defecte prin monitoringul valorii contorului.",
+      "influenteaza": "r0945, r0948",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5902,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3122",
+    "descriere_scurta": "Diagnostic attribute fault",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza atributul de diagnosticare al defectului care a aparut. Contine informatii codificate despre natura defectului, sursa si gravitatea acestuia. Util pentru diagnosticarea avansata si clasificarea automata a defectelor.",
+      "influenteaza": "r0945, r0949",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5904,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0952",
+    "descriere_scurta": "Fault cases, counter",
+    "GENERATED": {
+      "explicatie": "p - Contorizeaza numarul de situatii de defect aparute de la ultimul reset. Poate fi resetat prin scrierea valorii 0. Util pentru monitorizarea frecventei defectelor si evaluarea fiabilitatii drive-ului in timp.",
+      "influenteaza": "r0944, r0945",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5906,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0963",
+    "descriere_scurta": "PROFIBUS baud rate",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza viteza de comunicatie PROFIBUS detectata automat de drive. Valoarea numerica corespunde unui cod standardizat al ratei baud (ex: 9600, 19200, 93750, 187500, 500000, 1500000 baud). Nu poate fi setata manual.",
+      "influenteaza": "p0918",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 5908,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0969",
+    "descriere_scurta": "System runtime relative",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza timpul de functionare al sistemului in milisecunde de la ultimul POWER ON. Util pentru masurarea intervalelor de timp si pentru corelarea evenimentelor cu timpul de operare. Contorul se reseteaza la POWER ON.",
+      "influenteaza": "r9756",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5919,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0972",
+    "descriere_scurta": "Drive unit reset",
+    "GENERATED": {
+      "explicatie": "p - Seteaza procedura de executat pentru resetarea hardware a unitatii de actionare. Diferite valori initializeaza resetul software, resetul BIOS sau resetul complet al sistemului. Utilizat dupa actualizarea firmware sau la rezolvarea problemelor persistente.",
+      "influenteaza": "p0009",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 5922,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3996",
+    "descriere_scurta": "Parameter write inhibit status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea actuala a blocarii la scriere a parametrilor. Valoarea diferita de 0 indica ca scrierea parametrilor este blocata. Blocarea poate fi activata prin parola sau prin configuratia de securitate a drive-ului.",
+      "influenteaza": "p3990, p0011",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5924,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0989",
+    "descriere_scurta": "List of existing parameters 10",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza lista parametrilor existenti pentru acest drive in pachetele de 10. Permite identificarea rapida a tuturor parametrilor disponibili in drive-ul curent. Util pentru programare automata si verificarea configuratiei complete.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5926,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r0999",
+    "descriere_scurta": "List of modified parameters 10",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza parametrii care au valori diferite de setarile de fabrica in pachete de 10. Permite identificarea rapida a tuturor modificarilor fata de configuratia standard. Util pentru documentatia de punere in functiune si pentru audit.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5928,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1197",
+    "descriere_scurta": "Fixed speed setpoint number actual",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul setpoint-ului fix de viteza selectat curent. Valoarea indica care din setpoint-urile fixe configurate (p1001-p1015) este activ. Util pentru diagnosticarea logicii de selectie a vitezelor fixe.",
+      "influenteaza": "p1001, p1002, p1025",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5955,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1047",
+    "descriere_scurta": "Motorized potentiometer ramp-up time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de crestere pentru generatorul de rampa intern al potentiometrului motorized. Setpoint-ul creste de la zero la limita de viteza p1082 in aceasta durata. Valori mai mici ofera acceleratie mai rapida dar pot solicita mecanic sistemul.",
+      "influenteaza": "p1048, p1082",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 5957,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1036",
+    "descriere_scurta": "Motorized potentiometer lower setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru reducerea setpoint-ului potentiometrului motorized. In modul manual, semnalul reduce setpoint-ul curent cu rampa configurata. Utilizat pentru controlul vitezei prin doua comenzi (crestere/descrestere).",
+      "influenteaza": "p1035, p1047, p1048",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5961,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1038",
+    "descriere_scurta": "Motorized potentiometer minimum speed",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza minima a potentiometrului motorized. Setpoint-ul nu poate scadea sub aceasta valoare in modul manual. Permite definirea unui prag minim de viteza pentru aplicatii care nu se pot opri complet.",
+      "influenteaza": "p1039, p1047, p1048",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 5967,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1041",
+    "descriere_scurta": "Motorized potentiometer manual/automatic",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru comutarea intre modul manual si automat al potentiometrului motorized. In modul manual setpoint-ul este modificat prin comenzi ridicare/coborare, in modul automat printr-un semnal de setpoint extern.",
+      "influenteaza": "p1042, p1035, p1036",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 5970,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1045",
+    "descriere_scurta": "Mot. potentiometer speed setp. in front of ramp-fct. gen.",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul efectiv al potentiometrului motorized inainte de generatorul de rampa intern. Valoarea reflecta setpoint-ul rezultat dupa limitarea min/max. Util pentru diagnosticarea comportamentului potentiometrului motorized.",
+      "influenteaza": "r1050, p1038, p1039",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5974,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1082",
+    "descriere_scurta": "Maximum speed",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza maxima posibila a drive-ului. Limiteaza setpoint-ul de viteza la aceasta valoare maxima. Trebuie dimensionat in functie de limitele mecanice ale sarcinii si limitele electrice ale motorului si drive-ului.",
+      "influenteaza": "p1080, p1120, p1121",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 5975,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1050",
+    "descriere_scurta": "Motor. potentiometer setpoint after the ramp-function generator /",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul efectiv al potentiometrului motorized dupa generatorul de rampa intern. Aceasta valoare trebuie interconectata cu setpoint-ul principal (p1070). Util pentru diagnosticarea iesirii potentiometrului motorized.",
+      "influenteaza": "r1045, p1070",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5980,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1058",
+    "descriere_scurta": "Jog 1 speed setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza pentru functia jog 1 de deplasare incrementala a motorului. Jogging-ul este level-triggered si permite deplasarea controlata a motorului cat timp semnalul este activ. Utilizat pentru pozitionarea manuala si testarea in faza de punere in functiune.",
+      "influenteaza": "p1059, p1055, p1056",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 5985,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1088",
+    "descriere_scurta": "Speed limit in negative direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru limita de viteza in directia negativa de rotatie. Valoarea implicita 1086[0] conecteaza la limita maxima negativa configurata. Utilizat in aplicatii unde se doreste limitare asimetrica a vitezei.",
+      "influenteaza": "p1086, r1087",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 5988,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1073",
+    "descriere_scurta": "Main setpoint effective",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul principal efectiv dupa scalare. Valoarea arata setpoint-ul principal dupa aplicarea factorilor de scalare configurati. Util pentru verificarea setpoint-ului activ in landul de comanda al vitezei.",
+      "influenteaza": "p1070, p1071",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5989,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1078",
+    "descriere_scurta": "Total setpoint effective",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul total efectiv al vitezei ca suma a setpoint-ului principal si setpoint-ului suplimentar. Valoarea finala intrata in generatorul de rampa. Util pentru verificarea setpoint-ului complet inainte de limitare.",
+      "influenteaza": "r1073, r1077",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5991,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1077",
+    "descriere_scurta": "Supplementary setpoint effective",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul suplimentar efectiv dupa scalare. Setpoint-ul suplimentar este adaugat la setpoint-ul principal pentru a forma setpoint-ul total. Util pentru diagnosticarea efectului setpoint-ului adaugat (ex: compensare alunecere).",
+      "influenteaza": "p1075, p1076",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 5998,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0310",
+    "descriere_scurta": "Rated motor frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa nominala a motorului de pe placa de identificare (50 Hz pentru IEC, 60 Hz pentru NEMA). Parametru de baza utilizat in calculul numarului de perechi de poli si al alunecarii nominale. Trebuie introdus conform placutei motorului.",
+      "influenteaza": "p0311, p0314, p0100",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 6000,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1085",
+    "descriere_scurta": "Speed limit in positive direction of rotation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru limita de viteza in directia pozitiva de rotatie. Valoarea implicita 1083[0] conecteaza la limita maxima pozitiva configurata. Permite limitare dinamica a vitezei maxime pozitive din surse externe.",
+      "influenteaza": "p1083, r1086",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6003,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1087",
+    "descriere_scurta": "Speed limit negative effective",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limita de viteza negativa efectiva aplicata setpoint-ului. Valoarea reflecta limita negativa activa dupa procesarea surselor configurate in p1088. Util pentru verificarea limitarilor active in directia negativa.",
+      "influenteaza": "p1088, p1086",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6006,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1101",
+    "descriere_scurta": "Skip speed bandwidth",
+    "GENERATED": {
+      "explicatie": "p - Seteaza banda de trecere pentru vitezele de saritura (skip speeds) 1-4. In jurul vitezelor de saritura se creeaza o zona interzisa de latime +/- jumatate din valoarea setataa. Vitezele de saritura evita rezonantele mecanice ale instalatiei.",
+      "influenteaza": "p1091, p1092, p1093, p1094",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6011,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1094",
+    "descriere_scurta": "Skip speed 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de saritura 4 care trebuie evitata pentru prevenirea rezonantelor mecanice. Impreuna cu banda p1101, viteza este evitata in ambele directii de rotatie. Poate fi setat la 0 daca nu este necesara a patra viteza de saritura.",
+      "influenteaza": "p1101, p1091, p1092, p1093",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6012,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1170",
+    "descriere_scurta": "< 580 [rpm] and 580 [rpm] <= r1114 <= 620 [rpm] --> r1119 = 580 [rpm]",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru dezactivarea directiei negative de rotatie. Valoarea 1 blocheaza rotatia in sens negativ indiferent de setpoint. Utilizat in aplicatii unidirectionale cum ar fi pompele centrifuge sau ventilatoarele.",
+      "influenteaza": "p1110, r1112",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6017,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1112",
+    "descriere_scurta": "Speed setpoint after minimum limiting",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul de viteza dupa aplicarea limitei minime (p1080). Valoarea nu poate scadea sub viteza minima configurata. Util pentru verificarea efectului limitarii minime de viteza in landul de comanda.",
+      "influenteaza": "p1080, r1119",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6022,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1115",
+    "descriere_scurta": "Ramp-function generator selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza tipul generatorului de rampa: simplu (0) sau cu rotunjire (1). Generatorul cu rotunjire aplica o rotunjire la inceputul si sfarsitul rampei pentru tranzitii mai line. Reduce solicitarile mecanice la accelerare si decelerace.",
+      "influenteaza": "p1120, p1121, p1130",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6023,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1119",
+    "descriere_scurta": "Ramp-function generator setpoint at the input",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul la intrarea generatorului de rampa inainte de procesarea rampei. Reprezinta setpoint-ul dorit inainte de aplicarea timpilor de rampa. Util pentru diagnosticarea setpoint-ului efectiv transmis generatorului de rampa.",
+      "influenteaza": "r1150, p1120",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6036,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1120",
+    "descriere_scurta": "Ramp-function generator ramp-up time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de crestere al generatorului de rampa de la zero la viteza maxima p1082. Valori mai mari reduc acceleratia si solicitarile mecanice. Trebuie dimensionat in functie de inertiaa sarcinii si capacitatile de cuplu ale drive-ului.",
+      "influenteaza": "p1121, p1082, p1115",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6041,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1142",
+    "descriere_scurta": "Speed setpoint enable",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru bitul 6 al cuvantului de comanda 1 (enable/disable setpoint). La valoarea 0 (disable) setpoint-ul este fortat la zero mentinand motorul oprit cu rampa activa. Utilizat pentru controlul opririi controlatate a drive-ului.",
+      "influenteaza": "r0899, r1199",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6044,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1143",
+    "descriere_scurta": "Ramp-function generator, accept setting value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru acceptarea valorii de setare a generatorului de rampa. La activare, iesirea RFG este setata instantaneu la valoarea setata in p1144. Permite tranzitii bruste controlate de setpoint fara efectul rampei.",
+      "influenteaza": "p1144, r1150",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6045,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1199",
+    "descriere_scurta": "Ramp-function generator status word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuvantul de stare al generatorului de rampa cu indicatori de stare pentru limitare, urmarire si alte conditii active. Util pentru diagnosticarea comportamentului RFG si verificarea starii la oprire sau accelerare.",
+      "influenteaza": "p1115, r1119, r1150",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6048,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1145",
+    "descriere_scurta": "Ramp-function generator tracking intensity.",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intensitatea de urmarire (tracking) a generatorului de rampa. Iesirea RFG este corectata in functie de devierea la intrarea regulatorului de viteza necesara pentru acceleratia la limita de cuplu. Valori mai mari ofera urmarire mai agresiva a setpoint-ului.",
+      "influenteaza": "r1150, p1120",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6049,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1150",
+    "descriere_scurta": "Ramp-function generator speed setpoint at the output",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpoint-ul de viteza la iesirea generatorului de rampa, dupa aplicarea timpilor de rampa si a rotunjirii. Valoarea intrata in regulatorul de viteza. Parametru esential pentru diagnosticarea comportamentului dinamic al drive-ului.",
+      "influenteaza": "r1119, p1120, p1121",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6053,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1189",
+    "descriere_scurta": "Speed setpoint configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia canalului de setpoint de viteza. Bitii configureaza modul de adunare al setpoint-urilor si aplicarea filtrelor. Valoarea implicita 0011b activeaza setpoint-urile principale si suplimentare standard.",
+      "influenteaza": "p1155, p1160",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 6057,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1169",
+    "descriere_scurta": "Speed controller, speed setpoints 1 and 2",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza suma setpoint-urilor de viteza 1 (p1155) si viteza 2 (p1160) la intrarea regulatorului de viteza. Valorile componente si suma sunt utile pentru diagnosticarea lantului de setpoint. Reprezinta setpoint-ul final al regulatorului de viteza.",
+      "influenteaza": "p1155, p1160",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6058,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1160",
+    "descriere_scurta": "Speed controller speed setpoint 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru setpoint-ul de viteza 2 al regulatorului de viteza. Se adauga la setpoint-ul de viteza 1 (p1155) pentru setpoint-ul total al regulatorului. Utilizat pentru suprapunerea unui setpoint suplimentar (ex: din regulator tehnologic).",
+      "influenteaza": "p1155, r1169",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6061,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1204",
+    "descriere_scurta": "Flying restart, V/f control status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea si informatiile de diagnosticare ale functiei flying restart in modul de control V/f. Bitii indica fazele procesului de localizare a vitezei motorului in rotatie. Util pentru diagnosticarea functionarii flying restart in aplicatii V/f.",
+      "influenteaza": "p1200, p1202",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6063,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1200",
+    "descriere_scurta": "FlyRest oper mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de operare pentru functia flying restart care permite pornirea cu motorul in rotatie. Diferite valori 1-6 selecteaza diferite strategii de localizare a vitezei (prin frecventa, encoder, ambele directii etc.). Esential pentru repornirile dupa intreruperi scurte.",
+      "influenteaza": "p1202, p1204",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 6066,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1210",
+    "descriere_scurta": "Automatic restart, mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de repornire automata dupa defect sau cadere de tensiune. Valorile 1-16 configureaza diferite scenarii de repornire (dupa defect, dupa cadere de tensiune, cu sau fara confirmare). Influenteaza disponibilitatea sistemului dupa intreruperi.",
+      "influenteaza": "p1211, p1212, p1213",
+      "categorie": "Protectii"
+    }
+  }
+]

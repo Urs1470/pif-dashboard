@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 578,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0003",
+    "descriere_scurta": "BOP access level",
+    "GENERATED": {
+      "explicatie": "p=Seteaza nivelul de acces pentru citirea si scrierea parametrilor prin panoul de operare BOP. Nivelul 1 permite acces standard, nivelele superioare deblocheaza parametri avansati. Folosit la punerea in functiune pentru restrictionarea modificarilor neautorizate.",
+      "influenteaza": "p0004",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 579,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0004",
+    "descriere_scurta": "BOP display filter",
+    "GENERATED": {
+      "explicatie": "p=Filtreaza parametrii afisati pe panoul BOP in functie de grupul functional selectat. Simplifica navigarea prin afisarea doar a parametrilor relevanti pentru grupul ales. Se utilizeaza impreuna cu p0003 pentru personalizarea interfetei de operare.",
+      "influenteaza": "p0003",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 581,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0006",
+    "descriere_scurta": "BOP operating display mode",
+    "GENERATED": {
+      "explicatie": "p=Defineste ce informatii sunt afisate pe ecranul BOP in starea de functionare normala (gata de functionare si functionare activa). Poate afisa viteza, curentul, tensiunea sau alte marimi de proces. Configurarea corecta faciliteaza monitorizarea rapida a starii convertorului.",
+      "influenteaza": "p0003, p0004",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 582,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0007",
+    "descriere_scurta": "BOP background lighting",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de intarziere dupa care iluminarea de fundal a panoului BOP se stinge automat daca nu se apasa nicio tasta. Valoarea zero dezactiveaza stingerea automata. Prelungirea duratei de viata a ecranului BOP este scopul principal al acestui parametru.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 583,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0008",
+    "descriere_scurta": "BOP drive object after booting",
+    "GENERATED": {
+      "explicatie": "p=Defineste obiectul drive care va fi activ pe panoul BOP imediat dupa repornire. In instalatii cu mai multe obiecte drive pe aceeasi unitate, acest parametru determina care ax este afisat implicit la pornire. Simplifica operarea in sisteme multi-ax.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 584,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0009",
+    "descriere_scurta": "Device commissioning parameter filter",
+    "GENERATED": {
+      "explicatie": "p=Filtreaza parametrii accesibili in functie de pasul de punere in functiune selectat. Setarea la valori diferite de zero activeaza modul de punere in functiune si limiteaza parametrii modificabili la cei relevanti pentru pasul curent. Trebuie resetat la 0 dupa finalizarea punerii in functiune.",
+      "influenteaza": "p0010, p0097",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 585,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0010",
+    "descriere_scurta": "Encoder DO commissioning parameter filter",
+    "GENERATED": {
+      "explicatie": "p=Filtreaza parametrii accesibili pentru punerea in functiune a obiectului drive de encoder. Valorile diferite de zero limiteaza accesul la parametrii relevanti pentru pasul de configurare al encoderului. Dupa finalizare se reseteaza automat la 0.",
+      "influenteaza": "p0009, p0408",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 586,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0011",
+    "descriere_scurta": "BOP password entry (p0013)",
+    "GENERATED": {
+      "explicatie": "p=Permite introducerea parolei pentru protejarea accesului la parametrii panoului BOP. Parola introdusa se confirma prin p0012 si se stocheaza in lista p0013. Protejarea cu parola previne modificarile neautorizate ale parametrilor critici.",
+      "influenteaza": "p0012, p0013",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 587,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0012",
+    "descriere_scurta": "BOP password acknowledgement (p0013)",
+    "GENERATED": {
+      "explicatie": "p=Confirma parola introdusa in p0011 pentru activarea protectiei BOP. Parola devine activa numai daca valorile din p0011 si p0012 coincid. Mecanism de confirmare dubla pentru evitarea setarilor accidentale de parole.",
+      "influenteaza": "p0011, p0013",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 589,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0015",
+    "descriere_scurta": "Macro drive object",
+    "GENERATED": {
+      "explicatie": "p=Executa fisierele macro selectate de pe cardul de memorie sau memoria interna a dispozitivului. Macrocomenzile preincarca configuratii standard de parametri pentru aplicatii tipice. Simplifica punerea in functiune prin aplicarea unui set predefinit de setari.",
+      "influenteaza": "p0700",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 590,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0016",
+    "descriere_scurta": "Activate BOP user-defined list",
+    "GENERATED": {
+      "explicatie": "p=Activeaza sau dezactiveaza lista de parametri definita de utilizator pentru panoul BOP. Cand este activ (p0016=1), accesul BOP este limitat exclusiv la parametrii din lista p0013. Permite crearea unui set restrans de parametri pentru operatori cu acces limitat.",
+      "influenteaza": "p0003, p0013",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 591,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0040",
+    "descriere_scurta": "Reset energy consumption display",
+    "GENERATED": {
+      "explicatie": "p=Reseteaza contoarele de afisare a consumului de energie din r0039 si r0041. Procedeul consta in setarea p0040 de la 0 la 1, dupa care parametrul revine automat la zero. Util pentru masurarea consumului pe perioade de timp definite.",
+      "influenteaza": "r0039, r0041",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 592,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0045",
+    "descriere_scurta": "Display values smoothing time constant",
+    "GENERATED": {
+      "explicatie": "p=Seteaza constanta de timp pentru filtrarea valorilor de afisaj ale puterii si energiei (r5515[1], r5516[1]). Valori mai mari produc o afisare mai stabila dar cu raspuns mai lent la variatii. Nu afecteaza valorile reale de control, doar afisajul.",
+      "influenteaza": "r5515, r5516",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 593,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0092",
+    "descriere_scurta": "Clock synchronous operation pre-assignment/check",
+    "GENERATED": {
+      "explicatie": "p=Configureaza timpii de esantionare ai controlerelor interne pentru operarea izocrona PROFIdrive. La p0092=1, timpii sunt ajustati automat pentru compatibilitate izocrona, putand cauza derating al modulului de putere. La p0092=0, timpii sunt setati fara restrictii de sincronizare.",
+      "influenteaza": "p0115, p2048, p2049",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 594,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0097",
+    "descriere_scurta": "Select drive object type",
+    "GENERATED": {
+      "explicatie": "p=Executa configurarea automata a dispozitivului in functie de tipul de obiect drive selectat. La executare, seteaza automat p0099, p0107 si p0108 cu valorile corespunzatoare tipului ales. Simplifica configurarea initiala prin popularea automata a parametrilor de baza.",
+      "influenteaza": "p0099, p0107, p0108",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 596,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0100",
+    "descriere_scurta": "IEC/NEMA mot stds",
+    "GENERATED": {
+      "explicatie": "p=Selecteaza standardul utilizat pentru motoare si convertoare: IEC (kW, 50Hz) sau NEMA (hp, 60Hz). Aceasta setare determina unitatile de masura pentru puterea nominala a motorului si frecventa de referinta implicita. Trebuie setata corect inainte de introducerea datelor de placa a motorului.",
+      "influenteaza": "p0307, p0308, p0309, p0310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 597,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0105",
+    "descriere_scurta": "Activate/de-activate drive object",
+    "GENERATED": {
+      "explicatie": "p=Activeaza sau dezactiveaza un obiect drive din configuratia unitatii. Dezactivarea unui obiect drive il exclude din procesare fara a sterge configuratia sa. Utilizat in sisteme cu mai multe axe unde unele axe pot fi temporar inactive.",
+      "influenteaza": "p0180",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 598,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0112",
+    "descriere_scurta": "Sampling times pre-setting p0115",
+    "GENERATED": {
+      "explicatie": "p=Preasigneaza timpii de esantionare din p0115 printr-o selectie simpla de profil. Diferite valori ale p0112 seteaza combinatii predefinite de timpi de ciclu pentru regulatoarele de curent, viteza si flux. Simplifica configurarea timpilor de ciclu pentru aplicatii standard.",
+      "influenteaza": "p0115",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 599,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0113",
+    "descriere_scurta": "Minimum pulse frequency, selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza frecventa minima de comutare a inverterului, care determina indirect timpul de esantionare al regulatorului de curent p0115[0]. Frecventa minima selectata influenteaza incalzirea modulului de putere si calitatea formei de unda a curentului. Trebuie corelata cu aplicatia motoarelui si conditiile de racire.",
+      "influenteaza": "p0115, p1800",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 602,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0117",
+    "descriere_scurta": "Current controller computing dead time mode",
+    "GENERATED": {
+      "explicatie": "p=Seteaza modul de calcul al timpului mort al regulatorului de curent in raport cu sincronizarea PWM. Modul 0 si 1 sunt automate, modurile 2 si 3 permit setare manuala cu transfer timpuriu sau tardiv. Afecteaza performanta dinamica a regulatorului de curent si trebuie ajustat cu atentie in configuratii paralele.",
+      "influenteaza": "p0115, p0118",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 603,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0118",
+    "descriere_scurta": "Current controller computing dead time",
+    "GENERATED": {
+      "explicatie": "p=Defineste manual timpul mort al calculului pentru regulatorul de curent, exprimat in microsecunde. In mod normal este pre-setat automat in functie de p0115[0] si nu necesita modificare. Modificarea manuala este necesara doar in configuratii speciale cu sincronizare precisa.",
+      "influenteaza": "p0115, p0117",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 604,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0120",
+    "descriere_scurta": "Number of Power unit Data Sets (PDS)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date ale unitatii de putere, corespunzand numarului de module conectate in paralel. Necesar pentru configuratia cu module de putere paralele (parallel circuit). Afecteaza calculul puterii totale disponibile si gestionarea termica.",
+      "influenteaza": "p0602",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 605,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0130",
+    "descriere_scurta": "Number of Motor Data Sets (MDS)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date de motor disponibile pentru comutare motor (motor changeover). Permite stocarea datelor pentru mai multe motoare diferite intr-un singur convertor. Comutarea intre seturi de date permite conectarea de motoare diferite la acelasi convertor.",
+      "influenteaza": "p0180, p0833",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 607,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0140",
+    "descriere_scurta": "Number of Encoder Data Sets (EDS)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date de encoder disponibile pentru configuratia sistemului. Permite configurarea mai multor encodere sau tipuri de feedback de pozitie intr-un singur drive object. Necesita corelare cu numarul de seturi de date de motor p0130.",
+      "influenteaza": "p0130, p0408",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 608,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0150",
+    "descriere_scurta": "VSM2 data sets selection",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date pentru modulul de masura a tensiunii VSM2 (Voltage Sensing Module 2). VSM2 este utilizat la Active Line Module pentru masurarea tensiunii de retea si sincronizare. Necesita configurare corecta pentru functionarea ALM in modul regenerativ.",
+      "influenteaza": "p0151, p0154",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 610,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0151",
+    "descriere_scurta": "Voltage Sensing Module 2 component number",
+    "GENERATED": {
+      "explicatie": "p=Asigneaza setul de date VSM2 la un modul fizic VSM2 prin numarul de componenta din topologia sistemului. Numarul de componenta este unic si se atribuie la configurarea topologiei DRIVE-CLiQ. Trebuie sa corespunda modulului VSM2 fizic conectat la infeed.",
+      "influenteaza": "p0150, p0154",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 611,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0154",
+    "descriere_scurta": "Voltage Sensing Module 2 detection via LED",
+    "GENERATED": {
+      "explicatie": "p=Activeaza identificarea vizuala a modulului VSM2 prin LED pentru verificarea conexiunilor fizice. La setarea la 1, LED-ul modulului VSM2 asignat acestui infeed se aprinde pentru identificare. Util la punerea in functiune pentru verificarea conexiunilor in instalatii cu mai multe module.",
+      "influenteaza": "p0150, p0151",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 612,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0161",
+    "descriere_scurta": "Valve component number",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de componenta pentru valva hidraulica in topologia sistemului. Numarul este unic si se atribuie la configurarea topologiei, corespunzand unei componente de tip valva. Utilizat in aplicatii hidraulice cu module de control valva integrate.",
+      "influenteaza": "p0165, p0205",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 613,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0162",
+    "descriere_scurta": "CU-LINK slave component number",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de componenta pentru modulul de extensie CU-LINK (CX32, NX10). Permite Control Unit-ului sa comunice cu axe suplimentare prin interfata CU-LINK. Numarul trebuie sa corespunda componentei fizice asignate in topologia DRIVE-CLiQ.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 614,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0165",
+    "descriere_scurta": "Hydraulic Module activate/de-activate",
+    "GENERATED": {
+      "explicatie": "p=Activeaza sau dezactiveaza functionalitatea Hydraulic Module pentru controlul aplicatiilor hidraulice. Valoarea 1 activeaza modulul, valoarea 2 selecteaza un mod special de functionare. Necesar in aplicatii cu servoventile sau pompe hidraulice controlate de frecventa.",
+      "influenteaza": "p0161, p0230",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 615,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0170",
+    "descriere_scurta": "Number of Command Data Sets (CDS)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date de comanda disponibile pentru comutare. Fiecare CDS contine configuratia proprie de intrari binare BICO pentru comenzi de pornire/oprire si selectie setpoint. Permite schimbarea sursei de comanda prin selectia unui alt CDS.",
+      "influenteaza": "p0811",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 616,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0180",
+    "descriere_scurta": "Number of Drive Data Sets (DDS)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de seturi de date de drive (DDS) disponibile pentru comutarea parametrilor de reglare. Fiecare DDS poate contine parametri diferiti de motor, rampe si limite. Permite adaptarea dinamica a comportamentului la diferite conditii de incarcare sau motoare.",
+      "influenteaza": "p0130, p0140, p0833",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 618,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0205",
+    "descriere_scurta": "Valve rated voltage",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tensiunea nominala a servoventilei hidraulice conectate la modulul de putere. Valoarea corecta este necesara pentru generarea tensiunii de iesire corespunzatoare comenzii ventilului. Influenteaza direct comportamentul hidraulic al sistemului de actionare.",
+      "influenteaza": "p0161, p0165, p1832",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 619,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0210",
+    "descriere_scurta": "Drive unit line supply voltage",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tensiunea de alimentare a unitatii drive (valoarea rms faza-faza). Parametru critic care determina nivelele de supratensiune si subtensiune ale circuitului DC si pragurile de alarma. Setarea incorecta poate cauza trip-uri false sau poate masca probleme reale de tensiune.",
+      "influenteaza": "p0280, p0281, p0282, p0283, p1254, p1294",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 620,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0211",
+    "descriere_scurta": "Rated line freq",
+    "GENERATED": {
+      "explicatie": "p=Seteaza frecventa nominala a retelei de alimentare pentru modulul de alimentare (infeed). Valoarea corecta este necesara pentru sincronizarea cu reteaua si calculul corect al tensiunii DC link. Parametru important pentru functionarea ALM (Active Line Module) in mod regenerativ.",
+      "influenteaza": "p0210, p0284, p0285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 621,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0212",
+    "descriere_scurta": "Power unit configuration",
+    "GENERATED": {
+      "explicatie": "p=Seteaza configuratia hardware a unitatii de putere prin setarea bitilor individuali. Permite activarea sau dezactivarea unor functii specifice hardware ale modulului de putere. Trebuie configurat conform documentatiei tehnice a modulului de putere utilizat.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 623,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0220",
+    "descriere_scurta": "Infeed line filter type",
+    "GENERATED": {
+      "explicatie": "p=Selecteaza tipul de filtru de retea conectat la ALM (Active Line Module), ceea ce determina preasignarea automata a capacitatii, rezistentei si inductantei filtrului in p0221-p0224. Selectia corecta este esentiala pentru functionarea stabila a regulatorului de retea ALM. Diferite valori corespund filtrelor standard Siemens.",
+      "influenteaza": "p0221, p0223, p0224, p0225, p0226",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 625,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0221",
+    "descriere_scurta": "Infeed filter capacitance",
+    "GENERATED": {
+      "explicatie": "p=Seteaza capacitatea filtrului de retea conectat in configuratie triunghi. Valoarea este utilizata in calculul regulatorului de retea al ALM pentru stabilizarea tensiunii DC link. Trebuie sa corespunda valorii reale a filtrului utilizat sau sa fie preasignata automat prin p0220.",
+      "influenteaza": "p0220, p0223",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 627,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0223",
+    "descriere_scurta": "Infeed inductance between filter and power unit",
+    "GENERATED": {
+      "explicatie": "p=Seteaza inductanta reactorului de linie interpus intre filtrul de retea si unitatea de putere ALM. Valoarea exacta este necesara pentru calculul corect al regulatorului de curent al ALM. Influenteaza stabilitatea si performanta dinamica a modulului de alimentare activ.",
+      "influenteaza": "p0220, p0224",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 628,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0224",
+    "descriere_scurta": "Infeed resistance between filter and power unit",
+    "GENERATED": {
+      "explicatie": "p=Seteaza rezistenta reactorului de linie dintre filtrul de retea si unitatea de putere ALM. Utilizata alaturi de p0223 pentru modelul matematic al filtrului de retea in regulatorul ALM. Afecteaza amortizarea oscilatiilor in circuitul de alimentare.",
+      "influenteaza": "p0220, p0223",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 629,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0225",
+    "descriere_scurta": "Infeed inductance between line supply and filter",
+    "GENERATED": {
+      "explicatie": "p=Seteaza inductanta dintre reteaua de alimentare si filtrul de retea al ALM. Reprezinta inductanta liniei de alimentare sau a transformatorului de retea. Influenteaza calculul regulatorului de curent si limitele de putere ale ALM.",
+      "influenteaza": "p0220, p0226",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 630,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0226",
+    "descriere_scurta": "Infeed resistance between line supply and filter",
+    "GENERATED": {
+      "explicatie": "p=Seteaza rezistenta dintre reteaua de alimentare si filtrul de retea. Impreuna cu p0225 descrie impedanta liniei de alimentare pentru modelul de calcul al ALM. Valorile corecte asigura stabilitatea regulatorului de retea in conditii de sarcina variabila.",
+      "influenteaza": "p0220, p0225",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 631,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0227",
+    "descriere_scurta": "Infeed DC link capacitance, power unit",
+    "GENERATED": {
+      "explicatie": "p=Seteaza capacitatea totala a circuitului DC link al modulului de putere. Valoarea este utilizata in calculul regulatorului de tensiune DC link si al dinamicii de raspuns la sarcina. O valoare corecta asigura reglarea optima a tensiunii DC si protectia impotriva supratensiunilor.",
+      "influenteaza": "p0280, p1250",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 632,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0230",
+    "descriere_scurta": "Manipulated variable inhibit time",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de inhibare al variabilei de comanda la pornire, tinand setpointul de viteza la zero dupa deschiderea vanei de inchidere sau conectarea alimentarii ventilului de control. Previne starturi bruste in sistemele hidraulice inainte ca presiunea sistemului sa fie stabilizata. Important pentru protectia sistemelor hidraulice la pornire.",
+      "influenteaza": "p0165",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 633,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0233",
+    "descriere_scurta": "Power unit motor reactor",
+    "GENERATED": {
+      "explicatie": "p=Introduce valoarea inductantei unui reactor de motor conectat la iesirea modulului de putere. Reactorul de motor reduce dv/dt aplicat izolatiei motorului si atenueaza armonicele de curent. Valoarea corecta este necesara pentru calculul compensarilor in regulatorul de curent.",
+      "influenteaza": "p0234",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 634,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0234",
+    "descriere_scurta": "Power unit sine-wave filter capacitance",
+    "GENERATED": {
+      "explicatie": "p=Introduce capacitatea filtrului sinusoidal conectat la iesirea modulului de putere. Filtrul sinusoidal elimina armonicele de tensiune pentru obtinerea unei forme de unda aproape sinusoidale la motor. Valoarea corecta este necesara pentru evitarea instabilitatii regulatorului de curent.",
+      "influenteaza": "p0233",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 635,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0235",
+    "descriere_scurta": "Motor reactor in series number",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de reactoare conectate in serie la iesirea modulului de putere. In configuratii cu mai multe reactoare in serie, valoarea sumei inductantelor totale este calculata automat. Influenteaza calculul parametrilor regulatorului de curent.",
+      "influenteaza": "p0233",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 636,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0246",
+    "descriere_scurta": "System pressure external",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa de semnal pentru presiunea externa a sistemului hidraulic. Valoarea presiunii externe este utilizata in calculul variabilei de comanda pentru sistemul hidraulic. Utilizat in aplicatii cu presostrate externe sau traductoare de presiune analogice.",
+      "influenteaza": "p0865, p0866",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 638,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0249",
+    "descriere_scurta": "Power unit cooling type",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tipul de racire pentru module de putere booksize compact, permitand comutarea intre racire interna cu aer si racire Cold-Plate. Selectia tipului corect de racire este necesara pentru gestionarea termica corecta a modulului. Influenteaza limitele de curent permise si protectia termica.",
+      "influenteaza": "p0290, p0294",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 639,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0252",
+    "descriere_scurta": "Maximum operating time power unit fan",
+    "GENERATED": {
+      "explicatie": "p=Seteaza durata maxima de functionare a ventilatorului unitatii de putere inainte de necesitatea inlocuirii. Cu 500 de ore inainte de atingerea limitei, este generat un avertisment de pre-alarma. Setarea la 0 dezactiveaza aceasta monitorizare.",
+      "influenteaza": "p0295",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 641,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0260",
+    "descriere_scurta": "Cooling unit starting time 1",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de pornire 1 pentru monitorizarea unitatii de racire RKA dupa comanda de pornire. In acest interval trebuie sa fie prezente semnalele de alimentat si flux lichid OK. Depasirea timpului fara confirmarea semnalelor genereaza un mesaj de defect.",
+      "influenteaza": "p0261, p0262, p0263",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 642,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0261",
+    "descriere_scurta": "Cooling unit starting time 2",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de pornire 2 pentru monitorizarea unitatii de racire RKA, in care trebuie confirmate semnalele de conductivitate normala. Al doilea timp de pornire permite monitorizarea parametrilor de calitate a lichidului de racire. Depasirea genereaza mesaj de defect.",
+      "influenteaza": "p0260, p0262, p0263",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 643,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0262",
+    "descriere_scurta": "Cooling unit fault conductivity delay time",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de intarziere pentru declansarea defectului de conductivitate excesiva a lichidului de racire in timpul functionarii. Defectul este generat numai daca depasirea valorii limita persista mai mult decat timpul setat. Previne trip-urile false datorate variatiilor tranzitorii de conductivitate.",
+      "influenteaza": "p0260, p0261",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 644,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0263",
+    "descriere_scurta": "Cooling unit fault liquid flow delay time",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de intarziere pentru declansarea defectului de flux lichid insuficient al unitatii de racire. Defectul este generat numai daca conditia persista mai mult decat timpul setat. Permite filtrarea perturbarilor tranzitorii in masurarea debitului de lichid.",
+      "influenteaza": "p0260, p0261",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 645,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0264",
+    "descriere_scurta": "(axis without system pressure measurement) = r0069 (axis with system pressure measurement).",
+    "GENERATED": {
+      "explicatie": "p=Seteaza configuratia pentru masurarea tensiunii in modulul de putere. Bitii individuali ai acestui parametru determina care canale de masura tensiune sunt active si modul lor de utilizare. Configuratia corecta este necesara pentru functionarea corecta a masuratorilor de tensiune.",
+      "influenteaza": "p0150, p0151",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 647,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0278",
+    "descriere_scurta": "DC link voltage undervoltage threshold reduction",
+    "GENERATED": {
+      "explicatie": "p=Seteaza valoarea absoluta cu care se reduce pragul de subtensiune ce declansaza defectul F30003 pe DC link. Permite ajustarea fina a pragului de subtensiune pentru reteaua de alimentare. Util cand tensiunea retelei este usor sub valoarea nominala si se doreste evitarea trip-urilor inutile.",
+      "influenteaza": "p0210, p0280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 648,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0279",
+    "descriere_scurta": "DC link voltage offset alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza un offset pentru pragul de alarma A06810 al tensiunii DC link. Pragul efectiv de alarma se obtine din suma r0296 si p0279. Permite personalizarea nivelului de alarmare in functie de specificul aplicatiei.",
+      "influenteaza": "p0280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 649,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0280",
+    "descriere_scurta": "DC link voltage maximum steady-state",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tensiunea maxima admisa in regim stabil pe circuitul DC link. Cand setpointul de tensiune DC atinge aceasta valoare, se genereaza alarma A06800 si setpointul p3510 este limitat. Valoarea depinde de tensiunea de retea si trebuie setata cu marja fata de tensiunea de trip hardware.",
+      "influenteaza": "p0210, p3480, p3510",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 650,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0281",
+    "descriere_scurta": "Line supply overvoltage alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de alarma pentru supratensiunea retelei de alimentare, exprimat procentual din p0210. La depasirea acestui prag se genereaza o alarma de supratensiune retea. Valoarea tipica este 110% si permite detectarea deviatiilor de tensiune inainte de declansare.",
+      "influenteaza": "p0210, p0282",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 651,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0282",
+    "descriere_scurta": "Line supply undervoltage alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de alarma pentru subtensiunea retelei de alimentare, exprimat procentual din p0210. La scaderea sub acest prag se genereaza o alarma de subtensiune retea. Trebuie setat mai sus decat p0283 (pragul de trip) pentru a permite reactia operatorului inaintea opririi.",
+      "influenteaza": "p0210, p0283",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 652,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0283",
+    "descriere_scurta": "Line supply undervoltage shutdown (trip) threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de trip pentru subtensiunea retelei de alimentare, exprimat procentual din p0210. La scaderea sub acest nivel convertorul se opreste cu defect. Valoarea tipica este 75% si trebuie corelata cu p0282 pentru a asigura o avertizare inaintea opririi.",
+      "influenteaza": "p0210, p0282",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 653,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0284",
+    "descriere_scurta": "Line supply frequency exceeded alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de alarma pentru depasirea frecventei maxime admise a retelei, exprimat procentual. La depasirea frecventei nominale cu procentul setat se genereaza o alarma. Protejeaza impotriva functionarii in conditii de frecventa de retea anormala.",
+      "influenteaza": "p0211, p0285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 654,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0285",
+    "descriere_scurta": "Line supply frequency undershot alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de alarma pentru scaderea sub frecventa minima admisa a retelei, exprimat procentual din frecventa nominala. La scaderea sub acest prag se genereaza o alarma de subfrecventa retea. Protejeaza impotriva functionarii cu frecventa de retea prea joasa.",
+      "influenteaza": "p0211, p0284",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 656,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0290",
+    "descriere_scurta": "Power unit overload response",
+    "GENERATED": {
+      "explicatie": "p=Seteaza modul de raspuns la suprasarcina termica a unitatii de putere (temperatura heatsink, chip sau suprasarcina I2t). Actiunile posibile includ reducerea curentului de iesire sau a frecventei de impulsuri pentru evitarea supraincalzirii. Selectia corecta echilibreaza continuitatea functionarii cu protectia modulului.",
+      "influenteaza": "p0294, r0036, r0037",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 657,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0294",
+    "descriere_scurta": "Power unit alarm with I2t overload",
+    "GENERATED": {
+      "explicatie": "p=Seteaza pragul de alarma pentru suprasarcina I2t a unitatii de putere. La depasirea acestui prag se genereaza o alarma si se aplica raspunsul configurat in p0290. Valoarea trebuie setata sub limita de trip hardware a modulului de putere.",
+      "influenteaza": "p0290, r0036",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 658,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0295",
+    "descriere_scurta": "Fan run-on time",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul de functionare continua a ventilatorului dupa suprimarea impulsurilor de comanda a modulului de putere. Mentinerea ventilatorului activ dupa oprire permite racirea elementelor de putere reziduale. Durata corecta previne supraincalzirile post-oprire in aplicatii cu ciclu de lucru intens.",
+      "influenteaza": "p0252",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 659,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0340",
+    "descriere_scurta": "Automatic calculation control parameters",
+    "GENERATED": {
+      "explicatie": "p=Declanseaza resetarea si recalcularea automata a parametrilor de filtrare si reglare pe baza datelor de motor si encoder. Calculeaza automat gainul si integratorul regulatorului de viteza si curent. Trebuie executat dupa modificarea datelor de motor sau a configuratiei encoderului.",
+      "influenteaza": "p0570, p0573, p3900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 660,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0349",
+    "descriere_scurta": "System of units motor equivalent circuit diagram data",
+    "GENERATED": {
+      "explicatie": "p=Selecteaza sistemul de unitati folosit pentru datele schemei echivalente a motorului. Valoarea 1 utilizeaza unitati fizice absolute, valoarea 2 utilizeaza unitati per-unit. Afecteaza interpretarea si afisarea parametrilor schemei echivalente a motorului.",
+      "influenteaza": "p0350, p0356",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 661,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0408",
+    "descriere_scurta": "Rotary encoder pulse number",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de impulsuri pe rotatie al encoderului incremental conectat. Valoarea corecta este esentiala pentru calculul precis al vitezei si pozitiei. O valoare incorecta duce la erori de viteza si instabilitate a regulatorului de viteza.",
+      "influenteaza": "p0418, p0492",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 662,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0418",
+    "descriere_scurta": "Fine resolution Gx_XIST1 (in bits)",
+    "GENERATED": {
+      "explicatie": "p=Seteaza rezolutia fina in biti a valorilor de pozitie incrementala. Valori mai mari cresc precizia masurarii pozitiei la encodere de inalta rezolutie. Influenteaza direct rezolutia disponibila a regulatorului de pozitie.",
+      "influenteaza": "p0408",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 663,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0480",
+    "descriere_scurta": "Encoder control word Gn_STW signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru cuvantul de control al encoderului Gn_STW conform profilului PROFIdrive. Permite configurarea prin BICO a sursei cuvantului de control al encoderului. Necesara pentru integrarea encoderului in comunicatia PROFIdrive.",
+      "influenteaza": "p0925",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 665,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0488",
+    "descriere_scurta": "Measuring probe 1 input terminal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza terminalul de intrare digitala utilizat pentru conectarea sondei de masura 1. Sondele de masura sunt utilizate pentru masurarea precisa a pozitiei la evenimentele externe (de ex. palpator). Selectia terminalului corect este necesara pentru capturarea corecta a evenimentelor de masura.",
+      "influenteaza": "p0489, p0490, p0580",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 667,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0489",
+    "descriere_scurta": "Measuring probe 2 input terminal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza terminalul de intrare digitala utilizat pentru conectarea sondei de masura 2. Permite utilizarea a doua sonde de masura independente pentru aplicatii de pozitionare cu referinte multiple. Trebuie selectat un terminal diferit fata de p0488 pentru sonda 1.",
+      "influenteaza": "p0488, p0490",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 669,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0490",
+    "descriere_scurta": "Invert measuring probe or equivalent zero mark",
+    "GENERATED": {
+      "explicatie": "p=Seteaza inversarea semnalelor de intrare digitala pentru sondele de masura sau marcajul de zero echivalent. Permite adaptarea la senzori cu logica inversa (NPN vs PNP). Fiecare bit corespunde unui canal de masura specific.",
+      "influenteaza": "p0488, p0489, p0495",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 670,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0491",
+    "descriere_scurta": "Motor encoder fault response ENCODER",
+    "GENERATED": {
+      "explicatie": "p=Seteaza comportamentul la aparitia unui defect de encoder motor (ENCODER fault). Optiunile includ oprirea imediata sau comutarea automata la functionarea fara encoder cu o rampa de decelerare selectabila. Permite continuarea operatiei in mod degradat la pierderea feedbackului de encoder.",
+      "influenteaza": "p0408, p1215",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 671,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0492",
+    "descriere_scurta": "Square-wave encoder maximum speed difference per sampling cycle /",
+    "GENERATED": {
+      "explicatie": "p=Seteaza diferenta maxima admisa de viteza per ciclu de esantionare al regulatorului de curent pentru encodere incrementale cu semnal dreptunghiular. Depasirea acestei valori indica o eroare de encoder si genereaza un defect. Valoarea 0 dezactiveaza monitorizarea.",
+      "influenteaza": "p0408, p0491",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 672,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0493",
+    "descriere_scurta": "Zero mark selection input terminal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza terminalul de intrare pentru selectia marcajului de referinta via BERO in referenciere cu mai multe marcaje de zero. Semnalul BERO selecteaza care marcaj de zero este evaluat la referentiere. Utilizat in sisteme cu masini cu mai multi poli sau cu lungimi multiple de masurare.",
+      "influenteaza": "p0488, p0495",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 673,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0495",
+    "descriere_scurta": "Equivalent zero mark input terminal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza terminalul de intrare pentru conectarea unui marcaj de zero echivalent extern (marcaj de zero extern al encoderului). Permite utilizarea unui semnal extern ca marcaj de zero in locul impulsului de index al encoderului. Util in aplicatii cu encodere fara impuls de zero sau cu referentiere externa.",
+      "influenteaza": "p0488, p0490, p0493",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 675,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0496",
+    "descriere_scurta": "Encoder diagnostic signal selection",
+    "GENERATED": {
+      "explicatie": "p=Selecteaza semnalul de urmarit in r0497, r0498 si r0499 pentru diagnosticarea encoderului. Permite monitorizarea diferitelor semnale interne ale interfetei de encoder pentru depanare. Utilizat in cadrul functiei Trace pentru analiza comportamentului encoderului.",
+      "influenteaza": "r0497, r0498, r0499",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 677,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0500",
+    "descriere_scurta": "Technology application",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tipul aplicatiei tehnologice, influentand calculul parametrilor de reglare in bucla inchisa initiat prin p0578. Valoarea 100 corespunde aplicatiei standard, valorile 101-102 corespund aplicatiilor speciale. Determina presetarile initiale ale regulatorilor de viteza si curent.",
+      "influenteaza": "p0340, p0578",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 690,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0528",
+    "descriere_scurta": "Controller gain system of units",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sistemul de unitati utilizat pentru gainurile regulatoarelor de viteza si curent. Valoarea 0 utilizeaza unitati fizice relative, valoarea 1 utilizeaza unitati absolute (Nm/A, s etc.). Afecteaza interpretarea si afisarea gainurilor Kp si Ti ale regulatorilor.",
+      "influenteaza": "p1460, p1462",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 691,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0570",
+    "descriere_scurta": "Inhibit list values effective number",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de parametri din lista de blocare p0571 care vor fi exclusi din calculul automat al parametrilor de motor si reglare. Permite protejarea unor parametri specificati manual de suprascrierea de catre calculul automat p0340 sau p0578. Util pentru pastrarea setarilor manuale fine ale unor regulatori.",
+      "influenteaza": "p0571, p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 693,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0573",
+    "descriere_scurta": "Inhibit automatic reference value calculation",
+    "GENERATED": {
+      "explicatie": "p=Inhiba calculul automat al parametrilor de referinta (ex: p2000) in cadrul calculului automat al parametrilor de motor si reglare. Permite pastrarea valorilor de referinta setate manual la executia p0340 sau p3900. Util cand valorile de referinta sunt determinate extern si nu trebuie recalculate.",
+      "influenteaza": "p0340, p2000, p3900",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 694,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0580",
+    "descriere_scurta": "Measuring probe input terminal",
+    "GENERATED": {
+      "explicatie": "p=Seteaza terminalul de intrare pentru sonda de masura utilizata in masurarea vitezei actuale. Alternativa la utilizarea encoderului pentru masurarea vitezei in aplicatii cu masini fara encoder. Se utilizeaza impreuna cu p0581, p0582 si p0583 pentru configurarea completa.",
+      "influenteaza": "p0581, p0582, p0583",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 695,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0581",
+    "descriere_scurta": "Measuring probe edge",
+    "GENERATED": {
+      "explicatie": "p=Seteaza frontul de semnal evaluat de sonda de masura pentru determinarea vitezei actuale. Valoarea 0 evalueaza frontul crescator (0->1), valoarea 1 evalueaza frontul descrescator (1->0). Selectia frontului corect depinde de tipul senzorului si de logica semnalului utilizat.",
+      "influenteaza": "p0580, p0582",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 696,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0582",
+    "descriere_scurta": "Measuring probe pulses per revolution",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul de impulsuri per rotatie al discului sau rotii dintate utilizate cu sonda de masura. Valoarea corecta este necesara pentru calculul vitezei actuale din intervalul dintre impulsuri. Se utilizeaza impreuna cu p0580 si p0583.",
+      "influenteaza": "p0580, p0581, p0583",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 697,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0583",
+    "descriere_scurta": "Measuring probe maximum measuring time",
+    "GENERATED": {
+      "explicatie": "p=Seteaza timpul maxim de masurare al sondei de masura pentru viteza. Daca nu este receptionat niciun impuls in acest interval, viteza afisata in r0586 este setata la zero. Temporizatorul este restartat la urmatorul impuls primit.",
+      "influenteaza": "p0580, p0582",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 698,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0595",
+    "descriere_scurta": "Technological unit selection",
+    "GENERATED": {
+      "explicatie": "p=Selecteaza unitatile de masura pentru parametrii regulatorului tehnologic. Valori 1 sau 2 dezactiveaza utilizarea valorii de referinta din p0596. Afecteaza interpretarea si afisarea tuturor valorilor legate de regulatorul tehnologic.",
+      "influenteaza": "p0596, p2252",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 699,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0596",
+    "descriere_scurta": "Technological unit reference quantity",
+    "GENERATED": {
+      "explicatie": "p=Seteaza marimea de referinta pentru unitatile tehnologice utilizate de regulatorul de proces. La comutarea p0595 catre unitati absolute, toti parametrii implicati se refera la aceasta valoare de referinta. Determina scara procentuala a valorilor regulatorului tehnologic.",
+      "influenteaza": "p0595, p2252",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 700,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0601",
+    "descriere_scurta": "Temperature sensor, sensor type",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tipul senzorului de temperatura conectat la intrarea X21 (booksize) sau X41 (chassis) a modulului de putere. Tipurile suportate includ KTY84, PT1000, PTC si bimetal. Selectia corecta este necesara pentru interpretarea corecta a valorii masurate afisate in r0035.",
+      "influenteaza": "p0602, r0035",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 701,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0602",
+    "descriere_scurta": "Par_circuit power unit number, temperature sensor",
+    "GENERATED": {
+      "explicatie": "p=Seteaza numarul setului de date al unitatii de putere (PDS) la care este conectat senzorul de temperatura. In configuratii cu mai multe module de putere in paralel, specifica pe care modul este montat senzorul. Necesar pentru atribuirea corecta a valorii de temperatura masurate.",
+      "influenteaza": "p0120, p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 702,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0603",
+    "descriere_scurta": "Motor temperature signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru evaluarea temperaturii motorului prin interconectare BICO. Permite utilizarea unui semnal extern de temperatura in locul senzorului standard al modulului de putere. Esential pentru monitorizarea termica a motoarelor cu senzor de temperatura in infasurari.",
+      "influenteaza": "p0601, r0035",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 706,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0681",
+    "descriere_scurta": "Central measuring probe synchronizing signal signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de sincronizare SYN pentru functia de evaluare centralizata a sondelor de masura. Semnalul sincronizeaza timpul de sistem comun intre master si slave in evaluarea centralizata. Necesar in aplicatii cu mai multe axe care utilizeaza sonde de masura comune.",
+      "influenteaza": "p0682, p0684",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 707,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0682",
+    "descriere_scurta": "Central measuring probe control word signal source",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului pentru cuvantul de control al functiei de evaluare centralizata a sondelor de masura. Cuvantul de control gestioneaza operatiunile de captare a pozitiei pentru toate axele sincronizate. Utilizat in sisteme multi-ax cu sincronizare precisa a masuratorilor.",
+      "influenteaza": "p0681, p0684",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 708,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0684",
+    "descriere_scurta": "Central measuring probe evaluation technique",
+    "GENERATED": {
+      "explicatie": "p=Seteaza tehnica de evaluare utilizata in functia de evaluare centralizata a sondelor de masura. Determina modul de capturare si transmitere a valorilor de pozitie din evenimentele sondelor. Influenteaza acuratetea temporala a masuratorilor de pozitie in sisteme multi-ax.",
+      "influenteaza": "p0681, p0682",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 709,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0700",
+    "descriere_scurta": "Macro Binector Input (BI)",
+    "GENERATED": {
+      "explicatie": "p=Executa fisierele macro de pe cardul de memorie pentru preconectarea automata a intrarilor binectoare din setul de date de comanda activ. Simplifica configurarea conexiunilor BICO standard pentru aplicatii tipice. Fisierul macro trebuie sa fie disponibil pe cardul de memorie sau in memoria interna.",
+      "influenteaza": "p0015",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 710,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0728",
+    "descriere_scurta": "CU set input or output",
+    "GENERATED": {
+      "explicatie": "p=Seteaza directia terminalelor digitale bidiectionale DI/DO ale Control Unit ca intrari sau iesiri. Fiecare bit al acestui parametru corespunde unui terminal bidirectional DI/DO. Configurarea corecta este necesara inainte de utilizarea terminalelor respective.",
+      "influenteaza": "p0738, p0739, p0740, p0741, p0742, p0743, p0744, p0745",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 711,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0738",
+    "descriere_scurta": "CU signal source for terminal DI/DO 8",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de iesire pentru terminalul bidirectional DI/DO 8 cand acesta este configurat ca iesire digitala. Sursa se selecteaza prin interconectare BICO cu orice semnal binar disponibil in sistem. Terminalul trebuie setat ca iesire in p0728 inaintea utilizarii acestui parametru.",
+      "influenteaza": "p0728, p0748",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 712,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0739",
+    "descriere_scurta": "CU signal source for terminal DI/DO 9",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de iesire pentru terminalul bidirectional DI/DO 9. Configuratia BICO permite conectarea oricarui semnal binar intern la acest terminal de iesire. Terminalul trebuie setat ca iesire digitala in p0728 inaintea acestei configurari.",
+      "influenteaza": "p0728, p0748",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 713,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0740",
+    "descriere_scurta": "CU signal source for terminal DI/DO 10",
+    "GENERATED": {
+      "explicatie": "p=Seteaza sursa semnalului de iesire pentru terminalul bidirectional DI/DO 10. Permite configurarea prin BICO a oricarui semnal binar intern la aceasta iesire digitala. Terminalul trebuie setat ca iesire in p0728 inainte de configurarea acestui parametru.",
+      "influenteaza": "p0728, p0748",
+      "categorie": "I/O"
+    }
+  }
+]

@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 27723,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2110",
+    "descriere_scurta": "Alarm number",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only identic cu r2122 care afiseaza numerele alarmelor active. Disponibil ca alias pentru compatibilitate cu versiunile anterioare sau pentru accesul prin interfete de comunicatie specifice. Citirea alarmelor este primul pas in diagnosticarea avertismentelor active ale drive-ului.",
+      "influenteaza": "r2122, r2123",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27724,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2118",
+    "descriere_scurta": "Change message type message number",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care selecteaza avariile sau alarmele pentru care tipul de mesaj trebuie modificat. Valoarea specifica numarul avariei sau alarmei care urmeaza sa fie reconfigurata. Permite modificarea tipului de mesaj (avarie/alarma) pentru a adapta comportamentul drive-ului la cerintele aplicatiei.",
+      "influenteaza": "p2101",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27725,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2122",
+    "descriere_scurta": "Alarm code",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza numerele alarmelor care au aparut. Fiecare index contine codul unei alarme active in prezent. Alarmele nu opresc drive-ul dar semnaleaza conditii care necesita atentie. Monitorizarea continua a alarmelor permite interventia preventiva inainte de aparitia avariilor.",
+      "influenteaza": "r2123, r2124, r2125",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27726,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2123",
+    "descriere_scurta": "Alarm time received in milliseconds",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza timpul de rulare al sistemului in milisecunde in momentul aparitiei alarmei. Valoarea permite corelarea temporala a alarmei cu alte evenimente inregistrate. Utila pentru reconstructia cronologiei evenimentelor in analiza post-incident a functionarii drive-ului.",
+      "influenteaza": "r2122, r2145",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27727,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2124",
+    "descriere_scurta": "Alarm value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza informatii suplimentare despre alarma activa sub forma de numar intreg. Valoarea ofera context specific care ajuta la diagnosticarea cauzei alarmei. Interpretarea valorii depinde de codul alarmei si este descrisa in manualul de avarii si alarme.",
+      "influenteaza": "r2122, r2134",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27728,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2125",
+    "descriere_scurta": "Alarm time removed in milliseconds",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza timpul de rulare al sistemului in milisecunde in momentul stergerii alarmei. Durata alarmei poate fi calculata ca diferenta intre r2125 si r2123. Utila pentru analiza duratei si frecventei aparitiei alarmelor in contextul functionarii aplicatiei.",
+      "influenteaza": "r2123, r2146",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27729,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2126",
+    "descriere_scurta": "Change acknowledge mode fault number",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care selecteaza avaria pentru care modul de confirmare urmeaza sa fie modificat. Valoarea specifica numarul avariei vizate. Trebuie utilizat impreuna cu p2127 care defineste noul mod de confirmare pentru avaria selectata.",
+      "influenteaza": "p2127, p2118",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27730,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2127",
+    "descriere_scurta": "Change acknowledge mode mode",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste modul de confirmare pentru avaria selectata prin p2126. Valorile posibile sunt 1=confirmare automata, 2=confirmare manuala si 3=confirmare prin ciclul de pornire. Permite adaptarea comportamentului de confirmare a avariei la cerintele de siguranta ale aplicatiei.",
+      "influenteaza": "p2126",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27731,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2128",
+    "descriere_scurta": "Faults/alarms trigger selection",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care selecteaza avariile sau alarmele pentru care trebuie generat un semnal trigger in r2129 bitii 0-15. Permite configurarea unui mecanism de trigger rapid pentru un set specific de avarii sau alarme selectate. Util la integrarea monitorizarii avariilor cu sisteme externe de supraveghere.",
+      "influenteaza": "r2129",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27732,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2130",
+    "descriere_scurta": "Fault time received in days",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza timpul de rulare al sistemului in zile in momentul aparitiei avariei. Completand informatia din r0948 (in milisecunde), ofera timestamp-ul complet al avariei cu rezolutie dubla. Utila pentru corelarea avariilor cu evenimentele de proces la analiza pe termen lung.",
+      "influenteaza": "r0948, r0945",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27733,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2133",
+    "descriere_scurta": "Fault value for float values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza informatii suplimentare despre avaria aparuta ca valoare in virgula mobila (float). Unele avarii furnizeaza valori de diagnostic in format float care nu pot fi reprezentate ca integer. Interpretarea valorii depinde de codul avariei si este descrisa in documentatia tehnica.",
+      "influenteaza": "r0949, r0945",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27734,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2134",
+    "descriere_scurta": "Alarm value for float values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza informatii suplimentare despre alarma activa ca valoare float. Analog cu r2133 dar pentru alarme in loc de avarii. Utila la diagnosticarea alarmelor care furnizeaza date diagnostice in format numeric cu virgula mobila.",
+      "influenteaza": "r2124, r2122",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27735,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2138",
+    "descriere_scurta": "Control word faults/alarms",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza cuvantul de control al gestionarii avariilor si alarmelor. Contine comenzile active pentru confirmare, resetare sau modificarea modului de gestionare a mesajelor. Monitorizarea permite verificarea comenzilor de confirmare si resetare active in sistem.",
+      "influenteaza": "r2139",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27736,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2139",
+    "descriere_scurta": "Status word faults/alarms 1",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza primul cuvant de stare al avariilor si alarmelor. Bitii indica prezenta diferitelor clase de avarii si alarme, starea de blocare, starea de confirmare si alte indicatii de stare importante pentru monitorizarea drive-ului. Frecvent mapat in telegrama PROFIdrive.",
+      "influenteaza": "r2138, r0945",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27737,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2145",
+    "descriere_scurta": "Alarm time received in days",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza timpul de rulare al sistemului in zile in momentul aparitiei alarmei. Impreuna cu r2123 (in milisecunde) ofera timestamp-ul complet al alarmei. Utila pentru analiza istoricului alarmelor si corelarea cu evenimentele de proces pe termen lung.",
+      "influenteaza": "r2123, r2122",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27738,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2146",
+    "descriere_scurta": "Alarm time removed in days",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza timpul de rulare al sistemului in zile in momentul stergerii alarmei. Impreuna cu r2125 (in milisecunde) ofera timestamp-ul complet al stergerii alarmei. Utila pentru calculul duratei exacte a alarmelor si analiza historicului de disponibilitate al drive-ului.",
+      "influenteaza": "r2125, r2145",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27739,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2225",
+    "descriere_scurta": "Technology controller fixed value selection status word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza cuvantul de stare al selectiei valorii fixe a controlerului tehnologic. Bitii indica care valoare fixa este selectata activ ca setpoint al controlerului tehnologic. Monitorizarea confirma selectia corecta a setpoint-ului fix in aplicatii cu setpoint-uri predefinite.",
+      "influenteaza": "r2349",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27740,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2349",
+    "descriere_scurta": "Technology controller status word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza cuvantul de stare al controlerului tehnologic (PID). Bitii indica starea regulatorului: activ, in limitare, integrator retinuta, eroare prea mare etc. Monitorizarea cuvantului de stare este esentiala pentru diagnosticarea comportamentului buclei de reglare PID.",
+      "influenteaza": "r2225, r2266",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27741,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2514",
+    "descriere_scurta": "LR activate position actual value setting",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste sursa de semnal pentru activarea functiei de setare a valorii actuale de pozitie. Cele 4 indexuri corespund regulatorului de pozitie si encoderele 1-3. Permite setarea pozitiei actuale la o valoare definita (referentiere absoluta) din surse diferite.",
+      "influenteaza": "r2521, r2520",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27742,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2520",
+    "descriere_scurta": "LR Position actual value preprocessing encoder control word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza cuvantul de comanda al encoderului generat de preprocesarea valorii actuale de pozitie. Cele 3 indexuri corespund encoderelor 1, 2 si 3. Utilizat pentru transferul de comenzi catre encoder in cadrul procesarii pozitiei in regulatorul LR.",
+      "influenteaza": "r2521, p2514",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27743,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2521",
+    "descriere_scurta": "LR position actual value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza valoarea actuala de pozitie determinata de preprocesarea in regulatorul LR. Indexul 0 este pentru regulatorul de pozitie in bucla inchisa, iar indexurile 1-3 pentru encoderele 1, 2 si 3. Valoarea este sursa principala de feedback pentru regulatorul de pozitie.",
+      "influenteaza": "r2520, r2527",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27744,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2527",
+    "descriere_scurta": "= 1 --> The position actual value in r2521[1] for encoder 1 is valid.",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza valoarea actuala de viteza determinata de preprocesarea valorii actuale de viteza in regulatorul LR. Cele 4 indexuri corespund regulatorului de pozitie si encoderelor 1-3. Valoarea este utilizata de regulatorul de viteza si ca feedback pentru regulatorul de pozitie.",
+      "influenteaza": "r2521, r2528",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27745,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2528",
+    "descriere_scurta": "LR actual value sensing status word encoder 2",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza cuvantul de stare al captarii valorii actuale de pozitie de la encoder 2. Bitii indica starea validarii si procesarii semnalului de la encoder 2. Monitorizarea este necesara in configuratii cu doi encoderi redundanti sau cu functii de comutare de encoder.",
+      "influenteaza": "r2529, r2521",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27746,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2529",
+    "descriere_scurta": "LR actual value sensing status word encoder 3",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza cuvantul de stare al captarii valorii actuale de pozitie de la encoder 3. Analog cu r2528 pentru al treilea encoder. Utilizat in configuratii complexe cu trei encoderi pentru monitorizarea si diagnosticarea starii fiecarui encoder.",
+      "influenteaza": "r2528, r2521",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27747,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2594",
+    "descriere_scurta": "EPOS Maximum velocity externally limited",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste sursa semnalului pentru limita externa maxima de viteza in EPOS. Cele 3 indexuri corespund: limitei absolute a setpoint-ului, limitarii pozitive si negative a setpoint-ului. Permite limitarea dinamica externa a vitezei maxime de pozitionare din aplicatia PLC.",
+      "influenteaza": "r2672, r2681",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27748,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2670",
+    "descriere_scurta": "EPOS status word active traversing block",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza cuvantul de stare al blocului de traversare activ in EPOS. Bitii 0-5 indica numarul blocului activ (pana la 64 blocuri), iar bitul 15 indica modul MDI activ. Monitorizarea permite verificarea executiei corecte a blocurilor de pozitionare programate.",
+      "influenteaza": "r2669, r2672",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27749,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2686",
+    "descriere_scurta": "EPOS force limit effective",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza limitarea efectiva de forta/cuplu in EPOS la deplasarea pana la un opritor fix. Indexul 0 indica limita superioara, iar indexul 1 limita inferioara de forta efectiva, exprimate ca procent din referintele CI p1522 si p1523. Monitorizata in aplicatii cu detectarea opririi la fort.",
+      "influenteaza": "r2670, p1522",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27750,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2723",
+    "descriere_scurta": "Load gear absolute value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza valoarea absoluta de pozitie dupa angrenajul de incarcare. Aceasta valoare este utilizata pentru calculul pozitiei de sarcina in configuratii cu angrenaj intre motor si sarcina. Necesara pentru aplicatiile unde pozitia sarcinii difera de pozitia motorului prin raportul de transmisie.",
+      "influenteaza": "r2724, r2521",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27751,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2724",
+    "descriere_scurta": "Load gear position difference",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza diferenta de pozitie inaintea angrenajului de incarcare intre oprire si repornire. Utilizata pentru detectarea deplasarilor la angrenaj in perioadele fara alimentare. Relevanta in aplicatii cu angrenaje sau axe verticale unde gravitatia poate produce deplasari in timp ce drive-ul este oprit.",
+      "influenteaza": "r2723, r0477",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27752,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2810",
+    "descriere_scurta": "AND logic operation inputs",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste sursele de semnal pentru intrarile operatiei logice AND. Permite implementarea logicii AND intre semnale digitale BICO pentru a crea conditii complexe de control. Rezultatul operatiei AND este disponibil in r2811 si poate fi interconectat la alte functii.",
+      "influenteaza": "r2811",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27753,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2811",
+    "descriere_scurta": "AND logic operation result",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza rezultatul operatiei logice AND a intrarilor definite in p2810. Rezultatul este disponibil ca iesire BICO pentru interconectarea cu alte functii. Utilizat pentru implementarea conditiilor complexe de blocare sau activare bazate pe combinatii de semnale digitale.",
+      "influenteaza": "p2810",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27754,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2816",
+    "descriere_scurta": "OR logic operation inputs",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste sursele de semnal pentru intrarile operatiei logice OR. Permite crearea de conditii de activare bazate pe orice semnal din mai multi posibili, fara a necesita logica externa. Rezultatul operatiei OR este disponibil ca iesire BICO pentru interconectare ulterioara.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27755,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2969",
+    "descriere_scurta": "Direct axis flux model display",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza modelul de flux pe axa directa al motorului cu reluctanta in bucla inchisa. Indexul 0 ofera curentul id in Arms, iar indexurile 1-3 ofera fluxul pe axa d in functie de curentul id pentru 3 valori de curent iq. Utila la diagnosticarea functionarii modelului de flux pentru motoare de reluctanta.",
+      "influenteaza": "r1568",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27756,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3096",
+    "descriere_scurta": "PolID elasticity-based current",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste curentul maxim permis la executia identificarii pozitiei polilor bazata pe elasticitate (PolID). Valoarea recomandata este minimul dintre curentul nominal (p0305), limita de curent (p0640) si curentul maxim al modulului (p0209). Curentul prea mare poate deteriora sau deplasa mecanic axa.",
+      "influenteaza": "r1992, r1608",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27757,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3102",
+    "descriere_scurta": "RTC read UTC time",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza ora UTC curenta din sistemul drive. Indexul 0 afiseaza milisecundele, iar indexul 1 zilele. Ora UTC este utilizata pentru timestamp-urile avariilor si alarmelor. Verificarea orei corecte este importanta pentru corelarea evenimentelor din jurnalul de avarii cu alte sisteme.",
+      "influenteaza": "r3107, r3108",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27758,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3107",
+    "descriere_scurta": "RTC synchronizing time",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza ultimul eveniment de sincronizare a orologiului in timp real (RTC). Indexurile 0-1 contin ora dupa sincronizare, iar indexurile 2-3 ora inainte de sincronizare. Permite verificarea corectitudinii sincronizarii temporale si detectarea deviatiilor ceasului intern.",
+      "influenteaza": "r3102, r3108",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27759,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3108",
+    "descriere_scurta": "RTC last synchronization deviation",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza valoarea absoluta a ultimei deviatii de sincronizare determinata la ultima sincronizare a RTC-ului. Indexul 0 contine milisecundele, iar indexul 1 zilele deviatie. Valori mari indica o acumulare semnificativa a derivei ceasului intre doua sincronizari consecutive.",
+      "influenteaza": "r3107, r3102",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27760,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3113",
+    "descriere_scurta": "NAMUR message bit bar",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza starea barrei de biti de mesaje conform standardului NAMUR. Avariile si alarmele sunt asignate claselor de semnalizare corespunzatoare si influenteaza un bit specific de mesaj. Utila in aplicatiile industriale care urmeaza standardul NAMUR pentru clasificarea starii dispozitivelor.",
+      "influenteaza": "r3114, r2139",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27761,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3114",
+    "descriere_scurta": "Messages status word global",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza cuvantul de stare global al mesajelor. Bitul corespunzator este setat daca cel putin un mesaj este prezent la oricare obiect drive al unitatii. Permite o supraveghere rapida a starii globale a sistemului fara a verifica individual fiecare obiect drive.",
+      "influenteaza": "r3113, r2139",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27762,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3115",
+    "descriere_scurta": "Fault drive object initiating",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza numarul obiectului drive care a initiat avaria, ca numar intreg. Valoarea 63 indica ca avaria a fost initiata de obiectul drive insusi. Utila in sistemele multi-ax pentru identificarea rapidA a axei sau a modulului care a generat avaria in lant.",
+      "influenteaza": "r3120, r0945",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27763,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3120",
+    "descriere_scurta": "Component fault",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza componenta asociata avariei aparute. Valoarea codificata identifica hardware-ul specific (Motor Module, Sensor Module, Control Unit etc.) care a generat sau este asociat avariei. Permite localizarea rapida a componentei defecte in sistemul SINAMICS.",
+      "influenteaza": "r3121, r3115",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27764,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3121",
+    "descriere_scurta": "Component alarm",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza componenta asociata alarmei aparute. Analog cu r3120 dar pentru alarme in loc de avarii. Permite identificarea componentei hardware care genereaza o stare de alarma activa. Utila la diagnosticarea surselor de alarme repetitive in sistemul SINAMICS.",
+      "influenteaza": "r3120, r2122",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27765,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3411",
+    "descriere_scurta": "- r3414",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza capacitatea totala identificata a bus-ului CC, calculata prin doua masuratori succesive. Indexul 0 contine rezultatul primei masuratori, iar indexul 1 al celei de-a doua. Utila la verificarea starii condensatoarelor de bus si la dimensionarea timpilor de reactie la intreruperi de retea.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27766,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3444",
+    "descriere_scurta": "Smart Mode voltages",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil cu nivel de acces 4 care defineste tensiunea minima de retea pentru feedback regenerativ si tensiunea de setpoint a bus-ului CC in modul Smart Mode. Indexul 0 este tensiunea minima de retea pentru regenerare (%), iar indexul 1 este setpoint-ul de tensiune bus CC (%). Configuratia corecta optimizeaza bilantul energetic in modul Smart Mode.",
+      "influenteaza": "p3448, r3447",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27767,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3448",
+    "descriere_scurta": "Smart Mode effective inductance/DC link capacitance",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil cu nivel de acces 4 care defineste inductanta efectiva sau capacitatea bus-ului CC in modul Smart Mode. Indexul 0 este inductanta efectiva referita la p0223 (%), iar indexul 1 capacitatea efectiva a bus-ului referita la p0227 (%). Setarile precise asigura functionarea stabila a regulatorului Vdc in Smart Mode.",
+      "influenteaza": "p3444, r3447",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27768,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3476",
+    "descriere_scurta": "cos phi display smoothing time",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste constanta de timp de netezire pentru afisarea factorului de putere cos phi. Cele 2 indexuri corespund celor 2 vectori spatiali. Valoarea implicita este 200 ms. Constante de timp mai mari produc o afisare mai stabila dar cu raspuns mai lent la modificarile factorului de putere.",
+      "influenteaza": "r3477, r3478",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27769,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3477",
+    "descriere_scurta": "cos phi display actual value sign",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza semnul factorului de deplasare cos phi. Semnul pozitiv indica absorbtie de putere reactiva inductiva, iar semnul negativ indica absorbtie de putere reactiva capacitiva. Utila la analiza bilantului de putere reactiva al aplicatiei.",
+      "influenteaza": "r3478, p3476",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27770,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3478",
+    "descriere_scurta": "cos phi display absolute actual value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza valoarea absoluta a factorului de deplasare cos phi. Cele 2 indexuri corespund celor 2 vectori spatiali. Valoarea este definita ca cosinusul unghiului de faza intre tensiunea si curentul de frecventa fundamentala. Monitorizata pentru optimizarea eficientei energetice.",
+      "influenteaza": "r3477, p3476",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27771,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3535",
+    "descriere_scurta": "Infeed current limit display",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza limitele de curent valide ale unitatii de alimentare. Cele 5 indexuri ofera limitele pentru: curentul activ motor, curentul activ generator, curentul reactiv inductiv, curentul reactiv capacitiv si curentul aparent absolut. Monitorizarea ajuta la verificarea functionarii in interiorul limitelor.",
+      "influenteaza": "r3554",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27772,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3554",
+    "descriere_scurta": "Infeed Vdc controller output",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza iesirea controlerului de tensiune bus CC (Vdc) al unitatii de alimentare. Indexul 0 ofera iesirea componenta I, iar indexul 1 iesirea completa PI. Monitorizarea permite evaluarea starii regulatorului de bus CC si a marjei de control disponibile.",
+      "influenteaza": "r3535, p3510",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27773,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3574",
+    "descriere_scurta": "Master/slave DC link voltage monitoring",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste limitele superioare si inferioare si valorile de histerezis pentru monitorizarea tensiunii bus CC in configuratia master/slave. Valorile sunt absolute si referite la setpoint-ul de tensiune bus CC (p3510). La incalcarea limitelor de catre un slave, controlul in bucla inchisa a tensiunii este activat automat.",
+      "influenteaza": "p3510, r3554",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27774,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3625",
+    "descriere_scurta": "Infeed harmonics controller scaling",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste amplificarea controlerului de armonice al unitatii de alimentare pentru doua controlere de armonice. Valoarea 0% dezactiveaza controlerul, iar 100% reprezinta amplificarea implicita. Reduce continutul de armonice in curentul de retea, imbunatatind compatibilitatea electromagnetica si reducand perturbatiile.",
+      "influenteaza": "r3637, r3638",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27775,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3637",
+    "descriere_scurta": "Negative phase-sequence system control current setpoint",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza setpoint-ul de curent pentru controlul componentei de secventa negativa. Indexul 0 este componenta activa, indexul 1 componenta reactiva. Utilizat in aplicatiile cu dezechilibru de retea pentru reducerea efectelor componentei de secventa negativa asupra drive-ului.",
+      "influenteaza": "r3638, p3625",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27776,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3638",
+    "descriere_scurta": "Negative phase-sequence system control current actual value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza valorile actuale ale curentilor pentru controlul componentei de secventa negativa. Curentul de secventa pozitiva este compensat in curentul de secventa negativa afisat si invers. Monitorizarea permite evaluarea gradului de dezechilibru de retea si eficacitatea compensarii.",
+      "influenteaza": "r3637, p3625",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27777,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3642",
+    "descriere_scurta": "Negative phase-sequence system control manipulated variable /",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza variabila manipulata (tensiunea de iesire) a controlului componentei de secventa negativa. Valorile sunt afisate in coordonate alfa/beta. Monitorizarea permite evaluarea actiunii de control a regulatorului de secventa negativa.",
+      "influenteaza": "r3637, r3638",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27778,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3646",
+    "descriere_scurta": "Negative phase-sequence system control",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza componentele integrale ale controlului de secventa negativa. Indexul 0 contine componenta activa, iar indexul 1 componenta reactiva. Valorile indica istoricul acumulate al actiunilor integrale ale regulatoarelor de secventa negativa si pot semnala drift-uri de functionare.",
+      "influenteaza": "r3642, r3637",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27779,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3648",
+    "descriere_scurta": "Transformer DC component controller current actual value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza componentele de curent CC ale controlului de secventa negativa in coordonate alfa/beta. Valorile reprezinta componentele continue ale curentilor de retea care pot indica probleme de saturatie a transformatorului. Monitorizarea ajuta la protectia transformatorului de alimentare impotriva saturatiei.",
+      "influenteaza": "r3652, r3638",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27780,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3652",
+    "descriere_scurta": "Transformer DC component controller manipulated variable",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza variabila manipulata (tensiunea de iesire) a controlerului de componenta CC. Valorile sunt in coordonate alfa/beta si reprezinta tensiunile de corectie aplicate pentru eliminarea componentei CC din curentul de retea. Monitorizata la diagnosticarea protectiei transformatorului.",
+      "influenteaza": "r3648, r3642",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27781,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3664",
+    "descriere_scurta": "VSM temperature evaluation status",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza starea evaluarii temperaturii Voltage Sensing Module (VSM). Valoarea indica daca temperatura actuala a depasit pragul de alarma sau de avarie. Monitorizarea temperaturii VSM este importanta in medii cu temperaturi ridicate sau la incarcare maxima a sistemului.",
+      "influenteaza": "r0146",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27782,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3677",
+    "descriere_scurta": "= 3 x 39 = 117 µF",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only cu nivel de acces 4 care afiseaza capacitanta filtrului de retea pentru fiecare faza in configuratie stea. Valorile pentru fazele U, V si W permit verificarea simetriei filtrului. Utila la dimensionarea si verificarea configuratiei filtrului de retea al unitatii de alimentare.",
+      "influenteaza": "r3662",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27783,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3771",
+    "descriere_scurta": "APC velocity actual value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza valoarea actuala de viteza a sarcinii si a motorului pentru APC (Advanced Positioning Control). Indexul 0 afiseaza viteza netezita a sarcinii, iar indexul 1 viteza sarcinii sau motorului ponderata cu p3702. Monitorizarea permite verificarea comportamentului dinamic al axei in aplicatii APC.",
+      "influenteaza": "r3772, r3773",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27784,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3772",
+    "descriere_scurta": "APC filter branch 2 display values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza vitezele din ramura de filtrare 2 a sistemului APC. Indexul 0 ofera valoarea de intrare a filtrului 2.1, iar indexul 1 valoarea de iesire a filtrului 2.2. Utila la acordarea si diagnosticarea filtrelor de ramura 2 ale algoritmului APC.",
+      "influenteaza": "r3771, r3773",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27785,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3773",
+    "descriere_scurta": "APC filter branch 3 display values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza vitezele din ramura de filtrare 3 a sistemului APC, analog cu r3772 pentru ramura 3. Indexurile 0 si 1 corespund intrarilor si iesirilor filtrelor din aceasta ramura. Permite diagnosticarea functionarii complete a tuturor ramurilor de filtrare APC.",
+      "influenteaza": "r3771, r3772",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27786,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3777",
+    "descriere_scurta": "APC filter branch 1 display values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza vitezele din prima ramura de filtrare a sistemului APC. Indexul 0 ofera valoarea de intrare a filtrului 1.1, iar indexul 1 valoarea de iesire a aceluiasi filtru. Ramura 1 este principala ramura de filtrare a APC si afecteaza cel mai semnificativ comportamentul dinamic.",
+      "influenteaza": "r3771, r3772",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27787,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3803",
+    "descriere_scurta": "Sync-line-drive control word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza cuvantul de comanda pentru sincronizarea cu reteaua in modul line-drive. Bitii indica comenzile active de sincronizare a drive-ului cu unghiul de faza al retelei de alimentare. Monitorizarea este necesara in configuratiile cu regenerare sincronizata cu reteaua.",
+      "influenteaza": "r0898, r0899",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27788,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3840",
+    "descriere_scurta": "Friction characteristic status word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire BICO care afiseaza cuvantul de stare al caracteristicii de frecare. Bitii indica starea procesului de invatare a caracteristicii de frecare si daca aceasta este activa. Utila in aplicatii cu compensare de frecare pentru verificarea functionarii corecte a algoritmului de compensare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27789,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3861",
+    "descriere_scurta": "Braking Module inhibit/acknowledgement",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care furnizeaza semnalul pentru energizarea terminalului X21.1 al modulului de franare (inhibit/acknowledgement). Iesirea binector este utilizata ca sursa de semnal interconectata la o iesire digitala. Pentru formatul booksize se conecteaza la X21.1, iar pentru chassis la X21.3 al modulului de franare.",
+      "influenteaza": "p1362",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27790,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3875",
+    "descriere_scurta": "Long stator status word",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza cuvantul de stare pentru motoarele cu stator lung (motoare liniare de transport). Bitii indica starea specifica functionarii motorului cu stator lung, inclusiv starea de comutare a segmentelor de stator si alinierea motorului. Utilizat in aplicatiile de transport cu motoare liniare.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27791,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3927",
+    "descriere_scurta": "Motor data identification induction motor data determined",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza datele motorului asincron determinate si acceptate din procedura de identificare stationara sau masurare rotativa. Bitii codificati indica ce parametri au fost determinati cu succes. Monitorizarea dupa identificare confirma ce date au fost actualizate in configuratia drive-ului.",
+      "influenteaza": "r3928, r1949",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27792,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3928",
+    "descriere_scurta": "Motor data identification synchronous motor data determined",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza componentele finalizate cu succes ale ultimei masurari rotative pentru motoare sincrone. Bitii indica ce parametri ai motorului sincron au fost determinati corect. Permite verificarea completitudinii procedurii de identificare a datelor motorului sincron.",
+      "influenteaza": "r3927, r1949",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 27793,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3988",
+    "descriere_scurta": "Boot state",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza starea de pornire a drive-ului. Indexul 0 afiseaza starea de boot, iar indexul 1 starea de boot partial. Valorile codificate indica faza procesului de initializare a sistemului. Utila la diagnosticarea problemelor de pornire sau a blocajelor in procesul de initializare.",
+      "influenteaza": "r0197",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27794,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4072",
+    "descriere_scurta": "TB30 analog outputs output value currently referred",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza valoarea actuala referita (normalizata) a iesirilor analogice ale Terminal Board 30 (TB30). Indexul 0 este pentru AO 0 (X482.5/X482.6), iar indexul 1 pentru AO 1 (X482.7/X482.8). Verificarea valorii referite confirma ca semnalul analogic de iesire corespunde valorii setate.",
+      "influenteaza": "r4074",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27795,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4074",
+    "descriere_scurta": "TB30 analog outputs actual output voltage",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tensiunea actuala de iesire la iesirile analogice ale Terminal Board 30. Permite verificarea tensiunii efective prezente la bornele fizice AO 0 si AO 1. Compararea cu valoarea referita r4072 permite detectarea problemelor de scalare sau a defectiunilor hardware ale iesirilor analogice.",
+      "influenteaza": "r4072",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27796,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4076",
+    "descriere_scurta": "TB30 analog outputs type",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tipul iesirilor analogice ale Terminal Board 30. Valoarea indica varianta hardware a TB30 si tipul de semnal suportat (tensiune/curent). Informatia este necesara pentru configurarea corecta a scalarii si verificarea compatibilitatii cu echipamentele externe conectate.",
+      "influenteaza": "r4072, r4074",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27797,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4094",
+    "descriere_scurta": "TM15 digital inputs status inverted raw data internal",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only cu nivel de acces 4 care afiseaza starea invertita a datelor brute ale intrarilor digitale ale Terminal Module 15 (TM15). Datele brute invertite sunt utilizate intern in procesarea semnalelor. Utila la diagnosticarea funcionarii intrarilor digitale TM15 la nivel intern de circuit.",
+      "influenteaza": "r4024",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 27798,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4101",
+    "descriere_scurta": "TM120 sensor resistance",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza valoarea actuala a rezistentei senzorului de temperatura conectat la Terminal Module TM120 sau TM150. Cele 4 indexuri corespund canalelor de temperatura 0-3. Valoarea rezistentei permite calculul temperaturii si verificarea starii senzorilor de temperatura conectati.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27799,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4104",
+    "descriere_scurta": "Spindle supplementary temperature status",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire binector care afiseaza starea la evaluarea temperaturii suplimentare a axului. Bitii indica depasirea pragurilor de alarma si avarie ale temperaturii suplimentare. Monitorizarea este esentiala in aplicatiile de freza sau strung unde temperatura axului este critica pentru durata de viata.",
+      "influenteaza": "r4107",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27800,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4111",
+    "descriere_scurta": "TM150 group channel assignment",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care asigneaza canalele de temperatura la grupe pentru Terminal Module 150 (TM150). Pana la 3 grupe pot fi configurate (indexuri 0-2). Pentru fiecare grupa sunt calculate valori maxima (r4112), minima (r4113) si medie (r4114) din temperatura masuratorilor r4105[0..11] asignate grupei.",
+      "influenteaza": "r4112, r4113",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27801,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4112",
+    "descriere_scurta": "TM150 group temperature actual value maximum value",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only si iesire conector care afiseaza valoarea maxima a temperaturii pentru fiecare grupa din TM150. Valoarea este calculata din temperaturile actuale r4105[0..11] ale canalelor asignate grupei. Monitorizarea valorii maxime este esentiala pentru protectia termica globala a grupelor de motoare sau echipamente.",
+      "influenteaza": "p4111",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27802,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4117",
+    "descriere_scurta": "TM150 group sensor error effect",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste efectul unei erori de senzor asupra valorilor calculate ale grupei in TM150. Cu p4117=0 senzorul defect este exclus din calcul. Cu p4117=1 o eroare de senzor produce valoarea -300 grade C pentru valorile maxima, minima si medie ale grupei respective. Configuratia afecteaza comportamentul la defectul unui senzor.",
+      "influenteaza": "r4112, p4111",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27803,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4119",
+    "descriere_scurta": "TM150 activate/deactivate smoothing",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care activeaza sau dezactiveaza filtrul de netezire al semnalului de temperatura pentru TM150. Filtrarea este realizata cu un filtru lowpass de ordinul 1. Constanta de timp efectiva depinde de numarul de canale active simultan si este afisata in r4120. Activarea reduce zgomotul de masurare dar introduce o intarziere.",
+      "influenteaza": "r4120",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27804,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4402",
+    "descriere_scurta": "TM41 encoder emulation status",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza starea emulatiei de encoder incremental pe Terminal Module 41 (TM41). Bitii indica starea sincronizarii si functionarii emulatiei de encoder. Monitorizarea este necesara pentru verificarea functionarii corecte a emulatiei de encoder utilizata de controllerele externe care necesita semnale incrementale.",
+      "influenteaza": "r4154",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27805,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4620",
+    "descriere_scurta": "Motor temperature measured",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza temperatura actuala masurata in motor prin pana la 4 canale de temperatura. Indexurile 0-3 corespund canalelor de temperatura 1-4. Monitorizarea continua a temperaturii motorului este esentiala pentru protectia termica si planificarea mentenantei preventive.",
+      "influenteaza": "r0630",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27806,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4640",
+    "descriere_scurta": "Encoder diagnostics state machine",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only cu nivel de acces 4 care afiseaza diagnostica encoder-ului pentru interfata PROFIdrive. Valoarea indica starea automatului de stare al diagnosticii encoder-ului in comunicatia PROFIdrive. Utila la diagnosticarea problemelor de comunicatie cu encoder-ul in contextul profilului PROFIdrive.",
+      "influenteaza": "r0979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27807,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4693",
+    "descriere_scurta": "SMI spare part data backup directory",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste directorul pentru descarcarea si salvarea datelor in procedura de backup a pieselor de schimb SMI (Sensor Module Integrated). Permite specificarea locatiei unde sunt salvate datele de backup pentru encoder-ele cu interfata DRIVE-CLiQ. Necesara la inlocuirea planificata a encoder-elor SMI.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27808,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4705",
+    "descriere_scurta": "Trace status",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza starea actuala a functiei de trace (inregistrare semnale). Valorile codificate indica starea tracing-ului: in asteptare, in inregistrare, finalizat sau eroare. Monitorizarea este necesara pentru a sti cand inregistrarea trace s-a finalizat si datele pot fi citite.",
+      "influenteaza": "r4709, r4719",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27809,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4709",
+    "descriere_scurta": "Trace memory space required for measuring functions",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza memoria necesara in bytes pentru parametrizarea actuala a trace-ului in contextul functiilor de masurare. Indexurile 0 si 1 corespund trace 0 si trace 1. Verificarea memoriei necesare permite estimarea duratei inregistrarii posibile si evitarea depasirii memoriei disponibile.",
+      "influenteaza": "r4705, r4729",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27810,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4719",
+    "descriere_scurta": "Trace trigger index",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza indexul trigger-ului in buffer-ul de trace. Evenimentul de trigger a aparut la pozitia indicata in buffer. Informatia permite identificarea pozitiei temporale a evenimentului care a declansat inregistrarea in contextul datelor inregistrate.",
+      "influenteaza": "r4705",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27811,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4724",
+    "descriere_scurta": "Trace average in the time range",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care defineste media in domeniu timp pentru trace. Fiecare index corespunde unui trace (0 si 1). Valoarea determina numarul de esantioane mediate in fiecare punct de timp al tracing-ului. Valorile mari reduc rezolutia temporala dar si zgomotul din datele inregistrate.",
+      "influenteaza": "r4705, r4729",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27812,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4725",
+    "descriere_scurta": "Trace data type 1 traced",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tipul de date inregistrat in trace pentru semnalul 1. Indexurile 0 si 1 corespund trace 0 si trace 1. Tipul de date determina modul de interpretare a valorilor inregistrate in buffer-ul de trace si este esential pentru citirea corecta a datelor.",
+      "influenteaza": "r4726, r4727",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27813,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4726",
+    "descriere_scurta": "Trace data type 2 traced",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tipul de date inregistrat pentru semnalul 2 al trace-ului. Analog cu r4725 pentru semnalul 2. Permite identificarea formatului datelor inregistrate pe cel de-al doilea canal de trace pentru interpretarea corecta la citire.",
+      "influenteaza": "r4725, r4727",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27814,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4727",
+    "descriere_scurta": "Trace data type 3 traced",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tipul de date inregistrat pentru semnalul 3 al trace-ului. Completeaza informatia despre formatele de date ale trace-ului alaturi de r4725 si r4726. Necesara pentru interpretarea corecta a celui de-al treilea canal de semnal din datele trace.",
+      "influenteaza": "r4725, r4728",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27815,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4728",
+    "descriere_scurta": "Trace data type 4 traced",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza tipul de date inregistrat pentru semnalul 4 al trace-ului. Ultimul tip de date din seria de 4 canale de trace. Permite identificarea completa a formatelor de date pentru toate cele 4 canale de semnale disponibile in functia de trace.",
+      "influenteaza": "r4725, r4727",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27816,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4729",
+    "descriere_scurta": "Trace number of recorded values",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza numarul de valori inregistrate pentru fiecare semnal din trace. Indexurile 0 si 1 corespund trace 0 si trace 1. Valoarea indica durata efectiva a inregistrarii si este utila pentru calculul rezolutiei temporale si pentru dimensionarea transferului de date.",
+      "influenteaza": "r4709, r4719",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27817,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4737",
+    "descriere_scurta": "Trace record signal 7",
+    "GENERATED": {
+      "explicatie": "p - Parametru setabil care selecteaza al optulea semnal de inregistrat in trace. Cele 6 indexuri permit selectia in format BICO sau PINx cu ID de drive object si chart, pentru trace 0 si trace 1. Fiecare semnal suplimentar selectat reduce durata maxima de inregistrare disponibila.",
+      "influenteaza": "r4725, r4729",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27818,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4740",
+    "descriere_scurta": "Trace 0 trace buffer signal 0 floating point",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza buffer-ul de inregistrare pentru trace 0 si semnalul 0 in format float. Buffer-ul este organizat in bancuri de 16384 valori, comutabile prin p4795. Citirea buffer-ului este necesara dupa finalizarea inregistrarii pentru analiza semnalului in software-ul de comisionare.",
+      "influenteaza": "r4741, p4795",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27819,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4741",
+    "descriere_scurta": "Trace 0 trace buffer signal 1 floating point",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza buffer-ul de inregistrare pentru trace 0 si semnalul 1 in format float. Structura este identica cu r4740 dar pentru semnalul 1. Permite citirea datelor inregistrate ale celui de-al doilea canal de semnal al primului trace.",
+      "influenteaza": "r4740, r4742",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27820,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4742",
+    "descriere_scurta": "Trace 0 trace buffer signal 2 floating point",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza buffer-ul de inregistrare pentru trace 0 si semnalul 2 in format float. Al treilea canal de semnal al primului trace. Citirea datelor din acest buffer permite analiza simultana a trei semnale diferite inregistrate sincron.",
+      "influenteaza": "r4741, r4743",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27821,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4743",
+    "descriere_scurta": "Trace 0 trace buffer signal 3 floating point",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza buffer-ul de inregistrare pentru trace 0 si semnalul 3 in format float. Al patrulea canal de semnal al primului trace. Permite analiza completa a 4 semnale sincronizate in timp pentru diagnosticarea comportamentului tranzitoriu al drive-ului.",
+      "influenteaza": "r4742, r4744",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27822,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r4744",
+    "descriere_scurta": "Trace 0 trace buffer signal 4 floating point",
+    "GENERATED": {
+      "explicatie": "r - Parametru read-only care afiseaza buffer-ul de inregistrare pentru trace 0 si semnalul 4 in format float. Al cincilea canal de semnal al primului trace. Extinde capacitatea de diagnostica prin inregistrarea simultana a 5 semnale diferite cu aceeasi baza de timp.",
+      "influenteaza": "r4743, r4729",
+      "categorie": "Diagnostic"
+    }
+  }
+]

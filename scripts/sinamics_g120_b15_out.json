@@ -1,0 +1,673 @@
+[
+  {
+    "id": 26558,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20318",
+    "descriere_scurta": "NCM 1 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele semnalelor numerice X0 si X1 ale instantei NCM 1 a comparatorului numeric din FFB. Instanta independenta fata de NCM 0; genereaza semnale QU, QE, QL.",
+      "influenteaza": "r20319, r20320, r20321, p20322",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26559,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20319",
+    "descriere_scurta": "NCM 1 output QU",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QU = 1 al instantei NCM 1 indica ca X0 > X1. Poate fi conectat prin BICO la logici conditionale sau comenzi de comutare.",
+      "influenteaza": "p20318, r20320, r20321",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26560,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20320",
+    "descriere_scurta": "NCM 1 output QE",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QE = 1 al instantei NCM 1 indica ca X0 = X1. Util in logici de control care necesita detectia egalitatii intre doua semnale numerice.",
+      "influenteaza": "p20318, r20319, r20321",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26561,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20321",
+    "descriere_scurta": "NCM 1 output QL",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Semnalul QL = 1 al instantei NCM 1 indica ca X0 < X1. Complementar cu QU si QE in cadrul comparatorului numeric NCM 1.",
+      "influenteaza": "p20318, r20319, r20320",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26562,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20322",
+    "descriere_scurta": "NCM 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta NCM 1 a comparatorului numeric din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20323, r20319",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26563,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20323",
+    "descriere_scurta": "NCM 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei NCM 1 in cadrul grupului de executie setat in p20322. Valoarea implicita este 830.",
+      "influenteaza": "p20322",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26564,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20324",
+    "descriere_scurta": "RSR 2 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele pentru intrarea Set S si intrarea Reset R ale instantei RSR 2 a bistabilului RS din FFB. A treia instanta RS independenta; starea este retinuta intre cicluri.",
+      "influenteaza": "r20325, r20326, p20327",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26565,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20325",
+    "descriere_scurta": "RSR 2 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei RSR 2 a bistabilului RS din FFB. Q = 1 dupa Set, Q = 0 dupa Reset; ultima comanda este memorata.",
+      "influenteaza": "p20324, r20326",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26566,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20326",
+    "descriere_scurta": "RSR 2 inverted output QN",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea inversa QN a instantei RSR 2 a bistabilului RS din FFB. QN este complementul logic al iesirii Q.",
+      "influenteaza": "p20324, r20325",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26567,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20327",
+    "descriere_scurta": "RSR 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta RSR 2 a bistabilului RS din FFB. Valoarea 9999 dezactiveaza blocul; domeniu: 1 la 9999.",
+      "influenteaza": "p20328, r20325",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26568,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20328",
+    "descriere_scurta": "RSR 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei RSR 2 in cadrul grupului de executie setat in p20327. Valoarea implicita este 850; domeniu maxim 7999.",
+      "influenteaza": "p20327",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26569,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20329",
+    "descriere_scurta": "DFR 2 inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursele pentru trigger I, intrarea de date D, Set S si Reset R ale instantei DFR 2 a bistabilului D din FFB. A treia instanta D independenta.",
+      "influenteaza": "r20330, r20331, p20332",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26570,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20330",
+    "descriere_scurta": "DFR 2 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei DFR 2 a bistabilului D din FFB. Q preia starea intrararii D la fiecare front al triggerului I.",
+      "influenteaza": "p20329, r20331",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26571,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20331",
+    "descriere_scurta": "DFR 2 inverted output QN",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea inversa QN a instantei DFR 2 a bistabilului D din FFB. QN este complementul logic al iesirii Q.",
+      "influenteaza": "p20329, r20330",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26572,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20332",
+    "descriere_scurta": "DFR 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta DFR 2 a bistabilului D din FFB. Valoarea 9999 dezactiveaza blocul; domeniu: 1 la 9999.",
+      "influenteaza": "p20333, r20330",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26573,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20333",
+    "descriere_scurta": "DFR 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei DFR 2 in cadrul grupului de executie setat in p20332. Valoarea implicita este 870.",
+      "influenteaza": "p20332",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26574,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20334",
+    "descriere_scurta": "PDE 2 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei PDE 2 a dispozitivului de intarziere la inchidere din FFB. A treia instanta PDE independenta.",
+      "influenteaza": "p20335, r20336, p20337",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26575,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20335",
+    "descriere_scurta": "PDE 2 pulse delay time in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de intarziere T in milisecunde al instantei PDE 2 a dispozitivului de intarziere la inchidere. Domeniu: 0 la 5400000 ms.",
+      "influenteaza": "r20336, p20334",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26576,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20336",
+    "descriere_scurta": "PDE 2 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei PDE 2 a dispozitivului de intarziere la inchidere. Iesirea devine activa cu intarzierea T configurata in p20335.",
+      "influenteaza": "p20334, p20335",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26577,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20337",
+    "descriere_scurta": "PDE 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PDE 2 a dispozitivului de intarziere la inchidere din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20338, r20336",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26578,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20338",
+    "descriere_scurta": "PDE 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PDE 2 in cadrul grupului de executie setat in p20337. Valoarea implicita este 890.",
+      "influenteaza": "p20337",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26579,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20339",
+    "descriere_scurta": "PDE 3 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei PDE 3 a dispozitivului de intarziere la inchidere din FFB. A patra instanta PDE independenta.",
+      "influenteaza": "p20340, r20341, p20342",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26580,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20340",
+    "descriere_scurta": "PDE 3 pulse delay time in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de intarziere T in milisecunde al instantei PDE 3 a dispozitivului de intarziere la inchidere. Domeniu: 0 la 5400000 ms.",
+      "influenteaza": "r20341, p20339",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26581,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20341",
+    "descriere_scurta": "PDE 3 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei PDE 3 a dispozitivului de intarziere la inchidere. Iesirea este activata cu intarzierea T configurata in p20340.",
+      "influenteaza": "p20339, p20340",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26582,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20342",
+    "descriere_scurta": "PDE 3 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PDE 3 a dispozitivului de intarziere la inchidere din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20343, r20341",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26583,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20343",
+    "descriere_scurta": "PDE 3 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PDE 3 in cadrul grupului de executie setat in p20342. Valoarea implicita este 900.",
+      "influenteaza": "p20342",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26584,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20344",
+    "descriere_scurta": "PDF 2 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei PDF 2 a dispozitivului de intarziere la deschidere din FFB. A treia instanta PDF independenta.",
+      "influenteaza": "p20345, r20346, p20347",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26585,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20345",
+    "descriere_scurta": "PDF 2 pulse extension time in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de extensie T in milisecunde al instantei PDF 2 a dispozitivului de intarziere la deschidere. Iesirea ramane activa T ms dupa caderea semnalului de intrare.",
+      "influenteaza": "r20346, p20344",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26586,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20346",
+    "descriere_scurta": "PDF 2 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei PDF 2 a dispozitivului de intarziere la deschidere. Iesirea este mentinuta activa pentru durata T dupa caderea intrarii.",
+      "influenteaza": "p20344, p20345",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26587,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20347",
+    "descriere_scurta": "PDF 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PDF 2 a dispozitivului de intarziere la deschidere din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20348, r20346",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26588,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20348",
+    "descriere_scurta": "PDF 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PDF 2 in cadrul grupului de executie setat in p20347. Valoarea implicita este 920.",
+      "influenteaza": "p20347",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26589,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20349",
+    "descriere_scurta": "PDF 3 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei PDF 3 a dispozitivului de intarziere la deschidere din FFB. A patra instanta PDF independenta.",
+      "influenteaza": "p20350, r20351, p20352",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26590,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20350",
+    "descriere_scurta": "PDF 3 pulse extension time in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de extensie T in milisecunde al instantei PDF 3 a dispozitivului de intarziere la deschidere. Domeniu: 0 la 5400000 ms.",
+      "influenteaza": "r20351, p20349",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26591,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20351",
+    "descriere_scurta": "PDF 3 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea Q a instantei PDF 3 a dispozitivului de intarziere la deschidere. Iesirea este mentinuta pentru durata T dupa caderea semnalului de intrare.",
+      "influenteaza": "p20349, p20350",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26592,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20352",
+    "descriere_scurta": "PDF 3 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PDF 3 a dispozitivului de intarziere la deschidere din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20353, r20351",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26593,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20353",
+    "descriere_scurta": "PDF 3 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PDF 3 in cadrul grupului de executie setat in p20352. Valoarea implicita este 930.",
+      "influenteaza": "p20352",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26594,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20354",
+    "descriere_scurta": "MFP 2 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei MFP 2 a generatorului de impulsuri din FFB. La fiecare front pozitiv al intrarii I, blocul genereaza un impuls de durata T.",
+      "influenteaza": "p20355, r20356, p20357",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26595,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20355",
+    "descriere_scurta": "MFP 2 pulse duration in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza durata T in milisecunde a impulsului generat de instanta MFP 2 a generatorului de impulsuri din FFB. Domeniu: 0 la 5400000 ms.",
+      "influenteaza": "r20356, p20354",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26596,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20356",
+    "descriere_scurta": "MFP 2 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza impulsul de iesire Q al instantei MFP 2 a generatorului de impulsuri. Q = 1 pe durata T configurata in p20355 dupa detectarea frontului de intrare.",
+      "influenteaza": "p20354, p20355",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26597,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20357",
+    "descriere_scurta": "MFP 2 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta MFP 2 a generatorului de impulsuri din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20358, r20356",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26598,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20358",
+    "descriere_scurta": "MFP 2 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei MFP 2 in cadrul grupului de executie setat in p20357. Valoarea implicita este 950.",
+      "influenteaza": "p20357",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26599,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20359",
+    "descriere_scurta": "MFP 3 input pulse I",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare I al instantei MFP 3 a generatorului de impulsuri din FFB. A patra instanta MFP independenta; genereaza impuls la fiecare front pozitiv.",
+      "influenteaza": "p20360, r20361, p20362",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26600,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20360",
+    "descriere_scurta": "MFP 3 pulse duration in ms",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza durata T in milisecunde a impulsului generat de instanta MFP 3 a generatorului de impulsuri din FFB. Domeniu: 0 la 5400000 ms.",
+      "influenteaza": "r20361, p20359",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26601,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20361",
+    "descriere_scurta": "MFP 3 output Q",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza impulsul de iesire Q al instantei MFP 3 a generatorului de impulsuri. Iesirea este activa pe durata T dupa detectarea frontului semnalului de intrare.",
+      "influenteaza": "p20359, p20360",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26602,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20362",
+    "descriere_scurta": "MFP 3 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta MFP 3 a generatorului de impulsuri din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20363, r20361",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26603,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20363",
+    "descriere_scurta": "MFP 3 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei MFP 3 in cadrul grupului de executie setat in p20362. Valoarea implicita este 960.",
+      "influenteaza": "p20362",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26604,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20372",
+    "descriere_scurta": "PLI 0 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare X al instantei PLI 0 a interpolatorului pe curba liniara franta cu 20 de puncte de ruptura din FFB. Valoarea de iesire este interpolata liniar intre puncte.",
+      "influenteaza": "r20373, p20374, p20375, p20376",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26605,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20373",
+    "descriere_scurta": "PLI 0 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea interpolata Y a instantei PLI 0 a interpolatorului cu 20 puncte de ruptura. Y este calculata prin interpolare liniara intre punctele A si B definite.",
+      "influenteaza": "p20372, p20374, p20375",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26606,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20374",
+    "descriere_scurta": "PLI 0 X-coordinate, A breakpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonatele X ale celor 20 puncte de ruptura A0...A19 ale instantei PLI 0. Valorile trebuie introduse in ordine crescatoare pentru functionare corecta a interpolatorului.",
+      "influenteaza": "r20373, p20375, p20372",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26607,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20375",
+    "descriere_scurta": "PLI 0 Y-coordinate, B breakpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonatele Y ale celor 20 puncte de ruptura B0...B19 ale instantei PLI 0. Impreuna cu p20374 definesc curba caracteristica a interpolatorului.",
+      "influenteaza": "r20373, p20374, p20372",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26608,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20376",
+    "descriere_scurta": "PLI 0 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PLI 0 a interpolatorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20377, r20373",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26609,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20377",
+    "descriere_scurta": "PLI 0 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PLI 0 in cadrul grupului de executie setat in p20376. Valoarea implicita este 980.",
+      "influenteaza": "p20376",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26610,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20378",
+    "descriere_scurta": "PLI 1 input X",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza sursa semnalului de intrare X al instantei PLI 1 a interpolatorului cu 20 puncte de ruptura din FFB. Instanta independenta fata de PLI 0.",
+      "influenteaza": "r20379, p20380, p20381, p20382",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26611,
+    "familie": "SINAMICS_G120",
+    "parametru": "r20379",
+    "descriere_scurta": "PLI 1 output Y",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea interpolata Y a instantei PLI 1 a interpolatorului cu 20 puncte de ruptura. Iesirea este calculata din curba definita de p20380 si p20381.",
+      "influenteaza": "p20378, p20380, p20381",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26612,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20380",
+    "descriere_scurta": "PLI 1 X-coordinate, A breakpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonatele X ale celor 20 puncte de ruptura A0...A19 ale instantei PLI 1. Valorile trebuie sa fie in ordine crescatoare.",
+      "influenteaza": "r20379, p20381, p20378",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26613,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20381",
+    "descriere_scurta": "PLI 1 Y-coordinate, B breakpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonatele Y ale celor 20 puncte de ruptura B0...B19 ale instantei PLI 1. Impreuna cu p20380 definesc caracteristica de transfer a interpolatorului.",
+      "influenteaza": "r20379, p20380, p20378",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26614,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20382",
+    "descriere_scurta": "PLI 1 run-time group",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Stabileste grupul de executie in care este apelata instanta PLI 1 a interpolatorului din FFB. Valoarea 9999 dezactiveaza blocul.",
+      "influenteaza": "p20383, r20379",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26615,
+    "familie": "SINAMICS_G120",
+    "parametru": "p20383",
+    "descriere_scurta": "PLI 1 run sequence",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste ordinea de executie a instantei PLI 1 in cadrul grupului de executie setat in p20382. Valoarea implicita este 990.",
+      "influenteaza": "p20382",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26616,
+    "familie": "SINAMICS_G120",
+    "parametru": "p60122",
+    "descriere_scurta": "PROFIdrive SIC telegram selection",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Selecteaza telegramul Safety Info Channel (SIC) atasat telegramei PZD configurate in p0922/p2079. Valoarea 999 dezactiveaza SIC; valorile 700-999 selecteaza diferite formate de telegrama de siguranta.",
+      "influenteaza": "p0922, p2079",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26617,
+    "familie": "SINAMICS_G120",
+    "parametru": "r61000",
+    "descriere_scurta": "PROFINET Name of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numele statiei PROFINET al convertorului SINAMICS G120. Numele este configurat in reteaua PROFINET si utilizat pentru identificarea dispozitivului pe retea.",
+      "influenteaza": "r61001",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 26618,
+    "familie": "SINAMICS_G120",
+    "parametru": "r61001",
+    "descriere_scurta": "PROFINET IP of Station",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza adresa IP a statiei PROFINET a convertorului SINAMICS G120. Adresa IP este atribuita de controlerul PROFINET (PLC) in timpul configurarii retelei.",
+      "influenteaza": "r61000",
+      "categorie": "Comunicatii"
+    }
+  }
+]

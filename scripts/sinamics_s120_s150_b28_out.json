@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 18034,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4711",
+    "descriere_scurta": "Trace trigger signal",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza semnalul de declansare (trigger) pentru inregistrarea trace. Parametrul poate specifica semnalul in format BICO, adresa PINx cu ID-ul obiectului drive sau ID-ul blocului. Configuratia corecta a trigger-ului asigura captura evenimentului dorit la momentul potrivit.",
+      "influenteaza": "p4712, p4713, p4715, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18035,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4712",
+    "descriere_scurta": "Trace trigger threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea prag pentru declansarea trace-ului. Inregistrarea este activata cand semnalul definit in p4711 depaseste aceasta valoare. Fiecare index corespunde unui canal trace (Trace 0, Trace 1).",
+      "influenteaza": "p4711, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18036,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4713",
+    "descriere_scurta": "Trace tolerance band trigger threshold 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza primul prag al benzii de toleranta pentru declansarea trace-ului prin fereastra de toleranta. Inregistrarea se activeaza cand semnalul iese din banda definita de acest prag si p4714. Permite captura evenimentelor de iesire din domeniu normal de functionare.",
+      "influenteaza": "p4714, p4711, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18037,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4715",
+    "descriere_scurta": "Trace bit mask trigger, bit mask",
+    "GENERATED": {
+      "explicatie": "p - Seteaza masca de biti pentru declansarea trace-ului prin masca de biti. Inregistrarea este activata cand operatia AND intre semnalul trigger (p4711) si aceasta masca corespunde conditiei configurate (p4716). Permite declansarea pe baza unor biti specifici din cuvinte de stare.",
+      "influenteaza": "p4716, p4711",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18038,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4716",
+    "descriere_scurta": "Trace bit mask trigger trigger condition",
+    "GENERATED": {
+      "explicatie": "p - Seteaza conditia de declansare pentru trigger-ul cu masca de biti. Defineste valoarea cu care este comparat rezultatul AND intre semnalul trigger si masca p4715. Permite selectarea precisa a combinatiei de biti care declanseaza inregistrarea trace.",
+      "influenteaza": "p4715, p4711",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18039,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4720",
+    "descriere_scurta": "Trace recording cycle",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul de inregistrare al trace-ului (intervalul de esantionare). Valori mai mici ofera rezolutie temporala mai mare dar consuma mai rapid memoria de inregistrare. Trebuie corelat cu viteza fenomenului de analizat si durata dorita de inregistrare.",
+      "influenteaza": "p4721, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18040,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4721",
+    "descriere_scurta": "Trace recording time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata totala de inregistrare a trace-ului. Impreuna cu ciclul de inregistrare (p4720) determina numarul total de esantioane stocate. Limita superioara este determinata de memoria disponibila si numarul de semnale inregistrate simultan.",
+      "influenteaza": "p4720, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18041,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4722",
+    "descriere_scurta": "Trace trigger delay",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea relativa la evenimentul trigger pentru inceperea inregistrarii trace. Valori negative = pre-trigger (inregistrarea include perioada dinaintea evenimentului); valori pozitive = post-trigger (inregistrarea incepe dupa eveniment). Permite captura contextului complet al unui eveniment tranzitoriu.",
+      "influenteaza": "p4711, p4721",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18042,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4723",
+    "descriere_scurta": "Trace time slice cycle",
+    "GENERATED": {
+      "explicatie": "p - Seteaza ciclul time-slice in care este apelat trace-ul. Determina ciclul de calcul al drive-ului in care se realizeaza esantionarea semnalelor. Alinierea cu ciclul de curent sau de viteza al regulatorului este importanta pentru precizia temporala a inregistrarilor.",
+      "influenteaza": "p4720",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18043,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4730",
+    "descriere_scurta": "Trace record signal 0",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza primul semnal de inregistrat in trace. Semnalul poate fi specificat in format BICO sau ca adresa PINx. Fiecare canal trace poate inregistra simultan mai multe semnale. Selectia corecta a semnalelor este esentiala pentru diagnosticarea eficienta a problemelor de control.",
+      "influenteaza": "p4731, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18044,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4731",
+    "descriere_scurta": "Trace record signal 1",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al doilea semnal de inregistrat in trace. Permite monitorizarea simultana a mai multor semnale de control sau masura. Similar cu p4730 dar pentru al doilea canal de date al trace-ului.",
+      "influenteaza": "p4730, p4732",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18045,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4732",
+    "descriere_scurta": "Trace record signal 2",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al treilea semnal de inregistrat in trace. Face parte din setul de semnale monitorizate simultan. Permite corelarea temporala a trei semnale diferite pentru analiza interactiunilor in bucla de reglare.",
+      "influenteaza": "p4731, p4733",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18046,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4733",
+    "descriere_scurta": "Trace record signal 3",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al patrulea semnal de inregistrat in trace. Extinde capacitatea de monitorizare la 4 semnale simultane. Util pentru analiza completa a buclelor de control cu setpoint, eroare, iesire regulator si valoare actuala.",
+      "influenteaza": "p4732, p4734",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18047,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4734",
+    "descriere_scurta": "Trace record signal 4",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al cincilea semnal de inregistrat in trace. Permite monitorizarea detaliata a sistemului cu 5 semnale corelate temporal. Util in scenarii complexe unde sunt necesare mai mult de 4 semnale pentru diagnosticare completa.",
+      "influenteaza": "p4733, p4735",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18048,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4735",
+    "descriere_scurta": "Trace record signal 5",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al saselea semnal de inregistrat in trace. Extinde capacitatea de monitorizare la 6 semnale simultane. Numarul maxim de semnale simultane este limitat de memoria disponibila si ciclul de inregistrare ales.",
+      "influenteaza": "p4734, p4736",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18049,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4736",
+    "descriere_scurta": "Trace record signal 6",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza al saptelea semnal de inregistrat in trace. Este ultimul canal de semnal al trace-ului de inregistrare. Impreuna cu p4730-p4735 permite inregistrarea simultana a 7 semnale diferite pentru analiza detaliata a sistemului de actionare.",
+      "influenteaza": "p4735, p4730",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18050,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4780",
+    "descriere_scurta": "Trace physical address signal 0",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru primul semnal de trace in modul de adresare directa. Tipul de date al semnalului este definit prin p4730. Adresarea fizica permite accesul la semnale interne care nu sunt disponibile prin mecanismul BICO standard.",
+      "influenteaza": "p4730, p4703",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18051,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4781",
+    "descriere_scurta": "Trace physical address signal 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al doilea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4731. Permite extinderea capacitatii de trace la semnale accesibile doar prin adresa fizica.",
+      "influenteaza": "p4731",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18052,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4782",
+    "descriere_scurta": "Trace physical address signal 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al treilea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4732. Face parte din setul de adrese fizice configurabile pentru trace.",
+      "influenteaza": "p4732",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18053,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4783",
+    "descriere_scurta": "Trace physical address signal 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al patrulea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4733. Util pentru diagnosticarea avansata a semnalelor interne la nivel de firmware.",
+      "influenteaza": "p4733",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18054,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4784",
+    "descriere_scurta": "Trace physical address signal 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al cincilea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4734. Permite accesul la semnale interne avansate ale drive-ului pentru analiza detaliata.",
+      "influenteaza": "p4734",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18055,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4785",
+    "descriere_scurta": "Trace physical address signal 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al saselea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4735. Face parte din infrastructura de trace avansat prin adrese fizice.",
+      "influenteaza": "p4735",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18056,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4786",
+    "descriere_scurta": "Trace physical address signal 6",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al saptelea semnal de trace in modul de adresare directa. Tipul de date este definit prin p4736. Este ultima adresa fizica configurabila din setul de 7 semnale de trace cu adresare directa.",
+      "influenteaza": "p4736",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18057,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4787",
+    "descriere_scurta": "Trace physical address signal 7",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica de memorie pentru al optulea semnal de trace in modul de adresare directa. Tipul de date este definit de selectia din p4737. Extinde capacitatea de trace la 8 semnale cu adresare fizica directa.",
+      "influenteaza": "p4737",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18058,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4789",
+    "descriere_scurta": "Trace physical address trigger signal",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica pentru semnalul de trigger al trace-ului in modul de adresare directa. Tipul de date al semnalului trigger este definit prin selectia din p4711. Permite utilizarea oricarui semnal intern ca trigger pentru inregistrarea trace.",
+      "influenteaza": "p4711",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18059,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4815",
+    "descriere_scurta": "Function generator drive number",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza numarul drive-ului la care este conectat generatorul de functii. Permite conectarea generatorului de semnale de test la pana la 3 drive-uri simultane. Utilizat in punerea in functiune pentru injectarea semnalelor de test sintetice in bucla de reglare.",
+      "influenteaza": "p4816, p4832",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18060,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4832",
+    "descriere_scurta": "Function generator amplitude scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de scalare a amplitudinii semnalelor generate de generatorul de functii pentru fiecare canal de iesire. Nu poate fi modificat in timp ce generatorul este activ. Permite ajustarea amplitudinii semnalelor de test individual pentru fiecare drive conectat.",
+      "influenteaza": "p4815, p4830",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18061,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4835",
+    "descriere_scurta": "Function generator free measurement function scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea semnalelor de iesire ale functiei de masurare libera a generatorului de functii. Fiecare din cele 5 semnale de iesire disponibile (index 0-4) poate fi scalat independent. Permite adaptarea amplitudinii semnalelor de iesire ale functiei de masurare la cerintele aplicatiei.",
+      "influenteaza": "p4815, p4832",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18062,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5042",
+    "descriere_scurta": "Spindle transition times",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpii de tranzitie pentru masina de stare a clamarii arborelui principal (spindle). Indexul [0] = timp de stabilizare la starea 'clamped with tool', indexul [1] = timp maxim de clampare fara unealta. Configuratia corecta asigura functionarea corecta a mecanismului de prindere a sculei.",
+      "influenteaza": "p5043, p5045",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18063,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5043",
+    "descriere_scurta": "Spindle speed limits",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limitele de viteza pentru fiecare stare a masinii de stare a clamarii arborelui principal. Fiecare index corespunde unei stari specifice (eliberat, in clampare, clamped with/without tool, etc.). Limitele de viteza asigura siguranta mecanica in fiecare faza a ciclului de schimbare a sculei.",
+      "influenteaza": "p5042, p5045",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 18064,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5401",
+    "descriere_scurta": "Line droop control activation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele de semnal pentru activarea controlului droop de retea si a setpointurilor droop. Indexul [0] = activare control droop (dezactiveaza reglarea Vdc/curent); indexul [1] = activare setpointuri droop (p5405, p5406, p5415, p5416). Controlul droop permite functionarea in paralel a mai multor invertoare pe retea izolata.",
+      "influenteaza": "p5404, p5405, p5406, p5415",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18065,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5404",
+    "descriere_scurta": "Line droop control voltage signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de tensiune reglata in coordonate alfa/beta pentru controlul droop de retea. Indexul [0] = componenta alfa, [1] = componenta beta. Tensiunea masurata este utilizata in algoritmul de control droop pentru reglarea tensiunii retelei izolate.",
+      "influenteaza": "p5401, p5406",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18066,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5406",
+    "descriere_scurta": "Line droop control frequency droop supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa setpointului suplimentar de deviatie de frecventa pentru controlul droop (in procente din p0211). Indexul [0] = setpoint suplimentar cu netezire, [1] = setpoint suplimentar direct. Permite injectarea unei corectii externe de frecventa in regulatorul droop.",
+      "influenteaza": "p5401, p5405",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18067,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5416",
+    "descriere_scurta": "Line droop control voltage droop supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa setpointului suplimentar de deviatie de tensiune pentru controlul droop (in procente din p0210). Indexul [0] = setpoint suplimentar cu netezire, [1] = setpoint suplimentar direct. Permite injectarea unei corectii externe de tensiune in regulatorul droop de retea.",
+      "influenteaza": "p5401, p5415",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18068,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5425",
+    "descriere_scurta": "Line droop control voltage control signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de tensiune reglat la punctul de conexiune in coordonate alfa/beta pentru controlul droop avansat. Permite reglarea tensiunii la un punct diferit fata de cel masurat in p5404. Util in configuratii cu transformatoare sau cabluri lungi unde tensiunea la punct de conexiune difera.",
+      "influenteaza": "p5401, p5404",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18069,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5430",
+    "descriere_scurta": "Modulation depth controller setting",
+    "GENERATED": {
+      "explicatie": "p - Seteaza setpointul (index 0) si valoarea maxima (index 1) pentru adancimea de modulatie in controlul de retea. La p5430[1] = 110% limitarea adancimii de modulatie este dezactivata. Controlul adancimii de modulatie asigura rezerva de tensiune necesara reglarii curentului.",
+      "influenteaza": "p5401, p3478",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 18070,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5441",
+    "descriere_scurta": "Harmonics controller bandpass filter gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul filtrului bandpass pentru regulatorul de armonici. Fiecare index (0-3) corespunde unui filtru distinct al regulatorului de armonici. Castigul determina cat de agresiv regulatorul suprima armonica de retea la frecventa filtrului. Valori mai mari reduc armonicile dar pot destabiliza regulatorul.",
+      "influenteaza": "p3624",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18071,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5454",
+    "descriere_scurta": "Current hysteresis controller overcurrent hysteresis width",
+    "GENERATED": {
+      "explicatie": "p - Seteaza largimea histerezei de curent pentru regulatorul cu histereza de overcurent al modulatorului. Limitele efective de curent sunt calculate din supracurentul p5453 si aceasta histereza. Valori mai mari permit oscilarea mai ampla a curentului in jurul limitei, reducand frecventa de comutare.",
+      "influenteaza": "p5453, p5451",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18072,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5456",
+    "descriere_scurta": "= 0.",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de curent reglat in coordonate alfa/beta pentru controlerul droop de retea. Indexul [0] = componenta alfa, [1] = componenta beta. Semnalul de curent masutat este utilizat ca feedback in bucla de reglare a curentului in configuratia droop.",
+      "influenteaza": "p5401, p5453",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18073,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5457",
+    "descriere_scurta": "Current hysteresis controller pulse frequency changeover",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa de puls pentru starile de functionare ale regulatorului cu histereza de curent: [0] = functionare fara sarcina, [1] = functionare normala, [2] = scurtcircuit. Permite ajustarea frecventei de comutare in functie de starea de functionare pentru optimizarea pierderilor.",
+      "influenteaza": "p5454, p5458",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18074,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5458",
+    "descriere_scurta": "Current hysteresis controller minimum time operating state",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpii minime pentru starile de functionare ale regulatorului cu histereza de curent: [0] = timp minim in functionare normala, [1] = timp maxim in starea de scurtcircuit. Previne comutarile prea rapide intre stari care ar suprasolicita echipamentele electrice.",
+      "influenteaza": "p5457, p5454",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18075,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5484",
+    "descriere_scurta": "Magnetization transformer controller dynamics",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constantele de timp pentru regulatoarele de magnetizare a transformatorului: [0] = timp integrare regulator unghi, [1] = timp integrare regulator tensiune, [2] = timp netezire deviatie control. Configuratia corecta asigura magnetizarea stabila si precisa a transformatorului inainte de conectare la retea.",
+      "influenteaza": "p3415, p5485",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18076,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5485",
+    "descriere_scurta": "Transformer magnetization voltage thresholds",
+    "GENERATED": {
+      "explicatie": "p - Seteaza diferenta de tensiune permisa pentru inchiderea intreruptorului dupa magnetizarea transformatorului: [0] = valoare neamortizata, [1] = valoare amortizata. Doar cand diferenta de tensiune intre invertor si transformator este mai mica decat aceste praguri se permite inchiderea intreruptorului.",
+      "influenteaza": "p5484, p3415",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18077,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5505",
+    "descriere_scurta": "Dynamic grid support characteristic voltage values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de tensiune ale caracteristicii pentru suportul dinamic al retelei (FRT/LVRT/HVRT). Caracteristica defineste cate curent reactiv trebuie injectat la diferite deviatii de tensiune. Parametrul defineste punctele de start si sfarsit ale caracteristicii pentru deviatii pozitive si negative.",
+      "influenteaza": "p5506, p5507",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18078,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5507",
+    "descriere_scurta": "Dynamic grid support times",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpii pentru suportul dinamic al retelei: [0] = timp minim suport dinamic, [1] = timp minim perturbatie retea, [2] = timp netezire alfa/beta, [3] = timp netezire valoare instantanee. Configuratia timpilor respecta cerintele standardelor de grid code (VDE-AR-N 4120, etc.).",
+      "influenteaza": "p5505, p5506",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18079,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5523",
+    "descriere_scurta": "Dynamic grid support overcurrent limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul maxim permis in conditii de suprasarcina si scurtcircuit pentru suportul dinamic al retelei. Limita efectiva este calculata din acest parametru si histereza p5524. Protejeaza invertorulin timpul injectarii de curent reactiv la caderea de tensiune a retelei.",
+      "influenteaza": "p5524",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18080,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5524",
+    "descriere_scurta": "Dynamic grid support hysteresis width",
+    "GENERATED": {
+      "explicatie": "p - Seteaza largimea histerezei de curent pentru modulatorul de overcurent al suportului dinamic de retea. Cele 3 indecsi corespund starilor: fara sarcina, functionare normala si scurtcircuit in regim paralel retea. Controleaza comportamentul de limitare a curentului in conditii extreme ale retelei.",
+      "influenteaza": "p5523",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18081,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5526",
+    "descriere_scurta": "Dynamic grid support overcurrent modulator configuration",
+    "GENERATED": {
+      "explicatie": "p - Configureaza regulatorul cu histereza de curent pentru suportul dinamic al retelei. Fiecare index configureaza o stare operationala: fara sarcina, functionare normala, scurtcircuit. Valoarea implicita 1000 hex dezactiveaza controlul histereza implicit. Utilizat in aplicatii avansate de conectare la retea.",
+      "influenteaza": "p5524, p5523",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18082,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5527",
+    "descriere_scurta": "Dynamic grid support changeover pulse frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa de puls pentru starile de functionare ale regulatorului cu histereza de curent al suportului dinamic de retea. Frecventele diferite pentru cele 3 stari (fara sarcina, normal, scurtcircuit) permit optimizarea pierderilor in fiecare regim de functionare.",
+      "influenteaza": "p5526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18083,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5528",
+    "descriere_scurta": "Dynamic grid control operating state times",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpii pentru starile de functionare ale regulatorului cu histereza de curent al suportului dinamic: [0] = timp minim in starea normala, [1] = timp maxim in starea de scurtcircuit. Previne comutarile excesive intre stari la tranzitii rapide ale conditiilor de retea.",
+      "influenteaza": "p5527, p5526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18084,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5529",
+    "descriere_scurta": "Dynamic grid support sequence control state change",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limitele pentru schimbarea starii in controlul secvential al regulatorului cu histereza: [0] = curent minim pentru trecere de la fara sarcina la normal, [1] = curent maxim pentru revenire la fara sarcina, [2] = tensiune minima pentru scurtcircuit, [3] = tensiune maxima pentru iesire scurtcircuit. Asigura tranzitii stabile si logice intre stari.",
+      "influenteaza": "p5528, p5526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18085,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5543",
+    "descriere_scurta": "Line monitoring voltage threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragurile de tensiune pentru monitorizarea retelei, in procente din p0210: [0] = limita superioara operare, [1] = limita inferioara operare, [2] = limita superioara sincronizare, [3] = limita inferioara sincronizare. Depasirea limitelor de operare poate declansa oprirea; limitele de sincronizare controleaza fereastra de reconectare.",
+      "influenteaza": "p5545, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18086,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5545",
+    "descriere_scurta": "Line monitoring times",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpii pentru monitorizarea retelei, incluzand timpi de deconectare la cadere, timpi de asteptare FRT si durate de testare a reconectarii. Indecsi 0-7 acopera: timp minim deconectare tensiune/frecventa, timp netezire frecventa AISL, timp deconectare FRT LVRT, timp asteptare revenire tensiune/frecventa FRT si durate test sincronizare.",
+      "influenteaza": "p5543, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18087,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5548",
+    "descriere_scurta": "Line monitoring gains",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigurile pentru monitorizarea retelei. Indexul [0] = castigul deviatiei de frecventa AISL (Active Island detection by frequency Shift). Valoarea 0.1 implicita produce o deviatie de frecventa moderata pentru detectia insulei de retea fara perturbarea excesiva a sistemului.",
+      "influenteaza": "p5545",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18088,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5550",
+    "descriere_scurta": "Line monitoring line fault thresholds voltage characteristic",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragurile de activare ale unei perturbatii de retea pentru monitorizarea FRT: [0] = tensiune HVRT (supratensiune), [1] = tensiune LVRT (subtensiune), [2] = histereza tensiune. Valorile in procente din p0210 determina la ce deviatie de tensiune se activeaza suportul FRT.",
+      "influenteaza": "p5551, p5553, p5545",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18089,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5551",
+    "descriere_scurta": "Line monitoring HVRT time values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de timp ale caracteristicii HVRT (High Voltage Ride Through) pentru monitorizarea retelei. Pana la 10 puncte de timp definesc durata maxima permisa de operare la diferite niveluri de supratensiune. Respectarea caracteristicii HVRT este obligatorie conform standardelor de grid code.",
+      "influenteaza": "p5552, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18090,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5552",
+    "descriere_scurta": "Line monitoring HVRT voltage values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de tensiune ale caracteristicii HVRT in procente din p0210. Impreuna cu p5551 defineste complet curba HVRT cu pana la 10 puncte. Valorile minime de 101% asigura ca caracteristica HVRT incepe strict deasupra tensiunii nominale.",
+      "influenteaza": "p5551, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18091,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5553",
+    "descriere_scurta": "Line monitoring LVRT time values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de timp ale caracteristicii LVRT (Low Voltage Ride Through) pentru monitorizarea retelei. Pana la 10 puncte de timp definesc durata maxima permisa de operare la diferite niveluri de subtensiune. Conform majoritatii standardelor grid code, invertoarele trebuie sa suporte caderi de tensiune pana la 0% pentru 150 ms.",
+      "influenteaza": "p5554, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18092,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5554",
+    "descriere_scurta": "Line monitoring LVRT voltage values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de tensiune ale caracteristicii LVRT in procente din p0210. Impreuna cu p5553 defineste complet curba LVRT cu pana la 10 puncte. Valorile pana la 0% permit configurarea cerintei de ride-through la cadere completa de tensiune.",
+      "influenteaza": "p5553, p5550",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18093,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5555",
+    "descriere_scurta": "Line monitoring line fault thresholds frequency characteristic",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragurile de frecventa pentru activarea FRT de frecventa, ca deviatie de la frecventa nominala p0211: [0] = HFRT (frecventa prea mare), [1] = LFRT (frecventa prea mica), [2] = histereza frecventa. Valorile negative sunt permise pentru LFRT pentru a specifica deviatii sub frecventa nominala.",
+      "influenteaza": "p5556, p5558, p5545",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18094,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5556",
+    "descriere_scurta": "Line monitoring HFRT time values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de timp ale caracteristicii HFRT (High Frequency Ride Through). Pana la 10 puncte de timp definesc durata maxima permisa de operare la diferite niveluri de suprafrecventa. Corespunde cerintelor din standardele grid code pentru evenimente de suprafrecventa.",
+      "influenteaza": "p5557, p5555",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18095,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5557",
+    "descriere_scurta": "Line monitoring HFRT frequency values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de frecventa ale caracteristicii HFRT ca deviatie pozitiva fata de frecventa nominala p0211. Impreuna cu p5556 defineste curba HFRT cu pana la 10 puncte. Valoarea implicita de 1.5 Hz corespunde unui prag tipic de HFRT conform standardelor europene.",
+      "influenteaza": "p5556, p5555",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18096,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5558",
+    "descriere_scurta": "Line monitoring LFRT time values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de timp ale caracteristicii LFRT (Low Frequency Ride Through). Pana la 10 puncte de timp definesc durata maxima permisa de operare la diferite niveluri de subfrecventa. Respectarea cerintelor LFRT este obligatorie in multe grid code nationale.",
+      "influenteaza": "p5559, p5555",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18097,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5559",
+    "descriere_scurta": "Line monitoring LFRT frequency values",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile de frecventa ale caracteristicii LFRT ca deviatie negativa fata de frecventa nominala p0211. Impreuna cu p5558 defineste curba LFRT cu pana la 10 puncte. Valoarea implicita de -2.5 Hz corespunde unui prag tipic de LFRT conform standardelor europene.",
+      "influenteaza": "p5558, p5555",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18098,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5574",
+    "descriere_scurta": "Line PLL2 voltage signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului de tensiune pentru al doilea PLL (Phase Locked Loop) de retea in coordonate alfa/beta. Indexul [0] = componenta alfa, [1] = componenta beta. PLL2 permite sincronizarea simultana cu o a doua tensiune de retea, util in configuratii cu doua puncte de conexiune la retea.",
+      "influenteaza": "p5543",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18099,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5581",
+    "descriere_scurta": "Island grid times",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii temporali pentru magnetizare transformator, pornire neagra (black start) si sincronizare in retea izolata. Indecsi 0-8 acopera: timp rampa tensiune black start, timp revenire intreruptor, timp maxim si verificare pentru black start si sincronizare, timpi netezire rampa. Configuratia completa este necesara pentru functionarea in retea izolata.",
+      "influenteaza": "p5584, p5585, p3415",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18100,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5584",
+    "descriere_scurta": "Island grid synchronization controller dynamics",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constantele de timp ale regulatoarelor pentru sincronizarea in retea izolata: [0] = timp integrare regulator unghi, [1] = timp integrare regulator tensiune, [2] = timp netezire deviatie control. Dinamica corecta asigura sincronizarea stabila si rapida a invertorului cu reteaua izolata.",
+      "influenteaza": "p5581, p5585",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18101,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5585",
+    "descriere_scurta": "Island grid synchronization voltage thresholds",
+    "GENERATED": {
+      "explicatie": "p - Seteaza diferenta de tensiune permisa intre vectorii de spatiu ai tensiunii de retea si ai ALM-ului pentru sincronizarea in retea izolata: [0] = valoare neamortizata, [1] = valoare amortizata. Ambele conditii trebuie indeplinite simultan pentru inchiderea intreruptorului la sincronizare.",
+      "influenteaza": "p5584, p5581",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 18102,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5602",
+    "descriere_scurta": "Pe energy-saving mode pause time minimal",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata minima posibila a pauzei pentru modul de economisire a energiei. Valoarea include suma timpului de tranzitie din modul normal catre modul economic, timpul de tranzitie de stare si durata minima de stationare. Indexul [1] corespunde modului 2 al economisirii de energie.",
+      "influenteaza": "p5606, p5612",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18103,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5606",
+    "descriere_scurta": "Pe energy-saving mode dwell time maximum",
+    "GENERATED": {
+      "explicatie": "p - Seteaza durata maxima de stationare in modul de economisire a energiei. Dupa expirarea acestui timp, drive-ul revine automat la modul normal de functionare. Indexul [1] corespunde modului 2 al economisirii de energie.",
+      "influenteaza": "p5602, p5612",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18104,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p5612",
+    "descriere_scurta": "Pe energy-saving properties mode-dependent",
+    "GENERATED": {
+      "explicatie": "p - Seteaza proprietatile dependente de mod pentru economia de energie. Bitii de configurare definesc comportamentul specific modului de economisire activat. Indexul [1] corespunde modului 2. Configuratia permite personalizarea comportamentului de economisire a energiei pentru diferite aplicatii.",
+      "influenteaza": "p5602, p5606",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18105,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p6421",
+    "descriere_scurta": "Line supply voltage sensing gain adaptation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de castig identificat prin p6441 pentru calibrarea fina a detectiei tensiunii de retea. Indexul [0] = pentru transformatorul retelei de alimentare, [1] = pentru transformatorul retelei izolate. Calibrarea corecta asigura masurarea precisa a tensiunii de retea pentru reglare si protectie.",
+      "influenteaza": "p6441",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 18106,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p6870",
+    "descriere_scurta": "VSM offset voltage u1 - u2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tensiunea de offset intre fazele L1 si L2 pentru modulul VSM (Voltage Sensing Module). Valoarea este determinata automat cu drive-ul oprit si stationat cand p6903 este activat. Offsetul compensat asigura masurarea precisa a tensiunilor de faza pentru sincronizare si reglare.",
+      "influenteaza": "p6871, p6903",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 18107,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p6993",
+    "descriere_scurta": "Recorder trigger 2 bit mask",
+    "GENERATED": {
+      "explicatie": "p - Seteaza masca de biti pentru semnalul de trigger 2 al recorderului intern. Triggerele 2.1, 2.2 si 2.3 sunt formate prin AND-ul sursei de semnal (p6994) cu masca corespunzatoare. Permite configurarea precisa a conditiei de declansare a recorderului pe baza unor biti specifici din cuvintele de stare.",
+      "influenteaza": "p6994, p6998",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18108,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p6996",
+    "descriere_scurta": "Recorder signals",
+    "GENERATED": {
+      "explicatie": "p - Configureaza semnalele inregistrate de recorderul intern al drive-ului. Permite selectarea pana la 8 semnale de inregistrat simultan. Recorderul intern este un instrument avansat de diagnosticare pentru captura evenimentelor rare sau intermitente.",
+      "influenteaza": "p6993, p6998",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18109,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p6998",
+    "descriere_scurta": "Recorder trigger 1 signal sources",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele de semnal pentru activarea si declansarea recorderului intern: [0] = activare, [1..4] = trigger 1.1 pana la 1.4. Triggerele multiple permit conditionarea complexa a capturii. Activarea prin semnal BICO permite pornirea automata a inregistrarii la evenimente specifice.",
+      "influenteaza": "p6993, p6996",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18110,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p7766",
+    "descriere_scurta": "KHP password input",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parola pentru protectia know-how (KHP). Parola pana la 30 caractere ASCII este stocata ca coduri numerice. Protectia know-how previne accesul neautorizat la parametrii confidentiall ai aplicatiei. Resetarea parolei necesita cooperarea cu Siemens.",
+      "influenteaza": "p7767, p7769",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18111,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p7769",
+    "descriere_scurta": "KHP memory card reference serial number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de serie de referinta al cardului de memorie pentru protectia know-how. Permite OEM-ului sa lege proiectul la un hardware specific; la inlocuirea unitatii de control sau a cardului de memorie, OEM-ul poate re-adapta proiectul la noul hardware. Securizeaza drepturile de proprietate intelectuala ale OEM-ului.",
+      "influenteaza": "p7766, p7767",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18112,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p7790",
+    "descriere_scurta": "Component trace signal",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnalele individuale pentru trasa de componente. Indecsi 0-7 selecteaza semnale ale caror caracteristici temporale se inregistreaza; indecsi 8-15 selecteaza semnale a caror valoare instantanee se capteaza. Valoarea 0 dezactiveaza canalul respectiv si mareste durata de inregistrare pentru celelalte canale.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18113,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p7900",
+    "descriere_scurta": "Drive objects priority",
+    "GENERATED": {
+      "explicatie": "p - Seteaza prioritatea de procesare a obiectelor drive in sistem, permitand configurarea ordinii de executie. Implicit obiectele sunt sortate dupa tip (CU, Infeed, Servo, Vector, TM, Hub, CU_Link) si apoi dupa numarul obiectului. Modificarea prioritatii este activa dupa reboot, fara verificare de plauzibilitate.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 18114,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8604",
+    "descriere_scurta": "CAN life guarding",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de life guarding CANopen: [0] = intervalul de timp in ms (Guard Time, obiect 100C hex), [1] = factorul de multiplicare (Life Time Factor, obiect 100D hex). Produsul celor doua valori reprezinta durata totala de viata monitorizata. Valoarea 0 dezactiveaza life guarding.",
+      "influenteaza": "p8608",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18115,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8608",
+    "descriere_scurta": "CAN Clear Bus Off Error",
+    "GENERATED": {
+      "explicatie": "p - Configureaza comportamentul la eroarea Bus Off a controllerului CAN. Indexul [0] = restart manual (p8608[0] = 1 restarteaza CAN); indexul [1] = restart automat la intervale de 2 secunde pana la revenirea comunicatiei. Permite configurarea recuperarii automate sau manuale dupa erori grave de bus.",
+      "influenteaza": "p8604, p8609",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18116,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8609",
+    "descriere_scurta": "CAN Error Behavior",
+    "GENERATED": {
+      "explicatie": "p - Seteaza comportamentul nodului CAN la erori de comunicatie sau defecte de echipament. Valorile disponibile: 0 = fara reactie, 1 = alarma (implicit), 2 = avarie. Selectia corecta determina gravitatea cu care drive-ul trateaza erorile de comunicatie CAN in contextul aplicatiei.",
+      "influenteaza": "p8608",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18117,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8611",
+    "descriere_scurta": "CAN Pre-defined Error Field",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza campul de erori predefinit al nodului CAN conform protocolului CANopen (obiect 1003 hex). Include numarul total de erori, numarul de erori per drive si istoricul erorilor. Util pentru diagnosticarea problemelor de comunicatie CAN si identificarea surselor de erori repetitive.",
+      "influenteaza": "p8608, p8609",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 18118,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8630",
+    "descriere_scurta": "CAN virtual objects",
+    "GENERATED": {
+      "explicatie": "p - Configureaza selectia obiectului drive (index 0), aria sub-indicilor (index 1) si aria parametrilor (index 2) pentru utilizarea obiectelor virtuale CANopen. Obiectele virtuale permit accesul la parametrii altui obiect drive decat cel propriu prin mapare virtuala in dictionarul de obiecte CAN.",
+      "influenteaza": "p8700",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18119,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8700",
+    "descriere_scurta": "CAN Receive PDO 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru primul obiect PDO de receptie (RPDO 1) CANopen: [0] = COB-ID al PDO, [1] = tipul de transmisie. COB-ID determina identificatorul mesajului CAN, tipul de transmisie determina conditia de receptie (eveniment, sincron, ciclic). Necesar pentru configurarea comunicatiei ciclice.",
+      "influenteaza": "p8710",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18120,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8701",
+    "descriere_scurta": "CAN Receive PDO 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al doilea obiect PDO de receptie (RPDO 2) CANopen: [0] = COB-ID, [1] = tip transmisie. Al doilea RPDO permite receptia unui al doilea grup de date de proces de la masterul CANopen. Util cand mai mult de 4 cuvinte de date sunt necesare.",
+      "influenteaza": "p8711",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18121,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8702",
+    "descriere_scurta": "CAN Receive PDO 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al treilea obiect PDO de receptie (RPDO 3) CANopen. Extinde capacitatea de receptie la 3 grupuri de date de proces. Configuratia permite transmiterea setpointurilor complexe care necesita mai mult de 8 cuvinte de date.",
+      "influenteaza": "p8712",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18122,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8703",
+    "descriere_scurta": "CAN Receive PDO 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al patrulea obiect PDO de receptie (RPDO 4) CANopen. Permite receptia a 4 grupuri distincte de date de proces de la masterul CANopen. Maximizeaza flexibilitatea configurarii datelor de proces transmise catre drive.",
+      "influenteaza": "p8713",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18123,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8704",
+    "descriere_scurta": "CAN Receive PDO 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al cincilea obiect PDO de receptie (RPDO 5) CANopen. Extinde capacitatea de receptie dincolo de 4 RPDO-uri standard. Util in aplicatii complexe cu multi setpointuri sau date de parametrizare dinamica.",
+      "influenteaza": "p8714",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18124,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8705",
+    "descriere_scurta": "CAN Receive PDO 6",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al saselea obiect PDO de receptie (RPDO 6) CANopen. Face parte din setul extins de RPDO-uri pentru aplicatii cu cerinte ridicate de transfer de date. Fiecare RPDO poate transporta pana la 8 bytes de date de proces.",
+      "influenteaza": "p8715",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18125,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8706",
+    "descriere_scurta": "CAN Receive PDO 7",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al saptelea obiect PDO de receptie (RPDO 7) CANopen. Penultimul RPDO din setul maxim de 8. Permite configurarea unui al saptelea canal de date de proces in comunicatia CANopen.",
+      "influenteaza": "p8716",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18126,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8707",
+    "descriere_scurta": "CAN Receive PDO 8",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de comunicatie pentru al optulea si ultimul obiect PDO de receptie (RPDO 8) CANopen. Completeaza setul maxim de 8 RPDO-uri disponibile. Configuratia completa a tuturor RPDO-urilor permite transferul a pana la 64 bytes de date de proces per ciclu de comunicatie.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18127,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8710",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 1 CANopen, definind ce obiecte din dictionarul de obiecte sunt transmise in acest PDO. Pana la 4 obiecte pot fi mapate intr-un RPDO. Maparea corecta asigura ca datele de setpoint ajung la parametrii corespunzatori ai drive-ului.",
+      "influenteaza": "p8700",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18128,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8711",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 2 CANopen. Defineste pana la 4 obiecte din dictionarul CANopen mapate in al doilea PDO de receptie. Configuratia trebuie sa corespunda cu maparea configurata in masterul CANopen.",
+      "influenteaza": "p8701",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18129,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8712",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 3 CANopen. Configureaza obiectele de date mapate in al treilea PDO de receptie. Necesar pentru configurarea corecta a transferului de date extinse de la masterul CANopen catre drive.",
+      "influenteaza": "p8702",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18130,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8713",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 4 CANopen. Defineste continutul celui de-al patrulea PDO de receptie prin maparea obiectelor dorite. Face parte din configuratia completa a comunicatiei de date de proces CANopen.",
+      "influenteaza": "p8703",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18131,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8714",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 5 CANopen. Configureaza pana la 4 obiecte mapate in al cincilea PDO de receptie. Extinde capacitatea de mapare a datelor de proces dincolo de RPDO-urile standard 1-4.",
+      "influenteaza": "p8704",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18132,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8715",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 6",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 6 CANopen. Defineste continutul celui de-al saselea PDO de receptie. Face parte din setul extins de mapari RPDO pentru aplicatii cu transfer de date complexe.",
+      "influenteaza": "p8705",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 18133,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p8716",
+    "descriere_scurta": "CAN Receive Mapping for RPDO 7",
+    "GENERATED": {
+      "explicatie": "p - Seteaza parametrii de mapare pentru RPDO 7 CANopen. Configureaza ultimul dar unul din RPDO-urile disponibile. Permite maparea individuala a 4 obiecte de date pentru al saptelea canal de receptie CANopen.",
+      "influenteaza": "p8706",
+      "categorie": "Comunicatii"
+    }
+  }
+]

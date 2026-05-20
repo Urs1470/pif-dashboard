@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 26857,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1039",
+    "descriere_scurta": "Motorized potentiometer inversion",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru inversarea limitei minime sau maxime a potentiometrului motorized. Permite schimbarea sensului de variatie al referintei.",
+      "influenteaza": "p1030, p1035, p1037",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26858,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1040",
+    "descriere_scurta": "Motorized potentiometer starting value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea initiala a potentiometrului motorized la pornire. Aceasta valoare este activa la fiecare repornire a actionarii.",
+      "influenteaza": "p1030, p1037",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26859,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1042",
+    "descriere_scurta": "Motorized potentiometer automatic setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru referinta in modul automat a potentiometrului motorized. Permite preluarea referintei dintr-o sursa externa.",
+      "influenteaza": "p1043, p1044",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26860,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1043",
+    "descriere_scurta": "Motorized potentiometer accept setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru acceptarea valorii de setare din p1044 de catre potentiometrul motorized.",
+      "influenteaza": "p1042, p1044",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26861,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1044",
+    "descriere_scurta": "Motorized potentiometer setting value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru valoarea de setare a potentiometrului motorized. Valoarea este acceptata la activarea semnalului p1043.",
+      "influenteaza": "p1042, p1043",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26862,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1048",
+    "descriere_scurta": "Motorized potentiometer ramp-down time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rampare la coborare al generatorului intern de rampa pentru potentiometrul motorized, de la limita de viteza (p1082) la zero.",
+      "influenteaza": "p1082, p1037, p1030",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26863,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1051",
+    "descriere_scurta": "Speed limit RFG positive direction of rotation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru limita de viteza in directia pozitiva la intrarea generatorului de rampa. Implicit legata la p1083.",
+      "influenteaza": "p1083, p1082",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26864,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1052",
+    "descriere_scurta": "Speed limit RFG negative direction of rotation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru limita de viteza in directia negativa la intrarea generatorului de rampa. Implicit legata la p1086.",
+      "influenteaza": "p1086, p1082",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26865,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1055",
+    "descriere_scurta": "Jog bit 0",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru activarea modului Jog 1. La activare, motorul se deplaseaza cu viteza setata in p1058 cat timp semnalul este activ.",
+      "influenteaza": "p1058, p1059",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26866,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1059",
+    "descriere_scurta": "Jog 2 speed setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza viteza de deplasare in modul Jog 2 in rpm. Functionarea Jog este controlata nivel, permitand miscari incrementale ale motorului.",
+      "influenteaza": "p1058, p1055",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26867,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1063",
+    "descriere_scurta": "Speed limit setpoint channel",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de viteza efectiva in canalul de referinta inainte de generatorul de rampa. Limiteaza referinta de viteza inaintea procesarii de rampa.",
+      "influenteaza": "p1082, p1086",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26868,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1070",
+    "descriere_scurta": "Main setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru referinta principala de viteza. Este sursa principala de referinta pentru canalul de setpoint.",
+      "influenteaza": "p1071, p1075, p1076",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26869,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1071",
+    "descriere_scurta": "Main setpoint scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru factorul de scalare al referintei principale. Permite ajustarea dinamica a amplitudinii referintei principale.",
+      "influenteaza": "p1070",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26870,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1075",
+    "descriere_scurta": "Supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru referinta suplimentara adaugata referintei principale. Permite suprapunerea unui al doilea canal de referinta.",
+      "influenteaza": "p1070, p1076",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26871,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1076",
+    "descriere_scurta": "Supplementary setpoint scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru factorul de scalare al referintei suplimentare. Permite ajustarea proportiei referintei suplimentare.",
+      "influenteaza": "p1075",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26872,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1086",
+    "descriere_scurta": "Speed limit in negative direction of rotation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de viteza pentru directia negativa de rotatie in rpm. Valoarea trebuie sa fie negativa sau zero.",
+      "influenteaza": "p1082, p1052",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26873,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1091",
+    "descriere_scurta": "Skip speed 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza prima viteza de salt (frecventa de rezonanta de evitat). Convertorul evita functionarea continua la aceasta turatie pentru a preveni rezonanta mecanica.",
+      "influenteaza": "p1092, p1093",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26874,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1092",
+    "descriere_scurta": "Skip speed 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza a doua viteza de salt pentru evitarea rezonantei mecanice. Functioneaza similar cu p1091 pentru o a doua frecventa critica.",
+      "influenteaza": "p1091, p1093",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26875,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1093",
+    "descriere_scurta": "Skip speed 3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza a treia viteza de salt pentru evitarea rezonantei mecanice. Permite protejarea impotriva a trei frecvente de rezonanta distincte.",
+      "influenteaza": "p1091, p1092",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26876,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1111",
+    "descriere_scurta": "Inhibit positive direction",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru dezactivarea directiei pozitive de rotatie. La semnal activ, referinta pozitiva este blocata.",
+      "influenteaza": "p1082, p1086",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 26877,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1113",
+    "descriere_scurta": "Setpoint inversion",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru inversarea referintei de viteza. La semnal activ, semnul referintei este inversat.",
+      "influenteaza": "p1070, p1086",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26878,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1121",
+    "descriere_scurta": "Ramp-function generator ramp-down time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de decelerare al generatorului de rampa de la turatia maxima (p1082) la zero. Este aplicat si la comanda OFF1.",
+      "influenteaza": "p1120, p1082, p1130, p1131",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26879,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1122",
+    "descriere_scurta": "Bypass ramp-function generator",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru ocolirea generatorului de rampa (timpii de rampa devin zero). Permite schimbari instantanee de referinta.",
+      "influenteaza": "p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26880,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1130",
+    "descriere_scurta": "Ramp-function generator initial rounding-off time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rotunjire initiala al generatorului de rampa extins. Se aplica atat la accelerare cat si la decelerare, pentru porniri si opriri lise.",
+      "influenteaza": "p1131, p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26881,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1131",
+    "descriere_scurta": "Ramp-function generator final rounding-off time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rotunjire finala al generatorului de rampa extins. Se aplica la atingerea valorii tinta atat la accelerare cat si la decelerare.",
+      "influenteaza": "p1130, p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26882,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1134",
+    "descriere_scurta": "Ramp-function generator rounding-off type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul de rotunjire la comanda OFF1 sau la reducerea referintei. Valoarea 0 = rotunjire continua, valoarea 1 = rotunjire cu profil diferit.",
+      "influenteaza": "p1130, p1131",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26883,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1136",
+    "descriere_scurta": "OFF3 initial rounding-off time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rotunjire initiala specific comenzii OFF3 pentru generatorul de rampa extins. Permite o decelerare lina la oprire de urgenta.",
+      "influenteaza": "p1137, p1848",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26884,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1137",
+    "descriere_scurta": "OFF3 final rounding-off time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rotunjire finala specific comenzii OFF3 pentru generatorul de rampa extins.",
+      "influenteaza": "p1136",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26885,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1140",
+    "descriere_scurta": "Ramp-function generator enable",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru activarea/dezactivarea generatorului de rampa (bitul 4 din cuvantul de control 1). La dezactivare, iesirea rampei este retinuta.",
+      "influenteaza": "p1141, p0840",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26886,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1141",
+    "descriere_scurta": "Continue ramp-function generator",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru continuarea sau inghetarea generatorului de rampa (bitul 5 din cuvantul de control 1).",
+      "influenteaza": "p1140",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26887,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1144",
+    "descriere_scurta": "Ramp-function generator setting value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru valoarea de setare a generatorului de rampa. Permite preluarea instantanee a unei valori tinta.",
+      "influenteaza": "p1140, p1141",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26888,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1148",
+    "descriere_scurta": "Ramp-function gen., tolerance for ramp-up and ramp-down active",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza toleranta in rpm pentru statusul generatorului de rampa (rampa activa sus/jos). Daca diferenta intrare-iesire este mai mica decat toleranta, statusul nu este influentat.",
+      "influenteaza": "p1120, p1121",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26889,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1151",
+    "descriere_scurta": "Ramp-function generator configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia generatorului de rampa extins prin bitmask. Controleaza comportamentul la OFF1 si la modificarile de referinta.",
+      "influenteaza": "p1120, p1121, p1130, p1131",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26890,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1155",
+    "descriere_scurta": "Speed controller speed setpoint 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru referinta de viteza 1 a regulatorului de viteza. Este sursa principala de referinta dupa generatorul de rampa.",
+      "influenteaza": "p1070, p1075",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26891,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1198",
+    "descriere_scurta": "Control word setpoint channel",
+    "GENERATED": {
+      "explicatie": "r=afisaj. Afiseaza cuvantul de control al canalului de referinta. Reflecta starea comenzilor active pentru generatorul de rampa si canalul de setpoint.",
+      "influenteaza": "p1140, p1141, p1155",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26892,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1201",
+    "descriere_scurta": "Flying restart enable signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru activarea functiei Flying Restart (pornire in zbor). Permite sincronizarea cu un motor aflat deja in rotatie.",
+      "influenteaza": "p1202, p1203",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26893,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1202",
+    "descriere_scurta": "FlyRest srch curr",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul de cautare pentru functia Flying Restart ca procent din curentul de magnetizare al motorului. Influenteaza viteza de sincronizare.",
+      "influenteaza": "p1201, p1203",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26894,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1203",
+    "descriere_scurta": "Flying restart search rate factor",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul care influenteaza viteza de modificare a frecventei de iesire in timpul functiei Flying Restart. Valori mai mari duc la timpi mai lungi de cautare.",
+      "influenteaza": "p1201, p1202",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26895,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1205",
+    "descriere_scurta": "Flying restart, vector control status",
+    "GENERATED": {
+      "explicatie": "r=afisaj. Afiseaza statusul pentru monitorizarea starilor Flying Restart in modul de control vectorial. Permite diagnosticul procesului de sincronizare la pornire in zbor.",
+      "influenteaza": "p1201",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26896,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1213",
+    "descriere_scurta": "Automatic restart, monitoring time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpii de monitorizare pentru restart automat: [0] pentru repornire si [1] pentru resetarea contorului de erori. La depasire se genereaza eroare.",
+      "influenteaza": "p1210",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26897,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1230",
+    "descriere_scurta": "Armature short-circuit / DC brake activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru activarea scurtcircuitului de armatura sau a franei DC. Tipul de frana activa este configurat in p1231.",
+      "influenteaza": "p1231, p1232, p1233",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26898,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1231",
+    "descriere_scurta": "Armature short-circuit / DC brake configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul de franare activa (scurtcircuit intern, extern, frana DC, etc.) codificat prin valori de la 0 la 14. Determina comportamentul la oprire.",
+      "influenteaza": "p1230, p1232, p1236",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26899,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1232",
+    "descriere_scurta": "DC braking, braking current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul de curent continuu pentru franarea DC. Valoarea mai mare produce o frana mai puternica dar si mai multa disipatie termica in motor.",
+      "influenteaza": "p1231, p1233",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26900,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1233",
+    "descriere_scurta": "DC braking time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza durata franei DC utilizata ca raspuns la erori. Dupa expirarea timpului, motorul este lasat sa se opreasca prin inertie.",
+      "influenteaza": "p1231, p1232",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26901,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1236",
+    "descriere_scurta": "Ext. armature short-cct., contactor feedback signal monit. time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de monitorizare al semnalului de feedback al contactorului pentru configuratia de scurtcircuit extern de armatura. Eroare la depasirea timpului.",
+      "influenteaza": "p1231, p1235, p1237",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26902,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1237",
+    "descriere_scurta": "External armature short-circuit, waiting time when opening",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de asteptare la deschiderea contactorului de scurtcircuit extern. Daca nu e configurat feedback semnal (p1235), sistemul asteapta acest timp inainte de activarea impulsurilor.",
+      "influenteaza": "p1235, p1236",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26903,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1240",
+    "descriere_scurta": "Vdc controller or Vdc monitoring configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia regulatorului de tensiune a circuitului intermediar DC (Vdc) in modul de control vectorial: 0=dezactivat, 1=Vdc_max, 2=Vdc_min, etc.",
+      "influenteaza": "p1243, p1245, p1250, p1251",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26904,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1243",
+    "descriere_scurta": "Vdc_max controller dynamic factor",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul dinamic pentru regulatorul Vdc_max. La 100% se utilizeaza valorile de baza p1250, p1251, p1252. La valori mai mari creste agresivitatea regulatorului.",
+      "influenteaza": "p1250, p1251, p1252",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26905,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1245",
+    "descriere_scurta": "Vdc_min controller switch-in level (kinetic buffering)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza nivelul de activare al regulatorului Vdc_min (bufferizare cinetica) ca procent din tensiunea nominala. Sub acest prag, regulatorul reduce viteza pentru a mentine tensiunea DC.",
+      "influenteaza": "p1240, p1247, p1250",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26906,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1247",
+    "descriere_scurta": "Vdc_min controller dynamic factor (kinetic buffering)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul dinamic pentru regulatorul Vdc_min (bufferizare cinetica). Valorile mai mari maresc performanta regulatorului, necesar la mai multi convertori pe acelasi DC link.",
+      "influenteaza": "p1250, p1251, p1245",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26907,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1250",
+    "descriere_scurta": "Vdc controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional al regulatorului de tensiune DC link (Vdc_min si Vdc_max). Valori mai mari maresc reactia regulatorului la variatiile tensiunii.",
+      "influenteaza": "p1251, p1243, p1247",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26908,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1251",
+    "descriere_scurta": "Vdc controller integral time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul integral al regulatorului de tensiune DC link (Vdc_min si Vdc_max). Valori mai mici maresc viteza de raspuns a componentei integrale.",
+      "influenteaza": "p1250, p1243",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26909,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1255",
+    "descriere_scurta": "Vdc_min controller time threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de timp pentru regulatorul Vdc_min (bufferizare cinetica). La depasire se genereaza eroare. Necesita p1256=1.",
+      "influenteaza": "p1256, p1245",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26910,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1256",
+    "descriere_scurta": "Vdc_min controller response (kinetic buffering)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza raspunsul la expirarea timpului Vdc_min: 0=nicio reactie, 1=generare eroare la depasirea pragului de timp p1255.",
+      "influenteaza": "p1255, p1257",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26911,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1257",
+    "descriere_scurta": "Vdc_min controller speed threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de viteza pentru regulatorul Vdc_min. La atingerea acestei viteze minime se genereaza eroare cu raspunsul configurat.",
+      "influenteaza": "p1256, p1255",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26912,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1261",
+    "descriere_scurta": "Bypass control/status word",
+    "GENERATED": {
+      "explicatie": "r=afisaj. Afiseaza semnalele de control si feedback ale comutatorului de bypass. Permite diagnosticul starii conexiunii directe motor-retea (bypass).",
+      "influenteaza": "p1262",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26913,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1262",
+    "descriere_scurta": "Bypass dead time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul mort pentru bypassul nesincronizat. In acest interval convertorul asteapta inainte de conectarea directa la retea.",
+      "influenteaza": "r1261",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 26914,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1280",
+    "descriere_scurta": "Vdc controller or Vdc monitoring configuration (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia regulatorului de tensiune DC link (Vdc) in modul de control V/f. Echivalentul p1240 pentru modul V/f.",
+      "influenteaza": "p1285, p1287, p1290, p1291",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26915,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1285",
+    "descriere_scurta": "Vdc_min controller switch-in level (kinetic buffering) (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza nivelul de activare al regulatorului Vdc_min pentru bufferizare cinetica in modul V/f, ca procent din tensiunea nominala.",
+      "influenteaza": "p1280, p1287, p1290",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26916,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1287",
+    "descriere_scurta": "Vdc_min controller dynamic factor (kinetic buffering) (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul dinamic pentru regulatorul Vdc_min in modul V/f. La mai multi convertori pe acelasi DC link, factorul trebuie marit proportional cu capacitatile suplimentare.",
+      "influenteaza": "p1290, p1291, p1285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26917,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1288",
+    "descriere_scurta": "Vdc_max controller feedback coupling factor ramp-fct. gen. (V/f) /",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de cuplare feedback pentru generatorul de rampa in regulatorul Vdc_max (mod V/f). Controleaza influenta regulatorului Vdc_max asupra timpilor de rampa.",
+      "influenteaza": "p1280, p1289",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26918,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1289",
+    "descriere_scurta": "Vdc_max controller speed threshold (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul inferior de viteza pentru regulatorul Vdc_max in modul V/f. Sub acest prag, regulatorul Vdc_max se dezactiveaza si viteza este controlata de generatorul de rampa.",
+      "influenteaza": "p1280, p1288",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26919,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1290",
+    "descriere_scurta": "Vdc controller proportional gain (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional al regulatorului de tensiune DC link in modul V/f. Echivalentul p1250 pentru modul V/f.",
+      "influenteaza": "p1291, p1287",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26920,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1291",
+    "descriere_scurta": "Vdc controller integral time (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul integral al regulatorului Vdc in modul V/f. Echivalentul p1251 pentru modul V/f.",
+      "influenteaza": "p1290, p1287",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26921,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1293",
+    "descriere_scurta": "Vdc min controller output limit (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de iesire a regulatorului Vdc_min (regulator de subtensiune) in modul V/f. Limiteaza reducerea frecventei de iesire la bufferizare cinetica.",
+      "influenteaza": "p1290, p1280",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26922,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1295",
+    "descriere_scurta": "Vdc_min controller time threshold (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de timp pentru regulatorul Vdc_min in modul V/f. La depasire se genereaza eroare conform p1296.",
+      "influenteaza": "p1296, p1285",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26923,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1296",
+    "descriere_scurta": "Vdc_min controller response (kinetic buffering) (V/f",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza raspunsul la expirarea timpului Vdc_min in modul V/f: 0=nicio reactie, 1=generare eroare la depasirea pragului p1295.",
+      "influenteaza": "p1295, p1297",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26924,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1297",
+    "descriere_scurta": "Vdc_min controller speed threshold (V/f)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de viteza minima pentru regulatorul Vdc_min in modul V/f. La atingerea acestui prag se genereaza eroare cu raspunsul configurat.",
+      "influenteaza": "p1296, p1295",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 26925,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1311",
+    "descriere_scurta": "Voltage boost at acceleration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza cresterea de tensiune la accelerare in modul V/f ca procent. Genereaza un cuplu suplimentar la pornire si dispare cand referinta este atinsa.",
+      "influenteaza": "p1310, p0305, r0395",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26926,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1320",
+    "descriere_scurta": "V/f control programmable characteristic frequency 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste frecventa primului punct al caracteristicii V/f programabile. Impreuna cu p1321 defineste coordonatele primului punct al curbei V/f.",
+      "influenteaza": "p1321, p1322, p1323",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26927,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1321",
+    "descriere_scurta": "V/f control programmable characteristic voltage 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste tensiunea primului punct al caracteristicii V/f programabile. Impreuna cu p1320 formeaza primul punct de referinta al curbei de control V/f.",
+      "influenteaza": "p1320, p1322, p1323",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26928,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1322",
+    "descriere_scurta": "V/f control programmable characteristic frequency 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste frecventa celui de-al doilea punct al caracteristicii V/f programabile.",
+      "influenteaza": "p1323, p1320, p1321",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26929,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1323",
+    "descriere_scurta": "V/f control programmable characteristic voltage 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste tensiunea celui de-al doilea punct al caracteristicii V/f programabile.",
+      "influenteaza": "p1322, p1320, p1321",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26930,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1324",
+    "descriere_scurta": "V/f control programmable characteristic frequency 3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste frecventa celui de-al treilea punct al caracteristicii V/f programabile.",
+      "influenteaza": "p1320, p1322, p1326",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26931,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1326",
+    "descriere_scurta": "V/f control programmable characteristic frequency 4",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Defineste frecventa celui de-al patrulea punct al caracteristicii V/f programabile. In modul servo, impreuna cu p1327 defineste caracteristica liniara.",
+      "influenteaza": "p1320, p1322, p1324",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26932,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1333",
+    "descriere_scurta": "V/f control FCC starting frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa de pornire de la care se activeaza controlul FCC (Flux Current Control) in modul V/f. Sub aceasta frecventa FCC este inactiv.",
+      "influenteaza": "p1300",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26933,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1334",
+    "descriere_scurta": "V/f control slip compensation starting frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa de la care se activeaza compensarea alunecarii in modul V/f. Sub aceasta frecventa compensarea alunecarii este dezactivata.",
+      "influenteaza": "p1336, r0330",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26934,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1336",
+    "descriere_scurta": "Slip compensation limit value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea limita a compensarii alunecarii in procente raportata la alunecarea nominala r0330. Previne supracompensarea alunecarii.",
+      "influenteaza": "r0330, p1334",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26935,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1338",
+    "descriere_scurta": "V/f mode resonance damping gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul amortizarii de rezonanta in modul V/f. Valori mai mari imbunatatesc amortizarea oscilatiilor de rezonanta mecanica.",
+      "influenteaza": "p1339, p1349",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26936,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1339",
+    "descriere_scurta": "V/f mode resonance damping filter time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp a filtrului pentru amortizarea de rezonanta in modul V/f. Influenteaza banda de frecvente suprimate.",
+      "influenteaza": "p1338, p1349",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26937,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1345",
+    "descriere_scurta": "I_max voltage controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional al regulatorului de tensiune I_max. Controleaza limitarea tensiunii la curent maxim in modul V/f.",
+      "influenteaza": "p1300",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26938,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1349",
+    "descriere_scurta": "V/f mode resonance damping maximum frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa maxima de iesire pana la care amortizarea de rezonanta este activa in modul V/f. Peste aceasta valoare amortizarea este dezactivata.",
+      "influenteaza": "p1338, p1339",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26939,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1350",
+    "descriere_scurta": "Soft starting",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza (1) sau dezactiveaza (0) cresterea continua a tensiunii in faza de magnetizare. La valoarea 1 tensiunea creste treptat pana la nivelul boost, evitand socurile.",
+      "influenteaza": "p1310, p1311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26940,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1351",
+    "descriere_scurta": "Motor holding brake starting frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa de referinta la iesirea compensarii alunecarii pentru pornirea cu frana de retinere a motorului. Asigura cuplu la momentul eliberarii franei.",
+      "influenteaza": "p1334, p1336",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26941,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1358",
+    "descriere_scurta": "Angular difference, symmetrizing, actual angle",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea (in multipli ai ciclului regulatorului de curent) pentru simetrizarea valorii unghiulare actuale in generarea diferentei unghiulare.",
+      "influenteaza": "p0115",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26942,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1401",
+    "descriere_scurta": "Flux control configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia controlului de referinta de flux prin bitmask. Controleaza comportamentul regulatorului de flux si al zonei de slabire.",
+      "influenteaza": "p1402, p1570",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26943,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1402",
+    "descriere_scurta": "Closed-loop current control and motor model configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia pentru regulatorul de curent in bucla inchisa si modelul de motor prin bitmask. Controleaza modul de operare al controlului vectorial.",
+      "influenteaza": "p1401",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26944,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1406",
+    "descriere_scurta": "Control word speed controller",
+    "GENERATED": {
+      "explicatie": "r=afisaj. Afiseaza cuvantul de control al regulatorului de viteza. Reflecta starea comenzilor active ce influenteaza regulatorul de viteza.",
+      "influenteaza": "r1407, p0856",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26945,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r1407",
+    "descriere_scurta": "Status word speed controller",
+    "GENERATED": {
+      "explicatie": "r=afisaj. Afiseaza cuvantul de stare al regulatorului de viteza. Indica daca regulatorul este activ, limitat sau in regim tranzitoriu.",
+      "influenteaza": "r1406",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 26946,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1416",
+    "descriere_scurta": "Speed setpoint filter 1 time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp a filtrului PT1 pentru referinta de viteza 1. Filtreaza variatiile rapide ale referintei de viteza inainte de regulatorul de viteza.",
+      "influenteaza": "p1155",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26947,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1428",
+    "descriere_scurta": "Speed pre-control balancing dead time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea pentru simetrizarea referintei de viteza la precomanda activa de cuplu. Valoarea este un multiplu al ciclului regulatorului de viteza.",
+      "influenteaza": "p1429, p0115",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26948,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1429",
+    "descriere_scurta": "Speed pre-control balancing time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp PT1 pentru simetrizarea referintei de viteza la precomanda activa de cuplu. Filtreaza semnalul de referinta pentru precomanda.",
+      "influenteaza": "p1428",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 26949,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1433",
+    "descriere_scurta": "Speed controller reference model natural frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa naturala a elementului PT2 pentru modelul de referinta al regulatorului de viteza. Determina dinamica raspunsului la referinta.",
+      "influenteaza": "p1435, p0115",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26950,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1435",
+    "descriere_scurta": "Speed controller reference model dead time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea fractionara pentru modelul de referinta al regulatorului de viteza, emulind intarzierea de calcul a buclei proportionale. Multiplu al ciclului regulatorului de viteza.",
+      "influenteaza": "p1433",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26951,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1437",
+    "descriere_scurta": "Speed controller, reference model I component input",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru referinta de viteza a componentei integrale a regulatorului de viteza. Permite un control separat al comportamentului integrator.",
+      "influenteaza": "p1433, p1435",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 26952,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1441",
+    "descriere_scurta": "Actual speed smoothing time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp PT1 pentru filtrarea valorii actuale de viteza. Reduce zgomotul de masura al vitezei in afisaj si semnale BICO.",
+      "influenteaza": "p1442, p1452",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26953,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1442",
+    "descriere_scurta": "Speed controller speed actual value smoothing time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de filtrare a vitezei actuale in regulatorul de viteza cu encoder. Valori mai mari reduc oscilatiile dar scad dinamica regulatorului.",
+      "influenteaza": "p1441, p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26954,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1451",
+    "descriere_scurta": "Motor model speed actual value smoothing time SLVC",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de filtrare a vitezei actuale calculate de modelul motor in modul sensorless (SLVC). Afecteaza calitatea estimarii vitezei.",
+      "influenteaza": "p1452",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26955,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1452",
+    "descriere_scurta": "Speed controller speed actual value smoothing time (SLVC)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de filtrare a vitezei actuale in regulatorul de viteza fara encoder (SLVC). Influenteaza stabilitatea regulatorului in modul sensorless.",
+      "influenteaza": "p1451, p1442",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 26956,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p1455",
+    "descriere_scurta": "Speed controller P gain adaptation signal",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal BICO pentru adaptarea suplimentara a castigului P al regulatorului de viteza. Permite adaptarea dinamica a regulatorului in functie de conditii de functionare.",
+      "influenteaza": "p1715",
+      "categorie": "I/O"
+    }
+  }
+]

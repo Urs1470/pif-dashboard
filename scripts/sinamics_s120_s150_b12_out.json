@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 10216,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0192",
+    "descriere_scurta": "Power unit firmware properties 1",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza prima parte a proprietatilor firmware ale unitatii de putere. Fiecare bit indica o capabilitate specifica suportata de firmware-ul instalat pe unitatea de putere. Util pentru verificarea capabilitatilor hardware disponibile.",
+      "influenteaza": "r0193",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10217,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0193",
+    "descriere_scurta": "Power unit firmware properties 2",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza a doua parte a proprietatilor firmware ale unitatii de putere cu capabilitatile suplimentare. Completeaza informatia din r0192 pentru proprietatile extinse ale firmware-ului. Util pentru verificarea compatibilitatii functionalitati avansate.",
+      "influenteaza": "r0192",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10223,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0200",
+    "descriere_scurta": "Power unit code number actual",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza codul unic de identificare al unitatii de putere. Acest numar identifica exact tipul de invertor sau convertor instalat. Util pentru verificarea hardware-ului instalat si compatibilitatea cu proiectul.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10233,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1839",
+    "descriere_scurta": "Transition point compensation Q2 positive",
+    "GENERATED": {
+      "explicatie": "p - Seteaza debitul Q pentru punctul 2 pozitiv al compensatiei punctelor de tranzitie in controlul hidraulic. Este parte din caracteristica de compensare a neliniaritati ventilului hidraulic la trecerea prin zero. Valorile trebuie determinate experimental sau din caracteristica ventilului.",
+      "influenteaza": "p1837, p1841",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10272,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0238",
+    "descriere_scurta": "Internal power unit resistance",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezistenta interna a unitatii de putere incluzand IGBT-urile si rezistenta liniei. Este o valoare determinata automat de drive in procesul de identificare. Utilizata in calculele modelului termic si al controlului de tensiune.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10276,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0242",
+    "descriere_scurta": "Pressure sensor B reference value at 10 V",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta pentru senzorul de presiune B la tensiunea de 10 V in aplicatii hidraulice. Impreuna cu p0243 (offset), defineste caracteristica de scalare a senzorului de presiune. Permite calibrarea corecta a masurarii presiunii.",
+      "influenteaza": "p0243",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10285,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0251",
+    "descriere_scurta": "Operating hours counter power unit fan",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza orele de functionare ale ventilatoarelor unitatii de putere si permite resetarea la zero dupa inlocuirea acestora. Monitorizarea orelor de functionare permite planificarea intretinerii preventive a ventilatoarelor. Resetati la zero dupa fiecare inlocuire de ventilator.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10288,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0266",
+    "descriere_scurta": "Cooling unit feedback signals signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele de semnal pentru feedbackurile unitatii de racire incluzand starea pornirii, disponibilitatea, lipsa alarmelor, lipsa defectelor si lipsa scurgerilor de lichid. Fiecare index corespunde unui semnal de stare al unitatii de racire. Necesar pentru sisteme cu racire lichida.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10301,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0289",
+    "descriere_scurta": "Maximum power unit output current",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza curentul maxim de iesire actual al unitatii de putere luand in considerare factorii de derating activi. Reflecta capacitatea de curent disponibila in conditiile de temperatura si altitudine curente. Util pentru verificarea marjei de curent disponibile.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10304,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2135",
+    "descriere_scurta": "Status word faults/alarms 2",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire BICO al doilea cuvant de stare al defectelor si alarmelor. Fiecare bit indica prezenta unui anumit tip de defect sau alarma. Complement al primului cuvant de stare pentru diagnosticarea completa a starilor drive-ului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10305,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0293",
+    "descriere_scurta": "Power unit alarm threshold model temperature",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza pragul de alarma al temperaturii pentru diferenta intre temperatura chiplului si radiatorul termic in modelul termic. Este o valoare calculata de modelul termic intern al unitatii de putere. Depasirea acestui prag genereaza o alarma de temperatura.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10310,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0296",
+    "descriere_scurta": "DC link voltage undervoltage threshold",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza pragul de subtensiune al circuitului DC intermediar. Daca tensiunea DC scade sub aceasta valoare, drive-ul se opreste din cauza subtensiunii DC. Este calculat automat in functie de tensiunea nominala a retelei.",
+      "influenteaza": "r0297",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10315,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0301",
+    "descriere_scurta": "Motor code number selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza un motor din lista interna de motoare prin codul sau numeric. La schimbarea codului (exceptand valoarea 0), toti parametrii motorului sunt presetati automat din lista interna. Simplifica parametrizarea pentru motoarele Siemens standard.",
+      "influenteaza": "p0300, p0305, p0307",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10333,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0332",
+    "descriere_scurta": "Rated motor power factor",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza factorul de putere nominal al motorului asincron. Pentru p0308=0, afiseaza factorul de putere calculat intern; pentru p0308>0, afiseaza valoarea introdusa. Util pentru verificarea parametrizarii corecte a motorului.",
+      "influenteaza": "p0308, p0309",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10342,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0314",
+    "descriere_scurta": "Cylinder dead volume A side",
+    "GENERATED": {
+      "explicatie": "p - Seteaza volumul mort al cilindrului pe latura A in aplicatii hidraulice. Volumul mort afecteaza rigiditatea hidraulica si comportamentul dinamic al axei. Valoarea corecta este necesara pentru calculul precis al presiunilor si compensatia adecvata.",
+      "influenteaza": "p0315",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10364,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1938",
+    "descriere_scurta": "Voltage constant identified",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza constanta de tensiune identificata in procesul de identificare automata a parametrilor motorului. Reprezinta FEM (forta electromotoare) a motorului sincron la viteza nominala. Util pentru verificarea identificarii parametrilor motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10373,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1082",
+    "descriere_scurta": "Encoder emulation maximum speed",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza limita de frecventa a semnalului de iesire ca viteza maxima pentru emularea encoderului. Valoarea este afisata independent de modul de operare setat in p4400. Util pentru verificarea limitarii vitezei maxime la emularea encoderului.",
+      "influenteaza": "p4400",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10380,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0326",
+    "descriere_scurta": "Motor stall force correction factor",
+    "GENERATED": {
+      "explicatie": "p - Seteaza factorul de corectie pentru forta de blocare a motorului liniar la tensiunea DC de 600 V. Permite ajustarea fortei de blocare la tensiunile de lucru diferite de valoarea nominala. Valoarea implicita de 60% este valabila pentru tensiunile tipice de lucru.",
+      "influenteaza": "p0322",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10387,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1939",
+    "descriere_scurta": "Reluctance torque constant identified",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza constanta de cuplu de reluctanta identificata in procesul de identificare automata. Relevanta pentru motoarele sincrone cu reluctanta pronuntata (IPMSM). Util pentru verificarea identificarii corecte a parametrilor motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10391,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0320",
+    "descriere_scurta": "Motor rated magnetizing current/short-circuit current",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul de magnetizare nominal al motorului asincron sau curentul de scurtcircuit al motorului sincron. Pentru valoarea 0 la motoarele asincrone, curentul de magnetizare este calculat automat (afisat in r0331). Este un parametru fundamental pentru controlul vectorial.",
+      "influenteaza": "r0331",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10395,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0333",
+    "descriere_scurta": "Rated motor torque",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuplul nominal calculat al motorului. Este calculat pe baza puterii nominale si turatiei nominale din parametrii motorului. Util pentru verificarea parametrizarii corecte si a dimensionarii aplicatiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10399,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0316",
+    "descriere_scurta": "Motor torque constant",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de cuplu (kT) a motorului sincron in Nm/A. Defineste raportul dintre cuplul produs si curentul activ. Valoarea corecta este esentiala pentru controlul precis al cuplului motorului sincron.",
+      "influenteaza": "p0305",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10403,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0338",
+    "descriere_scurta": "Motor limit current",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul de limita al motorului sincron la tensiunea DC de 600 V, corespunzator curentului la care se atinge cuplul maxim la viteza nominala. Este folosit pentru caracteristica de limitare a tensiunii. Afecteaza puterea maxima disponibila la viteze mari.",
+      "influenteaza": "p0305, p0640",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 10411,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0345",
+    "descriere_scurta": "Required damping controlled axis",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amortizarea dorita pentru axa controlata utilizata la calculul automat al parametrilor controllerului. Cu aceasta valoare se calculeaza castigul, timpul integral si derivativ al buclei de control. Valoarea implicita de 0.7 ofera un raspuns optim critic-amortizat.",
+      "influenteaza": "p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10422,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0342",
+    "descriere_scurta": "Ratio between the total and motor moment of inertia",
+    "GENERATED": {
+      "explicatie": "p - Seteaza raportul dintre momentul total de inertie (sarcina + motor) si momentul de inertie propriu al motorului. Valoarea 1 inseamna fara sarcina, valori mai mari indica sarcina suplimentara. Afecteaza performanta dinamica a buclei de viteza si comportamentul la accelerare.",
+      "influenteaza": "p0341, p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10430,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0331",
+    "descriere_scurta": "Actual motor magnetizing current/short-circuit current",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza curentul de magnetizare nominal din p0320 sau, pentru p0320=0, curentul de magnetizare calculat intern. La motoarele sincrone, afiseaza curentul de scurtcircuit din p0320. Util pentru verificarea corectitudinii parametrizarii motorului.",
+      "influenteaza": "p0320",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10435,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1912",
+    "descriere_scurta": "Stator resistance identified",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezistenta statorica identificata in procesul de identificare automata a parametrilor motorului. Valoarea este masurata direct pe motorul conectat. Util pentru verificarea identificarii corecte si a starii infasurarii statorice.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10441,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0348",
+    "descriere_scurta": "Internal line diameter",
+    "GENERATED": {
+      "explicatie": "p - Seteaza diametrul interior al conductelor hidraulice pentru laturile A si B ale cilindrului. Afecteaza calculul rezistentelor hidraulice si al modelului de flux. Valoarea corecta este necesara pentru un control precis in aplicatii hidraulice.",
+      "influenteaza": "p0314",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10444,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1715",
+    "descriere_scurta": "Force controller P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al controllerului de forta. Valorile mari ofera raspuns mai rapid dar pot cauza instabilitate. Trebuie ajustat in functie de rigiditatea mecanica si inertiala sarcinii pentru performanta optima.",
+      "influenteaza": "p0392, p0393",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10464,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0365",
+    "descriere_scurta": "Motor saturation characteristic flux 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata y (flux) a celui de-al patrulea punct al caracteristicii de saturatie a motorului, exprimata in % fata de fluxul nominal. Caracteristica de saturatie este definita prin 4 perechi de valori. Valoarea implicita de 125% corespunde saturatiei tipice la curent maxim.",
+      "influenteaza": "p0361, p0362, p0363",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10468,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0369",
+    "descriere_scurta": "Motor saturation characteristic I_mag 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata x (curent de magnetizare sau curent de axa q) a celui de-al patrulea punct al caracteristicii de saturatie, in % fata de curentul de magnetizare nominal. Impreuna cu p0365, defineste al patrulea punct al caracteristicii. Valoarea implicita de 210% corespunde suprasaturatiei motorului.",
+      "influenteaza": "p0366, p0367, p0368",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10470,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0625",
+    "descriere_scurta": "Motor ambient temperature during commissioning",
+    "GENERATED": {
+      "explicatie": "p - Defineste temperatura ambianta a motorului la momentul comisionarii pentru calculul modelului de temperatura. Valoarea este utilizata ca temperatura de referinta initiala in modelul termic. O valoare corecta asigura o protectie termica precisa a motorului.",
+      "influenteaza": "p0605, p0612",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10509,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0400",
+    "descriere_scurta": "Encoder type selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza tipul de encoder din lista tipurilor suportate de Sensor Module. La selectia unui tip standard, parametrii encoderului sunt configurati automat. Tipul de encoder trebuie sa corespunda cu tipul fizic al encoderului montat pe motor.",
+      "influenteaza": "p0404, p0410, p0418",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10510,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0402",
+    "descriere_scurta": "Gearbox type selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza tipul de reductor pentru presetarea inversarii si a factorului de reductor. Factorul de masurare = revolutii motor sau sarcina / revolutii encoder. Selectia corecta este necesara pentru conversia precisa a pozitiei.",
+      "influenteaza": "p0432, p0433",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10524,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0413",
+    "descriere_scurta": "Measuring gear position tracking tolerance window",
+    "GENERATED": {
+      "explicatie": "p - Seteaza fereastra de toleranta pentru urmarirea pozitiei la angrenajul de masurare la repornire. Daca diferenta pozitiei salvate si celei actuale este in fereastra, pozitia este restaurata. In caz contrar, se emite un mesaj de avertizare si este necesara referentierea.",
+      "influenteaza": "p2722",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10554,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0432",
+    "descriere_scurta": "Gearbox factor encoder revolutions",
+    "GENERATED": {
+      "explicatie": "p - Seteaza revolutiile encoderului pentru factorul de reductor al evaluarii encoderului. Factorul de reductor specifica raportul intre arborele encoderului si arborele motorului sau al sarcinii. Impreuna cu p0433 defineste complet raportul de transmisie.",
+      "influenteaza": "p0433, p0402",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10558,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0459",
+    "descriere_scurta": "Sensor Module properties extended",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza proprietatile extinse ale Sensor Module, suplimentare celor din r0456. Fiecare bit indica o capabilitate specifica extinsa a modului de senzor. Util pentru verificarea compatibilitatii functiilor avansate ale encoderului.",
+      "influenteaza": "r0456",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10562,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0452",
+    "descriere_scurta": "Squarewave encoder filter time display",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza timpul de filtrare efectiv pentru un encoder cu semnal dreptunghiular. Filtrul este setat prin p0438 si aceasta valoare reflecta timpul efectiv aplicat. Util pentru verificarea setarii corecte a filtrului de encoder.",
+      "influenteaza": "p0438",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10566,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0440",
+    "descriere_scurta": "Copy encoder serial number",
+    "GENERATED": {
+      "explicatie": "p - Copiaza numarul de serie actual al encoderului apartinand acestui Encoder Data Set (EDS) in parametrii p0441-p0445. Utiliza la comisionarea initiala sau dupa inlocuirea encoderului pentru inregistrarea noului encoder. Permite identificarea ulterioara a encoderului specific.",
+      "influenteaza": "p0441, p0445",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10571,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0464",
+    "descriere_scurta": "Encoder serial number part 5",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza a cincea parte a numarului de serie al encoderului conectat. Numarul de serie complet este distribuit in mai multi parametri. Util pentru identificarea encoderului fizic si verificarea inlocuirii corecte.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10576,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0429",
+    "descriere_scurta": "Encoder SSI configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru un encoder cu interfata SSI (Serial Synchronous Interface). Permite configurarea parametrilor comunicatiei SSI cum ar fi rata de date, numarul de biti si formatul datelor. Necesar pentru conectarea encoderelor cu interfata SSI.",
+      "influenteaza": "p0404",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10580,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0455",
+    "descriere_scurta": "Encoder configuration recognized",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza configuratia detectata automat a encoderului pentru encodere cu interfata inteligenta (EnDat). Reflecta capabilitatile raportate de encoder la initializare. Util pentru verificarea recunoasterii corecte a encoderului.",
+      "influenteaza": "r0456",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10581,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0404",
+    "descriere_scurta": "Encoder configuration effective",
+    "GENERATED": {
+      "explicatie": "p - Seteaza proprietatile de baza ale encoderului cum ar fi tipul de semnal, directia de numarare si configuratia canalelor. Fiecare bit configureaza un aspect specific al evaluarii encoderului. Trebuie setat consistent cu specificatiile tehnice ale encoderului.",
+      "influenteaza": "p0400, p0410",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10587,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0445",
+    "descriere_scurta": "Encoder commissioning serial number part 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza a cincea parte a numarului de serie al encoderului stocat la comisionare. Impreuna cu p0441-p0444, stocheaza numarul complet de serie. Este scris automat la copierea numarului de serie (p0440). Util pentru inregistrarea encoderului la comisionare.",
+      "influenteaza": "p0440",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10590,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0437",
+    "descriere_scurta": "Sensor Module configuration extended",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia extinsa a Sensor Module cu proprietati suplimentare. Permite ajustari fine ale comportamentului modulului de senzor dincolo de configuratia de baza din p0430. Valoarea implicita 0011 corespunde configuratiei standard.",
+      "influenteaza": "p0430",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10592,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0439",
+    "descriere_scurta": "Encoder ramp-up time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de pornire al encoderului dupa care semnalele de pista sunt considerate stabile. Este necesar pentru encodere care necesita timp de initializare dupa aplicarea alimentarii. Previne erori de pozitie in faza initiala de pornire.",
+      "influenteaza": "p0404",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10595,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0462",
+    "descriere_scurta": "Encoder serial number part 3",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza a treia parte a numarului de serie al encoderului conectat. Face parte din numarul complet de serie distribuit in mai multi parametri. Util pentru identificarea exacta a encoderului fizic montat.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10600,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0469",
+    "descriere_scurta": "Absolute encoder linear measuring step",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezolutia pozitiei absolute pentru un encoder liniar absolut. Este valoarea detectata de la encoder sau configurata in parametrii de encoder. Util pentru verificarea rezolutiei efective a pozitiei absolute in sisteme cu encoder liniar absolut.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10601,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0470",
+    "descriere_scurta": "Redundant coarse position value valid bits",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de biti valizi ai valorii grosiere redundante de pozitie. Reflecta configuratia detectata sau setata a encoderului pentru valoarea de pozitie redundanta. Util pentru verificarea configuratiei corecte a encoderului dual.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10603,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0471",
+    "descriere_scurta": "Redundant coarse position value fine resolution bits",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de biti valizi pentru rezolutia fina a valorii grosiere redundante. Completeaza informatia din r0470 pentru structura completa a valorii de pozitie redundante. Util pentru verificarea configuratiei detailate a encoderului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10604,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0472",
+    "descriere_scurta": "Redundant coarse position value relevant bits",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul de biti relevanti ai valorii grosiere redundante de pozitie. Indica cati biti din valoarea grosiera redundanta sunt utilizati efectiv. Util pentru verificarea completitudinii configuratiei encoderului dual.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10606,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0473",
+    "descriere_scurta": "Non safety-relevant measuring steps position value pos1",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza pasii de masurare non-siguri ai valorii de pozitie POS1 pentru encoderul curent. Reflecta configuratia encoderului pentru valoarea de pozitie primara. Util pentru verificarea parametrizarii corecte a encoderului in raport cu p9513.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10607,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0474",
+    "descriere_scurta": "Redundant coarse position value configuration",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza configuratia encoderului pentru valoarea grosiera redundanta de pozitie. Reflecta setarile din p9515 aplicate efectiv. Util pentru verificarea configuratiei sistemului de monitorizare duala a pozitiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10609,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0475",
+    "descriere_scurta": "Gx_XIST1 coarse position safe most significant bit",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza numarul bitului cel mai semnificativ sigur (MSB) al pozitiei grosiere Gx_XIST1. Reflecta configuratia efectiva aplicata (corespunzatoare p9529). Util pentru verificarea configuratiei corecte a structurii de date a encoderului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10611,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0479",
+    "descriere_scurta": "Diagnostics encoder position actual value Gn_XIST1",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire conector valoarea actuala de pozitie a encoderului Gn_XIST1 conform PROFIdrive pentru diagnosticare. Spre deosebire de r0482, valoarea este actualizata in fiecare ciclu de baza DRIVE-CLiQ si este afisata cu semn. Util pentru diagnosticare dinamica a pozitiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10615,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0481",
+    "descriere_scurta": "Encoder status word Gn_ZSW",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuvantul de stare al encoderului Gn_ZSW conform PROFIdrive. Fiecare bit indica o stare specifica a encoderului cum ar fi referentiere, eroare sau pozitionare absoluta disponibila. Util pentru diagnosticarea starii de comunicare a encoderului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10616,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0483",
+    "descriere_scurta": "Encoder actual position value Gn_XIST2",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea actuala de pozitie a encoderului Gn_XIST2 conform PROFIdrive. Reprezinta valoarea secundara de pozitie transmisa prin protocolul PROFIdrive. Util pentru diagnosticarea valorilor de pozitie transmise prin PROFIBUS/PROFINET.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10619,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0482",
+    "descriere_scurta": "Encoder actual position value Gn_XIST1",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire conector valoarea actuala de pozitie Gn_XIST1 conform PROFIdrive cu indexuri pentru 3 encodere. Ofera pozitia principala a encoderului pentru fiecare slot de encoder. Util pentru verificarea valorilor de pozitie a encoderelor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10624,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0430",
+    "descriere_scurta": "Sensor Module configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia de baza a Sensor Module incluzand tipul de interfata, numarul de canale si alte proprietati fundamentale. Este parametrul principal de configurare a modului de senzor. Configuratia trebuie sa corespunda cu hardware-ul Sensor Module instalat.",
+      "influenteaza": "p0437, p0404",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10625,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0485",
+    "descriere_scurta": "Measuring gear encoder raw value incremental",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea bruta a encoderului incremental inainte de angrenajul de masurare. Reprezinta numarul brut de impulsuri din encoder fara conversia prin reducator. Util pentru diagnosticarea la nivel jos a evaluarii encoderului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10626,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0486",
+    "descriere_scurta": "Measuring gear encoder raw value absolute",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea bruta a encoderului absolut inainte de angrenajul de masurare. Reprezinta valoarea bruta de pozitie absoluta direct de la encoder. Util pentru diagnosticarea problemelor de evaluare a encoderului absolut.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10627,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0487",
+    "descriere_scurta": "Diagnostic encoder control word Gn_STW",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza cuvantul de control al encoderului Gn_STW conform PROFIdrive pentru diagnosticare. Indica comenzile transmise de controller catre encoder (ex: resetare pozitie, activare valoare de referinta). Util pentru diagnosticarea comunicatiei bidirectionale cu encoderul.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10631,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2517",
+    "descriere_scurta": "LR direct measuring probe 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare pentru sonda de masurare directa 1, care poate fi non-ciclica (1-8) sau ciclica (11-18). Sonda non-ciclica masoara o data si poate fi utilizata cu EPOS. Sonda ciclica masoara continuu si ocoleste tehnica handshake standard pentru procesare mai rapida.",
+      "influenteaza": "p2509",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10635,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1755",
+    "descriere_scurta": "Motor model changeover speed encoderless operation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de comutare a modelului motorului la operarea fara encoder. Deasupra acestei viteze, modelul comuta automat la modul fara encoder. Valoarea implicita very mare (210000 rpm) dezactiveaza practic comutatia automata la encoderless.",
+      "influenteaza": "p1404",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10643,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1408",
+    "descriere_scurta": "Status word current controller",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire BICO cuvantul de stare al controllerului de curent. Fiecare bit indica o stare specifica a controllerului de curent cum ar fi limitarea iesirilor sau saturatia integralei. Util pentru diagnosticarea buclei de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10652,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0494",
+    "descriere_scurta": "Equivalent zero mark input terminal",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza terminalul de intrare pentru conectarea unui marcaj zero echivalent (marcaj zero extern al encoderului). Permite utilizarea unui semnal extern ca marcaj zero de referinta al encoderului. Necesar in aplicatii cu referentiere speciala sau encodere fara marcaj zero propriu.",
+      "influenteaza": "p0404",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10653,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0499",
+    "descriere_scurta": "Encoder diagnostic signal high word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza componenta superioara (high word) a semnalului de diagnosticare a encoderului. Semnalul afisat este selectat prin p0496. Util exclusiv pentru diagnosticare avansata a encoderului de catre ingineri Siemens (acces nivel 4).",
+      "influenteaza": "p0496",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10654,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0498",
+    "descriere_scurta": "Encoder diagnostic signal low word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza componenta inferioara (low word) a semnalului de diagnosticare a encoderului. Semnalul afisat este selectat prin p0496. Util exclusiv pentru diagnosticare avansata a encoderului (acces nivel 4).",
+      "influenteaza": "p0496, r0499",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10660,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1750",
+    "descriere_scurta": "Motor model configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia modelului motorului prin biti individuali care controleaza comportamentul la pornire si in zona de frecventa zero pentru motoarele asincrone. Bitul 0 forteaza pornirea in bucla deschisa, bitul 3 activeaza caracteristica de saturatie. Permite ajustarea fina a comportamentului modelului de motor.",
+      "influenteaza": "p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10661,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0514",
+    "descriere_scurta": "User-specific reference quantities",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pana la 10 cantitati de referinta definite de utilizator pentru scalarea semnalelor BICO. Fiecare index (0-9) defineste o cantitate de referinta distincta. Pana la 20 BiCo-uri pot fi scalate la fiecare cantitate de referinta prin parametrii de asignare p515-p524.",
+      "influenteaza": "p0515",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 10671,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0530",
+    "descriere_scurta": "Bearing version selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza versiunea lagarelor motorului cu optiuni predefinite (0=nicio selectie, 1=manual, 101-104 pentru variante standard/performanta/high performance/lifetime). La selectia unei versiuni predefinite, codul (p0531) este setat automat. Relevant pentru calculul intervalelor de mentenanta.",
+      "influenteaza": "p0531",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10673,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0571",
+    "descriere_scurta": "Inhibit list motor/closed-loop control parameter calculation",
+    "GENERATED": {
+      "explicatie": "p - Lista de parametri exclusi din calculul automat al parametrilor motorului si ai controllerului (p0340, p0578). Permite pastrarea valorilor specifice ale unor parametri in timp ce altii sunt recalculati automat. Util cand unii parametri sunt ajustati manual si nu trebuie suprascrise de calculul automat.",
+      "influenteaza": "p0340",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10674,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0567",
+    "descriere_scurta": "Probe diagnostics word",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire conector cuvantul de diagnosticare al sondei de masurare MT_DIAG. Indica starea operationala a sondelor de masurare configurate. Util pentru verificarea functionarii corecte a sondelor de masurare si a capturii pozitiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10685,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0586",
+    "descriere_scurta": "Measuring probe velocity actual value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza viteza actuala masurata utilizand sonda BERO. Reprezinta viteza calculata din intervalele de timp dintre pulsurile BERO. Util pentru verificarea valorilor de viteza masurate prin sonde externe de tip BERO sau inductive.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10689,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0587",
+    "descriere_scurta": "Measuring probe measuring time measured",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza timpul dintre ultimele doua pulsuri BERO ca valoare de 32-bit cu rezolutie de 1/48 microsecunde. Daca un puls nou nu apare inainte de expirarea timpului maxim din p0583, parametrul este setat la valoarea maxima. Util pentru diagnosticarea frecventei pulsurilor BERO.",
+      "influenteaza": "p0583",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10691,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0589",
+    "descriere_scurta": "Measuring probe delay time",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza timpul scurs de la ultimul puls de masurare detectat ca valoare de 32-bit cu rezolutie de 1/48 microsecunde. La fiecare puls nou, valoarea este resetata si limitata la maximul din p0583. Util pentru detectia absentei pulsurilor BERO.",
+      "influenteaza": "p0583",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10695,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0608",
+    "descriere_scurta": "Motor temperature signal source 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa 2 pentru evaluarea temperaturii motorului prin interconectare BICO cu indexuri pentru 4 canale de temperatura. Permite utilizarea unui semnal de temperatura extern sau provenit dintr-o alta sursa decat senzorul standard. Util in configuratii cu sensori multipli de temperatura.",
+      "influenteaza": "p0600, p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10699,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0600",
+    "descriere_scurta": "Motor temperature sensor for monitoring",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza senzorul utilizat pentru monitorizarea temperaturii motorului. Tipul senzorului selectat este setat in p0601. Valorile posibile sunt 0 (niciun senzor) pana la 21, corespunzand diferitelor puncte de conectare ale senzorilor.",
+      "influenteaza": "p0601",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10707,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0605",
+    "descriere_scurta": "Mot_temp_mod 1/2 threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul pentru monitorizarea temperaturii motorului prin modelul 1 (I2t alarma) sau modelul 2/KTY (defect). Pragul de alarma A07012 este generat la depasire pentru modelul 1, iar defectul F07011 pentru modelul 2 sau KTY. Valoarea implicita este 145 grade C.",
+      "influenteaza": "p0612, p0615",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10715,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0628",
+    "descriere_scurta": "Motor overtemperature rotor winding",
+    "GENERATED": {
+      "explicatie": "p - Defineste supraincalzirea nominala a infasurarii rotorului in colivie raportata la temperatura ambianta. Este utilizata in calculul modelului termic al motorului asincron. Valoarea corecta asigura o protectie termica adecvata a rotorului.",
+      "influenteaza": "p0612",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10718,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0610",
+    "descriere_scurta": "Motor overtemperature response",
+    "GENERATED": {
+      "explicatie": "p - Seteaza raspunsul sistemului la atingerea pragului de temperatura al motorului. Valorile posibile (2-12) determina actiunea la supraincalzire: de la reducerea curentului (derating) pana la oprire imediata. Valoarea implicita 12 corespunde opririi la depasirea pragului.",
+      "influenteaza": "p0605",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10722,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0344",
+    "descriere_scurta": "Cylinder mounting position A side",
+    "GENERATED": {
+      "explicatie": "p - Ajusteaza pozitia de montare a cilindrului hidraulic referita la latura A, in grade fata de verticala. Este utilizata in compensarea fortei gravitationale pe cilindri montati oblic sau orizontal. Valoarea 0 corespunde montajului vertical cu latura A jos.",
+      "influenteaza": "p0341",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10727,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0623",
+    "descriere_scurta": "Rs identification stator resistance after switch on again",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezistenta statorica determinata prin identificarea Rs dupa repornirea drive-ului. Este utilizata pentru compensarea variatiei rezistentei statorice cu temperatura. Relevant pentru optimizarea controlului vectorial in conditii de temperatura variabila.",
+      "influenteaza": "p0622",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10729,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0622",
+    "descriere_scurta": "Motor excitation time for Rs_ident after powering up again",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de excitatie al motorului pentru identificarea rezistentei statorice dupa repornire. In cadrul acestui timp, drive-ul aplica curent de magnetizare pentru a masura rezistenta statorica la temperatura de operare. Valoarea 0 dezactiveaza identificarea Rs la repornire.",
+      "influenteaza": "r0623",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10735,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0307",
+    "descriere_scurta": "Rated motor power",
+    "GENERATED": {
+      "explicatie": "p - Seteaza puterea nominala a motorului conform placutei de caracteristici in kW. Este un parametru fundamental utilizat in calculul limitelor de curent si al performantei motorului. Trebuie sa corespunda exact cu puterea nominala de pe placuta motorului.",
+      "influenteaza": "p0305, p0310",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10740,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0634",
+    "descriere_scurta": "Q flux flux constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta pentru componenta nesaturata a functiei de flux pe axa q in motoarele sincrone cu curent de axa q neliniar. Este unul dintre cei 4 coeficienti care definesc functiile neliniare de flux pe axa q. Util pentru modelarea precisaa PMSM-urilor cu reluctanta pronuntata.",
+      "influenteaza": "p0635, p0636, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10746,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0636",
+    "descriere_scurta": "Q flux direct axis current constant unsaturated",
+    "GENERATED": {
+      "explicatie": "p - Descrie interdependenta componentei nesaturate de curent pe axa d in cadrul functiei de flux pe axa q. Este unul dintre cei 4 coeficienti pentru modelul de flux q neliniar si incrucisat. Relevant pentru motoarele sincrone cu inductanta pronuntata pe axa d.",
+      "influenteaza": "p0634, p0635, p0637",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10749,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1404",
+    "descriere_scurta": "Encoderless operation changeover speed",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de comutare intre operarea cu encoder si fara encoder. Deasupra acestei viteze, drive-ul trece automat la modul encoderless. Valoarea implicita extrem de mare dezactiveaza practic comutatia automata, pastrand controlul cu encoder.",
+      "influenteaza": "p1755",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10756,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1780",
+    "descriere_scurta": "Motor model adaptation configuration",
+    "GENERATED": {
+      "explicatie": "p - Configureaza circuitul de adaptare al modelului motorului prin biti individuali, activand adaptarea rezistentei statorice, rotorice, inductantei de magnetizare si compensatia de offset. Diferit pentru motoare asincrone (Rs, Rr, Lh, offset) si motoare PMSM (kT). Permite ajustarea automata a parametrilor motorului la variatia temperaturii.",
+      "influenteaza": "p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 10760,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0651",
+    "descriere_scurta": "Motor operating hours maintenance interval",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de mentenanta in ore de functionare pentru motorul conectat. La atingerea numarului de ore setat, este generat un defect de mentenanta corespunzator. Permite planificarea intretinerii preventive a motorului.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 10765,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0382",
+    "descriere_scurta": "Motor magnetizing inductance transformed / Lh d axis saturated",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza inductanta de magnetizare a motorului sau, pentru motoare sincrone cu excitatie separata, inductanta saturata de magnetizare pe axa d. Este un parametru de diagnosticare intern utilizat de modelul motorului. Util pentru verificarea identificarii parametrilor motorului (nivel 4).",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10771,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0375",
+    "descriere_scurta": "Motor damping resistance q axis",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza rezistenta de amortizare a motorului sincron cu excitatie separata pe axa q (perpendicular pe directia rotorului). Este un parametru intern al modelului motorului (nivel 4). Relevant pentru motoarele sincrone cu excitatie separata cu amortizor.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10777,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8571",
+    "descriere_scurta": "Macro Binector Input (BI)",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza fisierul ACX salvat in directorul corespunzator din memoria nevolatila a dispozitivului. Fisierele ACX contin configuratii de interconectare BICO. Util pentru verificarea macrourilor de interconectare disponibile.",
+      "influenteaza": "r8570",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 10780,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0721",
+    "descriere_scurta": "CU digital inputs terminal actual value",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza valoarea actuala la intrarile digitale ale CU, permitand verificarea semnalului fizic de la terminalele DI. Permite compararea semnalului real cu simularea (p0795) inainte de comutarea la modul terminal. Util pentru diagnosticarea intrarilor digitale si testarea configuratiei.",
+      "influenteaza": "p0795",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10783,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0723",
+    "descriere_scurta": "CU digital inputs status inverted",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea invertita a intrarilor digitale ale CU. Permite verificarea logicii inversate aplicata intrarilor digitale. Util pentru diagnosticarea logicii de intrare in aplicatii cu semnale active low.",
+      "influenteaza": "r0722",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10785,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0722",
+    "descriere_scurta": "CU digital inputs status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea curenta a intrarilor digitale ale Control Unit. Fiecare bit corespunde unei intrari digitale specifice. Este parametrul principal de diagnosticare al starii intrarilor digitale de pe CU.",
+      "influenteaza": "r0721, r0723",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10789,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0729",
+    "descriere_scurta": "CU digital outputs access authority",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza autoritatea de acces la iesirile digitale ale CU. Bitul 1 indica accesul controlerului prin PROFIBUS sau direct, bitul 0 indica accesul drive-ului sau ca iesirea nu este configurata. Util pentru diagnosticarea conflictelor de control al iesirilor digitale.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10822,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0747",
+    "descriere_scurta": "CU digital outputs status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea curenta a iesirilor digitale ale Control Unit. Fiecare bit corespunde unei iesiri digitale specifice. Util pentru diagnosticarea starii iesirilor digitale configurate pe CU.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10828,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0752",
+    "descriere_scurta": "CU analog input input voltage/current actual",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza tensiunea de intrare in V (mod tensiune) sau curentul in mA (mod curent cu rezistenta de sarcina conectata) al intrarii analogice a CU310-2. Este valoarea fizica masurata la terminal. Util pentru calibrarea si diagnosticarea intrarilor analogice.",
+      "influenteaza": "p0757, p0759",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 10829,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0757",
+    "descriere_scurta": "CU analog input characteristic value x1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata x a primului punct al caracteristicii de scalare pentru intrarea analogica a CU310-2. Impreuna cu p0759, defineste caracteristica liniara in doua puncte a intrarii analogice AI0. Valoarea implicita 0 corespunde intrarii la 0 V sau 0 mA.",
+      "influenteaza": "p0758, p0759, p0760",
+      "categorie": "I/O"
+    }
+  }
+]

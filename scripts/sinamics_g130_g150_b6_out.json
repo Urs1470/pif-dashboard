@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 6759,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2189",
+    "descriere_scurta": "Load monitoring torque threshold 3, upper",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul superior de cuplu al celei de-a treia zone a caracteristicii de monitorizare a sarcinii. Defineste limita superioara viteza-cuplu pentru zona 3 a curbei de protectie la suprasarcina.",
+      "influenteaza": "p2185, r2197",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6764,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2155",
+    "descriere_scurta": "Speed threshold 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza al doilea prag de viteza (in rpm) pentru semnalele de monitorizare. Genereaza semnalele BO '|n_act|<=prag2' (r2197.1) si '|n_act|>prag2' (r2197.2), utilizabile ca conditii in logici de automatizare.",
+      "influenteaza": "r2197, p2153, p2142",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6767,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2229",
+    "descriere_scurta": "Technology controller number actual",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul setpoint-ului fix selectat curent al controllerului tehnologic. Permite verificarea in timp real a sursei de setpoint activa din lista de setpoint-uri fixe configurate in controller.",
+      "influenteaza": "p2220, p2221, p2222, p2223",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6788,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2223",
+    "descriere_scurta": "Technology controller fixed value selection bit 3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru bitul 3 de selectie a setpoint-ului fix al controllerului tehnologic via BICO. Impreuna cu bitii 0-2 (p2220-p2222), permite selectia din pana la 16 setpoint-uri fixe predefinite.",
+      "influenteaza": "p2220, p2221, p2222, r2229",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6793,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2224",
+    "descriere_scurta": "Technology controller, fixed value effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea fixa efectiv selectata si activa a controllerului tehnologic. Valoarea reflecta setpoint-ul fix ales prin combinatia bitilor p2220-p2223, inainte de procesare prin generatorul de rampa.",
+      "influenteaza": "r2229, r2260",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6798,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2247",
+    "descriere_scurta": "Technology controller motorized potentiometer ramp-up time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de crestere (in secunde) al generatorului de rampa intern al potentiometrului motorized al controllerului tehnologic. Controleaza viteza de crestere a setpoint-ului la comanda de crestere a potentiometrului.",
+      "influenteaza": "p2248, r2250",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6802,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2238",
+    "descriere_scurta": "Technology controller motorized potentiometer minimum value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza valoarea minima (in %) a potentiometrului motorized al controllerului tehnologic. Limiteaza valoarea minima a setpoint-ului ajustabil prin potentiometru la aceasta limita inferioara.",
+      "influenteaza": "p2239, r2245, r2250",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6805,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2245",
+    "descriere_scurta": "Technology controller mot. potentiometer setpoint before RFG /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpoint-ul efectiv al potentiometrului motorized al controllerului tehnologic inainte de generatorul de rampa intern. Valoarea este limitata intre p2238 si p2239 si reflecta pozitia curenta a potentiometrului.",
+      "influenteaza": "r2250, p2247, p2248",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6806,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2248",
+    "descriere_scurta": "Technology controller motorized potentiometer ramp-down time /",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de scadere (in secunde) al generatorului de rampa intern al potentiometrului motorized al controllerului tehnologic. Controleaza viteza de scadere a setpoint-ului la comanda de reducere a potentiometrului.",
+      "influenteaza": "p2247, r2250",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6808,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2250",
+    "descriere_scurta": "Technology controller motorized potentiometer setpoint after RFG /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpoint-ul efectiv al potentiometrului motorized al controllerului tehnologic dupa generatorul de rampa intern. Valoarea filtrata prin rampa este ceea ce ajunge efectiv in lantul de reglare.",
+      "influenteaza": "r2245, p2247, p2248",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6809,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2285",
+    "descriere_scurta": "Technology controller integral time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp integrala (in secunde) a componentei I a controllerului tehnologic PID. O valoare mai mica creste viteza de eliminare a erorii statice dar poate destabiliza controllerul in procese cu inertie mare.",
+      "influenteaza": "p2280, p2274, r2273",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6811,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2256",
+    "descriere_scurta": "Technology controller setpoint 2 scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza scalarea (in %) pentru setpoint-ul 2 al controllerului tehnologic. Permite ajustarea ponderii setpoint-ului 2 in suma totala a setpoint-urilor, inainte de intrarea in generatorul de rampa al controllerului.",
+      "influenteaza": "p2255, r2260",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6812,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2255",
+    "descriere_scurta": "Technology controller setpoint 1 scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza scalarea (in %) pentru setpoint-ul 1 al controllerului tehnologic. Ajusteaza ponderea setpoint-ului 1 in suma totala, permitand configurarea balansarii intre mai multe surse de setpoint ale controllerului.",
+      "influenteaza": "p2256, r2260",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6814,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2257",
+    "descriere_scurta": "Technology controller, ramp-up time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de crestere (in secunde) al generatorului de rampa al controllerului tehnologic. Limiteaza viteza de crestere a setpoint-ului catre valoarea tinta, prevenind socurile in procesul controlat.",
+      "influenteaza": "p2258, r2260",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6815,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2258",
+    "descriere_scurta": "Technology controller ramp-down time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de scadere (in secunde) al generatorului de rampa al controllerului tehnologic. Controleaza viteza de scadere a setpoint-ului, putand fi diferit de timpul de crestere pentru comportament asimetric.",
+      "influenteaza": "p2257, r2260",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6817,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2260",
+    "descriere_scurta": "Technology controller setpoint after ramp-function generator /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpoint-ul dupa generatorul de rampa al controllerului tehnologic. Reprezinta setpoint-ul curent transmis spre filtrul de setpoint si ulterior spre comparatorul de eroare al controllerului PID.",
+      "influenteaza": "r2262, p2261",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6818,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2261",
+    "descriere_scurta": "Technology controller setpoint filter time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp (in secunde) a filtrului PT1 al setpoint-ului controllerului tehnologic. Filtreaza zgomotul sau tranzientii din setpoint inainte de comparatia cu valoarea actuala, imbunatatind stabilitatea.",
+      "influenteaza": "r2260, r2262",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6819,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2262",
+    "descriere_scurta": "Technology controller setpoint after filter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpoint-ul filtrat al controllerului tehnologic dupa filtrul PT1 (p2261). Aceasta valoare este utilizata in comparatia cu valoarea actuala r2266 pentru calculul erorii de reglare r2273.",
+      "influenteaza": "r2273, r2266, p2261",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6820,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2263",
+    "descriere_scurta": "Technology controller type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul controllerului tehnologic (0=PID cu actiune directa, 1=PID cu actiune inversa). Selectia corecta a tipului este esentiala pentru stabilitate; ex. controlul presiunii necesita actiune inversa (creste viteza cand presiunea scade).",
+      "influenteaza": "p2280, p2285, p2274, r2273",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6823,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2271",
+    "descriere_scurta": "Technology controller actual value inversion (sensor type)",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Selecteaza inversarea semnalului de valoare actuala al controllerului tehnologic (0=normal, 1=inversat). Depinde de tipul sensorului; un senzor de presiune cu iesire inversa (4mA=maxim) necesita inversare.",
+      "influenteaza": "r2266, r2273",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6824,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2266",
+    "descriere_scurta": "Technology controller actual value after filter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala filtrata a controllerului tehnologic dupa filtrul PT1 intern. Aceasta valoare este comparata cu setpoint-ul filtrat r2262 pentru calculul erorii de reglare a controllerului PID.",
+      "influenteaza": "r2273, r2262, p2264",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6825,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2267",
+    "descriere_scurta": "Technology controller upper limit actual value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita superioara (in %) pentru semnalul de valoare actuala al controllerului tehnologic. Semnalele de feedback care depasesc aceasta limita sunt clampate, prevenind comportamente anormale ale controllerului.",
+      "influenteaza": "p2268, r2266",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6829,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2270",
+    "descriere_scurta": "Technology controller actual value function selection",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Selecteaza functia matematica aplicata semnalului de valoare actuala (0=liniar, 1=patrat, 2=radical, 3=valoare absoluta). Permite linearizarea sensorilor cu caracteristici nelinare, ex. senzori de debit diferential.",
+      "influenteaza": "r2266, r2273",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6833,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2273",
+    "descriere_scurta": "Technology controller error",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza eroarea (deviatia de sistem) intre setpoint-ul filtrat r2262 si valoarea actuala filtrata r2266 a controllerului tehnologic. Eroarea pozitiva/negativa si magnitudinea sunt indicative pentru calitatea reglarii procesului.",
+      "influenteaza": "r2262, r2266, p2280",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6834,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2274",
+    "descriere_scurta": "Technology controller differentiation, time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp (in secunde) a componentei derivatoare D a controllerului tehnologic PID. Valori nenule introduc actiune derivatoare anticipativa; 0 dezactiveaza componenta D, lasand controllerul in mod PI.",
+      "influenteaza": "p2280, p2285, r2273",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6835,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2280",
+    "descriere_scurta": "Technology controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional (componenta P) al controllerului tehnologic PID. Valori mai mari accelereaza raspunsul dar pot duce la instabilitate; trebuie echilibrat cu constanta integrala p2285 pentru stabilitate.",
+      "influenteaza": "p2285, p2274, r2273",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6837,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2292",
+    "descriere_scurta": "Technology controller minimum limiting",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita minima (in %) a iesirii controllerului tehnologic. Previne comenzile de viteza negative sau prea mici care ar putea cauza comportamente nedorite ale actionarii sau ale procesului controlat.",
+      "influenteaza": "p2291, r2295",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6839,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2291",
+    "descriere_scurta": "Technology controller maximum limiting",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita maxima (in %) a iesirii controllerului tehnologic. Impreuna cu p2292, defineste fereastra de operare a iesirii controllerului, protejand procesul de comenzi excesive de viteza sau cuplu.",
+      "influenteaza": "p2292, r2295",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 6841,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2293",
+    "descriere_scurta": "Technology controller ramp-up/ramp-down time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de rampa (in secunde) pentru semnalul de iesire al controllerului tehnologic. Limiteaza viteza de variatie a iesirii controllerului, prevenind socurile bruste in comanda antrenamentului.",
+      "influenteaza": "p2291, p2292, p2295",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 6843,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2295",
+    "descriere_scurta": "Technology controller output scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza scalarea (in %) a semnalului de iesire al controllerului tehnologic. Permite ajustarea amplitudinii iesitii inainte de transmitere catre setpoint-ul de viteza sau cuplu al antrenamentului.",
+      "influenteaza": "p2291, p2292, p2293",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6866,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2700",
+    "descriere_scurta": "Reference velocity/reference frequency current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza valoarea de referinta curenta pentru viteza si frecventa (corespunzatoare la 100% sau 4000h). Toate vitezele si frecventele exprimate relativ in fieldbus sunt raportate la aceasta valoare.",
+      "influenteaza": "p2000",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6870,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2701",
+    "descriere_scurta": "Reference voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de referinta pentru tensiuni (100% sau 4000h), definita de p2001. Toate tensiunile exprimate ca valori relative in fieldbus sau BICO sunt raportate la aceasta referinta.",
+      "influenteaza": "p2001",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6872,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2703",
+    "descriere_scurta": "Reference torque",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de referinta pentru cuplu/forta (100% sau 4000h), definita de p2003. Utilizat la scalarea cuplului in comunicatia fieldbus; unitatea este identica cu cea selectata in p2003.",
+      "influenteaza": "p2003",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6873,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2704",
+    "descriere_scurta": "Reference power",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de referinta pentru puteri (100% sau 4000h), definita de p2004. Utilizat la scalarea puterii in comunicatia fieldbus; unitatea este identica cu cea selectata in p2004.",
+      "influenteaza": "p2004",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6876,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2706",
+    "descriere_scurta": "Reference temperature",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de referinta pentru temperaturi (100% sau 4000h), in grade Celsius. Utilizat la scalarea temperaturilor exprimate relativ in fieldbus sau BICO, ex. temperatura motorului sau convertorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6877,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2707",
+    "descriere_scurta": "Reference acceleration",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de referinta pentru acceleratii (100% sau 4000h), definita de p2007. Utilizat la scalarea acceleratiilor exprimate relativ in fieldbus sau BICO; unitatea este identica cu cea selectata in p2007.",
+      "influenteaza": "p2007",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6882,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r2811",
+    "descriere_scurta": "AND logic operation result",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza rezultatul operatiei logice AND aplicate semnalelor de intrare configurate in p2810. Rezultatul poate fi utilizat ca semnal BICO de iesire pentru logici de interblocare sau conditii complexe de comanda.",
+      "influenteaza": "p2810",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6884,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p2810",
+    "descriere_scurta": "AND logic operation inputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursele semnalelor de intrare pentru operatia logica AND via BICO. Permite combinarea mai multor conditii binare intr-un singur semnal de stare; rezultatul este disponibil in r2811.",
+      "influenteaza": "r2811",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6891,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3104",
+    "descriere_scurta": "RTC real time synchronization PING",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului de tip PING pentru sincronizarea timpului UTC real al ceasului RTC intern via BICO. Evenimentul PING declanseza setarea timpului UTC conform valorii transmise.",
+      "influenteaza": "p3103, p3109",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 6892,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3103",
+    "descriere_scurta": "RTC synchronization source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa/tehnica de sincronizare pentru ceasul de timp real (RTC) al convertorului (0=fara sincronizare, 1-3=diferite surse externe). Sincronizarea RTC este importanta pentru timestampingul corect al avariilor si evenimentelor.",
+      "influenteaza": "p3104, p3109",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 6896,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3109",
+    "descriere_scurta": "RTC real time synchronization, tolerance window",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza fereastra de toleranta (in ms) pentru sincronizarea timpului RTC. Daca deviatia de timp depaseste aceasta fereastra, este generata o alarma de sincronizare, semnalizand o problema cu sursa de timp extern.",
+      "influenteaza": "p3103, p3104",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6897,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3112",
+    "descriere_scurta": "External fault 3 enable negated",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului de enable negat pentru avaria externa 3. Avaria 3 este initiata prin AND logic: NOT(p2108) AND p3111 AND NOT(p3112). Permite blocarea conditonata a avariei externe 3.",
+      "influenteaza": "p2108, p3111",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6898,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3111",
+    "descriere_scurta": "External fault 3, enable",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului de enable pentru avaria externa 3. Impreuna cu p2108 si p3112, formeaza logica AND pentru initierea avariei externe 3. Semnal 1 permite propagarea avariei externe.",
+      "influenteaza": "p2108, p3112",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6903,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3116",
+    "descriere_scurta": "Acknowledgement automatically suppressed",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Controleaza comportamentul de confirmare automata a avariilor pe obiectul de actionare dispozitiv. Semnal 1 supima confirmarea automata si forwarding-ul avariilor locale; semnal 0 permite confirmarea automata si propagarea.",
+      "influenteaza": "p2102, p2105",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6904,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3117",
+    "descriere_scurta": "Change safety message type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza la 1 pentru reparametrizarea tuturor mesajelor de siguranta (avarii si alarme). Firmware-ul selecteaza automat tipul de mesaj relevant; util la configurarea sistemelor cu Safety Integrated.",
+      "influenteaza": "p2119, p2101",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6906,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3121",
+    "descriere_scurta": "Component number alarm",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul componentei asociate cu alarma activa. Permite identificarea precisa a componentei hardware sau software care a generat alarma, facilitand diagnosticarea si interventia de service.",
+      "influenteaza": "r3123, r2131",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6908,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3131",
+    "descriere_scurta": "Current fault value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea (fault value) a celei mai vechi avarii active. Valoarea ofera informatii detaliate despre cauza sau contextul specific al avariei, completand codul din r2131 pentru diagnosticare.",
+      "influenteaza": "r2131, r3115",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6910,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3135",
+    "descriere_scurta": "Suppress active fault",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza prin bitmask suprimarea bitului 'avarie prezenta' (r2139.3) pentru anumite raspunsuri la avarie. Permite ignorarea anumitor avarii in cuvantul de stare, util pentru secvente de control speciale.",
+      "influenteaza": "r2131, r2139",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6911,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3203",
+    "descriere_scurta": "Excitation current outside the tolerance delay time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea (in secunde) pana la generarea mesajului 'curent de excitatie in afara tolerantei'. Permite tranzitii normale ale curentului de excitatie fara generarea de alarme false la pornire sau tranzientia de regim.",
+      "influenteaza": "r1644, r1649",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6915,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3206",
+    "descriere_scurta": "Flux outside tolerance delay time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea (in secunde) pana la generarea mesajului 'flux in afara tolerantei'. Permite magnetizarea normala a motorului la pornire sau variatii de sarcina fara alarme false din monitorizarea fluxului.",
+      "influenteaza": "r1583, r1597",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6919,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3209",
+    "descriere_scurta": "Zero current signal delay time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza intarzierea (in secunde) pentru semnalul de curent zero al monitorizarii curentului zero. Filtreaza semnalizarile tranziente de curent zero, ex. in perioadele de comutare sau la viteze mici.",
+      "influenteaza": "r2197, r2199",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6924,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3237",
+    "descriere_scurta": "Hysteresis speed 7",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza histereza de viteza (in rpm) pentru semnalul 'deviatie viteza model/extern' (BO: r2199.7). Histereza previne comutarile repetate ale semnalului la variatii mici ale vitezei in jurul pragului.",
+      "influenteaza": "r2199",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6961,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3422",
+    "descriere_scurta": "DC-link capacitance, total",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza capacitanta totala a circuitului DC (in mF) pentru reglarea in bucla inchisa a tensiunii. Valoarea este pre-setata la capacitanta unei singure unitati de putere si trebuie adaptata la numarul real de unitati paralele.",
+      "influenteaza": "p3510, p3560, p3562",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6963,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3510",
+    "descriere_scurta": "DC link voltage setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza setpoint-ul tensiunii DC pe partea motorului (in V). Parametrul defineste valoarea tinta a tensiunii DC pentru controllerul in bucla inchisa al tensiunii, relevant in aplicatii cu sursa DC activa.",
+      "influenteaza": "p3511, p3560, p3562, r3517",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6964,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3511",
+    "descriere_scurta": "DC-link voltage supplementary setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa setpoint-ului suplimentar de tensiune DC via BICO. Permite adaugarea unui offset variabil la setpoint-ul principal p3510 pentru ajustarea dinamica a tensiunii DC tinta.",
+      "influenteaza": "p3510, r3517",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6965,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3513",
+    "descriere_scurta": "Inhibit voltage-controlled operation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru dezactivarea controlului in bucla inchisa al tensiunii DC pe partea motorului via BICO. Semnal 1 (default) dezactiveaza controlul de tensiune; semnal 0 il activeaza.",
+      "influenteaza": "p3510, r3517",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6966,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3517",
+    "descriere_scurta": "DC-link controller active current setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpoint-ul nelimitat al curentului activ al controllerului DC, calculat de controlerul de tensiune DC pe partea motorului. Valoarea indica ceea ce controlerul solicita fara constrangerile de limitare.",
+      "influenteaza": "p3510, p3560, p3562",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 6969,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3521",
+    "descriere_scurta": "DC link pre-control power scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de scalare (in %) al pre-controlului de putere pentru controllerul de tensiune DC. Ajusteaza contributia pre-controlului pentru compensarea pierderilor sau a variatilor de sarcina anticipate.",
+      "influenteaza": "p3510, r3517",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6971,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3560",
+    "descriere_scurta": "Vdc controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional normalizat (in %) al controllerului de tensiune DC (Vdc controller) pe circuitul de alimentare. Valori mai mari accelereaza raspunsul la perturbatii de tensiune dar pot cauza oscilatii.",
+      "influenteaza": "p3562, r3517, p3510",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6972,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3562",
+    "descriere_scurta": "Vdc controller integral time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp integrala normalizata (in %) a controllerului de tensiune DC (Vdc). Impreuna cu p3560, defineste comportamentul dinamic al reglarii tensiunii pe bara DC.",
+      "influenteaza": "p3560, r3517, p3510",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 6974,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3660",
+    "descriere_scurta": "VSM input line supply voltage, voltage scaler",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza scalatorul de tensiune (in %) pentru Voltage Sensing Module (VSM) la intrarea de tensiune de retea. Permite calibrarea masuratorii de tensiune de retea a VSM-ului la nivelul tensiunii reale de alimentare.",
+      "influenteaza": "p3665, p3667",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6978,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3665",
+    "descriere_scurta": "VSM temperature evaluation, sensor type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul sensorului de temperatura conectat la terminalele X520.5/X520.6 ale Voltage Sensing Module (VSM) (0=fara sensor, 1=PTC, 2=KTY84). Selectia corecta este necesara pentru evaluarea corecta a temperaturii.",
+      "influenteaza": "p3667, p3660",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6983,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3667",
+    "descriere_scurta": "VSM line filter overtemperature alarm threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de alarma de supratermperatura (in grade C) pentru senzorul KTY84 al VSM, utilizat la monitorizarea temperaturii filtrului de retea. Activ numai daca p3665=2 (sensor KTY84 conectat).",
+      "influenteaza": "p3665, p3660",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 6988,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3670",
+    "descriere_scurta": "VSM 10 V input CT gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul transformatorului de curent (CT) conectat la intrarea de 10V a Voltage Sensing Module (VSM), exprimat in A/V. Permite calibrarea corecta a masuratorii de curent prin VSM.",
+      "influenteaza": "p3660, p3665",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 6997,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3802",
+    "descriere_scurta": "Sync-line-drive enable",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului de activare/dezactivare a sincronizarii line-drive via BICO. Semnal 1 activeaza sincronizarea convertorului cu reteaua electrica, necesara inaintea bypassului sincronizat.",
+      "influenteaza": "r3819, r3804, r3805",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7002,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p0287",
+    "descriere_scurta": "Ground fault monitoring thresholds",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragurile de deconectare pentru monitorizarea defectelor la masa, ca procent din curentul maxim al unitatii de putere r0209. Index [0]=prag pentru blocarea impulsurilor; index [1]=prag pentru deblocarea impulsurilor.",
+      "influenteaza": "r0209",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7005,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3804",
+    "descriere_scurta": "Sync-line-drive target frequency",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza frecventa tinta masurata pentru sincronizarea line-drive. Reprezinta frecventa retelei la care convertorul incearca sa se sincronizeze, masurat in timp real de functia de sincronizare.",
+      "influenteaza": "p3802, r3819, r3805",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7006,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3805",
+    "descriere_scurta": "Sync-line-drive frequency difference",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza diferenta de frecventa dintre frecventa tinta masurata si frecventa de iesire a modulatorului in controlul de sincronizare line-drive. Indica eroarea de sincronizare de frecventa in curs.",
+      "influenteaza": "r3804, r3812, r3819",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7008,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3808",
+    "descriere_scurta": "Sync-line-drive phase difference",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza diferenta de faza dintre faza tinta masurata si faza modulatorului in controlul de sincronizare line-drive. Valoarea trebuie sa tinda catre zero inainte de activarea bypassului sincronizat.",
+      "influenteaza": "r3804, r3805, r3819",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7012,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3812",
+    "descriere_scurta": "Sync-line-drive correction frequency",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza frecventa de corectie calculata de controlerul de sincronizare line-drive. Aceasta corectie este adaugata frecventei de iesire pentru minimizarea diferentei de frecventa si faza cu reteaua.",
+      "influenteaza": "r3805, r3808, r3819",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7014,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3814",
+    "descriere_scurta": "Sync-line-drive voltage difference",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza diferenta de tensiune dintre tensiunea tinta masurata si tensiunea de iesire a modulatorului in controlul de sincronizare line-drive. Parametru important pentru validarea sincronizarii inainte de conectare la retea.",
+      "influenteaza": "r3805, r3808, r3819",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7017,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3845",
+    "descriere_scurta": "Friction characteristic record activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza inregistrarea automata a caracteristicii de frecare (0=inactiv, 1-3=moduri de inregistrare). Dupa urmatoarea comanda ON, caracteristica este determinata automat si stocata in parametrii p382x.",
+      "influenteaza": "p3842, p3839",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7043,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3842",
+    "descriere_scurta": "Friction characteristic activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza sau dezactiveaza utilizarea caracteristicii de frecare stocata (0=dezactivat, 1=activat). Cand este activata, compensarea de frecare este inclusa in calculul cuplului de pre-control al antrenamentului.",
+      "influenteaza": "p3845, p3839",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7048,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3839",
+    "descriere_scurta": "Friction characteristic, value M9",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata M (cuplu in Nm) pentru al 10-lea punct al caracteristicii de frecare. Caracteristica de frecare cu 10 puncte defineste functia viteza-cuplu de frecare utilizata pentru compensarea automata a frecarilor mecanice.",
+      "influenteaza": "p3842, p3845",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 7068,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3925",
+    "descriere_scurta": "Identification final display",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza pasii de punere in functiune care au fost efectuati, prin bitmask. Permite verificarea completa a procesului de comisionare si identificarea pasilor ramasi de executat.",
+      "influenteaza": "p1900, p1910, p1960",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7072,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3950",
+    "descriere_scurta": "Service parameter",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Parametru rezervat exclusiv personalului de service Siemens. Modificarea sa fara cunostintele necesare poate duce la comportamente imprevizibile ale convertorului sau la anularea garantiei.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 7073,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3974",
+    "descriere_scurta": "Device status word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea dispozitivului prin bitmask: bit 0=reset SW activ, bit 1=scriere parametri blocata (salvare in curs), bit 2=scriere parametri blocata (macro in executie). Util la diagnosticarea blocajelor de acces la parametri.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7074,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3979",
+    "descriere_scurta": "BICO counter, drive object",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza contorul de interconexiuni BICO modificate pe acest obiect de actionare. Incrementat cu 1 la fiecare modificare de interconexiune BICO; util pentru detectarea schimbarilor de configuratie neautorizate.",
+      "influenteaza": "r3978",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7075,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3978",
+    "descriere_scurta": "BICO CounterDevice",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza contorul total de interconexiuni BICO modificate pe intregul dispozitiv. Incrementat cu 1 la fiecare modificare de interconexiune BICO din orice obiect de actionare al dispozitivului.",
+      "influenteaza": "r3979",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7077,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p3981",
+    "descriere_scurta": "Faults, acknowledge drive object",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza la 1 pentru confirmarea tuturor avariilor active ale unui obiect de actionare specific. Dupa confirmare, valoarea revine la 0. Permite confirmarea selectiva a avariilor pe un obiect specific, spre deosebire de p2102 care actioneaza global.",
+      "influenteaza": "p2102, r2131",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 7079,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3986",
+    "descriere_scurta": "Parameter count",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul total de parametri pentru aceasta unitate de actionare, incluzand parametrii specifici dispozitivului si cei specifici actionarii. Util pentru verificarea integritatii configuratiei si planificarea arhivarii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7081,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r3998",
+    "descriere_scurta": "First drive commissioning",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Indica daca actionarea a fost deja pusa in functiune (0=da, necesita prima punere in functiune; 2=nu, deja comisionata). La prima pornire, wizardul de comisionare este activat automat.",
+      "influenteaza": "r3925",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 7082,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4021",
+    "descriere_scurta": "TB30 digital inputs terminal actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile actuale la intrarile digitale ale Terminal Board 30 (TB30) ca bitmask. Permite verificarea semnalelor fizice la terminale inainte de comutarea din modul simulare (p4095.x=1) la modul terminal.",
+      "influenteaza": "r4022, p4095",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7083,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4023",
+    "descriere_scurta": "TB30 digital inputs, status inverted",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea invertita a intrarilor digitale ale Terminal Board 30 (TB30). Valoarea este complementul logic al r4022, util pentru interconexiunile BICO care necesita semnale active-low.",
+      "influenteaza": "r4022, r4021",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7085,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4022",
+    "descriere_scurta": "TB30 digital inputs, status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea curenta a intrarilor digitale ale Terminal Board 30 (TB30) ca bitmask, dupa filtrare si procesare interna. Reprezinta starea logica activa utilizata de logica BICO.",
+      "influenteaza": "r4021, r4023",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7086,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4030",
+    "descriere_scurta": "TB30 signal source for terminal DO 0",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru iesirea digitala DO 0 (X481.5) a Terminal Board 30 (TB30) via BICO. Permite conectarea oricarui semnal binar intern la iesirea fizica, ex. starea convertorului, avarie, viteza atinsa.",
+      "influenteaza": "r4047, p4031",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7088,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4031",
+    "descriere_scurta": "TB30 signal source for terminal DO 1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru iesirea digitala DO 1 (X481.6) a Terminal Board 30 (TB30) via BICO. Configurabil independent de celelalte iesiri digitale pentru afisarea starii sau controlul perifericelor externe.",
+      "influenteaza": "r4047, p4030",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7090,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4032",
+    "descriere_scurta": "TB30 signal source for terminal DO 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru iesirea digitala DO 2 (X481.7) a Terminal Board 30 (TB30) via BICO. Permite maparea flexibila a semnalelor interne la iesirile fizice pentru interblocari sau semnalizari externe.",
+      "influenteaza": "r4047, p4033",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7091,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4033",
+    "descriere_scurta": "TB30 signal source for terminal DO 3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru iesirea digitala DO 3 (X481.8) a Terminal Board 30 (TB30) via BICO. A patra iesire digitala disponibila pe TB30, configurabila independent pentru semnalinzari sau comenzi externe.",
+      "influenteaza": "r4047, p4032",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7092,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4038",
+    "descriere_scurta": "TM31 signal source for terminal DI/DO 8",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru terminalul bidiirectional DI/DO 8 (X541.2) al Terminal Module 31 (TM31) in modul de iesire. Directia este stabilita in p4028; in modul DO, semnalul setat prin BICO apare la terminal.",
+      "influenteaza": "p4028, p4039",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7093,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4039",
+    "descriere_scurta": "TM31 signal source for terminal DI/DO 9",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru terminalul bidirectional DI/DO 9 (X541.3) al Terminal Module 31 (TM31) in modul de iesire. Terminalele DI/DO permit utilizarea flexibila ca intrare sau iesire conform p4028.",
+      "influenteaza": "p4028, p4038",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7094,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4040",
+    "descriere_scurta": "TM31 signal source for terminal DI/DO 10",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru terminalul bidirectional DI/DO 10 (X541.4) al Terminal Module 31 (TM31) in modul de iesire. Configurabila independent pentru diverse semnalizari sau comenzi ale instalatiei.",
+      "influenteaza": "p4028, p4041",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7095,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4041",
+    "descriere_scurta": "TM31 signal source for terminal DI/DO 11",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului pentru terminalul bidirectional DI/DO 11 (X541.5) al Terminal Module 31 (TM31) in modul de iesire. Ultimul terminal bidirectional al grupului, configurabil identic cu ceilalti.",
+      "influenteaza": "p4028, p4040",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7097,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4028",
+    "descriere_scurta": "TM31 set input or output",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Configureaza terminalele bidirectionale DI/DO ale Terminal Module 31 (TM31) ca intrari sau iesiri digitale, prin bitmask. Bit 0 corespunde DI/DO 8; trebuie setat inainte de configurarea surselor de semnal.",
+      "influenteaza": "p4038, p4039, p4040, p4041",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7098,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4047",
+    "descriere_scurta": "TB30 digital outputs status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea curenta a iesirilor digitale ale Terminal Board 30 (TB30) ca bitmask. Permite verificarea starii fizice efective a iesirilor, incluzand efectul invertirilor configurate in p4048.",
+      "influenteaza": "p4030, p4031, p4032, p4033, p4048",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7101,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4056",
+    "descriere_scurta": "TM31 analog inputs, type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul intrarilor analogice ale Terminal Module 31 (TM31) (0=0-10V, 1=-10V..+10V, 2=0-20mA, 3=-20..+20mA, 4=4-20mA, 5=0-20mA cu monitorizare ruptura). Trebuie sa corespunda tipului de semnal al senzorului conectat.",
+      "influenteaza": "p4058",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7102,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4048",
+    "descriere_scurta": "TB30 invert digital outputs",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza prin bitmask inversarea logica a semnalelor la iesirile digitale ale Terminal Board 30 (TB30). Permite adaptarea polaritatii semnalelor de iesire la cerintele echipamentelor externe fara modificari hardware.",
+      "influenteaza": "p4030, p4031, p4032, p4033, r4047",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7103,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4058",
+    "descriere_scurta": "TB30 analog inputs, characteristic value y1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza coordonata Y (in %) a primului punct al caracteristicii de scalare pentru intrarile analogice ale Terminal Board 30 (TB30). Impreuna cu p4059 (Y2), defineste caracteristica liniara de conversie tensiune/curent to procent.",
+      "influenteaza": "p4056, p4059",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7107,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4076",
+    "descriere_scurta": "TM31 analog outputs, type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul iesirilor analogice ale Terminal Module 31 (TM31) (0=0-10V, 1=-10V..+10V, 2=0-20mA, 3=-20..+20mA, 4=4-20mA). Trebuie sa corespunda tipului de semnal acceptat de echipamentul de monitorizare conectat.",
+      "influenteaza": "p4083",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 7109,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4083",
+    "descriere_scurta": "TB30 analog outputs, offset",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza offset-ul pentru iesirile analogice ale Terminal Board 30 (TB30), adaugat semnalului dupa caracteristica de scalare. Permite compensarea offset-urilor instrumentelor de masura sau ajustarea punctului zero al semnalului de iesire.",
+      "influenteaza": "p4076",
+      "categorie": "I/O"
+    }
+  }
+]

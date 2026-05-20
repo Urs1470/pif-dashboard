@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 11389,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1340",
+    "descriere_scurta": "I_max frequency controller proportional gain",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional al regulatorului de frecventa I_max care reduce frecventa de iesire cand curentul depaseste valoarea maxima r0067. Daca depasirea nu poate fi rezolvata prin frecventa, se activeaza si regulatorul de tensiune I_max.",
+      "influenteaza": "r1343, p1341",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 11392,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1343",
+    "descriere_scurta": "I_max controller frequency output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita efectiva de frecventa generata de regulatorul I_max. Permite monitorizarea actiunii regulatorului de curent maxim asupra frecventei de iesire.",
+      "influenteaza": "p1340",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11399,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1348",
+    "descriere_scurta": "U/f control Eco factor actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza factorul economic calculat pentru optimizarea consumului motorului in modul U/f Eco. Factorul ajusteaza tensiunea de iesire pentru eficienta maxima la sarcina partiala.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11408,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1356",
+    "descriere_scurta": "U/f control angular setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru generarea unghiului diferential in controlul U/f. Permite adaugarea unui offset de unghi la semnalul U/f pentru aplicatii speciale.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11410,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1363",
+    "descriere_scurta": "Braking chopper output voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea actuala de iesire a unitatii de putere in operatia chopperului de franare. Permite monitorizarea tensiunii aplicate rezistentei de franare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11413,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1369",
+    "descriere_scurta": "Phase current actual value filtered",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile actuale ale curentilor de faza masurate ca valoare de varf, mediate in intervalul de esantionare al regulatorului de viteza p0115[1]. Util pentru monitorizarea curentilor de faza ai motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11418,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1493",
+    "descriere_scurta": "Moment of inertia total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza momentul de inertie total parametrizat calculat ca suma a momentului motorului si sarcinii: (p0341*p0342)+p1498. Scalarea p1497 nu este luata in calcul.",
+      "influenteaza": "p0341, p0342, p1498",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11434,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1446",
+    "descriere_scurta": "Velocity actual value filter type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul filtrului general pentru valoarea actuala de viteza (1=PT1, 2=PT2). Selectia corecta a tipului de filtru influenteaza calitatea semnalului de viteza actuala.",
+      "influenteaza": "p1447, p1448, r1445",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11439,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1417",
+    "descriere_scurta": "Velocity setpoint filter 1 denominator natural frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa naturala a numitorului pentru filtrul de referinta de viteza 1 (PT2 sau general). Impreuna cu p1418 defineste caracteristica filtrului PT2.",
+      "influenteaza": "p1418, p1415",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11443,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1416",
+    "descriere_scurta": "Velocity setpoint filter 1 time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp pentru filtrul de referinta de viteza 1 de tip PT1. Valoarea mai mare produce filtrare mai puternica dar mareste intarzierea semnalului.",
+      "influenteaza": "p1415",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11448,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1415",
+    "descriere_scurta": "Velocity setpoint filter 1 type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul filtrului de referinta de viteza 1 (0=dezactivat, 1=PT1, 2=PT2/general). Selectia tipului determina care parametri de configurare ai filtrului sunt activi.",
+      "influenteaza": "p1414, p1416, p1417, p1418",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11453,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1414",
+    "descriere_scurta": "Velocity setpoint filter activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza activarea/dezactivarea filtrelor de referinta de viteza prin bitii cuvantului. Permite controlul selectiv al filtrelor individuale de referinta.",
+      "influenteaza": "p1415, p1421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11468,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1422",
+    "descriere_scurta": "Velocity setpoint filter 2 time constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp pentru filtrul de referinta de viteza 2 de tip PT1. Similar cu p1416 dar pentru cel de-al doilea filtru de referinta.",
+      "influenteaza": "p1421",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11473,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1421",
+    "descriere_scurta": "Velocity setpoint filter 2 type",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza tipul celui de-al doilea filtru de referinta de viteza (0=dezactivat, 1=PT1, 2=PT2/general). Permite adaugarea unei a doua etape de filtrare a referintei.",
+      "influenteaza": "p1414, p1422",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11491,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1511",
+    "descriere_scurta": "Force setpoint",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru referinta de forta; activa doar cand p1400.14=1. Referinta de forta poate fi scalata cu p1512.",
+      "influenteaza": "p1512, p1400",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11501,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1431",
+    "descriere_scurta": "Speed pre-control to motor model",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de viteza pentru precontrolul modelului motor in controlul vectorial fara encoder. Valoarea este utilizata de modelul motor pentru estimarea vitezei.",
+      "influenteaza": "p1430",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11502,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1432",
+    "descriere_scurta": "Speed pre-control after symmetrizing",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de precontrol a vitezei dupa simetrizare pentru constructia de cuplu (emuleaza bucla inchisa de control de curent). Permite monitorizarea semnalului de precontrol procesat.",
+      "influenteaza": "p1430",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11505,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1435",
+    "descriere_scurta": "Speed controller reference model dead time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul mort fractionar al modelului de referinta al regulatorului de viteza, care emuleaza intarzierea de calcul a buclei de control. Multiplicatorul selectat se refera la ciclul de esantionare p0115[1].",
+      "influenteaza": "p1433, p1434",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11509,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1434",
+    "descriere_scurta": "Velocity controller reference model damping",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza amortizarea elementului PT2 din modelul de referinta al regulatorului de viteza. Impreuna cu p1433 defineste comportamentul dinamic al modelului de referinta.",
+      "influenteaza": "p1433, r1436",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11512,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1433",
+    "descriere_scurta": "Velocity controller reference model natural frequency",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza frecventa naturala a elementului PT2 al modelului de referinta al regulatorului de viteza. Valoarea 0 dezactiveaza modelul de referinta.",
+      "influenteaza": "p1434, r1436",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11517,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1436",
+    "descriere_scurta": "Velocity controller reference model velocity_setpoint output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de viteza la iesirea modelului de referinta al regulatorului de viteza. Permite monitorizarea semnalului de referinta procesat de modelul de referinta.",
+      "influenteaza": "p1433, p1434",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11521,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1400",
+    "descriere_scurta": "Closed-loop control configuration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza configuratia pentru reglajul in bucla inchisa al actionarii prin bitii unui cuvant binar. Controleaza activarea diverselor functii avansate de control.",
+      "influenteaza": "p1501, p1511",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11531,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1451",
+    "descriere_scurta": "Speed actual value smoothing time sensorless",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de netezire pentru valoarea actuala de viteza calculata in operarea fara encoder. Valori mai mari reduc zgomotul dar introduc intarziere.",
+      "influenteaza": "r1445",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11538,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1443",
+    "descriere_scurta": "Speed controller speed actual value at actual value input",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza viteza actuala la intrarea de valoare actuala cu cablare libera p1440 a regulatorului de viteza. Util pentru diagnosticarea sursei de feedback de viteza.",
+      "influenteaza": "p1440",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11539,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1430",
+    "descriere_scurta": "Speed pre-control",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru canalul de precontrol de viteza sau cuplu. Precontrolul imbunatateste raspunsul dinamic al actionarii la schimbari rapide de referinta.",
+      "influenteaza": "r1431, r1432",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11540,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1444",
+    "descriere_scurta": "Velocity controller velocity setpoint static",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma tuturor referintelor de viteza prezente la intrarea regulatorului de viteza (referinta RFG, setpoint 1 si 2, precontrol, DSC, master control). Permite diagnosticarea valorii totale de referinta.",
+      "influenteaza": "p1155, p1160, p1430",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11544,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1448",
+    "descriere_scurta": "Velocity actual value filter denominator damping",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza amortizarea numitorului pentru filtrul de valoare actuala de viteza de tip PT2/general. Ajustarea corecta previne oscilatiile semnalului de feedback.",
+      "influenteaza": "p1446, p1447",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11545,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1445",
+    "descriere_scurta": "Actual velocity smoothed",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector valoarea actuala netezita de viteza a controlului de viteza. Este semnalul de feedback principal al regulatorului de viteza.",
+      "influenteaza": "p1446, p1448",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11571,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1454",
+    "descriere_scurta": "Velocity controller system deviation I component",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza devierea de sistem a componentei I a regulatorului de viteza. Cand modelul de referinta este inactiv (p1433=0Hz) corespunde deviatiei totale PI r0064.",
+      "influenteaza": "p1433",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11576,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1459",
+    "descriere_scurta": "Adaptation factor upper",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de adaptare dupa intervalul de adaptare (>p1457) pentru adaptarea suplimentara a castigului P al regulatorului de viteza. Permite ajustarea caracteristicii Kp in domenii diferite de viteza.",
+      "influenteaza": "p1457, p1460",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11592,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1465",
+    "descriere_scurta": "Velocity controller derivative-action time A",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp derivativa (Tv, componenta D) a regulatorului de viteza pe latura A. O valoare mai mare mareste actiunea derivativa si poate imbunatatii raspunsul tranzitoriu.",
+      "influenteaza": "p1460, r1469",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11617,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1460",
+    "descriere_scurta": "Velocity controller P gain A",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional (Kp) al regulatorului de viteza pe latura A. Valoarea mai mare imbunatateste rigiditatea reglajului dar poate cauza instabilitate la valori exagerate.",
+      "influenteaza": "r1468, p1465",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11628,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1468",
+    "descriere_scurta": "Velocity controller P gain effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza castigul P efectiv al regulatorului de viteza dupa aplicarea adaptarii. Permite verificarea valorii Kp reale utilizate de regulatorul de viteza.",
+      "influenteaza": "p1460, p1459",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11633,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1469",
+    "descriere_scurta": "Speed controller integral time effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza constanta de timp integrala efectiva a regulatorului de viteza dupa aplicarea adaptarilor configurate. Permite verificarea parametrilor efectivi ai regulatorului.",
+      "influenteaza": "p1462",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11646,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0056",
+    "descriere_scurta": "Status word, closed-loop control",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire BICO cuvantul de stare al reglajului in bucla inchisa. Bitii individuali indica stari cum ar fi magnetizare completata, regulator activ etc.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11650,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1479",
+    "descriere_scurta": "Speed controller integrator setting value scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru scalarea valorii de initializare a integratorului p1478 al regulatorului de viteza. Permite ajustarea dinamica a valorii initiale a integratorului.",
+      "influenteaza": "p1478",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11658,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1480",
+    "descriere_scurta": "Velocity controller PID output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de tensiune la iesirea regulatorului PID de viteza, suma componentelor P, I si D. Permite monitorizarea iesiriiregulatorului de viteza.",
+      "influenteaza": "r1481, r1482, r1483",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11661,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1481",
+    "descriere_scurta": "Velocity controller P component output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de tensiune a componentei P a regulatorului de viteza. Permite diagnosticarea contributiei componentei proportionale in actiunea de reglaj.",
+      "influenteaza": "r1480",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11665,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1482",
+    "descriere_scurta": "Velocity controller I component output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de tensiune a componentei I a regulatorului de viteza. Permite monitorizarea actiunii integrale care elimina eroarea statica de viteza.",
+      "influenteaza": "r1480",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11669,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1483",
+    "descriere_scurta": "Velocity controller D component output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de tensiune a componentei D a regulatorului de viteza. Permite monitorizarea actiunii derivatice care imbunatateste raspunsul tranzitoriu.",
+      "influenteaza": "r1480",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11671,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1484",
+    "descriere_scurta": "Speed controller Kp adaptation as percentage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza factorul de adaptare procentual al castigului Kp al regulatorului de viteza. Valoarea reflecta modificarea castigului P datorata functiei de adaptare configurate.",
+      "influenteaza": "p1459, p1457",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11675,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1486",
+    "descriere_scurta": "Droop compensation torque",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa semnalului de cuplu compensare pentru calculul droop in aplicatii cu mai multe actionari pe aceeasi sarcina. Trebuie interconectat cu setpointul de cuplu al actionarii.",
+      "influenteaza": "r1490, p1492",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11678,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1490",
+    "descriere_scurta": "Droop feedback speed reduction",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza semnalul de iesire al calculului droop care se scade din referinta de viteza cand este activat prin p1492. Asigura impartirea egala a sarcinii intre actionari.",
+      "influenteaza": "p1492, p1486",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11680,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1497",
+    "descriere_scurta": "Moment of inertia scaling signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru scalarea momentului de inertie al motorului. Permite ajustarea dinamica a parametrului de inertie pentru diverse conditii de incarcare.",
+      "influenteaza": "r1493, p1498",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11690,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1498",
+    "descriere_scurta": "Load mass",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza masa sarcinii in kilograme, utilizata in calculul momentului de inertie total si al precontrolului de cuplu de accelerare. Valoarea corecta imbunatateste raspunsul dinamic al actionarii.",
+      "influenteaza": "r1493, p1497",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11700,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r8573",
+    "descriere_scurta": "Macro Connector Inputs (CI) for torque setpoints",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza fisierul ACX salvat in memoria nevolatila referitor la intrarile conector pentru referinte de cuplu. Util pentru verificarea macrocomenzilor de interconectare a referintelor de cuplu.",
+      "influenteaza": "r8572",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11706,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1508",
+    "descriere_scurta": "Torque setpoint before supplementary torque",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpointul de cuplu inainte de adaugarea cuplului suplimentar. La controlul de viteza reprezinta iesirea regulatorului de viteza; la controlul de cuplu reflecta referinta de cuplu.",
+      "influenteaza": "r1515, r1516",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11707,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1512",
+    "descriere_scurta": "Force setpoint scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru scalarea referintei de forta configurata in p1511. Permite ajustarea dinamica a factorului de scalare al referintei de forta.",
+      "influenteaza": "p1511",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11708,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1509",
+    "descriere_scurta": "Force setpoint before force limiting",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpointul total de forta inainte de limitare, incluzand iesirea regulatorului, forta suplimentara si forta de precontrol in operarea fara encoder.",
+      "influenteaza": "r1538",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11722,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1515",
+    "descriere_scurta": "Supplementary torque total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cuplul suplimentar total ca suma a valorilor de cuplu suplimentar 1 si 2 (p1511, p1512, p1513, p1514). Permite verificarea cuplului suplimentar aplicat actionarii.",
+      "influenteaza": "p1511, p1512, p1513, p1514",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11725,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1517",
+    "descriere_scurta": ">= 20 ms is recommended.",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de netezire a fortei de accelerare. Valori mai mici permit schimbari mai rapide ale fortei de accelerare; se recomanda minim 20ms pentru stabilitate.",
+      "influenteaza": "r1516",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 11726,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1516",
+    "descriere_scurta": "Supplementary torque and acceleration torque",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma cuplului suplimentar netezit si a cuplului de accelerare, utilizate pentru precontrolul de cuplu. Reflecta totalul fortelor suplimentare aplicate motorului.",
+      "influenteaza": "p1517, r1515",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11765,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1529",
+    "descriere_scurta": "Force limit lower/regenerative scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru scalarea limitei de forta inferioare sau regenerative configurata in p1523. Permite ajustarea dinamica a scalarii limitei de forta.",
+      "influenteaza": "p1523, r1527",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 11767,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1526",
+    "descriere_scurta": "Force limit upper/motoring without offset",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita superioara de forta (motoring) a tuturor limitarilor de forta fara offset. Permite monitorizarea limitei de forta superioare efectiv aplicate.",
+      "influenteaza": "p1520, p1532",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11771,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1527",
+    "descriere_scurta": "Force limit lower/regenerative without offset",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita inferioara de forta (regenerativa) a tuturor limitarilor de forta fara offset. Permite monitorizarea limitei de forta inferioare efectiv aplicate.",
+      "influenteaza": "p1523, p1532",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11791,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1530",
+    "descriere_scurta": "Power limit motoring",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita de putere in modul motoring (consum de energie). Protejeaza convertorul si motorul de functionarea la puteri mai mari decat valoarea configurata.",
+      "influenteaza": "p1531",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 11797,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1533",
+    "descriere_scurta": "Current limit torque-generating total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul maxim generator de cuplu/forta ca rezultat al tuturor limitarilor de curent active. Valoarea indica curentul maxim disponibil pentru generarea de cuplu.",
+      "influenteaza": "p1530, p1531",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11799,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1534",
+    "descriere_scurta": "Torque limit upper total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita superioara totala de cuplu a tuturor limitarilor de cuplu active. Reflecta limita maxima de cuplu in directia motoring.",
+      "influenteaza": "p1520, r1538",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11803,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1535",
+    "descriere_scurta": "Torque limit lower total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita inferioara totala de cuplu a tuturor limitarilor de cuplu active. Reflecta limita maxima de cuplu in directia regenerativa.",
+      "influenteaza": "p1523, r1538",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11807,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1520",
+    "descriere_scurta": "Force limit upper/motoring",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita fixa superioara de forta in modul motoring. Protejeaza sarcina mecanica de forte excessive in directia de tractiune.",
+      "influenteaza": "r1526, r1534, r1538",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 11808,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1538",
+    "descriere_scurta": "Upper force limit effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza limita superioara efectiva actuala de forta dupa aplicarea tuturor limitarilor si offset-urilor. Reprezinta valoarea reala de limitare aplicata actionarii.",
+      "influenteaza": "p1520, p1532",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11815,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1545",
+    "descriere_scurta": "Activates travel to a fixed stop",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru activarea/dezactivarea functiei de deplasare pana la opritorul fix. Semnal 1=activ, semnal 0=inactiv; activ restrictioneaza cuplul pentru detectia opririi.",
+      "influenteaza": "r1543, p1544",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11820,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1543",
+    "descriere_scurta": "Travel to fixed stop torque scaling",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza factorul de scalare intern calculat pentru interconectarea cu scalarea limitelor de cuplu/forta in functia de deplasare la opritor fix.",
+      "influenteaza": "p1545",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11832,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1549",
+    "descriere_scurta": "Stall power actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza puterea instantanee de blocare a actionarii. Permite monitorizarea energiei disipate in conditii de blocare a motorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11839,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1551",
+    "descriere_scurta": "Torque limit variable/fixed signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru comutarea intre limita de cuplu variabila (scaling) si fixa. Semnal 1=limita variabila activa, semnal 0=limita fixa activa.",
+      "influenteaza": "p1520, p1523",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 11844,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1556",
+    "descriere_scurta": "Stiction force velocity negative",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza forta de compensare a frecarii statice la viteza negativa. Aplicata la schimbarea directiei din pozitiv spre negativ pentru a depasi frecarea statica.",
+      "influenteaza": "p1552, p1555",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11849,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1552",
+    "descriere_scurta": "Stiction velocity threshold",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de viteza pentru detectia regiunii de frecare statica. Sub aceasta viteza compensarea de frecare statica devine activa.",
+      "influenteaza": "p1555, p1556",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11854,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1555",
+    "descriere_scurta": "Stiction force velocity positive",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza forta de compensare a frecarii statice la viteza pozitiva. Aplicata la schimbarea directiei din negativ spre pozitiv pentru a depasi frecarea statica.",
+      "influenteaza": "p1552, p1556",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11859,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1562",
+    "descriere_scurta": "Moment of inertia estimator change time load",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de schimbare pentru cuplu/forta sarcina in estimatorul de moment de inertie. Valori mai mici permit urmariri mai rapide ale schimbarilor de sarcina.",
+      "influenteaza": "p1561",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11863,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1561",
+    "descriere_scurta": "Moment of inertia estimator change time moment of inertia",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de schimbare pentru momentul de inertie in estimatorul de moment de inertie. Valori mai mici permit estimarea mai rapida dar mai zgomotoasa.",
+      "influenteaza": "p1562",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11870,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1572",
+    "descriere_scurta": "Stiction voltage pulse duration",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza durata impulsului de tensiune pentru compensarea frecarii statice fara senzori de presiune. Pistonul trebuie calibrat pentru a utiliza aceasta compensare.",
+      "influenteaza": "p1570, p1571",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11875,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1573",
+    "descriere_scurta": "Flux threshold value magnetizing",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza pragul de flux pentru activarea referintei de viteza si terminarea magnetizarii (r0056.4). Valoarea mai mica permite pornire mai rapida dar cu flux redus.",
+      "influenteaza": "r0056",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11880,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1570",
+    "descriere_scurta": "Stiction voltage pulse positive",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza amplitudinea impulsului de tensiune pentru compensarea frecarii statice la schimbarea directiei din negativ spre pozitiv. Nu necesita senzori de presiune.",
+      "influenteaza": "p1572",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 11884,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1579",
+    "descriere_scurta": "Flux reduction flux build-up smoothing time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de netezire a referintei de flux la reconstituirea fluxului dupa o reducere de flux (p1581<100%). Controleaza viteza de refacere a fluxului.",
+      "influenteaza": "p1581, r1583",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11887,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1583",
+    "descriere_scurta": "Flux setpoint smoothed",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de flux netezita raportata la fluxul nominal al motorului. Permite monitorizarea starii magnetizarii motorului in timp real.",
+      "influenteaza": "p1579",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11893,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1589",
+    "descriere_scurta": "Field-weakening current pre-control value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de precontrol a curentului de defluxare. Permite monitorizarea componentei de precontrol in zona de functionare cu flux redus.",
+      "influenteaza": "r1597",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11898,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1575",
+    "descriere_scurta": "Voltage target value limit",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita tensiunii tinta in operarea stationara cu defluxare, corespunzand tensiunii de iesire necesare. Valoarea de 100% se refera la p0304 (tensiunea nominala a motorului).",
+      "influenteaza": "r1597, p0304",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 11904,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1597",
+    "descriere_scurta": "Field weakening controller output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea regulatorului de defluxare raportat la fluxul nominal al motorului. Activ in zona de viteza superioara vitezei nominale.",
+      "influenteaza": "p1575",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11905,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1598",
+    "descriere_scurta": "Total flux setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta efectiva totala de flux raportata la fluxul nominal al motorului. Suma referintei de baza si a componentei de defluxare.",
+      "influenteaza": "r1583, r1597",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11908,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1602",
+    "descriere_scurta": "P flux controller output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea regulatorului P de flux pentru motoarele sincrone cu excitatie separata (FEM). Specific aplicatiilor cu motor sincron cu excitatie exterioara.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11913,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1606",
+    "descriere_scurta": "Pulse technique pattern actual",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza modelele de impulsuri aplicate curent pentru estimarea continua a pozitiei rotorului. Valorile 0-2 indica diferite tehnici de impulsuri utilizate.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11923,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1614",
+    "descriere_scurta": "EMF maximum",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza forta electromotoare maxima posibila a motorului sincron cu excitatie separata. Valoarea depinde de viteza si de curentul de excitatie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11926,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1617",
+    "descriere_scurta": "Torque setpoint (controlled)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de cuplu pentru controlul in bucla deschisa al motorului sincron cu excitatie separata in domeniu sub p1755*p1756. Specific motorului sincron cu excitatie separata.",
+      "influenteaza": "p1755, p1756",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11927,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1618",
+    "descriere_scurta": "Current model controller pre-control",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea de precontrol a regulatorului modelului de curent, reprezentand un curent de magnetizare in directia axei d. Specific motorului sincron.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11933,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1623",
+    "descriere_scurta": "Field-generating current setpoint (steady-state)",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de curent generator de camp in stare stationara (Id_set). Valoarea determina magnetizarea motorului in conditii stationare.",
+      "influenteaza": "r1624",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11934,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1624",
+    "descriere_scurta": "Field-generating current setpoint total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta totala limitata de curent generator de camp (Id_set) incluzand componenta statica si componenta dinamica la schimbari ale referintei de flux.",
+      "influenteaza": "r1623",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11936,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1626",
+    "descriere_scurta": "Excitation current setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta calculata de curent de excitatie pentru motorul sincron cu excitatie separata. Rezulta din referinta de flux si caracteristica de magnetizare.",
+      "influenteaza": "r1641",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11937,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1627",
+    "descriere_scurta": "Current model load angle",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza unghiul de sarcina al modelului de curent pentru motorul sincron. Valoarea este utilizata intern pentru calcule de control ale motorului sincron.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11941,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1631",
+    "descriere_scurta": "Current model controller P gain effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza castigul P efectiv al regulatorului modelului de curent. Permite verificarea parametrilor de reglaj activi ai regulatorului de model de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11942,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1632",
+    "descriere_scurta": "Current model controller integral time effective",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza constanta de timp integrala efectiva a regulatorului modelului de curent. Reflecta valoarea Ti reala utilizata de regulatorul modelului de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11943,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1633",
+    "descriere_scurta": "Current model flux setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta efectiva de flux a modelului de curent raportata la fluxul nominal al motorului. Utilizata intern pentru calculele modelului de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11944,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1634",
+    "descriere_scurta": "Current model flux actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala de flux a modelului de curent raportata la fluxul nominal al motorului. Permite monitorizarea starii magnetice a motorului conform modelului de curent.",
+      "influenteaza": "r1633",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11945,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1635",
+    "descriere_scurta": "Current model controller I component",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza componenta I a regulatorului modelului de curent. Util pentru diagnosticarea comportamentului integral al regulatorului de model de curent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11946,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1636",
+    "descriere_scurta": "Current model controller output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea regulatorului modelului de curent. Valoarea este utilizata intern pentru controlul fluxului si pozitiei rotorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11948,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1637",
+    "descriere_scurta": "Current model magnetizing current d axis",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul de magnetizare al modelului de curent in axa d. Specific motorului sincron, reflecta componenta de magnetizare in directia axei d.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11949,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0390",
+    "descriere_scurta": "Rated excitation current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul nominal (I_F) al redresorului de excitatie controlat (DC master) pentru motoarele sincrone cu excitatie separata. Valoarea corecta este esentiala pentru controlul fluxului.",
+      "influenteaza": "r1626, r1641",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 11950,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1639",
+    "descriere_scurta": "Current model Isq after actual value tracking",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul stator in axa q dupa urmarirea valorii actuale de curent in modelul de curent. Valoarea este utilizata intern pentru estimarea pozitiei rotorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11952,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1641",
+    "descriere_scurta": "Excitation current actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala a curentului de excitatie citita de la rectificatorul de excitatie. Permite monitorizarea in timp real a curentului de excitatie al motorului sincron.",
+      "influenteaza": "p0390, r1626",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 11954,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1642",
+    "descriere_scurta": "Minimum excitation current",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza curentul minim de excitatie in procente, prevenind curentii negativi de excitatie. Protejeaza motorul sincron impotriva dezmagnetizarii.",
+      "influenteaza": "r1641, p0390",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 11955,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1644",
+    "descriere_scurta": "Excitation current monitoring output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea monitorizarii curentului de excitatie pentru motoarele sincrone cu excitatie separata. Permite detectarea deviatiei curentului de excitatie de la referinta.",
+      "influenteaza": "p1642",
+      "categorie": "Diagnostic"
+    }
+  }
+]

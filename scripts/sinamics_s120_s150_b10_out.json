@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 1957,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9904",
+    "descriere_scurta": "Topology comparison acknowledge differences",
+    "GENERATED": {
+      "explicatie": "p - Initiaza o noua comparatie a topologiei recunoscand diferentele care pot fi acceptate, cum ar fi componente deplasate sau cu numar de serie diferit. Permite continuarea configurarii in prezenta unor diferente minore intre topologia actuala si cea tinta. Disponibil numai pentru erori specifice care pot fi confirmate.",
+      "influenteaza": "p9905, p9906",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1958,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9905",
+    "descriere_scurta": "Device specialization",
+    "GENERATED": {
+      "explicatie": "p - Transfera numerele de serie si versiunile de hardware ale componentelor din topologia actuala in cea tinta si porneste o noua comparatie. Valoarea 1 transfera numere de serie si versiuni hardware, valoarea 2 include si numerele de comanda. Folosit la primul comisionare pentru acceptarea componentelor fizice.",
+      "influenteaza": "p9904, p9906",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1959,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9906",
+    "descriere_scurta": "Topology comparison comparison stage of all components",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul de comparatie intre topologia actuala si cea tinta pentru toate componentele simultan. Comparatia este initiata prin scrierea valorii dorite in acest parametru. Rezultatele sunt vizualizate prin parametrii de diagnosticare corespunzatori.",
+      "influenteaza": "p9908, p9904",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1961,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9908",
+    "descriere_scurta": "Topology comparison comparison stage of a component",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul de comparatie pentru o componenta individuala din topologia tinta cu topologia actuala. Permite verificarea selectiva a unei singure componente. Comparatia este initiata prin scrierea valorii necesare.",
+      "influenteaza": "p9906",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1963,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9910",
+    "descriere_scurta": "Target topology accept additional components",
+    "GENERATED": {
+      "explicatie": "p - Accepta componentele DRIVE-CLiQ suplimentare inserate in topologia tinta. Obiectele de drive corespunzatoare sunt adaugate automat in proiect. Necesar cand se adauga componente noi la un sistem existent.",
+      "influenteaza": "p9906",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1968,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9915",
+    "descriere_scurta": "DRIVE-CLiQ data transfer error shutdown threshold master",
+    "GENERATED": {
+      "explicatie": "p - Prag de inchidere pentru erorile de transfer date DRIVE-CLiQ pe latura master, destinat exclusiv serviciului intern Siemens. Modifcarea acestui parametru fara autorizare poate compromite fiabilitatea comunicatiei DRIVE-CLiQ. Nu se modifica in operare normala.",
+      "influenteaza": "p9916",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1969,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9916",
+    "descriere_scurta": "DRIVE-CLiQ data transfer error shutdown threshold slave",
+    "GENERATED": {
+      "explicatie": "p - Prag de inchidere pentru erorile de transfer date DRIVE-CLiQ pe latura slave, destinat exclusiv serviciului intern Siemens. Similar cu p9915 dar aplicat pentru componenta slave. Nu se modifica in operare normala.",
+      "influenteaza": "p9915",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1972,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9921",
+    "descriere_scurta": "Licensing activate license key",
+    "GENERATED": {
+      "explicatie": "p - Activeaza cheia de licenta introdusa anterior pentru functionalitati optionale ale drive-ului. La activare, checksumul cheii este verificat si cheia este salvata pe cardul de memorie. Necesara pentru activarea unor optiuni software precum functii avansate de reglare sau control.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1975,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9932",
+    "descriere_scurta": "Save system logbook EEPROM",
+    "GENERATED": {
+      "explicatie": "p - Salveaza jurnalul de sistem in EEPROM, destinat exclusiv serviciului tehnic. Utilizat de inginerii Siemens pentru diagnosticare avansata. Nu se modifica in operare normala de catre utilizatori.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1976,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9937",
+    "descriere_scurta": "DRIVE-CLiQ diagnostic configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru diagnosticarea DRIVE-CLiQ si monitorizarea contoarelor de erori r9936. Permite verificarea conexiunilor si cablurilor DRIVE-CLiQ pentru erori de transfer. Contoarele de erori sunt evaluate in blocurile PHY implicate.",
+      "influenteaza": "p9938, p9939",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1977,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9938",
+    "descriere_scurta": "DRIVE-CLiQ detailed diagnostics configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru diagnosticarea detaliata DRIVE-CLiQ pe o conexiune individuala selectata cu p9942. Permite investigarea erorilor de transfer date pe o singura conexiune DRIVE-CLiQ. Erorile din intervalul selectat pot fi citite din r9943.",
+      "influenteaza": "p9937, p9939, p9942",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1978,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9939",
+    "descriere_scurta": "DRIVE-CLiQ detailed diagnostics time interval",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de timp pentru inregistrarea contorului de erori in r9943 la diagnosticarea detaliata DRIVE-CLiQ. Un interval mai scurt ofera o imagine mai precisa a erorilor de transfer in timp real. Folosit impreuna cu p9938 si p9942 pentru diagnosticare avansata.",
+      "influenteaza": "p9938, p9942",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1979,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9941",
+    "descriere_scurta": "Target topology feature delete all components",
+    "GENERATED": {
+      "explicatie": "p - Sterge numerele de serie ale tuturor componentelor din topologia tinta prin scrierea valorii 1. Permite reasignarea componentelor fizice din topologia actuala la componentele din topologia tinta. Util la inlocuirea sau reconfigurarea completa a hardware-ului din sistem.",
+      "influenteaza": "p9906",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1980,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9942",
+    "descriere_scurta": "DRIVE-CLiQ detailed diagnostics select individual connection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza componenta al carei cablu de alimentare DRIVE-CLiQ este monitorizat pentru erori de transfer. Cablul de alimentare este conexiunea DRIVE-CLiQ catre Control Unit. Erorile inregistrate in intervalul p9939 pot fi citite din r9943.",
+      "influenteaza": "p9938, p9939",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1981,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p9990",
+    "descriere_scurta": "DO memory usage actual value determination selection",
+    "GENERATED": {
+      "explicatie": "p - La scriere: defineste obiectul de drive al carui consum de memorie este afisat (numarul DO) sau al intregului sistem (65535). La citire: returneaza numarul zonelor de memorie monitorizate. Util pentru diagnosticarea utilizarii memoriei in sisteme complexe multi-ax.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1983,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10001",
+    "descriere_scurta": "SI Motion delay time for test stop at DO (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de intarziere pentru testarea iesirii digitale in procedura de verificare fortata a iesirilor F-DO. In cadrul acestui timp, semnalul trebuie detectat prin intrarea de readback corespunzatoare (p10047). Valoarea implicita este 500 ms.",
+      "influenteaza": "p10046, p10047",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1984,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10002",
+    "descriere_scurta": "SI Motion F-DI changeover discrepancy time (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de discrepanta pentru intrarile digitale sigure (F-DI) pe procesorul 1. Starile celor doua intrari asociate trebuie sa coincida in cadrul acestui timp. Depasirea timpului genereaza o eroare de discrepanta F-DI.",
+      "influenteaza": "p10102",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1985,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10003",
+    "descriere_scurta": "SI motion forced checking procedure timer",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intervalul de timp pentru procedura de verificare fortata a intrarilor si iesirilor digitale de siguranta. In cadrul acestui interval, I/O-urile trebuie testate cel putin o data prin binector input p10007. Valoarea implicita este 8 ore.",
+      "influenteaza": "p10007",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1987,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10006",
+    "descriere_scurta": "SI Motion acknowledgement internal event F-DI (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza intrarea digitala failsafe pentru semnalul de confirmare a evenimentelor interne pe procesorul 1. Frontul descendent resetaza starea evenimentului intern in drive-uri. Frontul ascendent confirma erorile de discrepanta existente.",
+      "influenteaza": "p10106",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1988,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10007",
+    "descriere_scurta": "SI Motion forced checking procedure F-DO signal source",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza terminalul de intrare pentru initierea testului de oprire al iesirilor F-DO. Testul este initiat cu un semnal 0/1 la terminalul selectat si este posibil numai in afara modului de comisionare. Semnalul selectat poate fi un terminal fizic sau un semnal BICO.",
+      "influenteaza": "p10003",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1989,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10008",
+    "descriere_scurta": "SI TM54F operating mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de operare pentru modulul Terminal Module 54F (TM54F). Valoarea 1 (implicita) activeaza modul standard de operare, valoarea 0 dezactiveaza modul. Determina comportamentul general al TM54F in arhitectura de siguranta.",
+      "influenteaza": "p9601",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1990,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10009",
+    "descriere_scurta": "SI Motion SLP retraction F-DI (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza intrarea digitala failsafe pentru functia de retragere SLP pe procesorul 1. Frontul ascendent permite retragerea axei cand o limita SLP este incalcata. Un semnal 0 dezactiveaza modul de retragere activ si SLP devine din nou activa.",
+      "influenteaza": "p10109",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1996,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10017",
+    "descriere_scurta": "SI Motion digital inputs debounce time (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de debounce pentru intrarile digitale de pe procesorul 1, aplicat la F-DI, DI simple si DI22. Previne declansarile false cauzate de tranzitii rapide sau zgomot electric pe linii. Valoarea este rotunjita la milisecunde intregi.",
+      "influenteaza": "p10117",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1999,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10022",
+    "descriere_scurta": "SI Motion STO input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea digitala failsafe (F-DI) pentru functia Safe Torque Off (STO) pe procesorul 1. Intrarea selectata controleaza activarea directa a functiei STO pentru oprirea sigura a drive-ului. Trebuie interconectata cu un terminal F-DI valid.",
+      "influenteaza": "p10122",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2001,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10023",
+    "descriere_scurta": "SI Motion SS1 input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea digitala failsafe (F-DI) pentru functia Safe Stop 1 (SS1) pe procesorul 1. La activarea acestei intrari, drive-ul decelereaza controlat inainte de activarea STO. Trebuie interconectata cu un terminal F-DI valid.",
+      "influenteaza": "p10123",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2003,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10024",
+    "descriere_scurta": "SI Motion SS2 input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea digitala failsafe (F-DI) pentru functia Safe Stop 2 (SS2) pe procesorul 1. SS2 opreste axa si o mentine in starea SOS dupa decelerare. Trebuie interconectata cu un terminal F-DI valid.",
+      "influenteaza": "p10124",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2005,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10025",
+    "descriere_scurta": "SI Motion SOS input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea digitala failsafe (F-DI) pentru functia Safe Operating Stop (SOS) pe procesorul 1. La activarea SOS, axa este mentinuta in pozitia de repaus cu monitorizarea tolerantei definite in p9530. Trebuie interconectata cu un terminal F-DI valid.",
+      "influenteaza": "p10125",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2007,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10026",
+    "descriere_scurta": "SI Motion SLS input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea digitala failsafe (F-DI) pentru functia Safely-Limited Speed (SLS) pe procesorul 1. Intrarea activeaza monitorizarea vitezei limitate sigure. Limita activa de viteza este selectata prin p10027 si p10028.",
+      "influenteaza": "p10027, p10028, p10126",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2009,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10027",
+    "descriere_scurta": "SI Motion SLS limit bit 0 input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru bitul 0 al valorii limita SLS pe procesorul 1. Impreuna cu p10028 (bitul 1), defineste care dintre cele patru valori limita SLS este activa. Permite selectia dinamica a nivelului de viteza limitata sigura.",
+      "influenteaza": "p10028, p10127",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2011,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10028",
+    "descriere_scurta": "SI Motion SLS limit bit 1 input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru bitul 1 al valorii limita SLS pe procesorul 1. Impreuna cu p10027 (bitul 0), permite selectia uneia dintre cele patru valori limita SLS. Combinatia celor doi biti defineste nivelul activ de viteza sigura.",
+      "influenteaza": "p10027, p10128",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2013,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10030",
+    "descriere_scurta": "SI Motion SDI positive input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SDI in directia pozitiva pe procesorul 1. La activare, directia de miscare pozitiva este monitorizata si miscarea in aceasta directie este interzisa. Trebuie interconectata cu un terminal F-DI valid.",
+      "influenteaza": "p10130",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2015,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10031",
+    "descriere_scurta": "SI Motion SDI negative input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SDI in directia negativa pe procesorul 1. La activare, directia de miscare negativa este monitorizata si interzisa. Permite implementarea protectiei de directie pentru axa.",
+      "influenteaza": "p10131",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2017,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10032",
+    "descriere_scurta": "SI Motion SLP select input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare pentru selectia functiei SLP (Safety-Limited Position) pe procesorul 1. Activarea acestei intrari activeaza monitorizarea pozitiei limitate sigure. Zona de pozitie activa este selectata prin p10033.",
+      "influenteaza": "p10033, p10132",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2019,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10033",
+    "descriere_scurta": "SI Motion SLP position range input terminal (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare pentru selectia zonei de pozitie active pentru functia SLP pe procesorul 1. Impreuna cu p10032, permite selectia dinamica a zonei de pozitie sigura monitorizata. Trebuie interconectat cu un terminal F-DI valid.",
+      "influenteaza": "p10032, p10133",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2024,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10039",
+    "descriere_scurta": "SI Motion Safe State signal selection (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza semnalele individuale care sunt combinate logic pentru a crea starea Safe State pe procesorul 1. Fiecare bit selecteaza un semnal de siguranta participant la logica Safe State. Starea Safe State determina iesirile digitale sigure in caz de eveniment de siguranta.",
+      "influenteaza": "p10139",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2026,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10040",
+    "descriere_scurta": "SI Motion F-DI input mode (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de intrare pentru intrarile digitale sigure (F-DI) pe procesorul 1. Fiecare bit configureaza modul de evaluare al unei perechi F-DI (echivalent sau complementar). Configuratia corecta este esentiala pentru functionarea sigura a intrarilor.",
+      "influenteaza": "p10140",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2027,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10041",
+    "descriere_scurta": "SI TM54F F-DI enable for test",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnalele de activare pentru integrarea F-DI in testul alimentarii senzorilor in cadrul procedurii de verificare fortata a TM54F. Bitul corespunzator trebuie setat pentru fiecare F-DI inclusa in testul alimentarii. Relevant pentru TM54F cu alimentare senzori testabila.",
+      "influenteaza": "p10007",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2032,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10046",
+    "descriere_scurta": "SI Motion F-DO feedback signal input activation",
+    "GENERATED": {
+      "explicatie": "p - Activeaza intrarea de readback pentru iesirea digitala sigura (F-DO) in vederea testarii. Modul de test al fiecarei F-DO este setat in p10047. Este necesara pentru verificarea fortata a starii fizice a iesirilor de siguranta.",
+      "influenteaza": "p10047, p10001",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2033,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10047",
+    "descriere_scurta": "SI Motion F-DO test stop mode (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de test stop pentru iesirile digitale sigure (F-DO) pe procesorul 1. Valorile posibile 1-3 definesc tipul de test: secventa de 0/1, testul 0 sau testul 1. Valoarea implicita este 2.",
+      "influenteaza": "p10046, p10001",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2035,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10048",
+    "descriere_scurta": "SI TM54F F-DI F-DO test stop configuration",
+    "GENERATED": {
+      "explicatie": "p - Configureaza testul stop pentru F-DI si F-DO ale TM54F, inclusiv optiunea de test stop automat. Daca testul automat este activat, testul manual poate fi totusi initiat prin p10007. Valoarea 1 activeaza testul stop automat.",
+      "influenteaza": "p10007",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2036,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10050",
+    "descriere_scurta": "SI Motion PROFIsafe F-DI transfer (processor 1)",
+    "GENERATED": {
+      "explicatie": "p - Configureaza transferul si evaluarea intrarilor digitale failsafe (F-DI) prin PROFIsafe pe procesorul 1. Starea sigura a F-DI selectate este transmisa la controlerul F prin PROFIsafe. F-DI sunt monitorizate pentru discrepante, care pot fi confirmate prin PROFIsafe.",
+      "influenteaza": "p10150",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 2037,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10061",
+    "descriere_scurta": "SI TM54F password input",
+    "GENERATED": {
+      "explicatie": "p - Introdu parola Safety Integrated pentru TM54F pentru a permite modificarea parametrilor de siguranta ai modulului. Este necesara parola corecta inainte de orice modificare a configuratiei de siguranta pe TM54F. Parola noua se seteaza prin p10062 si se confirma prin p10063.",
+      "influenteaza": "p10062, p10063",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 2038,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10062",
+    "descriere_scurta": "SI TM54F password new",
+    "GENERATED": {
+      "explicatie": "p - Introduce noua parola Safety Integrated pentru modulul TM54F. Dupa autentificarea cu parola curenta in p10061, noua parola este setata in acest parametru. Confirmarea noii parole se realizeaza prin p10063.",
+      "influenteaza": "p10061, p10063",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 2039,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10063",
+    "descriere_scurta": "SI TM54F password acknowledgement",
+    "GENERATED": {
+      "explicatie": "p - Confirma noua parola Safety Integrated pentru TM54F introdusa in p10062. Parola noua devine activa numai dupa confirmarea cu acelasi cod. Procesul complet necesita cunoasterea parolei vechi.",
+      "influenteaza": "p10061, p10062",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 2041,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10102",
+    "descriere_scurta": "SI Motion F-DI changeover discrepancy time (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de discrepanta pentru intrarile digitale sigure (F-DI) pe procesorul 2. Echivalentul lui p10002 pentru cel de-al doilea procesor de siguranta. Starile celor doua intrari asociate trebuie sa coincida in cadrul acestui timp.",
+      "influenteaza": "p10002",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2042,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10106",
+    "descriere_scurta": "SI Motion acknowledgement internal event F-DI (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza intrarea F-DI pentru confirmarea evenimentelor interne pe procesorul 2. Frontul descendent reseteaza starea evenimentului intern in drive-uri. Echivalentul lui p10006 pentru al doilea procesor.",
+      "influenteaza": "p10006",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2043,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10109",
+    "descriere_scurta": "SI Motion SLP retraction F-DI (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza intrarea F-DI pentru functia de retragere SLP pe procesorul 2. Echivalentul lui p10009 pentru cel de-al doilea procesor de siguranta. Frontul ascendent permite retragerea la incalcarea limitei SLP.",
+      "influenteaza": "p10009",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2044,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10117",
+    "descriere_scurta": "SI Motion digital inputs debounce time (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de debounce pentru intrarile digitale pe procesorul 2, aplicat la F-DI si DI22. Echivalentul lui p10017 pentru al doilea procesor de siguranta. Valoarea este rotunjita la milisecunde intregi.",
+      "influenteaza": "p10017",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2045,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10122",
+    "descriere_scurta": "SI Motion STO input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia STO pe procesorul 2. Echivalentul lui p10022 pentru al doilea procesor de siguranta. Trebuie interconectata cu un terminal F-DI valid pentru activarea sigura a STO.",
+      "influenteaza": "p10022",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2046,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10123",
+    "descriere_scurta": "SI Motion SS1 input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SS1 pe procesorul 2. Echivalentul lui p10023 pentru al doilea procesor de siguranta. Permite controlul SS1 prin al doilea canal de siguranta.",
+      "influenteaza": "p10023",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2047,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10124",
+    "descriere_scurta": "SI Motion SS2 input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SS2 pe procesorul 2. Echivalentul lui p10024 pentru al doilea procesor de siguranta. Necesara pentru implementarea SS2 prin arhitectura cu doua canale.",
+      "influenteaza": "p10024",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2048,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10125",
+    "descriere_scurta": "SI Motion SOS input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SOS pe procesorul 2. Echivalentul lui p10025 pentru al doilea procesor de siguranta. Asigura monitorizarea duala a functiei Safe Operating Stop.",
+      "influenteaza": "p10025",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2049,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10126",
+    "descriere_scurta": "SI Motion SLS input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SLS pe procesorul 2. Echivalentul lui p10026 pentru al doilea procesor de siguranta. Necesara pentru implementarea monitorizarii vitezei limitate sigure in arhitectura duala.",
+      "influenteaza": "p10026",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2050,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10127",
+    "descriere_scurta": "SI Motion SLS limit bit 0 input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru bitul 0 al selectiei limitei SLS pe procesorul 2. Echivalentul lui p10027 pentru al doilea procesor. Impreuna cu p10128, permite selectia nivelului SLS activ pe canalul 2.",
+      "influenteaza": "p10128, p10027",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2051,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10128",
+    "descriere_scurta": "SI Motion SLS limit bit 1 input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru bitul 1 al selectiei limitei SLS pe procesorul 2. Echivalentul lui p10028 pentru al doilea procesor. Impreuna cu p10127 defineste nivelul activ de viteza limitata sigura pe canalul 2.",
+      "influenteaza": "p10127, p10028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2052,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10130",
+    "descriere_scurta": "SI Motion SDI positive input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SDI in directia pozitiva pe procesorul 2. Echivalentul lui p10030 pentru al doilea procesor de siguranta. Monitorizeaza directia de miscare pozitiva pe canalul 2.",
+      "influenteaza": "p10030",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2053,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10131",
+    "descriere_scurta": "SI Motion SDI negative input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarea F-DI pentru functia SDI in directia negativa pe procesorul 2. Echivalentul lui p10031 pentru al doilea procesor de siguranta. Asigura monitorizarea directionala duala pe canalul 2.",
+      "influenteaza": "p10031",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2054,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10132",
+    "descriere_scurta": "SI Motion SLP input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare failsafe pentru functia SLP pe procesorul 2. Echivalentul lui p10032 pentru al doilea procesor de siguranta. Activeaza monitorizarea pozitiei limitate sigure pe canalul 2.",
+      "influenteaza": "p10032",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2055,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10133",
+    "descriere_scurta": "SI Motion SLP position range input terminal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza terminalul de intrare failsafe pentru selectia zonei de pozitie SLP pe procesorul 2. Echivalentul lui p10033 pentru al doilea procesor. Permite selectia dinamica a zonei de pozitie monitorizate pe canalul 2.",
+      "influenteaza": "p10033",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2056,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10139",
+    "descriere_scurta": "SI Motion Safe State signal selection (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza semnalele combinate logic pentru starea Safe State pe procesorul 2. Echivalentul lui p10039 pentru al doilea procesor de siguranta. Determina comportamentul iesirilor sigure la evenimentele de siguranta pe canalul 2.",
+      "influenteaza": "p10039",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2057,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10140",
+    "descriere_scurta": "SI Motion F-DI input mode (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de intrare pentru intrarile digitale sigure (F-DI) pe procesorul 2. Echivalentul lui p10040 pentru al doilea procesor de siguranta. Configureaza modul de evaluare al fiecarei perechi F-DI.",
+      "influenteaza": "p10040",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2059,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10146",
+    "descriere_scurta": "SI Motion test sensor feedback signal (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia testului liniei de feedback pentru procedura de verificare fortata pe procesorul 2. Permite testarea circuitului de readback al senzorilor de siguranta pe canalul 2. Necesar pentru validarea intregii bucle de siguranta.",
+      "influenteaza": "p10046",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2060,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10147",
+    "descriere_scurta": "SI Motion F-DO test stop mode (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de test stop pentru iesirile digitale sigure (F-DO) pe procesorul 2. Echivalentul lui p10047 pentru al doilea procesor de siguranta. Valorile posibile 1-3 definesc tipul de test executat.",
+      "influenteaza": "p10047",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 2061,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10150",
+    "descriere_scurta": "SI Motion PROFIsafe F-DI transfer (processor 2)",
+    "GENERATED": {
+      "explicatie": "p - Configureaza transferul si evaluarea F-DI prin PROFIsafe pe procesorul 2. Echivalentul lui p10050 pentru al doilea procesor de siguranta. Starea sigura a F-DI selectate este transmisa la controlerul F.",
+      "influenteaza": "p10050",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 2062,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10201",
+    "descriere_scurta": "SI Motion SBT enable",
+    "GENERATED": {
+      "explicatie": "p - Activeaza functia de test sigur al franei (Safe Brake Test - SBT). Fiecare bit activeaza SBT pentru o frana specifica. Testul verifica ca frana poate mentine axa in pozitie la aplicarea unui cuplu de test definit.",
+      "influenteaza": "p10203, p10204",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 2064,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10203",
+    "descriere_scurta": "SI Motion SBT control selection",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza metoda de control pentru testul sigur al franei (SBT). Valoarea 0: SBT prin selectia functiei, valoarea 1: SBT prin binector input, valoarea 2: SBT pentru selectia test stop. Determina modul de initiere al testului de frana.",
+      "influenteaza": "p10201, p10218",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 2065,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10204",
+    "descriere_scurta": "SI Motion SBT motor type",
+    "GENERATED": {
+      "explicatie": "p - Selecteaza tipul de motor pentru testul sigur al franei. Valoarea 0 pentru motoare rotative, valoarea 1 pentru motoare liniare. Afecteaza modul in care cuplul de test este aplicat si verificat in cadrul SBT.",
+      "influenteaza": "p10201",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 2071,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10218",
+    "descriere_scurta": "SI Motion SBT test torque sign",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnul cuplului de test pentru testul sigur al franei (SBT). Aplicabil numai pentru modul SBT pentru selectia test stop (p10203=2). Valoarea 0 aplica cuplu pozitiv, valoarea 1 aplica cuplu negativ.",
+      "influenteaza": "p10203",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 2076,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10235",
+    "descriere_scurta": "SI Safety Control Channel control word S_STW3B",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru cuvantul de control S_STW3B al Safety Control Channel. Permite interconectarea cuvantului de control de siguranta cu surse diverse din sistem. Relevant pentru arhitecturi de control cu canal de siguranta dedicat.",
+      "influenteaza": "p10250",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 2077,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p10250",
+    "descriere_scurta": "SI Safety Control Channel control word S_STW1B",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru cuvantul de control S_STW1B al Safety Control Channel. Impreuna cu p10235, defineste sursele cuvintelor de control ale canalului de siguranta. Utilizat in arhitecturi cu canal de siguranta dedicat.",
+      "influenteaza": "p10235",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 2078,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p60022",
+    "descriere_scurta": "PROFIsafe telegram selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul telegramei PROFIsafe pentru comunicatia de siguranta. Determina structura datelor de siguranta transmise prin protoculul PROFIsafe. Trebuie sa corespunda cu configuratia din proiectul PROFIBUS sau PROFINET.",
+      "influenteaza": "p9610, p9611",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 2079,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p60122",
+    "descriere_scurta": "IF1 PROFIdrive SIC/SCC telegram selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza telegrama pentru canalul de informare sigura (SIC) si canalul de control sigura (SCC). Telegrama SIC/SCC este atasata direct telegramei PZD p0922/p2079. Permite transmiterea informatiilor de siguranta impreuna cu datele de proces standard.",
+      "influenteaza": "p0922",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 4342,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3472",
+    "descriere_scurta": "Line supply PLL line supply voltage smoothing time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza timpul de netezire al tensiunii de retea pentru PLL-ul alimentarii de retea, cu indici separati pentru diferite moduri de detectie. Include netezire pentru operarea fara encoder, operarea VSM, detectia subtensiunii si a supratensiunii de retea. Valorile trebuie ajustate in functie de calitatea retelei electrice.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4344,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0297",
+    "descriere_scurta": "DC link voltage overvoltage threshold",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza pragul de tensiune pentru detectia supratensiunii in circuitul DC intermediar. Daca tensiunea DC depaseste aceasta valoare, drive-ul se opreste protectiv din cauza supratensiunii. Este o valoare calculata automat si nu poate fi modificata direct.",
+      "influenteaza": "r0296",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 4345,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0640",
+    "descriere_scurta": "Current limit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita de curent maxim admis pentru drive. Aceasta limita protejeaza atat motorul cat si invertorul impotriva supracurentilor. Valoarea trebuie setata in functie de curentul nominal al motorului si al inverterului.",
+      "influenteaza": "p0305",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 4346,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0392",
+    "descriere_scurta": "Current controller adaptation starting point KP adapted",
+    "GENERATED": {
+      "explicatie": "p - Seteaza punctul de start al adaptarii controllerului de curent in functie de curent. Deasupra acestui curent, factorul de amplificare adaptat p1715 x p0393 devine efectiv. Permite reducerea amplificarii la curenti mari pentru stabilitate.",
+      "influenteaza": "p0393, p1715",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4347,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0456",
+    "descriere_scurta": "Encoder configuration supported",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza configuratia encoderului suportata de Sensor Module. Fiecare bit indica o capabilitate specifica a modulului de senzor, cum ar fi interfata EnDat sau suportul SSI. Este o valoare read-only determinata de hardware.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4348,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0759",
+    "descriere_scurta": "CU analog input characteristic value x2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata x a celui de-al doilea punct al caracteristicii de scalare pentru intrarea analogica a CU310-2. Impreuna cu p0757, defineste caracteristica liniara de scalare a intrarii analogice AI0. Valoarea reprezinta tensiunea sau curentul la al doilea punct de calibrare.",
+      "influenteaza": "p0757, p0758, p0760",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 4349,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0890",
+    "descriere_scurta": "ESR trigger",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursele de semnal pentru declansarea functiei Extended Stop and Retract (ESR). Permite interconectarea cu diverse semnale de trigger inclusiv starea Safety Integrated (STOP E sau F) si pierderea comunicatiei. Configureaza modul in care ESR este initiat in caz de avarie.",
+      "influenteaza": "p9697, p9897",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 4351,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r0964",
+    "descriere_scurta": "Device identification",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza informatiile de identificare ale dispozitivului inclusiv compania (42=Siemens), tipul de dispozitiv, versiunea firmware, data si numarul de obiecte de drive. Este un parametru read-only cu informatii de identificare a unitatii. Util pentru diagnosticare si documentatie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4352,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3996",
+    "descriere_scurta": "Parameter write inhibit status",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza starea de blocare la scriere a parametrilor. Indica daca scrierea parametrilor este inhibata in prezent. Este un parametru read-only util pentru verificarea drepturilor de acces la parametrizare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4353,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1015",
+    "descriere_scurta": "Fixed velocity setpoint 15",
+    "GENERATED": {
+      "explicatie": "p - Seteaza si furnizeaza ca iesire conector setpointul fix de viteza numarul 15. Este selectabil prin combinatii de intrari digitale pentru utilizarea in moduri cu setpointuri fixe. Valoarea poate fi pozitiva sau negativa in limitele -1000 la 1000 m/min.",
+      "influenteaza": "p1001",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 4355,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1234",
+    "descriere_scurta": "Speed at the start of DC braking",
+    "GENERATED": {
+      "explicatie": "p - Seteaza viteza de pornire a franarii DC. Cand viteza actuala scade sub acest prag, frana DC este activata. Valoarea implicita foarte mare (210000 rpm) inseamna practic dezactivat implicit.",
+      "influenteaza": "p1232, p1233",
+      "categorie": "Rampe"
+    }
+  },
+  {
+    "id": 4357,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1539",
+    "descriere_scurta": "Lower force limit effective",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire conector limita inferioara efectiva de forta in aplicatii de control al fortei. Este valoarea reala de limitare aplicata dupa luarea in considerare a tuturor restrictiilor active. Util pentru diagnosticarea comportamentului limitatorului de forta.",
+      "influenteaza": "",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 4358,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1800",
+    "descriere_scurta": "Manipulated variable filter activation",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza filtrele variabilei manipulate in bucla de reglare. Fiecare bit corespunde unui filtru specific aplicat marimii de comanda. Filtrele pot imbunatati calitatea controlului dar introduc intarziere.",
+      "influenteaza": "",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4359,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1438",
+    "descriere_scurta": "Velocity controller velocity setpoint",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza si furnizeaza ca iesire conector setpointul de viteza dupa limitare de setpoint pentru componenta P a controllerului de viteza. Este valoarea efectiva transmisa componentei proportionale a regulatorului. Util pentru diagnosticarea comportamentului buclei de viteza.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4360,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1439",
+    "descriere_scurta": "Speed setpoint I component",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza setpointul de viteza pentru componenta I a controllerului de viteza dupa modelul de referinta si limitarea setpointului. Este valoarea transmisa componentei integrale a regulatorului de viteza. Util pentru analiza comportamentului dinamic al buclei de reglare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4364,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0325",
+    "descriere_scurta": "Motor pole position identification current 1st phase",
+    "GENERATED": {
+      "explicatie": "p - Seteaza curentul pentru prima faza a tehnicii in doi pasi pentru identificarea pozitiei polilor motorului sincron. A doua faza foloseste curentul din p0329. Tehnica in doi pasi este selectata cu p1980=4.",
+      "influenteaza": "p0329, p1980",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4365,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1986",
+    "descriere_scurta": "ChId v/U characteristic velocity parameterized",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza caracteristica v/U parametrizata in unitati m/min. Este o valoare de diagnosticare care arata configuratia curenta a caracteristicii viteza-tensiune. Util pentru verificarea setarilor caracteristicii de control al tensiunii in raport cu viteza.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4367,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2722",
+    "descriere_scurta": "Load gear position tracking tolerance window",
+    "GENERATED": {
+      "explicatie": "p - Seteaza fereastra de toleranta pentru urmarirea pozitiei la angrenajul de sarcina la pornire. Daca diferenta dintre pozitia salvata si cea actuala este in interiorul ferestrei, pozitia este restaurata din valoarea encoderului. Daca depaseste fereastra, se emite un mesaj de avertizare.",
+      "influenteaza": "p0413",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4368,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3207",
+    "descriere_scurta": "Zero current signal threshold value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de curent pentru semnalul de curent zero in monitorizarea curentului zero. Cand curentul absolut scade sub aceasta valoare, r2199.6 este setat la 1 dupa expirarea timpului de intarziere. Bitul este resetat cand curentul depaseste din nou pragul plus histereza.",
+      "influenteaza": "r2199",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 4370,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3445",
+    "descriere_scurta": "Smart Mode voltages display",
+    "GENERATED": {
+      "explicatie": "r - Afiseaza tensiunile din modul Smart Mode incluzand tensiunea netezita DC si setpointul de tensiune DC. Este un parametru de diagnosticare pentru monitorizarea comportamentului in modul de operare Smart Mode. Util pentru reglarea fina a controlului in modul energetic.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 4371,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3765",
+    "descriere_scurta": "APC load velocity controller 2 P gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul proportional al controllerului de viteza al sarcinii 2 pentru APC (Advanced Positioning Control). Castigul actioneaza asupra diferentei dintre setpointul de viteza si viteza sarcinii in ramura filtrului 3.1 si 3.2. Valorile negative sunt permise pentru aplicatii speciale de control.",
+      "influenteaza": "p3760, p3762",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4372,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3823",
+    "descriere_scurta": "Friction characteristic value n3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata n (viteza) pentru al patrulea punct al caracteristicii de frecare (n3). Caracteristica de frecare este definita de 10 perechi de valori (n, M). Este utilizata pentru compensarea frecarii statice si dinamice in controlul de viteza.",
+      "influenteaza": "p3824, p3821, p3825",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4373,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3825",
+    "descriere_scurta": "Friction characteristic value n5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata n (viteza) pentru al saselea punct al caracteristicii de frecare (n5). Face parte din definirea caracteristicii de frecare in 10 puncte. Valorile trebuie sa fie in ordine crescatoare pentru viteze.",
+      "influenteaza": "p3826, p3823, p3827",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4374,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3827",
+    "descriere_scurta": "Friction characteristic value n7",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata n (viteza) pentru al optulea punct al caracteristicii de frecare (n7). Face parte din definirea caracteristicii de frecare in 10 puncte. Valoarea trebuie sa fie mai mare decat n5 (p3825) si mai mica decat n9 (p3829).",
+      "influenteaza": "p3828, p3825, p3829",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4375,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3829",
+    "descriere_scurta": "Friction characteristic value n9",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata n (viteza) pentru al zecelea punct al caracteristicii de frecare (n9), ultimul punct al caracteristicii. Valoarea tipica este 3000 rpm corespunzand vitezei nominale. Toate perechile de puncte trebuie sa formeze o caracteristica monotona.",
+      "influenteaza": "p3830, p3827",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4376,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3831",
+    "descriere_scurta": "Friction characteristic value M1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata M (cuplu) pentru al doilea punct al caracteristicii de frecare (M1). Valoarea reprezinta cuplul de frecare la viteza n1. Poate fi pozitiva sau negativa, in functie de directia dominanta a frecarii.",
+      "influenteaza": "p3821, p3833",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4377,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3833",
+    "descriere_scurta": "Friction characteristic value M3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata M (cuplu) pentru al patrulea punct al caracteristicii de frecare (M3). Valoarea reprezinta cuplul de frecare la viteza n3 (p3823). Este parte din definirea caracteristicii complete de frecare.",
+      "influenteaza": "p3823, p3831, p3835",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 4378,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3835",
+    "descriere_scurta": "Friction characteristic value M5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza coordonata M (cuplu) pentru al saselea punct al caracteristicii de frecare (M5). Valoarea reprezinta cuplul de frecare la viteza n5 (p3825). Face parte din caracteristica completa de compensare a frecarii.",
+      "influenteaza": "p3825, p3833, p3837",
+      "categorie": "Motor"
+    }
+  }
+]

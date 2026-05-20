@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 12567,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2250",
+    "descriere_scurta": "Technology controller motorized potentiometer setpoint after RFG /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta efectiva dupa generatorul de rampa intern al potentiometrului motorized al regulatorului tehnologic. Aceasta valoare este iesirea potentiometrului si se interconecteaza mai departe.",
+      "influenteaza": "p2247",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12570,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2245",
+    "descriere_scurta": "Technology controller mot. potentiometer setpoint before RFG /",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta efectiva in fata generatorului de rampa intern al potentiometrului motorized al regulatorului tehnologic. Valoarea inainte de aplicarea rampei configurate.",
+      "influenteaza": "r2250",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12579,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2260",
+    "descriere_scurta": "Technology controller setpoint after ramp-function generator",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta dupa generatorul de rampa al regulatorului tehnologic. Valoarea reflecta referinta dupa aplicarea rampei de accelerare configurate in regulatorul PID.",
+      "influenteaza": "p2257, p2258",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12581,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2262",
+    "descriere_scurta": "Technology controller setpoint after filter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector referinta netezita dupa filtrul de referinta PT1 al regulatorului tehnologic. Valoarea este disponibila pentru interconectari suplimentare.",
+      "influenteaza": "p2261",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12592,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2272",
+    "descriere_scurta": "Technology controller actual value scaled",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector valoarea actuala scalata a regulatorului tehnologic. Valoarea este semnalul de feedback al regulatorului PID dupa scalare.",
+      "influenteaza": "p2271",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12602,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2294",
+    "descriere_scurta": "Technology controller output signal",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector semnalul de iesire al regulatorului tehnologic PID. Aceasta valoare trebuie interconectata cu regulatorul de viteza sau cuplu al actionarii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12613,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0189",
+    "descriere_scurta": "Encoder 3 encoder data set number",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Asigneaza setul de date encoder (EDS) corespunzator pentru encoder 3 unui set de date de actionare (DDS). Valoarea reprezinta numarul setului de date encoder alocat.",
+      "influenteaza": "p0180",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12616,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2506",
+    "descriere_scurta": "LR length unit LU per load path",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de unitati de lungime neutre LU per cale de sarcina, stabilind relatia intre aranjamentul fizic si unitatile LU utilizate in actionare. Esential pentru calibrarea controlului de pozitie.",
+      "influenteaza": "r2524, p2504, p2505",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12620,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2518",
+    "descriere_scurta": "LR direct measuring probe 2",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza terminalul de intrare pentru sonda de masura directa 2, configurabila ca non-ciclica sau ciclica. Sonda directa ocoleste tehnica de handshake pentru procesarea mai rapida a semnalelor.",
+      "influenteaza": "p2509, p2510",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 12621,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2510",
+    "descriere_scurta": "LR selecting measuring probe evaluation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru selectia sondei de masura active: semnal 1=sonda 2 activata, semnal 0=sonda 1 activata la frontul 0/1 al BI:p2509. Configureaza selectia activa a sondei de masura.",
+      "influenteaza": "p2509, p2518",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 12622,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2515",
+    "descriere_scurta": "LR position actual value preprocessing setting value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru valoarea de setare a functiei de setare valoare actuala de pozitie. Permite resetarea pozitiei actuale la o valoare de referinta definita.",
+      "influenteaza": "r2526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12623,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2511",
+    "descriere_scurta": "LR measuring probe evaluation edge",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru evaluarea frontului sondei de masura: semnal 1=front descendent activ, semnal 0=front ascendent activ. Configureaza tipul de front detectat.",
+      "influenteaza": "p2509, p2510",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 12627,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2519",
+    "descriere_scurta": "LR position actual value preprocessing config. DDS changeover",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza comportamentul preprocesarii valorii actuale de pozitie la comutarea DDS. La valoarea 1, comutarea DDS cu schimbarea EDS sau a relatiilor mecanice invalideaza pozitia curenta.",
+      "influenteaza": "p2502, p2503",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12628,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2526",
+    "descriere_scurta": "LR status word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire BICO cuvantul de stare al regulatorului de pozitie. Bitii indica stari ca referinta atinsa, axa referentata, la opritor fix etc.",
+      "influenteaza": "p2515",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12630,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2524",
+    "descriere_scurta": "LR LU/revolution",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector unitatile de lungime interne LU per rotatie a motorului. Calculat din p2504, p2505 si p2506 pentru calibrarea controlului de pozitie.",
+      "influenteaza": "p2506, p2504, p2505",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12634,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2665",
+    "descriere_scurta": "EPOS position setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de pozitie absoluta actuala generata de EPOS (pozitioner de baza). Permite monitorizarea referintei de pozitie trimise de blocheta de pozitionare activa.",
+      "influenteaza": "r2671",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12638,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2563",
+    "descriere_scurta": "LR following error dynamic model",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza eroarea de urmarire dinamica corectata cu componenta dependenta de viteza. Reflecta devierea reziduala intre referinta si valoarea actuala dupa compensarea dinamica.",
+      "influenteaza": "r2565",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12643,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2535",
+    "descriere_scurta": "LR velocity pre-control balancing filter dead time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul mort fractionar pentru emularea comportamentului temporal al buclei de control de viteza in canalul de precontrol. Multiplicatorul se refera la ciclul de esantionare al regulatorului de pozitie.",
+      "influenteaza": "r2561",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12648,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2559",
+    "descriere_scurta": "LR position controller output I component",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector componenta I a iesirii regulatorului de pozitie (setpoint de viteza). Permite monitorizarea actiunii integrale a regulatorului de pozitie.",
+      "influenteaza": "r2558, r2560",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12657,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2684",
+    "descriere_scurta": "is set to 0 and the alarm is deleted.",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Seteaza sursa de semnal pentru came de oprire STOP in directia pozitiva de deplasare. Semnalul determina oprirea imediata a axei la atingerea camei de sfarsit de cursa pozitiv.",
+      "influenteaza": "r2683",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12661,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2683",
+    "descriere_scurta": "EPOS status word 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cuvantul de stare 1 al pozitionerului de baza EPOS, indicand stari operationale cum ar fi pozitionare activa, referinta atinsa, eroare de urmarire etc.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12669,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2556",
+    "descriere_scurta": "LR position setpoint after setpoint smoothing",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector referinta de pozitie dupa netezirea referintei. Valoarea reflecta referinta de pozitie dupa aplicarea filtrului de netezire.",
+      "influenteaza": "r2557",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12670,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2557",
+    "descriere_scurta": "LR position controller input system deviation",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector diferenta intre referinta si valoarea actuala de pozitie la intrarea regulatorului de pozitie. Reprezinta eroarea de pozitie.",
+      "influenteaza": "r2558, r2559",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12671,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2558",
+    "descriere_scurta": "LR position controller output P component",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector componenta P a iesirii regulatorului de pozitie (setpoint de viteza). Permite monitorizarea actiunii proportionale a regulatorului de pozitie.",
+      "influenteaza": "r2557, r2560",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12676,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2560",
+    "descriere_scurta": "LR velocity setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector setpointul de viteza dupa limitare la iesirea regulatorului de pozitie. Reprezinta comanda de viteza trimisa catre regulatorul de viteza.",
+      "influenteaza": "r2562",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12677,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2561",
+    "descriere_scurta": "LR velocity pre-control value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector setpointul de viteza din canalul de precontrol. Componenta de precontrol imbunatateste raspunsul dinamic al regulatorului de pozitie.",
+      "influenteaza": "p2535, r2562",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12680,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2562",
+    "descriere_scurta": "LR velocity setpoint total",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector setpointul total de viteza, suma precontrolului de viteza si a iesirii regulatorului de pozitie. Este comanda finala de viteza.",
+      "influenteaza": "r2560, r2561",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12684,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2564",
+    "descriere_scurta": "LR force pre-control value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector setpointul de forta din canalul de precontrol al regulatorului de pozitie. Permite imbunatatirea performantei la sarcini variabile.",
+      "influenteaza": "r2562",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12686,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2565",
+    "descriere_scurta": "LR following error actual",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector eroarea de urmarire actuala, devierea intre referinta de pozitie dupa interpolare fina si valoarea actuala. Monitorizare esentiala in controlul de pozitie.",
+      "influenteaza": "r2563",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12688,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2566",
+    "descriere_scurta": "LR velocity input pre-control",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza viteza la intrarea canalului de precontrol inainte de aplicarea filtrului de simetrizare. Util pentru diagnosticarea semnalului de intrare al canalului de precontrol.",
+      "influenteaza": "r2561",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12694,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2504",
+    "descriere_scurta": "LR motor/load motor distance",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza distanta motorului pentru factorul de angrenaj dintre arborele motorului si arborele sarcinii. Factorul de angrenaj = distanta motor (p2504) / cale sarcina (p2505).",
+      "influenteaza": "p2505, r2524",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12760,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2678",
+    "descriere_scurta": "EPOS external block change actual position",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza pozitia actuala la momentul evenimentelor de schimbare externa a blocului (sonda de masura sau semnal extern) sau la activarea comenzii de pozitionare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12764,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2634",
+    "descriere_scurta": "EPOS fixed stop maximum following error",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza eroarea de urmarire pentru detectia starii opritor fix atins (r2526.4). Cand eroarea de urmarire depaseste aceasta valoare, starea opritor fix atins este recunoscuta.",
+      "influenteaza": "r2526",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12767,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r1407",
+    "descriere_scurta": "Status word controller",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire BICO cuvantul de stare al regulatorului, indicand stari interne ale buclei de reglaj. Util pentru diagnosticarea modurilor de operare ale regulatorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12784,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2655",
+    "descriere_scurta": "EPOS select tracking mode",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru selectia modului de urmarire (tracking mode) al EPOS. In modul de urmarire actionarea urmareste pozitia actuala dupa retragerea semnalului de activare EPOS.",
+      "influenteaza": "p2656",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12793,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2666",
+    "descriere_scurta": "EPOS velocity setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpointul de viteza actual generat de EPOS in unitatile LU/min. Permite monitorizarea profilului de viteza generat de pozitionerul de baza.",
+      "influenteaza": "r2665",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12794,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2667",
+    "descriere_scurta": "EPOS backlash compensation value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea efectiva actuala a compensarii jocului mecanic aplicata de EPOS. Permite verificarea corectiei de joc mecanic active in functia de pozitionare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12797,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2671",
+    "descriere_scurta": "EPOS actual position setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta de pozitie aflata in curs de procesare de catre EPOS. Permite monitorizarea in timp real a pozitiei tinta curente din blocul de pozitionare activ.",
+      "influenteaza": "r2665",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12798,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2621",
+    "descriere_scurta": "EPOS traversing block task",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sarcina necesara pentru blocul de deplasare EPOS (1-9 tipuri diferite de sarcini cum ar fi pozitionare absoluta, relativa, viteza constanta etc.). Defineste modul de miscare al blocului.",
+      "influenteaza": "p2622, r2675",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12799,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2673",
+    "descriere_scurta": "EPOS actual acceleration override",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza factorul de suprascriere al acceleratiei aflat in curs de procesare. Permite monitorizarea scalarii actuale a rampei de accelerare aplicata de EPOS.",
+      "influenteaza": "r2665",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12800,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2674",
+    "descriere_scurta": "EPOS actual deceleration override",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza factorul de suprascriere al deceleratiei aflat in curs de procesare. Permite monitorizarea scalarii actuale a rampei de decelerare aplicata de EPOS.",
+      "influenteaza": "r2673",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12801,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2675",
+    "descriere_scurta": "EPOS actual task",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza sarcina aflata in curs de procesare de catre EPOS (valori 0-9 corespunzand diferitelor tipuri de sarcini). Permite identificarea operatiei de pozitionare curente.",
+      "influenteaza": "p2621",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12802,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2622",
+    "descriere_scurta": "EPOS traversing block task parameter",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza informatii/date suplimentare specifice sarcinii blocului de deplasare EPOS. Valorea depinde de tipul sarcinii selectat in p2621 (ex. pozitie tinta, distanta).",
+      "influenteaza": "p2621, r2676",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12803,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2677",
+    "descriere_scurta": "EPOS actual task mode",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza modul sarcinii aflat in curs de procesare de catre EPOS (absolut/relativ, cu/fara oprire etc.). Permite identificarea configuratiei detaliate a operatiei de pozitionare.",
+      "influenteaza": "p2621",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12805,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2680",
+    "descriere_scurta": "EPOS clearance reference cam and zero mark",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza distanta determinata intre cama de referinta si marcajul zero in procesul de cautare a referintei. Util pentru verificarea calitatii procesului de referentiere.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12807,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2682",
+    "descriere_scurta": "EPOS residual distance to go",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza distanta reziduala ramasa pana la finalul sarcinii de pozitionare curente. Permite monitorizarea progresului operatiei de pozitionare in curs de executie.",
+      "influenteaza": "r2665",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12810,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2676",
+    "descriere_scurta": "EPOS actual task parameter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza parametrul sarcinii in curs de procesare in modul de operare cu blocuri de deplasare. Reflecta valoarea efectiva a parametrului asociat sarcinii active.",
+      "influenteaza": "p2622",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12811,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2687",
+    "descriere_scurta": "EPOS force setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza setpointul efectiv de forta la atingerea opririi fixe in EPOS, raportat la limitele CI:p1522 si CI:p1523. Permite verificarea fortei aplicate la contact cu opriterul.",
+      "influenteaza": "p1522, p1523",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12817,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2700",
+    "descriere_scurta": "Reference frequency",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cantitatea de referinta actuala pentru frecventa (p2000); 100% sau 4000h corespunde acestei valori. Toate frecventele in valoare relativa sunt raportate la aceasta referinta.",
+      "influenteaza": "p2000",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12823,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2701",
+    "descriere_scurta": "Reference voltage",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza ca iesire conector cantitatea de referinta pentru tensiuni (p2001). Toate tensiunile in valoare relativa sunt raportate la aceasta referinta.",
+      "influenteaza": "p2001",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12826,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2703",
+    "descriere_scurta": "Reference force actual",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cantitatea de referinta actuala pentru forte. Toate fortele in valoare relativa sunt raportate la aceasta referinta; 100% sau 4000h corespunde acestei valori.",
+      "influenteaza": "p2003",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12828,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2704",
+    "descriere_scurta": "Reference power",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza ca iesire conector cantitatea de referinta pentru puteri (p2004). Toate puterile in valoare relativa sunt raportate la aceasta referinta; unitatea este aceeasi ca in p2004.",
+      "influenteaza": "p2004",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12829,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2705",
+    "descriere_scurta": "Reference angle",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza ca iesire conector cantitatea de referinta pentru unghiuri (p2005). Toate unghiurile in valoare relativa sunt raportate la aceasta referinta in grade.",
+      "influenteaza": "p2005",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12830,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2706",
+    "descriere_scurta": "Reference temp",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Furnizeaza ca iesire conector cantitatea de referinta pentru temperaturi. Toate temperaturile in valoare relativa sunt raportate la aceasta referinta in grade Celsius.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12835,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0421",
+    "descriere_scurta": "Absolute encoder rotary multiturn resolution",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul de rotatii rezolvabile pentru un encoder rotativ absolut multiturn. Valoarea determina domeniul de pozitie absoluta disponibil fara pierderea referintei.",
+      "influenteaza": "r2524",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12839,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2513",
+    "descriere_scurta": "LR Position actual value preprocessing corrective value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru valoarea de corectie a preprocesarii valorii actuale de pozitie. Permite corectii continue ale valorii actuale de pozitie dintr-o sursa externa.",
+      "influenteaza": "r2526",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12841,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2817",
+    "descriere_scurta": "OR logic operation result",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza rezultatul operatiei logice OR configurata. Permite combinarea mai multor semnale binare printr-o operatie SAU pentru utilizare in logica de control.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 12844,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p2930",
+    "descriere_scurta": "Fixed value F [N]",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza si furnizeaza ca iesire conector o valoare fixa de forta in Newton. Poate fi interconectata cu limitele de forta sau setpointul de forta ca valoare constanta de referinta.",
+      "influenteaza": "p1511, p1520",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12847,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r2902",
+    "descriere_scurta": "Fixed values [%]",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesiri conector valorile procentuale fixe frecvent utilizate (+0%, +5%, +10%, +20%, +50%, +100%, +150%, +200% si valorile negative corespunzatoare). Simplifican interconectarile de scalare.",
+      "influenteaza": "",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12855,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0317",
+    "descriere_scurta": "Motor voltage constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de tensiune pentru motoarele sincrone in Vrms/(1000 rpm) faza-faza. Utilizata in calculele de control ale motorului sincron cu magneti permanenti.",
+      "influenteaza": "p0305, p0311",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12859,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0328",
+    "descriere_scurta": "Motor reluctance torque constant",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de cuplu de reluctanta pentru motoarele sincrone cu reluctanta (1FE, IPM). Nu are semnificatie pentru motoarele asincrone.",
+      "influenteaza": "p0317",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12864,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0410",
+    "descriere_scurta": "Encoder inversion actual value",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza inversarea valorilor actuale ale encoderului prin bitii unui cuvant binar. Permite corectarea sensului de rotatie reportat de encoder fara modificari hardware.",
+      "influenteaza": "p1820",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12871,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1838",
+    "descriere_scurta": "Transition point compensation rounding 1 negative zero range",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza rotunjirea pentru punctul 1 negativ (zona zero) al compensarii punctului de tranzitie. Simetric cu p1835 dar pentru semiciclul negativ al tensiunii de iesire.",
+      "influenteaza": "p1837",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12884,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0645",
+    "descriere_scurta": "Motor kT characteristic kT1",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta kT1 pentru caracteristica kT a motorului liniar: kT(iq)=kT1+kT3*iq^2+kT5*iq^4+kT7*iq^6. Primul coeficient determina factorul de cuplu la curent mic.",
+      "influenteaza": "p0646, p0647, p0648",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12889,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0646",
+    "descriere_scurta": "Motor kT characteristic kT3",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta kT3 pentru caracteristica kT a motorului liniar: kT(iq)=kT1+kT3*iq^2+... Coeficientul de ordinul 3 caracterizeaza neliniaritatea caracteristicii la curent mediu.",
+      "influenteaza": "p0645, p0647, p0648",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12902,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p0358",
+    "descriere_scurta": "Motor rotor leakage inductance / damping inductance d axis",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza inductanta de dispersie a rotorului/sectiunii secundare a motorului, sau inductanta de amortizare pe axa d la motoarele sincrone cu excitatie separata. Valoarea se calculeaza automat prin identificare.",
+      "influenteaza": "p0356, p0357",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12911,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p1083",
+    "descriere_scurta": "Velocity limit positive direction",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza viteza maxima pentru directia pozitiva de deplasare. Aceasta limita fixa nu poate fi depasita indiferent de referinta aplicata.",
+      "influenteaza": "p1085, r1084",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 12925,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3095",
+    "descriere_scurta": "PolID elasticity-based deflection permissible",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza deflexia maxima permisa la executarea identificarii pozitiei polare bazata pe elasticitate. Valoarea trebuie sa fie mai mare decat p3094 (deflexia de test).",
+      "influenteaza": "p3094, r3097",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 12930,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3101",
+    "descriere_scurta": "RTC set UTC time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza ora UTC a ceasului in timp real al actionarii, sincronizand sistemul cu mastera de timp. Secventa: mai intai se scrie index 1 (zile) apoi index 0 (milisecunde).",
+      "influenteaza": "r2114",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12943,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3132",
+    "descriere_scurta": "Actual component number",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul componentei celei mai vechi avarii active. Permite identificarea hardware a componentei fizice care a generat avaria.",
+      "influenteaza": "r2131",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12947,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3203",
+    "descriere_scurta": "Excitation current outside the tolerance delay time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de intarziere pentru mesajul curent de excitatie in afara tolerantei in monitorizarea curentului de excitatie. Previne alarme false la tranzitii rapide.",
+      "influenteaza": "p3202",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12952,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3205",
+    "descriere_scurta": "Flux outside the tolerance hysteresis",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza histerezisul pentru mesajul de flux in afara tolerantei in monitorizarea fluxului. Histerezisul previne comutarea repetata a alarmei la valori de flux la limita tolerantei.",
+      "influenteaza": "p3204",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12957,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3237",
+    "descriere_scurta": "Hysteresis speed 7",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza viteza de histerezis pentru semnalul de deviere viteza model/extern (BO: r2199.7). Previne comutarea repetata a semnalului la devieri de viteza mici in jurul pragului.",
+      "influenteaza": "r2199",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12968,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3294",
+    "descriere_scurta": "Variable signaling function output signal",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire binectoare semnalul de iesire al functiei de semnalizare variabila. Permite monitorizarea rezultatului functiei de semnalizare configurata.",
+      "influenteaza": "p3290",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12977,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3329",
+    "descriere_scurta": "Fluid flow machine speed point 5",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza viteza (n) in procente a punctului 5 al caracteristicii P=f(n) cu 5 puncte pentru afisajul de economie de energie al masinilor cu fluid. Completeaza curba la viteza maxima.",
+      "influenteaza": "p3328",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12986,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3328",
+    "descriere_scurta": "Fluid flow machine power point 5",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza puterea (P) in procente a punctului 5 al caracteristicii P=f(n) pentru afisajul de economie de energie al masinilor cu fluid (ventilator, pompa). Defineste puterea la viteza maxima.",
+      "influenteaza": "p3329",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 12989,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3402",
+    "descriere_scurta": "Infeed internal state",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea interna a modulului de alimentare (infeed). Valorile 0-12 indica diferite stari ale procesului intern al modulului de alimentare controlat.",
+      "influenteaza": "r3405",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 12992,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3555",
+    "descriere_scurta": "Infeed Vdc controller integral component fast intervention",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza interventia rapida a regulatorului Vdc pentru reduceri bruste ale tensiunii DC datorate sarcinii mari a motorului. Dezactivata la p3555[5]=0 sau p3560<100% sau p0225>0.5*p0223.",
+      "influenteaza": "p3560, p0225, p0223",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 12996,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3414",
+    "descriere_scurta": "Infeed line supply inductance identified",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza inductanta de retea identificata, corespunzand inductantei totale intre reteaua rigida si punctul de conectare al Voltage Sensing Module (VSM).",
+      "influenteaza": "p3555",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13006,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3446",
+    "descriere_scurta": "Smart Mode currents",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza diverse valori de curent in modul Smart Mode al modulului de alimentare: setpoint curent DC, componenta I a regulatorului Vdc si curentul monitorizat al sarcinii DC.",
+      "influenteaza": "p3442",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13007,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3442",
+    "descriere_scurta": "Smart Mode smoothing times",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constantele de timp PT1 pentru filtrarea tensiunii DC (index 0) si curentului monitorizat (index 1) in modul Smart Mode. Valorile afecteaza dinamica regulatorului Vdc in Smart Mode.",
+      "influenteaza": "r3446, r3445",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 13012,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3452",
+    "descriere_scurta": "Infeed PLL status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea PLL (Phase-Locked Loop) al retelei de alimentare. Valorile 0-7 indica stari de la nesincronizat la blocat pe frecventa retelei.",
+      "influenteaza": "p3458",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13013,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3458",
+    "descriere_scurta": "Infeed PLL smoothing time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp de netezire a PLL-ului de retea: index 0 pentru operarea fara encoder (VSM), index 1 pentru operarea cu VSM. Afecteaza viteza de sincronizare cu reteaua.",
+      "influenteaza": "r3452, r3460",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 13014,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3460",
+    "descriere_scurta": "Infeed PLL system deviation",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza devierea de sistem a PLL-ului retelei de alimentare inainte de filtrare. Indica calitatea sincronizarii cu faza retelei de alimentare.",
+      "influenteaza": "r3461",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13015,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3461",
+    "descriere_scurta": "Infeed PLL system deviation after filtering",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza devierea de sistem a PLL-ului retelei dupa filtrare. Valoarea filtrata reflecta mai fidel calitatea sincronizarii eliminating fluctuatiile de scurta durata.",
+      "influenteaza": "r3460, p3458",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13019,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3470",
+    "descriere_scurta": "Infeed active current filter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cerinta de curent activ datorata filtrului de retea. Aceasta componenta de curent este compensata de modulul de alimentare controlat pentru a mentine factorul de putere unitar.",
+      "influenteaza": "r3471",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13020,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3471",
+    "descriere_scurta": "Infeed reactive current filter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza cerinta de curent reactiv datorata filtrului de retea. Curentul reactiv al filtrului este acoperit de modulul de alimentare controlat pentru a asigura cos phi=1 la retea.",
+      "influenteaza": "r3470",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13023,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3468",
+    "descriere_scurta": "Infeed voltage alpha/beta",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector tensiunea de retea la terminalele de intrare ale filtrului de retea in componente alfa/beta. Util pentru diagnosticarea calitatii tensiunii de retea.",
+      "influenteaza": "r3470, r3471",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13024,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3473",
+    "descriere_scurta": "cos phi display current signal source",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza sursa de semnal pentru curentul utilizat in afisajul cos phi al modulului de alimentare. Configureaza curentul de referinta pentru calculul factorului de putere.",
+      "influenteaza": "r3467",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13027,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3485",
+    "descriere_scurta": "Infeed standby controller output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea regulatorului de rezerva pentru adancimea de modulatie. Tensiunea DC este crescuta cu aceasta valoare; setpointul total DC este limitat la tensiunea maxima stationara p0280.",
+      "influenteaza": "p0280",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13045,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3405",
+    "descriere_scurta": "Infeed status word",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector cuvantul de stare al modulului de alimentare (infeed). Bitii indica stari ca tensiune DC OK, sincronizat, gata de operare etc.",
+      "influenteaza": "r3402",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13051,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3517",
+    "descriere_scurta": "Infeed active current controller unlimited setpoint",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector setpointul nelimitat al regulatorului de curent activ. In configuratia master-slave, masterul distribuie acest setpoint catre slave-uri.",
+      "influenteaza": "r3573",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13056,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3521",
+    "descriere_scurta": "Infeed pre-control power scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de scalare pentru precontrolul de putere al modulului de alimentare. Optimizeaza dinamica modulului de alimentare la schimbari rapide de sarcina.",
+      "influenteaza": "p3523",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 13057,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3523",
+    "descriere_scurta": "Infeed pre-control power smoothing",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza constanta de timp a filtrului pentru precontrolul de putere al modulului de alimentare. Valoarea 0 dezactiveaza filtrarea precontrolului.",
+      "influenteaza": "p3521",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 13058,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3536",
+    "descriere_scurta": "Infeed current limit status display",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire binectoare starea limitarilor de curent ale modulului de alimentare. Bitii indica care limitari de curent sunt active in prezent.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13068,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3534",
+    "descriere_scurta": "Infeed line filter maximum current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul maxim admis pentru filtrul de retea setat cu p0220[0]. Limita de curent a filtrului este utilizata in calculul limitarilor de curent ale modulului de alimentare.",
+      "influenteaza": "p0220",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 13077,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3573",
+    "descriere_scurta": "Master/slave active current setpoint multiplexer output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza iesirea multiplexorului pentru setpointul de curent activ in operatia master-slave a modulelor de alimentare. Valoarea este setpointul de curent activ al alimentatorului slave.",
+      "influenteaza": "r3517",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13085,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3575",
+    "descriere_scurta": "Master/slave DC link voltage monitoring status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea monitorizarii tensiunii circuitului DC in configuratia master-slave a modulelor de alimentare. Permite diagnosticarea problemelor de tensiune in configuratia multi-modul.",
+      "influenteaza": "r3573",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13087,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3578",
+    "descriere_scurta": "Master/slave current distribution factor multiplexer output",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza si furnizeaza ca iesire conector factorul de distributie a curentului in operatia master-slave. Valoarea este utilizata pentru distribuirea egala a sarcinii intre modulele de alimentare.",
+      "influenteaza": "r3573, r3575",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 13089,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "r3602",
+    "descriere_scurta": "Infeed control status",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea reglajului in bucla inchisa al modulului de alimentare. Valorile 0-8 indica diferite stari ale buclei de reglaj ale alimentatorului controlat.",
+      "influenteaza": "r3402, r3405",
+      "categorie": "Diagnostic"
+    }
+  }
+]

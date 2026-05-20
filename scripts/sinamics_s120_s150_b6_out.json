@@ -1,0 +1,1102 @@
+[
+  {
+    "id": 1247,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3667",
+    "descriere_scurta": "VSM line filter overtemperature alarm threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de alarma pentru senzorul de temperatura KTY al VSM pentru monitorizarea temperaturii filtrului de retea. Conditie: un senzor KTY84 este conectat si p3665 = 2. La depasirea pragului se genereaza o alarma inainte de oprirea pe defect.",
+      "influenteaza": "p3668, p3669",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1248,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3668",
+    "descriere_scurta": "VSM line filter overtemperature shutdown threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de oprire pentru senzorul de temperatura KTY al VSM pentru monitorizarea filtrului de retea. La depasirea acestui prag se genereaza un defect si drive-ul se opreste. Trebuie setat deasupra p3667 (alarma).",
+      "influenteaza": "p3667, p3669",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1249,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3669",
+    "descriere_scurta": "VSM line filter overtemperature hysteresis",
+    "GENERATED": {
+      "explicatie": "p - Seteaza histerezisul pentru pragul de alarma al VSM la monitorizarea temperaturii filtrului de retea. Previne oscilatia starii de alarma cand temperatura fluctueaza in jurul pragului. Valori tipice intre 1 si 5 K.",
+      "influenteaza": "p3667, p3668",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1250,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3670",
+    "descriere_scurta": "VSM 10 V input CT gain",
+    "GENERATED": {
+      "explicatie": "p - Seteaza castigul transformatorului de curent (CT) conectat la intrarea de 10 V a VSM. Parametrul specifica magnitudinea curentului in [A] referita la tensiunea de intrare in [V]. Esential pentru calibrarea corecta a masuratoriide curent prin VSM.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1251,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3676",
+    "descriere_scurta": "VSM line filter capacitance alarm threshold",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de alarma pentru modificarea capacitatii filtrului de retea. Monitorizarea capacitatii este dezactivata cu p3676 = 0.00%. Detecteaza degradarea condensatoarelor filtrului de retea inainte de defectare.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1254,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3680",
+    "descriere_scurta": "Braking Module internal inhibit",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru inhibarea Modulului de Franare intern. La semnal 1 Modulul de Franare este inhibat; la semnal 0 este activat. Permite controlul extern al disponibilitatii franei de franare.",
+      "influenteaza": "p3681, p3682, p3683",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1255,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3681",
+    "descriere_scurta": "Activating Braking Module internal DC link fast discharge",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru activarea descarcarii rapide a DC link pentru Modulul de Franare intern. Descarcarea se porneste cu intarziere p3682 dupa conditia de activare si deschiderea contactorului de retea. Asigura descarcarea rapida si sigura a condensatoarelor DC.",
+      "influenteaza": "p3682, p3680",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1256,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3682",
+    "descriere_scurta": "Braking Module internal DC link fast discharge delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru conectarea descarcarii rapide a DC link pentru Modulul de Franare intern. Permite timp suficient pentru alte operatii inainte de inceperea descarcarii. Valoarea minima este 500 ms pentru siguranta.",
+      "influenteaza": "p3681, p3680",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1257,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3683",
+    "descriere_scurta": "Braking Module internal activation threshold brake chopper",
+    "GENERATED": {
+      "explicatie": "p - Seteaza pragul de activare pentru comutatorul de franare (brake chopper). Cand tensiunea DC link depaseste aceasta valoare, comutatorul de franare este activat. Disipa energia regenerativa in rezistenta de franare pentru a limita supratensiunea DC.",
+      "influenteaza": "p3680, p3681",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1258,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3700",
+    "descriere_scurta": "APC configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru APC (Advanced Positioning Control - Control Avansat de Pozitionare). Bitii individuali activeaza diferite aspecte ale controlului avansat de pozitie. Trebuie configurat conform cerintelor aplicatiei de pozitionare.",
+      "influenteaza": "p3701",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1259,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3701",
+    "descriere_scurta": "APC enc sel",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul encoderului utilizat pentru APC (Advanced Positioning Control). Permite selectarea encoderului 2 sau 3 pentru functia de control avansat de pozitie. De obicei encoderele de sarcina (nu motor) sunt utilizate pentru APC.",
+      "influenteaza": "p3700",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1260,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3842",
+    "descriere_scurta": "Friction characteristic activation",
+    "GENERATED": {
+      "explicatie": "p - Activeaza sau dezactiveaza caracteristica de frecare. La valoare 1 compensarea frecarii este activa si corectia de moment este adaugata la setpoint-ul de cuplu. Imbunatateste precizia de pozitionare la viteze mici prin compensarea frecarii Coulomb.",
+      "influenteaza": "p3845",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1261,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3845",
+    "descriere_scurta": "Friction characteristic record activation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inregistrarea caracteristicii de frecare. Dupa urmatoarea comanda de pornire, caracteristica de frecare este inregistrata automat. Drive-ul masoara cuplul necesar la diferite viteze pentru a determina compensarea necesara.",
+      "influenteaza": "p3842",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1262,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3860",
+    "descriere_scurta": "Number of Braking Modules connected in parallel",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de Module de Franare conectate in paralel pe DC link. Influenteaza calculul puterii totale de disipare disponibile si distribuirea sarcinii intre modulele de franare. Valori permise intre 1 si 8.",
+      "influenteaza": "p3862, p3863",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1263,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3862",
+    "descriere_scurta": "Braking Module DC link fast discharge delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru conectarea descarcarii rapide a DC link. Permite executia altor operatii inainte de inceperea descarcarii condensatoarelor. Valoarea minima de 500 ms asigura secventa corecta de oprire.",
+      "influenteaza": "p3863, p3860",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1264,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3863",
+    "descriere_scurta": "Activating Braking Module DC link fast discharge",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru activarea descarcarii rapide a DC link. Descarcarea incepe cu intarzierea p3862 dupa activare si deschiderea contactorului de retea. Asigura descarcarea sigura si rapida a condensatoarelor DC la oprire.",
+      "influenteaza": "p3862, p3860",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1267,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3870",
+    "descriere_scurta": "Long stator configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia pentru functionarea cu motor de stator lung (linear motor cu stator lung). Bitii individuali controleaza diverse aspecte ale functionarii specifice motoarelor cu stator lung. Utilizat in aplicatii de transport pe distante mari (ex: vehicule de transport).",
+      "influenteaza": "p3871, p3872, p3873",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1268,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3871",
+    "descriere_scurta": "Set long stator signal source commutation angle (p3872)",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru memorarea unghiului de comutatie disponibil via p3872. La un front 0/1 al semnalului, unghiul de comutatie actual este captat si stocat. Utilizat pentru sincronizarea precisa a comutarii in motoarele cu stator lung.",
+      "influenteaza": "p3870, p3872",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1269,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3872",
+    "descriere_scurta": "Long stator signal source commutation angle",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru unghiul de comutatie al motorului cu stator lung. Unghiul este captat la frontul 0/1 al semnalului din p3871. Determina pozitia electrica utilizata pentru comutarea corecta a fazelor.",
+      "influenteaza": "p3871, p3870",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1270,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3873",
+    "descriere_scurta": "Long stator sig. source changeover to cl.-loop ctrl w/ enc.",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru comutarea la controlul in bucla inchisa cu encoder. La semnal 1 se comuta de la controlul sensorless la controlul cu encoder pentru motorul cu stator lung. Permite tranzitia lina intre moduri de control.",
+      "influenteaza": "p3870, p3874",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1271,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3874",
+    "descriere_scurta": "Long stator signal source commutation angle oper. with encoder /",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru unghiul de comutatie in functionarea cu encoder a motorului cu stator lung. Utilizeaza datele encoderului pentru o pozitionare mai precisa a unghiului de comutatie. Activ cand p3873 este 1.",
+      "influenteaza": "p3873, p3870",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1272,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3876",
+    "descriere_scurta": "Unpark long stator signal source 1 encoder",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului 1 pentru deblocarea encoderului motorului cu stator lung. Permite reactivarea encoderului dupa o stare de parcare. Utilizat in secventele de initializare a motoarelor cu stator lung.",
+      "influenteaza": "p3870",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1273,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3878",
+    "descriere_scurta": "Long stator commutation angle 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza unghiul de comutatie 1 pentru motoarele cu stator lung. Unghiul defineste pozitia electrica de referinta pentru comutarea fazelor. Trebuie calibrat precis pentru functionarea corecta a motorului linear cu stator lung.",
+      "influenteaza": "p3879, p3872",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1274,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3879",
+    "descriere_scurta": "Long stator commutation angle 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza unghiul de comutatie 2 pentru motoarele cu stator lung. Al doilea unghi de referinta pentru comutarea fazelor in functionare cu encoder. Utilizat impreuna cu p3878 pentru comutare bidirecţionala.",
+      "influenteaza": "p3878, p3874",
+      "categorie": "Motor"
+    }
+  },
+  {
+    "id": 1275,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3900",
+    "descriere_scurta": "Completion of quick commissioning",
+    "GENERATED": {
+      "explicatie": "p - Incheie punerea in functiune rapida (p0010 = 1) cu calculul automat al tuturor parametrilor dependenti de datele introduse. Diferitele valori controleaza amploarea calculelor si initializarilor efectuate. Trebuie executat dupa configurarea initiala a drive-ului.",
+      "influenteaza": "p0010, p0340",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1276,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3950",
+    "descriere_scurta": "Service parameter",
+    "GENERATED": {
+      "explicatie": "p - Parametru rezervat exclusiv pentru personalul de service Siemens. Nu trebuie modificat in exploatare normala. Utilizat pentru diagnosticare avansata si depanare de catre specialistii Siemens.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1277,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3961",
+    "descriere_scurta": "Fan operating hours counter",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza orele de functionare masurare de la ultima inlocuire a ventilatorului. Permite planificarea preventiva a inlocuirii ventilatoarelor inainte de defectare. Trebuie resetat manual dupa inlocuirea ventilatorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1278,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3981",
+    "descriere_scurta": "Faults acknowledge drive object",
+    "GENERATED": {
+      "explicatie": "p - Seteaza confirmarea tuturor defectelor active ale unui obiect de drive. La scrierea valorii 1, toate defectele active ale obiectului de drive sunt confirmate. Echivalent confirmarii prin buton sau PLC pentru obiectul de drive specific.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1279,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p3985",
+    "descriere_scurta": "Master control mode selection",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de comutare a controlului master / modul LOCAL. Determina comportamentul la comutarea intre controlul de la fieldbus si controlul local (AOP). Esential pentru aplicatii cu cerinte de operare locala si automata.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 1280,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4028",
+    "descriere_scurta": "Set input or output",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intrarile/iesirile digitale bidirecţionale ca intrare sau iesire. Permite configurarea flexibila a terminalelor DI/DO in functie de cerintele aplicatiei. Modificarea acestui parametru reconfigureaza hardware-ul I/O.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1281,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4030",
+    "descriere_scurta": "TB30 signal source for terminal DO 0",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru iesirea digitala DO 0 (X481.5) a placii Terminal Board 30 (TB30). Permite conectarea oricarui semnal BICO ca iesire fizica. Configureaza semnalul de stare sau comanda disponibil la terminalul DO 0.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1282,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4031",
+    "descriere_scurta": "TB30 signal source for terminal DO 1",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DO 1 (X481.6) al TB30. Permite asignarea oricarui semnal BICO la iesirea fizica DO 1. Configureaza semnalul disponibil la al doilea terminal de iesire al TB30.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1283,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4032",
+    "descriere_scurta": "TB30 signal source for terminal DO 2",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DO 2 (X481.7) al TB30. Permite conectarea unui semnal BICO la a treia iesire digitala a TB30. Ofera flexibilitate in configurarea semnalelor de stare la terminalele fizice.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1284,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4033",
+    "descriere_scurta": "TB30 signal source for terminal DO 3",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DO 3 (X481.8) al TB30. Al patrulea terminal de iesire digitala al placii TB30. Permite asignarea unui semnal logic de stare sau comanda la acest terminal.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1285,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4034",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 4",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 4 (X520.6) al Modulului Terminal 15 (TM15). Configurabil ca intrare sau iesire digitala, cu sursa de semnal BICO selectabila. Extinde capabilitatile I/O ale sistemului prin modulul TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1286,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4035",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 5 (X520.7) al TM15. Configurabil ca intrare sau iesire digitala bidirectionala. Permite integrarea de semnale suplimentare in sistemul de actionare.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1287,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4036",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 6",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 6 (X520.8) al TM15. Terminal bidirectional digital configurabil prin BICO. Face parte din expandorul de I/O al sistemului S120.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1288,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4037",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 7",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 7 (X520.9) al TM15. Ultimul terminal pe conectorul X520 al TM15, configurabil bidirectional. Permite flexibilitate maxima in utilizarea resurselor I/O.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1289,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4038",
+    "descriere_scurta": "Signal source for terminal DI/DO 0 decentral",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 0 descentralizat (X3.2). Utilizat in configuratii cu module descentralizate S120M. Permite integrarea terminalelor I/O descentralizate in sistemul BICO.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1290,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4039",
+    "descriere_scurta": "Signal source for terminal DI/DO 1 decentral",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 1 descentralizat (X3.4). Al doilea terminal descentralizat I/O pentru module S120M. Extinde I/O-ul disponibil in instalatii distribuite.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1291,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4040",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 10",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 10 (X521.4) al TM15. Terminal pe al doilea conector al TM15, configurabil ca intrare sau iesire. Parte a celui de-al doilea grup de canale ale TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1292,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4041",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 11",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 11 (X521.5) al TM15. Al doilea terminal pe conectorul X521 al TM15. Configurabil prin BICO ca intrare sau iesire digitala.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1293,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4042",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 12",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 12 (X521.6) al TM15. Terminal bidirectional din al treilea grup de canale al TM15. Permite asignarea semnalelor BICO la iesirile fizice.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1294,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4043",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 13",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 13 (X521.7) al TM15. Terminal digital configurabil bidirectional pe conectorul X521. Parte din resursele extinse de I/O ale TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1295,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4044",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 14",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 14 (X521.8) al TM15. Terminal bidirectional pe conectorul X521, configurabil ca intrare sau iesire. Ofera flexibilitate suplimentara de I/O.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1296,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4045",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 15",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 15 (X521.9) al TM15. Ultimul terminal pe conectorul X521 al TM15. Completeaza grupul de I/O al celui de-al doilea conector al TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1297,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4046",
+    "descriere_scurta": "TM31 digital outputs limit current",
+    "GENERATED": {
+      "explicatie": "p - Seteaza limita pentru curentul total al terminalelor X541.1-X541.4 (DI/DO 8-11) ale TM31. La valoare 0, tensiunea de iesire este nelimitata; la valoare 1, se aplica o limitare. Protejeaza iesirile digitale ale TM31 impotriva supracurentului.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1298,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4048",
+    "descriere_scurta": "Invert digital outputs",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inversarea semnalelor la iesirile digitale. Fiecare bit corespunde unei iesiri digitale; bit = 1 inseamna ca semnalul este inversat. Permite adaptarea logicii la aparatura cu logica inversa fara modificari de cablu.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1299,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4049",
+    "descriere_scurta": "TM15 digital inputs/outputs set the mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul DI/DO-urilor Modulului Terminal 15 (TM15). Controleaza comportamentul global al tuturor intrari/iesiri digitale ale TM15. Trebuie configurat inainte de utilizarea terminalelor individuale.",
+      "influenteaza": "p4034, p4035, p4036, p4037",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1333,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4086",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 16",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 16 (X522.2) al TM15. Primul terminal pe al treilea conector al TM15. Extinde capacitatea de I/O la 24 de canale bidirectionale.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1334,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4087",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 17",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 17 (X522.3) al TM15. Al doilea terminal pe X522 al TM15, configurat prin BICO. Face parte din al treilea grup de canale ale modulului.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1335,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4088",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 18",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 18 (X522.4) al TM15. Terminal din grupul X522 al TM15. Permite extensia suplimentara a resurselor digitale I/O.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1336,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4089",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 19",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 19 (X522.5) al TM15. Al patrulea terminal pe X522. Parte din expandorul de I/O al sistemului S120 prin TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1337,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4090",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 20",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 20 (X522.6) al TM15. Terminal bidirectional pe X522. Completeaza capabilitatile extinse de I/O ale modulului TM15.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1338,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4091",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 21",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 21 (X522.7) al TM15. Terminal bidirectional, al saptelea pe X522. Configurabil ca intrare sau iesire digitala prin BICO.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1339,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4092",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 22",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 22 (X522.8) al TM15. Al optulea terminal pe X522. Aproape de completarea capacitatii totale a conectorului X522.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1340,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4093",
+    "descriere_scurta": "TM15DI/DO signal source for terminal DI/DO 23",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru terminalul DI/DO 23 (X522.9) al TM15. Ultimul terminal disponibil pe TM15, conector X522. Completeaza totalul de 24 de canale bidirectionale ale modulului.",
+      "influenteaza": "p4028",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1341,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4095",
+    "descriere_scurta": "S120M digital inputs simulation mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de simulare pentru intrarile digitale ale S120M. In modul simulare, valorile intrarilor fizice sunt inlocuite cu valori simulate din p4096. Util pentru testare si punere in functiune fara semnale externe reale.",
+      "influenteaza": "p4096",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1342,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4096",
+    "descriere_scurta": "S120M digital inputs simulation mode setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valorile setpoint ale semnalelor de intrare in modul de simulare al S120M. Fiecare bit corespunde unui canal de intrare digitala simulata. Activ numai cand p4095 activeaza modul de simulare.",
+      "influenteaza": "p4095",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1349,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4099",
+    "descriere_scurta": "Inputs/outputs sampling time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza perioada de esantionare pentru intrari si iesiri. Indexul [0] corespunde perioadei de esantionare I/O a S120M. O valoare mai mica ofera reactii mai rapide dar creste incarcarea comunicatiei.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1351,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4100",
+    "descriere_scurta": "Spindle supplementary temperature sensor type",
+    "GENERATED": {
+      "explicatie": "p - Seteaza tipul senzorului pentru evaluarea temperaturii suplimentare a arborelui. Permite selectia intre diferite tipuri de senzori (KTY, PT100, etc). Esential pentru monitorizarea corecta a temperaturii motorului de arbore.",
+      "influenteaza": "p4102, p4103",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1357,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4103",
+    "descriere_scurta": "Spindle supplementary temperature delay time",
+    "GENERATED": {
+      "explicatie": "p - Seteaza intarzierea pentru afisarea defectului la evaluarea temperaturii arborelui. Cronometrul porneste la depasirea pragului de alarma; daca temperatura nu scade, se genereaza F07018. Previne opriri false cauzate de cresteri temporare de temperatura.",
+      "influenteaza": "p4100, p4102",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 1367,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4121",
+    "descriere_scurta": "TM150 filter rated line frequency",
+    "GENERATED": {
+      "explicatie": "p - Seteaza frecventa nominala a retelei pentru filtrul de eliminare a frecventei de retea al TM150. Valoarea 0 corespunde de obicei la 50 Hz, valoarea 1 la 60 Hz. Asigura suprimarea corecta a interferentelor de retea in masuratoare.",
+      "influenteaza": "",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1368,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4220",
+    "descriere_scurta": "TM17 enable DI/DO 0 ... 5",
+    "GENERATED": {
+      "explicatie": "p - Seteaza semnalul de activare cu bitii 0-5 pentru DI/DO 0-5 ale TM17 si declansatoarele cu bitii 8-13. Fiecare canal DI/DO poate fi activat independent sau prin DI/DO corespunzatoare 10-15. Controleaza disponibilitatea canalelor de I/O ale TM17.",
+      "influenteaza": "p4221, p4222",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1369,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4221",
+    "descriere_scurta": "TM17 smoothing time constant digital input 0 ... 15",
+    "GENERATED": {
+      "explicatie": "p - Seteaza constanta de timp de netezire pentru intrarile digitale 0-15 ale TM17. Filtreaza zgomotul si perturbatiile scurte pe intrarile digitale. Valori mai mari cresc imunitatea la perturbatii dar introduc intarziere.",
+      "influenteaza": "p4220",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1370,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4222",
+    "descriere_scurta": "TM17 time absolute/relative digital output 0 ... 15",
+    "GENERATED": {
+      "explicatie": "p - Seteaza temporizarea absoluta sau relativa pentru iesirile digitale 0-15 ale TM17. Permite controlul precis al timpilor de comutare al iesirilor. Utilizat in aplicatii cu cerinte stricte de sincronizare.",
+      "influenteaza": "p4220",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1371,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4400",
+    "descriere_scurta": "TM41 encoder emulation operating mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de functionare pentru emularea encoderului incremental pe TM41. Valoarea 0 dezactiveaza emularea; valoarea 1 activeaza emularea encoderului incremental. Utilizat pentru furnizarea unui semnal encoder catre CNC sau PLC extern.",
+      "influenteaza": "p4401, p4408, p4418",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1372,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4401",
+    "descriere_scurta": "TM41 encoder emulation mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul emularii encoderului incremental pe TM41. Controleaza generarea semnalelor A, B si zero mark ale encoderului emulat. Influenteaza calitatea si sincronizarea semnalelor encoder generate.",
+      "influenteaza": "p4400, p4404",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1373,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4404",
+    "descriere_scurta": "TM41 encoder emulation controller options",
+    "GENERATED": {
+      "explicatie": "p - Seteaza optiunile controlerului pentru emularea encoderului incremental pe TM41. Configureaza aspecte avansate ale algoritmului de emulare. Permite optimizarea preciziei emularii in diferite conditii de functionare.",
+      "influenteaza": "p4400, p4401",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1374,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4408",
+    "descriere_scurta": "TM41 encoder emulation pulse number leading encoder",
+    "GENERATED": {
+      "explicatie": "p - Impreuna cu p4418 defineste formatul setpoint-ului de pozitie pentru TM41. Trebuie setat identic cu p0408 al encoderului interconectat la p4420. Asigura generarea corecta a marcajului zero al encoderului emulat.",
+      "influenteaza": "p4418, p4420, p0408",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1375,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4418",
+    "descriere_scurta": "TM41 encoder emulation fine resolution leading encoder",
+    "GENERATED": {
+      "explicatie": "p - Impreuna cu p4408 defineste formatul setpoint-ului de pozitie pentru TM41. Trebuie setat identic cu p0418 al encoderului interconectat la p4420. Determina rezolutia fina a emularii encoderului.",
+      "influenteaza": "p4408, p4420, p0418",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1376,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4420",
+    "descriere_scurta": "TM41 encoder emulation position setpoint",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru setpoint-ul de pozitie al emularii encoderului incremental. Permite conectarea pozitiei motorului sau a altui semnal de pozitie. Determina pozitia care este emulata ca encoder catre echipamentul extern.",
+      "influenteaza": "p4408, p4418, p4421",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1377,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4421",
+    "descriere_scurta": "TM41 encoder emulation deadtime compensation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza compensarea timpului mort pentru emularea encoderului incremental. Factorul defineste multiplicatorul cu care setpoint-ul de pozitie este deplasat in functie de viteza. Corecteaza intarzierea inerenta in transmiterea semnalului encoder.",
+      "influenteaza": "p4420",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1378,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4422",
+    "descriere_scurta": "TM41 encoder emulation position setpoint inversion",
+    "GENERATED": {
+      "explicatie": "p - Seteaza inversarea setpoint-ului de pozitie pentru TM41. La valoare 0 setpoint-ul este evaluat normal; la valoare 1 este procesat inversat. Permite adaptarea directiei de rotatie a encoderului emulat fara modificari hardware.",
+      "influenteaza": "p4420",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1379,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4423",
+    "descriere_scurta": "TM41 encoder emulation standstill adaptation",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adaptarea la standstill pe TM41. Ajusteaza comportamentul emularii la viteze mici si standstill pentru a minimiza erorile de pozitie. Influenteaza precizia marcajului zero la pozitii de standstill.",
+      "influenteaza": "p4400",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1380,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4426",
+    "descriere_scurta": "TM41 encoder emulation pulses for zero mark",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de impulsuri pentru generarea marcajului zero la emularea encoderului incremental. La 0 se utilizeaza p0408/p4408. Permite configurarea pozitiei marcajului zero independent de rezolutia encoderului.",
+      "influenteaza": "p4408, p4400",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1382,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4650",
+    "descriere_scurta": "Encoder functional reserve component number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul componentei (p0141) a encoderului a carui rezerva functionala este afisata in r4651. Permite monitorizarea starii de sanatate a encoderului selectat. Utilizat in managementul preventiv al encoderelor.",
+      "influenteaza": "r4651",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1383,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4652",
+    "descriere_scurta": "XIST1_ERW reset mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de resetare a valorii actuale in XIST_ERW (CO: r4653). Controleaza cand si cum se reseteaza contorul de pozitie extins al encoderului. Influenteaza gestionarea pozitiei absolute multi-tura.",
+      "influenteaza": "p4655, r4653",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1385,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4655",
+    "descriere_scurta": "XIST1_ERW reset signal source",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru resetarea XIST1_ERW (CO: r4653). La frontul activ al semnalului selectat, contorul de pozitie extins este resetat. Utilizat pentru referentierea pozitiei absolute a sistemului.",
+      "influenteaza": "p4652, r4653",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1387,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4660",
+    "descriere_scurta": "Sensor Module filter bandwidth",
+    "GENERATED": {
+      "explicatie": "p - Seteaza latimea de banda a filtrului pentru Sensor Module SMx10 (resolver) si SMx20 (sin/cos). Valorile suportate hardware sunt 0 (implicit), 50 kHz, 170 kHz, 500 kHz si Nelimitat. O banda mai larga permite viteze mai mari dar poate introduce zgomot.",
+      "influenteaza": "r4661",
+      "categorie": "I/O"
+    }
+  },
+  {
+    "id": 1389,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4688",
+    "descriere_scurta": "Zero mark monitoring differential pulse count",
+    "GENERATED": {
+      "explicatie": "p - Afiseaza numarul de impulsuri diferentiale acumulate pentru monitorizarea marcajului zero. Impulsurile necorectate se aduna in acumulator daca F3x131 este reparametrizat la alarma sau fara mesaj. Indica gradul de deteriorare a encoderului in timp.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1391,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4690",
+    "descriere_scurta": "SMI spare part component number",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul componentei SMI/DQI pentru care trebuie salvate, sterse sau descarcate datele de motor si encoder. Identifica componenta specifica in topologia sistemului. Utilizat in procedurile de inlocuire a pieselor de schimb SMI.",
+      "influenteaza": "p4691, p4692",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1392,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4691",
+    "descriere_scurta": "SMI spare part save/download data",
+    "GENERATED": {
+      "explicatie": "p - Seteaza salvarea/descarcarea/stergerea datelor de motor si encoder pentru componenta specificata in p4690. Backup-ul se face automat la salvarea in memorie non-volatila (p0977 = 1). Permite restaurarea datelor dupa inlocuirea unui SMI.",
+      "influenteaza": "p4690, p4692",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1393,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4692",
+    "descriere_scurta": "SMI spare part save data of all SMIs",
+    "GENERATED": {
+      "explicatie": "p - Seteaza backup-ul datelor tuturor SMI-urilor si DQI-urilor din topologia tinta. Salveaza simultan datele tuturor modulelor encoder/sensor. Faciliteaza backup-ul complet al sistemului intr-o singura operatie.",
+      "influenteaza": "p4690, p4691",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 1396,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4701",
+    "descriere_scurta": "Measuring function control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza controlul functiei de masurare. Permite pornirea si oprirea masuratorilorexecutate de functia de masurare integrata. Utilizat pentru identificarea caracteristicilor mecanice ale sarcinii.",
+      "influenteaza": "p4707, p4717",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1398,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4707",
+    "descriere_scurta": "Measurement function configuration",
+    "GENERATED": {
+      "explicatie": "p - Seteaza configuratia functiei de masurare. Determina tipul si parametrii masuratoriide efectuat. Influenteaza ce marimi sunt masurate si cum sunt procesate rezultatele.",
+      "influenteaza": "p4701, p4717",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1406,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4717",
+    "descriere_scurta": "Measuring function number of averaging operations",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de operatii de mediere pentru functia de masurare. Mai multe medieri reduc zgomotul dar cresc durata masuratoriide. Influenteaza precizia rezultatelor identificarii.",
+      "influenteaza": "p4701, p4718",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1407,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4718",
+    "descriere_scurta": "Measuring function number of stabilizing periods",
+    "GENERATED": {
+      "explicatie": "p - Seteaza numarul de perioade de stabilizare pentru functia de masurare. Ofera timp pentru stabilizarea tranzitoriilorinainte de inceperea inregistrarii datelor. Influenteaza calitatea masuratoriiprin eliminarea tranzitoriilorintr-o valoare initiala.",
+      "influenteaza": "p4701, p4717",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1430,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4795",
+    "descriere_scurta": "Trace memory bank changeover",
+    "GENERATED": {
+      "explicatie": "p - Comuta banca de memorie pentru citirea continutului buffer-ului trace. Sistemul de trace foloseste doua banci de memorie alternante. Permite citirea datelor inregistrate fara intreruperea inregistrarii curente.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1431,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4800",
+    "descriere_scurta": "Function generator control",
+    "GENERATED": {
+      "explicatie": "p - Porneste generatorul de functii la valoarea 1. Semnalul este generat numai daca intrarea binectoare p4819 are valoare 1. Utilizat pentru testare, optimizare si diagnosticare a buclelor de control.",
+      "influenteaza": "p4819, p4810, p4820",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1432,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4810",
+    "descriere_scurta": "Function generator mode",
+    "GENERATED": {
+      "explicatie": "p - Seteaza modul de functionare al generatorului de functii. Determina modul in care semnalul generat este aplicat la iesire (adaos la setpoint, inlocuire etc). Influenteaza cum interactioneaza semnalul de test cu procesul de control.",
+      "influenteaza": "p4800, p4820",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1433,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4812",
+    "descriere_scurta": "Function generator physical address",
+    "GENERATED": {
+      "explicatie": "p - Seteaza adresa fizica unde generatorul de functii este conectat. Permite inserarea semnalului de test direct intr-un punct specific al lantului de control. Utilizat in diagnosticarea avansata a buclelor individuale.",
+      "influenteaza": "p4800, p4810",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1434,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4813",
+    "descriere_scurta": "Function generator physical address reference value",
+    "GENERATED": {
+      "explicatie": "p - Seteaza valoarea de referinta pentru 100% la intrarile raportate ale generatorului de functii. Defineste scara pentru semnalele exprimate procentual. Asigura calibrarea corecta a amplitudinilor relative.",
+      "influenteaza": "p4812, p4824",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1436,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4816",
+    "descriere_scurta": "Function generator output signal integer number scaling",
+    "GENERATED": {
+      "explicatie": "p - Seteaza scalarea pentru numarul intreg al semnalului de iesire al generatorului de functii. Permite ajustarea nivelului semnalului generat in format intreg. Influenteaza amplitudinea absoluta a semnalului de test.",
+      "influenteaza": "p4824, p4800",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1437,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4819",
+    "descriere_scurta": "Function generator control",
+    "GENERATED": {
+      "explicatie": "p - Seteaza sursa semnalului pentru controlul generatorului de functii. La trecerea la semnal 0 cand generatorul ruleaza, generarea se opreste si p4800 este setat la 0. Permite controlul extern al generatorului de functii din PLC.",
+      "influenteaza": "p4800",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1438,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4820",
+    "descriere_scurta": "Function generator signal shape",
+    "GENERATED": {
+      "explicatie": "p - Seteaza forma semnalului generat de generatorul de functii (sinus, dreptunghi, triunghi, salt etc). Permite selectarea formei de unda optima pentru testul dorit. Influenteaza tipul de excitatie aplicata sistemului de control.",
+      "influenteaza": "p4800, p4821, p4824",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1439,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4821",
+    "descriere_scurta": "Function generator period",
+    "GENERATED": {
+      "explicatie": "p - Seteaza perioada semnalului generat de generatorul de functii. Determina frecventa semnalului de test aplicat sistemului. Trebuie ales in functie de banda de frecventa a buclei testate.",
+      "influenteaza": "p4820, p4822",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1440,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4822",
+    "descriere_scurta": "Function generator pulse width",
+    "GENERATED": {
+      "explicatie": "p - Seteaza latimea impulsului pentru semnalul generat de generatorul de functii. Utilizat la semnalele dreptunghiulare pentru a controla raportul marcaj-spatiu. Permite generarea impulsurilor asimetrice pentru testare.",
+      "influenteaza": "p4820, p4821",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1441,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4823",
+    "descriere_scurta": "Function generator bandwidth",
+    "GENERATED": {
+      "explicatie": "p - Seteaza latimea de banda pentru semnalul generat de generatorul de functii. Controleaza continutul spectral al semnalului de test. Utilizat la semnale de zgomot (PRBS) pentru identificare in domeniu frecventa.",
+      "influenteaza": "p4820, p4824",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 1442,
+    "familie": "SINAMICS_S120_S150",
+    "parametru": "p4824",
+    "descriere_scurta": "Function generator amplitude",
+    "GENERATED": {
+      "explicatie": "p - Seteaza amplitudinea semnalului generat de generatorul de functii. Determina marimea perturbatiei aplicate sistemului testat. Valoarea trebuie aleasa suficient de mare pentru a fi vizibila dar fara a perturba excesiv procesul.",
+      "influenteaza": "p4820, p4825, p4826",
+      "categorie": "Diagnostic"
+    }
+  }
+]

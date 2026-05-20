@@ -1,0 +1,1103 @@
+[
+  {
+    "id": 27357,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4755",
+    "descriere_scurta": "Trace 1 trace buffer signal 5 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 5, in format float. Permite citirea celui de-al saselea canal de semnal inregistrat in trace 1.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27358,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4756",
+    "descriere_scurta": "Trace 1 trace buffer signal 6 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 6, in format float. Permite citirea celui de-al saptelea canal de semnal inregistrat in trace 1.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27359,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4757",
+    "descriere_scurta": "Trace 1 trace buffer signal 7 floating point",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 7, in format float. Acesta este ultimul canal disponibil al trace 1.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27360,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4762",
+    "descriere_scurta": "Trace 0 trace buffer signal 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 2, in format intreg fara semn (Unsigned32). Utilizat cand semnalul inregistrat are tip de date intreg.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27361,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4763",
+    "descriere_scurta": "Trace 0 trace buffer signal 3",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 3, in format Unsigned32. Utilizat cand semnalul inregistrat are tip de date intreg fara semn.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27362,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4764",
+    "descriere_scurta": "Trace 0 trace buffer signal 4",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 4, in format Unsigned32. Utilizat cand semnalul inregistrat are tip de date intreg fara semn.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27363,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4765",
+    "descriere_scurta": "Trace 0 trace buffer signal 5",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 5, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27364,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4766",
+    "descriere_scurta": "Trace 0 trace buffer signal 6",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 6, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27365,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4767",
+    "descriere_scurta": "Trace 0 trace buffer signal 7",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 0 pentru semnalul 7, in format Unsigned32. Acesta este ultimul canal intreg disponibil al trace 0.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27366,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4770",
+    "descriere_scurta": "Trace 1 trace buffer signal 0",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 0, in format Unsigned32. Utilizat pentru semnale de tip intreg inregistrate in trace 1.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27367,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4771",
+    "descriere_scurta": "Trace 1 trace buffer signal 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 1, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27368,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4772",
+    "descriere_scurta": "Trace 1 trace buffer signal 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 2, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27369,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4773",
+    "descriere_scurta": "Trace 1 trace buffer signal 3",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 3, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27370,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4774",
+    "descriere_scurta": "Trace 1 trace buffer signal 4",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 4, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27371,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4775",
+    "descriere_scurta": "Trace 1 trace buffer signal 5",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 5, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27372,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4776",
+    "descriere_scurta": "Trace 1 trace buffer signal 6",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 6, in format Unsigned32.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27373,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4777",
+    "descriere_scurta": "Trace 1 trace buffer signal 7",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valorile inregistrate in buffer-ul trace 1 pentru semnalul 7, in format Unsigned32. Acesta este ultimul canal intreg disponibil al trace 1.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27374,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4790",
+    "descriere_scurta": "Trace, data type 5 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al cincilea semnal inregistrat in buffer-ul trace. Informatia despre tipul de date este necesara pentru interpretarea corecta a valorilor din buffer.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27375,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4791",
+    "descriere_scurta": "Trace, data type 6 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al saselea semnal inregistrat in buffer-ul trace.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27376,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4792",
+    "descriere_scurta": "Trace, data type 7 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al saptelea semnal inregistrat in buffer-ul trace.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27377,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4793",
+    "descriere_scurta": "Trace, data type 8 traced",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tipul de date al celui de-al optulea semnal inregistrat in buffer-ul trace.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27378,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4806",
+    "descriere_scurta": "Function generator status signal",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza starea generatorului de functii: semnal 0 indica generator inactiv, semnal 1 indica generator activ. Utilizat pentru verificarea operatiei generatorului de semnale de test.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27379,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4833",
+    "descriere_scurta": "Function generator offset scaling",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza factorul de scalare (procente) al offset-ului formelor de unda generate de generatorul de functii, separat pentru fiecare canal de iesire. Valoarea nu poate fi modificata in timp ce generatorul este activ.",
+      "influenteaza": "r4806",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27380,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4955",
+    "descriere_scurta": "OA application identifier",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza identificatorii tuturor aplicatiilor OA (Open Architecture) instalate pe cardul de memorie sau memoria dispozitivului. Fiecare aplicatie ocupa 9 indici consecutivi in vectorul de afisare.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27381,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4956",
+    "descriere_scurta": "OA application activation",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Activeaza sau dezactiveaza aplicatiile OA instalate pe cardul de memorie sau memoria dispozitivului. Fiecare index corespunde unei aplicatii OA; valoarea 1 activeaza aplicatia respectiva.",
+      "influenteaza": "r4955, r4957",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27382,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4957",
+    "descriere_scurta": "OA application version",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza versiunile aplicatiilor OA instalate pe cardul de memorie sau memoria dispozitivului. Fiecare index corespunde versiunii unei aplicatii OA specifice.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27383,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4958",
+    "descriere_scurta": "OA application interface version",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza versiunile de interfata ale aplicatiilor OA instalate. Versiunea de interfata determina compatibilitatea aplicatiei OA cu versiunea de firmware a convertorului.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27384,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p4961",
+    "descriere_scurta": "OA application logbook module selection",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Selecteaza modulul pentru logbook-ul aplicatiei OA, utilizat exclusiv in scopuri de service. Valoarea implicita FFFFh indica selectia tuturor modulelor disponibile.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27385,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r4978",
+    "descriere_scurta": "OA application invalid identifier",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza identificatorii aplicatiilor OA invalide (incompatibile sau corupte) detectate pe cardul de memorie. Prezenta unui identificator valid indica o problema de compatibilitate care trebuie rezolvata.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27386,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7020",
+    "descriere_scurta": "Par_circuit deviation current in phase U",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza deviatia (ca valoare de varf) intre curentul real masurat in faza U si valoarea medie pentru configuratii cu convertoare in paralel. Deviatia maxima este afisata in r7025.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27387,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7021",
+    "descriere_scurta": "Par_circuit deviation current in phase V",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza deviatia (ca valoare de varf) intre curentul real masurat in faza V si valoarea medie pentru configuratii cu convertoare in paralel. Deviatia maxima este afisata in r7026.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27388,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7022",
+    "descriere_scurta": "Par_circuit deviation current in phase W",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza deviatia (ca valoare de varf) intre curentul real masurat in faza W si valoarea medie pentru configuratii cu convertoare in paralel. Deviatia maxima este afisata in r7027.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27389,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7030",
+    "descriere_scurta": "Par_circuit DC link voltage deviation",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza deviatia tensiunii circuitului DC fata de valoarea medie in configuratii cu unitati de putere in paralel. Deviatia maxima este afisata in r7031; diferente mari indica dezechilibre in impartirea sarcinii.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27390,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7035",
+    "descriere_scurta": "Par_circuit circulating current control operating mode",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza modul de operare al regulatorului de curent circulant pentru configuratii cu unitati de putere in paralel. Valoarea 1 activeaza regulatorul, care asigura distributia simetrica a curentilor totali.",
+      "influenteaza": "p7036, p7037, p7038",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27391,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7036",
+    "descriere_scurta": "Par_circuit circulating current control proportional gain",
+    "GENERATED": {
+      "epicatie": "p=parametru setabil.",
+      "explicatie": "p=parametru setabil. Seteaza castigul proportional al regulatorului de curent circulant, presetat la valoarea rezistentei cablului. Ajustarea acestui parametru influenteaza viteza de raspuns a regulatorului la dezechilibrele de curent.",
+      "influenteaza": "p7035, p7037",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27392,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7037",
+    "descriere_scurta": "Par_circuit circulating current control integral time",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza timpul de integrare al regulatorului de curent circulant, raportat la perioada de esantionare a controllerului de curent (p0115[0]). O valoare mai mica creste viteza de eliminare a dezechilibrului de curent.",
+      "influenteaza": "p7035, p7036",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27393,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7038",
+    "descriere_scurta": "Par_circuit circulating current control limit",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza limita maxima a semnalului de iesire al regulatorului de curent circulant, raportat la timpii de blocare ai tiristorului (p1828, p1829, p1830). Limiteaza corectia aplicata pentru evitarea instabilitatii.",
+      "influenteaza": "p7035, p1828, p1829, p1830",
+      "categorie": "Limite"
+    }
+  },
+  {
+    "id": 27394,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7040",
+    "descriere_scurta": "Par_circuit correction valve lockout time phase U",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza corectia de timp adaugata la timpul de blocare al tiristorului din faza U (p1828) pentru un anumit modul motor intr-o configuratie in paralel. Permite compensarea dispersiei timpilor de blocare intre module.",
+      "influenteaza": "p1828",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27395,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7042",
+    "descriere_scurta": "Par_circuit correction valve lockout time phase V",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza corectia de timp adaugata la timpul de blocare al tiristorului din faza V (p1829) pentru un anumit modul motor intr-o configuratie in paralel. Permite compensarea dispersiei timpilor de blocare intre module.",
+      "influenteaza": "p1829",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27396,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7044",
+    "descriere_scurta": "Par_circuit correction valve lockout time phase W",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza corectia de timp adaugata la timpul de blocare al tiristorului din faza W (p1830) pentru un anumit modul motor intr-o configuratie in paralel. Permite compensarea dispersiei timpilor de blocare intre module.",
+      "influenteaza": "p1830",
+      "categorie": "Altul"
+    }
+  },
+  {
+    "id": 27397,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7050",
+    "descriere_scurta": "Par_circuit circulating current phase U",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul circulant din faza U ca valoare de varf pentru configuratii cu unitati de putere in paralel. Valorile ridicate indica un dezechilibru semnificativ intre modulele conectate in paralel.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27398,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7051",
+    "descriere_scurta": "Par_circuit circulating current phase V",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul circulant din faza V ca valoare de varf pentru configuratii cu unitati de putere in paralel.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27399,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7052",
+    "descriere_scurta": "Par_circuit circulating current phase W",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul circulant din faza W ca valoare de varf pentru configuratii cu unitati de putere in paralel.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27400,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7100",
+    "descriere_scurta": "Par_circuit ring buffer fault/alarm code",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza codul erorii sau alarmei din buffer-ul inel al unitatilor de putere conectate in paralel (modul motor, alimentare activa, VSM). Permite identificarea evenimentelor individuale ale fiecarui modul.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27401,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7101",
+    "descriere_scurta": "Par_circuit ring buffer data set number",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul setului de date din buffer-ul inel al unitatilor de putere conectate in paralel. Impreuna cu r7100, permite corelarea evenimentelor cu setul de date activ la momentul aparitiei.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27402,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7101",
+    "descriere_scurta": ">= 100:",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Afiseaza timpul relativ de rulare al sistemului la care a aparut eroarea sau alarma in buffer-ul inel al unitatilor de putere conectate in paralel. Permite corelarea temporala a evenimentelor din module paralele.",
+      "influenteaza": "r7100, r7101",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27403,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7200",
+    "descriere_scurta": "Par_circuit power unit overload I2T",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suprasarcina calculata prin functia I2t a fiecarei unitati de putere dintr-o configuratie in paralel. Valoarea maxima dintre toate unitatile in paralel este afisata in r0036.",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27404,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7201",
+    "descriere_scurta": "Par_circuit power unit temperatures max. inverter",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura maxima a inverterului din unitatea de putere individuala intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor paralele este disponibila in r0037[0].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27405,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7202",
+    "descriere_scurta": "Par_circuit power unit temperatures max. depletion layer",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura maxima a stratului de depletie (jonctiune) din unitatea de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este in r0037[1].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27406,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7203",
+    "descriere_scurta": "Par_circuit power unit temperatures max. rectifier",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura maxima a redresorului din unitatea de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor in paralel este disponibila in r0037[2].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27407,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7204",
+    "descriere_scurta": "Par_circuit power unit temperatures air intake",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura aerului de intrare (aspiratie) din unitatea de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor in paralel este disponibila in r0037[3].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27408,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7205",
+    "descriere_scurta": "Par_circuit power unit temperatures electronics",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura modulului electronic al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor in paralel este disponibila in r0037[4].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27409,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7206",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 1 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[5].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27410,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7207",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 2 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[6].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27411,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7208",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 3",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 3 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[7].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27412,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7209",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 4",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 4 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[8].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27413,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7210",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 5",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 5 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[9].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27414,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7211",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 6",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura inverterului 6 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[10].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27415,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7212",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura redresorului 1 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[11].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27416,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7213",
+    "descriere_scurta": "Par_circuit power unit temperatures inverter 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura redresorului 2 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[12].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27417,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7214",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 1 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[13].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27418,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7215",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 2",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 2 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[14].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27419,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7216",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 3",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 3 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[15].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27420,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7217",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 4",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 4 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[16].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27421,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7218",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 5",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 5 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[17].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27422,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7219",
+    "descriere_scurta": "Par_circuit power unit temperatures depletion layer 6",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza temperatura stratului de depletie 6 al unitatii de putere intr-o configuratie in paralel. Valoarea maxima a tuturor unitatilor este disponibila in r0037[18].",
+      "influenteaza": "",
+      "categorie": "Protectii"
+    }
+  },
+  {
+    "id": 27423,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7220",
+    "descriere_scurta": "Par_circuit drive output current maximum",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul maxim de iesire al fiecarei unitati de putere individuale intr-o configuratie in paralel. Suma minima a tuturor unitatilor multiplicate cu numarul de module este disponibila in r0067.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27424,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7222",
+    "descriere_scurta": "Par_circuit absolute current actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea absoluta actuala a curentului pentru unitatea de putere individuala intr-o configuratie in paralel. Suma tuturor unitatilor in paralel este disponibila in r0068.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27425,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7223",
+    "descriere_scurta": "Par_circuit phase current actual value phase U",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala masurata a curentului de faza U ca valoare de varf pentru unitatea de putere individuala. Suma tuturor unitatilor in paralel este disponibila in r0069[0].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27426,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7224",
+    "descriere_scurta": "Par_circuit phase current actual value phase V",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala masurata a curentului de faza V ca valoare de varf pentru unitatea de putere individuala. Suma tuturor unitatilor in paralel este disponibila in r0069[1].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27427,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7225",
+    "descriere_scurta": "Par_circuit phase current actual value phase W",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza valoarea actuala masurata a curentului de faza W ca valoare de varf pentru unitatea de putere individuala. Suma tuturor unitatilor in paralel este disponibila in r0069[2].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27428,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7226",
+    "descriere_scurta": "Par_circuit phase current actual value phase U offset",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza offset-ul masurat al curentului de faza U ca valoare de varf pentru unitatea de putere. Suma tuturor unitatilor in paralel este disponibila in r0069[3].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27429,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7227",
+    "descriere_scurta": "Par_circuit phase current actual value phase V offset",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza offset-ul masurat al curentului de faza V ca valoare de varf pentru unitatea de putere. Suma tuturor unitatilor in paralel este disponibila in r0069[4].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27430,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7228",
+    "descriere_scurta": "Par_circuit phase current actual value phase W offset",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza offset-ul masurat al curentului de faza W ca valoare de varf pentru unitatea de putere. Suma tuturor unitatilor in paralel este disponibila in r0069[5].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27431,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7229",
+    "descriere_scurta": "Par_circuit phase current actual value sum U, V, W",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza suma curentilor din fazele U, V si W ca valoare de varf pentru unitatea de putere. Suma tuturor unitatilor in paralel este disponibila in r0069[6].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27432,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7230",
+    "descriere_scurta": "Par_circuit DC link voltage actual value",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea actuala masurata a circuitului DC pentru unitatea de putere individuala intr-o configuratie in paralel. Valoarea medie a tuturor unitatilor in paralel este disponibila in r0070.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27433,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7231",
+    "descriere_scurta": "Par_circuit phase voltage actual value phase U",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea de faza U actuala pentru unitatea de putere individuala intr-o configuratie in paralel. Valoarea medie a tuturor unitatilor este disponibila in r0089[0].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27434,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7232",
+    "descriere_scurta": "Par_circuit phase voltage actual value phase V",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea de faza V actuala pentru unitatea de putere individuala intr-o configuratie in paralel. Valoarea medie a tuturor unitatilor este disponibila in r0089[1].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27435,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7233",
+    "descriere_scurta": "Par_circuit phase voltage actual value phase W",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza tensiunea de faza W actuala pentru unitatea de putere individuala intr-o configuratie in paralel. Valoarea medie a tuturor unitatilor este disponibila in r0089[2].",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27436,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7240",
+    "descriere_scurta": "Par_circuit gating unit status word 1",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza primul cuvant de stare al unitatii de putere (gating unit) intr-o configuratie in paralel. Permite diagnosticarea starii individuale a fiecarui modul de putere in cadrul configuratiei paralele.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27437,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7250",
+    "descriere_scurta": "Par_circuit power unit rated power",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza puterea nominala a fiecarei unitati de putere individuale conectate in paralel pentru diferite cicluri de sarcina (placa de date, supraincarcare redusa/mare, S1, S6). Suma tuturor unitatilor este disponibila in r0206.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27438,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7251",
+    "descriere_scurta": "Par_circuit power unit rated current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul nominal al fiecarei unitati de putere individuale conectate in paralel pentru diferite cicluri de sarcina. Suma tuturor unitatilor in paralel este disponibila in r0207.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27439,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7252",
+    "descriere_scurta": "Par_circuit maximum power unit current",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza curentul maxim de iesire al fiecarei unitati de putere individuale conectate in paralel pentru diferite cicluri de sarcina. Suma valorilor maxime ale tuturor unitatilor este disponibila in r0209.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27440,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7822",
+    "descriere_scurta": "DRIVE-CLiQ component parameter index",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza indexul parametrului utilizat pentru accesarea unui parametru specific al unei componente DRIVE-CLiQ. Utilizat de service impreuna cu alti parametri de acces la date ale componentelor DRIVE-CLiQ.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27441,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7832",
+    "descriere_scurta": "Telegram diagnostics numerical format",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Indica formatul numeric original al semnalelor continute in telegrama de comunicatie. Numarul semnalului asociat este reprezentat la indexul corespunzator in r7831.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27442,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7833",
+    "descriere_scurta": "Telegram diagnostics unsigned",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza un semnal DSA in format intreg fara semn pentru diagnosticarea telegramei de comunicatie. Numarul semnalului asociat este reprezentat la indexul corespunzator in r7831.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27443,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7834",
+    "descriere_scurta": "Telegram diagnostics signed",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza un semnal DSA in format intreg cu semn pentru diagnosticarea telegramei de comunicatie. Numarul semnalului asociat este reprezentat la indexul corespunzator in r7831.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27444,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7835",
+    "descriere_scurta": "Telegram diagnostics real",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza un semnal DSA in format float pentru diagnosticarea telegramei de comunicatie. Numarul semnalului asociat este reprezentat la indexul corespunzator in r7831.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27445,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7836",
+    "descriere_scurta": "Telegram diagnostics unit",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza unitatile de masura ale unui semnal DSA pentru diagnosticarea telegramei. Numarul semnalului asociat este reprezentat la indexul corespunzator in r7831.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27446,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7843",
+    "descriere_scurta": "Memory card serial number",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza numarul de serie al cardului de memorie curent, cu fiecare caracter reprezentat in cod ASCII in indexurile parametrului. Utilizat pentru identificarea unica a cardului de memorie.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27447,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7850",
+    "descriere_scurta": "Drive object operational/not operational",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza daca toate componentele topologiei activate sunt disponibile pentru un obiect de actionare activat. Valoarea 0 indica obiectul neoperational, valoarea 1 indica obiectul operational.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27448,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p7859",
+    "descriere_scurta": "Component number global",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza numarul global si unic al componentei intr-un sistem cu mai multe unitati de control. Fiecare index corespunde unui numar de componenta local, caruia i se atribuie numarul global de componenta.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27449,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7869",
+    "descriere_scurta": "Status changes drive object reference",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza referinta la obiectele de actionare al caror status s-a modificat. Indexul 0 este incrementat la orice modificare a indexurilor 1-n; indexurile ulterioare contin numerele obiectelor cu status modificat.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27450,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7871",
+    "descriere_scurta": "Configuration changes drive object",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza modificarile de configuratie ale obiectului de actionare, cu fiecare index indicand un tip specific de modificare (parametri structurali, interconexiuni BICO, parametri de referinta etc).",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27451,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7872",
+    "descriere_scurta": "Status changes drive object",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza modificarile de status ale obiectului de actionare, cu indexul 0 incrementat la orice schimbare. Indexul 1 monitorizeaza erorile, indexul 2 alarmele si indexul 3 mesajele de siguranta.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27452,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r7901",
+    "descriere_scurta": "Sampling times",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza timpii de esantionare activi ai unitatii de actionare pentru fiecare felie de timp. O valoare r7901[x] = 0 indica faptul ca felia de timp respectiva nu este activa.",
+      "influenteaza": "",
+      "categorie": "Diagnostic"
+    }
+  },
+  {
+    "id": 27453,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8572",
+    "descriere_scurta": "Macro Connector Inputs (CI) for speed setpoints",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza fisierul ACX salvat in directorul corespunzator din memoria non-volatila, utilizat pentru configurarea macro-urilor de interconectare a intrarilor connector pentru referinte de viteza.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27454,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8607",
+    "descriere_scurta": "CAN Identity Object",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza informatiile generale despre dispozitiv prin obiectul de identitate CAN (CANopen). Indexurile contin Vendor ID, codul produsului, numarul de revizie si numarul de serie.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27455,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "p8609",
+    "descriere_scurta": "CAN Error Behaviour",
+    "GENERATED": {
+      "explicatie": "p=parametru setabil. Seteaza comportamentul nodului CAN in caz de eroare de comunicatie sau defect al echipamentului. Valorile 0, 1, 2 corespund diferitelor strategii de tratare a erorilor CANopen.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  },
+  {
+    "id": 27456,
+    "familie": "SINAMICS_G130_G150",
+    "parametru": "r8610",
+    "descriere_scurta": "CAN First Server SDO",
+    "GENERATED": {
+      "explicatie": "r=read-only afisaj. Afiseaza identificatorul (COB-ID) canalului SDO pentru comunicatia client-server si server-client CANopen. Indexul 0 afiseaza COB-ID de la client la server, indexul 1 de la server la client.",
+      "influenteaza": "",
+      "categorie": "Comunicatii"
+    }
+  }
+]
