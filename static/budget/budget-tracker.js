@@ -97,6 +97,7 @@ function migrateVwce(data) {
       exchange: 'XETRA',
       currency: 'EUR',
       tranzactii: [],
+      alimentari: [],
       pretCurent: 0,
       previousClose: 0,
       changePct: 0,
@@ -105,6 +106,17 @@ function migrateVwce(data) {
     };
   }
   if (!Array.isArray(data.vwce.tranzactii)) data.vwce.tranzactii = [];
+  if (!Array.isArray(data.vwce.alimentari)) data.vwce.alimentari = [];
+}
+
+// Special import categories that route money to investments instead of expenses
+var IMPORT_SPECIAL_CATS = ['__SKIP__', '__TEZAUR__', '__TRADEVILLE__'];
+function specialCatLabel(c) {
+  return {
+    '__SKIP__': '— ignoră —',
+    '__TEZAUR__': '→ Subscriere Tezaur',
+    '__TRADEVILLE__': '→ Alimentare Tradeville'
+  }[c] || c;
 }
 
 // Seed d.credit.scadentar from real ING amortisation table if missing
@@ -213,7 +225,7 @@ var REGULI_CATEGORIZARE_DEFAULT = [
   { id: 1,  pattern: 'Rata Credit',                       categorie: 'Rată credit + asig.' },
   { id: 2,  pattern: 'Prima asigurare ING Credit Protect',categorie: 'Rată credit + asig.' },
   { id: 3,  pattern: 'Detalii:chirie',                    categorie: 'Chirie' },
-  { id: 4,  pattern: 'Subscriere Tezaur',                 categorie: '__SKIP__' },
+  { id: 4,  pattern: 'Subscriere Tezaur',                 categorie: '__TEZAUR__' },
   { id: 5,  pattern: 'KAUFLAND|AUCHAN|CARREFOUR|MEGA IMAGE|LIDL|PROFI|PENNY|SELGROS',          categorie: 'Alimente' },
   { id: 6,  pattern: 'ENGIE|ELECTRICA|APA NOVA|E\\.ON|HIDROELECTRICA|ENEL',                    categorie: 'Facturi' },
   { id: 7,  pattern: 'VODAFONE|DIGI|RDS|RCS|ORANGE|TELEKOM',                                   categorie: 'Facturi' },
@@ -1249,9 +1261,10 @@ function renderSetari() {
   if (!d.reguliCategorizare || d.reguliCategorizare.length === 0) {
     html += '<div class="audit-empty">Nicio regulă. La import bancar tranzacțiile vor fi puse în "Alte" până când adăugi reguli.</div>';
   } else {
-    var categoriiTinta = ['__SKIP__'].concat(
+    var categoriiTinta = IMPORT_SPECIAL_CATS.concat(
       (d.cheltuieliFixe || []).map(function(c) { return c.label; }),
-      (d.categoriiVar || []).map(function(c) { return c.label; })
+      (d.categoriiVar || []).map(function(c) { return c.label; }),
+      (d.categoriiVenit || []).map(function(c) { return c.label; })
     );
     html += '<div class="table-wrap"><table>';
     html += '<thead><tr><th>Pattern (regex)</th><th>Categorie țintă</th><th></th></tr></thead><tbody>';
@@ -1260,7 +1273,7 @@ function renderSetari() {
       html += '<td><input type="text" class="input mono w-full" value="' + esc(r.pattern || '') + '" placeholder="Ex: KAUFLAND|AUCHAN" onchange="updateReguliCat(' + r.id + ', \'pattern\', this.value)"></td>';
       html += '<td><select class="select cs-enhance" onchange="updateReguliCat(' + r.id + ', \'categorie\', this.value)">';
       categoriiTinta.forEach(function(c) {
-        var lbl = c === '__SKIP__' ? '— ignoră —' : c;
+        var lbl = (IMPORT_SPECIAL_CATS.indexOf(c) >= 0) ? specialCatLabel(c) : c;
         html += '<option value="' + esc(c) + '"' + (r.categorie === c ? ' selected' : '') + '>' + esc(lbl) + '</option>';
       });
       html += '</select></td>';
@@ -1270,7 +1283,7 @@ function renderSetari() {
     html += '</tbody></table></div>';
     html += '<div class="info-box" style="margin-top:0.85rem;">';
     html += '<i data-lucide="info"></i>';
-    html += '<div>Pattern-urile sunt regex JavaScript case-insensitive, testate pe descrierea completă a tranzacției (detalii + beneficiar + locație). Categoria "— ignoră —" sare peste tranzacția respectivă (ex: subscrieri Tezaur care nu sunt cheltuieli).</div>';
+    html += '<div>Pattern-urile sunt regex JavaScript case-insensitive, testate pe descrierea completă a tranzacției (detalii + beneficiar + locație). Categorii speciale: <strong>→ Subscriere Tezaur</strong> creează automat o intrare în tabelul Tezaur; <strong>→ Alimentare Tradeville</strong> înregistrează banii transferați la broker (nu ca cheltuială); <strong>— ignoră —</strong> sare peste tranzacție. Pentru transferurile către Tradeville adaugă o regulă cu IBAN-ul contului tău Tradeville → Alimentare Tradeville.</div>';
     html += '</div>';
   }
   html += '</div></div>';
@@ -2181,6 +2194,24 @@ function renderInvestitii() {
   html += statCard(t.plEur >= 0 ? 'arrow-up-right' : 'arrow-down-right', 'Profit / pierdere', (t.plEur >= 0 ? '+' : '') + fmtEur(t.plEur) + ' EUR', (t.plEur >= 0 ? '+' : '') + t.plPct.toFixed(2) + '%' + (cursRon > 0 ? ' · ' + (t.plEur >= 0 ? '+' : '') + formatRON(t.plEur * cursRon) + ' RON' : ''), plClass);
   html += '</div></div>';
 
+  // Tradeville cash transfers (from bank import)
+  var alimentari = v.alimentari || [];
+  if (alimentari.length > 0) {
+    var totalTransferat = alimentari.reduce(function(s, a) { return s + (parseRON(a.suma) || 0); }, 0);
+    var investitRonEq = cursRon > 0 ? t.investitEur * cursRon : 0;
+    var cashNeinvestit = investitRonEq > 0 ? (totalTransferat - investitRonEq) : null;
+    html += '<div class="section">';
+    html += '<div class="info-box">';
+    html += '<i data-lucide="arrow-left-right"></i>';
+    html += '<div>Transferat la Tradeville: <strong class="mono">' + formatRON(totalTransferat) + ' RON</strong> din ' + alimentari.length + ' alimentări importate.';
+    if (cashNeinvestit !== null) {
+      html += ' Investit în VWCE: <strong class="mono">' + formatRON(investitRonEq) + ' RON</strong>.';
+      if (cashNeinvestit > 1) html += ' Cash neinvestit estimat: <strong class="mono">' + formatRON(cashNeinvestit) + ' RON</strong> — adaugă tranzacții VWCE pentru unitățile cumpărate.';
+    }
+    html += '</div></div>';
+    html += '</div>';
+  }
+
   // Chart: VWCE price + portfolio value evolution
   var series = (v.priceHistory || []);
   if (series.length > 1) {
@@ -2836,17 +2867,18 @@ async function showImportModal() {
   });
 
   function renderPreview() {
-    var chCategories = ['__SKIP__'].concat(
+    var chCategories = IMPORT_SPECIAL_CATS.concat(
       (state.data.cheltuieliFixe || []).map(function(c) { return c.label; }),
       (state.data.categoriiVar || []).map(function(c) { return c.label; })
     );
     var venitCategories = ['__SKIP__'].concat(
       (state.data.categoriiVenit || []).map(function(c) { return c.label; })
     );
-    var nSkip = 0, nApplyCh = 0, nApplyV = 0, nDup = 0;
+    var nSkip = 0, nApplyCh = 0, nApplyV = 0, nDup = 0, nInvest = 0;
     parsed.forEach(function(t) {
       if (t.duplicate) { nDup++; return; }
       if (t.categorie === '__SKIP__') { nSkip++; return; }
+      if (t.categorie === '__TEZAUR__' || t.categorie === '__TRADEVILLE__') { nInvest++; return; }
       if (t.tip === 'venit') nApplyV++;
       else nApplyCh++;
     });
@@ -2855,9 +2887,10 @@ async function showImportModal() {
       '<strong>' + parsed.length + '</strong> tranzacții găsite' +
       ' <span class="sep">·</span> <strong>' + nApplyCh + '</strong> cheltuieli' +
       ' <span class="sep">·</span> <strong>' + nApplyV + '</strong> venituri' +
+      (nInvest > 0 ? ' <span class="sep">·</span> <strong>' + nInvest + '</strong> investiții' : '') +
       ' <span class="sep">·</span> <strong>' + nSkip + '</strong> ignorate' +
       (nDup > 0 ? ' <span class="sep">·</span> <strong>' + nDup + '</strong> duplicate' : '');
-    applyBtn.disabled = ((nApplyCh + nApplyV) === 0);
+    applyBtn.disabled = ((nApplyCh + nApplyV + nInvest) === 0);
 
     var h = '<div class="table-wrap"><table>';
     h += '<thead><tr><th>Data</th><th>Tip</th><th>Descriere</th><th class="num">Sumă</th><th>Categorie</th></tr></thead><tbody>';
@@ -2867,9 +2900,12 @@ async function showImportModal() {
       if (t.duplicate) rowStyle = ' style="opacity:0.35;"';
       else if (t.categorie === '__SKIP__') rowStyle = ' style="opacity:0.45;"';
       var isVenit = t.tip === 'venit';
-      var tipChip = isVenit
-        ? '<span class="tag" style="background:var(--success-soft);color:var(--success);">venit</span>'
-        : '<span class="tag" style="background:var(--danger-soft);color:var(--danger);">cheltuială</span>';
+      var isInvest = t.categorie === '__TEZAUR__' || t.categorie === '__TRADEVILLE__';
+      var tipChip = isInvest
+        ? '<span class="tag" style="background:var(--violet-soft);color:var(--violet);">investiție</span>'
+        : (isVenit
+          ? '<span class="tag" style="background:var(--success-soft);color:var(--success);">venit</span>'
+          : '<span class="tag" style="background:var(--danger-soft);color:var(--danger);">cheltuială</span>');
       h += '<tr' + rowStyle + '>';
       h += '<td class="mono">' + esc(t.dataIso || t.data) + (t.duplicate ? ' <span class="tag" style="background:var(--warning-soft);color:var(--warning);font-size:0.62rem;">dup</span>' : '') + '</td>';
       h += '<td>' + tipChip + '</td>';
@@ -2877,7 +2913,7 @@ async function showImportModal() {
       h += '<td class="num ' + (isVenit ? 'pl-pos' : 'neg') + '">' + (isVenit ? '+' : '') + formatRON(t.suma) + '</td>';
       h += '<td><select class="select" data-imp-cat="' + idx + '">';
       (isVenit ? venitCategories : chCategories).forEach(function(c) {
-        var lbl = c === '__SKIP__' ? '— ignoră —' : c;
+        var lbl = (IMPORT_SPECIAL_CATS.indexOf(c) >= 0) ? specialCatLabel(c) : c;
         h += '<option value="' + esc(c) + '"' + (t.categorie === c ? ' selected' : '') + '>' + esc(lbl) + '</option>';
       });
       h += '</select></td>';
@@ -2907,7 +2943,7 @@ async function showImportModal() {
     if (act.dataset.act === 'cancel') return close();
     if (act.dataset.act === 'apply') {
       var fixedLabels = (state.data.cheltuieliFixe || []).reduce(function(s, c) { s[c.label] = true; return s; }, {});
-      var addedCh = 0, addedV = 0, refsAdded = [];
+      var addedCh = 0, addedV = 0, addedTez = 0, addedTrv = 0, refsAdded = [];
       // Collect candidate new rules from user overrides
       var ruleProposals = {};
       parsed.forEach(function(t) {
@@ -2923,6 +2959,30 @@ async function showImportModal() {
         if (t.categorie === '__SKIP__') return;
         var mk = t.dataIso ? t.dataIso.substring(0, 7) : null;
         if (!mk) return;
+        // Investment transfers — route to Tezaur / Tradeville instead of expenses
+        if (t.categorie === '__TEZAUR__') {
+          if (!Array.isArray(state.data.tezaur)) state.data.tezaur = [];
+          state.data.tezaur.push({
+            id: getNextId(state.data.tezaur),
+            emisiune: ((state.data.emisiuniTezaur || [])[0] || {}).label || 'Tezaur',
+            dataSubscriere: t.dataIso || '',
+            suma: t.suma,
+            dobanda: 0,
+            maturitate: '1 an',
+            dataScadenta: ''
+          });
+          addedTez++;
+          if (t.ref) refsAdded.push(t.ref);
+          return;
+        }
+        if (t.categorie === '__TRADEVILLE__') {
+          if (!state.data.vwce) migrateVwce(state.data);
+          if (!Array.isArray(state.data.vwce.alimentari)) state.data.vwce.alimentari = [];
+          state.data.vwce.alimentari.push({ data: t.dataIso || '', suma: t.suma });
+          addedTrv++;
+          if (t.ref) refsAdded.push(t.ref);
+          return;
+        }
         if (t.tip === 'venit') {
           if (!state.data.venituri[mk]) state.data.venituri[mk] = {};
           state.data.venituri[mk][t.categorie] = (state.data.venituri[mk][t.categorie] || 0) + t.suma;
@@ -2951,9 +3011,12 @@ async function showImportModal() {
         if (proposalsList.length > 0) {
           showRuleProposals(proposalsList, added);
         } else {
+          var invMsg = '';
+          if (addedTez > 0) invMsg += ' ' + addedTez + ' subscrieri Tezaur create (completează dobânda în tab Investiții).';
+          if (addedTrv > 0) invMsg += ' ' + addedTrv + ' alimentări Tradeville înregistrate.';
           showConfirm({
             title: 'Import complet',
-            body: addedCh + ' cheltuieli și ' + addedV + ' venituri adăugate. Cheltuielile fixe au fost păstrate intacte. ' + (refsAdded.length ? refsAdded.length + ' referințe salvate pentru detectare duplicate.' : ''),
+            body: addedCh + ' cheltuieli și ' + addedV + ' venituri adăugate.' + invMsg + ' Cheltuielile fixe au fost păstrate intacte.',
             okLabel: 'OK',
             cancelLabel: '',
             icon: 'check-circle'
