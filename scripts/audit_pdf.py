@@ -233,6 +233,8 @@ def parse_abb(pdf_path):
                     # value-key + FbEq scale columns, not the parameter's own default.
 
                 description = ' '.join(desc_parts).strip()
+                # Fix PDF line-break hyphenation: 'intern- ally' -> 'internally'
+                description = re.sub(r'(\w+)-\s+([a-z]\w*)', r'\1\2', description)
                 deftype = ' '.join(deftype_parts).strip()
 
                 default_val = ''
