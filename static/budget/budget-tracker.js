@@ -6,7 +6,7 @@ var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
 var LUNI_COUNT = 12; // default; overridden by d.profil.numarLuni
-var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte credite', 'Alte'];
+var CHELTUIELI_VARIABILE_DEFAULT = ['Alimente', 'Mâncare restaurant', 'Facturi', 'Transport', 'Sănătate', 'Îmbrăcăminte', 'Divertisment', 'Abonamente', 'Alte credite', 'Alte'];
 
 // Generate N months starting from "YYYY-MM"; returns {keys, labels}
 function generateLuni(startMonth, count) {
@@ -185,6 +185,19 @@ function ensureCategorieVar(data, label) {
   }
 }
 
+// Guarantee a categorisation rule routing to `categorie` exists. Idempotent —
+// skips if any rule already targets that category. `prepend` gives the new
+// rule priority over older rules during categorizeAuto's first-match scan.
+function ensureRegula(data, pattern, categorie, prepend) {
+  if (!data) return;
+  if (!Array.isArray(data.reguliCategorizare)) data.reguliCategorizare = [];
+  var exists = data.reguliCategorizare.some(function(r) { return r && r.categorie === categorie; });
+  if (exists) return;
+  var rule = { id: getNextId(data.reguliCategorizare), pattern: pattern, categorie: categorie };
+  if (prepend) data.reguliCategorizare.unshift(rule);
+  else data.reguliCategorizare.push(rule);
+}
+
 // Convert legacy cheltuieliFixe object {chirie, rataCredit} to array of {id,label,suma}
 function migrateCheltuieliFixe(data) {
   if (!data) return;
@@ -239,7 +252,8 @@ var REGULI_CATEGORIZARE_DEFAULT = [
   { id: 2,  pattern: 'Prima asigurare ING Credit Protect',categorie: 'Rată credit + asig.' },
   { id: 3,  pattern: 'Detalii:chirie',                    categorie: 'Chirie' },
   { id: 4,  pattern: 'Subscriere Tezaur',                 categorie: '__TEZAUR__' },
-  { id: 5,  pattern: 'KAUFLAND|AUCHAN|CARREFOUR|MEGA IMAGE|LIDL|PROFI|PENNY|SELGROS',          categorie: 'Alimente' },
+  { id: 5,  pattern: 'KAUFLAND|AUCHAN|CARREFOUR|MEGA IMAGE|LIDL|PROFI|PENNY|SELGROS|FRESH MARKET', categorie: 'Alimente' },
+  { id: 17, pattern: 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', categorie: 'Mâncare restaurant' },
   { id: 6,  pattern: 'ENGIE|ELECTRICA|APA NOVA|E\\.ON|HIDROELECTRICA|ENEL',                    categorie: 'Facturi' },
   { id: 7,  pattern: 'VODAFONE|DIGI|RDS|RCS|ORANGE|TELEKOM',                                   categorie: 'Facturi' },
   { id: 8,  pattern: 'MEDICAL|FARMACIE|FARMACIA|CATENA|SENSIBLU|HELPNET|REGINA MARIA|MEDLIFE|MEDICOVER|CLUJ MEDICAL', categorie: 'Sănătate' },
@@ -247,7 +261,7 @@ var REGULI_CATEGORIZARE_DEFAULT = [
   { id: 10, pattern: 'OMV|MOL|PETROM|ROMPETROL|LUKOIL|SOCAR',                                  categorie: 'Transport' },
   { id: 11, pattern: 'NETFLIX|SPOTIFY|HBO|YOUTUBE|APPLE\\.COM|GOOGLE|MICROSOFT|ADOBE',         categorie: 'Abonamente' },
   { id: 12, pattern: 'H\\&M|ZARA|RESERVED|BERSHKA|PULL\\&BEAR|C\\&A|DECATHLON',                categorie: 'Îmbrăcăminte' },
-  { id: 13, pattern: 'CINEMA|RESTAURANT|MCDONALDS|KFC|STARBUCKS|BURGER KING|PIZZA',            categorie: 'Divertisment' },
+  { id: 13, pattern: 'CINEMA|TEATRU|CONCERT|BOWLING|ESCAPE ROOM',                              categorie: 'Divertisment' },
   // Income rules (matched on credit transactions)
   { id: 14, pattern: 'SALARIU|VENIT SALARIAL|LEAFA|LEFE',                                      categorie: '__SKIP__' },
   { id: 15, pattern: 'BONUS|PRIMA|TICHETE|BONURI DE MASA|BONURI MASA',                         categorie: 'Bonus' },
@@ -325,14 +339,15 @@ var DATI_INITIALE = {
   ],
   categoriiVar: [
     { id: 1, label: 'Alimente' },
-    { id: 2, label: 'Facturi' },
-    { id: 3, label: 'Transport' },
-    { id: 4, label: 'Sănătate' },
-    { id: 5, label: 'Îmbrăcăminte' },
-    { id: 6, label: 'Divertisment' },
-    { id: 7, label: 'Abonamente' },
-    { id: 8, label: 'Alte credite' },
-    { id: 9, label: 'Alte' },
+    { id: 2, label: 'Mâncare restaurant' },
+    { id: 3, label: 'Facturi' },
+    { id: 4, label: 'Transport' },
+    { id: 5, label: 'Sănătate' },
+    { id: 6, label: 'Îmbrăcăminte' },
+    { id: 7, label: 'Divertisment' },
+    { id: 8, label: 'Abonamente' },
+    { id: 9, label: 'Alte credite' },
+    { id: 10, label: 'Alte' },
   ],
   categoriiVenit: [
     { id: 1, label: 'Bonuri masă' },
@@ -414,10 +429,12 @@ async function loadData() {
       migrateCheltuieliFixe(state.data);
       migrateCategoriiVar(state.data);
       ensureCategorieVar(state.data, 'Alte credite');
+      ensureCategorieVar(state.data, 'Mâncare restaurant');
       migrateCategoriiVenit(state.data);
       migrateEmisiuniTezaur(state.data);
       migrateCreditScadentar(state.data);
       migrateReguliCategorizare(state.data);
+      ensureRegula(state.data, 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', 'Mâncare restaurant', true);
       migrateImportedRefs(state.data);
       migrateGoals(state.data);
       migrateEtf(state.data);
