@@ -3476,3 +3476,10 @@
 2026-05-20 13:05:15,158  INFO        -> new: Defineste continutul mesajului TPDO (A) pentru modul de functionare CiA 402 "Vel
 2026-05-20 13:05:15,258  INFO      22990 0x1A03:003 (Lenze_i550)  existing_len=0  qc=new
 2026-05-20 13:05:15,669  INFO        -> new: Afiseaza codul de verificare pentru comunicatia Modbus. Este un parametru doar p
+2026-05-20 13:05:16,240  INFO        -> new: Seteaza timpul de eliminare a oscilatiilor mecanice sau electrice pentru intrare
+2026-05-20 13:05:16,340  INFO      22782 0x2633:002 (Lenze_i550)  existing_len=0  qc=new
+2026-05-20 13:05:17,886  INFO        -> new: Configureaza protectia termica a motorului impotriva supraincalzirii. Ofera trei
+2026-05-20 13:05:17,986  INFO      3159 1-94 (Danfoss_VLT_FC302)  existing_len=0  qc=new
+2026-05-20 13:05:18,538  INFO        -> new: Afiseaza numele de statie PROFINET activ si utilizat in retea. Acest parametru e
+2026-05-20 13:05:18,574  INFO        Committed + pushed
+2026-05-20 13:05:18,574  INFO      DONE: total=100 {'keep': 0, 'rewrite': 0, 'new': 86, 'error': 14} cost=$0.1542
