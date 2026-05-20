@@ -1741,49 +1741,29 @@ function renderFondUrgenta() {
   html += '<td colspan="2"></td></tr>';
   html += '</tfoot></table></div></div></div>';
 
-  // Evoluție lunară active
+  // Proiecție avere netă — calculată automat din active curente + scadenar credit
+  var totalFondCurent = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
+  var totalTezaurCurent = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
+  var activeCurente = totalFondCurent + totalTezaurCurent;
+  var scadEv = getScadentar(d);
+  var averePts = LUNI_KEYS.map(function(lk, i) {
+    var refIso = lk + '-28';
+    var sold = soldDupaPlatiTrecute(scadEv, refIso, d.credit.suma);
+    return { x: i, y: activeCurente - sold, label: LUNI[i] };
+  });
+  var averePrima = averePts.length ? averePts[0].y : 0;
+  var avereUltima = averePts.length ? averePts[averePts.length - 1].y : 0;
+
   html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="line-chart"></i> Evoluție lunară active</div></div>';
-  html += '<div class="panel">';
-  html += '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Activ</th>';
-  LUNI.forEach(function(l) { html += '<th class="num">' + l + '</th>'; });
-  html += '</tr></thead><tbody>';
-
-  var campuri = [
-    { key: 'fondUrgenta', label: 'Fond urgență' },
-    { key: 'tezaur', label: 'Tezaur investit' },
-    { key: 'buffer', label: 'Buffer cont curent' },
-  ];
-  campuri.forEach(function(c) {
-    html += '<tr><td class="muted">' + c.label + '</td>';
-    LUNI_KEYS.forEach(function(l) {
-      var val = (d.evolutie[l] || {})[c.key] || '';
-      html += '<td class="num"><input type="number" class="input num w-20" value="' + val + '" onchange="updateEvolutie(\'' + l + '\', \'' + c.key + '\', this.value)"></td>';
-    });
-    html += '</tr>';
-  });
-
-  // Total active per luna
-  html += '<tr class="total"><td>Total active</td>';
-  LUNI_KEYS.forEach(function(l) {
-    var e = d.evolutie[l] || {};
-    var total = (e.fondUrgenta || 0) + (e.tezaur || 0) + (e.buffer || 0);
-    html += '<td class="num">' + formatRON(total) + '</td>';
-  });
-  html += '</tr>';
-
-  // Avere netă per luna
-  html += '<tr class="total-strong"><td>Avere netă</td>';
-  LUNI_KEYS.forEach(function(l) {
-    var e = d.evolutie[l] || {};
-    var active = (e.fondUrgenta || 0) + (e.tezaur || 0) + (e.buffer || 0);
-    var an = active - (e.soldCredit || 0);
-    html += '<td class="num ' + (an >= 0 ? 'pos' : 'neg') + '">' + formatRON(an) + '</td>';
-  });
-  html += '</tr>';
-
-  html += '</tbody></table></div></div></div>';
+  html += '<div class="chart-card">';
+  html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="line-chart"></i> Proiecție avere netă</div><div class="chart-meta">active curente − sold credit</div></div>';
+  html += '  <div class="chart-meta" style="margin-bottom:0.4rem;">' + esc(LUNI[0] || '') + ': <span class="' + (averePrima >= 0 ? 'pl-pos' : 'pl-neg') + '">' + formatRON(averePrima) + '</span> → ' + esc(LUNI[LUNI.length-1] || '') + ': <span class="' + (avereUltima >= 0 ? 'pl-pos' : 'pl-neg') + '">' + formatRON(avereUltima) + '</span></div>';
+  html += '  <div class="chart-body">' + svgLine(averePts, { height: 200 }) + '</div>';
+  html += '  <div class="info-box" style="margin-top:0.75rem;">';
+  html += '<i data-lucide="info"></i>';
+  html += '<div>Calcul automat: <strong>' + formatRON(activeCurente) + ' RON</strong> active curente (fond ' + formatRON(totalFondCurent) + ' + tezaur ' + formatRON(totalTezaurCurent) + ') minus soldul creditului din scadenar, lună de lună. Pe măsură ce achiți ratele, averea netă crește chiar dacă activele rămân constante.</div>';
+  html += '  </div>';
+  html += '</div></div>';
 
   return html;
 }
