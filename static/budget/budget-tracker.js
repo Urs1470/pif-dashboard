@@ -113,6 +113,17 @@ function migrateBonuriSold(data) {
   if (!data.bonuriSold || typeof data.bonuriSold !== 'object') data.bonuriSold = {};
 }
 
+// Savings accounts: give each item a dataStart so interest can auto-accrue.
+// The stored `suma` is treated as the value at dataStart (default: today).
+function migrateFondUrgenta(data) {
+  if (!data) return;
+  if (!Array.isArray(data.fondUrgenta)) data.fondUrgenta = [];
+  var today = todayIso();
+  data.fondUrgenta.forEach(function(f) {
+    if (f && !f.dataStart) f.dataStart = today;
+  });
+}
+
 // Replace the dead `evolutie.buffer` with an editable current-account balance.
 // Carries the old buffer value over once, then drops the dead structure.
 function migrateSoldContCurent(data) {
@@ -632,6 +643,7 @@ function hydrateLoadedData(rawData) {
   pruneImportHistory(state.data);
   migrateVwce(state.data);
   migrateBonuriSold(state.data);
+  migrateFondUrgenta(state.data);
   migrateSoldContCurent(state.data);
   if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
   if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
@@ -1449,6 +1461,49 @@ function tezaurMetrics(t) {
   };
 }
 
+// --- Savings (Fond urgenta) — autonomous interest growth ---
+// Value of a savings item at `dateIso`. The entered `suma` is the value at
+// `dataStart`; it compounds at the NET rate (gross rate minus 10% tax). An
+// optional `dataMaturare` switches the rate to `dobandaDupa` after that date
+// (used for the 4-month bonus deposit that drops to the standard rate).
+function fondValoareLa(f, dateIso) {
+  var principal = parseRON(f.suma) || 0;
+  var start = f.dataStart || todayIso();
+  if (!dateIso || dateIso <= start || principal <= 0) return principal;
+  var r1 = (parseRON(f.dobanda) || 0) / 100 * 0.9;   // net annual rate
+  function grow(val, rate, fromIso, toIso) {
+    var days = Math.max(0, daysBetween(fromIso, toIso));
+    return val * Math.pow(1 + rate, days / 365);
+  }
+  if (f.dataMaturare && dateIso > f.dataMaturare && start < f.dataMaturare) {
+    var r2raw = (f.dobandaDupa != null && f.dobandaDupa !== '') ? parseRON(f.dobandaDupa) : parseRON(f.dobanda);
+    var r2 = (r2raw || 0) / 100 * 0.9;
+    var atMat = grow(principal, r1, start, f.dataMaturare);
+    return atMat * Math.pow(1 + r2, Math.max(0, daysBetween(f.dataMaturare, dateIso)) / 365);
+  }
+  return grow(principal, r1, start, dateIso);
+}
+
+function fondMetrics(f) {
+  var today = todayIso();
+  var principal = parseRON(f.suma) || 0;
+  var valoareAzi = round2(fondValoareLa(f, today));
+  return {
+    principal: principal,
+    valoareAzi: valoareAzi,
+    dobandaAcumulata: round2(valoareAzi - principal),
+    la1an: round2(fondValoareLa(f, addMonthsIso(today, 12))),
+    la2ani: round2(fondValoareLa(f, addMonthsIso(today, 24))),
+    la5ani: round2(fondValoareLa(f, addMonthsIso(today, 60))),
+    matur: !!(f.dataMaturare && today > f.dataMaturare)
+  };
+}
+
+// Total current (grown) value of all savings accounts.
+function totalFondAzi(d) {
+  return (d.fondUrgenta || []).reduce(function(s, f) { return s + fondValoareLa(f, todayIso()); }, 0);
+}
+
 function calcLuniRamase() {
   var scad = getScadentar(state.data);
   if (scad.length > 0) {
@@ -1477,7 +1532,7 @@ function renderBugetLunar() {
   var surplus = mediiV.total - mediiC.total - mediiInvestitii;
 
   var totalTezaur = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
-  var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
+  var totalFond = totalFondAzi(d);
   var soldDispoCurent = soldDisponibilCurent(d);
   var soldCredit = getSoldCurent(d);
   var avereNeta = totalTezaur + totalFond + soldDispoCurent - soldCredit;
@@ -2058,25 +2113,42 @@ function renderFondUrgenta() {
   var d = state.data;
   var html = '';
 
-  // Fond Urgență table
+  // Fond Urgență — autonomous interest growth
+  var fondMx = d.fondUrgenta.map(fondMetrics);
+  var fondAzi = fondMx.reduce(function(s, m) { return s + m.valoareAzi; }, 0);
+  var fondDobAcum = fondMx.reduce(function(s, m) { return s + m.dobandaAcumulata; }, 0);
+  var fond1an = fondMx.reduce(function(s, m) { return s + m.la1an; }, 0);
+  var fond2ani = fondMx.reduce(function(s, m) { return s + m.la2ani; }, 0);
+  var fond5ani = fondMx.reduce(function(s, m) { return s + m.la5ani; }, 0);
+
   html += '<div class="section">';
   html += '<div class="section-title">';
   html += '<div class="section-title-left"><i data-lucide="shield"></i> Fond de urgență</div>';
   html += '<button class="btn-add" onclick="addFond()"><i data-lucide="plus"></i> Adaugă cont</button>';
   html += '</div>';
+
+  // Projection stat cards
+  html += '<div class="stat-grid" style="margin-bottom:1rem;">';
+  html += statCard('shield', 'Valoare azi', formatRON(fondAzi), 'dobândă acumulată ' + formatRON(fondDobAcum), 'success');
+  html += statCard('trending-up', 'Peste 1 an', formatRON(fond1an), '+' + formatRON(fond1an - fondAzi) + ' din dobândă', '');
+  html += statCard('calendar', 'Peste 2 ani', formatRON(fond2ani), '+' + formatRON(fond2ani - fondAzi) + ' din dobândă', '');
+  html += statCard('calendar-clock', 'Peste 5 ani', formatRON(fond5ani), '+' + formatRON(fond5ani - fondAzi) + ' din dobândă', 'violet');
+  html += '</div>';
+
   html += '<div class="panel">';
   html += '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Cont</th><th class="num">Sumă</th><th class="num">Dobândă %</th><th class="num">Dobândă anuală</th><th>Lichid</th><th>Notă</th><th></th></tr></thead><tbody>';
+  html += '<thead><tr><th>Cont</th><th class="num">Sumă</th><th class="num">Dob. %</th><th>Scadenţă bonus</th><th class="num">Dob. după %</th><th class="num">Valoare azi</th><th class="num">Dob. acumulată</th><th>Lichid</th><th>Notă</th><th></th></tr></thead><tbody>';
 
-  d.fondUrgenta.forEach(function(f) {
-    var suma = parseRON(f.suma) || 0;
-    var dobanda = parseRON(f.dobanda) || 0;
-    var dobAnuala = suma * dobanda / 100;
+  d.fondUrgenta.forEach(function(f, i) {
+    var m = fondMx[i];
     html += '<tr>';
     html += '<td><input type="text" class="input w-40" value="' + esc(f.cont) + '" onchange="updateFond(' + f.id + ', \'cont\', this.value)"></td>';
-    html += '<td class="num"><input type="number" class="input num w-28" value="' + f.suma + '" onchange="updateFond(' + f.id + ', \'suma\', this.value)"></td>';
-    html += '<td class="num"><input type="number" step="0.01" class="input num w-20" value="' + f.dobanda + '" onchange="updateFond(' + f.id + ', \'dobanda\', this.value)"></td>';
-    html += '<td class="num accent">' + formatRON(dobAnuala) + '</td>';
+    html += '<td class="num"><input type="number" class="input num w-24" value="' + (f.suma != null ? f.suma : '') + '" onchange="updateFond(' + f.id + ', \'suma\', this.value)"></td>';
+    html += '<td class="num"><input type="number" step="0.01" class="input num w-16" value="' + (f.dobanda != null ? f.dobanda : '') + '" onchange="updateFond(' + f.id + ', \'dobanda\', this.value)"></td>';
+    html += '<td><input type="text" class="input fp-date w-28" value="' + esc(f.dataMaturare || '') + '" placeholder="—" onchange="updateFond(' + f.id + ', \'dataMaturare\', this.value)"></td>';
+    html += '<td class="num"><input type="number" step="0.01" class="input num w-16" value="' + (f.dobandaDupa != null && f.dobandaDupa !== '' ? f.dobandaDupa : '') + '" placeholder="—" onchange="updateFond(' + f.id + ', \'dobandaDupa\', this.value)"></td>';
+    html += '<td class="num accent mono">' + formatRON(m.valoareAzi) + (m.matur ? ' <span class="text-dim" style="font-size:0.62rem;">bonus expirat</span>' : '') + '</td>';
+    html += '<td class="num">' + formatRON(m.dobandaAcumulata) + '</td>';
     html += '<td><select class="select cs-enhance" onchange="updateFond(' + f.id + ', \'lichid\', this.value)">';
     ['Da', 'Nu', 'Parțial'].forEach(function(opt) {
       html += '<option value="' + opt + '"' + (f.lichid === opt ? ' selected' : '') + '>' + opt + '</option>';
@@ -2087,15 +2159,17 @@ function renderFondUrgenta() {
     html += '</tr>';
   });
 
-  var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
-  var totalDob = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0) * (parseRON(f.dobanda) || 0) / 100; }, 0);
   html += '</tbody><tfoot>';
-  html += '<tr><td>Total fond urgență</td>';
-  html += '<td class="num">' + formatRON(totalFond) + '</td>';
-  html += '<td></td>';
-  html += '<td class="num">+' + formatRON(totalDob) + ' / an</td>';
+  html += '<tr><td>Total fond urgență</td><td colspan="4"></td>';
+  html += '<td class="num">' + formatRON(fondAzi) + '</td>';
+  html += '<td class="num">+' + formatRON(fondDobAcum) + '</td>';
   html += '<td colspan="3"></td></tr>';
-  html += '</tfoot></table></div></div></div>';
+  html += '</tfoot></table></div>';
+  html += '<div class="info-box" style="margin-top:0.85rem;">';
+  html += '<i data-lucide="info"></i>';
+  html += '<div><strong>Valoare azi</strong> crește singură: în „Sumă" introduci soldul actual, iar aplicația adaugă dobânda zi de zi (capitalizată, <strong>netă</strong> după impozitul de 10%). Pentru depozitul bonus completează <strong>Scadenţă bonus</strong> (data) și <strong>Dob. după %</strong> (rata la care trece după maturare) — aplicația aplică automat rata nouă după acea dată. Cardurile de sus arată proiecția peste 1/2/5 ani.</div>';
+  html += '</div>';
+  html += '</div></div>';
 
   // Tezaur
   var tezMetrics = d.tezaur.map(tezaurMetrics);
@@ -2178,7 +2252,7 @@ function renderFondUrgenta() {
   html += '</div></div>';
 
   // Proiecție avere netă — active curente − sold credit, aliniat la soldul real
-  var totalFondCurent = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
+  var totalFondCurent = totalFondAzi(d);
   var totalTezaurCurent = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
   var activeCurente = totalFondCurent + totalTezaurCurent;
   var scadEv = getScadentar(d);
@@ -2209,7 +2283,10 @@ function renderFondUrgenta() {
 }
 
 function addFond() {
-  state.data.fondUrgenta.push({ id: getNextId(state.data.fondUrgenta), cont: '', suma: '', dobanda: '', lichid: 'Da', nota: '' });
+  state.data.fondUrgenta.push({
+    id: getNextId(state.data.fondUrgenta), cont: '', suma: '', dobanda: '',
+    dataStart: todayIso(), dataMaturare: '', dobandaDupa: '', lichid: 'Da', nota: ''
+  });
   saveData();
   render();
 }
@@ -2217,8 +2294,15 @@ function updateFond(id, field, value) {
   state.data.fondUrgenta = state.data.fondUrgenta.map(function(f) {
     if (f.id !== id) return f;
     var u = cloneObj(f);
-    if (field === 'suma' || field === 'dobanda') u[field] = parseRON(value);
-    else u[field] = value;
+    if (field === 'suma') {
+      // The entered amount is the value as of now — re-baseline the growth.
+      u.suma = parseRON(value);
+      u.dataStart = todayIso();
+    } else if (field === 'dobanda' || field === 'dobandaDupa') {
+      u[field] = parseRON(value);
+    } else {
+      u[field] = value;
+    }
     return u;
   });
   saveData();
@@ -3048,9 +3132,11 @@ function generateAndDownloadCSV(keys, labels) {
 
   lines.push('');
   lines.push('FOND URGENTA');
-  lines.push('Cont,Suma,Dobanda,Lichid,Nota');
+  lines.push('Cont,Suma,Dobanda,ValoareAzi,DobandaAcumulata,Lichid,Nota');
   d.fondUrgenta.forEach(function(f) {
-    lines.push((f.cont || '') + ',' + (f.suma || 0) + ',' + (f.dobanda || 0) + ',' + (f.lichid || '') + ',' + (f.nota || ''));
+    var m = fondMetrics(f);
+    lines.push((f.cont || '') + ',' + (f.suma || 0) + ',' + (f.dobanda || 0) + ',' +
+      m.valoareAzi + ',' + m.dobandaAcumulata + ',' + (f.lichid || '') + ',' + (f.nota || ''));
   });
 
   lines.push('');
