@@ -568,6 +568,7 @@ var state = {
   activeTab: 'buget-lunar',
   data: null,
   scadShowAll: false,
+  cheltShowAll: false,           // false = show only expense categories that have data
   saveStatus: 'saved',          // 'saved' | 'pending' | 'error'
   baseUpdated: undefined,        // server 'updated' token we loaded from; undefined = skip version check
   pendingMigrationSave: false,   // first save after a load-time migration
@@ -2028,6 +2029,11 @@ function toggleScadentarVizibil() {
   render();
 }
 
+function toggleCheltShowAll() {
+  state.cheltShowAll = !state.cheltShowAll;
+  render();
+}
+
 function toggleActionsMenu(ev) {
   if (ev) ev.stopPropagation();
   var menu = document.getElementById('actions-menu');
@@ -2317,14 +2323,22 @@ function renderVenituri() {
 
   html += '</tbody></table></div></div></div>';
 
-  // Cheltuieli
+  // ─── CHELTUIELI LUNARE ───
+  var catRows = (d.categoriiVar || []).map(function(c) {
+    var label = c.label || '';
+    var vals = LUNI_KEYS.map(function(x) { return (d.cheltuieli[x] || {})[label] || 0; });
+    return { label: label, vals: vals, hasAny: vals.some(function(v) { return v > 0; }) };
+  });
+  var nHiddenCat = catRows.filter(function(r) { return !r.hasAny; }).length;
+
   html += '<div class="section">';
   html += '<div class="section-title">';
   html += '  <div class="section-title-left"><i data-lucide="receipt"></i> Cheltuieli lunare</div>';
-  html += '  <div style="display:flex;gap:0.6rem;font-size:0.7rem;color:var(--text-dim);align-items:center;">';
-  html += '    <span style="display:inline-flex;align-items:center;gap:0.2rem;"><span style="width:14px;height:6px;border-radius:1px;background:var(--danger);"></span>+20% peste medie</span>';
-  html += '    <span style="display:inline-flex;align-items:center;gap:0.2rem;"><span style="width:14px;height:6px;border-radius:1px;background:var(--success);"></span>-20% sub medie</span>';
-  html += '  </div>';
+  if (nHiddenCat > 0 || state.cheltShowAll) {
+    html += '  <button class="btn-back" onclick="toggleCheltShowAll()"><i data-lucide="' +
+            (state.cheltShowAll ? 'eye-off' : 'eye') + '"></i> ' +
+            (state.cheltShowAll ? 'Doar cu cheltuieli' : 'Arată toate (' + nHiddenCat + ' goale)') + '</button>';
+  }
   html += '</div>';
   html += '<div class="panel">';
   html += '<div class="table-wrap"><table>';
@@ -2332,34 +2346,39 @@ function renderVenituri() {
   LUNI.forEach(function(l) { html += '<th class="num">' + l + '</th>'; });
   html += '</tr></thead><tbody>';
 
-  // Auto row: credit instalment pulled from the scadentar
+  // 1. Rată credit — automat din scadenţar
   html += '<tr class="fixed"><td><i data-lucide="landmark" style="width:12px;height:12px;vertical-align:-1px;"></i> Rată credit <span class="text-dim" style="font-size:0.68rem;">(scadenţar)</span></td>';
   LUNI_KEYS.forEach(function(lk) {
     var rc = rataCredituluiLuna(d, lk);
-    if (rc > 0) html += '<td class="num neg mono">' + formatRON(rc) + '</td>';
-    else html += '<td class="num text-dim">—</td>';
+    html += rc > 0 ? '<td class="num neg mono">' + formatRON(rc) + '</td>' : '<td class="num text-dim">—</td>';
   });
   html += '</tr>';
 
-  // Auto row: meal-voucher card spending, derived from the closing balance
+  // 2. Card bonuri → Alimente — automat din soldul cardului
   html += '<tr class="fixed"><td><i data-lucide="ticket" style="width:12px;height:12px;vertical-align:-1px;"></i> Card bonuri <span class="text-dim" style="font-size:0.68rem;">(→ Alimente)</span></td>';
   LUNI_KEYS.forEach(function(lk) {
     var cb = cheltuieliBonuriLuna(d, lk);
-    if (cb > 0) html += '<td class="num neg mono">' + formatRON(cb) + '</td>';
-    else html += '<td class="num text-dim">—</td>';
+    html += cb > 0 ? '<td class="num neg mono">' + formatRON(cb) + '</td>' : '<td class="num text-dim">—</td>';
   });
   html += '</tr>';
 
-  (d.categoriiVar || []).forEach(function(c) {
-    var label = c.label || '';
-    var labelAttr = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    // Precompute mean over months that have a positive value, for outlier marking
-    var vals = LUNI_KEYS.map(function(x) { return (d.cheltuieli[x] || {})[label] || 0; });
-    var posVals = vals.filter(function(v) { return v > 0; });
+  // 2b. Sold card bonuri — input care alimentează rândul de mai sus
+  html += '<tr style="background:var(--bg-elev2);"><td class="muted" style="font-size:0.76rem;padding-left:1.5rem;"><i data-lucide="corner-down-right" style="width:11px;height:11px;vertical-align:-1px;opacity:0.55;"></i> sold card bonuri la final de lună</td>';
+  LUNI_KEYS.forEach(function(l) {
+    var sv = (d.bonuriSold || {})[l];
+    html += '<td class="num"><input type="number" step="0.01" min="0" class="input num w-20" value="' + (sv != null ? sv : '') + '" placeholder="—" onchange="updateBonuriSold(\'' + l + '\', this.value)"></td>';
+  });
+  html += '</tr>';
+
+  // 3. Categorii variabile — doar cele cu cheltuieli (sau toate, dacă e activat)
+  catRows.forEach(function(r) {
+    if (!state.cheltShowAll && !r.hasAny) return;
+    var labelAttr = r.label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var posVals = r.vals.filter(function(v) { return v > 0; });
     var meanAll = posVals.length ? posVals.reduce(function(s, v) { return s + v; }, 0) / posVals.length : 0;
-    html += '<tr><td class="muted">' + esc(label) + '</td>';
+    html += '<tr><td class="muted">' + esc(r.label) + '</td>';
     LUNI_KEYS.forEach(function(l, idx) {
-      var val = vals[idx];
+      var val = r.vals[idx];
       var deltaClass = '';
       if (val > 0 && meanAll > 0) {
         if (val > meanAll * 1.2) deltaClass = ' over-mean';
@@ -2370,23 +2389,25 @@ function renderVenituri() {
     html += '</tr>';
   });
 
+  // 4. Total cheltuieli
   var totalsC = LUNI_KEYS.map(function(l) { return totalCheltuieliLuna(d, l); });
   html += '<tr class="total danger"><td>Total cheltuieli</td>';
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
   html += '</tr>';
 
-  // ETF investment transfers to Tradeville — money that left the ING account
+  // 5. Investiții ETF — bani ieșiți din ING spre Tradeville
   var invList = LUNI_KEYS.map(function(l) { return investitiiLuna(d, l); });
   html += '<tr class="fixed"><td><i data-lucide="trending-up" style="width:12px;height:12px;vertical-align:-1px;"></i> Investiții <span class="text-dim" style="font-size:0.68rem;">(ETF Tradeville)</span></td>';
   invList.forEach(function(t) { html += '<td class="num neg mono">' + (t > 0 ? formatRON(t) : '—') + '</td>'; });
   html += '</tr>';
 
+  // 6. Surplus lunar = Venituri − Cheltuieli − Investiții
   var surplus = LUNI_KEYS.map(function(l, i) { return totalsV[i] - totalsC[i] - invList[i]; });
   html += '<tr class="total-strong"><td>Surplus lunar</td>';
   surplus.forEach(function(t) { html += '<td class="num ' + (t >= 0 ? 'pos' : 'neg') + '">' + formatRON(t) + '</td>'; });
   html += '</tr>';
 
-  // Running available balance — carries forward; shown only for reconciled months
+  // 7. Sold disponibil — registru curent, se reportează
   html += '<tr class="total"><td><i data-lucide="wallet" style="width:12px;height:12px;vertical-align:-1px;"></i> Sold disponibil (final lună)</td>';
   LUNI_KEYS.forEach(function(l) {
     var sd = soldDisponibilLuna(d, l);
@@ -2395,18 +2416,10 @@ function renderVenituri() {
   });
   html += '</tr>';
 
-  // Input row: meal-voucher card closing balance — drives the "Card bonuri" row above.
-  html += '<tr style="background:var(--bg-elev2);"><td class="muted" style="font-size:0.78rem;"><i data-lucide="credit-card" style="width:12px;height:12px;vertical-align:-1px;"></i> Sold card bonuri (final lună)</td>';
-  LUNI_KEYS.forEach(function(l) {
-    var sv = (d.bonuriSold || {})[l];
-    html += '<td class="num"><input type="number" step="0.01" min="0" class="input num w-20" value="' + (sv != null ? sv : '') + '" placeholder="—" onchange="updateBonuriSold(\'' + l + '\', this.value)"></td>';
-  });
-  html += '</tr>';
-
   html += '</tbody></table></div>';
   html += '<div class="info-box" style="margin-top:0.85rem;">';
   html += '<i data-lucide="info"></i>';
-  html += '<div><strong>Surplus lunar</strong> = venituri − cheltuieli − investiții ETF. <strong>Sold disponibil</strong> reportează: soldul de la finalul unei luni e punctul de start pentru următoarea. Setează soldul real de pornire în <strong>Setări → Sold disponibil la început</strong>. Cardul de bonuri: introdu soldul rămas la final de lună pe rândul de sus. Tezaurul nu intră aici — e plasament rar, urmărit separat.</div>';
+  html += '<div><strong>Ordine:</strong> rată credit + card bonuri + categorii → <strong>Total cheltuieli</strong> → Investiții ETF → <strong>Surplus lunar</strong> (venituri − cheltuieli − investiții) → <strong>Sold disponibil</strong> (se reportează în luna următoare). Celule roșii = +20% peste media categoriei, verzi = −20% sub. Categoriile fără cheltuieli sunt ascunse — apasă „Arată toate" ca să adaugi manual. Tezaurul nu intră aici.</div>';
   html += '</div>';
   html += '</div></div>';
 
