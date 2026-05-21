@@ -16,6 +16,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sqlite3
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -47,7 +48,8 @@ def get_or_create_secret_key():
     return key
 
 app.secret_key = get_or_create_secret_key()
-CORS(app)
+# CORS intentionally NOT enabled: the dashboard is a same-origin app, and a
+# wildcard CORS policy would let any website call the authenticated API.
 app.teardown_appcontext(close_db)
 
 # ============ VERSION HASH ============
@@ -72,6 +74,14 @@ def inject_version():
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 # Allow large uploads for /api/admin/db-upload (DB ~40 MB now, may grow)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB
+
+# Session cookie hardening. SameSite=Lax is what stops a malicious site from
+# making authenticated state-changing calls to the API (CSRF): cross-site
+# POST/PUT/DELETE no longer carry the session cookie. Secure = HTTPS-only;
+# HttpOnly = not readable from JavaScript.
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 @app.before_request
 def make_session_permanent():
@@ -153,11 +163,16 @@ def before_request_func():
                 init_default_templates()
             except:
                 pass  # Templates may already exist
+        if not os.environ.get('PIF_DASHBOARD_PIN'):
+            logger.warning("PIF_DASHBOARD_PIN nu este setat — aplicatia foloseste PIN-ul implicit. Seteaza variabila de mediu pe server.")
         _startup_initialized = True
         logger.info("PIF Dashboard initialized")
 
-    # Apply rate limiting to all /api/* routes except login and healthz
-    if request.path.startswith('/api/') and request.path not in ('/api/login', '/api/healthz'):
+    # Rate-limit all /api/* routes, plus the login endpoints (the latter
+    # throttles PIN brute-force attempts).
+    _rl_api = request.path.startswith('/api/') and request.path not in ('/api/login', '/api/healthz')
+    _rl_login = request.path in ('/login', '/login-hash') and request.method == 'POST'
+    if _rl_api or _rl_login:
         if not check_rate_limit():
             logger.warning(f"Rate limit exceeded for IP: {request.remote_addr} on {request.path}")
             return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.', 'retry_after': RATE_WINDOW}), 429
@@ -244,10 +259,10 @@ def login_hash():
     pin = os.environ.get('PIF_DASHBOARD_PIN', 'pif2024')
     expected_hash = hashlib.sha256(pin.encode()).hexdigest()
     
-    if pin_hash == expected_hash:
+    if hmac.compare_digest(str(pin_hash), expected_hash):
         session['authenticated'] = True
         return jsonify({'success': True})
-    
+
     return jsonify({'success': False, 'error': 'Invalid hash'}), 401
 
 # Serve the frontend
@@ -1416,16 +1431,21 @@ def upload_atasament(project_id):
     project_folder = os.path.join(UPLOAD_FOLDER, project_id)
     os.makedirs(project_folder, exist_ok=True)
     
-    # Save file
-    filename = file.filename
-    filepath = os.path.join(project_folder, filename)
+    # Save file — sanitize the client-supplied name; never trust it for a
+    # filesystem path (blocks ../ traversal and overwriting server files).
+    original_name = file.filename
+    safe_name = secure_filename(original_name) or ('fisier_' + attachment_id[:8])
+    filepath = os.path.join(project_folder, safe_name)
+    if os.path.exists(filepath):
+        safe_name = attachment_id[:8] + '_' + safe_name
+        filepath = os.path.join(project_folder, safe_name)
     file.save(filepath)
-    
+
     # Get file size
     size = os.path.getsize(filepath)
-    
-    # Determine file type
-    ext = os.path.splitext(filename)[1].lower()
+
+    # Determine file type (from the original name — keeps the real extension)
+    ext = os.path.splitext(original_name)[1].lower()
     tip_map = {
         '.pdf': 'PDF',
         '.jpg': 'IMG', '.jpeg': 'IMG', '.png': 'IMG',
@@ -1440,7 +1460,7 @@ def upload_atasament(project_id):
     cursor.execute('''
         INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (attachment_id, project_id, filename, tip, size, now[:10], filepath))
+    ''', (attachment_id, project_id, original_name, tip, size, now[:10], filepath))
     
     conn.commit()
     conn.close()
@@ -2144,12 +2164,14 @@ def restore_database():
     cursor = conn.cursor()
     
     try:
+        # Run the whole clear + restore inside ONE transaction, so a bad payload
+        # rolls the deletes back instead of leaving the database wiped.
+        conn.execute('BEGIN TRANSACTION')
         # Clear existing data
         tables = ['proiecte', 'tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates']
         for table in tables:
             cursor.execute(f'DELETE FROM {table}')
 
-        conn.execute('BEGIN TRANSACTION')
         # Restore proiecte
         for p in data.get('proiecte', []):
             cursor.execute('''
@@ -2251,7 +2273,7 @@ def restore_database():
         conn.rollback()
         conn.close()
         logger.error(f"Error restoring database: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Restaurare esuata — modificarile au fost anulate.'}), 500
 
 # ============ PHASE 2a: CLIENTI CRUD ============
 
@@ -2767,6 +2789,25 @@ def admin_db_upload():
             os.unlink(tmp_path)
             return jsonify({'error': 'not a valid SQLite database'}), 400
 
+        # Beyond the magic header: verify the file is a sound SQLite DB and
+        # actually looks like a PIF database before replacing the live one.
+        try:
+            _chk = sqlite3.connect(tmp_path)
+            _integrity = _chk.execute('PRAGMA integrity_check').fetchone()
+            _has_core = _chk.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='proiecte'"
+            ).fetchone()
+            _chk.close()
+        except Exception:
+            os.unlink(tmp_path)
+            return jsonify({'error': 'fisierul nu este o baza SQLite utilizabila'}), 400
+        if not _integrity or _integrity[0] != 'ok':
+            os.unlink(tmp_path)
+            return jsonify({'error': 'baza incarcata a esuat integrity_check'}), 400
+        if not _has_core:
+            os.unlink(tmp_path)
+            return jsonify({'error': 'baza incarcata nu contine structura PIF (tabelul proiecte)'}), 400
+
         backups_dir = os.path.join(dir_name, 'backups')
         os.makedirs(backups_dir, exist_ok=True)
         stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -2785,7 +2826,8 @@ def admin_db_upload():
     except Exception as e:
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"db-upload failed: {e}")
+        return jsonify({'error': 'Incarcarea bazei a esuat.'}), 500
 
 
 @app.route('/api/admin/db-dump', methods=['GET'])
