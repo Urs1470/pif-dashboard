@@ -2301,14 +2301,15 @@ function mdInline(text) {
     s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, '<img alt="$1" src="$2">');
     s = s.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,
         '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    // Obsidian wikilinks [[Note]] or [[Note|alias]].
-    s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, target, alias) =>
+    // Obsidian wikilinks [[Note]] / [[Note|alias]] (also embeds ![[...]]).
+    s = s.replace(/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, target, alias) =>
         `<span class="md-wikilink" data-wikilink="${_attrEsc(target.trim())}">${(alias || target).trim()}</span>`);
-    // Bold, italic, strikethrough.
+    // Bold, italic, strikethrough, ==highlight==.
     s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
     s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
     s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+    s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>');
     // Tags #tag.
     s = s.replace(/(^|\s)#([a-zA-Z][\w/\-]*)/g, '$1<span class="md-tag">#$2</span>');
     // Restore inline code.
@@ -2316,10 +2317,28 @@ function mdInline(text) {
     return s;
 }
 
+// Obsidian callout type -> [css class, default Romanian title].
+function _calloutMeta(type) {
+    const map = {
+        note: ['note', 'Notă'], info: ['note', 'Info'], abstract: ['note', 'Rezumat'],
+        summary: ['note', 'Rezumat'], tldr: ['note', 'TL;DR'], todo: ['note', 'De făcut'],
+        tip: ['tip', 'Tip'], hint: ['tip', 'Tip'], important: ['tip', 'Important'],
+        success: ['success', 'Succes'], check: ['success', 'OK'], done: ['success', 'Gata'],
+        question: ['question', 'Întrebare'], help: ['question', 'Ajutor'], faq: ['question', 'FAQ'],
+        warning: ['warning', 'Atenție'], caution: ['warning', 'Atenție'], attention: ['warning', 'Atenție'],
+        failure: ['danger', 'Eșec'], fail: ['danger', 'Eșec'], missing: ['danger', 'Lipsă'],
+        danger: ['danger', 'Pericol'], error: ['danger', 'Eroare'], bug: ['danger', 'Bug'],
+        example: ['example', 'Exemplu'], quote: ['quote', 'Citat'], cite: ['quote', 'Citat'],
+    };
+    const t = (type || '').toLowerCase();
+    return map[t] || ['note', type ? (type.charAt(0).toUpperCase() + type.slice(1)) : 'Notă'];
+}
+
 function renderMarkdown(src) {
     let text = String(src || '').replace(/\r\n/g, '\n');
-    // Strip leading YAML frontmatter.
+    // Strip leading YAML frontmatter and Obsidian %% comments %%.
     text = text.replace(/^---\n[\s\S]*?\n---\n?/, '');
+    text = text.replace(/%%[\s\S]*?%%/g, '');
     const lines = text.split('\n');
     const out = [];
     let i = 0, inCode = false, codeBuf = [];
@@ -2346,7 +2365,19 @@ function renderMarkdown(src) {
             closeLists();
             const quote = [];
             while (i < lines.length && /^>\s?/.test(lines[i])) { quote.push(lines[i].replace(/^>\s?/, '')); i++; }
-            out.push('<blockquote>' + renderMarkdown(quote.join('\n')) + '</blockquote>');
+            // Obsidian callout: first line is [!type] optional-title.
+            const cm = quote[0] && quote[0].match(/^\[!(\w+)\][+-]?\s*(.*)$/);
+            if (cm) {
+                const meta = _calloutMeta(cm[1]);
+                const ctitle = cm[2].trim() || meta[1];
+                const body = quote.slice(1).join('\n').trim();
+                out.push(`<div class="md-callout md-callout-${meta[0]}">`
+                    + `<div class="md-callout-title">${mdInline(ctitle)}</div>`
+                    + (body ? `<div class="md-callout-body">${renderMarkdown(body)}</div>` : '')
+                    + '</div>');
+            } else {
+                out.push('<blockquote>' + renderMarkdown(quote.join('\n')) + '</blockquote>');
+            }
             continue;
         }
 
@@ -2414,18 +2445,85 @@ async function loadObsidianNotes() {
         }
         _obsidianNotes = data.notes || [];
         if (metaEl) metaEl.textContent = `${_obsidianNotes.length} notițe`;
-        renderObsidianList(_obsidianNotes, {});
+        renderObsidianTree();
     } catch (e) {
         console.error('loadObsidianNotes failed:', e);
     }
 }
 
+// --- Folder tree (mirrors the Obsidian file explorer) ---
+let _obsidianCollapsed = (function () {
+    try { return new Set(JSON.parse(localStorage.getItem('pif:obsidian:collapsed') || '[]')); }
+    catch (e) { return new Set(); }
+})();
+function _saveObsidianCollapsed() {
+    try { localStorage.setItem('pif:obsidian:collapsed', JSON.stringify([..._obsidianCollapsed])); } catch (e) {}
+}
+
+function _buildNoteTree(notes) {
+    const root = { folders: {}, notes: [] };
+    for (const n of notes) {
+        const parts = n.path.split('/');
+        parts.pop(); // drop the filename
+        let node = root;
+        for (const p of parts) {
+            if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] };
+            node = node.folders[p];
+        }
+        node.notes.push(n);
+    }
+    return root;
+}
+
+function _countTreeNotes(node) {
+    let c = node.notes.length;
+    for (const k in node.folders) c += _countTreeNotes(node.folders[k]);
+    return c;
+}
+
+function _renderTreeNode(node, depth, prefix) {
+    let html = '';
+    Object.keys(node.folders).sort((a, b) => a.localeCompare(b, 'ro')).forEach(fname => {
+        const full = prefix ? prefix + '/' + fname : fname;
+        const collapsed = _obsidianCollapsed.has(full);
+        const child = node.folders[fname];
+        html += `<div class="obsidian-folder-row" data-folder="${_attrEsc(full)}" style="padding-left:${8 + depth * 14}px">
+            <i data-lucide="chevron-${collapsed ? 'right' : 'down'}" class="obsidian-chevron"></i>
+            <i data-lucide="folder" class="obsidian-folder-icon"></i>
+            <span class="obsidian-folder-name">${escapeHtml(fname)}</span>
+            <span class="obsidian-folder-count">${_countTreeNotes(child)}</span>
+        </div>`;
+        if (!collapsed) html += _renderTreeNode(child, depth + 1, full);
+    });
+    node.notes.slice()
+        .sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase(), 'ro'))
+        .forEach(n => {
+            html += `<div class="obsidian-note-item obsidian-tree-note ${n.path === _obsidianActivePath ? 'active' : ''}" data-path="${_attrEsc(n.path)}" style="padding-left:${12 + depth * 14}px">
+                <i data-lucide="file-text" class="obsidian-note-icon"></i>
+                <span class="obsidian-note-title">${escapeHtml(n.title)}</span>
+            </div>`;
+        });
+    return html;
+}
+
+function renderObsidianTree() {
+    const listEl = document.getElementById('obsidian-note-list');
+    if (!listEl) return;
+    if (!_obsidianNotes.length) {
+        listEl.innerHTML = '<div style="padding:20px 12px;color:var(--text-dim);font-size:0.84rem;text-align:center;">Nicio notiță.</div>';
+        return;
+    }
+    listEl.innerHTML = _renderTreeNode(_buildNoteTree(_obsidianNotes), 0, '');
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+}
+
+// Flat list — used only for search results (across folders).
 function renderObsidianList(notes, opts) {
     opts = opts || {};
     const listEl = document.getElementById('obsidian-note-list');
     if (!listEl) return;
     if (!notes.length) {
-        listEl.innerHTML = `<div style="padding:20px 12px;color:var(--text-dim);font-size:0.84rem;text-align:center;">${opts.search ? 'Niciun rezultat.' : 'Nicio notiță.'}</div>`;
+        listEl.innerHTML = '<div style="padding:20px 12px;color:var(--text-dim);font-size:0.84rem;text-align:center;">Niciun rezultat.</div>';
         return;
     }
     listEl.innerHTML = notes.map(n => `
@@ -2485,7 +2583,7 @@ async function doObsidianSearch(q) {
     const metaEl = document.getElementById('obsidian-list-meta');
     if (!q) {
         if (metaEl) metaEl.textContent = `${_obsidianNotes.length} notițe`;
-        renderObsidianList(_obsidianNotes, {});
+        renderObsidianTree();
         return;
     }
     try {
@@ -2552,8 +2650,17 @@ async function loadObsidianConfig() {
     } catch (e) { /* admin panel still usable without it */ }
 }
 
-// Delegated clicks: note list items + wikilinks inside rendered notes.
+// Delegated clicks: folder rows (collapse), note items, wikilinks.
 document.addEventListener('click', function (e) {
+    const folderRow = e.target.closest && e.target.closest('.obsidian-folder-row');
+    if (folderRow) {
+        const f = folderRow.getAttribute('data-folder');
+        if (_obsidianCollapsed.has(f)) _obsidianCollapsed.delete(f);
+        else _obsidianCollapsed.add(f);
+        _saveObsidianCollapsed();
+        renderObsidianTree();
+        return;
+    }
     const item = e.target.closest && e.target.closest('.obsidian-note-item');
     if (item) { openObsidianNote(item.getAttribute('data-path')); return; }
     const wl = e.target.closest && e.target.closest('.md-wikilink');
