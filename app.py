@@ -7,6 +7,7 @@ import logging
 import hashlib
 import hmac
 import subprocess
+import threading
 
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -150,6 +151,7 @@ def check_rate_limit():
 
 # Phase 2c: One-time startup initialization
 _startup_initialized = False
+_startup_lock = threading.Lock()
 
 @app.before_request
 def before_request_func():
@@ -157,16 +159,20 @@ def before_request_func():
 
     # Run one-time initialization (migrations, templates)
     if not _startup_initialized:
-        with app.app_context():
-            init_db()
-            try:
-                init_default_templates()
-            except:
-                pass  # Templates may already exist
-        if not os.environ.get('PIF_DASHBOARD_PIN'):
-            logger.warning("PIF_DASHBOARD_PIN nu este setat — aplicatia foloseste PIN-ul implicit. Seteaza variabila de mediu pe server.")
-        _startup_initialized = True
-        logger.info("PIF Dashboard initialized")
+        with _startup_lock:
+            # Double-checked: only the first of the parallel requests an app
+            # load fires actually runs the migrations.
+            if not _startup_initialized:
+                with app.app_context():
+                    init_db()
+                    try:
+                        init_default_templates()
+                    except:
+                        pass  # Templates may already exist
+                if not os.environ.get('PIF_DASHBOARD_PIN'):
+                    logger.warning("PIF_DASHBOARD_PIN nu este setat — aplicatia foloseste PIN-ul implicit. Seteaza variabila de mediu pe server.")
+                _startup_initialized = True
+                logger.info("PIF Dashboard initialized")
 
     # Rate-limit all /api/* routes, plus the login endpoints (the latter
     # throttles PIN brute-force attempts).
@@ -456,7 +462,13 @@ def delete_proiect(project_id):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        tables = ['tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'echipamente']
+        # Subtasks are keyed by task_id (not proiect_id) — remove them first.
+        cursor.execute(
+            'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
+            (project_id,)
+        )
+        tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
+                  'timer_sessions', 'atasamente', 'echipamente']
         for table in tables:
             cursor.execute(f'DELETE FROM {table} WHERE proiect_id = ?', (project_id,))
         cursor.execute('DELETE FROM proiecte WHERE id = ?', (project_id,))
@@ -465,8 +477,14 @@ def delete_proiect(project_id):
         conn.rollback()
         conn.close()
         logger.error(f"Error deleting project {project_id}: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Stergerea proiectului a esuat.'}), 500
     conn.close()
+    # Remove the project's uploaded files from disk (orphans otherwise).
+    try:
+        import shutil
+        shutil.rmtree(os.path.join(UPLOAD_FOLDER, project_id), ignore_errors=True)
+    except Exception:
+        pass
     logger.info(f"Project deleted: {project_id}")
     return jsonify({'message': 'Project deleted'})
 
@@ -501,14 +519,22 @@ def batch_proiecte():
             return jsonify({'message': f'{len(project_ids)} projects updated'})
         
         elif action == 'delete':
+            import shutil
             for pid in project_ids:
-                # Delete related data first
-                tables = ['tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'echipamente']
+                # Delete related data first. Subtasks are keyed by task_id.
+                cursor.execute(
+                    'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
+                    (pid,)
+                )
+                tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
+                          'timer_sessions', 'atasamente', 'echipamente']
                 for table in tables:
                     cursor.execute(f'DELETE FROM {table} WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
             
             conn.commit()
+            for pid in project_ids:
+                shutil.rmtree(os.path.join(UPLOAD_FOLDER, pid), ignore_errors=True)
             logger.info(f"Batch deleted {len(project_ids)} projects")
             return jsonify({'message': f'{len(project_ids)} projects deleted'})
         
@@ -2019,7 +2045,7 @@ def export_pdf():
             if jt:
                 for s in sessions:
                     if s['id'] in matched: continue
-                    et_raw = s.get('end_time')
+                    et_raw = s.get('stop_time')
                     if not et_raw: continue
                     try: et = datetime.fromisoformat(et_raw).timestamp()
                     except: continue
@@ -4557,6 +4583,9 @@ def dashboard_home():
 
 DEPLOY_SECRET_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.deploy_secret')
 
+# Recent X-GitHub-Delivery IDs — replay guard for the deploy webhook.
+_webhook_seen_deliveries = []
+
 def get_deploy_secret():
     if os.path.exists(DEPLOY_SECRET_FILE):
         with open(DEPLOY_SECRET_FILE, 'r') as f:
@@ -4579,6 +4608,17 @@ def webhook_deploy():
 
     if not hmac.compare_digest(signature, expected):
         return 'Bad signature', 403
+
+    # Replay guard: reject a delivery already processed (a captured request
+    # cannot be re-sent to force repeated redeploys/restarts).
+    delivery_id = request.headers.get('X-GitHub-Delivery', '')
+    if delivery_id:
+        if delivery_id in _webhook_seen_deliveries:
+            logger.warning(f"Webhook replay rejected: {delivery_id}")
+            return 'Duplicate delivery', 409
+        _webhook_seen_deliveries.append(delivery_id)
+        if len(_webhook_seen_deliveries) > 200:
+            del _webhook_seen_deliveries[:-200]
 
     payload = request.get_json(silent=True) or {}
     ref = payload.get('ref', '')
