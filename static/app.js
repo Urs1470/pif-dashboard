@@ -2979,13 +2979,18 @@ function _assistantRefreshContext() {
     } catch (e) { /* refresh is best-effort */ }
 }
 
-// Auto-grow the assistant textarea.
+// Auto-grow the assistant textarea. The panel DOM is parsed after app.js, so
+// wait for DOMContentLoaded before binding.
 (function () {
-    const ta = document.getElementById('assistant-input');
-    if (ta) ta.addEventListener('input', () => {
-        ta.style.height = 'auto';
-        ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
-    });
+    function wireAssistantInput() {
+        const ta = document.getElementById('assistant-input');
+        if (ta) ta.addEventListener('input', () => {
+            ta.style.height = 'auto';
+            ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAssistantInput);
+    else wireAssistantInput();
 })();
 
 // ============ GLOBAL SEARCH (command palette) ============
@@ -3168,6 +3173,8 @@ function activateSearchResult(r) {
 }
 
 // Wire up the palette: Ctrl/Cmd+K toggles it; input + keyboard nav + clicks.
+// The palette DOM is parsed AFTER app.js loads, so element wiring waits for
+// DOMContentLoaded; the Ctrl+K handler can attach to document immediately.
 (function () {
     document.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
@@ -3177,31 +3184,35 @@ function activateSearchResult(r) {
             else openGlobalSearch();
         }
     });
-    const inp = document.getElementById('gsearch-input');
-    if (inp) {
-        inp.addEventListener('input', onGlobalSearchInput);
-        inp.addEventListener('keydown', function (e) {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                _gsearchActive = Math.min(_gsearchActive + 1, _gsearchResults.length - 1);
-                renderGlobalSearch();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                _gsearchActive = Math.max(_gsearchActive - 1, 0);
-                renderGlobalSearch();
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                activateSearchResult(_gsearchResults[_gsearchActive]);
-            } else if (e.key === 'Escape') {
-                closeGlobalSearch();
-            }
+    function wireGlobalSearch() {
+        const inp = document.getElementById('gsearch-input');
+        if (inp) {
+            inp.addEventListener('input', onGlobalSearchInput);
+            inp.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    _gsearchActive = Math.min(_gsearchActive + 1, _gsearchResults.length - 1);
+                    renderGlobalSearch();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    _gsearchActive = Math.max(_gsearchActive - 1, 0);
+                    renderGlobalSearch();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    activateSearchResult(_gsearchResults[_gsearchActive]);
+                } else if (e.key === 'Escape') {
+                    closeGlobalSearch();
+                }
+            });
+        }
+        const box = document.getElementById('gsearch-results');
+        if (box) box.addEventListener('click', function (e) {
+            const item = e.target.closest('.gsearch-item');
+            if (item) activateSearchResult(_gsearchResults[+item.getAttribute('data-idx')]);
         });
     }
-    const box = document.getElementById('gsearch-results');
-    if (box) box.addEventListener('click', function (e) {
-        const item = e.target.closest('.gsearch-item');
-        if (item) activateSearchResult(_gsearchResults[+item.getAttribute('data-idx')]);
-    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireGlobalSearch);
+    else wireGlobalSearch();
 })();
 
 async function loadGlobalTasks() {
