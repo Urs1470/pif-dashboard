@@ -1341,6 +1341,61 @@ function cheltuieliBonuriLuna(d, lunaKey) {
   return cheltuit > 0 ? round2(cheltuit) : 0;
 }
 
+// --- Investment outflows (money leaving the ING account) ---
+// ETF transfers to Tradeville for a given month.
+function investitiiEtfLuna(d, lunaKey) {
+  var al = (d.vwce && d.vwce.alimentari) || [];
+  return round2(al.reduce(function(s, a) {
+    return ((a.data || '').substring(0, 7) === lunaKey) ? s + (parseRON(a.suma) || 0) : s;
+  }, 0));
+}
+// Tezaur subscriptions for a given month.
+function investitiiTezaurLuna(d, lunaKey) {
+  var tz = d.tezaur || [];
+  return round2(tz.reduce(function(s, t) {
+    return ((t.dataSubscriere || '').substring(0, 7) === lunaKey) ? s + (parseRON(t.suma) || 0) : s;
+  }, 0));
+}
+// Total investment outflow for a month (ETF + Tezaur) — reduces the surplus.
+function investitiiLuna(d, lunaKey) {
+  return round2(investitiiEtfLuna(d, lunaKey) + investitiiTezaurLuna(d, lunaKey));
+}
+
+// --- Per-month money flow ---
+function totalVenituriLuna(d, lk) {
+  var v = d.venituri[lk] || {};
+  return (d.profil.salariuNet || 0) +
+    (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, 0);
+}
+function totalCheltuieliLuna(d, lk) {
+  var c = d.cheltuieli[lk] || {};
+  return totalFixeLuna(d, lk) + cheltuieliBonuriLuna(d, lk) +
+    Object.values(c).reduce(function(s, x) { return s + x; }, 0);
+}
+// Monthly surplus = income - expenses - investments. This is the real money
+// left over; it carries forward into the running available balance.
+function surplusLuna(d, lk) {
+  return round2(totalVenituriLuna(d, lk) - totalCheltuieliLuna(d, lk) - investitiiLuna(d, lk));
+}
+// Running available balance at end of `lk`: starting balance + the surplus of
+// every reconciled (representative) month up to and including `lk`. Returns
+// null if `lk` has no data yet — a future month's balance is unknown.
+function soldDisponibilLuna(d, lk) {
+  var rep = luniReprezentative(d);
+  var bal = parseRON(d.profil && d.profil.soldContCurent) || 0;
+  for (var i = 0; i < rep.length; i++) {
+    bal += surplusLuna(d, rep[i]);
+    if (rep[i] === lk) return round2(bal);
+  }
+  return null;
+}
+// Latest known available balance (after the last reconciled month).
+function soldDisponibilCurent(d) {
+  var rep = luniReprezentative(d);
+  if (rep.length === 0) return parseRON(d.profil && d.profil.soldContCurent) || 0;
+  return soldDisponibilLuna(d, rep[rep.length - 1]);
+}
+
 function todayIso() {
   var d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -1423,14 +1478,17 @@ function renderBugetLunar() {
   var d = state.data;
   var mediiV = calcMediiVenituri(d);
   var mediiC = calcMediiCheltuieli(d);
-  var surplus = mediiV.total - mediiC.total;
+  var luniRepList = luniReprezentative(d);
+  var mediiInvestitii = luniRepList.length
+    ? round2(luniRepList.reduce(function(s, l) { return s + investitiiLuna(d, l); }, 0) / luniRepList.length)
+    : 0;
+  var surplus = mediiV.total - mediiC.total - mediiInvestitii;
 
   var totalTezaur = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
   var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
-  var soldContCurent = parseRON(d.profil && d.profil.soldContCurent) || 0;
-  var totalActive = totalTezaur + totalFond + soldContCurent;
+  var soldDispoCurent = soldDisponibilCurent(d);
   var soldCredit = getSoldCurent(d);
-  var avereNeta = totalActive - soldCredit;
+  var avereNeta = totalTezaur + totalFond + soldDispoCurent - soldCredit;
 
   var html = '';
 
@@ -1465,10 +1523,12 @@ function renderBugetLunar() {
   html += '<div class="stat-grid">';
   html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + ' + ((mediiV.categorii || []).length) + ' categorii', '');
   html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Rată credit + variabile', 'danger');
-  html += statCard(surplus >= 0 ? 'piggy-bank' : 'alert-triangle', 'Surplus lunar', (surplus >= 0 ? '+' : '') + formatRON(surplus), surplus >= 0 ? 'Disponibil pentru economii' : 'Deficit lunar', surplus >= 0 ? 'success' : 'danger');
+  html += statCard('trending-up',  'Investiții medii', formatRON(mediiInvestitii), 'ETF + Tezaur / lună', '');
+  html += statCard(surplus >= 0 ? 'piggy-bank' : 'alert-triangle', 'Surplus lunar', (surplus >= 0 ? '+' : '') + formatRON(surplus), 'Venituri − cheltuieli − investiții', surplus >= 0 ? 'success' : 'danger');
+  html += statCard(soldDispoCurent >= 0 ? 'banknote' : 'alert-triangle', 'Sold disponibil', formatRON(soldDispoCurent), 'Bani lichizi acum (se reportează)', soldDispoCurent >= 0 ? 'success' : 'danger');
   html += statCard('shield',       'Fond urgență',    formatRON(totalFond),     d.fondUrgenta.length + ' conturi', 'violet');
   html += statCard('coins',        'Tezaur investit', formatRON(totalTezaur),   d.tezaur.length + ' emisiuni', '');
-  html += statCard(avereNeta >= 0 ? 'gem' : 'alert-octagon', 'Avere netă', (avereNeta >= 0 ? '+' : '') + formatRON(avereNeta), 'Tezaur + Fond + Cont curent − Credit', avereNeta >= 0 ? 'success' : 'danger');
+  html += statCard(avereNeta >= 0 ? 'gem' : 'alert-octagon', 'Avere netă', (avereNeta >= 0 ? '+' : '') + formatRON(avereNeta), 'Tezaur + Fond + Disponibil − Credit', avereNeta >= 0 ? 'success' : 'danger');
   html += '</div></div>';
 
   // BREAKDOWN VENITURI / CHELTUIELI
@@ -1508,18 +1568,15 @@ function renderBugetLunar() {
   // expenses (months with data) are not summed over different windows.
   var luniRep = luniReprezentative(d);
   var surplusBars = luniRep.map(function(lk) {
-    var idx = LUNI_KEYS.indexOf(lk);
-    var v = (d.venituri[lk] || {});
-    var totalV = (d.profil.salariuNet || 0) + (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, 0);
-    var c = (d.cheltuieli[lk] || {});
-    var totalC = totalFixeLuna(d, lk) + cheltuieliBonuriLuna(d, lk) + Object.values(c).reduce(function(s, x) { return s + x; }, 0);
-    return { value: totalV - totalC, label: LUNI[idx] };
+    return { value: surplusLuna(d, lk), label: LUNI[LUNI_KEYS.indexOf(lk)] };
   });
   var donutSlices = [];
   var rcTotal = luniRep.reduce(function(s, lk) { return s + rataCredituluiLuna(d, lk); }, 0);
   if (rcTotal > 0) donutSlices.push({ label: 'Rată credit', value: rcTotal });
   var bonuriTotal = luniRep.reduce(function(s, lk) { return s + cheltuieliBonuriLuna(d, lk); }, 0);
   if (bonuriTotal > 0) donutSlices.push({ label: 'Card bonuri (Alimente)', value: bonuriTotal });
+  var invTotal = luniRep.reduce(function(s, lk) { return s + investitiiLuna(d, lk); }, 0);
+  if (invTotal > 0) donutSlices.push({ label: 'Investiții (ETF/Tezaur)', value: invTotal });
   // Variable categories aggregated across the same representative months
   (d.categoriiVar || []).forEach(function(c) {
     var v = luniRep.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
@@ -1579,7 +1636,7 @@ function renderSetari() {
   html += '  </div>';
   html += '  <div class="field"><label class="field-label">Număr luni vizibile (1–120)</label>';
   html += '    <input type="number" min="1" max="120" class="input num w-full" value="' + (d.profil.numarLuni || 12) + '" onchange="updateProfil(\'numarLuni\', this.value)"></div>';
-  html += '  <div class="field"><label class="field-label">Sold cont curent ING (RON)</label>';
+  html += '  <div class="field"><label class="field-label">Sold disponibil la început (RON)</label>';
   html += '    <input type="number" step="0.01" class="input num w-full" value="' + (d.profil.soldContCurent != null ? d.profil.soldContCurent : '') + '" placeholder="0" onchange="updateProfil(\'soldContCurent\', this.value)"></div>';
   html += '  <div class="field"><label class="field-label">Sold inițial card bonuri (RON)</label>';
   html += '    <input type="number" step="0.01" class="input num w-full" value="' + (d.profil.bonuriSoldInitial != null ? d.profil.bonuriSoldInitial : '') + '" placeholder="0" onchange="updateProfil(\'bonuriSoldInitial\', this.value)"></div>';
@@ -2322,17 +2379,29 @@ function renderVenituri() {
     html += '</tr>';
   });
 
-  var totalsC = LUNI_KEYS.map(function(l) {
-    var c = d.cheltuieli[l] || {};
-    return totalFixeLuna(d, l) + cheltuieliBonuriLuna(d, l) + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
-  });
+  var totalsC = LUNI_KEYS.map(function(l) { return totalCheltuieliLuna(d, l); });
   html += '<tr class="total danger"><td>Total cheltuieli</td>';
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
   html += '</tr>';
 
-  var surplus = LUNI_KEYS.map(function(_, i) { return totalsV[i] - totalsC[i]; });
-  html += '<tr class="total-strong"><td>Surplus / deficit</td>';
+  // Investments (ETF + Tezaur) — money that left the ING account
+  var invList = LUNI_KEYS.map(function(l) { return investitiiLuna(d, l); });
+  html += '<tr class="fixed"><td><i data-lucide="trending-up" style="width:12px;height:12px;vertical-align:-1px;"></i> Investiții <span class="text-dim" style="font-size:0.68rem;">(ETF + Tezaur)</span></td>';
+  invList.forEach(function(t) { html += '<td class="num neg mono">' + (t > 0 ? formatRON(t) : '—') + '</td>'; });
+  html += '</tr>';
+
+  var surplus = LUNI_KEYS.map(function(l, i) { return totalsV[i] - totalsC[i] - invList[i]; });
+  html += '<tr class="total-strong"><td>Surplus lunar</td>';
   surplus.forEach(function(t) { html += '<td class="num ' + (t >= 0 ? 'pos' : 'neg') + '">' + formatRON(t) + '</td>'; });
+  html += '</tr>';
+
+  // Running available balance — carries forward; shown only for reconciled months
+  html += '<tr class="total"><td><i data-lucide="wallet" style="width:12px;height:12px;vertical-align:-1px;"></i> Sold disponibil (final lună)</td>';
+  LUNI_KEYS.forEach(function(l) {
+    var sd = soldDisponibilLuna(d, l);
+    if (sd == null) html += '<td class="num text-dim">—</td>';
+    else html += '<td class="num mono ' + (sd >= 0 ? 'pos' : 'neg') + '">' + formatRON(sd) + '</td>';
+  });
   html += '</tr>';
 
   // Input row: meal-voucher card closing balance — drives the "Card bonuri" row above.
@@ -2346,7 +2415,7 @@ function renderVenituri() {
   html += '</tbody></table></div>';
   html += '<div class="info-box" style="margin-top:0.85rem;">';
   html += '<i data-lucide="info"></i>';
-  html += '<div>Cardul de bonuri de masă: introdu <strong>soldul rămas la final de lună</strong> pe rândul de jos. Aplicația calculează cât ai cheltuit (sold anterior + încărcat − sold curent) și îl trece la <strong>Alimente</strong>, ca surplusul să fie real.</div>';
+  html += '<div><strong>Surplus lunar</strong> = venituri − cheltuieli − investiții (ETF/Tezaur). <strong>Sold disponibil</strong> reportează: soldul de la finalul unei luni e punctul de start pentru următoarea. Setează soldul real de pornire în <strong>Setări → Sold disponibil la început</strong>. Cardul de bonuri: introdu soldul rămas la final de lună pe rândul de sus.</div>';
   html += '</div>';
   html += '</div></div>';
 
@@ -2393,7 +2462,11 @@ function renderGoals() {
   var goals = d.goals || [];
   var mediiV = calcMediiVenituri(d);
   var mediiC = calcMediiCheltuieli(d);
-  var surplus = mediiV.total - mediiC.total;
+  var luniRepG = luniReprezentative(d);
+  var mediiInvestitiiG = luniRepG.length
+    ? round2(luniRepG.reduce(function(s, l) { return s + investitiiLuna(d, l); }, 0) / luniRepG.length)
+    : 0;
+  var surplus = mediiV.total - mediiC.total - mediiInvestitiiG;
   var totalNecesar = goals.reduce(function(s, g) { return s + goalNeedPerMonth(g); }, 0);
 
   var html = '';
