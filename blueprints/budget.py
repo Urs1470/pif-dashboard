@@ -44,14 +44,22 @@ def _trunc(v):
     return s if len(s) <= AUDIT_VALUE_MAX else s[:AUDIT_VALUE_MAX] + '…'
 
 
+# Keys excluded from the audit diff: bookkeeping + VWCE market data that
+# churns on every hourly price refresh (not user decisions worth logging).
+AUDIT_SKIP_KEYS = {
+    'priceHistory', 'lastUpdate', 'lastUpdateLocal',
+    'pretCurent', 'previousClose', 'change', 'changePct', 'cursRon',
+}
+
+
 def diff_state(old, new, path=''):
     """Yield (path, old, new) tuples for every leaf change between two JSON-like values."""
     if old == new:
         return
     if isinstance(old, dict) and isinstance(new, dict):
         for k in sorted(set(old.keys()) | set(new.keys()), key=str):
-            # Skip internal/bookkeeping keys (e.g. _idSeq) — not user data.
-            if isinstance(k, str) and k.startswith('_'):
+            # Skip internal/bookkeeping keys (_idSeq) and churning market data.
+            if isinstance(k, str) and (k.startswith('_') or k in AUDIT_SKIP_KEYS):
                 continue
             sub = f"{path}.{k}" if path else k
             yield from diff_state(old.get(k), new.get(k), sub)

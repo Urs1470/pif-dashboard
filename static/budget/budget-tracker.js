@@ -49,17 +49,6 @@ function diffMonths(a, b) {
   return (parseInt(bp[0], 10) - parseInt(ap[0], 10)) * 12 + (parseInt(bp[1], 10) - parseInt(ap[1], 10));
 }
 
-// True if recurring fixed-expense item is active in given month key
-function cheltuialaFixaActiva(item, lunaKey) {
-  if (!item) return false;
-  var start = item.startMonth || (state.data.profil && state.data.profil.startMonth) || '2026-05';
-  var diff = diffMonths(start, lunaKey);
-  if (diff < 0) return false;
-  var luni = parseInt(item.luni, 10);
-  if (!luni || luni <= 0) return true; // perpetual
-  return diff < luni;
-}
-
 // Fixed monthly outflow for a given month. Fixed expenses are retired (every
 // outflow is now a variable category fed by bank import), so this is just the
 // credit instalment from the amortisation schedule.
@@ -122,6 +111,22 @@ function migrateCleanDeadFields(data) {
 function migrateBonuriSold(data) {
   if (!data) return;
   if (!data.bonuriSold || typeof data.bonuriSold !== 'object') data.bonuriSold = {};
+}
+
+// Replace the dead `evolutie.buffer` with an editable current-account balance.
+// Carries the old buffer value over once, then drops the dead structure.
+function migrateSoldContCurent(data) {
+  if (!data || !data.profil) return;
+  if (data.profil.soldContCurent == null) {
+    var buf = 0;
+    if (data.evolutie && typeof data.evolutie === 'object') {
+      Object.keys(data.evolutie).forEach(function(k) {
+        buf += (data.evolutie[k] && data.evolutie[k].buffer) || 0;
+      });
+    }
+    data.profil.soldContCurent = buf;
+  }
+  delete data.evolutie;
 }
 
 // VWCE-focused tracking with live price proxy
@@ -346,7 +351,7 @@ function migrateLegacyMonthKeys(data) {
   if (!data) return data;
   var legacy = ['mai','iun','iul','aug','sep','oct','noi','dec'];
   var target = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12'];
-  ['venituri','cheltuieli','evolutie'].forEach(function(field) {
+  ['venituri','cheltuieli'].forEach(function(field) {
     if (!data[field] || typeof data[field] !== 'object') return;
     legacy.forEach(function(k, i) {
       if (data[field][k] !== undefined) {
@@ -538,9 +543,6 @@ var DATI_INITIALE = {
   tezaur: [
     { id: 1, emisiune: 'Tezaur 1 an', dataSubscriere: '2026-06-01', suma: 5000, dobanda: 6.30, maturitate: '1 an', dataScadenta: '2027-06-01' },
   ],
-  evolutie: {
-    '2026-05': { fondUrgenta: 14000, tezaur: 5000, buffer: 3450, soldCredit: 84450 },
-  },
   venituri: {
     '2026-05': { 'Bonuri de masă': 360, 'Bonus & prime': 1750, 'Diurnă & deconturi': 1200 },
     '2026-06': {}, '2026-07': {}, '2026-08': {}, '2026-09': {}, '2026-10': {}, '2026-11': {}, '2026-12': {}
@@ -559,7 +561,6 @@ var INITIAL_DATA = {
   cheltuieli: cloneObj(DATI_INITIALE.cheltuieli),
   fondUrgenta: cloneObj(DATI_INITIALE.fondUrgenta),
   tezaur: cloneObj(DATI_INITIALE.tezaur),
-  evolutie: cloneObj(DATI_INITIALE.evolutie),
 };
 
 // --- State global ---
@@ -608,7 +609,6 @@ function hydrateLoadedData(rawData) {
   if (!state.data.cheltuieli) state.data.cheltuieli = {};
   if (!state.data.fondUrgenta) state.data.fondUrgenta = [];
   if (!state.data.tezaur) state.data.tezaur = [];
-  if (!state.data.evolutie) state.data.evolutie = {};
   if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
   if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
   if (!state.data.profil.numarLuni) state.data.profil.numarLuni = DATI_INITIALE.profil.numarLuni;
@@ -631,6 +631,7 @@ function hydrateLoadedData(rawData) {
   pruneImportHistory(state.data);
   migrateVwce(state.data);
   migrateBonuriSold(state.data);
+  migrateSoldContCurent(state.data);
   if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
   if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
   if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -657,11 +658,13 @@ async function loadData() {
       state.pendingMigrationSave = hydrateLoadedData(payload.data);
       // Recover edits from a previous session that never reached the server.
       if (backup && backup.dirty && backup.data) {
-        var keepLocal = window.confirm(
-          'Sesiunea anterioara de pe acest dispozitiv avea modificari nesalvate.\n\n' +
-          'OK = recupereaza-le.\n' +
-          'Anuleaza = foloseste datele de pe server.'
-        );
+        var keepLocal = await showConfirm({
+          title: 'Modificări nesalvate',
+          body: 'Sesiunea anterioară de pe acest dispozitiv avea modificări nesalvate. Le recuperezi sau folosești datele de pe server?',
+          okLabel: 'Recuperează-le',
+          cancelLabel: 'Folosește serverul',
+          icon: 'history'
+        });
         if (keepLocal) {
           state.pendingMigrationSave = hydrateLoadedData(backup.data);
         }
@@ -694,6 +697,9 @@ async function syncFromServerIfStale() {
   if (_syncInFlight) return;
   if (state.saveStatus !== 'saved') return;   // unsaved edits — don't clobber
   if (saveTimer) return;                       // a save is pending/debouncing
+  // Don't rebuild the DOM under a field the user is currently editing.
+  var ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
   _syncInFlight = true;
   try {
     var r = await fetch(API_BASE + '/state', { credentials: 'same-origin' });
@@ -727,7 +733,7 @@ async function saveDataNow() {
     });
     if (r.status === 409) {
       var conflict = await r.json().catch(function() { return null; });
-      handleSaveConflict(conflict);
+      await handleSaveConflict(conflict);
       return;
     }
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -751,13 +757,17 @@ async function saveDataNow() {
 }
 
 // Another tab/device saved since we loaded. Ask the user how to resolve it.
-function handleSaveConflict(conflict) {
+async function handleSaveConflict(conflict) {
   setSaveStatus('error');
-  var keepMine = window.confirm(
-    'Bugetul a fost modificat in alta fereastra sau pe alt dispozitiv.\n\n' +
-    'OK = pastreaza modificarile de aici (suprascrie cealalta versiune).\n' +
-    'Anuleaza = incarca datele de pe server (pierzi modificarile de aici).'
-  );
+  var keepMine = await showConfirm({
+    title: 'Conflict de salvare',
+    body: 'Bugetul a fost modificat în altă fereastră sau pe alt dispozitiv. ' +
+          'Păstrezi modificările de aici (suprascrii cealaltă versiune) sau ' +
+          'încarci datele de pe server (pierzi modificările de aici)?',
+    okLabel: 'Păstrează ale mele',
+    cancelLabel: 'Încarcă de pe server',
+    icon: 'git-merge'
+  });
   if (keepMine) {
     // Adopt the server's current token, then re-save to overwrite.
     state.baseUpdated = (conflict && conflict.current) ? conflict.current.updated : undefined;
@@ -1299,18 +1309,33 @@ function rataCredituluiLuna(d, lunaKey) {
 // Income category that funds the meal-voucher card.
 var BONURI_CAT = 'Bonuri de masă';
 
+// Previous calendar month for a "YYYY-MM" key (independent of the view window).
+function prevMonthKey(ym) {
+  var p = String(ym || '').split('-');
+  var y = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (!y || !m) return null;
+  m -= 1;
+  if (m < 1) { m = 12; y -= 1; }
+  return y + '-' + (m < 10 ? '0' : '') + m;
+}
+
 // Spending from the meal-voucher card in a given month, derived from the
 // closing balance the user enters: opening + loaded - closing. The whole
-// amount is treated as a food (Alimente) expense. Returns 0 if the month has
-// not been reconciled yet (no closing balance entered).
+// amount is treated as a food (Alimente) expense. The opening balance is the
+// previous calendar month's closing balance, or profil.bonuriSoldInitial for
+// the first reconciled month. Returns 0 if the month is not reconciled yet.
 function cheltuieliBonuriLuna(d, lunaKey) {
   var sold = d.bonuriSold || {};
   var raw = sold[lunaKey];
   if (raw == null || raw === '') return 0;
-  var idx = LUNI_KEYS.indexOf(lunaKey);
-  var prevKey = idx > 0 ? LUNI_KEYS[idx - 1] : null;
+  var prevKey = prevMonthKey(lunaKey);
   var prevRaw = prevKey ? sold[prevKey] : null;
-  var soldDeschidere = (prevRaw != null && prevRaw !== '') ? (parseRON(prevRaw) || 0) : 0;
+  var soldDeschidere;
+  if (prevRaw != null && prevRaw !== '') {
+    soldDeschidere = parseRON(prevRaw) || 0;
+  } else {
+    soldDeschidere = parseRON(d.profil && d.profil.bonuriSoldInitial) || 0;
+  }
   var incarcat = (d.venituri[lunaKey] || {})[BONURI_CAT] || 0;
   var cheltuit = soldDeschidere + incarcat - (parseRON(raw) || 0);
   return cheltuit > 0 ? round2(cheltuit) : 0;
@@ -1402,8 +1427,8 @@ function renderBugetLunar() {
 
   var totalTezaur = d.tezaur.reduce(function(s, t) { return s + (parseRON(t.suma) || 0); }, 0);
   var totalFond = d.fondUrgenta.reduce(function(s, f) { return s + (parseRON(f.suma) || 0); }, 0);
-  var buffer = Object.keys(d.evolutie).reduce(function(s, l) { return s + (d.evolutie[l].buffer || 0); }, 0);
-  var totalActive = totalTezaur + totalFond + buffer;
+  var soldContCurent = parseRON(d.profil && d.profil.soldContCurent) || 0;
+  var totalActive = totalTezaur + totalFond + soldContCurent;
   var soldCredit = getSoldCurent(d);
   var avereNeta = totalActive - soldCredit;
 
@@ -1439,11 +1464,11 @@ function renderBugetLunar() {
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-up"></i> Sumar lunar — medie pe ' + nLuniRep + ' ' + (nLuniRep === 1 ? 'lună' : 'luni') + ' cu date</div></div>';
   html += '<div class="stat-grid">';
   html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + ' + ((mediiV.categorii || []).length) + ' categorii', '');
-  html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Fixe + variabile', 'danger');
+  html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Rată credit + variabile', 'danger');
   html += statCard(surplus >= 0 ? 'piggy-bank' : 'alert-triangle', 'Surplus lunar', (surplus >= 0 ? '+' : '') + formatRON(surplus), surplus >= 0 ? 'Disponibil pentru economii' : 'Deficit lunar', surplus >= 0 ? 'success' : 'danger');
   html += statCard('shield',       'Fond urgență',    formatRON(totalFond),     d.fondUrgenta.length + ' conturi', 'violet');
   html += statCard('coins',        'Tezaur investit', formatRON(totalTezaur),   d.tezaur.length + ' emisiuni', '');
-  html += statCard(avereNeta >= 0 ? 'gem' : 'alert-octagon', 'Avere netă', (avereNeta >= 0 ? '+' : '') + formatRON(avereNeta), 'Active - Sold credit', avereNeta >= 0 ? 'success' : 'danger');
+  html += statCard(avereNeta >= 0 ? 'gem' : 'alert-octagon', 'Avere netă', (avereNeta >= 0 ? '+' : '') + formatRON(avereNeta), 'Tezaur + Fond + Cont curent − Credit', avereNeta >= 0 ? 'success' : 'danger');
   html += '</div></div>';
 
   // BREAKDOWN VENITURI / CHELTUIELI
@@ -1554,6 +1579,10 @@ function renderSetari() {
   html += '  </div>';
   html += '  <div class="field"><label class="field-label">Număr luni vizibile (1–120)</label>';
   html += '    <input type="number" min="1" max="120" class="input num w-full" value="' + (d.profil.numarLuni || 12) + '" onchange="updateProfil(\'numarLuni\', this.value)"></div>';
+  html += '  <div class="field"><label class="field-label">Sold cont curent ING (RON)</label>';
+  html += '    <input type="number" step="0.01" class="input num w-full" value="' + (d.profil.soldContCurent != null ? d.profil.soldContCurent : '') + '" placeholder="0" onchange="updateProfil(\'soldContCurent\', this.value)"></div>';
+  html += '  <div class="field"><label class="field-label">Sold inițial card bonuri (RON)</label>';
+  html += '    <input type="number" step="0.01" class="input num w-full" value="' + (d.profil.bonuriSoldInitial != null ? d.profil.bonuriSoldInitial : '') + '" placeholder="0" onchange="updateProfil(\'bonuriSoldInitial\', this.value)"></div>';
   html += '</div>';
   html += '<div class="info-box" style="margin-top:0.85rem;">';
   html += '<i data-lucide="info"></i>';
@@ -1720,7 +1749,7 @@ function statCard(icon, label, value, sub, variant) {
   var v = variant ? ' ' + variant : '';
   return '<div class="stat-card' + v + '">' +
     '<div class="stat-label"><i data-lucide="' + icon + '"></i> ' + esc(label) + '</div>' +
-    '<div class="stat-value">' + value + '</div>' +
+    '<div class="stat-value">' + esc(value) + '</div>' +
     (sub ? '<div class="stat-sub">' + esc(sub) + '</div>' : '') +
     '</div>';
 }
@@ -1966,12 +1995,6 @@ function toggleActionsMenu(ev) {
 function closeActionsMenu() {
   var menu = document.getElementById('actions-menu');
   if (menu) menu.classList.remove('open');
-}
-
-function updateEvolutie(luna, field, val) {
-  if (!state.data.evolutie[luna]) state.data.evolutie[luna] = {};
-  state.data.evolutie[luna][field] = parseRON(val);
-  saveData();
 }
 
 // ====================================================================
@@ -3330,7 +3353,7 @@ async function showImportModal() {
           if (addedTrv > 0) invMsg += ' ' + addedTrv + ' alimentări Tradeville înregistrate.';
           showConfirm({
             title: 'Import complet',
-            body: addedCh + ' cheltuieli și ' + addedV + ' venituri adăugate.' + invMsg + ' Cheltuielile fixe au fost păstrate intacte.',
+            body: addedCh + ' cheltuieli și ' + addedV + ' venituri adăugate.' + invMsg,
             okLabel: 'OK',
             cancelLabel: '',
             icon: 'check-circle'
