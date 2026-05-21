@@ -750,7 +750,10 @@ def get_global_tasks():
     categorie = request.args.get('categorie')
     arhiva = request.args.get('arhiva')
 
-    query = 'SELECT * FROM global_tasks WHERE 1=1'
+    query = ('SELECT g.*, '
+             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id) AS subtask_total, '
+             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id AND s.done = 1) AS subtask_done '
+             'FROM global_tasks g WHERE 1=1')
     params = []
 
     if arhiva == 'true':
@@ -786,8 +789,9 @@ def create_global_task():
     task_id = data.get('id') or generate_uuid()
 
     cursor.execute('''
-        INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie, data_scadenta, data_finalizare, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -798,7 +802,8 @@ def create_global_task():
         data.get('data_scadenta', ''),
         data.get('data_finalizare', ''),
         now,
-        now
+        now,
+        data.get('recurenta', '')
     ))
 
     conn.commit()
@@ -820,13 +825,40 @@ def get_global_task(task_id):
 
     return jsonify(row_to_dict(row))
 
+def _spawn_recurring_global_task(cursor, existing, recurenta):
+    """Spawn the next occurrence of a completed recurring daily task. Copies
+    title/priority/category/description + fresh subtasks. Returns the new id."""
+    new_id = generate_uuid()
+    now = datetime.now().isoformat()
+    next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+    cursor.execute('''
+        INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta)
+        VALUES (?, ?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?)
+    ''', (new_id, existing['titlu'], existing['descriere'] or '', existing['prioritate'],
+          existing['categorie'], next_scad, now, now, recurenta))
+    cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
+    for srow in cursor.fetchall():
+        cursor.execute(
+            'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+            (generate_uuid(), new_id, srow['titlu'], srow['ordine'], now)
+        )
+    return new_id
+
+
 @app.route('/api/global-tasks/<task_id>', methods=['PUT', 'POST'])
 @login_required
 def update_global_task(task_id):
-    data = request.json
+    data = request.json or {}
     conn = get_db()
     cursor = conn.cursor()
 
+    cursor.execute('SELECT * FROM global_tasks WHERE id = ?', (task_id,))
+    existing = cursor.fetchone()
+    if existing is None:
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    old_status = existing['status']
     now = datetime.now().isoformat()
 
     cursor.execute('''
@@ -838,6 +870,7 @@ def update_global_task(task_id):
             categorie = COALESCE(?, categorie),
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
+            recurenta = COALESCE(?, recurenta),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -848,14 +881,24 @@ def update_global_task(task_id):
         data.get('categorie'),
         data.get('data_scadenta'),
         data.get('data_finalizare'),
+        data.get('recurenta'),
         now,
         task_id
     ))
 
+    # A recurring daily task just completed -> spawn the next occurrence.
+    spawned_id = None
+    if (data.get('status') == 'done' and old_status != 'done'
+            and (existing['recurenta'] or '').strip()):
+        spawned_id = _spawn_recurring_global_task(cursor, existing, existing['recurenta'].strip())
+
     conn.commit()
     conn.close()
 
-    return jsonify({'message': 'Task updated'})
+    resp = {'message': 'Task updated'}
+    if spawned_id:
+        resp['recurring_spawned'] = spawned_id
+    return jsonify(resp)
 
 @app.route('/api/global-tasks/<task_id>', methods=['DELETE'])
 @login_required

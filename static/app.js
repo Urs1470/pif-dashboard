@@ -1441,7 +1441,12 @@ function _csSet(id, value) {
     el.dispatchEvent(new Event('change'));
 }
 
+// The task modal is shared between project tasks and daily (global) tasks.
+let _taskModalMode = 'project';   // 'project' | 'global'
+
 function openTaskEditModal(task) {
+    _taskModalMode = 'project';
+    document.getElementById('task-edit-categorie-row').style.display = 'none';
     document.getElementById('task-edit-id').value = task.id;
     document.getElementById('task-edit-titlu').value = task.titlu || '';
     document.getElementById('task-edit-descriere').value = task.descriere || '';
@@ -1450,7 +1455,7 @@ function openTaskEditModal(task) {
     selectTaskPriority((task.prioritate || 'normal').toLowerCase());
     document.getElementById('task-edit-modal').classList.add('active');
     loadSubtasks(task.id);
-    loadTaskTimer(task.id);
+    loadTaskTimer(task.id);   // shows the time-row
     setTimeout(() => {
         if (taskEditFlatpickr) taskEditFlatpickr.destroy();
         taskEditFlatpickr = initFlatpickr('#task-modal-scadenta');
@@ -1458,12 +1463,44 @@ function openTaskEditModal(task) {
     }, 50);
 }
 
+// Open the shared modal for a daily (global) task.
+async function openGtEditModal(taskId) {
+    try {
+        const task = await apiGet(`/global-tasks/${taskId}`);
+        _taskModalMode = 'global';
+        document.getElementById('task-edit-id').value = task.id;
+        document.getElementById('task-edit-titlu').value = task.titlu || '';
+        document.getElementById('task-edit-descriere').value = task.descriere || '';
+        _csSet('task-edit-status', task.status || 'to_do');
+        _csSet('task-edit-recurenta', task.recurenta || '');
+        selectTaskPriority((task.prioritate || 'normal').toLowerCase());
+        // Global tasks have a free-text category; the per-task timer doesn't apply.
+        document.getElementById('task-edit-categorie-row').style.display = 'block';
+        document.getElementById('task-edit-categorie').value = task.categorie || '';
+        document.getElementById('task-time-row').style.display = 'none';
+        document.getElementById('task-edit-modal').classList.add('active');
+        loadSubtasks(task.id);
+        setTimeout(() => {
+            if (taskEditFlatpickr) taskEditFlatpickr.destroy();
+            taskEditFlatpickr = initFlatpickr('#task-modal-scadenta');
+            if (task.data_scadenta) taskEditFlatpickr.setDate(task.data_scadenta); else taskEditFlatpickr.clear();
+        }, 50);
+    } catch (e) {
+        console.error('openGtEditModal failed:', e);
+        showToast('Eroare la deschiderea taskului', true);
+    }
+}
+
 function closeTaskEditModal() {
     document.getElementById('task-edit-modal').classList.remove('active');
     if (taskEditFlatpickr) { taskEditFlatpickr.destroy(); taskEditFlatpickr = null; }
     if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
-    // Reload todos so subtask/time/recurrence badges reflect any change.
-    if (currentProjectId) loadTodos(currentProjectId);
+    // Refresh whichever list this modal belonged to.
+    if (_taskModalMode === 'global') {
+        if (typeof loadGlobalTasks === 'function') loadGlobalTasks();
+    } else if (currentProjectId) {
+        loadTodos(currentProjectId);
+    }
 }
 
 async function saveTaskFromModal() {
@@ -1477,7 +1514,15 @@ async function saveTaskFromModal() {
     const data_scadenta = (document.getElementById('task-modal-scadenta').value || '').trim();
     if (!titlu) { showToast('Titlul nu poate fi gol', true); return; }
     try {
-        const res = await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta, descriere, recurenta });
+        let res;
+        if (_taskModalMode === 'global') {
+            // Daily tasks store priority capitalised (Normal/Urgent/Minor).
+            const prioCap = prioritate.charAt(0).toUpperCase() + prioritate.slice(1);
+            const categorie = (document.getElementById('task-edit-categorie').value || '').trim() || 'General';
+            res = await apiPut(`/global-tasks/${id}`, { titlu, prioritate: prioCap, status, categorie, data_scadenta, descriere, recurenta });
+        } else {
+            res = await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta, descriere, recurenta });
+        }
         showToast((res && res.recurring_spawned)
             ? 'Task finalizat — următoarea apariție creată'
             : 'Task actualizat');
@@ -1499,7 +1544,7 @@ async function deleteTaskFromModal() {
     });
     if (!ok) return;
     try {
-        await apiDelete(`/tasks/${id}`);
+        await apiDelete(_taskModalMode === 'global' ? `/global-tasks/${id}` : `/tasks/${id}`);
         closeTaskEditModal();
         showToast('Task șters');
     } catch (e) {
@@ -3012,21 +3057,24 @@ function renderGlobalTasks(tasks) {
         if (isOverdue) classes.push('overdue');
         else if (isDueToday) classes.push('due-today');
 
+        const _gtBadge = (icon, text) => `<span style="font-size:0.68rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
+        const _recLbl = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
+        let gtMeta = '';
+        if (task.categorie && task.categorie !== 'General') gtMeta += `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>`;
+        if (task.data_scadenta) gtMeta += _gtBadge('calendar', task.data_scadenta);
+        if (task.subtask_total) gtMeta += _gtBadge('list-checks', `${task.subtask_done || 0}/${task.subtask_total}`);
+        if (task.recurenta) gtMeta += _gtBadge('repeat', _recLbl[task.recurenta] || task.recurenta);
         return `
-            <div class="${classes.join(' ')}">
-                <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onchange="toggleGtTask('${task.id}', this.checked)">
+            <div class="${classes.join(' ')}" onclick="editGtTask('${task.id}')" style="cursor:pointer;">
+                <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleGtTask('${task.id}', this.checked)">
                 <div class="todo-content">
                     <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
-                    <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">
-                    ${task.categorie && task.categorie !== 'General' ? `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>` : ''}
-                    ${task.data_scadenta ? `<span style="font-size:0.68rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
+                    ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">${gtMeta}</div>` : ''}
                 </div>
-                </div>
-                <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
-                <span class="todo-status cyclable ${task.status}" onclick="cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
-                <button class="btn btn-icon btn-ghost" onclick="editGtTask('${task.id}')" title="Editează"><i data-lucide="pencil"></i></button>
-                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+                <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="event.stopPropagation(); cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
+                <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
+                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="event.stopPropagation(); deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
             </div>
         `;
     };
@@ -3165,86 +3213,9 @@ async function toggleGtTask(taskId, checked) {
     }
 }
 
-async function editGtTask(taskId) {
-    try {
-        const task = await apiGet(`/global-tasks/${taskId}`);
-
-        // Populate quick-add bar with task data
-        const input = document.getElementById('quick-task-input');
-        input.value = task.titlu || '';
-        document.getElementById('quick-prioritate').value = task.prioritate || 'Normal';
-        document.getElementById('quick-categorie').value = task.categorie || 'General';
-
-        // Set scadenta via Flatpickr if available
-        const fp = document.getElementById('quick-scadenta')?._flatpickr;
-        if (fp) {
-            task.data_scadenta ? fp.setDate(task.data_scadenta) : fp.clear();
-        } else {
-            document.getElementById('quick-scadenta').value = task.data_scadenta || '';
-        }
-
-        // Override quick add to do PUT instead of POST
-        const quickAddBtn = document.getElementById('quick-add-btn');
-        const originalLabel = quickAddBtn.textContent;
-        quickAddBtn.textContent = '✓ Salvează';
-        quickAddBtn.style.background = 'var(--c3)';
-
-        // Replace quickAddTask temporarily
-        const tempHandler = async function() {
-            const titlu = input.value.trim();
-            if (!titlu) { input.focus(); return; }
-
-            input.disabled = true;
-            quickAddBtn.textContent = '...';
-
-            try {
-                await apiPut(`/global-tasks/${taskId}`, {
-                    titlu,
-                    prioritate: document.getElementById('quick-prioritate').value,
-                    categorie: document.getElementById('quick-categorie').value,
-                    data_scadenta: document.getElementById('quick-scadenta').value || ''
-                });
-                input.value = '';
-                document.getElementById('quick-scadenta').value = '';
-                if (fp) fp.clear();
-                await loadGlobalTasks();
-                showToast('Task actualizat!');
-            } catch (e) {
-                showToast('Eroare la actualizarea taskului', true);
-            } finally {
-                // Restore quick add bar
-                input.disabled = false;
-                quickAddBtn.textContent = originalLabel;
-                quickAddBtn.style.background = '';
-                quickAddBtn.onclick = quickAddTask;
-                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
-            }
-        };
-
-        quickAddBtn.onclick = tempHandler;
-
-        const escHandler = (e) => {
-            if (e.key === 'Escape') {
-                input.value = '';
-                quickAddBtn.textContent = originalLabel;
-                quickAddBtn.style.background = '';
-                quickAddBtn.onclick = quickAddTask;
-                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
-            }
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                tempHandler();
-                document.getElementById('quick-task-input').removeEventListener('keydown', escHandler);
-            }
-        };
-
-        document.getElementById('quick-task-input').addEventListener('keydown', escHandler);
-        input.focus();
-
-    } catch (e) {
-        console.error('Failed to edit global task:', e);
-        showToast('Eroare la editarea taskului', true);
-    }
+// Daily tasks now open the full edit modal (descriere, recurență, subtaskuri).
+function editGtTask(taskId) {
+    openGtEditModal(taskId);
 }
 
 async function deleteGtTask(taskId) {

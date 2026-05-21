@@ -24,7 +24,7 @@ def close_db(exc=None):
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -287,6 +287,21 @@ def migrate_v7_to_v8():
     print("Migration v7->v8: elaborate tasks (descriere, recurenta, subtasks, per-task timer)")
 
 
+def migrate_v8_to_v9():
+    """v8 -> v9: recurrence on daily (global) tasks. Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'recurenta' not in cols:
+        cursor.execute('ALTER TABLE global_tasks ADD COLUMN recurenta TEXT')
+        conn.commit()
+        print("Migration v8->v9: added global_tasks.recurenta")
+    else:
+        print("Migration v8->v9: global_tasks.recurenta already present")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -326,6 +341,11 @@ def run_migrations():
         set_schema_version(8)
         current_version = 8
 
+    if current_version < 9:
+        migrate_v8_to_v9()
+        set_schema_version(9)
+        current_version = 9
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -339,6 +359,8 @@ def run_migrations():
     has_subtask_table = cursor.fetchone() is not None
     cursor.execute("PRAGMA table_info(tasks)")
     has_descriere = any(row[1] == 'descriere' for row in cursor.fetchall())
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    has_gt_recurenta = any(row[1] == 'recurenta' for row in cursor.fetchall())
     conn.close()
     if not has_cat_table or not has_cat_col:
         print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
@@ -346,6 +368,9 @@ def run_migrations():
     if not has_subtask_table or not has_descriere:
         print("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere missing)")
         migrate_v7_to_v8()
+    if not has_gt_recurenta:
+        print("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
+        migrate_v8_to_v9()
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
