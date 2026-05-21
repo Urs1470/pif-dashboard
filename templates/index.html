@@ -4222,6 +4222,10 @@
                         <input type="text" id="obsidian-vault-path" class="admin-text-input"
                                placeholder="/home/ion-ursu/... sau calea folderului sincronizat"
                                autocomplete="off" spellcheck="false">
+                        <div class="admin-mini-label" style="margin-top:10px;">Foldere incluse (prefixe separate prin virgulă; gol = toate)</div>
+                        <input type="text" id="obsidian-folders" class="admin-text-input"
+                               placeholder="ex: 10, 30, 99"
+                               autocomplete="off" spellcheck="false">
                         <div style="display:flex; gap:8px; margin-top:8px;">
                             <button class="btn btn-primary btn-small" onclick="saveObsidianConfig()">
                                 <i data-lucide="save"></i> Salvează

@@ -2986,6 +2986,7 @@ def set_app_setting(key, value):
 # from the Administrativ tab and stored in app_settings.
 
 OBSIDIAN_SETTING_KEY = 'obsidian_vault_path'
+OBSIDIAN_FOLDERS_KEY = 'obsidian_folders'
 _obsidian_cache = {'path': None, 'sig': None, 'notes': None}
 _OBSIDIAN_SKIP_DIRS = {'.obsidian', '.trash', '.git', '.smart-env', 'node_modules'}
 
@@ -2996,6 +2997,26 @@ def _obsidian_vault():
     if not path or not os.path.isdir(path):
         return None
     return path
+
+
+def _obsidian_allowed_folders():
+    """Comma-separated top-level folder tokens to include. Empty list => all."""
+    raw = (get_app_setting(OBSIDIAN_FOLDERS_KEY) or '').strip()
+    return [t.strip() for t in raw.split(',') if t.strip()]
+
+
+def _obsidian_top_allowed(top, allowed):
+    """True if a top-level folder name matches one of the allowed tokens.
+    Token '10' matches '10', '10_Library', '10 Library', '10-Library'."""
+    if not allowed:
+        return True
+    if not top:
+        return False  # root-level note — excluded once a filter is active
+    for tok in allowed:
+        if top == tok or top.startswith(tok + '_') \
+                or top.startswith(tok + ' ') or top.startswith(tok + '-'):
+            return True
+    return False
 
 
 def _obsidian_safe_path(vault, rel):
@@ -3014,11 +3035,17 @@ def _obsidian_safe_path(vault, rel):
 
 def _obsidian_walk(vault):
     """Walk the vault, yielding (relpath, abspath, mtime, size) for every .md
-    file, skipping Obsidian/system folders."""
+    file, skipping Obsidian/system folders and honouring the top-level folder
+    filter (Ion only cares about folders 10/30/99)."""
     vault_real = os.path.realpath(vault)
+    allowed = _obsidian_allowed_folders()
     out = []
     for root, dirs, files in os.walk(vault_real):
         dirs[:] = [d for d in dirs if d not in _OBSIDIAN_SKIP_DIRS and not d.startswith('.')]
+        # At the vault root, prune to allowed top-level folders so we don't even
+        # descend into the excluded ones.
+        if allowed and os.path.realpath(root) == vault_real:
+            dirs[:] = [d for d in dirs if _obsidian_top_allowed(d, allowed)]
         for fname in files:
             if not fname.lower().endswith('.md'):
                 continue
@@ -3028,6 +3055,9 @@ def _obsidian_walk(vault):
             except OSError:
                 continue
             rel = os.path.relpath(abspath, vault_real).replace('\\', '/')
+            top = rel.split('/', 1)[0] if '/' in rel else ''
+            if not _obsidian_top_allowed(top, allowed):
+                continue
             out.append((rel, abspath, st.st_mtime, st.st_size))
     return out
 
@@ -3059,33 +3089,40 @@ def _obsidian_index(vault):
     return notes
 
 
+def _obsidian_config_dict():
+    """Current Obsidian config as a JSON-serialisable dict."""
+    raw = (get_app_setting(OBSIDIAN_SETTING_KEY) or '').strip()
+    folders = (get_app_setting(OBSIDIAN_FOLDERS_KEY) or '').strip()
+    vault = _obsidian_vault()
+    note_count = len(_obsidian_index(vault)) if vault else 0
+    return {
+        'configured': bool(raw),
+        'vault_path': raw,
+        'folders': folders,
+        'valid': vault is not None,
+        'note_count': note_count,
+    }
+
+
 @app.route('/api/obsidian/config', methods=['GET'])
 @login_required
 def obsidian_config_get():
-    raw = (get_app_setting(OBSIDIAN_SETTING_KEY) or '').strip()
-    vault = _obsidian_vault()
-    note_count = len(_obsidian_index(vault)) if vault else 0
-    return jsonify({
-        'configured': bool(raw),
-        'vault_path': raw,
-        'valid': vault is not None,
-        'note_count': note_count,
-    })
+    return jsonify(_obsidian_config_dict())
 
 
 @app.route('/api/obsidian/config', methods=['PUT'])
 @login_required
 def obsidian_config_set():
     data = request.get_json(silent=True) or {}
-    path = (data.get('vault_path') or '').strip()
-    if path and not os.path.isdir(path):
-        return jsonify({'error': 'Calea nu există sau nu este un folder', 'valid': False}), 400
-    set_app_setting(OBSIDIAN_SETTING_KEY, path)
+    if 'vault_path' in data:
+        path = (data.get('vault_path') or '').strip()
+        if path and not os.path.isdir(path):
+            return jsonify({'error': 'Calea nu există sau nu este un folder', 'valid': False}), 400
+        set_app_setting(OBSIDIAN_SETTING_KEY, path)
+    if 'folders' in data:
+        set_app_setting(OBSIDIAN_FOLDERS_KEY, (data.get('folders') or '').strip())
     _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})  # invalidate
-    vault = _obsidian_vault()
-    note_count = len(_obsidian_index(vault)) if vault else 0
-    return jsonify({'configured': bool(path), 'vault_path': path,
-                    'valid': vault is not None, 'note_count': note_count})
+    return jsonify(_obsidian_config_dict())
 
 
 @app.route('/api/obsidian/notes', methods=['GET'])

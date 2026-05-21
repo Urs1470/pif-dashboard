@@ -2500,24 +2500,29 @@ async function doObsidianSearch(q) {
 
 async function saveObsidianConfig() {
     const input = document.getElementById('obsidian-vault-path');
+    const foldersInput = document.getElementById('obsidian-folders');
     const statusEl = document.getElementById('obsidian-config-status');
     if (!input || !statusEl) return;
     const path = input.value.trim();
+    const folders = foldersInput ? foldersInput.value.trim() : '';
     statusEl.classList.add('show');
     statusEl.innerHTML = '<span style="color:var(--text2)">Se verifică...</span>';
     try {
         const res = await fetch('/api/obsidian/config', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ vault_path: path })
+            body: JSON.stringify({ vault_path: path, folders: folders })
         });
         const data = await res.json();
         if (!res.ok) {
             statusEl.innerHTML = `<span style="color:var(--danger)">${escapeHtml(data.error || 'Eroare')}</span>`;
             return;
         }
+        const foldersNote = data.folders
+            ? ` (foldere: ${escapeHtml(data.folders)})`
+            : ' (toate folderele)';
         if (data.valid) {
-            statusEl.innerHTML = `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe găsite.</span>`;
+            statusEl.innerHTML = `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe${foldersNote}.</span>`;
             showToast('Vault Obsidian salvat');
         } else if (data.configured) {
             statusEl.innerHTML = '<span style="color:var(--warning)">Calea e salvată dar nu pare validă.</span>';
@@ -2534,11 +2539,14 @@ async function loadObsidianConfig() {
         const data = await _obsidianGet('/config');
         const input = document.getElementById('obsidian-vault-path');
         if (input) input.value = data.vault_path || '';
+        const foldersInput = document.getElementById('obsidian-folders');
+        if (foldersInput) foldersInput.value = data.folders || '';
         const statusEl = document.getElementById('obsidian-config-status');
         if (statusEl && data.configured) {
             statusEl.classList.add('show');
+            const foldersNote = data.folders ? ` (foldere: ${escapeHtml(data.folders)})` : '';
             statusEl.innerHTML = data.valid
-                ? `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe.</span>`
+                ? `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe${foldersNote}.</span>`
                 : '<span style="color:var(--warning)">Calea salvată nu pare validă.</span>';
         }
     } catch (e) { /* admin panel still usable without it */ }
