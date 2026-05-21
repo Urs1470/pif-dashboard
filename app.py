@@ -3574,26 +3574,54 @@ def _load_assistant_config():
     return None
 
 
-def _minimax_call(cfg, messages):
-    """One round-trip to the MiniMax (OpenAI-compatible) chat endpoint."""
+def _normalize_assistant_url(url):
+    """MiniMax's Anthropic-compatible endpoint is <base>/anthropic/v1/messages.
+    Hermes supplied a slightly-off path (/anthropic/v1/chat/completions) — fix it."""
+    url = (url or '').strip().rstrip('/')
+    if '/anthropic' in url:
+        base = url.split('/anthropic')[0]
+        return base + '/anthropic/v1/messages'
+    return url
+
+
+def _anthropic_tools():
+    """Convert the OpenAI-style tool schemas to Anthropic's tool format."""
+    return [{
+        'name': t['function']['name'],
+        'description': t['function']['description'],
+        'input_schema': t['function']['parameters'],
+    } for t in ASSISTANT_TOOLS]
+
+
+def _minimax_call(cfg, system, messages):
+    """One round-trip to the MiniMax Anthropic-compatible Messages endpoint.
+    Raises RuntimeError with the response body on an HTTP error."""
     import urllib.request
+    import urllib.error
     payload = json.dumps({
         'model': cfg['model'],
+        'max_tokens': 2048,
+        'system': system,
         'messages': messages,
-        'tools': ASSISTANT_TOOLS,
-        'temperature': 0.3,
+        'tools': _anthropic_tools(),
     }).encode('utf-8')
     req = urllib.request.Request(
-        cfg['api_url'],
+        _normalize_assistant_url(cfg['api_url']),
         data=payload,
         headers={
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + cfg['api_key'],
+            'x-api-key': cfg['api_key'],
+            'anthropic-version': '2023-06-01',
         },
         method='POST'
     )
-    with urllib.request.urlopen(req, timeout=90) as resp:
-        return json.loads(resp.read().decode('utf-8'))
+    try:
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='ignore')[:400]
+        raise RuntimeError(f'API {e.code}: {body}')
 
 
 def _assistant_find_project(cursor, needle):
@@ -3793,39 +3821,39 @@ def assistant_chat():
     if not isinstance(history, list) or not history:
         return jsonify({'error': 'Niciun mesaj'}), 400
 
-    # Keep only role/content from client history; cap to last 20 turns.
-    convo = [{'role': 'system', 'content': ASSISTANT_SYSTEM_PROMPT}]
+    # Anthropic Messages format: system is a top-level field, not a message.
+    # Client history holds plain-text user/assistant turns; cap to last 20.
+    convo = []
     for m in history[-20:]:
         if isinstance(m, dict) and m.get('role') in ('user', 'assistant') and m.get('content'):
             convo.append({'role': m['role'], 'content': str(m['content'])})
+    if not convo:
+        return jsonify({'error': 'Niciun mesaj'}), 400
 
     tool_log = []
     try:
         for _ in range(8):  # max tool rounds
-            resp = _minimax_call(cfg, convo)
-            choice = (resp.get('choices') or [{}])[0].get('message') or {}
-            convo.append({
-                'role': 'assistant',
-                'content': choice.get('content') or '',
-                'tool_calls': choice.get('tool_calls'),
-            })
-            tool_calls = choice.get('tool_calls')
-            if not tool_calls:
-                return jsonify({'reply': choice.get('content') or '(răspuns gol)', 'tool_log': tool_log})
-            for tc in tool_calls:
-                fn = (tc.get('function') or {})
-                fname = fn.get('name', '')
-                try:
-                    fargs = json.loads(fn.get('arguments') or '{}')
-                except ValueError:
-                    fargs = {}
+            resp = _minimax_call(cfg, ASSISTANT_SYSTEM_PROMPT, convo)
+            blocks = resp.get('content') or []
+            text = '\n'.join(
+                b.get('text', '') for b in blocks if isinstance(b, dict) and b.get('type') == 'text'
+            ).strip()
+            tool_uses = [b for b in blocks if isinstance(b, dict) and b.get('type') == 'tool_use']
+            convo.append({'role': 'assistant', 'content': blocks})
+            if not tool_uses:
+                return jsonify({'reply': text or '(răspuns gol)', 'tool_log': tool_log})
+            results = []
+            for tu in tool_uses:
+                fname = tu.get('name', '')
+                fargs = tu.get('input') or {}
                 result = _assistant_exec_tool(fname, fargs)
                 tool_log.append({'tool': fname, 'args': fargs, 'ok': 'error' not in result})
-                convo.append({
-                    'role': 'tool',
-                    'tool_call_id': tc.get('id'),
+                results.append({
+                    'type': 'tool_result',
+                    'tool_use_id': tu.get('id'),
                     'content': json.dumps(result, ensure_ascii=False),
                 })
+            convo.append({'role': 'user', 'content': results})
         return jsonify({'reply': 'Am atins limita de pași. Reformulează cererea, te rog.', 'tool_log': tool_log})
     except Exception as e:
         logger.error(f'Assistant chat failed: {e}')
