@@ -573,11 +573,12 @@ var SAVE_DEBOUNCE_MS = 600;
 var LOCAL_BACKUP_KEY = 'budget-data-backup';
 
 // Mirror the working state to localStorage so a failed save / closed tab
-// does not lose edits. Non-fatal if storage is unavailable.
-function persistLocalBackup() {
+// does not lose edits. `dirty` = there are edits not yet confirmed saved to
+// the server. Non-fatal if storage is unavailable.
+function persistLocalBackup(dirty) {
   try {
     localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify({
-      data: state.data, ts: new Date().toISOString()
+      data: state.data, ts: new Date().toISOString(), dirty: !!dirty
     }));
   } catch(e) { /* quota exceeded or storage disabled — ignore */ }
 }
@@ -590,76 +591,117 @@ function readLocalBackup() {
   } catch(e) { return null; }
 }
 
+// Normalise + migrate a raw data object (from server or local backup) into
+// state.data. Returns true if a migration changed the structure (=> the next
+// save should be logged as a single 'migrate' audit entry).
+function hydrateLoadedData(rawData) {
+  var preMigration = JSON.stringify(rawData);
+  state.data = rawData;
+  if (!state.data.venituri) state.data.venituri = {};
+  if (!state.data.cheltuieli) state.data.cheltuieli = {};
+  if (!state.data.fondUrgenta) state.data.fondUrgenta = [];
+  if (!state.data.tezaur) state.data.tezaur = [];
+  if (!state.data.evolutie) state.data.evolutie = {};
+  if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
+  if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
+  if (!state.data.profil.numarLuni) state.data.profil.numarLuni = DATI_INITIALE.profil.numarLuni;
+  if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
+  migrateCategoriiVar(state.data);
+  migrateDropCheltuieliFixe(state.data);
+  ensureCategorieVar(state.data, 'Chirie');
+  ensureCategorieVar(state.data, 'Alte credite');
+  ensureCategorieVar(state.data, 'Mâncare restaurant');
+  migrateCategoriiVenit(state.data);
+  migrateEmisiuniTezaur(state.data);
+  migrateEmisiuniReduce(state.data);
+  migrateCreditScadentar(state.data);
+  migrateReguliCategorizare(state.data);
+  ensureRegula(state.data, 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', 'Mâncare restaurant', true);
+  migrateCategoriesV2(state.data);
+  migrateImportedRefs(state.data);
+  migrateGoals(state.data);
+  migrateImportHistory(state.data);
+  pruneImportHistory(state.data);
+  migrateVwce(state.data);
+  if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
+  if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
+  if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
+  if (!state.data.credit.dobanda) state.data.credit.dobanda = DATI_INITIALE.credit.dobanda;
+  if (!state.data.credit.suma) state.data.credit.suma = DATI_INITIALE.credit.suma;
+  migrateCleanDeadFields(state.data);
+  migrateLegacyMonthKeys(state.data);
+  refreshLuni();
+  LUNI_KEYS.forEach(function(l) {
+    if (!state.data.venituri[l]) state.data.venituri[l] = {};
+    if (!state.data.cheltuieli[l]) state.data.cheltuieli[l] = {};
+  });
+  return JSON.stringify(state.data) !== preMigration;
+}
+
 async function loadData() {
+  var backup = readLocalBackup();
   try {
     var r = await fetch(API_BASE + '/state', { credentials: 'same-origin' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var payload = await r.json();
     if (payload && payload.data) {
       state.baseUpdated = payload.updated || null;
-      var preMigration = JSON.stringify(payload.data);
-      state.data = payload.data;
-      if (!state.data.venituri) state.data.venituri = {};
-      if (!state.data.cheltuieli) state.data.cheltuieli = {};
-      if (!state.data.fondUrgenta) state.data.fondUrgenta = [];
-      if (!state.data.tezaur) state.data.tezaur = [];
-      if (!state.data.evolutie) state.data.evolutie = {};
-      if (!state.data.profil) state.data.profil = cloneObj(DATI_INITIALE.profil);
-      if (!state.data.profil.startMonth) state.data.profil.startMonth = DATI_INITIALE.profil.startMonth;
-      if (!state.data.profil.numarLuni) state.data.profil.numarLuni = DATI_INITIALE.profil.numarLuni;
-      if (state.data.profil.salariuNet == null) state.data.profil.salariuNet = DATI_INITIALE.profil.salariuNet;
-      migrateCategoriiVar(state.data);
-      migrateDropCheltuieliFixe(state.data);
-      ensureCategorieVar(state.data, 'Chirie');
-      ensureCategorieVar(state.data, 'Alte credite');
-      ensureCategorieVar(state.data, 'Mâncare restaurant');
-      migrateCategoriiVenit(state.data);
-      migrateEmisiuniTezaur(state.data);
-      migrateEmisiuniReduce(state.data);
-      migrateCreditScadentar(state.data);
-      migrateReguliCategorizare(state.data);
-      ensureRegula(state.data, 'RESTAURANT|MCDONALD|KFC|STARBUCKS|BURGER KING|PIZZA|GLOVO|TAZZ|FOODPANDA|SUSHI|TACO|BISTRO|CAFE|COFFEE', 'Mâncare restaurant', true);
-      migrateCategoriesV2(state.data);
-      migrateImportedRefs(state.data);
-      migrateGoals(state.data);
-      migrateImportHistory(state.data);
-      pruneImportHistory(state.data);
-      migrateVwce(state.data);
-      if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
-      if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
-      if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
-      if (!state.data.credit.dobanda) state.data.credit.dobanda = DATI_INITIALE.credit.dobanda;
-      if (!state.data.credit.suma) state.data.credit.suma = DATI_INITIALE.credit.suma;
-      migrateCleanDeadFields(state.data);
-      migrateLegacyMonthKeys(state.data);
-      refreshLuni();
-      LUNI_KEYS.forEach(function(l) {
-        if (!state.data.venituri[l]) state.data.venituri[l] = {};
-        if (!state.data.cheltuieli[l]) state.data.cheltuieli[l] = {};
-      });
-      // If any migration changed the stored structure, the first save should
-      // be logged as a single 'migrate' audit entry, not dozens of diffs.
-      state.pendingMigrationSave = (JSON.stringify(state.data) !== preMigration);
+      state.pendingMigrationSave = hydrateLoadedData(payload.data);
+      // Recover edits from a previous session that never reached the server.
+      if (backup && backup.dirty && backup.data) {
+        var keepLocal = window.confirm(
+          'Sesiunea anterioara de pe acest dispozitiv avea modificari nesalvate.\n\n' +
+          'OK = recupereaza-le.\n' +
+          'Anuleaza = foloseste datele de pe server.'
+        );
+        if (keepLocal) {
+          state.pendingMigrationSave = hydrateLoadedData(backup.data);
+        }
+      }
     } else {
       state.data = cloneObj(INITIAL_DATA);
       state.baseUpdated = payload ? (payload.updated || null) : null;
       refreshLuni();
       await saveDataNow();
     }
-    persistLocalBackup();
+    persistLocalBackup(false);
   } catch(e) {
     console.error('Load failed:', e);
-    var backup = readLocalBackup();
-    if (backup) {
+    if (backup && backup.data) {
       console.warn('Server unreachable — restored local backup from', backup.ts);
-      state.data = backup.data;
+      hydrateLoadedData(backup.data);
       state.baseUpdated = undefined;  // server version unknown; skip the check on next save
-      refreshLuni();
     } else {
       state.data = cloneObj(INITIAL_DATA);
       refreshLuni();
     }
   }
+}
+
+// Re-sync from the server when the tab regains focus — picks up edits made on
+// another device. Skipped while there are unsaved local changes (those are
+// protected by the 409 conflict check on the next save instead).
+var _syncInFlight = false;
+async function syncFromServerIfStale() {
+  if (_syncInFlight) return;
+  if (state.saveStatus !== 'saved') return;   // unsaved edits — don't clobber
+  if (saveTimer) return;                       // a save is pending/debouncing
+  _syncInFlight = true;
+  try {
+    var r = await fetch(API_BASE + '/state', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    var payload = await r.json();
+    if (!payload || !payload.data) return;
+    var serverUpdated = payload.updated || null;
+    if (serverUpdated && serverUpdated !== state.baseUpdated) {
+      state.baseUpdated = serverUpdated;
+      state.pendingMigrationSave = hydrateLoadedData(payload.data);
+      persistLocalBackup(false);
+      render();
+      console.info('Budget re-synced from server (newer version from another device)');
+    }
+  } catch(e) { /* offline — keep current state */ }
+  finally { _syncInFlight = false; }
 }
 
 async function saveDataNow() {
@@ -685,7 +727,7 @@ async function saveDataNow() {
     state.baseUpdated = resp.updated || state.baseUpdated;
     state.pendingMigrationSave = false;
     saveRetries = 0;
-    persistLocalBackup();
+    persistLocalBackup(false);   // confirmed on the server — backup no longer dirty
     setSaveStatus('saved');
   } catch(e) {
     console.error('Save failed:', e);
@@ -713,11 +755,9 @@ function handleSaveConflict(conflict) {
     state.baseUpdated = (conflict && conflict.current) ? conflict.current.updated : undefined;
     saveDataNow();
   } else if (conflict && conflict.current && conflict.current.data) {
-    state.data = conflict.current.data;
+    state.pendingMigrationSave = hydrateLoadedData(conflict.current.data);
     state.baseUpdated = conflict.current.updated;
-    state.pendingMigrationSave = false;
-    persistLocalBackup();
-    refreshLuni();
+    persistLocalBackup(false);
     setSaveStatus('saved');
     render();
   } else {
@@ -727,7 +767,7 @@ function handleSaveConflict(conflict) {
 
 function saveData() {
   setSaveStatus('pending');
-  persistLocalBackup();   // instant local mirror — survives a tab close before debounce
+  persistLocalBackup(true);   // dirty mirror — survives a tab close before the debounce fires
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(saveDataNow, SAVE_DEBOUNCE_MS);
 }
@@ -1322,14 +1362,6 @@ function calcLuniRamase() {
   return Math.max(0, (cr.durata || 60) - luniTrecute);
 }
 
-function calcEconomieDobanda(suma, sold, dobandaAnuala, luniRamase, comisionProcent) {
-  if (suma <= 0 || luniRamase <= 0) return { economie: 0, comision: 0, net: 0 };
-  var dobandaLunara = dobandaAnuala / 100 / 12;
-  var economieBruta = suma * dobandaLunara * (luniRamase / 2);
-  var comision = suma * (comisionProcent / 100);
-  return { economie: economieBruta, comision: comision, net: economieBruta - comision };
-}
-
 // ====================================================================
 // RENDER: Buget Lunar (overview)
 // ====================================================================
@@ -1686,11 +1718,8 @@ function renderCredite() {
   html += statCard('trending-down', 'Dobândă viitoare', formatRON(totalDobandaRamasa), 'rămasă până la final', 'warning');
   html += '</div></div>';
 
-  // Two-column: details + simulare
+  // Detalii credit
   html += '<div class="section">';
-  html += '<div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">';
-
-  // Detalii
   html += '<div class="panel danger">';
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="file-text"></i> Detalii credit</div></div>';
   if (cr.contract) html += '<div class="stat-row"><span>Contract</span><span class="mono">' + esc(cr.contract) + ' / ' + esc(cr.dataContract || '') + '</span></div>';
@@ -1705,32 +1734,7 @@ function renderCredite() {
   html += '<div class="stat-row"><span>Prima rată</span><span class="mono">' + esc(scad[0] ? scad[0].data : '—') + '</span></div>';
   html += '<div class="stat-row"><span>Ultima rată</span><span class="mono">' + esc(scad[scad.length - 1] ? scad[scad.length - 1].data : '—') + '</span></div>';
   html += '</div>';
-
-  // Simulare
-  html += '<div class="panel accent">';
-  html += '<div class="panel-head"><div class="panel-title"><i data-lucide="calculator"></i> Simulare rambursare anticipată</div></div>';
-  html += '<div class="field"><label class="field-label">Sold credit curent (RON)</label>';
-  html += '<input type="number" id="sim-sold" class="input num w-full" value="' + soldCurent.toFixed(2) + '" oninput="recalcSimulare()"></div>';
-  html += '<div class="field"><label class="field-label">Sumă rambursare (RON)</label>';
-  html += '<input type="number" id="sim-suma" class="input num w-full" value="5000" oninput="recalcSimulare()"></div>';
-  html += '<div class="field"><label class="field-label">Luni rămase</label>';
-  html += '<input type="number" id="sim-luni" class="input num w-full" value="' + viit.length + '" oninput="recalcSimulare()"></div>';
-  html += '<div id="sim-rezultat" class="sim-result"></div>';
   html += '</div>';
-
-  html += '</div></div>';
-
-  // Sold credit line chart
-  if (scad.length > 0) {
-    var soldPoints = scad.map(function(p, i) { return { x: i + 1, y: p.soldFinal, label: p.data }; });
-    // Prepend "azi" point with current estimated balance
-    soldPoints.unshift({ x: 0, y: cr.suma || soldPoints[0].y, label: 'start' });
-    html += '<div class="section">';
-    html += '<div class="chart-card">';
-    html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="trending-down"></i> Evoluție sold credit</div><div class="chart-meta">' + scad.length + ' rate · ' + viit.length + ' rămase</div></div>';
-    html += '  <div class="chart-body">' + svgLine(soldPoints, { height: 200, markerX: trec.length }) + '</div>';
-    html += '</div></div>';
-  }
 
   // Scadentar real
   html += '<div class="section">';
@@ -1934,27 +1938,6 @@ function updateEvolutie(luna, field, val) {
   if (!state.data.evolutie[luna]) state.data.evolutie[luna] = {};
   state.data.evolutie[luna][field] = parseRON(val);
   saveData();
-}
-
-function recalcSimulare() {
-  var suma = parseRON((document.getElementById('sim-suma') || {}).value || '0');
-  var sold = parseRON((document.getElementById('sim-sold') || {}).value || '0');
-  var luni = parseInt((document.getElementById('sim-luni') || {}).value || '0', 10);
-  var cr = state.data.credit;
-  var r = calcEconomieDobanda(suma, sold, cr.dobanda, luni, cr.comisionRambursare);
-  var el = document.getElementById('sim-rezultat');
-  if (!el) return;
-  var html = '';
-  html += '<div><strong>Economie dobândă:</strong> <span class="mono">' + formatRON(r.economie) + ' RON</span></div>';
-  html += '<div><strong>Comision rambursare (' + cr.comisionRambursare + '%):</strong> <span class="mono">' + formatRON(r.comision) + ' RON</span></div>';
-  html += '<div style="margin-top:0.4rem;"><span class="' + (r.net >= 0 ? 'pos' : 'neg') + '">Economie netă: <span class="mono">' + formatRON(r.net) + ' RON</span></span></div>';
-  if (suma > sold) {
-    html += '<div class="callout" style="margin-top:0.6rem;"><i data-lucide="alert-triangle"></i> Suma depășește soldul actual.</div>';
-  } else if (suma > 0) {
-    html += '<div style="margin-top:0.4rem;font-size:0.78rem;color:var(--text-mid);">Sold după rambursare: <span class="mono">' + formatRON(sold - suma) + ' RON</span></div>';
-  }
-  el.innerHTML = html;
-  refreshIcons();
 }
 
 // ====================================================================
@@ -2827,7 +2810,6 @@ function render() {
 function switchTab(tabId) {
   state.activeTab = tabId;
   render();
-  if (tabId === 'credite') setTimeout(recalcSimulare, 0);
   if (tabId === 'investitii') maybeAutoRefreshVwce();
 }
 
@@ -3495,7 +3477,6 @@ async function init() {
   await loadData();
   refreshLuni();
   render();
-  if (state.activeTab === 'credite') setTimeout(recalcSimulare, 0);
   if (state.activeTab === 'investitii') setTimeout(maybeAutoRefreshVwce, 0);
 }
 
@@ -3507,6 +3488,13 @@ window.addEventListener('beforeunload', function(e) {
     return '';
   }
 });
+
+// Re-sync from the server when the tab regains focus / visibility — so edits
+// made on another device show up without a manual page reload.
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') syncFromServerIfStale();
+});
+window.addEventListener('focus', function() { syncFromServerIfStale(); });
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
