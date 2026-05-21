@@ -117,6 +117,13 @@ function migrateCleanDeadFields(data) {
   }
 }
 
+// Meal-voucher card ("Bonuri de masa"): per-month closing balance entered by
+// the user. Spending is derived from it and counted as a food expense.
+function migrateBonuriSold(data) {
+  if (!data) return;
+  if (!data.bonuriSold || typeof data.bonuriSold !== 'object') data.bonuriSold = {};
+}
+
 // VWCE-focused tracking with live price proxy
 function migrateVwce(data) {
   if (!data) return;
@@ -623,6 +630,7 @@ function hydrateLoadedData(rawData) {
   migrateImportHistory(state.data);
   pruneImportHistory(state.data);
   migrateVwce(state.data);
+  migrateBonuriSold(state.data);
   if (!state.data.credit) state.data.credit = cloneObj(DATI_INITIALE.credit);
   if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
   if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
@@ -1238,16 +1246,17 @@ function calcMediiCheltuieli(d) {
   var count = luni.length || 1;
   var totalFixe = luni.reduce(function(s, l) { return s + totalFixeLuna(d, l); }, 0) / count;
   var rataCreditMedie = round2(luni.reduce(function(s, l) { return s + rataCredituluiLuna(d, l); }, 0) / count);
+  var bonuriMedie = round2(luni.reduce(function(s, l) { return s + cheltuieliBonuriLuna(d, l); }, 0) / count);
   var cats = Array.isArray(d.categoriiVar) ? d.categoriiVar : [];
   var result = { fixe: [], totalFixe: totalFixe, rataCreditMedie: rataCreditMedie,
-                 variabile: {}, categorii: cats, luniCount: luni.length };
+                 bonuriMedie: bonuriMedie, variabile: {}, categorii: cats, luniCount: luni.length };
   var totalVar = 0;
   cats.forEach(function(c) {
     var label = c.label || '';
     result.variabile[label] = luni.reduce(function(s, l) { return s + ((d.cheltuieli[l] || {})[label] || 0); }, 0) / count;
     totalVar += result.variabile[label];
   });
-  result.total = totalFixe + totalVar;
+  result.total = totalFixe + bonuriMedie + totalVar;
   return result;
 }
 
@@ -1285,6 +1294,26 @@ function rataCredituluiLuna(d, lunaKey) {
     }
   }
   return 0;
+}
+
+// Income category that funds the meal-voucher card.
+var BONURI_CAT = 'Bonuri de masă';
+
+// Spending from the meal-voucher card in a given month, derived from the
+// closing balance the user enters: opening + loaded - closing. The whole
+// amount is treated as a food (Alimente) expense. Returns 0 if the month has
+// not been reconciled yet (no closing balance entered).
+function cheltuieliBonuriLuna(d, lunaKey) {
+  var sold = d.bonuriSold || {};
+  var raw = sold[lunaKey];
+  if (raw == null || raw === '') return 0;
+  var idx = LUNI_KEYS.indexOf(lunaKey);
+  var prevKey = idx > 0 ? LUNI_KEYS[idx - 1] : null;
+  var prevRaw = prevKey ? sold[prevKey] : null;
+  var soldDeschidere = (prevRaw != null && prevRaw !== '') ? (parseRON(prevRaw) || 0) : 0;
+  var incarcat = (d.venituri[lunaKey] || {})[BONURI_CAT] || 0;
+  var cheltuit = soldDeschidere + incarcat - (parseRON(raw) || 0);
+  return cheltuit > 0 ? round2(cheltuit) : 0;
 }
 
 function todayIso() {
@@ -1438,6 +1467,9 @@ function renderBugetLunar() {
   if (mediiC.rataCreditMedie > 0) {
     html += '<div class="stat-row"><span>Rată credit</span><span class="stat-val danger">' + formatRON(mediiC.rataCreditMedie) + '</span></div>';
   }
+  if (mediiC.bonuriMedie > 0) {
+    html += '<div class="stat-row"><span>Card bonuri (Alimente)</span><span class="stat-val danger">' + formatRON(mediiC.bonuriMedie) + '</span></div>';
+  }
   (mediiC.categorii || []).forEach(function(c) {
     html += '<div class="stat-row"><span>' + esc(c.label) + '</span><span class="stat-val danger">' + formatRON(mediiC.variabile[c.label] || 0) + '</span></div>';
   });
@@ -1455,12 +1487,14 @@ function renderBugetLunar() {
     var v = (d.venituri[lk] || {});
     var totalV = (d.profil.salariuNet || 0) + (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, 0);
     var c = (d.cheltuieli[lk] || {});
-    var totalC = totalFixeLuna(d, lk) + Object.values(c).reduce(function(s, x) { return s + x; }, 0);
+    var totalC = totalFixeLuna(d, lk) + cheltuieliBonuriLuna(d, lk) + Object.values(c).reduce(function(s, x) { return s + x; }, 0);
     return { value: totalV - totalC, label: LUNI[idx] };
   });
   var donutSlices = [];
   var rcTotal = luniRep.reduce(function(s, lk) { return s + rataCredituluiLuna(d, lk); }, 0);
   if (rcTotal > 0) donutSlices.push({ label: 'Rată credit', value: rcTotal });
+  var bonuriTotal = luniRep.reduce(function(s, lk) { return s + cheltuieliBonuriLuna(d, lk); }, 0);
+  if (bonuriTotal > 0) donutSlices.push({ label: 'Card bonuri (Alimente)', value: bonuriTotal });
   // Variable categories aggregated across the same representative months
   (d.categoriiVar || []).forEach(function(c) {
     var v = luniRep.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
@@ -2236,6 +2270,15 @@ function renderVenituri() {
   });
   html += '</tr>';
 
+  // Auto row: meal-voucher card spending, derived from the closing balance
+  html += '<tr class="fixed"><td><i data-lucide="ticket" style="width:12px;height:12px;vertical-align:-1px;"></i> Card bonuri <span class="text-dim" style="font-size:0.68rem;">(→ Alimente)</span></td>';
+  LUNI_KEYS.forEach(function(lk) {
+    var cb = cheltuieliBonuriLuna(d, lk);
+    if (cb > 0) html += '<td class="num neg mono">' + formatRON(cb) + '</td>';
+    else html += '<td class="num text-dim">—</td>';
+  });
+  html += '</tr>';
+
   (d.categoriiVar || []).forEach(function(c) {
     var label = c.label || '';
     var labelAttr = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -2258,7 +2301,7 @@ function renderVenituri() {
 
   var totalsC = LUNI_KEYS.map(function(l) {
     var c = d.cheltuieli[l] || {};
-    return totalFixeLuna(d, l) + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
+    return totalFixeLuna(d, l) + cheltuieliBonuriLuna(d, l) + Object.values(c).reduce(function(s, v) { return s + v; }, 0);
   });
   html += '<tr class="total danger"><td>Total cheltuieli</td>';
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
@@ -2269,7 +2312,20 @@ function renderVenituri() {
   surplus.forEach(function(t) { html += '<td class="num ' + (t >= 0 ? 'pos' : 'neg') + '">' + formatRON(t) + '</td>'; });
   html += '</tr>';
 
-  html += '</tbody></table></div></div></div>';
+  // Input row: meal-voucher card closing balance — drives the "Card bonuri" row above.
+  html += '<tr style="background:var(--bg-elev2);"><td class="muted" style="font-size:0.78rem;"><i data-lucide="credit-card" style="width:12px;height:12px;vertical-align:-1px;"></i> Sold card bonuri (final lună)</td>';
+  LUNI_KEYS.forEach(function(l) {
+    var sv = (d.bonuriSold || {})[l];
+    html += '<td class="num"><input type="number" step="0.01" min="0" class="input num w-20" value="' + (sv != null ? sv : '') + '" placeholder="—" onchange="updateBonuriSold(\'' + l + '\', this.value)"></td>';
+  });
+  html += '</tr>';
+
+  html += '</tbody></table></div>';
+  html += '<div class="info-box" style="margin-top:0.85rem;">';
+  html += '<i data-lucide="info"></i>';
+  html += '<div>Cardul de bonuri de masă: introdu <strong>soldul rămas la final de lună</strong> pe rândul de jos. Aplicația calculează cât ai cheltuit (sold anterior + încărcat − sold curent) și îl trece la <strong>Alimente</strong>, ca surplusul să fie real.</div>';
+  html += '</div>';
+  html += '</div></div>';
 
   return html;
 }
@@ -2283,6 +2339,14 @@ function updateVenit(luna, camp, val) {
 function updateCheltuiala(luna, categorie, val) {
   if (!state.data.cheltuieli[luna]) state.data.cheltuieli[luna] = {};
   state.data.cheltuieli[luna][categorie] = parseRON(val);
+  saveData();
+  render();
+}
+
+function updateBonuriSold(luna, val) {
+  if (!state.data.bonuriSold) state.data.bonuriSold = {};
+  if (val === '' || val == null) delete state.data.bonuriSold[luna];
+  else state.data.bonuriSold[luna] = parseRON(val);
   saveData();
   render();
 }
@@ -2876,10 +2940,7 @@ function generateAndDownloadCSV(keys, labels) {
   lines.push('CHELTUIELI');
   lines.push('Categorie,' + labels.join(','));
   lines.push('Rata credit,' + keys.map(function(lk) { return rataCredituluiLuna(d, lk); }).join(','));
-  (d.cheltuieliFixe || []).forEach(function(f) {
-    var row = keys.map(function(lk) { return cheltuialaFixaActiva(f, lk) ? (f.suma || 0) : 0; }).join(',');
-    lines.push((f.label || '').replace(/,/g, ' ') + ',' + row);
-  });
+  lines.push('Card bonuri (Alimente),' + keys.map(function(lk) { return cheltuieliBonuriLuna(d, lk); }).join(','));
   (d.categoriiVar || []).forEach(function(c) {
     var label = c.label || '';
     lines.push(label.replace(/,/g, ' ') + ',' + keys.map(function(l) { return (d.cheltuieli[l] || {})[label] || 0; }).join(','));
