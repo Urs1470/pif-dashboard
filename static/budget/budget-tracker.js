@@ -1341,24 +1341,15 @@ function cheltuieliBonuriLuna(d, lunaKey) {
   return cheltuit > 0 ? round2(cheltuit) : 0;
 }
 
-// --- Investment outflows (money leaving the ING account) ---
-// ETF transfers to Tradeville for a given month.
-function investitiiEtfLuna(d, lunaKey) {
+// --- Investment outflow (money leaving the ING account) ---
+// ETF transfers to Tradeville for a given month. Tezaur is deliberately NOT
+// included — it is a rare long-term placement, tracked separately, not part
+// of the monthly cash-flow surplus.
+function investitiiLuna(d, lunaKey) {
   var al = (d.vwce && d.vwce.alimentari) || [];
   return round2(al.reduce(function(s, a) {
     return ((a.data || '').substring(0, 7) === lunaKey) ? s + (parseRON(a.suma) || 0) : s;
   }, 0));
-}
-// Tezaur subscriptions for a given month.
-function investitiiTezaurLuna(d, lunaKey) {
-  var tz = d.tezaur || [];
-  return round2(tz.reduce(function(s, t) {
-    return ((t.dataSubscriere || '').substring(0, 7) === lunaKey) ? s + (parseRON(t.suma) || 0) : s;
-  }, 0));
-}
-// Total investment outflow for a month (ETF + Tezaur) — reduces the surplus.
-function investitiiLuna(d, lunaKey) {
-  return round2(investitiiEtfLuna(d, lunaKey) + investitiiTezaurLuna(d, lunaKey));
 }
 
 // --- Per-month money flow ---
@@ -1523,7 +1514,7 @@ function renderBugetLunar() {
   html += '<div class="stat-grid">';
   html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + ' + ((mediiV.categorii || []).length) + ' categorii', '');
   html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Rată credit + variabile', 'danger');
-  html += statCard('trending-up',  'Investiții medii', formatRON(mediiInvestitii), 'ETF + Tezaur / lună', '');
+  html += statCard('trending-up',  'Investiții medii', formatRON(mediiInvestitii), 'ETF (Tradeville) / lună', '');
   html += statCard(surplus >= 0 ? 'piggy-bank' : 'alert-triangle', 'Surplus lunar', (surplus >= 0 ? '+' : '') + formatRON(surplus), 'Venituri − cheltuieli − investiții', surplus >= 0 ? 'success' : 'danger');
   html += statCard(soldDispoCurent >= 0 ? 'banknote' : 'alert-triangle', 'Sold disponibil', formatRON(soldDispoCurent), 'Bani lichizi acum (se reportează)', soldDispoCurent >= 0 ? 'success' : 'danger');
   html += statCard('shield',       'Fond urgență',    formatRON(totalFond),     d.fondUrgenta.length + ' conturi', 'violet');
@@ -1576,7 +1567,7 @@ function renderBugetLunar() {
   var bonuriTotal = luniRep.reduce(function(s, lk) { return s + cheltuieliBonuriLuna(d, lk); }, 0);
   if (bonuriTotal > 0) donutSlices.push({ label: 'Card bonuri (Alimente)', value: bonuriTotal });
   var invTotal = luniRep.reduce(function(s, lk) { return s + investitiiLuna(d, lk); }, 0);
-  if (invTotal > 0) donutSlices.push({ label: 'Investiții (ETF/Tezaur)', value: invTotal });
+  if (invTotal > 0) donutSlices.push({ label: 'Investiții ETF', value: invTotal });
   // Variable categories aggregated across the same representative months
   (d.categoriiVar || []).forEach(function(c) {
     var v = luniRep.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
@@ -2384,9 +2375,9 @@ function renderVenituri() {
   totalsC.forEach(function(t) { html += '<td class="num">' + formatRON(t) + '</td>'; });
   html += '</tr>';
 
-  // Investments (ETF + Tezaur) — money that left the ING account
+  // ETF investment transfers to Tradeville — money that left the ING account
   var invList = LUNI_KEYS.map(function(l) { return investitiiLuna(d, l); });
-  html += '<tr class="fixed"><td><i data-lucide="trending-up" style="width:12px;height:12px;vertical-align:-1px;"></i> Investiții <span class="text-dim" style="font-size:0.68rem;">(ETF + Tezaur)</span></td>';
+  html += '<tr class="fixed"><td><i data-lucide="trending-up" style="width:12px;height:12px;vertical-align:-1px;"></i> Investiții <span class="text-dim" style="font-size:0.68rem;">(ETF Tradeville)</span></td>';
   invList.forEach(function(t) { html += '<td class="num neg mono">' + (t > 0 ? formatRON(t) : '—') + '</td>'; });
   html += '</tr>';
 
@@ -2415,7 +2406,7 @@ function renderVenituri() {
   html += '</tbody></table></div>';
   html += '<div class="info-box" style="margin-top:0.85rem;">';
   html += '<i data-lucide="info"></i>';
-  html += '<div><strong>Surplus lunar</strong> = venituri − cheltuieli − investiții (ETF/Tezaur). <strong>Sold disponibil</strong> reportează: soldul de la finalul unei luni e punctul de start pentru următoarea. Setează soldul real de pornire în <strong>Setări → Sold disponibil la început</strong>. Cardul de bonuri: introdu soldul rămas la final de lună pe rândul de sus.</div>';
+  html += '<div><strong>Surplus lunar</strong> = venituri − cheltuieli − investiții ETF. <strong>Sold disponibil</strong> reportează: soldul de la finalul unei luni e punctul de start pentru următoarea. Setează soldul real de pornire în <strong>Setări → Sold disponibil la început</strong>. Cardul de bonuri: introdu soldul rămas la final de lună pe rândul de sus. Tezaurul nu intră aici — e plasament rar, urmărit separat.</div>';
   html += '</div>';
   html += '</div></div>';
 
