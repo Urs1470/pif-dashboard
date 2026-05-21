@@ -3442,6 +3442,396 @@ def obsidian_mentions():
     return jsonify({'mentions': mentions[:25], 'term': term})
 
 
+# ============ AI ASSISTANT (Hermes, in-app) ============
+# A chat assistant backed by the MiniMax gateway. It can search the app's data
+# and perform actions through tool/function calling. Gateway credentials live
+# in .assistant_config on the server (written by Hermes, never committed).
+
+ASSISTANT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.assistant_config')
+
+ASSISTANT_SYSTEM_PROMPT = """Ești Hermes, asistentul integrat în PIF Dashboard — o aplicație
+de management pentru punerea în funcțiune (PIF) și service la convertoare de frecvență
+industriale (ABB ACS580/ACS880, Siemens SINAMICS G120/G130_G150/S120_S150,
+Danfoss VLT FC302, Lenze i550/i950). Utilizatorul este Ion, inginer de commissioning.
+
+Reguli:
+- Răspunde mereu în română, concis, la obiect, fără emoji.
+- Folosește uneltele disponibile pentru a căuta informații reale și a executa acțiuni.
+  Nu inventa date — dacă o unealtă nu găsește nimic, spune clar.
+- Când creezi sau modifici ceva (proiect, task, checklist, jurnal), confirmă pe scurt
+  exact ce ai făcut.
+- Pentru parametri de convertoare folosește search_parametri / get_parametru.
+- Pentru notițele tehnice ale lui Ion folosește search_obsidian / read_obsidian_note.
+- Dacă o cerere e ambiguă (ex: la ce proiect), întreabă înainte să acționezi.
+"""
+
+# Tool schemas (OpenAI-compatible function calling).
+ASSISTANT_TOOLS = [
+    {"type": "function", "function": {
+        "name": "search_parametri",
+        "description": "Caută parametri de convertor în baza de date după text (cod sau descriere), opțional filtrat pe familie.",
+        "parameters": {"type": "object", "properties": {
+            "query": {"type": "string", "description": "cod parametru (ex 30.12) sau cuvinte din descriere"},
+            "familie": {"type": "string", "description": "opțional: ACS580, ACS880, SINAMICS_G120, SINAMICS_G130_G150, SINAMICS_S120_S150, Danfoss_VLT_FC302, Lenze_i550, Lenze_i950"}
+        }, "required": ["query"]}
+    }},
+    {"type": "function", "function": {
+        "name": "get_parametru",
+        "description": "Returnează detaliul complet al unui parametru (descriere, acces, default, min/max, explicație, influențe).",
+        "parameters": {"type": "object", "properties": {
+            "familie": {"type": "string"},
+            "cod": {"type": "string", "description": "codul exact al parametrului"}
+        }, "required": ["familie", "cod"]}
+    }},
+    {"type": "function", "function": {
+        "name": "search_obsidian",
+        "description": "Caută în notițele tehnice Obsidian ale utilizatorului (full-text).",
+        "parameters": {"type": "object", "properties": {
+            "query": {"type": "string"}
+        }, "required": ["query"]}
+    }},
+    {"type": "function", "function": {
+        "name": "read_obsidian_note",
+        "description": "Citește conținutul complet al unei notițe Obsidian după calea ei relativă.",
+        "parameters": {"type": "object", "properties": {
+            "path": {"type": "string", "description": "calea relativă a notiței (din search_obsidian)"}
+        }, "required": ["path"]}
+    }},
+    {"type": "function", "function": {
+        "name": "list_proiecte",
+        "description": "Listează proiectele, opțional filtrate pe status.",
+        "parameters": {"type": "object", "properties": {
+            "status": {"type": "string", "description": "opțional: in_lucru, in_asteptare, blocat, finalizat"}
+        }}
+    }},
+    {"type": "function", "function": {
+        "name": "get_proiect",
+        "description": "Detaliul unui proiect după nume (parțial) sau id: date proiect, taskuri, checklist, jurnal.",
+        "parameters": {"type": "object", "properties": {
+            "nume": {"type": "string", "description": "nume parțial sau id de proiect"}
+        }, "required": ["nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "create_proiect",
+        "description": "Creează un proiect nou.",
+        "parameters": {"type": "object", "properties": {
+            "nume": {"type": "string"},
+            "tip": {"type": "string", "description": "PIF sau Service"},
+            "client": {"type": "string"},
+            "producator": {"type": "string", "description": "ex ABB, Siemens, Danfoss, Lenze"},
+            "locatie": {"type": "string"}
+        }, "required": ["nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "create_task",
+        "description": "Adaugă un task într-un proiect.",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string", "description": "nume parțial sau id de proiect"},
+            "titlu": {"type": "string"},
+            "prioritate": {"type": "string", "description": "normal, urgent, minor"},
+            "scadenta": {"type": "string", "description": "data YYYY-MM-DD, opțional"},
+            "descriere": {"type": "string"},
+            "recurenta": {"type": "string", "description": "opțional: zilnic, saptamanal, lunar"}
+        }, "required": ["proiect", "titlu"]}
+    }},
+    {"type": "function", "function": {
+        "name": "add_checklist_item",
+        "description": "Adaugă un punct în checklist-ul unui proiect.",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "titlu": {"type": "string"}
+        }, "required": ["proiect", "titlu"]}
+    }},
+    {"type": "function", "function": {
+        "name": "add_jurnal",
+        "description": "Adaugă o intrare în jurnalul unui proiect.",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "continut": {"type": "string"}
+        }, "required": ["proiect", "continut"]}
+    }},
+    {"type": "function", "function": {
+        "name": "update_task_status",
+        "description": "Schimbă statusul unui task dintr-un proiect (caută taskul după titlu parțial).",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "task": {"type": "string", "description": "titlu parțial al taskului"},
+            "status": {"type": "string", "description": "to_do, in_lucru, done"}
+        }, "required": ["proiect", "task", "status"]}
+    }},
+]
+
+
+def _load_assistant_config():
+    """Read MiniMax gateway config from .assistant_config (JSON)."""
+    try:
+        with open(ASSISTANT_CONFIG_FILE, 'r', encoding='utf-8') as fh:
+            cfg = json.load(fh)
+        if cfg.get('api_url') and cfg.get('api_key') and cfg.get('model'):
+            return cfg
+    except (OSError, ValueError):
+        pass
+    return None
+
+
+def _minimax_call(cfg, messages):
+    """One round-trip to the MiniMax (OpenAI-compatible) chat endpoint."""
+    import urllib.request
+    payload = json.dumps({
+        'model': cfg['model'],
+        'messages': messages,
+        'tools': ASSISTANT_TOOLS,
+        'temperature': 0.3,
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        cfg['api_url'],
+        data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + cfg['api_key'],
+        },
+        method='POST'
+    )
+    with urllib.request.urlopen(req, timeout=90) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
+def _assistant_find_project(cursor, needle):
+    """Resolve a project by id or partial name. Returns the Row or None."""
+    needle = (needle or '').strip()
+    if not needle:
+        return None
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (needle,))
+    row = cursor.fetchone()
+    if row:
+        return row
+    cursor.execute('SELECT * FROM proiecte WHERE nume LIKE ? ORDER BY data_crearii DESC LIMIT 1',
+                   (f'%{needle}%',))
+    return cursor.fetchone()
+
+
+def _assistant_exec_tool(name, args):
+    """Execute one assistant tool. Returns a JSON-serialisable dict."""
+    try:
+        if name == 'search_parametri':
+            conn = get_db(); cur = conn.cursor()
+            q = f"%{(args.get('query') or '').strip()}%"
+            sql = ('SELECT id, familie, parametru, descriere_scurta, descriere FROM parametri_master '
+                   'WHERE (parametru LIKE ? OR descriere LIKE ?)')
+            params = [q, q]
+            if args.get('familie'):
+                sql += ' AND familie = ?'
+                params.append(args['familie'])
+            sql += ' ORDER BY familie, parametru LIMIT 25'
+            cur.execute(sql, params)
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'count': len(rows), 'parametri': rows}
+
+        if name == 'get_parametru':
+            conn = get_db(); cur = conn.cursor()
+            cur.execute('SELECT * FROM parametri_master WHERE familie = ? AND parametru = ? LIMIT 1',
+                        (args.get('familie'), args.get('cod')))
+            row = cur.fetchone()
+            conn.close()
+            if not row:
+                return {'error': 'Parametrul nu a fost găsit'}
+            d = dict(row)
+            d.pop('pdf_extra', None)
+            return d
+
+        if name == 'search_obsidian':
+            vault = _obsidian_vault()
+            if not vault:
+                return {'error': 'Vault Obsidian neconfigurat'}
+            q = (args.get('query') or '').strip().lower()
+            out = []
+            for n in _obsidian_index(vault):
+                if q in n['title'].lower() or q in n['content'].lower():
+                    out.append({'path': n['path'], 'title': n['title']})
+                if len(out) >= 20:
+                    break
+            return {'count': len(out), 'note': out}
+
+        if name == 'read_obsidian_note':
+            vault = _obsidian_vault()
+            if not vault:
+                return {'error': 'Vault Obsidian neconfigurat'}
+            abspath = _obsidian_safe_path(vault, args.get('path'))
+            if not abspath or not os.path.isfile(abspath):
+                return {'error': 'Nota nu a fost găsită'}
+            with open(abspath, 'r', encoding='utf-8', errors='ignore') as fh:
+                return {'path': args.get('path'), 'content': fh.read()[:8000]}
+
+        if name == 'list_proiecte':
+            conn = get_db(); cur = conn.cursor()
+            sql = 'SELECT id, nume, tip, client, producator, status FROM proiecte'
+            params = []
+            if args.get('status'):
+                sql += ' WHERE status = ?'
+                params.append(args['status'])
+            sql += ' ORDER BY data_crearii DESC LIMIT 60'
+            cur.execute(sql, params)
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'count': len(rows), 'proiecte': rows}
+
+        if name == 'get_proiect':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('nume'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            pid = proj['id']
+            cur.execute('SELECT titlu, status, prioritate, data_scadenta FROM tasks WHERE proiect_id = ? ORDER BY ordine', (pid,))
+            tasks = [dict(r) for r in cur.fetchall()]
+            cur.execute('SELECT titlu, completed FROM checklist_pif WHERE proiect_id = ?', (pid,))
+            checklist = [dict(r) for r in cur.fetchall()]
+            cur.execute('SELECT data, continut FROM jurnal WHERE proiect_id = ? ORDER BY created_at DESC LIMIT 10', (pid,))
+            jurnal = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist, 'jurnal': jurnal}
+
+        if name == 'create_proiect':
+            conn = get_db(); cur = conn.cursor()
+            now = datetime.now().isoformat()
+            pid = generate_uuid()
+            cur.execute('''
+                INSERT INTO proiecte (id, tip, nume, client, producator, locatie, status, data_crearii, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'in_lucru', ?, ?)
+            ''', (pid, args.get('tip', 'PIF'), args.get('nume', ''), args.get('client', ''),
+                  args.get('producator', ''), args.get('locatie', ''), now, now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': pid, 'mesaj': f"Proiect creat: {args.get('nume')}"}
+
+        if name == 'create_task':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            now = datetime.now().isoformat()
+            tid = generate_uuid()
+            cur.execute('SELECT COALESCE(MAX(ordine), 0) FROM tasks WHERE proiect_id = ?', (proj['id'],))
+            mo = cur.fetchone()[0]
+            cur.execute('''
+                INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+                                   data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
+                VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?, ?, ?)
+            ''', (tid, proj['id'], args.get('titlu', ''), args.get('prioritate', 'normal'),
+                  args.get('scadenta', ''), mo + 1, now, args.get('descriere', ''),
+                  args.get('recurenta', ''), now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': tid, 'mesaj': f"Task adăugat în {proj['nume']}: {args.get('titlu')}"}
+
+        if name == 'add_checklist_item':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            now = datetime.now().isoformat()
+            cid = generate_uuid()
+            cur.execute('''
+                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
+                VALUES (?, ?, ?, 0, '', 0, NULL)
+            ''', (cid, proj['id'], args.get('titlu', '')))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': cid, 'mesaj': f"Checklist item adăugat: {args.get('titlu')}"}
+
+        if name == 'add_jurnal':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            now = datetime.now().isoformat()
+            jid = generate_uuid()
+            cur.execute('INSERT INTO jurnal (id, proiect_id, data, continut, created_at) VALUES (?, ?, ?, ?, ?)',
+                        (jid, proj['id'], now[:10], args.get('continut', ''), now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': jid, 'mesaj': 'Intrare adăugată în jurnal'}
+
+        if name == 'update_task_status':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                        (proj['id'], f"%{args.get('task') or ''}%"))
+            task = cur.fetchone()
+            if not task:
+                conn.close()
+                return {'error': 'Taskul nu a fost găsit'}
+            cur.execute('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?',
+                        (args.get('status', 'to_do'), datetime.now().isoformat(), task['id']))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Status actualizat pentru '{task['titlu']}': {args.get('status')}"}
+
+        return {'error': f'Unealtă necunoscută: {name}'}
+    except Exception as e:
+        logger.error(f'Assistant tool {name} failed: {e}')
+        return {'error': str(e)}
+
+
+@app.route('/api/assistant/status', methods=['GET'])
+@login_required
+def assistant_status():
+    return jsonify({'configured': _load_assistant_config() is not None})
+
+
+@app.route('/api/assistant/chat', methods=['POST'])
+@login_required
+def assistant_chat():
+    cfg = _load_assistant_config()
+    if not cfg:
+        return jsonify({'error': 'Asistentul nu e configurat. Hermes trebuie să creeze .assistant_config pe server.'}), 503
+
+    data = request.json or {}
+    history = data.get('messages', [])
+    if not isinstance(history, list) or not history:
+        return jsonify({'error': 'Niciun mesaj'}), 400
+
+    # Keep only role/content from client history; cap to last 20 turns.
+    convo = [{'role': 'system', 'content': ASSISTANT_SYSTEM_PROMPT}]
+    for m in history[-20:]:
+        if isinstance(m, dict) and m.get('role') in ('user', 'assistant') and m.get('content'):
+            convo.append({'role': m['role'], 'content': str(m['content'])})
+
+    tool_log = []
+    try:
+        for _ in range(8):  # max tool rounds
+            resp = _minimax_call(cfg, convo)
+            choice = (resp.get('choices') or [{}])[0].get('message') or {}
+            convo.append({
+                'role': 'assistant',
+                'content': choice.get('content') or '',
+                'tool_calls': choice.get('tool_calls'),
+            })
+            tool_calls = choice.get('tool_calls')
+            if not tool_calls:
+                return jsonify({'reply': choice.get('content') or '(răspuns gol)', 'tool_log': tool_log})
+            for tc in tool_calls:
+                fn = (tc.get('function') or {})
+                fname = fn.get('name', '')
+                try:
+                    fargs = json.loads(fn.get('arguments') or '{}')
+                except ValueError:
+                    fargs = {}
+                result = _assistant_exec_tool(fname, fargs)
+                tool_log.append({'tool': fname, 'args': fargs, 'ok': 'error' not in result})
+                convo.append({
+                    'role': 'tool',
+                    'tool_call_id': tc.get('id'),
+                    'content': json.dumps(result, ensure_ascii=False),
+                })
+        return jsonify({'reply': 'Am atins limita de pași. Reformulează cererea, te rog.', 'tool_log': tool_log})
+    except Exception as e:
+        logger.error(f'Assistant chat failed: {e}')
+        return jsonify({'error': f'Eroare asistent: {e}'}), 500
+
+
 # ============ INIT DEFAULT TEMPLATES ============
 
 def init_default_templates():

@@ -972,6 +972,114 @@
             .obsidian-sidebar { max-height: 45vh; }
             .obsidian-content { min-height: 50vh; padding: 16px; }
         }
+
+        /* ═══ AI Assistant (Hermes) ═══ */
+        .assistant-fab {
+            position: fixed; right: 24px; bottom: 24px;
+            width: 54px; height: 54px; border-radius: 50%;
+            background: var(--accent); color: #07110f;
+            border: none; cursor: pointer; z-index: 900;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .assistant-fab:hover { transform: translateY(-2px) scale(1.05); }
+        .assistant-fab [data-lucide] { width: 24px; height: 24px; }
+        .assistant-fab.hidden { display: none; }
+
+        .assistant-panel {
+            position: fixed; right: 24px; bottom: 24px;
+            width: 390px; max-width: calc(100vw - 32px);
+            height: 560px; max-height: calc(100vh - 48px);
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            z-index: 950; overflow: hidden;
+            opacity: 0; transform: translateY(16px) scale(0.97);
+            pointer-events: none;
+            transition: opacity 0.16s, transform 0.16s;
+        }
+        .assistant-panel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        .assistant-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px; border-bottom: 1px solid var(--line-soft);
+            flex-shrink: 0;
+        }
+        .assistant-header-title {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 700; font-size: 0.95rem;
+        }
+        .assistant-header-title [data-lucide] { width: 17px; height: 17px; color: var(--accent); }
+        .assistant-header-actions { display: flex; gap: 4px; }
+        .assistant-header-actions button {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-dim); padding: 5px; border-radius: 6px;
+            display: inline-flex;
+        }
+        .assistant-header-actions button:hover { background: var(--bg-elev3); color: var(--text); }
+        .assistant-header-actions [data-lucide] { width: 16px; height: 16px; }
+        .assistant-messages {
+            flex: 1; overflow-y: auto; padding: 14px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .assistant-welcome {
+            margin: auto; text-align: center; color: var(--text-dim);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            padding: 20px;
+        }
+        .assistant-welcome [data-lucide] { width: 34px; height: 34px; opacity: 0.5; color: var(--accent); }
+        .assistant-welcome p { font-size: 0.85rem; line-height: 1.5; }
+        .assistant-msg {
+            max-width: 86%; padding: 8px 12px; border-radius: 12px;
+            font-size: 0.88rem; line-height: 1.5; word-wrap: break-word;
+        }
+        .assistant-msg.user {
+            align-self: flex-end; background: var(--accent-soft);
+            color: var(--text); border-bottom-right-radius: 4px;
+        }
+        .assistant-msg.bot {
+            align-self: flex-start; background: var(--bg-elev3);
+            color: var(--text); border-bottom-left-radius: 4px;
+        }
+        .assistant-msg.bot .md-rendered { font-size: 0.88rem; }
+        .assistant-msg.bot .md-rendered > *:first-child { margin-top: 0; }
+        .assistant-msg.bot .md-rendered > *:last-child { margin-bottom: 0; }
+        .assistant-tool-activity {
+            align-self: flex-start; font-size: 0.76rem; color: var(--text-dim);
+            display: flex; align-items: center; gap: 6px; font-style: italic;
+        }
+        .assistant-tool-activity [data-lucide] { width: 13px; height: 13px; }
+        .assistant-typing { align-self: flex-start; color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
+        .assistant-input-row {
+            display: flex; gap: 8px; padding: 10px;
+            border-top: 1px solid var(--line-soft); flex-shrink: 0;
+            align-items: flex-end;
+        }
+        .assistant-input-row textarea {
+            flex: 1; min-width: 0; resize: none;
+            max-height: 110px;
+            padding: 9px 11px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-family: var(--font-sans); font-size: 0.88rem; line-height: 1.4;
+        }
+        .assistant-input-row textarea:focus { outline: none; border-color: var(--accent); }
+        .assistant-send {
+            width: 38px; height: 38px; flex-shrink: 0;
+            background: var(--accent); color: #07110f;
+            border: none; border-radius: 10px; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .assistant-send:hover { filter: brightness(1.1); }
+        .assistant-send:disabled { opacity: 0.5; cursor: default; }
+        .assistant-send [data-lucide] { width: 17px; height: 17px; }
+        @media (max-width: 768px) {
+            .assistant-panel { right: 8px; bottom: 8px; width: calc(100vw - 16px); height: calc(100vh - 90px); }
+            .assistant-fab { right: 16px; bottom: 88px; }
+        }
+
         .admin-audit-health {
             display: flex;
             align-items: center;
@@ -5172,6 +5280,29 @@
             </div>
         </div>
     </nav>
+
+    <!-- ═══ AI Assistant (Hermes) ═══ -->
+    <button id="assistant-fab" class="assistant-fab" onclick="toggleAssistant()" title="Asistent Hermes" aria-label="Asistent Hermes">
+        <i data-lucide="sparkles"></i>
+    </button>
+    <div id="assistant-panel" class="assistant-panel">
+        <div class="assistant-header">
+            <div class="assistant-header-title"><i data-lucide="sparkles"></i> Hermes</div>
+            <div class="assistant-header-actions">
+                <button onclick="clearAssistantChat()" title="Conversație nouă"><i data-lucide="rotate-ccw"></i></button>
+                <button onclick="toggleAssistant()" title="Închide"><i data-lucide="x"></i></button>
+            </div>
+        </div>
+        <div id="assistant-messages" class="assistant-messages"></div>
+        <div class="assistant-input-row">
+            <textarea id="assistant-input" rows="1" placeholder="Întreabă Hermes..."
+                      autocomplete="off"
+                      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAssistantMessage();}"></textarea>
+            <button class="assistant-send" id="assistant-send-btn" onclick="sendAssistantMessage()" title="Trimite">
+                <i data-lucide="send"></i>
+            </button>
+        </div>
+    </div>
 
 <!-- PARAM DETAIL MODAL -->
 <div class="modal-overlay" id="param-detail-modal">

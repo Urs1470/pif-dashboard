@@ -2828,6 +2828,117 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// ============ AI ASSISTANT (Hermes) ============
+
+let _assistantMessages = [];
+let _assistantBusy = false;
+const _ASSISTANT_WRITE_TOOLS = ['create_proiect', 'create_task', 'add_checklist_item', 'add_jurnal', 'update_task_status'];
+
+function toggleAssistant() {
+    const panel = document.getElementById('assistant-panel');
+    if (!panel) return;
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+        renderAssistantMessages();
+        setTimeout(() => document.getElementById('assistant-input')?.focus(), 150);
+    }
+}
+
+function clearAssistantChat() {
+    _assistantMessages = [];
+    renderAssistantMessages();
+}
+
+function renderAssistantMessages() {
+    const box = document.getElementById('assistant-messages');
+    if (!box) return;
+    if (!_assistantMessages.length) {
+        box.innerHTML = `<div class="assistant-welcome">
+            <i data-lucide="sparkles"></i>
+            <p>Salut, Ion. Sunt Hermes.<br>Pot căuta parametri, notițe și proiecte — și pot crea proiecte, taskuri, checklist-uri și intrări de jurnal. Spune-mi ce ai nevoie.</p>
+        </div>`;
+        if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+        return;
+    }
+    box.innerHTML = _assistantMessages.map(m => {
+        if (m.role === 'user') return `<div class="assistant-msg user">${escapeHtml(m.content)}</div>`;
+        if (m.role === 'typing') return `<div class="assistant-typing">Hermes scrie…</div>`;
+        if (m.role === 'tools') return `<div class="assistant-tool-activity"><i data-lucide="settings-2"></i> ${escapeHtml(m.content)}</div>`;
+        return `<div class="assistant-msg bot"><div class="md-rendered">${renderMarkdown(m.content)}</div></div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+}
+
+async function sendAssistantMessage() {
+    if (_assistantBusy) return;
+    const input = document.getElementById('assistant-input');
+    if (!input) return;
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = 'auto';
+    _assistantMessages.push({ role: 'user', content: text });
+    _assistantMessages.push({ role: 'typing', content: '' });
+    renderAssistantMessages();
+    _assistantBusy = true;
+    const sendBtn = document.getElementById('assistant-send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+
+    const payload = _assistantMessages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .map(m => ({ role: m.role, content: m.content }));
+
+    try {
+        const res = await fetch('/api/assistant/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: payload })
+        });
+        const data = await res.json();
+        _assistantMessages = _assistantMessages.filter(m => m.role !== 'typing');
+        if (data.error) {
+            _assistantMessages.push({ role: 'assistant', content: '⚠ ' + data.error });
+        } else {
+            if (Array.isArray(data.tool_log) && data.tool_log.length) {
+                _assistantMessages.push({ role: 'tools', content: 'A folosit: ' + data.tool_log.map(t => t.tool).join(', ') });
+            }
+            _assistantMessages.push({ role: 'assistant', content: data.reply || '(răspuns gol)' });
+            if (Array.isArray(data.tool_log) && data.tool_log.some(t => _ASSISTANT_WRITE_TOOLS.includes(t.tool))) {
+                _assistantRefreshContext();
+            }
+        }
+    } catch (e) {
+        _assistantMessages = _assistantMessages.filter(m => m.role !== 'typing');
+        _assistantMessages.push({ role: 'assistant', content: '⚠ Eroare de rețea.' });
+    }
+    _assistantBusy = false;
+    if (sendBtn) sendBtn.disabled = false;
+    renderAssistantMessages();
+}
+
+// After the assistant changes data, refresh whatever the user is looking at.
+function _assistantRefreshContext() {
+    try {
+        if (currentProjectId) {
+            if (typeof loadTodos === 'function') loadTodos(currentProjectId);
+            if (typeof loadChecklist === 'function') loadChecklist(currentProjectId);
+            if (typeof loadJurnal === 'function') loadJurnal(currentProjectId);
+        } else if (typeof loadProjects === 'function') {
+            loadProjects();
+        }
+    } catch (e) { /* refresh is best-effort */ }
+}
+
+// Auto-grow the assistant textarea.
+(function () {
+    const ta = document.getElementById('assistant-input');
+    if (ta) ta.addEventListener('input', () => {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+    });
+})();
+
 async function loadGlobalTasks() {
     try {
         let url = '/global-tasks?';

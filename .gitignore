@@ -20,3 +20,5 @@ pif-dashboard.service
 # Secrets
 .secret_key
 .env
+.deploy_secret
+.assistant_config
