@@ -2209,6 +2209,58 @@
         .todo-add-form .cs { min-width: 0; width: 100%; display: block; }
         .todo-add-form .cs-trigger { height: 32px; min-height: 32px; font-size: 0.82rem; padding: 0 10px; border-radius: 6px; }
 
+        /* ── Task edit modal: descriere, subtaskuri, time-tracking ── */
+        .task-edit-textarea {
+            width: 100%;
+            padding: 8px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        .task-edit-textarea:focus { outline: none; border-color: var(--accent); }
+        .task-subtask-progress {
+            font-size: 0.72rem; color: var(--text-dim);
+            font-family: var(--font-mono); font-weight: 600;
+        }
+        .task-subtask-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+        .task-subtask-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 8px; border-radius: 6px;
+            background: var(--bg);
+        }
+        .task-subtask-item:hover { background: var(--bg-elev2); }
+        .task-subtask-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+        .task-subtask-item .task-subtask-titlu { flex: 1; min-width: 0; font-size: 0.86rem; }
+        .task-subtask-item.done .task-subtask-titlu { text-decoration: line-through; color: var(--text-dim); }
+        .task-subtask-item .task-subtask-del {
+            opacity: 0; background: none; border: none; cursor: pointer;
+            color: var(--text-dim); padding: 2px; display: inline-flex;
+        }
+        .task-subtask-item:hover .task-subtask-del { opacity: 1; }
+        .task-subtask-item .task-subtask-del:hover { color: var(--danger); }
+        .task-subtask-del [data-lucide] { width: 14px; height: 14px; }
+        .task-subtask-add { display: flex; gap: 6px; }
+        .task-subtask-add input {
+            flex: 1; min-width: 0;
+            padding: 7px 10px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--radius-md); color: var(--text); font-size: 0.86rem;
+        }
+        .task-subtask-add input:focus { outline: none; border-color: var(--accent); }
+        .task-time-box {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 12px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+        }
+        .task-time-total {
+            font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600;
+            color: var(--accent); flex: 1;
+        }
+
         .todo-list { max-height: 300px; overflow-y: auto; }
 
         .todo-item {
@@ -4416,7 +4468,7 @@
 
     <!-- Task edit modal — opens when clicking on a project task row. -->
     <div class="modal-overlay" id="task-edit-modal" onclick="if(event.target === this) closeTaskEditModal()">
-        <div class="modal" style="max-width: 520px;">
+        <div class="modal" style="max-width: 560px;">
             <div class="modal-header">
                 <h3 class="modal-title"><i data-lucide="pencil"></i> Editează task</h3>
                 <button class="modal-close" onclick="closeTaskEditModal()">&times;</button>
@@ -4445,9 +4497,44 @@
                         </select>
                     </div>
                 </div>
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                        <label>Termen (data scadenței)</label>
+                        <input type="text" id="task-modal-scadenta" placeholder="zz.ll.aaaa" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Recurență</label>
+                        <select id="task-edit-recurenta" class="cs-enhance">
+                            <option value="">Fără</option>
+                            <option value="zilnic">Zilnic</option>
+                            <option value="saptamanal">Săptămânal</option>
+                            <option value="lunar">Lunar</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label>Termen (data scadenței)</label>
-                    <input type="text" id="task-modal-scadenta" placeholder="zz.ll.aaaa" autocomplete="off">
+                    <label>Descriere</label>
+                    <textarea id="task-edit-descriere" rows="3" placeholder="Detalii, note, context..."
+                              class="task-edit-textarea"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Subtaskuri <span id="task-subtask-progress" class="task-subtask-progress"></span></label>
+                    <div id="task-subtask-list" class="task-subtask-list"></div>
+                    <div class="task-subtask-add">
+                        <input type="text" id="task-subtask-input" placeholder="Adaugă subtask..."
+                               autocomplete="off"
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}">
+                        <button class="btn btn-primary btn-icon-sm" onclick="addSubtask()" title="Adaugă subtask"><i data-lucide="plus"></i></button>
+                    </div>
+                </div>
+                <div class="form-group" id="task-time-row" style="display:none;">
+                    <label>Timp lucrat</label>
+                    <div class="task-time-box">
+                        <span id="task-time-total" class="task-time-total">0h 0m</span>
+                        <button class="btn btn-success btn-small" id="task-timer-btn" onclick="toggleTaskTimer()">
+                            <i data-lucide="play"></i> Pornește
+                        </button>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button class="btn btn-secondary" onclick="closeTaskEditModal()">Anulează</button>

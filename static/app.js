@@ -1201,9 +1201,17 @@ function renderTodos(tasks) {
     // Done sorted by completion (or update) DESC so the latest finalised one floats on top.
     done.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''));
 
+    const _metaBadge = (icon, text) => `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
+    const _recLabels = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
     const renderOne = (task) => {
         const prioRaw = task.prioritate || 'Normal';
         const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
+        let meta = '';
+        if (task.data_scadenta) meta += _metaBadge('calendar', task.data_scadenta);
+        if (task.subtask_total) meta += _metaBadge('list-checks', `${task.subtask_done || 0}/${task.subtask_total}`);
+        if (task.timp_secunde) meta += _metaBadge('timer', formatTimerDuration(task.timp_secunde));
+        if (task.recurenta) meta += _metaBadge('repeat', _recLabels[task.recurenta] || task.recurenta);
+        if (task.descriere && String(task.descriere).trim()) meta += _metaBadge('align-left', '');
         return `
         <div class="todo-item priority-${prioRaw.toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
             onclick="openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" style="cursor:pointer;">
@@ -1211,9 +1219,7 @@ function renderTodos(tasks) {
                 onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
             <div class="todo-content">
                 <div class="todo-title">${escapeHtml(task.titlu)}</div>
-                <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-                    ${task.data_scadenta ? `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar"></i> ${task.data_scadenta}</span>` : ''}
-                </div>
+                ${meta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">${meta}</div>` : ''}
             </div>
             <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
             <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
@@ -1422,13 +1428,29 @@ async function deleteTodo(taskId) {
 // ============ TASK EDIT MODAL ============
 
 let taskEditFlatpickr = null;
+let _taskTimerInterval = null;       // 1s display tick for the per-task timer
+let _taskTimerRunningSince = null;   // epoch ms when the running session started
+let _taskTimerBaseTotal = 0;         // accumulated seconds from finished sessions
+let _taskSubtasks = [];
+
+// Set a cs-enhance <select> value and sync its custom dropdown display.
+function _csSet(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = value;
+    el.dispatchEvent(new Event('change'));
+}
 
 function openTaskEditModal(task) {
     document.getElementById('task-edit-id').value = task.id;
     document.getElementById('task-edit-titlu').value = task.titlu || '';
-    document.getElementById('task-edit-status').value = task.status || 'to_do';
-    selectTaskPriority(task.prioritate || 'Normal');
+    document.getElementById('task-edit-descriere').value = task.descriere || '';
+    _csSet('task-edit-status', task.status || 'to_do');
+    _csSet('task-edit-recurenta', task.recurenta || '');
+    selectTaskPriority((task.prioritate || 'normal').toLowerCase());
     document.getElementById('task-edit-modal').classList.add('active');
+    loadSubtasks(task.id);
+    loadTaskTimer(task.id);
     setTimeout(() => {
         if (taskEditFlatpickr) taskEditFlatpickr.destroy();
         taskEditFlatpickr = initFlatpickr('#task-modal-scadenta');
@@ -1439,6 +1461,9 @@ function openTaskEditModal(task) {
 function closeTaskEditModal() {
     document.getElementById('task-edit-modal').classList.remove('active');
     if (taskEditFlatpickr) { taskEditFlatpickr.destroy(); taskEditFlatpickr = null; }
+    if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
+    // Reload todos so subtask/time/recurrence badges reflect any change.
+    if (currentProjectId) loadTodos(currentProjectId);
 }
 
 async function saveTaskFromModal() {
@@ -1447,13 +1472,16 @@ async function saveTaskFromModal() {
     const titlu = document.getElementById('task-edit-titlu').value.trim();
     const prioritate = document.getElementById('task-edit-prioritate').value;
     const status = document.getElementById('task-edit-status').value;
+    const descriere = document.getElementById('task-edit-descriere').value;
+    const recurenta = document.getElementById('task-edit-recurenta').value;
     const data_scadenta = (document.getElementById('task-modal-scadenta').value || '').trim();
     if (!titlu) { showToast('Titlul nu poate fi gol', true); return; }
     try {
-        await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta });
+        const res = await apiPut(`/tasks/${id}`, { titlu, prioritate, status, data_scadenta, descriere, recurenta });
+        showToast((res && res.recurring_spawned)
+            ? 'Task finalizat — următoarea apariție creată'
+            : 'Task actualizat');
         closeTaskEditModal();
-        if (currentProjectId) loadTodos(currentProjectId);
-        showToast('Task actualizat');
     } catch (e) {
         console.error('Save task error:', e);
         showToast('Eroare la salvare', true);
@@ -1473,7 +1501,6 @@ async function deleteTaskFromModal() {
     try {
         await apiDelete(`/tasks/${id}`);
         closeTaskEditModal();
-        if (currentProjectId) loadTodos(currentProjectId);
         showToast('Task șters');
     } catch (e) {
         showToast('Eroare la ștergere', true);
@@ -1481,8 +1508,135 @@ async function deleteTaskFromModal() {
 }
 
 function selectTaskPriority(val) {
-    document.getElementById('task-edit-prioritate').value = val;
-    document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.val === val));
+    _csSet('task-edit-prioritate', (val || 'normal').toLowerCase());
+}
+
+// ── Subtasks (lightweight checklist inside the task modal) ──
+async function loadSubtasks(taskId) {
+    try {
+        const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/subtasks`);
+        const subs = await res.json();
+        _taskSubtasks = Array.isArray(subs) ? subs : [];
+    } catch (e) { _taskSubtasks = []; }
+    renderSubtasks();
+}
+
+function renderSubtasks() {
+    const listEl = document.getElementById('task-subtask-list');
+    const progEl = document.getElementById('task-subtask-progress');
+    if (!listEl) return;
+    const total = _taskSubtasks.length;
+    const done = _taskSubtasks.filter(s => s.done).length;
+    if (progEl) progEl.textContent = total ? `(${done}/${total})` : '';
+    listEl.innerHTML = _taskSubtasks.map(s => `
+        <div class="task-subtask-item ${s.done ? 'done' : ''}">
+            <input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleSubtask('${s.id}', this.checked)">
+            <span class="task-subtask-titlu">${escapeHtml(s.titlu)}</span>
+            <button class="task-subtask-del" onclick="deleteSubtask('${s.id}')" title="Șterge"><i data-lucide="x"></i></button>
+        </div>`).join('');
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+}
+
+async function addSubtask() {
+    const taskId = document.getElementById('task-edit-id').value;
+    const input = document.getElementById('task-subtask-input');
+    const titlu = (input.value || '').trim();
+    if (!taskId || !titlu) return;
+    try {
+        await apiPost(`/tasks/${taskId}/subtasks`, { titlu });
+        input.value = '';
+        loadSubtasks(taskId);
+    } catch (e) { showToast('Eroare la adăugare subtask', true); }
+}
+
+async function toggleSubtask(subtaskId, done) {
+    try {
+        await apiPut(`/subtasks/${subtaskId}`, { done: done ? 1 : 0 });
+        const s = _taskSubtasks.find(x => x.id === subtaskId);
+        if (s) s.done = done ? 1 : 0;
+        renderSubtasks();
+    } catch (e) { showToast('Eroare', true); }
+}
+
+async function deleteSubtask(subtaskId) {
+    const taskId = document.getElementById('task-edit-id').value;
+    try {
+        await apiDelete(`/subtasks/${subtaskId}`);
+        loadSubtasks(taskId);
+    } catch (e) { showToast('Eroare la ștergere', true); }
+}
+
+// ── Per-task timer ──
+async function loadTaskTimer(taskId) {
+    const row = document.getElementById('task-time-row');
+    if (row) row.style.display = 'block';
+    if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
+    try {
+        const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer`);
+        const data = await res.json();
+        _taskTimerBaseTotal = data.total_secunde || 0;
+        if (data.running && data.running_since) {
+            _taskTimerRunningSince = new Date(data.running_since).getTime();
+            _setTaskTimerBtn(true);
+            _tickTaskTimer();
+            _taskTimerInterval = setInterval(_tickTaskTimer, 1000);
+        } else {
+            _taskTimerRunningSince = null;
+            _setTaskTimerBtn(false);
+            _renderTaskTime(_taskTimerBaseTotal);
+        }
+    } catch (e) {
+        _taskTimerRunningSince = null;
+        _renderTaskTime(0);
+    }
+}
+
+function _renderTaskTime(sec) {
+    const el = document.getElementById('task-time-total');
+    if (el) el.textContent = formatTime(Math.max(0, sec));
+}
+
+function _tickTaskTimer() {
+    if (_taskTimerRunningSince == null) return;
+    const elapsed = Math.floor((Date.now() - _taskTimerRunningSince) / 1000);
+    _renderTaskTime(_taskTimerBaseTotal + elapsed);
+}
+
+function _setTaskTimerBtn(running) {
+    const btn = document.getElementById('task-timer-btn');
+    if (!btn) return;
+    btn.innerHTML = running
+        ? '<i data-lucide="square"></i> Oprește'
+        : '<i data-lucide="play"></i> Pornește';
+    btn.classList.toggle('btn-success', !running);
+    btn.classList.toggle('btn-danger', running);
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+}
+
+async function toggleTaskTimer() {
+    const taskId = document.getElementById('task-edit-id').value;
+    if (!taskId) return;
+    const running = _taskTimerRunningSince != null;
+    try {
+        if (running) {
+            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
+            const data = await res.json();
+            if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
+            _taskTimerRunningSince = null;
+            _taskTimerBaseTotal = data.total_secunde || 0;
+            _setTaskTimerBtn(false);
+            _renderTaskTime(_taskTimerBaseTotal);
+            showToast('Cronometru oprit');
+        } else {
+            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
+            const data = await res.json();
+            _taskTimerRunningSince = new Date(data.start_time).getTime();
+            _setTaskTimerBtn(true);
+            _tickTaskTimer();
+            _taskTimerInterval = setInterval(_tickTaskTimer, 1000);
+            showToast('Cronometru pornit');
+        }
+    } catch (e) { showToast('Eroare cronometru', true); }
 }
 
 

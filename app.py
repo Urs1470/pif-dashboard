@@ -513,8 +513,17 @@ def batch_proiecte():
 def get_tasks(project_id):
     conn = get_db()
     cursor = conn.cursor()
-    # Phase 2c: Sort by ordine for drag-and-drop reordering
-    cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC, created_at DESC', (project_id,))
+    # Sort by ordine for drag-and-drop. Subtask counts + tracked time joined in
+    # so the todo row can show progress badges without N extra requests.
+    cursor.execute('''
+        SELECT t.*,
+            (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id) AS subtask_total,
+            (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id AND s.done = 1) AS subtask_done,
+            (SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions ts
+             WHERE ts.task_id = t.id AND ts.durata_secunde IS NOT NULL) AS timp_secunde
+        FROM tasks t WHERE t.proiect_id = ?
+        ORDER BY t.ordine ASC, t.created_at DESC
+    ''', (project_id,))
     rows = cursor.fetchall()
     conn.close()
     return jsonify([row_to_dict(row) for row in rows])
@@ -535,8 +544,9 @@ def create_task(project_id):
     max_ordine = result['max_ordine'] if result and result['max_ordine'] is not None else 0
     
     cursor.execute('''
-        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta, data_finalizare, ordine, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -546,22 +556,81 @@ def create_task(project_id):
         data.get('data_scadenta', ''),
         data.get('data_finalizare', ''),
         max_ordine + 1,
+        now,
+        data.get('descriere', ''),
+        data.get('recurenta', ''),
         now
     ))
-    
+
     conn.commit()
     conn.close()
-    
+
     return jsonify({'id': task_id}), 201
+
+
+def _next_recurrence_date(base_str, recurenta):
+    """base_str: 'YYYY-MM-DD' (flatpickr format) or empty. Returns the next
+    occurrence date as 'YYYY-MM-DD'. Falls back to today when base is unparsable."""
+    try:
+        base = datetime.strptime((base_str or '')[:10], '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        base = datetime.now().date()
+    if recurenta == 'zilnic':
+        nxt = base + timedelta(days=1)
+    elif recurenta == 'saptamanal':
+        nxt = base + timedelta(days=7)
+    elif recurenta == 'lunar':
+        import calendar
+        m = base.month + 1
+        y = base.year + (1 if m > 12 else 0)
+        if m > 12:
+            m -= 12
+        d = min(base.day, calendar.monthrange(y, m)[1])
+        nxt = datetime(y, m, d).date()
+    else:
+        return base_str or ''
+    return nxt.isoformat()
+
+
+def _spawn_recurring_task(cursor, existing, recurenta):
+    """Create the next occurrence of a recurring task that was just completed.
+    Copies title/priority/description/recurrence and fresh (unchecked) subtasks.
+    `existing` is the sqlite Row of the completed task. Returns the new id."""
+    new_id = generate_uuid()
+    now = datetime.now().isoformat()
+    next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+    cursor.execute('SELECT MAX(ordine) FROM tasks WHERE proiect_id = ?', (existing['proiect_id'],))
+    max_ordine = cursor.fetchone()[0] or 0
+    cursor.execute('''
+        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
+        VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?, ?, ?)
+    ''', (new_id, existing['proiect_id'], existing['titlu'], existing['prioritate'],
+          next_scad, max_ordine + 1, now, existing['descriere'] or '', recurenta, now))
+    # Carry the subtasks over, all unchecked — a recurring checklist repeats clean.
+    cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
+    for srow in cursor.fetchall():
+        cursor.execute(
+            'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+            (generate_uuid(), new_id, srow['titlu'], srow['ordine'], now)
+        )
+    return new_id
+
 
 @app.route('/api/tasks/<task_id>', methods=['PUT'])
 @login_required
 def update_task(task_id):
-    data = request.json
+    data = request.json or {}
     conn = get_db()
     cursor = conn.cursor()
-    
-    # Phase 2c: Support ordine field for drag-and-drop reordering
+
+    cursor.execute('SELECT * FROM tasks WHERE id = ?', (task_id,))
+    existing = cursor.fetchone()
+    if existing is None:
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    old_status = existing['status']
+
     cursor.execute('''
         UPDATE tasks SET
             titlu = COALESCE(?, titlu),
@@ -569,7 +638,10 @@ def update_task(task_id):
             prioritate = COALESCE(?, prioritate),
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
-            ordine = COALESCE(?, ordine)
+            ordine = COALESCE(?, ordine),
+            descriere = COALESCE(?, descriere),
+            recurenta = COALESCE(?, recurenta),
+            updated_at = ?
         WHERE id = ?
     ''', (
         data.get('titlu'),
@@ -578,23 +650,92 @@ def update_task(task_id):
         data.get('data_scadenta'),
         data.get('data_finalizare'),
         data.get('ordine'),
+        data.get('descriere'),
+        data.get('recurenta'),
+        datetime.now().isoformat(),
         task_id
     ))
-    
+
+    # A recurring task just completed -> spawn the next occurrence.
+    spawned_id = None
+    if (data.get('status') == 'done' and old_status != 'done'
+            and (existing['recurenta'] or '').strip()):
+        spawned_id = _spawn_recurring_task(cursor, existing, existing['recurenta'].strip())
+
     conn.commit()
     conn.close()
-    
-    return jsonify({'message': 'Task updated'})
+
+    resp = {'message': 'Task updated'}
+    if spawned_id:
+        resp['recurring_spawned'] = spawned_id
+    return jsonify(resp)
 
 @app.route('/api/tasks/<task_id>', methods=['DELETE'])
 @login_required
 def delete_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
+    cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
     cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Task deleted'})
+
+# ============ TASK SUBTASKS (lightweight checklist under a task) ============
+
+@app.route('/api/tasks/<task_id>/subtasks', methods=['GET'])
+@login_required
+def get_subtasks(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM task_subtasks WHERE task_id = ? ORDER BY ordine ASC, created_at ASC', (task_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([row_to_dict(r) for r in rows])
+
+@app.route('/api/tasks/<task_id>/subtasks', methods=['POST'])
+@login_required
+def create_subtask(task_id):
+    data = request.json or {}
+    titlu = (data.get('titlu') or '').strip()
+    if not titlu:
+        return jsonify({'error': 'Titlu required'}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task_id,))
+    next_ordine = cursor.fetchone()[0]
+    sid = generate_uuid()
+    cursor.execute(
+        'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        (sid, task_id, titlu, next_ordine, datetime.now().isoformat())
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sid}), 201
+
+@app.route('/api/subtasks/<subtask_id>', methods=['PUT'])
+@login_required
+def update_subtask(subtask_id):
+    data = request.json or {}
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE task_subtasks SET titlu = COALESCE(?, titlu), done = COALESCE(?, done) WHERE id = ?',
+        (data.get('titlu'), data.get('done'), subtask_id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+@app.route('/api/subtasks/<subtask_id>', methods=['DELETE'])
+@login_required
+def delete_subtask(subtask_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM task_subtasks WHERE id = ?', (subtask_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
 
 # ============ GLOBAL TASKS ============
 
@@ -1018,10 +1159,11 @@ def stop_timer(project_id):
     
     now = datetime.now().isoformat()
     
-    # Find active session
+    # Find active session — only the standalone project timer (task_id IS NULL),
+    # never a per-task timer session.
     cursor.execute('''
-        SELECT * FROM timer_sessions 
-        WHERE proiect_id = ? AND stop_time IS NULL 
+        SELECT * FROM timer_sessions
+        WHERE proiect_id = ? AND stop_time IS NULL AND task_id IS NULL
         ORDER BY start_time DESC LIMIT 1
     ''', (project_id,))
     session = cursor.fetchone()
@@ -1055,7 +1197,7 @@ def stop_timer_with_note(project_id):
 
     cursor.execute('''
         SELECT * FROM timer_sessions
-        WHERE proiect_id = ? AND stop_time IS NULL
+        WHERE proiect_id = ? AND stop_time IS NULL AND task_id IS NULL
         ORDER BY start_time DESC LIMIT 1
     ''', (project_id,))
     timer_session = cursor.fetchone()
@@ -1108,14 +1250,97 @@ def delete_timer_session(session_id):
     conn.close()
     return jsonify({'message': 'Timer session deleted'})
 
+# ============ PER-TASK TIMER ============
+# Time tracked against a specific task. Stored in timer_sessions with task_id
+# set, kept isolated from the standalone project timer (which uses task_id NULL).
+
+@app.route('/api/tasks/<task_id>/timer', methods=['GET'])
+@login_required
+def get_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT start_time FROM timer_sessions
+        WHERE task_id = ? AND stop_time IS NULL
+        ORDER BY start_time DESC LIMIT 1
+    ''', (task_id,))
+    running = cursor.fetchone()
+    cursor.execute(
+        'SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
+        'WHERE task_id = ? AND durata_secunde IS NOT NULL',
+        (task_id,)
+    )
+    total = cursor.fetchone()[0]
+    conn.close()
+    return jsonify({
+        'running': running is not None,
+        'running_since': running['start_time'] if running else None,
+        'total_secunde': total,
+    })
+
+@app.route('/api/tasks/<task_id>/timer/start', methods=['POST'])
+@login_required
+def start_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT proiect_id FROM tasks WHERE id = ?', (task_id,))
+    task = cursor.fetchone()
+    if not task:
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    now = datetime.now().isoformat()
+    # Close any already-running session for this task (avoid duplicates).
+    cursor.execute('SELECT id, start_time FROM timer_sessions WHERE task_id = ? AND stop_time IS NULL', (task_id,))
+    for r in cursor.fetchall():
+        dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(r['start_time'])).total_seconds())
+        cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?',
+                       (now, dur, r['id']))
+    session_id = generate_uuid()
+    cursor.execute(
+        'INSERT INTO timer_sessions (id, proiect_id, task_id, start_time) VALUES (?, ?, ?, ?)',
+        (session_id, task['proiect_id'], task_id, now)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'id': session_id, 'start_time': now})
+
+@app.route('/api/tasks/<task_id>/timer/stop', methods=['POST'])
+@login_required
+def stop_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.now().isoformat()
+    cursor.execute('''
+        SELECT id, start_time FROM timer_sessions
+        WHERE task_id = ? AND stop_time IS NULL
+        ORDER BY start_time DESC LIMIT 1
+    ''', (task_id,))
+    session = cursor.fetchone()
+    if not session:
+        conn.close()
+        return jsonify({'error': 'No running timer for this task'}), 404
+    dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(session['start_time'])).total_seconds())
+    cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?',
+                   (now, dur, session['id']))
+    cursor.execute(
+        'SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
+        'WHERE task_id = ? AND durata_secunde IS NOT NULL',
+        (task_id,)
+    )
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'durata_secunde': dur, 'total_secunde': total})
+
 @app.route('/api/proiecte/<project_id>/timer', methods=['GET'])
 @login_required
 def get_timer_sessions(project_id):
     conn = get_db()
     cursor = conn.cursor()
+    # Standalone project timer only — per-task sessions are shown in the task modal.
     cursor.execute('''
-        SELECT * FROM timer_sessions 
-        WHERE proiect_id = ? 
+        SELECT * FROM timer_sessions
+        WHERE proiect_id = ? AND task_id IS NULL
         ORDER BY start_time DESC
     ''', (project_id,))
     rows = cursor.fetchall()
