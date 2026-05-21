@@ -1,9 +1,17 @@
 // PIF Dashboard Service Worker
-// Cache-first strategy for app shell, network-first for API calls
+// Cache-first for the app shell, network-first for API calls.
+//
+// Update model: a newly installed worker STAYS in the "waiting" state until the
+// user explicitly accepts the update in-app (see initPWA / _promptSWUpdate in
+// app.js). The worker never reloads the page on its own — this is what used to
+// cause the "page flashes as if it reloads" while working.
+//
+// Single VERSION constant — bump it on every frontend deploy so old caches are
+// dropped on activate.
 
-const CACHE_NAME = 'pif-dashboard-v25';
-const STATIC_CACHE = 'pif-static-v25';
-const API_CACHE = 'pif-api-v25';
+const VERSION = 'v26';
+const STATIC_CACHE = 'pif-static-' + VERSION;
+const API_CACHE = 'pif-api-' + VERSION;
 
 // App shell files to cache on install
 const APP_SHELL = [
@@ -12,46 +20,34 @@ const APP_SHELL = [
   '/static/manifest.json'
 ];
 
-// API endpoints that should be cached
-const CACHEABLE_API = [
-  '/api/proiecte',
-  '/api/stats',
-  '/api/global-tasks'
-];
-
-// Install event - cache app shell
+// Install — cache the app shell. No skipWaiting(): the new worker waits until
+// the user accepts the update.
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing', VERSION);
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('[SW] Caching app shell');
-        return cache.addAll(APP_SHELL);
-      })
-      .then(() => self.skipWaiting())
+      .then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
-// Activate event - clean up old caches
+// Activate — clean up old caches, then take control of open pages.
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating', VERSION);
   event.waitUntil(
     caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
-            .map((name) => {
-              console.log('[SW] Deleting old cache:', name);
-              return caches.delete(name);
-            })
-        );
-      })
+      .then((cacheNames) => Promise.all(
+        cacheNames
+          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
+      ))
       .then(() => self.clients.claim())
   );
 });
 
-// Fetch event - handle requests
+// Fetch — handle requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -73,8 +69,8 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Static assets (JS, CSS, fonts): cache-first
-  if (url.pathname.startsWith('/static/') || 
-      url.pathname.endsWith('.js') || 
+  if (url.pathname.startsWith('/static/') ||
+      url.pathname.endsWith('.js') ||
       url.pathname.endsWith('.css') ||
       url.pathname.endsWith('.woff2') ||
       url.pathname.endsWith('.woff')) {
@@ -96,7 +92,7 @@ self.addEventListener('fetch', (event) => {
 async function cacheFirstWithNetwork(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
-  
+
   if (cached) {
     return cached;
   }
@@ -109,15 +105,19 @@ async function cacheFirstWithNetwork(request, cacheName) {
     return response;
   } catch (error) {
     console.log('[SW] Network request failed:', error);
-    // Return offline page if available
-    return cache.match('/');
+    // Only fall back to the app shell for actual page navigations —
+    // never return HTML where JS/CSS was expected.
+    if (request.mode === 'navigate') {
+      return cache.match('/');
+    }
+    throw error;
   }
 }
 
 // Network-first strategy with cache fallback
 async function networkFirstWithCache(request, cacheName) {
   const cache = await caches.open(cacheName);
-  
+
   try {
     const response = await fetch(request);
     if (response.ok) {
@@ -134,7 +134,7 @@ async function networkFirstWithCache(request, cacheName) {
     if (request.url.includes('/api/')) {
       return new Response(
         JSON.stringify({ error: 'Offline', message: 'Datele nu sunt disponibile offline' }),
-        { 
+        {
           status: 503,
           headers: { 'Content-Type': 'application/json' }
         }
@@ -147,8 +147,7 @@ async function networkFirstWithCache(request, cacheName) {
 // Network-first with no cache fallback (for page navigation)
 async function networkFirstWithNetwork(request) {
   try {
-    const response = await fetch(request);
-    return response;
+    return await fetch(request);
   } catch (error) {
     console.log('[SW] Network request failed:', error);
     throw error;
@@ -157,10 +156,11 @@ async function networkFirstWithNetwork(request) {
 
 // Listen for messages from the main thread
 self.addEventListener('message', (event) => {
+  // Sent by app.js only after the user accepts the update banner.
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
   }
-  
+
   if (event.data === 'clearApiCache') {
     caches.delete(API_CACHE).then(() => {
       console.log('[SW] API cache cleared');

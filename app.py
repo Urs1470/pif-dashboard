@@ -4403,6 +4403,9 @@ def add_sw_header(response):
     if request.path == '/service-worker.js':
         response.headers['Service-Worker-Allowed'] = '/'
         response.headers['Content-Type'] = 'application/javascript'
+        # Never HTTP-cache the worker itself — otherwise update detection is
+        # delayed and erratic.
+        response.headers['Cache-Control'] = 'no-cache'
     return response
 
 # ============ DASHBOARD HOME ============

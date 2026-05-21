@@ -66,12 +66,14 @@ function _invalidateCache(url) {
     // PLUS any nested resource of the same type (e.g. DELETE /jurnal/abc invalidates /proiecte/{any}/jurnal),
     // PLUS aggregate endpoints (/stats, /dashboard/*) that summarize over everything.
     const path = url.split('?')[0];
-    const root = '/' + (path.split('/')[1] || ''); // '/jurnal'
+    const seg = path.split('/')[1] || '';
+    const root = '/' + seg;                             // '/jurnal'
     for (const k of _apiCache.keys()) {
         if (
-            k.startsWith(root) ||                       // /jurnal*
-            k.includes(root) ||                         // /proiecte/X/jurnal*
-            k.startsWith('/dashboard/') ||              // dashboards depend on most resources
+            // resource-specific: only when we actually have a segment, so an
+            // empty root ('/') can never wipe the whole cache
+            (seg && (k.startsWith(root) || k.includes(root))) ||
+            k.startsWith('/dashboard') ||               // dashboards depend on most resources
             k.startsWith('/stats')                      // stat counters re-aggregate from every mutation
         ) _apiCache.delete(k);
     }
@@ -242,8 +244,14 @@ function toggleTheme() {
     const html = document.documentElement;
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    // Suppress transitions during the swap so the palette changes instantly
+    // instead of smearing across every element.
+    html.classList.add('theme-switching');
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        html.classList.remove('theme-switching');
+    }));
 }
 
 function setTheme(theme) {
@@ -582,11 +590,15 @@ async function updateStats() {
 // ============ PROJECTS ============
 
 async function loadProjects() {
-    // Show skeleton, hide table
     const skeleton = document.getElementById('projects-skeleton');
     const table = document.getElementById('projects-table');
-    if (skeleton) skeleton.style.display = 'block';
-    if (table) table.style.display = 'none';
+    // Show the skeleton only if the load is genuinely slow. On a cache hit the
+    // data resolves within a microtask, the timer never fires, the table is
+    // never hidden — so there is no flash when switching to the Proiecte tab.
+    const slowTimer = setTimeout(() => {
+        if (skeleton) skeleton.style.display = 'block';
+        if (table) table.style.display = 'none';
+    }, 180);
 
     try {
         const status = document.getElementById('filter-status').value;
@@ -618,11 +630,9 @@ async function loadProjects() {
         console.error('Failed to load projects:', e);
         showToast('Eroare la încărcarea proiectelor', 'error');
     } finally {
-        // Hide skeleton after load
-        setTimeout(() => {
-            if (skeleton) skeleton.style.display = 'none';
-            if (table) table.style.display = 'table';
-        }, 300);
+        clearTimeout(slowTimer);
+        if (skeleton) skeleton.style.display = 'none';
+        if (table) table.style.display = 'table';
     }
 }
 
@@ -2314,10 +2324,8 @@ function switchTab(tab) {
         loadProjectTasks();
         setTimeout(() => document.getElementById('quick-task-input')?.focus(), 100);
     }
-    if (tab === 'proiecte') {
-        loadProjects();
-        updateStats();
-    }
+    // tab === 'proiecte' is fully handled in the block above (list-view restore
+    // + loadProjects + updateStats) — do not call them a second time here.
     if (tab === 'acasa') {
         loadDashboardHome();
     }
@@ -6091,30 +6099,37 @@ function paramBackToProducator() {
 async function loadParametri() {
     const familie = document.getElementById('param-familie').value;
     const search = document.getElementById('param-search').value.trim();
-    
-    // Show loading
-    document.getElementById('parametri-loading').style.display = 'block';
-    document.getElementById('parametri-table').style.display = 'none';
-    document.getElementById('parametri-empty').style.display = 'none';
-    
+    const loading = document.getElementById('parametri-loading');
+    const table = document.getElementById('parametri-table');
+
+    // Show the loading indicator only if the fetch is genuinely slow — a cache
+    // hit resolves within a microtask and renders the table with no flash.
+    const slowTimer = setTimeout(() => {
+        if (loading) loading.style.display = 'block';
+        if (table) table.style.display = 'none';
+        const empty = document.getElementById('parametri-empty');
+        if (empty) empty.style.display = 'none';
+    }, 180);
+
     try {
         let url = `/parametri?page=${parametriPage}&limit=${parametriLimit}`;
         if (familie) url += `&familie=${encodeURIComponent(familie)}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
-        
+
         const data = await apiGet(url);
         parametriTotal = data.total;
-        
-        // Update count
-        document.getElementById('param-count').textContent = 
+
+        document.getElementById('param-count').textContent =
             `Total: ${data.total} parametri`;
-        
+
         renderParametri(data.params);
         updateParametriPagination(data);
-        
     } catch (e) {
         console.error('Failed to load parametri:', e);
-        showToast('Eroare la încărcarea parametrilor', true);
+        if (loading) loading.style.display = 'none';
+        showToast('Eroare la încărcarea parametrilor', 'error');
+    } finally {
+        clearTimeout(slowTimer);
     }
 }
 
@@ -6550,22 +6565,33 @@ function openParamManual() {
 // ============ PWA / OFFLINE SUPPORT ============
 
 let deferredPrompt = null;
+// Set to true ONLY when the user clicks "Reîncarcă" in the update banner.
+// Guards the controllerchange handler so a background SW activation can never
+// reload the page on its own (this was the "page flashes / reloads" bug).
+let _swUpdateAccepted = false;
 
 function initPWA() {
     if ('serviceWorker' in navigator) {
+        // Reload the page only after the user has explicitly accepted an update.
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (_swUpdateAccepted) window.location.reload();
+        });
+
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
                 .then(registration => {
                     console.log('SW registered:', registration.scope);
-                    // Auto-update: when new SW found, skip waiting + reload
+                    // A worker may already be waiting from a previous visit.
+                    if (registration.waiting && navigator.serviceWorker.controller) {
+                        promptSWUpdate(registration.waiting);
+                    }
+                    // A new worker installed while the app is open.
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
+                        if (!newWorker) return;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                newWorker.postMessage('skipWaiting');
-                                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                                    window.location.reload();
-                                });
+                                promptSWUpdate(newWorker);
                             }
                         });
                     });
@@ -6575,7 +6601,7 @@ function initPWA() {
                 });
         });
     }
-    
+
     // Capture install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -6584,6 +6610,32 @@ function initPWA() {
         // Show the install button
         const installBtn = document.getElementById('install-pwa-btn');
         if (installBtn) installBtn.style.display = 'flex';
+    });
+}
+
+// Non-blocking banner offering to apply a pending update. The page reloads
+// ONLY when the user clicks "Reîncarcă" — never on its own.
+function promptSWUpdate(worker) {
+    if (document.getElementById('sw-update-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.className = 'sw-update-banner';
+    banner.innerHTML = `
+        <span class="sw-update-text">Versiune nouă disponibilă</span>
+        <button type="button" class="sw-update-apply" id="sw-update-apply">Reîncarcă</button>
+        <button type="button" class="sw-update-dismiss" id="sw-update-dismiss" aria-label="Închide">&times;</button>
+    `;
+    document.body.appendChild(banner);
+    requestAnimationFrame(() => banner.classList.add('visible'));
+
+    document.getElementById('sw-update-apply').addEventListener('click', () => {
+        _swUpdateAccepted = true;
+        worker.postMessage('skipWaiting');
+        banner.classList.remove('visible');
+    });
+    document.getElementById('sw-update-dismiss').addEventListener('click', () => {
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 300);
     });
 }
 
