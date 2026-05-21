@@ -562,6 +562,15 @@ def init_db():
         )
     ''')
 
+    # Persistent memory for the in-app AI assistant (Hermes).
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS assistant_memory (
+            id TEXT PRIMARY KEY,
+            continut TEXT NOT NULL,
+            created_at TEXT
+        )
+    ''')
+
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')

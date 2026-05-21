@@ -3449,21 +3449,77 @@ def obsidian_mentions():
 
 ASSISTANT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.assistant_config')
 
-ASSISTANT_SYSTEM_PROMPT = """Ești Hermes, asistentul integrat în PIF Dashboard — o aplicație
-de management pentru punerea în funcțiune (PIF) și service la convertoare de frecvență
-industriale (ABB ACS580/ACS880, Siemens SINAMICS G120/G130_G150/S120_S150,
-Danfoss VLT FC302, Lenze i550/i950). Utilizatorul este Ion, inginer de commissioning.
+ASSISTANT_SYSTEM_PROMPT = """Ești Hermes — asistentul personal, specializat, integrat în
+PIF Dashboard. Lucrezi exclusiv pentru Ion și ești singurul lui asistent în aplicație.
 
-Reguli:
-- Răspunde mereu în română, concis, la obiect, fără emoji.
-- Folosește uneltele disponibile pentru a căuta informații reale și a executa acțiuni.
-  Nu inventa date — dacă o unealtă nu găsește nimic, spune clar.
-- Când creezi sau modifici ceva (proiect, task, checklist, jurnal), confirmă pe scurt
-  exact ce ai făcut.
-- Pentru parametri de convertoare folosește search_parametri / get_parametru.
-- Pentru notițele tehnice ale lui Ion folosește search_obsidian / read_obsidian_note.
-- Dacă o cerere e ambiguă (ex: la ce proiect), întreabă înainte să acționezi.
-"""
+CINE E ION
+- Inginer de punere în funcțiune (commissioning) pentru convertoare de frecvență
+  industriale. Lucrează pe teren: PIF (puneri în funcțiune) și Service.
+- Single user al aplicației — tot ce e aici e al lui.
+
+CUM COMUNICI CU EL
+- Mereu în română. Direct, concis, la obiect. Fără emoji, fără introduceri
+  politicoase lungi, fără să repeți întrebarea lui.
+- Înțelege-l din jumătate de cuvânt: folosește contextul conversației, MEMORIA ta
+  și datele reale din aplicație ca să deduci ce vrea. Nu pune întrebări inutile.
+- Dacă cererea e cu adevărat ambiguă (ex: nu se știe la ce proiect), întreabă
+  scurt. Altfel acționează pe interpretarea cea mai rezonabilă și spune ce ai
+  presupus.
+- Ești colaborativ și proactiv: dacă vezi ceva util (task scadent, inconsistență,
+  un pas care lipsește), spune-i.
+- După fiecare acțiune, confirmă scurt și concret ce ai făcut.
+- Confirmă în chat ÎNAINTE de ștergeri sau acțiuni ireversibile.
+
+DOMENIUL
+- PIF = Punere În Funcțiune. Service = mentenanță/intervenții.
+- Familii de convertoare: ABB ACS580 / ACS880, Siemens SINAMICS G120 /
+  SINAMICS_G130_G150 / SINAMICS_S120_S150, Danfoss VLT FC302, Lenze i550 / i950.
+
+MODELUL APLICAȚIEI
+- Proiecte (tip PIF sau Service), fiecare cu: taskuri, checklist, jurnal de
+  activitate, cronometru, echipamente. Status proiect: in_lucru, in_asteptare,
+  blocat, finalizat.
+- Taskuri: status to_do/in_lucru/done, prioritate normal/urgent/minor, scadență,
+  descriere, subtaskuri, recurență (zilnic/saptamanal/lunar).
+- Taskuri zilnice (globale) — independente de proiect.
+- Bază de ~14.700 parametri de convertoare, cu explicații și influențe.
+- Notițele tehnice Obsidian ale lui Ion.
+- Clienți și echipamente.
+
+REGULI DE LUCRU
+- Caută mereu informația reală cu uneltele — nu inventa date. Dacă o unealtă nu
+  găsește nimic, spune clar.
+- Pentru parametri: search_parametri / get_parametru.
+- Pentru notițele lui Ion: search_obsidian / read_obsidian_note.
+- Ai acces complet: poți crea, modifica și șterge proiecte, taskuri, taskuri
+  zilnice, subtaskuri, checklist, jurnal, echipamente, clienți.
+
+MEMORIA TA
+- Ai o memorie persistentă, vizibilă mai jos. Conține preferințele lui Ion,
+  context recurent, decizii, clienți/echipamente uzuale.
+- Când Ion îți spune o preferință sau un detaliu de context care contează pe
+  termen lung, salvează-l cu save_memory. Nu salva lucruri triviale sau ușor de
+  regăsit din datele aplicației.
+- Folosește memoria activ ca să-l înțelegi mai bine de fiecare dată."""
+
+
+def _load_assistant_memory():
+    """Return the assistant's persistent memory entries (oldest first)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, continut FROM assistant_memory ORDER BY created_at ASC')
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
+
+def _build_assistant_system_prompt():
+    """System prompt + the current memory section."""
+    mem = _load_assistant_memory()
+    if not mem:
+        return ASSISTANT_SYSTEM_PROMPT + '\n\nMEMORIE: (goală încă)'
+    lines = '\n'.join(f"- [{m['id'][:8]}] {m['continut']}" for m in mem)
+    return ASSISTANT_SYSTEM_PROMPT + '\n\nMEMORIE (lucruri reținute despre Ion și context):\n' + lines
 
 # Tool schemas (OpenAI-compatible function calling).
 ASSISTANT_TOOLS = [
@@ -3551,13 +3607,118 @@ ASSISTANT_TOOLS = [
         }, "required": ["proiect", "continut"]}
     }},
     {"type": "function", "function": {
-        "name": "update_task_status",
-        "description": "Schimbă statusul unui task dintr-un proiect (caută taskul după titlu parțial).",
+        "name": "update_task",
+        "description": "Modifică un task dintr-un proiect (găsit după titlu parțial). Trimite doar câmpurile de schimbat.",
         "parameters": {"type": "object", "properties": {
             "proiect": {"type": "string"},
-            "task": {"type": "string", "description": "titlu parțial al taskului"},
-            "status": {"type": "string", "description": "to_do, in_lucru, done"}
-        }, "required": ["proiect", "task", "status"]}
+            "task": {"type": "string", "description": "titlu parțial al taskului de modificat"},
+            "status": {"type": "string", "description": "to_do, in_lucru, done"},
+            "prioritate": {"type": "string", "description": "normal, urgent, minor"},
+            "scadenta": {"type": "string", "description": "data YYYY-MM-DD"},
+            "descriere": {"type": "string"},
+            "recurenta": {"type": "string", "description": "zilnic, saptamanal, lunar sau gol"}
+        }, "required": ["proiect", "task"]}
+    }},
+    {"type": "function", "function": {
+        "name": "delete_task",
+        "description": "Șterge un task dintr-un proiect (găsit după titlu parțial). Confirmă cu Ion înainte.",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "task": {"type": "string", "description": "titlu parțial al taskului"}
+        }, "required": ["proiect", "task"]}
+    }},
+    {"type": "function", "function": {
+        "name": "add_subtask",
+        "description": "Adaugă un subtask la un task dintr-un proiect (taskul găsit după titlu parțial).",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "task": {"type": "string", "description": "titlu parțial al taskului părinte"},
+            "titlu": {"type": "string", "description": "titlul subtaskului"}
+        }, "required": ["proiect", "task", "titlu"]}
+    }},
+    {"type": "function", "function": {
+        "name": "update_proiect",
+        "description": "Modifică un proiect (status sau alte câmpuri). Trimite doar ce schimbi.",
+        "parameters": {"type": "object", "properties": {
+            "nume": {"type": "string", "description": "nume parțial sau id de proiect"},
+            "status": {"type": "string", "description": "in_lucru, in_asteptare, blocat, finalizat"},
+            "client": {"type": "string"},
+            "locatie": {"type": "string"},
+            "observatii": {"type": "string"}
+        }, "required": ["nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "delete_proiect",
+        "description": "Șterge complet un proiect cu tot ce conține. Ireversibil — confirmă cu Ion în chat înainte.",
+        "parameters": {"type": "object", "properties": {
+            "nume": {"type": "string", "description": "nume parțial sau id de proiect"}
+        }, "required": ["nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "toggle_checklist_item",
+        "description": "Bifează sau debifează un punct din checklist-ul unui proiect (găsit după titlu parțial).",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "item": {"type": "string", "description": "titlu parțial al punctului din checklist"},
+            "completed": {"type": "boolean", "description": "true = bifat, false = debifat"}
+        }, "required": ["proiect", "item", "completed"]}
+    }},
+    {"type": "function", "function": {
+        "name": "add_echipament",
+        "description": "Adaugă un echipament la un proiect.",
+        "parameters": {"type": "object", "properties": {
+            "proiect": {"type": "string"},
+            "nume": {"type": "string"},
+            "producator": {"type": "string"},
+            "model": {"type": "string"},
+            "serial_number": {"type": "string"}
+        }, "required": ["proiect", "nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "list_clienti",
+        "description": "Listează clienții.",
+        "parameters": {"type": "object", "properties": {}}
+    }},
+    {"type": "function", "function": {
+        "name": "create_client",
+        "description": "Creează un client nou.",
+        "parameters": {"type": "object", "properties": {
+            "nume": {"type": "string"},
+            "telefon": {"type": "string"},
+            "email": {"type": "string"},
+            "adresa": {"type": "string"},
+            "contact_principal": {"type": "string"}
+        }, "required": ["nume"]}
+    }},
+    {"type": "function", "function": {
+        "name": "list_global_tasks",
+        "description": "Listează taskurile zilnice (globale, independente de proiect).",
+        "parameters": {"type": "object", "properties": {}}
+    }},
+    {"type": "function", "function": {
+        "name": "create_global_task",
+        "description": "Creează un task zilnic (global, independent de proiect).",
+        "parameters": {"type": "object", "properties": {
+            "titlu": {"type": "string"},
+            "prioritate": {"type": "string", "description": "Normal, Urgent, Minor"},
+            "categorie": {"type": "string"},
+            "scadenta": {"type": "string", "description": "data YYYY-MM-DD"},
+            "descriere": {"type": "string"}
+        }, "required": ["titlu"]}
+    }},
+    {"type": "function", "function": {
+        "name": "save_memory",
+        "description": "Salvează în memoria ta persistentă un fapt despre Ion sau contextul de lucru, ca să-l ții minte data viitoare.",
+        "parameters": {"type": "object", "properties": {
+            "continut": {"type": "string", "description": "faptul de reținut, o frază scurtă"}
+        }, "required": ["continut"]}
+    }},
+    {"type": "function", "function": {
+        "name": "delete_memory",
+        "description": "Șterge o intrare din memoria ta persistentă, după id-ul scurt afișat în secțiunea MEMORIE.",
+        "parameters": {"type": "object", "properties": {
+            "id": {"type": "string", "description": "id-ul scurt (8 caractere) al intrării de memorie"}
+        }, "required": ["id"]}
     }},
 ]
 
@@ -3717,8 +3878,11 @@ def _assistant_exec_tool(name, args):
             checklist = [dict(r) for r in cur.fetchall()]
             cur.execute('SELECT data, continut FROM jurnal WHERE proiect_id = ? ORDER BY created_at DESC LIMIT 10', (pid,))
             jurnal = [dict(r) for r in cur.fetchall()]
+            cur.execute('SELECT nume, producator, model, serial_number FROM echipamente WHERE proiect_id = ?', (pid,))
+            echipamente = [dict(r) for r in cur.fetchall()]
             conn.close()
-            return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist, 'jurnal': jurnal}
+            return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist,
+                    'jurnal': jurnal, 'echipamente': echipamente}
 
         if name == 'create_proiect':
             conn = get_db(); cur = conn.cursor()
@@ -3780,7 +3944,7 @@ def _assistant_exec_tool(name, args):
             conn.commit(); conn.close()
             return {'ok': True, 'id': jid, 'mesaj': 'Intrare adăugată în jurnal'}
 
-        if name == 'update_task_status':
+        if name == 'update_task':
             conn = get_db(); cur = conn.cursor()
             proj = _assistant_find_project(cur, args.get('proiect'))
             if not proj:
@@ -3792,10 +3956,172 @@ def _assistant_exec_tool(name, args):
             if not task:
                 conn.close()
                 return {'error': 'Taskul nu a fost găsit'}
-            cur.execute('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?',
-                        (args.get('status', 'to_do'), datetime.now().isoformat(), task['id']))
+            cur.execute('''UPDATE tasks SET
+                status = COALESCE(?, status), prioritate = COALESCE(?, prioritate),
+                data_scadenta = COALESCE(?, data_scadenta), descriere = COALESCE(?, descriere),
+                recurenta = COALESCE(?, recurenta), updated_at = ? WHERE id = ?''',
+                (args.get('status'), args.get('prioritate'), args.get('scadenta'),
+                 args.get('descriere'), args.get('recurenta'), datetime.now().isoformat(), task['id']))
             conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Status actualizat pentru '{task['titlu']}': {args.get('status')}"}
+            return {'ok': True, 'mesaj': f"Task actualizat: {task['titlu']}"}
+
+        if name == 'delete_task':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                        (proj['id'], f"%{args.get('task') or ''}%"))
+            task = cur.fetchone()
+            if not task:
+                conn.close()
+                return {'error': 'Taskul nu a fost găsit'}
+            cur.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task['id'],))
+            cur.execute('DELETE FROM tasks WHERE id = ?', (task['id'],))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Task șters: {task['titlu']}"}
+
+        if name == 'add_subtask':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                        (proj['id'], f"%{args.get('task') or ''}%"))
+            task = cur.fetchone()
+            if not task:
+                conn.close()
+                return {'error': 'Taskul nu a fost găsit'}
+            now = datetime.now().isoformat()
+            cur.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task['id'],))
+            mo = cur.fetchone()[0]
+            cur.execute('INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+                        (generate_uuid(), task['id'], args.get('titlu', ''), mo, now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Subtask adăugat la '{task['titlu']}': {args.get('titlu')}"}
+
+        if name == 'update_proiect':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('nume'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            cur.execute('''UPDATE proiecte SET
+                status = COALESCE(?, status), client = COALESCE(?, client),
+                locatie = COALESCE(?, locatie), observatii = COALESCE(?, observatii),
+                updated_at = ? WHERE id = ?''',
+                (args.get('status'), args.get('client'), args.get('locatie'),
+                 args.get('observatii'), datetime.now().isoformat(), proj['id']))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Proiect actualizat: {proj['nume']}"}
+
+        if name == 'delete_proiect':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('nume'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            pid = proj['id']
+            cur.execute('SELECT id FROM tasks WHERE proiect_id = ?', (pid,))
+            for t in cur.fetchall():
+                cur.execute('DELETE FROM task_subtasks WHERE task_id = ?', (t['id'],))
+            for tbl in ('tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
+                        'timer_sessions', 'echipamente', 'atasamente'):
+                cur.execute(f'DELETE FROM {tbl} WHERE proiect_id = ?', (pid,))
+            cur.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Proiect șters complet: {proj['nume']}"}
+
+        if name == 'toggle_checklist_item':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            cur.execute('SELECT id, titlu FROM checklist_pif WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                        (proj['id'], f"%{args.get('item') or ''}%"))
+            item = cur.fetchone()
+            if not item:
+                conn.close()
+                return {'error': 'Punctul din checklist nu a fost găsit'}
+            done = 1 if args.get('completed') else 0
+            cur.execute('UPDATE checklist_pif SET completed = ? WHERE id = ?', (done, item['id']))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': f"Checklist '{item['titlu']}': {'bifat' if done else 'debifat'}"}
+
+        if name == 'add_echipament':
+            conn = get_db(); cur = conn.cursor()
+            proj = _assistant_find_project(cur, args.get('proiect'))
+            if not proj:
+                conn.close()
+                return {'error': 'Proiectul nu a fost găsit'}
+            now = datetime.now().isoformat()
+            eid = generate_uuid()
+            cur.execute('''INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, created_at, updated_at)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                        (eid, proj['id'], args.get('nume', ''), args.get('producator', ''),
+                         args.get('model', ''), args.get('serial_number', ''), now, now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': eid, 'mesaj': f"Echipament adăugat la {proj['nume']}: {args.get('nume')}"}
+
+        if name == 'list_clienti':
+            conn = get_db(); cur = conn.cursor()
+            cur.execute('SELECT id, nume, telefon, email, contact_principal FROM clienti ORDER BY nume')
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'count': len(rows), 'clienti': rows}
+
+        if name == 'create_client':
+            conn = get_db(); cur = conn.cursor()
+            cid = generate_uuid()
+            cur.execute('''INSERT INTO clienti (id, nume, adresa, telefon, email, contact_principal, note, created_at)
+                           VALUES (?, ?, ?, ?, ?, ?, '', ?)''',
+                        (cid, args.get('nume', ''), args.get('adresa', ''), args.get('telefon', ''),
+                         args.get('email', ''), args.get('contact_principal', ''), datetime.now().isoformat()))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': cid, 'mesaj': f"Client creat: {args.get('nume')}"}
+
+        if name == 'list_global_tasks':
+            conn = get_db(); cur = conn.cursor()
+            cur.execute("SELECT id, titlu, status, prioritate, categorie, data_scadenta "
+                        "FROM global_tasks WHERE status != 'done' ORDER BY created_at DESC LIMIT 60")
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'count': len(rows), 'taskuri_zilnice': rows}
+
+        if name == 'create_global_task':
+            conn = get_db(); cur = conn.cursor()
+            now = datetime.now().isoformat()
+            gid = generate_uuid()
+            cur.execute('''INSERT INTO global_tasks
+                (id, titlu, descriere, prioritate, status, categorie, data_scadenta, data_finalizare, created_at, updated_at)
+                VALUES (?, ?, ?, ?, 'to_do', ?, ?, '', ?, ?)''',
+                (gid, args.get('titlu', ''), args.get('descriere', ''), args.get('prioritate', 'Normal'),
+                 args.get('categorie', 'General'), args.get('scadenta', ''), now, now))
+            conn.commit(); conn.close()
+            return {'ok': True, 'id': gid, 'mesaj': f"Task zilnic creat: {args.get('titlu')}"}
+
+        if name == 'save_memory':
+            continut = (args.get('continut') or '').strip()
+            if not continut:
+                return {'error': 'Conținut gol'}
+            conn = get_db(); cur = conn.cursor()
+            cur.execute('INSERT INTO assistant_memory (id, continut, created_at) VALUES (?, ?, ?)',
+                        (generate_uuid(), continut, datetime.now().isoformat()))
+            conn.commit(); conn.close()
+            return {'ok': True, 'mesaj': 'Reținut.'}
+
+        if name == 'delete_memory':
+            short = (args.get('id') or '').strip()
+            if not short:
+                return {'error': 'id gol'}
+            conn = get_db(); cur = conn.cursor()
+            cur.execute('DELETE FROM assistant_memory WHERE id LIKE ?', (short + '%',))
+            n = cur.rowcount
+            conn.commit(); conn.close()
+            return {'ok': n > 0, 'mesaj': 'Șters din memorie.' if n else 'Nu am găsit intrarea în memorie.'}
 
         return {'error': f'Unealtă necunoscută: {name}'}
     except Exception as e:
@@ -3830,10 +4156,11 @@ def assistant_chat():
     if not convo:
         return jsonify({'error': 'Niciun mesaj'}), 400
 
+    system_prompt = _build_assistant_system_prompt()
     tool_log = []
     try:
         for _ in range(8):  # max tool rounds
-            resp = _minimax_call(cfg, ASSISTANT_SYSTEM_PROMPT, convo)
+            resp = _minimax_call(cfg, system_prompt, convo)
             blocks = resp.get('content') or []
             text = '\n'.join(
                 b.get('text', '') for b in blocks if isinstance(b, dict) and b.get('type') == 'text'
