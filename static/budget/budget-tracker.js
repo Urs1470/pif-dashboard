@@ -102,6 +102,21 @@ function pruneImportHistory(data) {
   });
 }
 
+// Remove fields that no longer drive any calculation:
+//  - profil.bonusMedie  : never referenced anywhere
+//  - credit.rata        : the real instalment comes from the scadentar
+//  - credit.asigurare   : insurance is per-row in the scadentar
+//  - credit.soldActual  : current balance is now derived from the scadentar
+function migrateCleanDeadFields(data) {
+  if (!data) return;
+  if (data.profil) delete data.profil.bonusMedie;
+  if (data.credit) {
+    delete data.credit.rata;
+    delete data.credit.asigurare;
+    delete data.credit.soldActual;
+  }
+}
+
 // VWCE-focused tracking with live price proxy
 function migrateVwce(data) {
   if (!data) return;
@@ -505,8 +520,8 @@ var DATI_INITIALE = {
     { id: 1, label: 'Tezaur 1 an' },
   ],
   credit: {
-    suma: 84450, dobanda: 9.99, dae: 12.96, rata: 1786.52, asigurare: 145,
-    durata: 58, comisionRambursare: 1, dataStart: '2026-06-18', soldActual: 84450,
+    suma: 84450, dobanda: 9.99, dae: 12.96,
+    durata: 58, comisionRambursare: 1, dataStart: '2026-06-18',
     contract: '18099406', dataContract: '2026-05-02'
   },
   fondUrgenta: [
@@ -614,8 +629,8 @@ async function loadData() {
       if (!state.data.credit.durata) state.data.credit.durata = DATI_INITIALE.credit.durata;
       if (!state.data.credit.dataStart) state.data.credit.dataStart = DATI_INITIALE.credit.dataStart;
       if (!state.data.credit.dobanda) state.data.credit.dobanda = DATI_INITIALE.credit.dobanda;
-      if (!state.data.credit.soldActual) state.data.credit.soldActual = DATI_INITIALE.credit.soldActual;
       if (!state.data.credit.suma) state.data.credit.suma = DATI_INITIALE.credit.suma;
+      migrateCleanDeadFields(state.data);
       migrateLegacyMonthKeys(state.data);
       refreshLuni();
       LUNI_KEYS.forEach(function(l) {
@@ -1148,37 +1163,48 @@ async function removeCategorie(id) {
 // ====================================================================
 // CALCULATIONS
 // ====================================================================
+// Months that actually have income or expense data entered/imported. Future
+// empty months are excluded so averages and the surplus chart are not diluted.
+function luniReprezentative(d) {
+  return LUNI_KEYS.filter(function(l) {
+    var v = d.venituri[l] || {};
+    var c = d.cheltuieli[l] || {};
+    var hasV = Object.keys(v).some(function(k) { return (v[k] || 0) > 0; });
+    var hasC = Object.keys(c).some(function(k) { return (c[k] || 0) > 0; });
+    return hasV || hasC;
+  });
+}
+
 function calcMediiVenituri(d) {
   var cats = Array.isArray(d.categoriiVenit) ? d.categoriiVenit : [];
-  var luniCuDate = LUNI_KEYS.filter(function(l) {
-    var v = d.venituri[l] || {};
-    return cats.some(function(c) { return (v[c.label] || 0) > 0; });
-  });
-  var count = luniCuDate.length || 1;
+  var luni = luniReprezentative(d);
+  var count = luni.length || 1;
   var variabile = {};
   var totalVar = 0;
   cats.forEach(function(c) {
-    var sum = luniCuDate.reduce(function(s, l) { return s + ((d.venituri[l] || {})[c.label] || 0); }, 0) / count;
+    var sum = luni.reduce(function(s, l) { return s + ((d.venituri[l] || {})[c.label] || 0); }, 0) / count;
     variabile[c.label] = sum;
     totalVar += sum;
   });
   var salariuNet = (d.profil && d.profil.salariuNet) ? d.profil.salariuNet : DATI_INITIALE.profil.salariuNet;
-  return { salariu: salariuNet, variabile: variabile, categorii: cats, total: salariuNet + totalVar };
+  return { salariu: salariuNet, variabile: variabile, categorii: cats,
+           total: salariuNet + totalVar, luniCount: luni.length };
 }
 
 function calcMediiCheltuieli(d) {
-  var fixe = Array.isArray(d.cheltuieliFixe) ? d.cheltuieliFixe : [];
-  // Average fixed = mean of monthly totals over visible months (respects start/luni windows)
-  var totalFixe = LUNI_KEYS.length ? (LUNI_KEYS.reduce(function(s, l) { return s + totalFixeLuna(d, l); }, 0) / LUNI_KEYS.length) : 0;
-  var variabile = LUNI_KEYS.map(function(l) { return d.cheltuieli[l] || {}; });
-  var count = variabile.filter(function(v) { return Object.values(v).some(function(x) { return x > 0; }); }).length || 1;
+  // Average everything over the SAME representative months so the surplus
+  // card has one consistent denominator (was: fixe/12 vs variabile/1).
+  var luni = luniReprezentative(d);
+  var count = luni.length || 1;
+  var totalFixe = luni.reduce(function(s, l) { return s + totalFixeLuna(d, l); }, 0) / count;
+  var rataCreditMedie = round2(luni.reduce(function(s, l) { return s + rataCredituluiLuna(d, l); }, 0) / count);
   var cats = Array.isArray(d.categoriiVar) ? d.categoriiVar : [];
-  var rataCreditMedie = LUNI_KEYS.length ? round2(LUNI_KEYS.reduce(function(s, l) { return s + rataCredituluiLuna(d, l); }, 0) / LUNI_KEYS.length) : 0;
-  var result = { fixe: fixe, totalFixe: totalFixe, rataCreditMedie: rataCreditMedie, variabile: {}, categorii: cats };
+  var result = { fixe: [], totalFixe: totalFixe, rataCreditMedie: rataCreditMedie,
+                 variabile: {}, categorii: cats, luniCount: luni.length };
   var totalVar = 0;
   cats.forEach(function(c) {
     var label = c.label || '';
-    result.variabile[label] = variabile.reduce(function(s, v) { return s + (v[label] || 0); }, 0) / count;
+    result.variabile[label] = luni.reduce(function(s, l) { return s + ((d.cheltuieli[l] || {})[label] || 0); }, 0) / count;
     totalVar += result.variabile[label];
   });
   result.total = totalFixe + totalVar;
@@ -1203,11 +1229,9 @@ function soldDupaPlatiTrecute(scadentar, refIso, sumaInitiala) {
   return trec[trec.length - 1].soldFinal;
 }
 
-// Current credit balance: user-entered real value wins; otherwise derive
-// from the amortisation schedule.
+// Current credit balance — always derived from the amortisation schedule
+// (soldFinal of the last paid instalment). Auto-advances as instalments fall due.
 function getSoldCurent(d) {
-  var manual = parseRON(d && d.credit && d.credit.soldActual);
-  if (manual > 0) return manual;
   return soldDupaPlatiTrecute(getScadentar(d), todayIso(), (d && d.credit && d.credit.suma) || 0);
 }
 
@@ -1349,8 +1373,9 @@ function renderBugetLunar() {
   }
 
   // STAT CARDS
+  var nLuniRep = mediiC.luniCount || 0;
   html += '<div class="section">';
-  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-up"></i> Sumar lunar (medii)</div></div>';
+  html += '<div class="section-title"><div class="section-title-left"><i data-lucide="trending-up"></i> Sumar lunar — medie pe ' + nLuniRep + ' ' + (nLuniRep === 1 ? 'lună' : 'luni') + ' cu date</div></div>';
   html += '<div class="stat-grid">';
   html += statCard('wallet',       'Venituri medii',  formatRON(mediiV.total),  'Salariu + ' + ((mediiV.categorii || []).length) + ' categorii', '');
   html += statCard('trending-down','Cheltuieli medii',formatRON(mediiC.total),  'Fixe + variabile', 'danger');
@@ -1390,25 +1415,23 @@ function renderBugetLunar() {
   html += '</div></div>';
 
   // CHART: surplus lunar (bars) + distributie cheltuieli (donut)
-  var surplusBars = LUNI_KEYS.map(function(lk, i) {
+  // Both use only representative months so credit (12 mo) and variable
+  // expenses (months with data) are not summed over different windows.
+  var luniRep = luniReprezentative(d);
+  var surplusBars = luniRep.map(function(lk) {
+    var idx = LUNI_KEYS.indexOf(lk);
     var v = (d.venituri[lk] || {});
     var totalV = (d.profil.salariuNet || 0) + (d.categoriiVenit || []).reduce(function(s, c) { return s + (v[c.label] || 0); }, 0);
     var c = (d.cheltuieli[lk] || {});
     var totalC = totalFixeLuna(d, lk) + Object.values(c).reduce(function(s, x) { return s + x; }, 0);
-    return { value: totalV - totalC, label: LUNI[i] };
+    return { value: totalV - totalC, label: LUNI[idx] };
   });
   var donutSlices = [];
-  // Fixed expenses grouped by item
-  var rcTotal = LUNI_KEYS.reduce(function(s, lk) { return s + rataCredituluiLuna(d, lk); }, 0);
+  var rcTotal = luniRep.reduce(function(s, lk) { return s + rataCredituluiLuna(d, lk); }, 0);
   if (rcTotal > 0) donutSlices.push({ label: 'Rată credit', value: rcTotal });
-  (d.cheltuieliFixe || []).forEach(function(f) {
-    var v = 0;
-    LUNI_KEYS.forEach(function(lk) { if (cheltuialaFixaActiva(f, lk)) v += parseRON(f.suma) || 0; });
-    if (v > 0) donutSlices.push({ label: f.label, value: v });
-  });
-  // Variable categories aggregated across visible months
+  // Variable categories aggregated across the same representative months
   (d.categoriiVar || []).forEach(function(c) {
-    var v = LUNI_KEYS.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
+    var v = luniRep.reduce(function(s, lk) { return s + ((d.cheltuieli[lk] || {})[c.label] || 0); }, 0);
     if (v > 0) donutSlices.push({ label: c.label, value: v });
   });
   donutSlices.sort(function(a, b) { return b.value - a.value; });
@@ -1416,8 +1439,10 @@ function renderBugetLunar() {
   html += '<div class="section" style="margin-top:1.25rem;">';
   html += '<div class="stat-grid" style="grid-template-columns: 2fr 1fr;">';
   html += '<div class="chart-card">';
-  html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="bar-chart-3"></i> Surplus lunar (venituri − cheltuieli)</div><div class="chart-meta">' + LUNI_KEYS.length + ' luni</div></div>';
-  html += '  <div class="chart-body">' + svgBars(surplusBars, { height: 200 }) + '</div>';
+  html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="bar-chart-3"></i> Surplus lunar (venituri − cheltuieli)</div><div class="chart-meta">' + luniRep.length + ' ' + (luniRep.length === 1 ? 'lună cu date' : 'luni cu date') + '</div></div>';
+  html += '  <div class="chart-body">' + (surplusBars.length
+            ? svgBars(surplusBars, { height: 200 })
+            : '<div style="padding:2.5rem 1rem;text-align:center;color:var(--text-dim);">Nicio lună cu date încă — importă un extras bancar.</div>') + '</div>';
   html += '</div>';
   html += '<div class="chart-card">';
   html += '  <div class="chart-head"><div class="chart-title"><i data-lucide="pie-chart"></i> Distribuție cheltuieli</div><div class="chart-meta">cumulat</div></div>';
@@ -1434,7 +1459,7 @@ function renderBugetLunar() {
   html += '<div>';
   html += '<strong>' + esc(d.profil.nume || DATI_INITIALE.profil.nume) + '</strong>';
   html += '<span class="sep">·</span>Salariu net <strong class="mono">' + formatRON(d.profil.salariuNet) + ' RON</strong>';
-  html += '<span class="sep">·</span>Credit rămas <strong class="mono">' + d.credit.durata + ' luni</strong>';
+  html += '<span class="sep">·</span>Credit rămas <strong class="mono">' + viit.length + ' rate</strong>';
   html += '<span class="sep">·</span>Start credit <strong class="mono">' + esc(d.credit.dataStart) + '</strong>';
   html += '<span class="sep">·</span>Start buget <strong class="mono">' + esc(d.profil.startMonth || '2026-05') + '</strong>';
   html += '</div></div>';
@@ -1655,7 +1680,7 @@ function renderCredite() {
   html += '<div class="section">';
   html += '<div class="section-title"><div class="section-title-left"><i data-lucide="landmark"></i> Credit activ — scadenţar ING Home\'Bank</div></div>';
   html += '<div class="stat-grid">';
-  html += statCard('banknote', 'Sold curent', formatRON(soldCurent), 'introdus manual / scadenţar', 'danger');
+  html += statCard('banknote', 'Sold curent', formatRON(soldCurent), 'calculat din scadenţar', 'danger');
   html += statCard('calendar-clock', 'Rate rămase', viit.length, 'din ' + scad.length + ' total', 'warning');
   html += statCard('coins', 'Total rămas de plătit', formatRON(totalRamas), 'capital + dobandă + asigurare', 'danger');
   html += statCard('trending-down', 'Dobândă viitoare', formatRON(totalDobandaRamasa), 'rămasă până la final', 'warning');
@@ -1670,11 +1695,10 @@ function renderCredite() {
   html += '<div class="panel-head"><div class="panel-title"><i data-lucide="file-text"></i> Detalii credit</div></div>';
   if (cr.contract) html += '<div class="stat-row"><span>Contract</span><span class="mono">' + esc(cr.contract) + ' / ' + esc(cr.dataContract || '') + '</span></div>';
   html += '<div class="stat-row"><span>Sumă inițială</span><span class="stat-val danger">' + formatRON(cr.suma) + '</span></div>';
-  html += '<div class="stat-row"><span>Sold curent (real)</span>';
-  html += '<input type="number" step="0.01" class="input num w-28" value="' + (cr.soldActual || '') + '" placeholder="' + soldCurent.toFixed(2) + '" onchange="updateCreditSold(this.value)"></div>';
+  html += '<div class="stat-row"><span>Sold curent (din scadenţar)</span><span class="stat-val danger">' + formatRON(soldCurent) + '</span></div>';
   html += '<div class="stat-row"><span>Dobândă anuală</span><span class="mono">' + cr.dobanda + ' %</span></div>';
   html += '<div class="stat-row"><span>DAE</span><span class="mono">' + cr.dae + ' %</span></div>';
-  html += '<div class="stat-row"><span>Rată standard</span><span class="stat-val danger">' + formatRON(cr.rata) + '</span></div>';
+  html += '<div class="stat-row"><span>Rată curentă (capital+dob.)</span><span class="stat-val danger">' + formatRON(viit[0] ? viit[0].suma : 0) + '</span></div>';
   html += '<div class="stat-row"><span>Asigurare curentă</span><span class="stat-val danger">' + formatRON(viit[0] ? viit[0].asigurare : 0) + '</span></div>';
   html += '<div class="stat-row"><span>Comision rambursare</span><span class="mono">' + cr.comisionRambursare + ' %</span></div>';
   html += '<div class="stat-row"><span>Durată totală</span><span class="mono">' + scad.length + ' rate</span></div>';
@@ -1906,11 +1930,6 @@ function closeActionsMenu() {
   if (menu) menu.classList.remove('open');
 }
 
-function updateCreditSold(val) {
-  state.data.credit.soldActual = parseRON(val);
-  saveData();
-  render();
-}
 function updateEvolutie(luna, field, val) {
   if (!state.data.evolutie[luna]) state.data.evolutie[luna] = {};
   state.data.evolutie[luna][field] = parseRON(val);
