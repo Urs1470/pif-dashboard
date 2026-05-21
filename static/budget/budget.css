@@ -886,8 +886,23 @@ td.under-mean { box-shadow: inset 0 -2px 0 var(--success); }
 [data-theme="light"] .numInputWrapper span.arrowDown:after { border-top-color: var(--text-mid) !important; }
 
 @media (max-width: 640px) {
-  .header-inner { padding: 0.7rem 1rem; }
-  .main { padding: 1rem; }
+  .header-inner { padding: 0.6rem 0.85rem; gap: 0.55rem; }
+  .header-left { gap: 0.5rem; }
+  .header-actions { gap: 0.35rem; }
+  .btn-back { padding: 0.35rem 0.55rem; font-size: 0.75rem; }
+  .header-title { font-size: 0.95rem; }
+  .main { padding: 1rem 0.85rem; }
   .panel { padding: 0.9rem 1rem; }
   .stat-value { font-size: 1.3rem; }
+  /* Tabs scroll horizontally with momentum + comfortable touch targets */
+  .tabs { padding: 0.5rem 0.85rem; gap: 0.3rem; -webkit-overflow-scrolling: touch; }
+  .tab { padding: 0.5rem 0.7rem; font-size: 0.8rem; }
+  /* Dense data tables: smooth momentum scroll on touch */
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 420px) {
+  /* Very narrow phones: reclaim header space */
+  .header-sub { display: none; }
+  .btn-back { padding: 0.35rem 0.45rem; }
 }

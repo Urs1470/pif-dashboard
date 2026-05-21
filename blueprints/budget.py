@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 import urllib.request
 import urllib.error
+import urllib.parse
 import time
 
 budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
@@ -48,7 +49,10 @@ def diff_state(old, new, path=''):
     if old == new:
         return
     if isinstance(old, dict) and isinstance(new, dict):
-        for k in sorted(set(old.keys()) | set(new.keys())):
+        for k in sorted(set(old.keys()) | set(new.keys()), key=str):
+            # Skip internal/bookkeeping keys (e.g. _idSeq) — not user data.
+            if isinstance(k, str) and k.startswith('_'):
+                continue
             sub = f"{path}.{k}" if path else k
             yield from diff_state(old.get(k), new.get(k), sub)
     elif isinstance(old, list) and isinstance(new, list):
@@ -99,45 +103,77 @@ def set_state():
     now = datetime.now().isoformat()
     new_data = payload['data']
     data_json = json.dumps(new_data, ensure_ascii=False)
+    migrated = bool(payload.get('migrated'))
 
-    prev = db.execute(
-        "SELECT data FROM budget_state WHERE user = 'ion'"
-    ).fetchone()
-    old_data = json.loads(prev['data']) if prev and prev['data'] else None
+    try:
+        prev = db.execute(
+            "SELECT data, updated FROM budget_state WHERE user = 'ion'"
+        ).fetchone()
 
-    db.execute("""
-        INSERT INTO budget_state(user, data, updated)
-        VALUES('ion', ?, ?)
-        ON CONFLICT(user) DO UPDATE SET data = excluded.data, updated = excluded.updated
-    """, (data_json, now))
+        # Optimistic concurrency: if the client sent the snapshot it started
+        # from, reject when the stored version moved on (another tab/device).
+        if 'base_updated' in payload and prev is not None:
+            if payload.get('base_updated') != prev['updated']:
+                return jsonify({
+                    'error': 'conflict',
+                    'current': {
+                        'data': json.loads(prev['data']) if prev['data'] else None,
+                        'updated': prev['updated'],
+                    },
+                }), 409
 
-    if old_data is None:
+        old_data = json.loads(prev['data']) if prev and prev['data'] else None
+
         db.execute("""
-            INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-            VALUES(?, 'ion', 'init', NULL, NULL, ?)
-        """, (now, _trunc(new_data)))
-    else:
-        changes = list(diff_state(old_data, new_data))
-        for path, old_val, new_val in changes[:AUDIT_MAX_CHANGES_PER_SAVE]:
-            db.execute("""
-                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                VALUES(?, 'ion', 'update', ?, ?, ?)
-            """, (now, path, old_val, new_val))
-        if len(changes) > AUDIT_MAX_CHANGES_PER_SAVE:
-            extra = len(changes) - AUDIT_MAX_CHANGES_PER_SAVE
-            db.execute("""
-                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                VALUES(?, 'ion', 'update', '(truncated)', ?, NULL)
-            """, (now, f"{extra} schimbari suplimentare omise"))
+            INSERT INTO budget_state(user, data, updated)
+            VALUES('ion', ?, ?)
+            ON CONFLICT(user) DO UPDATE SET data = excluded.data, updated = excluded.updated
+        """, (data_json, now))
 
-    db.commit()
-    return jsonify({'ok': True, 'updated': now})
+        if old_data is None:
+            db.execute("""
+                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                VALUES(?, 'ion', 'init', NULL, NULL, ?)
+            """, (now, _trunc(new_data)))
+        elif migrated:
+            # First save after a client-side schema migration. Diffing the
+            # pre/post-migration blob yields dozens of spurious leaf changes,
+            # so record a single 'migrate' entry instead.
+            db.execute("""
+                INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                VALUES(?, 'ion', 'migrate', NULL, NULL, ?)
+            """, (now, 'migrare automata a structurii datelor'))
+        else:
+            changes = list(diff_state(old_data, new_data))
+            for path, old_val, new_val in changes[:AUDIT_MAX_CHANGES_PER_SAVE]:
+                db.execute("""
+                    INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                    VALUES(?, 'ion', 'update', ?, ?, ?)
+                """, (now, path, old_val, new_val))
+            if len(changes) > AUDIT_MAX_CHANGES_PER_SAVE:
+                extra = len(changes) - AUDIT_MAX_CHANGES_PER_SAVE
+                db.execute("""
+                    INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
+                    VALUES(?, 'ion', 'update', '(truncated)', ?, NULL)
+                """, (now, f"{extra} schimbari suplimentare omise"))
+
+        db.commit()
+        return jsonify({'ok': True, 'updated': now})
+    except Exception as e:
+        db.rollback()
+        current_app.logger.exception('budget set_state failed')
+        return jsonify({'error': 'save failed', 'detail': str(e)}), 500
 
 
 @budget_bp.route('/api/audit', methods=['GET'])
 @login_required
 def get_audit():
-    limit = min(int(request.args.get('limit', 50)), 500)
+    try:
+        limit = min(int(request.args.get('limit', 50)), 500)
+    except (TypeError, ValueError):
+        limit = 50
+    if limit < 1:
+        limit = 50
     db = _get_db()
     rows = db.execute("""
         SELECT ts, action, field, old_value, new_value FROM budget_audit
@@ -160,7 +196,10 @@ ALLOWED_QUOTE_SYMBOLS = {
 
 
 def _fetch_yahoo_chart(symbol, interval='1d', rng='3mo'):
-    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval={interval}&range={rng}'
+    # Defense-in-depth: URL-encode the symbol even though it is whitelisted,
+    # so a future whitelist entry can never inject into the URL path.
+    safe_symbol = urllib.parse.quote(symbol, safe='')
+    url = f'https://query1.finance.yahoo.com/v8/finance/chart/{safe_symbol}?interval={interval}&range={rng}'
     req = urllib.request.Request(url, headers={
         'User-Agent': 'Mozilla/5.0 (compatible; PIFDashboard/1.0)',
         'Accept': 'application/json',

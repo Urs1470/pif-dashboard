@@ -60,13 +60,11 @@ function cheltuialaFixaActiva(item, lunaKey) {
   return diff < luni;
 }
 
-// Sum of fixed-expense items active in given month key
+// Fixed monthly outflow for a given month. Fixed expenses are retired (every
+// outflow is now a variable category fed by bank import), so this is just the
+// credit instalment from the amortisation schedule.
 function totalFixeLuna(d, lunaKey) {
-  var fixe = (d.cheltuieliFixe || []).reduce(function(s, f) {
-    if (!cheltuialaFixaActiva(f, lunaKey)) return s;
-    return s + (parseRON(f.suma) || 0);
-  }, 0);
-  return round2(fixe + rataCredituluiLuna(d, lunaKey));
+  return round2(rataCredituluiLuna(d, lunaKey));
 }
 
 // Seed d.reguliCategorizare from defaults if missing
@@ -102,12 +100,6 @@ function pruneImportHistory(data) {
     var t = imp.ts ? new Date(imp.ts).getTime() : 0;
     return t >= cutoff;
   });
-}
-
-// ETF investments (manual tracking)
-function migrateEtf(data) {
-  if (!data) return;
-  if (!Array.isArray(data.etf)) data.etf = [];
 }
 
 // VWCE-focused tracking with live price proxy
@@ -553,12 +545,35 @@ var state = {
   activeTab: 'buget-lunar',
   data: null,
   scadShowAll: false,
+  saveStatus: 'saved',          // 'saved' | 'pending' | 'error'
+  baseUpdated: undefined,        // server 'updated' token we loaded from; undefined = skip version check
+  pendingMigrationSave: false,   // first save after a load-time migration
 };
 
 // --- API client (Flask backend) ---
 var API_BASE = '/budget/api';
 var saveTimer = null;
+var saveRetries = 0;
 var SAVE_DEBOUNCE_MS = 600;
+var LOCAL_BACKUP_KEY = 'budget-data-backup';
+
+// Mirror the working state to localStorage so a failed save / closed tab
+// does not lose edits. Non-fatal if storage is unavailable.
+function persistLocalBackup() {
+  try {
+    localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify({
+      data: state.data, ts: new Date().toISOString()
+    }));
+  } catch(e) { /* quota exceeded or storage disabled — ignore */ }
+}
+function readLocalBackup() {
+  try {
+    var raw = localStorage.getItem(LOCAL_BACKUP_KEY);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    return (parsed && parsed.data) ? parsed : null;
+  } catch(e) { return null; }
+}
 
 async function loadData() {
   try {
@@ -566,6 +581,8 @@ async function loadData() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var payload = await r.json();
     if (payload && payload.data) {
+      state.baseUpdated = payload.updated || null;
+      var preMigration = JSON.stringify(payload.data);
       state.data = payload.data;
       if (!state.data.venituri) state.data.venituri = {};
       if (!state.data.cheltuieli) state.data.cheltuieli = {};
@@ -590,7 +607,6 @@ async function loadData() {
       migrateCategoriesV2(state.data);
       migrateImportedRefs(state.data);
       migrateGoals(state.data);
-      migrateEtf(state.data);
       migrateImportHistory(state.data);
       pruneImportHistory(state.data);
       migrateVwce(state.data);
@@ -606,49 +622,115 @@ async function loadData() {
         if (!state.data.venituri[l]) state.data.venituri[l] = {};
         if (!state.data.cheltuieli[l]) state.data.cheltuieli[l] = {};
       });
+      // If any migration changed the stored structure, the first save should
+      // be logged as a single 'migrate' audit entry, not dozens of diffs.
+      state.pendingMigrationSave = (JSON.stringify(state.data) !== preMigration);
     } else {
       state.data = cloneObj(INITIAL_DATA);
+      state.baseUpdated = payload ? (payload.updated || null) : null;
       refreshLuni();
       await saveDataNow();
     }
+    persistLocalBackup();
   } catch(e) {
-    console.error('Load failed, using initial data:', e);
-    state.data = cloneObj(INITIAL_DATA);
-    refreshLuni();
+    console.error('Load failed:', e);
+    var backup = readLocalBackup();
+    if (backup) {
+      console.warn('Server unreachable — restored local backup from', backup.ts);
+      state.data = backup.data;
+      state.baseUpdated = undefined;  // server version unknown; skip the check on next save
+      refreshLuni();
+    } else {
+      state.data = cloneObj(INITIAL_DATA);
+      refreshLuni();
+    }
   }
 }
 
 async function saveDataNow() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  var body = { data: state.data, migrated: !!state.pendingMigrationSave };
+  // Only send the version token when we know it — omitting it skips the
+  // server-side conflict check (used after a local-backup restore).
+  if (state.baseUpdated !== undefined) body.base_updated = state.baseUpdated;
   try {
     var r = await fetch(API_BASE + '/state', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ data: state.data })
+      body: JSON.stringify(body)
     });
+    if (r.status === 409) {
+      var conflict = await r.json().catch(function() { return null; });
+      handleSaveConflict(conflict);
+      return;
+    }
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    var resp = await r.json();
+    state.baseUpdated = resp.updated || state.baseUpdated;
+    state.pendingMigrationSave = false;
+    saveRetries = 0;
+    persistLocalBackup();
     setSaveStatus('saved');
   } catch(e) {
     console.error('Save failed:', e);
     setSaveStatus('error');
+    // Auto-retry transient failures with backoff. Data is also mirrored to
+    // localStorage so nothing is lost even if all retries fail.
+    if (saveRetries < 3) {
+      saveRetries++;
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveDataNow, 4000 * saveRetries);
+    }
+  }
+}
+
+// Another tab/device saved since we loaded. Ask the user how to resolve it.
+function handleSaveConflict(conflict) {
+  setSaveStatus('error');
+  var keepMine = window.confirm(
+    'Bugetul a fost modificat in alta fereastra sau pe alt dispozitiv.\n\n' +
+    'OK = pastreaza modificarile de aici (suprascrie cealalta versiune).\n' +
+    'Anuleaza = incarca datele de pe server (pierzi modificarile de aici).'
+  );
+  if (keepMine) {
+    // Adopt the server's current token, then re-save to overwrite.
+    state.baseUpdated = (conflict && conflict.current) ? conflict.current.updated : undefined;
+    saveDataNow();
+  } else if (conflict && conflict.current && conflict.current.data) {
+    state.data = conflict.current.data;
+    state.baseUpdated = conflict.current.updated;
+    state.pendingMigrationSave = false;
+    persistLocalBackup();
+    refreshLuni();
+    setSaveStatus('saved');
+    render();
+  } else {
+    location.reload();
   }
 }
 
 function saveData() {
   setSaveStatus('pending');
+  persistLocalBackup();   // instant local mirror — survives a tab close before debounce
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(saveDataNow, SAVE_DEBOUNCE_MS);
 }
 
-function setSaveStatus(status) {
-  var el = document.getElementById('save-status');
-  if (!el) return;
+function saveStatusMeta(status) {
   var map = {
     pending: { cls: 'pending', icon: 'cloud-upload', text: 'Salvare...' },
     saved:   { cls: '',        icon: 'cloud-check',  text: 'Salvat' },
     error:   { cls: 'error',   icon: 'cloud-alert',  text: 'Eroare' }
   };
-  var s = map[status] || map.saved;
+  return map[status] || map.saved;
+}
+
+function setSaveStatus(status) {
+  state.saveStatus = status;
+  var el = document.getElementById('save-status');
+  if (!el) return;
+  var s = saveStatusMeta(status);
   el.className = 'save-chip ' + s.cls;
   el.innerHTML = '<i data-lucide="' + s.icon + '"></i> ' + s.text;
   refreshIcons();
@@ -656,8 +738,20 @@ function setSaveStatus(status) {
 
 function cloneObj(obj) { return JSON.parse(JSON.stringify(obj)); }
 function getNextId(arr) {
-  if (!arr || arr.length === 0) return 1;
-  return Math.max.apply(null, arr.map(function(x) { return x.id; })) + 1;
+  // Monotonic, never-reused ids — persisted in state.data._idSeq. Prevents the
+  // collision where deleting the highest-id row then adding one reuses that id
+  // (which could make an import-undo delete the wrong tezaur row).
+  var localMax = 0;
+  if (arr && arr.length) {
+    arr.forEach(function(x) {
+      var v = (x && typeof x.id === 'number') ? x.id : 0;
+      if (v > localMax) localMax = v;
+    });
+  }
+  var seq = (state.data && typeof state.data._idSeq === 'number') ? state.data._idSeq : 0;
+  var next = Math.max(localMax, seq) + 1;
+  if (state.data) state.data._idSeq = next;
+  return next;
 }
 
 // --- Lucide icons render with re-entry guard ---
@@ -892,52 +986,6 @@ function updateProfil(field, value) {
   saveData();
   render();
 }
-function updateCheltuialaFixa(id, field, value) {
-  if (!Array.isArray(state.data.cheltuieliFixe)) state.data.cheltuieliFixe = cloneObj(DATI_INITIALE.cheltuieliFixe);
-  state.data.cheltuieliFixe = state.data.cheltuieliFixe.map(function(f) {
-    if (f.id !== id) return f;
-    var u = cloneObj(f);
-    if (field === 'suma') {
-      u.suma = parseRON(value);
-    } else if (field === 'luni') {
-      var n = parseInt(value, 10);
-      u.luni = (isNaN(n) || n <= 0) ? null : Math.min(600, n);
-    } else if (field === 'startMonth') {
-      // Validate YYYY-MM, else keep previous
-      if (/^\d{4}-(0[1-9]|1[0-2])$/.test(String(value || ''))) u.startMonth = value;
-    } else {
-      u[field] = value;
-    }
-    return u;
-  });
-  saveData();
-  render();
-}
-function addCheltuialaFixa() {
-  if (!Array.isArray(state.data.cheltuieliFixe)) state.data.cheltuieliFixe = [];
-  state.data.cheltuieliFixe.push({ id: getNextId(state.data.cheltuieliFixe), label: '', suma: 0, platit: {} });
-  saveData();
-  render();
-}
-function toggleCheltuialaFixaPaid(id, lunaKey) {
-  if (!Array.isArray(state.data.cheltuieliFixe)) return;
-  state.data.cheltuieliFixe = state.data.cheltuieliFixe.map(function(f) {
-    if (f.id !== id) return f;
-    var u = cloneObj(f);
-    if (!u.platit) u.platit = {};
-    u.platit[lunaKey] = !u.platit[lunaKey];
-    if (!u.platit[lunaKey]) delete u.platit[lunaKey];
-    return u;
-  });
-  saveData();
-  render();
-}
-function removeCheltuialaFixa(id) {
-  state.data.cheltuieliFixe = state.data.cheltuieliFixe.filter(function(f) { return f.id !== id; });
-  saveData();
-  render();
-}
-
 function addCategorie() {
   if (!Array.isArray(state.data.categoriiVar)) state.data.categoriiVar = [];
   state.data.categoriiVar.push({ id: getNextId(state.data.categoriiVar), label: '' });
@@ -2372,17 +2420,6 @@ function contribuieGoal(id) {
 // ====================================================================
 // RENDER: Investitii (ETF / actiuni - manual tracking)
 // ====================================================================
-function etfMetrics(pos) {
-  var cantitate = parseRON(pos.cantitate) || 0;
-  var pretMediu = parseRON(pos.pretMediu) || 0;
-  var pretCurent = parseRON(pos.pretCurent) || pretMediu;
-  var investit = cantitate * pretMediu;
-  var valoare = cantitate * pretCurent;
-  var pl = valoare - investit;
-  var plPct = investit > 0 ? (pl / investit) * 100 : 0;
-  return { cantitate: cantitate, pretMediu: pretMediu, pretCurent: pretCurent, investit: investit, valoare: valoare, pl: pl, plPct: plPct };
-}
-
 // Find the closest historical close on or before `dateIso`. Falls back to v.pretCurent.
 function getVwcePriceOnDate(dateIso) {
   var v = (state.data && state.data.vwce) || {};
@@ -2689,43 +2726,6 @@ function removeVwceTx(id) {
   render();
 }
 
-function addEtf() {
-  if (!Array.isArray(state.data.etf)) state.data.etf = [];
-  state.data.etf.push({
-    id: getNextId(state.data.etf),
-    simbol: '',
-    nume: '',
-    isin: '',
-    cantitate: 0,
-    pretMediu: 0,
-    pretCurent: 0,
-    moneda: 'RON',
-    sursa: 'BVB',
-    broker: 'Tradeville',
-    dataAchizitie: '',
-    nota: ''
-  });
-  saveData();
-  render();
-}
-function updateEtf(id, field, value) {
-  if (!Array.isArray(state.data.etf)) return;
-  state.data.etf = state.data.etf.map(function(e) {
-    if (e.id !== id) return e;
-    var u = cloneObj(e);
-    if (field === 'cantitate' || field === 'pretMediu' || field === 'pretCurent') u[field] = parseRON(value);
-    else u[field] = value;
-    return u;
-  });
-  saveData();
-  render();
-}
-function removeEtf(id) {
-  state.data.etf = (state.data.etf || []).filter(function(e) { return e.id !== id; });
-  saveData();
-  render();
-}
-
 // ====================================================================
 // MAIN RENDER
 // ====================================================================
@@ -2766,7 +2766,8 @@ function render() {
   html += '      </div>';
   html += '    </div>';
   html += '    <div class="header-actions">';
-  html += '      <span id="save-status" class="save-chip"><i data-lucide="cloud-check"></i> Salvat</span>';
+  var ss = saveStatusMeta(state.saveStatus);
+  html += '      <span id="save-status" class="save-chip ' + ss.cls + '"><i data-lucide="' + ss.icon + '"></i> ' + ss.text + '</span>';
   html += '      <button class="icon-btn" onclick="showImportModal()" title="Importă tranzacții bancare"><i data-lucide="upload"></i></button>';
   html += '      <button class="icon-btn" onclick="toggleTheme()" title="Comută tema"><i data-lucide="' + themeIcon + '"></i></button>';
   html += '      <div class="actions-wrap">';
@@ -3478,6 +3479,15 @@ async function init() {
   if (state.activeTab === 'credite') setTimeout(recalcSimulare, 0);
   if (state.activeTab === 'investitii') setTimeout(maybeAutoRefreshVwce, 0);
 }
+
+// Warn before leaving if a save is still pending or has failed.
+window.addEventListener('beforeunload', function(e) {
+  if (state.saveStatus === 'pending' || state.saveStatus === 'error') {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
