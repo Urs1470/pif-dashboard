@@ -1031,20 +1031,6 @@ function renderLongTextPreview(textareaId) {
     }
     return;
 }
-function _renderLongTextPreviewOldBody(textareaId) {
-    const ta = document.getElementById(textareaId);
-    if (!ta) return;
-    // Find the matching preview div: assume it lives in the same form-group/body
-    const scope = ta.closest('.form-group, .detail-section-body') || ta.parentElement;
-    const preview = scope?.querySelector('.long-text-preview');
-    if (!preview) return;
-    const text = ta.value || '';
-    preview.textContent = text;
-    preview.classList.toggle('is-empty', !text.trim());
-    // Update char counter if present
-    const counter = scope?.querySelector('[data-count-for="' + textareaId + '"]');
-    if (counter) counter.textContent = text.length + ' caractere';
-}
 
 function renderAllLongTextPreviews() {
     ['service-before', 'service-after', 'pif-observatii'].forEach(renderLongTextPreview);
@@ -2162,8 +2148,10 @@ async function exportMarkdown() {
                 const jt = new Date(j.created_at || j.data || 0).getTime();
                 if (!jt) continue;
                 const found = sessions.find(s => {
-                    if (matched.has(s.id) || !s.end_time) return false;
-                    return Math.abs(jt - new Date(s.end_time).getTime()) < 2 * 60 * 1000;
+                    // Backend column is `stop_time` — `end_time` was the bug.
+                    const stopIso = s.stop_time || s.end_time;
+                    if (matched.has(s.id) || !stopIso) return false;
+                    return Math.abs(jt - new Date(stopIso).getTime()) < 2 * 60 * 1000;
                 });
                 if (found) { matched.add(found.id); j._duration_secunde = found.durata_secunde; }
             }
@@ -2171,7 +2159,7 @@ async function exportMarkdown() {
                 const durSuffix = entry._duration_secunde ? ` · ${fmtHours(entry._duration_secunde)}` : '';
                 md += `### ${entry.data || ''}${durSuffix}\n\n${entry.continut || ''}\n\n`;
             });
-            const unmatched = sessions.filter(s => !matched.has(s.id) && s.end_time);
+            const unmatched = sessions.filter(s => !matched.has(s.id) && (s.stop_time || s.end_time));
             if (unmatched.length > 0) {
                 md += `### Sesiuni timer fără notă\n\n`;
                 unmatched.forEach(s => {
@@ -3854,22 +3842,6 @@ async function loadDashboardHome() {
     }
 }
 
-async function updateHomeStats() {
-    try {
-        const [stats, extStats] = await Promise.all([
-            apiGet('/stats'),
-            apiGet('/stats/extended')
-        ]);
-        document.getElementById('home-stat-total').textContent = stats.total || 0;
-        var el = document.getElementById('home-stat-active');
-        if (el) el.textContent = stats.active || 0;
-        var el2 = document.getElementById('home-stat-hours-dynamic');
-        if (el2) el2.textContent = (extStats.total_billable_hours || 0) + 'h';
-    } catch (e) {
-        console.error('Failed to load home stats:', e);
-    }
-}
-
 function quickAddTaskFromHome() {
     switchTab('taskuri');
     setTimeout(() => {
@@ -4549,11 +4521,10 @@ function debounce(fn, delay) {
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
 }
 
+const _ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 function escapeHtml(text) {
     if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return String(text).replace(/[&<>"']/g, ch => _ESC_MAP[ch]);
 }
 
 function getStatusLabel(status) {
@@ -4569,6 +4540,9 @@ function getStatusLabel(status) {
 }
 
 function showToast(message, type = 'success') {
+    // Back-compat: several call sites pass a boolean (true = error toast).
+    if (type === true) type = 'error';
+    else if (type === false) type = 'success';
     const container = document.getElementById('toast-container');
     if (!container) return;
 
@@ -6204,43 +6178,6 @@ function parametriChangePage(delta) {
     parametriPage += delta;
     if (parametriPage < 1) parametriPage = 1;
     loadParametri();
-}
-
-function showParametruDetail(index) {
-    const params = window._currentParametriParams;
-    if (!params || index >= params.length) return;
-    
-    const p = params[index];
-    const panel = document.getElementById('param-detail-panel');
-    
-    // Highlight selected row
-    document.querySelectorAll('#parametri-tbody tr').forEach((tr, i) => {
-        tr.classList.toggle('selected-row', i === index);
-    });
-    
-    panel.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div>
-                <span style="font-size: 1.2rem; font-weight: 700; color: var(--accent);">${escapeHtml(p.parametru)}</span>
-                <span style="font-size: var(--font-small); color: var(--text2); margin-left: 8px;">${escapeHtml(p.familie || '')}</span>
-            </div>
-            <button onclick="document.getElementById('param-detail-panel').style.display='none'" 
-                    style="background: none; border: 1px solid var(--border); color: var(--text2); cursor: pointer; padding: 4px 10px; border-radius: 4px; font-size: 1rem;">✕</button>
-        </div>
-        <div style="margin-bottom: 12px; color: var(--text); line-height: 1.6; white-space: pre-wrap;">${escapeHtml(p.descriere_scurta || 'Fără descriere')}</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: var(--font-small);">
-            <div><span style="color: var(--text2);">Acces:</span> <span style="color: var(--text);">${escapeHtml(p.acces || '-')}</span></div>
-            <div><span style="color: var(--text2);">Tip date:</span> <span style="color: var(--text);">${escapeHtml(p.tip_date || '-')}</span></div>
-            <div><span style="color: var(--text2);">Default:</span> <span style="color: var(--accent); font-weight: 600;">${formatParamValue(p.valoare_default, p.valoare_default_str)}</span></div>
-            <div><span style="color: var(--text2);">Unitate:</span> <span style="color: var(--text);">${escapeHtml(p.unitate || '-')}</span></div>
-            <div><span style="color: var(--text2);">Min:</span> <span style="color: var(--text);">${p.min != null ? p.min : '-'}</span></div>
-            <div><span style="color: var(--text2);">Max:</span> <span style="color: var(--text);">${p.max != null ? p.max : '-'}</span></div>
-            <div><span style="color: var(--text2);">Pagină manual:</span> <span style="color: var(--text);">${p.pagina || '-'}</span></div>
-            <div><span style="color: var(--text2);">Categorie:</span> <span style="color: var(--text);">${escapeHtml(p.categorie || '-')}</span></div>
-        </div>
-    `;
-    panel.style.display = 'block';
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ============ PARAM MODAL ============
