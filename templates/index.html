@@ -763,6 +763,156 @@
             font-size: 0.86rem;
         }
         .admin-audit-result.show { display: block; }
+        .admin-text-input {
+            width: 100%;
+            padding: 8px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+        .admin-text-input:focus { outline: none; border-color: var(--accent); }
+
+        /* ═══ Obsidian Notes tab ═══ */
+        .obsidian-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            height: calc(100vh - 200px);
+            min-height: 420px;
+        }
+        .obsidian-sidebar {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .obsidian-search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .obsidian-search-row [data-lucide] { width: 15px; height: 15px; color: var(--text-dim); flex-shrink: 0; }
+        .obsidian-search-row input {
+            flex: 1; min-width: 0;
+            background: transparent; border: none; outline: none;
+            color: var(--text); font-size: 0.88rem; font-family: var(--font-sans);
+        }
+        .obsidian-list-meta {
+            padding: 6px 12px;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .obsidian-note-list { flex: 1; overflow-y: auto; padding: 6px; }
+        .obsidian-note-item {
+            padding: 7px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            border-left: 2px solid transparent;
+            transition: background 0.12s, border-left-color 0.12s;
+        }
+        .obsidian-note-item:hover { background: var(--bg-elev2); }
+        .obsidian-note-item.active {
+            background: var(--accent-soft);
+            border-left-color: var(--accent);
+        }
+        .obsidian-note-title {
+            font-size: 0.86rem; font-weight: 500; color: var(--text);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .obsidian-note-folder {
+            font-size: 0.7rem; color: var(--text-dim);
+            font-family: var(--font-mono);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .obsidian-note-snippet {
+            font-size: 0.76rem; color: var(--text2); margin-top: 2px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .obsidian-note-snippet mark { background: var(--warning-soft); color: var(--warning); border-radius: 2px; }
+        .obsidian-content {
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+        .obsidian-placeholder {
+            height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 12px; color: var(--text-dim);
+        }
+        .obsidian-placeholder [data-lucide] { width: 40px; height: 40px; opacity: 0.4; }
+        .obsidian-note-header {
+            display: flex; align-items: baseline; gap: 10px;
+            margin-bottom: 4px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--line-soft);
+        }
+        .obsidian-note-header h1 { font-size: 1.35rem; margin: 0; }
+        .obsidian-note-header .obsidian-note-path {
+            font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-mono);
+        }
+
+        /* Markdown rendering */
+        .md-rendered { font-size: 0.92rem; line-height: 1.65; color: var(--text); }
+        .md-rendered h1, .md-rendered h2, .md-rendered h3 {
+            margin: 1.1em 0 0.45em; line-height: 1.3; font-weight: 600;
+        }
+        .md-rendered h1 { font-size: 1.3rem; }
+        .md-rendered h2 { font-size: 1.12rem; }
+        .md-rendered h3 { font-size: 1rem; color: var(--text2); }
+        .md-rendered p { margin: 0.55em 0; }
+        .md-rendered ul, .md-rendered ol { margin: 0.5em 0; padding-left: 1.5em; }
+        .md-rendered li { margin: 0.2em 0; }
+        .md-rendered a { color: var(--accent); text-decoration: none; }
+        .md-rendered a:hover { text-decoration: underline; }
+        .md-rendered code {
+            background: var(--bg-elev3); padding: 1px 5px; border-radius: 4px;
+            font-family: var(--font-mono); font-size: 0.85em;
+        }
+        .md-rendered pre {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0.7em 0;
+        }
+        .md-rendered pre code { background: none; padding: 0; }
+        .md-rendered blockquote {
+            border-left: 3px solid var(--accent); margin: 0.7em 0;
+            padding: 2px 14px; color: var(--text2); background: var(--bg-elev2);
+            border-radius: 0 6px 6px 0;
+        }
+        .md-rendered hr { border: none; border-top: 1px solid var(--line-soft); margin: 1.2em 0; }
+        .md-rendered table { border-collapse: collapse; margin: 0.7em 0; width: 100%; }
+        .md-rendered th, .md-rendered td {
+            border: 1px solid var(--border); padding: 6px 10px; text-align: left; font-size: 0.86rem;
+        }
+        .md-rendered th { background: var(--bg-elev2); font-weight: 600; }
+        .md-rendered img { max-width: 100%; border-radius: 6px; }
+        .md-wikilink {
+            color: var(--violet); cursor: pointer;
+            border-bottom: 1px dotted var(--violet);
+        }
+        .md-wikilink:hover { background: var(--violet-soft); }
+        .md-tag {
+            color: var(--accent); background: var(--accent-soft);
+            padding: 0 5px; border-radius: 4px; font-size: 0.85em;
+        }
+        @media (max-width: 768px) {
+            .obsidian-layout { grid-template-columns: 1fr; height: auto; }
+            .obsidian-sidebar { max-height: 45vh; }
+            .obsidian-content { min-height: 50vh; padding: 16px; }
+        }
         .admin-audit-health {
             display: flex;
             align-items: center;
@@ -3525,6 +3675,7 @@
             <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')"><i data-lucide="check-square"></i> Taskuri Zilnice</button>
             <button class="main-tab" data-tab="proiecte" onclick="switchTab('proiecte')"><i data-lucide="folder-kanban"></i> Proiecte</button>
             <button class="main-tab" data-tab="parametri" onclick="switchTab('parametri')"><i data-lucide="sliders-horizontal"></i> Parametri</button>
+            <button class="main-tab" data-tab="notite" onclick="switchTab('notite')"><i data-lucide="notebook-pen"></i> Notițe</button>
             <button class="main-tab" data-tab="admin" onclick="switchTab('admin')"><i data-lucide="settings"></i> Administrativ</button>
         </div>
 
@@ -4063,6 +4214,42 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-title"><i data-lucide="book-open"></i> Integrare Obsidian</div>
+                    <div class="admin-section-body">
+                        <div class="admin-mini-label">Calea vault-ului pe server</div>
+                        <input type="text" id="obsidian-vault-path" class="admin-text-input"
+                               placeholder="/home/ion-ursu/... sau calea folderului sincronizat"
+                               autocomplete="off" spellcheck="false">
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <button class="btn btn-primary btn-small" onclick="saveObsidianConfig()">
+                                <i data-lucide="save"></i> Salvează
+                            </button>
+                        </div>
+                        <div id="obsidian-config-status" class="admin-audit-result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-notite" class="tab-content">
+            <div class="obsidian-layout">
+                <aside class="obsidian-sidebar">
+                    <div class="obsidian-search-row">
+                        <i data-lucide="search"></i>
+                        <input type="search" id="obsidian-search" placeholder="Caută în notițe..."
+                               autocomplete="off" oninput="onObsidianSearchInput()">
+                    </div>
+                    <div class="obsidian-list-meta" id="obsidian-list-meta"></div>
+                    <div id="obsidian-note-list" class="obsidian-note-list"></div>
+                </aside>
+                <section class="obsidian-content" id="obsidian-content">
+                    <div class="obsidian-placeholder">
+                        <i data-lucide="notebook-pen"></i>
+                        <p>Selectează o notiță din stânga sau caută.</p>
+                    </div>
+                </section>
             </div>
         </div>
 
@@ -4824,6 +5011,10 @@
             <div class="bottom-nav-item" data-tab="parametri" onclick="switchTab('parametri')">
                 <span class="bottom-nav-icon"><i data-lucide="sliders-horizontal"></i></span>
                 <span>Parametri</span>
+            </div>
+            <div class="bottom-nav-item" data-tab="notite" onclick="switchTab('notite')">
+                <span class="bottom-nav-icon"><i data-lucide="notebook-pen"></i></span>
+                <span>Notițe</span>
             </div>
             <div class="bottom-nav-item" data-tab="admin" onclick="switchTab('admin')">
                 <span class="bottom-nav-icon"><i data-lucide="settings"></i></span>

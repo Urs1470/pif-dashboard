@@ -2130,6 +2130,9 @@ function switchTab(tab) {
     if (tab === 'admin') {
         loadAdminPanel();
     }
+    if (tab === 'notite') {
+        loadObsidianNotes();
+    }
 }
 
 // ============ ADMIN PANEL ============
@@ -2168,6 +2171,8 @@ async function loadAdminPanel() {
             renderAdminBreakdown('adm-breakdown-producator', ext.by_manufacturer || [], 'producator');
             renderAdminBreakdown('adm-breakdown-status', ext.by_status || [], 'status', _statusLabel);
         }
+
+        loadObsidianConfig();
 
         if (window.lucide) try { window.lucide.createIcons(); } catch {}
     } catch (e) {
@@ -2273,6 +2278,286 @@ async function forceSWUpdate() {
         showToast('Eroare la update SW', true);
     }
 }
+
+// ============ OBSIDIAN NOTES (read-only vault integration) ============
+
+let _obsidianNotes = [];
+let _obsidianActivePath = null;
+let _obsidianSearchTimer = null;
+
+function _attrEsc(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// --- Lightweight Markdown renderer (no external lib) ---
+function mdInline(text) {
+    let s = escapeHtml(text);
+    // Protect inline code spans.
+    const codes = [];
+    s = s.replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return ' IC' + (codes.length - 1) + ' '; });
+    // Images, then links.
+    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, '<img alt="$1" src="$2">');
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,
+        '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    // Obsidian wikilinks [[Note]] or [[Note|alias]].
+    s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, target, alias) =>
+        `<span class="md-wikilink" data-wikilink="${_attrEsc(target.trim())}">${(alias || target).trim()}</span>`);
+    // Bold, italic, strikethrough.
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+    s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+    // Tags #tag.
+    s = s.replace(/(^|\s)#([a-zA-Z][\w/\-]*)/g, '$1<span class="md-tag">#$2</span>');
+    // Restore inline code.
+    s = s.replace(/ IC(\d+) /g, (m, i) => '<code>' + escapeHtml(codes[+i]) + '</code>');
+    return s;
+}
+
+function renderMarkdown(src) {
+    let text = String(src || '').replace(/\r\n/g, '\n');
+    // Strip leading YAML frontmatter.
+    text = text.replace(/^---\n[\s\S]*?\n---\n?/, '');
+    const lines = text.split('\n');
+    const out = [];
+    let i = 0, inCode = false, codeBuf = [];
+    const listStack = [];
+    const closeLists = () => { while (listStack.length) out.push('</' + listStack.pop() + '>'); };
+
+    while (i < lines.length) {
+        const line = lines[i];
+        const fence = line.match(/^```(.*)$/);
+        if (fence) {
+            if (inCode) { out.push('<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>'); inCode = false; codeBuf = []; }
+            else { closeLists(); inCode = true; }
+            i++; continue;
+        }
+        if (inCode) { codeBuf.push(line); i++; continue; }
+        if (line.trim() === '') { closeLists(); i++; continue; }
+
+        const h = line.match(/^(#{1,6})\s+(.*)$/);
+        if (h) { closeLists(); const lvl = Math.min(h[1].length, 3); out.push(`<h${lvl}>${mdInline(h[2])}</h${lvl}>`); i++; continue; }
+
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) { closeLists(); out.push('<hr>'); i++; continue; }
+
+        if (/^>\s?/.test(line)) {
+            closeLists();
+            const quote = [];
+            while (i < lines.length && /^>\s?/.test(lines[i])) { quote.push(lines[i].replace(/^>\s?/, '')); i++; }
+            out.push('<blockquote>' + renderMarkdown(quote.join('\n')) + '</blockquote>');
+            continue;
+        }
+
+        // Table: header row with pipes + separator row of dashes.
+        if (line.includes('|') && i + 1 < lines.length &&
+            /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i + 1]) && lines[i + 1].includes('-')) {
+            closeLists();
+            const cells = r => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+            const head = cells(line);
+            i += 2;
+            let tbl = '<table><thead><tr>' + head.map(c => `<th>${mdInline(c)}</th>`).join('') + '</tr></thead><tbody>';
+            while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
+                tbl += '<tr>' + cells(lines[i]).map(c => `<td>${mdInline(c)}</td>`).join('') + '</tr>';
+                i++;
+            }
+            out.push(tbl + '</tbody></table>');
+            continue;
+        }
+
+        const ul = line.match(/^(\s*)[-*+]\s+(.*)$/);
+        const ol = line.match(/^(\s*)\d+\.\s+(.*)$/);
+        if (ul || ol) {
+            const type = ul ? 'ul' : 'ol';
+            if (listStack[listStack.length - 1] !== type) { closeLists(); out.push('<' + type + '>'); listStack.push(type); }
+            const content = ul ? ul[2] : ol[2];
+            const task = content.match(/^\[([ xX])\]\s+(.*)$/);
+            if (task) out.push(`<li><input type="checkbox" disabled ${task[1] !== ' ' ? 'checked' : ''}> ${mdInline(task[2])}</li>`);
+            else out.push('<li>' + mdInline(content) + '</li>');
+            i++; continue;
+        }
+
+        closeLists();
+        const para = [line]; i++;
+        while (i < lines.length && lines[i].trim() !== '' &&
+               !/^(#{1,6}\s|```|>\s?|\s*[-*+]\s|\s*\d+\.\s)/.test(lines[i]) &&
+               !/^(-{3,}|\*{3,}|_{3,})$/.test(lines[i].trim())) {
+            para.push(lines[i]); i++;
+        }
+        out.push('<p>' + mdInline(para.join('\n')).replace(/\n/g, '<br>') + '</p>');
+    }
+    closeLists();
+    if (inCode) out.push('<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>');
+    return out.join('\n');
+}
+
+async function _obsidianGet(path) {
+    const res = await fetch('/api/obsidian' + path);
+    return res.json();
+}
+
+async function loadObsidianNotes() {
+    const listEl = document.getElementById('obsidian-note-list');
+    const metaEl = document.getElementById('obsidian-list-meta');
+    if (!listEl) return;
+    try {
+        const data = await _obsidianGet('/notes');
+        if (data.error) {
+            _obsidianNotes = [];
+            if (metaEl) metaEl.textContent = '';
+            listEl.innerHTML = `<div class="obsidian-placeholder" style="height:auto;padding:30px 12px;">
+                <i data-lucide="folder-x"></i>
+                <p style="font-size:0.82rem;text-align:center;">Vault Obsidian neconfigurat.<br>Administrativ → Integrare Obsidian.</p></div>`;
+            if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+            return;
+        }
+        _obsidianNotes = data.notes || [];
+        if (metaEl) metaEl.textContent = `${_obsidianNotes.length} notițe`;
+        renderObsidianList(_obsidianNotes, {});
+    } catch (e) {
+        console.error('loadObsidianNotes failed:', e);
+    }
+}
+
+function renderObsidianList(notes, opts) {
+    opts = opts || {};
+    const listEl = document.getElementById('obsidian-note-list');
+    if (!listEl) return;
+    if (!notes.length) {
+        listEl.innerHTML = `<div style="padding:20px 12px;color:var(--text-dim);font-size:0.84rem;text-align:center;">${opts.search ? 'Niciun rezultat.' : 'Nicio notiță.'}</div>`;
+        return;
+    }
+    listEl.innerHTML = notes.map(n => `
+        <div class="obsidian-note-item ${n.path === _obsidianActivePath ? 'active' : ''}" data-path="${_attrEsc(n.path)}">
+            <div class="obsidian-note-title">${escapeHtml(n.title)}</div>
+            ${n.folder ? `<div class="obsidian-note-folder">${escapeHtml(n.folder)}</div>` : ''}
+            ${n.snippet ? `<div class="obsidian-note-snippet">${_highlightSnippet(n.snippet, opts.query)}</div>` : ''}
+        </div>`).join('');
+}
+
+function _highlightSnippet(snippet, query) {
+    let s = escapeHtml(snippet);
+    if (query) {
+        const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        s = s.replace(new RegExp('(' + q + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return s;
+}
+
+async function openObsidianNote(path) {
+    _obsidianActivePath = path;
+    document.querySelectorAll('.obsidian-note-item').forEach(el =>
+        el.classList.toggle('active', el.getAttribute('data-path') === path));
+    const contentEl = document.getElementById('obsidian-content');
+    if (!contentEl) return;
+    contentEl.innerHTML = '<div class="obsidian-placeholder"><p>Se încarcă...</p></div>';
+    try {
+        const data = await _obsidianGet('/note?path=' + encodeURIComponent(path));
+        if (data.error) {
+            contentEl.innerHTML = `<div class="obsidian-placeholder"><i data-lucide="file-x"></i><p>${escapeHtml(data.error)}</p></div>`;
+            if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+            return;
+        }
+        contentEl.innerHTML = `
+            <div class="obsidian-note-header">
+                <h1>${escapeHtml(data.title)}</h1>
+                <span class="obsidian-note-path">${escapeHtml(data.path)}</span>
+            </div>
+            <div class="md-rendered">${renderMarkdown(data.content)}</div>`;
+        contentEl.scrollTop = 0;
+        if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+        if (typeof renderMathIn === 'function') try { renderMathIn(contentEl); } catch (e) {}
+    } catch (e) {
+        contentEl.innerHTML = '<div class="obsidian-placeholder"><p>Eroare la încărcarea notiței.</p></div>';
+    }
+}
+
+function onObsidianSearchInput() {
+    clearTimeout(_obsidianSearchTimer);
+    _obsidianSearchTimer = setTimeout(() => {
+        const q = (document.getElementById('obsidian-search').value || '').trim();
+        doObsidianSearch(q);
+    }, 250);
+}
+
+async function doObsidianSearch(q) {
+    const metaEl = document.getElementById('obsidian-list-meta');
+    if (!q) {
+        if (metaEl) metaEl.textContent = `${_obsidianNotes.length} notițe`;
+        renderObsidianList(_obsidianNotes, {});
+        return;
+    }
+    try {
+        const data = await _obsidianGet('/search?q=' + encodeURIComponent(q));
+        const results = data.results || [];
+        if (metaEl) metaEl.textContent = `${results.length} rezultate`;
+        renderObsidianList(results, { search: true, query: q });
+    } catch (e) {
+        console.error('Obsidian search failed:', e);
+    }
+}
+
+async function saveObsidianConfig() {
+    const input = document.getElementById('obsidian-vault-path');
+    const statusEl = document.getElementById('obsidian-config-status');
+    if (!input || !statusEl) return;
+    const path = input.value.trim();
+    statusEl.classList.add('show');
+    statusEl.innerHTML = '<span style="color:var(--text2)">Se verifică...</span>';
+    try {
+        const res = await fetch('/api/obsidian/config', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vault_path: path })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            statusEl.innerHTML = `<span style="color:var(--danger)">${escapeHtml(data.error || 'Eroare')}</span>`;
+            return;
+        }
+        if (data.valid) {
+            statusEl.innerHTML = `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe găsite.</span>`;
+            showToast('Vault Obsidian salvat');
+        } else if (data.configured) {
+            statusEl.innerHTML = '<span style="color:var(--warning)">Calea e salvată dar nu pare validă.</span>';
+        } else {
+            statusEl.innerHTML = '<span style="color:var(--text2)">Cale ștearsă.</span>';
+        }
+    } catch (e) {
+        statusEl.innerHTML = '<span style="color:var(--danger)">Eroare de rețea.</span>';
+    }
+}
+
+async function loadObsidianConfig() {
+    try {
+        const data = await _obsidianGet('/config');
+        const input = document.getElementById('obsidian-vault-path');
+        if (input) input.value = data.vault_path || '';
+        const statusEl = document.getElementById('obsidian-config-status');
+        if (statusEl && data.configured) {
+            statusEl.classList.add('show');
+            statusEl.innerHTML = data.valid
+                ? `<span style="color:var(--success)">Vault OK — ${data.note_count} notițe.</span>`
+                : '<span style="color:var(--warning)">Calea salvată nu pare validă.</span>';
+        }
+    } catch (e) { /* admin panel still usable without it */ }
+}
+
+// Delegated clicks: note list items + wikilinks inside rendered notes.
+document.addEventListener('click', function (e) {
+    const item = e.target.closest && e.target.closest('.obsidian-note-item');
+    if (item) { openObsidianNote(item.getAttribute('data-path')); return; }
+    const wl = e.target.closest && e.target.closest('.md-wikilink');
+    if (wl) {
+        const target = (wl.getAttribute('data-wikilink') || '').toLowerCase();
+        const note = _obsidianNotes.find(n => n.title.toLowerCase() === target)
+            || _obsidianNotes.find(n => n.path.toLowerCase().endsWith('/' + target + '.md'))
+            || _obsidianNotes.find(n => n.path.toLowerCase() === target + '.md');
+        if (note) openObsidianNote(note.path);
+        else showToast('Nota „' + (wl.getAttribute('data-wikilink') || '') + '" nu a fost găsită', true);
+    }
+});
 
 async function loadGlobalTasks() {
     try {

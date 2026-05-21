@@ -489,6 +489,16 @@ def init_db():
         )
     ''')
 
+    # Generic key/value app settings (Obsidian vault path, future config).
+    # Created with IF NOT EXISTS so it always exists without a dedicated migration.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT,
+            updated_at TEXT
+        )
+    ''')
+
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
