@@ -4230,6 +4230,115 @@ def assistant_chat():
         return jsonify({'error': f'Eroare asistent: {e}'}), 500
 
 
+# ============ GLOBAL SEARCH (command palette) ============
+
+def _search_snippet(text, query, width=80):
+    """A short context window around the first match of `query` in `text`."""
+    if not text:
+        return ''
+    text = str(text)
+    low = text.lower()
+    idx = low.find(query.lower())
+    if idx < 0:
+        return text[:width].strip()
+    start = max(0, idx - 32)
+    end = min(len(text), idx + len(query) + width)
+    return ('…' if start > 0 else '') + text[start:end].strip() + ('…' if end < len(text) else '')
+
+
+@app.route('/api/search', methods=['GET'])
+@login_required
+def global_search():
+    """Unified search across everything in the app for the command palette."""
+    q = (request.args.get('q') or '').strip()
+    if len(q) < 2:
+        return jsonify({'results': [], 'query': q})
+    like = f'%{q}%'
+    results = []
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('SELECT id, nume, client FROM proiecte '
+                'WHERE nume LIKE ? OR client LIKE ? OR cod_proiect LIKE ? OR locatie LIKE ? LIMIT 8',
+                (like, like, like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'proiect', 'id': r['id'], 'title': r['nume'],
+                        'subtitle': r['client'] or '', 'snippet': '', 'proiect_id': r['id']})
+
+    cur.execute('SELECT id, nume, observatii FROM proiecte WHERE observatii LIKE ? LIMIT 8', (like,))
+    for r in cur.fetchall():
+        results.append({'type': 'observatie', 'id': r['id'], 'title': f"Observații — {r['nume']}",
+                        'subtitle': '', 'snippet': _search_snippet(r['observatii'], q), 'proiect_id': r['id']})
+
+    cur.execute('SELECT t.id, t.titlu, t.descriere, t.proiect_id, p.nume AS pnume FROM tasks t '
+                'JOIN proiecte p ON t.proiect_id = p.id '
+                'WHERE t.titlu LIKE ? OR t.descriere LIKE ? LIMIT 12', (like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'task', 'id': r['id'], 'title': r['titlu'],
+                        'subtitle': r['pnume'], 'snippet': _search_snippet(r['descriere'], q),
+                        'proiect_id': r['proiect_id']})
+
+    cur.execute('SELECT id, titlu, descriere, categorie FROM global_tasks '
+                'WHERE titlu LIKE ? OR descriere LIKE ? LIMIT 10', (like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'global_task', 'id': r['id'], 'title': r['titlu'],
+                        'subtitle': r['categorie'] or 'Task zilnic', 'snippet': _search_snippet(r['descriere'], q)})
+
+    cur.execute('SELECT c.id, c.titlu, c.proiect_id, p.nume AS pnume FROM checklist_pif c '
+                'JOIN proiecte p ON c.proiect_id = p.id WHERE c.titlu LIKE ? LIMIT 10', (like,))
+    for r in cur.fetchall():
+        results.append({'type': 'checklist', 'id': r['id'], 'title': r['titlu'],
+                        'subtitle': f"Checklist · {r['pnume']}", 'snippet': '', 'proiect_id': r['proiect_id']})
+
+    cur.execute('SELECT j.id, j.continut, j.proiect_id, p.nume AS pnume FROM jurnal j '
+                'JOIN proiecte p ON j.proiect_id = p.id WHERE j.continut LIKE ? LIMIT 10', (like,))
+    for r in cur.fetchall():
+        results.append({'type': 'jurnal', 'id': r['id'], 'title': _search_snippet(r['continut'], q, 50),
+                        'subtitle': f"Jurnal · {r['pnume']}", 'snippet': _search_snippet(r['continut'], q),
+                        'proiect_id': r['proiect_id']})
+
+    cur.execute('SELECT e.id, e.nume, e.model, e.proiect_id, p.nume AS pnume FROM echipamente e '
+                'JOIN proiecte p ON e.proiect_id = p.id '
+                'WHERE e.nume LIKE ? OR e.model LIKE ? OR e.serial_number LIKE ? LIMIT 8',
+                (like, like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'echipament', 'id': r['id'], 'title': r['nume'],
+                        'subtitle': f"Echipament · {r['pnume']}", 'snippet': r['model'] or '',
+                        'proiect_id': r['proiect_id']})
+
+    cur.execute('SELECT id, nume, telefon FROM clienti WHERE nume LIKE ? OR contact_principal LIKE ? LIMIT 6',
+                (like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'client', 'id': r['id'], 'title': r['nume'],
+                        'subtitle': 'Client', 'snippet': r['telefon'] or ''})
+
+    cur.execute('SELECT id, familie, parametru, descriere FROM parametri_master '
+                'WHERE parametru LIKE ? OR descriere LIKE ? ORDER BY familie, parametru LIMIT 12',
+                (like, like))
+    for r in cur.fetchall():
+        results.append({'type': 'parametru', 'id': r['id'], 'title': f"{r['parametru']} — {r['familie']}",
+                        'subtitle': 'Parametru', 'snippet': _search_snippet(r['descriere'], q),
+                        'familie': r['familie'], 'cod': r['parametru']})
+
+    conn.close()
+
+    vault = _obsidian_vault()
+    if vault:
+        q_low = q.lower()
+        n_added = 0
+        for n in _obsidian_index(vault):
+            if q_low not in n['title'].lower() and q_low not in n['content'].lower():
+                continue
+            results.append({'type': 'obsidian', 'id': n['path'], 'title': n['title'],
+                            'subtitle': n['folder'] or 'Notiță',
+                            'snippet': _search_snippet(n['content'], q), 'path': n['path']})
+            n_added += 1
+            if n_added >= 12:
+                break
+
+    return jsonify({'results': results, 'query': q, 'count': len(results)})
+
+
 # ============ INIT DEFAULT TEMPLATES ============
 
 def init_default_templates():

@@ -2742,7 +2742,7 @@ function _highlightSnippet(snippet, query) {
     return s;
 }
 
-async function openObsidianNote(path) {
+async function openObsidianNote(path, highlightTerm) {
     _obsidianActivePath = path;
     document.querySelectorAll('.obsidian-note-item').forEach(el =>
         el.classList.toggle('active', el.getAttribute('data-path') === path));
@@ -2765,6 +2765,10 @@ async function openObsidianNote(path) {
         contentEl.scrollTop = 0;
         if (window.lucide) try { lucide.createIcons(); } catch (e) {}
         if (typeof renderMathIn === 'function') try { renderMathIn(contentEl); } catch (e) {}
+        // Came from global search — highlight + scroll to the searched term.
+        if (highlightTerm && typeof _highlightTermIn === 'function') {
+            _highlightTermIn(contentEl.querySelector('.md-rendered'), highlightTerm);
+        }
     } catch (e) {
         contentEl.innerHTML = '<div class="obsidian-placeholder"><p>Eroare la încărcarea notiței.</p></div>';
     }
@@ -2981,6 +2985,222 @@ function _assistantRefreshContext() {
     if (ta) ta.addEventListener('input', () => {
         ta.style.height = 'auto';
         ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+    });
+})();
+
+// ============ GLOBAL SEARCH (command palette) ============
+
+let _gsearchResults = [];
+let _gsearchActive = 0;
+let _gsearchTimer = null;
+
+const _GS_META = {
+    proiect:     { label: 'Proiecte', icon: 'folder-kanban' },
+    observatie:  { label: 'Observații', icon: 'file-text' },
+    task:        { label: 'Taskuri', icon: 'check-square' },
+    global_task: { label: 'Taskuri zilnice', icon: 'calendar-check' },
+    checklist:   { label: 'Checklist', icon: 'list-checks' },
+    jurnal:      { label: 'Jurnal', icon: 'notebook-pen' },
+    echipament:  { label: 'Echipamente', icon: 'cpu' },
+    client:      { label: 'Clienți', icon: 'users' },
+    parametru:   { label: 'Parametri', icon: 'sliders-horizontal' },
+    obsidian:    { label: 'Notițe', icon: 'book-open' },
+};
+const _GS_ORDER = ['proiect', 'observatie', 'task', 'global_task', 'checklist',
+                   'jurnal', 'echipament', 'client', 'parametru', 'obsidian'];
+
+function openGlobalSearch() {
+    const ov = document.getElementById('global-search');
+    if (!ov) return;
+    ov.classList.add('open');
+    const inp = document.getElementById('gsearch-input');
+    inp.value = '';
+    _gsearchResults = []; _gsearchActive = 0;
+    renderGlobalSearch();
+    setTimeout(() => inp.focus(), 40);
+}
+
+function closeGlobalSearch() {
+    const ov = document.getElementById('global-search');
+    if (ov) ov.classList.remove('open');
+}
+
+function onGlobalSearchInput() {
+    clearTimeout(_gsearchTimer);
+    _gsearchTimer = setTimeout(doGlobalSearch, 200);
+}
+
+async function doGlobalSearch() {
+    const q = (document.getElementById('gsearch-input').value || '').trim();
+    if (q.length < 2) { _gsearchResults = []; _gsearchActive = 0; renderGlobalSearch(); return; }
+    try {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        const raw = data.results || [];
+        // Order by group so keyboard nav matches the on-screen order.
+        _gsearchResults = [];
+        for (const t of _GS_ORDER) for (const r of raw) if (r.type === t) _gsearchResults.push(r);
+        _gsearchActive = 0;
+        renderGlobalSearch();
+    } catch (e) { console.error('Global search failed:', e); }
+}
+
+function _gsHi(text, q) {
+    let s = escapeHtml(text || '');
+    if (q) {
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        try { s = s.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
+    }
+    return s;
+}
+
+function renderGlobalSearch() {
+    const box = document.getElementById('gsearch-results');
+    if (!box) return;
+    const q = (document.getElementById('gsearch-input')?.value || '').trim();
+    if (q.length < 2) {
+        box.innerHTML = '<div class="gsearch-empty">Scrie cel puțin 2 caractere ca să cauți…</div>';
+        return;
+    }
+    if (!_gsearchResults.length) {
+        box.innerHTML = `<div class="gsearch-empty">Niciun rezultat pentru „${escapeHtml(q)}"</div>`;
+        return;
+    }
+    let html = '';
+    let lastType = null;
+    _gsearchResults.forEach((r, idx) => {
+        if (r.type !== lastType) {
+            html += `<div class="gsearch-group-label">${(_GS_META[r.type] || {}).label || r.type}</div>`;
+            lastType = r.type;
+        }
+        const meta = _GS_META[r.type] || { icon: 'circle' };
+        html += `<div class="gsearch-item ${idx === _gsearchActive ? 'active' : ''}" data-idx="${idx}">
+            <div class="gsearch-item-icon"><i data-lucide="${meta.icon}"></i></div>
+            <div class="gsearch-item-body">
+                <div class="gsearch-item-title">${_gsHi(r.title, q)}</div>
+                ${r.subtitle ? `<div class="gsearch-item-sub">${escapeHtml(r.subtitle)}</div>` : ''}
+                ${r.snippet ? `<div class="gsearch-item-snippet">${_gsHi(r.snippet, q)}</div>` : ''}
+            </div>
+        </div>`;
+    });
+    box.innerHTML = html;
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+    const activeEl = box.querySelector('.gsearch-item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+}
+
+// Highlight every occurrence of `term` inside `container`, scroll the first into
+// view. Used at search destinations (Obsidian notes, project observations).
+function _highlightTermIn(container, term) {
+    if (!container || !term) return null;
+    container.querySelectorAll('mark.search-hit').forEach(m => {
+        m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+    });
+    const lc = term.toLowerCase();
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+    const nodes = [];
+    while (walker.nextNode()) {
+        if (walker.currentNode.nodeValue.toLowerCase().includes(lc)) nodes.push(walker.currentNode);
+    }
+    let first = null;
+    for (const node of nodes) {
+        let rest = node.nodeValue;
+        const frag = document.createDocumentFragment();
+        let pos;
+        while ((pos = rest.toLowerCase().indexOf(lc)) >= 0) {
+            if (pos > 0) frag.appendChild(document.createTextNode(rest.slice(0, pos)));
+            const mark = document.createElement('mark');
+            mark.className = 'search-hit';
+            mark.textContent = rest.slice(pos, pos + term.length);
+            frag.appendChild(mark);
+            if (!first) first = mark;
+            rest = rest.slice(pos + term.length);
+        }
+        if (rest) frag.appendChild(document.createTextNode(rest));
+        node.parentNode.replaceChild(frag, node);
+    }
+    if (first) setTimeout(() => first.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60);
+    return first;
+}
+
+async function _openParamById(paramId) {
+    try {
+        const p = await apiGet('/parametri/' + encodeURIComponent(paramId));
+        if (p && !p.error) openParamModal(p);
+    } catch (e) { console.error('open param failed:', e); }
+}
+
+function activateSearchResult(r) {
+    const term = (document.getElementById('gsearch-input')?.value || '').trim();
+    closeGlobalSearch();
+    if (!r) return;
+    switch (r.type) {
+        case 'proiect':
+        case 'task':
+        case 'checklist':
+        case 'echipament':
+        case 'jurnal':
+            if (r.proiect_id) showProjectDetail(r.proiect_id);
+            break;
+        case 'observatie':
+            if (r.proiect_id) {
+                showProjectDetail(r.proiect_id);
+                setTimeout(() => {
+                    _highlightTermIn(document.querySelector('#pif-observatii-section .long-text-preview'), term);
+                }, 900);
+            }
+            break;
+        case 'global_task':
+            switchTab('taskuri');
+            break;
+        case 'parametru':
+            switchTab('parametri');
+            _openParamById(r.id);
+            break;
+        case 'obsidian':
+            switchTab('notite');
+            setTimeout(() => openObsidianNote(r.path, term), 350);
+            break;
+        case 'client':
+            switchTab('proiecte');
+            break;
+    }
+}
+
+// Wire up the palette: Ctrl/Cmd+K toggles it; input + keyboard nav + clicks.
+(function () {
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+            e.preventDefault();
+            const ov = document.getElementById('global-search');
+            if (ov && ov.classList.contains('open')) closeGlobalSearch();
+            else openGlobalSearch();
+        }
+    });
+    const inp = document.getElementById('gsearch-input');
+    if (inp) {
+        inp.addEventListener('input', onGlobalSearchInput);
+        inp.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                _gsearchActive = Math.min(_gsearchActive + 1, _gsearchResults.length - 1);
+                renderGlobalSearch();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                _gsearchActive = Math.max(_gsearchActive - 1, 0);
+                renderGlobalSearch();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                activateSearchResult(_gsearchResults[_gsearchActive]);
+            } else if (e.key === 'Escape') {
+                closeGlobalSearch();
+            }
+        });
+    }
+    const box = document.getElementById('gsearch-results');
+    if (box) box.addEventListener('click', function (e) {
+        const item = e.target.closest('.gsearch-item');
+        if (item) activateSearchResult(_gsearchResults[+item.getAttribute('data-idx')]);
     });
 })();
 
