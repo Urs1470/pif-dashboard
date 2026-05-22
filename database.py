@@ -8,12 +8,37 @@ def get_db():
     conn = sqlite3.connect(DATABASE_PATH)
     conn.execute('PRAGMA journal_mode=WAL')
     conn.execute('PRAGMA synchronous=NORMAL')
+    conn.execute('PRAGMA foreign_keys=ON')
     conn.row_factory = sqlite3.Row
+    # Track the connection on the Flask request context so close_db can close
+    # any that a handler forgot to close. Explicit conn.close() in handlers
+    # still works — closing an already-closed connection is a harmless no-op.
+    try:
+        from flask import g, has_app_context
+        if has_app_context():
+            conns = getattr(g, '_db_conns', None)
+            if conns is None:
+                conns = []
+                g._db_conns = conns
+            conns.append(conn)
+    except Exception:
+        pass
     return conn
 
 def close_db(exc=None):
-    """No-op for compatibility — Flask closes connections automatically."""
-    pass
+    """Teardown safety net — close any request connections left open."""
+    try:
+        from flask import g
+        conns = getattr(g, '_db_conns', None)
+        if conns:
+            for c in conns:
+                try:
+                    c.close()
+                except Exception:
+                    pass
+            g._db_conns = []
+    except Exception:
+        pass
 
 # ============ PHASE 2c: DATABASE MIGRATIONS ============
 # Schema version history:
