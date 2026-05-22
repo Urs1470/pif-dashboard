@@ -1472,6 +1472,7 @@ function showTab(tab) {
     case 'tasks': loadMobileTasks(); break;
     case 'params': loadParameters(); break;
     case 'notes': loadNotes(); break;
+    case 'obsidian': loadObsidianMobile(); break;
     case 'manuals': loadManuals(); break;
     case 'stats': loadMobileStats(); break;
     case 'clients': loadMobileClients(); break;
@@ -3228,4 +3229,361 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 4. Reload (argumentul boolean e ignorat de browsere moderne)
     window.location.reload();
   });
+});
+
+// ============ OBSIDIAN NOTES (mobile) ============
+// Drill-down browser for the read-only Obsidian vault. Mirrors the desktop
+// "Notițe" tab but as a single-column flow: tree/search -> note. Backend:
+//   GET /api/obsidian/notes   -> { notes: [{path,title,folder,mtime,size}], error? }
+//   GET /api/obsidian/note?path=<rel> -> { path, title, content } | { error }
+//   GET /api/obsidian/search?q=<q>    -> { results: [{path,title,folder,snippet,hits,score}], query }
+
+let _obsNotes = [];                 // flat list from /notes (cached for the session)
+let _obsLoaded = false;             // tree fetched at least once this session
+let _obsSearchTimer = null;
+let _obsCollapsed = (function () {
+  try { return new Set(JSON.parse(localStorage.getItem('pif:m:obs:collapsed') || '[]')); }
+  catch (e) { return new Set(); }
+})();
+function _obsSaveCollapsed() {
+  try { localStorage.setItem('pif:m:obs:collapsed', JSON.stringify([..._obsCollapsed])); } catch (e) {}
+}
+
+// Attribute-safe escaping for values placed inside data-* attributes.
+function _obsAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// --- Lightweight Markdown renderer (ported from desktop app.js) ---
+// Obsidian callout type -> [css class, default Romanian title].
+function _obsCalloutMeta(type) {
+  const map = {
+    note: ['note', 'Notă'], info: ['note', 'Info'], abstract: ['note', 'Rezumat'],
+    summary: ['note', 'Rezumat'], tldr: ['note', 'TL;DR'], todo: ['note', 'De făcut'],
+    tip: ['tip', 'Tip'], hint: ['tip', 'Tip'], important: ['tip', 'Important'],
+    success: ['success', 'Succes'], check: ['success', 'OK'], done: ['success', 'Gata'],
+    question: ['question', 'Întrebare'], help: ['question', 'Ajutor'], faq: ['question', 'FAQ'],
+    warning: ['warning', 'Atenție'], caution: ['warning', 'Atenție'], attention: ['warning', 'Atenție'],
+    failure: ['danger', 'Eșec'], fail: ['danger', 'Eșec'], missing: ['danger', 'Lipsă'],
+    danger: ['danger', 'Pericol'], error: ['danger', 'Eroare'], bug: ['danger', 'Bug'],
+    example: ['example', 'Exemplu'], quote: ['quote', 'Citat'], cite: ['quote', 'Citat'],
+  };
+  const t = (type || '').toLowerCase();
+  return map[t] || ['note', type ? (type.charAt(0).toUpperCase() + type.slice(1)) : 'Notă'];
+}
+
+// Inline-level Markdown. Input is escaped FIRST so note content can never
+// inject HTML (no XSS from the vault).
+function _obsMdInline(text) {
+  let s = escapeHtml(text);
+  // Protect inline code spans from further substitution.
+  const codes = [];
+  s = s.replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return ' IC' + (codes.length - 1) + ' '; });
+  // Images, then links. URLs come from already-escaped text.
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, '<img alt="$1" src="$2">');
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,
+    '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Obsidian wikilinks [[Note]] / [[Note|alias]] (also embeds ![[...]]).
+  s = s.replace(/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, target, alias) =>
+    `<span class="md-wikilink" data-wikilink="${_obsAttr(target.trim())}">${(alias || target).trim()}</span>`);
+  // Bold, italic, strikethrough, ==highlight==.
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+  s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+  // Tags #tag.
+  s = s.replace(/(^|\s)#([a-zA-Z][\w/\-]*)/g, '$1<span class="md-tag">#$2</span>');
+  // Restore inline code (re-escaped — codes[] holds raw text).
+  s = s.replace(/ IC(\d+) /g, (m, i) => '<code>' + escapeHtml(codes[+i]) + '</code>');
+  return s;
+}
+
+function renderObsMarkdown(src) {
+  let text = String(src || '').replace(/\r\n/g, '\n');
+  // Strip leading YAML frontmatter and Obsidian %% comments %%.
+  text = text.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  text = text.replace(/%%[\s\S]*?%%/g, '');
+  const lines = text.split('\n');
+  const out = [];
+  let i = 0, inCode = false, codeBuf = [];
+  const listStack = [];
+  const closeLists = () => { while (listStack.length) out.push('</' + listStack.pop() + '>'); };
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const fence = line.match(/^```(.*)$/);
+    if (fence) {
+      if (inCode) { out.push('<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>'); inCode = false; codeBuf = []; }
+      else { closeLists(); inCode = true; }
+      i++; continue;
+    }
+    if (inCode) { codeBuf.push(line); i++; continue; }
+    if (line.trim() === '') { closeLists(); i++; continue; }
+
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { closeLists(); const lvl = Math.min(h[1].length, 3); out.push(`<h${lvl}>${_obsMdInline(h[2])}</h${lvl}>`); i++; continue; }
+
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) { closeLists(); out.push('<hr>'); i++; continue; }
+
+    if (/^>\s?/.test(line)) {
+      closeLists();
+      const quote = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) { quote.push(lines[i].replace(/^>\s?/, '')); i++; }
+      // Obsidian callout: first line is [!type] optional-title.
+      const cm = quote[0] && quote[0].match(/^\[!(\w+)\][+-]?\s*(.*)$/);
+      if (cm) {
+        const meta = _obsCalloutMeta(cm[1]);
+        const ctitle = cm[2].trim() || meta[1];
+        const body = quote.slice(1).join('\n').trim();
+        out.push(`<div class="md-callout md-callout-${meta[0]}">`
+          + `<div class="md-callout-title">${_obsMdInline(ctitle)}</div>`
+          + (body ? `<div class="md-callout-body">${renderObsMarkdown(body)}</div>` : '')
+          + '</div>');
+      } else {
+        out.push('<blockquote>' + renderObsMarkdown(quote.join('\n')) + '</blockquote>');
+      }
+      continue;
+    }
+
+    // Table: header row with pipes + separator row of dashes.
+    if (line.includes('|') && i + 1 < lines.length &&
+        /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i + 1]) && lines[i + 1].includes('-')) {
+      closeLists();
+      const cells = r => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+      const head = cells(line);
+      i += 2;
+      let tbl = '<table><thead><tr>' + head.map(c => `<th>${_obsMdInline(c)}</th>`).join('') + '</tr></thead><tbody>';
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
+        tbl += '<tr>' + cells(lines[i]).map(c => `<td>${_obsMdInline(c)}</td>`).join('') + '</tr>';
+        i++;
+      }
+      out.push(tbl + '</tbody></table>');
+      continue;
+    }
+
+    const ul = line.match(/^(\s*)[-*+]\s+(.*)$/);
+    const ol = line.match(/^(\s*)\d+\.\s+(.*)$/);
+    if (ul || ol) {
+      const type = ul ? 'ul' : 'ol';
+      if (listStack[listStack.length - 1] !== type) { closeLists(); out.push('<' + type + '>'); listStack.push(type); }
+      const content = ul ? ul[2] : ol[2];
+      const task = content.match(/^\[([ xX])\]\s+(.*)$/);
+      if (task) out.push(`<li><input type="checkbox" disabled ${task[1] !== ' ' ? 'checked' : ''}> ${_obsMdInline(task[2])}</li>`);
+      else out.push('<li>' + _obsMdInline(content) + '</li>');
+      i++; continue;
+    }
+
+    closeLists();
+    const para = [line]; i++;
+    while (i < lines.length && lines[i].trim() !== '' &&
+           !/^(#{1,6}\s|```|>\s?|\s*[-*+]\s|\s*\d+\.\s)/.test(lines[i]) &&
+           !/^(-{3,}|\*{3,}|_{3,})$/.test(lines[i].trim())) {
+      para.push(lines[i]); i++;
+    }
+    out.push('<p>' + _obsMdInline(para.join('\n')).replace(/\n/g, '<br>') + '</p>');
+  }
+  closeLists();
+  if (inCode) out.push('<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>');
+  return out.join('\n');
+}
+
+// --- Data ---
+async function _obsApi(path) {
+  // apiGet handles 401/redirects; returns null when not authenticated.
+  return apiGet('/api/obsidian' + path);
+}
+
+async function loadObsidianMobile() {
+  // Always reset to the tree view when entering the tab.
+  obsBackToTree();
+  if (_obsLoaded) { renderObsTree(); return; }  // session cache — instant re-open
+  const listEl = document.getElementById('obs-list');
+  const metaEl = document.getElementById('obs-meta');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">Se încarcă...</div>';
+  if (metaEl) metaEl.textContent = '';
+  try {
+    const data = await _obsApi('/notes');
+    if (!data) { listEl.innerHTML = '<div class="obs-empty">Sesiune expirată.</div>'; return; }
+    if (data.error) {
+      _obsNotes = [];
+      listEl.innerHTML = '<div class="obs-empty"><i data-lucide="folder-x"></i>'
+        + '<div>Vault Obsidian neconfigurat.<br>Setează-l din varianta desktop → Administrativ.</div></div>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+      return;
+    }
+    _obsNotes = data.notes || [];
+    _obsLoaded = true;
+    renderObsTree();
+  } catch (e) {
+    console.error('loadObsidianMobile failed:', e);
+    listEl.innerHTML = '<div class="obs-empty">Eroare la încărcarea notițelor.</div>';
+  }
+}
+
+// --- Folder tree ---
+function _obsBuildTree(notes) {
+  const root = { folders: {}, notes: [] };
+  for (const n of notes) {
+    const parts = n.path.split('/');
+    parts.pop(); // drop the filename
+    let node = root;
+    for (const p of parts) {
+      if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] };
+      node = node.folders[p];
+    }
+    node.notes.push(n);
+  }
+  return root;
+}
+function _obsCountNotes(node) {
+  let c = node.notes.length;
+  for (const k in node.folders) c += _obsCountNotes(node.folders[k]);
+  return c;
+}
+function _obsRenderNode(node, depth, prefix) {
+  let html = '';
+  Object.keys(node.folders).sort((a, b) => a.localeCompare(b, 'ro')).forEach(fname => {
+    const full = prefix ? prefix + '/' + fname : fname;
+    const collapsed = _obsCollapsed.has(full);
+    const child = node.folders[fname];
+    html += `<div class="obs-folder-row" data-folder="${_obsAttr(full)}" style="padding-left:${4 + depth * 14}px">
+      <i data-lucide="chevron-${collapsed ? 'right' : 'down'}" class="obs-chevron"></i>
+      <i data-lucide="folder" class="obs-folder-icon"></i>
+      <span class="obs-folder-name">${escapeHtml(fname)}</span>
+      <span class="obs-folder-count">${_obsCountNotes(child)}</span>
+    </div>`;
+    if (!collapsed) html += _obsRenderNode(child, depth + 1, full);
+  });
+  node.notes.slice()
+    .sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase(), 'ro'))
+    .forEach(n => {
+      html += `<div class="obs-note-row" data-path="${_obsAttr(n.path)}" style="padding-left:${8 + depth * 14}px">
+        <i data-lucide="file-text" class="obs-note-icon"></i>
+        <span class="obs-note-name">${escapeHtml(n.title)}</span>
+      </div>`;
+    });
+  return html;
+}
+function renderObsTree() {
+  const listEl = document.getElementById('obs-list');
+  const metaEl = document.getElementById('obs-meta');
+  if (!listEl) return;
+  if (metaEl) metaEl.textContent = _obsNotes.length + ' notițe';
+  if (!_obsNotes.length) {
+    listEl.innerHTML = '<div class="obs-empty">Nicio notiță.</div>';
+    return;
+  }
+  listEl.innerHTML = _obsRenderNode(_obsBuildTree(_obsNotes), 0, '');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// --- Search ---
+function onObsSearchInput() {
+  clearTimeout(_obsSearchTimer);
+  _obsSearchTimer = setTimeout(() => {
+    const el = document.getElementById('obs-search');
+    doObsSearch((el && el.value || '').trim());
+  }, 280);
+}
+function _obsHighlight(snippet, query) {
+  let s = escapeHtml(snippet);
+  if (query) {
+    const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try { s = s.replace(new RegExp('(' + q + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
+  }
+  return s;
+}
+async function doObsSearch(q) {
+  const listEl = document.getElementById('obs-list');
+  const metaEl = document.getElementById('obs-meta');
+  if (!listEl) return;
+  if (!q) { renderObsTree(); return; }  // empty box -> back to tree
+  try {
+    const data = await _obsApi('/search?q=' + encodeURIComponent(q));
+    if (!data) return;
+    const results = data.results || [];
+    if (metaEl) metaEl.textContent = results.length + ' rezultate';
+    if (!results.length) {
+      listEl.innerHTML = '<div class="obs-empty">Niciun rezultat.</div>';
+      return;
+    }
+    listEl.innerHTML = results.map(n => `
+      <div class="obs-result" data-path="${_obsAttr(n.path)}">
+        <div class="obs-result-title">${escapeHtml(n.title)}</div>
+        ${n.folder ? `<div class="obs-result-folder">${escapeHtml(n.folder)}</div>` : ''}
+        ${n.snippet ? `<div class="obs-result-snippet">${_obsHighlight(n.snippet, q)}</div>` : ''}
+      </div>`).join('');
+  } catch (e) {
+    console.error('Obsidian mobile search failed:', e);
+    listEl.innerHTML = '<div class="obs-empty">Eroare la căutare.</div>';
+  }
+}
+
+// --- Single-note view (drill-down) ---
+function obsBackToTree() {
+  const browse = document.getElementById('obs-browse');
+  const note = document.getElementById('obs-note');
+  if (browse) browse.style.display = '';
+  if (note) note.style.display = 'none';
+}
+async function openObsNote(path) {
+  const browse = document.getElementById('obs-browse');
+  const noteEl = document.getElementById('obs-note');
+  const titleEl = document.getElementById('obs-note-title');
+  const pathEl = document.getElementById('obs-note-path');
+  const bodyEl = document.getElementById('obs-note-body');
+  if (!noteEl || !bodyEl) return;
+  if (browse) browse.style.display = 'none';
+  noteEl.style.display = '';
+  if (titleEl) titleEl.textContent = '';
+  if (pathEl) pathEl.textContent = '';
+  bodyEl.innerHTML = '<div class="loading">Se încarcă...</div>';
+  window.scrollTo(0, 0);
+  try {
+    const data = await _obsApi('/note?path=' + encodeURIComponent(path));
+    if (!data) { bodyEl.innerHTML = '<div class="obs-empty">Sesiune expirată.</div>'; return; }
+    if (data.error) {
+      bodyEl.innerHTML = '<div class="obs-empty"><i data-lucide="file-x"></i><div>'
+        + escapeHtml(data.error) + '</div></div>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+      return;
+    }
+    if (titleEl) titleEl.textContent = data.title || '';
+    if (pathEl) pathEl.textContent = data.path || '';
+    bodyEl.innerHTML = renderObsMarkdown(data.content);
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+  } catch (e) {
+    console.error('openObsNote failed:', e);
+    bodyEl.innerHTML = '<div class="obs-empty">Eroare la încărcarea notiței.</div>';
+  }
+}
+
+// Delegated taps inside the Obsidian tab: folder rows, note rows, wikilinks.
+document.addEventListener('click', function (e) {
+  const tab = document.getElementById('tab-obsidian');
+  if (!tab || !tab.contains(e.target)) return;
+  const folderRow = e.target.closest && e.target.closest('.obs-folder-row');
+  if (folderRow) {
+    const f = folderRow.getAttribute('data-folder');
+    if (_obsCollapsed.has(f)) _obsCollapsed.delete(f);
+    else _obsCollapsed.add(f);
+    _obsSaveCollapsed();
+    renderObsTree();
+    return;
+  }
+  const noteRow = e.target.closest && e.target.closest('.obs-note-row, .obs-result');
+  if (noteRow) { openObsNote(noteRow.getAttribute('data-path')); return; }
+  const wl = e.target.closest && e.target.closest('.md-wikilink');
+  if (wl) {
+    const target = (wl.getAttribute('data-wikilink') || '').toLowerCase();
+    const note = _obsNotes.find(n => n.title.toLowerCase() === target)
+      || _obsNotes.find(n => n.path.toLowerCase().endsWith('/' + target + '.md'))
+      || _obsNotes.find(n => n.path.toLowerCase() === target + '.md');
+    if (note) openObsNote(note.path);
+    else alert('Nota „' + (wl.getAttribute('data-wikilink') || '') + '" nu a fost găsită.');
+  }
 });

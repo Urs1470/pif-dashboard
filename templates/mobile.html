@@ -691,6 +691,167 @@
       font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
     }
     .gt-filter.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    /* ═══ Obsidian notes (mobile, drill-down) ═══ */
+    .obs-search-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; margin-bottom: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .obs-search-row [data-lucide] { width: 16px; height: 16px; color: var(--text-dim); }
+    .obs-search-row input {
+      flex: 1; min-width: 0;
+      background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 15px; font-family: inherit;
+    }
+    .obs-meta {
+      padding: 0 4px 8px;
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .obs-folder-row {
+      display: flex; align-items: center; gap: 7px;
+      min-height: 44px; padding: 6px 8px;
+      border-radius: 8px; cursor: pointer; user-select: none;
+    }
+    .obs-folder-row:active { background: var(--bg-elev2); }
+    .obs-chevron { width: 16px; height: 16px; color: var(--text-dim); flex-shrink: 0; }
+    .obs-folder-icon { width: 17px; height: 17px; color: var(--accent); flex-shrink: 0; }
+    .obs-folder-name {
+      flex: 1; min-width: 0;
+      font-size: 14px; font-weight: 600; color: var(--text2);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .obs-folder-count {
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+    }
+    .obs-note-row {
+      display: flex; align-items: center; gap: 8px;
+      min-height: 44px; padding: 6px 8px;
+      border-radius: 8px; cursor: pointer;
+      border-left: 2px solid transparent;
+    }
+    .obs-note-row:active { background: var(--bg-elev2); }
+    .obs-note-icon { width: 15px; height: 15px; color: var(--text-dim); flex-shrink: 0; }
+    .obs-note-name {
+      flex: 1; min-width: 0;
+      font-size: 14px; font-weight: 500; color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .obs-result {
+      padding: 10px 12px; margin-bottom: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px; cursor: pointer;
+    }
+    .obs-result:active { background: var(--bg-elev2); }
+    .obs-result-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .obs-result-folder {
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .obs-result-snippet {
+      font-size: 12px; color: var(--text2); margin-top: 3px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .obs-result-snippet mark, .md-rendered mark {
+      background: var(--warning-soft); color: var(--warning);
+      border-radius: 2px; padding: 0 2px;
+    }
+    .obs-empty {
+      text-align: center; padding: 40px 24px;
+      color: var(--text-dim); font-size: 14px;
+    }
+    .obs-empty [data-lucide] { width: 40px; height: 40px; opacity: 0.4; margin-bottom: 10px; }
+    .obs-note-header {
+      margin-bottom: 12px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .obs-note-header h1 { font-size: 20px; margin: 0 0 2px; line-height: 1.25; }
+    .obs-note-path {
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      word-break: break-all;
+    }
+
+    /* Markdown rendering (mobile) */
+    .md-rendered { font-size: 15px; line-height: 1.65; color: var(--text); }
+    .md-rendered h1, .md-rendered h2, .md-rendered h3 {
+      margin: 1.1em 0 0.45em; line-height: 1.3; font-weight: 600;
+    }
+    .md-rendered h1 { font-size: 1.3em; }
+    .md-rendered h2 { font-size: 1.15em; }
+    .md-rendered h3 { font-size: 1.03em; color: var(--text2); }
+    .md-rendered p { margin: 0.55em 0; }
+    .md-rendered ul, .md-rendered ol { margin: 0.5em 0; padding-left: 1.4em; }
+    .md-rendered li { margin: 0.25em 0; }
+    .md-rendered a { color: var(--accent); text-decoration: none; }
+    .md-rendered code {
+      background: var(--bg-elev3); padding: 1px 5px; border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
+      word-break: break-word;
+    }
+    .md-rendered pre {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 0.7em 0;
+    }
+    .md-rendered pre code { background: none; padding: 0; }
+    .md-rendered blockquote {
+      border-left: 3px solid var(--accent); margin: 0.7em 0;
+      padding: 2px 14px; color: var(--text2); background: var(--bg-elev2);
+      border-radius: 0 8px 8px 0;
+    }
+    .md-rendered hr { border: none; border-top: 1px solid var(--line-soft); margin: 1.2em 0; }
+    .md-rendered table {
+      border-collapse: collapse; margin: 0.7em 0;
+      width: 100%; display: block; overflow-x: auto;
+    }
+    .md-rendered th, .md-rendered td {
+      border: 1px solid var(--border); padding: 6px 10px;
+      text-align: left; font-size: 0.9em;
+    }
+    .md-rendered th { background: var(--bg-elev2); font-weight: 600; }
+    .md-rendered img { max-width: 100%; border-radius: 8px; }
+    .md-wikilink {
+      color: var(--violet); cursor: pointer;
+      border-bottom: 1px dotted var(--violet);
+    }
+    .md-tag {
+      color: var(--accent); background: var(--accent-soft);
+      padding: 0 5px; border-radius: 4px; font-size: 0.85em;
+    }
+    .md-callout {
+      margin: 0.8em 0; padding: 9px 14px 10px;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      background: var(--bg-elev2);
+    }
+    .md-callout-title { font-weight: 700; font-size: 0.95em; color: var(--accent); }
+    .md-callout-body { margin-top: 4px; }
+    .md-callout-body > *:first-child { margin-top: 0; }
+    .md-callout-body > *:last-child { margin-bottom: 0; }
+    .md-callout-note    { border-left-color: var(--accent);  background: var(--accent-soft); }
+    .md-callout-note .md-callout-title    { color: var(--accent); }
+    .md-callout-tip     { border-left-color: var(--success); background: var(--success-soft); }
+    .md-callout-tip .md-callout-title     { color: var(--success); }
+    .md-callout-success { border-left-color: var(--success); background: var(--success-soft); }
+    .md-callout-success .md-callout-title { color: var(--success); }
+    .md-callout-question{ border-left-color: var(--violet);  background: var(--violet-soft); }
+    .md-callout-question .md-callout-title{ color: var(--violet); }
+    .md-callout-warning { border-left-color: var(--warning); background: var(--warning-soft); }
+    .md-callout-warning .md-callout-title { color: var(--warning); }
+    .md-callout-danger  { border-left-color: var(--danger);  background: var(--danger-soft); }
+    .md-callout-danger .md-callout-title  { color: var(--danger); }
+    .md-callout-example { border-left-color: var(--violet);  background: var(--violet-soft); }
+    .md-callout-example .md-callout-title { color: var(--violet); }
+    .md-callout-quote   { border-left-color: var(--text-dim); }
+    .md-callout-quote .md-callout-title   { color: var(--text2); }
   </style>
   <!-- Lucide icons — self-hosted (pinned, same-origin, SW-cacheable; no unpkg @latest risk).
        flatpickr removed: unused on mobile (native date inputs). -->
@@ -1070,6 +1231,29 @@
         <div id="notes-list"></div>
       </div>
 
+      <!-- Tab: Obsidian notes (from More menu) — drill-down: tree/search -> note -->
+      <div id="tab-obsidian" class="tab-view">
+        <!-- Tree + search view -->
+        <div id="obs-browse">
+          <div class="obs-search-row">
+            <i data-lucide="search"></i>
+            <input type="search" id="obs-search" placeholder="Caută în notițe..."
+                   autocomplete="off" oninput="onObsSearchInput()">
+          </div>
+          <div class="obs-meta" id="obs-meta"></div>
+          <div id="obs-list"></div>
+        </div>
+        <!-- Single-note view -->
+        <div id="obs-note" style="display:none;">
+          <button class="back-btn" onclick="obsBackToTree()"><i data-lucide="arrow-left"></i> Înapoi</button>
+          <div class="obs-note-header">
+            <h1 id="obs-note-title"></h1>
+            <span class="obs-note-path" id="obs-note-path"></span>
+          </div>
+          <div class="md-rendered" id="obs-note-body"></div>
+        </div>
+      </div>
+
       <!-- Project Detail View -->
       <div id="project-detail" class="tab-view">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1152,6 +1336,7 @@
       </div>
       <div id="more-menu-items" style="display:flex; flex-direction:column; gap:8px;">
         <button class="more-item" onclick="closeMoreMenu(); showTab('notes')"><i data-lucide="notebook-pen"></i> Notițe / Jurnal</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('obsidian')"><i data-lucide="book-text"></i> Notițe Obsidian</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('manuals')"><i data-lucide="book-open"></i> Manuale</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('stats')"><i data-lucide="bar-chart-3"></i> Statistici</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('clients')"><i data-lucide="users"></i> Clienți</button>
