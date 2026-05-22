@@ -3722,7 +3722,11 @@ function showUpdateBanner() {
     // _updateBannerShown stays true — don't nag again this session
   });
   if (window.lucide && lucide.createIcons) lucide.createIcons();
-  requestAnimationFrame(function() { bar.classList.add('visible'); });
+  // Force a reflow so the slide-in transition registers, then reveal.
+  // Synchronous on purpose — requestAnimationFrame is paused in background
+  // tabs, which would leave the banner stuck off-screen.
+  void bar.offsetWidth;
+  bar.classList.add('visible');
 }
 
 function startVersionChecks() {
