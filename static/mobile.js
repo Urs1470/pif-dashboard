@@ -1,40 +1,6 @@
 // PIF Mobile - Mobile SPA Logic
 // IndexedDB for offline storage, sync when online
 
-// ============================================================
-// One-time SW cleanup (rulează o singură dată per device)
-// ============================================================
-(async () => {
-    const swFixed = localStorage.getItem('sw_force_v5');
-    if (!swFixed) {
-        console.log('[Boot] One-time SW cleanup starting...');
-        try {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (const reg of regs) {
-                console.log('[Boot] Unregistering SW:', reg.scope);
-                await reg.unregister();
-            }
-            const keys = await caches.keys();
-            for (const key of keys) {
-                console.log('[Boot] Deleting cache:', key);
-                await caches.delete(key);
-            }
-            localStorage.setItem('sw_force_v5', '1');
-            if (regs.length > 0) {
-                console.log('[Boot] SW was active — reloading');
-                window.location.reload();
-                // Nu returnăm — pagina se reîncarcă oricum
-            } else {
-                console.log('[Boot] No SW found — clean start');
-            }
-        } catch (e) {
-            console.warn('[Boot] SW cleanup failed:', e.message || e);
-        }
-    }
-})();
-
-// ============================================================
-
 const DB_NAME = 'pif_mobile_db';
 const DB_VERSION = 7;
 
@@ -320,39 +286,62 @@ setInterval(updateOnlineStatus, 30000);
 
 // ============ Service Worker Registration ============
 
+// Set to true only when the user taps "Reincarca" in the update banner.
+let _swUpdateAccepted = false;
+
 function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
 
-    navigator.serviceWorker.register('/static/service-worker.js')
+    // Reload the page only after the user has accepted an update — never on
+    // its own (a background SW activation must not reload the page).
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (_swUpdateAccepted) window.location.reload();
+    });
+
+    // Root-scope registration (same as desktop) so the worker actually
+    // controls the /m page — '/static/service-worker.js' would scope to /static/.
+    navigator.serviceWorker.register('/service-worker.js')
         .then(registration => {
             console.log('[App] SW registered');
-
-            // Verifică update-uri la fiecare 60 min
             setInterval(() => registration.update(), 60 * 60 * 1000);
 
-            // Când e un SW nou gata
+            if (registration.waiting && navigator.serviceWorker.controller) {
+                promptMobileSWUpdate(registration.waiting);
+            }
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
+                if (!newWorker) return;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // SW nou instalat, dar cel vechi încă controlează pagina
-                        console.log('[App] New SW ready — activating');
-                        newWorker.postMessage('SKIP_WAITING');
+                        promptMobileSWUpdate(newWorker);
                     }
                 });
             });
         })
         .catch(err => console.error('[App] SW registration failed:', err));
+}
 
-    // Când noul SW preia controlul → reload pentru a folosi noul cod
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            console.log('[App] New SW active — reloading');
-            window.location.reload();
-        }
+// Non-blocking update banner — the page reloads ONLY when the user taps it.
+function promptMobileSWUpdate(worker) {
+    if (document.getElementById('sw-update-banner')) return;
+    const b = document.createElement('div');
+    b.id = 'sw-update-banner';
+    b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:76px;z-index:5000;' +
+        'display:flex;align-items:center;gap:10px;padding:10px 12px;' +
+        'background:var(--bg-elev3);border:1px solid var(--border);border-radius:12px;' +
+        'box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+    b.innerHTML = '<span style="flex:1;font-size:13px;color:var(--text);">Versiune noua disponibila</span>' +
+        '<button id="sw-update-apply" style="background:var(--accent);color:var(--bg);border:none;' +
+        'border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;">Reincarca</button>' +
+        '<button id="sw-update-dismiss" aria-label="Inchide" style="background:none;border:none;' +
+        'color:var(--text-secondary);font-size:20px;line-height:1;padding:0 4px;">&times;</button>';
+    document.body.appendChild(b);
+    document.getElementById('sw-update-apply').addEventListener('click', () => {
+        _swUpdateAccepted = true;
+        worker.postMessage('skipWaiting');
+        b.remove();
     });
+    document.getElementById('sw-update-dismiss').addEventListener('click', () => b.remove());
 }
 
 // ============ Sync Logic ============
@@ -3056,10 +3045,10 @@ async function mobileBackupJSON() {
 // ============ Utility ============
 
 function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  if (text === null || text === undefined) return '';
+  return String(text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // Human-readable file size: 512 B, 12.4 KB, 4.7 MB, 1.2 GB
@@ -3245,9 +3234,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('force-refresh')?.addEventListener('click', async () => {
     if (!confirm('Reîncarcă aplicația? (cache-ul va fi șters)')) return;
 
-    // 1. Trimite mesaj la SW să-și golească cache-urile
+    // 1. Trimite mesaj la SW să-și golească cache-ul de API
     if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage('CLEAR_CACHE');
+      navigator.serviceWorker.controller.postMessage('clearApiCache');
     }
 
     // 2. Unregister SW complet
@@ -3262,7 +3251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await caches.delete(key);
     }
 
-    // 4. Reload fără cache
-    window.location.reload(true);
+    // 4. Reload (argumentul boolean e ignorat de browsere moderne)
+    window.location.reload();
   });
 });

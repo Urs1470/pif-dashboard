@@ -513,10 +513,9 @@
     }
     .gt-filter.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Lucide icons — self-hosted (pinned, same-origin, SW-cacheable; no unpkg @latest risk).
+       flatpickr removed: unused on mobile (native date inputs). -->
+  <script src="/static/lucide.min.js?v={{ js_version }}"></script>
   <style>
     /* Lucide icon defaults for mobile */
     [data-lucide], .lucide {
