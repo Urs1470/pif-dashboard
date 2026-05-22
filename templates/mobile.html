@@ -283,6 +283,185 @@
     }
     .nav-tab.active { color: var(--accent); }
     .nav-tab-icon { font-size: 20px; line-height: 1; }
+
+    /* ═══ Hermes assistant (mobile) ═══ */
+    #hermes-fab {
+      display: none;        /* revealed by showApp() once logged in */
+      position: fixed;
+      right: 16px;
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+      z-index: 90;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    #hermes-fab.ready { display: flex; }
+    #hermes-fab:active { opacity: 0.85; }
+    #hermes-fab [data-lucide] { width: 24px; height: 24px; }
+    #hermes-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 200;
+      flex-direction: column;
+    }
+    #hermes-panel.active { display: flex; }
+    .hermes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .hermes-header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .hermes-header-title [data-lucide] { width: 19px; height: 19px; color: var(--accent); }
+    .hermes-header-actions { display: flex; gap: 2px; }
+    .hermes-header-actions button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      border-radius: 8px;
+    }
+    .hermes-header-actions button:active { background: var(--bg-elev3); color: var(--text); }
+    .hermes-header-actions [data-lucide] { width: 20px; height: 20px; }
+    #hermes-messages {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hermes-welcome {
+      margin: auto;
+      text-align: center;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px;
+    }
+    .hermes-welcome [data-lucide] { width: 40px; height: 40px; opacity: 0.5; color: var(--accent); }
+    .hermes-welcome p { font-size: 14px; line-height: 1.55; }
+    .hermes-msg {
+      max-width: 88%;
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    .hermes-msg.user {
+      align-self: flex-end;
+      background: var(--accent-soft);
+      color: var(--text);
+      border-bottom-right-radius: 4px;
+    }
+    .hermes-msg.bot {
+      align-self: flex-start;
+      background: var(--bg-elev3);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .hermes-msg.error {
+      align-self: flex-start;
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-bottom-left-radius: 4px;
+    }
+    .hermes-msg.bot code, .hermes-msg.error code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86em;
+    }
+    .hermes-tools {
+      align-self: flex-start;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-style: italic;
+    }
+    .hermes-tools [data-lucide] { width: 13px; height: 13px; }
+    .hermes-typing {
+      align-self: flex-start;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-style: italic;
+    }
+    .hermes-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      align-items: flex-end;
+    }
+    #hermes-input {
+      flex: 1;
+      min-width: 0;
+      resize: none;
+      max-height: 120px;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    #hermes-input:focus { outline: none; border-color: var(--accent); }
+    #hermes-send {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #hermes-send:active { opacity: 0.85; }
+    #hermes-send:disabled { opacity: 0.5; cursor: default; }
+    #hermes-send [data-lucide] { width: 19px; height: 19px; }
+
     /* Project Cards */
     .project-card {
       background: var(--surface);
@@ -942,6 +1121,27 @@
   <!-- FAB removed: inline "Proiect nou" / "Notita noua" buttons are
        placed at the top of their respective tabs instead. -->
 
+  <!-- ═══ Hermes assistant (mobile) ═══ -->
+  <button id="hermes-fab" onclick="openHermes()" aria-label="Asistent Hermes" title="Asistent Hermes">
+    <i data-lucide="sparkles"></i>
+  </button>
+  <div id="hermes-panel" role="dialog" aria-label="Asistent Hermes">
+    <div class="hermes-header">
+      <div class="hermes-header-title"><i data-lucide="sparkles"></i> Hermes</div>
+      <div class="hermes-header-actions">
+        <button onclick="clearHermesChat()" aria-label="Conversatie noua" title="Conversatie noua"><i data-lucide="rotate-ccw"></i></button>
+        <button onclick="closeHermes()" aria-label="Inchide" title="Inchide"><i data-lucide="x"></i></button>
+      </div>
+    </div>
+    <div id="hermes-messages"></div>
+    <div class="hermes-input-row">
+      <textarea id="hermes-input" rows="1" placeholder="Intreaba Hermes..." autocomplete="off"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendHermesMessage();}"></textarea>
+      <button id="hermes-send" onclick="sendHermesMessage()" aria-label="Trimite" title="Trimite">
+        <i data-lucide="send"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- More menu overlay -->
   <div id="more-menu" class="modal">

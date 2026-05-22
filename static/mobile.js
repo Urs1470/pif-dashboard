@@ -1496,6 +1496,8 @@ function showLogin() {
   removeBoot();
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
+  document.getElementById('hermes-fab')?.classList.remove('ready');
+  document.getElementById('hermes-panel')?.classList.remove('active');
 }
 
 // ============ FAZA 3: Project Detail (10 sections) ============
@@ -2567,6 +2569,7 @@ function showApp() {
   removeBoot();
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  document.getElementById('hermes-fab')?.classList.add('ready');
   showTab('home');
 
   // Background params sync (non-blocking)
@@ -2873,6 +2876,143 @@ async function mobileBackupJSON() {
   } catch (e) { console.error('Backup error:', e); }
 }
 
+// ============ Hermes Assistant (mobile) ============
+
+let _hermesMessages = [];
+let _hermesBusy = false;
+// Write-tools: after the assistant uses one, refresh whatever tab is open.
+const _HERMES_WRITE_TOOLS = ['create_proiect', 'create_task', 'add_checklist_item', 'add_jurnal', 'update_task_status'];
+
+function openHermes() {
+  const panel = document.getElementById('hermes-panel');
+  if (!panel) return;
+  panel.classList.add('active');
+  renderHermesMessages();
+  setTimeout(() => document.getElementById('hermes-input')?.focus(), 150);
+}
+
+function closeHermes() {
+  const panel = document.getElementById('hermes-panel');
+  if (panel) panel.classList.remove('active');
+}
+
+function clearHermesChat() {
+  _hermesMessages = [];
+  renderHermesMessages();
+}
+
+// Minimal, safe inline markdown: bold, italic, inline code, line breaks.
+// Everything is escaped first — no raw HTML is ever injected.
+function hermesRenderText(src) {
+  let s = escapeHtml(String(src || ''));
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
+function renderHermesMessages() {
+  const box = document.getElementById('hermes-messages');
+  if (!box) return;
+  if (!_hermesMessages.length) {
+    box.innerHTML = '<div class="hermes-welcome">'
+      + '<i data-lucide="sparkles"></i>'
+      + '<p>Salut, Ion. Sunt Hermes.<br>Pot cauta parametri, notite si proiecte — si pot crea proiecte, taskuri, checklist-uri si intrari de jurnal. Spune-mi ce ai nevoie.</p>'
+      + '</div>';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    return;
+  }
+  box.innerHTML = _hermesMessages.map(m => {
+    if (m.role === 'user') return '<div class="hermes-msg user">' + escapeHtml(m.content) + '</div>';
+    if (m.role === 'typing') return '<div class="hermes-typing">Hermes scrie...</div>';
+    if (m.role === 'tools') return '<div class="hermes-tools"><i data-lucide="settings-2"></i> ' + escapeHtml(m.content) + '</div>';
+    if (m.role === 'error') return '<div class="hermes-msg error">' + hermesRenderText(m.content) + '</div>';
+    return '<div class="hermes-msg bot">' + hermesRenderText(m.content) + '</div>';
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+async function sendHermesMessage() {
+  if (_hermesBusy) return;
+  const input = document.getElementById('hermes-input');
+  if (!input) return;
+  const text = (input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  _hermesMessages.push({ role: 'user', content: text });
+  _hermesMessages.push({ role: 'typing', content: '' });
+  renderHermesMessages();
+  _hermesBusy = true;
+  const sendBtn = document.getElementById('hermes-send');
+  if (sendBtn) sendBtn.disabled = true;
+
+  // Backend expects { messages: [{role, content}] } with plain-text turns.
+  const payload = _hermesMessages
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    const res = await fetch('/api/assistant/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ messages: payload })
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    _hermesMessages = _hermesMessages.filter(m => m.role !== 'typing');
+    if (data && data.error) {
+      _hermesMessages.push({ role: 'error', content: data.error });
+    } else if (!res.ok) {
+      _hermesMessages.push({ role: 'error', content: 'Eroare server (' + res.status + ').' });
+    } else {
+      if (Array.isArray(data.tool_log) && data.tool_log.length) {
+        _hermesMessages.push({ role: 'tools', content: 'A folosit: ' + data.tool_log.map(t => t.tool).join(', ') });
+      }
+      _hermesMessages.push({ role: 'assistant', content: data.reply || '(raspuns gol)' });
+      if (Array.isArray(data.tool_log) && data.tool_log.some(t => _HERMES_WRITE_TOOLS.includes(t.tool))) {
+        _hermesRefreshContext();
+      }
+    }
+  } catch (e) {
+    _hermesMessages = _hermesMessages.filter(m => m.role !== 'typing');
+    _hermesMessages.push({ role: 'error', content: 'Eroare de retea. Verifica conexiunea.' });
+  }
+  _hermesBusy = false;
+  if (sendBtn) sendBtn.disabled = false;
+  renderHermesMessages();
+}
+
+// After the assistant changes data, refresh whatever tab the user is on.
+function _hermesRefreshContext() {
+  try {
+    if (currentProject && typeof showProjectDetail === 'function') {
+      showProjectDetail(currentProject.id);
+    } else if (currentTab === 'projects' && typeof loadProjects === 'function') {
+      loadProjects();
+    } else if (currentTab === 'tasks' && typeof loadMobileTasks === 'function') {
+      loadMobileTasks();
+    } else if (currentTab === 'home' && typeof loadDashboardHome === 'function') {
+      loadDashboardHome();
+    }
+  } catch (e) { /* refresh is best-effort */ }
+}
+
+function initHermes() {
+  // Auto-grow the input textarea.
+  const ta = document.getElementById('hermes-input');
+  if (ta) {
+    ta.addEventListener('input', () => {
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+    });
+  }
+}
+
 // ============ Utility ============
 
 function escapeHtml(text) {
@@ -3050,6 +3190,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Client search debounce
   document.getElementById('client-search')?.addEventListener('input', debounce(() => loadMobileClients(), 300));
+
+  // Hermes assistant
+  initHermes();
 
   // Param modal
   document.getElementById('close-param-modal').addEventListener('click', () => {
