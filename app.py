@@ -67,7 +67,9 @@ def file_hash(filepath):
 def inject_version():
     return {
         'js_version': file_hash('static/mobile.js'),
-        'sw_version': file_hash('static/service-worker.js')
+        'sw_version': file_hash('static/service-worker.js'),
+        'app_version': file_hash('static/app.js'),
+        'core_version': file_hash('static/core.js')
     }
 
 # ============ SESSION CONFIG ============
