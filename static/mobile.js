@@ -1693,6 +1693,12 @@ function openNoteModal(projectId = null) {
 
 function closeNoteModal() {
   document.getElementById('note-modal').classList.remove('active');
+  // Safety net: the global-task edit modal reuses #note-modal and runs a
+  // live timer tick — stop it if the modal is closed via backdrop click.
+  if (window._mobTaskTimerInterval) {
+    clearInterval(window._mobTaskTimerInterval);
+    window._mobTaskTimerInterval = null;
+  }
 }
 
 async function saveNote() {
@@ -2039,8 +2045,9 @@ async function loadMobileTimer(projectId) {
           <button onclick="stopMobileTimer('${projectId}')" class="modal-btn" style="background:var(--danger);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="square"></i> Oprește</button>
         </div>
       ` : `
-        <button onclick="startMobileTimer('${projectId}')" class="modal-btn" style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="play"></i> Pornește timer</button>
+        <button onclick="startMobileTimer('${projectId}')" class="modal-btn" style="margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="play"></i> Pornește timer</button>
       `}
+      <button onclick="openMobileManualTime('project','${projectId}')" class="modal-btn" style="margin-bottom:12px;background:var(--bg-elev2);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="clock-plus"></i> Adaugă manual</button>
       ${sessions.filter(s => s.stop_time).slice(0, 5).map(s => `
         <div style="display:flex; justify-content:space-between; padding:8px 12px; font-size:12px; color:var(--text-secondary); border-bottom:1px solid var(--border);">
           <span>${(s.start_time || '').substring(0, 16).replace('T', ' ')}</span>
@@ -2079,6 +2086,64 @@ async function deleteMobileTimerSession(sessionId, projectId) {
   if (!confirm('Șterge sesiunea?')) return;
   await apiDelete(`/api/timer/${sessionId}`);
   loadMobileTimer(projectId);
+}
+
+// ── Intrare manuală de timp (timp lucrat fără cronometru pornit) ──
+// Context: { kind: 'project'|'global', id }. Used by the project timer
+// ("Adaugă manual") and by the global-task edit modal.
+let _mobileManualTimeCtx = null;
+
+function openMobileManualTime(kind, id) {
+  if (!id) return;
+  _mobileManualTimeCtx = { kind: kind, id: id };
+  const dateEl = document.getElementById('mtm-date');
+  const hoursEl = document.getElementById('mtm-hours');
+  const minutesEl = document.getElementById('mtm-minutes');
+  if (dateEl) dateEl.value = new Date().toISOString().substring(0, 10);
+  if (hoursEl) hoursEl.value = '1';
+  if (minutesEl) minutesEl.value = '0';
+  const modal = document.getElementById('manual-time-modal-m');
+  if (modal) modal.classList.add('active');
+}
+
+function closeMobileManualTime() {
+  const modal = document.getElementById('manual-time-modal-m');
+  if (modal) modal.classList.remove('active');
+  _mobileManualTimeCtx = null;
+}
+
+async function saveMobileManualTime() {
+  if (!_mobileManualTimeCtx) return;
+  const ctx = _mobileManualTimeCtx;
+  const hoursEl = document.getElementById('mtm-hours');
+  const minutesEl = document.getElementById('mtm-minutes');
+  const dateEl = document.getElementById('mtm-date');
+  let h = parseInt(hoursEl ? hoursEl.value : '0', 10) || 0;
+  let m = parseInt(minutesEl ? minutesEl.value : '0', 10) || 0;
+  // Clamp to valid ranges (hours 0-24, minutes 0-59)
+  h = Math.min(24, Math.max(0, h));
+  m = Math.min(59, Math.max(0, m));
+  const dur = h * 3600 + m * 60;
+  if (dur <= 0) { alert('Durata trebuie să fie mai mare ca zero'); return; }
+  const data = (dateEl && dateEl.value ? dateEl.value : new Date().toISOString().substring(0, 10));
+  const body = { data: data, durata_secunde: dur };
+  try {
+    if (ctx.kind === 'global') {
+      await apiPost(`/api/global-tasks/${ctx.id}/timer/manual`, body);
+    } else {
+      await apiPost(`/api/proiecte/${ctx.id}/timer/manual`, body);
+    }
+    if ('vibrate' in navigator) navigator.vibrate(30);
+    closeMobileManualTime();
+    if (ctx.kind === 'global') {
+      // Refresh just the timer block inside the open task modal
+      refreshMobileTaskTimer(ctx.id);
+    } else {
+      loadMobileTimer(ctx.id);
+    }
+  } catch (e) {
+    alert('Eroare la salvarea timpului');
+  }
 }
 
 // 3.4 Checklist PIF cu categorii dinamice (parity cu desktop)
@@ -3053,8 +3118,8 @@ async function loadMobileTasks() {
           onchange="toggleMobileTask('${t.id}', this.checked)" class="mobile-task-check">
         <div class="mobile-task-body" onclick="editMobileTask('${t.id}')">
           <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
-          ${(t.categorie || t.data_scadenta) ? `<div class="mobile-task-meta">
-            ${t.categorie ? escapeHtml(t.categorie) : ''}${t.data_scadenta ? ' · <i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + t.data_scadenta : ''}
+          ${(t.categorie || t.data_scadenta || (t.timp_secunde > 0)) ? `<div class="mobile-task-meta">
+            ${t.categorie ? escapeHtml(t.categorie) : ''}${t.data_scadenta ? (t.categorie ? ' · ' : '') + '<i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + t.data_scadenta : ''}${(t.timp_secunde > 0) ? ((t.categorie || t.data_scadenta) ? ' · ' : '') + '<i data-lucide="timer" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + formatDuration(t.timp_secunde) : ''}
           </div>` : ''}
         </div>
         <span class="todo-priority cyclable ${prioClass}" onclick="event.stopPropagation(); cycleMobileGtPriority('${t.id}', '${prio}')">${prio}</span>
@@ -3101,7 +3166,7 @@ function editMobileTask(taskId) {
     content.innerHTML = `
       <div class="modal-header">
         <span class="modal-title">Editează task</span>
-        <button class="modal-close" onclick="restoreAndCloseModal()">×</button>
+        <button class="modal-close" onclick="closeMobileTaskEdit()">×</button>
       </div>
       <input id="et-titlu" value="${escapeHtml(task.titlu || '')}" placeholder="Titlu"
         style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
@@ -3116,11 +3181,116 @@ function editMobileTask(taskId) {
         style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
       <input id="et-scadenta" type="date" value="${task.data_scadenta || ''}"
         style="width:100%;padding:12px;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px;">
+      <div id="mob-task-timer-block" data-task-id="${task.id}"
+        style="padding:10px 12px;background:var(--bg-elev2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+        <div style="font-size:13px;color:var(--text-secondary);">Se încarcă timer...</div>
+      </div>
       <button onclick="saveMobileTaskEdit('${task.id}')" class="modal-btn">Salvează</button>
     `;
 
     modal.classList.add('active');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    // Load the timer block (separate fetch so start/stop/manual can refresh it
+    // in place without rebuilding the modal and losing unsaved title/desc edits).
+    refreshMobileTaskTimer(task.id);
   });
+}
+
+// Close the task-edit modal: clear any running timer tick first.
+function closeMobileTaskEdit() {
+  if (window._mobTaskTimerInterval) {
+    clearInterval(window._mobTaskTimerInterval);
+    window._mobTaskTimerInterval = null;
+  }
+  restoreAndCloseModal();
+}
+
+// Renders ONLY #mob-task-timer-block from a fresh /timer fetch.
+// Never touches the title/description/etc. inputs.
+async function refreshMobileTaskTimer(taskId) {
+  if (window._mobTaskTimerInterval) {
+    clearInterval(window._mobTaskTimerInterval);
+    window._mobTaskTimerInterval = null;
+  }
+  const block = document.getElementById('mob-task-timer-block');
+  if (!block) return;
+  let data;
+  try {
+    data = await apiGet(`/api/global-tasks/${taskId}/timer`);
+  } catch (e) {
+    block.innerHTML = '<div style="font-size:13px;color:var(--danger);">Eroare la încărcarea timerului</div>';
+    return;
+  }
+  // The modal may have been closed while the request was in flight.
+  if (!document.getElementById('mob-task-timer-block')) return;
+  if (!data) { block.innerHTML = ''; return; }
+
+  const running = !!data.running;
+  const baseTotal = data.total_secunde || 0;
+  const startMs = (running && data.running_since) ? new Date(data.running_since).getTime() : null;
+  // While running, total = finished sessions + current live elapsed.
+  const liveTotal = (running && startMs)
+    ? baseTotal + Math.floor((Date.now() - startMs) / 1000)
+    : baseTotal;
+
+  block.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:8px;">
+      <i data-lucide="timer" style="width:14px;height:14px;color:var(--accent);"></i>
+      <span>Timer</span>
+      <span id="mob-task-timer-total" style="margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--accent);">${formatDuration(liveTotal)}</span>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button type="button" onclick="toggleMobileTaskTimer('${taskId}')" class="modal-btn"
+        style="flex:1;padding:10px;font-size:13px;${running ? 'background:var(--danger);' : ''}display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i data-lucide="${running ? 'square' : 'play'}"></i> ${running ? 'Oprește' : 'Pornește'}
+      </button>
+      <button type="button" onclick="openMobileManualTime('global','${taskId}')" class="modal-btn"
+        style="flex:1;padding:10px;font-size:13px;background:var(--bg-elev3);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i data-lucide="clock-plus"></i> Adaugă manual
+      </button>
+    </div>
+  `;
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+
+  // Live 1s tick while running. Cleared on stop, refresh, or modal close.
+  // Also self-clears if the modal was dismissed via backdrop click (the
+  // note-modal backdrop handler only toggles the `active` class).
+  if (running && startMs) {
+    window._mobTaskTimerInterval = setInterval(() => {
+      const totalEl = document.getElementById('mob-task-timer-total');
+      const noteModal = document.getElementById('note-modal');
+      if (!totalEl || !noteModal || !noteModal.classList.contains('active')) {
+        clearInterval(window._mobTaskTimerInterval);
+        window._mobTaskTimerInterval = null;
+        return;
+      }
+      totalEl.textContent = formatDuration(baseTotal + Math.floor((Date.now() - startMs) / 1000));
+    }, 1000);
+  }
+}
+
+// Start/stop the global-task timer, then refresh only the timer block.
+async function toggleMobileTaskTimer(taskId) {
+  // Re-fetch state to decide which action to take.
+  let data;
+  try {
+    data = await apiGet(`/api/global-tasks/${taskId}/timer`);
+  } catch (e) {
+    alert('Eroare timer');
+    return;
+  }
+  try {
+    if (data && data.running) {
+      await apiPost(`/api/global-tasks/${taskId}/timer/stop`, {});
+    } else {
+      await apiPost(`/api/global-tasks/${taskId}/timer/start`, {});
+    }
+    if ('vibrate' in navigator) navigator.vibrate(30);
+  } catch (e) {
+    alert('Eroare timer');
+    return;
+  }
+  refreshMobileTaskTimer(taskId);
 }
 
 async function saveMobileTaskEdit(taskId) {
@@ -3131,7 +3301,7 @@ async function saveMobileTaskEdit(taskId) {
     categorie: document.getElementById('et-categorie').value.trim(),
     data_scadenta: document.getElementById('et-scadenta').value,
   });
-  restoreAndCloseModal();
+  closeMobileTaskEdit();
   loadMobileTasks();
 }
 

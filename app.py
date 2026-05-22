@@ -795,7 +795,9 @@ def get_global_tasks():
 
     query = ('SELECT g.*, '
              '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id) AS subtask_total, '
-             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id AND s.done = 1) AS subtask_done '
+             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id AND s.done = 1) AS subtask_done, '
+             '(SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions gs '
+             'WHERE gs.global_task_id = g.id) AS timp_secunde '
              'FROM global_tasks g WHERE 1=1')
     params = []
 
@@ -859,7 +861,10 @@ def create_global_task():
 def get_global_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM global_tasks WHERE id = ?', (task_id,))
+    cursor.execute('''SELECT g.*,
+        (SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions gs
+         WHERE gs.global_task_id = g.id) AS timp_secunde
+        FROM global_tasks g WHERE g.id = ?''', (task_id,))
     row = cursor.fetchone()
     conn.close()
 
@@ -1436,6 +1441,190 @@ def get_timer_sessions(project_id):
     total = sum(s['durata_secunde'] or 0 for s in sessions)
     
     return jsonify({'sessions': sessions, 'total_secunde': total})
+
+# ============ GLOBAL TASK TIMER ============
+# Time tracking for daily (global) tasks. Stored in global_task_sessions,
+# kept separate from timer_sessions (which is project-scoped, proiect_id NOT NULL).
+
+@app.route('/api/global-tasks/<task_id>/timer', methods=['GET'])
+@login_required
+def get_global_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''SELECT start_time FROM global_task_sessions
+                      WHERE global_task_id = ? AND stop_time IS NULL
+                      ORDER BY start_time DESC LIMIT 1''', (task_id,))
+    running = cursor.fetchone()
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions '
+                   'WHERE global_task_id = ? AND durata_secunde IS NOT NULL', (task_id,))
+    total = cursor.fetchone()[0]
+    cursor.execute('SELECT * FROM global_task_sessions WHERE global_task_id = ? '
+                   'ORDER BY start_time DESC', (task_id,))
+    sessions = [row_to_dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({
+        'running': running is not None,
+        'running_since': running['start_time'] if running else None,
+        'total_secunde': total,
+        'sessions': sessions,
+    })
+
+
+@app.route('/api/global-tasks/<task_id>/timer/start', methods=['POST'])
+@login_required
+def start_global_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM global_tasks WHERE id = ?', (task_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    now = datetime.now().isoformat()
+    # Close any already-running session for this task (avoid duplicates).
+    cursor.execute('SELECT id, start_time FROM global_task_sessions '
+                   'WHERE global_task_id = ? AND stop_time IS NULL', (task_id,))
+    for r in cursor.fetchall():
+        dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(r['start_time'])).total_seconds())
+        cursor.execute('UPDATE global_task_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?',
+                       (now, max(0, dur), r['id']))
+    session_id = generate_uuid()
+    cursor.execute('INSERT INTO global_task_sessions (id, global_task_id, start_time) VALUES (?, ?, ?)',
+                   (session_id, task_id, now))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': session_id, 'start_time': now})
+
+
+@app.route('/api/global-tasks/<task_id>/timer/stop', methods=['POST'])
+@login_required
+def stop_global_task_timer(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.now().isoformat()
+    cursor.execute('''SELECT id, start_time FROM global_task_sessions
+                      WHERE global_task_id = ? AND stop_time IS NULL
+                      ORDER BY start_time DESC LIMIT 1''', (task_id,))
+    session = cursor.fetchone()
+    if not session:
+        conn.close()
+        return jsonify({'error': 'No running timer for this task'}), 404
+    dur = max(0, int((datetime.fromisoformat(now) - datetime.fromisoformat(session['start_time'])).total_seconds()))
+    cursor.execute('UPDATE global_task_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?',
+                   (now, dur, session['id']))
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions '
+                   'WHERE global_task_id = ? AND durata_secunde IS NOT NULL', (task_id,))
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'durata_secunde': dur, 'total_secunde': total})
+
+
+@app.route('/api/global-task-timer/<session_id>', methods=['DELETE'])
+@login_required
+def delete_global_task_session(session_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM global_task_sessions WHERE id = ?', (session_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Session deleted'})
+
+
+# ============ MANUAL TIMER ENTRIES ============
+# Log worked time without having run a live timer (forgot to start it).
+# Body: {data: 'YYYY-MM-DD', durata_secunde: int}.
+
+def _manual_session_times(data_str, durata_secunde):
+    """Manual time entry -> (start_iso, stop_iso). Anchors the session at noon
+    on the given date so timezone math can never shift it to another day."""
+    try:
+        d = datetime.fromisoformat((data_str or '')[:10])
+    except (ValueError, TypeError):
+        d = datetime.now()
+    start = d.replace(hour=12, minute=0, second=0, microsecond=0)
+    stop = start + timedelta(seconds=int(durata_secunde))
+    return start.isoformat(), stop.isoformat()
+
+
+@app.route('/api/proiecte/<project_id>/timer/manual', methods=['POST'])
+@login_required
+def add_manual_timer(project_id):
+    """Manual time entry on the project's standalone timer."""
+    data = request.json or {}
+    try:
+        dur = int(data.get('durata_secunde') or 0)
+    except (ValueError, TypeError):
+        dur = 0
+    if dur <= 0:
+        return jsonify({'error': 'Durata invalidă'}), 400
+    start, stop = _manual_session_times(data.get('data'), dur)
+    conn = get_db()
+    cursor = conn.cursor()
+    sid = generate_uuid()
+    cursor.execute('INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
+                   'VALUES (?, ?, ?, ?, ?)', (sid, project_id, start, stop, dur))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sid, 'durata_secunde': dur})
+
+
+@app.route('/api/tasks/<task_id>/timer/manual', methods=['POST'])
+@login_required
+def add_manual_task_timer(task_id):
+    """Manual time entry on a project task."""
+    data = request.json or {}
+    try:
+        dur = int(data.get('durata_secunde') or 0)
+    except (ValueError, TypeError):
+        dur = 0
+    if dur <= 0:
+        return jsonify({'error': 'Durata invalidă'}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT proiect_id FROM tasks WHERE id = ?', (task_id,))
+    task = cursor.fetchone()
+    if not task:
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    start, stop = _manual_session_times(data.get('data'), dur)
+    sid = generate_uuid()
+    cursor.execute('INSERT INTO timer_sessions (id, proiect_id, task_id, start_time, stop_time, durata_secunde) '
+                   'VALUES (?, ?, ?, ?, ?, ?)', (sid, task['proiect_id'], task_id, start, stop, dur))
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
+                   'WHERE task_id = ? AND durata_secunde IS NOT NULL', (task_id,))
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
+
+
+@app.route('/api/global-tasks/<task_id>/timer/manual', methods=['POST'])
+@login_required
+def add_manual_global_task_timer(task_id):
+    """Manual time entry on a daily (global) task."""
+    data = request.json or {}
+    try:
+        dur = int(data.get('durata_secunde') or 0)
+    except (ValueError, TypeError):
+        dur = 0
+    if dur <= 0:
+        return jsonify({'error': 'Durata invalidă'}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM global_tasks WHERE id = ?', (task_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+    start, stop = _manual_session_times(data.get('data'), dur)
+    sid = generate_uuid()
+    cursor.execute('INSERT INTO global_task_sessions (id, global_task_id, start_time, stop_time, durata_secunde) '
+                   'VALUES (?, ?, ?, ?, ?)', (sid, task_id, start, stop, dur))
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions '
+                   'WHERE global_task_id = ? AND durata_secunde IS NOT NULL', (task_id,))
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
 
 # ============ ATTACHMENTS ============
 

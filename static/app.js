@@ -1534,10 +1534,10 @@ async function openGtEditModal(taskId) {
         _csSet('task-edit-status', task.status || 'to_do');
         _csSet('task-edit-recurenta', task.recurenta || '');
         selectTaskPriority((task.prioritate || 'normal').toLowerCase());
-        // Global tasks have a free-text category; the per-task timer doesn't apply.
+        // Global tasks have a free-text category and (now) their own timer.
         document.getElementById('task-edit-categorie-row').style.display = 'block';
         document.getElementById('task-edit-categorie').value = task.categorie || '';
-        document.getElementById('task-time-row').style.display = 'none';
+        loadTaskTimer(task.id);
         document.getElementById('task-edit-modal').classList.add('active');
         loadSubtasks(task.id);
         setTimeout(() => {
@@ -1671,13 +1671,18 @@ async function deleteSubtask(subtaskId) {
     } catch (e) { showToast('Eroare la ștergere', true); }
 }
 
-// ── Per-task timer ──
+// ── Per-task timer ── (works for project tasks AND daily/global tasks)
+function _taskTimerBase(taskId) {
+    return _taskModalMode === 'global'
+        ? `/api/global-tasks/${encodeURIComponent(taskId)}/timer`
+        : `/api/tasks/${encodeURIComponent(taskId)}/timer`;
+}
 async function loadTaskTimer(taskId) {
     const row = document.getElementById('task-time-row');
     if (row) row.style.display = 'block';
     if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
     try {
-        const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer`);
+        const res = await fetch(_taskTimerBase(taskId));
         const data = await res.json();
         _taskTimerBaseTotal = data.total_secunde || 0;
         if (data.running && data.running_since) {
@@ -1724,7 +1729,7 @@ async function toggleTaskTimer() {
     const running = _taskTimerRunningSince != null;
     try {
         if (running) {
-            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
+            const res = await fetch(_taskTimerBase(taskId) + '/stop', { method: 'POST' });
             const data = await res.json();
             if (_taskTimerInterval) { clearInterval(_taskTimerInterval); _taskTimerInterval = null; }
             _taskTimerRunningSince = null;
@@ -1733,7 +1738,7 @@ async function toggleTaskTimer() {
             _renderTaskTime(_taskTimerBaseTotal);
             showToast('Cronometru oprit');
         } else {
-            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
+            const res = await fetch(_taskTimerBase(taskId) + '/start', { method: 'POST' });
             const data = await res.json();
             _taskTimerRunningSince = new Date(data.start_time).getTime();
             _setTaskTimerBtn(true);
@@ -1742,6 +1747,65 @@ async function toggleTaskTimer() {
             showToast('Cronometru pornit');
         }
     } catch (e) { showToast('Eroare cronometru', true); }
+}
+
+// ── Intrare manuala de timp (timp lucrat fara cronometru) ──
+let _manualTimeCtx = null;      // { kind: 'project'|'task'|'global', id }
+let _manualTimeFp = null;
+
+function openManualTimeModal(kind, id) {
+    if (!id) return;
+    _manualTimeCtx = { kind: kind, id: id };
+    document.getElementById('manual-time-hours').value = '1';
+    document.getElementById('manual-time-minutes').value = '0';
+    document.getElementById('manual-time-modal').classList.add('active');
+    setTimeout(() => {
+        if (_manualTimeFp) { _manualTimeFp.destroy(); _manualTimeFp = null; }
+        _manualTimeFp = initFlatpickr('#manual-time-date');
+        if (_manualTimeFp) _manualTimeFp.setDate(new Date());
+    }, 50);
+}
+
+// Open the manual-entry modal for whatever task the shared task modal holds.
+function openManualTimeForTask() {
+    const id = document.getElementById('task-edit-id').value;
+    openManualTimeModal(_taskModalMode === 'global' ? 'global' : 'task', id);
+}
+
+function closeManualTimeModal() {
+    document.getElementById('manual-time-modal').classList.remove('active');
+    if (_manualTimeFp) { _manualTimeFp.destroy(); _manualTimeFp = null; }
+    _manualTimeCtx = null;
+}
+
+async function saveManualTime() {
+    if (!_manualTimeCtx) return;
+    const h = parseInt(document.getElementById('manual-time-hours').value, 10) || 0;
+    const m = parseInt(document.getElementById('manual-time-minutes').value, 10) || 0;
+    const dur = h * 3600 + m * 60;
+    if (dur <= 0) { showToast('Durata trebuie să fie mai mare ca zero', true); return; }
+    const data = (document.getElementById('manual-time-date').value || '').trim();
+    const body = { data: data, durata_secunde: dur };
+    const ctx = _manualTimeCtx;
+    try {
+        if (ctx.kind === 'project') {
+            await apiPost(`/proiecte/${ctx.id}/timer/manual`, body);
+        } else if (ctx.kind === 'global') {
+            await apiPost(`/global-tasks/${ctx.id}/timer/manual`, body);
+        } else {
+            await apiPost(`/tasks/${ctx.id}/timer/manual`, body);
+        }
+        closeManualTimeModal();
+        showToast('Timp adăugat');
+        if (ctx.kind === 'project') {
+            if (currentProjectId) loadJurnal(currentProjectId);
+        } else {
+            loadTaskTimer(ctx.id);
+        }
+    } catch (e) {
+        console.error('Manual time error:', e);
+        showToast('Eroare la adăugarea timpului', true);
+    }
 }
 
 
@@ -3226,6 +3290,7 @@ function renderGlobalTasks(tasks) {
         if (task.data_scadenta) gtMeta += _gtBadge('calendar', task.data_scadenta);
         if (task.subtask_total) gtMeta += _gtBadge('list-checks', `${task.subtask_done || 0}/${task.subtask_total}`);
         if (task.recurenta) gtMeta += _gtBadge('repeat', _recLbl[task.recurenta] || task.recurenta);
+        if (task.timp_secunde) gtMeta += _gtBadge('timer', formatTimerDuration(task.timp_secunde));
         return `
             <div class="${classes.join(' ')}" onclick="editGtTask('${task.id}')" style="cursor:pointer;">
                 <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleGtTask('${task.id}', this.checked)">

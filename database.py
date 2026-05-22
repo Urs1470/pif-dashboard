@@ -49,8 +49,9 @@ def close_db(exc=None):
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 # v10: Added fault_codes table (drive fault/alarm/warning codes from manuals)
+# v11: Added global_task_sessions table (timer for daily/global tasks)
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -358,6 +359,28 @@ def migrate_v9_to_v10():
     print("Migration v9->v10: added fault_codes table")
 
 
+def migrate_v10_to_v11():
+    """v10 -> v11: time tracking for daily (global) tasks. A separate table so
+    timer_sessions (proiect_id NOT NULL, FK to proiecte) stays untouched.
+    Manual time entries land here too, with stop_time set up-front. Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS global_task_sessions (
+            id TEXT PRIMARY KEY,
+            global_task_id TEXT NOT NULL,
+            start_time TEXT NOT NULL,
+            stop_time TEXT,
+            durata_secunde INTEGER,
+            FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
+    conn.commit()
+    conn.close()
+    print("Migration v10->v11: added global_task_sessions table")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -407,6 +430,11 @@ def run_migrations():
         set_schema_version(10)
         current_version = 10
 
+    if current_version < 11:
+        migrate_v10_to_v11()
+        set_schema_version(11)
+        current_version = 11
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -424,6 +452,8 @@ def run_migrations():
     has_gt_recurenta = any(row[1] == 'recurenta' for row in cursor.fetchall())
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
     has_fault_codes = cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='global_task_sessions'")
+    has_gts = cursor.fetchone() is not None
     conn.close()
     if not has_cat_table or not has_cat_col:
         print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
@@ -437,6 +467,9 @@ def run_migrations():
     if not has_fault_codes:
         print("Self-heal: re-running v9->v10 (fault_codes missing)")
         migrate_v9_to_v10()
+    if not has_gts:
+        print("Self-heal: re-running v10->v11 (global_task_sessions missing)")
+        migrate_v10_to_v11()
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -737,6 +770,18 @@ def init_db():
         )
     ''')
 
+    # Time-tracking sessions for daily (global) tasks.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS global_task_sessions (
+            id TEXT PRIMARY KEY,
+            global_task_id TEXT NOT NULL,
+            start_time TEXT NOT NULL,
+            stop_time TEXT,
+            durata_secunde INTEGER,
+            FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
+        )
+    ''')
+
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
@@ -754,6 +799,7 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_budget_audit_user_ts ON budget_audit(user, ts DESC)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
 
     conn.commit()
     conn.close()
