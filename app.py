@@ -3751,9 +3751,10 @@ ASSISTANT_TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "update_proiect",
-        "description": "Modifică un proiect (status sau alte câmpuri). Trimite doar ce schimbi.",
+        "description": "Modifică un proiect: redenumire (nume_nou), status, client, locatie sau observatii. Trimite doar ce schimbi. Redenumirea pastreaza tot continutul proiectului (taskuri, jurnal, checklist etc.).",
         "parameters": {"type": "object", "properties": {
-            "nume": {"type": "string", "description": "nume parțial sau id de proiect"},
+            "nume": {"type": "string", "description": "nume parțial sau id al proiectului de modificat (cheie de cautare)"},
+            "nume_nou": {"type": "string", "description": "noul nume al proiectului — pentru redenumire"},
             "status": {"type": "string", "description": "in_lucru, in_asteptare, blocat, finalizat"},
             "client": {"type": "string"},
             "locatie": {"type": "string"},
@@ -4121,14 +4122,17 @@ def _assistant_exec_tool(name, args):
             if not proj:
                 conn.close()
                 return {'error': 'Proiectul nu a fost găsit'}
+            nume_nou = (args.get('nume_nou') or '').strip() or None
             cur.execute('''UPDATE proiecte SET
-                status = COALESCE(?, status), client = COALESCE(?, client),
-                locatie = COALESCE(?, locatie), observatii = COALESCE(?, observatii),
+                nume = COALESCE(?, nume), status = COALESCE(?, status),
+                client = COALESCE(?, client), locatie = COALESCE(?, locatie),
+                observatii = COALESCE(?, observatii),
                 updated_at = ? WHERE id = ?''',
-                (args.get('status'), args.get('client'), args.get('locatie'),
-                 args.get('observatii'), datetime.now().isoformat(), proj['id']))
+                (nume_nou, args.get('status'), args.get('client'),
+                 args.get('locatie'), args.get('observatii'),
+                 datetime.now().isoformat(), proj['id']))
             conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Proiect actualizat: {proj['nume']}"}
+            return {'ok': True, 'mesaj': f"Proiect actualizat: {nume_nou or proj['nume']}"}
 
         if name == 'delete_proiect':
             conn = get_db(); cur = conn.cursor()
