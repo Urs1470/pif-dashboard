@@ -5391,7 +5391,9 @@
     <!-- Lucide icons (self-hosted — pinned, same-origin, SW-cacheable; no unpkg flash) -->
     <script src="/static/lucide.min.js?v=20260522a"></script>
 
-    <script src="/static/app.js?v=20260522c"></script>
+    <!-- Shared core — loaded before app.js; logic common with the mobile shell -->
+    <script src="/static/core.js?v=20260522d"></script>
+    <script src="/static/app.js?v=20260522d"></script>
     <!-- BEGIN: PV (owned by spawned-pv session) -->
     <script src="/static/pv-modal.js?v=20260518g-imgpos"></script>
     <!-- END: PV -->

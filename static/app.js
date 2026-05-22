@@ -1942,13 +1942,7 @@ function closePreview() {
     document.getElementById('preview-content').innerHTML = '';
 }
 
-function formatFileSize(bytes) {
-    if (!bytes) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
+// formatFileSize -> moved to shared core.js
 
 async function handleFileUpload(event) {
     const files = event.target.files;
@@ -4586,28 +4580,7 @@ document.addEventListener('touchend', function(e) {
 
 // ============ UTILITIES ============
 
-function debounce(fn, delay) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-}
-
-const _ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-function escapeHtml(text) {
-    if (!text) return '';
-    return String(text).replace(/[&<>"']/g, ch => _ESC_MAP[ch]);
-}
-
-function getStatusLabel(status) {
-    const labels = {
-        'in_lucru': 'În Lucru',
-        'finalizat': 'Finalizat',
-        'blocat': 'Blocat',
-        'in_așteptare': 'În Așteptare',
-        'to_do': 'To Do',
-        'done': 'Finalizat'
-    };
-    return labels[status] || status;
-}
+// debounce, escapeHtml (+_ESC_MAP), getStatusLabel -> moved to shared core.js
 
 function showToast(message, type = 'success') {
     // Back-compat: several call sites pass a boolean (true = error toast).

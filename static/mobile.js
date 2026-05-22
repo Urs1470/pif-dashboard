@@ -736,10 +736,7 @@ function switchProjectFilter(filter) {
   renderProjects(projectsCache);
 }
 
-function getStatusLabel(status) {
-  const labels = { 'in_lucru': 'În Lucru', 'finalizat': 'Finalizat', 'in_asteptare': 'În Așteptare' };
-  return labels[status] || status;
-}
+// getStatusLabel -> moved to shared core.js
 
 // (Audit Faza 6) FAZA 2 mobile project-detail functions removed here — they were
 // dead code, fully superseded by the FAZA 3 versions defined further below
@@ -3016,27 +3013,7 @@ function initHermes() {
 
 // ============ Utility ============
 
-function escapeHtml(text) {
-  if (text === null || text === undefined) return '';
-  return String(text)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// Human-readable file size: 512 B, 12.4 KB, 4.7 MB, 1.2 GB
-function formatFileSize(bytes) {
-  if (!bytes && bytes !== 0) return '';
-  const n = Number(bytes);
-  if (!isFinite(n) || n < 0) return '';
-  if (n < 1024) return n + ' B';
-  if (n < 1024 * 1024) return (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB';
-  if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
-  return (n / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-}
-
-function debounce(fn, ms) {
-  let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), ms); };
-}
+// escapeHtml, formatFileSize, debounce -> moved to shared core.js
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
