@@ -533,6 +533,53 @@
             padding: 22px 8px; font-style: italic;
         }
 
+        /* ═══ Parametri tab — mod toggle Parametri / Coduri eroare ═══ */
+        .param-mode-toggle {
+            display: inline-flex; gap: 4px; margin-bottom: 18px;
+            background: var(--bg-elev1); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 3px;
+        }
+        .param-mode-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 16px; border: none; background: transparent;
+            color: var(--text2); font-size: 0.85rem; font-weight: 600;
+            font-family: inherit; cursor: pointer; border-radius: 7px;
+            transition: background 0.14s, color 0.14s;
+        }
+        .param-mode-btn:hover { color: var(--text); }
+        .param-mode-btn.active { background: var(--accent-soft); color: var(--accent); }
+        .param-mode-btn i { width: 15px; height: 15px; }
+        .fault-tip-badge {
+            display: inline-block; padding: 2px 9px; border-radius: 20px;
+            font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.04em; font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-elev3); color: var(--text2);
+        }
+        .fault-tip-fault, .fault-tip-alarm {
+            background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger);
+        }
+        .fault-tip-warning, .fault-tip-warning_alarm, .fault-tip-trouble {
+            background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning);
+        }
+        .fault-tip-safety {
+            background: color-mix(in srgb, var(--violet) 18%, transparent); color: var(--violet);
+        }
+        .fault-tip-event {
+            background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);
+        }
+        .fault-modal-label {
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text2); font-weight: 700; margin-bottom: 5px;
+        }
+        .fault-modal-text {
+            font-size: 0.9rem; line-height: 1.55; color: var(--text);
+            white-space: pre-wrap;
+        }
+        .fault-row { cursor: pointer; }
+        .fault-row td:first-child {
+            font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent);
+        }
+
         /* ═══ Parametri tab — producator picker + mini-tabs ═══ */
         .param-step-title {
             font-size: 1rem; font-weight: 600;
@@ -4381,6 +4428,18 @@
 
         <!-- PARAMETRI TAB -->
         <div id="tab-parametri" class="tab-content">
+            <!-- Mod: Parametri / Coduri eroare -->
+            <div class="param-mode-toggle" role="tablist" aria-label="Mod parametri">
+                <button id="pmode-btn-params" class="param-mode-btn active" role="tab" aria-selected="true" onclick="paramSetMode('params')">
+                    <i data-lucide="sliders-horizontal"></i> Parametri
+                </button>
+                <button id="pmode-btn-faults" class="param-mode-btn" role="tab" aria-selected="false" onclick="paramSetMode('faults')">
+                    <i data-lucide="alert-triangle"></i> Coduri eroare
+                </button>
+            </div>
+
+            <!-- ═══ MOD: Parametri ═══ -->
+            <div id="param-mode-params">
             <!-- STEP 1: Producator picker -->
             <div id="param-step-producator">
                 <div class="param-step-title">Alege producătorul</div>
@@ -4449,6 +4508,66 @@
                     <button class="btn btn-secondary btn-small" id="param-next" onclick="parametriChangePage(1)" disabled><i data-lucide="chevron-right"></i></button>
                 </div>
             </div>
+            </div><!-- /param-mode-params -->
+
+            <!-- ═══ MOD: Coduri eroare ═══ -->
+            <div id="param-mode-faults" style="display:none;">
+                <!-- STEP 1: Producator picker -->
+                <div id="fault-step-producator">
+                    <div class="param-step-title">Alege producătorul</div>
+                    <div class="param-producator-grid" id="fault-producator-grid">
+                        <!-- populated by renderFaultProducatorPicker() -->
+                    </div>
+                </div>
+
+                <!-- STEP 2: Family selection + fault-code list -->
+                <div id="fault-step-list" style="display:none;">
+                    <div class="param-breadcrumb">
+                        <button class="btn-back-link" onclick="faultBackToProducator()">
+                            <i data-lucide="chevron-left"></i> Producători
+                        </button>
+                        <span class="param-breadcrumb-sep">/</span>
+                        <span class="param-breadcrumb-current" id="fault-breadcrumb-producator"></span>
+                    </div>
+
+                    <div class="param-mini-tabs" id="fault-mini-tabs"></div>
+
+                    <div class="filters" id="fault-filters" style="display:none;">
+                        <input type="text" id="fault-search" placeholder="Caută cod, nume sau cauză..."
+                               style="flex: 1; max-width: 400px;" oninput="debounceLoadFaultCodes()">
+                        <span id="fault-count" style="color: var(--text2); font-size: var(--font-small); margin-left:auto;"></span>
+                    </div>
+
+                    <div id="fault-table-container" style="overflow-x: auto; display:none;">
+                        <table id="fault-table" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Cod</th>
+                                    <th style="width: 110px;">Tip</th>
+                                    <th>Nume</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fault-tbody"></tbody>
+                        </table>
+                        <div id="fault-empty" style="display: none; padding: 40px; text-align: center; color: var(--text2);">
+                            Nu s-au găsit coduri
+                        </div>
+                        <div id="fault-loading" style="padding: 40px; text-align: center; color: var(--text2);">
+                            Se încarcă...
+                        </div>
+                    </div>
+
+                    <div id="fault-family-empty" style="padding: 32px 0; text-align: center; color: var(--text2); font-size: 0.95rem;">
+                        Selectează gama de mai sus pentru a vedea codurile de eroare.
+                    </div>
+
+                    <div id="fault-pagination" style="display: none; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding: 16px;">
+                        <button class="btn btn-secondary btn-small" id="fault-prev" onclick="faultChangePage(-1)" disabled><i data-lucide="chevron-left"></i></button>
+                        <span id="fault-page-info" style="color: var(--text2); font-size: var(--font-small);">Pagina 1</span>
+                        <button class="btn btn-secondary btn-small" id="fault-next" onclick="faultChangePage(1)" disabled><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+            </div><!-- /param-mode-faults -->
         </div>
 
         <div id="tab-admin" class="tab-content">
@@ -5524,6 +5643,41 @@
                 <div id="param-modal-explicatie" style="margin-top:8px;font-size:0.9em;line-height:1.6;"></div>
             </div>
             <button id="param-manual-btn" class="btn btn-small" style="display:none;margin-top:12px;width:100%;" onclick="openParamManual()">Deschide Manual PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- FAULT CODE DETAIL MODAL -->
+<div class="modal-overlay" id="fault-detail-modal" onclick="if(event.target === this) closeFaultModal()">
+    <div class="modal" style="max-width: 620px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span id="fault-modal-code" style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:1.05em;"></span>
+                <span id="fault-modal-tip" class="fault-tip-badge"></span>
+                <span id="fault-modal-familie" style="font-size:0.7em;opacity:0.6;font-weight:400;"></span>
+            </h3>
+            <button class="modal-close" onclick="closeFaultModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px 20px;">
+            <h4 id="fault-modal-name" style="margin:0 0 14px 0;color:var(--text);"></h4>
+
+            <div id="fault-modal-cauza-row" style="display:none;margin-bottom:14px;">
+                <div class="fault-modal-label">Cauză</div>
+                <div id="fault-modal-cauza" class="fault-modal-text"></div>
+            </div>
+            <div id="fault-modal-remediu-row" style="display:none;margin-bottom:14px;padding:12px;background:color-mix(in srgb, var(--success) 8%, transparent);border:1px solid var(--success);border-radius:6px;">
+                <div class="fault-modal-label" style="color:var(--success);">Remediu</div>
+                <div id="fault-modal-remediu" class="fault-modal-text"></div>
+            </div>
+
+            <div id="fault-modal-meta" style="display:none;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;"></div>
+            <div id="fault-modal-extra" style="display:none;margin-bottom:12px;"></div>
+
+            <div id="fault-modal-pagina-row" style="display:none;margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:6px;">
+                <span style="font-size:0.8em;color:var(--text2);">Pagina manual:</span>
+                <span id="fault-modal-pagina" style="font-weight:500;"></span>
+            </div>
+            <button id="fault-manual-btn" class="btn btn-small" style="display:none;width:100%;" onclick="openFaultManual()">Deschide Manual PDF</button>
         </div>
     </div>
 </div>

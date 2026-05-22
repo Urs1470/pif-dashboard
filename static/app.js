@@ -2382,9 +2382,9 @@ function switchTab(tab) {
         loadDashboardHome();
     }
     if (tab === 'parametri') {
-        // Always load families to refresh counts; cache makes this near-instant.
-        // Don't auto-load parametri — user picks producator then family first.
-        loadParametriFamilii();
+        // Parametri OR Coduri eroare, depending on the persisted mode.
+        // Families load lazily; apiGet cache makes re-entry near-instant.
+        paramTabEnter();
     }
     if (tab === 'admin') {
         loadAdminPanel();
@@ -6399,6 +6399,337 @@ function openParamManual() {
         }
         window.open(url, '_blank');
     }
+}
+
+// ============ CODURI EROARE (mod in tab-ul Parametri) ============
+// Drive fault / alarm / warning codes. Same producator -> familie -> list
+// navigation as the Parametri mode, reusing its CSS.
+
+let paramMode = 'params';            // 'params' | 'faults'
+let faultFamilies = [];              // [{producator, familie, count}]
+let _faultFamilieCounts = {};        // { 'ACS580': 191, ... }
+let _faultProducatori = {};          // { 'ABB': ['ACS580','ACS880'], ... }
+let _faultSelectedProducator = null;
+let _faultSelectedFamilie = null;
+let _faultFamiliiLoaded = false;
+let faultPage = 1;
+let faultTotal = 0;
+const faultLimit = 50;
+let faultData = [];                  // current page rows
+let currentFault = null;
+let _currentFaultManual = null;
+let _faultSearchTimer = null;
+
+const FAULT_TIP_LABEL = {
+    fault: 'Fault', warning: 'Warning', alarm: 'Alarm', safety: 'Safety',
+    event: 'Event', trouble: 'Trouble', info: 'Info',
+    no_response: 'No resp.', warning_alarm: 'Warn/Alarm'
+};
+
+// Switch between the Parametri and Coduri-eroare modes of the Parametri tab.
+function paramSetMode(mode) {
+    paramMode = (mode === 'faults') ? 'faults' : 'params';
+    try { localStorage.setItem('pif:param-mode', paramMode); } catch (e) {}
+    const isF = paramMode === 'faults';
+    const mp = document.getElementById('param-mode-params');
+    const mf = document.getElementById('param-mode-faults');
+    if (mp) mp.style.display = isF ? 'none' : 'block';
+    if (mf) mf.style.display = isF ? 'block' : 'none';
+    const bP = document.getElementById('pmode-btn-params');
+    const bF = document.getElementById('pmode-btn-faults');
+    if (bP) { bP.classList.toggle('active', !isF); bP.setAttribute('aria-selected', String(!isF)); }
+    if (bF) { bF.classList.toggle('active', isF); bF.setAttribute('aria-selected', String(isF)); }
+    if (isF) {
+        if (!_faultFamiliiLoaded) loadFaultFamilii();
+    } else {
+        loadParametriFamilii();   // cached -> instant
+    }
+}
+
+// Called when the Parametri tab is entered — applies the persisted mode.
+function paramTabEnter() {
+    let mode = 'params';
+    try { mode = localStorage.getItem('pif:param-mode') || 'params'; } catch (e) {}
+    paramSetMode(mode);
+}
+
+async function loadFaultFamilii() {
+    try {
+        const data = await apiGet('/fault-codes/familii');
+        faultFamilies = data.families || [];
+        _faultFamilieCounts = {};
+        _faultProducatori = {};
+        faultFamilies.forEach(f => {
+            _faultFamilieCounts[f.familie] = f.count;
+            if (!_faultProducatori[f.producator]) _faultProducatori[f.producator] = [];
+            _faultProducatori[f.producator].push(f.familie);
+        });
+        _faultFamiliiLoaded = true;
+        renderFaultProducatorPicker();
+    } catch (e) {
+        console.error('Failed to load fault families:', e);
+    }
+}
+
+function renderFaultProducatorPicker() {
+    const grid = document.getElementById('fault-producator-grid');
+    if (!grid) return;
+    const order = ['ABB', 'Siemens', 'Danfoss', 'Lenze'];
+    const prods = order.filter(p => _faultProducatori[p]);
+    Object.keys(_faultProducatori).forEach(p => { if (!prods.includes(p)) prods.push(p); });
+    grid.innerHTML = prods.map(prod => {
+        const fams = _faultProducatori[prod] || [];
+        const total = fams.reduce((s, f) => s + (_faultFamilieCounts[f] || 0), 0);
+        const famLabel = fams.map(f => f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '')).join(' · ');
+        return `
+            <button class="param-producator-card ${prod.toLowerCase()}" onclick="faultSelectProducator('${prod}')">
+                <span class="ppc-icon"><i data-lucide="cpu"></i></span>
+                <div class="ppc-body">
+                    <div class="ppc-name">${escapeHtml(prod)}</div>
+                    <div class="ppc-meta">${total.toLocaleString('ro-RO')} coduri</div>
+                    <div class="ppc-families">${escapeHtml(famLabel)}</div>
+                </div>
+            </button>`;
+    }).join('');
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+}
+
+function faultSelectProducator(prod) {
+    const fams = _faultProducatori[prod];
+    if (!fams || !fams.length) return;
+    _faultSelectedProducator = prod;
+    document.getElementById('fault-step-producator').style.display = 'none';
+    document.getElementById('fault-step-list').style.display = 'block';
+    document.getElementById('fault-breadcrumb-producator').textContent = prod;
+
+    const tabsEl = document.getElementById('fault-mini-tabs');
+    tabsEl.innerHTML = fams.map(f => {
+        const count = _faultFamilieCounts[f] || 0;
+        const label = f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '');
+        return `<button class="param-mini-tab" data-familie="${f}" onclick="faultSelectFamilie('${f}')">${escapeHtml(label)}<span class="count">${count.toLocaleString('ro-RO')}</span></button>`;
+    }).join('');
+    if (window.lucide) try { lucide.createIcons(); } catch (e) {}
+
+    if (fams.length > 0) faultSelectFamilie(fams[0]);
+}
+
+function faultSelectFamilie(familie) {
+    _faultSelectedFamilie = familie;
+    document.querySelectorAll('#fault-mini-tabs .param-mini-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.familie === familie);
+    });
+    document.getElementById('fault-filters').style.display = 'flex';
+    document.getElementById('fault-table-container').style.display = 'block';
+    document.getElementById('fault-family-empty').style.display = 'none';
+    document.getElementById('fault-pagination').style.display = 'flex';
+    const searchEl = document.getElementById('fault-search');
+    if (searchEl) searchEl.value = '';
+    faultPage = 1;
+    loadFaultCodes();
+}
+
+function faultBackToProducator() {
+    _faultSelectedProducator = null;
+    _faultSelectedFamilie = null;
+    document.getElementById('fault-step-list').style.display = 'none';
+    document.getElementById('fault-step-producator').style.display = 'block';
+}
+
+function debounceLoadFaultCodes() {
+    clearTimeout(_faultSearchTimer);
+    _faultSearchTimer = setTimeout(function () { faultPage = 1; loadFaultCodes(); }, 220);
+}
+
+async function loadFaultCodes() {
+    if (!_faultSelectedFamilie) return;
+    const search = (document.getElementById('fault-search').value || '').trim();
+    const loading = document.getElementById('fault-loading');
+    const table = document.getElementById('fault-table');
+
+    const slowTimer = setTimeout(() => {
+        if (loading) loading.style.display = 'block';
+        if (table) table.style.display = 'none';
+        const empty = document.getElementById('fault-empty');
+        if (empty) empty.style.display = 'none';
+    }, 180);
+
+    try {
+        let url = `/fault-codes?familie=${encodeURIComponent(_faultSelectedFamilie)}&page=${faultPage}&limit=${faultLimit}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        const data = await apiGet(url);
+        faultTotal = data.total;
+        document.getElementById('fault-count').textContent = `Total: ${data.total} coduri`;
+        renderFaultCodes(data.codes);
+        updateFaultPagination(data);
+    } catch (e) {
+        console.error('Failed to load fault codes:', e);
+        if (loading) loading.style.display = 'none';
+        showToast('Eroare la încărcarea codurilor', true);
+    } finally {
+        clearTimeout(slowTimer);
+    }
+}
+
+function faultTipBadge(tip) {
+    const t = tip || '';
+    const label = FAULT_TIP_LABEL[t] || (t || '—');
+    return `<span class="fault-tip-badge fault-tip-${t}">${escapeHtml(label)}</span>`;
+}
+
+function renderFaultCodes(codes) {
+    const tbody = document.getElementById('fault-tbody');
+    const table = document.getElementById('fault-table');
+    const empty = document.getElementById('fault-empty');
+    const loading = document.getElementById('fault-loading');
+    loading.style.display = 'none';
+    faultData = codes || [];
+
+    if (!faultData.length) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+    }
+    table.style.display = 'table';
+    empty.style.display = 'none';
+    tbody.innerHTML = faultData.map((c, i) => `
+        <tr class="fault-row param-row" onclick="openFaultModal(faultData[${i}])" title="Click pentru detalii">
+            <td>${escapeHtml(c.cod)}${c.cod_secundar ? ` <span style="color:var(--text-dim);font-size:0.82em;">${escapeHtml(c.cod_secundar)}</span>` : ''}</td>
+            <td>${faultTipBadge(c.tip)}</td>
+            <td>${escapeHtml(c.nume || '-')}</td>
+        </tr>`).join('');
+}
+
+function updateFaultPagination(data) {
+    const prev = document.getElementById('fault-prev');
+    const next = document.getElementById('fault-next');
+    const info = document.getElementById('fault-page-info');
+    if (prev) prev.disabled = data.page <= 1;
+    if (next) next.disabled = data.page >= data.totalPages;
+    if (info) info.textContent = `Pagina ${data.page} din ${data.totalPages} (${data.total} rezultate)`;
+}
+
+function faultChangePage(delta) {
+    faultPage += delta;
+    if (faultPage < 1) faultPage = 1;
+    loadFaultCodes();
+}
+
+function openFaultModal(code) {
+    if (!code) return;
+    currentFault = code;
+    document.getElementById('fault-modal-code').textContent = code.cod || '-';
+    const tipEl = document.getElementById('fault-modal-tip');
+    tipEl.className = 'fault-tip-badge fault-tip-' + (code.tip || '');
+    tipEl.textContent = FAULT_TIP_LABEL[code.tip] || code.tip || '';
+    tipEl.style.display = code.tip ? 'inline-block' : 'none';
+    document.getElementById('fault-modal-familie').textContent =
+        code.familie ? code.familie.replace(/_/g, ' ') : '';
+    document.getElementById('fault-modal-name').textContent = code.nume || '...';
+    ['fault-modal-cauza-row', 'fault-modal-remediu-row', 'fault-modal-meta',
+     'fault-modal-extra', 'fault-modal-pagina-row'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    document.getElementById('fault-manual-btn').style.display = 'none';
+    document.getElementById('fault-detail-modal').classList.add('active');
+
+    apiGet('/fault-codes/' + encodeURIComponent(code.id))
+        .then(d => { currentFault = d; renderFaultDetail(d); })
+        .catch(() => {});
+}
+
+function renderFaultDetail(d) {
+    document.getElementById('fault-modal-name').textContent = d.nume || '-';
+
+    const cauzaRow = document.getElementById('fault-modal-cauza-row');
+    if (d.cauza && d.cauza.trim()) {
+        document.getElementById('fault-modal-cauza').textContent = d.cauza;
+        cauzaRow.style.display = 'block';
+    } else { cauzaRow.style.display = 'none'; }
+
+    const remRow = document.getElementById('fault-modal-remediu-row');
+    if (d.remediu && d.remediu.trim()) {
+        document.getElementById('fault-modal-remediu').textContent = d.remediu;
+        remRow.style.display = 'block';
+    } else { remRow.style.display = 'none'; }
+
+    const metaEl = document.getElementById('fault-modal-meta');
+    const cards = [];
+    if (d.reactie) cards.push(['Reacție', d.reactie]);
+    if (d.confirmare) cards.push(['Confirmare', d.confirmare]);
+    if (d.cod_secundar) cards.push(['Cod secundar', d.cod_secundar]);
+    if (cards.length) {
+        metaEl.innerHTML = cards.map(([k, v]) =>
+            `<div style="padding:8px 12px;background:var(--bg);border-radius:6px;">
+                <div style="font-size:0.7em;color:var(--text2);margin-bottom:2px;">${escapeHtml(k)}</div>
+                <div style="font-weight:500;">${escapeHtml(v)}</div>
+            </div>`).join('');
+        metaEl.style.display = 'grid';
+    } else { metaEl.style.display = 'none'; }
+
+    renderFaultExtra(d.extra);
+
+    const pagRow = document.getElementById('fault-modal-pagina-row');
+    if (d.pagina) {
+        document.getElementById('fault-modal-pagina').textContent = d.pagina;
+        pagRow.style.display = 'block';
+    } else { pagRow.style.display = 'none'; }
+
+    _currentFaultManual = d.sursa || null;
+    document.getElementById('fault-manual-btn').style.display = _currentFaultManual ? 'block' : 'none';
+}
+
+function renderFaultExtra(extra) {
+    const el = document.getElementById('fault-modal-extra');
+    if (!extra || typeof extra !== 'object') { el.style.display = 'none'; return; }
+    let html = '';
+
+    if (Array.isArray(extra.aux_codes) && extra.aux_codes.length) {
+        html += `<div class="fault-modal-label">Coduri auxiliare</div>`;
+        html += extra.aux_codes.map(a => `
+            <div style="margin:4px 0;padding:7px 10px;background:var(--bg);border-radius:6px;border-left:3px solid var(--border);">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent);">${escapeHtml(a.cod || '?')}</span>
+                ${a.cauza ? `<div style="font-size:0.85em;color:var(--text2);margin-top:2px;">${escapeHtml(a.cauza)}</div>` : ''}
+                ${a.remediu ? `<div style="font-size:0.85em;margin-top:2px;">${escapeHtml(a.remediu)}</div>` : ''}
+            </div>`).join('');
+    }
+
+    const mv = extra.message_value || extra.fault_value || extra.alarm_value;
+    if (mv) {
+        html += `<div class="fault-modal-label" style="margin-top:10px;">Valoare mesaj</div>
+            <div class="fault-modal-text" style="font-size:0.85em;">${escapeHtml(mv)}</div>`;
+    }
+    if (extra.note) {
+        html += `<div class="fault-modal-label" style="margin-top:10px;">Notă</div>
+            <div class="fault-modal-text" style="font-size:0.85em;">${escapeHtml(extra.note)}</div>`;
+    }
+    const refs = [];
+    if (extra.parametru) refs.push(extra.parametru);
+    if (extra.configurable_in) refs.push(extra.configurable_in);
+    if (extra.see_also) refs.push(extra.see_also);
+    if (refs.length) {
+        html += `<div class="fault-modal-label" style="margin-top:10px;">Parametri asociați</div>
+            <div class="fault-modal-text" style="font-size:0.85em;">${escapeHtml(refs.join('  ·  '))}</div>`;
+    }
+    if (extra.trip_lock) {
+        html += `<div style="margin-top:8px;font-size:0.82em;">
+            <strong style="color:var(--warning);">Trip lock:</strong> necesită oprirea alimentării înainte de reset.</div>`;
+    }
+
+    if (html) { el.innerHTML = html; el.style.display = 'block'; }
+    else { el.style.display = 'none'; }
+}
+
+function closeFaultModal() {
+    document.getElementById('fault-detail-modal').classList.remove('active');
+    currentFault = null;
+}
+
+function openFaultManual() {
+    if (!_currentFaultManual) return;
+    let url = '/manuals/' + encodeURIComponent(_currentFaultManual);
+    if (currentFault && currentFault.pagina) url += '#page=' + currentFault.pagina;
+    window.open(url, '_blank');
 }
 
 // ============ PWA / OFFLINE SUPPORT ============

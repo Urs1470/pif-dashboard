@@ -1,0 +1,3840 @@
+[
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64FF",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Fault reset",
+    "cauza": "A fault has been reset from the control panel, Drive composer PC tool, fieldbus or I/O.",
+    "remediu": "Event. Informative only.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 538,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "B686",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Checksum mismatch",
+    "cauza": "Parameter checksum 96.68 Actual checksumA does not match 96.71 Approved checksum A and/ or parameter checksum 96.69 Actual checksumB does not match 96.72 Approved checksum B.",
+    "remediu": "Event. Informative only.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 538,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A2A1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Current calibration",
+    "cauza": "Current offset and gain measurement calibration will occur at next start.",
+    "remediu": "Informative warning. (See parameter 99.13 ID run requested.)",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 538,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A2B1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Overcurrent",
+    "cauza": "Output current has exceeded internal fault limit. In addition to an actual overcurrent situation, this warning may also be caused by an earth fault or supply phase loss.",
+    "remediu": "Check motor load. Check acceleration times in parameter group 23 Speed reference ramp (speed control), 26 Torque reference chain (torque control) or 28 Frequency reference chain (frequency control). Also check parameters 46.01 Speed scaling, 46.02 Frequency scaling and 46.03 Torque scaling. Check motor and motor cable (including phasing and delta/star connection). Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. See chapter Electrical installation, section Checking the insulation of the assembly in the Hardware manual of the drive. Check there are no contactors opening and closing in motor cable. Check that the start-up data in parameter group 99 Motor data corresponds to the motor rating plate. Check that there are no power factor correction capacitors or surge absorbers in motor cable.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 538,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A2B3",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Earth leakage",
+    "cauza": "Drive has detected load unbalance typically due to earth fault in motor or motor cable.",
+    "remediu": "Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. See chapter Electrical installation, section Checking the insulation of the assembly in the Hardware manual of the drive. If an earth fault is found, fix or change the motor cable and/or motor. If no earth fault can be detected, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 538,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A2B4",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Short circuit",
+    "cauza": "Short-circuit in motor cable(s) or motor.",
+    "remediu": "Check motor and motor cable for cabling errors. Check motor and motor cable (including phasing and delta/star connection). Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. See chapter Electrical installation, section Checking the insulation of the assembly in the Hardware manual of the drive. Check there are no power factor correction capacitors or surge absorbers in motor cable. For frames R6 to R11, check the auxiliary code.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Short circuit in the upper transistor of the U-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "Short circuit in the lower transistor of the U-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0004",
+          "cauza": "Short circuit in the upper transistor of the V-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0008",
+          "cauza": "Short circuit in the lower transistor of the V-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0010",
+          "cauza": "Short circuit in the upper transistor of the WU-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0020",
+          "cauza": "Short circuit in the lower transistor of the W-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0040",
+          "cauza": "DC capacitor short circuit.",
+          "remediu": ""
+        },
+        {
+          "cod": "0080",
+          "cauza": "State feedback from output phases does not match control signals. For frames R6 and R7.",
+          "remediu": ""
+        },
+        {
+          "cod": "0001",
+          "cauza": "Short circuit in the upper transistor of the U-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "Short circuit in the lower transistor of the U-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0004",
+          "cauza": "Short circuit in the upper transistor of the V-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0008",
+          "cauza": "Short circuit in the lower transistor of the V-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0010",
+          "cauza": "Short circuit in the upper transistor of the W-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0020",
+          "cauza": "Short circuit in the lower transistor of the W-phase. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0040",
+          "cauza": "DC capacitor short circuit. For frames R6 to R11.",
+          "remediu": ""
+        },
+        {
+          "cod": "0080",
+          "cauza": "State feedback from output phases does not match control signals. For frames R6 and R7.",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 539,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A2BA",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "IGBT overload",
+    "cauza": "Excessive IGBT junction to case temperature. This warning protects the IGBT(s) and can be activated by a short circuit in the motor cable.",
+    "remediu": "Check motor cable. Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 539,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A3A1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "DC link overvoltage",
+    "cauza": "Intermediate circuit DC voltage too high (when the drive is stopped).",
+    "remediu": "Check the supply voltage setting (parameter 95.01 Supply voltage). Note that the wrong setting of the parameter may cause the motor to rush uncontrollably, or may overload the brake chopper or resistor.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A3A2",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "DC link undervoltage",
+    "cauza": "Intermediate circuit DC voltage too low (when the drive is stopped).",
+    "remediu": "Check the supply voltage.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A3AA",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "DC not charged",
+    "cauza": "The voltage of the intermediate DC circuit has not yet risen to operating level.",
+    "remediu": "If the problem persists, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A490",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Incorrect temperature sensor setup",
+    "cauza": "Temperature cannot be supervised due to incorrect adapter setup. AO settings do not match with 35.11 and 35.21.",
+    "remediu": "Check the settings of temperature source parameters 35.11 and 35.21. Check the settings of temperature source parameters 35.11 and 35.21 against AO parameters 13.12 and 13.22.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A491",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External temperature 1",
+    "cauza": "Measured temperature 1 has exceeded warning limit.",
+    "remediu": "Check the value of parameter 35.02 Measured temperature 1. Check the cooling of the motor (or other equipment whose temperature is being measured). Check the value of 35.13 Temperature 1 warning limit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A492",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External temperature 2",
+    "cauza": "Measured temperature 2 has exceeded warning limit.",
+    "remediu": "Check the value of parameter 35.03 Measured temperature 2. Check the cooling of the motor (or other equipment whose temperature is being measured). Check the value of 35.23 Temperature 2 warning limit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4A0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Control board temperature (none) 1",
+    "cauza": "Control unit temperature is too high. Temperature above warning limit Thermistor broken",
+    "remediu": "Check the auxiliary code. See actions for each code below. Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Contact an ABB service representative for control unit replacement.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4A1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "IGBT overtemperature",
+    "cauza": "Estimated drive IGBT temperature is excessive.",
+    "remediu": "Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4A9",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Cooling",
+    "cauza": "Drive module temperature is excessive.",
+    "remediu": "Check ambient temperature. If it exceeds 40 °C/104 °F (IP21 frames R4...R9) or if it exceeds 50 °C /122 °F (IP21 frames R1...R9), ensure that load current does not exceed derated load capacity of drive. For all P55 frames, check the derating temperatures. See chapter Technical data, section Derating in the Hardware manual of the drive. Check drive module cooling air flow and fan operation. Check inside of cabinet and heatsink of drive module for dust pick-up. Clean whenever necessary.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 540,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4B0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Excess temperature",
+    "cauza": "Power unit module temperature is excessive.",
+    "remediu": "Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power. (1: U-phase, 2: V-phase, 3: W-phase, 4: INT board, 6: Air inlet (sensor connected to INT board X10), 7: PCB compartment fan or power supply board, FA: Ambient temperature).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4B1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Excess temperature difference",
+    "cauza": "High temperature difference between the IGBTs of different phases.",
+    "remediu": "Check the motor cabling. Check cooling of drive module(s).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A4F6",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "IGBT temperature",
+    "cauza": "Drive IGBT temperature is excessive.",
+    "remediu": "Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A581",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Fan",
+    "cauza": "Cooling fan feedback missing. For frame sizes R6 or larger",
+    "remediu": "Check the auxiliary code to identify the fan. Code 0 denotes main fan 1. Other codes (format XYZ): “X” specifies state code (1: ID run, 2: normal). “Y” = 0, “Z” specifies the index of the fan (1: Main fan 1, 2: Main fan 2, 3: Main fan 3). Check fan operation and connection. Replace fan if faulty.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A582",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Auxiliary fan missing",
+    "cauza": "An auxiliary cooling fan (IP55 internal fan) is stuck or disconnected.",
+    "remediu": "Check the auxiliary code. Check the auxiliary fan and connection. Replace faulty fan. Make sure the front cover of the drive is in place and tightened. If the commissioning of the drive requires that the cover is off, this warning will be generated even if the corresponding fault is defeated. See fault 5081 Auxiliary fan broken (page 558).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0000 0001",
+          "cauza": "Auxiliary fan 1 missing",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0002",
+          "cauza": "Auxiliary fan 2 missing",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5A0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Safe torque off",
+    "cauza": "Safe torque off function is active, that is, safety circuit signal(s) connected to connector STO is lost.",
+    "remediu": "Check safety circuit connections. For more information, chapter The Safe torque off function in the Hardware manual of the drive and description of parameter 31.22 STO indication run/stop (page 355). Check the value of parameter 95.04 Control board supply.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 541,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5EA",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Measurement circuit temperature",
+    "cauza": "Problem with internal temperature measurement of the drive. Aux code depends on control unit type. Frames R1...R5",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0000 0001",
+          "cauza": "IGBT temperature",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0003",
+          "cauza": "Board temperature",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0006",
+          "cauza": "Power supply temperature Frames R6...R11",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0001",
+          "cauza": "U-phase IGBT",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0002",
+          "cauza": "V-phase IGBT",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0003",
+          "cauza": "W-phase IGBT",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0004",
+          "cauza": "Board temperature",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0005",
+          "cauza": "Brake chopper",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0006",
+          "cauza": "Air inlet (TEMP3)",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0007",
+          "cauza": "Power supply temperature",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0008",
+          "cauza": "du/dt (TEMP2)",
+          "remediu": ""
+        },
+        {
+          "cod": "0000 0009",
+          "cauza": "TEMP1 FAh =1111 1010 Ambient temperature",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5EB",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "PU board powerfail",
+    "cauza": "Power unit power supply failure.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5ED",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Measurement circuit",
+    "cauza": "Measurement circuit fault.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5EE",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Measurement circuit",
+    "cauza": "Measurement circuit fault.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5EF",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "PU state feedback",
+    "cauza": "State feedback from output phases does not match control signals.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A5F0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Charging feedback",
+    "cauza": "Charging feedback signal missing.",
+    "remediu": "Check the feedback signal coming from the charging system.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A682",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Flash erase speed exceeded",
+    "cauza": "The flash memory (in the memory unit) has been erased too frequently, compromising the lifetime of the memory.",
+    "remediu": "Avoid forcing unnecessary parameter saves by parameter 96.07 or cyclic parameter writes (such as user logger triggering through parameters). Check the auxiliary code (format XYYY YZZZ). “X” specifies the source of warning (1: generic flash erase supervision). “ZZZ” specifies the flash subsector number that generated the warning.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A686",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Checksum mismatch",
+    "cauza": "Parameter checksum 96.68 Actual checksumA does not match 96.71 Approved checksum A and/ or parameter checksum 96.69 Actual checksumB does not match 96.72 Approved checksum B.",
+    "remediu": "Revert parameter changes made after approving the checksum. If parameter changes are valid, approve new checksum by setting parameter 96.55 Checksum control word bit 12 (Set approved checksum A) and/or 13 (Set approved checksum B) to 1 = Set.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 542,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6A4",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Motor nominal value",
+    "cauza": "The motor parameters are set incorrectly. The drive is not dimensioned correctly.",
+    "remediu": "Check the auxiliary code. See actions for each code below.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Slip frequency is too small.",
+          "remediu": "Check the settings of the motor configuration parameters in groups 98"
+        },
+        {
+          "cod": "0002",
+          "cauza": "Synchronous and nominal speeds differ too much.",
+          "remediu": "and 99. Check that the drive is sized correctly for"
+        },
+        {
+          "cod": "0003",
+          "cauza": "Nominal speed is higher than synchronous speed with 1 pole pair.",
+          "remediu": "the motor."
+        },
+        {
+          "cod": "0004",
+          "cauza": "Nominal current is outside limits",
+          "remediu": ""
+        },
+        {
+          "cod": "0005",
+          "cauza": "Nominal voltage is outside limits.",
+          "remediu": ""
+        },
+        {
+          "cod": "0006",
+          "cauza": "Nominal power is higher than apparent power.",
+          "remediu": ""
+        },
+        {
+          "cod": "0007",
+          "cauza": "Nominal power not consistent with nominal speed and torque.",
+          "remediu": ""
+        },
+        {
+          "cod": "0008",
+          "cauza": "Motor nominal power factor is not within limits for asynchronous motors [0.5...0.97]",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6A5",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "No motor data",
+    "cauza": "Parameters in group 99 have not been set.",
+    "remediu": "Check that all the required parameters in group 99 have been set. Note: It is normal for this warning to appear during the start-up and continue until the motor data is entered.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6A6",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Voltage category unselected",
+    "cauza": "The voltage category has not been defined.",
+    "remediu": "Set voltage category in parameter 95.01 Supply voltage.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6A7",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "System time not set",
+    "cauza": "System time is not set. Timed functions cannot be used and fault log dates are not correct.",
+    "remediu": "Set the system time manually or connect the control panel to the drive to synchronize the clock. If basic control panel is used, synchronize the clock through the EFB or a fieldbus module. Set parameter 34.10 Timed functions enable to Disabled to disable the timed functions if they are not used.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6B0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "User lock is open",
+    "cauza": "The user lock is open, ie. user lock configuration parameters 96.100...96.102 are visible.",
+    "remediu": "Close the user lock by entering an invalid pass code in parameter 96.02 Pass code. See section User lock (page 216).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6B1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "User pass code not confirmed",
+    "cauza": "A new user pass code has been entered in parameter 96.100 but not confirmed in 96.101.",
+    "remediu": "Confirm the new pass code by entering the same code in 96.101. To cancel, close the user lock without confirming the new code. See section User lock (page 216).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6D1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "FBA A parameter conflict",
+    "cauza": "The drive does not have a functionality requested by a PLC, or requested functionality has not been activated.",
+    "remediu": "Check PLC programming. Check settings of parameter groups 50 Fieldbus adapter (FBA).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 543,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6E5",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "AI parametrization",
+    "cauza": "The current/voltage hardware setting of an analog input does not correspond to parameter settings.",
+    "remediu": "Check the event log for an auxiliary code. The code identifies the analog input whose settings are in conflict. Adjust either the hardware setting (on the drive control unit) or parameter 12.15/12.25. Note: Control unit reboot (either by cycling the power or through parameter 96.08 Control board boot) is required to validate any changes in the hardware settings.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A6E6",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ULC configuration",
+    "cauza": "User load curve configuration error.",
+    "remediu": "Check the auxiliary code (format XXXX ZZZZ). “ZZZZ” indicates the problem (see actions for each code below).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0000",
+          "cauza": "Speed points inconsistent.",
+          "remediu": "Check that each speed point (parameters 37.11...37.15) has a higher value than the previous point."
+        },
+        {
+          "cod": "0001",
+          "cauza": "Frequency points inconsistent.",
+          "remediu": "Check that each frequency point (37.20...37.16) has a higher value than the previous point."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Underload point above overload point.",
+          "remediu": "Check that each overload point (37.31...37.35) has a higher value than the corresponding underload point"
+        },
+        {
+          "cod": "0003",
+          "cauza": "Overload point below underload point.",
+          "remediu": "(37.21...37.25)."
+        }
+      ]
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A780",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Motor stall",
+    "cauza": "Motor is operating in stall region because of, for example, excessive load or insufficient motor power.",
+    "remediu": "Check motor load and drive ratings. Check fault function parameters.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A783",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Motor overload",
+    "cauza": "Motor current is too high.",
+    "remediu": "Check for overloaded motor. Adjust the parameters used for the motor overload function (35.51...35.53) and 35.55...35.56.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A784",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Motor disconnect",
+    "cauza": "All three output phases are disconnected from motor.",
+    "remediu": "Check that switches between drive and motor are closed. Check that all cables between drive and motor are connected and secured. If no issue was detected and drive output was actually connected to motor, contact ABB.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A793",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "BR excess temperature",
+    "cauza": "Brake resistor temperature has exceeded warning limit defined by parameter 43.12 Brake resistor warning limit.",
+    "remediu": "Stop drive. Let resistor cool down. Check resistor overload protection function settings (parameter group 43 Brake chopper). Check warning limit setting, parameter 43.12 Brake resistor warning limit. Check that the resistor has been dimensioned correctly. Check that braking cycle meets allowed limits.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A794",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "BR data",
+    "cauza": "Brake resistor data has not been given.",
+    "remediu": "One or more of the resistor data settings (parameters 43.08...43.10) is incorrect. The parameter is specified by the auxiliary code.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0000 0001",
+          "cauza": "Resistance value too low.",
+          "remediu": "Check value of 43.10."
+        },
+        {
+          "cod": "0000 0002",
+          "cauza": "Thermal time constant not given.",
+          "remediu": "Check value of 43.08."
+        },
+        {
+          "cod": "0000 0003",
+          "cauza": "Maximum continuous power not given.",
+          "remediu": "Check value of 43.09."
+        }
+      ]
+    },
+    "pagina": 544,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A79C",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "BC IGBT excess temperature",
+    "cauza": "Brake chopper IGBT temperature has exceeded internal warning limit.",
+    "remediu": "Let chopper cool down. Check for excessive ambient temperature. Check for cooling fan failure. Check for obstructions in the air flow. Check the dimensioning and cooling of the cabinet. Check resistor overload protection function settings (parameters 43.06...43.10). Check minimum allowed resistor value for the chopper being used. Check that braking cycle meets allowed limits. Check that drive supply AC voltage is not excessive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A7A2",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Mechanical brake opening failed",
+    "cauza": "Status of mechanical brake acknowledgement is not as expected during brake open.",
+    "remediu": "Check mechanical brake connection. Check mechanical brake settings in parameter group 44 Mechanical brake control. Check that acknowledgement signal matches the actual status of brake.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A7AB",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Extension I/O configuration failure",
+    "cauza": "Installed C-type module is not the same as configured or the communication between the drive and module has been disturbed.",
+    "remediu": "Check that the installed module (shown by parameter 15.02 Detected extension module) is the same as selected by parameter 15.01 Extension module type. Eliminate the disturbance sources.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A7C1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "FBA A communication",
+    "cauza": "Cyclical communication between drive and fieldbus adapter module A or between PLC and fieldbus adapter module A is lost.",
+    "remediu": "Check status of fieldbus communication. See user documentation of fieldbus interface. Check settings of parameter groups 50 Fieldbus adapter (FBA), 51 FBA A settings, 52 FBA A data in and 53 FBA A data out. Check cable connections. Check if communication master is able to communicate.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A7CE",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "EFB comm loss",
+    "cauza": "Communication break in embedded fieldbus (EFB) communication.",
+    "remediu": "Check the status of the fieldbus master (online/offline/error etc.). Check cable connections to the EIA-485/X5 terminals 29, 30 and 31 on the control unit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A7EE",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Panel loss",
+    "cauza": "Control panel or PC tool selected as active control location for drive has ceased communicating.",
+    "remediu": "Check PC tool or control panel connection. Check control panel connector. Check mounting platform if being used. Disconnect and reconnect the control panel.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 545,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A88F",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Cooling fan",
+    "cauza": "Maintenance timer limit exceeded.",
+    "remediu": "Consider changing the cooling fan. Parameter 05.04 Fan on-time counter shows the running time of the cooling fan.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8A0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "AI supervision",
+    "cauza": "An analog signal is outside the limits specified for the analog input.",
+    "remediu": "Check signal level at the analog input. Check the wiring connected to the input. Check the minimum and maximum limits of the input in parameter group 12 Standard AI.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8A1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "RO life warning",
+    "cauza": "The relay has changed states more than the recommended number of times.",
+    "remediu": "Change the control unit or stop using the relay output.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Relay output 1",
+          "remediu": "Change the control unit or stop using relay output 1."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Relay output 2",
+          "remediu": "Change the control unit or stop using relay output 2."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Relay output 3",
+          "remediu": "Change the control unit or stop using relay output 3."
+        }
+      ]
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8A2",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "RO toggle warning",
+    "cauza": "The relay output is changing states faster than recommended, for example, if a fast changing frequency signal is connected to it. The relay lifetime will be exceeded shortly.",
+    "remediu": "Replace the signal connected to the relay output source with a less frequently changing signal.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Relay output 1",
+          "remediu": "Select a different signal with parameter 10.24 RO1 source."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Relay output 2",
+          "remediu": "Select a different signal with parameter 10.27 RO2 source."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Relay output 3",
+          "remediu": "Select a different signal with parameter 10.30 RO3 source."
+        }
+      ]
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 1",
+    "cauza": "Warning generated by the signal supervision function 1.",
+    "remediu": "Check the source of the warning (parameter 32.07 Supervision 1 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 2",
+    "cauza": "Warning generated by the signal supervision function 2.",
+    "remediu": "Check the source of the warning (parameter 32.17 Supervision 2 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B2",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 3",
+    "cauza": "Warning generated by the signal supervision function 3.",
+    "remediu": "Check the source of the warning (parameter 32.27 Supervision 3 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B3",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 4",
+    "cauza": "Warning generated by the signal supervision function 4.",
+    "remediu": "Check the source of the warning (parameter 32.37 Supervision 4 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 546,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B4",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 5",
+    "cauza": "Warning generated by the signal supervision function 5.",
+    "remediu": "Check the source of the warning (parameter 32.47 Supervision 5 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8B5",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ABB Signal supervision 6",
+    "cauza": "Warning generated by the signal supervision function 6.",
+    "remediu": "Check the source of the warning (parameter 32.57 Supervision 6 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8BE",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ULC overload warning",
+    "cauza": "Selected signal has exceeded the user overload curve.",
+    "remediu": "Check for any operating conditions increasing the monitored signal (for example, the loading of the motor if the torque or current is being monitored). Check the definition of the load curve (parameter group 37 User load curve).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A8BF",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "ULC underload warning",
+    "cauza": "Selected signal has fallen below the user underload curve.",
+    "remediu": "Check for any operating conditions decreasing the monitored signal (for example, loss of load if the torque or current is being monitored). Check the definition of the load curve (parameter group 37 User load curve).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A981",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External warning 1",
+    "cauza": "Fault in external device 1.",
+    "remediu": "Check the external device. Check setting of parameter 31.01 External event 1 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A982",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External warning 2",
+    "cauza": "Fault in external device 2.",
+    "remediu": "Check the external device. Check setting of parameter 31.03 External event 2 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A983",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External warning 3",
+    "cauza": "Fault in external device 3.",
+    "remediu": "Check the external device. Check setting of parameter 31.05 External event 3 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A984",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External warning 4",
+    "cauza": "Fault in external device 4.",
+    "remediu": "Check the external device. Check setting of parameter 31.07 External event 4 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "A985",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "External warning 5",
+    "cauza": "Fault in external device 5.",
+    "remediu": "Check the external device. Check setting of parameter 31.09 External event 5 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 547,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AF88",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Season configuration warning",
+    "cauza": "You have configured a season which starts before the previous season.",
+    "remediu": "Configure the seasons with increasing start dates, see parameters 34.60 Season 1 start date...34.63 Season 4 start date.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AF90",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Speed controller autotuning",
+    "cauza": "The speed controller autotune routine did not complete successfully.",
+    "remediu": "Check the auxiliary code. See actions for each code below.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0000",
+          "cauza": "Drive was stopped before the autotune was complete.",
+          "remediu": "Start the drive and repeat autotune until successful."
+        },
+        {
+          "cod": "0001",
+          "cauza": "The drive was started and it was not ready to follow the autotune command.",
+          "remediu": "Make sure the prerequisites of the autotune run are fulfilled. See section Before activating the autotune routine (page 133)."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Required torque reference could not be reached before the drive reached maximum speed.",
+          "remediu": "Decrease the torque step (parameter 25.38) or increase the speed step (parameter 25.39)."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Motor could not accelerate/ to maximum speed.",
+          "remediu": "Increase the torque step (parameter 25.38) or decrease the speed step (parameter 25.39)."
+        },
+        {
+          "cod": "0004",
+          "cauza": "Motor could not decelerate to minimum speed.",
+          "remediu": "Increase the torque step (parameter 25.38) or decrease the speed step (parameter 25.39)."
+        },
+        {
+          "cod": "0005",
+          "cauza": "Motor could not decelerate with full autotune torque.",
+          "remediu": "Decrease the torque step (parameter 25.38) or the speed step (parameter 25.39)."
+        },
+        {
+          "cod": "0006",
+          "cauza": "Autotune could not write a parameter.",
+          "remediu": "Run the drive one more time."
+        },
+        {
+          "cod": "0007",
+          "cauza": "Drive was ramping down when the autotune was activated.",
+          "remediu": "Run the drive to the set point and start the autotune one more time."
+        },
+        {
+          "cod": "0008",
+          "cauza": "Drive was ramping up when the autotune was activated.",
+          "remediu": "Wait until the drive reaches the set point and start autotune."
+        },
+        {
+          "cod": "0009",
+          "cauza": "Drive was running outside of autotune speed limits during the autotune activation.",
+          "remediu": "Check the limits, set the correct setpoint and repeat the autotune."
+        }
+      ]
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFAA",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Autoreset",
+    "cauza": "A fault is about to be autoreset.",
+    "remediu": "Informative warning. See the settings in parameter group 31 Fault functions.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFE1",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Emergency stop (off2)",
+    "cauza": "Drive has received an emergency stop (mode selection off2) command.",
+    "remediu": "Check that it is safe to continue operation. Then return emergency stop push button to normal position. Restart drive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFE2",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Emergency stop (off1 or off3)",
+    "cauza": "Drive has received an emergency stop (mode selection off1 or off3) command.",
+    "remediu": "If the emergency stop was unintentional, check the source selected by parameter 21.05 Emergency stop source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFE9",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Start delay",
+    "cauza": "The start delay is active and the drive will start the motor after a predefined delay.",
+    "remediu": "Informative warning. See parameter 21.22 Start delay.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFEB",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Run enable missing",
+    "cauza": "No run enable signal is received.",
+    "remediu": "Check setting of parameter 20.12 Run enable 1 source. Switch signal on (for example, in the fieldbus Control Word) or check wiring of selected source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 548,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFED",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Enable to rotate",
+    "cauza": "Signal to rotate has not been received within a fixed time delay of 240 s.",
+    "remediu": "Switch enable to rotate signal on ((for example, in digital inputs). Check the setting of (and source selected by) parameter 20.22 Enable to rotate.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFF6",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Identification run",
+    "cauza": "Motor ID run will occur at next start.",
+    "remediu": "Informative warning.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "AFF8",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Motor heating active",
+    "cauza": "Pre-heating is being performed",
+    "remediu": "Informative warning. Motor pre-heating is active. Current specified by parameter 21.16 Preheating current is being passed through the motor.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "B5A0",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "STO event",
+    "cauza": "Safe torque off function is active, ie. safety circuit signal(s) connected to connector STO is lost.",
+    "remediu": "Informative warning. Check safety circuit connections. For more information, see chapter The Safe torque off function in the Hardware manual of the drive and description of parameter 31.22 STO indication run/stop (page 355).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D50A",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Running dry",
+    "cauza": "Dry run protection is activated.",
+    "remediu": "Check the pump inlet for sufficient water level. Check dry run protection settings in parameters 82.20 Dry run protection and 82.21 Dry run source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D50B",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Pipe fill-timeout",
+    "cauza": "Soft pipe fill is reached the timeout limit. The PID output is not reached the setpoint after reference ramping is ended and timeout limit is elapsed.",
+    "remediu": "Check the pipe for possible leakage. See parameter 82.25 Soft pipe fill supervision and 82.26 Time-out limit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D501",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "No more available PFC motors",
+    "cauza": "No more PFC motors can be started because they can be interlocked or in the Hand mode.",
+    "remediu": "Check that there are no interlocked PFC motors, see parameters: 76.81...76.84. If all motors are in use, the PFC system is not adequately dimensioned to handle the demand.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D502",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "All motors interlocked",
+    "cauza": "All the motors in the PFC system are interlocked.",
+    "remediu": "Check that there are no interlocked PFC motors, see parameters 76.81...76.84.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D503",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "VSD controlled PFC motor interlocked",
+    "cauza": "The motor connected to the drive is interlocked (unavailable).",
+    "remediu": "Motor connected to the drive is interlocked and thus cannot be started. Remove the corresponding interlock to start the drive controlled PFC motor. See parameters 76.81...76.84.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D505",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Max cleaning warning",
+    "cauza": "Maximum number of cleanings are reached in defined time. The Pump cleaning is unable to clean the pump and hence, manual cleaning is required.",
+    "remediu": "Check the pump for blockages. Clean the pump manually if needed. Check parameters 83.35 Cleaning count fault to 83.37 Maximum cleaning count.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D506",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Pump cleaning not possible",
+    "cauza": "Pump cleaning cannot be started. The drive needs to be in remote control and start signal is activated.",
+    "remediu": "Change control location to Auto.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D507",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Pump cleaning needed",
+    "cauza": "Dirt detection indicates that the pump needs cleaning but automatic pump cleaning is not allowed.",
+    "remediu": "Perform pump cleaning manually. Start pump cleaning by changing parameter 83.12 Manually force cleaning to Start cleaning now.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 549,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D511",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Cavitation control",
+    "cauza": "Cavitation control warning. See section Cavitation control on page 169.",
+    "remediu": "Check the auxiliary code. See actions for each code below.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Cavitation detected warning. The pump is not getting enough liquid. Check the system.",
+          "remediu": "• Confirm that cavitation is occurring. • Check the fluid level in the system.. • Adjust the parameters used for the cavitation detection function (86.12 – 86.30) if needed."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Cavitation tune required.Perform a cavitation auto tune or enter the data manually. Cavitation control has been selected (86.11); however, there is missing data in 86.21 – 86.25.",
+          "remediu": "• Perform a cavitation curve autotune (86.20). • Manually enter the data used for the cavitation detection function (86.21 – 86.25) if autotune is not an option. • Disable cavitation control (86.11 if the above cannot be accomplished."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Cavitation curve autotune has been selected and will be performed on next start (in Hand).Check 86.20 if tune is not desired.",
+          "remediu": "• Press Hand to run the autotune. • De-select the cavitation curve autotune (86.20)."
+        },
+        {
+          "cod": "0004",
+          "cauza": "Cavitation is misconfigured. Check that the cavitation minimum reference 86.15 (86.12 in vector mode) is within the min/max limits defined in group 30.",
+          "remediu": "• Change the value of cavitation minimum frequency 86.15 (or 86.12 in vector mode) to be within the min/max range defined in group 30. • Run Cavitation Autotune if any parameters in group 86 Cavitation control are changed"
+        }
+      ]
+    },
+    "pagina": 550,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D58B",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Gas pressure outside limits",
+    "cauza": "The compressor gas pressure is outside the limits.",
+    "remediu": "Check the compressor gas pressure limits configured as AI min and max values.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 550,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D590",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Restart delay",
+    "cauza": "Compressor Restart delay.",
+    "remediu": "Check parameter 21.40 Restart delay. The drive cannot be started until the restart delay has elapsed.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "001",
+          "cauza": "Compressor short cycle protection",
+          "remediu": "Wait until the restart delay has passed."
+        }
+      ]
+    },
+    "pagina": 550,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D591",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Min. run time",
+    "cauza": "Compressor minimum run time.",
+    "remediu": "Check parameter 21.41 Minimum run time. During the minimum run time the drive runs at the minimum speed/frequency.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "001",
+          "cauza": "Minimum run time was triggered.",
+          "remediu": "Check parameter 21.41 Minimum run time. During the minimum run time the drive runs at the minimum speed/frequency."
+        }
+      ]
+    },
+    "pagina": 550,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D602",
+    "cod_secundar": null,
+    "tip": "warning",
+    "nume": "Cavitation tune completed",
+    "cauza": "Cavitation auto tune has finished and stopped the drive.",
+    "remediu": "Information only.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 550,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "1080",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Backup/Restore timeout",
+    "cauza": "Control panel or PC tool has failed to communicate with the drive when backup was being made or restored.",
+    "remediu": "Request backup or restore again.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 551,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "1081",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Rating ID fault",
+    "cauza": "Drive software has not been able to read the rating ID of the drive.",
+    "remediu": "Reset the fault to make the drive try to reread the rating ID. If the fault reappears, cycle the power to the drive. You may have to be repeat this. If the fault persists, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 551,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "2281",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Calibration",
+    "cauza": "Measured offset of output phase current measurement or difference between output phase U2 and W2 current measurement is too great (the values are updated during current calibration).",
+    "remediu": "Try performing the current calibration again (select Current measurement calibration at parameter 99.13). If the fault persists, contact your local ABB representative. Auxiliary codes are shown below.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Too high offset error in Uphase current.",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "Too high offset error in V-phase current.",
+          "remediu": ""
+        },
+        {
+          "cod": "0003",
+          "cauza": "Too high offset error in Wphase current.",
+          "remediu": ""
+        },
+        {
+          "cod": "0004",
+          "cauza": "Too high gain difference detected between phase current measurements.",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 551,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "2310",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Overcurrent",
+    "cauza": "Output current has exceeded internal fault limit. In addition to an actual overcurrent situation, this fault may also be caused by an earth fault or supply phase loss.",
+    "remediu": "Check the auxiliary code (format XXXYYYZZ): “ZZ” indicates the overcurrent type and phase that triggered the fault: bit 7 =1 indicates SW overcurrent bit 0: Phase U bit 1: Phase V bit 2: Phase W For example: Aux code 0x83 indicates SW overcurrent of phase U and V. If there is no aux code, this indicates that hardware overcurrent is triggered. Check motor load. Check acceleration times in parameter group 23 Speed reference ramp (speed control), 26 Torque reference chain (torque control) or 28 Frequency reference chain (frequency control). Also check parameters 46.01 Speed scaling, 46.02 Frequency scaling and 46.03 Torque scaling. Check motor and motor cable (including phasing and delta/star connection). Check there are no contactors opening and closing in motor cable. Check that the start-up data in parameter group 99 corresponds to the motor rating plate. Check that there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. See chapter Electrical installation, section Checking the insulation of the assembly in the Hardware manual of the drive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 552,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "2330",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Earth leakage",
+    "cauza": "Drive has detected load unbalance typically due to earth fault in motor or motor cable.",
+    "remediu": "Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. Try running the motor in scalar control mode if allowed. (See parameter 99.04 Motor control mode.) If no earth fault can be detected, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Short circuit in the upper transistor of the U-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "Short circuit in the lower transistor of the U-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0004",
+          "cauza": "Short circuit in the upper transistor of the V-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0008",
+          "cauza": "Short circuit in the lower transistor of the V-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0010",
+          "cauza": "Short circuit in the upper transistor of the W-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0020",
+          "cauza": "Short circuit in the lower transistor of the W-phase.",
+          "remediu": ""
+        },
+        {
+          "cod": "0040",
+          "cauza": "DC capacitor short circuit.",
+          "remediu": ""
+        },
+        {
+          "cod": "0080",
+          "cauza": "State feedback from output phases does not match control signals. For frames R6 and R7.",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 553,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "2381",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "IGBT overload",
+    "cauza": "Excessive IGBT junction to case temperature. This fault protects the IGBT(s) and can be activated by a short circuit in the motor cable.",
+    "remediu": "Check motor cable. Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 553,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3130",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Input phase loss",
+    "cauza": "Intermediate circuit DC voltage is oscillating due to missing input power line phase or blown fuse.",
+    "remediu": "Check input power line fuses. Check for loose power cable connections. Check for input power supply imbalance. If supply phases are properly connected and the drive still trips, it is reasonable to enable parameter 97.48 Udc stabilizer.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 553,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3181",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Wiring or earth fault",
+    "cauza": "Incorrect input power and motor cable connection (ie. input power cable is connected to drive motor connection).",
+    "remediu": "Check input power connections.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 553,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3210",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "DC link overvoltage",
+    "cauza": "Excessive intermediate circuit DC voltage.",
+    "remediu": "Check that overvoltage control is on (parameter 30.30 Overvoltage control). Check that the supply voltage matches the nominal input voltage of the drive. Check the supply line for static or transient overvoltage. Check brake chopper and resistor (if present). Check deceleration time. Use coast-to-stop function (if applicable). Retrofit drive with brake chopper and brake resistor. Check that the brake resistor is dimensioned properly and the resistance is between acceptable range for the drive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3220",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "DC link undervoltage",
+    "cauza": "Intermediate circuit DC voltage is not sufficient because of a missing supply phase, blown fuse or fault in the rectifier bridge.",
+    "remediu": "Check supply cabling, fuses and switchgear.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3381",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Output phase loss",
+    "cauza": "Motor circuit fault due to missing motor connection (all three phases are not connected).",
+    "remediu": "Connect motor cable.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "3385",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Autophasing",
+    "cauza": "Autophasing routine (see section Autophasing on page 179) has failed.",
+    "remediu": "Try other autophasing modes (see parameter 21.13 Autophasing mode if possible. Check that the motor ID run has been successfully completed. Check that the motor is not already turning when the autophasing routine starts. Check the setting of parameter 99.03 Motor type is Permanent magnet motor.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0002",
+          "cauza": "Motor is rotating during autophasing.",
+          "remediu": "Check that the motor is not already rotating when the autophasing routine starts."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Too much difference between measured and estimated positions.",
+          "remediu": "Check that the encoder is not slipping."
+        },
+        {
+          "cod": "0007",
+          "cauza": "General autophasing failure.",
+          "remediu": "Contact your local ABB representative."
+        }
+      ]
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4110",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Control board temperature",
+    "cauza": "Control unit temperature is too high.",
+    "remediu": "Check proper cooling of the drive. Check the auxiliary cooling fan.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4210",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "IGBT overtemperature",
+    "cauza": "Estimated drive IGBT temperature is excessive.",
+    "remediu": "Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 554,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4290",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Cooling",
+    "cauza": "Drive module temperature is excessive.",
+    "remediu": "Check ambient temperature. If it exceeds R4...R9) 40 °C/104 °F (IP21 frames or if it exceeds 50 °C /122 °F (IP21 frames R1...R9), ensure that load current does not exceed derated load capacity of drive. For all P55 frames, check the derating temperatures. See chapter Technical data, section Derating in the Hardware manual of the drive. Check drive module cooling air flow and fan operation. Check inside of cabinet and heatsink of drive module for dust pick-up. Clean whenever necessary.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "42F1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "IGBT temperature",
+    "cauza": "Drive IGBT temperature is excessive.",
+    "remediu": "Check ambient conditions. Check air flow and fan operation. Check heatsink fins for dust pick-up. Check motor power against drive power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4310",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Excess temperature",
+    "cauza": "Power unit module temperature is excessive.",
+    "remediu": "See A4B0 Excess temperature (page 543).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4380",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Excess temperature difference",
+    "cauza": "High temperature difference between the IGBTs of different phases.",
+    "remediu": "Check the motor cabling. Check cooling of drive module(s).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4981",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External temperature 1",
+    "cauza": "Measured temperature 1 has exceeded fault limit.",
+    "remediu": "Check the value of parameter 35.02 Measured temperature 1. Check the cooling of the motor (or other equipment whose temperature is being measured).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4982",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External temperature 2",
+    "cauza": "Measured temperature 2 has exceeded fault limit.",
+    "remediu": "Check the value of parameter 35.03 Measured temperature 2. Check the cooling of the motor (or other equipment whose temperature is being measured).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4990",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "CPTC-02 not found",
+    "cauza": "CPTC-02 extension module is not detected in option slot 2.",
+    "remediu": "Power down the drive and check that the module is properly inserted in option slot 2. See also CPTC-02 ATEX-certified thermistor protection module, Ex II (2) GD (+L537+Q971) user's manual (3AXD50000030058 [English].",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "4991",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Safe motor temperature",
+    "cauza": "The CPTC-02 module indicates overtemperature: • motor temperature is too high, or • the thermistor is in shortcircuit or disconnected",
+    "remediu": "Check the cooling of the motor. Check the motor load and drive ratings. Check the wiring of the temperature sensor. Repair wiring if faulty. Measure the resistance of the sensor. Replace the sensor if faulty.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5080",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Fan",
+    "cauza": "Cooling fan feedback missing. For frame sizes R6 or larger.",
+    "remediu": "See A581 Fan (page 543).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 555,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5081",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Auxiliary fan broken",
+    "cauza": "An auxiliary cooling fan (connected to the fan connectors on the control unit) is stuck or disconnected.",
+    "remediu": "Check the auxiliary code. Check auxiliary fan(s) and connection(s). Replace fan if faulty. Make sure the front cover of the drive is in place and tightened. If the commissioning of the drive requires th the cover is off, activate parameter 31.36 Aux fan fault function within 2 min from control unit reboot to temporarily suppress the fault. Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Auxiliary fan 1 broken.",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "Auxiliary fan 2 broken.",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5090",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "STO hardware failure",
+    "cauza": "STO hardware diagnostics has detected hardware failure.",
+    "remediu": "Contact your local ABB representative quoting the auxiliary code. The code contains location information, especially with parallel-connected inverter modules. When converted into a 32-bit binary number, the bits of the code indicate the following: 31...28: Number of faulty inverter module (0...11 decimal). 1111: STO_ACT states of control unit and inverter modules in conflict 27: STO_ACT state of inverter modules 26: STO_ACT state of control unit 25: STO1 of control unit 24: STO2 of control unit 23...12: STO1 of inverter modules 12...1 (Bits of non-existing modules set to 1) 11...0: STO2 of inverter modules 12...1 (Bits of non-existing modules set to 1).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5091",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Safe torque off",
+    "cauza": "Safe torque off function is active, that is, safety circuit signal(s) connected to connector STO is broken during start or run.",
+    "remediu": "Check safety circuit connections. For more information, see chapter The Safe torque off function in the Hardware manual of the drive and description of parameter 31.22 STO indication run/stop (page 355). Check the value of parameter 95.04 Control board supply.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5092",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "PU logic error",
+    "cauza": "Power unit memory has cleared.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5093",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Rating ID mismatch",
+    "cauza": "The hardware of the drive does not match the information stored in the memory. This may occur, for example, after a firmware update.",
+    "remediu": "Cycle the power to the drive. You may have to be repeat this. If the problem persists, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5094",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Measurement circuit temperature",
+    "cauza": "Problem with internal temperature measurement of the drive.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 556,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5089",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "SMT circuit malfunction",
+    "cauza": "Safe motor temperature fault is generated and STO event/fault/warning is not generated. Note: If only one STO channel is opened, fault 5090 STO hardware failure is generated.",
+    "remediu": "Check connection between the relay output of the module and the STO terminal.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5098",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "I/O communication loss",
+    "cauza": "Communication failure to standard I/O.",
+    "remediu": "Try resetting the fault or cycle the power to the drive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "50A0",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Fan",
+    "cauza": "Cooling fan stuck or disconnected.",
+    "remediu": "Check fan operation and connection. Replace fan if faulty.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5681",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "PU communication",
+    "cauza": "Communication errors detected between the drive control unit and the power unit.",
+    "remediu": "Check the connection between the drive control unit and the power unit. Check the value of parameter 95.04 Control board supply.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5682",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Power unit lost",
+    "cauza": "Connection between the drive control unit and the power unit is lost.",
+    "remediu": "Check the connection between the control unit and the power unit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5691",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Measurement circuit",
+    "cauza": "Measurement circuit fault.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5692",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "PU board powerfail",
+    "cauza": "Power unit power supply failure.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5693",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Measurement circuit",
+    "cauza": "Measurement circuit fault.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5697",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Charging feedback",
+    "cauza": "Charging feedback signal missing.",
+    "remediu": "Check the feedback signal coming from the charging system",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "5698",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Unknown PU fault",
+    "cauza": "The power unit logic has generated a fault which is not known by the software.",
+    "remediu": "Check the logic and software compatibility.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6181",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "FPGA version incompatible",
+    "cauza": "Firmware and FPGA versions are incompatible.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0010",
+          "cauza": "Incompatible PU FPGA version.",
+          "remediu": "The PU FPGA version does not support ambient temperature measurement. The required PU FPGA version is VIPZ 1016 (or newer) or VIPM 1015 (or newer)."
+        }
+      ]
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6200",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Checksum mismatch",
+    "cauza": "Parameter checksum 96.68 Actual checksumA does not match 96.71 Approved checksum A and/ or parameter checksum 96.69 Actual checksumB does not match 96.72 Approved checksum B.",
+    "remediu": "Revert parameter changes made after approving the checksum. If parameter changes are valid, approve new checksum by setting parameter 96.55 Checksum control word bit 12 (Set approved checksum A) and/or 13 (Set approved checksum B) to 1 = Set.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6306",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "FBA A mapping file",
+    "cauza": "Fieldbus adapter A mapping file read error.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6481",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Task overload",
+    "cauza": "Internal fault.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 557,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6487",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Stack overflow",
+    "cauza": "Internal fault.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64A1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Internal file load",
+    "cauza": "File read error.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64A4",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Rating ID fault",
+    "cauza": "Rating ID load error.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64A6",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Adaptive program",
+    "cauza": "Error running the adaptive program.",
+    "remediu": "Check the auxiliary code (format XXYY ZZZZ). “XX” specifies the number of the state (00=base program) and “YY” specifies the number of the function block (0000=generic error). ”ZZZZ” indicates the problem.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "000A",
+          "cauza": "Program corrupted or block non-existent",
+          "remediu": "Restore the template program or download the program to the drive."
+        },
+        {
+          "cod": "000C",
+          "cauza": "Required block input missing",
+          "remediu": "Check the inputs of the block."
+        },
+        {
+          "cod": "000E",
+          "cauza": "Program corrupted or block non-existent",
+          "remediu": "Restore the template program or download the program to the drive."
+        },
+        {
+          "cod": "0011",
+          "cauza": "Program too large.",
+          "remediu": "Remove blocks until the error stops."
+        },
+        {
+          "cod": "0012",
+          "cauza": "Program is empty.",
+          "remediu": "Correct the program and download it to the drive."
+        },
+        {
+          "cod": "001C",
+          "cauza": "A non-existing parameter or block is used in the program.",
+          "remediu": "Edit the program to correct the parameter reference, or to use an existing block."
+        },
+        {
+          "cod": "001D",
+          "cauza": "Parameter type invalid for selected pin.",
+          "remediu": "Edit the program to correct the parameter reference."
+        },
+        {
+          "cod": "001E",
+          "cauza": "Output to parameter failed because the parameter was write-protected.",
+          "remediu": "Check the parameter reference in the program. Check for other sources affecting the target parameter."
+        },
+        {
+          "cod": "0023",
+          "cauza": "Program file incompatible with current firmware version. Other –",
+          "remediu": "Adapt the program to current block library and firmware version. Contact your local ABB representative, quoting the auxiliary code."
+        }
+      ]
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64B1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Internal SSW fault",
+    "cauza": "Internal fault.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64B2",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "User set fault",
+    "cauza": "Loading of user parameter set failed because • requested set does not exist • set is not compatible with control program • drive was switched off during loading.",
+    "remediu": "Ensure that a valid user parameter set exists. Reload if uncertain.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 558,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64B3",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Macro parameterization error",
+    "cauza": "Macro parameterization failed, for example, because parameter default value that cannot be changed has been attempted to write.",
+    "remediu": "",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "64E1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Kernel overload",
+    "cauza": "Operating system error.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6581",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Parameter system",
+    "cauza": "Parameter load or save failed.",
+    "remediu": "Try forcing a save using parameter 96.07 Parameter save manually. Retry.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6591",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Backup/Restore timeout",
+    "cauza": "During backup creating or restoring operation a control panel or PC-tool has failed to communicate with the drive as part this operation.",
+    "remediu": "Check control panel or PC-tool communication and if it is still in backup or restore state.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "65A1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "FBA A parameter conflict",
+    "cauza": "The drive does not have a functionality requested by PLC, or requested functionality has not been activated.",
+    "remediu": "Check PLC programming. Check settings of parameter groups 50 Fieldbus adapter (FBA) and 51 FBA A settings.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6681",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB comm loss",
+    "cauza": "Communication break in embedded fieldbus (EFB) communication.",
+    "remediu": "Check the status of the fieldbus master (online/offline/error etc.). Check cable connections to the EIA-485/X5 terminals 29, 30 and 31 on the control unit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6682",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB config file",
+    "cauza": "Embedded fieldbus (EFB) configuration file could not be read.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6683",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB invalid parameterization",
+    "cauza": "Embedded fieldbus (EFB) parameter settings inconsistent or not compatible with selected protocol.",
+    "remediu": "Check the settings in parameter group 58 Embedded fieldbus.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6684",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB load fault",
+    "cauza": "Embedded fieldbus (EFB) protocol firmware could not be loaded. Version mismatch between EFB protocol firmware and drive firmware.",
+    "remediu": "Contact your local ABB representative.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6685",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB fault 2",
+    "cauza": "Fault reserved for the EFB protocol application.",
+    "remediu": "Check the documentation of the protocol.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6686",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB fault 3",
+    "cauza": "Fault reserved for the EFB protocol application.",
+    "remediu": "Check the documentation of the protocol.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6882",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Text 32-bit table overflow",
+    "cauza": "Internal fault.",
+    "remediu": "Reset the fault. Contact your local ABB representative if the fault persists.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "6885",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Text file overflow",
+    "cauza": "Internal fault.",
+    "remediu": "Reset the fault. Contact your local ABB representative if the fault persists.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7081",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Control panel loss",
+    "cauza": "Control panel or PC tool selected as active control location for drive has ceased communicating.",
+    "remediu": "Check PC tool or control panel connection. Check control panel connector. Disconnect and reconnect the control panel.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 559,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7082",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "I/O module comm loss",
+    "cauza": "Communication between IO module and drive is not working properly.",
+    "remediu": "Check the IO module installation.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7085",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Incompatible option module",
+    "cauza": "Fieldbus option module not supported.",
+    "remediu": "Replace the module with a supported type.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7086",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "AI Overvoltage",
+    "cauza": "An overvoltage has been detected on an analog input. The analog input has temporarily been changed to voltage mode and will be changed back to current mode when the AI signal level is back within acceptable limits.",
+    "remediu": "Check AI signal levels.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7121",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Motor stall",
+    "cauza": "Motor is operating in stall region because of, for example, excessive load or insufficient motor power.",
+    "remediu": "Check motor load and drive ratings. Check fault function parameters.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7122",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Motor overload",
+    "cauza": "Continuous average motor current is above the defined motor nominal current.",
+    "remediu": "Check that the motor rotation is not obstructed. Consider the possibility that the motor nominal torque may not be adequate for the application. Adjust the parameters used for the motor overload function (35.51...35.53) and 35.55...35.56.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7181",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Brake resistor",
+    "cauza": "Brake resistor broken or not connected.",
+    "remediu": "Check that a brake resistor has been connected. Check the condition of the brake resistor. Check the dimensioning of the brake resistor.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7183",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "BR excess temperature",
+    "cauza": "Brake resistor temperature has exceeded fault limit defined by parameter 43.11 Brake resistor fault limit.",
+    "remediu": "Stop drive. Let resistor cool down. Check resistor overload protection function settings (parameter group 43 Brake chopper). Check fault limit setting, parameter 43.11 Brake resistor fault limit. Check that braking cycle meets allowed limits.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7191",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "BC short circuit",
+    "cauza": "Short circuit in brake chopper IGBT.",
+    "remediu": "Ensure brake resistor is connected and not damaged. Check the electrical specifications of the brake resistor against chapter Resistor braking in the Hardware manual of the drive. Replace brake chopper (if replaceable).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 560,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7192",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "BC IGBT excess temperature",
+    "cauza": "Brake chopper IGBT temperature has exceeded internal fault limit.",
+    "remediu": "Let chopper cool down. Check for excessive ambient temperature. Check for cooling fan failure. Check for obstructions in the air flow. Check resistor overload protection function settings (parameter group 43 Brake chopper). Check that braking cycle meets allowed limits. Check that drive supply AC voltage is not excessive.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7310",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Overspeed",
+    "cauza": "Motor is turning faster than highest allowed speed due to incorrectly set minimum/maximum speed, insufficient braking torque or changes in load when using torque reference.",
+    "remediu": "Check minimum/maximum speed settings, parameters 30.11 Minimum speed and 30.12 Maximum speed. Check adequacy of motor braking torque. Check applicability of torque control. Check need for brake chopper and resistor(s).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "73B0",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Emergency ramp failed",
+    "cauza": "Emergency stop did not finish within expected time.",
+    "remediu": "Check the settings of parameters 31.32 Emergency ramp supervision and 31.33 Emergency ramp supervision delay. Check the predefined ramp times (23.11...23.15 for mode Off1, 23.23 for mode Off3).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "73F0",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Overfrequency",
+    "cauza": "Maximum allowed output frequency exceeded.",
+    "remediu": "Check the auxiliary code.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "00FA",
+          "cauza": "Motor is turning faster than the highest allowed frequency due to incorrectly set minimum/maximum frequency or the motor rushes because of too high supply voltage or incorrect supply voltage selection in parameter 95.01 Supply voltage. Other -",
+          "remediu": "Check minimum/maximum frequency settings, parameters 30.13 Minimum frequency and 30.14 Maximum frequency. Check used supply voltage and voltage selection parameter 95.01 Supply voltage. Contact your local ABB representative, quoting the auxiliary code."
+        }
+      ]
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "7510",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "FBA A communication",
+    "cauza": "Cyclical communication between drive and fieldbus adapter module A or between PLC and fieldbus adapter module A is lost.",
+    "remediu": "Check status of fieldbus communication. See user documentation of fieldbus interface. Check settings of parameter groups 50 Fieldbus adapter (FBA), 51 FBA A settings, 52 FBA A data in and 53 FBA A data out. Check cable connections. Check if communication master is able to communicate.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "8001",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "ULC underload fault",
+    "cauza": "User load curve: Signal has been too long under the underload curve.",
+    "remediu": "See parameter 37.04 ULC underload actions.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "8002",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "ULC overload fault",
+    "cauza": "User load curve: Signal has been too long over the overload curve.",
+    "remediu": "See parameter 37.03 ULC overload actions.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 561,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80A0",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "AI supervision",
+    "cauza": "An analog signal is outside the limits specified for the analog input.",
+    "remediu": "Check signal level at the analog input. Check the auxiliary code. Check the wiring connected to the input. Check the minimum and maximum limits of the input in parameter group 12 Standard AI.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "AI1LessMIN",
+          "remediu": ""
+        },
+        {
+          "cod": "0002",
+          "cauza": "AI1GreaterMAX",
+          "remediu": ""
+        },
+        {
+          "cod": "0003",
+          "cauza": "AI2LessMIN.",
+          "remediu": ""
+        },
+        {
+          "cod": "0004",
+          "cauza": "AI2GreaterMAX",
+          "remediu": ""
+        }
+      ]
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B0",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 1",
+    "cauza": "Fault generated by the signal supervision function 1.",
+    "remediu": "Check the source of the fault (parameter 32.07 Supervision 1 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B1",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 2",
+    "cauza": "Fault generated by the signal supervision function 2.",
+    "remediu": "Check the source of the fault (parameter 32.17 Supervision 2 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B2",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 3",
+    "cauza": "Fault generated by the signal supervision function 3.",
+    "remediu": "Check the source of the fault (parameter 32.27 Supervision 3 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B3",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 4",
+    "cauza": "Fault generated by the signal supervision function 4.",
+    "remediu": "Check the source of the fault (parameter 32.37 Supervision 4 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B4",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 5",
+    "cauza": "Fault generated by the signal supervision function 5.",
+    "remediu": "Check the source of the fault (parameter 32.47 Supervision 5 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "80B5",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Signal supervision 6",
+    "cauza": "Fault generated by the signal supervision function 6.",
+    "remediu": "Check the source of the fault (parameter 32.57 Supervision 6 signal).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "9081",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External fault 1",
+    "cauza": "Fault in external device 1.",
+    "remediu": "Check the external device. Check setting of parameter 31.01 External event 1 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "9082",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External fault 2",
+    "cauza": "Fault in external device 2.",
+    "remediu": "Check the external device. Check setting of parameter 31.03 External event 2 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "9083",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External fault 3",
+    "cauza": "Fault in external device 3.",
+    "remediu": "Check the external device. Check setting of parameter 31.05 External event 3 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 562,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "9084",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External fault 4",
+    "cauza": "Fault in external device 4.",
+    "remediu": "Check the external device. Check setting of parameter 31.07 External event 4 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "9085",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "External fault 5",
+    "cauza": "Fault in external device 5.",
+    "remediu": "Check the external device. Check setting of parameter 31.09 External event 5 source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D401",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Max cleaning fault",
+    "cauza": "The maximum number of cleanings are reached in the defined time. The pump cleaning is unable to clean the pump and hence, manual cleaning is required.",
+    "remediu": "Check the pump for blockages. Clean the pump manually if needed. Check parameters 83.35 Cleaning count fault to 83.37 Maximum cleaning count.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D404",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Running dry",
+    "cauza": "Dry run protection is activated.",
+    "remediu": "Check the pump inlet for sufficient water level. Check dry run protection settings in parameters 82.20 Dry run protection and 82.21 Dry run source.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D405",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Pipe fill-timeout",
+    "cauza": "Soft pipe fill has reached timeout limit. The PID output is not reached the setpoint after reference ramping is ended and the timeout limit is elapsed.",
+    "remediu": "Check the pipe for possible leakage. See parameter 82.25 Soft pipe fill supervision and 82.26 Time-out limit.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "D40C",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Cavitation detected",
+    "cauza": "The pump is not getting enough liquid.",
+    "remediu": "• Check the fluid level in the system. • Restart the pump and confirm if cavitation is still occurring. • Adjust the parameters used for the cavitation detection function (86.12 – 86.30) if needed.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FA81",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Safe torque off 1",
+    "cauza": "Safe torque off function is active, ie. STO circuit 1 is broken.",
+    "remediu": "Check safety circuit connections. For more information, see chapter The Safe torque off function in the Hardware manual of the drive and description of parameter 31.22 STO indication run/stop (page 355).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FA82",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "Safe torque off 2",
+    "cauza": "Safe torque off function is active, ie. STO circuit 2 is broken.",
+    "remediu": "Check the value of parameter 95.04 Control board supply.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 563,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FF61",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "ID run",
+    "cauza": "Motor ID run was not completed successfully.",
+    "remediu": "Check the nominal motor values in parameter group 99 Motor data. Check that no external control system is connected to the drive. Cycle the power to the drive (and its control unit, if powered separately). Check that no operation limits prevent the completion of the ID run. Restore parameters to default settings and try again. Check that the motor shaft is not locked. Check the auxiliary code. The second number of the code indicates the problem (see actions for each code below).",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": [
+        {
+          "cod": "0001",
+          "cauza": "Maximum current limit too low.",
+          "remediu": "Check settings of parameters 99.06 Motor nominal current and 30.17 Maximum current. Make sure that 30.17 > 99.06. Check that the drive is dimensioned correctly according to the motor."
+        },
+        {
+          "cod": "0002",
+          "cauza": "Maximum speed limit or calculated field weakening point too low.",
+          "remediu": "Check settings of parameters • 30.11 Minimum speed • 30.12 Maximum speed • 99.07 Motor nominal voltage • 99.08 Motor nominal frequency • 99.09 Motor nominal speed. Make sure that • 30.12 > (0.55 × 99.09) > (0.50 × synchronous speed) • 30.11 < 0, and • supply voltage > (0.66 × 99.07)."
+        },
+        {
+          "cod": "0003",
+          "cauza": "Maximum torque limit too low.",
+          "remediu": "Check settings of parameter 99.12 Motor nominal torque, and the torque limits in group 30 Limits. Make sure that the maximum torque limit in force is greater than 100%."
+        },
+        {
+          "cod": "0004",
+          "cauza": "Current measurement calibration did not finish within reasonable time",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "0005",
+          "cauza": "Motor not connected to the drive.",
+          "remediu": "Check the motor connection."
+        },
+        {
+          "cod": "0006…0008",
+          "cauza": "Internal error.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "0009",
+          "cauza": "(Asynchronous motors only) Acceleration did not finish within reasonable time.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "000A",
+          "cauza": "(Asynchronous motors only) Deceleration did not finish within reasonable time.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "000B",
+          "cauza": "(Asynchronous motors only) Speed dropped to zero during ID run.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "000C",
+          "cauza": "(Permanent magnet motors only) First acceleration did not finish within reasonable time.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "000D",
+          "cauza": "(Permanent magnet motors only) Second acceleration did not finish within reasonable time.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "000E…0010",
+          "cauza": "Internal error.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "0011",
+          "cauza": "(Synchronous reluctance motors only) Pulse test error.",
+          "remediu": "Contact your local ABB representative."
+        },
+        {
+          "cod": "0012",
+          "cauza": "Motor too large for advanced standstill ID run.",
+          "remediu": "Check that the motor and drive sizes are compatible. Contact your local ABB representative."
+        },
+        {
+          "cod": "0013",
+          "cauza": "(Asynchronous motors only) Motor data error.",
+          "remediu": "Check that the motor nominal value settings in the drive are the same as in the motor nameplate. Contact your local ABB representative."
+        }
+      ]
+    },
+    "pagina": 564,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FF63",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "STO diagnostics failure.",
+    "cauza": "SW internal malfunction.",
+    "remediu": "Reboot the control unit (using parameter 96.08 Control board boot) or by cycling power.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 565,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FF81",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "FB A force trip",
+    "cauza": "A fault trip command has been received through fieldbus adapter A.",
+    "remediu": "Check the fault information provided by the PLC.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 565,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  },
+  {
+    "producator": "ABB",
+    "familie": "ACS580",
+    "cod": "FF8E",
+    "cod_secundar": null,
+    "tip": "fault",
+    "nume": "EFB force trip",
+    "cauza": "A fault trip command has been received through the embedded fieldbus interface.",
+    "remediu": "Check the fault information provided by the PLC.",
+    "reactie": null,
+    "confirmare": null,
+    "extra": {
+      "aux_codes": []
+    },
+    "pagina": 565,
+    "sursa": "ACS580_Firmware_Manual.pdf"
+  }
+]

@@ -3009,6 +3009,130 @@ def get_parametri_by_producator(producator):
     conn.close()
     return jsonify([dict(r) for r in rows])
 
+# ============ FAULT CODES API ============
+# Drive fault / alarm / warning codes extracted from the manufacturer manuals.
+# Sibling dataset to parametri_master; same producator -> familie -> list shape.
+
+def _fault_row(row):
+    """Row -> dict, decoding extra_json into an `extra` object."""
+    d = dict(row)
+    raw = d.pop('extra_json', None)
+    if raw:
+        try:
+            d['extra'] = json.loads(raw)
+        except (ValueError, TypeError):
+            d['extra'] = None
+    else:
+        d['extra'] = None
+    return d
+
+
+@app.route('/api/fault-codes/familii', methods=['GET'])
+@login_required
+def get_fault_familii():
+    """Producator + familie + count, for the fault-code navigation picker."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''SELECT producator, familie, COUNT(*) AS count
+                      FROM fault_codes
+                      GROUP BY producator, familie
+                      ORDER BY producator, familie''')
+    families = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({'families': families})
+
+
+@app.route('/api/fault-codes', methods=['GET'])
+@login_required
+def get_fault_codes():
+    """List/filter fault codes. Query: familie, producator, search, tip, page, limit."""
+    conn = get_db()
+    cursor = conn.cursor()
+
+    search = request.args.get('search', '').strip()
+    familie = request.args.get('familie', '').strip()
+    producator = request.args.get('producator', '').strip()
+    tip = request.args.get('tip', '').strip()
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 50, type=int)
+    offset = (page - 1) * limit
+
+    where = ' WHERE 1=1'
+    params = []
+    if familie:
+        where += ' AND familie = ?'
+        params.append(familie)
+    if producator:
+        where += ' AND producator = ?'
+        params.append(producator)
+    if tip:
+        where += ' AND tip = ?'
+        params.append(tip)
+    if search:
+        where += ' AND (cod LIKE ? OR cod_secundar LIKE ? OR nume LIKE ? OR cauza LIKE ?)'
+        s = f'%{search}%'
+        params.extend([s, s, s, s])
+
+    cursor.execute(f'SELECT COUNT(*) FROM fault_codes{where}', params)
+    total = cursor.fetchone()[0]
+
+    cursor.execute(
+        f'''SELECT id, producator, familie, cod, cod_secundar, tip, nume, pagina
+            FROM fault_codes{where} ORDER BY cod LIMIT ? OFFSET ?''',
+        params + [limit, offset])
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    return jsonify({
+        'codes': rows,
+        'total': total,
+        'page': page,
+        'limit': limit,
+        'totalPages': max(1, (total + limit - 1) // limit),
+    })
+
+
+@app.route('/api/fault-codes/lookup', methods=['GET'])
+@login_required
+def lookup_fault_code():
+    """Quick lookup by code. Query: cod (required), producator/familie (optional).
+    Matches cod or cod_secundar, case-insensitive."""
+    cod = request.args.get('cod', '').strip()
+    if not cod:
+        return jsonify({'error': 'cod lipsa'}), 400
+    producator = request.args.get('producator', '').strip()
+    familie = request.args.get('familie', '').strip()
+
+    conn = get_db()
+    cursor = conn.cursor()
+    where = ' WHERE (cod = ? COLLATE NOCASE OR cod_secundar = ? COLLATE NOCASE)'
+    params = [cod, cod]
+    if producator:
+        where += ' AND producator = ?'
+        params.append(producator)
+    if familie:
+        where += ' AND familie = ?'
+        params.append(familie)
+    cursor.execute(f'SELECT * FROM fault_codes{where} ORDER BY producator, familie', params)
+    matches = [_fault_row(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({'matches': matches, 'count': len(matches)})
+
+
+@app.route('/api/fault-codes/<int:code_id>', methods=['GET'])
+@login_required
+def get_fault_code(code_id):
+    """Full detail for one fault code."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM fault_codes WHERE id = ?', (code_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row is None:
+        return jsonify({'error': 'Codul nu a fost găsit'}), 404
+    return jsonify(_fault_row(row))
+
+
 @app.route('/api/parametri/audit', methods=['GET'])
 @login_required
 def parametri_audit():

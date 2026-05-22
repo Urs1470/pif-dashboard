@@ -48,8 +48,9 @@ def close_db(exc=None):
 # v2: Added clienti, echipamente, project_templates tables
 # v3: Added ordine to tasks, notify_on_complete/deadline to proiecte
 # v4: Added budget_state, budget_audit tables for Budget Tracker
+# v10: Added fault_codes table (drive fault/alarm/warning codes from manuals)
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -327,6 +328,36 @@ def migrate_v8_to_v9():
     conn.close()
 
 
+def migrate_v9_to_v10():
+    """v9 -> v10: drive fault / alarm / warning codes extracted from the
+    manufacturer manuals. Sibling dataset to parametri_master. Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS fault_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producator TEXT NOT NULL,
+            familie TEXT NOT NULL,
+            cod TEXT NOT NULL,
+            cod_secundar TEXT,
+            tip TEXT,
+            nume TEXT,
+            cauza TEXT,
+            remediu TEXT,
+            reactie TEXT,
+            confirmare TEXT,
+            extra_json TEXT,
+            pagina INTEGER,
+            sursa TEXT
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
+    conn.commit()
+    conn.close()
+    print("Migration v9->v10: added fault_codes table")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -371,6 +402,11 @@ def run_migrations():
         set_schema_version(9)
         current_version = 9
 
+    if current_version < 10:
+        migrate_v9_to_v10()
+        set_schema_version(10)
+        current_version = 10
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -386,6 +422,8 @@ def run_migrations():
     has_descriere = any(row[1] == 'descriere' for row in cursor.fetchall())
     cursor.execute("PRAGMA table_info(global_tasks)")
     has_gt_recurenta = any(row[1] == 'recurenta' for row in cursor.fetchall())
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
+    has_fault_codes = cursor.fetchone() is not None
     conn.close()
     if not has_cat_table or not has_cat_col:
         print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
@@ -396,11 +434,69 @@ def run_migrations():
     if not has_gt_recurenta:
         print("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
         migrate_v8_to_v9()
+    if not has_fault_codes:
+        print("Self-heal: re-running v9->v10 (fault_codes missing)")
+        migrate_v9_to_v10()
 
     if current_version == SCHEMA_VERSION:
         print(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
         print(f"Database migrated to v{SCHEMA_VERSION}")
+
+
+def seed_fault_codes():
+    """Populate fault_codes from data/fault_codes/*.json when the table is empty.
+
+    Makes the drive fault-code dataset self-deploying: the JSON files ship in
+    git, and the table is filled automatically on the first startup after the
+    v10 migration. A no-op once the table has rows."""
+    import json
+    import glob
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'data', 'fault_codes')
+    if not os.path.isdir(data_dir):
+        return
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT COUNT(*) FROM fault_codes')
+        if cursor.fetchone()[0] > 0:
+            conn.close()
+            return
+    except sqlite3.OperationalError:
+        conn.close()
+        return
+    cols = ['producator', 'familie', 'cod', 'cod_secundar', 'tip', 'nume',
+            'cauza', 'remediu', 'reactie', 'confirmare', 'extra_json',
+            'pagina', 'sursa']
+    placeholders = ','.join('?' * len(cols))
+    total = 0
+    for path in sorted(glob.glob(os.path.join(data_dir, '*.json'))):
+        try:
+            with open(path, encoding='utf-8') as fh:
+                data = json.load(fh)
+        except Exception as e:
+            print(f"seed_fault_codes: skipped {os.path.basename(path)}: {e}")
+            continue
+        rows = []
+        for d in data:
+            extra = d.get('extra')
+            extra_json = json.dumps(extra, ensure_ascii=False) if extra else None
+            rows.append((
+                d.get('producator'), d.get('familie'), d.get('cod'),
+                d.get('cod_secundar'), d.get('tip'), d.get('nume'),
+                d.get('cauza'), d.get('remediu'), d.get('reactie'),
+                d.get('confirmare'), extra_json, d.get('pagina'), d.get('sursa'),
+            ))
+        cursor.executemany(
+            f"INSERT INTO fault_codes ({','.join(cols)}) VALUES ({placeholders})",
+            rows)
+        total += len(rows)
+    conn.commit()
+    conn.close()
+    if total:
+        print(f"Seeded fault_codes with {total} rows")
+
 
 def init_db():
     conn = get_db()
@@ -621,6 +717,26 @@ def init_db():
         )
     ''')
 
+    # Drive fault / alarm / warning codes extracted from the manufacturer manuals.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS fault_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producator TEXT NOT NULL,
+            familie TEXT NOT NULL,
+            cod TEXT NOT NULL,
+            cod_secundar TEXT,
+            tip TEXT,
+            nume TEXT,
+            cauza TEXT,
+            remediu TEXT,
+            reactie TEXT,
+            confirmare TEXT,
+            extra_json TEXT,
+            pagina INTEGER,
+            sursa TEXT
+        )
+    ''')
+
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
@@ -636,12 +752,17 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_budget_audit_user_ts ON budget_audit(user, ts DESC)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
 
     conn.commit()
     conn.close()
 
     # Run migrations after init to ensure schema is up to date
     run_migrations()
+
+    # Self-deploying fault-code dataset: fill the table on first run.
+    seed_fault_codes()
 
 def row_to_dict(row):
     if row is None:
