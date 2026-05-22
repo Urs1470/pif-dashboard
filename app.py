@@ -3751,14 +3751,26 @@ ASSISTANT_TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "update_proiect",
-        "description": "Modifică un proiect: redenumire (nume_nou), status, client, locatie sau observatii. Trimite doar ce schimbi. Redenumirea pastreaza tot continutul proiectului (taskuri, jurnal, checklist etc.).",
+        "description": "Modifică orice câmp al unui proiect. Trimite doar câmpurile pe care le schimbi. Orice modificare (inclusiv redenumirea prin nume_nou) pastreaza tot continutul proiectului: taskuri, jurnal, checklist, timer, echipamente.",
         "parameters": {"type": "object", "properties": {
             "nume": {"type": "string", "description": "nume parțial sau id al proiectului de modificat (cheie de cautare)"},
             "nume_nou": {"type": "string", "description": "noul nume al proiectului — pentru redenumire"},
+            "tip": {"type": "string", "description": "PIF sau Service"},
             "status": {"type": "string", "description": "in_lucru, in_asteptare, blocat, finalizat"},
             "client": {"type": "string"},
             "locatie": {"type": "string"},
-            "observatii": {"type": "string"}
+            "producator": {"type": "string", "description": "ABB, Siemens, Danfoss, Lenze, Altul"},
+            "echipament_principal": {"type": "string"},
+            "cod_proiect": {"type": "string"},
+            "pm": {"type": "string", "description": "responsabil proiect"},
+            "folder_server": {"type": "string"},
+            "data_incepere": {"type": "string", "description": "data de inceput, format YYYY-MM-DD"},
+            "deadline": {"type": "string", "description": "termen limita, format YYYY-MM-DD"},
+            "nr_comanda": {"type": "string"},
+            "nr_contract": {"type": "string"},
+            "observatii": {"type": "string"},
+            "service_before": {"type": "string", "description": "constatari Service (inainte de interventie)"},
+            "service_after": {"type": "string", "description": "actiuni Service (dupa interventie)"}
         }, "required": ["nume"]}
     }},
     {"type": "function", "function": {
@@ -4124,13 +4136,24 @@ def _assistant_exec_tool(name, args):
                 return {'error': 'Proiectul nu a fost găsit'}
             nume_nou = (args.get('nume_nou') or '').strip() or None
             cur.execute('''UPDATE proiecte SET
-                nume = COALESCE(?, nume), status = COALESCE(?, status),
-                client = COALESCE(?, client), locatie = COALESCE(?, locatie),
+                nume = COALESCE(?, nume), tip = COALESCE(?, tip),
+                status = COALESCE(?, status), client = COALESCE(?, client),
+                locatie = COALESCE(?, locatie), producator = COALESCE(?, producator),
+                echipament_principal = COALESCE(?, echipament_principal),
+                cod_proiect = COALESCE(?, cod_proiect), pm = COALESCE(?, pm),
+                folder_server = COALESCE(?, folder_server),
+                data_incepere = COALESCE(?, data_incepere), deadline = COALESCE(?, deadline),
+                nr_comanda = COALESCE(?, nr_comanda), nr_contract = COALESCE(?, nr_contract),
                 observatii = COALESCE(?, observatii),
+                service_before = COALESCE(?, service_before),
+                service_after = COALESCE(?, service_after),
                 updated_at = ? WHERE id = ?''',
-                (nume_nou, args.get('status'), args.get('client'),
-                 args.get('locatie'), args.get('observatii'),
-                 datetime.now().isoformat(), proj['id']))
+                (nume_nou, args.get('tip'), args.get('status'), args.get('client'),
+                 args.get('locatie'), args.get('producator'), args.get('echipament_principal'),
+                 args.get('cod_proiect'), args.get('pm'), args.get('folder_server'),
+                 args.get('data_incepere'), args.get('deadline'), args.get('nr_comanda'),
+                 args.get('nr_contract'), args.get('observatii'), args.get('service_before'),
+                 args.get('service_after'), datetime.now().isoformat(), proj['id']))
             conn.commit(); conn.close()
             return {'ok': True, 'mesaj': f"Proiect actualizat: {nume_nou or proj['nume']}"}
 
