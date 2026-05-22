@@ -206,7 +206,8 @@ const _GS_META = {
     echipament:  { label: 'Echipamente', icon: 'cpu' },
     client:      { label: 'Clienți', icon: 'users' },
     parametru:   { label: 'Parametri', icon: 'sliders-horizontal' },
+    fault_code:  { label: 'Coduri eroare', icon: 'alert-triangle' },
     obsidian:    { label: 'Notițe', icon: 'book-open' },
 };
 const _GS_ORDER = ['proiect', 'observatie', 'task', 'global_task', 'checklist',
-                   'jurnal', 'echipament', 'client', 'parametru', 'obsidian'];
+                   'jurnal', 'echipament', 'client', 'parametru', 'fault_code', 'obsidian'];

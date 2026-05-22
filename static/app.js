@@ -3054,6 +3054,13 @@ async function _openParamById(paramId) {
     } catch (e) { console.error('open param failed:', e); }
 }
 
+async function _openFaultById(faultId) {
+    try {
+        const f = await apiGet('/fault-codes/' + encodeURIComponent(faultId));
+        if (f && !f.error) openFaultModal(f);
+    } catch (e) { console.error('open fault failed:', e); }
+}
+
 function activateSearchResult(r) {
     const term = (document.getElementById('gsearch-input')?.value || '').trim();
     closeGlobalSearch();
@@ -3080,6 +3087,11 @@ function activateSearchResult(r) {
         case 'parametru':
             switchTab('parametri');
             _openParamById(r.id);
+            break;
+        case 'fault_code':
+            switchTab('parametri');
+            paramSetMode('faults');
+            _openFaultById(r.id);
             break;
         case 'obsidian':
             switchTab('notite');

@@ -3970,6 +3970,15 @@ ASSISTANT_TOOLS = [
             "id": {"type": "string", "description": "id-ul scurt (8 caractere) al intrării de memorie"}
         }, "required": ["id"]}
     }},
+    {"type": "function", "function": {
+        "name": "lookup_fault_code",
+        "description": "Cauta un cod de eroare/avarie/avertizare al unui convertor de frecventa (ABB, Siemens, Danfoss, Lenze) si returneaza cauza si remediul. Foloseste cand Ion intreaba ce inseamna un cod afisat de drive (ex: F30001, 2310, A07910, ALARM 14).",
+        "parameters": {"type": "object", "properties": {
+            "cod": {"type": "string", "description": "codul de eroare cautat (ex: F30001, 2310, A2B4, 14)"},
+            "producator": {"type": "string", "description": "optional: ABB, Siemens, Danfoss sau Lenze"},
+            "familie": {"type": "string", "description": "optional: familia (ex: ACS580, SINAMICS_G120)"}
+        }, "required": ["cod"]}
+    }},
 ]
 
 
@@ -4387,6 +4396,31 @@ def _assistant_exec_tool(name, args):
             conn.commit(); conn.close()
             return {'ok': n > 0, 'mesaj': 'Șters din memorie.' if n else 'Nu am găsit intrarea în memorie.'}
 
+        if name == 'lookup_fault_code':
+            cod = (args.get('cod') or '').strip()
+            if not cod:
+                return {'error': 'cod lipsa'}
+            prod = (args.get('producator') or '').strip()
+            fam = (args.get('familie') or '').strip()
+            conn = get_db(); cur = conn.cursor()
+            where = ' WHERE (cod = ? COLLATE NOCASE OR cod_secundar = ? COLLATE NOCASE)'
+            params = [cod, cod]
+            if prod:
+                where += ' AND producator = ?'; params.append(prod)
+            if fam:
+                where += ' AND familie = ?'; params.append(fam)
+            cols = ('producator, familie, cod, cod_secundar, tip, nume, '
+                    'cauza, remediu, reactie, confirmare')
+            cur.execute(f'SELECT {cols} FROM fault_codes{where} '
+                        'ORDER BY producator, familie LIMIT 12', params)
+            rows = [dict(r) for r in cur.fetchall()]
+            if not rows:
+                cur.execute(f'SELECT {cols} FROM fault_codes WHERE cod LIKE ? '
+                            'ORDER BY producator, familie LIMIT 12', (f'%{cod}%',))
+                rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+            return {'count': len(rows), 'coduri': rows}
+
         return {'error': f'Unealtă necunoscută: {name}'}
     except Exception as e:
         logger.error(f'Assistant tool {name} failed: {e}')
@@ -4540,6 +4574,17 @@ def global_search():
         results.append({'type': 'parametru', 'id': r['id'], 'title': f"{r['parametru']} — {r['familie']}",
                         'subtitle': 'Parametru', 'snippet': _search_snippet(r['descriere'], q),
                         'familie': r['familie'], 'cod': r['parametru']})
+
+    cur.execute('SELECT id, producator, familie, cod, tip, nume, cauza FROM fault_codes '
+                'WHERE cod LIKE ? OR cod_secundar LIKE ? OR nume LIKE ? OR cauza LIKE ? '
+                'ORDER BY producator, cod LIMIT 12', (like, like, like, like))
+    for r in cur.fetchall():
+        tip = r['tip'] or 'eroare'
+        results.append({'type': 'fault_code', 'id': r['id'],
+                        'title': f"{r['cod']} — {r['nume'] or ''}".strip(' —'),
+                        'subtitle': f"Cod {tip} · {r['familie']}",
+                        'snippet': _search_snippet(r['cauza'], q),
+                        'familie': r['familie'], 'producator': r['producator'], 'cod': r['cod']})
 
     conn.close()
 

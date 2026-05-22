@@ -1239,6 +1239,438 @@ function renderInfluenteaza(param, modal, row) {
   }
 }
 
+// ============ Coduri eroare (fault codes): producer→family drill-down ============
+
+const FAULT_PRODUCATORI_MOBILE = {
+  'ABB':     { icon: 'cpu', families: ['ACS580', 'ACS880'],                                          label: 'ABB' },
+  'Siemens': { icon: 'cpu', families: ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'], label: 'Siemens' },
+  'Danfoss': { icon: 'cpu', families: ['Danfoss_VLT_FC302'],                                         label: 'Danfoss' },
+  'Lenze':   { icon: 'cpu', families: ['Lenze_i550', 'Lenze_i950'],                                  label: 'Lenze' },
+};
+
+const FAULT_TIP_LABEL_M = {
+  fault: 'Fault', warning: 'Warning', alarm: 'Alarm', safety: 'Safety',
+  event: 'Event', trouble: 'Trouble', info: 'Info',
+  no_response: 'No resp.', warning_alarm: 'Warn/Alarm',
+};
+
+let _mobileFaultSelectedProducator = null;
+let _mobileFaultSelectedFamilie = null;
+let _mobileFaultFamilieCounts = {};   // { 'ACS580': 123, ... }
+let _mobileFaultFamiliesLoaded = false;
+let _mobileFaultFamiliesPromise = null;  // shared in-flight fetch (dedup concurrent calls)
+let _mobileFaultPage = 1;
+let _mobileFaultTotalPages = 1;
+let _mobileFaultCodes = [];           // accumulated list rows (for "load more")
+let _mobileFaultSearchTimer = null;
+let _mobileFaultLoadToken = 0;        // guards against out-of-order list responses
+let _mobileFaultDetailToken = 0;      // guards against out-of-order detail responses
+
+// Fetch the families+counts once; concurrent callers share the same promise.
+// Resolves true on success, false on failure.
+function ensureFaultFamiliesM() {
+  if (_mobileFaultFamiliesLoaded) return Promise.resolve(true);
+  if (_mobileFaultFamiliesPromise) return _mobileFaultFamiliesPromise;
+  _mobileFaultFamiliesPromise = apiGet('/api/fault-codes/familii')
+    .then(data => {
+      _mobileFaultFamilieCounts = {};
+      if (data && Array.isArray(data.families)) {
+        for (const f of data.families) {
+          if (f && f.familie) _mobileFaultFamilieCounts[f.familie] = f.count || 0;
+        }
+      }
+      _mobileFaultFamiliesLoaded = true;
+      return true;
+    })
+    .catch(e => {
+      console.error('Load fault families error:', e);
+      _mobileFaultFamiliesPromise = null;  // allow a retry on next entry
+      return false;
+    });
+  return _mobileFaultFamiliesPromise;
+}
+
+// Entry point — called by showTab('faults').
+async function loadFaultCodesM() {
+  const grid = document.getElementById('mobile-fault-producator-grid');
+  if (!_mobileFaultFamiliesLoaded && grid && !_mobileFaultSelectedProducator) {
+    grid.innerHTML = '<div class="loading">Se încarcă...</div>';
+  }
+  const ok = await ensureFaultFamiliesM();
+  if (!ok) {
+    if (grid && !_mobileFaultSelectedProducator) {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="wifi-off"></i></div>Eroare la încărcarea codurilor de eroare</div>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (_e) {}
+    }
+    return;
+  }
+
+  // If the detail view is already open (e.g. opened from global search), don't
+  // yank the user back to the picker/list — leave the current step alone.
+  const detailEl = document.getElementById('mobile-fault-detail');
+  const detailOpen = detailEl && detailEl.style.display !== 'none';
+
+  if (!detailOpen) {
+    // If a producer was already chosen this session, return straight to its list.
+    if (_mobileFaultSelectedProducator) {
+      mobileFaultSelectProducator(_mobileFaultSelectedProducator);
+    } else {
+      mobileFaultShowStep('producator');
+      renderMobileFaultProducatorPicker();
+    }
+  }
+
+  // Wire the search input once (debounced ~250ms).
+  const searchEl = document.getElementById('fault-search-m');
+  if (searchEl && !searchEl._wired) {
+    searchEl.oninput = function () {
+      clearTimeout(_mobileFaultSearchTimer);
+      _mobileFaultSearchTimer = setTimeout(function () {
+        _mobileFaultPage = 1;
+        loadFaultCodesListM(false);
+      }, 250);
+    };
+    searchEl._wired = true;
+  }
+}
+
+// Toggle between the three steps of the faults tab.
+function mobileFaultShowStep(step) {
+  const sP = document.getElementById('mobile-fault-step-producator');
+  const sL = document.getElementById('mobile-fault-step-list');
+  const sD = document.getElementById('mobile-fault-detail');
+  if (sP) sP.style.display = (step === 'producator') ? 'block' : 'none';
+  if (sL) sL.style.display = (step === 'list') ? 'block' : 'none';
+  if (sD) sD.style.display = (step === 'detail') ? 'block' : 'none';
+}
+
+function renderMobileFaultProducatorPicker() {
+  const grid = document.getElementById('mobile-fault-producator-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(FAULT_PRODUCATORI_MOBILE).map(([key, info]) => {
+    const total = info.families.reduce((s, f) => s + (_mobileFaultFamilieCounts[f] || 0), 0);
+    const familiesLabel = info.families.map(f => f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '')).join(' · ');
+    return `
+      <button class="mppc-card" onclick="mobileFaultSelectProducator('${key}')">
+        <i data-lucide="${info.icon}"></i>
+        <div class="mppc-name">${escapeHtml(info.label)}</div>
+        <div class="mppc-meta">${total.toLocaleString('ro-RO')} coduri</div>
+        <div class="mppc-families">${escapeHtml(familiesLabel)}</div>
+      </button>
+    `;
+  }).join('');
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+function mobileFaultSelectProducator(producator) {
+  const info = FAULT_PRODUCATORI_MOBILE[producator];
+  if (!info) return;
+  _mobileFaultSelectedProducator = producator;
+
+  mobileFaultShowStep('list');
+
+  const breadcrumb = document.getElementById('mobile-fault-breadcrumb');
+  if (breadcrumb) breadcrumb.textContent = info.label;
+
+  // Mini-tabs per family.
+  const tabsEl = document.getElementById('mobile-fault-mini-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = info.families.map(f => {
+      const count = _mobileFaultFamilieCounts[f] || 0;
+      const label = f.replace(/^(SINAMICS_|Lenze_|Danfoss_VLT_)/, '');
+      return `<button class="mpmt" data-familie="${escapeHtml(f)}" onclick="mobileFaultSelectFamilie('${f}')">${escapeHtml(label)}<span class="count">${count.toLocaleString('ro-RO')}</span></button>`;
+    }).join('');
+  }
+
+  // Auto-select the first family.
+  if (info.families.length > 0) mobileFaultSelectFamilie(info.families[0]);
+}
+
+function mobileFaultSelectFamilie(familie) {
+  _mobileFaultSelectedFamilie = familie;
+  _mobileFaultPage = 1;
+  // Update active mini-tab.
+  document.querySelectorAll('#mobile-fault-mini-tabs .mpmt').forEach(t => {
+    t.classList.toggle('active', t.dataset.familie === familie);
+  });
+  loadFaultCodesListM(false);
+}
+
+function mobileFaultBackToProducator() {
+  _mobileFaultSelectedProducator = null;
+  _mobileFaultSelectedFamilie = null;
+  const searchEl = document.getElementById('fault-search-m');
+  if (searchEl) searchEl.value = '';
+  mobileFaultShowStep('producator');
+  renderMobileFaultProducatorPicker();
+}
+
+function mobileFaultBackToList() {
+  mobileFaultShowStep('list');
+}
+
+// Load the code list for the selected family + search term.
+// append=false replaces the list; append=true adds the next page.
+async function loadFaultCodesListM(append) {
+  const listEl = document.getElementById('fault-list-m');
+  const moreBtn = document.getElementById('fault-load-more-m');
+  if (!_mobileFaultSelectedFamilie) return;
+
+  const searchEl = document.getElementById('fault-search-m');
+  const q = searchEl ? searchEl.value.trim() : '';
+
+  if (!append) {
+    _mobileFaultCodes = [];
+    if (listEl) listEl.innerHTML = '<div class="loading">Se încarcă...</div>';
+    if (moreBtn) moreBtn.style.display = 'none';
+  } else if (moreBtn) {
+    moreBtn.textContent = 'Se încarcă...';
+    moreBtn.disabled = true;
+  }
+
+  const token = ++_mobileFaultLoadToken;
+  try {
+    const url = '/api/fault-codes?familie=' + encodeURIComponent(_mobileFaultSelectedFamilie)
+      + '&search=' + encodeURIComponent(q)
+      + '&page=' + _mobileFaultPage + '&limit=50';
+    const data = await apiGet(url);
+    if (token !== _mobileFaultLoadToken) return;  // a newer request superseded this one
+
+    const codes = (data && Array.isArray(data.codes)) ? data.codes : [];
+    _mobileFaultTotalPages = (data && data.totalPages) ? data.totalPages : 1;
+    if (append) _mobileFaultCodes = _mobileFaultCodes.concat(codes);
+    else _mobileFaultCodes = codes;
+
+    renderFaultCodesListM(_mobileFaultCodes);
+  } catch (e) {
+    if (token !== _mobileFaultLoadToken) return;
+    console.error('Load fault codes error:', e);
+    if (!append && listEl) {
+      listEl.innerHTML = '<div class="empty-state"><i data-lucide="alert-triangle" style="color:var(--warning);"></i> Eroare la încărcare</div>';
+      if (window.lucide) try { window.lucide.createIcons(); } catch (_e) {}
+    } else if (append) {
+      // Roll the page back so the next "load more" tap retries this page.
+      _mobileFaultPage = Math.max(1, _mobileFaultPage - 1);
+    }
+  } finally {
+    if (moreBtn) { moreBtn.textContent = 'Încarcă mai multe'; moreBtn.disabled = false; }
+  }
+}
+
+function loadMoreFaultCodesM() {
+  if (_mobileFaultPage >= _mobileFaultTotalPages) return;
+  _mobileFaultPage++;
+  loadFaultCodesListM(true);
+}
+
+// Build a colored tip badge. The fault-tip-* CSS classes color fault/alarm,
+// warning/trouble, safety and event; any other (or null) tip stays muted.
+function faultTipBadgeHtmlM(tip) {
+  const t = tip || '';
+  if (!t) return '';
+  const label = FAULT_TIP_LABEL_M[t] || t;
+  return '<span class="fault-tip-badge fault-tip-' + escapeHtml(t) + '">' + escapeHtml(label) + '</span>';
+}
+
+function renderFaultCodesListM(codes) {
+  const listEl = document.getElementById('fault-list-m');
+  const moreBtn = document.getElementById('fault-load-more-m');
+  if (!listEl) return;
+
+  if (!Array.isArray(codes) || codes.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="alert-triangle"></i></div>Nu există coduri de eroare</div>';
+    if (moreBtn) moreBtn.style.display = 'none';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    return;
+  }
+
+  // Expose globally for safe onclick access (mirrors window._mobileParams).
+  window._mobileFaultCodes = codes;
+
+  listEl.innerHTML = codes.map((c, i) => {
+    const secondary = c.cod_secundar
+      ? ' <span style="font-size:11px; color:var(--text-dim); font-weight:400;">' + escapeHtml(c.cod_secundar) + '</span>'
+      : '';
+    return `
+      <div class="fault-item" onclick="openMobileFaultDetail(window._mobileFaultCodes[${i}])">
+        <div class="fault-item-top">
+          <span class="fault-item-code">${escapeHtml(c.cod || '-')}</span>${secondary}
+          ${faultTipBadgeHtmlM(c.tip)}
+        </div>
+        <div class="fault-item-name">${escapeHtml(c.nume || '-')}</div>
+      </div>
+    `;
+  }).join('');
+
+  if (moreBtn) {
+    moreBtn.style.display = (_mobileFaultPage < _mobileFaultTotalPages) ? 'block' : 'none';
+  }
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// Open the fault-detail view. Accepts a list-row object (partial) or a full row.
+// Shows what it has immediately, then fetches the full record by id.
+function openMobileFaultDetail(code) {
+  if (!code) return;
+  mobileFaultShowStep('detail');
+
+  // Scroll the content area back to the top for a fresh detail view.
+  const content = document.getElementById('content');
+  if (content) content.scrollTop = 0;
+
+  // Hide every optional section first so stale content from a previously
+  // viewed code never bleeds through while the new record is fetched.
+  ['fdm-cauza-row', 'fdm-remediu-row', 'fdm-meta', 'fdm-extra', 'fdm-pagina-row']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+  // Paint the basics from whatever we already have.
+  renderFaultDetailM(code, true);
+
+  // Fetch the full record for cauza/remediu/extra. The token guards against a
+  // slow response landing after the user has opened a different code.
+  const token = ++_mobileFaultDetailToken;
+  if (code.id && _isOnline) {
+    apiGet('/api/fault-codes/' + encodeURIComponent(code.id))
+      .then(d => {
+        if (token !== _mobileFaultDetailToken) return;
+        if (d && !d.error) renderFaultDetailM(d, false);
+      })
+      .catch(e => console.error('Load fault detail error:', e));
+  }
+}
+
+// Render the fault detail. partial=true means only header fields are trustworthy.
+function renderFaultDetailM(d, partial) {
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  setText('fdm-code', d.cod || '-');
+  setText('fdm-name', d.nume || (partial ? '...' : '-'));
+
+  const secEl = document.getElementById('fdm-cod-secundar');
+  if (secEl) {
+    if (d.cod_secundar) { secEl.textContent = d.cod_secundar; secEl.style.display = 'inline-block'; }
+    else { secEl.style.display = 'none'; }
+  }
+
+  const tipEl = document.getElementById('fdm-tip');
+  if (tipEl) {
+    if (d.tip) {
+      tipEl.className = 'fault-tip-badge fault-tip-' + d.tip;
+      tipEl.textContent = FAULT_TIP_LABEL_M[d.tip] || d.tip;
+      tipEl.style.display = 'inline-block';
+    } else {
+      tipEl.style.display = 'none';
+    }
+  }
+
+  setText('fdm-familie', d.familie ? d.familie.replace(/_/g, ' ') : '');
+
+  // Cauză
+  const cauzaRow = document.getElementById('fdm-cauza-row');
+  if (cauzaRow) {
+    if (d.cauza && String(d.cauza).trim()) {
+      setText('fdm-cauza', d.cauza);
+      cauzaRow.style.display = 'block';
+    } else if (!partial) {
+      cauzaRow.style.display = 'none';
+    }
+  }
+
+  // Remediu
+  const remRow = document.getElementById('fdm-remediu-row');
+  if (remRow) {
+    if (d.remediu && String(d.remediu).trim()) {
+      setText('fdm-remediu', d.remediu);
+      remRow.style.display = 'block';
+    } else if (!partial) {
+      remRow.style.display = 'none';
+    }
+  }
+
+  // Meta: Reacție / Confirmare / Cod secundar
+  const metaEl = document.getElementById('fdm-meta');
+  const metaGrid = document.getElementById('fdm-meta-grid');
+  if (metaEl && metaGrid) {
+    const cards = [];
+    if (d.reactie) cards.push(['Reacție', d.reactie]);
+    if (d.confirmare) cards.push(['Confirmare', d.confirmare]);
+    if (d.cod_secundar) cards.push(['Cod secundar', d.cod_secundar]);
+    if (cards.length) {
+      metaGrid.innerHTML = cards.map(([k, v]) =>
+        `<div style="padding:8px 12px; background:var(--bg); border-radius:6px;">
+           <div style="font-size:11px; color:var(--text-secondary); margin-bottom:2px;">${escapeHtml(k)}</div>
+           <div style="font-weight:500; font-size:13px;">${escapeHtml(v)}</div>
+         </div>`).join('');
+      metaEl.style.display = 'block';
+    } else if (!partial) {
+      metaEl.style.display = 'none';
+    }
+  }
+
+  // Extra block (only known once the full record is loaded).
+  if (!partial) renderFaultExtraM(d.extra);
+
+  // Pagina
+  const pagRow = document.getElementById('fdm-pagina-row');
+  if (pagRow) {
+    if (d.pagina) {
+      setText('fdm-pagina', d.pagina);
+      pagRow.style.display = 'block';
+    } else if (!partial) {
+      pagRow.style.display = 'none';
+    }
+  }
+
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// Render the `extra` object (aux codes, message value, note, refs, trip lock).
+function renderFaultExtraM(extra) {
+  const el = document.getElementById('fdm-extra');
+  if (!el) return;
+  if (!extra || typeof extra !== 'object') { el.style.display = 'none'; return; }
+
+  let html = '';
+
+  if (Array.isArray(extra.aux_codes) && extra.aux_codes.length) {
+    html += '<div class="fault-modal-label">Coduri auxiliare</div>';
+    html += extra.aux_codes.map(a => `
+      <div style="margin:4px 0; padding:7px 10px; background:var(--bg); border-radius:6px; border-left:3px solid var(--border);">
+        <span style="font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent);">${escapeHtml(a.cod || '?')}</span>
+        ${a.cauza ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:2px; white-space:pre-wrap;">${escapeHtml(a.cauza)}</div>` : ''}
+        ${a.remediu ? `<div style="font-size:12px; margin-top:2px; white-space:pre-wrap;">${escapeHtml(a.remediu)}</div>` : ''}
+      </div>`).join('');
+  }
+
+  const mv = extra.message_value || extra.fault_value || extra.alarm_value;
+  if (mv) {
+    html += '<div class="fault-modal-label" style="margin-top:10px;">Valoare mesaj</div>'
+      + '<div class="fault-modal-text">' + escapeHtml(mv) + '</div>';
+  }
+
+  if (extra.note) {
+    html += '<div class="fault-modal-label" style="margin-top:10px;">Notă</div>'
+      + '<div class="fault-modal-text">' + escapeHtml(extra.note) + '</div>';
+  }
+
+  const refs = [];
+  if (extra.parametru) refs.push(extra.parametru);
+  if (extra.configurable_in) refs.push(extra.configurable_in);
+  if (extra.see_also) refs.push(extra.see_also);
+  if (refs.length) {
+    html += '<div class="fault-modal-label" style="margin-top:10px;">Parametri asociați</div>'
+      + '<div class="fault-modal-text">' + escapeHtml(refs.join('  ·  ')) + '</div>';
+  }
+
+  if (extra.trip_lock) {
+    html += '<div style="margin-top:10px; font-size:13px;">'
+      + '<strong style="color:var(--warning);">Trip lock:</strong> necesită oprirea alimentării înainte de reset.</div>';
+  }
+
+  if (html) { el.innerHTML = html; el.style.display = 'block'; }
+  else { el.style.display = 'none'; }
+}
+
 // ============ Notes Modal ============
 
 function openNoteModal(projectId = null) {
@@ -1470,6 +1902,7 @@ function showTab(tab) {
     case 'params': loadParameters(); break;
     case 'notes': loadNotes(); break;
     case 'obsidian': loadObsidianMobile(); break;
+    case 'faults': loadFaultCodesM(); break;
     case 'manuals': loadManuals(); break;
     case 'stats': loadMobileStats(); break;
     case 'clients': loadMobileClients(); break;
@@ -3564,6 +3997,17 @@ async function _gsOpenParam(r) {
   }
 }
 
+// Open the fault-code detail from a search hit. The search result carries
+// id/cod/familie; openMobileFaultDetail paints those, then fetches the rest.
+// activateSearchResult already called showTab('faults'), which initializes the
+// tab and loads the families metadata; here we only need to open the detail.
+// Ensuring families are loaded keeps the "back" button populated afterwards.
+function _gsOpenFault(r) {
+  if (!r || !r.id) { _gsToast('Cod de eroare indisponibil.'); return; }
+  try { ensureFaultFamiliesM(); } catch (e) { /* non-fatal */ }
+  openMobileFaultDetail({ id: r.id, cod: r.cod, familie: r.familie, nume: r.title });
+}
+
 // Tap a result: close the overlay, then navigate to the item.
 function activateSearchResult(r) {
   closeGlobalSearch();
@@ -3585,6 +4029,10 @@ function activateSearchResult(r) {
     case 'parametru':
       showTab('params');
       _gsOpenParam(r);
+      break;
+    case 'fault_code':
+      showTab('faults');
+      _gsOpenFault(r);
       break;
     case 'client':
       showTab('clients');

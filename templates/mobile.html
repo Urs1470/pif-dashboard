@@ -256,6 +256,46 @@
     }
     .mpmt.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
     .mpmt .count { opacity: 0.7; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    /* Fault-code tip badge — colors mirror desktop (index.html) */
+    .fault-tip-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 16px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-elev3); color: var(--text2);
+    }
+    .fault-tip-fault, .fault-tip-alarm {
+      background: var(--danger-soft); color: var(--danger);
+    }
+    .fault-tip-warning, .fault-tip-warning_alarm, .fault-tip-trouble {
+      background: var(--warning-soft); color: var(--warning);
+    }
+    .fault-tip-safety {
+      background: var(--violet-soft); color: var(--violet);
+    }
+    .fault-tip-event {
+      background: var(--accent-soft); color: var(--accent);
+    }
+    /* Fault-code list rows */
+    .fault-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .fault-item:active { background: var(--border); }
+    .fault-item-top { display: flex; align-items: center; gap: 8px; }
+    .fault-item-code { font-weight: 600; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+    .fault-item-name { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+    .fault-modal-label {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-secondary); font-weight: 700; margin-bottom: 5px;
+    }
+    .fault-modal-text {
+      font-size: 14px; line-height: 1.55; color: var(--text);
+      white-space: pre-wrap;
+    }
     /* Tab Views */
     .tab-view { display: none; }
     .tab-view.active { display: block; }
@@ -1394,6 +1434,56 @@
         </div>
       </div>
 
+      <!-- Tab: Fault codes (from More menu) — producer picker -> familie + search + list -> detail -->
+      <div id="tab-faults" class="tab-view">
+        <!-- Step 1: producer picker (cards) -->
+        <div id="mobile-fault-step-producator">
+          <div style="font-size:13px; color:var(--text-secondary); margin:8px 0 12px;">Alege producătorul</div>
+          <div id="mobile-fault-producator-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;"></div>
+        </div>
+
+        <!-- Step 2: family mini-tabs + search + list -->
+        <div id="mobile-fault-step-list" style="display:none;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <button onclick="mobileFaultBackToProducator()" aria-label="Înapoi la producători" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; font-size:13px;"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i> <span id="mobile-fault-breadcrumb">Producători</span></button>
+          </div>
+          <div id="mobile-fault-mini-tabs" style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;"></div>
+          <input type="search" class="param-search" id="fault-search-m" placeholder="Caută cod sau nume..." style="margin-bottom:12px;">
+          <div id="fault-list-m"></div>
+          <button id="fault-load-more-m" onclick="loadMoreFaultCodesM()" style="display:none; width:100%; padding:12px; margin-top:8px; background:var(--bg-elev2); border:1px solid var(--border); border-radius:10px; color:var(--text-secondary); font-size:13px; cursor:pointer; font-family:inherit;">Încarcă mai multe</button>
+        </div>
+
+        <!-- Step 3: single fault detail -->
+        <div id="mobile-fault-detail" style="display:none;">
+          <button class="back-btn" onclick="mobileFaultBackToList()"><i data-lucide="arrow-left"></i> Înapoi</button>
+          <div class="detail-section">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+              <span id="fdm-code" style="font-weight:700; font-size:18px; color:var(--accent); font-family:'JetBrains Mono',monospace;">-</span>
+              <span id="fdm-cod-secundar" style="font-size:13px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; display:none;"></span>
+              <span id="fdm-tip" class="fault-tip-badge" style="display:none;"></span>
+            </div>
+            <div id="fdm-familie" style="font-size:12px; color:var(--text-secondary); font-family:'JetBrains Mono',monospace; margin-bottom:8px;"></div>
+            <div id="fdm-name" style="font-size:16px; font-weight:600; line-height:1.4;">...</div>
+          </div>
+          <div id="fdm-cauza-row" class="detail-section" style="display:none;">
+            <div class="detail-label" style="display:flex; align-items:center; gap:6px;"><i data-lucide="help-circle" style="width:14px;height:14px;color:var(--warning);"></i> Cauză</div>
+            <div id="fdm-cauza" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-top:4px;"></div>
+          </div>
+          <div id="fdm-remediu-row" class="detail-section" style="display:none;">
+            <div class="detail-label" style="display:flex; align-items:center; gap:6px;"><i data-lucide="wrench" style="width:14px;height:14px;color:var(--success);"></i> Remediu</div>
+            <div id="fdm-remediu" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-top:4px;"></div>
+          </div>
+          <div id="fdm-meta" class="detail-section" style="display:none;">
+            <div id="fdm-meta-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+          </div>
+          <div id="fdm-extra" class="detail-section" style="display:none;"></div>
+          <div id="fdm-pagina-row" class="detail-section" style="display:none;">
+            <div class="detail-label">Pagina manual</div>
+            <div id="fdm-pagina" style="font-size:14px;"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Project Detail View -->
       <div id="project-detail" class="tab-view">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1490,6 +1580,7 @@
       <div id="more-menu-items" style="display:flex; flex-direction:column; gap:8px;">
         <button class="more-item" onclick="closeMoreMenu(); showTab('notes')"><i data-lucide="notebook-pen"></i> Notițe / Jurnal</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('obsidian')"><i data-lucide="book-text"></i> Notițe Obsidian</button>
+        <button class="more-item" onclick="closeMoreMenu(); showTab('faults')"><i data-lucide="alert-triangle"></i> Coduri eroare</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('manuals')"><i data-lucide="book-open"></i> Manuale</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('stats')"><i data-lucide="bar-chart-3"></i> Statistici</button>
         <button class="more-item" onclick="closeMoreMenu(); showTab('clients')"><i data-lucide="users"></i> Clienți</button>
