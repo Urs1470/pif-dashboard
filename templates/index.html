@@ -1351,22 +1351,21 @@
         }
         .cs.open .cs-trigger-caret { transform: rotate(180deg); }
         .cs-menu {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            min-width: 100%;
+            /* Portaled to <body> + position:fixed so no ancestor's overflow
+               (e.g. a .detail-section card) can clip it. JS sets top/left. */
+            position: fixed;
             max-height: 280px; overflow-y: auto;
             background: var(--bg-elev2);
             border: 1px solid var(--border);
             border-radius: 10px;
             box-shadow: var(--shadow-lg);
             padding: 4px;
-            z-index: 1000;
+            z-index: 100000;
             opacity: 0; visibility: hidden;
             transform: translateY(-4px);
             transition: opacity 0.12s, transform 0.12s, visibility 0.12s;
         }
-        .cs.open .cs-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .cs-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
         .cs-option {
             padding: 8px 12px;
             border-radius: 6px;

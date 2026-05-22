@@ -163,9 +163,41 @@ function enhanceSelect(select) {
         wrap.setAttribute('data-value', select.value);
     };
 
-    const open = () => { wrap.classList.add('open'); document.addEventListener('mousedown', onDocClick, true); };
-    const close = () => { wrap.classList.remove('open'); document.removeEventListener('mousedown', onDocClick, true); };
-    const onDocClick = (e) => { if (!wrap.contains(e.target)) close(); };
+    // The menu is portaled to <body> (see below) so no ancestor's overflow
+    // can clip it. Position it to the trigger in viewport space on open.
+    const positionMenu = () => {
+        const r = trigger.getBoundingClientRect();
+        menu.style.minWidth = r.width + 'px';
+        menu.style.left = r.left + 'px';
+        const menuH = menu.offsetHeight || 0;
+        const spaceBelow = window.innerHeight - r.bottom;
+        if (spaceBelow < menuH + 8 && r.top > spaceBelow) {
+            menu.style.top = Math.max(8, r.top - menuH - 4) + 'px';   // open upward
+        } else {
+            menu.style.top = (r.bottom + 4) + 'px';
+        }
+    };
+    // Scroll closes the menu (a fixed menu would otherwise detach from the
+    // trigger) — but ignore scrolls inside the menu's own option list.
+    const onScroll = (e) => { if (e.target !== menu) close(); };
+    const open = () => {
+        wrap.classList.add('open');
+        menu.classList.add('open');
+        positionMenu();
+        document.addEventListener('mousedown', onDocClick, true);
+        window.addEventListener('scroll', onScroll, true);
+        window.addEventListener('resize', close);
+    };
+    const close = () => {
+        wrap.classList.remove('open');
+        menu.classList.remove('open');
+        document.removeEventListener('mousedown', onDocClick, true);
+        window.removeEventListener('scroll', onScroll, true);
+        window.removeEventListener('resize', close);
+    };
+    const onDocClick = (e) => {
+        if (!wrap.contains(e.target) && !menu.contains(e.target)) close();
+    };
 
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -180,8 +212,8 @@ function enhanceSelect(select) {
 
     select.parentNode.insertBefore(wrap, select);
     wrap.appendChild(trigger);
-    wrap.appendChild(menu);
     wrap.appendChild(select);
+    document.body.appendChild(menu);   // portaled out — positioned by positionMenu()
     syncFromSelect();
 }
 
