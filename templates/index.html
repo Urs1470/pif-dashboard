@@ -2369,11 +2369,15 @@
             font-weight: 500;
         }
 
+        /* Merged from two duplicate .section-title rules (audit Faza 5):
+           uppercase styling won the cascade, flex layout was additive. */
         .section-title {
-            font-size: var(--font-h4);
             font-weight: 600;
-            margin-bottom: var(--space-md);
-            color: var(--text);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text2);
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: var(--space-sm);
@@ -3420,15 +3424,6 @@
             flex-direction: column;
             gap: 16px;
             padding: 16px;
-        }
-
-        .section-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text2);
-            margin-bottom: 10px;
         }
 
         /* Quick Add Bar */
@@ -5396,7 +5391,7 @@
     <!-- Lucide icons (self-hosted — pinned, same-origin, SW-cacheable; no unpkg flash) -->
     <script src="/static/lucide.min.js?v=20260522a"></script>
 
-    <script src="/static/app.js?v=20260522b"></script>
+    <script src="/static/app.js?v=20260522c"></script>
     <!-- BEGIN: PV (owned by spawned-pv session) -->
     <script src="/static/pv-modal.js?v=20260518g-imgpos"></script>
     <!-- END: PV -->

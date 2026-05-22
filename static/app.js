@@ -370,8 +370,72 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
+// Accessibility: ARIA roles for the tab navigation, keyboard arrow-nav,
+// accessible names for icon-only controls, and a focus trap for modals.
+function initA11y() {
+    const tablist = document.querySelector('.main-tabs');
+    if (tablist) {
+        tablist.setAttribute('role', 'tablist');
+        tablist.setAttribute('aria-label', 'Navigare principala');
+        const tabs = [...tablist.querySelectorAll('.main-tab')];
+        tabs.forEach(tab => {
+            const name = tab.getAttribute('data-tab');
+            tab.setAttribute('role', 'tab');
+            if (name) {
+                tab.id = 'maintab-' + name;
+                tab.setAttribute('aria-controls', 'tab-' + name);
+            }
+            const on = tab.classList.contains('active');
+            tab.setAttribute('aria-selected', on ? 'true' : 'false');
+            tab.setAttribute('tabindex', on ? '0' : '-1');
+        });
+        document.querySelectorAll('.tab-content').forEach(panel => {
+            const name = (panel.id || '').replace('tab-', '');
+            panel.setAttribute('role', 'tabpanel');
+            if (document.getElementById('maintab-' + name)) {
+                panel.setAttribute('aria-labelledby', 'maintab-' + name);
+            }
+        });
+        // Left/Right/Home/End move between tabs (WAI-ARIA tabs pattern).
+        tablist.addEventListener('keydown', e => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+            e.preventDefault();
+            const cur = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+            let next = cur < 0 ? 0 : cur;
+            if (e.key === 'ArrowRight') next = (cur + 1) % tabs.length;
+            else if (e.key === 'ArrowLeft') next = (cur - 1 + tabs.length) % tabs.length;
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = tabs.length - 1;
+            const t = tabs[next];
+            if (t) { t.click(); t.focus(); }
+        });
+    }
+
+    // Promote title -> aria-label on icon-only controls that lack a name.
+    document.querySelectorAll('button[title]:not([aria-label]), a[title]:not([aria-label])').forEach(el => {
+        if (!(el.textContent || '').trim()) el.setAttribute('aria-label', el.getAttribute('title'));
+    });
+
+    // Focus trap: keep Tab within the top-most visible modal overlay.
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Tab') return;
+        const open = [...document.querySelectorAll('.modal-overlay')].filter(
+            m => m.offsetParent !== null && getComputedStyle(m).display !== 'none'
+        );
+        if (!open.length) return;
+        const modal = open[open.length - 1];
+        const f = [...modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+            .filter(el => el.offsetParent !== null);
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+}
+
 async function initApp() {
     initTheme();
+    initA11y();
     switchTab('acasa');
 
     // Warm cache for other tabs in the background — after Home renders
@@ -2266,6 +2330,12 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelector(`.main-tab[data-tab="${tab}"]`).classList.add('active');
     document.getElementById(`tab-${tab}`).classList.add('active');
+    // Keep ARIA tab state in sync with the visible tab.
+    document.querySelectorAll('.main-tab').forEach(t => {
+        const on = t.classList.contains('active');
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.setAttribute('tabindex', on ? '0' : '-1');
+    });
 
     // Hide project detail view when switching tabs
     const detailView = document.getElementById('project-detail-view');
