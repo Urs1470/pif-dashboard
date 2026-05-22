@@ -3587,3 +3587,212 @@ document.addEventListener('click', function (e) {
     else alert('Nota „' + (wl.getAttribute('data-wikilink') || '') + '" nu a fost găsită.');
   }
 });
+
+// ============ GLOBAL SEARCH (mobile) ============
+// Near-full-screen search overlay, mirrors the desktop command palette.
+// Backend: GET /api/search?q=<query> -> { results: [...], query, count }
+// Each result: { type, id, title, subtitle, snippet, proiect_id?, path?, familie?, cod? }
+
+let _gsResults = [];
+let _gsTimer = null;
+
+// type -> { label, icon } for grouped rendering (mirror of desktop _GS_META).
+const _GS_META = {
+  proiect:     { label: 'Proiecte', icon: 'folder-kanban' },
+  observatie:  { label: 'Observații', icon: 'file-text' },
+  task:        { label: 'Taskuri', icon: 'check-square' },
+  global_task: { label: 'Taskuri zilnice', icon: 'calendar-check' },
+  checklist:   { label: 'Checklist', icon: 'list-checks' },
+  jurnal:      { label: 'Jurnal', icon: 'notebook-pen' },
+  echipament:  { label: 'Echipamente', icon: 'cpu' },
+  client:      { label: 'Clienți', icon: 'users' },
+  parametru:   { label: 'Parametri', icon: 'sliders-horizontal' },
+  obsidian:    { label: 'Notițe', icon: 'book-open' },
+};
+const _GS_ORDER = ['proiect', 'observatie', 'task', 'global_task', 'checklist',
+                   'jurnal', 'echipament', 'client', 'parametru', 'obsidian'];
+
+function openGlobalSearch() {
+  const ov = document.getElementById('global-search');
+  if (!ov) return;
+  ov.classList.add('active');
+  const inp = document.getElementById('gs-input');
+  if (inp) { inp.value = ''; }
+  _gsResults = [];
+  renderGlobalSearch();
+  setTimeout(() => { if (inp) inp.focus(); }, 60);
+}
+
+function closeGlobalSearch() {
+  const ov = document.getElementById('global-search');
+  if (ov) ov.classList.remove('active');
+  clearTimeout(_gsTimer);
+}
+
+function onGlobalSearchInput() {
+  clearTimeout(_gsTimer);
+  _gsTimer = setTimeout(doGlobalSearch, 250);
+}
+
+async function doGlobalSearch() {
+  const inp = document.getElementById('gs-input');
+  const q = ((inp && inp.value) || '').trim();
+  if (q.length < 2) { _gsResults = []; renderGlobalSearch(); return; }
+  try {
+    const data = await apiGet('/api/search?q=' + encodeURIComponent(q));
+    if (!data) return;  // apiGet handles 401 / non-JSON
+    const raw = data.results || [];
+    // Order by group so the on-screen layout is stable.
+    _gsResults = [];
+    for (const t of _GS_ORDER) for (const r of raw) if (r.type === t) _gsResults.push(r);
+    renderGlobalSearch();
+  } catch (e) {
+    console.error('Global search failed:', e);
+    const box = document.getElementById('gs-results');
+    if (box) box.innerHTML = '<div class="gs-state"><i data-lucide="wifi-off"></i>'
+      + '<div>Căutarea a eșuat. Verifică conexiunea.</div></div>';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e2) {}
+  }
+}
+
+// Safe term highlighting: escape FIRST, then wrap matches in <mark>.
+function _gsHighlight(text, q) {
+  let s = escapeHtml(text || '');
+  if (q) {
+    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try { s = s.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
+  }
+  return s;
+}
+
+function renderGlobalSearch() {
+  const box = document.getElementById('gs-results');
+  if (!box) return;
+  const inp = document.getElementById('gs-input');
+  const q = ((inp && inp.value) || '').trim();
+  if (q.length < 2) {
+    box.innerHTML = '<div class="gs-state"><i data-lucide="search"></i>'
+      + '<div>Scrie cel puțin 2 caractere ca să cauți.</div></div>';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    return;
+  }
+  if (!_gsResults.length) {
+    box.innerHTML = '<div class="gs-state"><i data-lucide="search-x"></i>'
+      + '<div>Niciun rezultat pentru „' + escapeHtml(q) + '".</div></div>';
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+    return;
+  }
+  let html = '';
+  let lastType = null;
+  _gsResults.forEach((r, idx) => {
+    if (r.type !== lastType) {
+      html += '<div class="gs-group-label">' + escapeHtml((_GS_META[r.type] || {}).label || r.type) + '</div>';
+      lastType = r.type;
+    }
+    const meta = _GS_META[r.type] || { icon: 'circle' };
+    html += '<div class="gs-item" data-idx="' + idx + '">'
+      + '<div class="gs-item-icon"><i data-lucide="' + meta.icon + '"></i></div>'
+      + '<div class="gs-item-body">'
+      + '<div class="gs-item-title">' + _gsHighlight(r.title, q) + '</div>'
+      + (r.subtitle ? '<div class="gs-item-sub">' + escapeHtml(r.subtitle) + '</div>' : '')
+      + (r.snippet ? '<div class="gs-item-snippet">' + _gsHighlight(r.snippet, q) + '</div>' : '')
+      + '</div></div>';
+  });
+  box.innerHTML = html;
+  if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
+}
+
+// Small toast — there is no shared toast helper in mobile.js, so build one.
+function _gsToast(msg) {
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
+    + 'background:var(--bg-elev3);border:1px solid var(--accent);color:var(--text);'
+    + 'padding:10px 16px;border-radius:8px;z-index:300;font-size:13px;max-width:80%;text-align:center;';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// Open the mobile parameter modal from a search hit. The search result only
+// carries id/familie/cod, so fetch the full record first (modal shows '-' for
+// any missing field otherwise).
+async function _gsOpenParam(r) {
+  if (!r.id) { _gsToast('Parametru indisponibil.'); return; }
+  try {
+    const detail = await apiGet('/api/parametri/' + encodeURIComponent(r.id));
+    if (detail && !detail.error) {
+      openMobileParamModal(detail);
+    } else {
+      openMobileParamModal({ id: r.id, cod: r.cod, familie: r.familie });
+    }
+  } catch (e) {
+    console.error('open param failed:', e);
+    openMobileParamModal({ id: r.id, cod: r.cod, familie: r.familie });
+  }
+}
+
+// Tap a result: close the overlay, then navigate to the item.
+function activateSearchResult(r) {
+  closeGlobalSearch();
+  if (!r) return;
+  switch (r.type) {
+    case 'proiect':
+    case 'task':
+    case 'observatie':
+    case 'checklist':
+    case 'jurnal':
+    case 'echipament':
+      // All of these live inside a project — open the parent project detail.
+      if (r.proiect_id) showProjectDetail(r.proiect_id);
+      else _gsToast('Proiectul asociat nu a fost găsit.');
+      break;
+    case 'global_task':
+      showTab('tasks');
+      break;
+    case 'parametru':
+      showTab('params');
+      _gsOpenParam(r);
+      break;
+    case 'client':
+      showTab('clients');
+      break;
+    case 'obsidian':
+      // openObsNote toggles views inside #tab-obsidian, so show that tab first.
+      showTab('obsidian');
+      if (r.path) setTimeout(() => openObsNote(r.path), 300);
+      break;
+    default:
+      _gsToast('Nu există o destinație pentru acest rezultat.');
+  }
+}
+
+// Wire the overlay. mobile.js loads at the end of <body>, so the DOM elements
+// already exist; still guard every getElementById.
+(function () {
+  function wireGlobalSearch() {
+    const btn = document.getElementById('global-search-btn');
+    if (btn) btn.addEventListener('click', openGlobalSearch);
+
+    const closeBtn = document.getElementById('gs-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeGlobalSearch);
+
+    const inp = document.getElementById('gs-input');
+    if (inp) {
+      inp.addEventListener('input', onGlobalSearchInput);
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeGlobalSearch();
+      });
+    }
+
+    const box = document.getElementById('gs-results');
+    if (box) box.addEventListener('click', function (e) {
+      const item = e.target.closest && e.target.closest('.gs-item');
+      if (item) activateSearchResult(_gsResults[+item.getAttribute('data-idx')]);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireGlobalSearch);
+  } else {
+    wireGlobalSearch();
+  }
+})();
