@@ -477,12 +477,18 @@ def run_migrations():
         print(f"Database migrated to v{SCHEMA_VERSION}")
 
 
-def seed_fault_codes():
-    """Populate fault_codes from data/fault_codes/*.json when the table is empty.
+# Bump when data/fault_codes/*.json changes — forces a one-time re-seed on the
+# next startup. The fault_codes table holds only generated data, never user
+# data, so a full rebuild from the JSON is always safe.
+FAULT_DATA_REV = 2
 
-    Makes the drive fault-code dataset self-deploying: the JSON files ship in
-    git, and the table is filled automatically on the first startup after the
-    v10 migration. A no-op once the table has rows."""
+
+def seed_fault_codes():
+    """Populate fault_codes from data/fault_codes/*.json.
+
+    Seeds on first run (empty table) and re-seeds automatically whenever
+    FAULT_DATA_REV is bumped. Makes the drive fault-code dataset self-deploying
+    via git (the DB itself is gitignored)."""
     import json
     import glob
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -493,16 +499,24 @@ def seed_fault_codes():
     cursor = conn.cursor()
     try:
         cursor.execute('SELECT COUNT(*) FROM fault_codes')
-        if cursor.fetchone()[0] > 0:
-            conn.close()
-            return
+        count = cursor.fetchone()[0]
     except sqlite3.OperationalError:
         conn.close()
         return
+    cursor.execute("SELECT value FROM app_settings WHERE key = 'fault_data_rev'")
+    row = cursor.fetchone()
+    try:
+        stored_rev = int(row[0]) if row else 0
+    except (ValueError, TypeError):
+        stored_rev = 0
+    if count > 0 and stored_rev >= FAULT_DATA_REV:
+        conn.close()
+        return  # already up to date
     cols = ['producator', 'familie', 'cod', 'cod_secundar', 'tip', 'nume',
             'cauza', 'remediu', 'reactie', 'confirmare', 'extra_json',
             'pagina', 'sursa']
     placeholders = ','.join('?' * len(cols))
+    cursor.execute('DELETE FROM fault_codes')   # full rebuild from the JSON
     total = 0
     for path in sorted(glob.glob(os.path.join(data_dir, '*.json'))):
         try:
@@ -525,10 +539,13 @@ def seed_fault_codes():
             f"INSERT INTO fault_codes ({','.join(cols)}) VALUES ({placeholders})",
             rows)
         total += len(rows)
+    cursor.execute(
+        "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)",
+        ('fault_data_rev', str(FAULT_DATA_REV), datetime.now().isoformat()))
     conn.commit()
     conn.close()
     if total:
-        print(f"Seeded fault_codes with {total} rows")
+        print(f"Seeded fault_codes with {total} rows (rev {FAULT_DATA_REV})")
 
 
 def init_db():

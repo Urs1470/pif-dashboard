@@ -41,7 +41,7 @@
     "tip": "fault",
     "nume": "Earth leakage",
     "cauza": "Drive has detected load unbalance typically due to earth fault in motor or motor cable.",
-    "remediu": "If the control unit is externally powered, check the setting of parameter 95.4 Control board supply. Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. Try running the motor in scalar control mode if allowed. (See parameter 99.4 Motor control mode.)",
+    "remediu": "If the control unit is externally powered, check the setting of parameter 95.4 Control board supply. Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. Try running the motor in scalar control mode if allowed. (See parameter 99.4 Motor control mode.) With parallel-connected modules, check the auxiliary code (format XXXY YYZZ). “Y YY” specifies through which BCU control unit channel the fault was received. If no earth fault can be detected, contact your local ABB representative.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -92,7 +92,7 @@
     "tip": "fault",
     "nume": "BU current difference",
     "cauza": "AC phase current difference between parallel-connected inverter modules is excessive.",
-    "remediu": "Check motor cabling. Check there are no power factor correction capacitors or surge absorbers in motor cable. Check the auxiliary code (format XXXY YYZZ). “XXX” specifies the source of the first error (see “YYY”). “YYY” specifies the module through which BCU control unit channel the fault was received (1: Channel 1, 2: Channel 2, 4: Channel 3, 8: Channel 4, ..., 800: Channel 12, other: combinations of the",
+    "remediu": "Check motor cabling. Check there are no power factor correction capacitors or surge absorbers in motor cable. Check the auxiliary code (format XXXY YYZZ). “XXX” specifies the source of the first error (see “YYY”). “YYY” specifies the module through which BCU control unit channel the fault was received (1: Channel 1, 2: Channel 2, 4: Channel 3, 8: Channel 4, ..., 800: Channel 12, other: combinations of the above). “ZZ” indicates the phase (1: U, 2: V, 3: W).",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -211,7 +211,7 @@
     "tip": "fault",
     "nume": "DC link overvoltage",
     "cauza": "Excessive intermediate circuit DC voltage.",
-    "remediu": "Check that overvoltage control is on (parameter 30.30 Overvoltage control). Check that the supply voltage matches the nominal input voltage of the drive.",
+    "remediu": "Check that overvoltage control is on (parameter 30.30 Overvoltage control). Check that the supply voltage matches the nominal input voltage of the drive. Check the supply line for static or transient overvoltage. Check brake chopper and resistor (if present). Check deceleration time. Use coast-to-stop function (if applicable). Retrofit drive with brake chopper and brake resistor. With parallel-connected modules, check the auxiliary code (format XXXY YYZZ). “Y YY” specifies through which BCU control unit channel the fault was received.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -699,7 +699,7 @@
     "tip": "fault",
     "nume": "Rating ID mismatch",
     "cauza": "The hardware of the drive does not match the information stored in the memory unit. This may occur eg. after a firmware update or memory unit replacement.",
-    "remediu": "Cycle the power to the drive. Check the auxiliary code (format 0X0Y). “X” indicates the first faulty PU channel in hexadecimal (1...C) (With a ZCU control unit, “X” can be 1 or 2 but this is irrelevant to the fault).",
+    "remediu": "Cycle the power to the drive. Check the auxiliary code (format 0X0Y). “X” indicates the first faulty PU channel in hexadecimal (1...C) (With a ZCU control unit, “X” can be 1 or 2 but this is irrelevant to the fault). “Y” indicates the auxiliary code category. The auxiliary code categories are as follows: 1 = PU and CU ratings not the same. Rating ID has changed. 2 = Parallel connection rating ID has changed. 3 = PU types not the same in all power units. 4 = Parallel connection rating ID is active in a single power unit setup. 5 = It is not possible to implement the selected rating with the current PUs. 6 = PU rating ID is 0. 7 = Reading PU rating ID or PU type failed on PU connection. 8 = PU not supported (illegal rating ID). 9 = Incompatible module current rating (unit contains a module with too low a current rating). A - Selected parallel rating ID not found from database. With parallel connection faults (BCU control unit), the format of the auxiliary code is 0X0Y.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -912,8 +912,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "Charging feedback",
-    "cauza": "Incorrect parameter setting. · ThechargingswitchandDCswitch were operated out of sequence, or a start command was issued before the unit was ready. · Charging circuit fault. · Brake circuit fault.",
-    "remediu": "Check the setting of 95.9 Switch fuse controller. The parameter should be enabled only if an xSFC charging controller is installed. · The normal power-up sequence is: 1. Close charging switch. 2. After charging finishes (charging OK lamp lights), close DC switch. 3. Open charging switch. · Check the charging circuit. With a frame R6i/R7i inverter module, the auxiliary code “FA” indicates that the charging contactor status feedback does not match the control signal. With parallel-connected frame R8i modules, the auxiliary code (format XX00), “XX” specifies the affected BCU control unit channel. · Check the wiring and condition of brake resistor.",
+    "cauza": "Incorrect parameter setting. ThechargingswitchandDCswitch were operated out of sequence, or a start command was issued before the unit was ready. Charging circuit fault. Brake circuit fault.",
+    "remediu": "Check the setting of 95.9 Switch fuse controller. The parameter should be enabled only if an xSFC charging controller is installed. The normal power-up sequence is: 1. Close charging switch. 2. After charging finishes (charging OK lamp lights), close DC switch. 3. Open charging switch. Check the charging circuit. With a frame R6i/R7i inverter module, the auxiliary code “FA” indicates that the charging contactor status feedback does not match the control signal. With parallel-connected frame R8i modules, the auxiliary code (format XX00), “XX” specifies the affected BCU control unit channel. Check the wiring and condition of brake resistor.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -946,8 +946,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "Internal SW error",
-    "cauza": "Internal error. ·",
-    "remediu": "Contact your local ABB representative, quoting the auxiliary code. ·",
+    "cauza": "Internal error.",
+    "remediu": "Contact your local ABB representative, quoting the auxiliary code.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -963,8 +963,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "FPGA version incompatible",
-    "cauza": "Firmware and FPGA file version in the power unit are incompatible. · Update of power unit logic failed.",
-    "remediu": "Reboot the control unit (using parameter 96.8 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative. · Retry. · Check the auxiliary code to identify FPGA version compatibility (format: XXYYZZ). \"XX\" (8: cannot recognize power unit logic, FPGA logic not compatible, 9 = power unit FPGA logic is old, update FPGA logic, 10 = software is not compatible with power unit FPGA logic, update software (or downgrade power unit FPGA)). YY = BCU control unit channel (first channel = 0)",
+    "cauza": "Firmware and FPGA file version in the power unit are incompatible. Update of power unit logic failed.",
+    "remediu": "Reboot the control unit (using parameter 96.8 Control board boot) or by cycling power. If the problem persists, contact your local ABB representative. Retry. Check the auxiliary code to identify FPGA version compatibility (format: XXYYZZ). \"XX\" (8: cannot recognize power unit logic, FPGA logic not compatible, 9 = power unit FPGA logic is old, update FPGA logic, 10 = software is not compatible with power unit FPGA logic, update software (or downgrade power unit FPGA)). YY = BCU control unit channel (first channel = 0)",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -1145,7 +1145,7 @@
         {
           "cod": "800A",
           "cauza": "The application contains an unknown target (system) library function.",
-          "remediu": "Update the system library or reinstall Automation Builder."
+          "remediu": "Update the system library or reinstall Automation Builder. See the drive-specific log generated by Automation Builder."
         }
       ]
     },
@@ -1443,7 +1443,7 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "EFB invalid parameterization",
-    "cauza": "Embedded fieldbus (EFB) parameter settings inconsistent or not compatible with selected protocol. ·",
+    "cauza": "Embedded fieldbus (EFB) parameter settings inconsistent or not compatible with selected protocol.",
     "remediu": "Check the settings in parameter group 58 Embedded fieldbus.",
     "reactie": null,
     "confirmare": null,
@@ -1460,7 +1460,7 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "EFB load fault",
-    "cauza": "Embedded fieldbus (EFB) protocol firmware could not be loaded. · Version mismatch between EFB protocol firmware and drive firmware.",
+    "cauza": "Embedded fieldbus (EFB) protocol firmware could not be loaded. Version mismatch between EFB protocol firmware and drive firmware.",
     "remediu": "",
     "reactie": null,
     "confirmare": null,
@@ -1784,7 +1784,7 @@
     "tip": "fault",
     "nume": "Mech brake openingfailed",
     "cauza": "Mechanical brake control fault.",
-    "remediu": "Check mechanical brake connection.",
+    "remediu": "Check mechanical brake connection. Check that acknowledgement signal matches actual status of brake.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -1834,8 +1834,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "Motor speed feedback",
-    "cauza": "No motor speed feedback received. ·",
-    "remediu": "See A7B0 Motor speed feedback (page 610). ·",
+    "cauza": "No motor speed feedback received.",
+    "remediu": "See A7B0 Motor speed feedback (page 610).",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -1851,8 +1851,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "Overspeed",
-    "cauza": "Motor is turning faster than highest allowed speed due to incorrectly set minimum/maximum speed, insufficient braking torque or changes in load when using torque reference. · Incorrect estimated speed.",
-    "remediu": "Check minimum/maximum speed settings, parameters 30.11 Minimum speed, 30.12 Maximum speed and 31.30 Overspeed trip margin. Check adequacy of motor braking torque. Check applicability of torque control. Check need for brake chopper and resistor(s). · Check the status of motor current measurement. Perform a Normal, Advanced or Advanced Standstill ID run instead of, for example, a Reduced or Standstill. See parameter 99.13 ID run requested (page 567).",
+    "cauza": "Motor is turning faster than highest allowed speed due to incorrectly set minimum/maximum speed, insufficient braking torque or changes in load when using torque reference. Incorrect estimated speed.",
+    "remediu": "Check minimum/maximum speed settings, parameters 30.11 Minimum speed, 30.12 Maximum speed and 31.30 Overspeed trip margin. Check adequacy of motor braking torque. Check applicability of torque control. Check need for brake chopper and resistor(s). Check the status of motor current measurement. Perform a Normal, Advanced or Advanced Standstill ID run instead of, for example, a Reduced or Standstill. See parameter 99.13 ID run requested (page 567).",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -1920,7 +1920,7 @@
     "tip": "fault",
     "nume": "Load position feedback",
     "cauza": "No load position feedback received.",
-    "remediu": "Check the auxiliary code (format XXYY ZZZZ). “XX” specifies the number of the encoder interface module (01: 91.11/91.12, 02: 91.13/91.14), “YY” specifies the encoder (01: 92 Encoder 1 configuration, 02: 93 Encoder 2",
+    "remediu": "Check the auxiliary code (format XXYY ZZZZ). “XX” specifies the number of the encoder interface module (01: 91.11/91.12, 02: 91.13/91.14), “YY” specifies the encoder (01: 92 Encoder 1 configuration, 02: 93 Encoder 2 configuration). “ZZZZ” indicates the problem (see actions for each code below).",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -2369,7 +2369,7 @@
     "tip": "warning",
     "nume": "Earth leakage",
     "cauza": "Drive has detected load unbalance typically due to earth fault in motor or motor cable.",
-    "remediu": "Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. Try running the motor in scalar control mode if allowed. (See parameter 99.4 Motor control mode.)",
+    "remediu": "Check there are no power factor correction capacitors or surge absorbers in motor cable. Check for an earth fault in motor or motor cables by measuring the insulation resistances of motor and motor cable. Try running the motor in scalar control mode if allowed. (See parameter 99.4 Motor control mode.) If no earth fault can be detected, contact your local ABB representative.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -2488,7 +2488,7 @@
     "tip": "warning",
     "nume": "Incorrect temperature sensor setup",
     "cauza": "Problem with motor temperature measurement.",
-    "remediu": "Check the auxiliary code (format 0XYY ZZZZ). “X” identifies the affected temperature monitoring function (1 = parameter 35.11, 2 = parameter 35.21). “YY” indicates the selected temperature source, ie. the setting of the selection parameter in hexadecimal.",
+    "remediu": "Check the auxiliary code (format 0XYY ZZZZ). “X” identifies the affected temperature monitoring function (1 = parameter 35.11, 2 = parameter 35.21). “YY” indicates the selected temperature source, ie. the setting of the selection parameter in hexadecimal. “ZZZZ” indicates the problem (see actions for each code below).",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -2594,7 +2594,7 @@
     "tip": "warning",
     "nume": "Motor temperature3",
     "cauza": "The thermistor protection module installed in slot 3 indicates overtemperature.",
-    "remediu": "Check the cooling of the motor. Check the motor load and drive ratings. Check the wiring of the temperature sensor. Repair wiring if faulty. Measure the resistance of the sensor.",
+    "remediu": "Check the cooling of the motor. Check the motor load and drive ratings. Check the wiring of the temperature sensor. Repair wiring if faulty. Measure the resistance of the sensor. Replace sensor if faulty.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -2985,7 +2985,7 @@
     "tip": "warning",
     "nume": "Checksum mismatch",
     "cauza": "The calculated parameter checksum does not match any enabled reference checksum.",
-    "remediu": "Check that all necessary approved (reference) checksums (96.56...96.59) are enabled in 96.55 Checksum control word. Check the parameter configuration. Using 96.55 Checksum control word, enable a checksum parameter and",
+    "remediu": "Check that all necessary approved (reference) checksums (96.56...96.59) are enabled in 96.55 Checksum control word. Check the parameter configuration. Using 96.55 Checksum control word, enable a checksum parameter and copy the actual checksum into that parameter.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3070,7 +3070,7 @@
     "tip": "warning",
     "nume": "No motor data",
     "cauza": "Parameters in group 99 have not been set.",
-    "remediu": "Check that all the required parameters in group 99 have been set.",
+    "remediu": "Check that all the required parameters in group 99 have been set. Note: It is normal for this warning to appear during the start-up and continue until the motor data is entered.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3189,7 +3189,7 @@
     "tip": "warning",
     "nume": "AI parametrization",
     "cauza": "The current/voltage hardware setting of an analog input does not correspond to parameter settings.",
-    "remediu": "Check the auxiliary code. The code identifies the analog input whose settings are in conflict. Adjust either the hardware setting (on the drive control unit) or parameter 12.15/12.25.",
+    "remediu": "Check the auxiliary code. The code identifies the analog input whose settings are in conflict. Adjust either the hardware setting (on the drive control unit) or parameter 12.15/12.25. Note: Control board reboot (either by cycling the power or through parameter 96.8 Control board boot) is required to validate any changes in the hardware settings.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3260,8 +3260,8 @@
     "cod_secundar": null,
     "tip": "warning",
     "nume": "Motor fan",
-    "cauza": "No feedback received from external fan. ·",
-    "remediu": "Check external fan (or other equipment controlled) by the logic. Check settings of parameters 35.100...35.106. ·",
+    "cauza": "No feedback received from external fan.",
+    "remediu": "Check external fan (or other equipment controlled) by the logic. Check settings of parameters 35.100...35.106.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3277,8 +3277,8 @@
     "cod_secundar": null,
     "tip": "warning",
     "nume": "FEN temperature",
-    "cauza": "Errorintemperaturemeasurement when temperature sensor (KTY or PTC) connected to encoder interface FEN-xx is used. · Errorintemperaturemeasurement when KTY sensor connected to encoder interface FEN-01 is used.",
-    "remediu": "Check that parameter 35.11 Temperature 1 source / 35.21 Temperature 2 source setting corresponds to actual encoder interface installation. Check the settings of parameters 91.21 and 91.24. Check that the correspondingmoduleisactivated in parameters 91.11...91.14. Use parameter 91.10 Encoder parameter refresh to validate any changes in the settings. · FEN-01 does not support temperature measurement with KTY sensor. Use PTC sensor or other encoder interface module.",
+    "cauza": "Errorintemperaturemeasurement when temperature sensor (KTY or PTC) connected to encoder interface FEN-xx is used. Errorintemperaturemeasurement when KTY sensor connected to encoder interface FEN-01 is used.",
+    "remediu": "Check that parameter 35.11 Temperature 1 source / 35.21 Temperature 2 source setting corresponds to actual encoder interface installation. Check the settings of parameters 91.21 and 91.24. Check that the correspondingmoduleisactivated in parameters 91.11...91.14. Use parameter 91.10 Encoder parameter refresh to validate any changes in the settings. FEN-01 does not support temperature measurement with KTY sensor. Use PTC sensor or other encoder interface module.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3312,7 +3312,7 @@
     "tip": "warning",
     "nume": "Brake resistor",
     "cauza": "Brake resistor broken or not connected.",
-    "remediu": "Check that a brake resistor has been connected.",
+    "remediu": "Check that a brake resistor has been connected. Check the condition of the brake resistor.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -3518,7 +3518,7 @@
         {
           "cod": "00 0003",
           "cauza": "Configuration of module failed.",
-          "remediu": "Check the type and location settings of the modules (parameters 14.1/14.2, 15.1/15.2 or 16.1/16.2)."
+          "remediu": "Check the type and location settings of the modules (parameters 14.1/14.2, 15.1/15.2 or 16.1/16.2). Check that the module is properly seated in its slot. Check that the module and the slot connector is not damaged. Try installing the module into another slot."
         },
         {
           "cod": "00 0004",
@@ -3606,7 +3606,7 @@
     "tip": "warning",
     "nume": "Mechanical brakeopening not allowed",
     "cauza": "Open conditions of mechanical brake cannot be fulfilled (for example, brake has been prevented from opening by parameter 44.11 Keep brake closed).",
-    "remediu": "Check mechanical brake settings in parameter group 44 Mechanical brake control (especially 44.11 Keep brake closed).",
+    "remediu": "Check mechanical brake settings in parameter group 44 Mechanical brake control (especially 44.11 Keep brake closed). Check that acknowledgement signal (if used) matches actual status of brake.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4249,7 +4249,7 @@
     "tip": "warning",
     "nume": "AI Supervised Warning",
     "cauza": "An analog signal is outside the limits specified for the analog input.",
-    "remediu": "Check the auxiliary code (format XYY). “X” specifies the location of the input (0: AI on control unit; 1: I/O extension module 1, etc.), “YY” specifies the input and limit (01: AI1 under",
+    "remediu": "Check the auxiliary code (format XYY). “X” specifies the location of the input (0: AI on control unit; 1: I/O extension module 1, etc.), “YY” specifies the input and limit (01: AI1 under minimum, 02: AI1 over maximum, 03: AI2 under minimum, 04: AI2 over maximum). Check signal level at the analog input. Check the wiring connected to the input. Check the minimum and maximum limits of the input in parameter group 12 Standard AI, 14 I/O extension module 1, 15 I/O extension module 2 or 16 I/O extension module 3.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4546,8 +4546,8 @@
     "cod_secundar": null,
     "tip": "warning",
     "nume": "Autoreset",
-    "cauza": "A fault is about to be autoreset. ·",
-    "remediu": "Informative warning. See the settings in parameter group 31 Fault functions. ·",
+    "cauza": "A fault is about to be autoreset.",
+    "remediu": "Informative warning. See the settings in parameter group 31 Fault functions.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4564,7 +4564,7 @@
     "tip": "warning",
     "nume": "Emergency stop (off2)",
     "cauza": "Drive has received an emergency stop (mode selection off2) command.",
-    "remediu": "Check that it is safe to continue operation. Reset the source of the emergency stop signal (such as an emergency stop push button). Restart drive. If the emergency stop was unintentional, check the source of the stop signal (for example, 21.5 Emergency stop source, or control word received from an external control system).",
+    "remediu": "Check that it is safe to continue operation. Reset the source of the emergency stop signal (such as an emergency stop push button). Restart drive. If the emergency stop was unintentional, check the source of the stop signal (for example, 21.5 Emergency stop source, or control word received from an external control system). (Off2) command to the follower(s). The Off2 stop is stored in the event log of the follower.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4734,7 +4734,7 @@
     "tip": "fault",
     "nume": "ID run done",
     "cauza": "ID run completed.",
-    "remediu": "Informative event. The auxiliary code specifies the type of ID run. 0: None 1: Normal 2: Reduced 3: Standstill 4: Autophasing 5: Current measurement calibration 6: Advanced",
+    "remediu": "Informative event. The auxiliary code specifies the type of ID run. 0: None 1: Normal 2: Reduced 3: Standstill 4: Autophasing 5: Current measurement calibration 6: Advanced 7: Advanced standstill",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4819,7 +4819,7 @@
     "tip": "fault",
     "nume": "Safe torque off 2 loss",
     "cauza": "Safe torque off function is active, ie. STO circuit 2 is broken.",
-    "remediu": "Check safety circuit connections. For more information, see appropriate drive hardware manual and description of parameter 31.22 STO indication run/stop (page 353). Check the auxiliary code, The code contains location information, especially with parallel-connected inverter modules. When converted into a 32-bit binary number, the bits of the code indicate the following: 31...28: Number of faulty inverter module (0...11 decimal). 1111: STO_ACT states of control unit and inverter modules in conflict",
+    "remediu": "Check safety circuit connections. For more information, see appropriate drive hardware manual and description of parameter 31.22 STO indication run/stop (page 353). Check the auxiliary code, The code contains location information, especially with parallel-connected inverter modules. When converted into a 32-bit binary number, the bits of the code indicate the following: 31...28: Number of faulty inverter module (0...11 decimal). 1111: STO_ACT states of control unit and inverter modules in conflict 27: STO_ACT state of inverter modules 26: STO_ACT state of control unit 25: STO1 of control unit 24: STO2 of control unit 23...12: STO1 of inverter modules 12...1 (Bits of non-existing modules set to 1) 11...0: STO2 of inverter modules 12...1 (Bits of non-existing modules set to 1)",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4835,8 +4835,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "STO diagnostics failure",
-    "cauza": "SW internal malfunction. ·",
-    "remediu": "Contact your local ABB representative. ·",
+    "cauza": "SW internal malfunction.",
+    "remediu": "Contact your local ABB representative.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4852,8 +4852,8 @@
     "cod_secundar": null,
     "tip": "fault",
     "nume": "Memory unit missing",
-    "cauza": "No memory unit is attached to the control unit. · The memory unit attached to the control unit is empty.",
-    "remediu": "Power down the control unit. Check that the memory unit is properly inserted into the control unit. · Power down the control unit. Attach a memory unit (with the appropriate firmware) to the control unit.",
+    "cauza": "No memory unit is attached to the control unit. The memory unit attached to the control unit is empty.",
+    "remediu": "Power down the control unit. Check that the memory unit is properly inserted into the control unit. Power down the control unit. Attach a memory unit (with the appropriate firmware) to the control unit.",
     "reactie": null,
     "confirmare": null,
     "extra": {
@@ -4929,7 +4929,7 @@
         {
           "cod": "0001",
           "cauza": "Maximum current limit too low.",
-          "remediu": "Check settings of parameters 99.6 Motor nominal current and 30.17 Maximum current. Make sure that 30.17 Maximum current > 99.6 Motor nominal current."
+          "remediu": "Check settings of parameters 99.6 Motor nominal current and 30.17 Maximum current. Make sure that 30.17 Maximum current > 99.6 Motor nominal current. Check that the drive is dimensioned correctly according to the motor."
         },
         {
           "cod": "0002",

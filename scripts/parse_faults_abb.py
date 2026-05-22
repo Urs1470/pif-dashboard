@@ -16,8 +16,9 @@ The 3-line table header ("Code (hex)" / "Warning|Fault / Aux. code" /
 four column x-boundaries from it on each page (the left margin shifts ~20 px
 between odd and even pages).
 
-Output: one JSON file per manual -- scripts/fault_codes_<familie>.json -- a JSON
-array of fault objects (see MODULE doc / the spec for the schema).
+Output: one JSON file per manual -- data/fault_codes/fault_codes_<familie>.json
+(the deployed data location that load_fault_codes.py reads) -- a JSON array of
+fault objects (see MODULE doc / the spec for the schema).
 
 Usage:
     python scripts/parse_faults_abb.py            # parse both manuals
@@ -37,7 +38,9 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 MANUALS_DIR = ROOT / 'manuals'
-OUT_DIR = ROOT / 'scripts'
+# Deployed data location -- the same directory load_fault_codes.py reads from
+# (ROOT/data/fault_codes). The parser writes the regenerated JSON straight here.
+OUT_DIR = ROOT / 'data' / 'fault_codes'
 
 # Per-manual config. `pages` is the 0-indexed page span of the Fault tracing
 # chapter (inclusive) -- a generous superset; non-table pages are skipped
@@ -92,6 +95,30 @@ def _clean(text):
     return text.strip()
 
 
+# Bullet / dot glyphs that ABB's PDF leaves dangling in otherwise-empty
+# continuation cells. When such a glyph lands alone in the Cause or What-to-do
+# column it is decoration, not content, and ends up stuck on the tail of the
+# field. U+2022 BULLET, U+00B7 MIDDLE DOT, U+25CF/25AA black shapes, U+2023
+# TRIANGULAR bullet, U+2043 HYPHEN BULLET, plus the symbol-font code points
+# U+F06E / U+F0B7 ABB uses for list markers.
+_BULLET_CHARS = '\u2022\u00b7\u25cf\u25aa\u25a0\u2023\u2043\u2219\uf06e\uf0b7\uf0a7'
+# A token that is *only* bullet glyphs (a stray decoration cell).
+_BULLET_ONLY_RE = re.compile('^[' + _BULLET_CHARS + r'\s]+$')
+# Trailing run of whitespace + bullet glyphs to peel off a finished field.
+_TRAILING_BULLET_RE = re.compile('[\\s' + _BULLET_CHARS + ']*[' + _BULLET_CHARS
+                                 + '][\\s' + _BULLET_CHARS + ']*$')
+
+
+def _strip_trailing_bullets(text):
+    """Remove any trailing whitespace + stray bullet/dot glyphs from a finished
+    `cauza` / `remediu` value. ABB scatters lone bullet glyphs into empty
+    continuation cells; the parser appends them, leaving a dangling 'B7'/'2022'
+    on the tail. Mid-text bullets (genuine inline list separators) are kept."""
+    if not text:
+        return text
+    return _TRAILING_BULLET_RE.sub('', text).rstrip()
+
+
 def _looks_like_instruction(text):
     """True if `text` looks like the START of a real "What to do" instruction
     rather than a stray wrapped fragment of the main code's instruction.
@@ -123,6 +150,16 @@ def _is_noise_row(all_toks):
     leftover = [t for t in all_toks
                 if not _RUNHEAD_WORD_RE.match(t) and not _PAGENUM_RE.match(t)]
     return not leftover
+
+
+def _is_bullet_only_row(all_toks):
+    """True if a row holds nothing but stray bullet/dot glyphs. ABB sprinkles
+    lone bullet glyphs into otherwise-empty Cause / What-to-do cells (they
+    render their own y-row); such a row carries no content and must not be
+    appended to any field, or it leaves a dangling bullet on the tail."""
+    if not all_toks:
+        return False
+    return all(_BULLET_ONLY_RE.match(t) for t in all_toks)
 
 
 # NOTE: there is intentionally no per-token "strip noise from content" helper.
@@ -258,18 +295,26 @@ def _classify(code, table_tip):
 
 
 def _parse_page(page, cols_hint, table_tip):
-    """Parse one table page. Returns (entries, cols) where `entries` is a list of
-    raw row-records and `cols` is the column layout detected (or the hint).
+    """Parse one table page. Returns (entries, cols, todo_target_is_aux) where
+    `entries` is a list of raw row-records and `cols` is the column layout
+    detected (or the hint).
 
     Each entry: {code, name, cause, remediu, aux_codes:[{cod,cauza,remediu}]}.
     `aux_codes` accumulates aux sub-rows that belong to the *last* main code; a
     main code's aux rows may also continue onto the next page, handled by the
     caller via the `pending` mechanism.
+
+    `todo_target_is_aux` reports, for the LAST main code of the page, whether its
+    "What to do" stream was last flowing into an aux sub-row (True) or into the
+    main code itself (False). ABB's "What to do" column frequently wraps PAST the
+    bottom of the page; the first rows of the next page then carry the tail of
+    that cell. The caller uses this flag to route that page-leading continuation
+    back to the correct record (see `_leading_continuation`).
     """
     rows = _group_rows(page.get_text("words"))
     cols = _detect_columns(rows) or cols_hint
     if cols is None:
-        return [], cols_hint, None
+        return [], cols_hint, False
 
     # Index the first row strictly below the header so we don't ingest header
     # words as content.
@@ -297,6 +342,12 @@ def _parse_page(page, cols_hint, table_tip):
     # really the PREVIOUS code's wrapped what-to-do -- routed back to it.
     prev_entry = None            # the most recently flushed main record
     current_todo_started = False  # has `current` received any what-to-do yet?
+    # Tracks, for the main code currently open, whether the most recent piece of
+    # "What to do" text went into an aux sub-row (True) or the main code (False).
+    # ABB's What-to-do cell can wrap past the bottom of the page; the caller
+    # needs to know which record on the previous page should receive that
+    # page-crossing tail. Reset to False at the start of every main code.
+    last_todo_was_aux = False
 
     def flush_aux():
         nonlocal current_aux
@@ -324,6 +375,9 @@ def _parse_page(page, cols_hint, table_tip):
         # Discard pure running-header/footer rows ("Fault tracing 553") up front.
         if _is_noise_row(code_toks + name_toks + cause_toks + todo_toks):
             continue
+        # Discard rows that are only stray bullet glyphs (ABB decoration cells).
+        if _is_bullet_only_row(code_toks + name_toks + cause_toks + todo_toks):
+            continue
         name_join = ' '.join(name_toks).strip()
 
         # ---- Is this row a new MAIN code? ----
@@ -350,6 +404,8 @@ def _parse_page(page, cols_hint, table_tip):
             # its instruction list; otherwise todo text seen next may still be
             # the previous code's wrap.
             current_todo_started = bool(own_todo.strip())
+            # A fresh main code: any What-to-do text starts in the main itself.
+            last_todo_was_aux = False
             continue
 
         # ---- Is this row an AUX-code sub-row? ----
@@ -376,6 +432,9 @@ def _parse_page(page, cols_hint, table_tip):
             # the main's wrapped instruction -> give it back to the main.
             if not aux_block_owns_todo and aux_todo:
                 current['remediu'] += ' ' + aux_todo
+            # Track where What-to-do text is now flowing: into the aux sub-row
+            # itself (layout (a)) or back into the main code (layout (b)).
+            last_todo_was_aux = aux_block_owns_todo
             continue
 
         # ---- Otherwise: a continuation row -> append to the open record. ----
@@ -413,6 +472,7 @@ def _parse_page(page, cols_hint, table_tip):
             if current_aux is not None and aux_block_owns_todo:
                 # Aux owns its what-to-do (layout (a)).
                 current_aux['remediu'] += ' ' + todo_text
+                last_todo_was_aux = True
             elif (not current_todo_started and current_aux is None
                   and prev_entry is not None
                   and not _looks_like_instruction(todo_text)):
@@ -427,12 +487,14 @@ def _parse_page(page, cols_hint, table_tip):
                 if current_aux is None:
                     current_todo_started = True
                 current['remediu'] += ' ' + todo_text
+                last_todo_was_aux = False
 
     flush_main()
-    # Hand back the in-progress record so aux rows continuing on the next page
-    # can be attached. We only carry the *last* record if it had no real
-    # cause/remediu yet OR ended mid-table (its aux list may continue).
-    return entries, cols, None
+    # `last_todo_was_aux` now reflects the LAST main code of the page: True if
+    # its "What to do" text was last flowing into an aux sub-row. The caller
+    # uses this to route a page-leading What-to-do continuation (a cell that
+    # wrapped past the bottom of this page) back to the right record.
+    return entries, cols, last_todo_was_aux
 
 
 def _table_type_for_page(page, prev_type):
@@ -474,7 +536,8 @@ def parse_manual(familie):
     by_code = {}          # code -> result dict (first occurrence wins / merge)
     table_type = None     # current table identity
     cols_hint = None      # last detected column layout, reused on header-less pages
-    pending = None        # main record whose aux list may continue on next page
+    pending = None        # main record whose aux list / What-to-do may continue
+    pending_todo_was_aux = False  # did `pending`'s What-to-do end on an aux row?
 
     try:
         for pno in cfg['pages']:
@@ -490,18 +553,31 @@ def parse_manual(familie):
             if cols is None:
                 # Not a table page (intro/prose) -> nothing to extract.
                 pending = None
+                pending_todo_was_aux = False
                 continue
             cols_hint = cols
 
-            entries, cols, _ = _parse_page(page, cols, table_type)
+            entries, cols, todo_was_aux = _parse_page(page, cols, table_type)
 
-            # --- Attach a page-leading aux block to the pending main record. ---
-            # If this page opens with aux rows (no main code yet) they belong to
-            # `pending` from the previous page. _parse_page already drops stray
-            # aux rows when current is None; to recover them, re-scan the body
-            # for leading aux rows here.
+            # --- Attach page-leading continuation to the pending main record. ---
+            # The top of this page may carry (1) the tail of `pending`'s "What
+            # to do" cell, which wrapped past the previous page's bottom, and/or
+            # (2) aux sub-rows of `pending`. _parse_page drops both when its own
+            # `current` is None at page start; recover them here.
             if pending is not None:
-                lead_aux = _leading_aux(page, cols, table_type)
+                lead_todo, lead_aux = _leading_continuation(
+                    page, cols, table_type)
+                if lead_todo:
+                    # Route the wrapped What-to-do tail back to whichever record
+                    # was last receiving `pending`'s What-to-do text: its last
+                    # aux sub-row (aux-owns-todo layout) or the main code itself.
+                    if pending_todo_was_aux and pending['extra']['aux_codes']:
+                        tgt = pending['extra']['aux_codes'][-1]
+                        tgt['remediu'] = (tgt['remediu'] + ' '
+                                          + lead_todo).strip()
+                    else:
+                        pending['remediu'] = (pending['remediu'] + ' '
+                                              + lead_todo).strip()
                 for a in lead_aux:
                     pending['extra']['aux_codes'].append(a)
 
@@ -537,21 +613,31 @@ def parse_manual(familie):
                     by_code[e['code']] = rec
                     results.append(rec)
 
-            # The last entry of the page may have aux rows continuing overleaf.
-            pending = results[-1] if results else None
+            # The last entry of the page may have aux rows OR a wrapped "What
+            # to do" cell continuing overleaf. Remember it and where its
+            # What-to-do stream ended so the next page's leading continuation
+            # is routed correctly.
+            if entries:
+                pending = results[-1] if results else None
+                pending_todo_was_aux = todo_was_aux
+            # If the page produced no entries (e.g. a pure continuation page),
+            # keep `pending` pointing at the previous main code so its What-to-do
+            # can keep accumulating across several page breaks.
     finally:
         doc.close()
 
-    # Final cleanup pass: trim, drop empty aux entries.
+    # Final cleanup pass: trim, strip stray trailing bullet glyphs, drop empty
+    # aux entries. `_strip_trailing_bullets` removes the lone bullet/dot glyphs
+    # ABB leaves dangling in empty continuation cells (see its docstring).
     for r in results:
         r['nume'] = _clean(r['nume'])
-        r['cauza'] = _clean(r['cauza'])
-        r['remediu'] = _clean(r['remediu'])
+        r['cauza'] = _strip_trailing_bullets(_clean(r['cauza']))
+        r['remediu'] = _strip_trailing_bullets(_clean(r['remediu']))
         cleaned_aux = []
         for a in r['extra']['aux_codes']:
             a['cod'] = re.sub(r'\s+', ' ', (a['cod'] or '')).strip()
-            a['cauza'] = _clean(a['cauza'])
-            a['remediu'] = _clean(a['remediu'])
+            a['cauza'] = _strip_trailing_bullets(_clean(a['cauza']))
+            a['remediu'] = _strip_trailing_bullets(_clean(a['remediu']))
             if a['cod'] and (a['cauza'] or a['remediu']):
                 cleaned_aux.append(a)
         r['extra']['aux_codes'] = cleaned_aux
@@ -559,27 +645,59 @@ def parse_manual(familie):
     return results
 
 
-def _leading_aux(page, cols, table_tip):
-    """Return aux sub-rows that appear at the top of a page *before* the first
-    main code -- these continue the previous page's last main code."""
+def _leading_continuation(page, cols, table_tip):
+    """Recover everything at the top of a page that belongs to the PREVIOUS
+    page's last main code -- i.e. content that appears *before* this page's
+    first main code.
+
+    Two distinct things can spill across the page boundary:
+
+      1. A "What to do" cell that wraps past the bottom of the page. Its tail
+         lands as todo-column-only rows at the very top of the next page,
+         BEFORE any aux row or main code. The old `_leading_aux` dropped these
+         outright -- the truncation bug. They are returned as `lead_todo`.
+
+      2. Aux sub-rows of that main code. These are returned as `aux_list`,
+         exactly as before.
+
+    Returns (lead_todo, aux_list): `lead_todo` is the joined continuation text
+    of the wrapped What-to-do cell (empty string if none); `aux_list` is the
+    list of aux sub-row dicts.
+
+    Layout note: a leading todo-only continuation that occurs while aux rows of
+    an aux-OWNS-todo block are still open continues that *aux's* What-to-do, not
+    the main's. The caller is told where the main's stream ended (see
+    `_parse_page`'s `todo_target_is_aux`) and routes `lead_todo` accordingly --
+    but a continuation interleaved INSIDE this page's recovered aux block is
+    attached here directly to that aux.
+    """
     rows = _group_rows(page.get_text("words"))
     cols = _detect_columns(rows) or cols
     if cols is None:
-        return []
+        return '', []
     body = [(y, r) for y, r in rows if y > cols['header_y_max'] + 1]
     out = []
-    cur = None
-    # Locked once on the first aux row -- see aux_block_owns_todo in _parse_page.
-    aux_owns_todo = None
+    cur = None                    # aux sub-record being built
+    aux_owns_todo = None          # locked on the first aux row of the block
+    lead_todo_parts = []          # tail of the main's wrapped What-to-do cell
+    seen_aux = False              # has any aux row appeared yet?
+
     for y, row in body:
         code_toks, name_toks, cause_toks, todo_toks = _split_row(row, cols)
-        if _is_noise_row(code_toks + name_toks + cause_toks + todo_toks):
+        all_toks = code_toks + name_toks + cause_toks + todo_toks
+        if _is_noise_row(all_toks):
+            continue
+        # Stray bullet-glyph rows carry no content -- skip them entirely.
+        if _is_bullet_only_row(all_toks):
             continue
         # Stop as soon as a main code appears.
         if len(code_toks) == 1 and MAIN_CODE_RE.match(code_toks[0]):
             break
         name_join = ' '.join(name_toks).strip()
+
+        # ---- An aux sub-row. ----
         if not code_toks and name_toks and AUX_CODE_RE.match(name_join):
+            seen_aux = True
             if cur is not None:
                 cur['cauza'] = _clean(cur['cauza'])
                 cur['remediu'] = _clean(cur['remediu'])
@@ -591,25 +709,41 @@ def _leading_aux(page, cols, table_tip):
             cur = {'cod': re.sub(r'\s+', ' ', name_join).strip(),
                    'cauza': ' '.join(cause_toks),
                    'remediu': aux_todo if aux_owns_todo else ''}
-        elif cur is not None:
+            continue
+
+        # ---- A continuation row (no code, not an aux header). ----
+        if cur is not None:
+            # Inside this page's recovered aux block -> append to that aux.
             if name_toks:
                 cur['cauza'] += ' ' + ' '.join(name_toks)
             if cause_toks:
                 cur['cauza'] += ' ' + ' '.join(cause_toks)
-            # Wrapped what-to-do belongs to the aux only if its own row had
-            # what-to-do text; otherwise it belongs to the previous page's main
-            # code (already emitted) and is dropped here.
-            if todo_toks and aux_owns_todo:
-                cur['remediu'] += ' ' + ' '.join(todo_toks)
+            # Wrapped what-to-do belongs to the aux only if the block owns its
+            # todo; otherwise it is the main's wrap -- but the main was emitted
+            # on the previous page, so route it to the leading-todo bucket.
+            if todo_toks:
+                if aux_owns_todo:
+                    cur['remediu'] += ' ' + ' '.join(todo_toks)
+                else:
+                    lead_todo_parts.append(' '.join(todo_toks))
+        elif not seen_aux and todo_toks and not (code_toks or name_toks
+                                                 or cause_toks):
+            # A todo-column-only row before any aux row: this is the tail of the
+            # previous page's last main code's "What to do" cell, which wrapped
+            # past the page bottom. THIS is what the old parser dropped.
+            lead_todo_parts.append(' '.join(todo_toks))
         else:
-            # Continuation text of the *previous page's main code* itself, not
-            # an aux row -- ignore here (we only recover aux blocks).
+            # Cause/name continuation of the previous page's main code with no
+            # aux open. Rare; the main's cause is normally complete before the
+            # page break. Ignore (we only recover the What-to-do tail + aux).
             continue
+
     if cur is not None and cur['cod']:
         cur['cauza'] = _clean(cur['cauza'])
         cur['remediu'] = _clean(cur['remediu'])
         out.append(cur)
-    return out
+
+    return _clean(' '.join(lead_todo_parts)), out
 
 
 def _richness(rec):
@@ -627,6 +761,7 @@ def main():
             continue
         sys.stderr.write(f"[{familie}] parsing {MANUALS[familie]['pdf']} ...\n")
         records = parse_manual(familie)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
         out_path = OUT_DIR / f'fault_codes_{familie}.json'
         with open(out_path, 'w', encoding='utf-8') as f:
             json.dump(records, f, ensure_ascii=False, indent=2)
