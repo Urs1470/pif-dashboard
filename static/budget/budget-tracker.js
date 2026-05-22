@@ -2963,7 +2963,6 @@ function render() {
   html += '<div class="app-header">';
   html += '  <div class="header-inner">';
   html += '    <div class="header-left">';
-  html += '      <a class="btn-back" href="/" title="Înapoi la Dashboard"><i data-lucide="arrow-left"></i> Dashboard</a>';
   html += '      <div class="header-brand">';
   html += '        <div class="header-title"><i data-lucide="wallet"></i> Budget Tracker</div>';
   html += '        <div class="header-sub">Ion · RON · 2026</div>';
@@ -3672,6 +3671,67 @@ function showRuleProposals(proposals, addedCount) {
 }
 
 // ====================================================================
+// APP VERSION CHECK
+// ====================================================================
+// No service worker — the page just polls /api/version and, when the
+// deployed hash differs from the one it loaded with, shows a reload
+// banner. Mirrors the "new version available" prompt from the main app.
+var LOADED_VERSION = (function() {
+  var m = document.querySelector('meta[name="budget-version"]');
+  return m ? (m.getAttribute('content') || '') : '';
+})();
+var _updateBannerShown = false;
+var _versionCheckInFlight = false;
+
+async function checkAppVersion() {
+  if (_updateBannerShown || _versionCheckInFlight) return;
+  if (!LOADED_VERSION) return;  // no baseline to compare against
+  _versionCheckInFlight = true;
+  try {
+    var r = await fetch(API_BASE + '/version', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    var payload = await r.json();
+    if (payload && payload.version && payload.version !== LOADED_VERSION) {
+      showUpdateBanner();
+    }
+  } catch (e) {
+    /* offline / unreachable — try again on the next tick */
+  } finally {
+    _versionCheckInFlight = false;
+  }
+}
+
+function showUpdateBanner() {
+  if (_updateBannerShown) return;
+  _updateBannerShown = true;
+  var bar = document.createElement('div');
+  bar.className = 'update-banner';
+  bar.setAttribute('role', 'status');
+  bar.innerHTML =
+    '<i data-lucide="sparkles"></i>' +
+    '<span class="update-banner-text">Versiune nouă disponibilă</span>' +
+    '<button type="button" class="update-banner-btn">Reîncarcă</button>' +
+    '<button type="button" class="update-banner-x" aria-label="Închide"><i data-lucide="x"></i></button>';
+  document.body.appendChild(bar);
+  bar.querySelector('.update-banner-btn').addEventListener('click', function() {
+    location.reload();
+  });
+  bar.querySelector('.update-banner-x').addEventListener('click', function() {
+    bar.classList.remove('visible');
+    setTimeout(function() { bar.remove(); }, 300);
+    // _updateBannerShown stays true — don't nag again this session
+  });
+  if (window.lucide && lucide.createIcons) lucide.createIcons();
+  requestAnimationFrame(function() { bar.classList.add('visible'); });
+}
+
+function startVersionChecks() {
+  // First check a minute in, then every 15 minutes while the tab is open.
+  setTimeout(checkAppVersion, 60 * 1000);
+  setInterval(checkAppVersion, 15 * 60 * 1000);
+}
+
+// ====================================================================
 // BOOT
 // ====================================================================
 async function init() {
@@ -3679,6 +3739,7 @@ async function init() {
   refreshLuni();
   render();
   if (state.activeTab === 'investitii') setTimeout(maybeAutoRefreshVwce, 0);
+  startVersionChecks();
 }
 
 // Warn before leaving if a save is still pending or has failed.
@@ -3693,9 +3754,9 @@ window.addEventListener('beforeunload', function(e) {
 // Re-sync from the server when the tab regains focus / visibility — so edits
 // made on another device show up without a manual page reload.
 document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'visible') syncFromServerIfStale();
+  if (document.visibilityState === 'visible') { syncFromServerIfStale(); checkAppVersion(); }
 });
-window.addEventListener('focus', function() { syncFromServerIfStale(); });
+window.addEventListener('focus', function() { syncFromServerIfStale(); checkAppVersion(); });
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);

@@ -1,10 +1,11 @@
 # Budget Tracker Blueprint
 # Provides /budget/* routes with PIN authentication (same as app.py)
 
-from flask import Blueprint, send_from_directory, jsonify, request, session, current_app
+from flask import Blueprint, send_from_directory, jsonify, request, session, current_app, make_response
 from pathlib import Path
 from datetime import datetime
 import json
+import hashlib
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -20,6 +21,43 @@ AUDIT_MAX_CHANGES_PER_SAVE = 60
 # In-memory quote cache: {symbol: (timestamp, payload)}
 _QUOTE_CACHE = {}
 QUOTE_CACHE_TTL = 300  # 5 minutes
+
+
+# ============================================================
+# Asset versioning — a short content hash of the budget SPA's
+# static files. Drives cache-busting (?v=) and the in-app
+# "new version available" check (see /api/version below).
+# ============================================================
+_VERSIONED_FILES = ('index.html', 'budget-tracker.js', 'budget.css')
+_VERSION_CACHE = {'sig': None, 'version': None}
+
+
+def _budget_version():
+    """Return a 10-char content hash of the budget app's static assets.
+
+    Recomputed only when a file's mtime or size changes, so repeated
+    /api/version polls stay cheap.
+    """
+    sig_parts = []
+    for name in _VERSIONED_FILES:
+        try:
+            st = (STATIC_DIR / name).stat()
+            sig_parts.append('%s:%d:%d' % (name, st.st_mtime_ns, st.st_size))
+        except OSError:
+            sig_parts.append('%s:0:0' % name)
+    sig = '|'.join(sig_parts)
+    if _VERSION_CACHE['sig'] == sig:
+        return _VERSION_CACHE['version']
+    h = hashlib.md5()
+    for name in _VERSIONED_FILES:
+        try:
+            h.update((STATIC_DIR / name).read_bytes())
+        except OSError:
+            pass
+    version = h.hexdigest()[:10]
+    _VERSION_CACHE['sig'] = sig
+    _VERSION_CACHE['version'] = version
+    return version
 
 
 def _get_db():
@@ -76,13 +114,28 @@ def diff_state(old, new, path=''):
 @budget_bp.route('/')
 @login_required
 def index():
-    return send_from_directory(STATIC_DIR, 'index.html')
+    # Render the SPA shell with the current asset version stamped in, so a
+    # new deploy busts the budget.css / budget-tracker.js caches automatically.
+    version = _budget_version()
+    try:
+        html = (STATIC_DIR / 'index.html').read_text(encoding='utf-8')
+    except OSError:
+        return send_from_directory(STATIC_DIR, 'index.html')
+    resp = make_response(html.replace('__ASSET_VER__', version))
+    # The shell is tiny and must always reflect the live deploy.
+    resp.headers['Cache-Control'] = 'no-cache'
+    return resp
 
 
 @budget_bp.route('/<path:filename>')
 @login_required
 def static_files(filename):
-    return send_from_directory(STATIC_DIR, filename)
+    resp = send_from_directory(STATIC_DIR, filename)
+    # Assets are requested with a content-hash ?v= param, so a given URL
+    # always maps to the same bytes — let the browser cache them hard.
+    if request.args.get('v'):
+        resp.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return resp
 
 
 @budget_bp.route('/api/state', methods=['GET'])
@@ -188,6 +241,14 @@ def get_audit():
         WHERE user = 'ion' ORDER BY ts DESC, id DESC LIMIT ?
     """, (limit,)).fetchall()
     return jsonify([dict(r) for r in rows])
+
+
+@budget_bp.route('/api/version', methods=['GET'])
+@login_required
+def get_version():
+    """Current deployed asset version — polled by the client to show the
+    'new version available' banner without a service worker."""
+    return jsonify({'version': _budget_version()})
 
 
 # ============================================================
