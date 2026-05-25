@@ -55,6 +55,14 @@ function formatFileSize(bytes) {
 // escaped FIRST so vault content can never inject HTML (no XSS). Emits the
 // md-* CSS classes styled identically in both index.html and mobile.html.
 
+// Allowlist of safe URL schemes. Anything else (javascript:, data:, vbscript:,
+// file:) is rewritten to "#" to neutralise XSS via Markdown links and images.
+function _safeUrl(url) {
+    const t = String(url || '').trim().toLowerCase();
+    if (/^(javascript|data|vbscript|file):/.test(t)) return '#';
+    return url;
+}
+
 // Inline-level Markdown. Wikilinks become <span class="md-wikilink"
 // data-wikilink="..."> — both shells delegate clicks on that class/attr.
 function mdInline(text) {
@@ -64,10 +72,12 @@ function mdInline(text) {
     // real note text \u2014 e.g. a note literally containing "IC3".
     const codes = [];
     s = s.replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return '\uE000IC' + (codes.length - 1) + '\uE000'; });
-    // Images, then links. URLs come from already-escaped text.
-    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, '<img alt="$1" src="$2">');
+    // Images, then links. URLs go through _safeUrl which rejects
+    // javascript:/data:/vbscript:/file: schemes — XSS hardening.
+    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g,
+        (m, alt, url) => `<img alt="${alt}" src="${_safeUrl(url)}">`);
     s = s.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g,
-        '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        (m, txt, url) => `<a href="${_safeUrl(url)}" target="_blank" rel="noopener">${txt}</a>`);
     // Obsidian wikilinks [[Note]] / [[Note|alias]] (also embeds ![[...]]).
     // escapeHtml already escapes quotes, so it is safe for the data-attribute.
     s = s.replace(/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, target, alias) =>

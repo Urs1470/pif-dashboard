@@ -706,14 +706,21 @@ async function loadData() {
 // another device. Skipped while there are unsaved local changes (those are
 // protected by the 409 conflict check on the next save instead).
 var _syncInFlight = false;
+var _serverOpInFlight = false;  // shared across saveDataNow + syncFromServerIfStale to prevent overlapping hydrates
 async function syncFromServerIfStale() {
-  if (_syncInFlight) return;
+  if (_syncInFlight || _serverOpInFlight) return;
   if (state.saveStatus !== 'saved') return;   // unsaved edits — don't clobber
   if (saveTimer) return;                       // a save is pending/debouncing
   // Don't rebuild the DOM under a field the user is currently editing.
   var ae = document.activeElement;
-  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
+  if (ae && (
+    ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA' ||
+    ae.isContentEditable ||
+    (ae.classList && ae.classList.contains('cs-trigger')) ||
+    (ae.closest && (ae.closest('.cs.open') || ae.closest('.flatpickr-calendar') || ae.closest('.modal-overlay.active')))
+  )) return;
   _syncInFlight = true;
+  _serverOpInFlight = true;
   try {
     var r = await fetch(API_BASE + '/state', { credentials: 'same-origin' });
     if (!r.ok) return;
@@ -728,12 +735,19 @@ async function syncFromServerIfStale() {
       console.info('Budget re-synced from server (newer version from another device)');
     }
   } catch(e) { /* offline — keep current state */ }
-  finally { _syncInFlight = false; }
+  finally { _syncInFlight = false; _serverOpInFlight = false; }
 }
 
 async function saveDataNow() {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-  var body = { data: state.data, migrated: !!state.pendingMigrationSave };
+  _serverOpInFlight = true;
+  // Strip ephemeral series data from the persisted blob (it's huge and
+  // re-fetched live from the Yahoo proxy on demand). state.data keeps it
+  // locally — only the server-saved copy is slimmed.
+  var dataForServer = JSON.parse(JSON.stringify(state.data));
+  if (dataForServer.vwce) delete dataForServer.vwce.priceHistory;
+  delete dataForServer.priceHistory;
+  var body = { data: dataForServer, migrated: !!state.pendingMigrationSave };
   // Only send the version token when we know it — omitting it skips the
   // server-side conflict check (used after a local-backup restore).
   if (state.baseUpdated !== undefined) body.base_updated = state.baseUpdated;
@@ -766,33 +780,47 @@ async function saveDataNow() {
       if (saveTimer) clearTimeout(saveTimer);
       saveTimer = setTimeout(saveDataNow, 4000 * saveRetries);
     }
+  } finally {
+    _serverOpInFlight = false;
   }
 }
 
 // Another tab/device saved since we loaded. Ask the user how to resolve it.
 async function handleSaveConflict(conflict) {
-  setSaveStatus('error');
-  var keepMine = await showConfirm({
-    title: 'Conflict de salvare',
-    body: 'Bugetul a fost modificat în altă fereastră sau pe alt dispozitiv. ' +
-          'Păstrezi modificările de aici (suprascrii cealaltă versiune) sau ' +
-          'încarci datele de pe server (pierzi modificările de aici)?',
-    okLabel: 'Păstrează ale mele',
-    cancelLabel: 'Încarcă de pe server',
-    icon: 'git-merge'
-  });
-  if (keepMine) {
-    // Adopt the server's current token, then re-save to overwrite.
-    state.baseUpdated = (conflict && conflict.current) ? conflict.current.updated : undefined;
-    saveDataNow();
-  } else if (conflict && conflict.current && conflict.current.data) {
-    state.pendingMigrationSave = hydrateLoadedData(conflict.current.data);
-    state.baseUpdated = conflict.current.updated;
-    persistLocalBackup(false);
-    setSaveStatus('saved');
-    render();
-  } else {
-    location.reload();
+  _serverOpInFlight = true;
+  try {
+    setSaveStatus('error');
+    var keepMine = await showConfirm({
+      title: 'Conflict de salvare',
+      body: 'Bugetul a fost modificat în altă fereastră sau pe alt dispozitiv. ' +
+            'Păstrezi modificările de aici (suprascrii cealaltă versiune) sau ' +
+            'încarci datele de pe server (pierzi modificările de aici)?',
+      okLabel: 'Păstrează ale mele',
+      cancelLabel: 'Încarcă de pe server',
+      icon: 'git-merge'
+    });
+    if (keepMine) {
+      // Adopt the server's current token, then re-save to overwrite.
+      // Policy: DO NOT clear state.pendingMigrationSave here — if the local
+      // copy was migrated, the re-save still needs to record the audit
+      // 'migrate' entry. saveDataNow clears the flag itself on success.
+      state.baseUpdated = (conflict && conflict.current) ? conflict.current.updated : undefined;
+      saveDataNow();
+    } else if (conflict && conflict.current && conflict.current.data) {
+      // "Load server" branch: hydrateLoadedData reassigns
+      // state.pendingMigrationSave based on the freshly-loaded server data.
+      // The next user edit will trigger a save and the migration audit
+      // entry will fire correctly then.
+      state.pendingMigrationSave = hydrateLoadedData(conflict.current.data);
+      state.baseUpdated = conflict.current.updated;
+      persistLocalBackup(false);
+      setSaveStatus('saved');
+      render();
+    } else {
+      location.reload();
+    }
+  } finally {
+    _serverOpInFlight = false;
   }
 }
 
@@ -1423,7 +1451,11 @@ function addMonthsIso(iso, months) {
   var idx = (mo - 1) + months;
   var ny = y + Math.floor(idx / 12);
   var nm = (idx % 12) + 1;
-  return ny + '-' + String(nm).padStart(2, '0') + '-' + String(d || 1).padStart(2, '0');
+  // Clamp day to last valid day of target month (Jan 31 + 1mo → Feb 28/29).
+  var lastDay = new Date(ny, nm, 0).getDate();
+  if (!d) d = 1;
+  if (d > lastDay) d = lastDay;
+  return ny + '-' + String(nm).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 
 function daysBetween(isoA, isoB) {

@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0d12">
   <script>
     (function() {
@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-title" content="PIF Mobile">
   <meta name="description" content="PIF Dashboard Mobile - Proiecte, Note, Parametri">
   <title>PIF Mobile</title>
-  <link rel="manifest" href="/static/manifest.json?v=20260522fav">
+  <link rel="manifest" href="/static/manifest-mobile.json?v=20260522fav">
   <style id="boot-screen">
     /* Hide both screens until JS decides which to show */
     #login-screen { display: none !important; }
@@ -79,7 +79,7 @@
       /* Text */
       --text: #e8edf5;
       --text-secondary: #8590a0;
-      --text-dim: #5a6473;
+      --text-dim: #7c8696;
       --text2: #8590a0;
 
       /* Lines */
@@ -110,7 +110,7 @@
       --service-accent: #d97706;
       --text: #1f2937;
       --text-secondary: #5a6473;
-      --text-dim: #94a3b8;
+      --text-dim: #64748b;
       --text2: #5a6473;
       --border: #dbe1ea;
       --line-soft: #eef1f6;
@@ -1302,6 +1302,15 @@
     .katex { font-size: 0.95em; }
     .katex-display { margin: 6px 0; overflow-x: auto; }
     #mpm-explicatie .katex { color: var(--text); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
   <!-- KaTeX for math rendering in parameter explanations -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
@@ -1313,7 +1322,7 @@
   <div id="login-screen">
     <h1>PIF Mobile</h1>
     <p>Dashboard pentru proiecte PIF</p>
-    <input type="password" id="pin-input" placeholder="••••••" maxlength="20" autocomplete="current-password" inputmode="text">
+    <input type="password" id="pin-input" placeholder="••••••" maxlength="20" autocomplete="current-password" inputmode="numeric" aria-label="PIN">
     <div style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
       <input type="checkbox" id="remember-me" style="width:18px; height:18px;">
       <label for="remember-me" style="font-size:14px; color:var(--text-secondary);">Ține-mă autentificat</label>
@@ -1337,7 +1346,7 @@
 
     <main id="content">
       <!-- Tab 0: Home Dashboard -->
-      <div id="tab-home" class="tab-view active">
+      <div id="tab-home" class="tab-view active" role="tabpanel" aria-labelledby="navbtn-home">
         <div id="home-greeting" style="margin-bottom:16px;"></div>
         <div id="home-stats" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px;"></div>
         <div id="home-active-timer" style="margin-bottom:12px;"></div>
@@ -1347,15 +1356,15 @@
       </div>
 
       <!-- Tab 1: Projects -->
-      <div id="tab-projects" class="tab-view">
+      <div id="tab-projects" class="tab-view" role="tabpanel" aria-labelledby="navbtn-projects">
         <button onclick="openProjectFormModal()" class="modal-btn" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;"><i data-lucide="plus"></i> Proiect nou</button>
         <div id="projects-list"></div>
       </div>
 
       <!-- Tab 2: Tasks -->
-      <div id="tab-tasks" class="tab-view">
+      <div id="tab-tasks" class="tab-view" role="tabpanel" aria-labelledby="navbtn-tasks">
         <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <input type="text" id="quick-task-mobile" placeholder="Task nou..."
+          <input type="text" id="quick-task-mobile" placeholder="Task nou..." aria-label="Task nou rapid"
             style="flex:1;padding:12px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);">
           <button onclick="quickAddMobileTask()" style="padding:12px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:600;">+</button>
         </div>
@@ -1369,7 +1378,7 @@
       </div>
 
       <!-- Tab 3: Parameters -->
-      <div id="tab-params" class="tab-view">
+      <div id="tab-params" class="tab-view" role="tabpanel" aria-labelledby="navbtn-params">
         <div id="params-sync-status" onclick="syncParamsToLocal()" style="font-size:12px;padding:6px 10px;margin-bottom:8px;border-radius:6px;text-align:center;cursor:pointer;opacity:0.85;background:var(--bg-elev2);display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="circle" style="color:var(--danger);"></i> Cache gol — tap pentru sync</div>
         <button id="manual-sync-btn" onclick="syncParamsToLocal()" style="width:100%;padding:10px;margin-bottom:8px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="refresh-cw"></i> Sincronizează parametri acum</button>
 
@@ -1385,7 +1394,7 @@
             <button onclick="mobileParamBackToProducator()" aria-label="Înapoi la producători" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; font-size:13px;"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i> <span id="mobile-param-breadcrumb">Producători</span></button>
           </div>
           <div id="mobile-param-mini-tabs" style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;"></div>
-          <input type="search" class="param-search" id="param-search" placeholder="Caută parametru..." style="margin-bottom:12px;">
+          <input type="search" class="param-search" id="param-search" placeholder="Caută parametru..." aria-label="Caută parametru" style="margin-bottom:12px;">
           <select class="family-select" id="family-select" style="display:none;">
             <option value="">Toate familiile</option>
           </select>
@@ -1394,25 +1403,25 @@
       </div>
 
       <!-- Tab 4: Manuals -->
-      <div id="tab-manuals" class="tab-view">
+      <div id="tab-manuals" class="tab-view" role="tabpanel">
         <div id="manuals-list"></div>
       </div>
 
       <!-- Tab: Stats (from More menu) -->
-      <div id="tab-stats" class="tab-view">
+      <div id="tab-stats" class="tab-view" role="tabpanel">
         <div id="stats-content"></div>
       </div>
 
       <!-- Tab: Clients (from More menu) -->
-      <div id="tab-clients" class="tab-view">
-        <input type="text" id="client-search" placeholder="Caută client..."
+      <div id="tab-clients" class="tab-view" role="tabpanel">
+        <input type="text" id="client-search" placeholder="Caută client..." aria-label="Caută client"
           style="width:100%;padding:12px;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:12px;">
         <button onclick="openClientModal()" class="modal-btn" style="margin-bottom:12px;">+ Client nou</button>
         <div id="clients-list"></div>
       </div>
 
       <!-- Tab: Export (from More menu) -->
-      <div id="tab-export" class="tab-view">
+      <div id="tab-export" class="tab-view" role="tabpanel">
         <div style="font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px;"><i data-lucide="hard-drive-download" style="color:var(--accent);"></i> Export &amp; Backup</div>
         <button onclick="window.open('/api/export/excel?type=projects','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-spreadsheet"></i> Export proiecte (Excel)</button>
         <button onclick="window.open('/api/export/excel?type=tasks','_blank')" class="more-item" style="margin-bottom:8px;"><i data-lucide="file-spreadsheet"></i> Export taskuri (Excel)</button>
@@ -1422,18 +1431,18 @@
       </div>
 
       <!-- Tab: Notes (from More menu) -->
-      <div id="tab-notes" class="tab-view">
+      <div id="tab-notes" class="tab-view" role="tabpanel">
         <button onclick="openNoteModal()" class="modal-btn" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px;"><i data-lucide="plus"></i> Notiță nouă</button>
         <div id="notes-list"></div>
       </div>
 
       <!-- Tab: Obsidian notes (from More menu) — drill-down: tree/search -> note -->
-      <div id="tab-obsidian" class="tab-view">
+      <div id="tab-obsidian" class="tab-view" role="tabpanel">
         <!-- Tree + search view -->
         <div id="obs-browse">
           <div class="obs-search-row">
             <i data-lucide="search"></i>
-            <input type="search" id="obs-search" placeholder="Caută în notițe..."
+            <input type="search" id="obs-search" placeholder="Caută în notițe..." aria-label="Caută în notițe"
                    autocomplete="off" oninput="onObsSearchInput()">
           </div>
           <div class="obs-meta" id="obs-meta"></div>
@@ -1451,7 +1460,7 @@
       </div>
 
       <!-- Tab: Fault codes (from More menu) — producer picker -> familie + search + list -> detail -->
-      <div id="tab-faults" class="tab-view">
+      <div id="tab-faults" class="tab-view" role="tabpanel">
         <!-- Step 1: producer picker (cards) -->
         <div id="mobile-fault-step-producator">
           <div style="font-size:13px; color:var(--text-secondary); margin:8px 0 12px;">Alege producătorul</div>
@@ -1464,7 +1473,7 @@
             <button onclick="mobileFaultBackToProducator()" aria-label="Înapoi la producători" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; font-size:13px;"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i> <span id="mobile-fault-breadcrumb">Producători</span></button>
           </div>
           <div id="mobile-fault-mini-tabs" style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;"></div>
-          <input type="search" class="param-search" id="fault-search-m" placeholder="Caută cod sau nume..." style="margin-bottom:12px;">
+          <input type="search" class="param-search" id="fault-search-m" placeholder="Caută cod sau nume..." aria-label="Caută cod eroare" style="margin-bottom:12px;">
           <div id="fault-list-m"></div>
           <button id="fault-load-more-m" onclick="loadMoreFaultCodesM()" style="display:none; width:100%; padding:12px; margin-top:8px; background:var(--bg-elev2); border:1px solid var(--border); border-radius:10px; color:var(--text-secondary); font-size:13px; cursor:pointer; font-family:inherit;">Încarcă mai multe</button>
         </div>
@@ -1501,7 +1510,7 @@
       </div>
 
       <!-- Project Detail View -->
-      <div id="project-detail" class="tab-view">
+      <div id="project-detail" class="tab-view" role="tabpanel">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <button class="back-btn" id="back-to-projects">← Înapoi</button>
           <div style="display:flex; gap:8px;">
@@ -1529,20 +1538,20 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav id="bottom-nav">
-      <button class="nav-tab active" data-tab="home">
+    <nav id="bottom-nav" role="tablist" aria-label="Navigare principala">
+      <button class="nav-tab active" id="navbtn-home" role="tab" aria-controls="tab-home" aria-selected="true" data-tab="home">
         <span class="nav-tab-icon"><i data-lucide="home"></i></span><span>Acasă</span>
       </button>
-      <button class="nav-tab" data-tab="projects">
+      <button class="nav-tab" id="navbtn-projects" role="tab" aria-controls="tab-projects" aria-selected="false" data-tab="projects">
         <span class="nav-tab-icon"><i data-lucide="folder-kanban"></i></span><span>Proiecte</span>
       </button>
-      <button class="nav-tab" data-tab="tasks">
+      <button class="nav-tab" id="navbtn-tasks" role="tab" aria-controls="tab-tasks" aria-selected="false" data-tab="tasks">
         <span class="nav-tab-icon"><i data-lucide="check-square"></i></span><span>Taskuri</span>
       </button>
-      <button class="nav-tab" data-tab="params">
+      <button class="nav-tab" id="navbtn-params" role="tab" aria-controls="tab-params" aria-selected="false" data-tab="params">
         <span class="nav-tab-icon"><i data-lucide="sliders-horizontal"></i></span><span>Parametri</span>
       </button>
-      <button class="nav-tab" data-tab="more">
+      <button class="nav-tab" id="navbtn-more" role="tab" aria-controls="tab-more" aria-selected="false" data-tab="more">
         <span class="nav-tab-icon"><i data-lucide="menu"></i></span><span>Mai mult</span>
       </button>
     </nav>
@@ -1578,7 +1587,7 @@
     <div class="gs-top">
       <div class="gs-input-wrap">
         <i data-lucide="search"></i>
-        <input type="text" id="gs-input" placeholder="Caută în tot ce ai..."
+        <input type="text" id="gs-input" placeholder="Caută în tot ce ai..." aria-label="Căutare globală"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <button class="gs-close" id="gs-close" aria-label="Închide" title="Închide"><i data-lucide="x"></i></button>
@@ -1612,7 +1621,7 @@
         <span class="modal-title">Notiță nouă</span>
         <button class="modal-close" id="close-note-modal">×</button>
       </div>
-      <textarea id="note-content" placeholder="Scrie notița..."></textarea>
+      <textarea id="note-content" placeholder="Scrie notița..." aria-label="Conținut notiță"></textarea>
       <select id="note-project-select">
         <option value="">Proiect (opțional)</option>
       </select>

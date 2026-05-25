@@ -1918,6 +1918,10 @@ function showTab(tab) {
     case 'more': openMoreMenu(); break;
   }
 
+  document.querySelectorAll('#bottom-nav .nav-tab').forEach(b => {
+    b.setAttribute('aria-selected', b.dataset.tab === tab ? 'true' : 'false');
+  });
+
 }
 
 function openMoreMenu() {

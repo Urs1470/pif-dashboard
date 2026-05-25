@@ -1173,20 +1173,20 @@
     <!-- Flatpickr datepicker (dark theme) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/themes/dark.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Lucide icons (self-hosted — pinned, same-origin, SW-cacheable; no unpkg flash) -->
-    <script src="/static/lucide.min.js?v=20260522a"></script>
+    <script defer src="/static/lucide.min.js?v=20260522a"></script>
 
     <!-- Shared core — loaded before app.js; logic common with the mobile shell -->
-    <script src="/static/core.js?v={{ core_version }}"></script>
-    <script src="/static/app.js?v={{ app_version }}"></script>
+    <script defer src="/static/core.js?v={{ core_version }}"></script>
+    <script defer src="/static/app.js?v={{ app_version }}"></script>
     <!-- BEGIN: PV (owned by spawned-pv session) -->
-    <script src="/static/pv-modal.js?v=20260518g-imgpos"></script>
+    <script defer src="/static/pv-modal.js?v=20260518g-imgpos"></script>
     <!-- END: PV -->
     <script>
         document.getElementById('preview-modal').addEventListener('click', function(e) {

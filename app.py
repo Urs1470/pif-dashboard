@@ -20,6 +20,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 import sqlite3
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -43,7 +44,16 @@ def safe_table(table_name):
     return table_name
 
 app = Flask(__name__)
+# Trust the Cloudflare Tunnel reverse proxy in front of us so request.remote_addr
+# reflects the real client (not the cloudflared local socket). Without this,
+# per-IP rate limiting and login throttling share one global bucket.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 app.register_blueprint(budget_bp)
+
+
+def _client_ip():
+    """Real client IP, preferring CF-Connecting-IP (set by Cloudflare Tunnel)."""
+    return (request.headers.get('CF-Connecting-IP') or request.remote_addr or '127.0.0.1')
 
 # Persistent secret key — supravietuieste restart-urilor
 SECRET_KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.secret_key')
@@ -138,7 +148,7 @@ RATE_WINDOW = 60  # seconds
 
 def check_rate_limit():
     """Simple token-bucket rate limiter. Returns True if allowed, False if exceeded."""
-    client_ip = request.remote_addr or '127.0.0.1'
+    client_ip = _client_ip()
     now = time.time()
     
     # Clean old entries
@@ -206,6 +216,24 @@ def after_request_func(response):
     # Log API responses
     if request.path.startswith('/api/'):
         logger.info(f"{request.method} {request.path} - Status: {response.status_code}")
+    # Security headers (defence in depth — Cloudflare may add some too).
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+    response.headers.setdefault('Referrer-Policy', 'same-origin')
+    response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    # CSP: same-origin scripts + a few CDN sources the templates already use.
+    # 'unsafe-inline' on style is required by inline <style> blocks.
+    response.headers.setdefault(
+        'Content-Security-Policy',
+        "default-src 'self'; "
+        "img-src 'self' data: blob: https:; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+        "connect-src 'self' https://query1.finance.yahoo.com; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'"
+    )
     return response
 
 # ============ END PHASE 2a SETUP ============
@@ -976,6 +1004,9 @@ def update_global_task(task_id):
 def delete_global_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
+    # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
+    # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
+    cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
     cursor.execute('DELETE FROM global_tasks WHERE id = ?', (task_id,))
     conn.commit()
     conn.close()
@@ -2477,14 +2508,29 @@ def restore_database():
             ''', (ts.get('id'), ts.get('proiect_id'), ts.get('start_time'),
                   ts.get('stop_time'), ts.get('durata_secunde')))
         
-        # Restore atasamente (paths need to exist)
+        # Restore atasamente — but only paths that resolve INSIDE UPLOAD_FOLDER.
+        # A backup payload from an untrusted source could otherwise register
+        # /etc/passwd or .assistant_config as an "attachment" and then read it
+        # back through the download endpoint (path-traversal hardening).
+        upload_root_real = os.path.realpath(UPLOAD_FOLDER)
         for a in data.get('atasamente', []):
-            if os.path.exists(a.get('cale_locala', '')):
-                cursor.execute('''
-                    INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (a.get('id'), a.get('proiect_id'), a.get('nume_fisier'), a.get('tip_fisier'),
-                      a.get('dimensiune'), a.get('data'), a.get('cale_locala')))
+            cale = (a.get('cale_locala') or '').strip()
+            if not cale:
+                continue
+            try:
+                cale_real = os.path.realpath(cale)
+            except (OSError, ValueError):
+                continue
+            if not (cale_real == upload_root_real or cale_real.startswith(upload_root_real + os.sep)):
+                logger.warning(f"Restore skipped attachment with path outside UPLOAD_FOLDER: {cale}")
+                continue
+            if not os.path.exists(cale_real):
+                continue
+            cursor.execute('''
+                INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (a.get('id'), a.get('proiect_id'), a.get('nume_fisier'), a.get('tip_fisier'),
+                  a.get('dimensiune'), a.get('data'), a.get('cale_locala')))
         
         # Restore global_tasks
         for gt in data.get('global_tasks', []):
@@ -3094,6 +3140,7 @@ def admin_db_dump():
     """
     import tempfile
     import sqlite3 as _sql3
+    from flask import after_this_request
     from database import DATABASE_PATH
 
     if not os.path.exists(DATABASE_PATH):
@@ -3109,6 +3156,16 @@ def admin_db_dump():
     finally:
         dst.close()
         src.close()
+
+    # Schedule cleanup of the temp file once the response is sent — without
+    # this the temp dir slowly fills up (~40 MB per download).
+    @after_this_request
+    def _cleanup(response):
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+        return response
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     return send_file(
@@ -4084,14 +4141,9 @@ ASSISTANT_TOOLS = [
             "recurenta": {"type": "string", "description": "zilnic, saptamanal, lunar sau gol"}
         }, "required": ["proiect", "task"]}
     }},
-    {"type": "function", "function": {
-        "name": "delete_task",
-        "description": "Șterge un task dintr-un proiect (găsit după titlu parțial). Confirmă cu Ion înainte.",
-        "parameters": {"type": "object", "properties": {
-            "proiect": {"type": "string"},
-            "task": {"type": "string", "description": "titlu parțial al taskului"}
-        }, "required": ["proiect", "task"]}
-    }},
+    # delete_task removed from the LLM tool surface — destructive operations
+    # without server-side confirmation were the highest-impact finding in the
+    # security audit. Delete tasks from the UI instead.
     {"type": "function", "function": {
         "name": "add_subtask",
         "description": "Adaugă un subtask la un task dintr-un proiect (taskul găsit după titlu parțial).",
@@ -4125,13 +4177,7 @@ ASSISTANT_TOOLS = [
             "service_after": {"type": "string", "description": "actiuni Service (dupa interventie)"}
         }, "required": ["nume"]}
     }},
-    {"type": "function", "function": {
-        "name": "delete_proiect",
-        "description": "Șterge complet un proiect cu tot ce conține. Ireversibil — confirmă cu Ion în chat înainte.",
-        "parameters": {"type": "object", "properties": {
-            "nume": {"type": "string", "description": "nume parțial sau id de proiect"}
-        }, "required": ["nume"]}
-    }},
+    # delete_proiect removed from the LLM tool surface — see delete_task note.
     {"type": "function", "function": {
         "name": "toggle_checklist_item",
         "description": "Bifează sau debifează un punct din checklist-ul unui proiect (găsit după titlu parțial).",
@@ -4191,13 +4237,8 @@ ASSISTANT_TOOLS = [
             "continut": {"type": "string", "description": "faptul de reținut, o frază scurtă"}
         }, "required": ["continut"]}
     }},
-    {"type": "function", "function": {
-        "name": "delete_memory",
-        "description": "Șterge o intrare din memoria ta persistentă, după id-ul scurt afișat în secțiunea MEMORIE.",
-        "parameters": {"type": "object", "properties": {
-            "id": {"type": "string", "description": "id-ul scurt (8 caractere) al intrării de memorie"}
-        }, "required": ["id"]}
-    }},
+    # delete_memory removed from the LLM tool surface — see delete_task note.
+    # Memory entries can be deleted from the UI.
     {"type": "function", "function": {
         "name": "lookup_fault_code",
         "description": "Cauta un cod de eroare/avarie/avertizare al unui convertor de frecventa (ABB, Siemens, Danfoss, Lenze) si returneaza cauza si remediul. Foloseste cand Ion intreaba ce inseamna un cod afisat de drive (ex: F30001, 2310, A07910, ALARM 14).",
@@ -4453,21 +4494,9 @@ def _assistant_exec_tool(name, args):
             return {'ok': True, 'mesaj': f"Task actualizat: {task['titlu']}"}
 
         if name == 'delete_task':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
-                        (proj['id'], f"%{args.get('task') or ''}%"))
-            task = cur.fetchone()
-            if not task:
-                conn.close()
-                return {'error': 'Taskul nu a fost găsit'}
-            cur.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task['id'],))
-            cur.execute('DELETE FROM tasks WHERE id = ?', (task['id'],))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Task șters: {task['titlu']}"}
+            # Defence in depth — schema is removed, but if the LLM somehow emits
+            # this tool name we refuse server-side instead of running the delete.
+            return {'error': 'Funcția dezactivată din motive de securitate. Șterge taskul din UI.'}
 
         if name == 'add_subtask':
             conn = get_db(); cur = conn.cursor()
@@ -4519,21 +4548,8 @@ def _assistant_exec_tool(name, args):
             return {'ok': True, 'mesaj': f"Proiect actualizat: {nume_nou or proj['nume']}"}
 
         if name == 'delete_proiect':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('nume'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            pid = proj['id']
-            cur.execute('SELECT id FROM tasks WHERE proiect_id = ?', (pid,))
-            for t in cur.fetchall():
-                cur.execute('DELETE FROM task_subtasks WHERE task_id = ?', (t['id'],))
-            for tbl in ('tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
-                        'timer_sessions', 'echipamente', 'atasamente'):
-                cur.execute(f'DELETE FROM {safe_table(tbl)} WHERE proiect_id = ?', (pid,))
-            cur.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Proiect șters complet: {proj['nume']}"}
+            # Defence in depth — schema removed; server-side refusal too.
+            return {'error': 'Funcția dezactivată din motive de securitate. Șterge proiectul din UI.'}
 
         if name == 'toggle_checklist_item':
             conn = get_db(); cur = conn.cursor()
@@ -4615,14 +4631,8 @@ def _assistant_exec_tool(name, args):
             return {'ok': True, 'mesaj': 'Reținut.'}
 
         if name == 'delete_memory':
-            short = (args.get('id') or '').strip()
-            if not short:
-                return {'error': 'id gol'}
-            conn = get_db(); cur = conn.cursor()
-            cur.execute('DELETE FROM assistant_memory WHERE id LIKE ?', (short + '%',))
-            n = cur.rowcount
-            conn.commit(); conn.close()
-            return {'ok': n > 0, 'mesaj': 'Șters din memorie.' if n else 'Nu am găsit intrarea în memorie.'}
+            # Defence in depth — schema removed; server-side refusal too.
+            return {'error': 'Funcția dezactivată din motive de securitate. Șterge intrarea din UI.'}
 
         if name == 'lookup_fault_code':
             cod = (args.get('cod') or '').strip()
@@ -4958,11 +4968,14 @@ def dashboard_home():
     upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
     deadline_count = len(upcoming_deadlines)
     
-    # Active timer
+    # Active timer — only the standalone project timer, not per-task sessions
+    # (per-task rows also have proiect_id set; without this filter the banner
+    # could mis-attribute a per-task timer to the project as a whole).
     cursor.execute("""
         SELECT ts.id, ts.proiect_id as project_id, ts.start_time, p.nume as project_name
         FROM timer_sessions ts JOIN proiecte p ON ts.proiect_id = p.id
-        WHERE ts.stop_time IS NULL ORDER BY ts.start_time DESC LIMIT 1
+        WHERE ts.stop_time IS NULL AND ts.task_id IS NULL
+        ORDER BY ts.start_time DESC LIMIT 1
     """)
     active_timer = cursor.fetchone()
     if active_timer:
@@ -5064,7 +5077,9 @@ def webhook_deploy():
         )
         if fetch.returncode != 0:
             logger.error(f"Auto-deploy git fetch failed: {fetch.stderr}")
-            return f'Fetch failed: {fetch.stderr}', 500
+            # Don't echo git stderr back to GitHub's webhook delivery log
+            # (could leak filesystem paths or auth-bearing URLs).
+            return 'Fetch failed - check server logs', 500
         result = subprocess.run(
             ['git', 'reset', '--hard', 'origin/master'],
             cwd=project_dir, capture_output=True, text=True, timeout=30
@@ -5072,10 +5087,10 @@ def webhook_deploy():
         logger.info(f"Auto-deploy git reset: {result.stdout.strip()}")
         if result.returncode != 0:
             logger.error(f"Auto-deploy git reset failed: {result.stderr}")
-            return f'Reset failed: {result.stderr}', 500
+            return 'Reset failed - check server logs', 500
     except Exception as e:
-        logger.error(f"Auto-deploy error: {e}")
-        return f'Deploy error: {e}', 500
+        logger.exception("Auto-deploy error")
+        return 'Deploy error - check server logs', 500
 
     # Install dependintele noi din requirements.txt daca exista venv
     # (previne "no module X" cand un commit aduce dependinte noi)

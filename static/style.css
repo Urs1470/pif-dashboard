@@ -31,7 +31,7 @@
             --warning-soft: rgba(245,177,77,0.12);
             --text: #e8edf5;
             --text2: #8590a0;
-            --text-dim: #5a6473;
+            --text-dim: #7c8696;  /* bumped from #5a6473 for AA contrast 4.6:1 on bg-elev2 */
             --border: #232b38;
             --line-soft: #1a212c;
             --pif-accent: #58d1c9;
@@ -100,7 +100,7 @@
             --warning-soft: rgba(217,119,6,0.10);
             --text:      #1f2937;
             --text2:     #5a6473;
-            --text-dim:  #94a3b8;
+            --text-dim:  #64748b;  /* bumped from #94a3b8 for AA contrast 4.6:1 on light bg */
             --border:    #dbe1ea;
             --line-soft: #eef1f6;
             --pif-accent:     #58d1c9;
@@ -4446,3 +4446,13 @@
                 min-height: 100px;
             }
         }
+
+/* ============ REDUCED MOTION (a11y) ============ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v35';
+const VERSION = 'v36';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -75,24 +75,26 @@ self.addEventListener('fetch', (event) => {
   }
 
   // API requests: network-first with cache fallback
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirstWithCache(request, API_CACHE));
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/budget/api/')) {
+    event.respondWith(networkFirstWithCache(request, API_CACHE, event));
     return;
   }
 
-  // Static assets (JS, CSS, fonts): cache-first
-  if (url.pathname.startsWith('/static/') ||
-      url.pathname.endsWith('.js') ||
-      url.pathname.endsWith('.css') ||
-      url.pathname.endsWith('.woff2') ||
-      url.pathname.endsWith('.woff')) {
-    event.respondWith(cacheFirstWithNetwork(request, STATIC_CACHE));
+  // Static assets (JS, CSS, fonts): cache-first — require both path prefix AND
+  // file extension so we don't accidentally cache-first random app routes that
+  // happen to end with one of these extensions.
+  if ((url.pathname.startsWith('/static/') || url.pathname.startsWith('/budget/')) &&
+      (url.pathname.endsWith('.js') ||
+       url.pathname.endsWith('.css') ||
+       url.pathname.endsWith('.woff2') ||
+       url.pathname.endsWith('.woff'))) {
+    event.respondWith(cacheFirstWithNetwork(request, STATIC_CACHE, event));
     return;
   }
 
   // HTML pages: network-first (to get fresh content)
   if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(networkFirstWithCache(request, STATIC_CACHE));
+    event.respondWith(networkFirstWithCache(request, STATIC_CACHE, event));
     return;
   }
 
@@ -100,8 +102,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirstWithNetwork(request));
 });
 
-// Cache-first strategy with network fallback
-async function cacheFirstWithNetwork(request, cacheName) {
+// Cache-first strategy with network fallback.
+// `event` is optional; when provided, cache.put calls are wrapped in
+// event.waitUntil so they survive the SW thread potentially terminating
+// before the background write finishes.
+async function cacheFirstWithNetwork(request, cacheName, event) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
 
@@ -112,7 +117,11 @@ async function cacheFirstWithNetwork(request, cacheName) {
   try {
     const response = await fetch(request);
     if (response.ok) {
-      cache.put(request, response.clone());
+      const clone = response.clone();
+      const putPromise = cache.put(request, clone);
+      if (event && typeof event.waitUntil === 'function') {
+        event.waitUntil(putPromise.catch(() => {}));
+      }
     }
     return response;
   } catch (error) {
@@ -126,14 +135,21 @@ async function cacheFirstWithNetwork(request, cacheName) {
   }
 }
 
-// Network-first strategy with cache fallback
-async function networkFirstWithCache(request, cacheName) {
+// Network-first strategy with cache fallback.
+// `event` is optional; when provided, cache.put calls are wrapped in
+// event.waitUntil so they complete even if the page navigates away before
+// the background write finishes.
+async function networkFirstWithCache(request, cacheName, event) {
   const cache = await caches.open(cacheName);
 
   try {
     const response = await fetch(request);
     if (response.ok) {
-      cache.put(request, response.clone());
+      const clone = response.clone();
+      const putPromise = cache.put(request, clone);
+      if (event && typeof event.waitUntil === 'function') {
+        event.waitUntil(putPromise.catch(() => {}));
+      }
     }
     return response;
   } catch (error) {

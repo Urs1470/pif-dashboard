@@ -333,7 +333,13 @@ function refreshIcons() {
     if (_iconsRendering) return;
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
         _iconsRendering = true;
-        try { window.lucide.createIcons(); } catch (e) { /* noop */ }
+        try {
+            window.lucide.createIcons();
+            // Mark decorative SVGs as aria-hidden — screen readers can skip them.
+            document.querySelectorAll('svg.lucide:not([aria-hidden])').forEach(s => {
+                s.setAttribute('aria-hidden', 'true');
+            });
+        } catch (e) { /* noop */ }
         // release on next tick so the resulting mutations don't re-enter
         setTimeout(() => { _iconsRendering = false; }, 0);
     }
@@ -462,6 +468,14 @@ function initA11y() {
         const first = f[0], last = f[f.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
+    // Apply ARIA dialog semantics to all modal overlays (one-time setup).
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        if (!m.getAttribute('role')) {
+            m.setAttribute('role', 'dialog');
+            m.setAttribute('aria-modal', 'true');
+        }
     });
 }
 
@@ -1115,7 +1129,10 @@ function renderLongTextPreview(textareaId) {
         preview.textContent = '';
         preview.classList.add('is-empty');
     } else {
-        preview.innerHTML = _looksLikeHtml(raw) ? raw : _plainToHtml(raw);
+        // SECURITY: never trust stored HTML — render as plain text with <br>.
+        // Hermes assistant can write to these fields; raw HTML render would be
+        // a stored XSS vector via _looksLikeHtml's permissive tag-sniff.
+        preview.innerHTML = _plainToHtml(raw);
         preview.classList.remove('is-empty');
     }
     const counter = scope?.querySelector('[data-count-for="' + textareaId + '"]');
@@ -1154,7 +1171,10 @@ function openLongTextEditor(fieldId, title, iconName) {
 
     const editor = document.getElementById('ltm-editor');
     const raw = ta.value || '';
-    editor.innerHTML = _looksLikeHtml(raw) ? raw : _plainToHtml(raw);
+    // SECURITY: never trust stored HTML — render as plain text with <br>.
+    // Hermes assistant can write to these fields; raw HTML render would be
+    // a stored XSS vector via _looksLikeHtml's permissive tag-sniff.
+    editor.innerHTML = _plainToHtml(raw);
     _ltmUpdateCounter();
 
     modal.classList.add('active');
@@ -2295,9 +2315,9 @@ function openPreview(attachmentId, filename, tipFisier) {
     document.getElementById('preview-filename').textContent = filename;
 
     if (tipFisier === 'IMG') {
-        content.innerHTML = `<img src="${url}" alt="${filename}">`;
+        content.innerHTML = `<img src="${url}" alt="${escapeHtml(filename)}">`;
     } else if (tipFisier === 'PDF') {
-        content.innerHTML = `<iframe src="${url}" title="${filename}"></iframe>`;
+        content.innerHTML = `<iframe src="${url}" title="${escapeHtml(filename)}"></iframe>`;
     }
 
     document.getElementById('preview-modal').classList.add('active');

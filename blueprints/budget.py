@@ -121,7 +121,7 @@ def index():
         html = (STATIC_DIR / 'index.html').read_text(encoding='utf-8')
     except OSError:
         return send_from_directory(STATIC_DIR, 'index.html')
-    resp = make_response(html.replace('__ASSET_VER__', version))
+    resp = make_response(html.replace('__BUDGET_ASSET_VER_b9f23__', version))
     # The shell is tiny and must always reflect the live deploy.
     resp.headers['Cache-Control'] = 'no-cache'
     return resp

@@ -50,8 +50,10 @@ def close_db(exc=None):
 # v4: Added budget_state, budget_audit tables for Budget Tracker
 # v10: Added fault_codes table (drive fault/alarm/warning codes from manuals)
 # v11: Added global_task_sessions table (timer for daily/global tasks)
+# v12: Dropped redundant indexes + orphan tables (audit_log, parametri_std),
+#      added prune_budget_audit trigger (cap 5000 rows/user)
 
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -381,6 +383,52 @@ def migrate_v10_to_v11():
     print("Migration v10->v11: added global_task_sessions table")
 
 
+def migrate_v11_to_v12():
+    """v11 -> v12: housekeeping.
+      - Drop redundant indexes (idx_parametri_master_familie, idx_parametri_master_parametru,
+        idx_tasks_proiect, idx_budget_audit_user) — equivalents already exist
+        (idx_param_familie, idx_param_cod, idx_tasks_proiect_id, idx_budget_audit_user_ts).
+      - Drop orphan tables (audit_log, parametri_std) — superseded by budget_audit
+        and parametri_master respectively.
+      - Add prune_budget_audit trigger to cap budget_audit at 5000 most-recent
+        entries per user (prevents unbounded growth).
+
+    NOTE: task_subtasks.task_id has no FK constraint. Adding one requires
+    table recreation in SQLite. Application code must DELETE orphan rows
+    when deleting tasks (see delete_global_task fix in app.py).
+    Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute('DROP INDEX IF EXISTS idx_parametri_master_familie')
+    cursor.execute('DROP INDEX IF EXISTS idx_parametri_master_parametru')
+    cursor.execute('DROP INDEX IF EXISTS idx_tasks_proiect')
+    cursor.execute('DROP INDEX IF EXISTS idx_budget_audit_user')
+    cursor.execute('DROP TABLE IF EXISTS audit_log')
+    cursor.execute('DROP TABLE IF EXISTS parametri_std')
+
+    # Ensure task_subtasks has an index on task_id (orphans must be cleaned by app code).
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
+
+    # Cap budget_audit at 5000 most-recent rows per user.
+    cursor.execute('''
+        CREATE TRIGGER IF NOT EXISTS prune_budget_audit
+        AFTER INSERT ON budget_audit
+        BEGIN
+          DELETE FROM budget_audit WHERE id IN (
+            SELECT id FROM budget_audit
+            WHERE user = NEW.user
+            ORDER BY id ASC
+            LIMIT MAX(0, (SELECT COUNT(*) FROM budget_audit WHERE user = NEW.user) - 5000)
+          );
+        END;
+    ''')
+
+    conn.commit()
+    conn.close()
+    print("Migration v11->v12: dropped redundant indexes/orphan tables, added prune_budget_audit trigger")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -435,6 +483,11 @@ def run_migrations():
         set_schema_version(11)
         current_version = 11
 
+    if current_version < 12:
+        migrate_v11_to_v12()
+        set_schema_version(12)
+        current_version = 12
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -447,19 +500,35 @@ def run_migrations():
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='task_subtasks'")
     has_subtask_table = cursor.fetchone() is not None
     cursor.execute("PRAGMA table_info(tasks)")
-    has_descriere = any(row[1] == 'descriere' for row in cursor.fetchall())
+    tasks_cols = {row[1] for row in cursor.fetchall()}
+    has_descriere = 'descriere' in tasks_cols
+    has_tasks_recurenta = 'recurenta' in tasks_cols
+    has_tasks_updated_at = 'updated_at' in tasks_cols
+    cursor.execute("PRAGMA table_info(timer_sessions)")
+    has_timer_task_id = any(row[1] == 'task_id' for row in cursor.fetchall())
     cursor.execute("PRAGMA table_info(global_tasks)")
     has_gt_recurenta = any(row[1] == 'recurenta' for row in cursor.fetchall())
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
     has_fault_codes = cursor.fetchone() is not None
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='global_task_sessions'")
     has_gts = cursor.fetchone() is not None
+    # parametri_master may not exist on fresh DBs — gate v7 self-heal on it.
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    existing_tables = {row[0] for row in cursor.fetchall()}
+    has_pdf_extra = True  # default true so we skip self-heal when table is absent
+    if 'parametri_master' in existing_tables:
+        cursor.execute("PRAGMA table_info(parametri_master)")
+        has_pdf_extra = any(row[1] == 'pdf_extra' for row in cursor.fetchall())
     conn.close()
     if not has_cat_table or not has_cat_col:
         print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
         migrate_v4_to_v5()
-    if not has_subtask_table or not has_descriere:
-        print("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere missing)")
+    if 'parametri_master' in existing_tables and not has_pdf_extra:
+        print("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
+        migrate_v6_to_v7()
+    if (not has_subtask_table or not has_descriere or not has_tasks_recurenta
+            or not has_tasks_updated_at or not has_timer_task_id):
+        print("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at / timer_sessions.task_id missing)")
         migrate_v7_to_v8()
     if not has_gt_recurenta:
         print("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
@@ -488,7 +557,11 @@ def seed_fault_codes():
 
     Seeds on first run (empty table) and re-seeds automatically whenever
     FAULT_DATA_REV is bumped. Makes the drive fault-code dataset self-deploying
-    via git (the DB itself is gitignored)."""
+    via git (the DB itself is gitignored).
+
+    Crash-safe: accumulates ALL rows first, then runs DELETE + INSERT in a single
+    explicit transaction. A mid-loop failure leaves the existing table untouched
+    instead of wiping it."""
     import json
     import glob
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -516,36 +589,58 @@ def seed_fault_codes():
             'cauza', 'remediu', 'reactie', 'confirmare', 'extra_json',
             'pagina', 'sursa']
     placeholders = ','.join('?' * len(cols))
-    cursor.execute('DELETE FROM fault_codes')   # full rebuild from the JSON
-    total = 0
+
+    # Phase 1: read ALL JSON files first. If anything fails, abort BEFORE
+    # touching the table — a partial JSON parse must not wipe existing data.
+    rows = []
+    read_failed = False
     for path in sorted(glob.glob(os.path.join(data_dir, '*.json'))):
         try:
             with open(path, encoding='utf-8') as fh:
                 data = json.load(fh)
         except Exception as e:
-            print(f"seed_fault_codes: skipped {os.path.basename(path)}: {e}")
-            continue
-        rows = []
-        for d in data:
-            extra = d.get('extra')
-            extra_json = json.dumps(extra, ensure_ascii=False) if extra else None
-            rows.append((
-                d.get('producator'), d.get('familie'), d.get('cod'),
-                d.get('cod_secundar'), d.get('tip'), d.get('nume'),
-                d.get('cauza'), d.get('remediu'), d.get('reactie'),
-                d.get('confirmare'), extra_json, d.get('pagina'), d.get('sursa'),
-            ))
+            print(f"seed_fault_codes: aborting — failed to read {os.path.basename(path)}: {e}")
+            read_failed = True
+            break
+        try:
+            for d in data:
+                extra = d.get('extra')
+                extra_json = json.dumps(extra, ensure_ascii=False) if extra else None
+                rows.append((
+                    d.get('producator'), d.get('familie'), d.get('cod'),
+                    d.get('cod_secundar'), d.get('tip'), d.get('nume'),
+                    d.get('cauza'), d.get('remediu'), d.get('reactie'),
+                    d.get('confirmare'), extra_json, d.get('pagina'), d.get('sursa'),
+                ))
+        except Exception as e:
+            print(f"seed_fault_codes: aborting — failed to parse {os.path.basename(path)}: {e}")
+            read_failed = True
+            break
+
+    if read_failed or not rows:
+        if not rows and not read_failed:
+            print("seed_fault_codes: no rows found in data/fault_codes/*.json, leaving table untouched")
+        conn.close()
+        return
+
+    # Phase 2: all reads succeeded — do DELETE + bulk INSERT in one transaction.
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        cursor.execute('DELETE FROM fault_codes')
         cursor.executemany(
             f"INSERT INTO fault_codes ({','.join(cols)}) VALUES ({placeholders})",
             rows)
-        total += len(rows)
-    cursor.execute(
-        "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)",
-        ('fault_data_rev', str(FAULT_DATA_REV), datetime.now().isoformat()))
-    conn.commit()
+        cursor.execute(
+            "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)",
+            ('fault_data_rev', str(FAULT_DATA_REV), datetime.now().isoformat()))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        print(f"seed_fault_codes: transaction failed, rolled back: {e}")
+        return
     conn.close()
-    if total:
-        print(f"Seeded fault_codes with {total} rows (rev {FAULT_DATA_REV})")
+    print(f"Seeded fault_codes with {len(rows)} rows (rev {FAULT_DATA_REV})")
 
 
 def init_db():
@@ -817,6 +912,23 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
+    # Index task_subtasks.task_id for the orphan cleanup path (no FK on this column).
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
+
+    # Cap budget_audit at 5000 most-recent rows per user. Fresh DBs get the trigger
+    # here; existing DBs get it via migrate_v11_to_v12.
+    cursor.execute('''
+        CREATE TRIGGER IF NOT EXISTS prune_budget_audit
+        AFTER INSERT ON budget_audit
+        BEGIN
+          DELETE FROM budget_audit WHERE id IN (
+            SELECT id FROM budget_audit
+            WHERE user = NEW.user
+            ORDER BY id ASC
+            LIMIT MAX(0, (SELECT COUNT(*) FROM budget_audit WHERE user = NEW.user) - 5000)
+          );
+        END;
+    ''')
 
     conn.commit()
     conn.close()
