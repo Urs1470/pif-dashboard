@@ -215,9 +215,8 @@ def get_hashed_pin():
     """Get hashed PIN from environment variable"""
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        import secrets
-        pin = secrets.token_hex(4)
-        logger.critical(f"PIF_DASHBOARD_PIN nesetat — PIN generat automat: {pin}. Seteaza PIF_DASHBOARD_PIN in environment!")
+        logger.critical("⚠️  PIF_DASHBOARD_PIN nu este setat! Folosind fallback. Seteaza in systemd: Environment=PIF_DASHBOARD_PIN=...")
+        pin = 'pif2024'  # fallback — seteaza PIF_DASHBOARD_PIN in productie!
     # Generate hash on first call if not cached
     if not hasattr(get_hashed_pin, '_hash'):
         get_hashed_pin._hash = generate_password_hash(pin)
@@ -280,9 +279,7 @@ def login_hash():
         return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400
     
     # Get stored PIN (plaintext for hashing)
-    pin = os.environ.get('PIF_DASHBOARD_PIN')
-    if not pin:
-        return jsonify({'success': False, 'error': 'Server PIN not configured'}), 500
+    pin = os.environ.get('PIF_DASHBOARD_PIN') or 'pif2024'
     expected_hash = hashlib.sha256(pin.encode()).hexdigest()
     
     if hmac.compare_digest(str(pin_hash), expected_hash):
