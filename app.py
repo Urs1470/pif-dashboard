@@ -5041,20 +5041,28 @@ def webhook_deploy():
     # Install dependintele noi din requirements.txt daca exista venv
     # (previne "no module X" cand un commit aduce dependinte noi)
     venv_pip = os.path.join(project_dir, 'venv', 'bin', 'pip')
+    venv_python = os.path.join(project_dir, 'venv', 'bin', 'python')
     req_file = os.path.join(project_dir, 'requirements.txt')
-    if os.path.exists(venv_pip) and os.path.exists(req_file):
-        try:
-            pip_result = subprocess.run(
-                [venv_pip, 'install', '-r', req_file, '--quiet'],
-                cwd=project_dir, capture_output=True, text=True, timeout=120
-            )
-            if pip_result.returncode != 0:
-                logger.error(f"Auto-deploy pip install failed: {pip_result.stderr}")
-                # nu blocam restart-ul — poate codul nou nu are dependinte noi
-            else:
-                logger.info("Auto-deploy pip install OK")
-        except Exception as e:
-            logger.error(f"Auto-deploy pip install error: {e}")
+    if os.path.exists(req_file):
+        pip_cmds = []
+        if os.path.exists(venv_python):
+            pip_cmds.append([venv_python, '-m', 'pip', 'install', '-r', req_file, '--quiet'])
+        if os.path.exists(venv_pip):
+            pip_cmds.append([venv_pip, 'install', '-r', req_file, '--quiet'])
+        for pip_cmd in pip_cmds:
+            try:
+                pip_result = subprocess.run(
+                    pip_cmd,
+                    cwd=project_dir, capture_output=True, text=True, timeout=120
+                )
+                if pip_result.returncode != 0:
+                    logger.error(f"Auto-deploy pip install failed ({pip_cmd[0]}): {pip_result.stderr}")
+                    # nu blocam restart-ul — încearcă următorul fallback sau continuă
+                else:
+                    logger.info(f"Auto-deploy pip install OK ({pip_cmd[0]})")
+                    break
+            except Exception as e:
+                logger.error(f"Auto-deploy pip install error ({pip_cmd[0]}): {e}")
 
     subprocess.Popen(
         ['sudo', 'systemctl', 'restart', 'pif-dashboard'],
