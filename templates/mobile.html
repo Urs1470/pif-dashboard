@@ -1282,6 +1282,22 @@
     }
     .mob-add-cat-btn [data-lucide] { width: 14px; height: 14px; }
 
+    /* ============ Mobile inline subtasks (mirrors desktop todo-subtasks) ============ */
+    .mob-subtasks-list { margin-top: 4px; }
+    .mob-subtask-item.done { text-decoration: line-through; opacity: 0.6; }
+    .mob-inline-subtask-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      flex: 1;
+      min-width: 0;
+    }
+    .mob-inline-subtask-input:focus { border-color: var(--accent); }
+
     /* ============ KaTeX-rendered math ============ */
     .katex { font-size: 0.95em; }
     .katex-display { margin: 6px 0; overflow-x: auto; }

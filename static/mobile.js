@@ -10,6 +10,9 @@ let currentProject = null;
 let projectsCache = [];
 let allNotes = [];
 
+// Cached subtasks: { [taskId]: [subtask, ...] }
+let _mobileSubtasksCache = {};
+
 // ============ IndexedDB — Wrapper corect (v3, fără anti-pattern) ============
 
 function openDB() {
@@ -2291,12 +2294,136 @@ async function deleteMobileChecklistItem(itemId, projectId) {
   loadMobileChecklist(projectId);
 }
 
+// ============ Mobile Inline Subtasks & Timer (mirrors desktop renderTask) ============
+
+// Render subtasks inline under a parent task (visible without clicking expand)
+const renderMobileSubtasksInline = (taskId) => {
+  const subs = _mobileSubtasksCache[taskId] || [];
+  let html = '';
+  if (subs.length) {
+    html = `<div class="mob-subtasks-list" style="margin-top:6px;margin-left:24px;">${subs.map(s => `
+      <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
+        <label style="margin:0;padding:3px;border-radius:4px;">
+          <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+            onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
+        </label>
+        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+      </div>`).join('')}</div>`;
+  }
+  html += `<div class="mob-inline-subtask-wrap" id="mob-inline-subtask-add-${taskId}" style="display:none;margin-top:4px;margin-left:24px;">
+    <input type="text" class="mob-inline-subtask-input" placeholder="Nume subtask..."
+      onkeydown="if(event.key==='Enter'){event.preventDefault();addMobileSubtaskInline('${taskId}',this.value);this.value='';}">
+    <button onclick="addMobileSubtaskInline('${taskId}',this.previousElementSibling.value);this.previousElementSibling.value='';" style="padding:4px 10px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-size:13px;cursor:pointer;">+</button>
+  </div>`;
+  return html;
+};
+
+// Toggle subtask from the inline list
+async function toggleMobileSubtaskInline(subtaskId, done, parentTaskId) {
+  try {
+    await apiPut(`/subtasks/${subtaskId}`, { done: done ? 1 : 0 });
+    const s = _mobileSubtasksCache[parentTaskId]?.find(x => x.id === subtaskId);
+    if (s) s.done = !!done;
+    const parentItem = document.querySelector(`[data-task-id-subs="${parentTaskId}"]`);
+    if (parentItem) {
+      const subList = parentItem.querySelector('.mob-subtasks-list');
+      if (subList) {
+        const taskId = parentTaskId;
+        const subs = _mobileSubtasksCache[taskId] || [];
+        subList.innerHTML = subs.map(s => `
+          <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
+            <label style="margin:0;padding:3px;border-radius:4px;">
+              <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+                onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
+            </label>
+            <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+          </div>`).join('');
+      }
+    }
+  } catch (e) { if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]); }
+}
+
+// Add subtask inline
+async function addMobileSubtaskInline(taskId, titlu) {
+  if (!titlu?.trim()) return;
+  try {
+    await apiPost(`/tasks/${encodeURIComponent(taskId)}/subtasks`, { titlu: titlu.trim() });
+    const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
+    _mobileSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
+    const parentItem = document.querySelector(`[data-task-id-subs="${taskId}"]`);
+    if (parentItem) {
+      const subList = parentItem.querySelector('.mob-subtasks-list');
+      if (subList) {
+        const s = _mobileSubtasksCache[taskId] || [];
+        subList.innerHTML = s.map(s => `
+          <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
+            <label style="margin:0;padding:3px;border-radius:4px;">
+              <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+                onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
+            </label>
+            <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+          </div>`).join('');
+      }
+      const wrapper = document.getElementById(`mob-inline-subtask-add-${taskId}`);
+      if (wrapper) wrapper.style.display = 'none';
+    }
+  } catch (e) { if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]); }
+}
+
+// Show/hide inline subtask add input
+function toggleMobileSubtaskInlineAdd(taskId) {
+  const wrapper = document.getElementById(`mob-inline-subtask-add-${taskId}`);
+  if (!wrapper) return;
+  document.querySelectorAll('.mob-inline-subtask-wrap').forEach(el => {
+    if (el.id !== `mob-inline-subtask-add-${taskId}`) el.style.display = 'none';
+  });
+  wrapper.style.display = wrapper.style.display === 'none' ? 'flex' : 'none';
+  if (wrapper.style.display === 'flex') {
+    wrapper.querySelector('input')?.focus();
+  }
+}
+
+// Inline timer play/pause for mobile tasks
+let _mobileInlineTimerIntervals = {};
+async function toggleMobileTaskTimerInline(taskId, currentlyRunning, btn) {
+  try {
+    if (currentlyRunning) {
+      await apiPost(`/api/global-tasks/${taskId}/timer/stop`, {});
+    } else {
+      await apiPost(`/api/global-tasks/${taskId}/timer/start`, {});
+    }
+    loadMobileTasks();
+  } catch (e) { if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]); }
+}
+
+async function toggleMobileProjectTaskTimerInline(taskId, currentlyRunning, btn, projectId) {
+  try {
+    if (currentlyRunning) {
+      await apiPost(`/api/tasks/${taskId}/timer/stop`, {});
+    } else {
+      await apiPost(`/api/tasks/${taskId}/timer/start`, {});
+    }
+    loadMobileProjectTasks(projectId);
+  } catch (e) { if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]); }
+}
+
 // 3.5 Project Tasks
 async function loadMobileProjectTasks(projectId) {
   const el = document.getElementById('mobile-tasks-section');
   try {
     const tasks = await apiGet(`/api/proiecte/${projectId}/tasks`);
     if (!tasks) { el.innerHTML = ''; return; }
+
+    // Pre-fetch subtasks for all tasks that have them (in parallel)
+    const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
+    await Promise.all(tasksWithSubs.map(async (t) => {
+      try {
+        const subs = await apiGet(`/tasks/${encodeURIComponent(t.id)}/subtasks`);
+        _mobileSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
+      } catch (e) {
+        _mobileSubtasksCache[t.id] = [];
+      }
+    }));
 
     // Separate active vs finalised — Ion wants them grouped, not mixed.
     const active = tasks.filter(t => t.status !== 'done');
@@ -2308,13 +2435,28 @@ async function loadMobileProjectTasks(projectId) {
       const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
       const statusClass = t.status || 'to_do';
       const statusLabel = ({ to_do: 'To Do', in_lucru: 'În Lucru', done: 'Finalizat' })[statusClass] || statusClass;
+      const subtaskHtml = renderMobileSubtasksInline(t.id);
+      // Build meta: scadenta + subtask badge + timer button
+      let meta = '';
+      if (t.data_scadenta) meta += `<span style="font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i>${t.data_scadenta}</span>`;
+      // Subtask count badge — clickable to add inline
+      if (t.subtask_total) meta += `<span onclick="event.stopPropagation();toggleMobileSubtaskInlineAdd('${t.id}')" style="cursor:pointer;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg-elev2);border-radius:10px;" title="Adaugă subtask"><i data-lucide="list-checks" style="width:11px;height:11px;"></i>${t.subtask_done || 0}/${t.subtask_total}</span>`;
+      else meta += `<span onclick="event.stopPropagation();toggleMobileSubtaskInlineAdd('${t.id}')" style="cursor:pointer;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg-elev2);border-radius:10px;" title="Adaugă subtask"><i data-lucide="plus" style="width:11px;height:11px;"></i></span>`;
+      // Timer play/pause button
+      if (t.timp_secunde > 0 || t._timer_running) {
+        const running = t._timer_running;
+        meta += `<button onclick="event.stopPropagation();toggleMobileProjectTaskTimerInline('${t.id}',${running},this,'${projectId}')" style="cursor:pointer;padding:2px 8px;background:${running ? 'var(--danger-soft)' : 'var(--bg-elev2)'};border:1px solid ${running ? 'var(--danger)' : 'var(--border)'};border-radius:10px;font-size:11px;color:${running ? 'var(--danger)' : 'var(--text-secondary)'};display:inline-flex;align-items:center;gap:3px;" title="${running ? 'Oprește timer' : 'Pornește timer'}"><i data-lucide="${running ? 'square' : 'play'}" style="width:11px;height:11px;"></i>${t.timp_secunde ? formatDuration(t.timp_secunde) : ''}</button>`;
+      } else {
+        meta += `<button onclick="event.stopPropagation();toggleMobileProjectTaskTimerInline('${t.id}',false,this,'${projectId}')" style="cursor:pointer;padding:2px 8px;background:var(--bg-elev2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;" title="Pornește timer"><i data-lucide="play" style="width:11px;height:11px;"></i></button>`;
+      }
       return `
-        <div class="mobile-task-row">
+        <div class="mobile-task-row" data-task-id-subs="${t.id}">
           <input type="checkbox" ${t.status === 'done' ? 'checked' : ''} class="mobile-task-check"
             onchange="toggleMobileProjectTask('${t.id}',this.checked,'${projectId}')">
           <div class="mobile-task-body">
             <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
-            ${t.data_scadenta ? `<div class="mobile-task-meta"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ${t.data_scadenta}</div>` : ''}
+            ${meta ? `<div class="mobile-task-meta" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px;">${meta}</div>` : ''}
+            ${subtaskHtml}
           </div>
           <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleMobileTodoPriority('${t.id}', '${prioCap}', '${projectId}')">${prioCap}</span>
           <span class="todo-status cyclable ${statusClass}" onclick="event.stopPropagation(); cycleMobileTodoStatus('${t.id}', '${statusClass}', '${projectId}')">${statusLabel}</span>
@@ -2337,6 +2479,7 @@ async function loadMobileProjectTasks(projectId) {
       </div>
       ${listHtml}
     `;
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
   } catch (e) { el.innerHTML = ''; }
 }
 
@@ -3094,6 +3237,17 @@ async function loadMobileTasks() {
     const tasks = await apiGet(url);
     if (!tasks) return;
 
+    // Pre-fetch subtasks for all tasks that have them (in parallel)
+    const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
+    await Promise.all(tasksWithSubs.map(async (t) => {
+      try {
+        const subs = await apiGet(`/tasks/${encodeURIComponent(t.id)}/subtasks`);
+        _mobileSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
+      } catch (e) {
+        _mobileSubtasksCache[t.id] = [];
+      }
+    }));
+
     let filtered = tasks;
     if (mobileTaskFilter !== 'all' && mobileTaskFilter !== 'archive') {
       filtered = tasks.filter(t => t.prioritate === mobileTaskFilter);
@@ -3112,21 +3266,36 @@ async function loadMobileTasks() {
       const prioClass = prio.toLowerCase();
       const statusClass = t.status || 'to_do';
       const statusLabel = ({ to_do: 'To Do', in_lucru: 'În Lucru', done: 'Finalizat' })[statusClass] || statusClass;
+      const subtaskHtml = renderMobileSubtasksInline(t.id);
+      // Build meta: categorie + scadenta + subtask badge + timer button
+      let meta = '';
+      if (t.categorie) meta += `<span style="font-size:11px;color:var(--text-secondary);">${escapeHtml(t.categorie)}</span>`;
+      if (t.data_scadenta) meta += `${meta ? ' · ' : ''}<span style="font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i>${t.data_scadenta}</span>`;
+      // Subtask count badge — clickable to add inline
+      if (t.subtask_total) meta += `${meta ? ' · ' : ''}<span onclick="event.stopPropagation();toggleMobileSubtaskInlineAdd('${t.id}')" style="cursor:pointer;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg-elev2);border-radius:10px;" title="Adaugă subtask"><i data-lucide="list-checks" style="width:11px;height:11px;"></i>${t.subtask_done || 0}/${t.subtask_total}</span>`;
+      else meta += `${meta ? ' · ' : ''}<span onclick="event.stopPropagation();toggleMobileSubtaskInlineAdd('${t.id}')" style="cursor:pointer;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg-elev2);border-radius:10px;" title="Adaugă subtask"><i data-lucide="plus" style="width:11px;height:11px;"></i></span>`;
+      // Timer play/pause button
+      if (t.timp_secunde > 0 || t._timer_running) {
+        const running = t._timer_running;
+        meta += `${meta ? ' · ' : ''}<button onclick="event.stopPropagation();toggleMobileTaskTimerInline('${t.id}',${running},this)" style="cursor:pointer;padding:2px 8px;background:${running ? 'var(--danger-soft)' : 'var(--bg-elev2)'};border:1px solid ${running ? 'var(--danger)' : 'var(--border)'};border-radius:10px;font-size:11px;color:${running ? 'var(--danger)' : 'var(--text-secondary)'};display:inline-flex;align-items:center;gap:3px;" title="${running ? 'Oprește timer' : 'Pornește timer'}"><i data-lucide="${running ? 'square' : 'play'}" style="width:11px;height:11px;"></i>${t.timp_secunde ? formatDuration(t.timp_secunde) : ''}</button>`;
+      } else {
+        meta += `${meta ? ' · ' : ''}<button onclick="event.stopPropagation();toggleMobileTaskTimerInline('${t.id}',false,this)" style="cursor:pointer;padding:2px 8px;background:var(--bg-elev2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:3px;" title="Pornește timer"><i data-lucide="play" style="width:11px;height:11px;"></i></button>`;
+      }
       return `
-      <div class="mobile-task-row">
+      <div class="mobile-task-row" data-task-id-subs="${t.id}">
         <input type="checkbox" ${t.status === 'done' ? 'checked' : ''}
           onchange="toggleMobileTask('${t.id}', this.checked)" class="mobile-task-check">
         <div class="mobile-task-body" onclick="editMobileTask('${t.id}')">
           <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
-          ${(t.categorie || t.data_scadenta || (t.timp_secunde > 0)) ? `<div class="mobile-task-meta">
-            ${t.categorie ? escapeHtml(t.categorie) : ''}${t.data_scadenta ? (t.categorie ? ' · ' : '') + '<i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + t.data_scadenta : ''}${(t.timp_secunde > 0) ? ((t.categorie || t.data_scadenta) ? ' · ' : '') + '<i data-lucide="timer" style="width:11px;height:11px;vertical-align:-2px;"></i> ' + formatDuration(t.timp_secunde) : ''}
-          </div>` : ''}
+          ${meta ? `<div class="mobile-task-meta" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px;">${meta}</div>` : ''}
+          ${subtaskHtml}
         </div>
         <span class="todo-priority cyclable ${prioClass}" onclick="event.stopPropagation(); cycleMobileGtPriority('${t.id}', '${prio}')">${prio}</span>
         <span class="todo-status cyclable ${statusClass}" onclick="event.stopPropagation(); cycleMobileGtStatus('${t.id}', '${statusClass}')">${statusLabel}</span>
         <button onclick="event.stopPropagation(); deleteMobileGlobalTask('${t.id}')" class="mobile-task-del" aria-label="Șterge"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
   } catch (e) {
     listEl.innerHTML = '<div class="empty-state">Eroare la încărcarea taskurilor</div>';
   }
