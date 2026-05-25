@@ -2304,7 +2304,7 @@ const renderMobileSubtasksInline = (taskId) => {
     html = `<div class="mob-subtasks-list" style="margin-top:6px;margin-left:24px;">${subs.map(s => `
       <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
         <label style="margin:0;padding:3px;border-radius:4px;">
-          <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+          <input type="checkbox" class="todo-checkbox" style="width:24px;height:24px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
             onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
         </label>
         <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
@@ -2333,7 +2333,7 @@ async function toggleMobileSubtaskInline(subtaskId, done, parentTaskId) {
         subList.innerHTML = subs.map(s => `
           <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
             <label style="margin:0;padding:3px;border-radius:4px;">
-              <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+              <input type="checkbox" class="todo-checkbox" style="width:24px;height:24px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
                 onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
             </label>
             <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
@@ -2358,7 +2358,7 @@ async function addMobileSubtaskInline(taskId, titlu) {
         subList.innerHTML = s.map(s => `
           <div class="mob-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
             <label style="margin:0;padding:3px;border-radius:4px;">
-              <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
+              <input type="checkbox" class="todo-checkbox" style="width:24px;height:24px;margin:0;cursor:pointer;accent-color:var(--accent);" ${s.done ? 'checked' : ''}
                 onchange="event.stopPropagation(); toggleMobileSubtaskInline('${s.id}', this.checked, '${taskId}')">
             </label>
             <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
@@ -3285,7 +3285,7 @@ async function loadMobileTasks() {
       <div class="mobile-task-row" data-task-id-subs="${t.id}">
         <input type="checkbox" ${t.status === 'done' ? 'checked' : ''}
           onchange="toggleMobileTask('${t.id}', this.checked)" class="mobile-task-check">
-        <div class="mobile-task-body" onclick="editMobileTask('${t.id}')">
+        <div class="mobile-task-body">
           <div class="mobile-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
           ${meta ? `<div class="mobile-task-meta" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px;">${meta}</div>` : ''}
           ${subtaskHtml}
