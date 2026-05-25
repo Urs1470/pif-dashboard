@@ -3337,6 +3337,16 @@ async function loadGlobalTasks() {
         if (gtFilters.categorie) url += `categorie=${gtFilters.categorie}&`;
 
         const tasks = await apiGet(url);
+        // Pre-fetch subtasks for tasks that have them
+        const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
+        await Promise.all(tasksWithSubs.map(async (t) => {
+            try {
+                const subs = await apiGet(`/tasks/${encodeURIComponent(t.id)}/subtasks`);
+                _taskSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
+            } catch (e) {
+                _taskSubtasksCache[t.id] = [];
+            }
+        }));
         renderGlobalTasks(tasks);
         updateGtStats(tasks);
 
@@ -3404,6 +3414,16 @@ function renderGlobalTasks(tasks) {
 
         const _gtBadge = (icon, text) => `<span style="font-size:0.68rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
         const _recLbl = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
+        const renderSubtasksInline = (taskId) => {
+            const subs = _taskSubtasksCache[taskId] || [];
+            if (!subs.length) return '';
+            return `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
+                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
+                    <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
+                        onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                    <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                </div>`).join('')}</div>`;
+        };
         let gtMeta = '';
         if (task.categorie && task.categorie !== 'General') gtMeta += `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>`;
         if (task.data_scadenta) gtMeta += _gtBadge('calendar', task.data_scadenta);
@@ -3417,6 +3437,7 @@ function renderGlobalTasks(tasks) {
                     <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
                     ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">${gtMeta}</div>` : ''}
+                    ${renderSubtasksInline(task.id)}
                 </div>
                 <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="event.stopPropagation(); cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
