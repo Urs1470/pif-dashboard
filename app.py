@@ -305,11 +305,6 @@ def index():
 def spa_catchall():
     return render_template('index.html')
 
-# Redirect old mobile route
-@app.route('/m')
-def redirect_mobile():
-    return redirect(url_for('index'))
-
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -4893,7 +4888,7 @@ def init_default_templates():
 
 @app.route('/m')
 def mobile():
-    return render_template('mobile.html')
+    return redirect(url_for('index'))
 
 @app.route('/service-worker.js')
 def service_worker():
