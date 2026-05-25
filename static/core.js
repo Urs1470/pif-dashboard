@@ -203,6 +203,128 @@ function renderMarkdown(src) {
     return out.join('\n');
 }
 
+// --- Time formatting ------------------------------------------------
+// Format a duration in seconds as HH:MM:SS (zero-padded). Negative inputs
+// are clamped to 0 to absorb client/server clock drift on running timers.
+// Desktop calls it formatTime; mobile calls it formatDuration — both
+// names resolve to the same function.
+function formatTime(seconds) {
+    seconds = Math.max(0, Math.floor(seconds)); // never render negative time
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+const formatDuration = formatTime;   // mobile-side alias
+
+// --- Param helpers --------------------------------------------------
+// Pull a short human name out of the long English param description
+// (e.g. "Motor nominal speed Specifies the rated…" -> "Motor nominal speed").
+// Heuristic: take the first 2-4 words, but stop early if we hit a verb that
+// usually begins the explanatory clause ("Specifies", "Sets", "Defines"…).
+function extractParamName(descriere) {
+    if (!descriere) return '-';
+    const words = descriere.trim().split(/\s+/);
+    let nameEnd = Math.min(words.length, 4);
+    for (let i = 2; i < Math.min(words.length, 6); i++) {
+        if (/^(Scaled|Received|Selects|Specifies|Sets|Defines|Controls|Enables|Disables|Shows|Indicates|Returns|Contains|Used|When|If|The|A|An)$/i.test(words[i])) {
+            nameEnd = i;
+            break;
+        }
+    }
+    return words.slice(0, nameEnd).join(' ');
+}
+
+// Parse a parametru.influenteaza payload into [{code, efect, tip}].
+// Accepts:
+//   - CSV string "30.12, 21.13"
+//   - JSON array of strings ["30.12", "21.13"]
+//   - JSON array of objects [{parametru, efect?, tip?}]
+function _parseInfluenteaza(data) {
+    if (!data || data === 'null' || data === '[]') return [];
+    if (Array.isArray(data)) {
+        return data.map(o => typeof o === 'string'
+            ? { code: o, efect: '', tip: '' }
+            : { code: o.parametru || '?', efect: o.efect || '', tip: o.tip || '' });
+    }
+    if (typeof data !== 'string') return [];
+    const trimmed = data.trim();
+    if (!trimmed) return [];
+    // JSON?
+    if (trimmed.startsWith('[')) {
+        try { return _parseInfluenteaza(JSON.parse(trimmed)); } catch { /* fall through to CSV */ }
+    }
+    // CSV: split on commas (and whitespace) → unique codes
+    return trimmed.split(/[\s,]+/).filter(Boolean).map(c => ({ code: c, efect: '', tip: '' }));
+}
+const _mobParseInflu = _parseInfluenteaza;   // mobile-side alias
+
+// --- HTML helpers shared by both shells -----------------------------
+// Attribute-safe escaping for values placed inside data-* attributes.
+// Mobile imports the same function under the older name _obsAttr.
+function _attrEsc(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+const _obsAttr = _attrEsc;   // mobile-side alias
+
+// Safe term highlighting for search results: escape FIRST, then wrap matches
+// in <mark>. Used by global search (desktop _gsHi, mobile _gsHighlight) and
+// the mobile Obsidian search (_obsHighlight) — all three were identical.
+function _gsHighlight(text, q) {
+    let s = escapeHtml(text || '');
+    if (q) {
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        try { s = s.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
+    }
+    return s;
+}
+const _gsHi = _gsHighlight;          // desktop-side alias
+const _obsHighlight = _gsHighlight;  // mobile Obsidian-side alias
+
+// --- Obsidian tree --------------------------------------------------
+// Group a flat list of notes (each with a .path "Folder/Sub/Note.md")
+// into a nested { folders: {…}, notes: [] } tree. Pure data shaping,
+// shared by the desktop and mobile Obsidian tabs.
+function _buildNoteTree(notes) {
+    const root = { folders: {}, notes: [] };
+    for (const n of notes) {
+        const parts = n.path.split('/');
+        parts.pop(); // drop the filename
+        let node = root;
+        for (const p of parts) {
+            if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] };
+            node = node.folders[p];
+        }
+        node.notes.push(n);
+    }
+    return root;
+}
+const _obsBuildTree = _buildNoteTree;   // mobile-side alias
+
+// Count the total number of notes under a tree node (recursive).
+function _countTreeNotes(node) {
+    let c = node.notes.length;
+    for (const k in node.folders) c += _countTreeNotes(node.folders[k]);
+    return c;
+}
+const _obsCountNotes = _countTreeNotes;   // mobile-side alias
+
+// --- KaTeX options --------------------------------------------------
+// Shared by renderMathIn() in both shells. Delimiters: $...$ inline,
+// $$...$$ display, and the standard \\(…\\) / \\[…\\] variants.
+const _katexOptions = {
+    delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$',  right: '$',  display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true },
+    ],
+    throwOnError: false,
+    errorColor: 'var(--danger)',
+};
+
 // --- Global search metadata -----------------------------------------
 // type -> { label, icon } for grouped rendering in the command palette
 // (desktop) and the search overlay (mobile). _GS_ORDER fixes group order.

@@ -622,16 +622,7 @@ function timeSince(timestamp) {
 }
 
 // Render KaTeX math inside a container. Delimiters: $...$ inline, $$...$$ display.
-const _katexOptions = {
-  delimiters: [
-    { left: '$$', right: '$$', display: true },
-    { left: '$',  right: '$',  display: false },
-    { left: '\\(', right: '\\)', display: false },
-    { left: '\\[', right: '\\]', display: true },
-  ],
-  throwOnError: false,
-  errorColor: 'var(--danger)',
-};
+// _katexOptions lives in core.js (shared with the desktop shell).
 function renderMathIn(el) {
   if (!el) return;
   if (typeof window.renderMathInElement !== 'function') {
@@ -1120,17 +1111,7 @@ function renderParameters(params) {
   }).join('');
 }
 
-function extractParamName(descriere) {
-  if (!descriere) return '-';
-  const words = descriere.trim().split(/\s+/);
-  let nameEnd = Math.min(words.length, 4);
-  for (let i = 2; i < Math.min(words.length, 6); i++) {
-    if (/^(Scaled|Received|Selects|Specifies|Sets|Defines|Controls|Enables|Disables|Shows|Indicates|Returns|Contains|Used|When|If|The|A|An)$/i.test(words[i])) {
-      nameEnd = i; break;
-    }
-  }
-  return words.slice(0, nameEnd).join(' ');
-}
+// extractParamName() lives in core.js (shared with the desktop shell).
 
 // Copy current param code to clipboard, show transient feedback in the modal.
 async function copyMobileParamCode() {
@@ -1220,23 +1201,11 @@ function openMobileParamModal(param) {
   modal.classList.add('active');
 }
 
-// Parse influenteaza into [{code, efect, tip}]
-function _mobParseInflu(data) {
-  if (!data || data === '[]' || data === 'null') return [];
-  if (Array.isArray(data)) {
-    return data.map(o => typeof o === 'string'
-      ? { code: o, efect: '', tip: '' }
-      : { code: o.parametru || '?', efect: o.efect || '', tip: o.tip || '' });
-  }
-  if (typeof data !== 'string') return [];
-  const t = data.trim();
-  if (!t) return [];
-  if (t.startsWith('[')) {
-    try { return _mobParseInflu(JSON.parse(t)); } catch {}
-  }
-  return t.split(/[\s,]+/).filter(Boolean).map(c => ({ code: c, efect: '', tip: '' }));
-}
+// _mobParseInflu() is an alias for core.js's _parseInfluenteaza() (shared with desktop).
 
+// TODO HIGH-Q2: consider unifying — desktop _influChip and mobile _mobChip differ
+// (desktop chip is clickable: has the .influ-chip class + data-code attr + cursor/transition;
+// mobile chip is display-only). Different behaviour, intentionally left alone.
 function _mobChip(entry, color) {
   const code = entry.code || entry.parametru || '?';
   const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${entry.tip}]</span>` : '';
@@ -1814,6 +1783,8 @@ async function saveNote() {
 // ============ Dashboard Home (FAZA 2) ============
 
 // Greeting helpers — port from desktop app.js for mobile parity.
+// TODO HIGH-Q2: consider unifying — desktop and mobile differ
+// (desktop _greetingRO returns 'Bună seara' for h<5; this one returns 'Noapte bună').
 function _greetingMobile() {
   const h = new Date().getHours();
   if (h < 5) return 'Noapte bună';
@@ -1821,6 +1792,9 @@ function _greetingMobile() {
   if (h < 18) return 'Bună ziua';
   return 'Bună seara';
 }
+// TODO HIGH-Q2: consider unifying — desktop and mobile differ
+// (desktop _fmtDateRO uses toLocaleDateString with lowercase weekday/month;
+// this one uses hard-coded arrays with capitalised "Luni"). Different output style.
 function _fmtDateMobile(d = new Date()) {
   const zile = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
   const luni = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie',
@@ -1946,12 +1920,7 @@ async function stopTimerFromHome(projectId) {
   } catch (e) { console.error('Stop timer error:', e); }
 }
 
-function formatDuration(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-}
+// formatDuration() lives in core.js (alias of formatTime, shared with the desktop shell).
 
 // ============ Navigation ============
 
@@ -4074,12 +4043,7 @@ function _obsSaveCollapsed() {
   try { localStorage.setItem('pif:m:obs:collapsed', JSON.stringify([..._obsCollapsed])); } catch (e) {}
 }
 
-// Attribute-safe escaping for values placed inside data-* attributes.
-function _obsAttr(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// _obsAttr() is an alias for core.js's _attrEsc() (shared with the desktop shell).
 
 // Markdown renderer (renderMarkdown / mdInline / _calloutMeta) lives in
 // core.js — shared with the desktop shell.
@@ -4119,25 +4083,8 @@ async function loadObsidianMobile() {
 }
 
 // --- Folder tree ---
-function _obsBuildTree(notes) {
-  const root = { folders: {}, notes: [] };
-  for (const n of notes) {
-    const parts = n.path.split('/');
-    parts.pop(); // drop the filename
-    let node = root;
-    for (const p of parts) {
-      if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] };
-      node = node.folders[p];
-    }
-    node.notes.push(n);
-  }
-  return root;
-}
-function _obsCountNotes(node) {
-  let c = node.notes.length;
-  for (const k in node.folders) c += _obsCountNotes(node.folders[k]);
-  return c;
-}
+// _obsBuildTree() / _obsCountNotes() are aliases for core.js's
+// _buildNoteTree() / _countTreeNotes() (shared with the desktop shell).
 function _obsRenderNode(node, depth, prefix) {
   let html = '';
   Object.keys(node.folders).sort((a, b) => a.localeCompare(b, 'ro')).forEach(fname => {
@@ -4183,14 +4130,7 @@ function onObsSearchInput() {
     doObsSearch((el && el.value || '').trim());
   }, 280);
 }
-function _obsHighlight(snippet, query) {
-  let s = escapeHtml(snippet);
-  if (query) {
-    const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    try { s = s.replace(new RegExp('(' + q + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
-  }
-  return s;
-}
+// _obsHighlight() is an alias for core.js's _gsHighlight() (shared with desktop).
 async function doObsSearch(q) {
   const listEl = document.getElementById('obs-list');
   const metaEl = document.getElementById('obs-meta');
@@ -4336,15 +4276,7 @@ async function doGlobalSearch() {
   }
 }
 
-// Safe term highlighting: escape FIRST, then wrap matches in <mark>.
-function _gsHighlight(text, q) {
-  let s = escapeHtml(text || '');
-  if (q) {
-    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    try { s = s.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
-  }
-  return s;
-}
+// _gsHighlight() lives in core.js (shared with the desktop shell, as _gsHi).
 
 function renderGlobalSearch() {
   const box = document.getElementById('gs-results');

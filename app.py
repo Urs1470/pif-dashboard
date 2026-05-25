@@ -33,6 +33,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from database import get_db, init_db, row_to_dict, close_db, DATABASE_PATH
 from blueprints.budget import budget_bp
 from scripts.parse_params import parse_for_producator
+from labels import project_status_label, task_status_label
 
 VALID_TABLES = {'proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'jurnal', 'timer_sessions',
                 'atasamente', 'echipamente', 'clienti', 'global_tasks', 'global_task_sessions',
@@ -1945,9 +1946,8 @@ def export_excel():
         ''')
         for row in cursor.fetchall():
             # Map status to Romanian
-            status_map = {'in_lucru': 'În Lucru', 'finalizat': 'Finalizat', 'blocat': 'Blocat', 'in_așteptare': 'În Așteptare'}
             row_data = list(row)
-            row_data[4] = status_map.get(row_data[4], row_data[4])
+            row_data[4] = project_status_label(row_data[4])
             ws.append(row_data)
         
         auto_width(ws)
@@ -1968,10 +1968,9 @@ def export_excel():
         ''')
         for row in cursor.fetchall():
             # Map status to Romanian
-            status_map = {'to_do': 'To Do', 'in_lucru': 'În Lucru', 'done': 'Finalizat'}
             priority_map = {'urgent': 'Urgent', 'normal': 'Normal', 'minor': 'Minor'}
             row_data = list(row)
-            row_data[2] = status_map.get(row_data[2], row_data[2])
+            row_data[2] = task_status_label(row_data[2])
             row_data[3] = priority_map.get(row_data[3], row_data[3])
             ws.append(row_data)
         
@@ -2074,10 +2073,7 @@ def export_pdf():
     total_m = int((total_seconds % 3600) / 60)
     total_hours_label = f"{total_h}h {total_m}m" if total_h > 0 else f"{total_m}m"
 
-    # Status mapping
-    status_map = {'in_lucru': 'In Lucru', 'finalizat': 'Finalizat', 'blocat': 'Blocat',
-                  'in_asteptare': 'In Asteptare', 'in_așteptare': 'In Asteptare'}
-    task_status_map = {'to_do': 'To Do', 'in_lucru': 'In Lucru', 'done': 'Finalizat'}
+    # Status mapping (centralised via labels.py)
 
     # PIF design palette (matches the web UI tokens 1:1)
     PIF_BG = colors.HexColor('#11161e')
@@ -2158,7 +2154,7 @@ def export_pdf():
         ['Locație', project_dict.get('locatie') or '-'],
         ['Producător', project_dict.get('producator') or '-'],
         ['Echipament principal', project_dict.get('echipament_principal') or '-'],
-        ['Status', status_map.get(project_dict.get('status', ''), project_dict.get('status', '-'))],
+        ['Status', project_status_label(project_dict.get('status', '')) or '-'],
         ['Data începere', project_dict.get('data_incepere') or '-'],
         ['Deadline', project_dict.get('deadline') or '-'],
         ['PM', project_dict.get('pm') or '-'],
@@ -2248,7 +2244,7 @@ def export_pdf():
             task_data.append([
                 str(i),
                 t.get('titlu', '-'),
-                task_status_map.get(t.get('status', ''), t.get('status', '-')),
+                task_status_label(t.get('status', '')) or '-',
                 (t.get('prioritate') or 'Normal').capitalize(),
                 t.get('data_scadenta') or '-',
             ])
@@ -2370,8 +2366,6 @@ def export_all_projects_pdf():
     projects = [row_to_dict(row) for row in cursor.fetchall()]
     conn.close()
     
-    status_map = {'in_lucru': 'În Lucru', 'finalizat': 'Finalizat', 'blocat': 'Blocat', 'in_așteptare': 'În Așteptare'}
-    
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
     
@@ -2391,7 +2385,7 @@ def export_all_projects_pdf():
             proj.get('nume', '-')[:30],
             proj.get('client', '-')[:20],
             proj.get('tip', '-'),
-            status_map.get(proj.get('status', ''), proj.get('status', '-')),
+            project_status_label(proj.get('status', '')) or '-',
             proj.get('deadline', '-')
         ])
     
@@ -4294,6 +4288,22 @@ ASSISTANT_TOOLS = [
 ]
 
 
+# ============================================================
+# Assistant tool registry — replaces the long if/elif chain in
+# _assistant_exec_tool with a name->handler dispatch table.
+# Each tool body is a small function decorated with @assistant_tool.
+# ============================================================
+_ASSISTANT_HANDLERS = {}
+
+
+def assistant_tool(name):
+    """Decorator: register a Hermes tool handler under `name`."""
+    def wrap(fn):
+        _ASSISTANT_HANDLERS[name] = fn
+        return fn
+    return wrap
+
+
 def _load_assistant_config():
     """Read MiniMax gateway config from .assistant_config (JSON)."""
     try:
@@ -4370,341 +4380,392 @@ def _assistant_find_project(cursor, needle):
     return cursor.fetchone()
 
 
+@assistant_tool('search_parametri')
+def _tool_search_parametri(args):
+    conn = get_db(); cur = conn.cursor()
+    q = f"%{(args.get('query') or '').strip()}%"
+    sql = ('SELECT id, familie, parametru, descriere_scurta, descriere FROM parametri_master '
+           'WHERE (parametru LIKE ? OR descriere LIKE ?)')
+    params = [q, q]
+    if args.get('familie'):
+        sql += ' AND familie = ?'
+        params.append(args['familie'])
+    sql += ' ORDER BY familie, parametru LIMIT 25'
+    cur.execute(sql, params)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'count': len(rows), 'parametri': rows}
+
+
+@assistant_tool('get_parametru')
+def _tool_get_parametru(args):
+    conn = get_db(); cur = conn.cursor()
+    cur.execute('SELECT * FROM parametri_master WHERE familie = ? AND parametru = ? LIMIT 1',
+                (args.get('familie'), args.get('cod')))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return {'error': 'Parametrul nu a fost găsit'}
+    d = dict(row)
+    d.pop('pdf_extra', None)
+    return d
+
+
+@assistant_tool('search_obsidian')
+def _tool_search_obsidian(args):
+    vault = _obsidian_vault()
+    if not vault:
+        return {'error': 'Vault Obsidian neconfigurat'}
+    q = (args.get('query') or '').strip().lower()
+    out = []
+    for n in _obsidian_index(vault):
+        if q in n['title'].lower() or q in n['content'].lower():
+            out.append({'path': n['path'], 'title': n['title']})
+        if len(out) >= 20:
+            break
+    return {'count': len(out), 'note': out}
+
+
+@assistant_tool('read_obsidian_note')
+def _tool_read_obsidian_note(args):
+    vault = _obsidian_vault()
+    if not vault:
+        return {'error': 'Vault Obsidian neconfigurat'}
+    abspath = _obsidian_safe_path(vault, args.get('path'))
+    if not abspath or not os.path.isfile(abspath):
+        return {'error': 'Nota nu a fost găsită'}
+    with open(abspath, 'r', encoding='utf-8', errors='ignore') as fh:
+        return {'path': args.get('path'), 'content': fh.read()[:8000]}
+
+
+@assistant_tool('list_proiecte')
+def _tool_list_proiecte(args):
+    conn = get_db(); cur = conn.cursor()
+    sql = 'SELECT id, nume, tip, client, producator, status FROM proiecte'
+    params = []
+    if args.get('status'):
+        sql += ' WHERE status = ?'
+        params.append(args['status'])
+    sql += ' ORDER BY data_crearii DESC LIMIT 60'
+    cur.execute(sql, params)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'count': len(rows), 'proiecte': rows}
+
+
+@assistant_tool('get_proiect')
+def _tool_get_proiect(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('nume'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    pid = proj['id']
+    cur.execute('SELECT titlu, status, prioritate, data_scadenta FROM tasks WHERE proiect_id = ? ORDER BY ordine', (pid,))
+    tasks = [dict(r) for r in cur.fetchall()]
+    cur.execute('SELECT titlu, completed FROM checklist_pif WHERE proiect_id = ?', (pid,))
+    checklist = [dict(r) for r in cur.fetchall()]
+    cur.execute('SELECT data, continut FROM jurnal WHERE proiect_id = ? ORDER BY created_at DESC LIMIT 10', (pid,))
+    jurnal = [dict(r) for r in cur.fetchall()]
+    cur.execute('SELECT nume, producator, model, serial_number FROM echipamente WHERE proiect_id = ?', (pid,))
+    echipamente = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist,
+            'jurnal': jurnal, 'echipamente': echipamente}
+
+
+@assistant_tool('create_proiect')
+def _tool_create_proiect(args):
+    conn = get_db(); cur = conn.cursor()
+    now = datetime.now().isoformat()
+    pid = generate_uuid()
+    cur.execute('''
+        INSERT INTO proiecte (id, tip, nume, client, producator, locatie, status, data_crearii, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'in_lucru', ?, ?)
+    ''', (pid, args.get('tip', 'PIF'), args.get('nume', ''), args.get('client', ''),
+          args.get('producator', ''), args.get('locatie', ''), now, now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': pid, 'mesaj': f"Proiect creat: {args.get('nume')}"}
+
+
+@assistant_tool('create_task')
+def _tool_create_task(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    now = datetime.now().isoformat()
+    tid = generate_uuid()
+    cur.execute('SELECT COALESCE(MAX(ordine), 0) FROM tasks WHERE proiect_id = ?', (proj['id'],))
+    mo = cur.fetchone()[0]
+    cur.execute('''
+        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
+        VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?, ?, ?)
+    ''', (tid, proj['id'], args.get('titlu', ''), args.get('prioritate', 'normal'),
+          args.get('scadenta', ''), mo + 1, now, args.get('descriere', ''),
+          args.get('recurenta', ''), now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': tid, 'mesaj': f"Task adăugat în {proj['nume']}: {args.get('titlu')}"}
+
+
+@assistant_tool('add_checklist_item')
+def _tool_add_checklist_item(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    now = datetime.now().isoformat()
+    cid = generate_uuid()
+    cur.execute('''
+        INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
+        VALUES (?, ?, ?, 0, '', 0, NULL)
+    ''', (cid, proj['id'], args.get('titlu', '')))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': cid, 'mesaj': f"Checklist item adăugat: {args.get('titlu')}"}
+
+
+@assistant_tool('add_jurnal')
+def _tool_add_jurnal(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    now = datetime.now().isoformat()
+    jid = generate_uuid()
+    cur.execute('INSERT INTO jurnal (id, proiect_id, data, continut, created_at) VALUES (?, ?, ?, ?, ?)',
+                (jid, proj['id'], now[:10], args.get('continut', ''), now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': jid, 'mesaj': 'Intrare adăugată în jurnal'}
+
+
+@assistant_tool('update_task')
+def _tool_update_task(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                (proj['id'], f"%{args.get('task') or ''}%"))
+    task = cur.fetchone()
+    if not task:
+        conn.close()
+        return {'error': 'Taskul nu a fost găsit'}
+    cur.execute('''UPDATE tasks SET
+        status = COALESCE(?, status), prioritate = COALESCE(?, prioritate),
+        data_scadenta = COALESCE(?, data_scadenta), descriere = COALESCE(?, descriere),
+        recurenta = COALESCE(?, recurenta), updated_at = ? WHERE id = ?''',
+        (args.get('status'), args.get('prioritate'), args.get('scadenta'),
+         args.get('descriere'), args.get('recurenta'), datetime.now().isoformat(), task['id']))
+    conn.commit(); conn.close()
+    return {'ok': True, 'mesaj': f"Task actualizat: {task['titlu']}"}
+
+
+@assistant_tool('delete_task')
+def _tool_delete_task(args):
+    # Defence in depth — schema is removed, but if the LLM somehow emits
+    # this tool name we refuse server-side instead of running the delete.
+    return {'error': 'Funcția dezactivată din motive de securitate. Șterge taskul din UI.'}
+
+
+@assistant_tool('add_subtask')
+def _tool_add_subtask(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                (proj['id'], f"%{args.get('task') or ''}%"))
+    task = cur.fetchone()
+    if not task:
+        conn.close()
+        return {'error': 'Taskul nu a fost găsit'}
+    now = datetime.now().isoformat()
+    cur.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task['id'],))
+    mo = cur.fetchone()[0]
+    cur.execute('INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+                (generate_uuid(), task['id'], args.get('titlu', ''), mo, now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'mesaj': f"Subtask adăugat la '{task['titlu']}': {args.get('titlu')}"}
+
+
+@assistant_tool('update_proiect')
+def _tool_update_proiect(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('nume'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    nume_nou = (args.get('nume_nou') or '').strip() or None
+    cur.execute('''UPDATE proiecte SET
+        nume = COALESCE(?, nume), tip = COALESCE(?, tip),
+        status = COALESCE(?, status), client = COALESCE(?, client),
+        locatie = COALESCE(?, locatie), producator = COALESCE(?, producator),
+        echipament_principal = COALESCE(?, echipament_principal),
+        cod_proiect = COALESCE(?, cod_proiect), pm = COALESCE(?, pm),
+        folder_server = COALESCE(?, folder_server),
+        data_incepere = COALESCE(?, data_incepere), deadline = COALESCE(?, deadline),
+        nr_comanda = COALESCE(?, nr_comanda), nr_contract = COALESCE(?, nr_contract),
+        observatii = COALESCE(?, observatii),
+        service_before = COALESCE(?, service_before),
+        service_after = COALESCE(?, service_after),
+        updated_at = ? WHERE id = ?''',
+        (nume_nou, args.get('tip'), args.get('status'), args.get('client'),
+         args.get('locatie'), args.get('producator'), args.get('echipament_principal'),
+         args.get('cod_proiect'), args.get('pm'), args.get('folder_server'),
+         args.get('data_incepere'), args.get('deadline'), args.get('nr_comanda'),
+         args.get('nr_contract'), args.get('observatii'), args.get('service_before'),
+         args.get('service_after'), datetime.now().isoformat(), proj['id']))
+    conn.commit(); conn.close()
+    return {'ok': True, 'mesaj': f"Proiect actualizat: {nume_nou or proj['nume']}"}
+
+
+@assistant_tool('delete_proiect')
+def _tool_delete_proiect(args):
+    # Defence in depth — schema removed; server-side refusal too.
+    return {'error': 'Funcția dezactivată din motive de securitate. Șterge proiectul din UI.'}
+
+
+@assistant_tool('toggle_checklist_item')
+def _tool_toggle_checklist_item(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    cur.execute('SELECT id, titlu FROM checklist_pif WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
+                (proj['id'], f"%{args.get('item') or ''}%"))
+    item = cur.fetchone()
+    if not item:
+        conn.close()
+        return {'error': 'Punctul din checklist nu a fost găsit'}
+    done = 1 if args.get('completed') else 0
+    cur.execute('UPDATE checklist_pif SET completed = ? WHERE id = ?', (done, item['id']))
+    conn.commit(); conn.close()
+    return {'ok': True, 'mesaj': f"Checklist '{item['titlu']}': {'bifat' if done else 'debifat'}"}
+
+
+@assistant_tool('add_echipament')
+def _tool_add_echipament(args):
+    conn = get_db(); cur = conn.cursor()
+    proj = _assistant_find_project(cur, args.get('proiect'))
+    if not proj:
+        conn.close()
+        return {'error': 'Proiectul nu a fost găsit'}
+    now = datetime.now().isoformat()
+    eid = generate_uuid()
+    cur.execute('''INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                (eid, proj['id'], args.get('nume', ''), args.get('producator', ''),
+                 args.get('model', ''), args.get('serial_number', ''), now, now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': eid, 'mesaj': f"Echipament adăugat la {proj['nume']}: {args.get('nume')}"}
+
+
+@assistant_tool('list_clienti')
+def _tool_list_clienti(args):
+    conn = get_db(); cur = conn.cursor()
+    cur.execute('SELECT id, nume, telefon, email, contact_principal FROM clienti ORDER BY nume')
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'count': len(rows), 'clienti': rows}
+
+
+@assistant_tool('create_client')
+def _tool_create_client(args):
+    conn = get_db(); cur = conn.cursor()
+    cid = generate_uuid()
+    cur.execute('''INSERT INTO clienti (id, nume, adresa, telefon, email, contact_principal, note, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, '', ?)''',
+                (cid, args.get('nume', ''), args.get('adresa', ''), args.get('telefon', ''),
+                 args.get('email', ''), args.get('contact_principal', ''), datetime.now().isoformat()))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': cid, 'mesaj': f"Client creat: {args.get('nume')}"}
+
+
+@assistant_tool('list_global_tasks')
+def _tool_list_global_tasks(args):
+    conn = get_db(); cur = conn.cursor()
+    cur.execute("SELECT id, titlu, status, prioritate, categorie, data_scadenta "
+                "FROM global_tasks WHERE status != 'done' ORDER BY created_at DESC LIMIT 60")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'count': len(rows), 'taskuri_zilnice': rows}
+
+
+@assistant_tool('create_global_task')
+def _tool_create_global_task(args):
+    conn = get_db(); cur = conn.cursor()
+    now = datetime.now().isoformat()
+    gid = generate_uuid()
+    cur.execute('''INSERT INTO global_tasks
+        (id, titlu, descriere, prioritate, status, categorie, data_scadenta, data_finalizare, created_at, updated_at)
+        VALUES (?, ?, ?, ?, 'to_do', ?, ?, '', ?, ?)''',
+        (gid, args.get('titlu', ''), args.get('descriere', ''), args.get('prioritate', 'Normal'),
+         args.get('categorie', 'General'), args.get('scadenta', ''), now, now))
+    conn.commit(); conn.close()
+    return {'ok': True, 'id': gid, 'mesaj': f"Task zilnic creat: {args.get('titlu')}"}
+
+
+@assistant_tool('save_memory')
+def _tool_save_memory(args):
+    continut = (args.get('continut') or '').strip()
+    if not continut:
+        return {'error': 'Conținut gol'}
+    conn = get_db(); cur = conn.cursor()
+    cur.execute('INSERT INTO assistant_memory (id, continut, created_at) VALUES (?, ?, ?)',
+                (generate_uuid(), continut, datetime.now().isoformat()))
+    conn.commit(); conn.close()
+    return {'ok': True, 'mesaj': 'Reținut.'}
+
+
+@assistant_tool('delete_memory')
+def _tool_delete_memory(args):
+    # Defence in depth — schema removed; server-side refusal too.
+    return {'error': 'Funcția dezactivată din motive de securitate. Șterge intrarea din UI.'}
+
+
+@assistant_tool('lookup_fault_code')
+def _tool_lookup_fault_code(args):
+    cod = (args.get('cod') or '').strip()
+    if not cod:
+        return {'error': 'cod lipsa'}
+    prod = (args.get('producator') or '').strip()
+    fam = (args.get('familie') or '').strip()
+    conn = get_db(); cur = conn.cursor()
+    where = ' WHERE (cod = ? COLLATE NOCASE OR cod_secundar = ? COLLATE NOCASE)'
+    params = [cod, cod]
+    if prod:
+        where += ' AND producator = ?'; params.append(prod)
+    if fam:
+        where += ' AND familie = ?'; params.append(fam)
+    cols = ('producator, familie, cod, cod_secundar, tip, nume, '
+            'cauza, remediu, reactie, confirmare')
+    cur.execute(f'SELECT {cols} FROM {safe_table("fault_codes")}{where} '
+                'ORDER BY producator, familie LIMIT 12', params)
+    rows = [dict(r) for r in cur.fetchall()]
+    if not rows:
+        cur.execute(f'SELECT {cols} FROM fault_codes WHERE cod LIKE ? '
+                    'ORDER BY producator, familie LIMIT 12', (f'%{cod}%',))
+        rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {'count': len(rows), 'coduri': rows}
+
+
 def _assistant_exec_tool(name, args):
     """Execute one assistant tool. Returns a JSON-serialisable dict."""
+    handler = _ASSISTANT_HANDLERS.get(name)
+    if not handler:
+        return {'error': f"Tool necunoscut: {name}"}
     try:
-        if name == 'search_parametri':
-            conn = get_db(); cur = conn.cursor()
-            q = f"%{(args.get('query') or '').strip()}%"
-            sql = ('SELECT id, familie, parametru, descriere_scurta, descriere FROM parametri_master '
-                   'WHERE (parametru LIKE ? OR descriere LIKE ?)')
-            params = [q, q]
-            if args.get('familie'):
-                sql += ' AND familie = ?'
-                params.append(args['familie'])
-            sql += ' ORDER BY familie, parametru LIMIT 25'
-            cur.execute(sql, params)
-            rows = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'count': len(rows), 'parametri': rows}
-
-        if name == 'get_parametru':
-            conn = get_db(); cur = conn.cursor()
-            cur.execute('SELECT * FROM parametri_master WHERE familie = ? AND parametru = ? LIMIT 1',
-                        (args.get('familie'), args.get('cod')))
-            row = cur.fetchone()
-            conn.close()
-            if not row:
-                return {'error': 'Parametrul nu a fost găsit'}
-            d = dict(row)
-            d.pop('pdf_extra', None)
-            return d
-
-        if name == 'search_obsidian':
-            vault = _obsidian_vault()
-            if not vault:
-                return {'error': 'Vault Obsidian neconfigurat'}
-            q = (args.get('query') or '').strip().lower()
-            out = []
-            for n in _obsidian_index(vault):
-                if q in n['title'].lower() or q in n['content'].lower():
-                    out.append({'path': n['path'], 'title': n['title']})
-                if len(out) >= 20:
-                    break
-            return {'count': len(out), 'note': out}
-
-        if name == 'read_obsidian_note':
-            vault = _obsidian_vault()
-            if not vault:
-                return {'error': 'Vault Obsidian neconfigurat'}
-            abspath = _obsidian_safe_path(vault, args.get('path'))
-            if not abspath or not os.path.isfile(abspath):
-                return {'error': 'Nota nu a fost găsită'}
-            with open(abspath, 'r', encoding='utf-8', errors='ignore') as fh:
-                return {'path': args.get('path'), 'content': fh.read()[:8000]}
-
-        if name == 'list_proiecte':
-            conn = get_db(); cur = conn.cursor()
-            sql = 'SELECT id, nume, tip, client, producator, status FROM proiecte'
-            params = []
-            if args.get('status'):
-                sql += ' WHERE status = ?'
-                params.append(args['status'])
-            sql += ' ORDER BY data_crearii DESC LIMIT 60'
-            cur.execute(sql, params)
-            rows = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'count': len(rows), 'proiecte': rows}
-
-        if name == 'get_proiect':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('nume'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            pid = proj['id']
-            cur.execute('SELECT titlu, status, prioritate, data_scadenta FROM tasks WHERE proiect_id = ? ORDER BY ordine', (pid,))
-            tasks = [dict(r) for r in cur.fetchall()]
-            cur.execute('SELECT titlu, completed FROM checklist_pif WHERE proiect_id = ?', (pid,))
-            checklist = [dict(r) for r in cur.fetchall()]
-            cur.execute('SELECT data, continut FROM jurnal WHERE proiect_id = ? ORDER BY created_at DESC LIMIT 10', (pid,))
-            jurnal = [dict(r) for r in cur.fetchall()]
-            cur.execute('SELECT nume, producator, model, serial_number FROM echipamente WHERE proiect_id = ?', (pid,))
-            echipamente = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist,
-                    'jurnal': jurnal, 'echipamente': echipamente}
-
-        if name == 'create_proiect':
-            conn = get_db(); cur = conn.cursor()
-            now = datetime.now().isoformat()
-            pid = generate_uuid()
-            cur.execute('''
-                INSERT INTO proiecte (id, tip, nume, client, producator, locatie, status, data_crearii, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'in_lucru', ?, ?)
-            ''', (pid, args.get('tip', 'PIF'), args.get('nume', ''), args.get('client', ''),
-                  args.get('producator', ''), args.get('locatie', ''), now, now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': pid, 'mesaj': f"Proiect creat: {args.get('nume')}"}
-
-        if name == 'create_task':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            now = datetime.now().isoformat()
-            tid = generate_uuid()
-            cur.execute('SELECT COALESCE(MAX(ordine), 0) FROM tasks WHERE proiect_id = ?', (proj['id'],))
-            mo = cur.fetchone()[0]
-            cur.execute('''
-                INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
-                                   data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
-                VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?, ?, ?)
-            ''', (tid, proj['id'], args.get('titlu', ''), args.get('prioritate', 'normal'),
-                  args.get('scadenta', ''), mo + 1, now, args.get('descriere', ''),
-                  args.get('recurenta', ''), now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': tid, 'mesaj': f"Task adăugat în {proj['nume']}: {args.get('titlu')}"}
-
-        if name == 'add_checklist_item':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            now = datetime.now().isoformat()
-            cid = generate_uuid()
-            cur.execute('''
-                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
-                VALUES (?, ?, ?, 0, '', 0, NULL)
-            ''', (cid, proj['id'], args.get('titlu', '')))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': cid, 'mesaj': f"Checklist item adăugat: {args.get('titlu')}"}
-
-        if name == 'add_jurnal':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            now = datetime.now().isoformat()
-            jid = generate_uuid()
-            cur.execute('INSERT INTO jurnal (id, proiect_id, data, continut, created_at) VALUES (?, ?, ?, ?, ?)',
-                        (jid, proj['id'], now[:10], args.get('continut', ''), now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': jid, 'mesaj': 'Intrare adăugată în jurnal'}
-
-        if name == 'update_task':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
-                        (proj['id'], f"%{args.get('task') or ''}%"))
-            task = cur.fetchone()
-            if not task:
-                conn.close()
-                return {'error': 'Taskul nu a fost găsit'}
-            cur.execute('''UPDATE tasks SET
-                status = COALESCE(?, status), prioritate = COALESCE(?, prioritate),
-                data_scadenta = COALESCE(?, data_scadenta), descriere = COALESCE(?, descriere),
-                recurenta = COALESCE(?, recurenta), updated_at = ? WHERE id = ?''',
-                (args.get('status'), args.get('prioritate'), args.get('scadenta'),
-                 args.get('descriere'), args.get('recurenta'), datetime.now().isoformat(), task['id']))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Task actualizat: {task['titlu']}"}
-
-        if name == 'delete_task':
-            # Defence in depth — schema is removed, but if the LLM somehow emits
-            # this tool name we refuse server-side instead of running the delete.
-            return {'error': 'Funcția dezactivată din motive de securitate. Șterge taskul din UI.'}
-
-        if name == 'add_subtask':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            cur.execute('SELECT id, titlu FROM tasks WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
-                        (proj['id'], f"%{args.get('task') or ''}%"))
-            task = cur.fetchone()
-            if not task:
-                conn.close()
-                return {'error': 'Taskul nu a fost găsit'}
-            now = datetime.now().isoformat()
-            cur.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task['id'],))
-            mo = cur.fetchone()[0]
-            cur.execute('INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
-                        (generate_uuid(), task['id'], args.get('titlu', ''), mo, now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Subtask adăugat la '{task['titlu']}': {args.get('titlu')}"}
-
-        if name == 'update_proiect':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('nume'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            nume_nou = (args.get('nume_nou') or '').strip() or None
-            cur.execute('''UPDATE proiecte SET
-                nume = COALESCE(?, nume), tip = COALESCE(?, tip),
-                status = COALESCE(?, status), client = COALESCE(?, client),
-                locatie = COALESCE(?, locatie), producator = COALESCE(?, producator),
-                echipament_principal = COALESCE(?, echipament_principal),
-                cod_proiect = COALESCE(?, cod_proiect), pm = COALESCE(?, pm),
-                folder_server = COALESCE(?, folder_server),
-                data_incepere = COALESCE(?, data_incepere), deadline = COALESCE(?, deadline),
-                nr_comanda = COALESCE(?, nr_comanda), nr_contract = COALESCE(?, nr_contract),
-                observatii = COALESCE(?, observatii),
-                service_before = COALESCE(?, service_before),
-                service_after = COALESCE(?, service_after),
-                updated_at = ? WHERE id = ?''',
-                (nume_nou, args.get('tip'), args.get('status'), args.get('client'),
-                 args.get('locatie'), args.get('producator'), args.get('echipament_principal'),
-                 args.get('cod_proiect'), args.get('pm'), args.get('folder_server'),
-                 args.get('data_incepere'), args.get('deadline'), args.get('nr_comanda'),
-                 args.get('nr_contract'), args.get('observatii'), args.get('service_before'),
-                 args.get('service_after'), datetime.now().isoformat(), proj['id']))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Proiect actualizat: {nume_nou or proj['nume']}"}
-
-        if name == 'delete_proiect':
-            # Defence in depth — schema removed; server-side refusal too.
-            return {'error': 'Funcția dezactivată din motive de securitate. Șterge proiectul din UI.'}
-
-        if name == 'toggle_checklist_item':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            cur.execute('SELECT id, titlu FROM checklist_pif WHERE proiect_id = ? AND titlu LIKE ? LIMIT 1',
-                        (proj['id'], f"%{args.get('item') or ''}%"))
-            item = cur.fetchone()
-            if not item:
-                conn.close()
-                return {'error': 'Punctul din checklist nu a fost găsit'}
-            done = 1 if args.get('completed') else 0
-            cur.execute('UPDATE checklist_pif SET completed = ? WHERE id = ?', (done, item['id']))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': f"Checklist '{item['titlu']}': {'bifat' if done else 'debifat'}"}
-
-        if name == 'add_echipament':
-            conn = get_db(); cur = conn.cursor()
-            proj = _assistant_find_project(cur, args.get('proiect'))
-            if not proj:
-                conn.close()
-                return {'error': 'Proiectul nu a fost găsit'}
-            now = datetime.now().isoformat()
-            eid = generate_uuid()
-            cur.execute('''INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, created_at, updated_at)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                        (eid, proj['id'], args.get('nume', ''), args.get('producator', ''),
-                         args.get('model', ''), args.get('serial_number', ''), now, now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': eid, 'mesaj': f"Echipament adăugat la {proj['nume']}: {args.get('nume')}"}
-
-        if name == 'list_clienti':
-            conn = get_db(); cur = conn.cursor()
-            cur.execute('SELECT id, nume, telefon, email, contact_principal FROM clienti ORDER BY nume')
-            rows = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'count': len(rows), 'clienti': rows}
-
-        if name == 'create_client':
-            conn = get_db(); cur = conn.cursor()
-            cid = generate_uuid()
-            cur.execute('''INSERT INTO clienti (id, nume, adresa, telefon, email, contact_principal, note, created_at)
-                           VALUES (?, ?, ?, ?, ?, ?, '', ?)''',
-                        (cid, args.get('nume', ''), args.get('adresa', ''), args.get('telefon', ''),
-                         args.get('email', ''), args.get('contact_principal', ''), datetime.now().isoformat()))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': cid, 'mesaj': f"Client creat: {args.get('nume')}"}
-
-        if name == 'list_global_tasks':
-            conn = get_db(); cur = conn.cursor()
-            cur.execute("SELECT id, titlu, status, prioritate, categorie, data_scadenta "
-                        "FROM global_tasks WHERE status != 'done' ORDER BY created_at DESC LIMIT 60")
-            rows = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'count': len(rows), 'taskuri_zilnice': rows}
-
-        if name == 'create_global_task':
-            conn = get_db(); cur = conn.cursor()
-            now = datetime.now().isoformat()
-            gid = generate_uuid()
-            cur.execute('''INSERT INTO global_tasks
-                (id, titlu, descriere, prioritate, status, categorie, data_scadenta, data_finalizare, created_at, updated_at)
-                VALUES (?, ?, ?, ?, 'to_do', ?, ?, '', ?, ?)''',
-                (gid, args.get('titlu', ''), args.get('descriere', ''), args.get('prioritate', 'Normal'),
-                 args.get('categorie', 'General'), args.get('scadenta', ''), now, now))
-            conn.commit(); conn.close()
-            return {'ok': True, 'id': gid, 'mesaj': f"Task zilnic creat: {args.get('titlu')}"}
-
-        if name == 'save_memory':
-            continut = (args.get('continut') or '').strip()
-            if not continut:
-                return {'error': 'Conținut gol'}
-            conn = get_db(); cur = conn.cursor()
-            cur.execute('INSERT INTO assistant_memory (id, continut, created_at) VALUES (?, ?, ?)',
-                        (generate_uuid(), continut, datetime.now().isoformat()))
-            conn.commit(); conn.close()
-            return {'ok': True, 'mesaj': 'Reținut.'}
-
-        if name == 'delete_memory':
-            # Defence in depth — schema removed; server-side refusal too.
-            return {'error': 'Funcția dezactivată din motive de securitate. Șterge intrarea din UI.'}
-
-        if name == 'lookup_fault_code':
-            cod = (args.get('cod') or '').strip()
-            if not cod:
-                return {'error': 'cod lipsa'}
-            prod = (args.get('producator') or '').strip()
-            fam = (args.get('familie') or '').strip()
-            conn = get_db(); cur = conn.cursor()
-            where = ' WHERE (cod = ? COLLATE NOCASE OR cod_secundar = ? COLLATE NOCASE)'
-            params = [cod, cod]
-            if prod:
-                where += ' AND producator = ?'; params.append(prod)
-            if fam:
-                where += ' AND familie = ?'; params.append(fam)
-            cols = ('producator, familie, cod, cod_secundar, tip, nume, '
-                    'cauza, remediu, reactie, confirmare')
-            cur.execute(f'SELECT {cols} FROM {safe_table("fault_codes")}{where} '
-                        'ORDER BY producator, familie LIMIT 12', params)
-            rows = [dict(r) for r in cur.fetchall()]
-            if not rows:
-                cur.execute(f'SELECT {cols} FROM fault_codes WHERE cod LIKE ? '
-                            'ORDER BY producator, familie LIMIT 12', (f'%{cod}%',))
-                rows = [dict(r) for r in cur.fetchall()]
-            conn.close()
-            return {'count': len(rows), 'coduri': rows}
-
-        return {'error': f'Unealtă necunoscută: {name}'}
+        return handler(args)
     except Exception as e:
-        logger.error(f'Assistant tool {name} failed: {e}')
+        logger.exception(f"Assistant tool {name} failed")
         return {'error': str(e)}
 
 

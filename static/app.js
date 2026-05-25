@@ -371,16 +371,7 @@ function renderMathIn(el) {
         console.warn('KaTeX render failed:', e);
     }
 }
-const _katexOptions = {
-    delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '$',  right: '$',  display: false },
-        { left: '\\(', right: '\\)', display: false },
-        { left: '\\[', right: '\\]', display: true },
-    ],
-    throwOnError: false,
-    errorColor: 'var(--danger)',
-};
+// _katexOptions lives in core.js (shared with the mobile shell).
 
 // Check if a node tree contains an UN-RENDERED <i data-lucide="...">
 // (we only need to refresh when raw placeholders appear, not when Lucide's own
@@ -2930,11 +2921,7 @@ let _obsidianNotes = [];
 let _obsidianActivePath = null;
 let _obsidianSearchTimer = null;
 
-function _attrEsc(s) {
-    return String(s == null ? '' : s)
-        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// _attrEsc() lives in core.js (shared with the mobile shell, as _obsAttr).
 
 // Lightweight Markdown renderer (mdInline / _calloutMeta / renderMarkdown)
 // lives in core.js — shared with the mobile shell.
@@ -2976,26 +2963,7 @@ function _saveObsidianCollapsed() {
     try { localStorage.setItem('pif:obsidian:collapsed', JSON.stringify([..._obsidianCollapsed])); } catch (e) {}
 }
 
-function _buildNoteTree(notes) {
-    const root = { folders: {}, notes: [] };
-    for (const n of notes) {
-        const parts = n.path.split('/');
-        parts.pop(); // drop the filename
-        let node = root;
-        for (const p of parts) {
-            if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] };
-            node = node.folders[p];
-        }
-        node.notes.push(n);
-    }
-    return root;
-}
-
-function _countTreeNotes(node) {
-    let c = node.notes.length;
-    for (const k in node.folders) c += _countTreeNotes(node.folders[k]);
-    return c;
-}
+// _buildNoteTree() and _countTreeNotes() live in core.js (shared with mobile).
 
 function _renderTreeNode(node, depth, prefix) {
     let html = '';
@@ -3386,14 +3354,7 @@ async function doGlobalSearch() {
     } catch (e) { console.error('Global search failed:', e); }
 }
 
-function _gsHi(text, q) {
-    let s = escapeHtml(text || '');
-    if (q) {
-        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        try { s = s.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>'); } catch (e) {}
-    }
-    return s;
-}
+// _gsHi() is an alias for core.js's _gsHighlight() (shared with mobile).
 
 function renderGlobalSearch() {
     const box = document.getElementById('gsearch-results');
@@ -3986,6 +3947,8 @@ async function logout() {
 
 // ============ HOME PAGE ============
 
+// TODO HIGH-Q2: consider unifying — desktop and mobile differ
+// (mobile _greetingMobile returns 'Noapte bună' for h<5; this one returns 'Bună seara').
 function _greetingRO() {
     const h = new Date().getHours();
     if (h < 5)  return 'Bună seara';
@@ -3993,6 +3956,9 @@ function _greetingRO() {
     if (h < 18) return 'Bună ziua';
     return 'Bună seara';
 }
+// TODO HIGH-Q2: consider unifying — desktop and mobile differ
+// (mobile _fmtDateMobile uses hard-coded RO weekday/month arrays with capitalised "Luni";
+// this one uses toLocaleDateString which yields lowercase "luni"). Different output style.
 function _fmtDateRO(d = new Date()) {
     return d.toLocaleDateString('ro-RO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 }
@@ -4002,13 +3968,7 @@ function _shortDateRO(iso) {
     if (isNaN(d)) return iso;
     return d.toLocaleDateString('ro-RO', { day:'numeric', month:'short' });
 }
-function _elapsed(seconds) {
-    seconds = Math.max(0, Math.floor(seconds)); // never show negative time (handles clock drift)
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
+// _elapsed() was a local duplicate of formatTime() — callsites now use formatTime() directly.
 
 async function loadDashboardHome() {
     try {
@@ -4085,7 +4045,7 @@ async function loadDashboardHome() {
                         </div>
                         <div class="h-timer-sub">Pornit la ${startTime.toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
-                    <div class="h-timer-elapsed" id="home-timer-elapsed" data-start="${active_timer.start_time}">${_elapsed(elapsedSec)}</div>
+                    <div class="h-timer-elapsed" id="home-timer-elapsed" data-start="${active_timer.start_time}">${formatTime(elapsedSec)}</div>
                 </div>
             `;
         }
@@ -4228,7 +4188,7 @@ async function loadDashboardHome() {
                 const el = document.getElementById('home-timer-elapsed');
                 if (!el) { clearInterval(window._homeTimerInterval); return; }
                 const start = new Date(el.dataset.start);
-                el.textContent = _elapsed(Math.floor((Date.now() - start) / 1000));
+                el.textContent = formatTime(Math.floor((Date.now() - start) / 1000));
             }, 1000);
         }
 
@@ -4647,13 +4607,7 @@ async function deleteTimerSession(sessionId) {
     }
 }
 
-function formatTime(seconds) {
-    seconds = Math.max(0, Math.floor(seconds)); // never render negative time
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
+// formatTime() lives in core.js (shared with the mobile shell, as formatDuration).
 
 // ============ SVG CHARTS (pure SVG, no Chart.js dependency) ============
 
@@ -6518,19 +6472,7 @@ function renderParametri(params) {
     `).join('');
 }
 
-function extractParamName(descriere) {
-    if (!descriere) return '-';
-    const words = descriere.trim().split(/\s+/);
-    let nameEnd = Math.min(words.length, 4);
-    for (let i = 2; i < Math.min(words.length, 6); i++) {
-        const word = words[i];
-        if (/^(Scaled|Received|Selects|Specifies|Sets|Defines|Controls|Enables|Disables|Shows|Indicates|Returns|Contains|Used|When|If|The|A|An)$/i.test(word)) {
-            nameEnd = i;
-            break;
-        }
-    }
-    return words.slice(0, nameEnd).join(' ');
-}
+// extractParamName() lives in core.js (shared with the mobile shell).
 
 function formatParamValue(def, defStr) {
     if (defStr !== null && defStr !== undefined && defStr !== '') {
@@ -6657,30 +6599,13 @@ function closeParamModal() {
 }
 
 // Parse `influenteaza` into a list of {code, label, efect, tip}.
-// Accepts:
-//   - CSV string "30.12, 21.13"
-//   - JSON array of strings ["30.12", "21.13"]
-//   - JSON array of objects [{parametru, efect?, tip?}]
-function _parseInfluenteaza(data) {
-    if (!data || data === 'null' || data === '[]') return [];
-    if (Array.isArray(data)) {
-        return data.map(o => typeof o === 'string'
-            ? { code: o, efect: '', tip: '' }
-            : { code: o.parametru || '?', efect: o.efect || '', tip: o.tip || '' });
-    }
-    if (typeof data !== 'string') return [];
-    const trimmed = data.trim();
-    if (!trimmed) return [];
-    // JSON?
-    if (trimmed.startsWith('[')) {
-        try { return _parseInfluenteaza(JSON.parse(trimmed)); } catch { /* fall through to CSV */ }
-    }
-    // CSV: split on commas (and whitespace) → unique codes
-    return trimmed.split(/[\s,]+/).filter(Boolean).map(c => ({ code: c, efect: '', tip: '' }));
-}
+// _parseInfluenteaza() lives in core.js (shared with the mobile shell).
 
 // Build a clickable chip for a referenced parameter code. On click, navigates
 // to that param's modal if we have it in cache; otherwise just copies the code.
+// TODO HIGH-Q2: consider unifying — desktop _influChip and mobile _mobChip differ
+// (desktop chip is clickable: has the .influ-chip class + data-code attr + cursor/transition;
+// mobile chip is display-only). Different behaviour, intentionally left alone.
 function _influChip(entry, color) {
     const code = entry.code || entry.parametru || '?';
     const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${entry.tip}]</span>` : '';
