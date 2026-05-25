@@ -297,6 +297,19 @@ def login_hash():
 def index():
     return render_template('index.html')
 
+# SPA catch-all routes for bookmark/SEO
+@app.route('/parametri')
+@app.route('/notite')
+@app.route('/administrativ')
+@login_required
+def spa_catchall():
+    return render_template('index.html')
+
+# Redirect old mobile route
+@app.route('/m')
+def redirect_mobile():
+    return redirect(url_for('index'))
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
