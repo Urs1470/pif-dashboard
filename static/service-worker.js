@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v34';
+const VERSION = 'v35';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -46,6 +46,16 @@ self.addEventListener('activate', (event) => {
           })
       ))
       .then(() => self.clients.claim())
+      .then(() => {
+        // Notify all open clients that a new SW has activated and they should
+        // show the update banner. This works even when the old page's app.js
+        // didn't properly register updatefound (the root cause of the bug).
+        self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({ type: 'SW_UPDATED', version: VERSION });
+          });
+        });
+      })
   );
 });
 

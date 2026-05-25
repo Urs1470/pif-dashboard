@@ -6943,6 +6943,15 @@ function initPWA() {
             if (_swUpdateAccepted) window.location.reload();
         });
 
+        // Listen for SW_UPDATED messages sent by the service worker's activate
+        // handler. This is the primary update-notification path — it fires even
+        // when the page's old app.js never ran updatefound (the root bug).
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SW_UPDATED') {
+                showSWUpdateBanner();
+            }
+        });
+
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
                 .then(registration => {
@@ -6981,7 +6990,10 @@ function initPWA() {
 
 // Non-blocking banner offering to apply a pending update. The page reloads
 // ONLY when the user clicks "Reîncarcă" — never on its own.
-function promptSWUpdate(worker) {
+// Extract banner creation so it can be called from both the message handler
+// AND the existing updatefound flow. The worker parameter is optional — if
+// absent the "Reîncarcă" button sends skipWaiting directly to the SW.
+function showSWUpdateBanner(worker) {
     if (document.getElementById('sw-update-banner')) return;
     const banner = document.createElement('div');
     banner.id = 'sw-update-banner';
@@ -6996,13 +7008,18 @@ function promptSWUpdate(worker) {
 
     document.getElementById('sw-update-apply').addEventListener('click', () => {
         _swUpdateAccepted = true;
-        worker.postMessage('skipWaiting');
+        if (worker) worker.postMessage('skipWaiting');
         banner.classList.remove('visible');
     });
     document.getElementById('sw-update-dismiss').addEventListener('click', () => {
         banner.classList.remove('visible');
         setTimeout(() => banner.remove(), 300);
     });
+}
+
+// Backwards-compatible wrapper — delegates to the new standalone function.
+function promptSWUpdate(worker) {
+    showSWUpdateBanner(worker);
 }
 
 async function installPWA() {
