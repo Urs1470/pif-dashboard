@@ -32,6 +32,16 @@ from database import get_db, init_db, row_to_dict, close_db
 from blueprints.budget import budget_bp
 from scripts.parse_params import parse_for_producator
 
+VALID_TABLES = {'proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'jurnal', 'timer_sessions',
+                'atasamente', 'echipamente', 'clienti', 'global_tasks', 'global_task_sessions',
+                'checklist_categorii', 'fault_codes', 'project_templates', 'budget_state',
+                'budget_audit', 'parametri_master'}
+
+def safe_table(table_name):
+    if table_name not in VALID_TABLES:
+        raise ValueError(f"Invalid table name: {table_name}")
+    return table_name
+
 app = Flask(__name__)
 app.register_blueprint(budget_bp)
 
@@ -474,7 +484,7 @@ def delete_proiect(project_id):
         tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
                   'timer_sessions', 'atasamente', 'echipamente']
         for table in tables:
-            cursor.execute(f'DELETE FROM {table} WHERE proiect_id = ?', (project_id,))
+            cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (project_id,))
         cursor.execute('DELETE FROM proiecte WHERE id = ?', (project_id,))
         conn.commit()
     except Exception as e:
@@ -533,7 +543,7 @@ def batch_proiecte():
                 tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
                           'timer_sessions', 'atasamente', 'echipamente']
                 for table in tables:
-                    cursor.execute(f'DELETE FROM {table} WHERE proiect_id = ?', (pid,))
+                    cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
             
             conn.commit()
@@ -2382,7 +2392,7 @@ def backup_database():
     
     tables = ['proiecte', 'tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates']
     for table in tables:
-        cursor.execute(f'SELECT * FROM {table}')
+        cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
         backup[table] = [row_to_dict(row) for row in rows]
     
@@ -2405,7 +2415,7 @@ def restore_database():
         # Clear existing data
         tables = ['proiecte', 'tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates']
         for table in tables:
-            cursor.execute(f'DELETE FROM {table}')
+            cursor.execute(f'DELETE FROM {safe_table(table)}')
 
         # Restore proiecte
         for p in data.get('proiecte', []):
@@ -3280,12 +3290,12 @@ def get_fault_codes():
         s = f'%{search}%'
         params.extend([s, s, s, s])
 
-    cursor.execute(f'SELECT COUNT(*) FROM fault_codes{where}', params)
+    cursor.execute(f'SELECT COUNT(*) FROM {safe_table("fault_codes")}{where}', params)
     total = cursor.fetchone()[0]
 
     cursor.execute(
         f'''SELECT id, producator, familie, cod, cod_secundar, tip, nume, pagina
-            FROM fault_codes{where} ORDER BY cod LIMIT ? OFFSET ?''',
+            FROM {safe_table("fault_codes")}{where} ORDER BY cod LIMIT ? OFFSET ?''',
         params + [limit, offset])
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
@@ -3320,7 +3330,7 @@ def lookup_fault_code():
     if familie:
         where += ' AND familie = ?'
         params.append(familie)
-    cursor.execute(f'SELECT * FROM fault_codes{where} ORDER BY producator, familie', params)
+    cursor.execute(f'SELECT * FROM {safe_table("fault_codes")}{where} ORDER BY producator, familie', params)
     matches = [_fault_row(r) for r in cursor.fetchall()]
     conn.close()
     return jsonify({'matches': matches, 'count': len(matches)})
@@ -3360,7 +3370,7 @@ def parametri_audit():
         params = [familie_filter]
 
     # Total count
-    cursor.execute(f'SELECT COUNT(*) FROM parametri_master{where}', params)
+    cursor.execute(f'SELECT COUNT(*) FROM {safe_table("parametri_master")}{where}', params)
     total = cursor.fetchone()[0]
 
     # Per-familie breakdown
@@ -3371,7 +3381,7 @@ def parametri_audit():
             SUM(CASE WHEN pagina IS NULL THEN 1 ELSE 0 END) as missing_pagina,
             SUM(CASE WHEN unitate IS NULL OR TRIM(unitate)='' THEN 1 ELSE 0 END) as missing_unitate,
             SUM(CASE WHEN acces IS NULL OR TRIM(acces)='' THEN 1 ELSE 0 END) as missing_acces
-        FROM parametri_master{where}
+        FROM {safe_table("parametri_master")}{where}
         GROUP BY familie ORDER BY familie
     ''', params)
     per_familie = [dict(r) for r in cursor.fetchall()]
@@ -3380,13 +3390,13 @@ def parametri_audit():
 
     # 1. Missing descriere_scurta
     cursor.execute(f'''
-        SELECT id, parametru, familie FROM parametri_master
+        SELECT id, parametru, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (descriere_scurta IS NULL OR TRIM(descriere_scurta)='')
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (descriere_scurta IS NULL OR TRIM(descriere_scurta)='')
     ''', params)
     issues['missing_descriere_scurta'] = {
@@ -3398,13 +3408,13 @@ def parametri_audit():
 
     # 2. Descriere_scurta foarte scurtă (probabil placeholder)
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10
     ''', params)
     issues['short_descriere'] = {
@@ -3416,13 +3426,13 @@ def parametri_audit():
 
     # 3. Descriere = parametru (placeholder evident)
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) = TRIM(parametru)
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) = TRIM(parametru)
     ''', params)
     issues['descriere_equals_code'] = {
@@ -3434,13 +3444,13 @@ def parametri_audit():
 
     # 4. Lipsă explicație tehnică
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (explicatie IS NULL OR TRIM(explicatie)='')
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (explicatie IS NULL OR TRIM(explicatie)='')
     ''', params)
     issues['missing_explicatie'] = {
@@ -3452,13 +3462,13 @@ def parametri_audit():
 
     # 5. Lipsă pagină manual
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} pagina IS NULL
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} pagina IS NULL
     ''', params)
     issues['missing_pagina'] = {
@@ -3470,13 +3480,13 @@ def parametri_audit():
 
     # 6. Cod parametru suspect (doar numere sau prea scurt)
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
     ''', params)
     issues['suspect_code'] = {
@@ -3489,7 +3499,7 @@ def parametri_audit():
     # 7. Descrieri identice la 5+ parametri (probabil placeholder)
     cursor.execute(f'''
         SELECT descriere_scurta, COUNT(*) as cnt
-        FROM parametri_master
+        FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) != ''
         GROUP BY descriere_scurta HAVING cnt >= 5
         ORDER BY cnt DESC LIMIT 20
@@ -3504,7 +3514,7 @@ def parametri_audit():
 
     # 8. Lipsă unitate când titlul sugerează una (SQLite n-are REGEXP, folosim LIKE)
     cursor.execute(f'''
-        SELECT id, parametru, descriere_scurta, familie FROM parametri_master
+        SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')}
         (unitate IS NULL OR TRIM(unitate)='')
         AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
@@ -3512,7 +3522,7 @@ def parametri_audit():
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
     cursor.execute(f'''
-        SELECT COUNT(*) FROM parametri_master
+        SELECT COUNT(*) FROM {safe_table("parametri_master")}
         {where + (' AND ' if where else ' WHERE ')}
         (unitate IS NULL OR TRIM(unitate)='')
         AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
@@ -4509,7 +4519,7 @@ def _assistant_exec_tool(name, args):
                 cur.execute('DELETE FROM task_subtasks WHERE task_id = ?', (t['id'],))
             for tbl in ('tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
                         'timer_sessions', 'echipamente', 'atasamente'):
-                cur.execute(f'DELETE FROM {tbl} WHERE proiect_id = ?', (pid,))
+                cur.execute(f'DELETE FROM {safe_table(tbl)} WHERE proiect_id = ?', (pid,))
             cur.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
             conn.commit(); conn.close()
             return {'ok': True, 'mesaj': f"Proiect șters complet: {proj['nume']}"}
@@ -4618,7 +4628,7 @@ def _assistant_exec_tool(name, args):
                 where += ' AND familie = ?'; params.append(fam)
             cols = ('producator, familie, cod, cod_secundar, tip, nume, '
                     'cauza, remediu, reactie, confirmare')
-            cur.execute(f'SELECT {cols} FROM fault_codes{where} '
+            cur.execute(f'SELECT {cols} FROM {safe_table("fault_codes")}{where} '
                         'ORDER BY producator, familie LIMIT 12', params)
             rows = [dict(r) for r in cur.fetchall()]
             if not rows:
