@@ -3677,7 +3677,7 @@ function renderGlobalTasks(tasks) {
                     ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;align-items:center;">${gtMeta}</div>` : ''}
                     ${renderSubtasksInline(task.id)}
                 </div>
-                <button class="todo-edit-btn" onclick="event.stopPropagation();editGtTask('${task.id}')" title="Editează task"><i data-lucide="pencil"></i></button>
+                <button class="todo-edit-btn" onclick="event.stopPropagation();editGtTask('${task.id}')" title="Editează task">✎</button>
                 <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="event.stopPropagation(); cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
                 <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="event.stopPropagation(); deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
