@@ -1309,15 +1309,27 @@ function renderTodos(tasks) {
     const _recLabels = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
 
     // Render subtasks inline under a parent task (visible without clicking expand)
+    // Also renders the inline add subtask button if task has subtasks
     const renderSubtasksInline = (taskId) => {
         const subs = _taskSubtasksCache[taskId] || [];
-        if (!subs.length) return '';
-        return `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-            <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
-                <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
-                    onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-            </div>`).join('')}</div>`;
+        let html = '';
+        if (subs.length) {
+            html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
+                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                    <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
+                        <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
+                            onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                    </label>
+                    <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                </div>`).join('')}</div>`;
+        }
+        // Add inline subtask add button
+        html += `<div class="inline-subtask-wrapper" id="inline-subtask-add-${taskId}" style="display:none;">
+            <input type="text" class="inline-subtask-input" placeholder="Nume subtask..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtaskInline('${taskId}',this.value);this.value='';}">
+            <button class="inline-subtask-add-btn" onclick="addSubtaskInline('${taskId}',this.previousElementSibling.value);this.previousElementSibling.value='';" title="Adaugă">+</button>
+        </div>`;
+        return html;
     };
 
     const renderOne = (task) => {
@@ -1325,22 +1337,35 @@ function renderTodos(tasks) {
         const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
         let meta = '';
         if (task.data_scadenta) meta += _metaBadge('calendar', task.data_scadenta);
-        if (task.subtask_total) meta += _metaBadge('list-checks', `${task.subtask_done || 0}/${task.subtask_total}`);
-        if (task.timp_secunde) meta += _metaBadge('timer', formatTimerDuration(task.timp_secunde));
+        // Subtask count badge becomes clickable to add subtask inline
+        if (task.subtask_total) meta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAdd('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="list-checks"></i> ${task.subtask_done || 0}/${task.subtask_total}</span>`;
+        else meta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAdd('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="plus"></i></span>`;
+        // Timer play/pause button
+        if (task.timp_secunde) {
+            const timerRunning = task._timer_running;
+            meta += `<button class="timer-btn ${timerRunning ? 'running' : ''}" onclick="event.stopPropagation();toggleTaskTimerInline('${task.id}',${timerRunning ? 'true' : 'false'},this)" title="${timerRunning ? 'Oprește timer' : 'Pornește timer'}">
+                <span class="timer-icon">${timerRunning ? '⏸' : '▶'}</span>
+                <span>${formatTimerDuration(task.timp_secunde)}</span>
+            </button>`;
+        } else {
+            meta += `<button class="timer-btn" onclick="event.stopPropagation();toggleTaskTimerInline('${task.id}',false,this)" title="Pornește timer">
+                <span class="timer-icon">▶</span>
+            </button>`;
+        }
         if (task.recurenta) meta += _metaBadge('repeat', _recLabels[task.recurenta] || task.recurenta);
         if (task.descriere && String(task.descriere).trim()) meta += _metaBadge('align-left', '');
         const subtaskHtml = renderSubtasksInline(task.id);
         return `
         <div class="todo-item priority-${prioRaw.toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
-            data-task-id-subtasks="${task.id}"
-            onclick="openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" style="cursor:pointer;">
+            data-task-id-subtasks="${task.id}">
             <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''}
                 onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
             <div class="todo-content" style="flex:1;min-width:0;">
                 <div class="todo-title">${escapeHtml(task.titlu)}</div>
-                ${meta ? `<div class="todo-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;">${meta}</div>` : ''}
+                ${meta ? `<div class="todo-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;align-items:center;">${meta}</div>` : ''}
                 ${subtaskHtml}
             </div>
+            <button class="todo-edit-btn" onclick="event.stopPropagation();openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" title="Editează task"><i data-lucide="pencil"></i></button>
             <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
             <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
             <button class="btn btn-icon btn-ghost btn-ghost-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
@@ -1741,14 +1766,203 @@ async function toggleSubtaskInline(subtaskId, done, parentTaskId) {
             if (subtaskList) {
                 const subs = _taskSubtasksCache[parentTaskId] || [];
                 subtaskList.innerHTML = subs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
-                        <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
-                            onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${parentTaskId}')">
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
+                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
+                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${parentTaskId}')">
+                        </label>
                         <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
                     </div>`).join('');
             }
         }
     } catch (e) { showToast('Eroare la actualizare subtask', true); }
+}
+
+// Show/hide inline subtask add input
+function toggleInlineSubtaskAdd(taskId) {
+    const wrapper = document.getElementById(`inline-subtask-add-${taskId}`);
+    if (!wrapper) return;
+    const isVisible = wrapper.style.display !== 'none';
+    // Hide all other inline add wrappers first
+    document.querySelectorAll('.inline-subtask-wrapper').forEach(el => el.style.display = 'none');
+    if (!isVisible) {
+        wrapper.style.display = 'block';
+        wrapper.querySelector('input').focus();
+    }
+}
+
+// Add subtask inline (from the inline input field)
+async function addSubtaskInline(taskId, titlu) {
+    titlu = (titlu || '').trim();
+    if (!titlu) return;
+    try {
+        await apiPost(`/tasks/${encodeURIComponent(taskId)}/subtasks`, { titlu });
+        // Refresh subtasks cache
+        const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
+        _taskSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
+        // Re-render the subtasks inline
+        const parentItem = document.querySelector(`[data-task-id-subtasks="${taskId}"]`);
+        if (parentItem) {
+            const subtaskList = parentItem.querySelector('.todo-subtasks-list');
+            if (subtaskList) {
+                const allSubs = _taskSubtasksCache[taskId] || [];
+                subtaskList.innerHTML = allSubs.map(s => `
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
+                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
+                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                        </label>
+                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                    </div>`).join('');
+            }
+        }
+        // Hide the add wrapper
+        const wrapper = document.getElementById(`inline-subtask-add-${taskId}`);
+        if (wrapper) wrapper.style.display = 'none';
+        showToast('Subtask adăugat');
+    } catch (e) { showToast('Eroare la adăugare subtask', true); }
+}
+
+// Toggle task timer from inline button in task list
+let _inlineTimerIntervals = {};
+async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
+    try {
+        if (isRunning) {
+            // Stop timer
+            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to stop timer');
+            const data = await res.json();
+            // Update button
+            if (btnElement) {
+                btnElement.classList.remove('running');
+                btnElement.querySelector('.timer-icon').textContent = '▶';
+                btnElement.querySelector('span:last-child').textContent = formatTimerDuration(data.total_secunde || 0);
+            }
+            // Clear interval
+            if (_inlineTimerIntervals[taskId]) {
+                clearInterval(_inlineTimerIntervals[taskId]);
+                delete _inlineTimerIntervals[taskId];
+            }
+            showToast('Cronometru oprit');
+        } else {
+            // Start timer
+            const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to start timer');
+            const data = await res.json();
+            const startTime = new Date(data.start_time).getTime();
+            // Update button
+            if (btnElement) {
+                btnElement.classList.add('running');
+                btnElement.querySelector('.timer-icon').textContent = '⏸';
+            }
+            // Start interval to update elapsed time
+            _inlineTimerIntervals[taskId] = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const btn = document.querySelector(`[data-task-id-subtasks="${taskId}"] .timer-btn`);
+                if (btn) {
+                    btn.querySelector('span:last-child').textContent = formatTimerDuration(elapsed);
+                }
+            }, 1000);
+            showToast('Cronometru pornit');
+        }
+    } catch (e) {
+        console.error('Timer error:', e);
+        showToast('Eroare cronometru', true);
+    }
+}
+
+// Global task versions for inline subtask add
+function toggleInlineSubtaskAddGt(taskId) {
+    const wrapper = document.getElementById(`inline-subtask-add-gt-${taskId}`);
+    if (!wrapper) return;
+    const isVisible = wrapper.style.display !== 'none';
+    // Hide all other inline add wrappers first
+    document.querySelectorAll('.inline-subtask-wrapper').forEach(el => el.style.display = 'none');
+    if (!isVisible) {
+        wrapper.style.display = 'block';
+        wrapper.querySelector('input').focus();
+    }
+}
+
+async function addSubtaskInlineGt(taskId, titlu) {
+    titlu = (titlu || '').trim();
+    if (!titlu) return;
+    try {
+        await apiPost(`/tasks/${encodeURIComponent(taskId)}/subtasks`, { titlu });
+        // Refresh subtasks cache
+        const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
+        _taskSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
+        // Re-render the subtasks inline
+        const parentItem = document.querySelector(`[data-task-id-subtasks="${taskId}"]`);
+        if (parentItem) {
+            const subtaskList = parentItem.querySelector('.todo-subtasks-list');
+            if (subtaskList) {
+                const allSubs = _taskSubtasksCache[taskId] || [];
+                subtaskList.innerHTML = allSubs.map(s => `
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
+                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
+                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                        </label>
+                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                    </div>`).join('');
+            }
+        }
+        // Hide the add wrapper
+        const wrapper = document.getElementById(`inline-subtask-add-gt-${taskId}`);
+        if (wrapper) wrapper.style.display = 'none';
+        showToast('Subtask adăugat');
+    } catch (e) { showToast('Eroare la adăugare subtask', true); }
+}
+
+// Toggle global task timer from inline button
+let _gtInlineTimerIntervals = {};
+async function toggleGtTimerInline(taskId, isRunning, btnElement) {
+    try {
+        if (isRunning) {
+            // Stop timer
+            const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to stop timer');
+            const data = await res.json();
+            // Update button
+            if (btnElement) {
+                btnElement.classList.remove('running');
+                btnElement.querySelector('.timer-icon').textContent = '▶';
+                btnElement.querySelector('span:last-child').textContent = formatTimerDuration(data.total_secunde || 0);
+            }
+            // Clear interval
+            if (_gtInlineTimerIntervals[taskId]) {
+                clearInterval(_gtInlineTimerIntervals[taskId]);
+                delete _gtInlineTimerIntervals[taskId];
+            }
+            showToast('Cronometru oprit');
+        } else {
+            // Start timer
+            const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to start timer');
+            const data = await res.json();
+            const startTime = new Date(data.start_time).getTime();
+            // Update button
+            if (btnElement) {
+                btnElement.classList.add('running');
+                btnElement.querySelector('.timer-icon').textContent = '⏸';
+            }
+            // Start interval to update elapsed time
+            _gtInlineTimerIntervals[taskId] = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                // Find button by the timer-icon span content
+                document.querySelectorAll('.gt-task-card .timer-btn').forEach(btn => {
+                    if (btn.querySelector('.timer-icon').textContent === '⏸') {
+                        btn.querySelector('span:last-child').textContent = formatTimerDuration(elapsed);
+                    }
+                });
+            }, 1000);
+            showToast('Cronometru pornit');
+        }
+    } catch (e) {
+        console.error('Timer error:', e);
+        showToast('Eroare cronometru', true);
+    }
 }
 
 async function deleteSubtask(subtaskId) {
@@ -3416,29 +3630,54 @@ function renderGlobalTasks(tasks) {
         const _recLbl = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
         const renderSubtasksInline = (taskId) => {
             const subs = _taskSubtasksCache[taskId] || [];
-            if (!subs.length) return '';
-            return `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
-                    <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
-                        onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                    <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-                </div>`).join('')}</div>`;
+            let html = '';
+            if (subs.length) {
+                html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
+                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
+                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                        </label>
+                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                    </div>`).join('')}</div>`;
+            }
+            // Add inline subtask add button
+            html += `<div class="inline-subtask-wrapper" id="inline-subtask-add-gt-${taskId}" style="display:none;">
+                <input type="text" class="inline-subtask-input" placeholder="Nume subtask..."
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtaskInlineGt('${taskId}',this.value);this.value='';}">
+                <button class="inline-subtask-add-btn" onclick="addSubtaskInlineGt('${taskId}',this.previousElementSibling.value);this.previousElementSibling.value='';" title="Adaugă">+</button>
+            </div>`;
+            return html;
         };
         let gtMeta = '';
         if (task.categorie && task.categorie !== 'General') gtMeta += `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>`;
         if (task.data_scadenta) gtMeta += _gtBadge('calendar', task.data_scadenta);
-        if (task.subtask_total) gtMeta += _gtBadge('list-checks', `${task.subtask_done || 0}/${task.subtask_total}`);
+        // Subtask count badge becomes clickable to add subtask inline
+        if (task.subtask_total) gtMeta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAddGt('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="list-checks"></i> ${task.subtask_done || 0}/${task.subtask_total}</span>`;
+        else gtMeta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAddGt('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="plus"></i></span>`;
+        // Timer play/pause button for global tasks
+        if (task.timp_secunde) {
+            const timerRunning = task._timer_running;
+            gtMeta += `<button class="timer-btn ${timerRunning ? 'running' : ''}" onclick="event.stopPropagation();toggleGtTimerInline('${task.id}',${timerRunning ? 'true' : 'false'},this)" title="${timerRunning ? 'Oprește timer' : 'Pornește timer'}">
+                <span class="timer-icon">${timerRunning ? '⏸' : '▶'}</span>
+                <span>${formatTimerDuration(task.timp_secunde)}</span>
+            </button>`;
+        } else {
+            gtMeta += `<button class="timer-btn" onclick="event.stopPropagation();toggleGtTimerInline('${task.id}',false,this)" title="Pornește timer">
+                <span class="timer-icon">▶</span>
+            </button>`;
+        }
         if (task.recurenta) gtMeta += _gtBadge('repeat', _recLbl[task.recurenta] || task.recurenta);
-        if (task.timp_secunde) gtMeta += _gtBadge('timer', formatTimerDuration(task.timp_secunde));
         return `
-            <div class="${classes.join(' ')}" onclick="editGtTask('${task.id}')" style="cursor:pointer;">
+            <div class="${classes.join(' ')}">
                 <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleGtTask('${task.id}', this.checked)">
                 <div class="todo-content">
                     <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
                     ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
-                    ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;">${gtMeta}</div>` : ''}
+                    ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;align-items:center;">${gtMeta}</div>` : ''}
                     ${renderSubtasksInline(task.id)}
                 </div>
+                <button class="todo-edit-btn" onclick="event.stopPropagation();editGtTask('${task.id}')" title="Editează task"><i data-lucide="pencil"></i></button>
                 <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="event.stopPropagation(); cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
                 <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
                 <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="event.stopPropagation(); deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
