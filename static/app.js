@@ -1315,7 +1315,7 @@ function renderTodos(tasks) {
         let html = '';
         if (subs.length) {
             html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
+                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:0.82rem;color:var(--text-dim);">
                     <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
                         <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
                             onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
@@ -3633,7 +3633,7 @@ function renderGlobalTasks(tasks) {
             let html = '';
             if (subs.length) {
                 html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:0.82rem;color:var(--text-dim);">
                         <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
                             <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
                                 onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
