@@ -91,7 +91,8 @@ def inject_version():
         'js_version': file_hash('static/mobile.js'),
         'sw_version': file_hash('static/service-worker.js'),
         'app_version': file_hash('static/app.js'),
-        'core_version': file_hash('static/core.js')
+        'core_version': file_hash('static/core.js'),
+        'style_version': file_hash('static/style.css')
     }
 
 # ============ SESSION CONFIG ============
