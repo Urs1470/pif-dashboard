@@ -779,12 +779,16 @@ def _build_pif_signature_table(doc, client_name, rep_client, rep_eg):
 
 def _put_image_in_cell(cell, entry, pic_width_cm):
     """Pune poza + caption intr-o celula de tabel."""
+    from docx.shared import Inches, Cm, Emu
     cell.text = ''
     p_pic = cell.paragraphs[0]
     p_pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p_pic.add_run()
     try:
-        run.add_picture(entry['file'], width=Cm(pic_width_cm))
+        # Standard sizing: 1 per row ~16.9cm (480pt), 2 per row ~8.5cm (240pt)
+        # Max height 12.7cm (360pt) so images aren't too tall
+        MAX_HEIGHT_CM = 12.7
+        run.add_picture(entry['file'], width=Cm(pic_width_cm), height=Cm(MAX_HEIGHT_CM))
     except Exception as e:
         run.add_text(f"[Imagine invalida: {e}]")
     caption = (entry.get('caption') or '').strip()
@@ -827,14 +831,15 @@ def _build_images_block(doc, group, after_paragraph=None):
 
     for r, row_imgs in enumerate(rows_layout):
         if len(row_imgs) == 1:
-            # poza singura — merge cele 2 celule, poza 15cm
+            # poza singura — merge cele 2 celule, poza standard 16.9cm
             cell = table.rows[r].cells[0].merge(table.rows[r].cells[1])
-            _put_image_in_cell(cell, row_imgs[0], pic_width_cm=15.0)
+            _put_image_in_cell(cell, row_imgs[0], pic_width_cm=16.9)
             _set_cell_borders(cell, sides=())
         else:
             for c in range(2):
                 cell = table.rows[r].cells[c]
-                _put_image_in_cell(cell, row_imgs[c], pic_width_cm=7.5)
+                # 2 pe rand — fiecare 8.5cm standard
+                _put_image_in_cell(cell, row_imgs[c], pic_width_cm=8.5)
                 _set_cell_borders(cell, sides=())
                 _set_cell_width(cell, cell_w)
 

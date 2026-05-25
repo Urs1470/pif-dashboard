@@ -1254,10 +1254,22 @@ document.addEventListener('click', (e) => {
 // ============ TASKS / TODOS ============
 
 let draggedTaskId = null;
+// Cached subtasks: { [taskId]: [subtask, ...] }
+let _taskSubtasksCache = {};
 
 async function loadTodos(projectId) {
     try {
         const tasks = await apiGet(`/proiecte/${projectId}/tasks`);
+        // Pre-fetch subtasks for all tasks that have them (in parallel)
+        const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
+        await Promise.all(tasksWithSubs.map(async (t) => {
+            try {
+                const subs = await apiGet(`/tasks/${encodeURIComponent(t.id)}/subtasks`);
+                _taskSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
+            } catch (e) {
+                _taskSubtasksCache[t.id] = [];
+            }
+        }));
         const filterStatus = document.getElementById('todo-filter-status')?.value || '';
         const filterPrioritate = document.getElementById('todo-filter-prioritate')?.value || '';
         const sortBy = document.getElementById('todo-sort')?.value || 'prioritate';
@@ -1295,6 +1307,19 @@ function renderTodos(tasks) {
 
     const _metaBadge = (icon, text) => `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
     const _recLabels = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
+
+    // Render subtasks inline under a parent task (visible without clicking expand)
+    const renderSubtasksInline = (taskId) => {
+        const subs = _taskSubtasksCache[taskId] || [];
+        if (!subs.length) return '';
+        return `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
+            <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
+                <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
+                    onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
+                <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+            </div>`).join('')}</div>`;
+    };
+
     const renderOne = (task) => {
         const prioRaw = task.prioritate || 'Normal';
         const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
@@ -1304,14 +1329,17 @@ function renderTodos(tasks) {
         if (task.timp_secunde) meta += _metaBadge('timer', formatTimerDuration(task.timp_secunde));
         if (task.recurenta) meta += _metaBadge('repeat', _recLabels[task.recurenta] || task.recurenta);
         if (task.descriere && String(task.descriere).trim()) meta += _metaBadge('align-left', '');
+        const subtaskHtml = renderSubtasksInline(task.id);
         return `
         <div class="todo-item priority-${prioRaw.toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
+            data-task-id-subtasks="${task.id}"
             onclick="openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" style="cursor:pointer;">
             <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''}
                 onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
-            <div class="todo-content">
+            <div class="todo-content" style="flex:1;min-width:0;">
                 <div class="todo-title">${escapeHtml(task.titlu)}</div>
-                ${meta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">${meta}</div>` : ''}
+                ${meta ? `<div class="todo-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;">${meta}</div>` : ''}
+                ${subtaskHtml}
             </div>
             <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
             <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
@@ -1693,6 +1721,34 @@ async function toggleSubtask(subtaskId, done) {
         if (s) s.done = done ? 1 : 0;
         renderSubtasks();
     } catch (e) { showToast('Eroare', true); }
+}
+
+// Toggle subtask from the inline list (visible in todo list — no modal needed)
+async function toggleSubtaskInline(subtaskId, done, parentTaskId) {
+    try {
+        await apiPut(`/subtasks/${subtaskId}`, { done: done ? 1 : 0 });
+        // Update cache
+        if (_taskSubtasksCache[parentTaskId]) {
+            const s = _taskSubtasksCache[parentTaskId].find(x => x.id === subtaskId);
+            if (s) s.done = done ? 1 : 0;
+        }
+        // Update the parent task's subtask counts (optimistic: update in current tasks array)
+        // The parent task's subtask_done count will be refreshed on next loadTodos
+        // For now, just re-render the inline subtasks
+        const parentItem = document.querySelector(`[data-task-id-subtasks="${parentTaskId}"]`);
+        if (parentItem) {
+            const subtaskList = parentItem.querySelector('.todo-subtasks-list');
+            if (subtaskList) {
+                const subs = _taskSubtasksCache[parentTaskId] || [];
+                subtaskList.innerHTML = subs.map(s => `
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.78rem;color:var(--text-dim);">
+                        <input type="checkbox" class="todo-checkbox" style="width:13px;height:13px;margin:0;" ${s.done ? 'checked' : ''}
+                            onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${parentTaskId}')">
+                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
+                    </div>`).join('');
+            }
+        }
+    } catch (e) { showToast('Eroare la actualizare subtask', true); }
 }
 
 async function deleteSubtask(subtaskId) {
@@ -2906,15 +2962,44 @@ document.addEventListener('click', function (e) {
 
 // ============ AI ASSISTANT (Hermes) ============
 
+const _ASSISTANT_STORAGE_KEY = 'pif:hermes:conversation';
 let _assistantMessages = [];
 let _assistantBusy = false;
-const _ASSISTANT_WRITE_TOOLS = ['create_proiect', 'create_task', 'add_checklist_item', 'add_jurnal', 'update_task_status'];
+const _ASSISTANT_WRITE_TOOLS = [
+    'create_proiect', 'create_task', 'add_checklist_item', 'add_jurnal',
+    'update_task', 'update_task_status', 'add_subtask',
+    'delete_task', 'delete_proiect', 'toggle_checklist_item',
+    'add_echipament', 'create_client', 'update_proiect'
+];
+
+function _loadAssistantConversation() {
+    try {
+        const stored = localStorage.getItem(_ASSISTANT_STORAGE_KEY);
+        if (stored) {
+            const msgs = JSON.parse(stored);
+            if (Array.isArray(msgs) && msgs.length > 0) {
+                _assistantMessages = msgs;
+            }
+        }
+    } catch (e) { /* ignore parse errors */ }
+}
+
+function _saveAssistantConversation() {
+    try {
+        // Keep only user + assistant messages (not typing/tools)
+        const toSave = _assistantMessages.filter(
+            m => m.role === 'user' || m.role === 'assistant'
+        );
+        localStorage.setItem(_ASSISTANT_STORAGE_KEY, JSON.stringify(toSave));
+    } catch (e) { /* ignore */ }
+}
 
 function toggleAssistant() {
     const panel = document.getElementById('assistant-panel');
     if (!panel) return;
     panel.classList.toggle('open');
     if (panel.classList.contains('open')) {
+        if (_assistantMessages.length === 0) _loadAssistantConversation();
         renderAssistantMessages();
         setTimeout(() => document.getElementById('assistant-input')?.focus(), 150);
     }
@@ -2922,6 +3007,7 @@ function toggleAssistant() {
 
 function clearAssistantChat() {
     _assistantMessages = [];
+    localStorage.removeItem(_ASSISTANT_STORAGE_KEY);
     renderAssistantMessages();
 }
 
@@ -2990,18 +3076,19 @@ async function sendAssistantMessage() {
     }
     _assistantBusy = false;
     if (sendBtn) sendBtn.disabled = false;
+    _saveAssistantConversation();
     renderAssistantMessages();
 }
 
 // After the assistant changes data, refresh whatever the user is looking at.
 function _assistantRefreshContext() {
     try {
+        if (typeof loadProjects === 'function') loadProjects();
         if (currentProjectId) {
+            if (typeof loadProjectDetails === 'function') loadProjectDetails(currentProjectId);
             if (typeof loadTodos === 'function') loadTodos(currentProjectId);
             if (typeof loadChecklist === 'function') loadChecklist(currentProjectId);
             if (typeof loadJurnal === 'function') loadJurnal(currentProjectId);
-        } else if (typeof loadProjects === 'function') {
-            loadProjects();
         }
     } catch (e) { /* refresh is best-effort */ }
 }
