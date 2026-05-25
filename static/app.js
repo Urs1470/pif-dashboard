@@ -1315,7 +1315,7 @@ function renderTodos(tasks) {
         let html = '';
         if (subs.length) {
             html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
                     <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
                         <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
                             onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
@@ -1365,7 +1365,7 @@ function renderTodos(tasks) {
                 ${meta ? `<div class="todo-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;align-items:center;">${meta}</div>` : ''}
                 ${subtaskHtml}
             </div>
-            <button class="todo-edit-btn" onclick="event.stopPropagation();openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" title="Editează task"><i data-lucide="pencil"></i></button>
+            <button class="todo-edit-btn" onclick="event.stopPropagation();openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" title="Editează task">✎</button>
             <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
             <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
             <button class="btn btn-icon btn-ghost btn-ghost-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
@@ -3633,7 +3633,7 @@ function renderGlobalTasks(tasks) {
             let html = '';
             if (subs.length) {
                 html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
+                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:0.82rem;color:var(--text-dim);">
                         <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
                             <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
                                 onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
