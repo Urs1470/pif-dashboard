@@ -1311,6 +1311,93 @@
         scroll-behavior: auto !important;
       }
     }
+
+    /* ============ MOBILE TOAST + SHEET ============ */
+    .m-toast-container {
+      position: fixed; left: 0; right: 0; bottom: 5rem;
+      z-index: 2000;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      pointer-events: none;
+      padding: 0 1rem;
+    }
+    .m-toast {
+      pointer-events: auto;
+      background: var(--bg-elev2, #161c26);
+      color: var(--text, #e8edf5);
+      border: 1px solid var(--accent-ring, rgba(88,209,201,0.25));
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      font-size: 0.88rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      max-width: 100%;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .m-toast.visible { opacity: 1; transform: translateY(0); }
+    .m-toast.success { border-color: var(--success, #66d19e); color: var(--success, #66d19e); }
+    .m-toast.error { border-color: var(--danger, #f97066); color: var(--danger, #f97066); }
+    .m-toast.warning { border-color: var(--warning, #f5b14d); color: var(--warning, #f5b14d); }
+
+    .m-sheet-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .m-sheet-overlay.open { opacity: 1; visibility: visible; }
+    .m-sheet {
+      background: var(--bg-elev1, #11161e);
+      border: 1px solid var(--border, #232b38);
+      border-radius: 14px;
+      padding: 1.25rem;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .m-sheet-overlay.open .m-sheet { transform: scale(1); }
+    .m-sheet-title {
+      font-size: 1rem; font-weight: 600; color: var(--text, #e8edf5);
+      margin: 0 0 0.5rem 0;
+    }
+    .m-sheet-body {
+      font-size: 0.88rem; color: var(--text2, #8590a0);
+      margin-bottom: 1rem; line-height: 1.5;
+    }
+    .m-sheet-input {
+      width: 100%;
+      background: var(--bg-elev2, #161c26);
+      border: 1px solid var(--border, #232b38);
+      border-radius: 8px;
+      color: var(--text, #e8edf5);
+      padding: 0.55rem 0.75rem;
+      font-size: 0.95rem; font-family: inherit;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+    .m-sheet-input:focus { border-color: var(--accent, #58d1c9); box-shadow: 0 0 0 3px var(--accent-soft, rgba(88,209,201,0.10)); }
+    .m-sheet-actions {
+      display: flex; gap: 0.5rem; justify-content: flex-end;
+    }
+    .m-sheet-btn-cancel, .m-sheet-btn-ok {
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; min-height: 44px; min-width: 88px;
+    }
+    .m-sheet-btn-cancel {
+      background: transparent; color: var(--text2, #8590a0);
+      border: 1px solid var(--border, #232b38);
+    }
+    .m-sheet-btn-cancel:hover { background: var(--bg-elev2, #161c26); }
+    .m-sheet-btn-ok {
+      background: var(--accent, #58d1c9); color: #fff; border: none;
+    }
+    .m-sheet-btn-ok:hover { filter: brightness(1.08); }
   </style>
   <!-- KaTeX for math rendering in parameter explanations -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
@@ -1802,5 +1889,21 @@
       }
     })();
   </script>
+
+  <!-- Mobile toast container -->
+  <div class="m-toast-container" id="m-toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Mobile confirm/prompt sheet -->
+  <div class="m-sheet-overlay" id="m-sheet-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="m-sheet">
+      <h3 class="m-sheet-title" id="m-sheet-title"></h3>
+      <div class="m-sheet-body" id="m-sheet-body"></div>
+      <input type="text" class="m-sheet-input" id="m-sheet-input" style="display:none;" aria-label="Răspuns">
+      <div class="m-sheet-actions">
+        <button type="button" class="m-sheet-btn-cancel" id="m-sheet-cancel">Anulează</button>
+        <button type="button" class="m-sheet-btn-ok" id="m-sheet-ok">OK</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

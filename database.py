@@ -1,6 +1,9 @@
 import sqlite3
 import os
+import logging
 from datetime import datetime
+
+logger = logging.getLogger('pif_dashboard')
 
 DATABASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pif_dashboard.db')
 
@@ -147,7 +150,7 @@ def migrate_v1_to_v2():
     
     conn.commit()
     conn.close()
-    print("Migration v1->v2 completed: Added clienti, echipamente, project_templates tables")
+    logger.info("Migration v1->v2 completed: Added clienti, echipamente, project_templates tables")
 
 def migrate_v2_to_v3():
     """Migration from v2 to v3: Add ordine to tasks, notify_on_complete/deadline to proiecte"""
@@ -174,7 +177,7 @@ def migrate_v2_to_v3():
     
     conn.commit()
     conn.close()
-    print("Migration v2->v3 completed: Added ordine to tasks, notify_on_complete/deadline to proiecte")
+    logger.info("Migration v2->v3 completed: Added ordine to tasks, notify_on_complete/deadline to proiecte")
 
 def migrate_v3_to_v4():
     """Migration from v3 to v4: Add budget_state, budget_audit tables for Budget Tracker"""
@@ -205,7 +208,7 @@ def migrate_v3_to_v4():
 
     conn.commit()
     conn.close()
-    print("Migration v3->v4 completed: Added budget_state, budget_audit tables")
+    logger.info("Migration v3->v4 completed: Added budget_state, budget_audit tables")
 
 def migrate_v4_to_v5():
     """v4 -> v5: per-project dynamic checklist categories.
@@ -239,7 +242,7 @@ def migrate_v4_to_v5():
 
     conn.commit()
     conn.close()
-    print("Migration v4->v5 completed: Added checklist_categorii + categorie_id column")
+    logger.info("Migration v4->v5 completed: Added checklist_categorii + categorie_id column")
 
 
 def migrate_v5_to_v6():
@@ -253,9 +256,9 @@ def migrate_v5_to_v6():
     if 'interconexiuni' in cols:
         cursor.execute('ALTER TABLE parametri_master DROP COLUMN interconexiuni')
         conn.commit()
-        print("Migration v5->v6: dropped parametri_master.interconexiuni")
+        logger.info("Migration v5->v6: dropped parametri_master.interconexiuni")
     else:
-        print("Migration v5->v6: interconexiuni already absent")
+        logger.info("Migration v5->v6: interconexiuni already absent")
     conn.close()
 
 
@@ -270,9 +273,9 @@ def migrate_v6_to_v7():
     if 'pdf_extra' not in cols:
         cursor.execute('ALTER TABLE parametri_master ADD COLUMN pdf_extra TEXT')
         conn.commit()
-        print("Migration v6->v7: added parametri_master.pdf_extra")
+        logger.info("Migration v6->v7: added parametri_master.pdf_extra")
     else:
-        print("Migration v6->v7: pdf_extra already present")
+        logger.info("Migration v6->v7: pdf_extra already present")
     conn.close()
 
 
@@ -313,7 +316,7 @@ def migrate_v7_to_v8():
 
     conn.commit()
     conn.close()
-    print("Migration v7->v8: elaborate tasks (descriere, recurenta, subtasks, per-task timer)")
+    logger.info("Migration v7->v8: elaborate tasks (descriere, recurenta, subtasks, per-task timer)")
 
 
 def migrate_v8_to_v9():
@@ -325,9 +328,9 @@ def migrate_v8_to_v9():
     if 'recurenta' not in cols:
         cursor.execute('ALTER TABLE global_tasks ADD COLUMN recurenta TEXT')
         conn.commit()
-        print("Migration v8->v9: added global_tasks.recurenta")
+        logger.info("Migration v8->v9: added global_tasks.recurenta")
     else:
-        print("Migration v8->v9: global_tasks.recurenta already present")
+        logger.info("Migration v8->v9: global_tasks.recurenta already present")
     conn.close()
 
 
@@ -358,7 +361,7 @@ def migrate_v9_to_v10():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
     conn.commit()
     conn.close()
-    print("Migration v9->v10: added fault_codes table")
+    logger.info("Migration v9->v10: added fault_codes table")
 
 
 def migrate_v10_to_v11():
@@ -380,7 +383,7 @@ def migrate_v10_to_v11():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
     conn.commit()
     conn.close()
-    print("Migration v10->v11: added global_task_sessions table")
+    logger.info("Migration v10->v11: added global_task_sessions table")
 
 
 def migrate_v11_to_v12():
@@ -426,7 +429,7 @@ def migrate_v11_to_v12():
 
     conn.commit()
     conn.close()
-    print("Migration v11->v12: dropped redundant indexes/orphan tables, added prune_budget_audit trigger")
+    logger.info("Migration v11->v12: dropped redundant indexes/orphan tables, added prune_budget_audit trigger")
 
 
 def run_migrations():
@@ -521,29 +524,29 @@ def run_migrations():
         has_pdf_extra = any(row[1] == 'pdf_extra' for row in cursor.fetchall())
     conn.close()
     if not has_cat_table or not has_cat_col:
-        print("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
+        logger.warning("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
         migrate_v4_to_v5()
     if 'parametri_master' in existing_tables and not has_pdf_extra:
-        print("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
+        logger.warning("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
         migrate_v6_to_v7()
     if (not has_subtask_table or not has_descriere or not has_tasks_recurenta
             or not has_tasks_updated_at or not has_timer_task_id):
-        print("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at / timer_sessions.task_id missing)")
+        logger.warning("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at / timer_sessions.task_id missing)")
         migrate_v7_to_v8()
     if not has_gt_recurenta:
-        print("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
+        logger.warning("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
         migrate_v8_to_v9()
     if not has_fault_codes:
-        print("Self-heal: re-running v9->v10 (fault_codes missing)")
+        logger.warning("Self-heal: re-running v9->v10 (fault_codes missing)")
         migrate_v9_to_v10()
     if not has_gts:
-        print("Self-heal: re-running v10->v11 (global_task_sessions missing)")
+        logger.warning("Self-heal: re-running v10->v11 (global_task_sessions missing)")
         migrate_v10_to_v11()
 
     if current_version == SCHEMA_VERSION:
-        print(f"Database schema is up to date (v{SCHEMA_VERSION})")
+        logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
-        print(f"Database migrated to v{SCHEMA_VERSION}")
+        logger.info(f"Database migrated to v{SCHEMA_VERSION}")
 
 
 # Bump when data/fault_codes/*.json changes — forces a one-time re-seed on the
@@ -599,7 +602,7 @@ def seed_fault_codes():
             with open(path, encoding='utf-8') as fh:
                 data = json.load(fh)
         except Exception as e:
-            print(f"seed_fault_codes: aborting — failed to read {os.path.basename(path)}: {e}")
+            logger.warning(f"seed_fault_codes: aborting — failed to read {os.path.basename(path)}: {e}")
             read_failed = True
             break
         try:
@@ -613,13 +616,13 @@ def seed_fault_codes():
                     d.get('confirmare'), extra_json, d.get('pagina'), d.get('sursa'),
                 ))
         except Exception as e:
-            print(f"seed_fault_codes: aborting — failed to parse {os.path.basename(path)}: {e}")
+            logger.warning(f"seed_fault_codes: aborting — failed to parse {os.path.basename(path)}: {e}")
             read_failed = True
             break
 
     if read_failed or not rows:
         if not rows and not read_failed:
-            print("seed_fault_codes: no rows found in data/fault_codes/*.json, leaving table untouched")
+            logger.warning("seed_fault_codes: no rows found in data/fault_codes/*.json, leaving table untouched")
         conn.close()
         return
 
@@ -637,10 +640,10 @@ def seed_fault_codes():
     except Exception as e:
         conn.rollback()
         conn.close()
-        print(f"seed_fault_codes: transaction failed, rolled back: {e}")
+        logger.warning(f"seed_fault_codes: transaction failed, rolled back: {e}")
         return
     conn.close()
-    print(f"Seeded fault_codes with {len(rows)} rows (rev {FAULT_DATA_REV})")
+    logger.info(f"Seeded fault_codes with {len(rows)} rows (rev {FAULT_DATA_REV})")
 
 
 def init_db():

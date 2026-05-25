@@ -10,6 +10,8 @@ import subprocess
 import threading
 import html
 import re
+import shutil
+import tempfile
 
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -17,7 +19,6 @@ from io import BytesIO
 from flask import Flask, request, jsonify, send_file, render_template, session, redirect, url_for
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -29,7 +30,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-from database import get_db, init_db, row_to_dict, close_db
+from database import get_db, init_db, row_to_dict, close_db, DATABASE_PATH
 from blueprints.budget import budget_bp
 from scripts.parse_params import parse_for_producator
 
@@ -192,8 +193,8 @@ def before_request_func():
                     init_db()
                     try:
                         init_default_templates()
-                    except:
-                        pass  # Templates may already exist
+                    except Exception as e:
+                        logger.warning(f"init_default_templates failed: {e}")
                 if not os.environ.get('PIF_DASHBOARD_PIN'):
                     logger.warning("PIF_DASHBOARD_PIN nu este setat — aplicatia foloseste PIN-ul implicit. Seteaza variabila de mediu pe server.")
                 _startup_initialized = True
@@ -535,12 +536,12 @@ def delete_proiect(project_id):
     conn.close()
     # Remove the project's uploaded files from disk (orphans otherwise).
     try:
-        import shutil
         shutil.rmtree(os.path.join(UPLOAD_FOLDER, project_id), ignore_errors=True)
     except Exception:
         pass
     logger.info(f"Project deleted: {project_id}")
     return jsonify({'message': 'Project deleted'})
+
 
 # ============ BATCH OPERATIONS ============
 
@@ -573,7 +574,6 @@ def batch_proiecte():
             return jsonify({'message': f'{len(project_ids)} projects updated'})
         
         elif action == 'delete':
-            import shutil
             for pid in project_ids:
                 # Delete related data first. Subtasks are keyed by task_id.
                 cursor.execute(
@@ -1926,8 +1926,8 @@ def export_excel():
                 try:
                     if cell.value:
                         max_length = max(max_length, len(str(cell.value)))
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"auto_width cell length compute failed: {e}")
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[column_letter].width = adjusted_width
     
@@ -2304,14 +2304,14 @@ def export_pdf():
         for j in jurnal:
             jt_raw = j.get('created_at') or j.get('data')
             try: jt = datetime.fromisoformat(jt_raw).timestamp() if jt_raw else 0
-            except: jt = 0
+            except Exception: jt = 0
             if jt:
                 for s in sessions:
                     if s['id'] in matched: continue
                     et_raw = s.get('stop_time')
                     if not et_raw: continue
                     try: et = datetime.fromisoformat(et_raw).timestamp()
-                    except: continue
+                    except Exception: continue
                     if abs(jt - et) < 120:
                         matched.add(s['id'])
                         j['_dur'] = s.get('durata_secunde') or 0
@@ -3071,10 +3071,6 @@ def admin_db_upload():
     Expects a multipart form field named 'db' with a .db file.
     Validates SQLite header, backs up the existing DB, then atomic-replaces it.
     """
-    import shutil
-    import tempfile
-    from database import DATABASE_PATH
-
     if 'db' not in request.files:
         return jsonify({'error': "missing form field 'db'"}), 400
     f = request.files['db']
@@ -3118,6 +3114,17 @@ def admin_db_upload():
         if os.path.exists(DATABASE_PATH):
             shutil.copy2(DATABASE_PATH, backup_path)
 
+        # Checkpoint WAL into the main DB file so the *-wal/*-shm files are
+        # truncated. Without this, the OLD WAL can persist after replace and
+        # corrupt reads against the NEW DB.
+        try:
+            conn = get_db()
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            conn.commit()
+            close_db(None)
+        except Exception as e:
+            logger.warning(f"WAL checkpoint before db replace failed: {e}")
+
         os.replace(tmp_path, DATABASE_PATH)
 
         return jsonify({
@@ -3139,10 +3146,8 @@ def admin_db_dump():
     """Stream o copie consistenta a DB-ului SQLite pentru audit local.
     Foloseste sqlite3 backup API ca sa nu blocheze scrieri concurente.
     """
-    import tempfile
     import sqlite3 as _sql3
     from flask import after_this_request
-    from database import DATABASE_PATH
 
     if not os.path.exists(DATABASE_PATH):
         return jsonify({'error': 'DB not found on server'}), 404
@@ -3243,19 +3248,40 @@ def get_parametri():
 @app.route('/api/parametri/bulk', methods=['GET'])
 @login_required
 def get_parametri_bulk():
-    """Returnează toți parametrii FĂRĂ explicatie/influenteaza (lightweight)."""
+    """Returnează parametrii FĂRĂ explicatie/influenteaza (lightweight).
+
+    Backward compatible: without `limit` query param returns the full list
+    (legacy shape). With `limit` set, returns a paginated envelope.
+    """
+    has_limit = request.args.get('limit') is not None
+    limit = min(int(request.args.get('limit', 1000)), 5000)
+    offset = max(int(request.args.get('offset', 0)), 0)
+
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
-               valoare_default, valoare_default_str, min, max, unitate,
-               pagina, creat_la
-        FROM parametri_master
-        ORDER BY familie, parametru
-    ''')
+
+    if has_limit:
+        cursor.execute("SELECT COUNT(*) FROM parametri_master")
+        total = cursor.fetchone()[0]
+        cursor.execute('''
+            SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
+                   valoare_default, valoare_default_str, min, max, unitate,
+                   pagina, creat_la
+            FROM parametri_master
+            ORDER BY familie, parametru
+            LIMIT ? OFFSET ?
+        ''', (limit, offset))
+    else:
+        cursor.execute('''
+            SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
+                   valoare_default, valoare_default_str, min, max, unitate,
+                   pagina, creat_la
+            FROM parametri_master
+            ORDER BY familie, parametru
+        ''')
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
-    
+
     # Sanitize: JSON nu suportă Infinity/NaN — înlocuiește cu null
     import math
     for row in rows:
@@ -3267,7 +3293,14 @@ def get_parametri_bulk():
                         row[key] = None
                 except (ValueError, TypeError):
                     pass
-    
+
+    if has_limit:
+        return jsonify({
+            'data': rows,
+            'total': total,
+            'limit': limit,
+            'offset': offset,
+        })
     return jsonify(rows)
 
 PRODUCATOR_FAMILII = {
@@ -3280,17 +3313,33 @@ PRODUCATOR_FAMILII = {
 @app.route('/api/parametri/by-producator/<producator>', methods=['GET'])
 @login_required
 def get_parametri_by_producator(producator):
-    """Returnează parametrii pentru toate familiile unui producător."""
+    """Returnează parametrii pentru toate familiile unui producător.
+
+    Cu `?q=` activeaza modul typeahead (LIMIT 50, filtrare LIKE pe
+    parametru + descriere_scurta). Fara `q` returneaza pana la 1000
+    randuri (safety cap — Siemens are 7000+ in DB).
+    """
     familii = PRODUCATOR_FAMILII.get(producator, [])
     if not familii:
         return jsonify([])
+    q = (request.args.get('q') or '').strip()
     conn = get_db()
     cursor = conn.cursor()
     placeholders = ','.join('?' * len(familii))
-    cursor.execute(
-        f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master WHERE familie IN ({placeholders})',
-        familii
-    )
+    if q:
+        like = f'%{q}%'
+        cursor.execute(
+            f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master '
+            f'WHERE familie IN ({placeholders}) AND (parametru LIKE ? OR descriere_scurta LIKE ?) '
+            f'LIMIT 50',
+            list(familii) + [like, like]
+        )
+    else:
+        cursor.execute(
+            f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master '
+            f'WHERE familie IN ({placeholders}) LIMIT 1000',
+            familii
+        )
     rows = cursor.fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
@@ -3426,7 +3475,6 @@ def parametri_audit():
     Detectează anomalii grupate pe categorii, cu sample-uri.
     Optional: ?familie=ACS580 restricționează la o familie.
     """
-    import re
     familie_filter = request.args.get('familie', '').strip()
     conn = get_db()
     cursor = conn.cursor()
@@ -3457,6 +3505,32 @@ def parametri_audit():
 
     issues = {}
 
+    # Single-pass count: 7 categories in one table scan (HIGH-P4).
+    # Avoids 7 separate COUNT queries against parametri_master.
+    cursor.execute(f'''
+        SELECT
+            SUM(CASE WHEN (descriere_scurta IS NULL OR TRIM(descriere_scurta)='') THEN 1 ELSE 0 END) AS c_missing_desc,
+            SUM(CASE WHEN LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10 THEN 1 ELSE 0 END) AS c_short_desc,
+            SUM(CASE WHEN TRIM(descriere_scurta) = TRIM(parametru) THEN 1 ELSE 0 END) AS c_desc_eq_code,
+            SUM(CASE WHEN (explicatie IS NULL OR TRIM(explicatie)='') THEN 1 ELSE 0 END) AS c_missing_explicatie,
+            SUM(CASE WHEN pagina IS NULL THEN 1 ELSE 0 END) AS c_missing_pagina,
+            SUM(CASE WHEN (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%') THEN 1 ELSE 0 END) AS c_suspect_code,
+            SUM(CASE WHEN (unitate IS NULL OR TRIM(unitate)='')
+                AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
+                THEN 1 ELSE 0 END) AS c_missing_unitate
+        FROM {safe_table("parametri_master")}{where}
+    ''', params)
+    counts_row = cursor.fetchone()
+    counts = {
+        'missing_desc': counts_row[0] or 0,
+        'short_desc': counts_row[1] or 0,
+        'desc_eq_code': counts_row[2] or 0,
+        'missing_explicatie': counts_row[3] or 0,
+        'missing_pagina': counts_row[4] or 0,
+        'suspect_code': counts_row[5] or 0,
+        'missing_unitate': counts_row[6] or 0,
+    }
+
     # 1. Missing descriere_scurta
     cursor.execute(f'''
         SELECT id, parametru, familie FROM {safe_table("parametri_master")}
@@ -3464,12 +3538,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} (descriere_scurta IS NULL OR TRIM(descriere_scurta)='')
-    ''', params)
     issues['missing_descriere_scurta'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['missing_desc'],
         'label': 'Parametri fără descriere scurtă',
         'severity': 'high',
         'samples': rows,
@@ -3482,12 +3552,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} LENGTH(TRIM(descriere_scurta)) BETWEEN 1 AND 10
-    ''', params)
     issues['short_descriere'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['short_desc'],
         'label': 'Descriere foarte scurtă (≤10 caractere)',
         'severity': 'medium',
         'samples': rows,
@@ -3500,12 +3566,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} TRIM(descriere_scurta) = TRIM(parametru)
-    ''', params)
     issues['descriere_equals_code'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['desc_eq_code'],
         'label': 'Descriere = codul parametrului (placeholder)',
         'severity': 'high',
         'samples': rows,
@@ -3518,12 +3580,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} (explicatie IS NULL OR TRIM(explicatie)='')
-    ''', params)
     issues['missing_explicatie'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['missing_explicatie'],
         'label': 'Fără explicație tehnică detaliată',
         'severity': 'medium',
         'samples': rows,
@@ -3536,12 +3594,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} pagina IS NULL
-    ''', params)
     issues['missing_pagina'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['missing_pagina'],
         'label': 'Fără referință la pagina manualului',
         'severity': 'medium',
         'samples': rows,
@@ -3554,12 +3608,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
-    ''', params)
     issues['suspect_code'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['suspect_code'],
         'label': 'Cod parametru suspect (prea scurt sau format neașteptat)',
         'severity': 'low',
         'samples': rows,
@@ -3590,14 +3640,8 @@ def parametri_audit():
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
-    cursor.execute(f'''
-        SELECT COUNT(*) FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')}
-        (unitate IS NULL OR TRIM(unitate)='')
-        AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
-    ''', params)
     issues['missing_unitate_suggested'] = {
-        'count': cursor.fetchone()[0],
+        'count': counts['missing_unitate'],
         'label': 'Lipsă unitate când descrierea sugerează una',
         'severity': 'low',
         'samples': rows,
@@ -3655,8 +3699,7 @@ def get_parametru_detail(param_id):
         )
         candidates = cursor.fetchall()
         # Refine: code appears as a comma/space-delimited token (avoid p100 catching p1000)
-        import re as _re
-        token_pat = _re.compile(r'(?:^|[,\s])' + _re.escape(code) + r'(?:$|[,\s])')
+        token_pat = re.compile(r'(?:^|[,\s])' + re.escape(code) + r'(?:$|[,\s])')
         influentat_de = [
             {'id': c['id'], 'parametru': c['parametru'], 'descriere_scurta': c['descriere_scurta']}
             for c in candidates
@@ -3956,8 +3999,7 @@ def obsidian_mentions():
     term = (request.args.get('term') or '').strip()
     if not term or len(term) < 2:
         return jsonify({'mentions': []})
-    import re as _re
-    pat = _re.compile(r'(?<![\w.])' + _re.escape(term) + r'(?![\w.])', _re.IGNORECASE)
+    pat = re.compile(r'(?<![\w.])' + re.escape(term) + r'(?![\w.])', re.IGNORECASE)
     mentions = []
     for n in _obsidian_index(vault):
         if pat.search(n['content']) or pat.search(n['title']):

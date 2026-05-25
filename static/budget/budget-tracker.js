@@ -84,10 +84,13 @@ function migrateImportHistory(data) {
 // Drop import sessions older than 6 months
 function pruneImportHistory(data) {
   if (!data || !Array.isArray(data.importHistory)) return;
-  var cutoff = Date.now() - 182 * 24 * 60 * 60 * 1000;
+  // 6 calendar months back (vs 182 days — the UI text says "6 luni").
+  var cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 6);
+  var cutoffMs = cutoff.getTime();
   data.importHistory = data.importHistory.filter(function(imp) {
     var t = imp.ts ? new Date(imp.ts).getTime() : 0;
-    return t >= cutoff;
+    return t >= cutoffMs;
   });
 }
 

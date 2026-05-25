@@ -90,7 +90,7 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: 8px;
   font-size: 0.8rem; font-weight: 500;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
   text-decoration: none;
 }
 .btn-back:hover { color: var(--accent); border-color: var(--accent-ring); background: var(--accent-soft); }
@@ -114,7 +114,7 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--success-soft);
   color: var(--success);
   font-size: 0.72rem; font-weight: 500;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 .save-chip.pending { background: var(--warning-soft); color: var(--warning); }
 .save-chip.error { background: var(--danger-soft); color: var(--danger); }
@@ -128,7 +128,7 @@ a { color: var(--accent); text-decoration: none; }
   background: transparent;
   color: var(--text-mid);
   cursor: pointer;
-  transition: all 0.12s;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
 }
 .icon-btn:hover { color: var(--accent); border-color: var(--accent-ring); background: var(--accent-soft); }
 .icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
@@ -151,7 +151,7 @@ a { color: var(--accent); text-decoration: none; }
   color: var(--text-mid);
   font-size: 0.85rem; font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
   white-space: nowrap;
   font-family: inherit;
 }
@@ -346,7 +346,7 @@ label.field-label {
   border-radius: 8px;
   font-size: 0.8rem; font-weight: 600;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: filter 0.12s, transform 0.12s;
   font-family: inherit;
 }
 :root[data-theme="light"] .btn-add { color: #fff; }
@@ -361,7 +361,7 @@ label.field-label {
   color: var(--text-dim);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: color 0.12s, background 0.12s;
 }
 .btn-del:hover { color: var(--danger); background: var(--danger-soft); }
 .btn-del .lucide { width: 14px; height: 14px; }
@@ -446,7 +446,7 @@ label.field-label {
   color: var(--text-mid);
   font-size: 0.85rem; font-weight: 500;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: color 0.12s, background 0.12s, filter 0.12s;
   font-family: inherit;
 }
 .modal-btn:hover { color: var(--text); background: var(--bg-elev2); }

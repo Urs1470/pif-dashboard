@@ -13,6 +13,78 @@ let allNotes = [];
 // Cached subtasks: { [taskId]: [subtask, ...] }
 let _mobileSubtasksCache = {};
 
+// ====================================================================
+// MOBILE TOAST / CONFIRM / PROMPT
+// In-app replacements for window.alert / confirm / prompt that match
+// the app's design system. Toast = one-way notification. Sheet = blocking
+// confirm or prompt (Promise-returning).
+// ====================================================================
+function showMobileToast(msg, type) {
+  const container = document.getElementById('m-toast-container');
+  if (!container) { console.log('[toast]', msg); return; }
+  const toast = document.createElement('div');
+  toast.className = 'm-toast' + (type ? ' ' + type : '');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  // Force reflow so the entrance transition triggers (works in bg tabs).
+  void toast.offsetWidth;
+  toast.classList.add('visible');
+  const ttl = type === 'error' ? 4500 : 2800;
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 250);
+  }, ttl);
+}
+
+function mobileConfirm(title, body) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('m-sheet-overlay');
+    if (!overlay) { resolve(window.confirm(body || title)); return; }
+    document.getElementById('m-sheet-title').textContent = title || '';
+    document.getElementById('m-sheet-body').textContent = body || '';
+    document.getElementById('m-sheet-input').style.display = 'none';
+    overlay.classList.add('open');
+    overlay.removeAttribute('aria-hidden');
+    const ok = document.getElementById('m-sheet-ok');
+    const cancel = document.getElementById('m-sheet-cancel');
+    const cleanup = (result) => {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      ok.onclick = null;
+      cancel.onclick = null;
+      resolve(result);
+    };
+    ok.onclick = () => cleanup(true);
+    cancel.onclick = () => cleanup(false);
+  });
+}
+
+function mobilePrompt(title, defaultValue) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('m-sheet-overlay');
+    if (!overlay) { resolve(window.prompt(title, defaultValue || '')); return; }
+    document.getElementById('m-sheet-title').textContent = title || '';
+    document.getElementById('m-sheet-body').textContent = '';
+    const input = document.getElementById('m-sheet-input');
+    input.value = defaultValue || '';
+    input.style.display = '';
+    overlay.classList.add('open');
+    overlay.removeAttribute('aria-hidden');
+    setTimeout(() => { input.focus(); input.select(); }, 100);
+    const ok = document.getElementById('m-sheet-ok');
+    const cancel = document.getElementById('m-sheet-cancel');
+    const cleanup = (result) => {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      ok.onclick = null;
+      cancel.onclick = null;
+      resolve(result);
+    };
+    ok.onclick = () => cleanup(input.value);
+    cancel.onclick = () => cleanup(null);
+  });
+}
+
 // ============ IndexedDB — Wrapper corect (v3, fără anti-pattern) ============
 
 function openDB() {
@@ -2090,7 +2162,7 @@ async function stopMobileTimer(projectId) {
 }
 
 async function deleteMobileTimerSession(sessionId, projectId) {
-  if (!confirm('Șterge sesiunea?')) return;
+  if (!(await mobileConfirm('Șterge sesiunea', 'Confirmi ștergerea acestei sesiuni de timer?'))) return;
   await apiDelete(`/api/timer/${sessionId}`);
   loadMobileTimer(projectId);
 }
@@ -2131,7 +2203,7 @@ async function saveMobileManualTime() {
   h = Math.min(24, Math.max(0, h));
   m = Math.min(59, Math.max(0, m));
   const dur = h * 3600 + m * 60;
-  if (dur <= 0) { alert('Durata trebuie să fie mai mare ca zero'); return; }
+  if (dur <= 0) { showMobileToast('Durata trebuie să fie mai mare ca zero', 'error'); return; }
   const data = (dateEl && dateEl.value ? dateEl.value : new Date().toISOString().substring(0, 10));
   const body = { data: data, durata_secunde: dur };
   try {
@@ -2149,7 +2221,7 @@ async function saveMobileManualTime() {
       loadMobileTimer(ctx.id);
     }
   } catch (e) {
-    alert('Eroare la salvarea timpului');
+    showMobileToast('Eroare la salvarea timpului', 'error');
   }
 }
 
@@ -2250,32 +2322,32 @@ async function loadMobileChecklist(projectId) {
 }
 
 async function addMobileChecklistCat(projectId) {
-  const nume = prompt('Numele categoriei:');
+  const nume = await mobilePrompt('Categorie nouă', '');
   if (!nume || !nume.trim()) return;
   try {
     await apiPost(`/api/proiecte/${projectId}/checklist-categorii`, { nume: nume.trim() });
     if ('vibrate' in navigator) navigator.vibrate(20);
     loadMobileChecklist(projectId);
-  } catch (e) { alert('Eroare la creare'); }
+  } catch (e) { showMobileToast('Eroare la creare', 'error'); }
 }
 
 async function renameMobileChecklistCat(catId, projectId) {
   const current = document.querySelector(`.mob-checklist-cat[data-cat-key="${catId}"] .mob-cat-name`)?.textContent || '';
-  const newName = prompt('Noul nume:', current);
+  const newName = await mobilePrompt('Redenumire categorie', current);
   if (!newName || !newName.trim() || newName.trim() === current) return;
   try {
     await apiPut(`/api/checklist-categorii/${catId}`, { nume: newName.trim() });
     loadMobileChecklist(projectId);
-  } catch (e) { alert('Eroare'); }
+  } catch (e) { showMobileToast('Eroare', 'error'); }
 }
 
 async function deleteMobileChecklistCat(catId, catName, projectId) {
-  if (!confirm(`Ștergi categoria "${catName}"? Items-urile vor fi mutate la "Fără categorie".`)) return;
+  if (!(await mobileConfirm('Șterge categoria', `Categoria "${catName}". Items-urile vor fi mutate la "Fără categorie".`))) return;
   try {
     await apiDelete(`/api/checklist-categorii/${catId}?move=1`);
     if ('vibrate' in navigator) navigator.vibrate(20);
     loadMobileChecklist(projectId);
-  } catch (e) { alert('Eroare'); }
+  } catch (e) { showMobileToast('Eroare', 'error'); }
 }
 
 async function toggleMobileChecklist(itemId, checked, projectId) {
@@ -2565,7 +2637,7 @@ async function addMobileJournalEntry(projectId) {
 }
 
 async function deleteMobileJournalEntry(entryId, projectId) {
-  if (!confirm('Șterge intrarea?')) return;
+  if (!(await mobileConfirm('Șterge intrarea', 'Confirmi ștergerea acestei intrări din jurnal?'))) return;
   await apiDelete(`/api/jurnal/${entryId}`);
   loadMobileJournal(projectId);
 }
@@ -2644,7 +2716,7 @@ async function uploadMobileFile(projectId) {
 }
 
 async function deleteMobileAttachment(attachmentId, projectId) {
-  if (!confirm('Șterge atașamentul?')) return;
+  if (!(await mobileConfirm('Șterge atașamentul', 'Fișierul va fi șters permanent.'))) return;
   await apiDelete(`/api/atasamente/${attachmentId}`);
   loadMobileAttachments(projectId);
 }
@@ -2758,7 +2830,7 @@ async function saveMobileEquipment(projectId, eqId) {
     serial_number: document.getElementById('eq-serial').value.trim(),
     params_text: document.getElementById('eq-params').value
   };
-  if (!data.nume) { alert('Numele e obligatoriu'); return; }
+  if (!data.nume) { showMobileToast('Numele e obligatoriu', 'error'); return; }
 
   if (eqId && eqId !== 'null') {
     await apiPut(`/api/echipamente/${eqId}`, data);
@@ -2771,7 +2843,7 @@ async function saveMobileEquipment(projectId, eqId) {
 }
 
 async function deleteMobileEquipment(eqId, projectId) {
-  if (!confirm('Șterge echipamentul?')) return;
+  if (!(await mobileConfirm('Șterge echipamentul', 'Confirmi ștergerea echipamentului?'))) return;
   await apiDelete(`/api/echipamente/${eqId}`);
   loadMobileEquipment(projectId);
 }
@@ -2783,7 +2855,7 @@ let _mobileImportPreview = null;
 function triggerMobileImportParams() {
   const producator = document.getElementById('eq-producator')?.value || '';
   if (!producator || producator === 'Altul') {
-    alert('Selectează mai întâi un producător (Danfoss, ABB, Siemens, Lenze)');
+    showMobileToast('Selectează mai întâi un producător (Danfoss, ABB, Siemens, Lenze)', 'warning');
     return;
   }
   const input = document.getElementById('mobile-import-file');
@@ -2809,14 +2881,14 @@ async function onMobileImportFileSelected(event) {
     const res = await fetch('/api/import-params/preview', { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || 'Eroare la parsare');
+      showMobileToast(data.error || 'Eroare la parsare', 'error');
       return;
     }
     _mobileImportPreview = data;
     showMobileImportModal(data);
   } catch (e) {
     console.error('Mobile import preview failed:', e);
-    alert('Eroare la parsare fișier');
+    showMobileToast('Eroare la parsare fișier', 'error');
   }
 }
 
@@ -3023,7 +3095,7 @@ async function saveMobileLongText() {
     else if (_mltActiveField === 'service_before' || _mltActiveField === 'service_after') loadMobileServiceFields(currentProject);
   } catch (e) {
     console.error('Save long text failed:', e);
-    alert('Eroare la salvare');
+    showMobileToast('Eroare la salvare', 'error');
   }
 }
 
@@ -3110,7 +3182,7 @@ async function cycleMobileGtStatus(taskId, current) {
 // 3.11 Project CRUD
 async function deleteMobileProject() {
   if (!currentProject) return;
-  if (!confirm(`Șterge proiectul "${currentProject.nume}"? Toate datele asociate vor fi pierdute.`)) return;
+  if (!(await mobileConfirm('Șterge proiectul', `"${currentProject.nume}". Toate datele asociate vor fi pierdute.`))) return;
   await apiDelete(`/api/proiecte/${currentProject.id}`);
   currentProject = null;
   showTab('projects');
@@ -3189,7 +3261,7 @@ async function saveProjectFromModal(existingId) {
     pm: document.getElementById('pf-pm').value.trim(),
   };
 
-  if (!data.nume) { alert('Numele proiectului e obligatoriu'); return; }
+  if (!data.nume) { showMobileToast('Numele proiectului e obligatoriu', 'error'); return; }
 
   if (existingId) {
     await apiPut(`/api/proiecte/${existingId}`, data);
@@ -3324,7 +3396,7 @@ async function quickAddMobileTask() {
 }
 
 async function deleteMobileGlobalTask(taskId) {
-  if (!confirm('Șterge taskul?')) return;
+  if (!(await mobileConfirm('Șterge taskul', 'Confirmi ștergerea taskului?'))) return;
   await apiDelete(`/api/global-tasks/${taskId}`);
   loadMobileTasks();
 }
@@ -3449,7 +3521,7 @@ async function toggleMobileTaskTimer(taskId) {
   try {
     data = await apiGet(`/api/global-tasks/${taskId}/timer`);
   } catch (e) {
-    alert('Eroare timer');
+    showMobileToast('Eroare timer', 'error');
     return;
   }
   try {
@@ -3460,7 +3532,7 @@ async function toggleMobileTaskTimer(taskId) {
     }
     if ('vibrate' in navigator) navigator.vibrate(30);
   } catch (e) {
-    alert('Eroare timer');
+    showMobileToast('Eroare timer', 'error');
     return;
   }
   refreshMobileTaskTimer(taskId);
@@ -3575,7 +3647,7 @@ async function saveMobileClient(existingId) {
     adresa: document.getElementById('cl-adresa').value.trim(),
     note: document.getElementById('cl-note').value.trim(),
   };
-  if (!data.nume) { alert('Numele e obligatoriu'); return; }
+  if (!data.nume) { showMobileToast('Numele e obligatoriu', 'error'); return; }
   if (existingId) await apiPut(`/api/clienti/${existingId}`, data);
   else await apiPost('/api/clienti', data);
   restoreAndCloseModal();
@@ -3583,7 +3655,7 @@ async function saveMobileClient(existingId) {
 }
 
 async function deleteMobileClient(clientId) {
-  if (!confirm('Șterge clientul?')) return;
+  if (!(await mobileConfirm('Șterge clientul', 'Confirmi ștergerea clientului?'))) return;
   await apiDelete(`/api/clienti/${clientId}`);
   restoreAndCloseModal();
   loadMobileClients();
@@ -3849,7 +3921,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Origin: ' + window.location.origin,
         'IDB version: 5'
       ];
-      alert(info.join('\n'));
+      showMobileToast(info.join(' • '));
     }
   });
   
@@ -3960,7 +4032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Force Refresh button
   document.getElementById('force-refresh')?.addEventListener('click', async () => {
-    if (!confirm('Reîncarcă aplicația? (cache-ul va fi șters)')) return;
+    if (!(await mobileConfirm('Reîncarcă aplicația', 'Cache-ul local va fi șters.'))) return;
 
     // 1. Trimite mesaj la SW să-și golească cache-ul de API
     if (navigator.serviceWorker.controller) {
@@ -4206,7 +4278,7 @@ document.addEventListener('click', function (e) {
       || _obsNotes.find(n => n.path.toLowerCase().endsWith('/' + target + '.md'))
       || _obsNotes.find(n => n.path.toLowerCase() === target + '.md');
     if (note) openObsNote(note.path);
-    else alert('Nota „' + (wl.getAttribute('data-wikilink') || '') + '" nu a fost găsită.');
+    else showMobileToast('Nota „' + (wl.getAttribute('data-wikilink') || '') + '" nu a fost găsită.', 'warning');
   }
 });
 
