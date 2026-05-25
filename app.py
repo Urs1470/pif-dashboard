@@ -8,6 +8,8 @@ import hashlib
 import hmac
 import subprocess
 import threading
+import html
+import re
 
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -2063,6 +2065,23 @@ def export_pdf():
     normal_style = ParagraphStyle(
         'PIFNormal', parent=styles['Normal'],
         fontSize=9.5, leading=14, textColor=PIF_TEXT, fontName='Helvetica')
+
+    def _safe_text(text):
+        """Escape HTML special chars and normalize line breaks for ReportLab Paragraph.
+        
+        Handles mixed content: existing <br>/<div> tags from WYSIWYG are stripped,
+        newlines are converted to <br/>, and remaining HTML chars are escaped.
+        """
+        if not text:
+            return ''
+        # Normalize existing HTML <br> variants to actual newlines
+        t = re.sub(r'<br\s*/?>', '\n', text)
+        # Strip <div>...</div> tags (not supported by ReportLab markup)
+        t = re.sub(r'</?div[^>]*>', '', t)
+        # Escape remaining HTML entities so they're treated as literal text
+        t = html.escape(t)
+        # Convert newlines to <br/> for ReportLab
+        return t.replace('\n', '<br/>')
     small_style = ParagraphStyle(
         'PIFSmall', parent=styles['Normal'],
         fontSize=8, leading=11, textColor=PIF_TEXT_DIM, fontName='Helvetica')
@@ -2113,17 +2132,17 @@ def export_pdf():
     # 2. Conținut tehnic (PIF observații / Service before+after)
     if is_pif and project_dict.get('observatii'):
         elements.append(Paragraph("2. Observații tehnice", heading_style))
-        elements.append(Paragraph(project_dict['observatii'].replace('\n', '<br/>'), normal_style))
+        elements.append(Paragraph(_safe_text(project_dict.get('observatii', '')), normal_style))
         elements.append(Spacer(1, 6))
     if not is_pif and (project_dict.get('service_before') or project_dict.get('service_after')):
         elements.append(Paragraph("2. Fișă intervenție", heading_style))
         if project_dict.get('service_before'):
             elements.append(Paragraph("Constatări înainte de intervenție", subheading_style))
-            elements.append(Paragraph(project_dict['service_before'].replace('\n', '<br/>'), normal_style))
+            elements.append(Paragraph(_safe_text(project_dict.get('service_before', '')), normal_style))
             elements.append(Spacer(1, 4))
         if project_dict.get('service_after'):
             elements.append(Paragraph("Acțiuni efectuate și rezultat", subheading_style))
-            elements.append(Paragraph(project_dict['service_after'].replace('\n', '<br/>'), normal_style))
+            elements.append(Paragraph(_safe_text(project_dict.get('service_after', '')), normal_style))
             elements.append(Spacer(1, 4))
 
     # 3. Checklist PIF cu categorii
@@ -2251,8 +2270,7 @@ def export_pdf():
                 dh = int(dur // 3600); dm = int((dur % 3600) // 60)
                 dur_suffix = f" · <font color='#58d1c9'>{dh}h {dm}m</font>" if dh > 0 else f" · <font color='#58d1c9'>{dm}m</font>"
             elements.append(Paragraph(f"<b>{entry.get('data', '-')}</b>{dur_suffix}", subheading_style))
-            content = (entry.get('continut') or '').replace('\n', '<br/>')
-            elements.append(Paragraph(content, normal_style))
+            elements.append(Paragraph(_safe_text(entry.get('continut') or ''), normal_style))
             elements.append(Spacer(1, 4))
         # Timer fără notă
         unmatched = [s for s in sessions if s['id'] not in matched and s.get('end_time')]
