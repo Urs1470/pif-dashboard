@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v32';
+const VERSION = 'v33';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -28,6 +28,8 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(APP_SHELL))
   );
+  // Activate immediately instead of waiting — new SW takes control on next refresh.
+  self.skipWaiting();
 });
 
 // Activate — clean up old caches, then take control of open pages.
