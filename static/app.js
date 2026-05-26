@@ -1316,11 +1316,28 @@ function _tcardToggleMenu(taskId, btn) {
     if (!card) return;
     const wasOpen = card.classList.contains('tcard--menu-open');
     _tcardCloseMenus();
-    if (!wasOpen) card.classList.add('tcard--menu-open');
+    if (!wasOpen) {
+        card.classList.add('tcard--menu-open');
+        // Flip menu upward if it would overflow the scrollable container or viewport
+        const menu = card.querySelector('.tcard__menu');
+        if (menu) {
+            requestAnimationFrame(() => {
+                const menuRect = menu.getBoundingClientRect();
+                const scrollParent = card.closest('.todo-list');
+                const bottom = scrollParent
+                    ? scrollParent.getBoundingClientRect().bottom
+                    : window.innerHeight;
+                if (menuRect.bottom > bottom) {
+                    card.classList.add('tcard--menu-up');
+                }
+            });
+        }
+    }
 }
 
 function _tcardCloseMenus() {
-    document.querySelectorAll('.tcard.tcard--menu-open').forEach(c => c.classList.remove('tcard--menu-open'));
+    document.querySelectorAll('.tcard.tcard--menu-open').forEach(c =>
+        c.classList.remove('tcard--menu-open', 'tcard--menu-up'));
 }
 
 function _tcardOpenManualTime(kind, taskId) {

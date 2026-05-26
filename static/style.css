@@ -2514,7 +2514,7 @@
             color: var(--accent); flex: 1;
         }
 
-        .todo-list { max-height: 300px; overflow-y: auto; }
+        .todo-list { max-height: 300px; overflow-y: auto; scrollbar-gutter: stable; }
 
         .todo-item {
             display: flex;
@@ -4677,6 +4677,7 @@
     display: none;
 }
 .tcard.tcard--menu-open .tcard__menu { display: block; }
+.tcard.tcard--menu-up .tcard__menu { top: auto; bottom: calc(100% + 2px); }
 .tcard__menu-item {
     display: flex;
     align-items: center;
