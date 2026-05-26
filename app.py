@@ -108,9 +108,9 @@ app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB
 # Session cookie hardening. SameSite=Lax is what stops a malicious site from
 # making authenticated state-changing calls to the API (CSRF): cross-site
 # POST/PUT/DELETE no longer carry the session cookie.
-# Secure = HTTPS-only — set SESSION_COOKIE_SECURE=true in env for
-# production behind Cloudflare Tunnel. Default false so local dev works.
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ('1', 'true', 'yes')
+# Secure = HTTPS-only. Default True (production runs behind Cloudflare Tunnel).
+# Set SESSION_COOKIE_SECURE=false explicitly in local dev if needed.
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'true').lower() not in ('0', 'false', 'no')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
@@ -200,7 +200,10 @@ def before_request_func():
                     except Exception as e:
                         logger.warning(f"init_default_templates failed: {e}")
                 if not os.environ.get('PIF_DASHBOARD_PIN'):
-                    logger.warning("PIF_DASHBOARD_PIN nu este setat — aplicatia foloseste PIN-ul implicit. Seteaza variabila de mediu pe server.")
+                    if app.debug:
+                        logger.warning("PIF_DASHBOARD_PIN nu este setat — mod DEBUG, se foloseste fallback.")
+                    else:
+                        logger.critical("PIF_DASHBOARD_PIN nu este setat! Loginul va esua. Seteaza Environment=PIF_DASHBOARD_PIN=... in systemd.")
                 _startup_initialized = True
                 logger.info("PIF Dashboard initialized")
 
@@ -249,15 +252,11 @@ def get_hashed_pin():
     """Get hashed PIN from environment variable"""
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        if app.config.get('DEBUG', False):
-            logger.warning("⚠️  PIF_DASHBOARD_PIN nu este setat — fallback 'pif2024' doar in DEBUG mode!")
+        if app.debug:
+            logger.warning("PIF_DASHBOARD_PIN nu este setat — folosind fallback in modul DEBUG.")
             pin = 'pif2024'
         else:
-            # Check if running via __main__ (direct startup) or via gunicorn/wsgi
-            logger.critical("🚫 PIF_DASHBOARD_PIN nu este setat! Aplicatia nu poate porni in PRODUCTIE.")
-            logger.critical("   Seteaza: export PIF_DASHBOARD_PIN=parola_ta")
-            pin = 'pif2024'  # fallback temporar — aplicatia nu blocheaza login
-            logger.critical("   ⚠️  Folosind fallback temporar 'pif2024' — seteaza PIF_DASHBOARD_PIN imediat!")
+            raise RuntimeError("PIF_DASHBOARD_PIN nu este setat! Seteaza variabila de mediu pe server.")
     # Generate hash on first call if not cached
     if not hasattr(get_hashed_pin, '_hash'):
         get_hashed_pin._hash = generate_password_hash(pin)
@@ -324,11 +323,14 @@ def login_hash():
     if not pin_hash:
         return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400
     
-    # Get stored PIN (plaintext for hashing) — reuse get_hashed_pin fallback logic
-    raw_pin = os.environ.get('PIF_DASHBOARD_PIN')
-    if not raw_pin:
-        raw_pin = 'pif2024'
-    expected_hash = hashlib.sha256(raw_pin.encode()).hexdigest()
+    # Get stored PIN (plaintext for hashing)
+    pin = os.environ.get('PIF_DASHBOARD_PIN')
+    if not pin:
+        if app.debug:
+            pin = 'pif2024'
+        else:
+            return jsonify({'success': False, 'error': 'Server misconfigured'}), 500
+    expected_hash = hashlib.sha256(pin.encode()).hexdigest()
     
     if hmac.compare_digest(str(pin_hash), expected_hash):
         session['authenticated'] = True
@@ -1440,11 +1442,13 @@ def stop_timer_with_note(project_id):
 @login_required
 def delete_timer_session(session_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (session_id,))
-    deleted = cursor.rowcount
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (session_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+    finally:
+        conn.close()
     if deleted == 0:
         return jsonify({'error': 'Timer session not found'}), 404
     return jsonify({'message': 'Timer session deleted'})
@@ -2407,7 +2411,7 @@ def _pdf_section_equipment(elements, echipamente, section_n, styles):
 def _pdf_section_journal(elements, jurnal, timer_sessions, section_n, styles):
     """N. Jurnal de lucru — entries with ±2 min timer-session dedupe."""
     elements.append(Paragraph(f"{section_n}. Jurnal de lucru", styles['heading']))
-    # Match each jurnal entry to a session with matching end_time within 2 min.
+    # Match each jurnal entry to a session with matching stop_time within 2 min.
     sessions = list(timer_sessions)
     matched = set()
     for j in jurnal:
@@ -2435,7 +2439,7 @@ def _pdf_section_journal(elements, jurnal, timer_sessions, section_n, styles):
         elements.append(Paragraph(_pdf_safe_text(entry.get('continut') or ''), styles['normal']))
         elements.append(Spacer(1, 4))
     # Timer fără notă
-    unmatched = [s for s in sessions if s['id'] not in matched and s.get('end_time')]
+    unmatched = [s for s in sessions if s['id'] not in matched and s.get('stop_time')]
     if unmatched:
         elements.append(Paragraph("Sesiuni timer fără notă", styles['subheading']))
         for s in unmatched[:20]:
@@ -2662,13 +2666,16 @@ def restore_database():
                 p.get('created_at'), p.get('updated_at')
             ))
         
-        # Restore tasks
+        # Restore tasks (v8+ columns: descriere, recurenta, updated_at, ordine)
         for t in data.get('tasks', []):
             cursor.execute('''
-                INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta, data_finalizare, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('status'),
-                  t.get('prioritate'), t.get('data_scadenta'), t.get('data_finalizare'), t.get('created_at')))
+                INSERT INTO tasks (id, proiect_id, titlu, descriere, status, prioritate,
+                    data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('descriere'),
+                  t.get('status'), t.get('prioritate'), t.get('data_scadenta'),
+                  t.get('data_finalizare'), t.get('ordine', 0), t.get('recurenta'),
+                  t.get('created_at'), t.get('updated_at')))
         
         # Restore checklist
         for c in data.get('checklist_pif', []):
@@ -2685,13 +2692,13 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?)
             ''', (j.get('id'), j.get('proiect_id'), j.get('data'), j.get('continut'), j.get('created_at')))
         
-        # Restore timer_sessions
+        # Restore timer_sessions (v8+ column: task_id)
         for ts in data.get('timer_sessions', []):
             cursor.execute('''
-                INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (ts.get('id'), ts.get('proiect_id'), ts.get('start_time'),
-                  ts.get('stop_time'), ts.get('durata_secunde')))
+                INSERT INTO timer_sessions (id, proiect_id, task_id, start_time, stop_time, durata_secunde)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (ts.get('id'), ts.get('proiect_id'), ts.get('task_id'),
+                  ts.get('start_time'), ts.get('stop_time'), ts.get('durata_secunde')))
         
         # Restore atasamente — but only paths that resolve INSIDE UPLOAD_FOLDER.
         # A backup payload from an untrusted source could otherwise register
@@ -2717,14 +2724,16 @@ def restore_database():
             ''', (a.get('id'), a.get('proiect_id'), a.get('nume_fisier'), a.get('tip_fisier'),
                   a.get('dimensiune'), a.get('data'), a.get('cale_locala')))
         
-        # Restore global_tasks
+        # Restore global_tasks (v9+ column: recurenta)
         for gt in data.get('global_tasks', []):
             cursor.execute('''
-                INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie, data_scadenta, data_finalizare, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+                    data_scadenta, data_finalizare, recurenta, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
                   gt.get('status'), gt.get('categorie'), gt.get('data_scadenta'),
-                  gt.get('data_finalizare'), gt.get('created_at'), gt.get('updated_at')))
+                  gt.get('data_finalizare'), gt.get('recurenta'),
+                  gt.get('created_at'), gt.get('updated_at')))
         
         # Restore clienti
         for c in data.get('clienti', []):
@@ -2751,13 +2760,13 @@ def restore_database():
             ''', (t.get('id'), t.get('name'), t.get('tip'), t.get('default_checklist_json'),
                   t.get('default_tasks_json'), t.get('created_at')))
         
-        # Restore task_subtasks
+        # Restore task_subtasks (schema: id, task_id, titlu, done, ordine, created_at)
         for s in data.get('task_subtasks', []):
             cursor.execute('''
-                INSERT INTO task_subtasks (id, task_id, titlu, responsabil, status, ordine, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (s.get('id'), s.get('task_id'), s.get('titlu'), s.get('responsabil'),
-                  s.get('status'), s.get('ordine', 0), s.get('created_at')))
+                INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
+                  s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
         
         # Restore global_task_sessions
         for gts in data.get('global_task_sessions', []):
@@ -2775,13 +2784,16 @@ def restore_database():
             ''', (cat.get('id'), cat.get('proiect_id'), cat.get('nume'),
                   cat.get('ordine', 0), cat.get('created_at')))
         
-        # Restore fault_codes
+        # Restore fault_codes (actual schema from database.py)
         for fc in data.get('fault_codes', []):
             cursor.execute('''
-                INSERT INTO fault_codes (id, proiect_id, cod_fault, descriere, aparitie, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (fc.get('id'), fc.get('proiect_id'), fc.get('cod_fault'),
-                  fc.get('descriere'), fc.get('aparitie'), fc.get('created_at')))
+                INSERT INTO fault_codes (id, producator, familie, cod, cod_secundar, tip,
+                    nume, cauza, remediu, reactie, confirmare, extra_json, pagina, sursa)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (fc.get('id'), fc.get('producator'), fc.get('familie'), fc.get('cod'),
+                  fc.get('cod_secundar'), fc.get('tip'), fc.get('nume'), fc.get('cauza'),
+                  fc.get('remediu'), fc.get('reactie'), fc.get('confirmare'),
+                  fc.get('extra_json'), fc.get('pagina'), fc.get('sursa')))
         
         conn.commit()
         conn.close()
@@ -4898,20 +4910,18 @@ def pv_pif_generate(project_id):
 
 # ============ ERROR HANDLERS ============
 
-@app.errorhandler(500)
-def handle_500(e):
-    """Return JSON for API routes, HTML for everything else."""
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'Internal server error'}), 500
-    return render_template('500.html'), 500
-
-
 @app.errorhandler(404)
-def handle_404(e):
-    """Return JSON for API routes, HTML for everything else."""
+def page_not_found(e):
     if request.path.startswith('/api/'):
-        return jsonify({'error': 'Not found'}), 404
-    return render_template('404.html'), 404
+        return jsonify({'error': 'Endpoint inexistent'}), 404
+    return '<h1>404</h1><p>Pagina nu a fost gasita.</p>', 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    logger.error(f"500 Internal Server Error: {e}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Eroare interna a serverului'}), 500
+    return '<h1>500</h1><p>Eroare interna a serverului.</p>', 500
 
 
 if __name__ == '__main__':

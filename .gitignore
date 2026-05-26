@@ -17,6 +17,9 @@ uploads/
 pif-dashboard.service
 .venv
 
+# Data files (never track)
+proj_tasks.json
+
 # Secrets
 .secret_key
 .env
