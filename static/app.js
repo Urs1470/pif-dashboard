@@ -1847,6 +1847,7 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
                 const labelSpan = btnElement.querySelector('span:last-child');
                 if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
             }
             if (_inlineTimerIntervals[taskId]) {
                 clearInterval(_inlineTimerIntervals[taskId]);
@@ -1861,6 +1862,7 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
             }
             _inlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -1938,6 +1940,7 @@ async function toggleGtTimerInline(taskId, isRunning, btnElement) {
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
                 const labelSpan = btnElement.querySelector('span:last-child');
                 if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
             }
             if (_gtInlineTimerIntervals[taskId]) {
                 clearInterval(_gtInlineTimerIntervals[taskId]);
@@ -1952,6 +1955,7 @@ async function toggleGtTimerInline(taskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
             }
             _gtInlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
