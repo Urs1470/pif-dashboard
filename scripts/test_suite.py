@@ -115,7 +115,11 @@ def api_route_check():
         if not p.exists(): continue
         for m in rcall.finditer(p.read_text()):
             route = m.group(1).split('?')[0]
-            if route.startswith('/'): routes_called.add(route)
+            if route.startswith('/'):
+                # apiGet('/proiecte') uses API_BASE='/api' prefix — normalize
+                if not route.startswith('/api'):
+                    route = '/api' + route
+                routes_called.add(route)
     
     missing = routes_called - routes_defined
     if missing:

@@ -3248,6 +3248,50 @@ def get_parametri():
         'totalPages': max(1, (total + limit - 1) // limit)
     })
 
+@app.route('/api/parametri/search', methods=['GET'])
+@login_required
+def search_parametri():
+    """Search parametri by text query - used by mobile app.
+    Mobile app calls /api/parametri/search?q=query"""
+    conn = get_db()
+    cursor = conn.cursor()
+
+    q = request.args.get('q', '')
+    familie = request.args.get('familie', '')
+    limit = request.args.get('limit', 50, type=int)
+
+    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la FROM parametri_master WHERE 1=1"
+    count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
+    params = []
+
+    if q:
+        clause = " AND (parametru LIKE ? OR descriere LIKE ?)"
+        count_query += clause
+        query += clause
+        params.extend([f'%{q}%', f'%{q}%'])
+
+    if familie:
+        clause = " AND familie = ?"
+        count_query += clause
+        query += clause
+        params.append(familie)
+
+    cursor.execute(count_query, params)
+    total = cursor.fetchone()[0]
+
+    query += " ORDER BY familie, parametru LIMIT ?"
+    params.append(limit)
+
+    cursor.execute(query, params)
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    return jsonify({
+        'params': rows,
+        'total': total,
+        'limit': limit
+    })
+
 # ============ BULK PARAMS (lightweight, for mobile cache) ============
 
 @app.route('/api/parametri/bulk', methods=['GET'])
@@ -3900,6 +3944,16 @@ def _obsidian_config_dict():
     }
 
 
+@app.route('/api/obsidian', methods=['GET'])
+@login_required
+def obsidian_index():
+    """Base Obsidian API endpoint - returns available sub-endpoints."""
+    return jsonify({
+        'endpoints': ['/config', '/notes', '/note', '/search', '/mentions'],
+        'vault_configured': bool(_obsidian_vault()),
+    })
+
+
 @app.route('/api/obsidian/config', methods=['GET'])
 @login_required
 def obsidian_config_get():
@@ -4130,6 +4184,28 @@ def global_search():
                 break
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
+
+
+# ============ MOBILE NOTES SYNC ============
+
+@app.route('/api/sync/notes', methods=['POST'])
+@login_required
+def sync_notes():
+    """Sync notes from mobile app. Mobile stores notes locally in IndexedDB
+    and syncs with server. Currently returns empty arrays since there is
+    no server-side notes storage (notes are Obsidian-based)."""
+    data = request.get_json(silent=True) or {}
+    pending_notes = data.get('notes', [])
+    last_sync = data.get('last_sync')
+
+    saved = []
+    server_notes = []
+
+    return jsonify({
+        'saved': saved,
+        'server_notes': server_notes,
+        'synced_at': datetime.now().isoformat()
+    })
 
 
 # ============ INIT DEFAULT TEMPLATES ============
