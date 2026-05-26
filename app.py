@@ -623,7 +623,9 @@ def get_tasks(project_id):
             (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id) AS subtask_total,
             (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id AND s.done = 1) AS subtask_done,
             (SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions ts
-             WHERE ts.task_id = t.id AND ts.durata_secunde IS NOT NULL) AS timp_secunde
+             WHERE ts.task_id = t.id AND ts.durata_secunde IS NOT NULL) AS timp_secunde,
+            (SELECT COUNT(*) > 0 FROM timer_sessions ts
+             WHERE ts.task_id = t.id AND ts.stop_time IS NULL) AS timer_running
         FROM tasks t WHERE t.proiect_id = ?
         ORDER BY t.ordine ASC, t.created_at DESC
     ''', (project_id,))
@@ -857,7 +859,9 @@ def get_global_tasks():
              '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id) AS subtask_total, '
              '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id AND s.done = 1) AS subtask_done, '
              '(SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions gs '
-             'WHERE gs.global_task_id = g.id) AS timp_secunde '
+             'WHERE gs.global_task_id = g.id) AS timp_secunde, '
+             '(SELECT COUNT(*) > 0 FROM global_task_sessions gs '
+             'WHERE gs.global_task_id = g.id AND gs.stop_time IS NULL) AS timer_running '
              'FROM global_tasks g WHERE 1=1')
     params = []
 

@@ -1379,6 +1379,7 @@ function renderTodos(tasks) {
 
     const renderOne = (task) => {
         task._tcard_expanded = _expandedTaskIds.has(task.id);
+        task._timer_running = !!task.timer_running;
         return renderTaskCard(task, { kind: 'project', projectId: currentProjectId });
     };
 
@@ -3596,6 +3597,7 @@ function renderGlobalTasks(tasks) {
 
     const renderOne = (task) => {
         task._tcard_expanded = _expandedTaskIds.has(task.id);
+        task._timer_running = !!task.timer_running;
         return renderTaskCard(task, { kind: 'global' });
     };
 
