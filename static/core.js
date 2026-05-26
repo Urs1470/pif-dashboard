@@ -369,10 +369,11 @@ const _TCARD_REC_LBL = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: '
 // Chip row (between title and actions).
 function _tcardChips(task, ctx) {
     const chips = [];
-    if (ctx.kind === 'global' && task.categorie && task.categorie !== 'General') {
+    const isGlobalLike = ctx.kind === 'global' || ctx.kind === 'overview';
+    if (isGlobalLike && task.categorie && task.categorie !== 'General') {
         chips.push(`<span class="tcard__chip tcard__chip--cat">${escapeHtml(task.categorie)}</span>`);
     }
-    if (ctx.kind === 'project' && task.proiect_nume) {
+    if ((ctx.kind === 'project' || ctx.kind === 'overview') && task.proiect_nume) {
         chips.push(`<span class="tcard__chip tcard__chip--cat">${escapeHtml(task.proiect_nume)}</span>`);
     }
     if (task.data_scadenta) {
@@ -383,7 +384,7 @@ function _tcardChips(task, ctx) {
     const done = task.subtask_done || 0;
     if (tot > 0) {
         const complete = (done === tot) ? ' complete' : '';
-        const handler = ctx.kind === 'global' ? 'toggleInlineSubtaskAddGt' : 'toggleInlineSubtaskAdd';
+        const handler = isGlobalLike ? 'toggleInlineSubtaskAddGt' : 'toggleInlineSubtaskAdd';
         chips.push(`<span class="tcard__chip tcard__chip--subs${complete}" onclick="event.stopPropagation();${handler}('${task.id}')" title="Adaugă subtask"><i data-lucide="list-checks"></i>${done}/${tot}</span>`);
     }
     if (task.recurenta) {
@@ -399,7 +400,7 @@ function _tcardChips(task, ctx) {
 // Timer button — green when running. formatTimerDuration is shell-defined
 // but falls back to formatTime from core.
 function _tcardTimer(task, ctx) {
-    const handler = ctx.kind === 'global' ? 'toggleGtTimerInline' : 'toggleTaskTimerInline';
+    const handler = (ctx.kind === 'global' || ctx.kind === 'overview') ? 'toggleGtTimerInline' : 'toggleTaskTimerInline';
     const running = !!task._timer_running;
     const total = task.timp_secunde || 0;
     const cls = running ? 'tcard__timer tcard__timer--running' : 'tcard__timer';
@@ -414,7 +415,8 @@ function _tcardTimer(task, ctx) {
 function _tcardBody(task, ctx) {
     const subs = (typeof _taskSubtasksCache !== 'undefined' && _taskSubtasksCache[task.id]) || [];
     const subsDone = subs.filter(s => s.done).length;
-    const addSubName = ctx.kind === 'global' ? 'addSubtaskInlineGt' : 'addSubtaskInline';
+    const isGlobalLike = ctx.kind === 'global' || ctx.kind === 'overview';
+    const addSubName = isGlobalLike ? 'addSubtaskInlineGt' : 'addSubtaskInline';
     const subsList = subs.map(s => `
         <div class="tcard__subtask ${s.done ? 'done' : ''}">
             <input type="checkbox" ${s.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();toggleSubtaskInline('${s.id}',this.checked,'${task.id}')">
@@ -450,10 +452,11 @@ function renderTaskCard(task, ctx) {
     const prio = String(task.prioritate || 'Normal').toLowerCase();
     const prioCap = prio.charAt(0).toUpperCase() + prio.slice(1);
 
-    const cycPrio    = kind === 'global' ? 'cycleGtPriority'  : 'cycleTodoPriority';
-    const cycStatus  = kind === 'global' ? 'cycleGtStatus'    : 'cycleTodoStatus';
-    const toggleSt   = kind === 'global' ? 'toggleGtTask'     : 'toggleTodo';
-    const deleteName = kind === 'global' ? 'deleteGtTask'     : 'deleteTodo';
+    const isGlobalLike = kind === 'global' || kind === 'overview';
+    const cycPrio    = kind === 'overview' ? 'cycleOverviewPriority' : (isGlobalLike ? 'cycleGtPriority'  : 'cycleTodoPriority');
+    const cycStatus  = kind === 'overview' ? 'cycleOverviewStatus'   : (isGlobalLike ? 'cycleGtStatus'    : 'cycleTodoStatus');
+    const toggleSt   = kind === 'overview' ? 'toggleOverviewTask'    : (isGlobalLike ? 'toggleGtTask'     : 'toggleTodo');
+    const deleteName = kind === 'overview' ? 'deleteOverviewTask'    : (isGlobalLike ? 'deleteGtTask'     : 'deleteTodo');
 
     const cls = ['tcard', `tcard--prio-${prio}`];
     if (isDone) cls.push('tcard--done');

@@ -1324,9 +1324,11 @@ function _tcardCloseMenus() {
 }
 
 function _tcardOpenManualTime(kind, taskId) {
-    if (typeof openManualTimeForTask === 'function') openManualTimeForTask(kind, taskId);
-    else if (typeof openManualTimeModal === 'function') openManualTimeModal(kind === 'project' ? 'task' : kind, taskId);
-    else showToast('Intrare manuală indisponibilă', true);
+    // overview tasks use the global-tasks API, map accordingly
+    const apiKind = kind === 'overview' ? 'global' : kind;
+    if (typeof openManualTimeForTask === 'function') openManualTimeForTask(apiKind, taskId);
+    else if (typeof openManualTimeModal === 'function') openManualTimeModal(apiKind === 'project' ? 'task' : apiKind, taskId);
+    else showToast('Intrare manuala indisponibila', true);
 }
 
 // Outside-click closes any open tcard menu.
@@ -3717,6 +3719,14 @@ async function loadProjectTasks() {
         if (status) url += `status=${status}&`;
         if (prioritate) url += `prioritate=${prioritate}&`;
         const tasks = await apiGet(url);
+        // Pre-fetch subtasks for tcard chip rendering
+        const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
+        await Promise.all(tasksWithSubs.map(async (t) => {
+            try {
+                const subs = await apiGet(`/tasks/${encodeURIComponent(t.id)}/subtasks`);
+                _taskSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
+            } catch (e) { _taskSubtasksCache[t.id] = []; }
+        }));
         renderProjectTasks(tasks);
     } catch (e) { console.error('Load project tasks error:', e); }
 }
@@ -3725,34 +3735,98 @@ function renderProjectTasks(tasks) {
     const container = document.getElementById('project-tasks-list');
     if (!container) return;
     if (!tasks || tasks.length === 0) {
-        container.innerHTML = `<p style="color:var(--text2); font-size:0.85rem; font-family:'Courier New',monospace;">Niciun task activ în proiecte.</p>`;
+        container.innerHTML = `<p style="color:var(--text2); font-size:0.85rem; font-family:'Courier New',monospace;">Niciun task activ in proiecte.</p>`;
         return;
     }
     const priorityOrder = { 'Urgent': 0, 'Normal': 1, 'Minor': 2 };
-    tasks.sort((a, b) => (priorityOrder[a.prioritate] ?? 1) - (priorityOrder[b.prioritate] ?? 1));
-    container.innerHTML = tasks.map(t => `
-        <div class="gt-task-card ${t.status === 'done' ? 'completed' : ''}" style="border-left:3px solid ${t.proiect_tip === 'PIF' ? 'var(--c3)' : 'var(--c1)'};">
-            <input type="checkbox" class="todo-checkbox" ${t.status === 'done' ? 'checked' : ''} onchange="toggleProjectTaskGlobal('${t.id}', this.checked)">
-            <div class="todo-content">
-                <div class="gt-task-title ${t.status === 'done' ? 'done' : ''}">${escapeHtml(t.titlu)}</div>
-                <div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <span style="color:var(--accent); font-weight:600;">${escapeHtml(t.proiect_nume || '-')}</span>
-                    <span class="badge">${t.proiect_tip || 'PIF'}</span>
-                    ${t.data_scadenta ? `<span><i data-lucide="calendar"></i> ${t.data_scadenta}</span>` : ''}
-                    ${t.proiect_client ? `<span>👤 ${escapeHtml(t.proiect_client)}</span>` : ''}
-                </div>
-            </div>
-            <span class="todo-priority ${(t.prioritate||'normal').toLowerCase()}">${t.prioritate || 'Normal'}</span>
-            <button class="btn btn-small btn-secondary" onclick="showProjectDetail('${t.proiect_id}')" title="Deschide proiectul">→</button>
-        </div>
-    `).join('');
+    tasks.sort((a, b) => {
+        if (a.status === 'done' && b.status !== 'done') return 1;
+        if (a.status !== 'done' && b.status === 'done') return -1;
+        const pDiff = (priorityOrder[a.prioritate] || 1) - (priorityOrder[b.prioritate] || 1);
+        if (pDiff !== 0) return pDiff;
+        if (a.data_scadenta && b.data_scadenta) return a.data_scadenta.localeCompare(b.data_scadenta);
+        if (a.data_scadenta) return -1;
+        if (b.data_scadenta) return 1;
+        return 0;
+    });
+
+    const active = tasks.filter(t => t.status !== 'done');
+    const done = tasks.filter(t => t.status === 'done');
+    done.sort((a, b) => (b.data_finalizare || b.updated_at || '').localeCompare(a.data_finalizare || a.updated_at || ''));
+
+    const renderOne = (task) => {
+        task._tcard_expanded = _expandedTaskIds.has(task.id);
+        task._timer_running = !!task.timer_running;
+        return renderTaskCard(task, { kind: 'overview' });
+    };
+
+    let html = '<div class="tcard-list">' + active.map(renderOne).join('') + '</div>';
+    if (done.length > 0) {
+        const isCollapsed = localStorage.getItem('pif:pt-done-collapsed') !== '0';
+        html += `<div class="tcard-done-sep" onclick="togglePtDoneCollapse()" data-collapsed="${isCollapsed ? '1' : '0'}">
+            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}"></i>
+            <span>Finalizate (${done.length})</span>
+        </div>`;
+        html += `<div class="tcard-done-group${isCollapsed ? ' collapsed' : ''}"><div class="tcard-list">${done.map(renderOne).join('')}</div></div>`;
+    }
+    container.innerHTML = html;
+    if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
 }
 
-async function toggleProjectTaskGlobal(taskId, checked) {
+function togglePtDoneCollapse() {
+    const key = 'pif:pt-done-collapsed';
+    const isCollapsed = localStorage.getItem(key) !== '0';
+    localStorage.setItem(key, isCollapsed ? '0' : '1');
+    const divider = document.querySelector('#project-tasks-list .tcard-done-sep');
+    const group = document.querySelector('#project-tasks-list .tcard-done-group');
+    if (divider && group) {
+        divider.setAttribute('data-collapsed', isCollapsed ? '0' : '1');
+        const icon = divider.querySelector('[data-lucide]');
+        if (icon) {
+            icon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-right');
+            if (window.lucide) try { window.lucide.createIcons(); } catch {}
+        }
+        group.classList.toggle('collapsed', !isCollapsed);
+    }
+}
+
+// -- Overview task handlers (delegheaza la API-ul global-tasks, refresh-ul ramane pe overview) --
+
+async function toggleOverviewTask(taskId, checked) {
     try {
-        await apiPut(`/tasks/${taskId}`, { status: checked ? 'done' : 'to_do', data_finalizare: checked ? new Date().toISOString() : '' });
+        await apiPut(`/global-tasks/${taskId}`, { status: checked ? 'done' : 'to_do', data_finalizare: checked ? new Date().toISOString() : '' });
         await loadProjectTasks();
-    } catch (e) { console.error('Toggle project task error:', e); }
+    } catch (e) { console.error('Toggle overview task error:', e); }
+}
+
+async function cycleOverviewPriority(taskId, current) {
+    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
+    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
+    try {
+        await apiPut(`/global-tasks/${taskId}`, { prioritate: next });
+        loadProjectTasks();
+    } catch (e) { showToast('Eroare la schimbarea prioritatii', true); }
+}
+
+async function cycleOverviewStatus(taskId, current) {
+    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
+    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
+    try {
+        await apiPut(`/global-tasks/${taskId}`, { status: next });
+        loadProjectTasks();
+    } catch (e) { showToast('Eroare la schimbarea statusului', true); }
+}
+
+async function deleteOverviewTask(taskId) {
+    if (!confirm('Stergi acest task? Actiunea nu poate fi anulata.')) return;
+    try {
+        await apiDelete(`/global-tasks/${taskId}`);
+        loadProjectTasks();
+        showToast('Task sters!');
+    } catch (e) {
+        console.error('Failed to delete overview task:', e);
+        showToast('Eroare la stergerea taskului', true);
+    }
 }
 
 async function toggleGtTask(taskId, checked) {
@@ -4829,7 +4903,7 @@ document.addEventListener('touchend', function(e) {
     
     // Swipe right to complete task (only if horizontal swipe > 50px and small vertical)
     if (deltaX > 50 && Math.abs(deltaY) < 30) {
-        const target = e.target.closest('.todo-item, .gt-task-card');
+        const target = e.target.closest('.todo-item, .gt-task-card, .tcard');
         if (target) {
             const checkbox = target.querySelector('input[type="checkbox"]');
             if (checkbox && !checkbox.checked) {
