@@ -1883,6 +1883,43 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
     }
 }
 
+// Toggle subtask timer from inline button in subtask list
+let _subtaskTimerIntervals = {};
+async function toggleSubtaskTimerInline(subtaskId, isRunning, btnElement) {
+    try {
+        if (isRunning) {
+            const res = await fetch(`/api/subtasks/${encodeURIComponent(subtaskId)}/timer/stop`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to stop subtask timer');
+            const data = await res.json();
+            if (btnElement) {
+                btnElement.classList.remove('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
+                btnElement.title = 'Pornește timer';
+            }
+            if (_subtaskTimerIntervals[subtaskId]) {
+                clearInterval(_subtaskTimerIntervals[subtaskId]);
+                delete _subtaskTimerIntervals[subtaskId];
+            }
+            showToast('Cronometru subtask oprit');
+        } else {
+            const res = await fetch(`/api/subtasks/${encodeURIComponent(subtaskId)}/timer/start`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to start subtask timer');
+            const data = await res.json();
+            if (btnElement) {
+                btnElement.classList.add('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
+                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
+                btnElement.title = 'Oprește timer';
+            }
+            showToast('Cronometru subtask pornit');
+        }
+    } catch (e) {
+        console.error('Subtask timer error:', e);
+        showToast('Eroare cronometru subtask', true);
+    }
+}
+
 // Global task versions for inline subtask add
 function toggleInlineSubtaskAddGt(taskId) {
     const wrapper = document.getElementById(`inline-subtask-add-gt-${taskId}`);

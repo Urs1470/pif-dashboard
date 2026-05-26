@@ -4781,6 +4781,15 @@
 .tcard__subtask-del:hover { color: var(--danger); background: var(--danger-soft); }
 .tcard__subtask-del .lucide { width: 13px; height: 13px; }
 
+.tcard__subtask-timer {
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    border-radius: 4px; opacity: 0.6; transition: opacity 0.15s;
+}
+.tcard__subtask:hover .tcard__subtask-timer { opacity: 1; }
+.tcard__subtask-timer:hover { background: var(--bg-elev2); }
+.tcard__subtask-timer.tcard__timer--running { opacity: 1; color: var(--accent); }
+.tcard__subtask-timer .tcard__timer-icon { font-size: 12px; }
+
 .tcard__subtask-add {
     display: flex;
     gap: 6px;

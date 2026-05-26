@@ -1408,6 +1408,76 @@ def delete_timer_session(session_id):
     conn.close()
     return jsonify({'message': 'Timer session deleted'})
 
+# ============ PER-SUBTASK TIMER ============
+# Time tracked against a specific subtask. Stored in timer_sessions with subtask_id set.
+
+@app.route('/api/subtasks/<subtask_id>/timer', methods=['GET'])
+@login_required
+def get_subtask_timer(subtask_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM task_subtasks WHERE id = ?', (subtask_id,))
+    subtask = cursor.fetchone()
+    if not subtask:
+        conn.close()
+        return jsonify({'error': 'Subtask not found'}), 404
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
+    total = cursor.fetchone()[0]
+    cursor.execute('SELECT start_time FROM timer_sessions WHERE subtask_id = ? AND stop_time IS NULL ORDER BY start_time DESC LIMIT 1', (subtask_id,))
+    running = cursor.fetchone()
+    conn.close()
+    return jsonify({
+        'running': running is not None,
+        'running_since': running['start_time'] if running else None,
+        'total_secunde': total
+    })
+
+@app.route('/api/subtasks/<subtask_id>/timer/start', methods=['POST'])
+@login_required
+def start_subtask_timer(subtask_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM task_subtasks WHERE id = ?', (subtask_id,))
+    subtask = cursor.fetchone()
+    if not subtask:
+        conn.close()
+        return jsonify({'error': 'Subtask not found'}), 404
+    now = datetime.now().isoformat()
+    cursor.execute('SELECT id, start_time FROM timer_sessions WHERE subtask_id = ? AND stop_time IS NULL', (subtask_id,))
+    for r in cursor.fetchall():
+        dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(r['start_time'])).total_seconds())
+        cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?', (now, dur, r['id']))
+    cursor.execute('SELECT t.proiect_id FROM tasks t JOIN task_subtasks s ON s.task_id = t.id WHERE s.id = ?', (subtask_id,))
+    task_row = cursor.fetchone()
+    proj_id = task_row['proiect_id'] if task_row else None
+    session_id = generate_uuid()
+    cursor.execute(
+        'INSERT INTO timer_sessions (id, proiect_id, subtask_id, start_time) VALUES (?, ?, ?, ?)',
+        (session_id, proj_id, subtask_id, now)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'id': session_id, 'start_time': now})
+
+@app.route('/api/subtasks/<subtask_id>/timer/stop', methods=['POST'])
+@login_required
+def stop_subtask_timer(subtask_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.now().isoformat()
+    cursor.execute('SELECT * FROM timer_sessions WHERE subtask_id = ? AND stop_time IS NULL ORDER BY start_time DESC LIMIT 1', (subtask_id,))
+    session = cursor.fetchone()
+    if not session:
+        conn.close()
+        return jsonify({'error': 'No running timer for this subtask'}), 404
+    dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(session['start_time'])).total_seconds())
+    cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?', (now, dur, session['id']))
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'durata_secunde': dur, 'total_secunde': total})
+
 # ============ PER-TASK TIMER ============
 # Time tracked against a specific task. Stored in timer_sessions with task_id
 # set, kept isolated from the standalone project timer (which uses task_id NULL).
