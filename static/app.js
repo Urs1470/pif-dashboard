@@ -3723,6 +3723,7 @@ async function loadProjectTasks() {
 
 function renderProjectTasks(tasks) {
     const container = document.getElementById('project-tasks-list');
+    if (!container) return;
     if (!tasks || tasks.length === 0) {
         container.innerHTML = `<p style="color:var(--text2); font-size:0.85rem; font-family:'Courier New',monospace;">Niciun task activ în proiecte.</p>`;
         return;
