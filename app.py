@@ -107,9 +107,10 @@ app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB
 
 # Session cookie hardening. SameSite=Lax is what stops a malicious site from
 # making authenticated state-changing calls to the API (CSRF): cross-site
-# POST/PUT/DELETE no longer carry the session cookie. Secure = HTTPS-only;
-# HttpOnly = not readable from JavaScript.
-app.config['SESSION_COOKIE_SECURE'] = True
+# POST/PUT/DELETE no longer carry the session cookie.
+# Secure = HTTPS-only — set SESSION_COOKIE_SECURE=true in env for
+# production behind Cloudflare Tunnel. Default false so local dev works.
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ('1', 'true', 'yes')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
@@ -248,8 +249,15 @@ def get_hashed_pin():
     """Get hashed PIN from environment variable"""
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        logger.critical("⚠️  PIF_DASHBOARD_PIN nu este setat! Folosind fallback. Seteaza in systemd: Environment=PIF_DASHBOARD_PIN=...")
-        pin = 'pif2024'  # fallback — seteaza PIF_DASHBOARD_PIN in productie!
+        if app.config.get('DEBUG', False):
+            logger.warning("⚠️  PIF_DASHBOARD_PIN nu este setat — fallback 'pif2024' doar in DEBUG mode!")
+            pin = 'pif2024'
+        else:
+            # Check if running via __main__ (direct startup) or via gunicorn/wsgi
+            logger.critical("🚫 PIF_DASHBOARD_PIN nu este setat! Aplicatia nu poate porni in PRODUCTIE.")
+            logger.critical("   Seteaza: export PIF_DASHBOARD_PIN=parola_ta")
+            pin = 'pif2024'  # fallback temporar — aplicatia nu blocheaza login
+            logger.critical("   ⚠️  Folosind fallback temporar 'pif2024' — seteaza PIF_DASHBOARD_PIN imediat!")
     # Generate hash on first call if not cached
     if not hasattr(get_hashed_pin, '_hash'):
         get_hashed_pin._hash = generate_password_hash(pin)
@@ -316,9 +324,11 @@ def login_hash():
     if not pin_hash:
         return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400
     
-    # Get stored PIN (plaintext for hashing)
-    pin = os.environ.get('PIF_DASHBOARD_PIN') or 'pif2024'
-    expected_hash = hashlib.sha256(pin.encode()).hexdigest()
+    # Get stored PIN (plaintext for hashing) — reuse get_hashed_pin fallback logic
+    raw_pin = os.environ.get('PIF_DASHBOARD_PIN')
+    if not raw_pin:
+        raw_pin = 'pif2024'
+    expected_hash = hashlib.sha256(raw_pin.encode()).hexdigest()
     
     if hmac.compare_digest(str(pin_hash), expected_hash):
         session['authenticated'] = True
@@ -780,12 +790,17 @@ def update_task(task_id):
 @login_required
 def delete_task(task_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
-    cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Task deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
+        cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        return jsonify({'message': 'Task deleted'})
+    finally:
+        conn.close()
 
 # ============ TASK SUBTASKS (lightweight checklist under a task) ============
 
@@ -837,11 +852,16 @@ def update_subtask(subtask_id):
 @login_required
 def delete_subtask(subtask_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM task_subtasks WHERE id = ?', (subtask_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'ok': True})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM task_subtasks WHERE id = ?', (subtask_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Subtask not found'}), 404
+        return jsonify({'ok': True})
+    finally:
+        conn.close()
 
 # ============ GLOBAL TASKS ============
 
@@ -1017,14 +1037,19 @@ def update_global_task(task_id):
 @login_required
 def delete_global_task(task_id):
     conn = get_db()
-    cursor = conn.cursor()
-    # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
-    # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
-    cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
-    cursor.execute('DELETE FROM global_tasks WHERE id = ?', (task_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Task deleted'})
+    try:
+        cursor = conn.cursor()
+        # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
+        # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
+        cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
+        cursor.execute('DELETE FROM global_tasks WHERE id = ?', (task_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        return jsonify({'message': 'Task deleted'})
+    finally:
+        conn.close()
 
 # ============ CHECKLIST PIF ============
 
@@ -1125,11 +1150,16 @@ def update_checklist_item(item_id):
 @login_required
 def delete_checklist_item(item_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM checklist_pif WHERE id = ?', (item_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Checklist item deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM checklist_pif WHERE id = ?', (item_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Checklist item not found'}), 404
+        return jsonify({'message': 'Checklist item deleted'})
+    finally:
+        conn.close()
 
 # ============ CHECKLIST CATEGORII (per-project dynamic) ============
 
@@ -1189,15 +1219,17 @@ def delete_checklist_categorie(cat_id):
     # ?move=0           -> hard delete the items together with the category.
     move = request.args.get('move', '1') == '1'
     conn = get_db()
-    cursor = conn.cursor()
-    if move:
-        cursor.execute('UPDATE checklist_pif SET categorie_id = NULL WHERE categorie_id = ?', (cat_id,))
-    else:
-        cursor.execute('DELETE FROM checklist_pif WHERE categorie_id = ?', (cat_id,))
-    cursor.execute('DELETE FROM checklist_categorii WHERE id = ?', (cat_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'ok': True, 'moved': move})
+    try:
+        cursor = conn.cursor()
+        if move:
+            cursor.execute('UPDATE checklist_pif SET categorie_id = NULL WHERE categorie_id = ?', (cat_id,))
+        else:
+            cursor.execute('DELETE FROM checklist_pif WHERE categorie_id = ?', (cat_id,))
+        cursor.execute('DELETE FROM checklist_categorii WHERE id = ?', (cat_id,))
+        conn.commit()
+        return jsonify({'ok': True, 'moved': move})
+    finally:
+        conn.close()
 
 # ============ JURNAL ============
 
@@ -1241,36 +1273,41 @@ def create_jurnal_entry(project_id):
 @login_required
 def delete_jurnal_entry(entry_id):
     conn = get_db()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    # If this jurnal entry was created by stop-with-note, there is a paired
-    # timer_session row with stop_time within ~2 min of jurnal.created_at.
-    # Cascade-delete it so the user doesn't need two clicks (delete the note,
-    # then delete the leftover "Timer fără notă" that pops up afterward).
-    cursor.execute(
-        'SELECT proiect_id, created_at FROM jurnal WHERE id = ?',
-        (entry_id,)
-    )
-    row = cursor.fetchone()
-    if row:
-        try:
-            j_time = datetime.fromisoformat(row['created_at'])
-            cursor.execute('''
-                SELECT id, stop_time FROM timer_sessions
-                WHERE proiect_id = ? AND stop_time IS NOT NULL
-            ''', (row['proiect_id'],))
-            for s in cursor.fetchall():
-                s_stop = datetime.fromisoformat(s['stop_time'])
-                if abs((s_stop - j_time).total_seconds()) < 120:
-                    cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (s['id'],))
-                    break
-        except (ValueError, TypeError):
-            pass
+        # If this jurnal entry was created by stop-with-note, there is a paired
+        # timer_session row with stop_time within ~2 min of jurnal.created_at.
+        # Cascade-delete it so the user doesn't need two clicks (delete the note,
+        # then delete the leftover "Timer fără notă" that pops up afterward).
+        cursor.execute(
+            'SELECT proiect_id, created_at FROM jurnal WHERE id = ?',
+            (entry_id,)
+        )
+        row = cursor.fetchone()
+        if row:
+            try:
+                j_time = datetime.fromisoformat(row['created_at'])
+                cursor.execute('''
+                    SELECT id, stop_time FROM timer_sessions
+                    WHERE proiect_id = ? AND stop_time IS NOT NULL
+                ''', (row['proiect_id'],))
+                for s in cursor.fetchall():
+                    s_stop = datetime.fromisoformat(s['stop_time'])
+                    if abs((s_stop - j_time).total_seconds()) < 120:
+                        cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (s['id'],))
+                        break
+            except (ValueError, TypeError):
+                pass
 
-    cursor.execute('DELETE FROM jurnal WHERE id = ?', (entry_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Jurnal entry deleted'})
+        cursor.execute('DELETE FROM jurnal WHERE id = ?', (entry_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Jurnal entry not found'}), 404
+        return jsonify({'message': 'Jurnal entry deleted'})
+    finally:
+        conn.close()
 
 @app.route('/api/jurnal/all', methods=['GET'])
 @login_required
@@ -1405,8 +1442,11 @@ def delete_timer_session(session_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (session_id,))
+    deleted = cursor.rowcount
     conn.commit()
     conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Timer session not found'}), 404
     return jsonify({'message': 'Timer session deleted'})
 
 # ============ PER-SUBTASK TIMER ============
@@ -1695,11 +1735,16 @@ def stop_global_task_timer(task_id):
 @login_required
 def delete_global_task_session(session_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM global_task_sessions WHERE id = ?', (session_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'message': 'Session deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM global_task_sessions WHERE id = ?', (session_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Session not found'}), 404
+        return jsonify({'message': 'Session deleted'})
+    finally:
+        conn.close()
 
 
 # ============ MANUAL TIMER ENTRIES ============
@@ -1891,22 +1936,25 @@ def download_atasament(attachment_id):
 @login_required
 def delete_atasament(attachment_id):
     conn = get_db()
-    cursor = conn.cursor()
-    
-    cursor.execute('SELECT cale_locala FROM atasamente WHERE id = ?', (attachment_id,))
-    row = cursor.fetchone()
-    
-    if row:
+    try:
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT cale_locala FROM atasamente WHERE id = ?', (attachment_id,))
+        row = cursor.fetchone()
+        
+        if not row:
+            return jsonify({'error': 'Attachment not found'}), 404
+        
         filepath = row['cale_locala']
         if os.path.exists(filepath):
             os.remove(filepath)
         
         cursor.execute('DELETE FROM atasamente WHERE id = ?', (attachment_id,))
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({'message': 'Attachment deleted'})
+        
+        conn.commit()
+        return jsonify({'message': 'Attachment deleted'})
+    finally:
+        conn.close()
 
 # ============ STATS ============
 
@@ -2207,7 +2255,7 @@ def export_pdf():
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
         rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=2*cm, bottomMargin=2*cm,
-        title=f"PIF Report — {project_dict.get('nume', '')}",
+        title=f"PIF Report — {re.sub(r'[<>]', '', project_dict.get('nume', '') or '')}",
         author='PIF Dashboard'
     )
 
@@ -2543,7 +2591,7 @@ def backup_database():
     
     backup = {}
     
-    tables = ['proiecte', 'tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'budget_state', 'budget_audit', 'parametri_master']
     for table in tables:
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
@@ -2566,7 +2614,7 @@ def restore_database():
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data
-        tables = ['proiecte', 'tasks', 'checklist_pif', 'jurnal', 'timer_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates']
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'budget_state', 'budget_audit', 'parametri_master']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)}')
 
@@ -2676,6 +2724,38 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (t.get('id'), t.get('name'), t.get('tip'), t.get('default_checklist_json'),
                   t.get('default_tasks_json'), t.get('created_at')))
+        
+        # Restore task_subtasks
+        for s in data.get('task_subtasks', []):
+            cursor.execute('''
+                INSERT INTO task_subtasks (id, task_id, titlu, responsabil, status, ordine, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (s.get('id'), s.get('task_id'), s.get('titlu'), s.get('responsabil'),
+                  s.get('status'), s.get('ordine', 0), s.get('created_at')))
+        
+        # Restore global_task_sessions
+        for gts in data.get('global_task_sessions', []):
+            cursor.execute('''
+                INSERT INTO global_task_sessions (id, global_task_id, start_time, stop_time, durata_secunde)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (gts.get('id'), gts.get('global_task_id'), gts.get('start_time'),
+                  gts.get('stop_time'), gts.get('durata_secunde')))
+        
+        # Restore checklist_categorii
+        for cat in data.get('checklist_categorii', []):
+            cursor.execute('''
+                INSERT INTO checklist_categorii (id, proiect_id, nume, ordine, created_at)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (cat.get('id'), cat.get('proiect_id'), cat.get('nume'),
+                  cat.get('ordine', 0), cat.get('created_at')))
+        
+        # Restore fault_codes
+        for fc in data.get('fault_codes', []):
+            cursor.execute('''
+                INSERT INTO fault_codes (id, proiect_id, cod_fault, descriere, aparitie, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (fc.get('id'), fc.get('proiect_id'), fc.get('cod_fault'),
+                  fc.get('descriere'), fc.get('aparitie'), fc.get('created_at')))
         
         conn.commit()
         conn.close()
@@ -2790,13 +2870,17 @@ def update_client(client_id):
 @login_required
 def delete_client(client_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM clienti WHERE id = ?', (client_id,))
-    conn.commit()
-    conn.close()
-    
-    logger.info(f"Client deleted: {client_id}")
-    return jsonify({'message': 'Client deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM clienti WHERE id = ?', (client_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Client not found'}), 404
+        logger.info(f"Client deleted: {client_id}")
+        return jsonify({'message': 'Client deleted'})
+    finally:
+        conn.close()
 
 # ============ PHASE 2a: ECHIPAMENTE CRUD ============
 
@@ -2916,13 +3000,17 @@ def update_echipament(echipament_id):
 @login_required
 def delete_echipament(echipament_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM echipamente WHERE id = ?', (echipament_id,))
-    conn.commit()
-    conn.close()
-    
-    logger.info(f"Equipment deleted: {echipament_id}")
-    return jsonify({'message': 'Equipment deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM echipamente WHERE id = ?', (echipament_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Equipment not found'}), 404
+        logger.info(f"Equipment deleted: {echipament_id}")
+        return jsonify({'message': 'Equipment deleted'})
+    finally:
+        conn.close()
 
 # ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
 
@@ -3074,13 +3162,17 @@ def get_template(template_id):
 @login_required
 def delete_template(template_id):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM project_templates WHERE id = ?', (template_id,))
-    conn.commit()
-    conn.close()
-    
-    logger.info(f"Template deleted: {template_id}")
-    return jsonify({'message': 'Template deleted'})
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM project_templates WHERE id = ?', (template_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            return jsonify({'error': 'Template not found'}), 404
+        logger.info(f"Template deleted: {template_id}")
+        return jsonify({'message': 'Template deleted'})
+    finally:
+        conn.close()
 
 @app.route('/api/templates/create-from-project/<project_id>', methods=['POST'])
 @login_required

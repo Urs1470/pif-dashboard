@@ -406,7 +406,7 @@ function _tcardTimer(task, ctx) {
     const icon = running ? '⏸' : '▶';
     const fmt = (typeof formatTimerDuration === 'function') ? formatTimerDuration : formatTime;
     const label = total > 0 ? fmt(total) : '';
-    return `<button type="button" class="${cls}" onclick="event.stopPropagation();${handler}('${task.id}',${running},this)" title="${running ? 'Oprește timer' : 'Pornește timer'}"><span class="tcard__timer-icon">${icon}</span>${label ? `<span>${label}</span>` : ''}</button>`;
+    return `<button type="button" class="${cls}" onclick="event.stopPropagation();${handler}('${task.id}',this)" data-timer-running="${running}" title="${running ? 'Oprește timer' : 'Pornește timer'}"><span class="tcard__timer-icon">${icon}</span>${label ? `<span>${label}</span>` : ''}</button>`;
 }
 
 // Expanded body — descriere (markdown) + subtaskuri inline. Subtasks come
@@ -419,7 +419,7 @@ function _tcardBody(task, ctx) {
         <div class="tcard__subtask ${s.done ? 'done' : ''}">
             <input type="checkbox" ${s.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();toggleSubtaskInline('${s.id}',this.checked,'${task.id}')">
             <span class="tcard__subtask-title">${escapeHtml(s.titlu || '')}</span>
-            <button type="button" class="tcard__subtask-timer" onclick="event.stopPropagation();toggleSubtaskTimerInline('${s.id}',${!!s._timer_running},this)" title="Pornește timer"><span class="tcard__timer-icon">▶</span></button>
+            <button type="button" class="tcard__subtask-timer" onclick="event.stopPropagation();toggleSubtaskTimerInline('${s.id}',this)" data-timer-running="${!!s._timer_running}" title="Pornește timer"><span class="tcard__timer-icon">▶</span></button>
             <button type="button" class="tcard__subtask-manual" onclick="event.stopPropagation();openManualTimeForSubtask('${s.id}')" title="Adaugă timp manual">✎</button>
             <button type="button" class="tcard__subtask-del" onclick="event.stopPropagation();deleteSubtask('${s.id}')" title="Șterge subtask"><i data-lucide="x"></i></button>
         </div>`).join('');

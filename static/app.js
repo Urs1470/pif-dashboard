@@ -1822,7 +1822,8 @@ async function addSubtaskInline(taskId, titlu) {
 
 // Toggle task timer from inline button in task list
 let _inlineTimerIntervals = {};
-async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
+async function toggleTaskTimerInline(taskId, btnElement) {
+    const isRunning = btnElement ? btnElement.dataset.timerRunning === 'true' : false;
     try {
         if (isRunning) {
             const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
@@ -1833,7 +1834,7 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
                 const labelSpan = btnElement.querySelector('span:last-child');
                 if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
+                btnElement.dataset.timerRunning = 'false';
             }
             if (_inlineTimerIntervals[taskId]) {
                 clearInterval(_inlineTimerIntervals[taskId]);
@@ -1848,7 +1849,7 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
+                btnElement.dataset.timerRunning = 'true';
             }
             _inlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -1871,7 +1872,8 @@ async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
 
 // Toggle subtask timer from inline button in subtask list
 let _subtaskTimerIntervals = {};
-async function toggleSubtaskTimerInline(subtaskId, isRunning, btnElement) {
+async function toggleSubtaskTimerInline(subtaskId, btnElement) {
+    const isRunning = btnElement ? btnElement.dataset.timerRunning === 'true' : false;
     try {
         if (isRunning) {
             const res = await fetch(`/api/subtasks/${encodeURIComponent(subtaskId)}/timer/stop`, { method: 'POST' });
@@ -1880,7 +1882,7 @@ async function toggleSubtaskTimerInline(subtaskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.remove('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
+                btnElement.dataset.timerRunning = 'false';
                 btnElement.title = 'Pornește timer';
             }
             if (_subtaskTimerIntervals[subtaskId]) {
@@ -1895,7 +1897,7 @@ async function toggleSubtaskTimerInline(subtaskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
+                btnElement.dataset.timerRunning = 'true';
                 btnElement.title = 'Oprește timer';
             }
             showToast('Cronometru subtask pornit');
@@ -1937,7 +1939,8 @@ async function addSubtaskInlineGt(taskId, titlu) {
 
 // Toggle global task timer from inline button
 let _gtInlineTimerIntervals = {};
-async function toggleGtTimerInline(taskId, isRunning, btnElement) {
+async function toggleGtTimerInline(taskId, btnElement) {
+    const isRunning = btnElement ? btnElement.dataset.timerRunning === 'true' : false;
     try {
         if (isRunning) {
             const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
@@ -1948,7 +1951,7 @@ async function toggleGtTimerInline(taskId, isRunning, btnElement) {
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
                 const labelSpan = btnElement.querySelector('span:last-child');
                 if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('true,this)', 'false,this)'));
+                btnElement.dataset.timerRunning = 'false';
             }
             if (_gtInlineTimerIntervals[taskId]) {
                 clearInterval(_gtInlineTimerIntervals[taskId]);
@@ -1963,7 +1966,7 @@ async function toggleGtTimerInline(taskId, isRunning, btnElement) {
             if (btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
-                btnElement.setAttribute('onclick', btnElement.getAttribute('onclick').replace('false,this)', 'true,this)'));
+                btnElement.dataset.timerRunning = 'true';
             }
             _gtInlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
