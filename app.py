@@ -274,6 +274,11 @@ def healthz():
     Răspunde instant (sub 1ms) — fără DB, fără auth."""
     return jsonify({'status': 'ok', 'timestamp': int(time.time())})
 
+@app.route('/api/health')
+def health_redirect():
+    """Redirect legacy /api/health -> /api/healthz for backward compatibility."""
+    return redirect('/api/healthz', code=301)
+
 # ============ END HEALTHCHECK ============
 
 # Serve the login page
