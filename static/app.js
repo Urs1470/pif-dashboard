@@ -1318,26 +1318,51 @@ function _tcardToggleMenu(taskId, btn) {
     _tcardCloseMenus();
     if (!wasOpen) {
         card.classList.add('tcard--menu-open');
-        // Flip menu upward if it would overflow the scrollable container or viewport
         const menu = card.querySelector('.tcard__menu');
         if (menu) {
             requestAnimationFrame(() => {
-                const menuRect = menu.getBoundingClientRect();
-                const scrollParent = card.closest('.todo-list');
-                const bottom = scrollParent
-                    ? scrollParent.getBoundingClientRect().bottom
-                    : window.innerHeight;
-                if (menuRect.bottom > bottom) {
-                    card.classList.add('tcard--menu-up');
+                // Fixed positioning escapes overflow:auto clipping on .todo-list
+                const btnRect = btn.getBoundingClientRect();
+                const menuW  = menu.offsetWidth  || 200;
+                const menuH  = menu.offsetHeight;
+
+                // Horizontal — align right edge with button, clamp to viewport
+                let left = btnRect.right - menuW;
+                if (left < 4) left = 4;
+
+                // Vertical — prefer downward, flip up if not enough space below
+                const spaceBelow = window.innerHeight - btnRect.bottom;
+                const spaceAbove = btnRect.top;
+                let top;
+                if (spaceBelow >= menuH + 4 || spaceBelow >= spaceAbove) {
+                    top = btnRect.bottom + 2;
+                } else {
+                    top = btnRect.top - menuH - 2;
                 }
+
+                menu.style.position = 'fixed';
+                menu.style.top      = top  + 'px';
+                menu.style.left     = left + 'px';
+                menu.style.right    = 'auto';
+                menu.style.bottom   = 'auto';
             });
+
+            // Close on scroll so the fixed menu doesn't drift from the card
+            const scrollParent = card.closest('.todo-list');
+            if (scrollParent) {
+                const onScroll = () => { _tcardCloseMenus(); scrollParent.removeEventListener('scroll', onScroll); };
+                scrollParent.addEventListener('scroll', onScroll, { once: true });
+            }
         }
     }
 }
 
 function _tcardCloseMenus() {
-    document.querySelectorAll('.tcard.tcard--menu-open').forEach(c =>
-        c.classList.remove('tcard--menu-open', 'tcard--menu-up'));
+    document.querySelectorAll('.tcard.tcard--menu-open').forEach(c => {
+        c.classList.remove('tcard--menu-open', 'tcard--menu-up');
+        const m = c.querySelector('.tcard__menu');
+        if (m) m.style.cssText = '';          // reset inline overrides
+    });
 }
 
 function _tcardOpenManualTime(kind, taskId) {
