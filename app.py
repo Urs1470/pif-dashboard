@@ -1462,11 +1462,10 @@ def get_subtask_timer(subtask_id):
     if not subtask:
         conn.close()
         return jsonify({'error': 'Subtask not found'}), 404
-    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
-    total = cursor.fetchone()[0]
     cursor.execute('SELECT start_time FROM timer_sessions WHERE subtask_id = ? AND stop_time IS NULL ORDER BY start_time DESC LIMIT 1', (subtask_id,))
     running = cursor.fetchone()
     conn.close()
+    total = _sum_timer('subtask_id', subtask_id)
     return jsonify({
         'running': running is not None,
         'running_since': running['start_time'] if running else None,
@@ -1513,10 +1512,9 @@ def stop_subtask_timer(subtask_id):
         return jsonify({'error': 'No running timer for this subtask'}), 404
     dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(session['start_time'])).total_seconds())
     cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?', (now, dur, session['id']))
-    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
-    total = cursor.fetchone()[0]
     conn.commit()
     conn.close()
+    total = _sum_timer('subtask_id', subtask_id)
     return jsonify({'durata_secunde': dur, 'total_secunde': total})
 
 
@@ -1547,11 +1545,9 @@ def add_manual_subtask_timer(subtask_id):
     sid = generate_uuid()
     cursor.execute('INSERT INTO timer_sessions (id, proiect_id, subtask_id, start_time, stop_time, durata_secunde) '
                    'VALUES (?, ?, ?, ?, ?, ?)', (sid, proj_id, subtask_id, start, stop, dur))
-    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
-                   'WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
-    total = cursor.fetchone()[0]
     conn.commit()
     conn.close()
+    total = _sum_timer('subtask_id', subtask_id)
     return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
 # ============ PER-TASK TIMER ============
 # Time tracked against a specific task. Stored in timer_sessions with task_id
@@ -1568,13 +1564,8 @@ def get_task_timer(task_id):
         ORDER BY start_time DESC LIMIT 1
     ''', (task_id,))
     running = cursor.fetchone()
-    cursor.execute(
-        'SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
-        'WHERE task_id = ? AND durata_secunde IS NOT NULL',
-        (task_id,)
-    )
-    total = cursor.fetchone()[0]
     conn.close()
+    total = _sum_timer('task_id', task_id)
     return jsonify({
         'running': running is not None,
         'running_since': running['start_time'] if running else None,
@@ -1625,14 +1616,9 @@ def stop_task_timer(task_id):
     dur = int((datetime.fromisoformat(now) - datetime.fromisoformat(session['start_time'])).total_seconds())
     cursor.execute('UPDATE timer_sessions SET stop_time = ?, durata_secunde = ? WHERE id = ?',
                    (now, dur, session['id']))
-    cursor.execute(
-        'SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
-        'WHERE task_id = ? AND durata_secunde IS NOT NULL',
-        (task_id,)
-    )
-    total = cursor.fetchone()[0]
     conn.commit()
     conn.close()
+    total = _sum_timer('task_id', task_id)
     return jsonify({'durata_secunde': dur, 'total_secunde': total})
 
 @app.route('/api/proiecte/<project_id>/timer', methods=['GET'])
@@ -1667,13 +1653,11 @@ def get_global_task_timer(task_id):
                       WHERE global_task_id = ? AND stop_time IS NULL
                       ORDER BY start_time DESC LIMIT 1''', (task_id,))
     running = cursor.fetchone()
-    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions '
-                   'WHERE global_task_id = ? AND durata_secunde IS NOT NULL', (task_id,))
-    total = cursor.fetchone()[0]
     cursor.execute('SELECT * FROM global_task_sessions WHERE global_task_id = ? '
                    'ORDER BY start_time DESC', (task_id,))
     sessions = [row_to_dict(r) for r in cursor.fetchall()]
     conn.close()
+    total = _sum_timer('global_task_id', task_id, table='global_task_sessions')
     return jsonify({
         'running': running is not None,
         'running_since': running['start_time'] if running else None,
@@ -1761,6 +1745,32 @@ def _manual_session_times(data_str, durata_secunde):
     start = d.replace(hour=12, minute=0, second=0, microsecond=0)
     stop = start + timedelta(seconds=int(durata_secunde))
     return start.isoformat(), stop.isoformat()
+
+
+_TIMER_TABLES = {'timer_sessions', 'global_task_sessions'}
+_TIMER_COLS = {'subtask_id', 'task_id', 'global_task_id', 'proiect_id'}
+
+
+def _sum_timer(col, val, table='timer_sessions', cursor=None):
+    """Sum of durata_secunde where col=val. Pass cursor to read inside an
+    in-flight transaction; otherwise opens its own short-lived connection.
+    Whitelists table/col so the f-string can't be turned into injection."""
+    if table not in _TIMER_TABLES:
+        raise ValueError(f"Invalid table: {table}")
+    if col not in _TIMER_COLS:
+        raise ValueError(f"Invalid col: {col}")
+    sql = (f"SELECT COALESCE(SUM(durata_secunde), 0) FROM {table} "
+           f"WHERE {col}=? AND durata_secunde IS NOT NULL")
+    if cursor is not None:
+        cursor.execute(sql, (val,))
+        return cursor.fetchone()[0]
+    conn = get_db()
+    try:
+        c = conn.cursor()
+        c.execute(sql, (val,))
+        return c.fetchone()[0]
+    finally:
+        conn.close()
 
 
 @app.route('/api/proiecte/<project_id>/timer/manual', methods=['POST'])
