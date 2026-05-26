@@ -1291,6 +1291,7 @@ function _tcardRerenderCard(cardEl) {
     try { task = JSON.parse(cardEl.dataset.taskJson || '{}'); }
     catch (e) { return; }
     task._tcard_expanded = _expandedTaskIds.has(taskId);
+    task._timer_running = !!task.timer_running;
     const tmp = document.createElement('div');
     tmp.innerHTML = renderTaskCard(task, { kind, projectId: kind === 'project' ? currentProjectId : null });
     const fresh = tmp.firstElementChild;
@@ -1808,25 +1809,10 @@ async function addSubtaskInline(taskId, titlu) {
     if (!titlu) return;
     try {
         await apiPost(`/tasks/${encodeURIComponent(taskId)}/subtasks`, { titlu });
-        // Refresh subtasks cache
         const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
         _taskSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
-        // Re-render the subtasks inline
-        const parentItem = document.querySelector(`[data-task-id-subtasks="${taskId}"]`);
-        if (parentItem) {
-            const subtaskList = parentItem.querySelector('.todo-subtasks-list');
-            if (subtaskList) {
-                const allSubs = _taskSubtasksCache[taskId] || [];
-                subtaskList.innerHTML = allSubs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
-                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
-                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
-                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                        </label>
-                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-                    </div>`).join('');
-            }
-        }
+        const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+        if (card) _tcardRerenderCard(card);
         // Hide the add wrapper
         const wrapper = document.getElementById(`inline-subtask-add-${taskId}`);
         if (wrapper) wrapper.style.display = 'none';
@@ -1938,25 +1924,10 @@ async function addSubtaskInlineGt(taskId, titlu) {
     if (!titlu) return;
     try {
         await apiPost(`/tasks/${encodeURIComponent(taskId)}/subtasks`, { titlu });
-        // Refresh subtasks cache
         const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
         _taskSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
-        // Re-render the subtasks inline
-        const parentItem = document.querySelector(`[data-task-id-subtasks="${taskId}"]`);
-        if (parentItem) {
-            const subtaskList = parentItem.querySelector('.todo-subtasks-list');
-            if (subtaskList) {
-                const allSubs = _taskSubtasksCache[taskId] || [];
-                subtaskList.innerHTML = allSubs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:0.82rem;color:var(--text-dim);">
-                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
-                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
-                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                        </label>
-                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-                    </div>`).join('');
-            }
-        }
+        const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+        if (card) _tcardRerenderCard(card);
         // Hide the add wrapper
         const wrapper = document.getElementById(`inline-subtask-add-gt-${taskId}`);
         if (wrapper) wrapper.style.display = 'none';
