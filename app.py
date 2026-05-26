@@ -4896,6 +4896,24 @@ def pv_pif_generate(project_id):
     )
 
 
+# ============ ERROR HANDLERS ============
+
+@app.errorhandler(500)
+def handle_500(e):
+    """Return JSON for API routes, HTML for everything else."""
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal server error'}), 500
+    return render_template('500.html'), 500
+
+
+@app.errorhandler(404)
+def handle_404(e):
+    """Return JSON for API routes, HTML for everything else."""
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found'}), 404
+    return render_template('404.html'), 404
+
+
 if __name__ == '__main__':
     init_db()
     init_default_templates()
