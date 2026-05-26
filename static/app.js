@@ -1268,6 +1268,71 @@ let draggedTaskId = null;
 // Cached subtasks: { [taskId]: [subtask, ...] }
 let _taskSubtasksCache = {};
 
+// ─── Task card (tcard) — DOM glue for the unified renderer in core.js ───
+// Persistent expand state survives re-renders triggered by inline saves.
+const _expandedTaskIds = new Set();
+
+function _tcardToggleExpand(taskId, cardEl) {
+    if (_expandedTaskIds.has(taskId)) {
+        _expandedTaskIds.delete(taskId);
+        // Collapse via re-render of this single card.
+        _tcardRerenderCard(cardEl);
+    } else {
+        _expandedTaskIds.add(taskId);
+        const kind = cardEl.dataset.tcardKind || 'global';
+        _tcardEnsureSubtasks(taskId, kind).then(() => _tcardRerenderCard(cardEl));
+    }
+}
+
+function _tcardRerenderCard(cardEl) {
+    const taskId = cardEl.dataset.taskId;
+    const kind = cardEl.dataset.tcardKind || 'global';
+    let task;
+    try { task = JSON.parse(cardEl.dataset.taskJson || '{}'); }
+    catch (e) { return; }
+    task._tcard_expanded = _expandedTaskIds.has(taskId);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderTaskCard(task, { kind, projectId: kind === 'project' ? currentProjectId : null });
+    const fresh = tmp.firstElementChild;
+    if (fresh) {
+        cardEl.replaceWith(fresh);
+        if (window.lucide) try { window.lucide.createIcons(); } catch {}
+    }
+}
+
+async function _tcardEnsureSubtasks(taskId, kind) {
+    if (_taskSubtasksCache[taskId] !== undefined && _taskSubtasksCache[taskId].length >= 0) return;
+    try {
+        const subs = await apiGet(`/tasks/${encodeURIComponent(taskId)}/subtasks`);
+        _taskSubtasksCache[taskId] = Array.isArray(subs) ? subs : [];
+    } catch (e) {
+        _taskSubtasksCache[taskId] = [];
+    }
+}
+
+function _tcardToggleMenu(taskId, btn) {
+    const card = btn.closest('.tcard');
+    if (!card) return;
+    const wasOpen = card.classList.contains('tcard--menu-open');
+    _tcardCloseMenus();
+    if (!wasOpen) card.classList.add('tcard--menu-open');
+}
+
+function _tcardCloseMenus() {
+    document.querySelectorAll('.tcard.tcard--menu-open').forEach(c => c.classList.remove('tcard--menu-open'));
+}
+
+function _tcardOpenManualTime(kind, taskId) {
+    if (typeof openManualTimeForTask === 'function') openManualTimeForTask(kind, taskId);
+    else if (typeof openManualTimeModal === 'function') openManualTimeModal(kind === 'project' ? 'task' : kind, taskId);
+    else showToast('Intrare manuală indisponibilă', true);
+}
+
+// Outside-click closes any open tcard menu.
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.tcard__menu, .tcard__menu-btn')) _tcardCloseMenus();
+});
+
 async function loadTodos(projectId) {
     try {
         const tasks = await apiGet(`/proiecte/${projectId}/tasks`);
@@ -1304,101 +1369,31 @@ async function loadTodos(projectId) {
 
 function renderTodos(tasks) {
     const container = document.getElementById('todo-list');
-
     if (!tasks.length) {
         container.innerHTML = '<p style="color: var(--text2); font-size:0.85rem;">Nu există task-uri.</p>';
         return;
     }
-
-    // Split active vs done — Ion wants them grouped, not mixed.
     const active = tasks.filter(t => t.status !== 'done');
     const done = tasks.filter(t => t.status === 'done');
-    // Done sorted by completion (or update) DESC so the latest finalised one floats on top.
     done.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''));
 
-    const _metaBadge = (icon, text) => `<span style="font-size:0.72rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
-    const _recLabels = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
-
-    // Render subtasks inline under a parent task (visible without clicking expand)
-    // Also renders the inline add subtask button if task has subtasks
-    const renderSubtasksInline = (taskId) => {
-        const subs = _taskSubtasksCache[taskId] || [];
-        let html = '';
-        if (subs.length) {
-            html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:0.82rem;color:var(--text-dim);">
-                    <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
-                        <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
-                            onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                    </label>
-                    <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-                </div>`).join('')}</div>`;
-        }
-        // Add inline subtask add button
-        html += `<div class="inline-subtask-wrapper" id="inline-subtask-add-${taskId}" style="display:none;">
-            <input type="text" class="inline-subtask-input" placeholder="Nume subtask..."
-                onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtaskInline('${taskId}',this.value);this.value='';}">
-            <button class="inline-subtask-add-btn" onclick="addSubtaskInline('${taskId}',this.previousElementSibling.value);this.previousElementSibling.value='';" title="Adaugă">+</button>
-        </div>`;
-        return html;
-    };
-
     const renderOne = (task) => {
-        const prioRaw = task.prioritate || 'Normal';
-        const prioCap = prioRaw.charAt(0).toUpperCase() + prioRaw.slice(1).toLowerCase();
-        let meta = '';
-        if (task.data_scadenta) meta += _metaBadge('calendar', task.data_scadenta);
-        // Subtask count badge becomes clickable to add subtask inline
-        if (task.subtask_total) meta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAdd('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="list-checks"></i> ${task.subtask_done || 0}/${task.subtask_total}</span>`;
-        else meta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAdd('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="plus"></i></span>`;
-        // Timer play/pause button
-        if (task.timp_secunde) {
-            const timerRunning = task._timer_running;
-            meta += `<button class="timer-btn ${timerRunning ? 'running' : ''}" onclick="event.stopPropagation();toggleTaskTimerInline('${task.id}',${timerRunning ? 'true' : 'false'},this)" title="${timerRunning ? 'Oprește timer' : 'Pornește timer'}">
-                <span class="timer-icon">${timerRunning ? '⏸' : '▶'}</span>
-                <span>${formatTimerDuration(task.timp_secunde)}</span>
-            </button>`;
-        } else {
-            meta += `<button class="timer-btn" onclick="event.stopPropagation();toggleTaskTimerInline('${task.id}',false,this)" title="Pornește timer">
-                <span class="timer-icon">▶</span>
-            </button>`;
-        }
-        if (task.recurenta) meta += _metaBadge('repeat', _recLabels[task.recurenta] || task.recurenta);
-        if (task.descriere && String(task.descriere).trim()) meta += _metaBadge('align-left', '');
-        const subtaskHtml = renderSubtasksInline(task.id);
-        return `
-        <div class="todo-item priority-${prioRaw.toLowerCase()} ${task.status === 'done' ? 'completed' : ''}"
-            data-task-id-subtasks="${task.id}">
-            <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''}
-                onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleTodo('${task.id}', this.checked)">
-            <div class="todo-content" style="flex:1;min-width:0;">
-                <div class="todo-title">${escapeHtml(task.titlu)}</div>
-                ${meta ? `<div class="todo-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;align-items:center;">${meta}</div>` : ''}
-                ${subtaskHtml}
-            </div>
-            <button class="todo-edit-btn" onclick="event.stopPropagation();openTaskEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" title="Editează task">✎</button>
-            <span class="todo-priority cyclable ${prioRaw.toLowerCase()}" onclick="event.stopPropagation(); cycleTodoPriority('${task.id}', '${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
-            <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleTodoStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${typeof getStatusLabel === 'function' ? getStatusLabel(task.status) : task.status}</span>
-            <button class="btn btn-icon btn-ghost btn-ghost-danger todo-delete" onclick="event.stopPropagation(); deleteTodo('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
-        </div>`;
+        task._tcard_expanded = _expandedTaskIds.has(task.id);
+        return renderTaskCard(task, { kind: 'project', projectId: currentProjectId });
     };
 
-    let html = active.map(renderOne).join('');
+    let html = '<div class="tcard-list">' + active.map(renderOne).join('') + '</div>';
     if (done.length > 0) {
-        // Finalizate sunt colapsate by default; click pe divider expand/collapse.
-        // Starea persistă în localStorage per proiect.
         const collapsedKey = `pif:todo-done-collapsed:${currentProjectId}`;
-        const isCollapsed = localStorage.getItem(collapsedKey) !== '0';  // default = colapsate
-        html += `<div class="todo-divider todo-divider-clickable" onclick="toggleTodoDoneCollapse('${currentProjectId}')" data-collapsed="${isCollapsed ? '1' : '0'}">
-            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}" style="width:14px;height:14px;"></i>
+        const isCollapsed = localStorage.getItem(collapsedKey) !== '0';
+        html += `<div class="tcard-done-sep" onclick="toggleTodoDoneCollapse('${currentProjectId}')" data-collapsed="${isCollapsed ? '1' : '0'}">
+            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}"></i>
             <span>Finalizate (${done.length})</span>
         </div>`;
-        html += `<div class="todo-done-group" style="${isCollapsed ? 'display:none;' : ''}">${done.map(renderOne).join('')}</div>`;
+        html += `<div class="tcard-done-group${isCollapsed ? ' collapsed' : ''}"><div class="tcard-list">${done.map(renderOne).join('')}</div></div>`;
     }
     container.innerHTML = html;
     if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
-
-    // Add drag-and-drop event listeners
     initTaskDragDrop();
 }
 
@@ -1436,8 +1431,8 @@ function toggleTodoDoneCollapse(projectId) {
     const key = `pif:todo-done-collapsed:${projectId}`;
     const isCollapsed = localStorage.getItem(key) !== '0';
     localStorage.setItem(key, isCollapsed ? '0' : '1');
-    const divider = document.querySelector('.todo-divider-clickable');
-    const group = document.querySelector('.todo-done-group');
+    const divider = document.querySelector('#todo-list .tcard-done-sep');
+    const group = document.querySelector('#todo-list .tcard-done-group');
     if (divider && group) {
         divider.setAttribute('data-collapsed', isCollapsed ? '0' : '1');
         const icon = divider.querySelector('[data-lucide]');
@@ -1445,15 +1440,16 @@ function toggleTodoDoneCollapse(projectId) {
             icon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-right');
             if (window.lucide) try { window.lucide.createIcons(); } catch {}
         }
-        group.style.display = isCollapsed ? 'block' : 'none';
+        group.classList.toggle('collapsed', !isCollapsed);
     }
 }
 
 function initTaskDragDrop() {
     const container = document.getElementById('todo-list');
-    const items = container.querySelectorAll('.todo-item');
-
+    if (!container) return;
+    const items = container.querySelectorAll('.tcard[data-task-id]');
     items.forEach(item => {
+        item.setAttribute('draggable', 'true');
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('dragend', handleDragEnd);
         item.addEventListener('dragover', handleDragOver);
@@ -3600,80 +3596,18 @@ function renderGlobalTasks(tasks) {
     done.sort((a, b) => (b.data_finalizare || b.updated_at || b.created_at || '').localeCompare(a.data_finalizare || a.updated_at || a.created_at || ''));
 
     const renderOne = (task) => {
-        const isOverdue = task.data_scadenta && task.data_scadenta < today && task.status !== 'done';
-        const isDueToday = task.data_scadenta === today && task.status !== 'done';
-        const classes = ['gt-task-card'];
-        if (task.status === 'done') classes.push('completed');
-        if (isOverdue) classes.push('overdue');
-        else if (isDueToday) classes.push('due-today');
-
-        const _gtBadge = (icon, text) => `<span style="font-size:0.68rem; color:var(--text2);display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${icon}"></i>${text ? ' ' + escapeHtml(String(text)) : ''}</span>`;
-        const _recLbl = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
-        const renderSubtasksInline = (taskId) => {
-            const subs = _taskSubtasksCache[taskId] || [];
-            let html = '';
-            if (subs.length) {
-                html = `<div class="todo-subtasks-list" style="margin-top:4px;margin-left:24px;">${subs.map(s => `
-                    <div class="todo-subtask-item ${s.done ? 'done' : ''}" style="display:flex;align-items:center;gap:6px;padding:6px 0;font-size:0.82rem;color:var(--text-dim);">
-                        <label class="subtask-touch-target" style="margin:0;padding:4px;border-radius:4px;">
-                            <input type="checkbox" class="todo-checkbox" style="width:18px;height:18px;margin:0;cursor:pointer;" ${s.done ? 'checked' : ''}
-                                onchange="event.stopPropagation(); toggleSubtaskInline('${s.id}', this.checked, '${taskId}')">
-                        </label>
-                        <span style="${s.done ? 'text-decoration:line-through;opacity:0.6;' : ''}">${escapeHtml(s.titlu)}</span>
-                    </div>`).join('')}</div>`;
-            }
-            // Add inline subtask add button
-            html += `<div class="inline-subtask-wrapper" id="inline-subtask-add-gt-${taskId}" style="display:none;">
-                <input type="text" class="inline-subtask-input" placeholder="Nume subtask..."
-                    onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtaskInlineGt('${taskId}',this.value);this.value='';}">
-                <button class="inline-subtask-add-btn" onclick="addSubtaskInlineGt('${taskId}',this.previousElementSibling.value);this.previousElementSibling.value='';" title="Adaugă">+</button>
-            </div>`;
-            return html;
-        };
-        let gtMeta = '';
-        if (task.categorie && task.categorie !== 'General') gtMeta += `<span style="font-size:0.68rem; padding:1px 7px; border-radius:20px; background:var(--bg3); color:var(--text2); font-family:'JetBrains Mono',monospace;">${escapeHtml(task.categorie)}</span>`;
-        if (task.data_scadenta) gtMeta += _gtBadge('calendar', task.data_scadenta);
-        // Subtask count badge becomes clickable to add subtask inline
-        if (task.subtask_total) gtMeta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAddGt('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="list-checks"></i> ${task.subtask_done || 0}/${task.subtask_total}</span>`;
-        else gtMeta += `<span class="timer-btn" onclick="event.stopPropagation();toggleInlineSubtaskAddGt('${task.id}')" style="cursor:pointer;" title="Adaugă subtask"><i data-lucide="plus"></i></span>`;
-        // Timer play/pause button for global tasks
-        if (task.timp_secunde) {
-            const timerRunning = task._timer_running;
-            gtMeta += `<button class="timer-btn ${timerRunning ? 'running' : ''}" onclick="event.stopPropagation();toggleGtTimerInline('${task.id}',${timerRunning ? 'true' : 'false'},this)" title="${timerRunning ? 'Oprește timer' : 'Pornește timer'}">
-                <span class="timer-icon">${timerRunning ? '⏸' : '▶'}</span>
-                <span>${formatTimerDuration(task.timp_secunde)}</span>
-            </button>`;
-        } else {
-            gtMeta += `<button class="timer-btn" onclick="event.stopPropagation();toggleGtTimerInline('${task.id}',false,this)" title="Pornește timer">
-                <span class="timer-icon">▶</span>
-            </button>`;
-        }
-        if (task.recurenta) gtMeta += _gtBadge('repeat', _recLbl[task.recurenta] || task.recurenta);
-        return `
-            <div class="${classes.join(' ')}">
-                <input type="checkbox" class="todo-checkbox" ${task.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation(); toggleGtTask('${task.id}', this.checked)">
-                <div class="todo-content">
-                    <div class="gt-task-title">${escapeHtml(task.titlu)}</div>
-                    ${task.descriere ? `<div class="todo-meta">${escapeHtml(task.descriere)}</div>` : ''}
-                    ${gtMeta ? `<div class="todo-meta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:3px;align-items:center;">${gtMeta}</div>` : ''}
-                    ${renderSubtasksInline(task.id)}
-                </div>
-                <button class="todo-edit-btn" onclick="event.stopPropagation();editGtTask('${task.id}')" title="Editează task">✎</button>
-                <span class="todo-priority cyclable ${task.prioritate || 'Normal'}" onclick="event.stopPropagation(); cycleGtPriority('${task.id}', '${task.prioritate || 'Normal'}')" title="Click pentru ciclu prioritate">${task.prioritate || 'Normal'}</span>
-                <span class="todo-status cyclable ${task.status}" onclick="event.stopPropagation(); cycleGtStatus('${task.id}', '${task.status}')" title="Click pentru ciclu status">${getStatusLabel(task.status)}</span>
-                <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="event.stopPropagation(); deleteGtTask('${task.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
-            </div>
-        `;
+        task._tcard_expanded = _expandedTaskIds.has(task.id);
+        return renderTaskCard(task, { kind: 'global' });
     };
 
-    let html = active.map(renderOne).join('');
+    let html = '<div class="tcard-list">' + active.map(renderOne).join('') + '</div>';
     if (done.length > 0) {
         const isCollapsed = localStorage.getItem('pif:gt-done-collapsed') !== '0';
-        html += `<div class="todo-divider todo-divider-clickable" onclick="toggleGtDoneCollapse()" data-collapsed="${isCollapsed ? '1' : '0'}">
-            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}" style="width:14px;height:14px;"></i>
+        html += `<div class="tcard-done-sep" onclick="toggleGtDoneCollapse()" data-collapsed="${isCollapsed ? '1' : '0'}">
+            <i data-lucide="chevron-${isCollapsed ? 'right' : 'down'}"></i>
             <span>Finalizate (${done.length})</span>
         </div>`;
-        html += `<div class="gt-done-group" style="${isCollapsed ? 'display:none;' : ''}">${done.map(renderOne).join('')}</div>`;
+        html += `<div class="tcard-done-group${isCollapsed ? ' collapsed' : ''}"><div class="tcard-list">${done.map(renderOne).join('')}</div></div>`;
     }
     container.innerHTML = html;
     if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
@@ -3683,8 +3617,8 @@ function toggleGtDoneCollapse() {
     const key = 'pif:gt-done-collapsed';
     const isCollapsed = localStorage.getItem(key) !== '0';
     localStorage.setItem(key, isCollapsed ? '0' : '1');
-    const divider = document.querySelector('#gt-task-list .todo-divider-clickable');
-    const group = document.querySelector('#gt-task-list .gt-done-group');
+    const divider = document.querySelector('#gt-task-list .tcard-done-sep');
+    const group = document.querySelector('#gt-task-list .tcard-done-group');
     if (divider && group) {
         divider.setAttribute('data-collapsed', isCollapsed ? '0' : '1');
         const icon = divider.querySelector('[data-lucide]');
@@ -3692,7 +3626,7 @@ function toggleGtDoneCollapse() {
             icon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-right');
             if (window.lucide) try { window.lucide.createIcons(); } catch {}
         }
-        group.style.display = isCollapsed ? 'block' : 'none';
+        group.classList.toggle('collapsed', !isCollapsed);
     }
 }
 

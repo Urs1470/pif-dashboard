@@ -343,3 +343,147 @@ const _GS_META = {
 };
 const _GS_ORDER = ['proiect', 'observatie', 'task', 'global_task', 'checklist',
                    'jurnal', 'echipament', 'client', 'parametru', 'fault_code', 'obsidian'];
+
+// ====================================================================
+// TASK CARD — unified renderer (string-returning) for project tasks
+// AND global tasks. Both shells call this with a ctx that switches
+// the action handler names. DOM glue (expand toggle, menu open/close,
+// outside-click) lives in the calling shell (app.js / mobile.js).
+// ====================================================================
+
+// Deadline → visual class. Done tasks never highlight.
+function _tcardDeadlineState(dateStr, isDone) {
+    if (!dateStr || isDone) return '';
+    const today = new Date().toISOString().split('T')[0];
+    if (dateStr < today) return 'overdue';
+    if (dateStr === today) return 'today';
+    const soon = new Date();
+    soon.setDate(soon.getDate() + 7);
+    if (dateStr <= soon.toISOString().split('T')[0]) return 'soon';
+    return '';
+}
+
+// Pretty recurrence label.
+const _TCARD_REC_LBL = { zilnic: 'Zilnic', saptamanal: 'Săptămânal', lunar: 'Lunar' };
+
+// Chip row (between title and actions).
+function _tcardChips(task, ctx) {
+    const chips = [];
+    if (ctx.kind === 'global' && task.categorie && task.categorie !== 'General') {
+        chips.push(`<span class="tcard__chip tcard__chip--cat">${escapeHtml(task.categorie)}</span>`);
+    }
+    if (ctx.kind === 'project' && task.proiect_nume) {
+        chips.push(`<span class="tcard__chip tcard__chip--cat">${escapeHtml(task.proiect_nume)}</span>`);
+    }
+    if (task.data_scadenta) {
+        const dstate = _tcardDeadlineState(task.data_scadenta, task.status === 'done');
+        chips.push(`<span class="tcard__chip tcard__chip--deadline${dstate ? ' ' + dstate : ''}"><i data-lucide="calendar"></i>${escapeHtml(task.data_scadenta)}</span>`);
+    }
+    const tot = task.subtask_total || 0;
+    const done = task.subtask_done || 0;
+    if (tot > 0) {
+        const complete = (done === tot) ? ' complete' : '';
+        const handler = ctx.kind === 'global' ? 'toggleInlineSubtaskAddGt' : 'toggleInlineSubtaskAdd';
+        chips.push(`<span class="tcard__chip tcard__chip--subs${complete}" onclick="event.stopPropagation();${handler}('${task.id}')" title="Adaugă subtask"><i data-lucide="list-checks"></i>${done}/${tot}</span>`);
+    }
+    if (task.recurenta) {
+        const lbl = _TCARD_REC_LBL[task.recurenta] || task.recurenta;
+        chips.push(`<span class="tcard__chip tcard__chip--rec"><i data-lucide="repeat"></i>${escapeHtml(lbl)}</span>`);
+    }
+    if (task.descriere && String(task.descriere).trim() && !task._tcard_expanded) {
+        chips.push(`<span class="tcard__chip tcard__chip--desc" title="Are descriere"><i data-lucide="align-left"></i></span>`);
+    }
+    return chips.join('');
+}
+
+// Timer button — green when running. formatTimerDuration is shell-defined
+// but falls back to formatTime from core.
+function _tcardTimer(task, ctx) {
+    const handler = ctx.kind === 'global' ? 'toggleGtTimerInline' : 'toggleTaskTimerInline';
+    const running = !!task._timer_running;
+    const total = task.timp_secunde || 0;
+    const cls = running ? 'tcard__timer tcard__timer--running' : 'tcard__timer';
+    const icon = running ? '⏸' : '▶';
+    const fmt = (typeof formatTimerDuration === 'function') ? formatTimerDuration : formatTime;
+    const label = total > 0 ? fmt(total) : '';
+    return `<button type="button" class="${cls}" onclick="event.stopPropagation();${handler}('${task.id}',${running},this)" title="${running ? 'Oprește timer' : 'Pornește timer'}"><span class="tcard__timer-icon">${icon}</span>${label ? `<span>${label}</span>` : ''}</button>`;
+}
+
+// Expanded body — descriere (markdown) + subtaskuri inline. Subtasks come
+// from the shell's _taskSubtasksCache (same dict used by both shells).
+function _tcardBody(task, ctx) {
+    const subs = (typeof _taskSubtasksCache !== 'undefined' && _taskSubtasksCache[task.id]) || [];
+    const subsDone = subs.filter(s => s.done).length;
+    const addSubName = ctx.kind === 'global' ? 'addSubtaskInlineGt' : 'addSubtaskInline';
+    const subsList = subs.map(s => `
+        <div class="tcard__subtask ${s.done ? 'done' : ''}">
+            <input type="checkbox" ${s.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();toggleSubtaskInline('${s.id}',this.checked,'${task.id}')">
+            <span class="tcard__subtask-title">${escapeHtml(s.titlu || '')}</span>
+            <button type="button" class="tcard__subtask-del" onclick="event.stopPropagation();deleteSubtask('${s.id}')" title="Șterge subtask"><i data-lucide="x"></i></button>
+        </div>`).join('');
+    const desc = (task.descriere || '').trim();
+    const descHtml = desc
+        ? `<div class="tcard__desc">${(typeof renderMarkdown === 'function') ? renderMarkdown(desc) : escapeHtml(desc).replace(/\n/g, '<br>')}</div>`
+        : '';
+    return `<div class="tcard__body" onclick="event.stopPropagation()">
+        ${descHtml}
+        <div class="tcard__subtasks">
+            <div class="tcard__subtasks-head"><i data-lucide="list-checks"></i> Subtaskuri (${subsDone}/${subs.length})</div>
+            ${subsList}
+            <div class="tcard__subtask-add">
+                <input type="text" placeholder="Subtask nou — Enter pentru a adăuga" aria-label="Subtask nou"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();${addSubName}('${task.id}',this.value);this.value='';}">
+                <button type="button" onclick="${addSubName}('${task.id}',this.previousElementSibling.value);this.previousElementSibling.value='';"><i data-lucide="plus"></i></button>
+            </div>
+        </div>
+    </div>`;
+}
+
+// Main renderer. ctx = { kind: 'project'|'global', projectId? }.
+// Shell extends each task with _tcard_expanded / _timer_running before calling.
+function renderTaskCard(task, ctx) {
+    ctx = ctx || { kind: 'global' };
+    const kind = ctx.kind || 'global';
+    const isDone = task.status === 'done';
+    const prio = String(task.prioritate || 'Normal').toLowerCase();
+    const prioCap = prio.charAt(0).toUpperCase() + prio.slice(1);
+
+    const cycPrio    = kind === 'global' ? 'cycleGtPriority'  : 'cycleTodoPriority';
+    const cycStatus  = kind === 'global' ? 'cycleGtStatus'    : 'cycleTodoStatus';
+    const toggleSt   = kind === 'global' ? 'toggleGtTask'     : 'toggleTodo';
+    const deleteName = kind === 'global' ? 'deleteGtTask'     : 'deleteTodo';
+
+    const cls = ['tcard', `tcard--prio-${prio}`];
+    if (isDone) cls.push('tcard--done');
+    if (task._tcard_expanded) cls.push('tcard--expanded');
+    if (task._timer_running) cls.push('tcard--running');
+
+    const statusLabel = (typeof getStatusLabel === 'function') ? getStatusLabel(task.status) : task.status;
+    const statusCls = `tcard__status tcard__status--${task.status}`;
+    const prioCls = `tcard__pill tcard__pill--${prio}`;
+    const taskJsonAttr = escapeHtml(JSON.stringify(task));
+
+    const body = task._tcard_expanded ? _tcardBody(task, ctx) : '';
+
+    return `<div class="${cls.join(' ')}" data-task-id="${task.id}" data-tcard-kind="${kind}" onclick="_tcardToggleExpand('${task.id}', this)">
+        <div class="tcard__stripe"></div>
+        <input type="checkbox" class="tcard__check" ${isDone ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();${toggleSt}('${task.id}',this.checked)" title="Marchează finalizat">
+        <div class="tcard__main">
+            <div class="tcard__title">${escapeHtml(task.titlu || '')}</div>
+            <div class="tcard__chips">${_tcardChips(task, ctx)}</div>
+        </div>
+        <div class="tcard__actions">
+            <span class="${prioCls}" onclick="event.stopPropagation();${cycPrio}('${task.id}','${prioCap}')" title="Click pentru ciclu prioritate">${prioCap}</span>
+            <span class="${statusCls}" onclick="event.stopPropagation();${cycStatus}('${task.id}','${task.status}')" title="Click pentru ciclu status">${statusLabel}</span>
+            ${_tcardTimer(task, ctx)}
+            <button type="button" class="tcard__menu-btn" onclick="event.stopPropagation();_tcardToggleMenu('${task.id}', this)" title="Mai multe acțiuni" aria-label="Mai multe acțiuni">⋯</button>
+        </div>
+        <div class="tcard__menu" onclick="event.stopPropagation()">
+            <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();openTaskEditModal(JSON.parse(this.closest('.tcard').dataset.taskJson))" data-act="edit"><i data-lucide="edit-2"></i> Editează detalii</button>
+            <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();_tcardOpenManualTime('${kind}','${task.id}')"><i data-lucide="clock"></i> Intrare manuală timp</button>
+            <div class="tcard__menu-divider"></div>
+            <button type="button" class="tcard__menu-item danger" onclick="event.stopPropagation();_tcardCloseMenus();${deleteName}('${task.id}')"><i data-lucide="trash-2"></i> Șterge task</button>
+        </div>
+        ${body}
+    </div>`.replace('data-tcard-kind="' + kind + '"', 'data-tcard-kind="' + kind + '" data-task-json="' + taskJsonAttr + '"');
+}

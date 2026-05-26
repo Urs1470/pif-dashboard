@@ -4456,3 +4456,435 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* ====================================================================
+   TASK CARD (.tcard) — unified design for project tasks AND global tasks
+   Layout: compact by default, click body to expand inline (no modal).
+   The same markup is rendered by core.js renderTaskCard() with a ctx
+   ({kind, projectId?}) that picks the right backend endpoints.
+   ==================================================================== */
+.tcard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tcard {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4px auto 1fr auto;
+    gap: 10px 12px;
+    align-items: center;
+    padding: 10px 12px 10px 0;
+    background: var(--bg-elev1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+.tcard:hover {
+    border-color: var(--accent-ring);
+    background: var(--bg-elev2);
+}
+.tcard:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Left stripe — colour from priority (or status when done). */
+.tcard__stripe {
+    grid-row: 1 / -1;
+    grid-column: 1;
+    width: 4px;
+    align-self: stretch;
+    border-radius: 10px 0 0 10px;
+    background: var(--accent-ring);
+}
+.tcard--prio-urgent .tcard__stripe { background: var(--danger); }
+.tcard--prio-normal .tcard__stripe { background: var(--accent); }
+.tcard--prio-minor  .tcard__stripe { background: var(--text-dim); }
+.tcard--done .tcard__stripe { background: var(--success); opacity: 0.55; }
+
+/* Status checkbox — round, clickable, prominent (no label clicks elsewhere). */
+.tcard__check {
+    grid-column: 2;
+    width: 22px; height: 22px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Title + chips column (the bulk of the card). */
+.tcard__main {
+    grid-column: 3;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.tcard__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tcard--done .tcard__title {
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-dim);
+    text-decoration-thickness: 1px;
+}
+
+.tcard__chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--text2);
+    line-height: 1;
+}
+.tcard__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--bg-elev2);
+    color: var(--text2);
+    line-height: 1;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.tcard__chip .lucide { width: 11px; height: 11px; }
+.tcard__chip--cat {
+    background: var(--bg3, var(--bg-elev3));
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+}
+.tcard__chip--subs {
+    cursor: pointer;
+    background: var(--accent-soft);
+    color: var(--accent);
+    transition: filter 0.12s;
+}
+.tcard__chip--subs:hover { filter: brightness(1.12); }
+.tcard__chip--subs.complete { background: var(--success-soft); color: var(--success); }
+
+.tcard__chip--deadline { background: var(--bg-elev2); color: var(--text2); }
+.tcard__chip--deadline.overdue { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+.tcard__chip--deadline.today { background: var(--warning-soft); color: var(--warning); }
+.tcard__chip--deadline.soon { background: var(--bg-elev3); color: var(--text); }
+
+.tcard__chip--rec { background: var(--violet-soft); color: var(--violet); }
+.tcard__chip--desc { background: var(--bg-elev2); color: var(--text-dim); }
+
+/* Right-side actions column (compact). */
+.tcard__actions {
+    grid-column: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.tcard__pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.12s;
+    line-height: 1;
+}
+.tcard__pill:hover { filter: brightness(1.12); }
+.tcard__pill--urgent { background: var(--danger-soft); color: var(--danger); }
+.tcard__pill--normal { background: var(--bg-elev3); color: var(--text2); }
+.tcard__pill--minor  { background: var(--bg-elev2); color: var(--text-dim); }
+
+.tcard__status {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.12s;
+    line-height: 1;
+}
+.tcard__status:hover { filter: brightness(1.12); }
+.tcard__status--to_do { background: var(--bg-elev3); color: var(--text-dim); }
+.tcard__status--in_lucru { background: var(--accent-soft); color: var(--accent); }
+.tcard__status--done { background: var(--success-soft); color: var(--success); }
+
+/* Timer button — small pill with play/pause + total time. Running = green. */
+.tcard__timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--bg-elev2);
+    color: var(--text2);
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, filter 0.12s;
+}
+.tcard__timer:hover { filter: brightness(1.12); border-color: var(--accent-ring); }
+.tcard__timer--running { background: var(--success-soft); color: var(--success); border-color: var(--success); }
+.tcard__timer-icon { font-size: 0.9em; line-height: 1; }
+
+/* ⋯ menu trigger. */
+.tcard__menu-btn {
+    width: 26px; height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.12s, background 0.12s;
+}
+.tcard__menu-btn:hover { color: var(--text); background: var(--bg-elev3); }
+
+/* Popup menu (positioned relative to the action area). */
+.tcard__menu {
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 8px;
+    z-index: 50;
+    min-width: 200px;
+    padding: 4px;
+    background: var(--bg-elev2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    display: none;
+}
+.tcard.tcard--menu-open .tcard__menu { display: block; }
+.tcard__menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.82rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+}
+.tcard__menu-item:hover { background: var(--bg-elev3); }
+.tcard__menu-item.danger:hover { background: var(--danger-soft); color: var(--danger); }
+.tcard__menu-item .lucide { width: 14px; height: 14px; flex-shrink: 0; }
+.tcard__menu-divider { height: 1px; background: var(--border); margin: 4px 2px; }
+
+/* ─── EXPANDED state ─────────────────────────────────────────────── */
+.tcard__body {
+    grid-column: 2 / -1;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px 4px 4px 0;
+}
+.tcard.tcard--expanded { background: var(--bg-elev2); border-color: var(--accent-ring); }
+.tcard.tcard--expanded .tcard__body { display: flex; }
+.tcard.tcard--expanded .tcard__title { white-space: normal; }
+
+.tcard__desc {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.55;
+    padding: 8px 10px;
+    background: var(--bg-elev1);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+.tcard__desc:empty { display: none; }
+
+.tcard__subtasks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.tcard__subtasks-head {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tcard__subtask {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: 6px;
+    transition: background 0.1s;
+}
+.tcard__subtask:hover { background: var(--bg-elev1); }
+.tcard__subtask input[type="checkbox"] {
+    width: 16px; height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+.tcard__subtask-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+.tcard__subtask.done .tcard__subtask-title {
+    text-decoration: line-through;
+    color: var(--text-dim);
+}
+.tcard__subtask-del {
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s, color 0.12s, background 0.12s;
+}
+.tcard__subtask:hover .tcard__subtask-del { opacity: 1; }
+.tcard__subtask-del:hover { color: var(--danger); background: var(--danger-soft); }
+.tcard__subtask-del .lucide { width: 13px; height: 13px; }
+
+.tcard__subtask-add {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+.tcard__subtask-add input {
+    flex: 1;
+    background: var(--bg-elev1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.12s;
+}
+.tcard__subtask-add input:focus { border-color: var(--accent); }
+.tcard__subtask-add button {
+    padding: 0 12px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.12s;
+}
+.tcard__subtask-add button:hover { filter: brightness(1.08); }
+
+.tcard__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+}
+
+/* Done group separator — clickable to collapse/expand. */
+.tcard-done-sep {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    margin: 8px 0 4px 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    transition: background 0.12s, color 0.12s;
+}
+.tcard-done-sep:hover { background: var(--bg-elev2); color: var(--text); }
+.tcard-done-sep .lucide { width: 14px; height: 14px; }
+.tcard-done-group { display: flex; flex-direction: column; gap: 8px; }
+.tcard-done-group.collapsed { display: none; }
+
+/* Toolbar at top of list — filters + sort + "+ Task nou" inline form. */
+.tcard-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.tcard-bar__new {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    gap: 6px;
+}
+.tcard-bar__new input {
+    flex: 1;
+    background: var(--bg-elev1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+}
+.tcard-bar__new input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ─── Mobile / touch tweaks ──────────────────────────────────────── */
+@media (max-width: 640px) {
+    .tcard {
+        grid-template-columns: 4px auto 1fr;
+        padding: 12px 12px 12px 0;
+    }
+    .tcard__actions {
+        grid-column: 2 / -1;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        padding-top: 4px;
+    }
+    .tcard__check { width: 26px; height: 26px; }
+    .tcard__pill, .tcard__status, .tcard__timer { padding: 5px 10px; font-size: 0.74rem; }
+    .tcard__menu-btn { width: 32px; height: 32px; }
+    .tcard__subtask input[type="checkbox"] { width: 20px; height: 20px; }
+    .tcard__subtask-del { opacity: 1; width: 28px; height: 28px; }
+}
