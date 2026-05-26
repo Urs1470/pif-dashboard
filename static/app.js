@@ -1569,11 +1569,14 @@ async function toggleTodo(taskId, checked) {
 }
 
 async function deleteTodo(taskId) {
+    if (!confirm('Ștergi acest task? Acțiunea nu poate fi anulată.')) return;
     try {
         await apiDelete(`/tasks/${taskId}`);
         loadTodos(currentProjectId);
+        showToast('Task șters!');
     } catch (e) {
         console.error('Failed to delete todo:', e);
+        showToast('Eroare la ștergerea taskului', true);
     }
 }
 
@@ -1835,39 +1838,38 @@ let _inlineTimerIntervals = {};
 async function toggleTaskTimerInline(taskId, isRunning, btnElement) {
     try {
         if (isRunning) {
-            // Stop timer
             const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to stop timer');
             const data = await res.json();
-            // Update button
             if (btnElement) {
-                btnElement.classList.remove('running');
-                btnElement.querySelector('.timer-icon').textContent = '▶';
-                btnElement.querySelector('span:last-child').textContent = formatTimerDuration(data.total_secunde || 0);
+                btnElement.classList.remove('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
+                const labelSpan = btnElement.querySelector('span:last-child');
+                if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
             }
-            // Clear interval
             if (_inlineTimerIntervals[taskId]) {
                 clearInterval(_inlineTimerIntervals[taskId]);
                 delete _inlineTimerIntervals[taskId];
             }
             showToast('Cronometru oprit');
         } else {
-            // Start timer
             const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to start timer');
             const data = await res.json();
             const startTime = new Date(data.start_time).getTime();
-            // Update button
             if (btnElement) {
-                btnElement.classList.add('running');
-                btnElement.querySelector('.timer-icon').textContent = '⏸';
+                btnElement.classList.add('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
             }
-            // Start interval to update elapsed time
             _inlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const btn = document.querySelector(`[data-task-id-subtasks="${taskId}"] .timer-btn`);
-                if (btn) {
-                    btn.querySelector('span:last-child').textContent = formatTimerDuration(elapsed);
+                const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+                if (card) {
+                    const btn = card.querySelector('.tcard__timer');
+                    if (btn) {
+                        const labelSpan = btn.querySelector('span:last-child');
+                        if (labelSpan) labelSpan.textContent = formatTimerDuration(elapsed);
+                    }
                 }
             }, 1000);
             showToast('Cronometru pornit');
@@ -1927,42 +1929,39 @@ let _gtInlineTimerIntervals = {};
 async function toggleGtTimerInline(taskId, isRunning, btnElement) {
     try {
         if (isRunning) {
-            // Stop timer
             const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to stop timer');
             const data = await res.json();
-            // Update button
             if (btnElement) {
-                btnElement.classList.remove('running');
-                btnElement.querySelector('.timer-icon').textContent = '▶';
-                btnElement.querySelector('span:last-child').textContent = formatTimerDuration(data.total_secunde || 0);
+                btnElement.classList.remove('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
+                const labelSpan = btnElement.querySelector('span:last-child');
+                if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
             }
-            // Clear interval
             if (_gtInlineTimerIntervals[taskId]) {
                 clearInterval(_gtInlineTimerIntervals[taskId]);
                 delete _gtInlineTimerIntervals[taskId];
             }
             showToast('Cronometru oprit');
         } else {
-            // Start timer
             const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to start timer');
             const data = await res.json();
             const startTime = new Date(data.start_time).getTime();
-            // Update button
             if (btnElement) {
-                btnElement.classList.add('running');
-                btnElement.querySelector('.timer-icon').textContent = '⏸';
+                btnElement.classList.add('tcard__timer--running');
+                btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
             }
-            // Start interval to update elapsed time
             _gtInlineTimerIntervals[taskId] = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                // Find button by the timer-icon span content
-                document.querySelectorAll('.gt-task-card .timer-btn').forEach(btn => {
-                    if (btn.querySelector('.timer-icon').textContent === '⏸') {
-                        btn.querySelector('span:last-child').textContent = formatTimerDuration(elapsed);
+                const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+                if (card) {
+                    const btn = card.querySelector('.tcard__timer');
+                    if (btn) {
+                        const labelSpan = btn.querySelector('span:last-child');
+                        if (labelSpan) labelSpan.textContent = formatTimerDuration(elapsed);
                     }
-                });
+                }
             }, 1000);
             showToast('Cronometru pornit');
         }
@@ -3740,12 +3739,14 @@ function editGtTask(taskId) {
 }
 
 async function deleteGtTask(taskId) {
+    if (!confirm('Ștergi acest task global? Acțiunea nu poate fi anulată.')) return;
     try {
         await apiDelete(`/global-tasks/${taskId}`);
         loadGlobalTasks();
         showToast('Task șters!');
     } catch (e) {
         console.error('Failed to delete global task:', e);
+        showToast('Eroare la ștergerea taskului', true);
     }
 }
 
