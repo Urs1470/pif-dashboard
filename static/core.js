@@ -420,6 +420,7 @@ function _tcardBody(task, ctx) {
             <input type="checkbox" ${s.done ? 'checked' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();toggleSubtaskInline('${s.id}',this.checked,'${task.id}')">
             <span class="tcard__subtask-title">${escapeHtml(s.titlu || '')}</span>
             <button type="button" class="tcard__subtask-timer" onclick="event.stopPropagation();toggleSubtaskTimerInline('${s.id}',${!!s._timer_running},this)" title="Pornește timer"><span class="tcard__timer-icon">▶</span></button>
+            <button type="button" class="tcard__subtask-manual" onclick="event.stopPropagation();openManualTimeForSubtask('${s.id}')" title="Adaugă timp manual">✎</button>
             <button type="button" class="tcard__subtask-del" onclick="event.stopPropagation();deleteSubtask('${s.id}')" title="Șterge subtask"><i data-lucide="x"></i></button>
         </div>`).join('');
     const desc = (task.descriere || '').trim();

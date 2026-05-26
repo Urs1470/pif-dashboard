@@ -2116,6 +2116,26 @@ function openManualTimeModal(kind, id) {
     }, 50);
 }
 
+// Manual time entry for subtask — simple prompt-based (no modal)
+function openManualTimeForSubtask(subtaskId) {
+    const minutes = prompt('Adaugă timp manual (minute):', '15');
+    if (!minutes) return;
+    const secunde = parseInt(minutes) * 60;
+    if (isNaN(secunde) || secunde <= 0) {
+        showToast('Valoare invalidă', true);
+        return;
+    }
+    apiPost(`/subtasks/${encodeURIComponent(subtaskId)}/timer/manual`, { durata_secunde: secunde })
+        .then(data => {
+            if (data.error) { showToast(data.error, true); return; }
+            showToast(`Adăugat ${minutes} min`);
+            // Refresh parent task to update total timp_secunde
+            if (typeof loadTodos === 'function' && currentProjectId) loadTodos(currentProjectId);
+            if (typeof loadGlobalTasks === 'function') loadGlobalTasks();
+        })
+        .catch(() => showToast('Eroare la adăugare timp', true));
+}
+
 // Open the manual-entry modal for whatever task the shared task modal holds.
 function openManualTimeForTask() {
     const id = document.getElementById('task-edit-id').value;

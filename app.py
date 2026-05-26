@@ -623,7 +623,8 @@ def get_tasks(project_id):
             (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id) AS subtask_total,
             (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id AND s.done = 1) AS subtask_done,
             (SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions ts
-             WHERE ts.task_id = t.id AND ts.durata_secunde IS NOT NULL) AS timp_secunde,
+             WHERE (ts.task_id = t.id OR ts.subtask_id IN (SELECT id FROM task_subtasks WHERE task_id = t.id))
+             AND ts.durata_secunde IS NOT NULL) AS timp_secunde,
             (SELECT COUNT(*) > 0 FROM timer_sessions ts
              WHERE ts.task_id = t.id AND ts.stop_time IS NULL) AS timer_running
         FROM tasks t WHERE t.proiect_id = ?
@@ -1478,6 +1479,40 @@ def stop_subtask_timer(subtask_id):
     conn.close()
     return jsonify({'durata_secunde': dur, 'total_secunde': total})
 
+
+
+
+@app.route('/api/subtasks/<subtask_id>/timer/manual', methods=['POST'])
+@login_required
+def add_manual_subtask_timer(subtask_id):
+    """Manual time entry on a subtask."""
+    data = request.json or {}
+    try:
+        dur = int(data.get('durata_secunde') or 0)
+    except (ValueError, TypeError):
+        dur = 0
+    if dur <= 0:
+        return jsonify({'error': 'Durata invalidă'}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM task_subtasks WHERE id = ?', (subtask_id,))
+    subtask = cursor.fetchone()
+    if not subtask:
+        conn.close()
+        return jsonify({'error': 'Subtask not found'}), 404
+    cursor.execute('SELECT t.proiect_id FROM tasks t WHERE t.id = ?', (subtask['task_id'],))
+    task_row = cursor.fetchone()
+    proj_id = task_row['proiect_id'] if task_row else None
+    start, stop = _manual_session_times(data.get('data'), dur)
+    sid = generate_uuid()
+    cursor.execute('INSERT INTO timer_sessions (id, proiect_id, subtask_id, start_time, stop_time, durata_secunde) '
+                   'VALUES (?, ?, ?, ?, ?, ?)', (sid, proj_id, subtask_id, start, stop, dur))
+    cursor.execute('SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions '
+                   'WHERE subtask_id = ? AND durata_secunde IS NOT NULL', (subtask_id,))
+    total = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
 # ============ PER-TASK TIMER ============
 # Time tracked against a specific task. Stored in timer_sessions with task_id
 # set, kept isolated from the standalone project timer (which uses task_id NULL).
