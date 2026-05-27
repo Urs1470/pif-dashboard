@@ -299,8 +299,40 @@
     </nav>
   </div>
 
-  <!-- FAB removed: inline "Proiect nou" / "Notita noua" buttons are
-       placed at the top of their respective tabs instead. -->
+  <!-- Quick-capture FAB — opens bottom-sheet with 4 actions: jurnal,
+       task rapid, photo upload to current project, parametru lookup. -->
+  <button id="qc-fab" onclick="openQuickCapture()" aria-label="Acțiuni rapide" title="Acțiuni rapide (Q)">
+    <i data-lucide="plus"></i>
+  </button>
+  <div id="qc-sheet-overlay" hidden onclick="if(event.target===this)closeQuickCapture()">
+    <div id="qc-sheet" role="dialog" aria-label="Acțiuni rapide">
+      <div class="qc-handle" aria-hidden="true"></div>
+      <div class="qc-title">Acțiuni rapide</div>
+      <div class="qc-grid">
+        <button class="qc-action qc-action--journal" onclick="qcOpenJournal()">
+          <div class="qc-action-ico"><i data-lucide="notebook-pen"></i></div>
+          <div class="qc-action-label">Jurnal rapid</div>
+          <div class="qc-action-sub">Notă într-un proiect</div>
+        </button>
+        <button class="qc-action qc-action--task" onclick="qcOpenTask()">
+          <div class="qc-action-ico"><i data-lucide="check-square"></i></div>
+          <div class="qc-action-label">Task rapid</div>
+          <div class="qc-action-sub">Task global nou</div>
+        </button>
+        <button class="qc-action qc-action--time" onclick="qcOpenManualTime()">
+          <div class="qc-action-ico"><i data-lucide="clock"></i></div>
+          <div class="qc-action-label">Oră manuală</div>
+          <div class="qc-action-sub">Adaugă timp pe proiect</div>
+        </button>
+        <button class="qc-action qc-action--param" onclick="qcOpenParamLookup()">
+          <div class="qc-action-ico"><i data-lucide="sliders-horizontal"></i></div>
+          <div class="qc-action-label">Parametru</div>
+          <div class="qc-action-sub">Caută rapid în catalog</div>
+        </button>
+      </div>
+      <button class="qc-cancel" onclick="closeQuickCapture()">Anulează</button>
+    </div>
+  </div>
 
   <!-- ═══ Hermes assistant (mobile) ═══ -->
   <button id="hermes-fab" onclick="openHermes()" aria-label="Asistent Hermes" title="Asistent Hermes">

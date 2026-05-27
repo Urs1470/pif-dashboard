@@ -1740,17 +1740,17 @@
         th {
             background: var(--bg-elev2);
             color: var(--text2);
-            font-weight: 600;
+            font-weight: 700;
             text-align: left;
-            padding: 11px 14px;
+            padding: 9px 14px;
             font-size: 10.5px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.09em;
             border-bottom: 1px solid var(--border);
         }
 
         td {
-            padding: 12px 14px;
+            padding: 8px 14px;
             border-bottom: 1px solid var(--line-soft);
             max-width: 240px;
             overflow: hidden;
@@ -2548,13 +2548,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            /* Increased padding and min-height for better touch targets */
-            padding: 10px 12px;
+            padding: 8px 12px;
             background: var(--bg);
             border-radius: 4px;
             margin-bottom: 2px;
             border-left: 2px solid;
-            min-height: 52px;
+            min-height: 44px;
             font-size: 0.86rem;
             line-height: 1.3;
         }
@@ -2769,9 +2768,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-bottom: 1px solid var(--line-soft);
-            min-height: 40px;
+            min-height: 36px;
             transition: background 0.15s;
         }
         .jurnal-item:last-child, .timer-session:last-child { border-bottom: none; }
@@ -3837,6 +3836,160 @@
             /* Project form modal mobile */
             #new-project-form { padding: 0; align-items: flex-end; }
             #new-project-form .modal-container { max-width: 100%; max-height: 92vh; border-radius: var(--radius) var(--radius) 0 0; }
+        }
+
+        /* ═══ Home "Continue" strip + Quick capture ═══
+           Single-user, action-first home: see what you opened recently and
+           type-to-add a task without leaving the page. */
+        .home-section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 4px 0 10px;
+        }
+        .home-section-title {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text2);
+        }
+        .home-section-title [data-lucide], .home-section-title .lucide {
+            width: 14px; height: 14px; color: var(--accent);
+        }
+        .recent-projects-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .recent-project-card {
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            cursor: pointer;
+            display: flex; flex-direction: column; gap: 4px;
+            position: relative;
+            transition: border-color 0.15s, transform 0.1s, background 0.15s;
+            min-height: 70px;
+        }
+        .recent-project-card:hover {
+            border-color: var(--accent);
+            background: var(--bg-elev2);
+            transform: translateY(-1px);
+        }
+        .recent-project-card:active { transform: scale(0.99); }
+        .recent-tip {
+            position: absolute; top: 10px; right: 12px;
+            font-size: 9.5px; font-weight: 700;
+            padding: 2px 7px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .recent-tip.pif { background: var(--accent-soft); color: var(--accent); }
+        .recent-tip.service { background: var(--warning-soft); color: var(--warning); }
+        .recent-project-name {
+            font-size: 13.5px; font-weight: 600; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            padding-right: 40px;
+            letter-spacing: -0.005em;
+        }
+        .recent-project-client {
+            font-size: 11.5px; color: var(--text2);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .home-quick-capture {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--bg-elev1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 8px 10px 8px 14px;
+            margin-bottom: 18px;
+            transition: border-color 0.15s;
+        }
+        .home-quick-capture:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .home-quick-capture .hqc-icon {
+            width: 18px; height: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .home-quick-capture input[type="text"] {
+            flex: 1; min-width: 0;
+            background: transparent; border: none;
+            color: var(--text);
+            font-size: 14px;
+            padding: 8px 0;
+            min-height: auto;
+            box-shadow: none;
+        }
+        .home-quick-capture input[type="text"]:focus { box-shadow: none; outline: none; }
+        .home-quick-capture select,
+        .home-quick-capture .cs {
+            min-width: 110px;
+        }
+        .home-quick-capture .cs-trigger { min-height: 38px; font-size: 12.5px; }
+        .home-quick-capture .btn { min-height: 38px; padding: 8px 14px; }
+        @media (max-width: 768px) {
+            .home-quick-capture { flex-wrap: wrap; gap: 6px; }
+            .home-quick-capture input[type="text"] { flex-basis: 100%; }
+        }
+
+        /* ═══ Global timer banner ═══
+           Persistent across all tabs — visible whenever ANY timer is active.
+           Sits below header, above main tabs. Tick updates every second. */
+        .gtb {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, rgba(102,209,158,0.12) 0%, var(--bg-elev1) 60%);
+            border: 1px solid rgba(102,209,158,0.35);
+            border-radius: var(--radius-md);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 0 0 1px rgba(102,209,158,0.08);
+        }
+        .gtb[hidden] { display: none; }
+        .gtb-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+            box-shadow: 0 0 0 4px rgba(102,209,158,0.20);
+            animation: gtb-pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes gtb-pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(102,209,158,0.18); }
+            50%      { box-shadow: 0 0 0 7px rgba(102,209,158,0.05); }
+        }
+        .gtb-main { flex: 1; min-width: 0; }
+        .gtb-label {
+            font-size: 14px; font-weight: 700; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            letter-spacing: -0.005em;
+        }
+        .gtb-sub {
+            font-size: 11.5px; color: var(--text2);
+            text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+            margin-top: 1px;
+        }
+        .gtb-elapsed {
+            font-family: var(--font-mono);
+            font-size: 18px; font-weight: 700;
+            color: var(--success);
+            font-feature-settings: "tnum";
+            padding: 0 4px;
+        }
+        .gtb-stop {
+            background: var(--danger); color: #fff;
+            border: none; border-radius: 8px;
+            min-width: 40px; min-height: 40px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+            transition: filter 0.15s, transform 0.1s;
+        }
+        .gtb-stop:hover { filter: brightness(1.08); }
+        .gtb-stop:active { transform: scale(0.96); }
+        .gtb-stop [data-lucide] { width: 16px; height: 16px; fill: currentColor; }
+        @media (max-width: 768px) {
+            .gtb { padding: 9px 12px; gap: 10px; margin-bottom: 12px; }
+            .gtb-label { font-size: 13px; }
+            .gtb-sub { font-size: 10.5px; }
+            .gtb-elapsed { font-size: 16px; }
         }
 
         /* ═══ Motion polish (audit Faza 1) ═══ */

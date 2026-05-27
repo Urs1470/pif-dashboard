@@ -77,6 +77,13 @@ function _invalidateCache(url) {
             k.startsWith('/stats')                      // stat counters re-aggregate from every mutation
         ) _apiCache.delete(k);
     }
+    // If a timer-related URL was just mutated, refresh the sticky banner so the
+    // user sees the change immediately (instead of waiting up to 15s for poll).
+    if (url.includes('/timer/') || url.includes('/timer-start') || url.includes('/timer-stop')) {
+        if (typeof window.refreshGlobalTimerBanner === 'function') {
+            window.refreshGlobalTimerBanner();
+        }
+    }
 }
 
 async function _doFetch(url) {
@@ -530,7 +537,82 @@ async function initApp() {
     setupKeyboardShortcuts();
 
     initAllDatePickers();
+
+    // Persistent timer banner: poll active timers, tick every second
+    initGlobalTimerBanner();
 }
+
+// ============ GLOBAL TIMER BANNER ============
+// Persistent across all tabs. Polls /api/timer/active every 15s and updates the
+// elapsed counter every second from the cached start_time. One-click stop.
+let _gtbState = { active: null, tickInterval: null, pollInterval: null };
+
+async function refreshGlobalTimerBanner() {
+    let data;
+    try { data = await apiGet('/timer/active', { fresh: true }); }
+    catch (e) { return; }
+    const timers = (data && data.timers) || [];
+    const top = timers[0] || null;
+    _gtbState.active = top;
+    const banner = document.getElementById('global-timer-banner');
+    if (!banner) return;
+    if (!top) { banner.hidden = true; return; }
+    banner.hidden = false;
+    document.getElementById('gtb-label').textContent = top.label || 'Timer activ';
+    const kindLabels = { project: 'Proiect', task: 'Task', subtask: 'Subtask', global_task: 'Task global' };
+    document.getElementById('gtb-sub').textContent = (kindLabels[top.kind] || 'Timer') + ' · activ';
+    const elapsedEl = document.getElementById('gtb-elapsed');
+    elapsedEl.dataset.start = top.start_time;
+    _tickGlobalTimerBanner();
+}
+
+function _tickGlobalTimerBanner() {
+    const el = document.getElementById('gtb-elapsed');
+    if (!el || !el.dataset.start) return;
+    const start = new Date(el.dataset.start);
+    const sec = Math.max(0, Math.floor((Date.now() - start) / 1000));
+    el.textContent = formatTime(sec);
+}
+
+async function _stopActiveTimerFromBanner() {
+    const t = _gtbState.active;
+    if (!t) return;
+    let endpoint = null;
+    if (t.kind === 'project') endpoint = `/proiecte/${t.project_id}/timer/stop`;
+    else if (t.kind === 'task') endpoint = `/tasks/${t.task_id}/timer/stop`;
+    else if (t.kind === 'subtask') endpoint = `/subtasks/${t.subtask_id}/timer/stop`;
+    else if (t.kind === 'global_task') endpoint = `/global-tasks/${t.global_task_id}/timer/stop`;
+    if (!endpoint) return;
+    try {
+        await apiFetch(API_BASE + endpoint, { method: 'POST' });
+    } catch (e) {
+        if (typeof showToast === 'function') showToast('Eroare la oprirea timer-ului', 'error');
+        return;
+    }
+    _invalidateCache('/timer/active');
+    _invalidateCache('/dashboard/home');
+    refreshGlobalTimerBanner();
+    if (typeof showToast === 'function') showToast('Timer oprit', 'success');
+    // Refresh home if visible
+    if (typeof loadDashboardHome === 'function' && document.getElementById('tab-acasa')?.classList.contains('active')) {
+        loadDashboardHome();
+    }
+}
+
+function initGlobalTimerBanner() {
+    const stopBtn = document.getElementById('gtb-stop');
+    if (stopBtn) stopBtn.addEventListener('click', _stopActiveTimerFromBanner);
+    refreshGlobalTimerBanner();
+    // Tick the displayed elapsed time every second
+    if (_gtbState.tickInterval) clearInterval(_gtbState.tickInterval);
+    _gtbState.tickInterval = setInterval(_tickGlobalTimerBanner, 1000);
+    // Re-poll API every 15s to detect timers started/stopped from elsewhere
+    if (_gtbState.pollInterval) clearInterval(_gtbState.pollInterval);
+    _gtbState.pollInterval = setInterval(refreshGlobalTimerBanner, 15000);
+}
+
+// Public: called from start/stop timer flows so the banner updates immediately
+window.refreshGlobalTimerBanner = refreshGlobalTimerBanner;
 
 // ============ KEYBOARD SHORTCUTS ============
 
@@ -920,6 +1002,22 @@ async function showProjectDetail(projectId) {
 
     try {
         const project = await apiGet(`/proiecte/${projectId}`);
+
+        // Track recent-projects for the "Continue" strip on Acasă
+        try {
+            const stored = JSON.parse(localStorage.getItem('recent_projects') || '[]');
+            const without = stored.filter(p => p.id !== projectId);
+            without.unshift({
+                id: projectId,
+                nume: project.nume || '',
+                client: project.client || '',
+                tip: project.tip || '',
+                status: project.status || '',
+                ts: Date.now(),
+            });
+            localStorage.setItem('recent_projects', JSON.stringify(without.slice(0, 6)));
+        } catch (_) { /* localStorage full / disabled - non-fatal */ }
+
 
         // Fill detail view
         document.getElementById('detail-nume').textContent = project.nume;
@@ -4082,6 +4180,40 @@ document.getElementById('quick-task-input').addEventListener('keydown', function
     if (e.key === 'Enter') { e.preventDefault(); quickAddTask(); }
 });
 
+// ============ HOME QUICK CAPTURE ============
+// One-row capture on the Acasă tab: type → Enter → done. No modal, no friction.
+
+async function homeQuickCapture() {
+    const inp = document.getElementById('home-quick-input');
+    if (!inp) return;
+    const titlu = inp.value.trim();
+    if (!titlu) { inp.focus(); return; }
+    const prio = document.getElementById('home-quick-prio')?.value || 'Normal';
+    inp.disabled = true;
+    try {
+        await apiPost('/global-tasks', {
+            titlu, prioritate: prio, categorie: 'General', status: 'to_do',
+        });
+        inp.value = '';
+        if (typeof showToast === 'function') showToast('Task adăugat', 'success');
+        loadDashboardHome();
+    } catch (e) {
+        if (typeof showToast === 'function') showToast('Eroare la adăugare', 'error');
+    } finally {
+        inp.disabled = false;
+        inp.focus();
+    }
+}
+
+// Wire Enter on the home quick capture input (handler attached every time the
+// home is rendered, since the element is recreated by loadDashboardHome).
+document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.id === 'home-quick-input' && e.key === 'Enter') {
+        e.preventDefault();
+        homeQuickCapture();
+    }
+});
+
 // ============ LOGOUT ============
 
 async function logout() {
@@ -4137,6 +4269,39 @@ async function loadDashboardHome() {
             </div>
         `;
 
+        // — Continue: recently opened projects —
+        let recents = [];
+        try { recents = JSON.parse(localStorage.getItem('recent_projects') || '[]'); } catch (_) {}
+        if (recents.length > 0) {
+            html += `<div class="home-section-header"><span class="home-section-title"><i data-lucide="rotate-ccw"></i> Continuă</span></div>`;
+            html += `<div class="recent-projects-strip">`;
+            recents.slice(0, 5).forEach(p => {
+                const tipBadge = p.tip ? `<span class="recent-tip ${p.tip === 'PIF' ? 'pif' : 'service'}">${escapeHtml(p.tip)}</span>` : '';
+                html += `
+                    <div class="recent-project-card" onclick="showProjectDetail('${p.id}')">
+                        ${tipBadge}
+                        <div class="recent-project-name" title="${escapeHtml(p.nume)}">${escapeHtml(p.nume || '—')}</div>
+                        <div class="recent-project-client">${escapeHtml(p.client || '—')}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+
+        // — Quick capture: new global task in 1 row —
+        html += `
+            <div class="home-quick-capture">
+                <i data-lucide="plus-circle" class="hqc-icon"></i>
+                <input type="text" id="home-quick-input" placeholder="Task rapid... (Enter pentru a salva)" maxlength="200">
+                <select id="home-quick-prio" class="cs-enhance">
+                    <option value="Normal">Normal</option>
+                    <option value="Urgent">Urgent</option>
+                    <option value="Minor">Minor</option>
+                </select>
+                <button class="btn btn-primary btn-small" onclick="homeQuickCapture()" type="button"><i data-lucide="check"></i> Adaugă</button>
+            </div>
+        `;
+
         // — 4-stat bar —
         const delta = stats.weekly_delta || 0;
         const deltaStr = delta === 0 ? 'la fel ca săptămâna trecută'
@@ -4180,24 +4345,8 @@ async function loadDashboardHome() {
             </div>
         `;
 
-        // — Active timer banner —
-        if (active_timer) {
-            const startTime = new Date(active_timer.start_time);
-            const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-            html += `
-                <div class="h-timer">
-                    <div class="h-timer-dot"></div>
-                    <div class="h-timer-meta">
-                        <div class="h-timer-title">
-                            ${escapeHtml(active_timer.project_name || active_timer.proiect_nume || 'Proiect')}
-                            <span class="h-timer-tag">Activ</span>
-                        </div>
-                        <div class="h-timer-sub">Pornit la ${startTime.toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})}</div>
-                    </div>
-                    <div class="h-timer-elapsed" id="home-timer-elapsed" data-start="${active_timer.start_time}">${formatTime(elapsedSec)}</div>
-                </div>
-            `;
-        }
+        // Active timer is now shown by the persistent global banner above the
+        // main tabs — see #global-timer-banner. Avoid duplicating it here.
 
         // — Card grid —
         html += `<div class="home-grid">`;

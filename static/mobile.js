@@ -4424,3 +4424,174 @@ function activateSearchResult(r) {
     wireGlobalSearch();
   }
 })();
+
+
+// ====================================================================
+// QUICK CAPTURE — bottom-sheet with 4 most-common field actions.
+// One tap → action; closes sheet on success.
+// ====================================================================
+
+function openQuickCapture() {
+  const ov = document.getElementById('qc-sheet-overlay');
+  if (!ov) return;
+  ov.hidden = false;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeQuickCapture() {
+  const ov = document.getElementById('qc-sheet-overlay');
+  if (ov) ov.hidden = true;
+}
+
+// Keyboard shortcut: 'Q' opens the sheet on tablets with BT keyboard
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'q' && e.key !== 'Q') return;
+  const inField = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable;
+  if (inField) return;
+  e.preventDefault();
+  const ov = document.getElementById('qc-sheet-overlay');
+  if (ov && ov.hidden === false) closeQuickCapture();
+  else openQuickCapture();
+});
+
+// ── Action 1: Jurnal rapid — pick project (or use the currently-open one), type note, save
+async function qcOpenJournal() {
+  closeQuickCapture();
+  let projects = [];
+  try { projects = await fetch('/api/proiecte?limit=200').then(r => r.json()); }
+  catch (_) { showMobileToast('Nu am putut încărca proiectele', 'error'); return; }
+  if (!projects.length) { showMobileToast('Adaugă mai întâi un proiect', 'warning'); return; }
+
+  // Pre-select current project if any
+  const currentId = (typeof currentProject !== 'undefined' && currentProject) ? currentProject.id : null;
+  const opts = projects.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === currentId ? 'selected' : ''}>${escapeHtml(p.nume)} — ${escapeHtml(p.client || '')}</option>`).join('');
+
+  const html = `
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Proiect</label>
+    <select id="qc-jrn-proj" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:16px;">${opts}</select>
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Notă</label>
+    <textarea id="qc-jrn-text" rows="3" placeholder="Ce s-a întâmplat?" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;resize:vertical;"></textarea>
+  `;
+  await _qcModalForm('Jurnal rapid', html, async () => {
+    const proj = document.getElementById('qc-jrn-proj').value;
+    const note = document.getElementById('qc-jrn-text').value.trim();
+    if (!proj || !note) { showMobileToast('Completează ambele câmpuri', 'warning'); return false; }
+    const csrf = (document.cookie.match(/csrf_token=([^;]+)/) || [])[1] || '';
+    const res = await fetch(`/api/proiecte/${proj}/jurnal`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+      body: JSON.stringify({continut: note, data: new Date().toISOString().slice(0, 10)})
+    });
+    if (!res.ok) { showMobileToast('Eroare la salvare', 'error'); return false; }
+    showMobileToast('Notă jurnal salvată', 'success');
+    return true;
+  });
+}
+
+// ── Action 2: Task rapid — global task, one input, save
+async function qcOpenTask() {
+  closeQuickCapture();
+  const html = `
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Titlu task</label>
+    <input type="text" id="qc-task-titlu" placeholder="Ce trebuie făcut?" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;margin-bottom:10px;" autofocus>
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Prioritate</label>
+    <select id="qc-task-prio" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;">
+      <option value="Normal" selected>Normal</option>
+      <option value="Urgent">Urgent</option>
+      <option value="Minor">Minor</option>
+    </select>
+  `;
+  await _qcModalForm('Task rapid', html, async () => {
+    const titlu = document.getElementById('qc-task-titlu').value.trim();
+    const prio = document.getElementById('qc-task-prio').value;
+    if (!titlu) { showMobileToast('Scrie titlul', 'warning'); return false; }
+    const csrf = (document.cookie.match(/csrf_token=([^;]+)/) || [])[1] || '';
+    const res = await fetch('/api/global-tasks', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+      body: JSON.stringify({titlu, prioritate: prio, categorie: 'General', status: 'to_do'})
+    });
+    if (!res.ok) { showMobileToast('Eroare la salvare', 'error'); return false; }
+    showMobileToast('Task adăugat', 'success');
+    return true;
+  });
+}
+
+// ── Action 3: Oră manuală — pick project, duration in minutes, optional note
+async function qcOpenManualTime() {
+  closeQuickCapture();
+  let projects = [];
+  try { projects = await fetch('/api/proiecte?limit=200').then(r => r.json()); }
+  catch (_) { showMobileToast('Nu am putut încărca proiectele', 'error'); return; }
+  if (!projects.length) { showMobileToast('Adaugă mai întâi un proiect', 'warning'); return; }
+
+  const currentId = (typeof currentProject !== 'undefined' && currentProject) ? currentProject.id : null;
+  const opts = projects.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === currentId ? 'selected' : ''}>${escapeHtml(p.nume)}</option>`).join('');
+
+  const html = `
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Proiect</label>
+    <select id="qc-tm-proj" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:16px;">${opts}</select>
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Minute lucrate</label>
+    <input type="number" id="qc-tm-min" min="1" max="1440" placeholder="ex. 45" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;margin-bottom:10px;">
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600;">Notă (opțional)</label>
+    <input type="text" id="qc-tm-note" placeholder="Ce ai făcut?" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;">
+  `;
+  await _qcModalForm('Oră manuală', html, async () => {
+    const proj = document.getElementById('qc-tm-proj').value;
+    const min = parseInt(document.getElementById('qc-tm-min').value, 10);
+    const note = document.getElementById('qc-tm-note').value.trim();
+    if (!proj || !min || min <= 0) { showMobileToast('Completează proiect și minute', 'warning'); return false; }
+    const csrf = (document.cookie.match(/csrf_token=([^;]+)/) || [])[1] || '';
+    const body = {durata_secunde: min * 60, data: new Date().toISOString().slice(0, 10)};
+    if (note) body.titlu = note;
+    const res = await fetch(`/api/proiecte/${proj}/timer/manual`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) { showMobileToast('Eroare la salvare', 'error'); return false; }
+    showMobileToast('Timp adăugat', 'success');
+    return true;
+  });
+}
+
+// ── Action 4: Parametru — jump to params tab with prefilled search
+function qcOpenParamLookup() {
+  closeQuickCapture();
+  if (typeof switchToTab === 'function') switchToTab('params');
+  else if (typeof showTab === 'function') showTab('params');
+  setTimeout(() => {
+    const input = document.querySelector('#tab-params input[type="search"], #tab-params input[type="text"]');
+    if (input) { input.focus(); input.scrollIntoView({behavior: 'smooth', block: 'center'}); }
+  }, 300);
+}
+
+// Tiny modal form helper — reuses the existing .m-sheet markup so we don't
+// reinvent UI. Returns Promise that resolves true on OK, false on cancel.
+function _qcModalForm(title, innerHtml, onSubmit) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'm-sheet-overlay open';
+    overlay.innerHTML = `
+      <div class="m-sheet">
+        <div class="m-sheet-title">${escapeHtml(title)}</div>
+        <div>${innerHtml}</div>
+        <div class="m-sheet-actions" style="margin-top:14px;">
+          <button type="button" class="m-sheet-btn-cancel">Anulează</button>
+          <button type="button" class="m-sheet-btn-ok">Salvează</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    const close = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('.m-sheet-btn-cancel').onclick = () => close(false);
+    overlay.querySelector('.m-sheet-btn-ok').onclick = async () => {
+      const ok = await onSubmit();
+      if (ok) close(true);
+    };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+    // Focus first input
+    setTimeout(() => { const first = overlay.querySelector('input, textarea, select'); if (first) first.focus(); }, 50);
+  });
+}

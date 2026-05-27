@@ -331,8 +331,11 @@ def spa_catchall():
 # ============ PWA ROUTES ============
 
 @app.route('/m')
+@login_required
 def mobile():
-    return redirect(url_for('index'))
+    """Mobile PWA shell — separate template, separate JS bundle.
+    Optimized for field use: bottom-nav, quick-capture FAB, offline IndexedDB."""
+    return render_template('mobile.html')
 
 
 @app.route('/service-worker.js')

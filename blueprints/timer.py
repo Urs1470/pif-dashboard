@@ -618,3 +618,102 @@ def reset_global_task_timer(task_id):
     finally:
         conn.close()
     return jsonify({'deleted': deleted})
+
+
+# ── Active timers (any kind) for the global sticky banner ──
+@timer_bp.route('/api/timer/active', methods=['GET'])
+@login_required
+def get_active_timers():
+    """Return all currently-running timers across project/task/subtask/global.
+    Used by the persistent timer banner to show whatever is ticking right now.
+    Returns at most one item per kind; UI shows the most recently started.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+    results = []
+
+    # Project-level timer (project, no task/subtask)
+    cursor.execute("""
+        SELECT ts.id, ts.proiect_id, ts.start_time, p.nume AS project_name
+        FROM timer_sessions ts JOIN proiecte p ON ts.proiect_id = p.id
+        WHERE ts.stop_time IS NULL AND ts.task_id IS NULL AND ts.subtask_id IS NULL
+        ORDER BY ts.start_time DESC LIMIT 1
+    """)
+    row = cursor.fetchone()
+    if row:
+        results.append({
+            'kind': 'project',
+            'session_id': row['id'],
+            'project_id': row['proiect_id'],
+            'project_name': row['project_name'],
+            'start_time': row['start_time'],
+            'label': row['project_name'],
+        })
+
+    # Task-level timer
+    cursor.execute("""
+        SELECT ts.id, ts.task_id, ts.proiect_id, ts.start_time,
+               t.titlu AS task_title, p.nume AS project_name
+        FROM timer_sessions ts
+        JOIN tasks t ON ts.task_id = t.id
+        LEFT JOIN proiecte p ON ts.proiect_id = p.id
+        WHERE ts.stop_time IS NULL AND ts.task_id IS NOT NULL AND ts.subtask_id IS NULL
+        ORDER BY ts.start_time DESC LIMIT 1
+    """)
+    row = cursor.fetchone()
+    if row:
+        results.append({
+            'kind': 'task',
+            'session_id': row['id'],
+            'task_id': row['task_id'],
+            'project_id': row['proiect_id'],
+            'project_name': row['project_name'],
+            'task_title': row['task_title'],
+            'start_time': row['start_time'],
+            'label': row['task_title'] + (f" · {row['project_name']}" if row['project_name'] else ''),
+        })
+
+    # Subtask-level timer
+    cursor.execute("""
+        SELECT ts.id, ts.subtask_id, ts.start_time,
+               st.titlu AS subtask_title, t.titlu AS task_title, p.nume AS project_name
+        FROM timer_sessions ts
+        JOIN task_subtasks st ON ts.subtask_id = st.id
+        LEFT JOIN tasks t ON st.task_id = t.id
+        LEFT JOIN proiecte p ON ts.proiect_id = p.id
+        WHERE ts.stop_time IS NULL AND ts.subtask_id IS NOT NULL
+        ORDER BY ts.start_time DESC LIMIT 1
+    """)
+    row = cursor.fetchone()
+    if row:
+        results.append({
+            'kind': 'subtask',
+            'session_id': row['id'],
+            'subtask_id': row['subtask_id'],
+            'start_time': row['start_time'],
+            'label': row['subtask_title'] + (f" · {row['task_title']}" if row['task_title'] else ''),
+        })
+
+    # Global task timer
+    cursor.execute("""
+        SELECT gs.id, gs.global_task_id, gs.start_time, gt.titlu AS task_title
+        FROM global_task_sessions gs
+        JOIN global_tasks gt ON gs.global_task_id = gt.id
+        WHERE gs.stop_time IS NULL
+        ORDER BY gs.start_time DESC LIMIT 1
+    """)
+    row = cursor.fetchone()
+    if row:
+        results.append({
+            'kind': 'global_task',
+            'session_id': row['id'],
+            'global_task_id': row['global_task_id'],
+            'start_time': row['start_time'],
+            'label': row['task_title'],
+        })
+
+    conn.close()
+
+    # Sort by start_time desc — most-recently-started timer first
+    results.sort(key=lambda r: r['start_time'], reverse=True)
+    return jsonify({'timers': results, 'active': len(results) > 0})

@@ -62,6 +62,19 @@
             </div>
         </header>
 
+        <!-- Sticky global timer banner — shows whatever timer is ticking right now -->
+        <div id="global-timer-banner" class="gtb" hidden>
+            <div class="gtb-dot"></div>
+            <div class="gtb-main">
+                <div class="gtb-label" id="gtb-label">—</div>
+                <div class="gtb-sub" id="gtb-sub">Timer activ</div>
+            </div>
+            <div class="gtb-elapsed" id="gtb-elapsed" data-start="">00:00:00</div>
+            <button type="button" class="gtb-stop" id="gtb-stop" title="Oprește timer-ul (S)" aria-label="Oprește timer-ul">
+                <i data-lucide="square"></i>
+            </button>
+        </div>
+
         <div class="main-tabs">
             <button class="main-tab active" data-tab="acasa" onclick="switchTab('acasa')"><i data-lucide="home"></i> Acasă</button>
             <button class="main-tab" data-tab="taskuri" onclick="switchTab('taskuri')"><i data-lucide="check-square"></i> Taskuri Zilnice</button>
