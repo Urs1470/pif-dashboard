@@ -1825,19 +1825,19 @@ async function loadDashboardHome() {
       : '';
     document.getElementById('home-stats').innerHTML = `
       <div class="detail-section" style="text-align:center; padding:12px;">
-        <div style="font-size:24px; font-weight:600; color:var(--violet); font-family:'JetBrains Mono',monospace;">${s.total_projects ?? 0}</div>
+        <div style="font-size:30px; font-weight:700; color:var(--violet); letter-spacing:-0.02em; line-height:1.1;">${s.total_projects ?? 0}</div>
         <div class="detail-label">Total proiecte</div>
       </div>
       <div class="detail-section" style="text-align:center; padding:12px;">
-        <div style="font-size:24px; font-weight:600; color:var(--accent); font-family:'JetBrains Mono',monospace;">${s.active_projects ?? 0}</div>
+        <div style="font-size:30px; font-weight:700; color:var(--accent); letter-spacing:-0.02em; line-height:1.1;">${s.active_projects ?? 0}</div>
         <div class="detail-label">Active</div>
       </div>
       <div class="detail-section" style="text-align:center; padding:12px;">
-        <div style="font-size:24px; font-weight:600; color:var(--success); font-family:'JetBrains Mono',monospace;">${s.weekly_hours ?? 0}</div>
+        <div style="font-size:30px; font-weight:700; color:var(--success); letter-spacing:-0.02em; line-height:1.1;">${s.weekly_hours ?? 0}</div>
         <div class="detail-label">Ore (7 zile)${delta ? ` <span style="color:var(--text-dim);">${delta}</span>` : ''}</div>
       </div>
       <div class="detail-section" style="text-align:center; padding:12px;">
-        <div style="font-size:24px; font-weight:600; color:var(--danger); font-family:'JetBrains Mono',monospace;">${s.urgent_count ?? 0}</div>
+        <div style="font-size:30px; font-weight:700; color:var(--danger); letter-spacing:-0.02em; line-height:1.1;">${s.urgent_count ?? 0}</div>
         <div class="detail-label">Taskuri urgente</div>
       </div>
     `;
