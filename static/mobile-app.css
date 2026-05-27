@@ -164,6 +164,8 @@
     #content {
       flex: 1;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
       padding: 16px;
       /* Bottom-nav is 64px; generous clearance so the last content (ex. sectiunea
          Atasamente din detaliul de proiect) nu ajunge niciodata sub soclu. */
@@ -574,8 +576,8 @@
     }
     #hermes-input:focus { outline: none; border-color: var(--accent); }
     #hermes-send {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       flex-shrink: 0;
       background: var(--accent);
       color: var(--bg);
@@ -1037,10 +1039,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 32px;
-      min-height: 32px;
+      min-width: 40px;
+      min-height: 40px;
     }
-    .mlt-tool [data-lucide] { width: 14px; height: 14px; }
+    .mlt-tool [data-lucide] { width: 16px; height: 16px; }
     .mlt-tool:active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
     /* Mobile task row — same priority/status pills as desktop, click-cyclable. */
     .mobile-task-row {
@@ -1054,8 +1056,8 @@
       margin-bottom: 6px;
     }
     .mobile-task-check {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
       accent-color: var(--accent);
       flex-shrink: 0;
@@ -1065,7 +1067,7 @@
     .mobile-task-title.done { text-decoration: line-through; opacity: 0.55; }
     .mobile-task-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
     .mobile-task-del {
-      width: 32px; height: 32px;
+      width: 44px; height: 44px;
       background: none;
       border: none;
       color: var(--danger);
@@ -1147,7 +1149,7 @@
     .mob-cat-progress.done { background: var(--success-soft); color: var(--success); }
     .mob-cat-actions { display: flex; gap: 2px; flex-shrink: 0; }
     .mob-cat-actions button {
-      width: 30px; height: 30px;
+      width: 40px; height: 40px;
       background: transparent;
       border: none;
       color: var(--text-secondary);
@@ -1168,14 +1170,14 @@
     }
     .mob-checklist-item:last-of-type { border-bottom: none; }
     .mob-checklist-item input[type=checkbox] {
-      width: 20px; height: 20px;
+      width: 24px; height: 24px;
       accent-color: var(--accent);
       flex-shrink: 0;
     }
     .mob-checklist-item.done .mob-ci-text { text-decoration: line-through; opacity: 0.55; }
     .mob-ci-text { flex: 1; font-size: 13px; color: var(--text); }
     .mob-ci-del {
-      width: 30px; height: 30px;
+      width: 40px; height: 40px;
       background: transparent;
       border: none;
       color: var(--danger);
@@ -1242,6 +1244,17 @@
       min-width: 0;
     }
     .mob-inline-subtask-input:focus { border-color: var(--accent); }
+
+    /* Global mobile form rules: prevent iOS zoom (font >= 16px), ensure touch targets */
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    input[type="search"],
+    select,
+    textarea {
+      font-size: 16px;
+      min-height: 44px;
+    }
 
     /* ============ KaTeX-rendered math ============ */
     .katex { font-size: 0.95em; }
@@ -1320,7 +1333,8 @@
       border-radius: 8px;
       color: var(--text, #e8edf5);
       padding: 0.55rem 0.75rem;
-      font-size: 0.95rem; font-family: inherit;
+      font-size: 16px; font-family: inherit;
+      min-height: 44px;
       margin-bottom: 1rem;
       outline: none;
     }
