@@ -625,16 +625,25 @@ function setupKeyboardShortcuts() {
 
         // Escape - close modal or go back
         if (e.key === 'Escape') {
+            // keyboard-help-overlay uses its own class (not .modal-overlay), so
+            // check it explicitly first.
+            const kh = document.getElementById('keyboard-help-overlay');
+            if (kh && kh.classList.contains('active')) {
+                hideKeyboardHelp();
+                return;
+            }
             const modal = document.querySelector('.modal-overlay.active');
             if (modal) {
                 if (modal.id === 'new-project-form') hideNewProjectForm();
                 else if (modal.id === 'confirm-modal') closeConfirmModal();
                 else if (modal.id === 'preview-modal') closePreview();
-                else if (modal.id === 'keyboard-help-overlay') hideKeyboardHelp();
                 else if (modal.id === 'param-detail-modal') closeParamModal();
                 else if (modal.id === 'task-edit-modal') closeTaskEditModal();
                 else if (modal.id === 'manuals-modal') closeManualsModal();
+                return;
             }
+            // No modal open — fall back to "go up one level": close param detail
+            // if open, otherwise navigate back to the project list.
             closeParamModal();
             if (currentProjectId) {
                 showProjectList();
@@ -672,12 +681,14 @@ function setupKeyboardShortcuts() {
             return;
         }
 
-        // 1-5 - Switch tabs
+        // 1-6 - Switch tabs (match visual tab order: Acasa, Taskuri, Proiecte,
+        // Parametri, Notite, Administrativ)
         if (e.key === '1') { switchTab('acasa'); return; }
         if (e.key === '2') { switchTab('taskuri'); return; }
         if (e.key === '3') { switchTab('proiecte'); return; }
         if (e.key === '4') { switchTab('parametri'); return; }
-        if (e.key === '5') { switchTab('admin'); return; }
+        if (e.key === '5') { switchTab('notite'); return; }
+        if (e.key === '6') { switchTab('admin'); return; }
 
         // Ctrl+S - Save (if modal is open)
         if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
