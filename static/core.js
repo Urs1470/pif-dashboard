@@ -479,6 +479,13 @@ function renderTaskCard(task, ctx) {
     const cycStatus  = kind === 'overview' ? 'cycleOverviewStatus'   : (isGlobalLike ? 'cycleGtStatus'    : 'cycleTodoStatus');
     const toggleSt   = kind === 'overview' ? 'toggleOverviewTask'    : (isGlobalLike ? 'toggleGtTask'     : 'toggleTodo');
     const deleteName = kind === 'overview' ? 'deleteOverviewTask'    : (isGlobalLike ? 'deleteGtTask'     : 'deleteTodo');
+    // Edit dispatch: global tasks use openGtEditModal (mode='global', saves to
+    // /api/global-tasks/<id>); project todos use openTaskEditModal(task)
+    // (mode='project', saves to /api/tasks/<id>). Overview cards fall back to
+    // project mode because they overlay project tasks.
+    const editCall   = kind === 'global'
+        ? `openGtEditModal('${task.id}')`
+        : `openTaskEditModal(JSON.parse(this.closest('.tcard').dataset.taskJson))`;
 
     const cls = ['tcard', `tcard--prio-${prio}`];
     if (isDone) cls.push('tcard--done');
@@ -506,7 +513,7 @@ function renderTaskCard(task, ctx) {
             <button type="button" class="tcard__menu-btn" onclick="event.stopPropagation();_tcardToggleMenu('${task.id}', this)" title="Mai multe acțiuni" aria-label="Mai multe acțiuni">⋯</button>
         </div>
         <div class="tcard__menu" onclick="event.stopPropagation()">
-            <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();openTaskEditModal(JSON.parse(this.closest('.tcard').dataset.taskJson))" data-act="edit"><i data-lucide="edit-2"></i> Editează detalii</button>
+            <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();${editCall}" data-act="edit"><i data-lucide="edit-2"></i> Editează detalii</button>
             <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();_tcardOpenManualTime('${kind}','${task.id}')"><i data-lucide="clock"></i> Intrare manuală timp</button>
             <button type="button" class="tcard__menu-item danger" onclick="event.stopPropagation();_tcardCloseMenus();_tcardResetTimer('${kind}','${task.id}')"><i data-lucide="rotate-ccw"></i> Resetează timer</button>
             <div class="tcard__menu-divider"></div>
