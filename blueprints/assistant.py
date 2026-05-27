@@ -38,29 +38,8 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-# ============================================================
-# Obsidian + safe_table helpers — owned by app.py. We import
-# them lazily inside the tool handlers that need them, to avoid
-# a circular import (app.py imports this module at startup).
-# ============================================================
-def _obsidian_vault():
-    from app import _obsidian_vault as _v
-    return _v()
-
-
-def _obsidian_index(vault):
-    from app import _obsidian_index as _i
-    return _i(vault)
-
-
-def _obsidian_safe_path(vault, rel):
-    from app import _obsidian_safe_path as _p
-    return _p(vault, rel)
-
-
-def safe_table(table_name):
-    from app import safe_table as _s
-    return _s(table_name)
+from blueprints.obsidian import _obsidian_vault, _obsidian_index, _obsidian_safe_path
+from utils import safe_table
 
 
 # ============================================================

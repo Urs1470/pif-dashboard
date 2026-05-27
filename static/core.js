@@ -8,6 +8,27 @@
 // logic — no DOM-render code, no shell-specific state.
 // =====================================================================
 
+// --- CSRF token helper -----------------------------------------------
+function _getCsrfToken() {
+    const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    return m ? m[1] : '';
+}
+
+function apiFetch(url, opts) {
+    opts = opts || {};
+    const headers = opts.headers || {};
+    if (!headers['Content-Type'] && !(opts.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+    const method = (opts.method || 'GET').toUpperCase();
+    if (method !== 'GET' && method !== 'HEAD') {
+        headers['X-CSRF-Token'] = _getCsrfToken();
+    }
+    opts.headers = headers;
+    opts.credentials = opts.credentials || 'same-origin';
+    return fetch(url, opts);
+}
+
 // --- HTML escaping ---------------------------------------------------
 const _ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 function escapeHtml(text) {
