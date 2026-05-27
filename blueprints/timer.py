@@ -335,25 +335,6 @@ def add_manual_task_timer(task_id):
     return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
 
 
-# ── Reset (delete all sessions) for a project task ──
-@timer_bp.route('/api/tasks/<task_id>/timer/reset', methods=['DELETE'])
-@login_required
-def reset_task_timer(task_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        # Stop any running session first
-        now = datetime.now().isoformat()
-        cursor.execute('''UPDATE timer_sessions SET stop_time = ?, durata_secunde = 0
-                          WHERE task_id = ? AND stop_time IS NULL''', (now, task_id))
-        cursor.execute('DELETE FROM timer_sessions WHERE task_id = ?', (task_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-    finally:
-        conn.close()
-    return jsonify({'deleted': deleted})
-
-
 # ──────────────────────────────────────────────────────────────────
 # PER-SUBTASK TIMER
 # Time tracked against a specific subtask.  Stored in timer_sessions
@@ -460,24 +441,6 @@ def add_manual_subtask_timer(subtask_id):
     conn.close()
     total = _sum_timer('subtask_id', subtask_id)
     return jsonify({'id': sid, 'durata_secunde': dur, 'total_secunde': total})
-
-
-# ── Reset (delete all sessions) for a subtask ──
-@timer_bp.route('/api/subtasks/<subtask_id>/timer/reset', methods=['DELETE'])
-@login_required
-def reset_subtask_timer(subtask_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        now = datetime.now().isoformat()
-        cursor.execute('''UPDATE timer_sessions SET stop_time = ?, durata_secunde = 0
-                          WHERE subtask_id = ? AND stop_time IS NULL''', (now, subtask_id))
-        cursor.execute('DELETE FROM timer_sessions WHERE subtask_id = ?', (subtask_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-    finally:
-        conn.close()
-    return jsonify({'deleted': deleted})
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -600,24 +563,6 @@ def delete_global_task_session(session_id):
         return jsonify({'message': 'Session deleted'})
     finally:
         conn.close()
-
-
-# ── Reset (delete all sessions) for a global task ──
-@timer_bp.route('/api/global-tasks/<task_id>/timer/reset', methods=['DELETE'])
-@login_required
-def reset_global_task_timer(task_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        now = datetime.now().isoformat()
-        cursor.execute('''UPDATE global_task_sessions SET stop_time = ?, durata_secunde = 0
-                          WHERE global_task_id = ? AND stop_time IS NULL''', (now, task_id))
-        cursor.execute('DELETE FROM global_task_sessions WHERE global_task_id = ?', (task_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-    finally:
-        conn.close()
-    return jsonify({'deleted': deleted})
 
 
 # ── Active timers (any kind) for the global sticky banner ──

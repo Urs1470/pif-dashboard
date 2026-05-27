@@ -810,12 +810,6 @@ def _assistant_exec_tool(name, args):
         return {'error': str(e)}
 
 
-@assistant_bp.route('/status', methods=['GET'])
-@login_required
-def assistant_status():
-    return jsonify({'configured': _load_assistant_config() is not None})
-
-
 @assistant_bp.route('/chat', methods=['POST'])
 @login_required
 def assistant_chat():

@@ -24,6 +24,37 @@ pif-dashboard.service
 # Data files (never track)
 proj_tasks.json
 
+# Scratch / scripts artifacts (LLM batch runs, audit dumps, ad-hoc inspections)
+scripts/*_b*_input.json
+scripts/*_b*_out.json
+scripts/*_b*_regen_input.json
+scripts/sample_explicatii*.json
+scripts/audit_export.csv
+scripts/llm_*.log
+scripts/categorie_fill.log
+scripts/fault_codes_inspection.txt
+scripts/check_*.py
+scripts/inspect_*.py
+scripts/verify_99.py
+scripts/verify_batches.py
+scripts/verify_screenshot_params.py
+scripts/deep_audit.py
+scripts/final_quality_check.py
+scripts/fix_*.py
+scripts/gen_b*.py
+scripts/apply_explicatii.py
+scripts/delete_ghost_params.py
+scripts/categorie_fill.py
+scripts/migrate_subtask_timer.py
+scripts/migrate_timer_fk.py
+scripts/test_abb_parse.py
+scripts/_inspect_all_pdfs.py
+
+# Audit / scratch markdown
+AUDIT_*.md
+.commit_msg.txt
+.claude/
+
 # Secrets
 .secret_key
 .env

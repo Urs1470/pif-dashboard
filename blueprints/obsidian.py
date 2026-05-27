@@ -145,16 +145,6 @@ def _obsidian_config_dict():
 # Routes
 # ---------------------------------------------------------------------------
 
-@obsidian_bp.route('/api/obsidian', methods=['GET'])
-@login_required
-def obsidian_index():
-    """Base Obsidian API endpoint - returns available sub-endpoints."""
-    return jsonify({
-        'endpoints': ['/config', '/notes', '/note', '/search', '/mentions'],
-        'vault_configured': bool(_obsidian_vault()),
-    })
-
-
 @obsidian_bp.route('/api/obsidian/config', methods=['GET'])
 @login_required
 def obsidian_config_get():
@@ -248,20 +238,3 @@ def obsidian_search():
     return jsonify({'results': results[:50], 'query': query})
 
 
-@obsidian_bp.route('/api/obsidian/mentions', methods=['GET'])
-@login_required
-def obsidian_mentions():
-    """Notes that mention a given term -- used to auto-link notes to a parameter
-    or project from their detail view. Token-boundary match to avoid noise."""
-    vault = _obsidian_vault()
-    if not vault:
-        return jsonify({'mentions': []}), 200
-    term = (request.args.get('term') or '').strip()
-    if not term or len(term) < 2:
-        return jsonify({'mentions': []})
-    pat = re.compile(r'(?<![\w.])' + re.escape(term) + r'(?![\w.])', re.IGNORECASE)
-    mentions = []
-    for n in _obsidian_index(vault):
-        if pat.search(n['content']) or pat.search(n['title']):
-            mentions.append({'path': n['path'], 'title': n['title'], 'folder': n['folder']})
-    return jsonify({'mentions': mentions[:25], 'term': term})

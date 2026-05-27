@@ -1,4 +1,0 @@
-2026-05-19 00:20:31,693  INFO      START: ALL/explicatie  dry=False
-2026-05-19 00:20:32,293  INFO      14799 76.01 (ACS580)  existing_len=693  qc=rewrite
-2026-05-19 00:20:39,938  INFO        -> rewrite: Afiseaza starea de functionare sau oprire a motoarelor PFC conectate. Este un pa
-2026-05-19 00:20:39,989  INFO      14800 15.54 (ACS580)  existing_len=842  qc=rewrite

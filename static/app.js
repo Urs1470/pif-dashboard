@@ -2921,15 +2921,6 @@ async function exportCurrentProjectPDF() {
     }
 }
 
-function exportClientPDF() {
-    const clientName = prompt('Introduceți numele clientului:');
-    if (!clientName || !clientName.trim()) {
-        return;
-    }
-    const encodedName = encodeURIComponent(clientName.trim());
-    window.open(`${API_BASE}/export/pdf/client/${encodedName}`, '_blank');
-}
-
 // ============ PHASE 2c: TELEGRAM NOTIFICATIONS ============
 
 
@@ -4914,235 +4905,6 @@ async function deleteTimerSession(sessionId) {
 
 // formatTime() lives in core.js (shared with the mobile shell, as formatDuration).
 
-// ============ SVG CHARTS (pure SVG, no Chart.js dependency) ============
-
-function cssVar(name) {
-    return getComputedStyle(document.documentElement)
-        .getPropertyValue(name).trim();
-}
-
-function svgEl(tag, attrs = {}) {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-    return el;
-}
-
-function makeSVG(width, height) {
-    return svgEl('svg', {
-        viewBox: `0 0 ${width} ${height}`,
-        xmlns: 'http://www.w3.org/2000/svg',
-        'aria-hidden': 'true'
-    });
-}
-
-function svgEmptyState(message) {
-    return `<div style="text-align:center; padding:24px 16px;
-        color:var(--chart-text);
-        font-family:'Courier New',monospace; font-size:0.82rem;
-        opacity:0.6;">
-        [ — ] ${message}
-    </div>`;
-}
-
-function renderDonutChart(containerId, data, labels) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    const colors = [cssVar('--c1'), cssVar('--c2'), cssVar('--c3'), cssVar('--c4'), cssVar('--c5')];
-    const textColor = cssVar('--chart-text');
-    const bgColor = cssVar('--chart-bg') || cssVar('--bg2') || '#0e1117';
-    if (!data || data.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
-    const W = 280, H = 280, cx = 100, cy = 130, R = 85, r = 52;
-    const total = data.reduce((a, b) => a + b, 0);
-    const svg = makeSVG(W, H);
-    svg.appendChild(svgEl('circle', { cx, cy, r: R, fill: 'none', stroke: cssVar('--chart-grid') || 'rgba(138,122,90,0.15)', 'stroke-width': '1' }));
-    let angle = -Math.PI / 2;
-    data.forEach((val, i) => {
-        const slice = (val / total) * 2 * Math.PI;
-        const x1 = cx + R * Math.cos(angle), y1 = cy + R * Math.sin(angle);
-        const x2 = cx + R * Math.cos(angle + slice), y2 = cy + R * Math.sin(angle + slice);
-        const x3 = cx + r * Math.cos(angle + slice), y3 = cy + r * Math.sin(angle + slice);
-        const x4 = cx + r * Math.cos(angle), y4 = cy + r * Math.sin(angle);
-        const large = slice > Math.PI ? 1 : 0;
-        svg.appendChild(svgEl('path', {
-            d: `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${r} ${r} 0 ${large} 0 ${x4} ${y4} Z`,
-            fill: colors[i % colors.length], stroke: bgColor, 'stroke-width': '2'
-        }));
-        angle += slice;
-    });
-    const totalText = svgEl('text', { x: cx, y: cy - 6, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '22', 'font-weight': '700' });
-    totalText.textContent = total; svg.appendChild(totalText);
-    const totalLabel = svgEl('text', { x: cx, y: cy + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', opacity: '0.7' });
-    totalLabel.textContent = 'TOTAL'; svg.appendChild(totalLabel);
-    const legendX = 210, legendStartY = 60;
-    labels.forEach((label, i) => {
-        const ly = legendStartY + i * 28;
-        svg.appendChild(svgEl('rect', { x: legendX, y: ly - 9, width: 12, height: 12, rx: '2', fill: colors[i % colors.length] }));
-        const t = svgEl('text', { x: legendX + 18, y: ly + 1, fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '11' });
-        t.textContent = `${label} (${data[i]})`; svg.appendChild(t);
-    });
-    container.innerHTML = ''; container.appendChild(svg);
-}
-
-function renderBarChart(containerId, labels, values, colorIndex = 0) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    if (!values || values.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
-    const colors = [cssVar('--c1'), cssVar('--c2'), cssVar('--c3'), cssVar('--c4'), cssVar('--c5')];
-    const textColor = cssVar('--chart-text');
-    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
-    const W = 380, H = 200, padL = 30, padR = 10, padT = 15, padB = 45;
-    const chartW = W - padL - padR, chartH = H - padT - padB;
-    const maxVal = Math.max(...values, 1);
-    const barW = Math.min(40, (chartW / values.length) * 0.6);
-    const gap = chartW / values.length;
-    const svg = makeSVG(W, H);
-    [0, 0.25, 0.5, 0.75, 1].forEach(fraction => {
-        const y = padT + chartH * (1 - fraction);
-        svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': fraction === 0 ? 'none' : '3,3' }));
-        if (fraction > 0) {
-            const t = svgEl('text', { x: padL - 4, y: y + 3, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
-            t.textContent = Math.round(maxVal * fraction); svg.appendChild(t);
-        }
-    });
-    values.forEach((val, i) => {
-        const barH = (val / maxVal) * chartH;
-        const x = padL + gap * i + gap / 2 - barW / 2, y = padT + chartH - barH;
-        svg.appendChild(svgEl('rect', { x, y, width: barW, height: Math.max(barH, 1), rx: '2', fill: colors[(colorIndex + i) % colors.length] }));
-        const valT = svgEl('text', { x: x + barW / 2, y: y - 4, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', 'font-weight': '600' });
-        valT.textContent = val; svg.appendChild(valT);
-        const labelT = svgEl('text', { x: x + barW / 2, y: H - padB + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
-        labelT.textContent = labels[i].length > 8 ? labels[i].substring(0, 7) + '…' : labels[i]; svg.appendChild(labelT);
-    });
-    container.innerHTML = ''; container.appendChild(svg);
-}
-
-function renderLineChart(containerId, labels, values) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    if (!values || values.length === 0) { container.innerHTML = svgEmptyState('Nu există date'); return; }
-    const accentColor = cssVar('--c1');
-    const textColor = cssVar('--chart-text');
-    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
-    const fillColor = accentColor + '22';
-    const W = 380, H = 200, padL = 30, padR = 15, padT = 15, padB = 40;
-    const chartW = W - padL - padR, chartH = H - padT - padB;
-    const maxVal = Math.max(...values, 1);
-    const stepX = chartW / (values.length - 1 || 1);
-    const svg = makeSVG(W, H);
-    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
-        const y = padT + chartH * (1 - f);
-        svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': f === 0 ? 'none' : '3,3' }));
-        if (f > 0) { const t = svgEl('text', { x: padL - 4, y: y + 3, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' }); t.textContent = Math.round(maxVal * f); svg.appendChild(t); }
-    });
-    const pts = values.map((v, i) => ({ x: padL + i * stepX, y: padT + chartH - (v / maxVal) * chartH }));
-    const fillPath = ['M', pts[0].x, padT + chartH];
-    pts.forEach(p => fillPath.push('L', p.x, p.y));
-    fillPath.push('L', pts[pts.length - 1].x, padT + chartH, 'Z');
-    svg.appendChild(svgEl('path', { d: fillPath.join(' '), fill: fillColor, stroke: 'none' }));
-    const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-    svg.appendChild(svgEl('path', { d: linePath, fill: 'none', stroke: accentColor, 'stroke-width': '2', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
-    pts.forEach((p, i) => {
-        svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: '3.5', fill: accentColor, stroke: cssVar('--chart-bg') || cssVar('--bg') || '#0e1117', 'stroke-width': '1.5' }));
-        const t = svgEl('text', { x: p.x, y: H - padB + 14, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
-        t.textContent = labels[i].length > 7 ? labels[i].substring(2) : labels[i]; svg.appendChild(t);
-    });
-    container.innerHTML = ''; container.appendChild(svg);
-}
-
-function renderHBarChart(containerId, labels, values) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    if (!values || values.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:32px 16px; color:var(--chart-text); font-family:'Courier New',monospace; font-size:0.85rem;"><div style="font-size:1.4rem; margin-bottom:8px; opacity:0.4;">[ 0h ]</div>nicio sesiune timer înregistrată</div>`;
-        return;
-    }
-    const accentColor = cssVar('--c2');
-    const textColor = cssVar('--chart-text');
-    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
-    const rowH = 28, padL = 130, padR = 50, padT = 10, padB = 10;
-    const maxVal = Math.max(...values, 1);
-    const chartW = 380 - padL - padR;
-    const H = padT + padB + values.length * rowH;
-    const svg = makeSVG(380, H);
-    values.forEach((val, i) => {
-        const y = padT + i * rowH, barW = (val / maxVal) * chartW;
-        if (i % 2 === 0) svg.appendChild(svgEl('rect', { x: 0, y, width: 380, height: rowH, fill: gridColor, opacity: '0.4' }));
-        const labelT = svgEl('text', { x: padL - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
-        labelT.textContent = labels[i].length > 18 ? labels[i].substring(0, 17) + '…' : labels[i]; svg.appendChild(labelT);
-        svg.appendChild(svgEl('rect', { x: padL, y: y + 5, width: Math.max(barW, 2), height: rowH - 10, rx: '2', fill: accentColor }));
-        const valT = svgEl('text', { x: padL + barW + 6, y: y + rowH / 2 + 4, fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10', 'font-weight': '600' });
-        valT.textContent = val + 'h'; svg.appendChild(valT);
-    });
-    container.innerHTML = ''; container.appendChild(svg);
-}
-
-function initCharts(data) {
-    renderDonutChart('chart-status', (data.by_status || []).map(s => s.count), (data.by_status || []).map(s => getStatusLabel(s.status)));
-    renderBarChart('chart-manufacturer', (data.by_manufacturer || []).map(m => m.producator || 'Altul'), (data.by_manufacturer || []).map(m => m.count), 0);
-    renderLineChart('chart-monthly', (data.by_month || []).map(m => m.month), (data.by_month || []).map(m => m.count));
-    renderHBarChart('chart-hours', (data.hours_per_project || []).map(h => h.nume), (data.hours_per_project || []).map(h => h.hours));
-}
-
-
-// ============ TIMELINE ============
-
-function renderTimeline(projects) {
-    const container = document.getElementById('timeline-container');
-    if (!container) return;
-    const withDates = (projects || []).filter(p => p.data_incepere || p.deadline);
-    if (withDates.length === 0) { container.innerHTML = svgEmptyState('Nu există proiecte cu date definite'); return; }
-    const today = new Date();
-    let minDate = new Date(today.getTime() - 60 * 86400000);
-    let maxDate = new Date(today.getTime() + 60 * 86400000);
-    withDates.forEach(p => {
-        if (p.data_incepere) { const d = new Date(p.data_incepere); if (d < minDate) minDate = d; }
-        if (p.deadline) { const d = new Date(p.deadline); if (d > maxDate) maxDate = d; }
-    });
-    const totalRange = maxDate - minDate;
-    const statusColors = { in_lucru: cssVar('--c3'), finalizat: cssVar('--c2'), in_asteptare: cssVar('--c1') };
-    const textColor = cssVar('--chart-text');
-    const gridColor = cssVar('--chart-grid') || 'rgba(138,122,90,0.15)';
-    const accentColor = cssVar('--c1');
-    const rowH = 32, padL = 160, padR = 16, padT = 8, padB = 24;
-    const W = 800, chartW = W - padL - padR;
-    const H = padT + padB + withDates.length * rowH;
-    const svg = makeSVG(W, H);
-    const cursor = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-    while (cursor <= maxDate) {
-        const x = padL + ((cursor - minDate) / totalRange) * chartW;
-        svg.appendChild(svgEl('line', { x1: x, y1: padT, x2: x, y2: H - padB, stroke: gridColor, 'stroke-width': '0.5', 'stroke-dasharray': '3,4' }));
-        const t = svgEl('text', { x, y: H - 6, 'text-anchor': 'middle', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '9' });
-        t.textContent = cursor.toLocaleDateString('ro-RO', { month: 'short', year: '2-digit' }); svg.appendChild(t);
-        cursor.setMonth(cursor.getMonth() + 1);
-    }
-    withDates.forEach((p, i) => {
-        const y = padT + i * rowH;
-        const start = p.data_incepere ? new Date(p.data_incepere) : minDate;
-        const end = p.deadline ? new Date(p.deadline) : maxDate;
-        const left = Math.max(0, ((start - minDate) / totalRange) * chartW);
-        const width = Math.min(chartW - left, Math.max(6, ((end - start) / totalRange) * chartW));
-        const color = statusColors[p.status] || cssVar('--c3');
-        if (i % 2 === 0) svg.appendChild(svgEl('rect', { x: 0, y, width: W, height: rowH, fill: gridColor, opacity: '0.3' }));
-        const labelT = svgEl('text', { x: padL - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', fill: textColor, 'font-family': "'Courier New', monospace", 'font-size': '10' });
-        labelT.textContent = p.nume.length > 22 ? p.nume.substring(0, 21) + '…' : p.nume; svg.appendChild(labelT);
-        const barG = svgEl('g', { style: 'cursor:pointer' });
-        barG.addEventListener('click', () => { if (typeof showProjectDetail === 'function') showProjectDetail(p.id); });
-        barG.appendChild(svgEl('rect', { x: padL + left, y: y + 6, width, height: rowH - 12, rx: '3', fill: color, opacity: '0.85' }));
-        if (width > 40) {
-            const barT = svgEl('text', { x: padL + left + 6, y: y + rowH / 2 + 4, fill: '#fff', 'font-family': "'Courier New', monospace", 'font-size': '9', opacity: '0.9' });
-            barT.textContent = p.nume.length > Math.floor(width / 6.5) ? p.nume.substring(0, Math.floor(width / 6.5) - 1) + '…' : p.nume; barG.appendChild(barT);
-        }
-        const title = svgEl('title');
-        title.textContent = `${p.nume}\n${p.data_incepere || '?'} → ${p.deadline || '?'}\nStatus: ${getStatusLabel(p.status)}`; barG.appendChild(title);
-        svg.appendChild(barG);
-    });
-    const todayX = padL + ((today - minDate) / totalRange) * chartW;
-    svg.appendChild(svgEl('line', { x1: todayX, y1: padT, x2: todayX, y2: H - padB, stroke: accentColor, 'stroke-width': '1.5', 'stroke-dasharray': '4,3', opacity: '0.8' }));
-    const todayT = svgEl('text', { x: todayX + 4, y: padT + 10, fill: accentColor, 'font-family': "'Courier New', monospace", 'font-size': '9', 'font-weight': '600' });
-    todayT.textContent = 'azi'; svg.appendChild(todayT);
-    container.innerHTML = ''; container.appendChild(svg);
-}
-
 // ============ SWIPE TO COMPLETE (Mobile) ============
 
 let touchStartX = 0;
@@ -6995,13 +6757,6 @@ function renderInfluentatDeDesktop(param) {
     );
 }
 
-function copyParamCode() {
-    if (!currentParam) return;
-    navigator.clipboard.writeText(currentParam.parametru || '').then(() => {
-        showToast('Cod copiat: ' + currentParam.parametru);
-    });
-}
-
 var el = document.getElementById('param-detail-modal');
 if (el) el.addEventListener('click', function(e) {
     if (e.target === this) closeParamModal();
@@ -7450,7 +7205,6 @@ function openFaultManual() {
 
 // ============ PWA / OFFLINE SUPPORT ============
 
-let deferredPrompt = null;
 // Set to true ONLY when the user clicks "Reîncarcă" in the update banner.
 // Guards the controllerchange handler so a background SW activation can never
 // reload the page on its own (this was the "page flashes / reloads" bug).
@@ -7497,15 +7251,6 @@ function initPWA() {
         });
     }
 
-    // Capture install prompt
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        console.log('Install prompt captured');
-        // Show the install button
-        const installBtn = document.getElementById('install-pwa-btn');
-        if (installBtn) installBtn.style.display = 'flex';
-    });
 }
 
 // Non-blocking banner offering to apply a pending update. The page reloads
@@ -7542,20 +7287,6 @@ function promptSWUpdate(worker) {
     showSWUpdateBanner(worker);
 }
 
-async function installPWA() {
-    if (!deferredPrompt) {
-        showToast('Instalare nu este disponibilă', true);
-        return;
-    }
-    
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-        showToast('PIF Dashboard instalat!', 'success');
-    }
-    deferredPrompt = null;
-}
 
 // Initialize PWA on load
 document.addEventListener('DOMContentLoaded', initPWA);
