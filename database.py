@@ -464,8 +464,9 @@ def migrate_v12_to_v13():
         cursor.execute('ALTER TABLE parametri_master ADD COLUMN conditie_vizibilitate TEXT')
 
     # Extract "(Only visible ...)" / "(Visible when ...)" from descriere
+    # Also strip residual punctuation (e.g. ". Temperature..." -> "Temperature...")
     import re
-    pattern = re.compile(r'^\s*\((?:Only )?[Vv]isible\b[^)]*\)\s*')
+    pattern = re.compile(r'^\s*\((?:Only )?[Vv]isible\b[^)]*\)[\s.,;:]*')
     cursor.execute("SELECT id, descriere FROM parametri_master WHERE descriere LIKE '%(Only visible%' OR descriere LIKE '%(Visible when%'")
     rows = cursor.fetchall()
     updated = 0
