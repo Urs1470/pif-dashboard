@@ -1387,9 +1387,13 @@ async function _tcardResetTimer(kind, taskId) {
                 await apiDelete(`/global-task-timer/${s.id}`);
             }
         } else {
-            // Project tasks: stop then use bulk reset endpoint
+            // Project tasks: stop then fetch sessions and delete each
             try { await apiPost(`/tasks/${taskId}/timer/stop`, {}); } catch (_) {}
-            await apiDelete(`/tasks/${taskId}/timer/reset`);
+            const data = await apiGet(`/tasks/${taskId}/timer`);
+            const sessions = data.sessions || [];
+            for (const s of sessions) {
+                await apiDelete(`/timer/${s.id}`);
+            }
         }
         // Stop any local ticking interval
         if (_inlineTimerIntervals[taskId]) { clearInterval(_inlineTimerIntervals[taskId]); delete _inlineTimerIntervals[taskId]; }
@@ -1409,7 +1413,12 @@ async function resetSubtaskTimer(subtaskId, parentTaskId) {
     try {
         // Stop running timer first (ignore if not running)
         try { await apiPost(`/subtasks/${subtaskId}/timer/stop`, {}); } catch (_) {}
-        await apiDelete(`/subtasks/${subtaskId}/timer/reset`);
+        // Fetch all sessions then delete each one
+        const data = await apiGet(`/subtasks/${subtaskId}/timer`);
+        const sessions = data.sessions || [];
+        for (const s of sessions) {
+            await apiDelete(`/timer/${s.id}`);
+        }
         if (_subtaskTimerIntervals[subtaskId]) { clearInterval(_subtaskTimerIntervals[subtaskId]); delete _subtaskTimerIntervals[subtaskId]; }
         showToast('Timer subtask resetat');
         // Invalidate subtask cache and re-render

@@ -1487,12 +1487,15 @@ def get_subtask_timer(subtask_id):
         return jsonify({'error': 'Subtask not found'}), 404
     cursor.execute('SELECT start_time FROM timer_sessions WHERE subtask_id = ? AND stop_time IS NULL ORDER BY start_time DESC LIMIT 1', (subtask_id,))
     running = cursor.fetchone()
+    cursor.execute('SELECT * FROM timer_sessions WHERE subtask_id = ? ORDER BY start_time DESC', (subtask_id,))
+    sessions = [row_to_dict(r) for r in cursor.fetchall()]
     conn.close()
     total = _sum_timer('subtask_id', subtask_id)
     return jsonify({
         'running': running is not None,
         'running_since': running['start_time'] if running else None,
-        'total_secunde': total
+        'total_secunde': total,
+        'sessions': sessions,
     })
 
 @app.route('/api/subtasks/<subtask_id>/timer/start', methods=['POST'])
@@ -1605,12 +1608,15 @@ def get_task_timer(task_id):
         ORDER BY start_time DESC LIMIT 1
     ''', (task_id,))
     running = cursor.fetchone()
+    cursor.execute('SELECT * FROM timer_sessions WHERE task_id = ? ORDER BY start_time DESC', (task_id,))
+    sessions = [row_to_dict(r) for r in cursor.fetchall()]
     conn.close()
     total = _sum_timer('task_id', task_id)
     return jsonify({
         'running': running is not None,
         'running_since': running['start_time'] if running else None,
         'total_secunde': total,
+        'sessions': sessions,
     })
 
 @app.route('/api/tasks/<task_id>/timer/start', methods=['POST'])
