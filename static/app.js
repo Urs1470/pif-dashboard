@@ -1374,7 +1374,7 @@ function _tcardOpenManualTime(kind, taskId) {
 }
 
 async function _tcardResetTimer(kind, taskId) {
-    if (!confirm('Sigur vrei să resetezi timerul? Toate sesiunile înregistrate vor fi șterse.')) return;
+    if (!confirm('Sigur vrei sa resetezi timerul? Toate sesiunile inregistrate vor fi sterse.')) return;
     const apiKind = kind === 'overview' ? 'global' : kind;
     try {
         const url = apiKind === 'global'
