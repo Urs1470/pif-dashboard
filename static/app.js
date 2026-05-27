@@ -6814,6 +6814,16 @@ function openParamModal(param) {
     document.getElementById('param-modal-familie').textContent = param.familie || '';
     document.getElementById('param-modal-name').textContent = extractParamName(param.descriere) || param.descriere_scurta || '-';
     document.getElementById('param-modal-descriere').textContent = param.descriere || '-';
+    // Visibility condition chip
+    const vizEl = document.getElementById('param-modal-vizibilitate');
+    if (vizEl) {
+        if (param.conditie_vizibilitate) {
+            vizEl.textContent = param.conditie_vizibilitate;
+            vizEl.style.display = 'inline-block';
+        } else {
+            vizEl.style.display = 'none';
+        }
+    }
     document.getElementById('param-modal-acces').textContent = param.acces || '-';
     document.getElementById('param-modal-tip').textContent = param.tip_date || '-';
     const def = param.valoare_default_str || (param.valoare_default !== null && param.valoare_default !== undefined ? param.valoare_default : '-');

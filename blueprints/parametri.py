@@ -52,7 +52,7 @@ def get_parametri():
 
     # Build count query first
     count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
-    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la FROM parametri_master WHERE 1=1"
+    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la, conditie_vizibilitate FROM parametri_master WHERE 1=1"
     params = []
 
     if search:
@@ -100,7 +100,7 @@ def search_parametri():
     familie = request.args.get('familie', '')
     limit = request.args.get('limit', 50, type=int)
 
-    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la FROM parametri_master WHERE 1=1"
+    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la, conditie_vizibilitate FROM parametri_master WHERE 1=1"
     count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
     params = []
 

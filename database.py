@@ -56,7 +56,7 @@ def close_db(exc=None):
 # v12: Dropped redundant indexes + orphan tables (audit_log, parametri_std),
 #      added prune_budget_audit trigger (cap 5000 rows/user)
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -442,6 +442,50 @@ def migrate_v11_to_v12():
     logger.info("Migration v11->v12: dropped redundant indexes/orphan tables, added prune_budget_audit trigger")
 
 
+def migrate_v12_to_v13():
+    """v12 -> v13: clean ABB parameter descriptions.
+    349 params had "(Only visible when ...)" or "(Visible when ...)" prefixes
+    baked into `descriere` from ABB manual parsing. Extract these into a new
+    `conditie_vizibilitate` column and strip them from the description.
+    Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='parametri_master'")
+    if not cursor.fetchone():
+        conn.close()
+        logger.info("Migration v12->v13: parametri_master does not exist yet, skipping")
+        return
+
+    # Add column if missing
+    cursor.execute("PRAGMA table_info(parametri_master)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'conditie_vizibilitate' not in cols:
+        cursor.execute('ALTER TABLE parametri_master ADD COLUMN conditie_vizibilitate TEXT')
+
+    # Extract "(Only visible ...)" / "(Visible when ...)" from descriere
+    import re
+    pattern = re.compile(r'^\s*\((?:Only )?[Vv]isible\b[^)]*\)\s*')
+    cursor.execute("SELECT id, descriere FROM parametri_master WHERE descriere LIKE '%(Only visible%' OR descriere LIKE '%(Visible when%'")
+    rows = cursor.fetchall()
+    updated = 0
+    for row_id, desc in rows:
+        m = pattern.match(desc or '')
+        if m:
+            condition = m.group(0).strip().strip('()')
+            clean_desc = desc[m.end():].strip()
+            # Capitalize first letter of cleaned description
+            if clean_desc and clean_desc[0].islower():
+                clean_desc = clean_desc[0].upper() + clean_desc[1:]
+            cursor.execute('UPDATE parametri_master SET descriere = ?, conditie_vizibilitate = ? WHERE id = ?',
+                           (clean_desc, condition, row_id))
+            updated += 1
+
+    conn.commit()
+    conn.close()
+    logger.info(f"Migration v12->v13: added conditie_vizibilitate, cleaned {updated} param descriptions")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -500,6 +544,11 @@ def run_migrations():
         migrate_v11_to_v12()
         set_schema_version(12)
         current_version = 12
+
+    if current_version < 13:
+        migrate_v12_to_v13()
+        set_schema_version(13)
+        current_version = 13
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
