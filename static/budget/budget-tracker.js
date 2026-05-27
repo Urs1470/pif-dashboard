@@ -2,6 +2,26 @@
 // Budget Tracker - Vanilla JS (PIF design system)
 // ====================================================================
 
+// CSRF helper + wrapper (budget is a standalone SPA — core.js is NOT loaded).
+function _budgetCsrfToken() {
+  var m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+  return m ? m[1] : '';
+}
+function apiFetch(url, opts) {
+  opts = opts || {};
+  var headers = opts.headers || {};
+  if (!headers['Content-Type'] && !(opts.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  var method = (opts.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    headers['X-CSRF-Token'] = _budgetCsrfToken();
+  }
+  opts.headers = headers;
+  opts.credentials = opts.credentials || 'same-origin';
+  return fetch(url, opts);
+}
+
 var LUNI_LABELS_RO = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec'];
 var LUNI = ['Mai','Iun','Iul','Aug','Sep','Oct','Noi','Dec']; // recomputed by refreshLuni()
 var LUNI_KEYS = ['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12']; // recomputed
@@ -755,9 +775,8 @@ async function saveDataNow() {
   // server-side conflict check (used after a local-backup restore).
   if (state.baseUpdated !== undefined) body.base_updated = state.baseUpdated;
   try {
-    var r = await fetch(API_BASE + '/state', {
+    var r = await apiFetch(API_BASE + '/state', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify(body)
     });

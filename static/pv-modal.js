@@ -662,12 +662,12 @@
           fd.append(`image_${i}_anchor`, entry.anchor || 'final');
           fd.append(`image_${i}_width`, entry.width || 'half');
         });
-        res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
+        res = await apiFetch(`/api/proiecte/${projectId}/pv/service/generate`, {
           method: 'POST', body: fd, credentials: 'same-origin',
         });
       } else {
-        res = await fetch(`/api/proiecte/${projectId}/pv/service/generate`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+        res = await apiFetch(`/api/proiecte/${projectId}/pv/service/generate`, {
+          method: 'POST',
           body: JSON.stringify(payload), credentials: 'same-origin',
         });
       }
@@ -1125,12 +1125,12 @@
           fd.append(`image_${i}_anchor`, entry.anchor || 'final');
           fd.append(`image_${i}_width`, entry.width || 'half');
         });
-        res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
+        res = await apiFetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
           method: 'POST', body: fd, credentials: 'same-origin',
         });
       } else {
-        res = await fetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+        res = await apiFetch(`/api/proiecte/${projectId}/pv/pif/generate`, {
+          method: 'POST',
           body: JSON.stringify(payload), credentials: 'same-origin',
         });
       }

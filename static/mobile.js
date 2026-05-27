@@ -249,9 +249,9 @@ async function apiGet(url) {
 }
 
 async function apiPost(url, data) {
-  const res = await fetch(url, {
+  // apiFetch (core.js) handles CSRF header + JSON Content-Type.
+  const res = await apiFetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(data)
   });
@@ -265,9 +265,8 @@ async function apiPost(url, data) {
 }
 
 async function apiPut(url, data) {
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(data)
   });
@@ -279,7 +278,7 @@ async function apiPut(url, data) {
 }
 
 async function apiDelete(url) {
-  const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+  const res = await apiFetch(url, { method: 'DELETE', credentials: 'include' });
   if (res.status === 401) { sessionStorage.removeItem('pif_auth'); showLogin(); return null; }
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
@@ -2673,7 +2672,7 @@ async function uploadMobileFile(projectId) {
   const formData = new FormData();
   formData.append('file', input.files[0]);
   try {
-    const res = await fetch(`/api/proiecte/${projectId}/atasamente`, {
+    const res = await apiFetch(`/api/proiecte/${projectId}/atasamente`, {
       method: 'POST', credentials: 'include', body: formData
     });
     if (res.ok) {
@@ -2847,7 +2846,7 @@ async function onMobileImportFileSelected(event) {
   formData.append('model', model);
 
   try {
-    const res = await fetch('/api/import-params/preview', { method: 'POST', body: formData });
+    const res = await apiFetch('/api/import-params/preview', { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) {
       showMobileToast(data.error || 'Eroare la parsare', 'error');
@@ -3771,9 +3770,8 @@ async function sendHermesMessage() {
     .map(m => ({ role: m.role, content: m.content }));
 
   try {
-    const res = await fetch('/api/assistant/chat', {
+    const res = await apiFetch('/api/assistant/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ messages: payload })
     });

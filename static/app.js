@@ -229,9 +229,8 @@ function enhanceAllSelects() {
 }
 
 async function apiPost(url, data) {
-    const res = await fetch(API_BASE + url, {
+    const res = await apiFetch(API_BASE + url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -240,9 +239,8 @@ async function apiPost(url, data) {
 }
 
 async function apiPut(url, data) {
-    const res = await fetch(API_BASE + url, {
+    const res = await apiFetch(API_BASE + url, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -251,14 +249,15 @@ async function apiPut(url, data) {
 }
 
 async function apiDelete(url) {
-    const res = await fetch(API_BASE + url, { method: 'DELETE' });
+    const res = await apiFetch(API_BASE + url, { method: 'DELETE' });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     _invalidateCache(url);
     return res.json();
 }
 
 async function apiUpload(url, formData) {
-    const res = await fetch(API_BASE + url, {
+    // apiFetch detects FormData and skips Content-Type; still adds CSRF token.
+    const res = await apiFetch(API_BASE + url, {
         method: 'POST',
         body: formData
     });
@@ -2151,7 +2150,7 @@ async function toggleGtTimerInline(taskId, btnElement) {
     const isRunning = btnElement ? btnElement.dataset.timerRunning === 'true' : false;
     try {
         if (isRunning) {
-            const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
+            const res = await apiFetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/stop`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to stop timer');
             const data = await res.json();
             if (btnElement) {
@@ -2169,7 +2168,7 @@ async function toggleGtTimerInline(taskId, btnElement) {
             const card = btnElement ? btnElement.closest('.tcard') : null;
             let baseTotal = 0;
             if (card) { try { baseTotal = JSON.parse(card.dataset.taskJson || '{}').timp_secunde || 0; } catch (_) {} }
-            const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
+            const res = await apiFetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to start timer');
             const data = await res.json();
             const startTime = new Date(data.start_time).getTime();
@@ -2623,9 +2622,8 @@ async function importBackup(event) {
     reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            await fetch(`${API_BASE}/restore`, {
+            await apiFetch(`${API_BASE}/restore`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
             showToast('Backup restaurat cu succes!');
@@ -3324,9 +3322,8 @@ async function saveObsidianConfig() {
     statusEl.classList.add('show');
     statusEl.innerHTML = '<span style="color:var(--text2)">Se verifică...</span>';
     try {
-        const res = await fetch('/api/obsidian/config', {
+        const res = await apiFetch('/api/obsidian/config', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ vault_path: path, folders: folders })
         });
         const data = await res.json();
@@ -3484,9 +3481,8 @@ async function sendAssistantMessage() {
         .map(m => ({ role: m.role, content: m.content }));
 
     try {
-        const res = await fetch('/api/assistant/chat', {
+        const res = await apiFetch('/api/assistant/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages: payload })
         });
         const data = await res.json();
@@ -5932,7 +5928,7 @@ async function onImportParamsFileSelected(event) {
         console.error('Import params preview failed:', e);
         let msg = 'Eroare la parsare';
         try {
-            const res = await fetch(API_BASE + '/import-params/preview', { method: 'POST', body: formData });
+            const res = await apiFetch(API_BASE + '/import-params/preview', { method: 'POST', body: formData });
             const j = await res.json();
             if (j && j.error) msg = j.error;
         } catch (_) {}
