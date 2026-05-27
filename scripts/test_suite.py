@@ -167,7 +167,9 @@ def api_smoke_test():
     except Exception as e:
         log("fail", f"Server error: {e}"); return
     
-    pin = os.environ.get('PIF_DASHBOARD_PIN', 'pif2024')
+    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
+    if not pin:
+        log("fail", "PIF_DASHBOARD_PIN env var is required"); return
     try:
         r = requests.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
         if r.status_code == 401: log("fail", "Login failed - invalid PIN"); return

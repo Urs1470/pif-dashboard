@@ -1,10 +1,13 @@
 """Dump the live budget state structure + values for analysis."""
-import requests, sys, json
+import requests, sys, json, os
 sys.stdout.reconfigure(encoding='utf-8')
 
-SERVER = "https://pif.iupif.org"
+SERVER = os.environ.get("PIF_SERVER", "https://pif.iupif.org")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 s = requests.Session()
-s.post(f"{SERVER}/login", json={"pin": "pif2024"}, timeout=30)
+s.post(f"{SERVER}/login", json={"pin": PIN}, timeout=30)
 st = s.get(f"{SERVER}/budget/api/state", timeout=30).json()
 data = st['data'] or {}
 

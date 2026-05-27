@@ -717,7 +717,7 @@ async function populateFamilyDropdown(allParamsParam) {
     if (!select) return;
     select.innerHTML = '<option value="all">Toate familiile</option>';
     families.forEach(f => {
-      select.innerHTML += '<option value="' + f + '">' + f + '</option>';
+      select.innerHTML += '<option value="' + escapeHtml(f) + '">' + escapeHtml(f) + '</option>';
     });
   } catch (e) {
     console.error('[Dropdown] Error:', e);
@@ -974,7 +974,7 @@ async function loadParameters() {
       if (select) {
         const families = Object.keys(_mobileParamFamilieCounts).sort();
         select.innerHTML = '<option value="all">Toate familiile</option>';
-        families.forEach(f => { select.innerHTML += '<option value="'+f+'">'+f+'</option>'; });
+        families.forEach(f => { select.innerHTML += '<option value="'+escapeHtml(f)+'">'+escapeHtml(f)+'</option>'; });
       }
     } catch (e) {}
 
@@ -1005,7 +1005,7 @@ async function loadParameters() {
     }
   } catch (e) {
     const listEl = document.getElementById('params-list');
-    if (listEl) listEl.innerHTML = '<div class="empty-state"><i data-lucide="alert-triangle" style="color:var(--warning);"></i> Eroare: ' + (e.message || 'necunoscută') + '</div>';
+    if (listEl) listEl.innerHTML = '<div class="empty-state"><i data-lucide="alert-triangle" style="color:var(--warning);"></i> Eroare: ' + escapeHtml(e.message || 'necunoscută') + '</div>';
     if (window.lucide) try { window.lucide.createIcons(); } catch (_e) {}
   }
 }
@@ -1169,7 +1169,7 @@ function openMobileParamModal(param) {
   const explicatieRow = modal.querySelector('#mpm-explicatie-row');
   const explicatieEl = modal.querySelector('#mpm-explicatie');
   if (param.explicatie && param.explicatie.trim().length > 0) {
-    explicatieEl.innerHTML = param.explicatie;
+    explicatieEl.textContent = param.explicatie;
     renderMathIn(explicatieEl);
     explicatieRow.style.display = 'block';
   } else if (_isOnline && param.id) {
@@ -1178,7 +1178,7 @@ function openMobileParamModal(param) {
     explicatieEl.textContent = 'Se încarcă...';
     apiGet('/api/parametri/' + param.id).then(detail => {
       if (detail && detail.explicatie) {
-        explicatieEl.innerHTML = detail.explicatie;
+        explicatieEl.textContent = detail.explicatie;
         renderMathIn(explicatieEl);
       } else {
         explicatieEl.textContent = 'Nicio explicație disponibilă';
@@ -1207,10 +1207,10 @@ function openMobileParamModal(param) {
 // (desktop chip is clickable: has the .influ-chip class + data-code attr + cursor/transition;
 // mobile chip is display-only). Different behaviour, intentionally left alone.
 function _mobChip(entry, color) {
-  const code = entry.code || entry.parametru || '?';
-  const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${entry.tip}]</span>` : '';
-  const labelText = entry.descriere_scurta ? ` <span style="font-size:0.8em;opacity:0.75;">${entry.descriere_scurta}</span>` : '';
-  const efectText = entry.efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${entry.efect}</div>` : '';
+  const code = escapeHtml(entry.code || entry.parametru || '?');
+  const tipTag = entry.tip ? ` <span style="font-size:0.7em;opacity:0.6;">[${escapeHtml(entry.tip)}]</span>` : '';
+  const labelText = entry.descriere_scurta ? ` <span style="font-size:0.8em;opacity:0.75;">${escapeHtml(entry.descriere_scurta)}</span>` : '';
+  const efectText = entry.efect ? `<div style="font-size:0.8em;opacity:0.8;margin-top:1px;">${escapeHtml(entry.efect)}</div>` : '';
   return `<div style="margin:4px 0;padding:6px 10px;background:var(--bg);border-radius:6px;border-left:3px solid ${color};">
     <span style="font-family:'JetBrains Mono', monospace;font-weight:600;color:${color};">${code}</span>${tipTag}${labelText}
     ${efectText}

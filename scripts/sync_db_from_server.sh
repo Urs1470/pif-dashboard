@@ -7,8 +7,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SERVER="https://pif.iupif.org"
-PIN="pif2024"
+SERVER="${PIF_SERVER:-https://pif.iupif.org}"
+PIN="${PIF_DASHBOARD_PIN:?PIF_DASHBOARD_PIN env var is required}"
 COOKIES="$(mktemp)"
 TS="$(date +%Y%m%d_%H%M%S)"
 

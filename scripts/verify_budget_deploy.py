@@ -1,9 +1,11 @@
 """Verify budget app after deploy: login, check endpoints respond correctly."""
-import requests, sys, time
+import requests, sys, time, os
 sys.stdout.reconfigure(encoding='utf-8')
 
-SERVER = "https://pif.iupif.org"
-PIN = "pif2024"
+SERVER = os.environ.get("PIF_SERVER", "https://pif.iupif.org")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 
 s = requests.Session()
 r = s.post(f"{SERVER}/login", json={"pin": PIN}, timeout=30)

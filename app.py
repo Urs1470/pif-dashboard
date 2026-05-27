@@ -89,15 +89,17 @@ def file_hash(filepath):
     except FileNotFoundError:
         return 'dev'
 
+_asset_versions = {
+    'js_version': file_hash('static/mobile.js'),
+    'sw_version': file_hash('static/service-worker.js'),
+    'app_version': file_hash('static/app.js'),
+    'core_version': file_hash('static/core.js'),
+    'style_version': file_hash('static/style.css'),
+}
+
 @app.context_processor
 def inject_version():
-    return {
-        'js_version': file_hash('static/mobile.js'),
-        'sw_version': file_hash('static/service-worker.js'),
-        'app_version': file_hash('static/app.js'),
-        'core_version': file_hash('static/core.js'),
-        'style_version': file_hash('static/style.css')
-    }
+    return _asset_versions
 
 # ============ SESSION CONFIG ============
 
@@ -151,32 +153,40 @@ logger = setup_logging()
 rate_limit_store = {}  # {ip: [(timestamp, count), ...]}
 RATE_LIMIT = 60  # requests per minute
 RATE_WINDOW = 60  # seconds
+_RATE_MAX_IPS = 10000
+_rate_last_evict = 0.0
 
 def check_rate_limit():
     """Simple token-bucket rate limiter. Returns True if allowed, False if exceeded."""
+    global _rate_last_evict
     client_ip = _client_ip()
     now = time.time()
-    
-    # Clean old entries
+
+    if now - _rate_last_evict > RATE_WINDOW:
+        stale = [ip for ip, entries in rate_limit_store.items()
+                 if all(now - ts >= RATE_WINDOW for ts, _ in entries)]
+        for ip in stale:
+            del rate_limit_store[ip]
+        _rate_last_evict = now
+
+    if len(rate_limit_store) >= _RATE_MAX_IPS and client_ip not in rate_limit_store:
+        return False
+
     if client_ip in rate_limit_store:
         rate_limit_store[client_ip] = [
             (ts, count) for ts, count in rate_limit_store[client_ip]
             if now - ts < RATE_WINDOW
         ]
-    
-    # Count requests in current window
-    request_count = 0
-    if client_ip in rate_limit_store:
-        request_count = sum(count for ts, count in rate_limit_store[client_ip])
-    
+
+    request_count = sum(count for ts, count in rate_limit_store.get(client_ip, []))
+
     if request_count >= RATE_LIMIT:
         return False
-    
-    # Record this request
+
     if client_ip not in rate_limit_store:
         rate_limit_store[client_ip] = []
     rate_limit_store[client_ip].append((now, 1))
-    
+
     return True
 
 # Phase 2c: One-time startup initialization
@@ -252,11 +262,7 @@ def get_hashed_pin():
     """Get hashed PIN from environment variable"""
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        if app.debug:
-            logger.warning("PIF_DASHBOARD_PIN nu este setat — folosind fallback in modul DEBUG.")
-            pin = 'pif2024'
-        else:
-            raise RuntimeError("PIF_DASHBOARD_PIN nu este setat! Seteaza variabila de mediu pe server.")
+        raise RuntimeError("PIF_DASHBOARD_PIN nu este setat! Seteaza variabila de mediu.")
     # Generate hash on first call if not cached
     if not hasattr(get_hashed_pin, '_hash'):
         get_hashed_pin._hash = generate_password_hash(pin)
@@ -326,10 +332,7 @@ def login_hash():
     # Get stored PIN (plaintext for hashing)
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        if app.debug:
-            pin = 'pif2024'
-        else:
-            return jsonify({'success': False, 'error': 'Server misconfigured'}), 500
+        return jsonify({'success': False, 'error': 'Server misconfigured'}), 500
     expected_hash = hashlib.sha256(pin.encode()).hexdigest()
     
     if hmac.compare_digest(str(pin_hash), expected_hash):
@@ -578,24 +581,23 @@ def batch_proiecte():
     
     conn = get_db()
     cursor = conn.cursor()
-    
+
     try:
         if action == 'update_status':
             new_status = data.get('status')
             if not new_status:
                 return jsonify({'error': 'Status required for update'}), 400
-            
+
             now = datetime.now().isoformat()
             for pid in project_ids:
                 cursor.execute('UPDATE proiecte SET status = ?, updated_at = ? WHERE id = ?', (new_status, now, pid))
-            
+
             conn.commit()
             logger.info(f"Batch updated {len(project_ids)} projects to status: {new_status}")
             return jsonify({'message': f'{len(project_ids)} projects updated'})
-        
+
         elif action == 'delete':
             for pid in project_ids:
-                # Delete related data first. Subtasks are keyed by task_id.
                 cursor.execute(
                     'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
                     (pid,)
@@ -605,21 +607,22 @@ def batch_proiecte():
                 for table in tables:
                     cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
-            
+
             conn.commit()
             for pid in project_ids:
                 shutil.rmtree(os.path.join(UPLOAD_FOLDER, pid), ignore_errors=True)
             logger.info(f"Batch deleted {len(project_ids)} projects")
             return jsonify({'message': f'{len(project_ids)} projects deleted'})
-        
+
         else:
             return jsonify({'error': 'Invalid action'}), 400
-    
+
     except Exception as e:
         conn.rollback()
-        conn.close()
         logger.error(f"Batch operation error: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Batch operation failed'}), 500
+    finally:
+        conn.close()
 
 # ============ TASKS ============
 
@@ -4479,28 +4482,6 @@ def global_search():
                 break
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
-
-
-# ============ MOBILE NOTES SYNC ============
-
-@app.route('/api/sync/notes', methods=['POST'])
-@login_required
-def sync_notes():
-    """Sync notes from mobile app. Mobile stores notes locally in IndexedDB
-    and syncs with server. Currently returns empty arrays since there is
-    no server-side notes storage (notes are Obsidian-based)."""
-    data = request.get_json(silent=True) or {}
-    pending_notes = data.get('notes', [])
-    last_sync = data.get('last_sync')
-
-    saved = []
-    server_notes = []
-
-    return jsonify({
-        'saved': saved,
-        'server_notes': server_notes,
-        'synced_at': datetime.now().isoformat()
-    })
 
 
 # ============ INIT DEFAULT TEMPLATES ============

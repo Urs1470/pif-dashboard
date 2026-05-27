@@ -32,7 +32,7 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
 - **Laptop-server (Linux)**: `/home/ion-ursu/Projects/pif-dashboard` — Hermes lucrează aici **și** aplicația rulează din același folder
 - **Service**: `pif-dashboard.service` (systemd, user `ion-ursu`), expus prin `cloudflared.service` la `https://pif.iupif.org/`
 - **DB**: `/home/ion-ursu/Projects/pif-dashboard/pif_dashboard.db` (~41MB, **nu în repo**). Backup-uri în `backups/` și `backup-pre-budget-update/` — manuale sau via `backup_db.py`. Niciun cron automat.
-- **Backend**: Flask + SQLite single-process, auth PIN (`pif2024` default, `PIF_DASHBOARD_PIN` env var override)
+- **Backend**: Flask + SQLite single-process, auth PIN via `PIF_DASHBOARD_PIN` env var (required)
 - **Frontend**:
   - Desktop: `templates/index.html` + `static/app.js`
   - Mobile (PWA, ruta `/m`): `templates/mobile.html` + `static/mobile.js`
@@ -283,7 +283,7 @@ Apoi diagnostichează în pace.
 - **Service Worker cache-uiește agresiv** — la deploy nou pe static assets, bump versiunile din `service-worker.js` ca activate-event să șteargă cache-ul vechi. Userii vor primi versiunea nouă la următoarea încărcare.
 - **`new project form crash` pe desktop** — `#jurnal-data` a fost șters dintr-o iterație anterioară. Codul care îl mai referă trebuie `if (jd) jd.value = ...`. Pattern: guard pe `getElementById` în tot codul care toucheză DOM-ul Acasă.
 - **Cloudflare Tunnel poate cădea independent** — 1033 error apare când `cloudflared` e jos pe server. NU e cod-related. Ion îl restart-ează: `sudo systemctl restart cloudflared`.
-- **PIN-ul** default e `pif2024`. NU păstra PIN-ul în niciun fișier committed.
+- **PIN-ul** e configurat exclusiv prin `PIF_DASHBOARD_PIN` env var. NU păstra PIN-ul în niciun fișier committed.
 - **Webhook auto-deploy crapă tăcut dacă ai modificări locale ne-comitate pe server** — pe laptop-server, dacă tu (Hermes) ai un fișier modificat dar ne-commit-uit (ex: `scripts/audit_pdf.py` în lucru), `git pull` refuză să suprascrie și webhook-ul returnează 500. Toate push-urile ulterioare ale lui Claude se acumulează pe GitHub fără să ajungă pe server. **Regulă**: păstrează worktree-ul de pe server CURAT. Înainte de orice sesiune de lucru pe scripts/audit, fie commit + push WIP, fie `git stash`. Verifică:
   ```bash
   cd ~/Projects/pif-dashboard && git status

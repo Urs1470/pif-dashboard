@@ -223,7 +223,7 @@ def set_state():
     except Exception as e:
         db.rollback()
         current_app.logger.exception('budget set_state failed')
-        return jsonify({'error': 'save failed', 'detail': str(e)}), 500
+        return jsonify({'error': 'save failed'}), 500
 
 
 @budget_bp.route('/api/audit', methods=['GET'])

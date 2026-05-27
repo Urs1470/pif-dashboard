@@ -11,8 +11,10 @@ Usage:  python scripts/upload_db.py
 """
 import requests, sys, pathlib, time, sqlite3, tempfile, os
 
-SERVER = "https://pif.iupif.org"
-PIN = "pif2024"
+SERVER = os.environ.get("PIF_SERVER", "https://pif.iupif.org")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 DB_PATH = pathlib.Path("pif_dashboard.db")
 BUDGET_TABLES = ("budget_state", "budget_audit")
 

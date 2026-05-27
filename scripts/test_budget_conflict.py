@@ -1,11 +1,14 @@
 """Test the 409 concurrency check WITHOUT mutating real data.
 A POST with a stale base_updated is rejected BEFORE any DB write."""
-import requests, sys
+import requests, sys, os
 sys.stdout.reconfigure(encoding='utf-8')
 
-SERVER = "https://pif.iupif.org"
+SERVER = os.environ.get("PIF_SERVER", "https://pif.iupif.org")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 s = requests.Session()
-s.post(f"{SERVER}/login", json={"pin": "pif2024"}, timeout=30)
+s.post(f"{SERVER}/login", json={"pin": PIN}, timeout=30)
 
 # Current state + version token
 st = s.get(f"{SERVER}/budget/api/state", timeout=30).json()

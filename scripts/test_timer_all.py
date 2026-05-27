@@ -4,9 +4,12 @@ import requests
 import time
 import json
 import sys
+import os
 
-BASE = "http://localhost:5000"
-PIN = "pif2024"
+BASE = os.environ.get("PIF_SERVER", "http://localhost:5000")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 PASS = 0
 FAIL = 0
 ERRORS = []

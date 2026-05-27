@@ -66,7 +66,7 @@ def get_schema_version():
         cursor.execute("SELECT version FROM schema_version LIMIT 1")
         row = cursor.fetchone()
         version = row['version'] if row else 1
-    except:
+    except Exception:
         version = 1
     conn.close()
     return version
@@ -130,7 +130,7 @@ def migrate_v1_to_v2():
     # Add tip_atasament column to atasamente if not exists
     try:
         cursor.execute("ALTER TABLE atasamente ADD COLUMN tip_atasament TEXT DEFAULT 'fisier'")
-    except:
+    except Exception:
         pass
     
     # Performance indexes
@@ -160,19 +160,19 @@ def migrate_v2_to_v3():
     # Add ordine column to tasks table if not exists
     try:
         cursor.execute("ALTER TABLE tasks ADD COLUMN ordine INTEGER DEFAULT 0")
-    except:
+    except Exception:
         pass
     
     # Add notify_on_complete to proiecte if not exists
     try:
         cursor.execute("ALTER TABLE proiecte ADD COLUMN notify_on_complete INTEGER DEFAULT 1")
-    except:
+    except Exception:
         pass
     
     # Add notify_on_deadline to proiecte if not exists
     try:
         cursor.execute("ALTER TABLE proiecte ADD COLUMN notify_on_deadline INTEGER DEFAULT 1")
-    except:
+    except Exception:
         pass
     
     conn.commit()
@@ -729,6 +729,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS timer_sessions (
             id TEXT PRIMARY KEY,
             proiect_id TEXT NOT NULL,
+            task_id TEXT,
+            subtask_id TEXT,
             start_time TEXT NOT NULL,
             stop_time TEXT,
             durata_secunde INTEGER,
@@ -904,10 +906,11 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect_id ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_proiect ON jurnal(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_proiect ON timer_sessions(proiect_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_task ON timer_sessions(task_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_subtask ON timer_sessions(subtask_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
@@ -915,7 +918,6 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
-    # Index task_subtasks.task_id for the orphan cleanup path (no FK on this column).
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
 
     # Cap budget_audit at 5000 most-recent rows per user. Fresh DBs get the trigger

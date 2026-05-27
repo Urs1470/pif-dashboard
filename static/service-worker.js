@@ -28,8 +28,8 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(APP_SHELL))
   );
-  // Activate immediately instead of waiting — new SW takes control on next refresh.
-  self.skipWaiting();
+  // No skipWaiting() — let the new SW wait until all tabs close, avoiding
+  // mismatches between cached HTML and new JS/CSS assets.
 });
 
 // Activate — clean up old caches, then take control of open pages.

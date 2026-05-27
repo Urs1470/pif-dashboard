@@ -11,8 +11,10 @@ import requests, sqlite3, tempfile, os, sys
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-SERVER = "https://pif.iupif.org"
-PIN = "pif2024"
+SERVER = os.environ.get("PIF_SERVER", "https://pif.iupif.org")
+PIN = os.environ.get("PIF_DASHBOARD_PIN", "")
+if not PIN:
+    sys.exit("PIF_DASHBOARD_PIN env var is required")
 LOCAL_DB = "pif_dashboard.db"
 BUDGET_TABLES = ("budget_state", "budget_audit")
 

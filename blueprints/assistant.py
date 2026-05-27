@@ -886,4 +886,4 @@ def assistant_chat():
         return jsonify({'reply': 'Am atins limita de pași. Reformulează cererea, te rog.', 'tool_log': tool_log})
     except Exception as e:
         logger.error(f'Assistant chat failed: {e}')
-        return jsonify({'error': f'Eroare asistent: {e}'}), 500
+        return jsonify({'error': 'Eroare asistent'}), 500

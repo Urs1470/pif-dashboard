@@ -1130,7 +1130,7 @@ function renderLongTextPreview(textareaId) {
     if (counter) {
         // Char count based on visible text, not HTML markup
         const tmp = document.createElement('div');
-        tmp.innerHTML = raw;
+        tmp.textContent = raw;
         counter.textContent = (tmp.innerText || '').length + ' caractere';
     }
     return;
@@ -1143,8 +1143,8 @@ function renderAllLongTextPreviews() {
 // Detect whether the stored value is HTML or plain text. Older entries are plain.
 function _looksLikeHtml(s) { return /<\/?(p|br|div|h[1-6]|ul|ol|li|strong|b|em|i|u|a|hr|blockquote)\b/i.test(s || ''); }
 function _plainToHtml(s) {
-    return (s || '').split(/\n\n+/).map(p => {
-        const lines = p.replace(/\r/g, '').replace(/\n/g, '<br>');
+    return escapeHtml(s || '').split(/\n\n+/).map(p => {
+        const lines = p.replace(/\n/g, '<br>');
         return `<p>${lines}</p>`;
     }).join('');
 }

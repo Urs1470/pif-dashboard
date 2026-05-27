@@ -677,7 +677,7 @@
       }
       const blob = await res.blob();
       const cd = res.headers.get('content-disposition') || '';
-      let filename = `PV_Service_${body.cod_proiect || 'PV'}.docx`;
+      let filename = `PV_Service_${payload.cod_proiect || 'PV'}.docx`;
       const m = cd.match(/filename="?([^";]+)"?/);
       if (m) filename = m[1];
       const url = URL.createObjectURL(blob);
