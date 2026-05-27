@@ -423,6 +423,7 @@ function _tcardBody(task, ctx) {
             <span class="tcard__subtask-title">${escapeHtml(s.titlu || '')}</span>
             <button type="button" class="tcard__subtask-timer" onclick="event.stopPropagation();toggleSubtaskTimerInline('${s.id}',this)" data-timer-running="${!!s._timer_running}" title="Pornește timer"><span class="tcard__timer-icon">▶</span></button>
             <button type="button" class="tcard__subtask-manual" onclick="event.stopPropagation();openManualTimeForSubtask('${s.id}')" title="Adaugă timp manual">✎</button>
+            <button type="button" class="tcard__subtask-reset" onclick="event.stopPropagation();resetSubtaskTimer('${s.id}','${task.id}')" title="Resetează timer subtask"><i data-lucide="rotate-ccw"></i></button>
             <button type="button" class="tcard__subtask-del" onclick="event.stopPropagation();deleteSubtask('${s.id}')" title="Șterge subtask"><i data-lucide="x"></i></button>
         </div>`).join('');
     const desc = (task.descriere || '').trim();
@@ -486,6 +487,7 @@ function renderTaskCard(task, ctx) {
         <div class="tcard__menu" onclick="event.stopPropagation()">
             <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();openTaskEditModal(JSON.parse(this.closest('.tcard').dataset.taskJson))" data-act="edit"><i data-lucide="edit-2"></i> Editează detalii</button>
             <button type="button" class="tcard__menu-item" onclick="event.stopPropagation();_tcardCloseMenus();_tcardOpenManualTime('${kind}','${task.id}')"><i data-lucide="clock"></i> Intrare manuală timp</button>
+            <button type="button" class="tcard__menu-item danger" onclick="event.stopPropagation();_tcardCloseMenus();_tcardResetTimer('${kind}','${task.id}')"><i data-lucide="rotate-ccw"></i> Resetează timer</button>
             <div class="tcard__menu-divider"></div>
             <button type="button" class="tcard__menu-item danger" onclick="event.stopPropagation();_tcardCloseMenus();${deleteName}('${task.id}')"><i data-lucide="trash-2"></i> Șterge task</button>
         </div>

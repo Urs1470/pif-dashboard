@@ -4798,6 +4798,15 @@
 .tcard__subtask:hover .tcard__subtask-manual { opacity: 0.5; }
 .tcard__subtask-manual:hover { opacity: 1 !important; background: var(--bg-elev2); }
 
+.tcard__subtask-reset {
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    border-radius: 4px; opacity: 0; font-size: 10px;
+    transition: opacity 0.15s; color: var(--danger);
+}
+.tcard__subtask-reset .lucide { width: 12px; height: 12px; }
+.tcard__subtask:hover .tcard__subtask-reset { opacity: 0.4; }
+.tcard__subtask-reset:hover { opacity: 1 !important; background: var(--danger-soft); }
+
 .tcard__subtask-add {
     display: flex;
     gap: 6px;

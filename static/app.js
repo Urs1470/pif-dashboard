@@ -1373,6 +1373,46 @@ function _tcardOpenManualTime(kind, taskId) {
     else showToast('Intrare manuala indisponibila', true);
 }
 
+async function _tcardResetTimer(kind, taskId) {
+    if (!confirm('Sigur vrei să resetezi timerul? Toate sesiunile înregistrate vor fi șterse.')) return;
+    const apiKind = kind === 'overview' ? 'global' : kind;
+    try {
+        const url = apiKind === 'global'
+            ? `/global-tasks/${taskId}/timer/reset`
+            : `/tasks/${taskId}/timer/reset`;
+        await apiDelete(url);
+        // Stop any local ticking interval
+        if (_inlineTimerIntervals[taskId]) { clearInterval(_inlineTimerIntervals[taskId]); delete _inlineTimerIntervals[taskId]; }
+        if (_gtInlineTimerIntervals[taskId]) { clearInterval(_gtInlineTimerIntervals[taskId]); delete _gtInlineTimerIntervals[taskId]; }
+        showToast('Timer resetat');
+        // Refresh the correct list
+        if (kind === 'project' && typeof loadTodos === 'function') loadTodos(_currentProjectId);
+        else if (kind === 'overview' && typeof loadProjectTasks === 'function') loadProjectTasks();
+        else if (typeof loadGlobalTasks === 'function') loadGlobalTasks();
+    } catch (e) {
+        showToast('Eroare la resetare timer', true);
+    }
+}
+
+async function resetSubtaskTimer(subtaskId, parentTaskId) {
+    if (!confirm('Sigur vrei să resetezi timerul subtaskului?')) return;
+    try {
+        await apiDelete(`/subtasks/${subtaskId}/timer/reset`);
+        if (_subtaskTimerIntervals[subtaskId]) { clearInterval(_subtaskTimerIntervals[subtaskId]); delete _subtaskTimerIntervals[subtaskId]; }
+        showToast('Timer subtask resetat');
+        // Invalidate subtask cache and re-render
+        if (typeof _taskSubtasksCache !== 'undefined') delete _taskSubtasksCache[parentTaskId];
+        // Re-expand the card to refresh subtask display
+        const card = document.querySelector(`.tcard[data-task-id="${parentTaskId}"]`);
+        if (card && card.classList.contains('tcard--expanded')) {
+            _tcardToggleExpand(parentTaskId, card);
+            setTimeout(() => _tcardToggleExpand(parentTaskId, card), 50);
+        }
+    } catch (e) {
+        showToast('Eroare la resetare timer subtask', true);
+    }
+}
+
 // Outside-click closes any open tcard menu.
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.tcard__menu, .tcard__menu-btn')) _tcardCloseMenus();
