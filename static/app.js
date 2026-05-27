@@ -2024,6 +2024,12 @@ async function addSubtaskInline(taskId, titlu) {
 
 // Toggle task timer from inline button in task list
 let _inlineTimerIntervals = {};
+function _ensureTimerLabel(btn, text) {
+    let lbl = btn.querySelector('span:not(.tcard__timer-icon)');
+    if (!lbl) { lbl = document.createElement('span'); btn.appendChild(lbl); }
+    lbl.textContent = text;
+    return lbl;
+}
 async function toggleTaskTimerInline(taskId, btnElement) {
     const isRunning = btnElement ? btnElement.dataset.timerRunning === 'true' : false;
     try {
@@ -2034,8 +2040,7 @@ async function toggleTaskTimerInline(taskId, btnElement) {
             if (btnElement) {
                 btnElement.classList.remove('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
-                const labelSpan = btnElement.querySelector('span:last-child');
-                if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
+                _ensureTimerLabel(btnElement, formatTimerDuration(data.total_secunde || 0));
                 btnElement.dataset.timerRunning = 'false';
             }
             if (_inlineTimerIntervals[taskId]) {
@@ -2044,6 +2049,9 @@ async function toggleTaskTimerInline(taskId, btnElement) {
             }
             showToast('Cronometru oprit');
         } else {
+            const card = btnElement ? btnElement.closest('.tcard') : null;
+            let baseTotal = 0;
+            if (card) { try { baseTotal = JSON.parse(card.dataset.taskJson || '{}').timp_secunde || 0; } catch (_) {} }
             const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to start timer');
             const data = await res.json();
@@ -2052,16 +2060,14 @@ async function toggleTaskTimerInline(taskId, btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
                 btnElement.dataset.timerRunning = 'true';
+                _ensureTimerLabel(btnElement, formatTimerDuration(baseTotal));
             }
             _inlineTimerIntervals[taskId] = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
-                if (card) {
-                    const btn = card.querySelector('.tcard__timer');
-                    if (btn) {
-                        const labelSpan = btn.querySelector('span:last-child');
-                        if (labelSpan) labelSpan.textContent = formatTimerDuration(elapsed);
-                    }
+                const elapsed = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+                const c = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+                if (c) {
+                    const btn = c.querySelector('.tcard__timer');
+                    if (btn) _ensureTimerLabel(btn, formatTimerDuration(baseTotal + elapsed));
                 }
             }, 1000);
             showToast('Cronometru pornit');
@@ -2151,8 +2157,7 @@ async function toggleGtTimerInline(taskId, btnElement) {
             if (btnElement) {
                 btnElement.classList.remove('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '▶';
-                const labelSpan = btnElement.querySelector('span:last-child');
-                if (labelSpan) labelSpan.textContent = formatTimerDuration(data.total_secunde || 0);
+                _ensureTimerLabel(btnElement, formatTimerDuration(data.total_secunde || 0));
                 btnElement.dataset.timerRunning = 'false';
             }
             if (_gtInlineTimerIntervals[taskId]) {
@@ -2161,6 +2166,9 @@ async function toggleGtTimerInline(taskId, btnElement) {
             }
             showToast('Cronometru oprit');
         } else {
+            const card = btnElement ? btnElement.closest('.tcard') : null;
+            let baseTotal = 0;
+            if (card) { try { baseTotal = JSON.parse(card.dataset.taskJson || '{}').timp_secunde || 0; } catch (_) {} }
             const res = await fetch(`/api/global-tasks/${encodeURIComponent(taskId)}/timer/start`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to start timer');
             const data = await res.json();
@@ -2169,16 +2177,14 @@ async function toggleGtTimerInline(taskId, btnElement) {
                 btnElement.classList.add('tcard__timer--running');
                 btnElement.querySelector('.tcard__timer-icon').textContent = '⏸';
                 btnElement.dataset.timerRunning = 'true';
+                _ensureTimerLabel(btnElement, formatTimerDuration(baseTotal));
             }
             _gtInlineTimerIntervals[taskId] = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
-                if (card) {
-                    const btn = card.querySelector('.tcard__timer');
-                    if (btn) {
-                        const labelSpan = btn.querySelector('span:last-child');
-                        if (labelSpan) labelSpan.textContent = formatTimerDuration(elapsed);
-                    }
+                const elapsed = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+                const c = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+                if (c) {
+                    const btn = c.querySelector('.tcard__timer');
+                    if (btn) _ensureTimerLabel(btn, formatTimerDuration(baseTotal + elapsed));
                 }
             }, 1000);
             showToast('Cronometru pornit');
@@ -4804,7 +4810,8 @@ function renderTimerSessions(sessions, totalSeconds) {
 }
 
 function formatTimerDuration(seconds) {
-    if (!seconds) return '0m';
+    seconds = Math.max(0, Math.floor(seconds || 0));
+    if (seconds === 0) return '0s';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
