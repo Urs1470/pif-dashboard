@@ -1377,10 +1377,20 @@ async function _tcardResetTimer(kind, taskId) {
     if (!confirm('Sigur vrei sa resetezi timerul? Toate sesiunile inregistrate vor fi sterse.')) return;
     const apiKind = kind === 'overview' ? 'global' : kind;
     try {
-        const url = apiKind === 'global'
-            ? `/global-tasks/${taskId}/timer/reset`
-            : `/tasks/${taskId}/timer/reset`;
-        await apiDelete(url);
+        if (apiKind === 'global') {
+            // Stop running timer first (ignore if not running)
+            try { await apiPost(`/global-tasks/${taskId}/timer/stop`, {}); } catch (_) {}
+            // Fetch all sessions then delete each one
+            const data = await apiGet(`/global-tasks/${taskId}/timer`);
+            const sessions = data.sessions || [];
+            for (const s of sessions) {
+                await apiDelete(`/global-task-timer/${s.id}`);
+            }
+        } else {
+            // Project tasks: stop then use bulk reset endpoint
+            try { await apiPost(`/tasks/${taskId}/timer/stop`, {}); } catch (_) {}
+            await apiDelete(`/tasks/${taskId}/timer/reset`);
+        }
         // Stop any local ticking interval
         if (_inlineTimerIntervals[taskId]) { clearInterval(_inlineTimerIntervals[taskId]); delete _inlineTimerIntervals[taskId]; }
         if (_gtInlineTimerIntervals[taskId]) { clearInterval(_gtInlineTimerIntervals[taskId]); delete _gtInlineTimerIntervals[taskId]; }
@@ -1395,14 +1405,15 @@ async function _tcardResetTimer(kind, taskId) {
 }
 
 async function resetSubtaskTimer(subtaskId, parentTaskId) {
-    if (!confirm('Sigur vrei să resetezi timerul subtaskului?')) return;
+    if (!confirm('Sigur vrei sa resetezi timerul subtaskului?')) return;
     try {
+        // Stop running timer first (ignore if not running)
+        try { await apiPost(`/subtasks/${subtaskId}/timer/stop`, {}); } catch (_) {}
         await apiDelete(`/subtasks/${subtaskId}/timer/reset`);
         if (_subtaskTimerIntervals[subtaskId]) { clearInterval(_subtaskTimerIntervals[subtaskId]); delete _subtaskTimerIntervals[subtaskId]; }
         showToast('Timer subtask resetat');
         // Invalidate subtask cache and re-render
         if (typeof _taskSubtasksCache !== 'undefined') delete _taskSubtasksCache[parentTaskId];
-        // Re-expand the card to refresh subtask display
         const card = document.querySelector(`.tcard[data-task-id="${parentTaskId}"]`);
         if (card && card.classList.contains('tcard--expanded')) {
             _tcardToggleExpand(parentTaskId, card);
