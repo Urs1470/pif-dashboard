@@ -4184,40 +4184,6 @@ document.getElementById('quick-task-input').addEventListener('keydown', function
     if (e.key === 'Enter') { e.preventDefault(); quickAddTask(); }
 });
 
-// ============ HOME QUICK CAPTURE ============
-// One-row capture on the Acasă tab: type → Enter → done. No modal, no friction.
-
-async function homeQuickCapture() {
-    const inp = document.getElementById('home-quick-input');
-    if (!inp) return;
-    const titlu = inp.value.trim();
-    if (!titlu) { inp.focus(); return; }
-    const prio = document.getElementById('home-quick-prio')?.value || 'Normal';
-    inp.disabled = true;
-    try {
-        await apiPost('/global-tasks', {
-            titlu, prioritate: prio, categorie: 'General', status: 'to_do',
-        });
-        inp.value = '';
-        if (typeof showToast === 'function') showToast('Task adăugat', 'success');
-        loadDashboardHome();
-    } catch (e) {
-        if (typeof showToast === 'function') showToast('Eroare la adăugare', 'error');
-    } finally {
-        inp.disabled = false;
-        inp.focus();
-    }
-}
-
-// Wire Enter on the home quick capture input (handler attached every time the
-// home is rendered, since the element is recreated by loadDashboardHome).
-document.addEventListener('keydown', function (e) {
-    if (e.target && e.target.id === 'home-quick-input' && e.key === 'Enter') {
-        e.preventDefault();
-        homeQuickCapture();
-    }
-});
-
 // ============ LOGOUT ============
 
 async function logout() {
@@ -4291,20 +4257,6 @@ async function loadDashboardHome() {
             });
             html += `</div>`;
         }
-
-        // — Quick capture: new global task in 1 row —
-        html += `
-            <div class="home-quick-capture">
-                <i data-lucide="plus-circle" class="hqc-icon"></i>
-                <input type="text" id="home-quick-input" placeholder="Task rapid... (Enter pentru a salva)" maxlength="200">
-                <select id="home-quick-prio" class="cs-enhance">
-                    <option value="Normal">Normal</option>
-                    <option value="Urgent">Urgent</option>
-                    <option value="Minor">Minor</option>
-                </select>
-                <button class="btn btn-primary btn-small" onclick="homeQuickCapture()" type="button"><i data-lucide="check"></i> Adaugă</button>
-            </div>
-        `;
 
         // — 4-stat bar —
         const delta = stats.weekly_delta || 0;

@@ -3874,42 +3874,6 @@
             font-size: 11.5px; color: var(--text2);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .home-quick-capture {
-            display: flex; align-items: center; gap: 8px;
-            background: var(--bg-elev1);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 8px 10px 8px 14px;
-            margin-bottom: 18px;
-            transition: border-color 0.15s;
-        }
-        .home-quick-capture:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-        .home-quick-capture .hqc-icon {
-            width: 18px; height: 18px;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
-        .home-quick-capture input[type="text"] {
-            flex: 1; min-width: 0;
-            background: transparent; border: none;
-            color: var(--text);
-            font-size: 14px;
-            padding: 8px 0;
-            min-height: auto;
-            box-shadow: none;
-        }
-        .home-quick-capture input[type="text"]:focus { box-shadow: none; outline: none; }
-        .home-quick-capture select,
-        .home-quick-capture .cs {
-            min-width: 110px;
-        }
-        .home-quick-capture .cs-trigger { min-height: 38px; font-size: 12.5px; }
-        .home-quick-capture .btn { min-height: 38px; padding: 8px 14px; }
-        @media (max-width: 768px) {
-            .home-quick-capture { flex-wrap: wrap; gap: 6px; }
-            .home-quick-capture input[type="text"] { flex-basis: 100%; }
-        }
-
         /* ═══ Global timer banner ═══
            Persistent across all tabs — visible whenever ANY timer is active.
            Sits below header, above main tabs. Tick updates every second. */
