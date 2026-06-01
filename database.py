@@ -487,6 +487,45 @@ def migrate_v12_to_v13():
     logger.info(f"Migration v12->v13: added conditie_vizibilitate, cleaned {updated} param descriptions")
 
 
+def migrate_v13_to_v14():
+    """v13 -> v14: add FOREIGN KEY + ON DELETE CASCADE to task_subtasks.task_id.
+    SQLite requires table recreation. Idempotent — skips if FK already exists."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.execute("PRAGMA foreign_keys = OFF")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='task_subtasks'")
+    if not cursor.fetchone():
+        conn.close()
+        return
+
+    cursor.execute("PRAGMA foreign_key_list(task_subtasks)")
+    if cursor.fetchone():
+        conn.close()
+        return
+
+    cursor.execute("BEGIN")
+    cursor.execute('''
+        CREATE TABLE task_subtasks_new (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL,
+            titlu TEXT NOT NULL,
+            done INTEGER DEFAULT 0,
+            ordine INTEGER DEFAULT 0,
+            created_at TEXT,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+    ''')
+    cursor.execute("INSERT INTO task_subtasks_new SELECT id, task_id, titlu, done, ordine, created_at FROM task_subtasks")
+    cursor.execute("DROP TABLE task_subtasks")
+    cursor.execute("ALTER TABLE task_subtasks_new RENAME TO task_subtasks")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)")
+    cursor.execute("COMMIT")
+    conn.execute("PRAGMA foreign_keys = ON")
+    conn.close()
+    logger.info("Migration v13->v14: added FK constraint on task_subtasks.task_id")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -550,6 +589,11 @@ def run_migrations():
         migrate_v12_to_v13()
         set_schema_version(13)
         current_version = 13
+
+    if current_version < 14:
+        migrate_v13_to_v14()
+        set_schema_version(14)
+        current_version = 14
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
@@ -914,7 +958,8 @@ def init_db():
             titlu TEXT NOT NULL,
             done INTEGER DEFAULT 0,
             ordine INTEGER DEFAULT 0,
-            created_at TEXT
+            created_at TEXT,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
         )
     ''')
 

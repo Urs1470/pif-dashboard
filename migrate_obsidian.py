@@ -31,7 +31,7 @@ def parse_frontmatter(content):
         if len(parts) == 2:
             try:
                 return yaml.safe_load(parts[0]) or {}, parts[1]
-            except:
+            except (ValueError, yaml.YAMLError):
                 return {}, parts[1]
     return {}, content
 

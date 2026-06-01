@@ -219,8 +219,8 @@ def delete_proiect(project_id):
     # Remove the project's uploaded files from disk (orphans otherwise).
     try:
         shutil.rmtree(os.path.join(UPLOAD_FOLDER, project_id), ignore_errors=True)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to remove uploads for {project_id}: {e}")
     logger.info(f"Project deleted: {project_id}")
     return jsonify({'message': 'Project deleted'})
 

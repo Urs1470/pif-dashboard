@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <script>
+    <script nonce="{{ csp_nonce }}">
         (function() {
             const saved = localStorage.getItem('theme');
             if (saved === 'light') {
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // Theme management (no external CDN dependency on login)
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
+    <script nonce="{{ csp_nonce }}">
         /* Apply the saved theme before first paint — avoids a light/dark flash on load. */
         (function () {
             try {
@@ -27,7 +27,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 </head>
 <body>
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // Redirect PWA standalone pe mobil → versiunea /m
         if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
             const isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || window.innerWidth < 769;
@@ -1189,13 +1189,13 @@
     </div>
 
     <!-- Flatpickr datepicker (dark theme) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/themes/dark.css">
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" integrity="sha384-RkASv+6KfBMW9eknReJIJ6b3UnjKOKC5bOUaNgIY778NFbQ8MtWq9Lr/khUgqtTt" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/themes/dark.css" integrity="sha384-heUUtXw0Djj2DElfLOVPlASSWFKNL3JDY6s3FEqQD03GYyWOeophY5DsfEG40sYX" crossorigin="anonymous">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js" integrity="sha384-5JqMv4L/Xa0hfvtF06qboNdhvuYXUku9ZrhZh3bSk8VXF0A/RuSLHpLsSV9Zqhl6" crossorigin="anonymous"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ro.js" integrity="sha384-aLnOiW8aFHnLXN1VvFsB3FJMG5vJ4H/tufp8GgST4F9MKGB4S9YvG2QEzAfRunDy" crossorigin="anonymous"></script>
 
     <!-- Chart.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 
     <!-- Lucide icons (self-hosted — pinned, same-origin, SW-cacheable; no unpkg flash) -->
     <script defer src="/static/lucide.min.js?v=20260522a"></script>
@@ -1206,7 +1206,7 @@
     <!-- BEGIN: PV (owned by spawned-pv session) -->
     <script defer src="/static/pv-modal.js?v=20260518g-imgpos"></script>
     <!-- END: PV -->
-    <script>
+    <script nonce="{{ csp_nonce }}">
         document.getElementById('preview-modal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
         });

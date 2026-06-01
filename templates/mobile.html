@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0d12">
-  <script>
+  <script nonce="{{ csp_nonce }}">
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
@@ -535,7 +535,7 @@
   <!-- BEGIN: PV (owned by spawned-pv session) -->
   <script src="/static/pv-modal.js?v={{ js_version }}"></script>
   <!-- END: PV -->
-  <script>
+  <script nonce="{{ csp_nonce }}">
     // Render Lucide icons after mobile.js loads + on every render via MutationObserver
     (function() {
       let _rendering = false;

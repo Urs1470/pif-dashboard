@@ -3,6 +3,7 @@ import time
 import logging
 import hashlib
 import hmac
+import secrets
 import threading
 
 from datetime import timedelta
@@ -82,6 +83,7 @@ def file_hash(filepath):
         with open(filepath, 'rb') as f:
             return hashlib.sha256(f.read()).hexdigest()[:8]
     except FileNotFoundError:
+        logger.warning(f"Asset not found for hashing: {filepath}")
         return 'dev'
 
 
@@ -106,6 +108,7 @@ def inject_version():
     ctx = dict(_asset_versions)
     ctx['use_dist'] = _USE_DIST
     ctx['asset_path'] = _asset_path
+    ctx['csp_nonce'] = getattr(request, '_csp_nonce', '')
     return ctx
 
 
@@ -224,6 +227,8 @@ def before_request_func():
             logger.warning(f"Rate limit exceeded for IP: {request.remote_addr} on {request.path}")
             return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.', 'retry_after': RATE_WINDOW}), 429
 
+    request._csp_nonce = secrets.token_urlsafe(16)
+
     if request.path.startswith('/api/'):
         logger.info(f"{request.method} {request.path} - IP: {request.remote_addr}")
 
@@ -236,16 +241,17 @@ def after_request_func(response):
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('Referrer-Policy', 'same-origin')
     response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    nonce = getattr(request, '_csp_nonce', '')
     response.headers.setdefault(
         'Content-Security-Policy',
-        "default-src 'self'; "
-        "img-src 'self' data: blob: https:; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
-        "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
-        "connect-src 'self' https://query1.finance.yahoo.com; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'"
+        f"default-src 'self'; "
+        f"img-src 'self' data: blob: https:; "
+        f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
+        f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        f"font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+        f"connect-src 'self' https://query1.finance.yahoo.com; "
+        f"frame-ancestors 'none'; "
+        f"base-uri 'self'"
     )
     return response
 

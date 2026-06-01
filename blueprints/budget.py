@@ -75,6 +75,10 @@ def login_required(f):
     return decorated
 
 
+def _current_user():
+    return session.get('budget_user', 'ion')
+
+
 def _trunc(v):
     if v is None:
         return None
@@ -143,7 +147,7 @@ def static_files(filename):
 def get_state():
     db = _get_db()
     row = db.execute(
-        "SELECT data, updated FROM budget_state WHERE user = 'ion'"
+        "SELECT data, updated FROM budget_state WHERE user = ?", (_current_user(),)
     ).fetchone()
     if not row:
         return jsonify({'data': None, 'updated': None})
@@ -168,7 +172,7 @@ def set_state():
 
     try:
         prev = db.execute(
-            "SELECT data, updated FROM budget_state WHERE user = 'ion'"
+            "SELECT data, updated FROM budget_state WHERE user = ?", (_current_user(),)
         ).fetchone()
 
         # Optimistic concurrency: if the client sent the snapshot it started
@@ -185,38 +189,39 @@ def set_state():
 
         old_data = json.loads(prev['data']) if prev and prev['data'] else None
 
+        user = _current_user()
         db.execute("""
             INSERT INTO budget_state(user, data, updated)
-            VALUES('ion', ?, ?)
+            VALUES(?, ?, ?)
             ON CONFLICT(user) DO UPDATE SET data = excluded.data, updated = excluded.updated
-        """, (data_json, now))
+        """, (user, data_json, now))
 
         if old_data is None:
             db.execute("""
                 INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                VALUES(?, 'ion', 'init', NULL, NULL, ?)
-            """, (now, _trunc(new_data)))
+                VALUES(?, ?, 'init', NULL, NULL, ?)
+            """, (now, user, _trunc(new_data)))
         elif migrated:
             # First save after a client-side schema migration. Diffing the
             # pre/post-migration blob yields dozens of spurious leaf changes,
             # so record a single 'migrate' entry instead.
             db.execute("""
                 INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                VALUES(?, 'ion', 'migrate', NULL, NULL, ?)
-            """, (now, 'migrare automata a structurii datelor'))
+                VALUES(?, ?, 'migrate', NULL, NULL, ?)
+            """, (now, user, 'migrare automata a structurii datelor'))
         else:
             changes = list(diff_state(old_data, new_data))
             for path, old_val, new_val in changes[:AUDIT_MAX_CHANGES_PER_SAVE]:
                 db.execute("""
                     INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                    VALUES(?, 'ion', 'update', ?, ?, ?)
-                """, (now, path, old_val, new_val))
+                    VALUES(?, ?, 'update', ?, ?, ?)
+                """, (now, user, path, old_val, new_val))
             if len(changes) > AUDIT_MAX_CHANGES_PER_SAVE:
                 extra = len(changes) - AUDIT_MAX_CHANGES_PER_SAVE
                 db.execute("""
                     INSERT INTO budget_audit(ts, user, action, field, old_value, new_value)
-                    VALUES(?, 'ion', 'update', '(truncated)', ?, NULL)
-                """, (now, f"{extra} schimbari suplimentare omise"))
+                    VALUES(?, ?, 'update', '(truncated)', ?, NULL)
+                """, (now, user, f"{extra} schimbari suplimentare omise"))
 
         db.commit()
         return jsonify({'ok': True, 'updated': now})
@@ -238,8 +243,8 @@ def get_audit():
     db = _get_db()
     rows = db.execute("""
         SELECT ts, action, field, old_value, new_value FROM budget_audit
-        WHERE user = 'ion' ORDER BY ts DESC, id DESC LIMIT ?
-    """, (limit,)).fetchall()
+        WHERE user = ? ORDER BY ts DESC, id DESC LIMIT ?
+    """, (_current_user(), limit)).fetchall()
     return jsonify([dict(r) for r in rows])
 
 

@@ -198,7 +198,7 @@ def api_smoke_test():
                 try:
                     j = r.json()
                     log("pass", f"GET {ep} -> {r.status_code}, {len(j) if isinstance(j, list) else 'ok'}")
-                except:
+                except (ValueError, KeyError):
                     log("pass", f"GET {ep} -> {r.status_code}")
             else:
                 log("fail", f"GET {ep} -> {r.status_code} (expected {exp})")
