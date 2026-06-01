@@ -3264,7 +3264,7 @@ function parseIngCsv(text) {
     var dataCol = (cols[0] || '').trim();
     if (parseDataIngRo(dataCol)) {
       if (current) tx.push(current);
-      var debit = parseRON(cols[4] || '0');
+      var debit = parseRON(cols[5] || '0');
       var credit = parseRON(cols[6] || '0');
       var sens = debit > 0 ? 'debit' : (credit > 0 ? 'credit' : 'zero');
       current = {
