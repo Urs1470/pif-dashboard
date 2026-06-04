@@ -659,6 +659,26 @@
                 </div>
 
                 <div class="admin-section">
+                    <div class="admin-section-title"><i data-lucide="file-input"></i> Import debrief (Cowork)</div>
+                    <div class="admin-section-body">
+                        <div class="admin-mini-label">Lipește JSON-ul generat de Cowork</div>
+                        <textarea id="import-debrief-input" class="admin-text-input"
+                                  placeholder='{ "proiect": { "nume": "..." }, "client": {...}, "echipamente": [...], ... }'
+                                  spellcheck="false" autocomplete="off"
+                                  style="min-height:160px; resize:vertical; font-family:var(--font-mono); font-size:12.5px; line-height:1.5;"></textarea>
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <button class="btn btn-primary btn-small" onclick="importDebrief()">
+                                <i data-lucide="upload"></i> Importă
+                            </button>
+                            <button class="btn btn-small" onclick="document.getElementById('import-debrief-input').value=''; document.getElementById('import-debrief-result').innerHTML='';">
+                                <i data-lucide="x"></i> Golește
+                            </button>
+                        </div>
+                        <div id="import-debrief-result" class="admin-audit-result"></div>
+                    </div>
+                </div>
+
+                <div class="admin-section">
                     <div class="admin-section-title"><i data-lucide="shield-check"></i> Audit DB parametri</div>
                     <div class="admin-section-body">
                         <button class="admin-action-btn" onclick="runParamAudit()">

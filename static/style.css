@@ -809,6 +809,33 @@
             font-size: 0.86rem;
         }
         .admin-audit-result.show { display: block; }
+
+        /* Import debrief result states */
+        #import-debrief-result:empty { display: none; }
+        #import-debrief-result { margin-top: 10px; }
+        .import-pending { color: var(--text2); font-size: 13px; padding: 4px 0; }
+        .import-err {
+            color: var(--danger); font-size: 13px;
+            padding: 10px 12px; background: var(--danger-soft);
+            border: 1px solid var(--danger); border-radius: var(--radius-md);
+        }
+        .import-ok {
+            padding: 12px; background: var(--bg-elev2);
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+        }
+        .import-ok-head {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600; color: var(--success); font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .import-ok-head [data-lucide] { width: 16px; height: 16px; }
+        .import-ok-list {
+            list-style: none; margin: 0 0 10px; padding: 0;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 16px;
+            font-size: 13px; color: var(--text2);
+        }
+        .import-ok-list b { color: var(--text); }
+
         .admin-text-input {
             width: 100%;
             padding: 8px 10px;

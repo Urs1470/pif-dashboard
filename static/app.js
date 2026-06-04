@@ -2652,6 +2652,65 @@ async function importBackup(event) {
     event.target.value = '';
 }
 
+// ============ IMPORT DEBRIEF (Cowork) ============
+
+async function importDebrief() {
+    const input = document.getElementById('import-debrief-input');
+    const resultEl = document.getElementById('import-debrief-result');
+    const raw = (input.value || '').trim();
+    if (!raw) { input.focus(); return; }
+
+    // Parse client-side first so we give a clear error before hitting the API.
+    let payload;
+    try {
+        payload = JSON.parse(raw);
+    } catch (err) {
+        resultEl.innerHTML = `<div class="import-err">JSON invalid: ${escapeHtml(err.message)}</div>`;
+        return;
+    }
+
+    resultEl.innerHTML = '<div class="import-pending">Se importă…</div>';
+    try {
+        const res = await apiFetch(`${API_BASE}/import/debrief`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            resultEl.innerHTML = `<div class="import-err">Eroare: ${escapeHtml(data.error || ('HTTP ' + res.status))}</div>`;
+            return;
+        }
+        const s = data.sumar || {};
+        const ore = s.ore_total_secunde ? (Math.round(s.ore_total_secunde / 360) / 10) + 'h' : '0h';
+        resultEl.innerHTML = `
+            <div class="import-ok">
+                <div class="import-ok-head">
+                    <i data-lucide="check-circle"></i>
+                    ${data.creat ? 'Proiect creat' : 'Proiect actualizat'}
+                </div>
+                <ul class="import-ok-list">
+                    <li>Echipamente: <b>${s.echipamente ?? 0}</b></li>
+                    <li>Checklist: <b>${s.checklist_items ?? 0}</b></li>
+                    <li>Jurnal: <b>${s.jurnal_entries ?? 0}</b></li>
+                    <li>Ore: <b>${ore}</b></li>
+                </ul>
+                <button class="btn btn-primary btn-small" onclick="showProjectDetail('${data.proiect_id}')">
+                    <i data-lucide="arrow-right"></i> Deschide proiectul
+                </button>
+            </div>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Refresh project list + stats in the background so the new project shows up.
+        _invalidateCache('/proiecte');
+        _invalidateCache('/dashboard/home');
+        loadProjects();
+        updateStats();
+        showToast(data.creat ? 'Proiect importat' : 'Proiect actualizat din import');
+    } catch (err) {
+        console.error('Import debrief failed:', err);
+        resultEl.innerHTML = `<div class="import-err">Eroare de rețea: ${escapeHtml(err.message)}</div>`;
+    }
+}
+
 // ============ EXPORT ============
 
 async function exportMarkdown() {

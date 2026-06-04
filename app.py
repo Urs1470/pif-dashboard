@@ -83,8 +83,17 @@ def file_hash(filepath):
         with open(filepath, 'rb') as f:
             return hashlib.sha256(f.read()).hexdigest()[:8]
     except FileNotFoundError:
-        logger.warning(f"Asset not found for hashing: {filepath}")
-        return 'dev'
+        # Resolve relative to this file so a non-root CWD (e.g. the preview
+        # runner) still finds the asset instead of falling back to 'dev'.
+        try:
+            abspath = os.path.join(os.path.dirname(os.path.abspath(__file__)), filepath)
+            with open(abspath, 'rb') as f:
+                return hashlib.sha256(f.read()).hexdigest()[:8]
+        except FileNotFoundError:
+            # logger is defined later in this module; file_hash runs at import
+            # time (before setup_logging), so fetch the named logger directly.
+            logging.getLogger('pif_dashboard').warning(f"Asset not found for hashing: {filepath}")
+            return 'dev'
 
 
 def _asset_path(name):
