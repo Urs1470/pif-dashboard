@@ -6533,7 +6533,7 @@ function openParamModal(param) {
     currentParam = param;
     document.getElementById('param-modal-code').textContent = param.parametru || '-';
     document.getElementById('param-modal-familie').textContent = param.familie || '';
-    document.getElementById('param-modal-name').textContent = extractParamName(param.descriere) || param.descriere_scurta || '-';
+    document.getElementById('param-modal-name').textContent = param.descriere_scurta || extractParamName(param.descriere) || '-';
     document.getElementById('param-modal-descriere').textContent = param.descriere || '-';
     // Visibility condition chip
     const vizEl = document.getElementById('param-modal-vizibilitate');

@@ -1071,6 +1071,235 @@ def init_default_templates():
     conn.close()
 
 
+# ============ STRUCTURED IMPORT (Cowork AI debrief) ============
+
+def _manual_session_times_local(data_str, durata_secunde):
+    """Duplicate of timer._manual_session_times — avoids cross-blueprint import.
+    Anchors a manual time entry at noon on the given date."""
+    from datetime import timedelta
+    try:
+        d = datetime.fromisoformat((data_str or '')[:10])
+    except (ValueError, TypeError):
+        d = datetime.now()
+    start = d.replace(hour=12, minute=0, second=0, microsecond=0)
+    stop = start + timedelta(seconds=int(durata_secunde))
+    return start.isoformat(), stop.isoformat()
+
+
+@projects_bp.route('/api/import/debrief', methods=['POST'])
+@login_required
+def import_debrief():
+    """Structured import from an external AI tool (Cowork).
+
+    Receives a single JSON payload describing a project debrief and
+    creates/updates entities in the correct dependency order:
+      1. Client (upsert by name)
+      2. Proiect (upsert by name+client)
+      3. Echipamente
+      4. Checklist categorii + items
+      5. Jurnal entries
+      6. Ore (timer_sessions via manual-time helper)
+
+    Returns the project ID and a summary of what was created.
+    """
+    data = request.json
+    if not data:
+        return jsonify({'error': 'JSON body required'}), 400
+
+    proiect_data = data.get('proiect') or {}
+    if not proiect_data.get('nume'):
+        return jsonify({'error': 'proiect.nume is required'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.now().isoformat()
+    sumar = {
+        'echipamente': 0,
+        'jurnal_entries': 0,
+        'ore_total_secunde': 0,
+        'checklist_items': 0,
+    }
+
+    try:
+        # ── 1. Client ──────────────────────────────────────────────
+        client_data = data.get('client') or {}
+        client_id = None
+        client_name = (client_data.get('nume') or proiect_data.get('client') or '').strip()
+
+        if client_name:
+            cursor.execute(
+                'SELECT id FROM clienti WHERE LOWER(nume) = LOWER(?)',
+                (client_name,)
+            )
+            row = cursor.fetchone()
+            if row:
+                client_id = row['id']
+            else:
+                client_id = generate_uuid()
+                cursor.execute('''
+                    INSERT INTO clienti (id, nume, adresa, telefon, email, contact_principal, note, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    client_id,
+                    client_name,
+                    client_data.get('adresa', ''),
+                    client_data.get('telefon', ''),
+                    client_data.get('email', ''),
+                    client_data.get('contact_principal', ''),
+                    client_data.get('note', ''),
+                    now,
+                ))
+                logger.info(f"Import debrief: created client '{client_name}' ({client_id})")
+
+        # ── 2. Proiect ─────────────────────────────────────────────
+        proiect_nume = proiect_data['nume'].strip()
+        proiect_client = client_name or proiect_data.get('client', '')
+
+        cursor.execute(
+            'SELECT id FROM proiecte WHERE LOWER(nume) = LOWER(?) AND LOWER(COALESCE(client, \'\')) = LOWER(?)',
+            (proiect_nume, proiect_client.lower())
+        )
+        existing = cursor.fetchone()
+        proiect_creat = existing is None
+
+        if existing:
+            project_id = existing['id']
+            logger.info(f"Import debrief: found existing project '{proiect_nume}' ({project_id})")
+        else:
+            project_id = proiect_data.get('id') or generate_uuid()
+            cursor.execute('''
+                INSERT INTO proiecte (
+                    id, tip, nume, client, locatie, echipament_principal, producator,
+                    cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
+                    status, observatii, nr_comanda, nr_contract, service_before, service_after,
+                    confirmat_client, client_nume_confirmare, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                project_id,
+                proiect_data.get('tip', 'PIF'),
+                proiect_nume,
+                proiect_client,
+                proiect_data.get('locatie', ''),
+                proiect_data.get('echipament_principal', ''),
+                proiect_data.get('producator', 'Altul'),
+                proiect_data.get('cod_proiect', ''),
+                proiect_data.get('pm', ''),
+                proiect_data.get('folder_server', ''),
+                proiect_data.get('data_incepere', ''),
+                proiect_data.get('deadline', ''),
+                proiect_data.get('data_crearii', now[:10]),
+                proiect_data.get('status', 'in_lucru'),
+                proiect_data.get('observatii', ''),
+                proiect_data.get('nr_comanda', ''),
+                proiect_data.get('nr_contract', ''),
+                proiect_data.get('service_before', ''),
+                proiect_data.get('service_after', ''),
+                proiect_data.get('confirmat_client', 0),
+                proiect_data.get('client_nume_confirmare', ''),
+                now, now,
+            ))
+            logger.info(f"Import debrief: created project '{proiect_nume}' ({project_id})")
+
+        # ── 3. Echipamente ─────────────────────────────────────────
+        for eq in (data.get('echipamente') or []):
+            eq_id = eq.get('id') or generate_uuid()
+            params = eq.get('params_json') or eq.get('params') or {}
+            if isinstance(params, dict):
+                params = json.dumps(params)
+            cursor.execute('''
+                INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                eq_id, project_id,
+                eq.get('nume', ''),
+                eq.get('producator', 'Altul'),
+                eq.get('model', ''),
+                eq.get('serial_number', ''),
+                params if isinstance(params, str) else json.dumps(params),
+                now, now,
+            ))
+            sumar['echipamente'] += 1
+
+        # ── 4. Checklist categorii ─────────────────────────────────
+        cat_name_to_id = {}
+        for cat in (data.get('checklist_categorii') or []):
+            cat_name = (cat.get('nume') or '').strip()
+            if not cat_name:
+                continue
+            cursor.execute(
+                'INSERT INTO checklist_categorii (proiect_id, nume, ordine, created_at) VALUES (?, ?, ?, ?)',
+                (project_id, cat_name, cat.get('ordine', 0), now)
+            )
+            cat_name_to_id[cat_name.lower()] = cursor.lastrowid
+
+        # ── 5. Checklist items ─────────────────────────────────────
+        for item in (data.get('checklist_items') or []):
+            item_id = item.get('id') or generate_uuid()
+            cat_ref = (item.get('categorie') or '').strip().lower()
+            cat_id = cat_name_to_id.get(cat_ref)  # None if not found or empty
+            cursor.execute('''
+                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                item_id, project_id,
+                item.get('titlu', ''),
+                item.get('completed', 0),
+                item.get('note', ''),
+                item.get('ordine', 0),
+                cat_id,
+            ))
+            sumar['checklist_items'] += 1
+
+        # ── 6. Jurnal ──────────────────────────────────────────────
+        for entry in (data.get('jurnal') or []):
+            entry_id = entry.get('id') or generate_uuid()
+            cursor.execute('''
+                INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                entry_id, project_id,
+                entry.get('data', now[:10]),
+                entry.get('continut', ''),
+                now,
+            ))
+            sumar['jurnal_entries'] += 1
+
+        # ── 7. Ore ─────────────────────────────────────────────────
+        for ore_entry in (data.get('ore') or []):
+            try:
+                dur = int(ore_entry.get('durata_secunde') or 0)
+            except (ValueError, TypeError):
+                dur = 0
+            if dur <= 0:
+                continue
+            start, stop = _manual_session_times_local(ore_entry.get('data'), dur)
+            sid = generate_uuid()
+            cursor.execute(
+                'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
+                'VALUES (?, ?, ?, ?, ?)',
+                (sid, project_id, start, stop, dur)
+            )
+            sumar['ore_total_secunde'] += dur
+
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        logger.exception(f"Import debrief failed: {e}")
+        return jsonify({'error': f'Import failed: {e}'}), 500
+    finally:
+        conn.close()
+
+    logger.info(f"Import debrief OK: project={project_id}, creat={proiect_creat}, sumar={sumar}")
+    return jsonify({
+        'success': True,
+        'proiect_id': project_id,
+        'proiect_url': f'/proiecte/{project_id}',
+        'creat': proiect_creat,
+        'sumar': sumar,
+    }), 201
+
+
 # ============ PV (Proces Verbal) generation ============
 
 def _parse_pv_request():

@@ -245,7 +245,18 @@ const formatDuration = formatTime;   // mobile-side alias
 // usually begins the explanatory clause ("Specifies", "Sets", "Defines"…).
 function extractParamName(descriere) {
     if (!descriere) return '-';
-    const words = descriere.trim().split(/\s+/);
+    // Strip leading parenthetical visibility/condition note. ABB manuals start
+    // many parameter descriptions with text like:
+    //   "(Only visible when IGBT supply unit control activated by 95.20) Estimated reactive current ..."
+    // Without this, the extracted name becomes "(Only visible when IGBT" — useless.
+    let text = descriere.trim();
+    while (text.startsWith('(')) {
+        const close = text.indexOf(')');
+        if (close === -1) break;
+        text = text.slice(close + 1).trim();
+    }
+    if (!text) return '-';
+    const words = text.split(/\s+/);
     let nameEnd = Math.min(words.length, 4);
     for (let i = 2; i < Math.min(words.length, 6); i++) {
         if (/^(Scaled|Received|Selects|Specifies|Sets|Defines|Controls|Enables|Disables|Shows|Indicates|Returns|Contains|Used|When|If|The|A|An)$/i.test(words[i])) {
