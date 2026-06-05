@@ -1294,16 +1294,37 @@ def import_debrief():
             sumar['checklist_items'] += 1
 
         # ── 6. Jurnal ──────────────────────────────────────────────
+        # Mirror the stop-with-note convention: embed the day's logged time in
+        # the journal text (e.g. "... — 12h"), so each entry shows the effort.
+        # Hours still go into timer_sessions (section 7) for totals/billing.
+        ore_by_date = {}
+        for oe in (data.get('ore') or []):
+            try:
+                _d = int(oe.get('durata_secunde') or 0)
+            except (ValueError, TypeError):
+                _d = 0
+            if _d > 0:
+                _dt = (oe.get('data') or '')[:10]
+                ore_by_date[_dt] = ore_by_date.get(_dt, 0) + _d
+        _hours_shown = set()  # annotate only the first journal entry per date
+
         for entry in (data.get('jurnal') or []):
             entry_id = entry.get('id') or generate_uuid()
+            edate = entry.get('data') or now[:10]
+            # Accept 'text' as alias for 'continut' (skill v1.2+)
+            continut = (entry.get('continut') or entry.get('text') or '')
+            secs = ore_by_date.get(edate[:10])
+            if secs and edate[:10] not in _hours_shown:
+                htxt = f"{secs / 3600:.1f}".rstrip('0').rstrip('.')
+                continut = (continut.rstrip() + f"  — {htxt}h").strip()
+                _hours_shown.add(edate[:10])
             cursor.execute('''
                 INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
                 VALUES (?, ?, ?, ?, ?)
             ''', (
                 entry_id, project_id,
-                entry.get('data', now[:10]),
-                # Accept 'text' as alias for 'continut' (skill v1.2+)
-                (entry.get('continut') or entry.get('text') or ''),
+                edate,
+                continut,
                 now,
             ))
             sumar['jurnal_entries'] += 1
