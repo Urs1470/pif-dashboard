@@ -3824,6 +3824,108 @@ function formatDate(dateStr) {
 
 // ============ Event Listeners ============
 
+// ============ Touch gestures: swipe între taburi + pull-to-refresh ============
+// Cele 4 taburi principale, în ordinea din bottom-nav (fără „more", care e meniu).
+const SWIPE_TABS = ['home', 'projects', 'tasks', 'params'];
+
+function _gestureBlocked() {
+  // Nu interceptăm gesturile când e deschis un modal / sheet / meniu / detaliu.
+  if (document.querySelector('.modal.active, .m-sheet-overlay.open, #more-menu.active, #hermes-panel.active')) return true;
+  if (currentTab === 'project-detail') return true;
+  return !SWIPE_TABS.includes(currentTab);
+}
+
+function initTouchGestures() {
+  const content = document.getElementById('content');
+  if (!content || content.dataset.gesturesWired) return;
+  content.dataset.gesturesWired = '1';
+
+  // Indicator pentru pull-to-refresh
+  let ptr = document.getElementById('ptr-indicator');
+  if (!ptr) {
+    ptr = document.createElement('div');
+    ptr.id = 'ptr-indicator';
+    ptr.innerHTML = '<i data-lucide="refresh-cw"></i>';
+    document.getElementById('app')?.appendChild(ptr);
+    window.lucide?.createIcons();
+  }
+
+  const SWIPE_MIN = 60;     // px orizontal minim pentru schimbare tab
+  const PTR_TRIGGER = 70;   // px tras în jos pentru refresh
+  let startX = 0, startY = 0, startT = 0, tracking = false, mode = null, pull = 0, hLock = false;
+
+  // True dacă ținta e într-un element cu scroll orizontal propriu (pills de
+  // filtre, taburi de familii) — acolo nu furăm swipe-ul orizontal.
+  function inHorizontalScroller(target) {
+    let el = target;
+    while (el && el !== content) {
+      if (el.scrollWidth > el.clientWidth + 4) {
+        const ov = getComputedStyle(el).overflowX;
+        if (ov === 'auto' || ov === 'scroll') return true;
+      }
+      el = el.parentElement;
+    }
+    return false;
+  }
+
+  content.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || _gestureBlocked()) { tracking = false; return; }
+    hLock = inHorizontalScroller(e.target);
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startT = Date.now();
+    tracking = true; mode = null; pull = 0;
+  }, { passive: true });
+
+  content.addEventListener('touchmove', (e) => {
+    if (!tracking) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (mode === null) {
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.3) mode = hLock ? 'scroll' : 'h';
+      else if (dy > 12 && content.scrollTop <= 0 && dy > Math.abs(dx) * 1.3) mode = 'pull';
+      else if (Math.abs(dy) > 12) mode = 'scroll';
+    }
+    if (mode === 'pull') {
+      pull = Math.min(dy * 0.5, 90);
+      ptr.style.transform = `translateX(-50%) translateY(${pull}px)`;
+      ptr.classList.toggle('ready', pull >= PTR_TRIGGER);
+      if (e.cancelable) e.preventDefault();  // blochează overscroll-ul nativ
+    }
+  }, { passive: false });
+
+  content.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = (e.changedTouches[0]?.clientX ?? startX) - startX;
+    const dt = Date.now() - startT;
+
+    if (mode === 'h' && Math.abs(dx) >= SWIPE_MIN && dt < 600) {
+      const idx = SWIPE_TABS.indexOf(currentTab);
+      const next = idx + (dx < 0 ? 1 : -1);
+      if (idx !== -1 && next >= 0 && next < SWIPE_TABS.length) showTab(SWIPE_TABS[next]);
+    } else if (mode === 'pull') {
+      ptr.style.transform = '';
+      if (pull >= PTR_TRIGGER) {
+        ptr.classList.add('spinning');
+        Promise.resolve(_pullRefresh()).finally(() =>
+          setTimeout(() => ptr.classList.remove('spinning', 'ready'), 400));
+      } else {
+        ptr.classList.remove('ready');
+      }
+    }
+    mode = null;
+  }, { passive: true });
+}
+
+async function _pullRefresh() {
+  try {
+    if (_isOnline && typeof syncPending === 'function') { try { await syncPending(); } catch (_) {} }
+    showTab(currentTab);   // reîncarcă datele tabului curent
+    showMobileToast('Reîmprospătat');
+  } catch (_) {}
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Auth check FIRST (cel mai rapid path)
   const hasSession = isAuthenticated();
@@ -3844,6 +3946,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // 4. Online status (nu blochează)
   updateOnlineStatus();
+
+  // 4b. Gesturi touch: swipe între taburi + pull-to-refresh
+  initTouchGestures();
   
   // 5. Debug panel: 5 tap-uri rapide pe header → info
   let _debugTaps = 0;
