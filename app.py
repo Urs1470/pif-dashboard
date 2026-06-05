@@ -4,6 +4,7 @@ import logging
 import hashlib
 import hmac
 import secrets
+import subprocess
 import threading
 
 from datetime import timedelta
@@ -364,6 +365,111 @@ def add_sw_header(response):
         response.headers['Content-Type'] = 'application/javascript'
         response.headers['Cache-Control'] = 'no-cache'
     return response
+
+
+# ============ AUTO-DEPLOY WEBHOOK ============
+# GitHub push -> this endpoint -> git fetch+reset --hard origin/master -> restart.
+# HMAC-authenticated (X-Hub-Signature-256), CSRF-exempt via the /webhook/ prefix.
+# NOTE: this route was accidentally dropped during the blueprint refactor, which
+# silently broke auto-deploy. Restored here; keep it in app.py (deploy infra,
+# not a domain route).
+
+DEPLOY_SECRET_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.deploy_secret')
+
+# Recent X-GitHub-Delivery IDs — replay guard for the deploy webhook.
+_webhook_seen_deliveries = []
+
+
+def get_deploy_secret():
+    if os.path.exists(DEPLOY_SECRET_FILE):
+        with open(DEPLOY_SECRET_FILE, 'r') as f:
+            return f.read().strip()
+    return None
+
+
+@app.route('/webhook/deploy', methods=['POST'])
+def webhook_deploy():
+    secret = get_deploy_secret()
+    if not secret:
+        return 'Webhook not configured', 500
+
+    signature = request.headers.get('X-Hub-Signature-256', '')
+    if not signature.startswith('sha256='):
+        return 'Invalid signature', 403
+
+    expected = 'sha256=' + hmac.new(
+        secret.encode(), request.data, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(signature, expected):
+        return 'Bad signature', 403
+
+    # Replay guard: reject a delivery already processed.
+    delivery_id = request.headers.get('X-GitHub-Delivery', '')
+    if delivery_id:
+        if delivery_id in _webhook_seen_deliveries:
+            logger.warning(f"Webhook replay rejected: {delivery_id}")
+            return 'Duplicate delivery', 409
+        _webhook_seen_deliveries.append(delivery_id)
+        if len(_webhook_seen_deliveries) > 200:
+            del _webhook_seen_deliveries[:-200]
+
+    payload = request.get_json(silent=True) or {}
+    ref = payload.get('ref', '')
+    if ref != 'refs/heads/master':
+        return 'Not master branch, skipping', 200
+
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        # fetch + reset --hard makes the deploy idempotent even if the server
+        # worktree is dirty (audit scripts regenerate tracked JSONs in-place).
+        fetch = subprocess.run(
+            ['git', 'fetch', 'origin', 'master'],
+            cwd=project_dir, capture_output=True, text=True, timeout=30
+        )
+        if fetch.returncode != 0:
+            logger.error(f"Auto-deploy git fetch failed: {fetch.stderr}")
+            return 'Fetch failed - check server logs', 500
+        result = subprocess.run(
+            ['git', 'reset', '--hard', 'origin/master'],
+            cwd=project_dir, capture_output=True, text=True, timeout=30
+        )
+        logger.info(f"Auto-deploy git reset: {result.stdout.strip()}")
+        if result.returncode != 0:
+            logger.error(f"Auto-deploy git reset failed: {result.stderr}")
+            return 'Reset failed - check server logs', 500
+    except Exception:
+        logger.exception("Auto-deploy error")
+        return 'Deploy error - check server logs', 500
+
+    # Install new deps (prevents "no module X" when a commit adds dependencies).
+    venv_pip = os.path.join(project_dir, 'venv', 'bin', 'pip')
+    venv_python = os.path.join(project_dir, 'venv', 'bin', 'python')
+    req_file = os.path.join(project_dir, 'requirements.txt')
+    if os.path.exists(req_file):
+        pip_cmds = []
+        if os.path.exists(venv_python):
+            pip_cmds.append([venv_python, '-m', 'pip', 'install', '-r', req_file, '--quiet'])
+        if os.path.exists(venv_pip):
+            pip_cmds.append([venv_pip, 'install', '-r', req_file, '--quiet'])
+        for pip_cmd in pip_cmds:
+            try:
+                pip_result = subprocess.run(
+                    pip_cmd, cwd=project_dir, capture_output=True, text=True, timeout=120
+                )
+                if pip_result.returncode != 0:
+                    logger.error(f"Auto-deploy pip install failed ({pip_cmd[0]}): {pip_result.stderr}")
+                else:
+                    logger.info(f"Auto-deploy pip install OK ({pip_cmd[0]})")
+                    break
+            except Exception as e:
+                logger.error(f"Auto-deploy pip install error ({pip_cmd[0]}): {e}")
+
+    subprocess.Popen(
+        ['sudo', 'systemctl', 'restart', 'pif-dashboard'],
+        cwd=project_dir
+    )
+
+    return 'Deploy triggered', 200
 
 
 # ============ ERROR HANDLERS ============
