@@ -16,6 +16,7 @@ from utils import (
     get_app_setting, set_app_setting,
 )
 from scripts.parse_params import parse_for_producator
+from scripts.parse_params.siemens_starter import parse_archive
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -1010,6 +1011,158 @@ def preview_import_params():
         'conflicts': sum(1 for p in parsed if p.get('conflict')),
         'params': parsed,
     })
+
+
+# ============ IMPORT ARHIVA PROIECT (Siemens STARTER) ============
+
+def _enrich_drive_descriptions(drives):
+    """Adaugă `descriere_db` pe parametrii fiecărui drive, din parametri_master.
+
+    Grupat pe familie ca să facă un singur SELECT per familie. Nemodificator pe
+    DB — doar citește descrierile scurte pentru afișare în UI.
+    """
+    by_familie = {}
+    for d in drives:
+        fam = d.get('familie') or ''
+        if fam:
+            by_familie.setdefault(fam, set()).update(d.get('params', {}).keys())
+    if not by_familie:
+        return {}
+
+    desc = {}
+    conn = get_db()
+    cursor = conn.cursor()
+    for fam, codes in by_familie.items():
+        codes = list(codes)
+        desc[fam] = {}
+        # chunk pentru a evita limita SQLite de variabile (999)
+        for i in range(0, len(codes), 900):
+            chunk = codes[i:i + 900]
+            placeholders = ','.join('?' * len(chunk))
+            cursor.execute(
+                f'SELECT parametru, descriere_scurta FROM parametri_master '
+                f'WHERE familie = ? AND parametru IN ({placeholders})',
+                [fam] + chunk
+            )
+            for r in cursor.fetchall():
+                desc[fam][r['parametru']] = r['descriere_scurta']
+    conn.close()
+    return desc
+
+
+@projects_bp.route('/api/import-archive/preview', methods=['POST'])
+@login_required
+def preview_import_archive():
+    """Parsează o arhivă ZIP de proiect Siemens STARTER și returnează drive-urile.
+
+    Form fields:
+      file: arhiva .zip a proiectului STARTER (conține Project.mcp)
+
+    Nu modifică DB. Persistarea se face prin POST .../echipamente/import-archive.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Fișier lipsă (field "file")'}), 400
+    upload = request.files['file']
+    if not upload.filename:
+        return jsonify({'error': 'Fișier gol'}), 400
+
+    try:
+        raw = upload.read()
+    except Exception as e:
+        logger.exception("Eroare citire arhivă import")
+        return jsonify({'error': f'Eroare citire fișier: {e}'}), 400
+
+    try:
+        result = parse_archive(raw)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.exception("Eroare parsare arhivă STARTER")
+        return jsonify({'error': f'Eroare la parsarea arhivei: {e}'}), 400
+
+    drives = result.get('drives', [])
+    desc = _enrich_drive_descriptions(drives)
+    for d in drives:
+        fam_desc = desc.get(d.get('familie') or '', {})
+        # mic eșantion adnotat pentru afișare în preview (motor + rampe uzuale)
+        d['descrieri'] = {code: fam_desc[code] for code in d.get('params', {})
+                          if fam_desc.get(code)}
+
+    return jsonify({
+        'project_name': result.get('project_name', ''),
+        'filename': upload.filename,
+        'count': len(drives),
+        'drives': drives,
+    })
+
+
+@projects_bp.route('/api/proiecte/<project_id>/echipamente/import-archive', methods=['POST'])
+@login_required
+def import_archive_echipamente(project_id):
+    """Creează câte un echipament per drive dintr-un import de arhivă STARTER.
+
+    Body JSON: { "drives": [ {nume, producator, model, serial_number, firmware,
+                              params: {code: value}}, ... ] }
+
+    Fiecare drive devine un rând separat în `echipamente`, cu parametrii
+    modificați stocați în params_json.
+    """
+    data = request.json or {}
+    drives = data.get('drives') or []
+    if not drives:
+        return jsonify({'error': 'Niciun drive de importat'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # validează existența proiectului (FK ar prinde oricum, dar mesaj mai clar)
+    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiectul nu există'}), 404
+
+    created = []
+    now = datetime.now().isoformat()
+    for drive in drives:
+        params = drive.get('params') or {}
+        if not isinstance(params, dict):
+            params = {}
+        # serializează valorile ca string-uri (consistent cu create_echipament)
+        params_dict = {str(k): str(v) for k, v in params.items()}
+        echipament_id = generate_uuid()
+        model = drive.get('model', '')
+        firmware = drive.get('firmware', '')
+        if firmware and firmware not in model:
+            model = f'{model} {firmware}'.strip()
+        cursor.execute('''
+            INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            echipament_id,
+            project_id,
+            drive.get('nume', '') or 'Drive',
+            drive.get('producator', 'Siemens') or 'Siemens',
+            model,
+            drive.get('serial_number', '') or '',
+            json.dumps(params_dict),
+            now,
+            now,
+        ))
+        created.append({
+            'id': echipament_id,
+            'nume': drive.get('nume', ''),
+            'params': len(params_dict),
+        })
+
+    conn.commit()
+    conn.close()
+
+    logger.info(f"Import arhivă: {len(created)} echipamente create în proiect {project_id}")
+    return jsonify({
+        'message': f'{len(created)} echipamente importate',
+        'count': len(created),
+        'created': created,
+    }), 201
 
 
 # ============ PROJECT TEMPLATES CRUD ============

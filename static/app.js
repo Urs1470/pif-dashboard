@@ -6094,6 +6094,150 @@ function closeImportParamsModal() {
     _importParamsPreview = null;
 }
 
+// ============ IMPORT ARHIVĂ PROIECT (Siemens STARTER) ============
+// Upload-ul unei arhive .zip de proiect STARTER → fiecare drive devine un
+// echipament separat, cu parametrii diferiți de fabrică.
+
+let _importArchivePreview = null;
+let _importArchiveFile = null;
+
+function triggerImportArchive() {
+    if (!currentProjectId) {
+        showToast('Deschide mai întâi un proiect', true);
+        return;
+    }
+    const input = document.getElementById('import-archive-file');
+    if (input) { input.value = ''; input.click(); }
+}
+
+async function onImportArchiveSelected(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    _importArchiveFile = file;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    showToast(`Se analizează ${file.name}…`);
+    try {
+        const data = await apiUpload('/import-archive/preview', formData);
+        _importArchivePreview = data;
+        showImportArchiveModal(data);
+    } catch (e) {
+        console.error('Import archive preview failed:', e);
+        let msg = 'Eroare la analiza arhivei';
+        try {
+            const res = await apiFetch(API_BASE + '/import-archive/preview', { method: 'POST', body: formData });
+            const j = await res.json();
+            if (j && j.error) msg = j.error;
+        } catch (_) {}
+        showToast(msg, true);
+    }
+}
+
+function showImportArchiveModal(data) {
+    const modal = document.getElementById('import-archive-modal');
+    const body = document.getElementById('import-archive-body');
+    if (!modal || !body) return;
+
+    const drives = data.drives || [];
+    const cards = drives.map((d, idx) => {
+        const params = d.params || {};
+        const descrieri = d.descrieri || {};
+        const codes = Object.keys(params);
+        const sample = codes.slice(0, 8).map(code => {
+            const desc = descrieri[code] ? ` <span style="color:var(--text-dim);">${escapeHtml(extractParamName(descrieri[code]))}</span>` : '';
+            return `<span style="display:inline-block; margin:2px 6px 2px 0; font-family:'JetBrains Mono',monospace; font-size:0.74rem;"><span style="color:var(--accent);">${escapeHtml(code)}</span>=${escapeHtml(String(params[code]))}${desc}</span>`;
+        }).join('');
+        const more = codes.length > 8 ? `<span style="color:var(--text-dim); font-size:0.74rem;">… +${codes.length - 8} alți parametri</span>` : '';
+        return `
+            <div style="border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" class="imp-arch-check" data-idx="${idx}" checked>
+                    <span style="font-weight:600;">${escapeHtml(d.nume)}</span>
+                    <span style="color:var(--text-dim); font-size:0.8rem;">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
+                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${codes.length} parametri diferiți de fabrică</span>
+                </label>
+                <div style="margin-top:6px; padding-left:26px; line-height:1.6;">${sample}${more}</div>
+            </div>`;
+    }).join('');
+
+    body.innerHTML = `
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Proiect:</span> <strong>${escapeHtml(data.project_name || '—')}</strong></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Drive-uri găsite:</span> <strong>${drives.length}</strong></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(true)"><i data-lucide="check-square"></i> Toate</button>
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(false)"><i data-lucide="square"></i> Niciunul</button>
+        </div>
+        <div style="max-height:52vh; overflow-y:auto;">
+            ${cards || '<div style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit drive-uri în arhivă.</div>'}
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+            <button type="button" class="btn btn-secondary btn-small" onclick="closeImportArchiveModal()">Anulează</button>
+            <button type="button" class="btn btn-primary btn-small" onclick="commitImportArchive()"><i data-lucide="check"></i> Importă echipamentele selectate</button>
+        </div>
+    `;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+}
+
+function toggleAllImportArchive(checked) {
+    document.querySelectorAll('.imp-arch-check').forEach(cb => cb.checked = checked);
+}
+
+async function commitImportArchive() {
+    if (!_importArchivePreview || !currentProjectId) return;
+    const allDrives = _importArchivePreview.drives || [];
+    const selected = [];
+    document.querySelectorAll('.imp-arch-check').forEach(cb => {
+        if (cb.checked) {
+            const d = allDrives[parseInt(cb.dataset.idx, 10)];
+            if (d) selected.push(d);
+        }
+    });
+    if (selected.length === 0) {
+        showToast('Selectează cel puțin un drive', true);
+        return;
+    }
+    try {
+        const projectId = currentProjectId;
+        const data = await apiPost(`/proiecte/${projectId}/echipamente/import-archive`,
+            { drives: selected });
+
+        // Salvează arhiva și ca atașament al proiectului (best-effort)
+        if (_importArchiveFile) {
+            try {
+                const fd = new FormData();
+                fd.append('file', _importArchiveFile);
+                await apiUpload(`/proiecte/${projectId}/atasamente`, fd);
+                if (typeof loadAttachments === 'function') await loadAttachments(projectId);
+            } catch (attErr) {
+                console.error('Atașarea arhivei a eșuat:', attErr);
+                showToast('Echipamente importate, dar arhiva nu a putut fi atașată', true);
+            }
+        }
+
+        closeImportArchiveModal();
+        showToast(data.message || `${selected.length} echipamente importate`);
+        await loadEchipamente(projectId);
+    } catch (e) {
+        console.error('Import archive commit failed:', e);
+        showToast('Eroare la import: ' + (e.message || ''), true);
+    }
+}
+
+function closeImportArchiveModal() {
+    const modal = document.getElementById('import-archive-modal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+    _importArchivePreview = null;
+    _importArchiveFile = null;
+}
+
 // ============ BATCH OPERATIONS ============
 
 let batchMode = false;
