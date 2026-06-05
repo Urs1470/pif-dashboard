@@ -30,14 +30,10 @@ blueprints/
   assistant.py            # /api/assistant/* — Hermes AI (MiniMax gateway)
   admin.py                # /api/stats/*, /api/export/*, /api/search/* — analytics, backup
 
-services/
-  pv_generator.py         # DOCX report generation (PV/service) from templates
-
 templates/
   index.html              # Main SPA shell (desktop)
   mobile.html             # PWA shell (/m)
   login.html              # PIN login
-  pv/*.docx               # Report templates
 
 static/
   app.js                  # Desktop app logic
@@ -118,7 +114,6 @@ No pytest/unittest framework. Run with `python scripts/test_suite.py`.
 
 From `HERMES.md` — when spawning sub-sessions:
 - **Main session:** templates/index.html, static/app.js, templates/mobile.html, static/mobile.js
-- **PV session:** services/pv_generator.py, static/pv-modal.js, templates/pv/*.docx
 - **Import session:** scripts/parse_params/*
 - **Budget session:** static/budget/*, blueprints/budget.py
 - Always `git fetch && git pull --rebase` before push. No force push.

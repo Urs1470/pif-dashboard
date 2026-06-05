@@ -15,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC = os.path.join(ROOT, 'static')
 DIST = os.path.join(STATIC, 'dist')
 
-JS_FILES = ['core.js', 'app.js', 'mobile.js', 'pv-modal.js']
+JS_FILES = ['core.js', 'app.js', 'mobile.js']
 CSS_FILES = ['style.css', 'login.css', 'mobile-app.css']
 BUDGET_JS = ['budget/budget-tracker.js']
 BUDGET_CSS = ['budget/budget.css']

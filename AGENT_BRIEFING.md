@@ -61,17 +61,12 @@ TASK-UL TĂU:
 
 ## Exemple gata-de-trimis pentru sesiunile curente
 
-### PV generation
+### ~~PV generation~~ (ELIMINAT 2026-06-05)
 
-```
-[copiază template-ul de sus, înlocuiește:]
-<SCOPE> = PV
-<TASK> = Continuă implementarea generării proceselor verbale (Service + PIF) din
-template-urile DOCX. Vezi planul detaliat în pvuri.md atașat de Ion. Domain-ul
-tău acoperit: services/pv_generator.py, static/pv-modal.js, templates/pv/*.docx,
-secțiunea PV din app.py. Pe shared files (index.html, mobile.html), wrappează
-butonul + script include cu BEGIN/END PV.
-```
+> Generarea de procese verbale (PIF + Service) a fost ștearsă complet din dashboard:
+> `services/pv_generator.py`, `static/pv-modal.js`, `templates/pv/*.docx`, rutele
+> `/api/proiecte/<id>/pv/*` și butoanele din UI nu mai există. Fluxul actual de
+> raportare e prin Cowork debrief → import (`/api/import/debrief`).
 
 ### Import parametri convertoare
 

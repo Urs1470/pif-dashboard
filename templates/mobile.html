@@ -532,9 +532,6 @@
   <!-- Shared core — loaded before mobile.js; logic common with the desktop shell -->
   <script src="/static/core.js?v={{ core_version }}"></script>
   <script src="/static/mobile.js?v={{ js_version }}"></script>
-  <!-- BEGIN: PV (owned by spawned-pv session) -->
-  <script src="/static/pv-modal.js?v={{ js_version }}"></script>
-  <!-- END: PV -->
   <script nonce="{{ csp_nonce }}">
     // Render Lucide icons after mobile.js loads + on every render via MutationObserver
     (function() {

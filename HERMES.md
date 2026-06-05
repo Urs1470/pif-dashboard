@@ -66,7 +66,6 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
 
 | Zonă | Owner |
 |---|---|
-| **PV generation**: `services/pv_generator.py`, `static/pv-modal.js`, `templates/pv/*.docx`, secțiunea PV din `app.py` | **Spawned-PV session** |
 | **Import parametri**: `scripts/parse_params/*.py`, endpoint `/api/echipamente/<id>/import-params` în `app.py` | **Spawned-Import session** |
 | **Audit PDF**: `scripts/audit_pdf.py`, `scripts/audit_reports/*`, parsers nestate | **Hermes** |
 | **LLM batch** pe `parametri_master` (descrieri, explicații) | **Hermes** |
@@ -89,12 +88,12 @@ Aceste 4 fișiere sunt **shared**. Mai multe sesiuni au nevoie să adauge integr
    ```
    Dacă rebase-ul produce conflict pe shared files, **STOP**, citește ce a făcut sesiunea concurentă, integrează manual, retestează.
 
-2. **Marker pentru integrări spawned sessions**: când spawned session adaugă o secțiune mică în index.html / mobile.html / app.js / mobile.js, **wrappuiește cu comentarii de ownership**:
+2. **Marker pentru integrări spawned sessions**: când spawned session adaugă o secțiune mică în index.html / mobile.html / app.js / mobile.js, **wrappuiește cu comentarii de ownership** (exemplu cu un feature ipotetic „X"):
    ```html
-   <!-- BEGIN: PV (owned by spawned-pv session) -->
-   <button onclick="openPvModal()">Generează PV</button>
-   <script src="/static/pv-modal.js"></script>
-   <!-- END: PV -->
+   <!-- BEGIN: X (owned by spawned-x session) -->
+   <button onclick="openXModal()">Deschide X</button>
+   <script src="/static/x-modal.js"></script>
+   <!-- END: X -->
    ```
    ```js
    // BEGIN: import-params (owned by spawned-import session)

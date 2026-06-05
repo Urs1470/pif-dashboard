@@ -1056,18 +1056,6 @@ async function showProjectDetail(projectId) {
         const beforeAfter = document.getElementById('before-after-section');
         if (beforeAfter) beforeAfter.style.display = isService ? 'grid' : 'none';
 
-        // BEGIN: PV (owned by spawned-pv session)
-        const pvBtn = document.getElementById('btn-genereaza-pv');
-        if (pvBtn) {
-            const supportsPv = isService || isPIF;
-            pvBtn.style.display = supportsPv ? 'inline-flex' : 'none';
-            window.__pvDispatch = function (pid) {
-                if (isService && window.openPvServiceModal) return openPvServiceModal(pid);
-                if (isPIF && window.openPvPifModal) return openPvPifModal(pid);
-            };
-        }
-        // END: PV
-
         // Common sections
         const timerJurnal = document.getElementById('timer-jurnal-section');
         const atasamente = document.getElementById('attachments-section');
