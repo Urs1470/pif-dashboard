@@ -661,11 +661,19 @@
                 <div class="admin-section">
                     <div class="admin-section-title"><i data-lucide="file-input"></i> Import debrief (Cowork)</div>
                     <div class="admin-section-body">
-                        <div class="admin-mini-label">Lipește JSON-ul generat de Cowork</div>
+                        <button class="admin-action-btn" onclick="document.getElementById('import-debrief-file').click()">
+                            <span class="admin-icon"><i data-lucide="file-up"></i></span>
+                            <div>
+                                <div class="admin-action-title">Încarcă fișier .json</div>
+                                <div class="admin-action-desc">Selectează fișierul descărcat din Cowork</div>
+                            </div>
+                        </button>
+                        <input type="file" id="import-debrief-file" class="hidden-input" accept=".json,application/json" onchange="importDebriefFile(event)">
+                        <div class="admin-mini-label" style="margin-top:12px;">…sau lipește JSON-ul direct</div>
                         <textarea id="import-debrief-input" class="admin-text-input"
                                   placeholder='{ "proiect": { "nume": "..." }, "client": {...}, "echipamente": [...], ... }'
                                   spellcheck="false" autocomplete="off"
-                                  style="min-height:160px; resize:vertical; font-family:var(--font-mono); font-size:12.5px; line-height:1.5;"></textarea>
+                                  style="min-height:140px; resize:vertical; font-family:var(--font-mono); font-size:12.5px; line-height:1.5;"></textarea>
                         <div style="display:flex; gap:8px; margin-top:10px;">
                             <button class="btn btn-primary btn-small" onclick="importDebrief()">
                                 <i data-lucide="upload"></i> Importă

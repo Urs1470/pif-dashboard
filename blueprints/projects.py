@@ -12,7 +12,10 @@ from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 
 from database import get_db, row_to_dict
-from utils import safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES
+from utils import (
+    safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES,
+    get_app_setting, set_app_setting,
+)
 from scripts.parse_params import parse_for_producator
 
 logger = logging.getLogger('pif_dashboard')
@@ -1110,6 +1113,26 @@ def import_debrief():
     if not proiect_data.get('nume'):
         return jsonify({'error': 'proiect.nume is required'}), 400
 
+    # ── Idempotency guard ──────────────────────────────────────────────
+    # meta.debrief_id uniquely identifies a Cowork debrief. If we've imported
+    # it before, return the existing project instead of inserting duplicate
+    # equipment / checklist / journal / hours (re-import would otherwise
+    # double the logged time — a billing footgun).
+    meta = data.get('meta') or {}
+    debrief_id = (meta.get('debrief_id') or '').strip()
+    if debrief_id:
+        prev_pid = get_app_setting(f'import_debrief:{debrief_id}')
+        if prev_pid:
+            logger.info(f"Import debrief: duplicate debrief_id={debrief_id} -> existing {prev_pid}")
+            return jsonify({
+                'success': True,
+                'duplicate': True,
+                'proiect_id': prev_pid,
+                'proiect_url': f'/proiecte/{prev_pid}',
+                'creat': False,
+                'sumar': {'echipamente': 0, 'jurnal_entries': 0, 'ore_total_secunde': 0, 'checklist_items': 0},
+            }), 200
+
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.now().isoformat()
@@ -1290,9 +1313,18 @@ def import_debrief():
     finally:
         conn.close()
 
-    logger.info(f"Import debrief OK: project={project_id}, creat={proiect_creat}, sumar={sumar}")
+    # Record the debrief_id AFTER a successful commit so a future re-import of
+    # the same debrief is recognised as a duplicate (see idempotency guard).
+    if debrief_id:
+        try:
+            set_app_setting(f'import_debrief:{debrief_id}', project_id)
+        except Exception:
+            logger.warning(f"Import debrief: could not record debrief_id={debrief_id}")
+
+    logger.info(f"Import debrief OK: project={project_id}, creat={proiect_creat}, debrief_id={debrief_id or '-'}, sumar={sumar}")
     return jsonify({
         'success': True,
+        'duplicate': False,
         'proiect_id': project_id,
         'proiect_url': f'/proiecte/{project_id}',
         'creat': proiect_creat,

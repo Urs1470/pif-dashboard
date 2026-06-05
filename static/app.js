@@ -2654,6 +2654,23 @@ async function importBackup(event) {
 
 // ============ IMPORT DEBRIEF (Cowork) ============
 
+// Read a .json file picked from disk into the textarea, then import it.
+function importDebriefFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('import-debrief-input').value = e.target.result;
+        importDebrief();
+    };
+    reader.onerror = () => {
+        document.getElementById('import-debrief-result').innerHTML =
+            '<div class="import-err">Nu am putut citi fișierul.</div>';
+    };
+    reader.readAsText(file);
+    event.target.value = '';   // allow re-selecting the same file
+}
+
 async function importDebrief() {
     const input = document.getElementById('import-debrief-input');
     const resultEl = document.getElementById('import-debrief-result');
@@ -2678,6 +2695,25 @@ async function importDebrief() {
         const data = await res.json();
         if (!res.ok || !data.success) {
             resultEl.innerHTML = `<div class="import-err">Eroare: ${escapeHtml(data.error || ('HTTP ' + res.status))}</div>`;
+            return;
+        }
+        // Already-imported debrief — don't double the data, just point to it.
+        if (data.duplicate) {
+            resultEl.innerHTML = `
+                <div class="import-ok import-dup">
+                    <div class="import-ok-head" style="color:var(--warning);">
+                        <i data-lucide="info"></i>
+                        Debrief deja importat
+                    </div>
+                    <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">
+                        Acest debrief a mai fost importat — nu am adăugat date duplicate.
+                    </div>
+                    <button class="btn btn-primary btn-small" onclick="showProjectDetail('${data.proiect_id}')">
+                        <i data-lucide="arrow-right"></i> Deschide proiectul
+                    </button>
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            showToast('Debrief deja importat', true);
             return;
         }
         const s = data.sumar || {};
