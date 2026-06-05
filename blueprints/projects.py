@@ -1117,20 +1117,34 @@ def import_debrief():
     # it before, return the existing project instead of inserting duplicate
     # equipment / checklist / journal / hours (re-import would otherwise
     # double the logged time — a billing footgun).
+    #
+    # BUT: only treat it as a duplicate if that project STILL EXISTS. If the
+    # user deleted the imported project and wants to re-import, the stale
+    # debrief_id record must not block them — it gets overwritten with the new
+    # project id on success below.
     meta = data.get('meta') or {}
     debrief_id = (meta.get('debrief_id') or '').strip()
     if debrief_id:
         prev_pid = get_app_setting(f'import_debrief:{debrief_id}')
         if prev_pid:
-            logger.info(f"Import debrief: duplicate debrief_id={debrief_id} -> existing {prev_pid}")
-            return jsonify({
-                'success': True,
-                'duplicate': True,
-                'proiect_id': prev_pid,
-                'proiect_url': f'/proiecte/{prev_pid}',
-                'creat': False,
-                'sumar': {'echipamente': 0, 'jurnal_entries': 0, 'ore_total_secunde': 0, 'checklist_items': 0},
-            }), 200
+            _c = get_db()
+            try:
+                still_exists = _c.cursor().execute(
+                    'SELECT 1 FROM proiecte WHERE id = ?', (prev_pid,)
+                ).fetchone() is not None
+            finally:
+                _c.close()
+            if still_exists:
+                logger.info(f"Import debrief: duplicate debrief_id={debrief_id} -> existing {prev_pid}")
+                return jsonify({
+                    'success': True,
+                    'duplicate': True,
+                    'proiect_id': prev_pid,
+                    'proiect_url': f'/proiecte/{prev_pid}',
+                    'creat': False,
+                    'sumar': {'echipamente': 0, 'jurnal_entries': 0, 'ore_total_secunde': 0, 'checklist_items': 0},
+                }), 200
+            logger.info(f"Import debrief: prior project {prev_pid} for debrief_id={debrief_id} was deleted — allowing re-import")
 
     conn = get_db()
     cursor = conn.cursor()
