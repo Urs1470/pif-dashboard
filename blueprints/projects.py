@@ -1211,7 +1211,9 @@ def import_debrief():
                 proiect_data.get('deadline', ''),
                 proiect_data.get('data_crearii', now[:10]),
                 proiect_data.get('status', 'in_lucru'),
-                proiect_data.get('observatii', ''),
+                # Accept observatii_pv as a fallback (older skill variants put the
+                # detailed write-up there); never silently drop it.
+                (proiect_data.get('observatii') or proiect_data.get('observatii_pv') or ''),
                 proiect_data.get('nr_comanda', ''),
                 proiect_data.get('nr_contract', ''),
                 proiect_data.get('service_before', ''),
@@ -1259,13 +1261,18 @@ def import_debrief():
             item_id = item.get('id') or generate_uuid()
             cat_ref = (item.get('categorie') or '').strip().lower()
             cat_id = cat_name_to_id.get(cat_ref)  # None if not found or empty
+            # Accept both schema variants:
+            #   titlu/completed (prompt v1.1)  and  text/bifat (skill v1.2+)
+            titlu = item.get('titlu') or item.get('text') or ''
+            done_raw = item.get('completed', item.get('bifat', 0))
+            completed = 1 if done_raw in (1, True, '1', 'true', 'True', 'da', 'yes') else 0
             cursor.execute('''
                 INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 item_id, project_id,
-                item.get('titlu', ''),
-                item.get('completed', 0),
+                titlu,
+                completed,
                 item.get('note', ''),
                 item.get('ordine', 0),
                 cat_id,
@@ -1281,7 +1288,8 @@ def import_debrief():
             ''', (
                 entry_id, project_id,
                 entry.get('data', now[:10]),
-                entry.get('continut', ''),
+                # Accept 'text' as alias for 'continut' (skill v1.2+)
+                (entry.get('continut') or entry.get('text') or ''),
                 now,
             ))
             sumar['jurnal_entries'] += 1
