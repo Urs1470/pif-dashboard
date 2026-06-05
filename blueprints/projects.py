@@ -1015,11 +1015,11 @@ def preview_import_params():
 
 # ============ IMPORT ARHIVA PROIECT (Siemens STARTER) ============
 
-def _enrich_drive_descriptions(drives):
-    """Adaugă `descriere_db` pe parametrii fiecărui drive, din parametri_master.
+def _familie_param_meta(drives):
+    """Returnează {familie: {cod: {'desc': str, 'default': str}}} din parametri_master.
 
-    Grupat pe familie ca să facă un singur SELECT per familie. Nemodificator pe
-    DB — doar citește descrierile scurte pentru afișare în UI.
+    Un singur SELECT per familie. Nemodificator pe DB. Folosit pentru a îmbogăți
+    descrierile ȘI pentru a filtra parametrii care sunt la valoarea de fabrică.
     """
     by_familie = {}
     for d in drives:
@@ -1029,25 +1029,90 @@ def _enrich_drive_descriptions(drives):
     if not by_familie:
         return {}
 
-    desc = {}
+    meta = {}
     conn = get_db()
     cursor = conn.cursor()
     for fam, codes in by_familie.items():
         codes = list(codes)
-        desc[fam] = {}
+        meta[fam] = {}
         # chunk pentru a evita limita SQLite de variabile (999)
         for i in range(0, len(codes), 900):
             chunk = codes[i:i + 900]
             placeholders = ','.join('?' * len(chunk))
             cursor.execute(
-                f'SELECT parametru, descriere_scurta FROM parametri_master '
-                f'WHERE familie = ? AND parametru IN ({placeholders})',
+                f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
+                f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
                 [fam] + chunk
             )
             for r in cursor.fetchall():
-                desc[fam][r['parametru']] = r['descriere_scurta']
+                default = r['valoare_default']
+                if default is None or str(default).strip() == '':
+                    default = r['valoare_default_str']
+                meta[fam][r['parametru']] = {
+                    'desc': r['descriere_scurta'],
+                    'default': default,
+                }
     conn.close()
-    return desc
+    return meta
+
+
+def _equals_default(value, default):
+    """True dacă valoarea curentă coincide cu default-ul de fabrică.
+
+    Comparație numerică tolerantă (single-float repr) cu fallback pe string.
+    Default necunoscut/gol => nu putem decide => False (păstrăm parametrul).
+    """
+    if default is None or str(default).strip() == '':
+        return False
+    a, b = str(value).strip(), str(default).strip()
+    if a == b:
+        return True
+    try:
+        return abs(float(a) - float(b)) < 1e-6
+    except (ValueError, TypeError):
+        return False
+
+
+def _is_zeroish(value):
+    """True dacă valoarea e zero numeric (0, 0.0, 0.00...)."""
+    try:
+        return float(str(value).strip()) == 0.0
+    except (ValueError, TypeError):
+        return False
+
+
+def _filter_drive_params(drives, meta):
+    """Elimină parametrii la valoarea de fabrică (zgomot) din fiecare drive.
+
+    Reguli:
+      - dacă valoarea == default cunoscut din parametri_master => omis;
+      - dacă parametrul lipsește din DB ȘI valoarea e 0 => omis (aproape sigur
+        un connector BICO / funcție dezactivată neatinsă, nu o setare reală);
+      - restul se păstrează.
+    Adaugă pe fiecare drive `descrieri`, `params` filtrat, `modified_count`,
+    `skipped_default`.
+    """
+    for d in drives:
+        fam_meta = meta.get(d.get('familie') or '', {})
+        params = d.get('params', {})
+        kept, descrieri, skipped = {}, {}, 0
+        for code, val in params.items():
+            m = fam_meta.get(code)
+            if m is not None:
+                if _equals_default(val, m['default']):
+                    skipped += 1
+                    continue
+                if m.get('desc'):
+                    descrieri[code] = m['desc']
+            elif _is_zeroish(val):
+                # necunoscut în DB + valoare 0 => zgomot
+                skipped += 1
+                continue
+            kept[code] = val
+        d['params'] = kept
+        d['descrieri'] = descrieri
+        d['modified_count'] = len(kept)
+        d['skipped_default'] = skipped
 
 
 @projects_bp.route('/api/import-archive/preview', methods=['POST'])
@@ -1081,17 +1146,15 @@ def preview_import_archive():
         return jsonify({'error': f'Eroare la parsarea arhivei: {e}'}), 400
 
     drives = result.get('drives', [])
-    desc = _enrich_drive_descriptions(drives)
-    for d in drives:
-        fam_desc = desc.get(d.get('familie') or '', {})
-        # mic eșantion adnotat pentru afișare în preview (motor + rampe uzuale)
-        d['descrieri'] = {code: fam_desc[code] for code in d.get('params', {})
-                          if fam_desc.get(code)}
+    meta = _familie_param_meta(drives)
+    # Filtrează parametrii la valoarea de fabrică (elimină zgomotul de 0-uri).
+    _filter_drive_params(drives, meta)
 
     return jsonify({
         'project_name': result.get('project_name', ''),
         'filename': upload.filename,
         'count': len(drives),
+        'skipped_default': sum(d.get('skipped_default', 0) for d in drives),
         'drives': drives,
     })
 
