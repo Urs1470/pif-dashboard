@@ -6167,6 +6167,7 @@ function showImportArchiveModal(data) {
             <div><span style="color:var(--text-dim); font-size:0.8rem;">Proiect:</span> <strong>${escapeHtml(data.project_name || '—')}</strong></div>
             <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
             <div><span style="color:var(--text-dim); font-size:0.8rem;">Drive-uri găsite:</span> <strong>${drives.length}</strong></div>
+            ${data.skipped_default ? `<div style="color:var(--text-dim); font-size:0.8rem;"><i data-lucide="filter" style="width:12px;height:12px;vertical-align:-1px;"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
         </div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(true)"><i data-lucide="check-square"></i> Toate</button>
