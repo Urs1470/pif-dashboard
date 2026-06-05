@@ -6099,6 +6099,7 @@ function closeImportParamsModal() {
 // echipament separat, cu parametrii diferiți de fabrică.
 
 let _importArchivePreview = null;
+let _importArchiveFile = null;
 
 function triggerImportArchive() {
     if (!currentProjectId) {
@@ -6112,6 +6113,7 @@ function triggerImportArchive() {
 async function onImportArchiveSelected(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
+    _importArchiveFile = file;
 
     const formData = new FormData();
     formData.append('file', file);
@@ -6202,11 +6204,26 @@ async function commitImportArchive() {
         return;
     }
     try {
-        const data = await apiPost(`/proiecte/${currentProjectId}/echipamente/import-archive`,
+        const projectId = currentProjectId;
+        const data = await apiPost(`/proiecte/${projectId}/echipamente/import-archive`,
             { drives: selected });
+
+        // Salvează arhiva și ca atașament al proiectului (best-effort)
+        if (_importArchiveFile) {
+            try {
+                const fd = new FormData();
+                fd.append('file', _importArchiveFile);
+                await apiUpload(`/proiecte/${projectId}/atasamente`, fd);
+                if (typeof loadAttachments === 'function') await loadAttachments(projectId);
+            } catch (attErr) {
+                console.error('Atașarea arhivei a eșuat:', attErr);
+                showToast('Echipamente importate, dar arhiva nu a putut fi atașată', true);
+            }
+        }
+
         closeImportArchiveModal();
         showToast(data.message || `${selected.length} echipamente importate`);
-        await loadEchipamente(currentProjectId);
+        await loadEchipamente(projectId);
     } catch (e) {
         console.error('Import archive commit failed:', e);
         showToast('Eroare la import: ' + (e.message || ''), true);
@@ -6218,6 +6235,7 @@ function closeImportArchiveModal() {
     if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
     _importArchivePreview = null;
+    _importArchiveFile = null;
 }
 
 // ============ BATCH OPERATIONS ============
