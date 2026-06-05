@@ -6172,10 +6172,10 @@ function showImportArchiveModal(data) {
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(true)"><i data-lucide="check-square"></i> Toate</button>
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(false)"><i data-lucide="square"></i> Niciunul</button>
         </div>
-        <div style="max-height:52vh; overflow-y:auto;">
+        <div class="imp-arch-list">
             ${cards || '<div style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit drive-uri în arhivă.</div>'}
         </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+        <div class="imp-arch-actions">
             <button type="button" class="btn btn-secondary btn-small" onclick="closeImportArchiveModal()">Anulează</button>
             <button type="button" class="btn btn-primary btn-small" onclick="commitImportArchive()"><i data-lucide="check"></i> Importă echipamentele selectate</button>
         </div>

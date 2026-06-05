@@ -27,9 +27,9 @@
 
       /* Text */
       --text: #e8edf5;
-      --text-secondary: #8590a0;
-      --text-dim: #7c8696;
-      --text2: #8590a0;
+      --text-secondary: #98a3b3;
+      --text-dim: #6b7585;
+      --text2: #98a3b3;
 
       /* Lines */
       --border: #232b38;
@@ -59,7 +59,7 @@
       --service-accent: #d97706;
       --text: #1f2937;
       --text-secondary: #5a6473;
-      --text-dim: #64748b;
+      --text-dim: #8b95a6;
       --text2: #5a6473;
       --border: #dbe1ea;
       --line-soft: #eef1f6;
@@ -76,7 +76,7 @@
     html, body {
       height: 100%;
       font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.5;
       background: var(--bg);
       color: var(--text);
@@ -216,7 +216,7 @@
     .mppc-card [data-lucide] { width: 28px; height: 28px; color: var(--accent); }
     .mppc-name { font-size: 15px; font-weight: 600; }
     .mppc-meta { font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
-    .mppc-families { font-size: 11px; color: var(--text-dim); }
+    .mppc-families { font-size: 12px; color: var(--text-dim); }
     /* Family mini-tabs on Parametri step 2 */
     .mpmt {
       padding: 6px 12px;
@@ -236,7 +236,7 @@
     /* Fault-code tip badge — colors mirror desktop (index.html) */
     .fault-tip-badge {
       display: inline-block; padding: 3px 10px; border-radius: 16px;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.04em; font-family: 'JetBrains Mono', monospace;
       background: var(--bg-elev3); color: var(--text2);
     }
@@ -253,15 +253,20 @@
       background: var(--accent-soft); color: var(--accent);
     }
     /* Fault-code list rows */
+    /* Liste lungi (fault/param): rânduri plate separate prin divider — mai
+       aerisit și mai ușor de scanat decât un teanc de carduri bordurate. */
     .fault-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 8px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      padding: 14px 4px;
+      margin-bottom: 0;
       cursor: pointer;
+      transition: background 0.12s ease;
     }
-    .fault-item:active { background: var(--border); }
+    .fault-item:active { background: var(--hover); }
+    .fault-item:last-child { border-bottom: none; }
     .fault-item-top { display: flex; align-items: center; gap: 8px; }
     .fault-item-code { font-weight: 600; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
     .fault-item-name { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
@@ -650,6 +655,7 @@
       padding: 16px;
       margin-bottom: 12px;
       cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
     }
     .note-item:active { background: var(--border); }
     .note-project { font-size: 12px; color: var(--accent); margin-bottom: 4px; }
@@ -681,14 +687,24 @@
       margin-bottom: 16px;
     }
     .param-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 8px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      padding: 14px 4px;
+      margin-bottom: 0;
       cursor: pointer;
+      transition: background 0.12s ease;
     }
-    .param-item:active { background: var(--border); }
+    .param-item:active { background: var(--hover); }
+    .param-item:last-child { border-bottom: none; }
+    /* Rândul expandat capătă din nou un fundal de card, ca să se delimiteze. */
+    .param-item.expanded {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 4px 0;
+    }
     .param-code { font-weight: 600; color: var(--accent); }
     .param-default { font-size: 14px; color: var(--text-secondary); }
     .param-desc { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }

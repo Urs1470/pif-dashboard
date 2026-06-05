@@ -1872,6 +1872,34 @@
 
         .modal-body { padding: 20px; }
 
+        /* Import-arhivă modal: pe mobil 90vh depășește zona vizibilă (bara de
+           browser + home indicator), așa că footer-ul cu butoane ajungea sub
+           „dock"-ul de jos. Folosim dvh + body scrollabil + footer sticky cu
+           padding pentru safe-area, ca butonul de salvare să fie mereu vizibil. */
+        #import-archive-modal .modal {
+            display: flex;
+            flex-direction: column;
+            max-height: 90dvh;
+            overflow: hidden;
+        }
+        #import-archive-modal .modal-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .imp-arch-actions {
+            position: sticky;
+            bottom: 0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin: 14px -20px -20px;
+            padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+        }
+
         /* Form */
         .form-group { margin-bottom: var(--space-md); }
 
