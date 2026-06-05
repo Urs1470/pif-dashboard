@@ -147,7 +147,13 @@ def _resolve_value(const_idx: int, const_pool: Dict[int, tuple]) -> Optional[str
 
 
 def _format_code(pnu: int, index: int) -> str:
-    return f'p{pnu}[{index}]' if index else f'p{pnu}'
+    """Format Siemens canonic, cu zero-padding la minim 4 cifre: p15 -> p0015,
+    p304 -> p0304, p1120 -> p1120, p20383 -> p20383. Indexul (>0) se păstrează:
+    p0840[1]. Trebuie să se potrivească exact cu `parametru` din parametri_master
+    (ex. p0003, p0010), altfel descrierile și default-urile nu se rezolvă.
+    """
+    base = f'p{pnu:04d}'
+    return f'{base}[{index}]' if index else base
 
 
 def _read_project_drives(db_path: str) -> List[Dict]:
