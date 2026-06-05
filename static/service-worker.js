@@ -9,15 +9,30 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v38';
+const VERSION = 'v39';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
-// App shell files to cache on install
+// App shell files to cache on install. Include both desktop (/) and mobile (/m)
+// entry points plus the mobile bundle, so a cold offline start works even if the
+// user never browsed those assets while online.
 const APP_SHELL = [
   '/',
   '/static/app.js',
-  '/static/manifest.json'
+  '/static/manifest.json',
+  '/m',
+  '/static/mobile.js',
+  '/static/mobile-app.css',
+  '/static/lucide.min.js'
+];
+
+// Cross-origin CDN hosts whose assets we cache-first at runtime (fonts + KaTeX),
+// so the mobile PWA renders correctly offline instead of falling back to system
+// fonts and breaking math rendering.
+const CDN_HOSTS = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'cdn.jsdelivr.net'
 ];
 
 // Install — cache the app shell. No skipWaiting(): the new worker waits until
@@ -26,7 +41,16 @@ self.addEventListener('install', (event) => {
   console.log('[SW] Installing', VERSION);
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
+      // Per-item cache.put with catch: one missing/redirected asset (e.g. /m
+      // returning a login redirect when unauthenticated) must not abort the
+      // whole install the way cache.addAll() would.
+      .then((cache) => Promise.all(
+        APP_SHELL.map((u) =>
+          fetch(u, { credentials: 'same-origin' })
+            .then((res) => (res && res.ok ? cache.put(u, res) : null))
+            .catch(() => {})
+        )
+      ))
   );
   // No skipWaiting() — let the new SW wait until all tabs close, avoiding
   // mismatches between cached HTML and new JS/CSS assets.
@@ -92,6 +116,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // CDN assets (Google Fonts, KaTeX): cache-first so the PWA renders correctly
+  // offline. These are cross-origin; responses may be opaque, so we cache them
+  // regardless of `response.ok` (opaque responses report status 0).
+  if (CDN_HOSTS.includes(url.hostname)) {
+    event.respondWith(cacheFirstCDN(request, STATIC_CACHE, event));
+    return;
+  }
+
   // HTML pages: network-first (to get fresh content)
   if (request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(networkFirstWithCache(request, STATIC_CACHE, event));
@@ -131,6 +163,31 @@ async function cacheFirstWithNetwork(request, cacheName, event) {
     if (request.mode === 'navigate') {
       return cache.match('/');
     }
+    throw error;
+  }
+}
+
+// Cache-first for cross-origin CDN assets (fonts, KaTeX). Unlike the same-origin
+// helper, this caches opaque responses too (status 0) so offline rendering works.
+async function cacheFirstCDN(request, cacheName, event) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+  if (cached) {
+    return cached;
+  }
+  try {
+    const response = await fetch(request);
+    // Cache 2xx and opaque (status 0) responses; skip explicit error statuses.
+    if (response && (response.ok || response.type === 'opaque')) {
+      const clone = response.clone();
+      const putPromise = cache.put(request, clone);
+      if (event && typeof event.waitUntil === 'function') {
+        event.waitUntil(putPromise.catch(() => {}));
+      }
+    }
+    return response;
+  } catch (error) {
+    console.log('[SW] CDN request failed:', error);
     throw error;
   }
 }
