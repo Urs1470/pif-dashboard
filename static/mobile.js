@@ -2309,9 +2309,18 @@ async function addMobileChecklistItem(projectId, categorieId = null) {
   loadMobileChecklist(projectId);
 }
 
-async function deleteMobileChecklistItem(itemId, projectId) {
-  await apiDelete(`/api/checklist/${itemId}`);
-  loadMobileChecklist(projectId);
+let _mobileChecklistReloadTimer = null;
+async function deleteMobileChecklistItem(itemId, projectId, btnEl) {
+  // Optimistic hide + debounced reload to prevent freeze on rapid deletes
+  const row = btnEl ? btnEl.closest('.mob-checklist-item, [data-checklist-id]') : document.querySelector(`[onclick*="deleteMobileChecklistItem('${itemId}'"]`);
+  if (row) { row.style.transition = 'opacity 0.15s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 150); }
+  try {
+    await apiDelete(`/api/checklist/${itemId}`);
+    clearTimeout(_mobileChecklistReloadTimer);
+    _mobileChecklistReloadTimer = setTimeout(() => loadMobileChecklist(projectId), 350);
+  } catch (e) {
+    loadMobileChecklist(projectId);
+  }
 }
 
 // ============ Mobile Inline Subtasks & Timer (mirrors desktop renderTask) ============
@@ -2537,9 +2546,17 @@ async function toggleMobileProjectTask(taskId, checked, projectId) {
   loadMobileProjectTasks(projectId);
 }
 
-async function deleteMobileProjectTask(taskId, projectId) {
-  await apiDelete(`/api/tasks/${taskId}`);
-  loadMobileProjectTasks(projectId);
+let _mobileTaskReloadTimer = null;
+async function deleteMobileProjectTask(taskId, projectId, btnEl) {
+  const row = btnEl ? btnEl.closest('.mob-task-card, [data-task-id]') : null;
+  if (row) { row.style.transition = 'opacity 0.15s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 150); }
+  try {
+    await apiDelete(`/api/tasks/${taskId}`);
+    clearTimeout(_mobileTaskReloadTimer);
+    _mobileTaskReloadTimer = setTimeout(() => loadMobileProjectTasks(projectId), 350);
+  } catch (e) {
+    loadMobileProjectTasks(projectId);
+  }
 }
 
 // 3.6 Journal
@@ -2580,10 +2597,18 @@ async function addMobileJournalEntry(projectId) {
   loadMobileJournal(projectId);
 }
 
-async function deleteMobileJournalEntry(entryId, projectId) {
+let _mobileJournalReloadTimer = null;
+async function deleteMobileJournalEntry(entryId, projectId, btnEl) {
   if (!(await mobileConfirm('Șterge intrarea', 'Confirmi ștergerea acestei intrări din jurnal?'))) return;
-  await apiDelete(`/api/jurnal/${entryId}`);
-  loadMobileJournal(projectId);
+  const row = btnEl ? btnEl.closest('.note-item') : null;
+  if (row) { row.style.transition = 'opacity 0.15s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 150); }
+  try {
+    await apiDelete(`/api/jurnal/${entryId}`);
+    clearTimeout(_mobileJournalReloadTimer);
+    _mobileJournalReloadTimer = setTimeout(() => loadMobileJournal(projectId), 350);
+  } catch (e) {
+    loadMobileJournal(projectId);
+  }
 }
 
 // 3.7 Attachments
@@ -3343,10 +3368,18 @@ async function quickAddMobileTask() {
   loadMobileTasks();
 }
 
-async function deleteMobileGlobalTask(taskId) {
+let _mobileGlobalTaskReloadTimer = null;
+async function deleteMobileGlobalTask(taskId, btnEl) {
   if (!(await mobileConfirm('Șterge taskul', 'Confirmi ștergerea taskului?'))) return;
-  await apiDelete(`/api/global-tasks/${taskId}`);
-  loadMobileTasks();
+  const row = btnEl ? btnEl.closest('.mob-task-card, [data-task-id]') : null;
+  if (row) { row.style.transition = 'opacity 0.15s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 150); }
+  try {
+    await apiDelete(`/api/global-tasks/${taskId}`);
+    clearTimeout(_mobileGlobalTaskReloadTimer);
+    _mobileGlobalTaskReloadTimer = setTimeout(() => loadMobileTasks(), 350);
+  } catch (e) {
+    loadMobileTasks();
+  }
 }
 
 function editMobileTask(taskId) {

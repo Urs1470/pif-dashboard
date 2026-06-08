@@ -1776,15 +1776,17 @@ async function toggleTodo(taskId, checked) {
     }
 }
 
-async function deleteTodo(taskId) {
+async function deleteTodo(taskId, btnEl) {
     if (!confirm('Ștergi acest task? Acțiunea nu poate fi anulată.')) return;
+    _optimisticRemove(btnEl || document.querySelector(`[data-task-id="${taskId}"]`), '.tcard');
     try {
         await apiDelete(`/tasks/${taskId}`);
-        loadTodos(currentProjectId);
+        _debouncedTodoReload();
         showToast('Task șters!');
     } catch (e) {
         console.error('Failed to delete todo:', e);
         showToast('Eroare la ștergerea taskului', true);
+        if (currentProjectId) loadTodos(currentProjectId);
     }
 }
 
@@ -2199,12 +2201,18 @@ async function toggleGtTimerInline(taskId, btnElement) {
     }
 }
 
-async function deleteSubtask(subtaskId) {
+let _subtaskReloadTimer = null;
+async function deleteSubtask(subtaskId, btnEl) {
     const taskId = document.getElementById('task-edit-id').value;
+    _optimisticRemove(btnEl || document.querySelector(`[onclick*="deleteSubtask('${subtaskId}')"]`), '.subtask-item');
     try {
         await apiDelete(`/subtasks/${subtaskId}`);
+        clearTimeout(_subtaskReloadTimer);
+        _subtaskReloadTimer = setTimeout(() => loadSubtasks(taskId), 350);
+    } catch (e) {
+        showToast('Eroare la ștergere', true);
         loadSubtasks(taskId);
-    } catch (e) { showToast('Eroare la ștergere', true); }
+    }
 }
 
 // ── Per-task timer ── (works for project tasks AND daily/global tasks)
@@ -2449,17 +2457,18 @@ async function addJurnalEntry() {
     }
 }
 
-async function deleteJurnalEntry(entryId, pairedSessionId) {
+let _jurnalReloadTimer = null;
+async function deleteJurnalEntry(entryId, pairedSessionId, btnEl) {
+    _optimisticRemove(btnEl || document.querySelector(`[onclick*="deleteJurnalEntry('${entryId}'"]`), '.jurnal-enter');
     try {
-        // Delete the paired timer_session too (stop-with-note creates both).
-        // Frontend belt-and-suspenders even though the backend now cascades —
-        // covers servers running the old code and pre-fix orphan rows.
         const calls = [apiDelete(`/jurnal/${entryId}`)];
         if (pairedSessionId) calls.push(apiDelete(`/timer/${pairedSessionId}`).catch(() => {}));
         await Promise.all(calls);
-        loadJurnal(currentProjectId);
+        clearTimeout(_jurnalReloadTimer);
+        _jurnalReloadTimer = setTimeout(() => { if (currentProjectId) loadJurnal(currentProjectId); }, 350);
     } catch (e) {
         console.error('Failed to delete jurnal entry:', e);
+        if (currentProjectId) loadJurnal(currentProjectId);
     }
 }
 
@@ -4110,8 +4119,9 @@ async function cycleOverviewStatus(taskId, current) {
     } catch (e) { showToast('Eroare la schimbarea statusului', true); }
 }
 
-async function deleteOverviewTask(taskId) {
+async function deleteOverviewTask(taskId, btnEl) {
     if (!confirm('Stergi acest task? Actiunea nu poate fi anulata.')) return;
+    _optimisticRemove(btnEl || document.querySelector(`[data-task-id="${taskId}"]`), '.tcard');
     try {
         await apiDelete(`/global-tasks/${taskId}`);
         loadProjectTasks();
@@ -4143,15 +4153,17 @@ function editGtTask(taskId) {
     openGtEditModal(taskId);
 }
 
-async function deleteGtTask(taskId) {
+async function deleteGtTask(taskId, btnEl) {
     if (!confirm('Ștergi acest task global? Acțiunea nu poate fi anulată.')) return;
+    _optimisticRemove(btnEl || document.querySelector(`[data-task-id="${taskId}"]`), '.tcard');
     try {
         await apiDelete(`/global-tasks/${taskId}`);
-        loadGlobalTasks();
+        _debouncedGlobalTaskReload();
         showToast('Task șters!');
     } catch (e) {
         console.error('Failed to delete global task:', e);
         showToast('Eroare la ștergerea taskului', true);
+        loadGlobalTasks();
     }
 }
 
@@ -4573,6 +4585,43 @@ function quickAddTaskFromHome() {
 
 // ============ CHECKLIST PIF ============
 
+// ── Debounced reload helpers ──────────────────────────────────
+// Rapid deletions (3 clicks in <500ms) used to fire 3 concurrent GET+render
+// cycles, racing on the DOM.  Now each delete only hides the DOM row, and the
+// full reload is debounced: it fires once, 350ms after the *last* delete.
+let _checklistReloadTimer = null;
+function _debouncedChecklistReload() {
+    clearTimeout(_checklistReloadTimer);
+    _checklistReloadTimer = setTimeout(() => {
+        if (currentProjectId) loadChecklist(currentProjectId);
+    }, 350);
+}
+let _todoReloadTimer = null;
+function _debouncedTodoReload() {
+    clearTimeout(_todoReloadTimer);
+    _todoReloadTimer = setTimeout(() => {
+        if (currentProjectId) loadTodos(currentProjectId);
+    }, 350);
+}
+let _globalTaskReloadTimer = null;
+function _debouncedGlobalTaskReload() {
+    clearTimeout(_globalTaskReloadTimer);
+    _globalTaskReloadTimer = setTimeout(() => loadGlobalTasks(), 350);
+}
+
+// Optimistic hide: immediately remove the closest card/row from the DOM
+// so the user sees instant feedback, even before the API call returns.
+function _optimisticRemove(el, selector) {
+    const row = el ? el.closest(selector) : null;
+    if (row) {
+        row.style.transition = 'opacity 0.15s, max-height 0.2s';
+        row.style.opacity = '0';
+        row.style.maxHeight = '0';
+        row.style.overflow = 'hidden';
+        setTimeout(() => row.remove(), 200);
+    }
+}
+
 // ============ CHECKLIST PIF cu CATEGORII DINAMICE ============
 // Fiecare proiect are propriile categorii (per-project, NOT global).
 // Item-urile orfane (categorie_id NULL) intra in bucket-ul virtual "Fara categorie".
@@ -4673,7 +4722,7 @@ function _renderChecklistCatBlock(cat, items, collapsed, isUncategorized = false
             <input type="checkbox" ${it.completed ? 'checked' : ''}
                    onchange="toggleChecklistItem('${it.id}', this.checked)">
             <span class="checklist-title">${escapeHtml(it.titlu || '')}</span>
-            <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteChecklistItem('${it.id}')" title="Șterge"><i data-lucide="trash-2"></i></button>
+            <button class="btn btn-icon btn-ghost btn-ghost-danger" onclick="deleteChecklistItem('${it.id}', this)" title="Șterge"><i data-lucide="trash-2"></i></button>
         </div>
     `).join('') || `<div class="checklist-cat-empty">Niciun item în această categorie.</div>`;
 
@@ -4821,19 +4870,23 @@ async function toggleChecklistItem(itemId, checked) {
         await apiPut(`/checklist/${itemId}`, {
             completed: checked ? 1 : 0
         });
-        loadChecklist(currentProjectId);
+        _debouncedChecklistReload();
     } catch (e) {
         console.error('Failed to toggle checklist item:', e);
+        if (currentProjectId) loadChecklist(currentProjectId);
     }
 }
 
-async function deleteChecklistItem(itemId) {
+async function deleteChecklistItem(itemId, btnEl) {
+    // Optimistic: hide the row immediately, then fire API + debounced reload
+    _optimisticRemove(btnEl || document.querySelector(`[onclick*="deleteChecklistItem('${itemId}')"]`), '.checklist-item');
     try {
         await apiDelete(`/checklist/${itemId}`);
-        loadChecklist(currentProjectId);
-        showToast('Item șters!');
+        _debouncedChecklistReload();
     } catch (e) {
         console.error('Failed to delete checklist item:', e);
+        // On error, force a full reload to restore the item
+        if (currentProjectId) loadChecklist(currentProjectId);
     }
 }
 
@@ -4960,13 +5013,16 @@ function stopTimerUI() {
     if (stopBtn)  stopBtn.style.display  = 'none';
 }
 
-async function deleteTimerSession(sessionId) {
+async function deleteTimerSession(sessionId, btnEl) {
+    _optimisticRemove(btnEl || document.querySelector(`[onclick*="deleteTimerSession('${sessionId}'"]`), '.timer-session');
     try {
         await apiDelete(`/timer/${sessionId}`);
-        loadJurnal(currentProjectId);
+        clearTimeout(_jurnalReloadTimer);
+        _jurnalReloadTimer = setTimeout(() => { if (currentProjectId) loadJurnal(currentProjectId); }, 350);
         showToast('Sesiune ștearsă!');
     } catch (e) {
         console.error('Failed to delete timer session:', e);
+        if (currentProjectId) loadJurnal(currentProjectId);
     }
 }
 
