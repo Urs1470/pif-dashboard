@@ -1537,11 +1537,14 @@ def import_debrief():
             ))
             sumar['checklist_items'] += 1
 
-        # ── 6 + 7. Jurnal (short) + Ore ────────────────────────────
-        # Journal rows are kept SHORT: an activity label (from ore[].descriere)
-        # plus the day's hours, e.g. "Parametrizare drive-uri — 12h". The detailed
-        # narrative already went to observatii / service_after (section 2). Hours
-        # also go to timer_sessions for totals/billing.
+        # ── 6 + 7. Timer-with-note per day ─────────────────────────
+        # Each ore[] entry becomes a TIMER SESSION paired with a short NOTE
+        # (activity label from ore[].descriere). The frontend pairs a jurnal entry
+        # to a timer when jurnal.created_at is within ~2 min of timer.stop_time
+        # (see loadJurnal in app.js), then shows ONE "timer cu notă" row — duration
+        # badge + note — instead of a bare "Timer fără notă" plus a separate entry.
+        # So we set the note's created_at == the session stop_time. The detailed
+        # narrative already went to observatii / service_after (section 2).
 
         # date -> detailed jurnal text, used as the label fallback when a given
         # ore[] entry has no descriere.
@@ -1561,22 +1564,14 @@ def import_debrief():
                     dur = 0
                 edate = ore_entry.get('data') or now[:10]
                 # Short activity label: descriere -> fallback to a slice of the
-                # day's detailed jurnal text -> generic "Lucru".
+                # day's detailed jurnal text -> generic "Lucru". No "— Xh" suffix:
+                # the duration shows as the timer badge on the paired row.
                 label = (ore_entry.get('descriere') or '').strip()
                 if not label:
                     fb = jurnal_text_by_date.get(edate[:10], '')
                     label = (fb[:60].rstrip() + '…') if len(fb) > 60 else (fb or 'Lucru')
                 if dur > 0:
-                    htxt = f"{dur / 3600:.1f}".rstrip('0').rstrip('.')
-                    continut = f"{label} — {htxt}h"
-                else:
-                    continut = label
-                cursor.execute('''
-                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (generate_uuid(), project_id, edate, continut, now))
-                sumar['jurnal_entries'] += 1
-                if dur > 0:
+                    # Timer session first, then the paired note (created_at = stop).
                     start, stop = _manual_session_times_local(edate, dur)
                     cursor.execute(
                         'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
@@ -1584,6 +1579,14 @@ def import_debrief():
                         (generate_uuid(), project_id, start, stop, dur)
                     )
                     sumar['ore_total_secunde'] += dur
+                    note_created = stop
+                else:
+                    note_created = now
+                cursor.execute('''
+                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (generate_uuid(), project_id, edate, label, note_created))
+                sumar['jurnal_entries'] += 1
         else:
             # No ore[] — keep a short journal row per jurnal[] entry so the day
             # log isn't lost (no hours available for these).
