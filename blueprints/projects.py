@@ -1407,6 +1407,36 @@ def import_debrief():
         proiect_nume = proiect_data['nume'].strip()
         proiect_client = client_name or proiect_data.get('client', '')
 
+        # Detailed narrative (from jurnal[]) -> goes to observatii (PIF) or
+        # service_after (Service). The journal ROWS themselves are kept SHORT,
+        # built from ore[] further below. Each block: "YYYY-MM-DD: text".
+        _detail_blocks = []
+        for _e in (data.get('jurnal') or []):
+            _t = (_e.get('continut') or _e.get('text') or '').strip()
+            if _t:
+                _ed = (_e.get('data') or '').strip()
+                _detail_blocks.append(f"{_ed}: {_t}" if _ed else _t)
+        detail = "\n\n".join(_detail_blocks)
+        is_service = (proiect_data.get('tip', 'PIF') == 'Service')
+
+        # observatii: PIF gets the detail; Service keeps its own short observatii
+        # (the detail goes to service_after instead). observatii_pv belongs to
+        # Cowork's PV — the dashboard ignores it.
+        if is_service:
+            observatii_val = proiect_data.get('observatii', '')
+        else:
+            observatii_val = detail or proiect_data.get('observatii', '')
+
+        # service_after: Service folds Cowork's value + the detail; PIF leaves it.
+        if is_service:
+            _sa = (proiect_data.get('service_after') or '').strip()
+            if _sa and detail:
+                service_after_val = _sa + "\n\n" + detail
+            else:
+                service_after_val = _sa or detail
+        else:
+            service_after_val = proiect_data.get('service_after', '')
+
         cursor.execute(
             'SELECT id FROM proiecte WHERE LOWER(nume) = LOWER(?) AND LOWER(COALESCE(client, \'\')) = LOWER(?)',
             (proiect_nume, proiect_client.lower())
@@ -1441,13 +1471,11 @@ def import_debrief():
                 proiect_data.get('deadline', ''),
                 proiect_data.get('data_crearii', now[:10]),
                 proiect_data.get('status', 'in_lucru'),
-                # Accept observatii_pv as a fallback (older skill variants put the
-                # detailed write-up there); never silently drop it.
-                (proiect_data.get('observatii') or proiect_data.get('observatii_pv') or ''),
+                observatii_val,
                 proiect_data.get('nr_comanda', ''),
                 proiect_data.get('nr_contract', ''),
                 proiect_data.get('service_before', ''),
-                proiect_data.get('service_after', ''),
+                service_after_val,
                 proiect_data.get('confirmat_client', 0),
                 proiect_data.get('client_nume_confirmare', ''),
                 now, now,
@@ -1509,58 +1537,66 @@ def import_debrief():
             ))
             sumar['checklist_items'] += 1
 
-        # ── 6. Jurnal ──────────────────────────────────────────────
-        # Mirror the stop-with-note convention: embed the day's logged time in
-        # the journal text (e.g. "... — 12h"), so each entry shows the effort.
-        # Hours still go into timer_sessions (section 7) for totals/billing.
-        ore_by_date = {}
-        for oe in (data.get('ore') or []):
-            try:
-                _d = int(oe.get('durata_secunde') or 0)
-            except (ValueError, TypeError):
-                _d = 0
-            if _d > 0:
-                _dt = (oe.get('data') or '')[:10]
-                ore_by_date[_dt] = ore_by_date.get(_dt, 0) + _d
-        _hours_shown = set()  # annotate only the first journal entry per date
+        # ── 6 + 7. Jurnal (short) + Ore ────────────────────────────
+        # Journal rows are kept SHORT: an activity label (from ore[].descriere)
+        # plus the day's hours, e.g. "Parametrizare drive-uri — 12h". The detailed
+        # narrative already went to observatii / service_after (section 2). Hours
+        # also go to timer_sessions for totals/billing.
 
-        for entry in (data.get('jurnal') or []):
-            entry_id = entry.get('id') or generate_uuid()
-            edate = entry.get('data') or now[:10]
-            # Accept 'text' as alias for 'continut' (skill v1.2+)
-            continut = (entry.get('continut') or entry.get('text') or '')
-            secs = ore_by_date.get(edate[:10])
-            if secs and edate[:10] not in _hours_shown:
-                htxt = f"{secs / 3600:.1f}".rstrip('0').rstrip('.')
-                continut = (continut.rstrip() + f"  — {htxt}h").strip()
-                _hours_shown.add(edate[:10])
-            cursor.execute('''
-                INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (
-                entry_id, project_id,
-                edate,
-                continut,
-                now,
-            ))
-            sumar['jurnal_entries'] += 1
+        # date -> detailed jurnal text, used as the label fallback when a given
+        # ore[] entry has no descriere.
+        jurnal_text_by_date = {}
+        for _e in (data.get('jurnal') or []):
+            _t = (_e.get('continut') or _e.get('text') or '').strip()
+            _d = (_e.get('data') or '')[:10]
+            if _t and _d and _d not in jurnal_text_by_date:
+                jurnal_text_by_date[_d] = _t
 
-        # ── 7. Ore ─────────────────────────────────────────────────
-        for ore_entry in (data.get('ore') or []):
-            try:
-                dur = int(ore_entry.get('durata_secunde') or 0)
-            except (ValueError, TypeError):
-                dur = 0
-            if dur <= 0:
-                continue
-            start, stop = _manual_session_times_local(ore_entry.get('data'), dur)
-            sid = generate_uuid()
-            cursor.execute(
-                'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
-                'VALUES (?, ?, ?, ?, ?)',
-                (sid, project_id, start, stop, dur)
-            )
-            sumar['ore_total_secunde'] += dur
+        ore_list = data.get('ore') or []
+        if ore_list:
+            for ore_entry in ore_list:
+                try:
+                    dur = int(ore_entry.get('durata_secunde') or 0)
+                except (ValueError, TypeError):
+                    dur = 0
+                edate = ore_entry.get('data') or now[:10]
+                # Short activity label: descriere -> fallback to a slice of the
+                # day's detailed jurnal text -> generic "Lucru".
+                label = (ore_entry.get('descriere') or '').strip()
+                if not label:
+                    fb = jurnal_text_by_date.get(edate[:10], '')
+                    label = (fb[:60].rstrip() + '…') if len(fb) > 60 else (fb or 'Lucru')
+                if dur > 0:
+                    htxt = f"{dur / 3600:.1f}".rstrip('0').rstrip('.')
+                    continut = f"{label} — {htxt}h"
+                else:
+                    continut = label
+                cursor.execute('''
+                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (generate_uuid(), project_id, edate, continut, now))
+                sumar['jurnal_entries'] += 1
+                if dur > 0:
+                    start, stop = _manual_session_times_local(edate, dur)
+                    cursor.execute(
+                        'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
+                        'VALUES (?, ?, ?, ?, ?)',
+                        (generate_uuid(), project_id, start, stop, dur)
+                    )
+                    sumar['ore_total_secunde'] += dur
+        else:
+            # No ore[] — keep a short journal row per jurnal[] entry so the day
+            # log isn't lost (no hours available for these).
+            for _e in (data.get('jurnal') or []):
+                _t = (_e.get('continut') or _e.get('text') or '').strip()
+                if not _t:
+                    continue
+                short = (_t[:80].rstrip() + '…') if len(_t) > 80 else _t
+                cursor.execute('''
+                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (generate_uuid(), project_id, (_e.get('data') or now[:10]), short, now))
+                sumar['jurnal_entries'] += 1
 
         conn.commit()
 
