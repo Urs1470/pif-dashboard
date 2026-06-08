@@ -297,6 +297,11 @@ function paramSpecLabel(key) {
     return '';
 }
 
+// Returns true when a params_json key is an equipment *spec* rather than a
+// real drive-parameter code. Spec keys go to the card header; drive params
+// stay in the expandable parameters table.
+function isSpecKey(key) { return paramSpecLabel(key) !== ''; }
+
 // Parse a parametru.influenteaza payload into [{code, efect, tip}].
 // Accepts:
 //   - CSV string "30.12, 21.13"

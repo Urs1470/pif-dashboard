@@ -2677,7 +2677,9 @@ async function loadMobileEquipment(projectId) {
       ${(items || []).map(eq => {
         let params = {};
         try { params = JSON.parse(eq.params_json || '{}'); } catch {}
-        const paramEntries = Object.entries(params);
+        const allEntries = Object.entries(params);
+        const specEntries = allEntries.filter(([k]) => isSpecKey(k));
+        const driveEntries = allEntries.filter(([k]) => !isSpecKey(k));
         const eqJson = JSON.stringify(eq).replace(/"/g, '&quot;');
         return `
           <div class="detail-section eq-card" data-eq-id="${escapeHtml(eq.id)}" style="margin-bottom:8px; cursor:pointer;" onclick="toggleMobileEquipmentCard(this, event)">
@@ -2686,25 +2688,24 @@ async function loadMobileEquipment(projectId) {
                 <div style="font-weight:600;font-size:14px;">${escapeHtml(eq.nume || '-')}</div>
                 <div style="font-size:12px;color:var(--text-secondary);">${escapeHtml(eq.producator || '')} · ${escapeHtml(eq.model || '')}</div>
                 ${eq.serial_number ? `<div style="font-size:11px;color:var(--text-secondary);">S/N: ${escapeHtml(eq.serial_number)}</div>` : ''}
-                ${paramEntries.length > 0 ? `<div style="font-size:11px;color:var(--accent);margin-top:3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="sliders-horizontal" style="width:11px;height:11px;"></i> ${paramEntries.length} parametri</div>` : ''}
+                ${specEntries.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${specEntries.map(([k, v]) =>
+                  `<span style="display:inline-flex;gap:3px;background:var(--bg-card,var(--bg));border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;"><span style="color:var(--text-secondary);">${escapeHtml(paramSpecLabel(k))}:</span> <span style="font-weight:600;">${escapeHtml(v)}</span></span>`
+                ).join('')}</div>` : ''}
+                ${driveEntries.length > 0 ? `<div style="font-size:11px;color:var(--accent);margin-top:3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="sliders-horizontal" style="width:11px;height:11px;"></i> ${driveEntries.length} parametri drive</div>` : ''}
               </div>
               <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;" onclick="event.stopPropagation()">
                 <button onclick='event.stopPropagation(); editMobileEquipment(${eqJson}, "${projectId}")' aria-label="Editează" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="pencil" style="width:16px;height:16px;"></i></button>
                 <button onclick="event.stopPropagation(); deleteMobileEquipment('${eq.id}','${projectId}')" aria-label="Șterge" style="background:none;border:none;color:var(--danger);cursor:pointer;padding:6px;display:inline-flex;align-items:center;justify-content:center;"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>
-                ${paramEntries.length > 0 ? `<i data-lucide="chevron-down" class="eq-chevron" style="width:16px;height:16px;color:var(--text-dim);transition:transform 0.15s;"></i>` : ''}
+                ${driveEntries.length > 0 ? `<i data-lucide="chevron-down" class="eq-chevron" style="width:16px;height:16px;color:var(--text-dim);transition:transform 0.15s;"></i>` : ''}
               </div>
             </div>
-            ${paramEntries.length > 0 ? `
+            ${driveEntries.length > 0 ? `
               <div class="eq-expanded" style="display:none; margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                ${paramEntries.map(([k, v]) => {
-                  // Equipment spec key -> readable label; real drive code -> raw.
-                  const klabel = (typeof paramSpecLabel === 'function' && paramSpecLabel(k)) || k;
-                  return `
+                ${driveEntries.map(([k, v]) => `
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--line-soft);gap:8px;">
-                    <span style="color:var(--accent);font-weight:600;flex-shrink:0;">${escapeHtml(klabel)}</span>
+                    <span style="color:var(--accent);font-weight:600;flex-shrink:0;">${escapeHtml(k)}</span>
                     <span style="font-family:'JetBrains Mono',monospace;text-align:right;word-break:break-word;">${escapeHtml(v)}</span>
-                  </div>`;
-                }).join('')}
+                  </div>`).join('')}
               </div>
             ` : ''}
           </div>

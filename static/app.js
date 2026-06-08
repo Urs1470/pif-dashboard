@@ -5406,23 +5406,37 @@ function renderEchipamente(echipamente, descLookup) {
             params = JSON.parse(e.params_json || '{}');
         } catch (err) {}
 
-        const paramCount = Object.keys(params).length;
-        const hasParams = paramCount > 0;
         const lookup = descLookup[e.producator] || {};
-        const paramsRows = Object.entries(params).map(([key, value]) => {
-            const desc = lookup[key] || '';
-            // Catalog drive param -> its short name; otherwise an equipment spec
-            // (cantitate, putere_kw, …) -> a readable label; else '-'.
-            const shortDesc = desc ? extractParamName(desc) : (paramSpecLabel(key) || '-');
-            return `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
-        }).join('');
 
-        const expandedBody = hasParams
+        // Separate equipment specs (cantitate, putere_kw, …) from drive params (99.04, P0304, …)
+        const specs = [];
+        const driveParams = [];
+        for (const [key, value] of Object.entries(params)) {
+            if (isSpecKey(key)) {
+                specs.push({ key, label: paramSpecLabel(key), value });
+            } else {
+                const desc = lookup[key] || '';
+                const shortDesc = desc ? extractParamName(desc) : key;
+                driveParams.push({ key, desc: shortDesc, value });
+            }
+        }
+
+        const hasDriveParams = driveParams.length > 0;
+        const driveRows = driveParams.map(p =>
+            `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(p.key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(p.desc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(p.value)}</td></tr>`
+        ).join('');
+
+        const expandedBody = hasDriveParams
             ? `<table class="echipament-params-table">
                     <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
-                    <tbody>${paramsRows}</tbody>
+                    <tbody>${driveRows}</tbody>
                 </table>`
-            : `<div style="color:var(--text2); font-size:0.85rem; padding:8px 0;">Niciun parametru salvat. Click pe <i data-lucide="pencil" style="width:12px;height:12px;vertical-align:-1px;"></i> pentru a edita.</div>`;
+            : `<div style="color:var(--text2); font-size:0.85rem; padding:8px 0;">Niciun parametru de drive salvat. Click pe <i data-lucide="pencil" style="width:12px;height:12px;vertical-align:-1px;"></i> pentru a edita.</div>`;
+
+        // Spec pills — visible on card without expanding
+        const specPills = specs.map(s =>
+            `<span class="echipament-spec-pill"><span style="color:var(--text2);">${escapeHtml(s.label)}:</span> ${escapeHtml(s.value)}</span>`
+        ).join('');
 
         return `
             <div class="echipament-card is-clickable" onclick="toggleEchipamentCard(this, event)">
@@ -5437,9 +5451,10 @@ function renderEchipamente(echipamente, descLookup) {
                     ${e.producator ? `<span>${escapeHtml(e.producator)}</span>` : ''}
                     ${e.model ? `<span>${escapeHtml(e.model)}</span>` : ''}
                     ${e.serial_number ? `<span>S/N: ${escapeHtml(e.serial_number)}</span>` : ''}
-                    ${hasParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${paramCount} parametri</span>` : ''}
+                    ${hasDriveParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${driveParams.length} parametri</span>` : ''}
                     <span class="echipament-chevron" style="margin-left:auto; color:var(--text-dim); transition:transform 0.15s; display:inline-flex;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
                 </div>
+                ${specs.length ? `<div class="echipament-specs">${specPills}</div>` : ''}
                 <div class="echipament-expanded" style="display: none;">
                     ${expandedBody}
                 </div>
@@ -5515,25 +5530,41 @@ function renderCurrentParams() {
     const entries = Object.entries(currentParams);
     if (entries.length === 0) { list.innerHTML = `<p style="color:var(--text2); font-size:0.82rem; font-family:'Courier New',monospace; padding:8px 0;">Niciun parametru setat.</p>`; return; }
 
+    // Separate specs from drive params in edit modal too
+    const specEntries = entries.filter(([code]) => isSpecKey(code));
+    const driveEntries = entries.filter(([code]) => !isSpecKey(code));
+
     const lookupDesc = (code) => {
         const p = availableParams.find(ap => ap.parametru === code);
         if (p && p.descriere_scurta) {
             const name = typeof extractParamName === 'function' ? extractParamName(p.descriere_scurta) : p.descriere_scurta;
             return name.length > 35 ? name.substring(0, 32) + '…' : name;
         }
-        // Equipment spec key (cantitate, putere_kw, …) -> readable label.
-        const spec = (typeof paramSpecLabel === 'function') ? paramSpecLabel(code) : '';
-        return spec || '—';
+        return code;
     };
 
-    const header = `<div style="display:flex; gap:8px; align-items:center; padding:4px 10px; font-family:'Courier New',monospace; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); border-bottom:1px solid var(--border); margin-bottom:4px;">
-        <span style="min-width:65px;">Cod</span>
-        <span style="flex:2;">Descriere</span>
-        <span style="min-width:70px; text-align:right;">Valoare</span>
-        <span style="width:58px;"></span>
-    </div>`;
+    // Spec section — compact pill-style rows
+    const specSection = specEntries.length ? `
+        <div style="margin-bottom:10px;">
+            <div style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:6px;">Specificații echipament</div>
+            ${specEntries.map(([code, value]) => `<div style="display:flex; gap:8px; align-items:center; padding:5px 10px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:3px; background:var(--bg3); font-size:0.82rem;">
+                <span style="color:var(--text2); min-width:100px;">${escapeHtml(paramSpecLabel(code))}</span>
+                <span style="flex:1; color:var(--text); font-weight:600;">${escapeHtml(String(value))}</span>
+                <button class="btn btn-small btn-secondary" onclick="editParamValue('${code}')" style="height:26px; padding:0 6px; font-size:0.7rem; width:26px;" title="Editează"><i data-lucide="pencil"></i></button>
+                <button class="btn btn-small btn-danger" onclick="deleteParam('${code}')" title="Șterge"><i data-lucide="x"></i></button>
+            </div>`).join('')}
+        </div>` : '';
 
-    const rows = entries.map(([code, value]) => {
+    // Drive params section — table-style with code + description
+    const driveHeader = driveEntries.length ? `<div style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); margin-bottom:6px;">Parametri drive</div>
+        <div style="display:flex; gap:8px; align-items:center; padding:4px 10px; font-family:'Courier New',monospace; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); border-bottom:1px solid var(--border); margin-bottom:4px;">
+            <span style="min-width:65px;">Cod</span>
+            <span style="flex:2;">Descriere</span>
+            <span style="min-width:70px; text-align:right;">Valoare</span>
+            <span style="width:58px;"></span>
+        </div>` : '';
+
+    const driveRows = driveEntries.map(([code, value]) => {
         const desc = lookupDesc(code);
         const param = availableParams.find(ap => ap.parametru === code);
         return `<div style="display:flex; gap:8px; align-items:center; padding:5px 10px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:3px; background:var(--bg3); font-family:'Courier New',monospace; font-size:0.8rem;">
@@ -5545,7 +5576,7 @@ function renderCurrentParams() {
         </div>`;
     }).join('');
 
-    list.innerHTML = header + rows;
+    list.innerHTML = specSection + driveHeader + driveRows;
 }
 
 function editParamValue(code) { const param = availableParams.find(p => p.parametru === code); openParamValueInput(code, param?.descriere || '', currentParams[code] || ''); }
