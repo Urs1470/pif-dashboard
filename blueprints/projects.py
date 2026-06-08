@@ -921,6 +921,159 @@ def delete_echipament(echipament_id):
         conn.close()
 
 
+# ============ PROJECT SNAPSHOT (Cowork sync) ============
+
+@projects_bp.route('/api/proiecte/<project_id>/snapshot', methods=['GET'])
+@login_required
+def get_project_snapshot(project_id):
+    """Full project export as JSON — consumed by Cowork to build debriefs.
+
+    Returns the same schema shape as the debrief import, so Cowork can
+    read what it wrote + everything the user added on site (real params,
+    timer hours, checked items, observations).
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    project = cursor.fetchone()
+    if not project:
+        conn.close()
+        return jsonify({'error': 'Project not found'}), 404
+
+    p = row_to_dict(project)
+
+    # Client
+    client_data = None
+    if p.get('client'):
+        cursor.execute('SELECT * FROM clienti WHERE nume = ?', (p['client'],))
+        crow = cursor.fetchone()
+        if crow:
+            client_data = row_to_dict(crow)
+
+    # Echipamente
+    cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at', (project_id,))
+    echipamente = []
+    for row in cursor.fetchall():
+        eq = row_to_dict(row)
+        # Parse params_json for clean output
+        try:
+            eq['params_json'] = json.loads(eq.get('params_json') or '{}')
+        except (json.JSONDecodeError, TypeError):
+            eq['params_json'] = {}
+        echipamente.append(eq)
+
+    # Checklist categorii + items
+    cursor.execute('SELECT * FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine', (project_id,))
+    categorii = [row_to_dict(r) for r in cursor.fetchall()]
+    cursor.execute('SELECT * FROM checklist_pif WHERE proiect_id = ? ORDER BY ordine', (project_id,))
+    checklist_items = []
+    for r in cursor.fetchall():
+        item = row_to_dict(r)
+        # Find category name
+        cat_match = next((c for c in categorii if str(c['id']) == str(item.get('categorie_id'))), None)
+        item['categorie'] = cat_match['nume'] if cat_match else None
+        checklist_items.append(item)
+
+    # Jurnal
+    cursor.execute('SELECT * FROM jurnal WHERE proiect_id = ? ORDER BY data, created_at', (project_id,))
+    jurnal = [row_to_dict(r) for r in cursor.fetchall()]
+
+    # Timer sessions
+    cursor.execute('SELECT * FROM timer_sessions WHERE proiect_id = ? ORDER BY start_time', (project_id,))
+    sessions = [row_to_dict(r) for r in cursor.fetchall()]
+    total_secunde = sum(s.get('durata_secunde', 0) or 0 for s in sessions)
+
+    # Tasks + subtasks
+    cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY created_at', (project_id,))
+    tasks = []
+    for r in cursor.fetchall():
+        t = row_to_dict(r)
+        cursor.execute('SELECT * FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (t['id'],))
+        t['subtasks'] = [row_to_dict(s) for s in cursor.fetchall()]
+        tasks.append(t)
+
+    conn.close()
+
+    # Build ore[] summary: group timer sessions by date
+    ore_by_date = {}
+    for s in sessions:
+        d = (s.get('start_time') or '')[:10]
+        if d:
+            ore_by_date.setdefault(d, 0)
+            ore_by_date[d] += s.get('durata_secunde', 0) or 0
+    ore = [{'data': d, 'durata_secunde': sec} for d, sec in sorted(ore_by_date.items())]
+
+    snapshot = {
+        'meta': {
+            'version': '1.0',
+            'sursa': 'pif-dashboard',
+            'exported_at': datetime.now().isoformat(),
+            'project_id': project_id,
+        },
+        'client': client_data,
+        'proiect': {
+            'tip': p.get('tip', ''),
+            'nume': p.get('nume', ''),
+            'client': p.get('client', ''),
+            'locatie': p.get('locatie', ''),
+            'producator': p.get('producator', ''),
+            'echipament_principal': p.get('echipament_principal', ''),
+            'cod_proiect': p.get('cod_proiect', ''),
+            'nr_comanda': p.get('nr_comanda', ''),
+            'nr_contract': p.get('nr_contract', ''),
+            'pm': p.get('pm', ''),
+            'folder_server': p.get('folder_server', ''),
+            'data_incepere': p.get('data_incepere', ''),
+            'deadline': p.get('deadline', ''),
+            'data_crearii': p.get('data_crearii', ''),
+            'status': p.get('status', ''),
+            'observatii': p.get('observatii', ''),
+            'confirmat_client': p.get('confirmat_client', 0),
+            'client_nume_confirmare': p.get('client_nume_confirmare', ''),
+            'service_before': p.get('service_before', ''),
+            'service_after': p.get('service_after', ''),
+        },
+        'echipamente': [{
+            'id': eq['id'],
+            'nume': eq.get('nume', ''),
+            'producator': eq.get('producator', ''),
+            'model': eq.get('model', ''),
+            'serial_number': eq.get('serial_number', ''),
+            'params_json': eq.get('params_json', {}),
+        } for eq in echipamente],
+        'checklist_categorii': [{'nume': c['nume'], 'ordine': c.get('ordine', 0)} for c in categorii],
+        'checklist_items': [{
+            'categorie': it.get('categorie'),
+            'titlu': it.get('titlu', ''),
+            'completed': bool(it.get('completed')),
+            'ordine': it.get('ordine', 0),
+        } for it in checklist_items],
+        'jurnal': [{
+            'data': j.get('data', ''),
+            'continut': j.get('continut', ''),
+            'created_at': j.get('created_at', ''),
+        } for j in jurnal],
+        'ore': ore,
+        'ore_total_secunde': total_secunde,
+        'tasks': [{
+            'titlu': t.get('titlu', ''),
+            'descriere': t.get('descriere', ''),
+            'status': t.get('status', ''),
+            'prioritate': t.get('prioritate', ''),
+            'data_scadenta': t.get('data_scadenta', ''),
+            'subtasks': [{'titlu': s.get('titlu', ''), 'done': bool(s.get('done'))} for s in t.get('subtasks', [])],
+        } for t in tasks],
+        'timer_sessions': [{
+            'start_time': s.get('start_time', ''),
+            'stop_time': s.get('stop_time', ''),
+            'durata_secunde': s.get('durata_secunde', 0),
+        } for s in sessions],
+    }
+
+    return jsonify(snapshot)
+
+
 # ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
 
 def _familie_from_echipament(producator: str, model: str) -> str:

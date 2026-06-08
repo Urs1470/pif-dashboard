@@ -28,14 +28,35 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
+def _check_api_token():
+    """Validate Bearer token from Authorization header against PIF_API_TOKEN env var.
+    Returns True if token is valid, False otherwise.  Sets g.api_token_auth = True
+    so CSRF can skip its check for machine-to-machine requests."""
+    from flask import g
+    token = os.environ.get('PIF_API_TOKEN', '').strip()
+    if not token:
+        return False
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Bearer ') and len(auth) > 7:
+        import hmac as _hmac
+        provided = auth[7:].strip()
+        if _hmac.compare_digest(token, provided):
+            g.api_token_auth = True
+            return True
+    return False
+
+
 def login_required(f):
     @functools.wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'authenticated' not in session:
-            if request.path.startswith('/api/'):
-                return jsonify({'error': 'Unauthorized'}), 401
-            return redirect(url_for('login_page'))
-        return f(*args, **kwargs)
+        if 'authenticated' in session:
+            return f(*args, **kwargs)
+        # Machine-to-machine: Accept Bearer token from Cowork / external tools
+        if _check_api_token():
+            return f(*args, **kwargs)
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        return redirect(url_for('login_page'))
     return decorated_function
 
 

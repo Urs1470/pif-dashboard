@@ -76,6 +76,24 @@ SQLite file: `pif_dashboard.db` (gitignored). 19 tables, 14 migrations (idempote
 | `SECRET_KEY` | No | auto-generated `.secret_key` file | Session signing |
 | `SESSION_COOKIE_SECURE` | No | `true` | Set `false` for local HTTP dev |
 | `PIF_USE_DIST` | No | `false` | Use minified builds from static/dist/ |
+| `PIF_API_TOKEN` | No | none | Bearer token for machine-to-machine API access (Cowork). CSRF-exempt. |
+
+## Cowork Integration
+
+Cowork (Claude AI) can read and write Dashboard data via REST API using a Bearer token:
+
+```bash
+# Read project list
+curl -H "Authorization: Bearer $PIF_API_TOKEN" https://pif.iupif.org/api/proiecte?status=in_lucru
+
+# Read full project snapshot (all child data)
+curl -H "Authorization: Bearer $PIF_API_TOKEN" https://pif.iupif.org/api/proiecte/<id>/snapshot
+
+# Import debrief (create project + all child data)
+curl -X POST -H "Authorization: Bearer $PIF_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d @debrief.json https://pif.iupif.org/api/import/debrief
+```
 
 ## Server
 

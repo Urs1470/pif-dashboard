@@ -62,6 +62,14 @@ def init_csrf(app):
                 return
         if request.endpoint and request.endpoint in _EXEMPT_ENDPOINTS:
             return
+        # API-token (Bearer) requests are machine-to-machine — no CSRF needed.
+        # Check both: already-set flag (from login_required) or raw header presence.
+        if getattr(g, 'api_token_auth', False):
+            return
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            # Will be validated by login_required; skip CSRF here.
+            return
         if 'authenticated' not in session:
             return
         expected = session.get('_csrf_token')
