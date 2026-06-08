@@ -5521,7 +5521,9 @@ function renderCurrentParams() {
             const name = typeof extractParamName === 'function' ? extractParamName(p.descriere_scurta) : p.descriere_scurta;
             return name.length > 35 ? name.substring(0, 32) + '…' : name;
         }
-        return '—';
+        // Equipment spec key (cantitate, putere_kw, …) -> readable label.
+        const spec = (typeof paramSpecLabel === 'function') ? paramSpecLabel(code) : '';
+        return spec || '—';
     };
 
     const header = `<div style="display:flex; gap:8px; align-items:center; padding:4px 10px; font-family:'Courier New',monospace; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text2); border-bottom:1px solid var(--border); margin-bottom:4px;">
