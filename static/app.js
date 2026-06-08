@@ -1174,6 +1174,12 @@ async function deleteCurrentProject() {
     showConfirm('Sigur doriți să ștergeți acest proiect? Această acțiune nu poate fi anulată.', async () => {
         try {
             await apiDelete(`/proiecte/${currentProjectId}`);
+            // Also drop it from the "Continuă" recent-projects strip immediately.
+            try {
+                const rp = JSON.parse(localStorage.getItem('recent_projects') || '[]')
+                    .filter(p => p && p.id !== currentProjectId);
+                localStorage.setItem('recent_projects', JSON.stringify(rp));
+            } catch (_) {}
             showToast('Proiect șters!');
             showProjectList();
         } catch (e) {
@@ -4325,6 +4331,25 @@ async function loadDashboardHome() {
         // — Continue: recently opened projects —
         let recents = [];
         try { recents = JSON.parse(localStorage.getItem('recent_projects') || '[]'); } catch (_) {}
+        if (recents.length > 0) {
+            // Drop entries whose project no longer exists (deleted) and dedupe by
+            // id; re-imports create same-name/different-id rows, and deletes leave
+            // stale ones. Validate against the live list, then write back the
+            // cleaned version so the junk doesn't accumulate in localStorage.
+            let existingIds = null;
+            try {
+                const projs = await apiGet('/proiecte');
+                existingIds = new Set((projs || []).map(p => p.id));
+            } catch (_) {}
+            const seen = new Set();
+            recents = recents.filter(p => {
+                if (!p || !p.id || seen.has(p.id)) return false;
+                if (existingIds && !existingIds.has(p.id)) return false;
+                seen.add(p.id);
+                return true;
+            });
+            try { localStorage.setItem('recent_projects', JSON.stringify(recents.slice(0, 6))); } catch (_) {}
+        }
         if (recents.length > 0) {
             html += `<div class="home-section-header"><span class="home-section-title"><i data-lucide="rotate-ccw"></i> Continuă</span></div>`;
             html += `<div class="recent-projects-strip">`;
