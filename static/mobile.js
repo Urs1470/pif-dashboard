@@ -2696,12 +2696,15 @@ async function loadMobileEquipment(projectId) {
             </div>
             ${paramEntries.length > 0 ? `
               <div class="eq-expanded" style="display:none; margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                ${paramEntries.map(([k, v]) => `
+                ${paramEntries.map(([k, v]) => {
+                  // Equipment spec key -> readable label; real drive code -> raw.
+                  const klabel = (typeof paramSpecLabel === 'function' && paramSpecLabel(k)) || k;
+                  return `
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--line-soft);gap:8px;">
-                    <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;flex-shrink:0;">${escapeHtml(k)}</span>
+                    <span style="color:var(--accent);font-weight:600;flex-shrink:0;">${escapeHtml(klabel)}</span>
                     <span style="font-family:'JetBrains Mono',monospace;text-align:right;word-break:break-word;">${escapeHtml(v)}</span>
-                  </div>
-                `).join('')}
+                  </div>`;
+                }).join('')}
               </div>
             ` : ''}
           </div>

@@ -267,6 +267,36 @@ function extractParamName(descriere) {
     return words.slice(0, nameEnd).join(' ');
 }
 
+// Human label for an equipment "spec" key (cantitate, cod_comanda, putere_kw, …).
+// These come from a debrief import and are NOT catalog drive parameters, so they
+// have no description in parametri_master. Returns a readable label, or '' for a
+// real drive-parameter code (e.g. "99.04", "p0304") which should be left as-is.
+const _SPEC_LABELS = {
+    cantitate: 'Cantitate',
+    cod_comanda: 'Cod comandă',
+    putere_kw: 'Putere (kW)',
+    putere: 'Putere',
+    tablou: 'Tablou',
+    serie: 'Serie',
+    tip: 'Tip',
+    model: 'Model',
+    locatie: 'Locație',
+};
+function paramSpecLabel(key) {
+    if (!key) return '';
+    if (_SPEC_LABELS[key]) return _SPEC_LABELS[key];
+    // Generic snake_case spec key -> Title Case ("cod_comanda" -> "Cod comanda",
+    // "putere_kw" -> "Putere kW"). Drive codes (no underscore) return '' so the
+    // caller keeps the raw code / catalog description.
+    if (key.includes('_')) {
+        return key.split('_')
+            .map(w => (w.toLowerCase() === 'kw' ? 'kW'
+                      : w.charAt(0).toUpperCase() + w.slice(1)))
+            .join(' ');
+    }
+    return '';
+}
+
 // Parse a parametru.influenteaza payload into [{code, efect, tip}].
 // Accepts:
 //   - CSV string "30.12, 21.13"

@@ -5386,7 +5386,9 @@ function renderEchipamente(echipamente, descLookup) {
         const lookup = descLookup[e.producator] || {};
         const paramsRows = Object.entries(params).map(([key, value]) => {
             const desc = lookup[key] || '';
-            const shortDesc = desc ? extractParamName(desc) : '-';
+            // Catalog drive param -> its short name; otherwise an equipment spec
+            // (cantitate, putere_kw, …) -> a readable label; else '-'.
+            const shortDesc = desc ? extractParamName(desc) : (paramSpecLabel(key) || '-');
             return `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(shortDesc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(value)}</td></tr>`;
         }).join('');
 
