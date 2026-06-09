@@ -924,8 +924,10 @@ def bulk_add_params():
                 VALUES (?, ?, ?, ?, datetime('now'))
             ''', (generate_uuid(), familie, code, desc))
             inserted += 1
-        except Exception:
+        except Exception as e:
             skipped += 1
+            if skipped <= 3:
+                logger.warning(f"Bulk add skip {code}: {e}")
     conn.commit()
     conn.close()
     logger.info(f"Bulk add params ({familie}): +{inserted} inserted, {skipped} skipped")
