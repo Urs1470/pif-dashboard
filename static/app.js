@@ -5525,7 +5525,17 @@ function renderEchipamente(echipamente, descLookup) {
             if (isSpecKey(key)) {
                 specs.push({ key, label: paramSpecLabel(key), value });
             } else {
-                const desc = storedDesc[key] || lookup[key] || '';
+                let desc = storedDesc[key] || lookup[key] || '';
+                if (!desc) {
+                    // Siemens STARTER exports r-params (read-only) with p-prefix — try r-prefix fallback
+                    if (key.startsWith('p')) desc = lookup['r' + key.substring(1)] || '';
+                    // Indexed params (p0114[2]) — try base param with both prefixes
+                    if (!desc && key.includes('[')) {
+                        const base = key.replace(/\[.*$/, '');
+                        desc = storedDesc[base] || lookup[base] || '';
+                        if (!desc && base.startsWith('p')) desc = lookup['r' + base.substring(1)] || '';
+                    }
+                }
                 const shortDesc = desc ? extractParamName(desc) : key;
                 driveParams.push({ key, desc: shortDesc, value });
             }
@@ -5646,7 +5656,20 @@ function renderCurrentParams() {
     const driveEntries = entries.filter(([code]) => !isSpecKey(code));
 
     const lookupDesc = (code) => {
-        const p = availableParams.find(ap => ap.parametru === code);
+        // Check stored descriptions from parser/backup first
+        if (currentDescrieri[code]) {
+            const name = typeof extractParamName === 'function' ? extractParamName(currentDescrieri[code]) : currentDescrieri[code];
+            return name.length > 35 ? name.substring(0, 32) + '…' : name;
+        }
+        // Try exact match, then r-prefix fallback (Siemens STARTER exports r-params as p-params)
+        let p = availableParams.find(ap => ap.parametru === code);
+        if (!p && code.startsWith('p')) p = availableParams.find(ap => ap.parametru === 'r' + code.substring(1));
+        // Indexed params (p0114[2]) — try base param with both prefixes
+        if (!p && code.includes('[')) {
+            const base = code.replace(/\[.*$/, '');
+            p = availableParams.find(ap => ap.parametru === base);
+            if (!p && base.startsWith('p')) p = availableParams.find(ap => ap.parametru === 'r' + base.substring(1));
+        }
         if (p && p.descriere_scurta) {
             const name = typeof extractParamName === 'function' ? extractParamName(p.descriere_scurta) : p.descriere_scurta;
             return name.length > 35 ? name.substring(0, 32) + '…' : name;
