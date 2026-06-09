@@ -1333,6 +1333,32 @@ def _familie_param_meta(drives):
                     'default': default,
                 }
 
+        # Indexed params — look up base codes (p0114[2] → p0114)
+        indexed_bases = set()
+        for c in codes:
+            if '[' in c:
+                indexed_bases.add(c.split('[')[0])
+        indexed_bases -= set(meta[fam].keys())
+        if indexed_bases:
+            indexed_list = list(indexed_bases)
+            for i in range(0, len(indexed_list), 900):
+                chunk = indexed_list[i:i + 900]
+                placeholders = ','.join('?' * len(chunk))
+                cursor.execute(
+                    f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
+                    f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
+                    [fam] + chunk
+                )
+                for r in cursor.fetchall():
+                    if r['parametru'] not in meta[fam]:
+                        default = r['valoare_default']
+                        if default is None or str(default).strip() == '':
+                            default = r['valoare_default_str']
+                        meta[fam][r['parametru']] = {
+                            'desc': r['descriere_scurta'],
+                            'default': default,
+                        }
+
         # Siemens: caută r-prefix cross-family (read-only params)
         # r0027 poate fi în G130 dar nu în G120 — e read-only în ambele.
         # Caut fără filtru de familie, apoi stochez sub familia curentă.
@@ -1361,6 +1387,32 @@ def _familie_param_meta(drives):
                             'desc': r['descriere_scurta'],
                             'default': default,
                         }
+
+            # Cross-family p-prefix: some params exist in other Siemens families
+            missing_p = set()
+            for c in codes:
+                base = c.split('[')[0] if '[' in c else c
+                if base not in meta[fam]:
+                    missing_p.add(base)
+            if missing_p:
+                missing_list = list(missing_p)
+                for i in range(0, len(missing_list), 900):
+                    chunk = missing_list[i:i + 900]
+                    placeholders = ','.join('?' * len(chunk))
+                    cursor.execute(
+                        f'SELECT DISTINCT parametru, descriere_scurta, valoare_default, valoare_default_str '
+                        f'FROM parametri_master WHERE parametru IN ({placeholders})',
+                        chunk
+                    )
+                    for r in cursor.fetchall():
+                        if r['parametru'] not in meta[fam]:
+                            default = r['valoare_default']
+                            if default is None or str(default).strip() == '':
+                                default = r['valoare_default_str']
+                            meta[fam][r['parametru']] = {
+                                'desc': r['descriere_scurta'],
+                                'default': default,
+                            }
     conn.close()
     return meta
 
@@ -1421,6 +1473,19 @@ def _filter_drive_params(drives, meta):
                     continue
 
             m = fam_meta.get(code)
+            # Indexed params (p0114[2]) — try base param if exact not found
+            if m is None and '[' in code:
+                base = code.split('[')[0]
+                m = fam_meta.get(base)
+            # Siemens: try r-prefix for description even if param stays
+            if m is None and is_siemens and code.startswith('p'):
+                base = code.split('[')[0] if '[' in code else code
+                r_code = 'r' + base[1:]
+                r_m = fam_meta.get(r_code)
+                if r_m and r_m.get('desc'):
+                    # r-param exists but we didn't skip it (wasn't in r-check above)
+                    # Still use its description
+                    descrieri[code] = r_m['desc']
             if m is not None:
                 if _equals_default(val, m['default']):
                     skipped += 1
