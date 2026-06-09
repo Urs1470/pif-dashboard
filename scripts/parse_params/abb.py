@@ -179,7 +179,13 @@ def parse(content, filename: str = '', skip_at_default: bool = True) -> List[Dic
 
 
 def read_drive_info(content) -> dict:
-    """Citeste metadatele drive din OfflineDriveInfo.xml. Returneaza dict gol daca nu poate."""
+    """Citeste metadatele drive din OfflineDriveInfo.xml + DriveProperties.
+
+    Returneaza dict cu chei din ambele surse:
+      - OfflineDriveInfo.xml: Family, Software, Variant
+      - parameters.dcparams > DriveProperties: Name, DriveModel,
+        SystemSoftwareVersion, ControlBoardType, ChannelAddress, Address
+    """
     if isinstance(content, (bytes, bytearray)):
         raw = bytes(content)
     else:
@@ -192,6 +198,8 @@ def read_drive_info(content) -> dict:
     except zipfile.BadZipFile:
         return {}
     info = {}
+
+    # 1. OfflineDriveInfo.xml (existent)
     for name in zf.namelist():
         if name.lower().endswith('offlinedriveinfo.xml'):
             try:
@@ -203,8 +211,133 @@ def read_drive_info(content) -> dict:
             except ET.ParseError:
                 pass
             break
+
+    # 2. DriveProperties din parameters.dcparams
+    _DRIVE_PROPS = {'Name', 'DriveModel', 'SystemSoftwareVersion',
+                    'ControlBoardType', 'ChannelAddress', 'Address'}
+    for name in zf.namelist():
+        if name.lower().endswith('.dcparams'):
+            try:
+                root = ET.fromstring(zf.read(name))
+                dp = root.find('DriveProperties')
+                if dp is None:
+                    dp = root.find('{*}DriveProperties')
+                if dp is not None:
+                    for child in dp:
+                        tag = child.tag.split('}')[-1]
+                        if tag in _DRIVE_PROPS and child.text:
+                            info[tag] = child.text.strip()
+            except ET.ParseError:
+                pass
+            break
+
     zf.close()
     return info
+
+
+def parse_full(content, filename: str = '') -> List[Dict]:
+    """Parseaza un .dcparamsbak si returneaza TOTI parametrii cu metadate extinse.
+
+    Spre deosebire de parse(), include:
+    - Toti parametrii (inclusiv cei la default si signals)
+    - Metadate extinse: unit, min, max, data_type, value_names, is_signal
+
+    Folosit pentru enrichment-ul bazei de date parametri_master.
+    """
+    if isinstance(content, (bytes, bytearray)):
+        raw = bytes(content)
+    else:
+        with open(content, 'rb') as f:
+            raw = f.read()
+
+    if not _is_zip(raw):
+        xml_data = raw
+    else:
+        try:
+            zf = zipfile.ZipFile(io.BytesIO(raw))
+        except zipfile.BadZipFile:
+            return []
+        target = None
+        for name in zf.namelist():
+            if name.lower().endswith('.dcparams'):
+                target = name
+                break
+        if target is None:
+            return []
+        xml_data = zf.read(target)
+        zf.close()
+
+    try:
+        root = ET.fromstring(xml_data)
+    except ET.ParseError:
+        return []
+
+    plist = root.find('ParameterList')
+    if plist is None:
+        plist = root.find('{*}ParameterList')
+    if plist is None:
+        return []
+
+    result = []
+    for elem in plist:
+        if elem.tag.split('}')[-1] != 'DriveParameter':
+            continue
+
+        group = (elem.findtext('Group') or '').strip()
+        idx = (elem.findtext('Index') or '').strip()
+        if not group or not idx:
+            continue
+
+        try:
+            db_id = f"{int(group)}.{int(idx):02d}"
+        except ValueError:
+            db_id = f"{group}.{idx}"
+
+        name = (elem.findtext('Name') or '').strip()
+        unit = (elem.findtext('Unit') or '').strip()
+        if unit == 'NoUnit':
+            unit = ''
+
+        raw_default = (elem.findtext('DefaultValue') or '').strip()
+        raw_value = (elem.findtext('Value') or '').strip()
+        is_signal = (elem.findtext('IsSignal') or '').lower() == 'true'
+
+        # Min/Max
+        raw_min = (elem.findtext('Min') or '').strip()
+        raw_max = (elem.findtext('Max') or '').strip()
+
+        # Data type
+        data_type = (elem.findtext('NativeDataType') or '').strip()
+        param_type = (elem.findtext('Type') or '').strip()
+
+        # Enum labels
+        names_map = _value_names_map(elem)
+
+        result.append({
+            'db_id': db_id,
+            'raw_id': f"{group}.{idx}",
+            'name': name,
+            'unit': unit,
+            'default_value': raw_default,
+            'value': raw_value,
+            'min': raw_min,
+            'max': raw_max,
+            'data_type': data_type,
+            'param_type': param_type,
+            'value_names': names_map if names_map else None,
+            'is_signal': is_signal,
+        })
+
+    # Sortare numerica (Group, Index)
+    def sort_key(p):
+        parts = p['db_id'].split('.')
+        try:
+            return (int(parts[0]), int(parts[1]))
+        except Exception:
+            return (9999, 9999)
+
+    result.sort(key=sort_key)
+    return result
 
 
 if __name__ == '__main__':

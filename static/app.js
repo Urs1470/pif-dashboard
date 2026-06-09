@@ -6403,6 +6403,165 @@ function closeImportArchiveModal() {
     _importArchiveFile = null;
 }
 
+// ============ IMPORT MULTI-FILE ABB (.dcparamsbak) ============
+
+let _importAbbMultiPreview = null;
+let _importAbbMultiFiles = null;
+
+function triggerImportAbbMulti() {
+    if (!currentProjectId) {
+        showToast('Deschide mai întâi un proiect', true);
+        return;
+    }
+    const input = document.getElementById('import-abb-multi-file');
+    if (input) { input.value = ''; input.click(); }
+}
+
+async function onImportAbbMultiSelected(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    _importAbbMultiFiles = files;
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+
+    showToast(`Se analizează ${files.length} fișiere ABB…`);
+    try {
+        const data = await apiUpload('/import-abb-multi/preview', formData);
+        _importAbbMultiPreview = data;
+        showImportAbbMultiModal(data);
+    } catch (e) {
+        console.error('Import ABB multi preview failed:', e);
+        let msg = 'Eroare la analiza fișierelor ABB';
+        try {
+            const formData2 = new FormData();
+            for (let i = 0; i < files.length; i++) formData2.append('files', files[i]);
+            const res = await apiFetch(API_BASE + '/import-abb-multi/preview', { method: 'POST', body: formData2 });
+            const j = await res.json();
+            if (j && j.error) msg = j.error;
+        } catch (_) {}
+        showToast(msg, true);
+    }
+}
+
+function showImportAbbMultiModal(data) {
+    const modal = document.getElementById('import-abb-multi-modal');
+    const body = document.getElementById('import-abb-multi-body');
+    if (!modal || !body) return;
+
+    const drives = data.drives || [];
+    const cards = drives.map((d, idx) => {
+        const params = d.params || {};
+        const descrieri = d.descrieri || {};
+        const codes = Object.keys(params);
+        const sample = codes.slice(0, 8).map(code => {
+            const desc = descrieri[code] ? ` <span style="color:var(--text-dim);">${escapeHtml(extractParamName(descrieri[code]))}</span>` : '';
+            return `<span style="display:inline-block; margin:2px 6px 2px 0; font-family:'JetBrains Mono',monospace; font-size:0.74rem;"><span style="color:var(--accent);">${escapeHtml(code)}</span>=${escapeHtml(String(params[code]))}${desc}</span>`;
+        }).join('');
+        const more = codes.length > 8 ? `<span style="color:var(--text-dim); font-size:0.74rem;">… +${codes.length - 8} alți parametri</span>` : '';
+        const fileLabel = d.filename ? `<span style="color:var(--text-dim); font-size:0.74rem; font-family:'JetBrains Mono',monospace;">${escapeHtml(d.filename)}</span>` : '';
+        return `
+            <div style="border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex-wrap:wrap;">
+                    <input type="checkbox" class="imp-abb-check" data-idx="${idx}" checked>
+                    <span style="font-weight:600;">${escapeHtml(d.nume)}</span>
+                    <span style="color:var(--text-dim); font-size:0.8rem;">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
+                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${d.modified_count || codes.length} parametri diferiți de fabrică</span>
+                </label>
+                <div style="margin-top:4px; padding-left:26px;">${fileLabel}</div>
+                <div style="margin-top:4px; padding-left:26px; line-height:1.6;">${sample}${more}</div>
+            </div>`;
+    }).join('');
+
+    const warnings = (data.warnings || []).length
+        ? `<div style="color:var(--warning); font-size:0.8rem; margin-bottom:8px;"><i data-lucide="alert-triangle" style="width:14px;height:14px;vertical-align:-2px;"></i> ${data.warnings.join('; ')}</div>`
+        : '';
+
+    body.innerHTML = `
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Producător:</span> <strong>ABB</strong></div>
+            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișiere:</span> <strong>${drives.length}</strong></div>
+            ${data.skipped_default ? `<div style="color:var(--text-dim); font-size:0.8rem;"><i data-lucide="filter" style="width:12px;height:12px;vertical-align:-1px;"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
+        </div>
+        ${warnings}
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportAbbMulti(true)"><i data-lucide="check-square"></i> Toate</button>
+            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportAbbMulti(false)"><i data-lucide="square"></i> Niciunul</button>
+        </div>
+        <div class="imp-arch-list" style="max-height:55vh; overflow-y:auto;">
+            ${cards || '<div style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit drive-uri în fișiere.</div>'}
+        </div>
+        <div class="imp-arch-actions">
+            <button type="button" class="btn btn-secondary btn-small" onclick="closeImportAbbMultiModal()">Anulează</button>
+            <button type="button" class="btn btn-primary btn-small" onclick="commitImportAbbMulti()"><i data-lucide="check"></i> Importă echipamentele selectate</button>
+        </div>
+    `;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+}
+
+function toggleAllImportAbbMulti(checked) {
+    document.querySelectorAll('.imp-abb-check').forEach(cb => cb.checked = checked);
+}
+
+async function commitImportAbbMulti() {
+    if (!_importAbbMultiPreview || !currentProjectId) return;
+    const allDrives = _importAbbMultiPreview.drives || [];
+    const selected = [];
+    document.querySelectorAll('.imp-abb-check').forEach(cb => {
+        if (cb.checked) {
+            const d = allDrives[parseInt(cb.dataset.idx, 10)];
+            if (d) selected.push(d);
+        }
+    });
+    if (selected.length === 0) {
+        showToast('Selectează cel puțin un drive', true);
+        return;
+    }
+    try {
+        const projectId = currentProjectId;
+        // Reuse the same persist endpoint as Siemens archive import
+        const data = await apiPost(`/proiecte/${projectId}/echipamente/import-archive`,
+            { drives: selected });
+
+        // Save each .dcparamsbak as project attachment (best-effort)
+        if (_importAbbMultiFiles && _importAbbMultiFiles.length > 0) {
+            // Build a set of selected filenames for matching
+            const selectedFiles = new Set(selected.map(d => d.filename));
+            for (let i = 0; i < _importAbbMultiFiles.length; i++) {
+                const file = _importAbbMultiFiles[i];
+                if (!selectedFiles.has(file.name)) continue;
+                try {
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    await apiUpload(`/proiecte/${projectId}/atasamente`, fd);
+                } catch (attErr) {
+                    console.error(`Atașarea ${file.name} a eșuat:`, attErr);
+                }
+            }
+            if (typeof loadAttachments === 'function') await loadAttachments(projectId);
+        }
+
+        closeImportAbbMultiModal();
+        showToast(data.message || `${selected.length} echipamente importate`);
+        await loadEchipamente(projectId);
+    } catch (e) {
+        console.error('Import ABB multi commit failed:', e);
+        showToast('Eroare la import: ' + (e.message || ''), true);
+    }
+}
+
+function closeImportAbbMultiModal() {
+    const modal = document.getElementById('import-abb-multi-modal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+    _importAbbMultiPreview = null;
+    _importAbbMultiFiles = null;
+}
+
 // ============ BATCH OPERATIONS ============
 
 let batchMode = false;

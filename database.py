@@ -526,6 +526,24 @@ def migrate_v13_to_v14():
     logger.info("Migration v13->v14: added FK constraint on task_subtasks.task_id")
 
 
+def migrate_v14_to_v15():
+    """v14 -> v15: add enum_labels column to parametri_master.
+
+    Stores JSON blob with value→label mapping extracted from drive backups.
+    Example: {"0": "Off", "1": "On", "2": "Above limit"}
+    Idempotent — skips if column already exists.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(parametri_master)")
+    cols = [row[1] for row in cursor.fetchall()]
+    if 'enum_labels' not in cols:
+        cursor.execute('ALTER TABLE parametri_master ADD COLUMN enum_labels TEXT')
+        conn.commit()
+        logger.info("Migration v14->v15: added enum_labels column to parametri_master")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -594,6 +612,11 @@ def run_migrations():
         migrate_v13_to_v14()
         set_schema_version(14)
         current_version = 14
+
+    if current_version < 15:
+        migrate_v14_to_v15()
+        set_schema_version(15)
+        current_version = 15
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

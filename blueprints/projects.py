@@ -17,6 +17,7 @@ from utils import (
 )
 from scripts.parse_params import parse_for_producator
 from scripts.parse_params.siemens_starter import parse_archive
+from scripts.parse_params.abb import parse as parse_abb, read_drive_info as abb_drive_info
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -1177,6 +1178,95 @@ def preview_import_params():
         'conflicts': sum(1 for p in parsed if p.get('conflict')),
         'params': parsed,
     })
+
+
+# ============ IMPORT MULTI-FILE ABB (.dcparamsbak) ============
+
+@projects_bp.route('/api/import-abb-multi/preview', methods=['POST'])
+@login_required
+def preview_import_abb_multi():
+    """Parsează multiple fișiere .dcparamsbak ABB și returnează preview multi-drive.
+
+    Form fields:
+      files: unul sau mai multe fișiere .dcparamsbak
+      model: optional, hint pentru familia (ACS580 vs ACS880)
+
+    Returnează aceeași structură ca /import-archive/preview, compatibilă cu
+    POST .../echipamente/import-archive pentru persistare.
+    """
+    files = request.files.getlist('files')
+    if not files or all(not f.filename for f in files):
+        return jsonify({'error': 'Niciun fișier selectat (field "files")'}), 400
+
+    model_hint = (request.form.get('model') or '').strip()
+    drives = []
+    errors = []
+
+    for upload in files:
+        if not upload.filename:
+            continue
+        try:
+            raw = upload.read()
+        except Exception as e:
+            errors.append(f'{upload.filename}: eroare citire ({e})')
+            continue
+
+        # Parse parameters (only non-default, non-signal)
+        parsed = parse_abb(raw, upload.filename)
+        # Extract drive metadata
+        info = abb_drive_info(raw)
+
+        if not parsed and not info:
+            errors.append(f'{upload.filename}: nu s-a putut parsa')
+            continue
+
+        # Determine family
+        family_raw = info.get('Family', '')
+        model_raw = info.get('DriveModel', '')
+        familie = _familie_from_echipament('ABB', model_raw or model_hint or family_raw)
+
+        # Build params dict {db_id: value} — matching Siemens archive format
+        params = {}
+        for p in parsed:
+            params[p['db_id']] = p['value']
+
+        # Use drive name from backup, fallback to filename stem
+        filename_stem = os.path.splitext(upload.filename)[0]
+        drive_name = info.get('Name') or filename_stem
+
+        firmware = info.get('Software') or info.get('SystemSoftwareVersion') or ''
+
+        drives.append({
+            'nume': drive_name,
+            'producator': 'ABB',
+            'model': model_raw,
+            'firmware': firmware,
+            'familie': familie,
+            'serial_number': '',
+            'params': params,
+            'filename': upload.filename,
+        })
+
+    if not drives:
+        msg = 'Nu s-au putut parsa fișierele.'
+        if errors:
+            msg += ' Erori: ' + '; '.join(errors)
+        return jsonify({'error': msg}), 400
+
+    # Enrich with parametri_master descriptions + filter factory defaults
+    meta = _familie_param_meta(drives)
+    _filter_drive_params(drives, meta)
+
+    resp = {
+        'filename': f'{len(drives)} fișiere ABB',
+        'count': len(drives),
+        'skipped_default': sum(d.get('skipped_default', 0) for d in drives),
+        'drives': drives,
+    }
+    if errors:
+        resp['warnings'] = errors
+
+    return jsonify(resp)
 
 
 # ============ IMPORT ARHIVA PROIECT (Siemens STARTER) ============
