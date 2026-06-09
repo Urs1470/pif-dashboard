@@ -1295,6 +1295,10 @@ def _familie_param_meta(drives):
 
     Un singur SELECT per familie. Nemodificator pe DB. Folosit pentru a îmbogăți
     descrierile ȘI pentru a filtra parametrii care sunt la valoarea de fabrică.
+
+    Pentru familii Siemens (SINAMICS), caută și versiunile r-prefix ale codurilor
+    p-prefix — STARTER exportă toți parametrii cu prefix p, dar parametrii
+    read-only sunt stocați în DB ca r (r0026 = DC link voltage smoothed).
     """
     by_familie = {}
     for d in drives:
@@ -1310,7 +1314,8 @@ def _familie_param_meta(drives):
     for fam, codes in by_familie.items():
         codes = list(codes)
         meta[fam] = {}
-        # chunk pentru a evita limita SQLite de variabile (999)
+
+        # Lookup codurile exacte (p0304, 1.01, etc.)
         for i in range(0, len(codes), 900):
             chunk = codes[i:i + 900]
             placeholders = ','.join('?' * len(chunk))
@@ -1327,6 +1332,31 @@ def _familie_param_meta(drives):
                     'desc': r['descriere_scurta'],
                     'default': default,
                 }
+
+        # Siemens: caută și r-prefix pentru coduri p-prefix (read-only params)
+        if 'SINAMICS' in fam or 'MICROMASTER' in fam:
+            r_codes = set()
+            for c in codes:
+                base = c.split('[')[0] if '[' in c else c
+                if base.startswith('p'):
+                    r_codes.add('r' + base[1:])
+            r_codes = list(r_codes)
+            for i in range(0, len(r_codes), 900):
+                chunk = r_codes[i:i + 900]
+                placeholders = ','.join('?' * len(chunk))
+                cursor.execute(
+                    f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
+                    f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
+                    [fam] + chunk
+                )
+                for r in cursor.fetchall():
+                    default = r['valoare_default']
+                    if default is None or str(default).strip() == '':
+                        default = r['valoare_default_str']
+                    meta[fam][r['parametru']] = {
+                        'desc': r['descriere_scurta'],
+                        'default': default,
+                    }
     conn.close()
     return meta
 
@@ -1363,16 +1393,29 @@ def _filter_drive_params(drives, meta):
       - dacă valoarea == default cunoscut din parametri_master => omis;
       - dacă parametrul lipsește din DB ȘI valoarea e 0 => omis (aproape sigur
         un connector BICO / funcție dezactivată neatinsă, nu o setare reală);
+      - Siemens: dacă codul p are echivalent r în DB => e parametru read-only
+        (monitorizare/diagnostic), omis — STARTER exportă r-params ca p-params;
       - restul se păstrează.
     Adaugă pe fiecare drive `descrieri`, `params` filtrat, `modified_count`,
     `skipped_default`.
     """
     for d in drives:
-        fam_meta = meta.get(d.get('familie') or '', {})
+        fam = d.get('familie') or ''
+        fam_meta = meta.get(fam, {})
+        is_siemens = 'SINAMICS' in fam or 'MICROMASTER' in fam
         params = d.get('params', {})
         parser_desc = d.get('parser_descrieri') or {}
         kept, descrieri, skipped = {}, {}, 0
         for code, val in params.items():
+            # Siemens: skip read-only monitoring params (r-prefix in DB)
+            # STARTER exports r-params (r0026=DC link voltage) with p-prefix
+            if is_siemens and code.startswith('p'):
+                base = code.split('[')[0] if '[' in code else code
+                r_code = 'r' + base[1:]
+                if fam_meta.get(r_code):
+                    skipped += 1
+                    continue
+
             m = fam_meta.get(code)
             if m is not None:
                 if _equals_default(val, m['default']):
