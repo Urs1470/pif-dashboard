@@ -4471,9 +4471,9 @@
         .echipament-expanded {
             margin-top: 8px;
         }
-        .echipament-param-search {
+        input.echipament-param-search {
             width: 100%;
-            padding: 6px 10px 6px 30px;
+            padding: 6px 10px 6px 32px;
             margin-bottom: 8px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
@@ -4483,16 +4483,18 @@
             font-family: var(--font-sans);
             outline: none;
             transition: border-color 0.15s;
+            min-height: unset;
+            cursor: text;
         }
-        [data-theme="light"] .echipament-param-search {
+        [data-theme="light"] input.echipament-param-search {
             background: #ffffff;
             border-color: #c5cdd8;
         }
-        .echipament-param-search:focus {
+        input.echipament-param-search:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 2px var(--accent-soft);
         }
-        .echipament-param-search::placeholder {
+        input.echipament-param-search::placeholder {
             color: var(--text2);
         }
         .echipament-param-search-wrap {
