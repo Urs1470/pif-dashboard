@@ -892,6 +892,46 @@ def enrich_params_from_backup():
     return jsonify(report)
 
 
+@admin_bp.route('/api/admin/bulk-add-params', methods=['POST'])
+@login_required
+def bulk_add_params():
+    """Insert missing parameter descriptions into parametri_master.
+
+    JSON body: { "familie": "SINAMICS_G120", "params": [
+        {"parametru": "p0114", "descriere_scurta": "Fixed frequency setpoint"},
+        ...
+    ]}
+    Only inserts params that don't already exist (by familie+parametru).
+    """
+    data = request.json or {}
+    familie = data.get('familie', '')
+    params = data.get('params', [])
+    if not familie or not params:
+        return jsonify({'error': 'Provide familie + params[]'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    inserted = 0
+    skipped = 0
+    for p in params:
+        code = p.get('parametru', '')
+        desc = p.get('descriere_scurta', '')
+        if not code or not desc:
+            continue
+        try:
+            cursor.execute('''
+                INSERT INTO parametri_master (id, familie, parametru, descriere_scurta, creat_la)
+                VALUES (?, ?, ?, ?, datetime('now'))
+            ''', (generate_uuid(), familie, code, desc))
+            inserted += 1
+        except Exception:
+            skipped += 1
+    conn.commit()
+    conn.close()
+    logger.info(f"Bulk add params ({familie}): +{inserted} inserted, {skipped} skipped")
+    return jsonify({'inserted': inserted, 'skipped': skipped})
+
+
 @admin_bp.route('/api/restore', methods=['POST'])
 @login_required
 def restore_database():
