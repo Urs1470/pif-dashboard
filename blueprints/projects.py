@@ -697,6 +697,17 @@ def get_clienti():
     conn.close()
     return jsonify([row_to_dict(row) for row in rows])
 
+def _normalize_client_name(name):
+    """Title-case client name, preserving all-caps words (ABB, SRL, SA, GmbH)."""
+    if not name:
+        return ''
+    words = name.strip().split()
+    return ' '.join(
+        w if w.isupper() and len(w) >= 2 else w.capitalize()
+        for w in words
+    )
+
+
 @projects_bp.route('/api/clienti', methods=['POST'])
 @login_required
 def create_client():
@@ -712,7 +723,7 @@ def create_client():
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         client_id,
-        data.get('nume', ''),
+        _normalize_client_name(data.get('nume', '')),
         data.get('adresa', ''),
         data.get('telefon', ''),
         data.get('email', ''),
@@ -748,6 +759,8 @@ def update_client(client_id):
     conn = get_db()
     cursor = conn.cursor()
 
+    raw_name = data.get('nume')
+    normalized_name = _normalize_client_name(raw_name) if raw_name else None
     cursor.execute('''
         UPDATE clienti SET
             nume = COALESCE(?, nume),
@@ -758,7 +771,7 @@ def update_client(client_id):
             note = COALESCE(?, note)
         WHERE id = ?
     ''', (
-        data.get('nume'),
+        normalized_name,
         data.get('adresa'),
         data.get('telefon'),
         data.get('email'),

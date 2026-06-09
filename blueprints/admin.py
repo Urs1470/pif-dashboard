@@ -1204,12 +1204,23 @@ def dashboard_home():
     prev_weekly_hours = round(cursor.fetchone()[0] / 3600, 1)
     weekly_delta = round(weekly_hours - prev_weekly_hours, 1)
 
-    # Urgent global tasks
+    # Urgent tasks — global + project-level (UNION)
     cursor.execute("""
-        SELECT id, titlu, prioritate, data_scadenta, categorie
+        SELECT id, titlu, prioritate, data_scadenta, categorie,
+               NULL as proiect_id, NULL as proiect_nume
         FROM global_tasks
-        WHERE prioritate = 'Urgent' AND status != 'done'
-        ORDER BY data_scadenta IS NULL, data_scadenta, created_at DESC LIMIT 5
+        WHERE LOWER(prioritate) = 'urgent' AND status != 'done'
+
+        UNION ALL
+
+        SELECT t.id, t.titlu, t.prioritate, t.data_scadenta, '' as categorie,
+               t.proiect_id, p.nume as proiect_nume
+        FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+        WHERE LOWER(t.prioritate) = 'urgent' AND t.status != 'done'
+          AND p.status NOT IN ('finalizat', 'anulat')
+
+        ORDER BY data_scadenta IS NULL, data_scadenta
+        LIMIT 10
     """)
     urgent_tasks = [dict(r) for r in cursor.fetchall()]
     urgent_count = len(urgent_tasks)

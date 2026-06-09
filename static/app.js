@@ -479,7 +479,13 @@ function initA11y() {
 async function initApp() {
     initTheme();
     initA11y();
-    switchTab('acasa');
+    // Restore SPA state from URL hash (browser back/forward, bookmarks)
+    const startHash = location.hash.replace(/^#/, '');
+    if (startHash) {
+        _navigateToHash(startHash);
+    } else {
+        switchTab('acasa');
+    }
 
     // Warm cache for other tabs in the background — after Home renders
     setTimeout(() => {
@@ -999,16 +1005,14 @@ async function saveProject(event) {
 }
 
 async function showProjectDetail(projectId) {
-    // If invoked from another tab (Acasa cards), switch to Proiecte first so detail
-    // view is visible. switchTab('proiecte') resets currentProjectId to null, so we
-    // MUST switch BEFORE assigning currentProjectId. Otherwise click-from-home leaves
-    // currentProjectId null and every subsequent action (status pill, addTodo,
-    // saveServiceField, changeProjectStatus, ...) silently early-returns.
+    // If invoked from another tab (Acasa cards), activate the Proiecte tab UI only
+    // (no data loaders) so the detail view is visible without a flash.
     const proiecteTab = document.getElementById('tab-proiecte');
     if (proiecteTab && !proiecteTab.classList.contains('active')) {
-        switchTab('proiecte');
+        _activateTabUI('proiecte');
     }
     currentProjectId = projectId;
+    _pushHash('proiecte/' + projectId);
 
     try {
         const project = await apiGet(`/proiecte/${projectId}`);
@@ -1123,6 +1127,7 @@ function showProjectList() {
     document.getElementById('project-detail-view').classList.remove('active');
     loadProjects();
     updateStats();
+    _pushHash('proiecte');
 }
 
 function goHome() {
@@ -3022,71 +3027,96 @@ async function exportCurrentProjectPDF() {
 
 // ============ GLOBAL TASKS ============
 
-function switchTab(tab) {
+// ---- Hash routing for browser Back/Forward ----
+let _skipHashUpdate = false;
+
+function _pushHash(hash) {
+    if (_skipHashUpdate) return;
+    if (location.hash === '#' + hash) return;
+    history.pushState(null, '', '#' + hash);
+}
+
+function _navigateToHash(hash) {
+    _skipHashUpdate = true;
+    if (!hash || hash === 'acasa') {
+        switchTab('acasa');
+    } else if (hash.startsWith('proiecte/')) {
+        const id = hash.slice('proiecte/'.length);
+        if (id) showProjectDetail(id);
+        else switchTab('proiecte');
+    } else if (['proiecte','taskuri','parametri','notite','admin'].includes(hash)) {
+        switchTab(hash);
+    } else {
+        switchTab('acasa');
+    }
+    _skipHashUpdate = false;
+}
+
+window.addEventListener('popstate', () => {
+    const hash = location.hash.replace(/^#/, '');
+    _navigateToHash(hash);
+});
+
+// ---- Tab UI activation (DOM-only, no data loaders) ----
+// Used by showProjectDetail() to switch to Proiecte tab instantly without
+// triggering loadProjects/updateStats that cause a visible flash.
+function _activateTabUI(tab) {
     document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector(`.main-tab[data-tab="${tab}"]`).classList.add('active');
-    document.getElementById(`tab-${tab}`).classList.add('active');
-    // Keep ARIA tab state in sync with the visible tab.
+    const tabBtn = document.querySelector(`.main-tab[data-tab="${tab}"]`);
+    if (tabBtn) tabBtn.classList.add('active');
+    const tabContent = document.getElementById(`tab-${tab}`);
+    if (tabContent) tabContent.classList.add('active');
+    // ARIA
     document.querySelectorAll('.main-tab').forEach(t => {
         const on = t.classList.contains('active');
         t.setAttribute('aria-selected', on ? 'true' : 'false');
         t.setAttribute('tabindex', on ? '0' : '-1');
     });
+    // Bottom nav
+    document.querySelectorAll('.bottom-nav-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-tab') === tab);
+    });
+    // Header action buttons
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        headerActions.classList.toggle('project-tab-active', tab === 'proiecte');
+    }
+    const btnClienti = document.getElementById('header-btn-clienti');
+    const btnManuale = document.getElementById('header-btn-manuale');
+    if (btnClienti) btnClienti.style.display = (tab === 'proiecte') ? 'inline-flex' : 'none';
+    if (btnManuale) btnManuale.style.display = (tab === 'parametri') ? 'inline-flex' : 'none';
+}
+
+function switchTab(tab) {
+    _activateTabUI(tab);
 
     // Hide project detail view when switching tabs
     const detailView = document.getElementById('project-detail-view');
     if (detailView) detailView.classList.remove('active');
+
     // Show project list when going back to projects tab
     if (tab === 'proiecte') {
-        // Critical: project-list-view gets `hidden` added in showProjectDetail().
-        // Without removing it here the list stays invisible after viewing a detail
-        // and switching tabs, forcing a page refresh to recover.
         const listView = document.getElementById('project-list-view');
         if (listView) listView.classList.remove('hidden');
         currentProjectId = null;
 
         const tableContainer = document.getElementById('projects-table-container');
         if (tableContainer) tableContainer.style.display = 'block';
-        // empty-state visibility is owned by renderProjects() — do not force it here.
 
-        // Re-fetch in case data changed while viewing the detail. apiGet uses
-        // stale-while-revalidate so the cached list shows instantly while a fresh
-        // copy lands in the background.
         loadProjects();
         updateStats();
     }
-
-    // Update bottom nav active state
-    document.querySelectorAll('.bottom-nav-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('data-tab') === tab);
-    });
-
-    // Toggle projects-only header elements
-    const headerActions = document.querySelector('.header-actions');
-    if (headerActions) {
-        headerActions.classList.toggle('project-tab-active', tab === 'proiecte');
-    }
-
-    // Context-specific header buttons
-    const btnClienti = document.getElementById('header-btn-clienti');
-    const btnManuale = document.getElementById('header-btn-manuale');
-    if (btnClienti) btnClienti.style.display = (tab === 'proiecte') ? 'inline-flex' : 'none';
-    if (btnManuale) btnManuale.style.display = (tab === 'parametri') ? 'inline-flex' : 'none';
 
     if (tab === 'taskuri') {
         loadGlobalTasks();
         loadProjectTasks();
         setTimeout(() => document.getElementById('quick-task-input')?.focus(), 100);
     }
-    // tab === 'proiecte' is fully handled in the block above (list-view restore
-    // + loadProjects + updateStats) — do not call them a second time here.
     if (tab === 'acasa') {
         loadDashboardHome();
     }
     if (tab === 'parametri') {
-        // Parametri OR Coduri eroare, depending on the persisted mode.
-        // Families load lazily; apiGet cache makes re-entry near-instant.
         paramTabEnter();
     }
     if (tab === 'admin') {
@@ -3095,6 +3125,9 @@ function switchTab(tab) {
     if (tab === 'notite') {
         loadObsidianNotes();
     }
+
+    // Update URL hash for browser back/forward
+    _pushHash(tab);
 }
 
 // ============ ADMIN PANEL ============
@@ -5351,6 +5384,17 @@ async function saveClient(event) {
         }
         
         await loadClientList();
+        // If project form is open, auto-fill with the just-saved client
+        const pForm = document.getElementById('new-project-form');
+        const pInput = document.getElementById('p-client');
+        if (pForm && pForm.classList.contains('active') && pInput) {
+            const savedName = document.getElementById('client-nume').value;
+            const match = clientListCache.find(c => c.nume.toLowerCase() === savedName.toLowerCase());
+            if (match) {
+                pInput.value = match.nume;
+                document.getElementById('p-client-id').value = match.id;
+            }
+        }
         closeAddClientModal();
         renderClientList(clientListCache);
     } catch (e) {
