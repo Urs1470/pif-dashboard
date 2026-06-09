@@ -1232,6 +1232,12 @@ def preview_import_abb_multi():
         # Determine family
         family_raw = info.get('Family', '')
         model_raw = info.get('DriveModel', '')
+        # INU/ISU modules in Multidrive cabinets have empty DriveModel —
+        # construct fallback from Kind + ControlBoardType
+        if not model_raw:
+            kind = info.get('Kind') or info.get('ProductFamily') or family_raw or ''
+            board = info.get('ControlBoardType', '')
+            model_raw = f"{kind} ({board})" if board else kind
         familie = _familie_from_echipament('ABB', model_raw or model_hint or family_raw)
 
         # Build params dict {db_id: value} + parser descriptions

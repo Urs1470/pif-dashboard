@@ -214,7 +214,8 @@ def read_drive_info(content) -> dict:
 
     # 2. DriveProperties din parameters.dcparams
     _DRIVE_PROPS = {'Name', 'DriveModel', 'SystemSoftwareVersion',
-                    'ControlBoardType', 'ChannelAddress', 'Address'}
+                    'ControlBoardType', 'ChannelAddress', 'Address',
+                    'Kind', 'ProductFamily', 'ManualIdentifier'}
     for name in zf.namelist():
         if name.lower().endswith('.dcparams'):
             try:
