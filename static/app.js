@@ -5267,6 +5267,7 @@ async function addNewClientFromAutocomplete(name) {
         await loadClientList();
         const newClient = clientListCache.find(c => c.nume.toLowerCase() === name.toLowerCase());
         if (newClient) {
+            document.getElementById('p-client').value = newClient.nume;  // normalized name from server
             document.getElementById('p-client-id').value = newClient.id;
         }
     } catch (e) {
