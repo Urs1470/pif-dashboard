@@ -921,9 +921,9 @@ def bulk_add_params():
             continue
         try:
             cursor.execute(
-                'INSERT INTO parametri_master (id, familie, parametru, descriere_scurta)'
-                ' VALUES (?, ?, ?, ?)',
-                (generate_uuid(), familie, code, desc)
+                'INSERT INTO parametri_master (familie, parametru, descriere_scurta)'
+                ' VALUES (?, ?, ?)',
+                (familie, code, desc)
             )
             inserted += 1
         except Exception as e:
