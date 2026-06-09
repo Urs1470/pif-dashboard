@@ -4498,19 +4498,18 @@
             color: var(--text2);
         }
         .echipament-param-search-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0;
             position: relative;
         }
         .echipament-param-search-wrap .search-icon {
             position: absolute;
             left: 10px;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
             width: 14px;
             height: 14px;
             color: var(--text2);
             pointer-events: none;
-            flex-shrink: 0;
         }
         .echipament-param-no-results {
             color: var(--text-dim);
