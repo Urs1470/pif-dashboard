@@ -893,6 +893,13 @@ def update_echipament(echipament_id):
                     params_dict[key.strip()] = value.strip()
         params_json = json.dumps(params_dict)
 
+    # descrieri_json — merge incoming with existing
+    descrieri_json = None
+    if data.get('descrieri_json'):
+        descrieri_json = data['descrieri_json']
+        if isinstance(descrieri_json, dict):
+            descrieri_json = json.dumps(descrieri_json)
+
     cursor.execute('''
         UPDATE echipamente SET
             nume = COALESCE(?, nume),
@@ -900,6 +907,7 @@ def update_echipament(echipament_id):
             model = COALESCE(?, model),
             serial_number = COALESCE(?, serial_number),
             params_json = COALESCE(?, params_json),
+            descrieri_json = COALESCE(?, descrieri_json),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -908,6 +916,7 @@ def update_echipament(echipament_id):
         data.get('model'),
         data.get('serial_number'),
         params_json,
+        descrieri_json,
         now,
         echipament_id
     ))
@@ -1225,10 +1234,13 @@ def preview_import_abb_multi():
         model_raw = info.get('DriveModel', '')
         familie = _familie_from_echipament('ABB', model_raw or model_hint or family_raw)
 
-        # Build params dict {db_id: value} — matching Siemens archive format
+        # Build params dict {db_id: value} + parser descriptions
         params = {}
+        parser_descrieri = {}
         for p in parsed:
             params[p['db_id']] = p['value']
+            if p.get('name'):
+                parser_descrieri[p['db_id']] = p['name']
 
         # Use drive name from backup, fallback to filename stem
         filename_stem = os.path.splitext(upload.filename)[0]
@@ -1244,6 +1256,7 @@ def preview_import_abb_multi():
             'familie': familie,
             'serial_number': '',
             'params': params,
+            'parser_descrieri': parser_descrieri,
             'filename': upload.filename,
         })
 
@@ -1351,6 +1364,7 @@ def _filter_drive_params(drives, meta):
     for d in drives:
         fam_meta = meta.get(d.get('familie') or '', {})
         params = d.get('params', {})
+        parser_desc = d.get('parser_descrieri') or {}
         kept, descrieri, skipped = {}, {}, 0
         for code, val in params.items():
             m = fam_meta.get(code)
@@ -1360,10 +1374,16 @@ def _filter_drive_params(drives, meta):
                     continue
                 if m.get('desc'):
                     descrieri[code] = m['desc']
+                elif parser_desc.get(code):
+                    descrieri[code] = parser_desc[code]
             elif _is_zeroish(val):
                 # necunoscut în DB + valoare 0 => zgomot
                 skipped += 1
                 continue
+            else:
+                # param not in parametri_master — use parser description
+                if parser_desc.get(code):
+                    descrieri[code] = parser_desc[code]
             kept[code] = val
         d['params'] = kept
         d['descrieri'] = descrieri
@@ -1448,14 +1468,17 @@ def import_archive_echipamente(project_id):
             params = {}
         # serializează valorile ca string-uri (consistent cu create_echipament)
         params_dict = {str(k): str(v) for k, v in params.items()}
+        # descrieri din parser + parametri_master (populated by _filter_drive_params)
+        descrieri = drive.get('descrieri') or {}
+        descrieri_json = json.dumps(descrieri) if descrieri else None
         echipament_id = generate_uuid()
         model = drive.get('model', '')
         firmware = drive.get('firmware', '')
         if firmware and firmware not in model:
             model = f'{model} {firmware}'.strip()
         cursor.execute('''
-            INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, descrieri_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             echipament_id,
             project_id,
@@ -1464,6 +1487,7 @@ def import_archive_echipamente(project_id):
             model,
             drive.get('serial_number', '') or '',
             json.dumps(params_dict),
+            descrieri_json,
             now,
             now,
         ))

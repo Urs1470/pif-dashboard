@@ -224,7 +224,7 @@ def get_parametri_by_producator(producator):
     else:
         cursor.execute(
             f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master '
-            f'WHERE familie IN ({placeholders}) LIMIT 1000',
+            f'WHERE familie IN ({placeholders})',
             familii
         )
     rows = cursor.fetchall()

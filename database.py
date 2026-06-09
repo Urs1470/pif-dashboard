@@ -544,6 +544,25 @@ def migrate_v14_to_v15():
     conn.close()
 
 
+def migrate_v15_to_v16():
+    """v15 -> v16: add descrieri_json column to echipamente.
+
+    Stores {parametru_code: description} extracted from drive backups/parser.
+    Used to display parameter descriptions even when parametri_master doesn't
+    have them — the backup XML often includes names that the DB lacks.
+    Idempotent — skips if column already exists.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(echipamente)")
+    cols = [row[1] for row in cursor.fetchall()]
+    if 'descrieri_json' not in cols:
+        cursor.execute('ALTER TABLE echipamente ADD COLUMN descrieri_json TEXT')
+        conn.commit()
+        logger.info("Migration v15->v16: added descrieri_json column to echipamente")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -617,6 +636,11 @@ def run_migrations():
         migrate_v14_to_v15()
         set_schema_version(15)
         current_version = 15
+
+    if current_version < 16:
+        migrate_v15_to_v16()
+        set_schema_version(16)
+        current_version = 16
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

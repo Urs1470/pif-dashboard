@@ -5510,6 +5510,12 @@ function renderEchipamente(echipamente, descLookup) {
             params = JSON.parse(e.params_json || '{}');
         } catch (err) {}
 
+        // Stored descriptions (from parser/backup) take priority over parametri_master
+        let storedDesc = {};
+        try {
+            storedDesc = JSON.parse(e.descrieri_json || '{}');
+        } catch (err) {}
+
         const lookup = descLookup[e.producator] || {};
 
         // Separate equipment specs (cantitate, putere_kw, …) from drive params (99.04, P0304, …)
@@ -5519,7 +5525,7 @@ function renderEchipamente(echipamente, descLookup) {
             if (isSpecKey(key)) {
                 specs.push({ key, label: paramSpecLabel(key), value });
             } else {
-                const desc = lookup[key] || '';
+                const desc = storedDesc[key] || lookup[key] || '';
                 const shortDesc = desc ? extractParamName(desc) : key;
                 driveParams.push({ key, desc: shortDesc, value });
             }
@@ -5583,6 +5589,7 @@ function toggleEchipamentCard(card, ev) {
 let availableParams = [];
 let currentEchipamentId = null;
 let currentParams = {};
+let currentDescrieri = {};
 
 async function loadParamsForProducator(producator) {
     if (!producator || producator === 'Altul') { availableParams = []; return; }
@@ -5691,6 +5698,7 @@ function showAddEquipmentForm() {
 
     // Reset state for new equipment
     currentParams = {};
+    currentDescrieri = {};
     availableParams = [];
     currentEchipamentId = null;
 
@@ -5909,6 +5917,7 @@ function onProducatorChange() {
     
     // Reset current params
     currentParams = {};
+    currentDescrieri = {};
     renderCurrentParams();
 }
 
@@ -5970,10 +5979,14 @@ async function editEchipament(echipamentId) {
         // Remove existing form if any
         document.querySelectorAll('.echipament-form-overlay, .echipament-form').forEach(el => el.remove());
 
-        // Load current params from equipment
+        // Load current params and stored descriptions from equipment
         currentParams = {};
+        currentDescrieri = {};
         try {
             currentParams = JSON.parse(eq.params_json || '{}');
+        } catch (err) {}
+        try {
+            currentDescrieri = JSON.parse(eq.descrieri_json || '{}');
         } catch (err) {}
 
         // Load available params for this manufacturer
@@ -6066,7 +6079,8 @@ async function saveEchipament() {
         producator: document.getElementById('eq-producator').value,
         model: document.getElementById('eq-model').value,
         serial_number: document.getElementById('eq-serial').value,
-        params_json: JSON.stringify(currentParams)
+        params_json: JSON.stringify(currentParams),
+        descrieri_json: Object.keys(currentDescrieri).length > 0 ? currentDescrieri : undefined
     };
     
     try {
@@ -6241,6 +6255,9 @@ function applyImportedParams() {
             if (Object.prototype.hasOwnProperty.call(currentParams, p.db_id)) overridden++;
             else added++;
             currentParams[p.db_id] = String(value);
+            // Store parser description for this param (from backup name or DB)
+            const desc = p.descriere_db || p.name || '';
+            if (desc) currentDescrieri[p.db_id] = desc;
         }
     });
     closeImportParamsModal();
