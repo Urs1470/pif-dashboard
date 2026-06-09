@@ -28,6 +28,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from utils import safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES
 from database import get_db, row_to_dict, DATABASE_PATH, init_db
 from labels import project_status_label, task_status_label
+from scripts.parse_params.abb import parse_full as abb_parse_full, read_drive_info as abb_drive_info
 
 logger = logging.getLogger(__name__)
 
@@ -702,6 +703,194 @@ def backup_database():
     conn.close()
 
     return jsonify(backup)
+
+
+# ---------------------------------------------------------------------------
+# Enrich parametri_master from ABB .dcparamsbak
+# ---------------------------------------------------------------------------
+
+@admin_bp.route('/api/admin/enrich-params', methods=['POST'])
+@login_required
+def enrich_params_from_backup():
+    """Upload a .dcparamsbak file and enrich parametri_master with its data.
+
+    Form fields:
+      file: .dcparamsbak backup file
+      family: optional target family (default: auto-detect from backup)
+      apply: "true" to actually write changes (default: dry-run report only)
+
+    Returns a JSON report of what was/would be changed.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'Fișier lipsă (field "file")'}), 400
+    upload = request.files['file']
+    if not upload.filename:
+        return jsonify({'error': 'Fișier gol'}), 400
+
+    family_hint = (request.form.get('family') or '').strip()
+    apply = (request.form.get('apply') or '').lower() in ('true', '1', 'yes')
+
+    try:
+        raw = upload.read()
+    except Exception as e:
+        return jsonify({'error': f'Eroare citire fișier: {e}'}), 400
+
+    # Read drive info for family detection
+    info = abb_drive_info(raw)
+    if not family_hint:
+        family_raw = info.get('Family', '')
+        model_raw = info.get('DriveModel', '')
+        if '880' in family_raw or '880' in model_raw:
+            family_hint = 'ACS880'
+        elif '580' in family_raw or '580' in model_raw:
+            family_hint = 'ACS580'
+        else:
+            family_hint = 'ACS880'
+
+    # Parse ALL params (including signals and at-default)
+    all_params = abb_parse_full(raw, upload.filename or '')
+    if not all_params:
+        return jsonify({'error': 'Nu s-au putut parsa parametrii din fișier'}), 400
+
+    signals = [p for p in all_params if p['is_signal']]
+    config = [p for p in all_params if not p['is_signal']]
+
+    # Load existing DB params
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT parametru, descriere_scurta, unitate, valoare_default,
+               valoare_default_str, min, max, enum_labels
+        FROM parametri_master WHERE familie = ?
+    ''', (family_hint,))
+    db_params = {}
+    for row in cursor.fetchall():
+        db_params[row['parametru']] = {
+            'descriere_scurta': row['descriere_scurta'] or '',
+            'unitate': row['unitate'] or '',
+            'valoare_default': row['valoare_default'],
+            'valoare_default_str': row['valoare_default_str'] or '',
+            'min': row['min'],
+            'max': row['max'],
+            'enum_labels': row['enum_labels'] or '',
+        }
+
+    # Compare
+    new_params = []
+    fill_unit = []
+    fill_default = []
+    fill_min_max = []
+    different_default = []
+    enum_available = []
+
+    for p in all_params:
+        code = p['db_id']
+        db = db_params.get(code)
+
+        if p.get('value_names'):
+            enum_available.append(p)
+
+        if db is None:
+            new_params.append(p)
+            continue
+
+        if not db['unitate'] and p['unit']:
+            fill_unit.append((code, p['unit']))
+
+        backup_default = p['default_value']
+        db_default = str(db['valoare_default']) if db['valoare_default'] is not None else db['valoare_default_str']
+        if backup_default and db_default:
+            try:
+                if abs(float(backup_default) - float(db_default)) > 1e-6:
+                    different_default.append({'code': code, 'db': db_default, 'backup': backup_default})
+            except (ValueError, TypeError):
+                if backup_default != db_default:
+                    different_default.append({'code': code, 'db': db_default, 'backup': backup_default})
+        elif backup_default and not db_default:
+            fill_default.append((code, backup_default))
+
+        if (db['min'] is None or str(db['min']).strip() == '') and p['min']:
+            fill_min_max.append((code, 'min', p['min']))
+        if (db['max'] is None or str(db['max']).strip() == '') and p['max']:
+            fill_min_max.append((code, 'max', p['max']))
+
+    enum_for_existing = [p for p in enum_available if p['db_id'] in db_params]
+    enum_missing = [p for p in enum_for_existing if not db_params[p['db_id']].get('enum_labels')]
+
+    report = {
+        'drive_info': info,
+        'family': family_hint,
+        'total_params': len(all_params),
+        'signals': len(signals),
+        'config': len(config),
+        'existing_in_db': len(db_params),
+        'new_params': len(new_params),
+        'fill_unit': len(fill_unit),
+        'fill_default': len(fill_default),
+        'fill_min_max': len(fill_min_max),
+        'different_default': len(different_default),
+        'enum_available': len(enum_available),
+        'enum_missing_in_db': len(enum_missing),
+        'applied': apply,
+        'new_params_sample': [{'code': p['db_id'], 'name': p['name'], 'unit': p['unit'],
+                               'signal': p['is_signal']} for p in new_params[:30]],
+        'different_default_sample': different_default[:20],
+    }
+
+    if apply:
+        inserted = 0
+        for p in new_params:
+            if p['is_signal']:
+                continue
+            try:
+                cursor.execute('''
+                    INSERT INTO parametri_master (id, familie, parametru, descriere_scurta,
+                        unitate, valoare_default, min, max, enum_labels, creat_la)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                ''', (
+                    generate_uuid(), family_hint, p['db_id'], p['name'],
+                    p['unit'] or None, p['default_value'] or None,
+                    p['min'] or None, p['max'] or None,
+                    json.dumps(p['value_names']) if p.get('value_names') else None,
+                ))
+                inserted += 1
+            except sqlite3.IntegrityError:
+                pass
+
+        for code, unit in fill_unit:
+            cursor.execute(
+                'UPDATE parametri_master SET unitate = ? WHERE familie = ? AND parametru = ? AND (unitate IS NULL OR unitate = "")',
+                (unit, family_hint, code))
+
+        for code, default in fill_default:
+            cursor.execute(
+                'UPDATE parametri_master SET valoare_default = ? WHERE familie = ? AND parametru = ? AND valoare_default IS NULL',
+                (default, family_hint, code))
+
+        for code, field, val in fill_min_max:
+            cursor.execute(
+                f'UPDATE parametri_master SET [{field}] = ? WHERE familie = ? AND parametru = ? AND ([{field}] IS NULL OR [{field}] = "")',
+                (val, family_hint, code))
+
+        stored_enums = 0
+        for p in enum_missing:
+            if p.get('value_names'):
+                cursor.execute(
+                    'UPDATE parametri_master SET enum_labels = ? WHERE familie = ? AND parametru = ? AND (enum_labels IS NULL OR enum_labels = "")',
+                    (json.dumps(p['value_names']), family_hint, p['db_id']))
+                stored_enums += 1
+
+        conn.commit()
+        report['inserted'] = inserted
+        report['updated_units'] = len(fill_unit)
+        report['updated_defaults'] = len(fill_default)
+        report['updated_min_max'] = len(fill_min_max)
+        report['stored_enums'] = stored_enums
+        logger.info(f"Enrich params ({family_hint}): +{inserted} new, {len(fill_unit)} units, {stored_enums} enums")
+
+    conn.close()
+    return jsonify(report)
+
 
 @admin_bp.route('/api/restore', methods=['POST'])
 @login_required
