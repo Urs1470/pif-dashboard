@@ -1333,7 +1333,9 @@ def _familie_param_meta(drives):
                     'default': default,
                 }
 
-        # Siemens: caută și r-prefix pentru coduri p-prefix (read-only params)
+        # Siemens: caută r-prefix cross-family (read-only params)
+        # r0027 poate fi în G130 dar nu în G120 — e read-only în ambele.
+        # Caut fără filtru de familie, apoi stochez sub familia curentă.
         if 'SINAMICS' in fam or 'MICROMASTER' in fam:
             r_codes = set()
             for c in codes:
@@ -1344,19 +1346,21 @@ def _familie_param_meta(drives):
             for i in range(0, len(r_codes), 900):
                 chunk = r_codes[i:i + 900]
                 placeholders = ','.join('?' * len(chunk))
+                # Cross-family: orice r-param din orice familie Siemens
                 cursor.execute(
-                    f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
-                    f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
-                    [fam] + chunk
+                    f'SELECT DISTINCT parametru, descriere_scurta, valoare_default, valoare_default_str '
+                    f'FROM parametri_master WHERE parametru IN ({placeholders})',
+                    chunk
                 )
                 for r in cursor.fetchall():
-                    default = r['valoare_default']
-                    if default is None or str(default).strip() == '':
-                        default = r['valoare_default_str']
-                    meta[fam][r['parametru']] = {
-                        'desc': r['descriere_scurta'],
-                        'default': default,
-                    }
+                    if r['parametru'] not in meta[fam]:
+                        default = r['valoare_default']
+                        if default is None or str(default).strip() == '':
+                            default = r['valoare_default_str']
+                        meta[fam][r['parametru']] = {
+                            'desc': r['descriere_scurta'],
+                            'default': default,
+                        }
     conn.close()
     return meta
 
