@@ -5555,8 +5555,16 @@ function renderEchipamente(echipamente, descLookup) {
             `<tr><td style="font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(p.key)}</td><td style="font-size:0.78rem;color:var(--text2);padding-right:12px;">${escapeHtml(p.desc)}</td><td style="font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.82rem;">${escapeHtml(p.value)}</td></tr>`
         ).join('');
 
+        const searchBox = driveParams.length > 5
+            ? `<div class="echipament-param-search-wrap">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" class="echipament-param-search" placeholder="Cauta parametru (cod sau descriere)..." oninput="filterEchipamentParams(this)" onclick="event.stopPropagation()">
+               </div>
+               <div class="echipament-param-no-results">Niciun parametru gasit.</div>`
+            : '';
+
         const expandedBody = hasDriveParams
-            ? `<table class="echipament-params-table">
+            ? `${searchBox}<table class="echipament-params-table">
                     <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
                     <tbody>${driveRows}</tbody>
                 </table>`
@@ -5602,6 +5610,39 @@ function toggleEchipamentCard(card, ev) {
         expanded.style.display = isOpen ? 'none' : 'block';
         if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
         card.classList.toggle('is-open', !isOpen);
+        // Auto-focus search when expanding
+        if (!isOpen) {
+            const searchInput = expanded.querySelector('.echipament-param-search');
+            if (searchInput) setTimeout(() => searchInput.focus(), 50);
+        }
+    }
+}
+
+function filterEchipamentParams(input) {
+    const query = (input.value || '').toLowerCase().trim();
+    const container = input.closest('.echipament-expanded');
+    if (!container) return;
+    const table = container.querySelector('.echipament-params-table');
+    const noResults = container.querySelector('.echipament-param-no-results');
+    if (!table) return;
+    const rows = table.querySelectorAll('tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+        if (!query) {
+            row.style.display = '';
+            visible++;
+            return;
+        }
+        const cells = row.querySelectorAll('td');
+        const code = (cells[0] ? cells[0].textContent : '').toLowerCase();
+        const desc = (cells[1] ? cells[1].textContent : '').toLowerCase();
+        const val  = (cells[2] ? cells[2].textContent : '').toLowerCase();
+        const match = code.includes(query) || desc.includes(query) || val.includes(query);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    if (noResults) {
+        noResults.style.display = (query && visible === 0) ? 'block' : 'none';
     }
 }
 
