@@ -17,37 +17,6 @@ let parametriPage = 1;
 let parametriTotal = 0;
 let parametriLimit = 50;
 
-const NAV_ICONS = {
-    acasa: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="10" width="7" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="11" y="6" width="7" height="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <polyline points="1,11 10,3 19,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
-    </svg>`,
-
-    taskuri: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="3" width="16" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="2" y="9" width="10" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="2" y="15" width="7" height="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <polyline points="13,13 16,16 19,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
-    </svg>`,
-
-    proiecte: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="2" width="14" height="16" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="6" y1="7" x2="14" y2="7" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="6" y1="11" x2="14" y2="11" stroke="currentColor" stroke-width="1"/>
-        <line x1="6" y1="15" x2="10" y2="15" stroke="currentColor" stroke-width="1"/>
-        <rect x="7" y="0" width="6" height="4" fill="var(--bg)" stroke="currentColor" stroke-width="1.5"/>
-    </svg>`,
-
-    parametri: `<svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="2" width="16" height="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="5" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1"/>
-        <line x1="5" y1="10" x2="12" y2="10" stroke="currentColor" stroke-width="1"/>
-        <line x1="10" y1="14" x2="10" y2="17" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="6" y1="17" x2="14" y2="17" stroke="currentColor" stroke-width="1.5"/>
-    </svg>`
-};
-
 // ============ API HELPERS ============
 
 // ─── Tiny request cache with stale-while-revalidate ───
@@ -56,7 +25,34 @@ const NAV_ICONS = {
 // - Mutations (POST/PUT/DELETE) invalidate by URL prefix match (see _invalidateCache)
 const _apiCache = new Map();   // url -> { data, ts }
 const _apiInflight = new Map(); // url -> Promise (dedupe parallel requests)
-const _API_CACHE_TTL = 60_000;  // 60s — stale entries still served, then refreshed
+const _API_CACHE_TTL = 60_000;  // 60s hard TTL — entries older than this are evicted on read
+const _API_CACHE_MAX = 100;     // LRU cap — oldest entry evicted when exceeded
+
+// Evict a single entry if it has expired (returns true if entry was valid).
+function _cacheIsValid(key) {
+    const entry = _apiCache.get(key);
+    if (!entry) return false;
+    if (Date.now() - entry.ts > _API_CACHE_TTL) { _apiCache.delete(key); return false; }
+    return true;
+}
+
+// After a set, enforce the LRU cap by removing the oldest entry.
+function _cacheTrim() {
+    if (_apiCache.size <= _API_CACHE_MAX) return;
+    // Map iterates in insertion order — first key is the oldest
+    let oldest = null, oldestTs = Infinity;
+    for (const [k, v] of _apiCache) {
+        if (v.ts < oldestTs) { oldest = k; oldestTs = v.ts; }
+    }
+    if (oldest) _apiCache.delete(oldest);
+}
+
+function _cacheSet(key, data) {
+    // Delete first so re-insertion moves the key to the end (recent)
+    _apiCache.delete(key);
+    _apiCache.set(key, { data, ts: Date.now() });
+    _cacheTrim();
+}
 
 function _cacheKey(url) { return url; }
 
@@ -94,14 +90,13 @@ async function _doFetch(url) {
 
 async function apiGet(url, { fresh = false } = {}) {
     const key = _cacheKey(url);
-    const cached = _apiCache.get(key);
-    const now = Date.now();
 
-    if (!fresh && cached) {
+    if (!fresh && _cacheIsValid(key)) {
+        const cached = _apiCache.get(key);
         // Serve cached, refresh in background if stale-ish (>15s old)
-        if (now - cached.ts > 15_000 && !_apiInflight.has(key)) {
+        if (Date.now() - cached.ts > 15_000 && !_apiInflight.has(key)) {
             const p = _doFetch(url).then(data => {
-                _apiCache.set(key, { data, ts: Date.now() });
+                _cacheSet(key, data);
                 _apiInflight.delete(key);
                 return data;
             }).catch(() => _apiInflight.delete(key));
@@ -114,7 +109,7 @@ async function apiGet(url, { fresh = false } = {}) {
     if (_apiInflight.has(key)) return _apiInflight.get(key);
 
     const p = _doFetch(url).then(data => {
-        _apiCache.set(key, { data, ts: Date.now() });
+        _cacheSet(key, data);
         _apiInflight.delete(key);
         return data;
     }).catch(e => { _apiInflight.delete(key); throw e; });
@@ -4023,41 +4018,33 @@ const _PRIO_CYCLE = ['Normal', 'Minor', 'Urgent'];
 // checkbox. The status pill only toggles between active states (To Do <-> In Lucru).
 const _STATUS_CYCLE = ['to_do', 'in_lucru'];
 
-async function cycleGtPriority(taskId, current) {
-    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
-    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
+// Unified cycle helper — rotates a task field through its cycle array and
+// dispatches to the correct API endpoint + reload based on `kind`.
+// `field` is 'prioritate' or 'status'; `kind` is 'global'|'todo'|'overview'.
+async function cycleTaskField(kind, taskId, current, field) {
+    const cycle = field === 'prioritate' ? _PRIO_CYCLE : _STATUS_CYCLE;
+    const fallback = field === 'prioritate' ? 'Normal' : 'to_do';
+    const idx = cycle.indexOf(current || fallback);
+    let next = cycle[(idx + 1) % cycle.length];
+
+    // Project todos store priority lowercase
+    const endpoint = kind === 'todo' ? `/tasks/${taskId}` : `/global-tasks/${taskId}`;
+    const value = (kind === 'todo' && field === 'prioritate') ? next.toLowerCase() : next;
+
     try {
-        await apiPut(`/global-tasks/${taskId}`, { prioritate: next });
-        loadGlobalTasks();
-    } catch (e) { showToast('Eroare la schimbarea priorității', true); }
+        await apiPut(endpoint, { [field]: value });
+        if (kind === 'global')        loadGlobalTasks();
+        else if (kind === 'todo')     { if (currentProjectId) loadTodos(currentProjectId); }
+        else if (kind === 'overview') loadProjectTasks();
+    } catch (e) { showToast('Eroare la schimbarea ' + (field === 'prioritate' ? 'priorității' : 'statusului'), true); }
 }
 
-async function cycleGtStatus(taskId, current) {
-    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
-    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
-    try {
-        await apiPut(`/global-tasks/${taskId}`, { status: next });
-        loadGlobalTasks();
-    } catch (e) { showToast('Eroare la schimbarea statusului', true); }
-}
-
-async function cycleTodoPriority(taskId, current) {
-    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
-    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
-    try {
-        await apiPut(`/tasks/${taskId}`, { prioritate: next.toLowerCase() });
-        if (currentProjectId) loadTodos(currentProjectId);
-    } catch (e) { showToast('Eroare', true); }
-}
-
-async function cycleTodoStatus(taskId, current) {
-    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
-    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
-    try {
-        await apiPut(`/tasks/${taskId}`, { status: next });
-        if (currentProjectId) loadTodos(currentProjectId);
-    } catch (e) { showToast('Eroare', true); }
-}
+// Thin wrappers — keep the original function names so existing onclick
+// handlers in renderTaskCard (core.js) continue to work unchanged.
+async function cycleGtPriority(taskId, current)       { return cycleTaskField('global',   taskId, current, 'prioritate'); }
+async function cycleGtStatus(taskId, current)          { return cycleTaskField('global',   taskId, current, 'status'); }
+async function cycleTodoPriority(taskId, current)      { return cycleTaskField('todo',     taskId, current, 'prioritate'); }
+async function cycleTodoStatus(taskId, current)        { return cycleTaskField('todo',     taskId, current, 'status'); }
 
 async function loadProjectTasks() {
     const status = document.getElementById('pt-filter-status')?.value || 'to_do,in_lucru';
@@ -4147,23 +4134,8 @@ async function toggleOverviewTask(taskId, checked) {
     } catch (e) { console.error('Toggle overview task error:', e); }
 }
 
-async function cycleOverviewPriority(taskId, current) {
-    const idx = _PRIO_CYCLE.indexOf(current || 'Normal');
-    const next = _PRIO_CYCLE[(idx + 1) % _PRIO_CYCLE.length];
-    try {
-        await apiPut(`/global-tasks/${taskId}`, { prioritate: next });
-        loadProjectTasks();
-    } catch (e) { showToast('Eroare la schimbarea prioritatii', true); }
-}
-
-async function cycleOverviewStatus(taskId, current) {
-    const idx = _STATUS_CYCLE.indexOf(current || 'to_do');
-    const next = _STATUS_CYCLE[(idx + 1) % _STATUS_CYCLE.length];
-    try {
-        await apiPut(`/global-tasks/${taskId}`, { status: next });
-        loadProjectTasks();
-    } catch (e) { showToast('Eroare la schimbarea statusului', true); }
-}
+async function cycleOverviewPriority(taskId, current) { return cycleTaskField('overview', taskId, current, 'prioritate'); }
+async function cycleOverviewStatus(taskId, current)   { return cycleTaskField('overview', taskId, current, 'status'); }
 
 async function deleteOverviewTask(taskId, btnEl) {
     if (!confirm('Stergi acest task? Actiunea nu poate fi anulata.')) return;
