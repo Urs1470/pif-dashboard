@@ -56,7 +56,7 @@ def close_db(exc=None):
 # v12: Dropped redundant indexes + orphan tables (audit_log, parametri_std),
 #      added prune_budget_audit trigger (cap 5000 rows/user)
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 17
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -563,6 +563,19 @@ def migrate_v15_to_v16():
     conn.close()
 
 
+def migrate_v16_to_v17():
+    """v16 -> v17: add performance indexes on timer_sessions for task_id and
+    subtask_id columns. These are hit by the project-task list query and
+    subtask timer lookups. Idempotent (CREATE INDEX IF NOT EXISTS)."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_task_id ON timer_sessions(task_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_subtask_id ON timer_sessions(subtask_id)')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v16->v17: added timer_sessions indexes on task_id, subtask_id")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -641,6 +654,11 @@ def run_migrations():
         migrate_v15_to_v16()
         set_schema_version(16)
         current_version = 16
+
+    if current_version < 17:
+        migrate_v16_to_v17()
+        set_schema_version(17)
+        current_version = 17
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

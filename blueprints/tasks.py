@@ -89,23 +89,72 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
 def get_tasks(project_id):
     conn = get_db()
     cursor = conn.cursor()
-    # Sort by ordine for drag-and-drop. Subtask counts + tracked time joined in
-    # so the todo row can show progress badges without N extra requests.
+
+    # 1) Fetch all tasks for this project (single query).
     cursor.execute('''
-        SELECT t.*,
-            (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id) AS subtask_total,
-            (SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = t.id AND s.done = 1) AS subtask_done,
-            (SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions ts
-             WHERE (ts.task_id = t.id OR ts.subtask_id IN (SELECT id FROM task_subtasks WHERE task_id = t.id))
-             AND ts.durata_secunde IS NOT NULL) AS timp_secunde,
-            (SELECT COUNT(*) > 0 FROM timer_sessions ts
-             WHERE ts.task_id = t.id AND ts.stop_time IS NULL) AS timer_running
-        FROM tasks t WHERE t.proiect_id = ?
+        SELECT t.* FROM tasks t WHERE t.proiect_id = ?
         ORDER BY t.ordine ASC, t.created_at DESC
     ''', (project_id,))
     rows = cursor.fetchall()
+    if not rows:
+        conn.close()
+        return jsonify([])
+
+    task_ids = [r['id'] for r in rows]
+    placeholders = ','.join('?' * len(task_ids))
+
+    # 2) Batch-fetch subtask counts (one query for all tasks).
+    cursor.execute(f'''
+        SELECT task_id,
+               COUNT(*) AS subtask_total,
+               SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS subtask_done
+        FROM task_subtasks
+        WHERE task_id IN ({placeholders})
+        GROUP BY task_id
+    ''', task_ids)
+    subtask_map = {}
+    for r in cursor.fetchall():
+        subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
+                                      'subtask_done': r['subtask_done']}
+
+    # 3) Batch-fetch timer totals and running state (one query for all tasks).
+    #    Joins task_subtasks to also capture time logged against subtasks.
+    cursor.execute(f'''
+        SELECT t_id,
+               COALESCE(SUM(CASE WHEN ts.durata_secunde IS NOT NULL THEN ts.durata_secunde ELSE 0 END), 0) AS timp_secunde,
+               MAX(CASE WHEN ts.stop_time IS NULL THEN 1 ELSE 0 END) AS timer_running
+        FROM (
+            SELECT ts.durata_secunde, ts.stop_time, ts.task_id AS t_id
+            FROM timer_sessions ts
+            WHERE ts.task_id IN ({placeholders})
+            UNION ALL
+            SELECT ts.durata_secunde, ts.stop_time, st.task_id AS t_id
+            FROM timer_sessions ts
+            JOIN task_subtasks st ON ts.subtask_id = st.id
+            WHERE st.task_id IN ({placeholders})
+        ) ts
+        GROUP BY t_id
+    ''', task_ids + task_ids)
+    timer_map = {}
+    for r in cursor.fetchall():
+        timer_map[r['t_id']] = {'timp_secunde': r['timp_secunde'],
+                                 'timer_running': r['timer_running']}
+
     conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
+
+    # 4) Merge results in Python.
+    result = []
+    for row in rows:
+        d = row_to_dict(row)
+        sc = subtask_map.get(d['id'], {})
+        d['subtask_total'] = sc.get('subtask_total', 0)
+        d['subtask_done'] = sc.get('subtask_done', 0)
+        tm = timer_map.get(d['id'], {})
+        d['timp_secunde'] = tm.get('timp_secunde', 0)
+        d['timer_running'] = tm.get('timer_running', 0)
+        result.append(d)
+
+    return jsonify(result)
 
 
 @tasks_bp.route('/api/proiecte/<project_id>/tasks', methods=['POST'])
