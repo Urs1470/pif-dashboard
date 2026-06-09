@@ -4472,43 +4472,47 @@
             margin-top: 8px;
         }
         input.echipament-param-search {
-            width: 100%;
-            padding: 6px 10px 6px 32px;
-            margin-bottom: 8px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--bg);
+            flex: 1;
+            min-width: 0;
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
             color: var(--text);
             font-size: 0.78rem;
             font-family: var(--font-sans);
             outline: none;
-            transition: border-color 0.15s;
             min-height: unset;
             cursor: text;
         }
-        [data-theme="light"] input.echipament-param-search {
-            background: #ffffff;
-            border-color: #c5cdd8;
-        }
         input.echipament-param-search:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-soft);
+            border: none;
+            box-shadow: none;
         }
         input.echipament-param-search::placeholder {
             color: var(--text2);
         }
         .echipament-param-search-wrap {
-            position: relative;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+        [data-theme="light"] .echipament-param-search-wrap {
+            background: #ffffff;
+            border-color: #c5cdd8;
+        }
+        .echipament-param-search-wrap:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-soft);
         }
         .echipament-param-search-wrap .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-58%);
             width: 14px;
             height: 14px;
             color: var(--text2);
-            pointer-events: none;
+            flex-shrink: 0;
         }
         .echipament-param-no-results {
             color: var(--text-dim);
