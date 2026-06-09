@@ -1106,6 +1106,13 @@ async function showProjectDetail(projectId) {
     } catch (e) {
         console.error('Failed to load project:', e);
         showToast('Eroare la încărcarea detaliilor', true);
+        // Revert state so the list stays usable — don't leave currentProjectId
+        // pointing at a project whose detail never rendered.
+        currentProjectId = null;
+        document.getElementById('project-list-view')?.classList.remove('hidden');
+        document.getElementById('project-detail-view')?.classList.remove('active');
+        _pushHash('proiecte');
+        return;
     }
 
     // Mobile: add back button at top if not exists
@@ -1178,15 +1185,22 @@ async function deleteCurrentProject() {
 
     showConfirm('Sigur doriți să ștergeți acest proiect? Această acțiune nu poate fi anulată.', async () => {
         try {
-            await apiDelete(`/proiecte/${currentProjectId}`);
+            const deletedId = currentProjectId;
+            await apiDelete(`/proiecte/${deletedId}`);
             // Also drop it from the "Continuă" recent-projects strip immediately.
             try {
                 const rp = JSON.parse(localStorage.getItem('recent_projects') || '[]')
-                    .filter(p => p && p.id !== currentProjectId);
+                    .filter(p => p && p.id !== deletedId);
                 localStorage.setItem('recent_projects', JSON.stringify(rp));
             } catch (_) {}
             showToast('Proiect șters!');
-            showProjectList();
+            // Reset state before reloading — ensure list renders fresh
+            currentProjectId = null;
+            document.getElementById('project-list-view')?.classList.remove('hidden');
+            document.getElementById('project-detail-view')?.classList.remove('active');
+            _pushHash('proiecte');
+            await loadProjects();
+            updateStats();
         } catch (e) {
             console.error('Failed to delete project:', e);
             showToast('Eroare la ștergerea proiectului', true);
