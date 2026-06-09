@@ -1206,19 +1206,20 @@ def dashboard_home():
 
     # Urgent tasks — global + project-level (UNION)
     cursor.execute("""
-        SELECT id, titlu, prioritate, data_scadenta, categorie,
-               NULL as proiect_id, NULL as proiect_nume
-        FROM global_tasks
-        WHERE LOWER(prioritate) = 'urgent' AND status != 'done'
+        SELECT * FROM (
+            SELECT id, titlu, prioritate, data_scadenta, categorie,
+                   NULL as proiect_id, NULL as proiect_nume
+            FROM global_tasks
+            WHERE LOWER(prioritate) = 'urgent' AND status != 'done'
 
-        UNION ALL
+            UNION ALL
 
-        SELECT t.id, t.titlu, t.prioritate, t.data_scadenta, '' as categorie,
-               t.proiect_id, p.nume as proiect_nume
-        FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-        WHERE LOWER(t.prioritate) = 'urgent' AND t.status != 'done'
-          AND p.status NOT IN ('finalizat', 'anulat')
-
+            SELECT t.id, t.titlu, t.prioritate, t.data_scadenta, '' as categorie,
+                   t.proiect_id, p.nume as proiect_nume
+            FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+            WHERE LOWER(t.prioritate) = 'urgent' AND t.status != 'done'
+              AND p.status NOT IN ('finalizat', 'anulat')
+        )
         ORDER BY data_scadenta IS NULL, data_scadenta
         LIMIT 10
     """)
