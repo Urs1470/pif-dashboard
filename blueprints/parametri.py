@@ -47,7 +47,8 @@ def get_parametri():
     search = request.args.get('search', '')
     familie = request.args.get('familie', '')
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 50, type=int)
+    page = max(page, 1)
+    limit = min(max(request.args.get('limit', 50, type=int), 1), 500)
     offset = (page - 1) * limit
 
     # Build count query first
@@ -98,7 +99,7 @@ def search_parametri():
 
     q = request.args.get('q', '')
     familie = request.args.get('familie', '')
-    limit = request.args.get('limit', 50, type=int)
+    limit = min(max(request.args.get('limit', 50, type=int), 1), 500)
 
     query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la, conditie_vizibilitate FROM parametri_master WHERE 1=1"
     count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
@@ -277,7 +278,8 @@ def get_fault_codes():
     producator = request.args.get('producator', '').strip()
     tip = request.args.get('tip', '').strip()
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 50, type=int)
+    page = max(page, 1)
+    limit = min(max(request.args.get('limit', 50, type=int), 1), 500)
     offset = (page - 1) * limit
 
     where = ' WHERE 1=1'

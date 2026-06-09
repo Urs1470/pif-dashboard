@@ -37,8 +37,8 @@ def get_proiecte():
     producator = request.args.get('producator')
 
     # Pagination parameters
-    limit = request.args.get('limit', 100, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
+    offset = max(request.args.get('offset', 0, type=int), 0)
 
     query = 'SELECT * FROM proiecte WHERE 1=1'
     params = []
@@ -237,6 +237,8 @@ def batch_proiecte():
     """Batch update or delete multiple projects"""
     data = request.json
     action = data.get('action')  # 'update_status' or 'delete'
+    if action not in ('update_status', 'delete'):
+        return jsonify({'error': 'Invalid action'}), 400
     project_ids = data.get('project_ids', [])
 
     if not project_ids:

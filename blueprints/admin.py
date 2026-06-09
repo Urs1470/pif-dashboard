@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 
 admin_bp = Blueprint('admin', __name__)
 
+def _excel_safe(val):
+    """Prevent formula injection in Excel exports."""
+    if isinstance(val, str) and val and val[0] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + val
+    return val
+
 # ---------------------------------------------------------------------------
 # Stats
 # ---------------------------------------------------------------------------
@@ -194,7 +200,7 @@ def export_excel():
             # Map status to Romanian
             row_data = list(row)
             row_data[4] = project_status_label(row_data[4])
-            ws.append(row_data)
+            ws.append([_excel_safe(v) for v in row_data])
 
         auto_width(ws)
 
@@ -218,7 +224,7 @@ def export_excel():
             row_data = list(row)
             row_data[2] = task_status_label(row_data[2])
             row_data[3] = priority_map.get(row_data[3], row_data[3])
-            ws.append(row_data)
+            ws.append([_excel_safe(v) for v in row_data])
 
         auto_width(ws)
 
@@ -239,7 +245,7 @@ def export_excel():
             ORDER BY t.start_time DESC
         ''')
         for row in cursor.fetchall():
-            ws.append(list(row))
+            ws.append([_excel_safe(v) for v in row])
 
         auto_width(ws)
 
@@ -487,14 +493,14 @@ def _pdf_section_journal(elements, jurnal, timer_sessions, section_n, styles):
     for j in jurnal:
         jt_raw = j.get('created_at') or j.get('data')
         try: jt = datetime.fromisoformat(jt_raw).timestamp() if jt_raw else 0
-        except Exception: jt = 0
+        except (ValueError, TypeError): jt = 0
         if jt:
             for s in sessions:
                 if s['id'] in matched: continue
                 et_raw = s.get('stop_time')
                 if not et_raw: continue
                 try: et = datetime.fromisoformat(et_raw).timestamp()
-                except Exception: continue
+                except (ValueError, TypeError): continue
                 if abs(jt - et) < 120:
                     matched.add(s['id'])
                     j['_dur'] = s.get('durata_secunde') or 0
@@ -926,7 +932,7 @@ def bulk_add_params():
                 (familie, code, desc)
             )
             inserted += 1
-        except Exception as e:
+        except sqlite3.Error as e:
             skipped += 1
             errors.append(f"{code}: {e}")
     conn.commit()
@@ -1193,7 +1199,7 @@ def admin_db_upload():
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='proiecte'"
             ).fetchone()
             _chk.close()
-        except Exception:
+        except (sqlite3.Error, OSError):
             os.unlink(tmp_path)
             return jsonify({'error': 'fisierul nu este o baza SQLite utilizabila'}), 400
         if not _integrity or _integrity[0] != 'ok':
