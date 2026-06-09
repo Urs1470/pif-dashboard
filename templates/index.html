@@ -292,7 +292,7 @@
                 <div class="detail-section-body">
                     <div class="todo-add-form">
                         <div class="form-group" style="margin-bottom:0">
-                            <input type="text" id="todo-title" placeholder="Titlu task nou...">
+                            <input type="text" id="todo-title" placeholder="Titlu task nou..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTodo();}">
                         </div>
                         <select id="todo-priority" class="cs-enhance">
                             <option value="normal">Normal</option>
