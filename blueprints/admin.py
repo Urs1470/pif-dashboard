@@ -913,25 +913,26 @@ def bulk_add_params():
     cursor = conn.cursor()
     inserted = 0
     skipped = 0
+    errors = []
     for p in params:
         code = p.get('parametru', '')
         desc = p.get('descriere_scurta', '')
         if not code or not desc:
             continue
         try:
-            cursor.execute('''
-                INSERT INTO parametri_master (id, familie, parametru, descriere_scurta, creat_la)
-                VALUES (?, ?, ?, ?, datetime('now'))
-            ''', (generate_uuid(), familie, code, desc))
+            cursor.execute(
+                'INSERT INTO parametri_master (id, familie, parametru, descriere_scurta)'
+                ' VALUES (?, ?, ?, ?)',
+                (generate_uuid(), familie, code, desc)
+            )
             inserted += 1
         except Exception as e:
             skipped += 1
-            if skipped <= 3:
-                logger.warning(f"Bulk add skip {code}: {e}")
+            errors.append(f"{code}: {e}")
     conn.commit()
     conn.close()
     logger.info(f"Bulk add params ({familie}): +{inserted} inserted, {skipped} skipped")
-    return jsonify({'inserted': inserted, 'skipped': skipped})
+    return jsonify({'inserted': inserted, 'skipped': skipped, 'errors': errors[:5]})
 
 
 @admin_bp.route('/api/restore', methods=['POST'])
