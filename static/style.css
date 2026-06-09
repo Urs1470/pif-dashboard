@@ -4728,6 +4728,13 @@
     cursor: pointer;
     transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
 }
+@keyframes highlightFlash {
+    0%   { box-shadow: 0 0 0 3px var(--accent); }
+    100% { box-shadow: none; }
+}
+.highlight-flash {
+    animation: highlightFlash 1.8s ease-out;
+}
 .tcard:hover {
     border-color: var(--accent-ring);
     background: var(--bg-elev2);

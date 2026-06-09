@@ -4479,7 +4479,9 @@ async function loadDashboardHome() {
             urgent_tasks.forEach(t => {
                 const proj = t.proiect_nume ? escapeHtml(t.proiect_nume) : '—';
                 const date = t.data_scadenta ? `<span><i data-lucide="calendar"></i> ${t.data_scadenta}</span>` : '';
-                const onclick = t.proiect_id ? `onclick="showProjectDetail('${t.proiect_id}')"` : '';
+                const onclick = t.proiect_id
+                    ? `onclick="navigateToProjectTask('${t.proiect_id}','${t.id}')"`
+                    : `onclick="navigateToGlobalTask('${t.id}')"`;
                 html += `
                     <div class="h-row" ${onclick}>
                         <span class="h-row-dot urgent"></span>
@@ -4538,10 +4540,10 @@ async function loadDashboardHome() {
             todays_tasks.forEach(t => {
                 const prio = (t.prioritate || 'Normal');
                 const prioCls = prio.toLowerCase();
-                // Click pe task global: dacă are proiect, du-te acolo; altfel deschide tab Taskuri.
+                // Click pe task global: du-te la task si scroll+highlight
                 const onclickAttr = t.proiect_id
-                    ? `onclick="showProjectDetail('${t.proiect_id}')"`
-                    : `onclick="switchTab('taskuri')"`;
+                    ? `onclick="navigateToProjectTask('${t.proiect_id}','${t.id}')"`
+                    : `onclick="navigateToGlobalTask('${t.id}')"`;
                 html += `
                     <div class="h-row" ${onclickAttr}>
                         <span class="h-row-dot ${prioCls}"></span>
@@ -5096,6 +5098,37 @@ document.addEventListener('touchend', function(e) {
 // ============ UTILITIES ============
 
 // debounce, escapeHtml (+_ESC_MAP), getStatusLabel -> moved to shared core.js
+
+/** Scroll an element into view and flash-highlight it. */
+function scrollToAndHighlight(el, { behavior = 'smooth', block = 'center' } = {}) {
+    if (!el) return;
+    el.scrollIntoView({ behavior, block });
+    el.classList.add('highlight-flash');
+    setTimeout(() => el.classList.remove('highlight-flash'), 1800);
+}
+
+/** Navigate from Acasă to a global task in the Taskuri tab. */
+function navigateToGlobalTask(taskId) {
+    switchTab('taskuri');
+    // Wait for tasks to render, then find and scroll
+    setTimeout(() => {
+        const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+        if (card) scrollToAndHighlight(card);
+    }, 400);
+}
+
+/** Navigate from Acasă to a project task in the project detail todo section. */
+async function navigateToProjectTask(projectId, taskId) {
+    await showProjectDetail(projectId);
+    setTimeout(() => {
+        const todoSection = document.getElementById('todo-section');
+        if (taskId) {
+            const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+            if (card) { scrollToAndHighlight(card); return; }
+        }
+        if (todoSection) scrollToAndHighlight(todoSection, { block: 'start' });
+    }, 300);
+}
 
 function showToast(message, type = 'success') {
     // Back-compat: several call sites pass a boolean (true = error toast).
