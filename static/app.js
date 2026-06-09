@@ -1773,6 +1773,12 @@ async function addTodo() {
 }
 
 async function toggleTodo(taskId, checked) {
+    // Optimistic UI update
+    const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+    const cb = card ? card.querySelector('.tcard__check') : null;
+    if (card) card.classList.toggle('tcard--done');
+    if (cb) cb.checked = checked;
+
     try {
         await apiPut(`/tasks/${taskId}`, {
             status: checked ? 'done' : 'to_do',
@@ -1781,6 +1787,10 @@ async function toggleTodo(taskId, checked) {
         loadTodos(currentProjectId);
     } catch (e) {
         console.error('Failed to toggle todo:', e);
+        // Revert optimistic update
+        if (card) card.classList.toggle('tcard--done');
+        if (cb) cb.checked = !checked;
+        showToast('Eroare la actualizare', true);
     }
 }
 
@@ -4169,6 +4179,12 @@ async function deleteOverviewTask(taskId, btnEl) {
 }
 
 async function toggleGtTask(taskId, checked) {
+    // Optimistic UI update
+    const card = document.querySelector(`.tcard[data-task-id="${taskId}"]`);
+    const cb = card ? card.querySelector('.tcard__check') : null;
+    if (card) card.classList.toggle('tcard--done');
+    if (cb) cb.checked = checked;
+
     try {
         await apiPut(`/global-tasks/${taskId}`, {
             status: checked ? 'done' : 'to_do',
@@ -4181,6 +4197,10 @@ async function toggleGtTask(taskId, checked) {
         if (archiveVisible) renderArchive(archived);
     } catch (e) {
         console.error('Failed to toggle global task:', e);
+        // Revert optimistic update
+        if (card) card.classList.toggle('tcard--done');
+        if (cb) cb.checked = !checked;
+        showToast('Eroare la actualizare', true);
     }
 }
 
@@ -5296,6 +5316,8 @@ function onClientSearch() {
 
     dropdown.classList.add('active');
 }
+
+const _debouncedClientSearch = debounce(onClientSearch, 300);
 
 function selectClient(clientId, clientName) {
     document.getElementById('p-client').value = clientName;
@@ -7000,7 +7022,11 @@ quickAddTask = async function() {
 
 // ============ PARAMETRI MASTER BROWSER ============
 
-const debounceLoadParametri = debounce(loadParametri, 300);
+function loadParametriFromFilter() {
+    parametriPage = 1;
+    loadParametri();
+}
+const debounceLoadParametri = debounce(loadParametriFromFilter, 300);
 
 // Map manufacturer -> their families (mirrors PRODUCATOR_FAMILII on the server)
 const PARAM_PRODUCATORI = {

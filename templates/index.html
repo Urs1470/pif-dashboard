@@ -1118,7 +1118,7 @@
                     <div class="form-group">
                         <label>Client *</label>
                         <div class="client-autocomplete">
-                            <input type="text" id="p-client" required autocomplete="off" oninput="onClientSearch()" onfocus="onClientSearch()">
+                            <input type="text" id="p-client" required autocomplete="off" oninput="_debouncedClientSearch()" onfocus="onClientSearch()">
                             <div id="client-dropdown" class="client-dropdown"></div>
                         </div>
                         <input type="hidden" id="p-client-id">
