@@ -4503,9 +4503,8 @@
         .echipament-param-search-wrap .search-icon {
             position: absolute;
             left: 10px;
-            top: 0;
-            bottom: 0;
-            margin: auto 0;
+            top: 50%;
+            transform: translateY(-58%);
             width: 14px;
             height: 14px;
             color: var(--text2);
