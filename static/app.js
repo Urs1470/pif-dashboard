@@ -5214,39 +5214,39 @@ async function loadClientList() {
 function onClientSearch() {
     const input = document.getElementById('p-client');
     const dropdown = document.getElementById('client-dropdown');
-    const searchText = input.value.toLowerCase().trim();
-    
-    if (searchText.length === 0) {
+    const rawText = input.value.trim();
+    const searchLower = rawText.toLowerCase();
+
+    if (rawText.length === 0) {
         dropdown.classList.remove('active');
         return;
     }
-    
-    // Filter clients
-    const filtered = clientListCache.filter(c => 
-        (c.nume && c.nume.toLowerCase().includes(searchText)) ||
-        (c.adresa && c.adresa.toLowerCase().includes(searchText)) ||
-        (c.telefon && c.telefon.includes(searchText))
+
+    // Filter clients (case-insensitive)
+    const filtered = clientListCache.filter(c =>
+        (c.nume && c.nume.toLowerCase().includes(searchLower)) ||
+        (c.adresa && c.adresa.toLowerCase().includes(searchLower)) ||
+        (c.telefon && c.telefon.includes(rawText))
     );
-    
-    if (filtered.length === 0 && searchText.length > 0) {
-        dropdown.innerHTML = `
-            <div class="client-add-new" onclick="addNewClientFromAutocomplete('${escapeHtml(searchText)}')">
-                + Adaugă "${escapeHtml(searchText)}" ca client nou
-            </div>
-        `;
+
+    // "Add new" button — uses the original text (preserves user's casing)
+    const addBtn = `
+        <div class="client-add-new" onclick="addNewClientFromAutocomplete('${escapeHtml(rawText)}')">
+            + Adaugă "${escapeHtml(rawText)}" ca client nou
+        </div>
+    `;
+
+    if (filtered.length === 0) {
+        dropdown.innerHTML = addBtn;
     } else {
         dropdown.innerHTML = filtered.slice(0, 10).map(c => `
             <div class="client-option" onclick="selectClient('${c.id}', '${escapeHtml(c.nume)}')">
                 <div class="client-option-name">${escapeHtml(c.nume)}</div>
                 <div class="client-option-meta">${escapeHtml(c.adresa || '')} ${c.telefon ? '| ' + c.telefon : ''}</div>
             </div>
-        `).join('') + `
-            <div class="client-add-new" onclick="addNewClientFromAutocomplete('${escapeHtml(searchText)}')">
-                + Adaugă "${escapeHtml(searchText)}" ca client nou
-            </div>
-        `;
+        `).join('') + addBtn;
     }
-    
+
     dropdown.classList.add('active');
 }
 
