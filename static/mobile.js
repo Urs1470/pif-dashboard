@@ -2974,8 +2974,8 @@ function _renderLongTextPreviewMobile(value, placeholder) {
   if (!text) {
     return `<div class="mlt-preview is-empty">${escapeHtml(placeholder)}</div>`;
   }
-  // Truncate visually via CSS (-webkit-line-clamp). Pre-wrap preserves new lines.
-  return `<div class="mlt-preview">${escapeHtml(text)}</div>`;
+  // Render stored text (auto-detects plain text vs HTML from desktop WYSIWYG).
+  return `<div class="mlt-preview">${_renderStoredText(text)}</div>`;
 }
 
 // 3.9 Observations
@@ -3039,7 +3039,8 @@ function openMobileLongTextEditor(fieldName, title, iconName) {
   if (iconEl && iconName) iconEl.setAttribute('data-lucide', iconName);
 
   const ta = document.getElementById('mlt-textarea');
-  ta.value = value;
+  // If stored as HTML (from desktop WYSIWYG), convert to plain text for textarea editing.
+  ta.value = _storedToPlainText(value);
   _mltUpdateCounter();
   ta.oninput = _mltUpdateCounter;
 

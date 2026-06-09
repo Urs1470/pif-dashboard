@@ -1222,18 +1222,15 @@ function renderLongTextPreview(textareaId) {
         preview.textContent = '';
         preview.classList.add('is-empty');
     } else {
-        // SECURITY: never trust stored HTML — render as plain text with <br>.
-        // Hermes assistant can write to these fields; raw HTML render would be
-        // a stored XSS vector via _looksLikeHtml's permissive tag-sniff.
-        preview.innerHTML = _plainToHtml(raw);
+        // Auto-detect HTML vs plain text. HTML is sanitized through a strict
+        // tag whitelist (_sanitizeHtml) so Hermes-injected content is safe.
+        preview.innerHTML = _renderStoredText(raw);
         preview.classList.remove('is-empty');
     }
     const counter = scope?.querySelector('[data-count-for="' + textareaId + '"]');
     if (counter) {
         // Char count based on visible text, not HTML markup
-        const tmp = document.createElement('div');
-        tmp.textContent = raw;
-        counter.textContent = (tmp.innerText || '').length + ' caractere';
+        counter.textContent = _storedToPlainText(raw).length + ' caractere';
     }
     return;
 }
@@ -1242,14 +1239,8 @@ function renderAllLongTextPreviews() {
     ['service-before', 'service-after', 'pif-observatii'].forEach(renderLongTextPreview);
 }
 
-// Detect whether the stored value is HTML or plain text. Older entries are plain.
-function _looksLikeHtml(s) { return /<\/?(p|br|div|h[1-6]|ul|ol|li|strong|b|em|i|u|a|hr|blockquote)\b/i.test(s || ''); }
-function _plainToHtml(s) {
-    return escapeHtml(s || '').split(/\n\n+/).map(p => {
-        const lines = p.replace(/\n/g, '<br>');
-        return `<p>${lines}</p>`;
-    }).join('');
-}
+// _looksLikeHtml, _plainToHtml, _sanitizeHtml, _renderStoredText, _storedToPlainText
+// are defined in core.js (shared with mobile.js).
 function _escAttr(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function openLongTextEditor(fieldId, title, iconName) {
@@ -1264,10 +1255,8 @@ function openLongTextEditor(fieldId, title, iconName) {
 
     const editor = document.getElementById('ltm-editor');
     const raw = ta.value || '';
-    // SECURITY: never trust stored HTML — render as plain text with <br>.
-    // Hermes assistant can write to these fields; raw HTML render would be
-    // a stored XSS vector via _looksLikeHtml's permissive tag-sniff.
-    editor.innerHTML = _plainToHtml(raw);
+    // Auto-detect HTML vs plain text. Sanitized for XSS safety.
+    editor.innerHTML = _renderStoredText(raw);
     _ltmUpdateCounter();
 
     modal.classList.add('active');

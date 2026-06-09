@@ -36,6 +36,69 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, ch => _ESC_MAP[ch]);
 }
 
+// --- Rich-text helpers (shared by desktop + mobile) -------------------
+// Detect whether a stored string is HTML (from WYSIWYG editor) or plain text.
+function _looksLikeHtml(s) { return /<\/?(p|br|div|h[1-6]|ul|ol|li|strong|b|em|i|u|a|hr|blockquote)\b/i.test(s || ''); }
+
+// Convert plain text (with \n) to safe HTML paragraphs.
+function _plainToHtml(s) {
+    return escapeHtml(s || '').split(/\n\n+/).map(p => {
+        const lines = p.replace(/\n/g, '<br>');
+        return `<p>${lines}</p>`;
+    }).join('');
+}
+
+// Whitelist-based HTML sanitizer — strips everything except safe formatting tags
+// produced by the contenteditable WYSIWYG editor.  Prevents stored XSS even if
+// Hermes or an external source writes raw HTML into these fields.
+const _SAFE_TAGS = new Set([
+    'P','BR','DIV','H1','H2','H3','H4','H5','H6',
+    'UL','OL','LI','STRONG','B','EM','I','U','A','HR','BLOCKQUOTE','SPAN'
+]);
+function _sanitizeHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    (function walk(node) {
+        const children = Array.from(node.childNodes);
+        for (const child of children) {
+            if (child.nodeType === 3) continue;
+            if (child.nodeType !== 1) { child.remove(); continue; }
+            if (!_SAFE_TAGS.has(child.tagName)) {
+                child.replaceWith(document.createTextNode(child.textContent));
+                continue;
+            }
+            const attrs = Array.from(child.attributes);
+            for (const attr of attrs) {
+                if (child.tagName === 'A' && attr.name === 'href') continue;
+                child.removeAttribute(attr.name);
+            }
+            if (child.tagName === 'A') {
+                const href = child.getAttribute('href') || '';
+                if (href && !/^https?:\/\//i.test(href) && !href.startsWith('/')) {
+                    child.removeAttribute('href');
+                }
+            }
+            walk(child);
+        }
+    })(tmp);
+    return tmp.innerHTML;
+}
+
+// Render stored value as safe HTML — auto-detects plain text vs HTML.
+function _renderStoredText(raw) {
+    if (!raw || !raw.trim()) return '';
+    return _looksLikeHtml(raw) ? _sanitizeHtml(raw) : _plainToHtml(raw);
+}
+
+// Extract plain text from stored value (strips HTML tags if present).
+function _storedToPlainText(raw) {
+    if (!raw) return '';
+    if (!_looksLikeHtml(raw)) return raw;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = raw;
+    return tmp.innerText || tmp.textContent || '';
+}
+
 // --- Debounce --------------------------------------------------------
 function debounce(fn, delay) {
     let timer;
