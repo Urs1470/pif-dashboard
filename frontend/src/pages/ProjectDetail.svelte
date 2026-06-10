@@ -81,8 +81,6 @@
   let editLabel = $state('')
   let editSaving = $state(false)
 
-  // Field section expand state
-  let fieldExpanded = $state({})
 
   // Checklist category collapse
   let collapsedCats = $state(loadCatCollapse())
@@ -428,10 +426,6 @@
     } finally { editSaving = false }
   }
 
-  function toggleFieldExpand(field) {
-    fieldExpanded = { ...fieldExpanded, [field]: !fieldExpanded[field] }
-  }
-
   onMount(() => { load(); loadActiveTimer() })
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
@@ -502,7 +496,7 @@
           <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><Pencil size={13} /></button>
         </div>
         {#if project.observatii}
-          <button class="field-body field-html" class:expanded={fieldExpanded.observatii} onclick={() => toggleFieldExpand('observatii')}>
+          <button class="field-body field-html" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>
             {@html renderStoredText(project.observatii)}
           </button>
         {:else}
@@ -518,7 +512,7 @@
             <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><Pencil size={13} /></button>
           </div>
           {#if project.service_before}
-            <button class="field-body field-html" class:expanded={fieldExpanded.service_before} onclick={() => toggleFieldExpand('service_before')}>
+            <button class="field-body field-html" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>
               {@html renderStoredText(project.service_before)}
             </button>
           {:else}
@@ -533,7 +527,7 @@
             <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><Pencil size={13} /></button>
           </div>
           {#if project.service_after}
-            <button class="field-body field-html" class:expanded={fieldExpanded.service_after} onclick={() => toggleFieldExpand('service_after')}>
+            <button class="field-body field-html" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>
               {@html renderStoredText(project.service_after)}
             </button>
           {:else}
@@ -819,8 +813,6 @@
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .field-body { position: relative; max-height: 4.8em; overflow: hidden; font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); text-align: left; width: 100%; cursor: pointer; }
   .field-body::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 24px; background: linear-gradient(transparent, var(--bg-surface)); pointer-events: none; }
-  .field-body.expanded { max-height: none; }
-  .field-body.expanded::after { display: none; }
   .field-body.field-html :global(p) { margin: 4px 0; }
   .field-body.field-html :global(h2) { color: var(--accent); font-size: 1.05rem; margin: 8px 0 4px; font-weight: 700; }
   .field-body.field-html :global(h3) { color: var(--text); font-size: 0.98rem; margin: 6px 0 3px; font-weight: 600; }
