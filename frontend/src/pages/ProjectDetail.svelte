@@ -3,7 +3,7 @@
   import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, ClipboardList, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
-    loadProjectChecklist, loadChecklistCategories, deleteProject,
+    loadProjectChecklist, loadChecklistCategories, deleteProject, updateProject,
     createChecklistItem, updateChecklistItem, deleteChecklistItem,
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
@@ -73,8 +73,15 @@
   // Done tasks collapse
   let showDoneTasks = $state(false)
 
-  // Observatii expand
-  let obsExpanded = $state(false)
+  // Field edit modal (observatii, service_before, service_after)
+  let showFieldEdit = $state(false)
+  let editField = $state(null)
+  let editValue = $state('')
+  let editLabel = $state('')
+  let editSaving = $state(false)
+
+  // Field section expand state
+  let fieldExpanded = $state({})
 
   // Checklist category collapse
   let collapsedCats = $state(loadCatCollapse())
@@ -373,6 +380,29 @@
     return diff > 0 && diff <= 7
   }
 
+  function openFieldEdit(field, label) {
+    editField = field
+    editValue = project[field] || ''
+    editLabel = label
+    showFieldEdit = true
+  }
+
+  async function saveFieldEdit() {
+    editSaving = true
+    try {
+      await updateProject(params.id, { [editField]: editValue })
+      project = { ...project, [editField]: editValue }
+      showFieldEdit = false
+      toast('Salvat', 'success')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { editSaving = false }
+  }
+
+  function toggleFieldExpand(field) {
+    fieldExpanded = { ...fieldExpanded, [field]: !fieldExpanded[field] }
+  }
+
   onMount(() => { load(); loadActiveTimer() })
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
@@ -436,16 +466,50 @@
         {#if project.deadline}<div class="ps"><span class="ps-val">{formatDate(project.deadline)}</span><span class="ps-lbl">deadline</span></div>{/if}
       </div>
 
-      {#if project.observatii}
-        <div class="obs-section">
-          <button class="obs-toggle" onclick={() => obsExpanded = !obsExpanded}>
-            <AlertCircle size={14} />
-            <span class="obs-label">Observatii</span>
-            {#if obsExpanded}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
-          </button>
-          <div class="obs-text" class:expanded={obsExpanded}>
+      <div class="field-section">
+        <div class="field-header">
+          <FileText size={14} />
+          <span class="field-label">Observatii Tehnice</span>
+          <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><Pencil size={13} /></button>
+        </div>
+        {#if project.observatii}
+          <button class="field-body" class:expanded={fieldExpanded.observatii} onclick={() => toggleFieldExpand('observatii')}>
             {project.observatii}
+          </button>
+        {:else}
+          <button class="field-empty" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>Click pentru a adauga...</button>
+        {/if}
+      </div>
+
+      {#if project.tip === 'Service'}
+        <div class="field-section">
+          <div class="field-header">
+            <AlertCircle size={14} />
+            <span class="field-label">Constatari inainte de interventie</span>
+            <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><Pencil size={13} /></button>
           </div>
+          {#if project.service_before}
+            <button class="field-body" class:expanded={fieldExpanded.service_before} onclick={() => toggleFieldExpand('service_before')}>
+              {project.service_before}
+            </button>
+          {:else}
+            <button class="field-empty" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>Click pentru a adauga...</button>
+          {/if}
+        </div>
+
+        <div class="field-section">
+          <div class="field-header">
+            <CheckCircle2 size={14} />
+            <span class="field-label">Actiuni si rezultat</span>
+            <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><Pencil size={13} /></button>
+          </div>
+          {#if project.service_after}
+            <button class="field-body" class:expanded={fieldExpanded.service_after} onclick={() => toggleFieldExpand('service_after')}>
+              {project.service_after}
+            </button>
+          {:else}
+            <button class="field-empty" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>Click pentru a adauga...</button>
+          {/if}
         </div>
       {/if}
     </div>
@@ -641,9 +705,6 @@
           {#each [['Client', project.client], ['Locatie', project.locatie], ['Echipament', project.echipament_principal], ['Producator', project.producator], ['Cod proiect', project.cod_proiect], ['PM', project.pm], ['Nr. comanda', project.nr_comanda], ['Nr. contract', project.nr_contract], ['Data incepere', formatDate(project.data_incepere)], ['Deadline', formatDate(project.deadline)]] as [label, val]}
             <div class="irow"><span class="ilabel">{label}</span><span>{val || '—'}</span></div>
           {/each}
-          {#if project.observatii}<div class="ifull"><span class="ilabel">Observatii</span><p>{project.observatii}</p></div>{/if}
-          {#if project.service_before}<div class="ifull"><span class="ilabel">Service Before</span><p>{project.service_before}</p></div>{/if}
-          {#if project.service_after}<div class="ifull"><span class="ilabel">Service After</span><p>{project.service_after}</p></div>{/if}
           {#if timerSessions.sessions?.length > 0}
             <div class="ifull">
               <span class="ilabel">Sesiuni timer ({timerSessions.sessions.length})</span>
@@ -687,6 +748,16 @@
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
 
+<Modal bind:open={showFieldEdit} title={editLabel} size="md">
+  <div class="field-edit-modal">
+    <textarea rows="10" bind:value={editValue} placeholder="Scrie aici..."></textarea>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showFieldEdit = false}>Anuleaza</Button>
+      <Button loading={editSaving} onclick={saveFieldEdit}>Salveaza</Button>
+    </div>
+  </div>
+</Modal>
+
 <style>
   .page { padding: var(--space-lg); }
   .back { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-md); cursor: pointer; }
@@ -706,13 +777,18 @@
   .ps-val { display: block; font-size: var(--font-h2); font-weight: 600; color: var(--text); font-feature-settings: "tnum"; }
   .ps-lbl { font-size: var(--font-tiny); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 
-  /* Observatii section under header */
-  .obs-section { margin-top: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-  .obs-toggle { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 600; color: var(--text-secondary); cursor: pointer; width: 100%; }
-  .obs-toggle:hover { color: var(--text); }
-  .obs-label { flex: 1; text-align: left; }
-  .obs-text { font-size: var(--font-small); color: var(--text); line-height: 1.6; white-space: pre-wrap; padding: 0 var(--space-md) var(--space-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .obs-text.expanded { display: block; -webkit-line-clamp: unset; }
+  /* Field sections under header (observatii, service) */
+  .field-section { margin-top: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .field-header { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); color: var(--text-secondary); }
+  .field-label { flex: 1; font-weight: 600; }
+  .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
+  .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
+  .field-body { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--font-small); color: var(--text); line-height: 1.6; white-space: pre-wrap; padding: 0 var(--space-md) var(--space-sm); text-align: left; width: 100%; cursor: pointer; }
+  .field-body.expanded { display: block; -webkit-line-clamp: unset; }
+  .field-empty { padding: var(--space-xs) var(--space-md) var(--space-sm); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
+  .field-empty:hover { color: var(--accent); }
+  .field-edit-modal textarea { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; line-height: 1.6; min-height: 200px; }
+  .field-edit-modal textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent-ring); }
 
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -824,7 +900,6 @@
   .irow { display: flex; justify-content: space-between; font-size: var(--font-small); padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
   .ilabel { color: var(--text-dim); font-weight: 500; }
   .ifull { display: flex; flex-direction: column; gap: 4px; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
-  .ifull p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; }
   .sess-list { display: flex; flex-direction: column; gap: 2px; }
   .sess { display: flex; justify-content: space-between; font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
   .sess-dur { font-family: var(--font-mono); color: var(--accent); }
