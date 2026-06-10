@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v39';
+const VERSION = 'v40';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -200,7 +200,10 @@ async function networkFirstWithCache(request, cacheName, event) {
   const cache = await caches.open(cacheName);
 
   try {
-    const response = await fetch(request);
+    // cache:'no-cache' forces revalidation with the origin — plain fetch()
+    // would happily return the browser's heuristically-cached copy, making
+    // "network-first" serve a stale HTML shell after deploys.
+    const response = await fetch(request, { cache: 'no-cache' });
     if (response.ok) {
       const clone = response.clone();
       const putPromise = cache.put(request, clone);

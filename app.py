@@ -247,6 +247,11 @@ def before_request_func():
 def after_request_func(response):
     if request.path.startswith('/api/'):
         logger.info(f"{request.method} {request.path} - Status: {response.status_code}")
+    # HTML shell must never be served stale: without this, the browser's
+    # heuristic HTTP cache (and the SW's fetch passing through it) keeps the
+    # old index.html with old ?v= asset hashes after a deploy.
+    if response.content_type and response.content_type.startswith('text/html'):
+        response.headers.setdefault('Cache-Control', 'no-cache, must-revalidate')
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('Referrer-Policy', 'same-origin')
