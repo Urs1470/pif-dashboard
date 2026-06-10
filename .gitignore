@@ -15,7 +15,6 @@ uploads/
 *.db-wal
 
 # Build output
-static/dist/
 node_modules/
 
 # System
