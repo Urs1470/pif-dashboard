@@ -3,7 +3,7 @@ html { -webkit-text-size-adjust: 100%; -moz-text-size-adjust: 100%; }
 body { min-height: 100dvh; -webkit-font-smoothing: antialiased; }
 img, svg { display: block; max-width: 100%; }
 input, button, textarea, select { font: inherit; color: inherit; }
-button { cursor: pointer; border: none; background: none; }
-a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
 ul, ol { list-style: none; }
 table { border-collapse: collapse; }

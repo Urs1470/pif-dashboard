@@ -128,7 +128,7 @@
   .task-meta { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
   .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
-  .timer-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
   .task-skeleton { padding: var(--space-sm) var(--space-md); }

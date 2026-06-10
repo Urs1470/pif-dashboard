@@ -1,0 +1,29 @@
+{
+  "name": "PIF Dashboard",
+  "short_name": "PIF",
+  "description": "Dashboard pentru management proiecte si task-uri",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1117'/%3E%3Cpath d='M40 12 L19 37 L29 37 L24 52 L45 27 L35 27 Z' fill='%234fd1c5' stroke='%234fd1c5' stroke-width='3.5' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1117'/%3E%3Cpath d='M40 12 L19 37 L29 37 L24 52 L45 27 L35 27 Z' fill='%234fd1c5' stroke='%234fd1c5' stroke-width='3.5' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "ro",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

@@ -32,3 +32,31 @@ body {
 code, pre {
   font-family: var(--font-mono);
 }
+
+.sw-update-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-toast);
+  font-size: var(--font-small);
+  color: var(--text);
+}
+.sw-update-bar button {
+  padding: 4px 12px;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-tiny);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}

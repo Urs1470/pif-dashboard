@@ -59,6 +59,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 2px;
     padding: var(--space-xs);
     color: var(--text-dim);
@@ -66,6 +67,8 @@
     font-weight: 500;
     transition: color var(--dur-fast) var(--ease);
     min-width: 56px;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
   }
   .bottom-tab.active {
     color: var(--accent);
