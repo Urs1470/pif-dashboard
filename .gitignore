@@ -16,6 +16,7 @@ uploads/
 
 # Build output
 static/dist/
+node_modules/
 
 # System
 pif-dashboard.service

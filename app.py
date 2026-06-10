@@ -11,7 +11,7 @@ from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from flask import (
     Flask, request, jsonify, render_template,
-    session, redirect, url_for,
+    session, redirect, url_for, send_from_directory,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -348,10 +348,20 @@ def login_hash():
 
 # ============ FRONTEND ROUTES ============
 
+_DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'dist')
+
+
+def _serve_frontend():
+    """Serve either the Svelte build (PIF_USE_DIST) or the legacy template."""
+    if _USE_DIST and os.path.isfile(os.path.join(_DIST_DIR, 'index.html')):
+        return send_from_directory(_DIST_DIR, 'index.html')
+    return render_template('index.html')
+
+
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    return _serve_frontend()
 
 
 @app.route('/parametri')
@@ -359,7 +369,13 @@ def index():
 @app.route('/administrativ')
 @login_required
 def spa_catchall():
-    return render_template('index.html')
+    return _serve_frontend()
+
+
+@app.route('/assets/<path:filename>')
+def dist_assets(filename):
+    """Serve Vite-built assets (JS/CSS with content hashes)."""
+    return send_from_directory(os.path.join(_DIST_DIR, 'assets'), filename)
 
 
 # ============ PWA ROUTES ============
