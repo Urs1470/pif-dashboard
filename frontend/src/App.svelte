@@ -40,7 +40,9 @@
     if (!m) { LoadedComponent = null; return }
 
     if (m.component._lazy) {
-      const key = routeKey.split('/').slice(0, 2).join('/')
+      // Cheia e PATTERN-ul rutei, nu prefixul caii — altfel /projects si
+      // /projects/:id ar imparti aceeasi intrare in cache.
+      const key = m.pattern
       if (lazyCache[key]) {
         LoadedComponent = lazyCache[key]
         loadedParams = m.params
@@ -69,7 +71,7 @@
     <Header />
     <main class="app-content" id="main-content">
       {#key routeKey}
-        <div in:fade={{ duration: 120 }}>
+        <div class="content-width" in:fade={{ duration: 120 }}>
           {#if loadError}
             <div class="not-found"><p>Eroare: {loadError}</p></div>
           {:else if LoadedComponent}

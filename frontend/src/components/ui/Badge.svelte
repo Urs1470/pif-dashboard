@@ -11,29 +11,32 @@
   .badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
+    gap: 5px;
+    padding: 2px 9px;
     border-radius: var(--radius-full);
-    font-size: var(--font-tiny);
-    font-weight: 500;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: var(--badge-color);
     background: color-mix(in srgb, var(--badge-color) 12%, transparent);
     white-space: nowrap;
   }
   .badge.small {
     padding: 2px 8px;
-    font-size: 11px;
+    font-size: 10px;
     gap: 4px;
   }
   .dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--badge-color);
+    opacity: 0.9;
     flex-shrink: 0;
   }
   .small .dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
 </style>

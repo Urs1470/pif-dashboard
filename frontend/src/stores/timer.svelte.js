@@ -11,8 +11,8 @@ let tickInterval = null
 function startTick() {
   stopTick()
   tickInterval = setInterval(() => {
-    if (timer.active?.running_since) {
-      timer.elapsed = Math.floor((Date.now() - new Date(timer.active.running_since).getTime()) / 1000)
+    if (timer.active?.start_time) {
+      timer.elapsed = Math.floor((Date.now() - new Date(timer.active.start_time).getTime()) / 1000)
     }
   }, 1000)
 }
@@ -29,9 +29,10 @@ export async function loadActiveTimer() {
   timer.loading = true
   try {
     const data = await apiJson('/api/timer/active')
-    timer.active = data.active || data || null
-    if (timer.active?.running_since) {
-      timer.elapsed = Math.floor((Date.now() - new Date(timer.active.running_since).getTime()) / 1000)
+    // API: { timers: [{kind, session_id, project_id, task_id, global_task_id, start_time, label}], active: bool }
+    timer.active = data.timers?.[0] || null
+    if (timer.active?.start_time) {
+      timer.elapsed = Math.floor((Date.now() - new Date(timer.active.start_time).getTime()) / 1000)
       startTick()
     } else {
       stopTick()
@@ -52,6 +53,12 @@ export async function startProjectTimer(projectId) {
 export async function stopProjectTimer(projectId) {
   await apiJson(`/api/proiecte/${projectId}/timer/stop`, { method: 'POST' })
   await loadActiveTimer()
+}
+
+export async function stopProjectTimerWithNote(projectId, data) {
+  const result = await apiJson(`/api/proiecte/${projectId}/timer/stop-with-note`, { method: 'POST', body: data })
+  await loadActiveTimer()
+  return result
 }
 
 export async function startTaskTimer(taskId) {

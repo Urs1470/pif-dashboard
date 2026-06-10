@@ -177,7 +177,7 @@
   .btn-del { font-size: var(--font-tiny); color: var(--danger); padding: 2px 6px; opacity: 0.5; }
   .btn-del:hover { opacity: 1; }
 
-  .badge-done { padding: 2px 8px; background: rgba(52,211,153,0.15); color: var(--success); border-radius: var(--radius-full); font-size: 0.6rem; }
+  .badge-done { padding: 2px 8px; background: var(--success-subtle); color: var(--success); border-radius: var(--radius-full); font-size: 0.6rem; }
 
   :global(.spin) { animation: spin 1s linear infinite; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

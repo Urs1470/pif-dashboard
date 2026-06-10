@@ -108,8 +108,8 @@
   .scad-table tr.next td { color: var(--text); font-weight: 500; }
 
   .badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: 0.6rem; font-weight: 500; }
-  .badge.paid { background: var(--accent-subtle, rgba(79,209,197,0.12)); color: var(--accent); }
-  .badge.next-badge { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .badge.paid { background: var(--accent-subtle); color: var(--accent); }
+  .badge.next-badge { background: var(--warning-subtle); color: var(--warning); }
   .badge.future { background: var(--bg-elevated); color: var(--text-dim); }
 
   @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }

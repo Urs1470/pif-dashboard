@@ -54,7 +54,9 @@
   .backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -65,11 +67,12 @@
   .modal {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     width: 100%;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
+    box-shadow: var(--shadow-lg);
     animation: slideUp var(--dur-base) var(--ease);
   }
   .modal-sm { max-width: 400px; }
@@ -86,8 +89,8 @@
     flex-shrink: 0;
   }
   .modal-title {
-    font-size: var(--font-base);
-    font-weight: 600;
+    font-size: var(--font-h3);
+    font-weight: 700;
     color: var(--text);
   }
   .modal-close {

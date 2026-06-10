@@ -78,3 +78,62 @@ export async function loadProjectEquipment(id) {
 export async function loadProjectChecklist(id) {
   return apiJson(`/api/proiecte/${id}/checklist`)
 }
+
+export async function loadChecklistCategories(id) {
+  return apiJson(`/api/proiecte/${id}/checklist-categorii`)
+}
+
+export async function createChecklistItem(projectId, data) {
+  return apiJson(`/api/proiecte/${projectId}/checklist`, { method: 'POST', body: data })
+}
+
+export async function updateChecklistItem(itemId, data) {
+  return apiJson(`/api/checklist/${itemId}`, { method: 'PUT', body: data })
+}
+
+export async function deleteChecklistItem(itemId) {
+  return apiJson(`/api/checklist/${itemId}`, { method: 'DELETE' })
+}
+
+export async function createJournalEntry(projectId, data) {
+  return apiJson(`/api/proiecte/${projectId}/jurnal`, { method: 'POST', body: data })
+}
+
+export async function deleteJournalEntry(entryId) {
+  return apiJson(`/api/jurnal/${entryId}`, { method: 'DELETE' })
+}
+
+export async function createEquipment(projectId, data) {
+  return apiJson(`/api/proiecte/${projectId}/echipamente`, { method: 'POST', body: data })
+}
+
+export async function updateEquipment(eqId, data) {
+  return apiJson(`/api/echipamente/${eqId}`, { method: 'PUT', body: data })
+}
+
+export async function deleteEquipment(eqId) {
+  return apiJson(`/api/echipamente/${eqId}`, { method: 'DELETE' })
+}
+
+export async function loadAttachments(projectId) {
+  return apiJson(`/api/proiecte/${projectId}/atasamente`)
+}
+
+export async function uploadAttachment(projectId, file) {
+  const fd = new FormData()
+  fd.append('file', file)
+  return apiJson(`/api/proiecte/${projectId}/atasamente`, { method: 'POST', body: fd })
+}
+
+export async function deleteAttachment(attId) {
+  return apiJson(`/api/atasamente/${attId}`, { method: 'DELETE' })
+}
+
+export async function loadProjectTimerSessions(id) {
+  return apiJson(`/api/proiecte/${id}/timer`)
+}
+
+export async function loadClients(search = '') {
+  const qs = search ? `?search=${encodeURIComponent(search)}` : ''
+  return apiJson(`/api/clienti${qs}`)
+}

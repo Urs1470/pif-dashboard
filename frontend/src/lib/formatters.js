@@ -27,29 +27,29 @@ export const STATUS_COLORS = {
 }
 
 const PRIORITY_LABELS = {
-  scazuta: 'Scazuta',
-  normala: 'Normala',
-  ridicata: 'Ridicata',
-  urgenta: 'Urgenta',
+  urgent: 'Urgent',
+  normal: 'Normal',
+  minor: 'Minor',
 }
 
 const PRIORITY_COLORS = {
-  scazuta: 'var(--text-dim)',
-  normala: 'var(--info)',
-  ridicata: 'var(--warning)',
-  urgenta: 'var(--danger)',
+  urgent: 'var(--danger)',
+  normal: 'var(--warning)',
+  minor: 'var(--text-faint)',
 }
 
 export function statusLabel(status) {
-  return STATUS_LABELS[status] || status || '—'
+  return TASK_STATUS_LABELS[status] || PROJECT_STATUS_LABELS[status] || status || '—'
 }
 
 export function priorityLabel(p) {
-  return PRIORITY_LABELS[p] || p || '—'
+  const key = (p || '').toLowerCase()
+  return PRIORITY_LABELS[key] || p || '—'
 }
 
 export function priorityColor(p) {
-  return PRIORITY_COLORS[p] || 'var(--text-secondary)'
+  const key = (p || '').toLowerCase()
+  return PRIORITY_COLORS[key] || 'var(--text-secondary)'
 }
 
 export function formatDate(iso) {

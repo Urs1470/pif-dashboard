@@ -1,5 +1,17 @@
 import { apiJson } from '../lib/api.js'
 
+// Oglinda hartii producator → familii din blueprints/parametri.py
+export const PRODUCATOR_FAMILII = {
+  ABB: ['ACS580', 'ACS880'],
+  Danfoss: ['Danfoss_VLT_FC302'],
+  Lenze: ['Lenze_i550', 'Lenze_i950'],
+  Siemens: ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'],
+}
+
+export function familieLabel(f) {
+  return (f || '').replace(/_/g, ' ')
+}
+
 export const params = $state({
   items: [],
   families: [],
@@ -8,7 +20,7 @@ export const params = $state({
   totalPages: 1,
   loading: false,
   error: null,
-  filters: { search: '', familie: '', page: 1, limit: 50 },
+  filters: { search: '', familie: '', producator: '', page: 1, limit: 50 },
 })
 
 export async function loadFamilies() {
@@ -41,11 +53,15 @@ export async function loadParams() {
   }
 }
 
+export async function loadParamDetail(id) {
+  return apiJson(`/api/parametri/${id}`)
+}
+
 export const faultCodes = $state({
   items: [],
   families: [],
   loading: false,
-  filters: { search: '', familie: '', page: 1, limit: 50 },
+  filters: { search: '', familie: '', producator: '', page: 1, limit: 50 },
   total: 0,
   totalPages: 1,
 })
@@ -65,10 +81,11 @@ export async function loadFaultCodes() {
     const p = new URLSearchParams()
     if (faultCodes.filters.search) p.set('search', faultCodes.filters.search)
     if (faultCodes.filters.familie) p.set('familie', faultCodes.filters.familie)
+    if (faultCodes.filters.producator) p.set('producator', faultCodes.filters.producator)
     p.set('page', faultCodes.filters.page)
     p.set('limit', faultCodes.filters.limit)
     const data = await apiJson(`/api/fault-codes?${p}`)
-    faultCodes.items = data.params || data.codes || []
+    faultCodes.items = data.codes || data.params || []
     faultCodes.total = data.total || 0
     faultCodes.totalPages = data.totalPages || 1
   } catch (e) {
@@ -76,4 +93,8 @@ export async function loadFaultCodes() {
   } finally {
     faultCodes.loading = false
   }
+}
+
+export async function loadFaultDetail(id) {
+  return apiJson(`/api/fault-codes/${id}`)
 }

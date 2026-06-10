@@ -535,6 +535,11 @@ def migrate_v14_to_v15():
     """
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='parametri_master'")
+    if not cursor.fetchone():
+        logger.info("Migration v14->v15: parametri_master does not exist yet, skipping")
+        conn.close()
+        return
     cursor.execute("PRAGMA table_info(parametri_master)")
     cols = [row[1] for row in cursor.fetchall()]
     if 'enum_labels' not in cols:

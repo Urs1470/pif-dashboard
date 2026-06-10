@@ -19,8 +19,9 @@
   .card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     overflow: hidden;
+    transition: border-color var(--dur-fast) var(--ease);
   }
   .padded {
     padding: var(--space-md);

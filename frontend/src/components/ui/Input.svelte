@@ -33,17 +33,19 @@
     letter-spacing: 0.04em;
   }
   .field-input {
-    padding: 8px 12px;
+    padding: 10px 12px;
+    min-height: 46px;
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     color: var(--text);
-    font-size: var(--font-small);
-    transition: border-color var(--dur-fast) var(--ease);
+    font-size: var(--font-body);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
   .field-input:focus {
     outline: none;
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
   }
   .field-input:disabled {
     opacity: 0.5;

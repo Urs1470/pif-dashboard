@@ -6,7 +6,7 @@ body {
   font-size: var(--font-body);
   color: var(--text);
   background: var(--bg);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 ::selection {
@@ -33,6 +33,143 @@ code, pre {
   font-family: var(--font-mono);
 }
 
+/* ===== Latime continut: 1400px centrat ===== */
+.content-width {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== Focus ring global pe inputs ===== */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* ===== Checkbox custom (stil legacy) ===== */
+input[type="checkbox"].cbx {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--bg);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+input[type="checkbox"].cbx:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"].cbx:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+input[type="checkbox"].cbx:focus {
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* ===== Tabel de date partajat (stil legacy) ===== */
+.data-table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+  color: var(--text);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-table tbody tr {
+  transition: background var(--dur-fast) var(--ease);
+}
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.data-table tbody tr:hover td {
+  background: var(--bg-elevated);
+}
+.data-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+.data-table tbody tr.clickable-row:hover td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* ===== Stat cards (stil legacy) ===== */
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  font-feature-settings: "tnum";
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+/* ===== Section header uppercase (stil legacy) ===== */
+.section-title {
+  font-size: var(--font-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+/* ===== Timer dot pulsant ===== */
+@keyframes htpulse {
+  0% { box-shadow: 0 0 0 0 var(--accent-ring), 0 0 14px var(--accent); }
+  70% { box-shadow: 0 0 0 8px transparent, 0 0 14px var(--accent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.timer-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: htpulse 1.8s ease-out infinite;
+}
+
 .sw-update-bar {
   position: fixed;
   bottom: 80px;
@@ -53,7 +190,7 @@ code, pre {
 .sw-update-bar button {
   padding: 4px 12px;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--accent-text);
   border-radius: var(--radius-sm);
   font-size: var(--font-tiny);
   font-weight: 600;

@@ -3,7 +3,7 @@
   import { ListTodo, Plus, Clock, CheckCircle2 } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer } from '../stores/timer.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate } from '../lib/formatters.js'
+  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor } from '../lib/formatters.js'
   import Badge from '../components/ui/Badge.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -66,7 +66,7 @@
   {:else}
     <div class="list">
       {#each globalTasks.items as t (t.id)}
-        <div class="task-row" class:done={t.status === 'done'}>
+        <div class="task-row" class:done={t.status === 'done'} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
           <button class="check" onclick={() => toggleStatus(t)}>
             {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
           </button>
@@ -113,9 +113,9 @@
   .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
 
   .list { display: flex; flex-direction: column; }
-  .task-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); transition: background var(--dur-fast) var(--ease); }
-  .task-row:hover { background: var(--bg-surface); }
-  .task-row + .task-row { border-top: 1px solid var(--border); }
+  .task-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-xs); border-left: 2px solid var(--border); transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), border-left-color var(--dur-fast) var(--ease); }
+  .task-row:hover { background: var(--bg-surface); transform: translateX(2px); }
+  .task-row + .task-row { margin-top: 2px; }
   .task-row.done { opacity: 0.6; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }

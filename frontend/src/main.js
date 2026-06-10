@@ -20,12 +20,12 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
         })
       })
     } catch (e) {
-      console.log('[SW] Registration failed:', e)
+      if (import.meta.env.DEV) console.log('[SW] Registration failed:', e)
     }
   })
 
   navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data?.type === 'SW_UPDATED') {
+    if (event.data?.type === 'SW_UPDATED' && import.meta.env.DEV) {
       console.log('[SW] Updated to', event.data.version)
     }
   })

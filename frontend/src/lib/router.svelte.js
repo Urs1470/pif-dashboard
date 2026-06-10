@@ -39,7 +39,7 @@ export function resolveRoute(routes) {
   const path = router.path
   for (const [pattern, component] of Object.entries(routes)) {
     const params = matchRoute(pattern, path)
-    if (params !== null) return { component, params }
+    if (params !== null) return { component, params, pattern }
   }
   return null
 }
