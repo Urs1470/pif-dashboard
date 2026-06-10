@@ -4,10 +4,10 @@
 
 from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 
 from database import get_db, row_to_dict
-from utils import generate_uuid, login_required
+from utils import generate_uuid, login_required, get_json_or_400
 
 timer_bp = Blueprint('timer', __name__)
 
@@ -163,7 +163,7 @@ def stop_timer_with_note(project_id):
         WHERE id = ?
     ''', (now, duration, timer_session['id']))
 
-    data = request.json or {}
+    data = get_json_or_400()
     titlu = data.get('titlu', 'Activitate')
     note = data.get('note', '')
 
@@ -191,7 +191,7 @@ def stop_timer_with_note(project_id):
 @login_required
 def add_manual_timer(project_id):
     """Manual time entry on the project's standalone timer."""
-    data = request.json or {}
+    data = get_json_or_400()
     try:
         dur = int(data.get('durata_secunde') or 0)
     except (ValueError, TypeError):
@@ -309,7 +309,7 @@ def stop_task_timer(task_id):
 @login_required
 def add_manual_task_timer(task_id):
     """Manual time entry on a project task."""
-    data = request.json or {}
+    data = get_json_or_400()
     try:
         dur = int(data.get('durata_secunde') or 0)
     except (ValueError, TypeError):
@@ -416,7 +416,7 @@ def stop_subtask_timer(subtask_id):
 @login_required
 def add_manual_subtask_timer(subtask_id):
     """Manual time entry on a subtask."""
-    data = request.json or {}
+    data = get_json_or_400()
     try:
         dur = int(data.get('durata_secunde') or 0)
     except (ValueError, TypeError):
@@ -524,7 +524,7 @@ def stop_global_task_timer(task_id):
 @login_required
 def add_manual_global_task_timer(task_id):
     """Manual time entry on a daily (global) task."""
-    data = request.json or {}
+    data = get_json_or_400()
     try:
         dur = int(data.get('durata_secunde') or 0)
     except (ValueError, TypeError):

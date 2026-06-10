@@ -3,8 +3,17 @@ import uuid
 import functools
 from datetime import datetime
 
-from flask import session, request, jsonify, redirect, url_for
+from flask import session, request, jsonify, redirect, url_for, abort, make_response
 from database import get_db
+
+
+def get_json_or_400():
+    """Parsed JSON body as dict, or abort with a 400 JSON error."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        abort(make_response(jsonify({'error': 'Body JSON invalid sau lipsa'}), 400))
+    return data
+
 
 VALID_TABLES = {
     'proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'jurnal',

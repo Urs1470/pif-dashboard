@@ -17,7 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import get_db, init_db, close_db
-from utils import login_required
+from utils import login_required, get_json_or_400
 from csrf import init_csrf
 
 app = Flask(__name__)
@@ -309,7 +309,7 @@ def login_page():
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = get_json_or_400()
     pin = data.get('pin', '')
     if check_password_hash(get_hashed_pin(), pin):
         session['authenticated'] = True
@@ -327,7 +327,7 @@ def logout():
 
 @app.route('/login-hash', methods=['POST'])
 def login_hash():
-    data = request.json
+    data = get_json_or_400()
     pin_hash = data.get('pin_hash', '')
     if not pin_hash:
         return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400

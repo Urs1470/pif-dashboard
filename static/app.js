@@ -783,7 +783,9 @@ async function updateStats() {
 
 // ============ PROJECTS ============
 
+let _projectsLoadSeq = 0;
 async function loadProjects() {
+    const seq = ++_projectsLoadSeq;
     const skeleton = document.getElementById('projects-skeleton');
     const table = document.getElementById('projects-table');
     // Show the skeleton only if the load is genuinely slow. On a cache hit the
@@ -806,6 +808,7 @@ async function loadProjects() {
         if (producator) url += `producator=${producator}&`;
 
         let projects = await apiGet(url);
+        if (seq !== _projectsLoadSeq) return;  // stale response — a newer load is in flight
 
         // Client-side search filter
         if (search) {
@@ -822,11 +825,14 @@ async function loadProjects() {
         renderProjects(projects);
     } catch (e) {
         console.error('Failed to load projects:', e);
-        showToast('Eroare la încărcarea proiectelor', 'error');
+        if (seq === _projectsLoadSeq) showToast('Eroare la încărcarea proiectelor', 'error');
     } finally {
         clearTimeout(slowTimer);
-        if (skeleton) skeleton.style.display = 'none';
-        if (table) table.style.display = 'table';
+        if (seq === _projectsLoadSeq) {
+            // Only the latest load may touch the shared skeleton/table visibility.
+            if (skeleton) skeleton.style.display = 'none';
+            if (table) table.style.display = 'table';
+        }
     }
 }
 
@@ -1543,9 +1549,12 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('.tcard__menu, .tcard__menu-btn')) _tcardCloseMenus();
 });
 
+let _todosLoadSeq = 0;
 async function loadTodos(projectId) {
+    const seq = ++_todosLoadSeq;
     try {
         const tasks = await apiGet(`/proiecte/${projectId}/tasks`);
+        if (seq !== _todosLoadSeq) return;  // stale response — a newer load is in flight
         // Pre-fetch subtasks for all tasks that have them (in parallel)
         const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
         await Promise.all(tasksWithSubs.map(async (t) => {
@@ -1556,6 +1565,7 @@ async function loadTodos(projectId) {
                 _taskSubtasksCache[t.id] = [];
             }
         }));
+        if (seq !== _todosLoadSeq) return;  // stale response — discard before render
         const filterStatus = document.getElementById('todo-filter-status')?.value || '';
         const filterPrioritate = document.getElementById('todo-filter-prioritate')?.value || '';
         const sortBy = document.getElementById('todo-sort')?.value || 'prioritate';
@@ -2391,12 +2401,15 @@ if (tEditModal) tEditModal.addEventListener('click', function(e) { if (e.target 
 
 // ============ JURNAL ============
 
+let _jurnalLoadSeq = 0;
 async function loadJurnal(projectId) {
+    const seq = ++_jurnalLoadSeq;
     try {
         const [jurnalEntries, timerData] = await Promise.all([
             apiGet(`/proiecte/${projectId}/jurnal`),
             apiGet(`/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 }))
         ]);
+        if (seq !== _jurnalLoadSeq) return;  // stale response — a newer load is in flight
 
         const sessions = (timerData.sessions || []).slice();
 
@@ -3900,7 +3913,9 @@ function activateSearchResult(r) {
     else wireGlobalSearch();
 })();
 
+let _gtLoadSeq = 0;
 async function loadGlobalTasks() {
+    const seq = ++_gtLoadSeq;
     try {
         let url = '/global-tasks?';
         if (gtFilters.status) url += `status=${gtFilters.status}&`;
@@ -3908,6 +3923,7 @@ async function loadGlobalTasks() {
         if (gtFilters.categorie) url += `categorie=${gtFilters.categorie}&`;
 
         const tasks = await apiGet(url);
+        if (seq !== _gtLoadSeq) return;  // stale response — a newer load is in flight
         // Pre-fetch subtasks for tasks that have them
         const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
         await Promise.all(tasksWithSubs.map(async (t) => {
@@ -3918,11 +3934,13 @@ async function loadGlobalTasks() {
                 _taskSubtasksCache[t.id] = [];
             }
         }));
+        if (seq !== _gtLoadSeq) return;  // stale response — discard before render
         renderGlobalTasks(tasks);
         updateGtStats(tasks);
 
         // Update archive count
         const archived = await apiGet('/global-tasks?arhiva=true');
+        if (seq !== _gtLoadSeq) return;  // stale response — discard
         document.getElementById('archive-count').textContent = archived.length;
     } catch (e) {
         console.error('Failed to load global tasks:', e);
@@ -4046,7 +4064,9 @@ async function cycleGtStatus(taskId, current)          { return cycleTaskField('
 async function cycleTodoPriority(taskId, current)      { return cycleTaskField('todo',     taskId, current, 'prioritate'); }
 async function cycleTodoStatus(taskId, current)        { return cycleTaskField('todo',     taskId, current, 'status'); }
 
+let _ptLoadSeq = 0;
 async function loadProjectTasks() {
+    const seq = ++_ptLoadSeq;
     const status = document.getElementById('pt-filter-status')?.value || 'to_do,in_lucru';
     const prioritate = document.getElementById('pt-filter-prioritate')?.value || '';
     try {
@@ -4054,6 +4074,7 @@ async function loadProjectTasks() {
         if (status) url += `status=${status}&`;
         if (prioritate) url += `prioritate=${prioritate}&`;
         const tasks = await apiGet(url);
+        if (seq !== _ptLoadSeq) return;  // stale response — a newer load is in flight
         // Pre-fetch subtasks for tcard chip rendering
         const tasksWithSubs = tasks.filter(t => t.subtask_total > 0);
         await Promise.all(tasksWithSubs.map(async (t) => {
@@ -4062,6 +4083,7 @@ async function loadProjectTasks() {
                 _taskSubtasksCache[t.id] = Array.isArray(subs) ? subs : [];
             } catch (e) { _taskSubtasksCache[t.id] = []; }
         }));
+        if (seq !== _ptLoadSeq) return;  // stale response — discard before render
         renderProjectTasks(tasks);
     } catch (e) { console.error('Load project tasks error:', e); }
 }
@@ -5677,6 +5699,12 @@ let availableParams = [];
 let currentEchipamentId = null;
 let currentParams = {};
 let currentDescrieri = {};
+// Data behind the rendered suggestion/value rows. onclick handlers receive only a
+// numeric index into these arrays — interpolating data strings into onclick is unsafe
+// because the HTML parser decodes escapeHtml entities before the JS engine parses
+// the handler, so an apostrophe in the data breaks out of the JS string literal.
+let _paramSuggestionItems = [];
+let _paramPendingInputs = [];
 
 async function loadParamsForProducator(producator) {
     if (!producator || producator === 'Altul') { availableParams = []; return; }
@@ -5689,8 +5717,15 @@ function filterParamSuggestions(query) {
     const q = query.toLowerCase();
     const filtered = availableParams.filter(p => (p.parametru && p.parametru.toLowerCase().includes(q)) || (p.descriere_scurta && p.descriere_scurta.toLowerCase().includes(q))).slice(0, 15);
     if (filtered.length === 0) { suggestions.style.display = 'none'; return; }
-    suggestions.innerHTML = filtered.map(p => `<div onclick="selectParam('${escapeHtml(p.parametru)}', '${escapeHtml(p.descriere_scurta || '')}', '${p.valoare_default_str || p.valoare_default || ''}')" style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-family:'Courier New',monospace; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><div><span style="color:var(--accent); font-weight:600;">${escapeHtml(p.parametru)}</span><span style="color:var(--text2); margin-left:8px; font-size:0.78rem;">${escapeHtml(p.descriere_scurta ? p.descriere_scurta.substring(0, 50) + (p.descriere_scurta.length > 50 ? '…' : '') : '')}</span></div><span style="color:var(--text2); font-size:0.78rem; flex-shrink:0; margin-left:8px;">${p.familie || ''}${p.unitate ? ' | ' + p.unitate : ''}</span></div>`).join('');
+    _paramSuggestionItems = filtered;
+    suggestions.innerHTML = filtered.map((p, i) => `<div onclick="selectParamByIdx(${i})" style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-family:'Courier New',monospace; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><div><span style="color:var(--accent); font-weight:600;">${escapeHtml(p.parametru)}</span><span style="color:var(--text2); margin-left:8px; font-size:0.78rem;">${escapeHtml(p.descriere_scurta ? p.descriere_scurta.substring(0, 50) + (p.descriere_scurta.length > 50 ? '…' : '') : '')}</span></div><span style="color:var(--text2); font-size:0.78rem; flex-shrink:0; margin-left:8px;">${p.familie || ''}${p.unitate ? ' | ' + p.unitate : ''}</span></div>`).join('');
     suggestions.style.display = 'block';
+}
+
+function selectParamByIdx(i) {
+    const p = _paramSuggestionItems[i];
+    if (!p) return;
+    selectParam(p.parametru, p.descriere_scurta || '', String(p.valoare_default_str || p.valoare_default || ''));
 }
 
 function selectParam(code, description, defaultValue) {
@@ -5708,9 +5743,16 @@ function openParamValueInput(code, description, defaultValue) {
     const div = document.createElement('div');
     div.id = tempId;
     div.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:6px;';
-    div.innerHTML = `<span style="font-family:'Courier New',monospace; font-size:0.85rem; color:var(--accent); min-width:60px;">${escapeHtml(code)}</span><span style="font-size:0.78rem; color:var(--text2); flex:1;">${escapeHtml(description.substring(0, 40))}${description.length > 40 ? '…' : ''}</span><input type="text" id="pval-${code.replace(/\./g, '_')}" value="${escapeHtml(String(value))}" style="width:100px; height:32px; padding:0 8px; font-family:'Courier New',monospace; font-size:0.85rem; text-align:right;" placeholder="Valoare"><button class="btn btn-small btn-primary" onclick="confirmParamValue('${code}', '${escapeHtml(description)}')" style="height:32px; padding:0 10px;">✓</button><button class="btn btn-small btn-secondary" onclick="document.getElementById('${tempId}').remove()" style="height:32px; padding:0 10px;">✗</button>`;
+    const idx = _paramPendingInputs.push({ code, description }) - 1;
+    div.innerHTML = `<span style="font-family:'Courier New',monospace; font-size:0.85rem; color:var(--accent); min-width:60px;">${escapeHtml(code)}</span><span style="font-size:0.78rem; color:var(--text2); flex:1;">${escapeHtml(description.substring(0, 40))}${description.length > 40 ? '…' : ''}</span><input type="text" id="pval-${code.replace(/\./g, '_')}" value="${escapeHtml(String(value))}" style="width:100px; height:32px; padding:0 8px; font-family:'Courier New',monospace; font-size:0.85rem; text-align:right;" placeholder="Valoare"><button class="btn btn-small btn-primary" onclick="confirmParamValueByIdx(${idx})" style="height:32px; padding:0 10px;">✓</button><button class="btn btn-small btn-secondary" onclick="this.parentElement.remove()" style="height:32px; padding:0 10px;">✗</button>`;
     list.appendChild(div);
     document.getElementById(`pval-${code.replace(/\./g, '_')}`)?.focus();
+}
+
+function confirmParamValueByIdx(i) {
+    const p = _paramPendingInputs[i];
+    if (!p) return;
+    confirmParamValue(p.code, p.description);
 }
 
 function confirmParamValue(code, description) {
@@ -7107,7 +7149,9 @@ function paramBackToProducator() {
     if (select) select.value = '';
 }
 
+let _parametriLoadSeq = 0;
 async function loadParametri() {
+    const seq = ++_parametriLoadSeq;
     const familie = document.getElementById('param-familie').value;
     const search = document.getElementById('param-search').value.trim();
     const loading = document.getElementById('parametri-loading');
@@ -7128,6 +7172,7 @@ async function loadParametri() {
         if (search) url += `&search=${encodeURIComponent(search)}`;
 
         const data = await apiGet(url);
+        if (seq !== _parametriLoadSeq) return;  // stale response — a newer load is in flight
         parametriTotal = data.total;
 
         document.getElementById('param-count').textContent =
@@ -7137,6 +7182,7 @@ async function loadParametri() {
         updateParametriPagination(data);
     } catch (e) {
         console.error('Failed to load parametri:', e);
+        if (seq !== _parametriLoadSeq) return;  // stale request — UI belongs to a newer load
         if (loading) loading.style.display = 'none';
         showToast('Eroare la încărcarea parametrilor', 'error');
     } finally {
@@ -7649,8 +7695,10 @@ function debounceLoadFaultCodes() {
     _faultSearchTimer = setTimeout(function () { faultPage = 1; loadFaultCodes(); }, 220);
 }
 
+let _faultLoadSeq = 0;
 async function loadFaultCodes() {
     if (!_faultSelectedFamilie) return;
+    const seq = ++_faultLoadSeq;
     const search = (document.getElementById('fault-search').value || '').trim();
     const loading = document.getElementById('fault-loading');
     const table = document.getElementById('fault-table');
@@ -7666,12 +7714,14 @@ async function loadFaultCodes() {
         let url = `/fault-codes?familie=${encodeURIComponent(_faultSelectedFamilie)}&page=${faultPage}&limit=${faultLimit}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
         const data = await apiGet(url);
+        if (seq !== _faultLoadSeq) return;  // stale response — a newer load is in flight
         faultTotal = data.total;
         document.getElementById('fault-count').textContent = `Total: ${data.total} coduri`;
         renderFaultCodes(data.codes);
         updateFaultPagination(data);
     } catch (e) {
         console.error('Failed to load fault codes:', e);
+        if (seq !== _faultLoadSeq) return;  // stale request — UI belongs to a newer load
         if (loading) loading.style.display = 'none';
         showToast('Eroare la încărcarea codurilor', true);
     } finally {

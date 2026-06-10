@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 from database import get_db, row_to_dict
 from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES,
-    get_app_setting, set_app_setting,
+    get_app_setting, set_app_setting, get_json_or_400,
 )
 from scripts.parse_params import parse_for_producator
 from scripts.parse_params.siemens_starter import parse_archive
@@ -68,7 +68,7 @@ def get_proiecte():
 @projects_bp.route('/api/proiecte', methods=['POST'])
 @login_required
 def create_proiect():
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -131,7 +131,7 @@ def get_proiect(project_id):
 @projects_bp.route('/api/proiecte/<project_id>', methods=['PUT'])
 @login_required
 def update_proiect(project_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -235,11 +235,13 @@ def delete_proiect(project_id):
 @login_required
 def batch_proiecte():
     """Batch update or delete multiple projects"""
-    data = request.json
+    data = get_json_or_400()
     action = data.get('action')  # 'update_status' or 'delete'
     if action not in ('update_status', 'delete'):
         return jsonify({'error': 'Invalid action'}), 400
     project_ids = data.get('project_ids', [])
+    if not isinstance(project_ids, list) or len(project_ids) > 500:
+        return jsonify({'error': 'Lista invalida (max 500)'}), 400
 
     if not project_ids:
         return jsonify({'error': 'No projects selected'}), 400
@@ -303,7 +305,7 @@ def get_checklist(project_id):
 @projects_bp.route('/api/proiecte/<project_id>/checklist', methods=['POST'])
 @login_required
 def create_checklist_item(project_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -334,7 +336,7 @@ def create_checklist_item(project_id):
 @projects_bp.route('/api/checklist/<item_id>', methods=['PUT'])
 @login_required
 def update_checklist_item(item_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -413,7 +415,7 @@ def list_checklist_categorii(project_id):
 @projects_bp.route('/api/proiecte/<project_id>/checklist-categorii', methods=['POST'])
 @login_required
 def create_checklist_categorie(project_id):
-    data = request.json or {}
+    data = get_json_or_400()
     nume = (data.get('nume') or '').strip()
     if not nume:
         return jsonify({'error': 'Nume required'}), 400
@@ -435,7 +437,7 @@ def create_checklist_categorie(project_id):
 @projects_bp.route('/api/checklist-categorii/<int:cat_id>', methods=['PUT'])
 @login_required
 def update_checklist_categorie(cat_id):
-    data = request.json or {}
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
     if 'nume' in data:
@@ -483,7 +485,7 @@ def get_jurnal(project_id):
 @projects_bp.route('/api/proiecte/<project_id>/jurnal', methods=['POST'])
 @login_required
 def create_jurnal_entry(project_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -645,6 +647,10 @@ def download_atasament(attachment_id):
         return jsonify({'error': 'Attachment not found'}), 404
 
     filepath = row['cale_locala']
+    real_path = os.path.realpath(filepath)
+    safe_root = os.path.realpath(UPLOAD_FOLDER)
+    if not real_path.startswith(safe_root + os.sep):
+        return jsonify({'error': 'Invalid file path'}), 403
     if not os.path.exists(filepath):
         return jsonify({'error': 'File not found on disk'}), 404
 
@@ -714,7 +720,7 @@ def _normalize_client_name(name):
 @projects_bp.route('/api/clienti', methods=['POST'])
 @login_required
 def create_client():
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -758,7 +764,7 @@ def get_client(client_id):
 @projects_bp.route('/api/clienti/<client_id>', methods=['PUT'])
 @login_required
 def update_client(client_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -821,7 +827,7 @@ def get_echipamente(project_id):
 @projects_bp.route('/api/proiecte/<project_id>/echipamente', methods=['POST'])
 @login_required
 def create_echipament(project_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -876,7 +882,7 @@ def get_echipament(echipament_id):
 @projects_bp.route('/api/echipamente/<echipament_id>', methods=['PUT'])
 @login_required
 def update_echipament(echipament_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1566,7 +1572,7 @@ def import_archive_echipamente(project_id):
     Fiecare drive devine un rând separat în `echipamente`, cu parametrii
     modificați stocați în params_json.
     """
-    data = request.json or {}
+    data = get_json_or_400()
     drives = data.get('drives') or []
     if not drives:
         return jsonify({'error': 'Niciun drive de importat'}), 400
@@ -1720,7 +1726,7 @@ def import_debrief():
 
     Returns the project ID and a summary of what was created.
     """
-    data = request.json
+    data = get_json_or_400()
     if not data:
         return jsonify({'error': 'JSON body required'}), 400
 

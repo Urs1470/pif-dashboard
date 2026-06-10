@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from database import get_db, row_to_dict
-from utils import generate_uuid, login_required
+from utils import generate_uuid, login_required, get_json_or_400
 
 tasks_bp = Blueprint('tasks', __name__)
 
@@ -160,7 +160,7 @@ def get_tasks(project_id):
 @tasks_bp.route('/api/proiecte/<project_id>/tasks', methods=['POST'])
 @login_required
 def create_task(project_id):
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -200,7 +200,7 @@ def create_task(project_id):
 @tasks_bp.route('/api/tasks/<task_id>', methods=['PUT'])
 @login_required
 def update_task(task_id):
-    data = request.json or {}
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -285,7 +285,7 @@ def get_subtasks(task_id):
 @tasks_bp.route('/api/tasks/<task_id>/subtasks', methods=['POST'])
 @login_required
 def create_subtask(task_id):
-    data = request.json or {}
+    data = get_json_or_400()
     titlu = (data.get('titlu') or '').strip()
     if not titlu:
         return jsonify({'error': 'Titlu required'}), 400
@@ -306,7 +306,7 @@ def create_subtask(task_id):
 @tasks_bp.route('/api/subtasks/<subtask_id>', methods=['PUT'])
 @login_required
 def update_subtask(subtask_id):
-    data = request.json or {}
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -348,14 +348,8 @@ def get_global_tasks():
     categorie = request.args.get('categorie')
     arhiva = request.args.get('arhiva')
 
-    query = ('SELECT g.*, '
-             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id) AS subtask_total, '
-             '(SELECT COUNT(*) FROM task_subtasks s WHERE s.task_id = g.id AND s.done = 1) AS subtask_done, '
-             '(SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions gs '
-             'WHERE gs.global_task_id = g.id) AS timp_secunde, '
-             '(SELECT COUNT(*) > 0 FROM global_task_sessions gs '
-             'WHERE gs.global_task_id = g.id AND gs.stop_time IS NULL) AS timer_running '
-             'FROM global_tasks g WHERE 1=1')
+    # 1) Fetch the global tasks (single query, no correlated subqueries).
+    query = 'SELECT g.* FROM global_tasks g WHERE 1=1'
     params = []
 
     if arhiva == 'true':
@@ -377,14 +371,63 @@ def get_global_tasks():
 
     cursor.execute(query, params)
     rows = cursor.fetchall()
+    if not rows:
+        conn.close()
+        return jsonify([])
+
+    task_ids = [r['id'] for r in rows]
+    placeholders = ','.join('?' * len(task_ids))
+
+    # 2) Batch-fetch subtask counts (one query for all tasks).
+    cursor.execute(f'''
+        SELECT task_id,
+               COUNT(*) AS subtask_total,
+               SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS subtask_done
+        FROM task_subtasks
+        WHERE task_id IN ({placeholders})
+        GROUP BY task_id
+    ''', task_ids)
+    subtask_map = {}
+    for r in cursor.fetchall():
+        subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
+                                      'subtask_done': r['subtask_done']}
+
+    # 3) Batch-fetch timer totals and running state (one query for all tasks).
+    cursor.execute(f'''
+        SELECT global_task_id,
+               COALESCE(SUM(CASE WHEN durata_secunde IS NOT NULL THEN durata_secunde ELSE 0 END), 0) AS timp_secunde,
+               MAX(CASE WHEN stop_time IS NULL THEN 1 ELSE 0 END) AS timer_running
+        FROM global_task_sessions
+        WHERE global_task_id IN ({placeholders})
+        GROUP BY global_task_id
+    ''', task_ids)
+    timer_map = {}
+    for r in cursor.fetchall():
+        timer_map[r['global_task_id']] = {'timp_secunde': r['timp_secunde'],
+                                          'timer_running': r['timer_running']}
+
     conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
+
+    # 4) Merge results in Python — response shape identical to the old
+    #    correlated-subquery version (same keys, same 0 defaults).
+    result = []
+    for row in rows:
+        d = row_to_dict(row)
+        sc = subtask_map.get(d['id'], {})
+        d['subtask_total'] = sc.get('subtask_total', 0)
+        d['subtask_done'] = sc.get('subtask_done', 0)
+        tm = timer_map.get(d['id'], {})
+        d['timp_secunde'] = tm.get('timp_secunde', 0)
+        d['timer_running'] = tm.get('timer_running', 0)
+        result.append(d)
+
+    return jsonify(result)
 
 
 @tasks_bp.route('/api/global-tasks', methods=['POST'])
 @login_required
 def create_global_task():
-    data = request.json
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -436,7 +479,7 @@ def get_global_task(task_id):
 @tasks_bp.route('/api/global-tasks/<task_id>', methods=['PUT', 'POST'])
 @login_required
 def update_global_task(task_id):
-    data = request.json or {}
+    data = get_json_or_400()
     conn = get_db()
     cursor = conn.cursor()
 

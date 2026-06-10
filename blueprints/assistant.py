@@ -6,7 +6,7 @@
 # pattern (@assistant_tool decorator) was introduced in HIGH-Q3 refactor; this
 # blueprint simply hosts the handlers and routes in their own module.
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, session
 from functools import wraps
 from datetime import datetime
 import json
@@ -18,6 +18,7 @@ import urllib.parse
 import logging
 
 from database import get_db
+from utils import get_json_or_400
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -817,7 +818,7 @@ def assistant_chat():
     if not cfg:
         return jsonify({'error': 'Asistentul nu e configurat. Hermes trebuie să creeze .assistant_config pe server.'}), 503
 
-    data = request.json or {}
+    data = get_json_or_400()
     history = data.get('messages', [])
     if not isinstance(history, list) or not history:
         return jsonify({'error': 'Niciun mesaj'}), 400

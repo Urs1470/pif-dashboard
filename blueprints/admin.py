@@ -25,7 +25,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-from utils import safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES
+from utils import safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES, get_json_or_400
 from database import get_db, row_to_dict, DATABASE_PATH, init_db
 from labels import project_status_label, task_status_label
 from scripts.parse_params.abb import parse_full as abb_parse_full, read_drive_info as abb_drive_info
@@ -909,7 +909,7 @@ def bulk_add_params():
     ]}
     Only inserts params that don't already exist (by familie+parametru).
     """
-    data = request.json or {}
+    data = get_json_or_400()
     familie = data.get('familie', '')
     params = data.get('params', [])
     if not familie or not params:
@@ -944,7 +944,7 @@ def bulk_add_params():
 @admin_bp.route('/api/restore', methods=['POST'])
 @login_required
 def restore_database():
-    data = request.json
+    data = get_json_or_400()
 
     conn = get_db()
     cursor = conn.cursor()
