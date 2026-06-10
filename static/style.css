@@ -2042,6 +2042,13 @@
         .skeleton-text:last-child { width: 60%; }
         .skeleton-title { height: 1.5em; width: 70%; margin-bottom: 0.75em; }
         .skeleton-badge { height: 1.5em; width: 80px; }
+        /* Generic list-row placeholder — pair with .skeleton for the shimmer:
+           <div class="skeleton skeleton-row"></div> (see skeletonRows() in app.js) */
+        .skeleton-row {
+            height: 44px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+        }
         .skeleton-card {
             background: var(--bg2);
             border: 1px solid var(--border);
@@ -4807,6 +4814,20 @@
     color: var(--text2);
     line-height: 1;
 }
+
+/* Utility classes extracted from inline styles */
+.u-empty { color: var(--text2); font-size: 0.85rem; }
+.u-flex-row { display: flex; gap: 8px; align-items: center; }
+.u-mono { font-family: var(--font-mono, monospace); font-size: 0.85rem; }
+.u-mb-12 { margin-bottom: 12px; }
+.u-dim-italic { color: var(--text2); font-style: italic; }
+/* The patterns actually repeated in app.js template literals: */
+.u-text2 { color: var(--text2); }
+.u-dim-sm { color: var(--text-dim); font-size: 0.8rem; }
+.u-icon-12 { width: 12px; height: 12px; vertical-align: -1px; }
+.u-small-muted { font-size: var(--font-small); color: var(--text2); }
+.u-cell-line { padding: 8px; border-bottom: 1px solid var(--border); }
+.u-empty-center { text-align: center; padding: 20px; color: var(--text2); }
 .tcard__chip {
     display: inline-flex;
     align-items: center;

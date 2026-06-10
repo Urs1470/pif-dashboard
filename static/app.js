@@ -1005,6 +1005,12 @@ async function saveProject(event) {
     }
 }
 
+// Pulsing placeholder rows shown while a section's data is in flight.
+// Reuses the existing .skeleton shimmer (style.css) + .skeleton-row sizing.
+function skeletonRows(n = 3) {
+    return Array.from({ length: n }, () => '<div class="skeleton skeleton-row"></div>').join('');
+}
+
 async function showProjectDetail(projectId) {
     // If invoked from another tab (Acasa cards), activate the Proiecte tab UI only
     // (no data loaders) so the detail view is visible without a flash.
@@ -1014,6 +1020,14 @@ async function showProjectDetail(projectId) {
     }
     currentProjectId = projectId;
     _pushHash('proiecte/' + projectId);
+
+    // Loading skeletons: these sections load async (1-2s) and would otherwise show
+    // blank space — or stale content from the previously opened project. Each
+    // loader overwrites its container when the real data renders.
+    ['todo-list', 'timer-sessions-list', 'attachment-list', 'echipamente-list'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = skeletonRows(3);
+    });
 
     try {
         const project = await apiGet(`/proiecte/${projectId}`);
@@ -1590,7 +1604,7 @@ async function loadTodos(projectId) {
 function renderTodos(tasks) {
     const container = document.getElementById('todo-list');
     if (!tasks.length) {
-        container.innerHTML = '<p style="color: var(--text2); font-size:0.85rem;">Nu există task-uri.</p>';
+        container.innerHTML = '<p class="u-empty">Nu există task-uri.</p>';
         return;
     }
     const active = tasks.filter(t => t.status !== 'done');
@@ -2459,7 +2473,7 @@ async function loadJurnal(projectId) {
             }).join('');
         }
 
-        container.innerHTML = html || '<p style="color:var(--text2);">Nu există activități.</p>';
+        container.innerHTML = html || '<p class="u-text2">Nu există activități.</p>';
         if (window.lucide) try { window.lucide.createIcons(); } catch (e) {}
     } catch (e) {
         console.error('Failed to load jurnal:', e);
@@ -2519,7 +2533,7 @@ function renderAttachments(attachments) {
         : '';
 
     if (!attachments.length) {
-        container.innerHTML = '<p style="color: var(--text2);">Nu există atașamente.</p>';
+        container.innerHTML = '<p class="u-text2">Nu există atașamente.</p>';
         return;
     }
 
@@ -3483,7 +3497,7 @@ async function saveObsidianConfig() {
     const path = input.value.trim();
     const folders = foldersInput ? foldersInput.value.trim() : '';
     statusEl.classList.add('show');
-    statusEl.innerHTML = '<span style="color:var(--text2)">Se verifică...</span>';
+    statusEl.innerHTML = '<span class="u-text2">Se verifică...</span>';
     try {
         const res = await apiFetch('/api/obsidian/config', {
             method: 'PUT',
@@ -3503,7 +3517,7 @@ async function saveObsidianConfig() {
         } else if (data.configured) {
             statusEl.innerHTML = '<span style="color:var(--warning)">Calea e salvată dar nu pare validă.</span>';
         } else {
-            statusEl.innerHTML = '<span style="color:var(--text2)">Cale ștearsă.</span>';
+            statusEl.innerHTML = '<span class="u-text2">Cale ștearsă.</span>';
         }
     } catch (e) {
         statusEl.innerHTML = '<span style="color:var(--danger)">Eroare de rețea.</span>';
@@ -3984,7 +3998,7 @@ function renderGlobalTasks(tasks) {
     const today = new Date().toISOString().split('T')[0];
 
     if (!tasks.length) {
-        container.innerHTML = '<p style="color: var(--text2);">Nu există task-uri.</p>';
+        container.innerHTML = '<p class="u-text2">Nu există task-uri.</p>';
         return;
     }
 
@@ -5617,11 +5631,11 @@ function renderEchipamente(echipamente, descLookup) {
                     <thead><tr><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Cod</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);">Descriere</th><th style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);text-align:right;">Valoare</th></tr></thead>
                     <tbody>${driveRows}</tbody>
                 </table>`
-            : `<div style="color:var(--text2); font-size:0.85rem; padding:8px 0;">Niciun parametru de drive salvat. Click pe <i data-lucide="pencil" style="width:12px;height:12px;vertical-align:-1px;"></i> pentru a edita.</div>`;
+            : `<div style="color:var(--text2); font-size:0.85rem; padding:8px 0;">Niciun parametru de drive salvat. Click pe <i data-lucide="pencil" class="u-icon-12"></i> pentru a edita.</div>`;
 
         // Spec pills — visible on card without expanding
         const specPills = specs.map(s =>
-            `<span class="echipament-spec-pill"><span style="color:var(--text2);">${escapeHtml(s.label)}:</span> ${escapeHtml(s.value)}</span>`
+            `<span class="echipament-spec-pill"><span class="u-text2">${escapeHtml(s.label)}:</span> ${escapeHtml(s.value)}</span>`
         ).join('');
 
         return `
@@ -5637,7 +5651,7 @@ function renderEchipamente(echipamente, descLookup) {
                     ${e.producator ? `<span>${escapeHtml(e.producator)}</span>` : ''}
                     ${e.model ? `<span>${escapeHtml(e.model)}</span>` : ''}
                     ${e.serial_number ? `<span>S/N: ${escapeHtml(e.serial_number)}</span>` : ''}
-                    ${hasDriveParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${driveParams.length} parametri</span>` : ''}
+                    ${hasDriveParams ? `<span style="color:var(--accent);"><i data-lucide="sliders-horizontal" class="u-icon-12"></i> ${driveParams.length} parametri</span>` : ''}
                     <span class="echipament-chevron" style="margin-left:auto; color:var(--text-dim); transition:transform 0.15s; display:inline-flex;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
                 </div>
                 ${specs.length ? `<div class="echipament-specs">${specPills}</div>` : ''}
@@ -6346,10 +6360,10 @@ function showImportParamsModal(data) {
 
     body.innerHTML = `
         <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Producător:</span> <strong>${escapeHtml(data.producator_detected || '')}</strong></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Familie:</span> <span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(data.familie || '-')}</span></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Parametri:</span> <strong>${data.count}</strong></div>
+            <div><span class="u-dim-sm">Producător:</span> <strong>${escapeHtml(data.producator_detected || '')}</strong></div>
+            <div><span class="u-dim-sm">Familie:</span> <span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(data.familie || '-')}</span></div>
+            <div><span class="u-dim-sm">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
+            <div><span class="u-dim-sm">Parametri:</span> <strong>${data.count}</strong></div>
             ${data.conflicts ? `<div style="color:var(--warning);"><i data-lucide="alert-triangle" style="width:14px; height:14px; vertical-align:-2px;"></i> ${data.conflicts} conflicte între Setup-uri</div>` : ''}
         </div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -6361,15 +6375,15 @@ function showImportParamsModal(data) {
                 <thead style="position:sticky; top:0; background:var(--bg-elev2); z-index:1;">
                     <tr style="text-align:left;">
                         <th style="padding:8px; width:36px; border-bottom:1px solid var(--border);"></th>
-                        <th style="padding:8px; border-bottom:1px solid var(--border);">Cod</th>
-                        <th style="padding:8px; border-bottom:1px solid var(--border);">Denumire</th>
+                        <th class="u-cell-line">Cod</th>
+                        <th class="u-cell-line">Denumire</th>
                         <th style="padding:8px; border-bottom:1px solid var(--border); width:200px;">Valoare</th>
-                        <th style="padding:8px; border-bottom:1px solid var(--border);">Default</th>
-                        <th style="padding:8px; border-bottom:1px solid var(--border);">Note</th>
+                        <th class="u-cell-line">Default</th>
+                        <th class="u-cell-line">Note</th>
                     </tr>
                 </thead>
                 <tbody id="import-params-tbody">
-                    ${rows || '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit parametri în fișier.</td></tr>'}
+                    ${rows || '<tr><td colspan="6" class="u-empty-center">Nu s-au găsit parametri în fișier.</td></tr>'}
                 </tbody>
             </table>
         </div>
@@ -6485,8 +6499,8 @@ function showImportArchiveModal(data) {
                 <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                     <input type="checkbox" class="imp-arch-check" data-idx="${idx}" checked>
                     <span style="font-weight:600;">${escapeHtml(d.nume)}</span>
-                    <span style="color:var(--text-dim); font-size:0.8rem;">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
-                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${codes.length} parametri diferiți de fabrică</span>
+                    <span class="u-dim-sm">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
+                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" class="u-icon-12"></i> ${codes.length} parametri diferiți de fabrică</span>
                 </label>
                 <div style="margin-top:6px; padding-left:26px; line-height:1.6;">${sample}${more}</div>
             </div>`;
@@ -6494,17 +6508,17 @@ function showImportArchiveModal(data) {
 
     body.innerHTML = `
         <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Proiect:</span> <strong>${escapeHtml(data.project_name || '—')}</strong></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Drive-uri găsite:</span> <strong>${drives.length}</strong></div>
-            ${data.skipped_default ? `<div style="color:var(--text-dim); font-size:0.8rem;"><i data-lucide="filter" style="width:12px;height:12px;vertical-align:-1px;"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
+            <div><span class="u-dim-sm">Proiect:</span> <strong>${escapeHtml(data.project_name || '—')}</strong></div>
+            <div><span class="u-dim-sm">Fișier:</span> <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">${escapeHtml(data.filename || '')}</span></div>
+            <div><span class="u-dim-sm">Drive-uri găsite:</span> <strong>${drives.length}</strong></div>
+            ${data.skipped_default ? `<div class="u-dim-sm"><i data-lucide="filter" class="u-icon-12"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
         </div>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(true)"><i data-lucide="check-square"></i> Toate</button>
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportArchive(false)"><i data-lucide="square"></i> Niciunul</button>
         </div>
         <div class="imp-arch-list">
-            ${cards || '<div style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit drive-uri în arhivă.</div>'}
+            ${cards || '<div class="u-empty-center">Nu s-au găsit drive-uri în arhivă.</div>'}
         </div>
         <div class="imp-arch-actions">
             <button type="button" class="btn btn-secondary btn-small" onclick="closeImportArchiveModal()">Anulează</button>
@@ -6633,8 +6647,8 @@ function showImportAbbMultiModal(data) {
                 <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex-wrap:wrap;">
                     <input type="checkbox" class="imp-abb-check" data-idx="${idx}" checked>
                     <span style="font-weight:600;">${escapeHtml(d.nume)}</span>
-                    <span style="color:var(--text-dim); font-size:0.8rem;">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
-                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" style="width:12px;height:12px;vertical-align:-1px;"></i> ${d.modified_count || codes.length} parametri diferiți de fabrică</span>
+                    <span class="u-dim-sm">${escapeHtml(d.model || '')}${d.firmware ? ' · ' + escapeHtml(d.firmware) : ''}</span>
+                    <span style="margin-left:auto; color:var(--accent); font-size:0.8rem;"><i data-lucide="sliders-horizontal" class="u-icon-12"></i> ${d.modified_count || codes.length} parametri diferiți de fabrică</span>
                 </label>
                 <div style="margin-top:4px; padding-left:26px;">${fileLabel}</div>
                 <div style="margin-top:4px; padding-left:26px; line-height:1.6;">${sample}${more}</div>
@@ -6647,9 +6661,9 @@ function showImportAbbMultiModal(data) {
 
     body.innerHTML = `
         <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);">
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Producător:</span> <strong>ABB</strong></div>
-            <div><span style="color:var(--text-dim); font-size:0.8rem;">Fișiere:</span> <strong>${drives.length}</strong></div>
-            ${data.skipped_default ? `<div style="color:var(--text-dim); font-size:0.8rem;"><i data-lucide="filter" style="width:12px;height:12px;vertical-align:-1px;"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
+            <div><span class="u-dim-sm">Producător:</span> <strong>ABB</strong></div>
+            <div><span class="u-dim-sm">Fișiere:</span> <strong>${drives.length}</strong></div>
+            ${data.skipped_default ? `<div class="u-dim-sm"><i data-lucide="filter" class="u-icon-12"></i> ${data.skipped_default} parametri la valoarea de fabrică omiși</div>` : ''}
         </div>
         ${warnings}
         <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -6657,7 +6671,7 @@ function showImportAbbMultiModal(data) {
             <button type="button" class="btn btn-secondary btn-small" onclick="toggleAllImportAbbMulti(false)"><i data-lucide="square"></i> Niciunul</button>
         </div>
         <div class="imp-arch-list" style="max-height:55vh; overflow-y:auto;">
-            ${cards || '<div style="text-align:center; padding:20px; color:var(--text2);">Nu s-au găsit drive-uri în fișiere.</div>'}
+            ${cards || '<div class="u-empty-center">Nu s-au găsit drive-uri în fișiere.</div>'}
         </div>
         <div class="imp-arch-actions">
             <button type="button" class="btn btn-secondary btn-small" onclick="closeImportAbbMultiModal()">Anulează</button>
@@ -7214,11 +7228,11 @@ function renderParametri(params) {
             <td style="font-weight: 600; color: var(--accent);">${escapeHtml(p.parametru)}</td>
             <td><span class="param-name">${escapeHtml(extractParamName(p.descriere_scurta))}</span></td>
             <td><span class="badge" style="font-size: 0.7rem;">${escapeHtml(p.acces || '-')}</span></td>
-            <td style="font-size: var(--font-small); color: var(--text2);">${escapeHtml(p.tip_date || '-')}</td>
+            <td class="u-small-muted">${escapeHtml(p.tip_date || '-')}</td>
             <td style="font-size: var(--font-small);">${formatParamValue(p.valoare_default, p.valoare_default_str)}</td>
-            <td style="font-size: var(--font-small); color: var(--text2);">${p.min != null ? p.min : '-'}</td>
-            <td style="font-size: var(--font-small); color: var(--text2);">${p.max != null ? p.max : '-'}</td>
-            <td style="font-size: var(--font-small); color: var(--text2);">${escapeHtml(p.unitate || '-')}</td>
+            <td class="u-small-muted">${p.min != null ? p.min : '-'}</td>
+            <td class="u-small-muted">${p.max != null ? p.max : '-'}</td>
+            <td class="u-small-muted">${escapeHtml(p.unitate || '-')}</td>
         </tr>
     `).join('');
 }
