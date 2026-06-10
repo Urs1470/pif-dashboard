@@ -23,6 +23,7 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import EquipmentFormModal from '../components/projects/EquipmentFormModal.svelte'
   import AttachmentsTab from '../components/projects/AttachmentsTab.svelte'
+  import RichTextEditor from '../components/ui/RichTextEditor.svelte'
 
   let { params } = $props()
   let project = $state(null)
@@ -380,6 +381,34 @@
     return diff > 0 && diff <= 7
   }
 
+  const SAFE_TAGS = new Set(['P','BR','DIV','H1','H2','H3','H4','H5','H6','UL','OL','LI','STRONG','B','EM','I','U','A','HR','BLOCKQUOTE','SPAN'])
+  function sanitizeHtml(html) {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    ;(function walk(node) {
+      for (const child of Array.from(node.childNodes)) {
+        if (child.nodeType === 1) {
+          if (!SAFE_TAGS.has(child.tagName)) {
+            while (child.firstChild) node.insertBefore(child.firstChild, child)
+            child.remove()
+          } else {
+            for (const a of Array.from(child.attributes)) {
+              if (child.tagName === 'A' && a.name === 'href') continue
+              child.removeAttribute(a.name)
+            }
+            walk(child)
+          }
+        }
+      }
+    })(tmp)
+    return tmp.innerHTML
+  }
+  function renderStoredText(raw) {
+    if (!raw || !raw.trim()) return ''
+    if (/<\/?[a-z][\s\S]*>/i.test(raw)) return sanitizeHtml(raw)
+    return raw.split(/\n\n+/).map(p => '<p>' + p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>').join('')
+  }
+
   function openFieldEdit(field, label) {
     editField = field
     editValue = project[field] || ''
@@ -473,8 +502,8 @@
           <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><Pencil size={13} /></button>
         </div>
         {#if project.observatii}
-          <button class="field-body" class:expanded={fieldExpanded.observatii} onclick={() => toggleFieldExpand('observatii')}>
-            {project.observatii}
+          <button class="field-body field-html" class:expanded={fieldExpanded.observatii} onclick={() => toggleFieldExpand('observatii')}>
+            {@html renderStoredText(project.observatii)}
           </button>
         {:else}
           <button class="field-empty" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>Click pentru a adauga...</button>
@@ -489,8 +518,8 @@
             <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><Pencil size={13} /></button>
           </div>
           {#if project.service_before}
-            <button class="field-body" class:expanded={fieldExpanded.service_before} onclick={() => toggleFieldExpand('service_before')}>
-              {project.service_before}
+            <button class="field-body field-html" class:expanded={fieldExpanded.service_before} onclick={() => toggleFieldExpand('service_before')}>
+              {@html renderStoredText(project.service_before)}
             </button>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>Click pentru a adauga...</button>
@@ -504,8 +533,8 @@
             <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><Pencil size={13} /></button>
           </div>
           {#if project.service_after}
-            <button class="field-body" class:expanded={fieldExpanded.service_after} onclick={() => toggleFieldExpand('service_after')}>
-              {project.service_after}
+            <button class="field-body field-html" class:expanded={fieldExpanded.service_after} onclick={() => toggleFieldExpand('service_after')}>
+              {@html renderStoredText(project.service_after)}
             </button>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>Click pentru a adauga...</button>
@@ -688,7 +717,10 @@
                 {#if isExpanded}
                   <div class="eparams">
                     {#each eparams as [k, v]}
-                      <div class="eparam"><code>{k}</code><span>{v}</span></div>
+                      <div class="eparam">
+                        <span class="eparam-key">{k}</span>
+                        <span class="eparam-val">{v}</span>
+                      </div>
                     {/each}
                   </div>
                 {/if}
@@ -748,9 +780,11 @@
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
 
-<Modal bind:open={showFieldEdit} title={editLabel} size="md">
+<Modal bind:open={showFieldEdit} title={editLabel} size="lg">
   <div class="field-edit-modal">
-    <textarea rows="10" bind:value={editValue} placeholder="Scrie aici..."></textarea>
+    {#if showFieldEdit}
+      <RichTextEditor bind:value={editValue} placeholder="Scrie aici..." />
+    {/if}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showFieldEdit = false}>Anuleaza</Button>
       <Button loading={editSaving} onclick={saveFieldEdit}>Salveaza</Button>
@@ -783,12 +817,19 @@
   .field-label { flex: 1; font-weight: 600; }
   .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
-  .field-body { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--font-small); color: var(--text); line-height: 1.6; white-space: pre-wrap; padding: 0 var(--space-md) var(--space-sm); text-align: left; width: 100%; cursor: pointer; }
-  .field-body.expanded { display: block; -webkit-line-clamp: unset; }
+  .field-body { position: relative; max-height: 4.8em; overflow: hidden; font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); text-align: left; width: 100%; cursor: pointer; }
+  .field-body::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 24px; background: linear-gradient(transparent, var(--bg-surface)); pointer-events: none; }
+  .field-body.expanded { max-height: none; }
+  .field-body.expanded::after { display: none; }
+  .field-body.field-html :global(p) { margin: 4px 0; }
+  .field-body.field-html :global(h2) { color: var(--accent); font-size: 1.05rem; margin: 8px 0 4px; font-weight: 700; }
+  .field-body.field-html :global(h3) { color: var(--text); font-size: 0.98rem; margin: 6px 0 3px; font-weight: 600; }
+  .field-body.field-html :global(ul), .field-body.field-html :global(ol) { padding-left: 22px; margin: 4px 0; }
+  .field-body.field-html :global(a) { color: var(--accent); text-decoration: underline; }
+  .field-body.field-html :global(hr) { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
   .field-empty { padding: var(--space-xs) var(--space-md) var(--space-sm); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
-  .field-edit-modal textarea { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; line-height: 1.6; min-height: 200px; }
-  .field-edit-modal textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent-ring); }
+  .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -887,10 +928,10 @@
   .edetails { display: flex; gap: var(--space-md); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
   .eparam-toggle { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-tiny); color: var(--accent); cursor: pointer; margin-top: var(--space-sm); padding: 4px 0; font-weight: 500; }
   .eparam-toggle:hover { text-decoration: underline; }
-  .eparams { margin-top: var(--space-xs); display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); }
-  .eparam { display: flex; justify-content: space-between; font-size: var(--font-tiny); }
-  .eparam code { color: var(--accent); font-family: var(--font-mono); }
-  .eparam span { color: var(--text-secondary); }
+  .eparams { margin-top: var(--space-xs); display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); background: var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }
+  .eparam { display: flex; justify-content: space-between; gap: var(--space-sm); padding: 6px var(--space-sm); background: var(--bg); font-size: var(--font-small); }
+  .eparam-key { color: var(--accent); font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: 500; flex-shrink: 0; }
+  .eparam-val { color: var(--text); font-weight: 500; text-align: right; }
   .att-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .att-btn:hover { background: var(--bg-hover); color: var(--text); }
   .att-btn.danger:hover { background: var(--danger-subtle); color: var(--danger); }

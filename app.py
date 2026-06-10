@@ -378,6 +378,16 @@ def dist_assets(filename):
     return send_from_directory(os.path.join(_DIST_DIR, 'assets'), filename)
 
 
+@app.route('/favicon.svg')
+def favicon():
+    return send_from_directory(_DIST_DIR, 'favicon.svg')
+
+
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory(_DIST_DIR, 'manifest.json')
+
+
 # ============ PWA ROUTES ============
 
 @app.route('/m')

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { StickyNote, Search, FileText, Folder, FolderOpen, ChevronRight, ArrowLeft } from '@lucide/svelte'
+  import { StickyNote, Search, FileText, Folder, FolderOpen, ChevronRight, ChevronDown, ArrowLeft } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { toast } from '../stores/ui.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -27,10 +27,33 @@
     try { return JSON.parse(localStorage.getItem('notes_collapsed') || '{}') } catch (_) { return {} }
   }
 
-  function toggleFolder(folder) {
-    collapsedFolders[folder] = !collapsedFolders[folder]
+  function toggleFolder(folderPath) {
+    collapsedFolders[folderPath] = !collapsedFolders[folderPath]
     try { localStorage.setItem('notes_collapsed', JSON.stringify(collapsedFolders)) } catch (_) {}
   }
+
+  function buildNoteTree(noteList) {
+    const root = { folders: {}, notes: [] }
+    for (const n of noteList) {
+      const parts = n.path.split('/')
+      parts.pop()
+      let node = root
+      for (const p of parts) {
+        if (!node.folders[p]) node.folders[p] = { folders: {}, notes: [] }
+        node = node.folders[p]
+      }
+      node.notes.push(n)
+    }
+    return root
+  }
+
+  function countTreeNotes(node) {
+    let c = node.notes.length
+    for (const k in node.folders) c += countTreeNotes(node.folders[k])
+    return c
+  }
+
+  const noteTree = $derived(buildNoteTree(notes))
 
   async function loadNotes() {
     loading = true
@@ -76,17 +99,29 @@
   }
 
   onMount(loadNotes)
-
-  const grouped = $derived.by(() => {
-    const groups = new Map()
-    for (const n of notes) {
-      const folder = n.folder || '/'
-      if (!groups.has(folder)) groups.set(folder, [])
-      groups.get(folder).push(n)
-    }
-    return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-  })
 </script>
+
+{#snippet treeNode(node, depth, prefix)}
+  {#each Object.keys(node.folders).sort((a, b) => a.localeCompare(b, 'ro')) as fname}
+    {@const fullPath = prefix ? prefix + '/' + fname : fname}
+    {@const child = node.folders[fname]}
+    {@const isCollapsed = collapsedFolders[fullPath]}
+    <button class="folder-row" style="padding-left: {12 + depth * 14}px" onclick={() => toggleFolder(fullPath)}>
+      {#if isCollapsed}<Folder size={14} />{:else}<FolderOpen size={14} />{/if}
+      <span>{fname}</span>
+      <span class="folder-count">{countTreeNotes(child)}</span>
+    </button>
+    {#if !isCollapsed}
+      {@render treeNode(child, depth + 1, fullPath)}
+    {/if}
+  {/each}
+  {#each node.notes.slice().sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ro')) as note (note.path)}
+    <button class="note-item" style="padding-left: {12 + depth * 14}px" class:active={activeNote?.path === note.path} onclick={() => openNote(note)}>
+      <FileText size={14} />
+      <span class="note-title">{note.title}</span>
+    </button>
+  {/each}
+{/snippet}
 
 <div class="page">
   <div class="page-header"><StickyNote size={22} /><h1>Notite</h1><span class="count">{notes.length}</span></div>
@@ -124,21 +159,7 @@
           </div>
         {:else}
           <div class="note-list">
-            {#each grouped as [folder, items] (folder)}
-              <button class="folder-row" onclick={() => toggleFolder(folder)}>
-                {#if collapsedFolders[folder]}<Folder size={14} />{:else}<FolderOpen size={14} />{/if}
-                <span>{folder === '/' ? 'Radacina' : folder}</span>
-                <span class="folder-count">{items.length}</span>
-              </button>
-              {#if !collapsedFolders[folder]}
-                {#each items as note (note.path)}
-                  <button class="note-item indent" class:active={activeNote?.path === note.path} onclick={() => openNote(note)}>
-                    <FileText size={14} />
-                    <span class="note-title">{note.title}</span>
-                  </button>
-                {/each}
-              {/if}
-            {/each}
+            {@render treeNode(noteTree, 0, '')}
           </div>
         {/if}
       </aside>
@@ -187,7 +208,6 @@
   .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: 400; }
 
   .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); border-left: 2px solid transparent; text-align: left; width: 100%; }
-  .note-item.indent { padding-left: var(--space-lg); }
   .note-item:hover { background: var(--bg-hover); color: var(--text); }
   .note-item.active { background: var(--accent-subtle); color: var(--accent); border-left-color: var(--accent); }
   .note-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
