@@ -1,8 +1,29 @@
-const STATUS_LABELS = {
-  in_lucru: 'In lucru',
-  in_asteptare: 'In asteptare',
+export const PROJECT_STATUS_LABELS = {
+  in_lucru: 'În Lucru',
+  in_asteptare: 'În Așteptare',
+  'in_așteptare': 'În Așteptare',
+  blocat: 'Blocat',
   finalizat: 'Finalizat',
-  anulat: 'Anulat',
+}
+
+export const TASK_STATUS_LABELS = {
+  to_do: 'To Do',
+  in_lucru: 'În Lucru',
+  in_asteptare: 'În Așteptare',
+  'in_așteptare': 'În Așteptare',
+  blocat: 'Blocat',
+  done: 'Finalizat',
+  finalizat: 'Finalizat',
+}
+
+export const STATUS_COLORS = {
+  in_lucru: 'var(--accent)',
+  in_asteptare: 'var(--warning)',
+  'in_așteptare': 'var(--warning)',
+  blocat: 'var(--danger)',
+  finalizat: 'var(--success)',
+  done: 'var(--success)',
+  to_do: 'var(--text-dim)',
 }
 
 const PRIORITY_LABELS = {
