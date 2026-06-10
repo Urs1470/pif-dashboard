@@ -6,7 +6,7 @@ const app = mount(App, {
   target: document.getElementById('app'),
 })
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !import.meta.env.DEV) {
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.register('/service-worker.js')

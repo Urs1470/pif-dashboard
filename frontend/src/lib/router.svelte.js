@@ -47,5 +47,7 @@ export function resolveRoute(routes) {
 if (typeof window !== 'undefined') {
   window.addEventListener('hashchange', () => {
     router.path = getPath()
+    const main = document.getElementById('main-content')
+    if (main) { main.scrollTop = 0; main.focus({ preventScroll: true }) }
   })
 }

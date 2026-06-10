@@ -19,7 +19,7 @@
   }
 </script>
 
-<nav class="bottom-nav">
+<nav class="bottom-nav" aria-label="Navigatie mobila">
   {#each tabs as tab}
     <a
       href={tab.path}

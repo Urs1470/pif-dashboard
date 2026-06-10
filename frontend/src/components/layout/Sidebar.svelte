@@ -31,7 +31,7 @@
     {/if}
   </div>
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Navigatie principala">
     {#each navItems as item}
       <a
         href={item.path}

@@ -4,11 +4,11 @@
 </script>
 
 <header class="header">
-  <div class="header-search">
+  <button class="header-search" onclick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
     <Search size={16} />
     <span class="search-hint">Cauta...</span>
     <kbd>Ctrl+K</kbd>
-  </div>
+  </button>
 
   <div class="header-actions">
     <button class="header-btn" onclick={toggleTheme} title="Schimba tema">

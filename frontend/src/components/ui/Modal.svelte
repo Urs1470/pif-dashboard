@@ -1,16 +1,43 @@
 <script>
+  import { tick } from 'svelte'
+
   let { open = $bindable(false), title = '', size = 'md', children } = $props()
+  let backdropEl = $state(null)
+  let previousFocus = $state(null)
 
   function onBackdrop(e) {
     if (e.target === e.currentTarget) open = false
   }
+
   function onKey(e) {
-    if (e.key === 'Escape') open = false
+    if (e.key === 'Escape') { open = false; return }
+    if (e.key === 'Tab' && backdropEl) {
+      const focusable = backdropEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
   }
+
+  $effect(() => {
+    if (open) {
+      previousFocus = document.activeElement
+      tick().then(() => {
+        const first = backdropEl?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        if (first) first.focus()
+        else backdropEl?.focus()
+      })
+    } else if (previousFocus) {
+      previousFocus.focus()
+      previousFocus = null
+    }
+  })
 </script>
 
 {#if open}
-  <div class="backdrop" onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" tabindex="-1">
+  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1">
     <div class="modal modal-{size}">
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
