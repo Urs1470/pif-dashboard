@@ -218,7 +218,7 @@
 </Modal>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 1000px; }
+  .page { padding: var(--space-lg); }
   .back { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-md); cursor: pointer; }
   .back:hover { color: var(--accent); }
 

@@ -124,7 +124,7 @@
 </Modal>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 1200px; }
+  .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }

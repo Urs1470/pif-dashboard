@@ -45,7 +45,7 @@
 </div>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 900px; }
+  .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-lg); }
   .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
   .sec-title { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-base); font-weight: 600; color: var(--text); margin-top: var(--space-lg); margin-bottom: var(--space-sm); }

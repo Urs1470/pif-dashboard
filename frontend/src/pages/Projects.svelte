@@ -107,7 +107,7 @@
 </div>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 1200px; }
+  .page { padding: var(--space-lg); }
   .page-header { margin-bottom: var(--space-md); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: 700; }

@@ -69,7 +69,7 @@
 </div>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 1000px; }
+  .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
   .save-status { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); }

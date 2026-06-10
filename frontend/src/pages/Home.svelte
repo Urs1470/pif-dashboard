@@ -176,7 +176,7 @@
 </div>
 
 <style>
-  .page { padding: var(--space-lg); max-width: 1200px; }
+  .page { padding: var(--space-lg); }
   .page-head { margin-bottom: var(--space-lg); }
   .greeting { font-size: var(--font-h1); font-weight: 700; color: var(--text); }
   .today { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; text-transform: capitalize; }
