@@ -158,7 +158,7 @@ def obsidian_config_set():
     if 'vault_path' in data:
         path = (data.get('vault_path') or '').strip()
         if path and not os.path.isdir(path):
-            return jsonify({'error': 'Calea nu există sau nu este un folder', 'valid': False}), 400
+            return jsonify({'error': 'Calea nu există sau nu este un folder'}), 400
         set_app_setting(OBSIDIAN_SETTING_KEY, path)
     if 'folders' in data:
         set_app_setting(OBSIDIAN_FOLDERS_KEY, (data.get('folders') or '').strip())

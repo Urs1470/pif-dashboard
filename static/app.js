@@ -4796,7 +4796,7 @@ function _renderChecklistCatBlock(cat, items, collapsed, isUncategorized = false
         <div class="checklist-add-row">
             <input type="text" placeholder="${isUncategorized ? 'Adaugă item fără categorie...' : 'Adaugă item...'}"
                    onkeydown="if(event.key==='Enter') addChecklistItem(${isUncategorized ? 'null' : cat.id})">
-            <button class="btn btn-primary btn-small" onclick="addChecklistItem(${isUncategorized ? 'null' : cat.id})"><i data-lucide="plus"></i></button>
+            <button class="btn btn-primary btn-small" onclick="addChecklistItem(${isUncategorized ? 'null' : cat.id})" aria-label="Adaugă"><i data-lucide="plus"></i></button>
         </div>
     `;
 
@@ -5873,7 +5873,7 @@ function showAddEquipmentForm() {
         <div class="modal" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
           <div class="modal-header">
             <h3 class="modal-title"><i data-lucide="cpu"></i> Echipament nou</h3>
-            <button class="modal-close" onclick="hideEchipamentForm()">&times;</button>
+            <button class="modal-close" onclick="hideEchipamentForm()" aria-label="Închide">&times;</button>
           </div>
           <div class="modal-body">
         <div class="echipament-form" id="echipament-form-container">
@@ -6164,7 +6164,7 @@ async function editEchipament(echipamentId) {
             <div class="modal" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
               <div class="modal-header">
                 <h3 class="modal-title"><i data-lucide="pencil"></i> Editează echipament</h3>
-                <button class="modal-close" onclick="hideEchipamentForm()">&times;</button>
+                <button class="modal-close" onclick="hideEchipamentForm()" aria-label="Închide">&times;</button>
               </div>
               <div class="modal-body">
             <div class="echipament-form" id="echipament-form-container">

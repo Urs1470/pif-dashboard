@@ -292,7 +292,7 @@ def get_quote(symbol):
     """
     symbol = symbol.upper()
     if symbol not in ALLOWED_QUOTE_SYMBOLS:
-        return jsonify({'error': 'symbol not whitelisted', 'symbol': symbol}), 400
+        return jsonify({'error': 'symbol not whitelisted'}), 400
 
     rng = request.args.get('range', '3mo')
     if rng not in ('5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max'):
@@ -310,7 +310,7 @@ def get_quote(symbol):
         data = _fetch_yahoo_chart(symbol, rng=rng)
         result = (data.get('chart') or {}).get('result') or []
         if not result:
-            return jsonify({'error': 'no data from upstream', 'symbol': symbol}), 502
+            return jsonify({'error': 'no data from upstream'}), 502
         r0 = result[0]
         meta = r0.get('meta') or {}
         price = meta.get('regularMarketPrice')
@@ -344,6 +344,6 @@ def get_quote(symbol):
         _QUOTE_CACHE[cache_key] = (now, payload)
         return jsonify(payload)
     except urllib.error.HTTPError as e:
-        return jsonify({'error': f'upstream HTTP {e.code}', 'symbol': symbol}), 502
+        return jsonify({'error': f'upstream HTTP {e.code}'}), 502
     except Exception as e:
-        return jsonify({'error': str(e), 'symbol': symbol}), 500
+        return jsonify({'error': str(e)}), 500

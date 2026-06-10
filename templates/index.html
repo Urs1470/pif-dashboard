@@ -495,9 +495,9 @@
                 <div id="param-detail-panel" style="display: none; margin-top: 16px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2);"></div>
 
                 <div id="parametri-pagination" style="display: none; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding: 16px;">
-                    <button class="btn btn-secondary btn-small" id="param-prev" onclick="parametriChangePage(-1)" disabled><i data-lucide="chevron-left"></i></button>
+                    <button class="btn btn-secondary btn-small" id="param-prev" onclick="parametriChangePage(-1)" aria-label="Pagina anterioară" disabled><i data-lucide="chevron-left"></i></button>
                     <span id="param-page-info" style="color: var(--text2); font-size: var(--font-small);">Pagina 1</span>
-                    <button class="btn btn-secondary btn-small" id="param-next" onclick="parametriChangePage(1)" disabled><i data-lucide="chevron-right"></i></button>
+                    <button class="btn btn-secondary btn-small" id="param-next" onclick="parametriChangePage(1)" aria-label="Pagina următoare" disabled><i data-lucide="chevron-right"></i></button>
                 </div>
             </div>
             </div><!-- /param-mode-params -->
@@ -554,9 +554,9 @@
                     </div>
 
                     <div id="fault-pagination" style="display: none; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding: 16px;">
-                        <button class="btn btn-secondary btn-small" id="fault-prev" onclick="faultChangePage(-1)" disabled><i data-lucide="chevron-left"></i></button>
+                        <button class="btn btn-secondary btn-small" id="fault-prev" onclick="faultChangePage(-1)" aria-label="Pagina anterioară" disabled><i data-lucide="chevron-left"></i></button>
                         <span id="fault-page-info" style="color: var(--text2); font-size: var(--font-small);">Pagina 1</span>
-                        <button class="btn btn-secondary btn-small" id="fault-next" onclick="faultChangePage(1)" disabled><i data-lucide="chevron-right"></i></button>
+                        <button class="btn btn-secondary btn-small" id="fault-next" onclick="faultChangePage(1)" aria-label="Pagina următoare" disabled><i data-lucide="chevron-right"></i></button>
                     </div>
                 </div>
             </div><!-- /param-mode-faults -->
@@ -851,7 +851,7 @@
         <div class="modal" style="max-width: 400px;">
             <div class="modal-header">
                 <h3 class="modal-title">Confirmare</h3>
-                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+                <button class="modal-close" onclick="closeConfirmModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body">
                 <p id="confirm-message"></p>
@@ -868,7 +868,7 @@
         <div class="modal" style="max-width: 560px;">
             <div class="modal-header">
                 <h3 class="modal-title"><i data-lucide="pencil"></i> Editează task</h3>
-                <button class="modal-close" onclick="closeTaskEditModal()">&times;</button>
+                <button class="modal-close" onclick="closeTaskEditModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="task-edit-id">
@@ -952,7 +952,7 @@
         <div class="modal" style="max-width: 460px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="pif-ask-title">Confirmare</h3>
-                <button class="modal-close" onclick="_pifAskClose(null)">&times;</button>
+                <button class="modal-close" onclick="_pifAskClose(null)" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body">
                 <p id="pif-ask-message" style="margin-bottom: 14px; color: var(--text2);"></p>
@@ -981,7 +981,7 @@
                 <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
                     <i data-lucide="file-up"></i> Import parametri din export
                 </h3>
-                <button class="modal-close" onclick="closeImportParamsModal()">&times;</button>
+                <button class="modal-close" onclick="closeImportParamsModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body" id="import-params-body">
                 <!-- populated dynamically -->
@@ -996,7 +996,7 @@
                 <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
                     <i data-lucide="folder-up"></i> Import arhivă proiect (Siemens STARTER)
                 </h3>
-                <button class="modal-close" onclick="closeImportArchiveModal()">&times;</button>
+                <button class="modal-close" onclick="closeImportArchiveModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body" id="import-archive-body">
                 <!-- populated dynamically -->
@@ -1011,7 +1011,7 @@
                 <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
                     <i data-lucide="hard-drive-upload"></i> Import backup-uri ABB
                 </h3>
-                <button class="modal-close" onclick="closeImportAbbMultiModal()">&times;</button>
+                <button class="modal-close" onclick="closeImportAbbMultiModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body" id="import-abb-multi-body">
                 <!-- populated dynamically -->
@@ -1080,7 +1080,7 @@
         <div class="modal-container">
             <div class="modal-header">
                 <h2 id="form-title">Proiect nou</h2>
-                <button class="btn btn-small" onclick="hideNewProjectForm()"><i data-lucide="x"></i></button>
+                <button class="btn btn-small" onclick="hideNewProjectForm()" aria-label="Închide"><i data-lucide="x"></i></button>
             </div>
             <div class="modal-body">
                 <form id="project-form" onsubmit="saveProject(event)">
@@ -1192,7 +1192,7 @@
         <div class="modal client-list-modal">
             <div class="modal-header">
                 <h3 class="modal-title">👥 Clienți</h3>
-                <button class="modal-close" onclick="closeClientListModal()">&times;</button>
+                <button class="modal-close" onclick="closeClientListModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="client-list-header">
@@ -1209,7 +1209,7 @@
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="add-client-title">Adaugă Client Nou</h3>
-                <button class="modal-close" onclick="closeAddClientModal()">&times;</button>
+                <button class="modal-close" onclick="closeAddClientModal()" aria-label="Închide">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="add-client-form" onsubmit="saveClient(event)">
@@ -1348,7 +1348,7 @@
                 <span id="param-modal-code" style="font-family:monospace;color:var(--accent);font-size:1.1em;"></span>
                 <span id="param-modal-familie" style="font-size:0.7em;opacity:0.6;"></span>
             </h3>
-            <button class="modal-close" onclick="closeParamModal()">&times;</button>
+            <button class="modal-close" onclick="closeParamModal()" aria-label="Închide">&times;</button>
         </div>
         <div class="modal-body" style="padding:16px 20px;">
             <h4 id="param-modal-name" style="margin:0 0 8px 0;color:var(--text);"></h4>
@@ -1405,7 +1405,7 @@
                 <span id="fault-modal-tip" class="fault-tip-badge"></span>
                 <span id="fault-modal-familie" style="font-size:0.7em;opacity:0.6;font-weight:400;"></span>
             </h3>
-            <button class="modal-close" onclick="closeFaultModal()">&times;</button>
+            <button class="modal-close" onclick="closeFaultModal()" aria-label="Închide">&times;</button>
         </div>
         <div class="modal-body" style="padding:16px 20px;">
             <h4 id="fault-modal-name" style="margin:0 0 14px 0;color:var(--text);"></h4>
@@ -1436,7 +1436,7 @@
     <div class="modal" style="max-width: 400px;">
         <div class="modal-header">
             <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;"><i data-lucide="clock"></i> Adaugă timp manual</h3>
-            <button class="modal-close" onclick="closeManualTimeModal()">&times;</button>
+            <button class="modal-close" onclick="closeManualTimeModal()" aria-label="Închide">&times;</button>
         </div>
         <div class="modal-body" style="padding:16px 20px;">
             <div class="form-group">
@@ -1466,7 +1466,7 @@
     <div class="modal" style="max-width: 500px;">
         <div class="modal-header">
             <h3 class="modal-title">Manuale PIF</h3>
-            <button class="modal-close" onclick="closeManualsModal()">&times;</button>
+            <button class="modal-close" onclick="closeManualsModal()" aria-label="Închide">&times;</button>
         </div>
         <div class="modal-body" style="padding:16px 20px;">
             <div id="manuals-list" style="display:flex;flex-direction:column;gap:8px;"></div>

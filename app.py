@@ -235,7 +235,7 @@ def before_request_func():
     if _rl_api or _rl_login:
         if not check_rate_limit():
             logger.warning(f"Rate limit exceeded for IP: {request.remote_addr} on {request.path}")
-            return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.', 'retry_after': RATE_WINDOW}), 429
+            return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.'}), 429, {'Retry-After': str(RATE_WINDOW)}
 
     request._csp_nonce = secrets.token_urlsafe(16)
 
@@ -335,15 +335,15 @@ def login_hash():
     data = get_json_or_400()
     pin_hash = data.get('pin_hash', '')
     if not pin_hash:
-        return jsonify({'success': False, 'error': 'Missing pin_hash'}), 400
+        return jsonify({'error': 'Missing pin_hash'}), 400
     pin = os.environ.get('PIF_DASHBOARD_PIN')
     if not pin:
-        return jsonify({'success': False, 'error': 'Server misconfigured'}), 500
+        return jsonify({'error': 'Server misconfigured'}), 500
     expected_hash = hashlib.sha256(pin.encode()).hexdigest()
     if hmac.compare_digest(str(pin_hash), expected_hash):
         session['authenticated'] = True
         return jsonify({'success': True})
-    return jsonify({'success': False, 'error': 'Invalid hash'}), 401
+    return jsonify({'error': 'Invalid hash'}), 401
 
 
 # ============ FRONTEND ROUTES ============

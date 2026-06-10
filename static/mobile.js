@@ -164,13 +164,47 @@ async function dbGetAll(storeName) {
   });
 }
 
+// Quota (spațiu local plin) — detectare + toast throttled, ca un loop de
+// scrieri (ex: cache-uirea tuturor proiectelor) să nu spameze toast-uri.
+let _quotaToastAt = 0;
+
+function _isQuotaError(err) {
+  return !!err && err.name === 'QuotaExceededError';
+}
+
+function _notifyQuotaExceeded() {
+  const now = Date.now();
+  if (now - _quotaToastAt < 30000) return;
+  _quotaToastAt = now;
+  showMobileToast('Spațiu local plin — datele offline nu s-au salvat.', 'error');
+}
+
 async function dbPut(storeName, data) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
     const request = store.put(data);
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = (event) => {
+      if (_isQuotaError(request.error)) {
+        // Spațiu plin: notifică userul dar nu crăpa apelantul — fluxul
+        // continuă (ex: saveNote trimite în continuare la server dacă e online).
+        event.preventDefault();
+        _notifyQuotaExceeded();
+        resolve(undefined);
+      } else {
+        reject(request.error);
+      }
+    };
+    tx.onabort = () => {
+      // Quota poate aborta tranzacția fără onerror pe request (browser-dependent).
+      if (_isQuotaError(tx.error)) {
+        _notifyQuotaExceeded();
+        resolve(undefined);
+      } else {
+        reject(tx.error || new Error('TX aborted'));
+      }
+    };
   });
 }
 
@@ -420,6 +454,10 @@ function promptMobileSWUpdate(worker) {
 
 // ============ Sync Logic ============
 
+// O singură notificare per rafală de eșecuri de sync — flag-ul se resetează
+// la prima sincronizare reușită, ca retry-urile periodice să nu spameze.
+let _syncFailureNotified = false;
+
 async function syncNotes() {
   if (!_isOnline || !isAuthenticated()) return;
   
@@ -476,13 +514,18 @@ async function syncNotes() {
     
     // Update last sync time
     localStorage.setItem('last_sync', new Date().toISOString());
-    
+    _syncFailureNotified = false;
+
     // Refresh notes view if on notes tab
     if (currentTab === 'notes') {
       loadNotes();
     }
   } catch (e) {
     console.error('Sync error:', e);
+    if (!_syncFailureNotified) {
+      _syncFailureNotified = true;
+      showMobileToast('Sincronizare eșuată — datele rămân locale.', 'error');
+    }
   }
 }
 
@@ -594,6 +637,7 @@ async function syncParamsToLocal() {
         
     } catch (err) {
         console.error('[Sync] ❌ CAUGHT ERROR:', err.name, err.message, err.stack);
+        if (_isQuotaError(err)) _notifyQuotaExceeded();
         if (statusEl) statusEl.textContent = '❌ Sync eșuat — ' + (err.message || 'eroare');
         return false;
     }
