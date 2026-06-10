@@ -76,7 +76,7 @@ app.teardown_appcontext(close_db)
 
 # ============ VERSION HASH ============
 
-_USE_DIST = os.environ.get('PIF_USE_DIST', '').lower() in ('1', 'true', 'yes')
+_USE_DIST = os.environ.get('PIF_USE_DIST', 'true').lower() in ('1', 'true', 'yes')
 
 
 def file_hash(filepath):
