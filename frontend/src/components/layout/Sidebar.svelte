@@ -3,7 +3,7 @@
     Home, FolderKanban, ListTodo, Cpu, StickyNote,
     Wallet, Settings, PanelLeftClose, PanelLeft
   } from '@lucide/svelte'
-  import { router, link } from '../../lib/router.svelte.js'
+  import { router, link, navigate } from '../../lib/router.svelte.js'
   import { ui, toggleSidebar } from '../../stores/ui.svelte.js'
 
   const navItems = [
@@ -23,13 +23,15 @@
 </script>
 
 <aside class="sidebar" class:collapsed={ui.sidebarCollapsed}>
-  <div class="sidebar-brand">
+  <a href="/" use:link class="sidebar-brand" title="PIF Dashboard">
+    <svg class="brand-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="7" fill="var(--accent)"/>
+      <text x="16" y="23" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="19" font-weight="700" fill="var(--accent-text)">P</text>
+    </svg>
     {#if !ui.sidebarCollapsed}
-      <span class="brand-text">PIF</span>
-    {:else}
-      <span class="brand-icon">P</span>
+      <span class="brand-text">PIF Dashboard</span>
     {/if}
-  </div>
+  </a>
 
   <nav class="sidebar-nav" aria-label="Navigatie principala">
     {#each navItems as item}
@@ -78,22 +80,26 @@
     height: var(--header-height);
     display: flex;
     align-items: center;
+    gap: var(--space-sm);
     padding: 0 var(--space-md);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    text-decoration: none;
+    transition: opacity var(--dur-fast) var(--ease);
+  }
+  .sidebar-brand:hover { opacity: 0.85; }
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
   }
   .brand-text {
-    font-size: var(--font-h2);
+    font-size: var(--font-small);
     font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .brand-icon {
-    font-size: var(--font-h2);
-    font-weight: 700;
-    color: var(--accent);
-    width: 32px;
-    text-align: center;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .sidebar-nav {

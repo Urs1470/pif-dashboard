@@ -92,3 +92,7 @@ export async function updateSubtask(id, data) {
     body: JSON.stringify(data),
   })
 }
+
+export async function deleteSubtask(id) {
+  return apiJson(`/api/subtasks/${id}`, { method: 'DELETE' })
+}

@@ -1,13 +1,13 @@
 <script>
   import { onMount } from 'svelte'
-  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, ClipboardList, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote } from '@lucide/svelte'
+  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, ClipboardList, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
     loadProjectChecklist, loadChecklistCategories, deleteProject,
     createChecklistItem, updateChecklistItem, deleteChecklistItem,
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
-  import { updateTask, createTask } from '../stores/tasks.svelte.js'
+  import { updateTask, createTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, loadActiveTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -61,6 +61,31 @@
   let equipDeleteId = $state(null)
   let showEquipDelete = $state(false)
 
+  // Subtask state
+  let expandedTask = $state(null)
+  let subtasksCache = $state({})
+  let newSubtaskTitle = $state('')
+  let subtaskLoading = $state(false)
+
+  // Equipment collapse state
+  let expandedEquip = $state(new Set())
+
+  // Done tasks collapse
+  let showDoneTasks = $state(false)
+
+  // Observatii expand
+  let obsExpanded = $state(false)
+
+  // Checklist category collapse
+  let collapsedCats = $state(loadCatCollapse())
+
+  function loadCatCollapse() {
+    try { return JSON.parse(localStorage.getItem('pif:cl-collapse') || '{}') } catch (_) { return {} }
+  }
+  function saveCatCollapse() {
+    try { localStorage.setItem('pif:cl-collapse', JSON.stringify(collapsedCats)) } catch (_) {}
+  }
+
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'journal', label: 'Jurnal', icon: BookOpen },
@@ -108,10 +133,15 @@
     equipment = Array.isArray(e) ? e : e.echipamente || []
   }
 
+  async function reloadTasks() {
+    const t = await loadProjectTasks(params.id).catch(() => [])
+    tasks = Array.isArray(t) ? t : t.tasks || []
+  }
+
   async function toggleTaskStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
-    await updateTask(task.id, { status: next })
     tasks = tasks.map(t => t.id === task.id ? { ...t, status: next } : t)
+    await updateTask(task.id, { status: next })
   }
 
   async function handleProjectTimer() {
@@ -159,8 +189,7 @@
       await createTask(params.id, { titlu: newTaskTitle.trim(), status: 'to_do' })
       newTaskTitle = ''
       showNewTask = false
-      const t = await loadProjectTasks(params.id)
-      tasks = Array.isArray(t) ? t : t.tasks || []
+      await reloadTasks()
     } finally { creatingTask = false }
   }
 
@@ -249,6 +278,74 @@
     } catch (_) { return [] }
   }
 
+  function toggleEquipExpand(id) {
+    const next = new Set(expandedEquip)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    expandedEquip = next
+  }
+
+  // Subtask functions
+  async function toggleTaskExpand(taskId) {
+    if (expandedTask === taskId) {
+      expandedTask = null
+      return
+    }
+    expandedTask = taskId
+    if (!subtasksCache[taskId]) {
+      subtaskLoading = true
+      try {
+        const subs = await loadSubtasks(taskId)
+        subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+      } catch (_) {
+        subtasksCache = { ...subtasksCache, [taskId]: [] }
+      } finally { subtaskLoading = false }
+    }
+  }
+
+  async function toggleSubtaskDone(sub) {
+    const next = sub.done ? 0 : 1
+    const taskId = expandedTask
+    subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].map(s => s.id === sub.id ? { ...s, done: next } : s) }
+    try {
+      await updateSubtask(sub.id, { done: next })
+    } catch (_) {
+      subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].map(s => s.id === sub.id ? { ...s, done: sub.done } : s) }
+    }
+    await reloadTasks()
+  }
+
+  async function addSubtask(taskId) {
+    if (!newSubtaskTitle.trim()) return
+    try {
+      await createSubtask(taskId, newSubtaskTitle.trim())
+      newSubtaskTitle = ''
+      const subs = await loadSubtasks(taskId)
+      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+      await reloadTasks()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
+  }
+
+  async function removeSubtask(subId, taskId) {
+    subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].filter(s => s.id !== subId) }
+    try {
+      await deleteSubtask(subId)
+      await reloadTasks()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+      const subs = await loadSubtasks(taskId)
+      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+    }
+  }
+
+  function toggleCatCollapse(catId) {
+    const key = String(catId ?? '0')
+    collapsedCats = { ...collapsedCats, [key]: !collapsedCats[key] }
+    saveCatCollapse()
+  }
+
   function exportPdf() {
     window.open(`/api/export/pdf?project_id=${params.id}`, '_blank')
   }
@@ -262,9 +359,25 @@
     }
   }
 
+  function isOverdue(d) {
+    if (!d) return false
+    return new Date(d) < new Date(new Date().toDateString())
+  }
+  function isToday(d) {
+    if (!d) return false
+    return new Date(d).toDateString() === new Date().toDateString()
+  }
+  function isSoon(d) {
+    if (!d) return false
+    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
+    return diff > 0 && diff <= 7
+  }
+
   onMount(() => { load(); loadActiveTimer() })
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
+  const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat'))
+  const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
   const projectTimerActive = $derived(timer.active?.kind === 'project' && timer.active?.project_id === params.id)
   const checklistGroups = $derived.by(() => {
     const groups = []
@@ -322,6 +435,19 @@
         <div class="ps"><span class="ps-val">{formatDuration(timerSessions.total_secunde)}</span><span class="ps-lbl">ore lucrate</span></div>
         {#if project.deadline}<div class="ps"><span class="ps-val">{formatDate(project.deadline)}</span><span class="ps-lbl">deadline</span></div>{/if}
       </div>
+
+      {#if project.observatii}
+        <div class="obs-section">
+          <button class="obs-toggle" onclick={() => obsExpanded = !obsExpanded}>
+            <AlertCircle size={14} />
+            <span class="obs-label">Observatii</span>
+            {#if obsExpanded}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
+          </button>
+          <div class="obs-text" class:expanded={obsExpanded}>
+            {project.observatii}
+          </div>
+        </div>
+      {/if}
     </div>
 
     <div class="tabs">
@@ -343,22 +469,76 @@
         {#if tasks.length === 0}<p class="empty">Niciun task.</p>
         {:else}
           <div class="task-list">
-            {#each tasks as t (t.id)}
-              <div class="trow" class:done={t.status === 'done' || t.status === 'finalizat'} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
-                <button class="check" onclick={() => toggleTaskStatus(t)}>
-                  {#if t.status === 'done' || t.status === 'finalizat'}<CheckCircle2 size={16} />{:else}<div class="check-empty"></div>{/if}
-                </button>
-                <div class="tmain">
-                  <div class="ttitle">{t.titlu}</div>
-                  <div class="tinfo">
-                    <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
-                    {#if t.timp_secunde}<span>{formatDuration(t.timp_secunde)}</span>{/if}
-                    {#if t.subtask_total}<span>{t.subtask_done}/{t.subtask_total}</span>{/if}
-                  </div>
+            {#each activeTasks as t (t.id)}
+              <div class="trow-wrap">
+                <div class="trow" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                  <button class="check" onclick={() => toggleTaskStatus(t)}>
+                    <div class="check-empty"></div>
+                  </button>
+                  <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
+                    <div class="ttitle-row">
+                      <span class="ttitle">{t.titlu}</span>
+                      {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
+                    </div>
+                    <div class="tinfo">
+                      <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
+                      {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
+                      {#if t.subtask_total}
+                        <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
+                      {/if}
+                      {#if t.deadline}
+                        <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
+                      {/if}
+                    </div>
+                  </button>
+                  <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
                 </div>
-                <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
+                {#if expandedTask === t.id}
+                  <div class="subtask-body">
+                    {#if t.descriere}
+                      <div class="task-desc">{t.descriere}</div>
+                    {/if}
+                    {#if subtaskLoading && !subtasksCache[t.id]}
+                      <div class="sub-loading">Se incarca...</div>
+                    {:else}
+                      {#each (subtasksCache[t.id] || []) as sub (sub.id)}
+                        <div class="sub-row" class:sub-done={sub.done}>
+                          <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
+                          <span class="sub-title">{sub.titlu}</span>
+                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><Trash2 size={12} /></button>
+                        </div>
+                      {/each}
+                      <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
+                        <input type="text" placeholder="Adauga subtask..." bind:value={newSubtaskTitle} />
+                        <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
+                      </form>
+                    {/if}
+                  </div>
+                {/if}
               </div>
             {/each}
+
+            {#if doneTasks.length > 0}
+              <button class="done-sep" onclick={() => showDoneTasks = !showDoneTasks}>
+                {#if showDoneTasks}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
+                <span>Finalizate ({doneTasks.length})</span>
+              </button>
+              {#if showDoneTasks}
+                {#each doneTasks as t (t.id)}
+                  <div class="trow done" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                    <button class="check" onclick={() => toggleTaskStatus(t)}>
+                      <CheckCircle2 size={16} />
+                    </button>
+                    <div class="tmain">
+                      <div class="ttitle">{t.titlu}</div>
+                      <div class="tinfo">
+                        {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
+                      </div>
+                    </div>
+                  </div>
+                {/each}
+              {/if}
+            {/if}
           </div>
         {/if}
 
@@ -386,27 +566,32 @@
       {:else if activeTab === 'checklist'}
         {#each checklistGroups as group (group.id ?? 'uncat')}
           {@const done = group.items.filter(i => i.completed).length}
+          {@const catKey = String(group.id ?? '0')}
+          {@const isColl = !!collapsedCats[catKey]}
           <div class="clgroup">
             {#if group.nume}
-              <div class="clgroup-head">
+              <button class="clgroup-head" onclick={() => toggleCatCollapse(group.id)}>
+                {#if isColl}<ChevronRight size={14} />{:else}<ChevronDown size={14} />{/if}
                 <span class="section-title">{group.nume}</span>
                 <span class="clgroup-count">{done}/{group.items.length}</span>
-              </div>
+              </button>
             {/if}
-            {#each group.items as item (item.id)}
-              <div class="clrow" class:done={item.completed}>
-                <input type="checkbox" class="cbx" checked={!!item.completed} onchange={() => toggleChecklistItem(item)} />
-                <div class="clmain">
-                  <div class="cllabel">{item.titlu || '—'}</div>
-                  {#if item.note}<div class="clcat">{item.note}</div>{/if}
+            {#if !isColl}
+              {#each group.items as item (item.id)}
+                <div class="clrow" class:done={item.completed}>
+                  <input type="checkbox" class="cbx" checked={!!item.completed} onchange={() => toggleChecklistItem(item)} />
+                  <div class="clmain">
+                    <div class="cllabel">{item.titlu || '—'}</div>
+                    {#if item.note}<div class="clcat">{item.note}</div>{/if}
+                  </div>
+                  <button class="jdel" title="Sterge" onclick={() => removeChecklistItem(item.id)}><Trash2 size={13} /></button>
                 </div>
-                <button class="jdel" title="Sterge" onclick={() => removeChecklistItem(item.id)}><Trash2 size={13} /></button>
-              </div>
-            {/each}
-            <form class="cladd" onsubmit={(e) => { e.preventDefault(); addChecklistItem(group.id) }}>
-              <input type="text" placeholder="Adauga element..." bind:value={newItemTitles[group.id ?? '0']} />
-              <button type="submit" class="cladd-btn" disabled={!(newItemTitles[group.id ?? '0'] || '').trim()}><Plus size={14} /></button>
-            </form>
+              {/each}
+              <form class="cladd" onsubmit={(e) => { e.preventDefault(); addChecklistItem(group.id) }}>
+                <input type="text" placeholder="Adauga element..." bind:value={newItemTitles[group.id ?? '0']} />
+                <button type="submit" class="cladd-btn" disabled={!(newItemTitles[group.id ?? '0'] || '').trim()}><Plus size={14} /></button>
+              </form>
+            {/if}
           </div>
         {/each}
 
@@ -419,6 +604,7 @@
         {:else}
           <div class="elist">{#each equipment as e (e.id)}
             {@const eparams = parseEquipParams(e)}
+            {@const isExpanded = expandedEquip.has(e.id)}
             <Card>
               <div class="ecard-top">
                 <div class="ename">{e.nume || '—'}{#if e.producator} — {e.producator}{/if}</div>
@@ -432,11 +618,16 @@
                 {#if e.serial_number}<span>Serie: {e.serial_number}</span>{/if}
               </div>
               {#if eparams.length > 0}
-                <div class="eparams">
-                  {#each eparams as [k, v]}
-                    <div class="eparam"><code>{k}</code><span>{v}</span></div>
-                  {/each}
-                </div>
+                <button class="eparam-toggle" onclick={() => toggleEquipExpand(e.id)}>
+                  {#if isExpanded}<ChevronDown size={12} /> Ascunde parametri{:else}<ChevronRight size={12} /> {eparams.length} parametri{/if}
+                </button>
+                {#if isExpanded}
+                  <div class="eparams">
+                    {#each eparams as [k, v]}
+                      <div class="eparam"><code>{k}</code><span>{v}</span></div>
+                    {/each}
+                  </div>
+                {/if}
               {/if}
             </Card>
           {/each}</div>
@@ -515,6 +706,14 @@
   .ps-val { display: block; font-size: var(--font-h2); font-weight: 600; color: var(--text); font-feature-settings: "tnum"; }
   .ps-lbl { font-size: var(--font-tiny); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 
+  /* Observatii section under header */
+  .obs-section { margin-top: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .obs-toggle { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 600; color: var(--text-secondary); cursor: pointer; width: 100%; }
+  .obs-toggle:hover { color: var(--text); }
+  .obs-label { flex: 1; text-align: left; }
+  .obs-text { font-size: var(--font-small); color: var(--text); line-height: 1.6; white-space: pre-wrap; padding: 0 var(--space-md) var(--space-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .obs-text.expanded { display: block; -webkit-line-clamp: unset; }
+
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .tab { display: flex; align-items: center; gap: 4px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; min-height: 44px; -webkit-tap-highlight-color: transparent; }
@@ -528,7 +727,9 @@
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
   .error-text { color: var(--danger); }
 
+  /* Task list */
   .task-list { display: flex; flex-direction: column; }
+  .trow-wrap { display: flex; flex-direction: column; }
   .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
   .trow.done { opacity: 0.5; }
@@ -536,14 +737,43 @@
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
   .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
-  .tmain { flex: 1; min-width: 0; }
+  .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
+  .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
+  :global(.tdesc-icon) { color: var(--text-faint); flex-shrink: 0; }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
+  .tmono { font-family: var(--font-mono); }
+  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
+  .tdeadline { font-size: 10px; }
+  .tdeadline.overdue { color: var(--danger); font-weight: 600; }
+  .tdeadline.today { color: var(--accent); font-weight: 600; }
+  .tdeadline.soon { color: var(--warning); }
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
 
+  /* Done separator */
+  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .done-sep:hover { color: var(--text-secondary); }
+
+  /* Subtask expanded area */
+  .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
+  .task-desc { font-size: var(--font-small); color: var(--text-secondary); white-space: pre-wrap; line-height: 1.55; margin-bottom: var(--space-sm); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border-subtle); }
+  .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
+  .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
+  .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
+  .sub-del { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
+  .sub-row:hover .sub-del { opacity: 1; }
+  .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
+  .sub-add { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
+  .sub-add input { flex: 1; padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .sub-add-btn { width: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
+  .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
+
+  /* Journal */
   .jform { margin-bottom: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); }
   .jform textarea { width: 100%; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
   .jform-row { display: flex; gap: var(--space-sm); justify-content: flex-end; align-items: center; }
@@ -556,9 +786,11 @@
   .jdel:hover { background: var(--danger-subtle); color: var(--danger); }
   .jtext { font-size: var(--font-small); color: var(--text); line-height: 1.55; white-space: pre-wrap; }
 
+  /* Checklist */
   .clgroup { margin-bottom: var(--space-lg); }
-  .clgroup-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--space-xs); margin-bottom: var(--space-xs); border-bottom: 1px solid var(--border); }
-  .clgroup-count { font-size: var(--font-tiny); color: var(--text-dim); }
+  .clgroup-head { display: flex; align-items: center; gap: var(--space-xs); padding-bottom: var(--space-xs); margin-bottom: var(--space-xs); border-bottom: 1px solid var(--border); cursor: pointer; width: 100%; }
+  .clgroup-head:hover { color: var(--text); }
+  .clgroup-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); }
   .clrow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-xs); border-radius: var(--radius-xs); }
   .clrow:hover { background: var(--bg-surface); }
   .clrow.done .cllabel { text-decoration: line-through; color: var(--text-dim); }
@@ -571,12 +803,15 @@
   .cladd-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
   .cladd-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* Equipment */
   .elist { display: flex; flex-direction: column; gap: var(--space-sm); }
   .ecard-top { display: flex; align-items: center; justify-content: space-between; }
   .ecard-actions { display: flex; gap: 2px; }
   .ename { font-size: var(--font-small); font-weight: 600; color: var(--text); }
   .edetails { display: flex; gap: var(--space-md); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
-  .eparams { margin-top: var(--space-sm); display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); }
+  .eparam-toggle { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-tiny); color: var(--accent); cursor: pointer; margin-top: var(--space-sm); padding: 4px 0; font-weight: 500; }
+  .eparam-toggle:hover { text-decoration: underline; }
+  .eparams { margin-top: var(--space-xs); display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); }
   .eparam { display: flex; justify-content: space-between; font-size: var(--font-tiny); }
   .eparam code { color: var(--accent); font-family: var(--font-mono); }
   .eparam span { color: var(--text-secondary); }
@@ -584,6 +819,7 @@
   .att-btn:hover { background: var(--bg-hover); color: var(--text); }
   .att-btn.danger:hover { background: var(--danger-subtle); color: var(--danger); }
 
+  /* Info tab */
   .igrid { display: flex; flex-direction: column; gap: var(--space-sm); }
   .irow { display: flex; justify-content: space-between; font-size: var(--font-small); padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
   .ilabel { color: var(--text-dim); font-weight: 500; }
@@ -607,5 +843,7 @@
     .edetails { flex-wrap: wrap; gap: var(--space-sm); }
     .trow { padding: var(--space-sm); }
     .back { min-height: 44px; }
+    .subtask-body { margin-left: var(--space-sm); }
+    .sub-del { opacity: 1; }
   }
 </style>
