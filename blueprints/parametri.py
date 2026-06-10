@@ -408,7 +408,12 @@ def parametri_audit():
             SUM(CASE WHEN TRIM(descriere_scurta) = TRIM(parametru) THEN 1 ELSE 0 END) AS c_desc_eq_code,
             SUM(CASE WHEN (explicatie IS NULL OR TRIM(explicatie)='') THEN 1 ELSE 0 END) AS c_missing_explicatie,
             SUM(CASE WHEN pagina IS NULL THEN 1 ELSE 0 END) AS c_missing_pagina,
-            SUM(CASE WHEN (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%') THEN 1 ELSE 0 END) AS c_suspect_code,
+            SUM(CASE WHEN (LENGTH(TRIM(parametru)) < 2
+                OR (familie LIKE 'ACS%' AND parametru NOT LIKE '%.%')
+                OR (familie LIKE 'Danfoss%' AND parametru NOT LIKE '%-%')
+                OR (familie LIKE 'Lenze%' AND parametru NOT LIKE '0x%')
+                OR (familie LIKE 'SINAMICS%' AND NOT (parametru GLOB 'p[0-9]*' OR parametru GLOB 'r[0-9]*'))
+                ) THEN 1 ELSE 0 END) AS c_suspect_code,
             SUM(CASE WHEN (unitate IS NULL OR TRIM(unitate)='')
                 AND (descriere_scurta LIKE '%Hz%' OR descriere_scurta LIKE '%kW%' OR descriere_scurta LIKE '%rpm%' OR descriere_scurta LIKE '%°C%' OR descriere_scurta LIKE '%percent%')
                 THEN 1 ELSE 0 END) AS c_missing_unitate
@@ -495,10 +500,17 @@ def parametri_audit():
         'samples': rows,
     }
 
-    # 6. Cod parametru suspect (doar numere sau prea scurt)
+    # 6. Cod parametru suspect — formatul valid diferă per producător:
+    #    ABB 'Group.Index' (30.11), Danfoss 'G-P' (5-40), Lenze hex (0x2540:001),
+    #    Siemens p/r+cifre (p0304). Familii necunoscute nu sunt flagate.
     cursor.execute(f'''
         SELECT id, parametru, descriere_scurta, familie FROM {safe_table("parametri_master")}
-        {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 3 OR parametru NOT LIKE '%.%')
+        {where + (' AND ' if where else ' WHERE ')} (LENGTH(TRIM(parametru)) < 2
+            OR (familie LIKE 'ACS%' AND parametru NOT LIKE '%.%')
+            OR (familie LIKE 'Danfoss%' AND parametru NOT LIKE '%-%')
+            OR (familie LIKE 'Lenze%' AND parametru NOT LIKE '0x%')
+            OR (familie LIKE 'SINAMICS%' AND NOT (parametru GLOB 'p[0-9]*' OR parametru GLOB 'r[0-9]*'))
+        )
         LIMIT 30
     ''', params)
     rows = [dict(r) for r in cursor.fetchall()]
