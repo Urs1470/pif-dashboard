@@ -45,9 +45,10 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v17**, id
 ## Maintenance protocol (for every AI session)
 
 1. Start by reading this file + `CODE_MAP.md`/`API_MAP.md` — do NOT scan app.js/blueprints blindly.
-2. After adding/removing functions, sections, or routes: run `python scripts/gen_memory.py` and commit the regenerated maps with your change.
+2. Maps auto-regenerate on commit via `.githooks/pre-commit` (activate once per clone: `git config core.hooksPath .githooks`). Without the hook, run `python scripts/gen_memory.py` manually after adding/removing functions, sections, or routes.
 3. Made a non-obvious decision, found a new gotcha, or changed feature status? Append one dated line to **Recent decisions** below (newest first, keep ≤ 30 entries, prune oldest).
 
 ## Recent decisions
 
+- 2026-06-11: Added versioned pre-commit hook (`.githooks/pre-commit`) that auto-regenerates CODE_MAP/API_MAP when relevant code is committed; activation per clone via `git config core.hooksPath .githooks`.
 - 2026-06-11: Created persistent memory system (`scripts/gen_memory.py` → `docs/memory/`); CLAUDE.md updated to point here; fixed stale migration count (v14 → v17).

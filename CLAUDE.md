@@ -20,7 +20,13 @@ To avoid re-exploring the codebase every session, start here instead of scanning
 - `docs/memory/API_MAP.md` — auto-generated: all Flask routes (method, path, handler, line)
 - `SCHEMA_REFERENCE.md` — full SQL schema; `HERMES.md` — multi-agent rules + design system
 
-After structural changes (new/removed functions, JS sections, or routes), regenerate the maps and commit them with your change:
+The maps regenerate automatically on commit via a versioned pre-commit hook (`.githooks/pre-commit`). Activate it once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+If the hook isn't active (or to refresh manually), run:
 
 ```bash
 python scripts/gen_memory.py
