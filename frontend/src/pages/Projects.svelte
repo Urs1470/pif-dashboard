@@ -28,6 +28,18 @@
     { key: 'deadline', label: 'Deadline' },
   ]
 
+  const STATUS_CYCLE = ['in_lucru', 'in_asteptare', 'blocat', 'finalizat']
+
+  async function cycleProjectStatus(e, p) {
+    e.stopPropagation()
+    const cur = p.status || 'in_lucru'
+    const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length]
+    try {
+      await updateProject(p.id, { status: next })
+      toast(`Status: ${PROJECT_STATUS_LABELS[next] || next}`, 'success')
+    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+  }
+
   let searchInput = $state('')
   let debounceTimer
   let showNewModal = $state(false)
@@ -228,7 +240,7 @@
               </td>
               <td class="dim">{p.client || '—'}</td>
               <td class="dim">{p.producator || '—'}</td>
-              <td><Badge label={PROJECT_STATUS_LABELS[p.status] || p.status || '—'} color={STATUS_COLORS[p.status] || 'var(--text-dim)'} small /></td>
+              <td><button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button></td>
               <td class="dim">{p.deadline ? formatDate(p.deadline) : '—'}</td>
             </tr>
           {/each}
@@ -314,6 +326,8 @@
   .batch-check { display: flex; align-items: center; justify-content: center; width: 36px; height: 100%; color: var(--text-dim); cursor: pointer; }
   .batch-check:hover { color: var(--accent); }
   .batch-selected { background: var(--accent-subtle) !important; }
+  .status-pill { font-size: var(--font-tiny); font-weight: 600; padding: 2px 10px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .status-pill:hover { opacity: .7; transform: scale(1.05); }
 
   .row-skeleton { display: flex; flex-direction: column; gap: 6px; padding: var(--space-sm) var(--space-md); }
   .error-text { color: var(--danger); padding: var(--space-md); }

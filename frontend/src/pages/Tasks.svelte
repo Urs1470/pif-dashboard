@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat } from '@lucide/svelte'
+  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat, Search } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
@@ -34,6 +34,16 @@
   let subtaskLoading = $state(false)
 
   let showDoneTasks = $state(false)
+  let taskSearch = $state('')
+  let statusFilter = $state('')
+
+  const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
+  const STATUS_FILTER_OPTIONS = [
+    { value: '', label: 'Toate' },
+    { value: 'to_do', label: 'To Do' },
+    { value: 'in_lucru', label: 'In Lucru' },
+    { value: 'done', label: 'Finalizat' },
+  ]
 
   let showManualTime = $state(false)
   let manualId = $state(null)
@@ -44,8 +54,22 @@
 
   let taskSessions = $state({})
 
-  const activeTasks = $derived(globalTasks.items.filter(t => t.status !== 'done'))
-  const doneTasks = $derived(globalTasks.items.filter(t => t.status === 'done'))
+  function matchesSearch(t) {
+    if (!taskSearch) return true
+    const q = taskSearch.toLowerCase()
+    return (t.titlu || '').toLowerCase().includes(q) ||
+           (t.descriere || '').toLowerCase().includes(q) ||
+           (t.categorie || '').toLowerCase().includes(q)
+  }
+
+  const filteredTasks = $derived(
+    globalTasks.items.filter(t => {
+      if (statusFilter && t.status !== statusFilter) return false
+      return matchesSearch(t)
+    })
+  )
+  const activeTasks = $derived(filteredTasks.filter(t => t.status !== 'done'))
+  const doneTasks = $derived(filteredTasks.filter(t => t.status === 'done'))
 
   async function toggleStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
@@ -218,6 +242,13 @@
     await loadGlobalTasks({ arhiva: showArchive })
   }
 
+  async function cycleTaskStatus(t) {
+    const cur = t.status || 'to_do'
+    const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length]
+    await updateGlobalTask(t.id, { status: next })
+    await loadGlobalTasks({ arhiva: showArchive })
+  }
+
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
@@ -232,8 +263,18 @@
   </div>
 
   <div class="toolbar">
-    <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false; loadGlobalTasks() }}>Active</button>
-    <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhiva</button>
+    <div class="search-box">
+      <Search size={14} />
+      <input type="text" placeholder="Cauta taskuri..." bind:value={taskSearch} />
+    </div>
+    <div class="filters">
+      {#each STATUS_FILTER_OPTIONS as opt}
+        <button class="chip" class:active={statusFilter === opt.value} onclick={() => statusFilter = opt.value}>{opt.label}</button>
+      {/each}
+      <span class="filter-sep"></span>
+      <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false; loadGlobalTasks() }}>Active</button>
+      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhiva</button>
+    </div>
   </div>
 
   {#if globalTasks.loading}
@@ -265,6 +306,7 @@
               </div>
             </button>
             <div class="task-actions">
+              <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
               <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><Pencil size={12} /></button>
               <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
@@ -492,10 +534,18 @@
   .page-title-row h1 { font-size: var(--font-h1); font-weight: 700; }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
-  .toolbar { display: flex; gap: 4px; margin-bottom: var(--space-md); }
+  .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
+  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); flex: 1; max-width: 280px; }
+  .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
+  .search-box input::placeholder { color: var(--text-dim); }
+  .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .filter-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
   .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .chip:hover { background: var(--bg-hover); }
   .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .status-badge:hover { opacity: .7; }
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
@@ -576,6 +626,8 @@
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: none; }
     .sess-del, .task-del, .task-edit { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
   }

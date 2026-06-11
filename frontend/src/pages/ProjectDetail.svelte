@@ -1,12 +1,13 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
+  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle, Upload, Copy } from '@lucide/svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
     deleteProject, updateProject,
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
+  import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel } from '../lib/formatters.js'
@@ -254,6 +255,124 @@
     equipDeleteId = null
     await reloadEquipment()
     toast('Echipament sters', 'success')
+  }
+
+  // Equipment import state
+  let importFileInput = $state(null)
+  let importAbbInput = $state(null)
+  let importType = $state('')
+  let importPreview = $state(null)
+  let showImportModal = $state(false)
+  let importBusy = $state(false)
+  let importSelected = $state(new Set())
+
+  // Equipment copy state
+  let showCopyModal = $state(false)
+  let copyProjects = $state([])
+  let copyProjectId = $state('')
+  let copyEquipment = $state([])
+  let copySelected = $state(new Set())
+  let copyBusy = $state(false)
+
+  function triggerImportStarter() {
+    importType = 'starter'
+    importFileInput?.click()
+  }
+
+  function triggerImportAbb() {
+    importType = 'abb'
+    importAbbInput?.click()
+  }
+
+  async function onImportFile(e) {
+    const files = e.target.files
+    if (!files?.length) return
+    importBusy = true
+    try {
+      const fd = new FormData()
+      if (importType === 'abb') {
+        for (const f of files) fd.append('files', f)
+        const res = await apiJson('/api/import-abb-multi/preview', { method: 'POST', body: fd })
+        importPreview = res
+      } else {
+        fd.append('file', files[0])
+        const res = await apiJson('/api/import-archive/preview', { method: 'POST', body: fd })
+        importPreview = res
+      }
+      importSelected = new Set((importPreview.drives || []).map((_, i) => i))
+      showImportModal = true
+    } catch (err) { toast(`Eroare import: ${err.message}`, 'error') }
+    finally { importBusy = false; e.target.value = '' }
+  }
+
+  async function commitImport() {
+    if (!importPreview?.drives || importSelected.size === 0) return
+    importBusy = true
+    try {
+      const drives = importPreview.drives.filter((_, i) => importSelected.has(i))
+      await apiJson(`/api/proiecte/${params.id}/echipamente/import-archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drives }),
+      })
+      toast(`${drives.length} echipamente importate`, 'success')
+      showImportModal = false
+      importPreview = null
+      await reloadEquipment()
+    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+    finally { importBusy = false }
+  }
+
+  function toggleImportDrive(i) {
+    const next = new Set(importSelected)
+    if (next.has(i)) next.delete(i); else next.add(i)
+    importSelected = next
+  }
+
+  async function openCopyModal() {
+    showCopyModal = true
+    copyBusy = true
+    try {
+      const data = await apiJson('/api/proiecte')
+      const all = Array.isArray(data) ? data : data.projects || []
+      copyProjects = all.filter(p => p.id !== params.id)
+    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+    finally { copyBusy = false }
+  }
+
+  async function loadCopyEquipment() {
+    if (!copyProjectId) { copyEquipment = []; return }
+    copyBusy = true
+    try {
+      const e = await apiJson(`/api/proiecte/${copyProjectId}/echipamente`)
+      copyEquipment = Array.isArray(e) ? e : e.echipamente || []
+      copySelected = new Set(copyEquipment.map((_, i) => i))
+    } catch (_) { copyEquipment = [] }
+    finally { copyBusy = false }
+  }
+
+  async function commitCopy() {
+    if (copySelected.size === 0) return
+    copyBusy = true
+    try {
+      const drives = copyEquipment.filter((_, i) => copySelected.has(i)).map(e => ({
+        nume: e.nume, producator: e.producator, model: e.model,
+        serial_number: e.serial_number, firmware: e.firmware,
+        params: typeof e.params_json === 'string' ? JSON.parse(e.params_json || '{}') : (e.params_json || {}),
+        descrieri: typeof e.descrieri_json === 'string' ? JSON.parse(e.descrieri_json || '{}') : (e.descrieri_json || {}),
+      }))
+      await apiJson(`/api/proiecte/${params.id}/echipamente/import-archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drives }),
+      })
+      toast(`${drives.length} echipamente copiate`, 'success')
+      showCopyModal = false
+      copyEquipment = []
+      copyProjectId = ''
+      await reloadEquipment()
+    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+    finally { copyBusy = false }
   }
 
   function parseEquipParams(e) {
@@ -713,8 +832,15 @@
       {:else if activeTab === 'equipment'}
         <div class="tab-header">
           <span class="tab-sub">{equipment.length} echipamente</span>
-          <Button size="sm" variant="secondary" onclick={newEquip}><Plus size={14} /> Echipament</Button>
+          <div class="equip-btns">
+            <Button size="sm" variant="ghost" onclick={triggerImportStarter} disabled={importBusy}><Upload size={14} /> Import STARTER</Button>
+            <Button size="sm" variant="ghost" onclick={triggerImportAbb} disabled={importBusy}><Upload size={14} /> Import ABB</Button>
+            <Button size="sm" variant="ghost" onclick={openCopyModal}><Copy size={14} /> Copiaza</Button>
+            <Button size="sm" variant="secondary" onclick={newEquip}><Plus size={14} /> Echipament</Button>
+          </div>
         </div>
+        <input type="file" accept=".zip,.s7p" hidden bind:this={importFileInput} onchange={onImportFile} />
+        <input type="file" accept=".dcparamsbak" multiple hidden bind:this={importAbbInput} onchange={onImportFile} />
         {#if equipment.length === 0}<p class="empty">Niciun echipament.</p>
         {:else}
           <div class="elist">{#each equipment as e (e.id)}
@@ -814,6 +940,72 @@
 
 <ProjectFormModal bind:open={showEditModal} {project} onsaved={() => load()} />
 <EquipmentFormModal bind:open={showEquipModal} projectId={params.id} equipment={editingEquipment} onsaved={() => reloadEquipment()} />
+
+<Modal bind:open={showImportModal} title="Import Echipamente" size="lg">
+  {#if importPreview}
+    <div class="import-info">
+      <span>{importPreview.drives?.length || 0} drive-uri detectate</span>
+      {#if importPreview.skipped_default}<span class="dim">({importPreview.skipped_default} parametri la valoare default omisi)</span>{/if}
+    </div>
+    <div class="import-drives">
+      {#each (importPreview.drives || []) as drv, i}
+        <div class="import-drive" class:import-selected={importSelected.has(i)}>
+          <label class="import-check">
+            <input type="checkbox" checked={importSelected.has(i)} onchange={() => toggleImportDrive(i)} />
+            <div class="import-drive-info">
+              <strong>{drv.nume || `Drive ${i + 1}`}</strong>
+              <span class="dim">{drv.producator} {drv.model}{drv.firmware ? ` (FW ${drv.firmware})` : ''}</span>
+              <span class="dim">{Object.keys(drv.params || {}).length} parametri modificati</span>
+            </div>
+          </label>
+        </div>
+      {/each}
+    </div>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anuleaza</Button>
+      <Button loading={importBusy} disabled={importSelected.size === 0} onclick={commitImport}>
+        <Upload size={14} /> Importa {importSelected.size} echipamente
+      </Button>
+    </div>
+  {/if}
+</Modal>
+
+<Modal bind:open={showCopyModal} title="Copiaza echipamente din alt proiect" size="lg">
+  <div class="copy-form">
+    <label class="mf-field">
+      <span class="mf-label">Proiect sursa</span>
+      <select class="mf-input" bind:value={copyProjectId} onchange={loadCopyEquipment}>
+        <option value="">Selecteaza proiect...</option>
+        {#each copyProjects as p}
+          <option value={p.id}>{p.nume}{p.client ? ` — ${p.client}` : ''}</option>
+        {/each}
+      </select>
+    </label>
+    {#if copyEquipment.length > 0}
+      <div class="import-drives">
+        {#each copyEquipment as eq, i}
+          <div class="import-drive" class:import-selected={copySelected.has(i)}>
+            <label class="import-check">
+              <input type="checkbox" checked={copySelected.has(i)} onchange={() => { const n = new Set(copySelected); if (n.has(i)) n.delete(i); else n.add(i); copySelected = n }} />
+              <div class="import-drive-info">
+                <strong>{eq.nume || '—'}</strong>
+                <span class="dim">{eq.producator} {eq.model || ''}</span>
+              </div>
+            </label>
+          </div>
+        {/each}
+      </div>
+    {:else if copyProjectId}
+      <p class="empty">Niciun echipament in proiectul selectat.</p>
+    {/if}
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showCopyModal = false}>Anuleaza</Button>
+      <Button loading={copyBusy} disabled={copySelected.size === 0} onclick={commitCopy}>
+        <Copy size={14} /> Copiaza {copySelected.size} echipamente
+      </Button>
+    </div>
+  </div>
+</Modal>
 <ConfirmDialog bind:open={showDeleteConfirm} title="Sterge proiect" message={`Stergi proiectul "${project?.nume}"? Toate datele (taskuri, jurnal, atasamente, echipamente) vor fi sterse definitiv.`} confirmLabel="Sterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
@@ -1024,6 +1216,18 @@
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
+
+  /* Equipment import/copy */
+  .equip-btns { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+  .import-info { font-size: var(--font-small); color: var(--text-secondary); margin-bottom: var(--space-md); display: flex; gap: var(--space-sm); align-items: center; }
+  .import-drives { display: flex; flex-direction: column; gap: var(--space-xs); max-height: 400px; overflow-y: auto; }
+  .import-drive { padding: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-md); transition: all var(--dur-fast); }
+  .import-drive.import-selected { border-color: var(--accent); background: var(--accent-subtle); }
+  .import-check { display: flex; align-items: flex-start; gap: var(--space-sm); cursor: pointer; }
+  .import-check input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); }
+  .import-drive-info { display: flex; flex-direction: column; gap: 2px; }
+  .import-drive-info strong { font-size: var(--font-small); color: var(--text); }
+  .copy-form { display: flex; flex-direction: column; gap: var(--space-md); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

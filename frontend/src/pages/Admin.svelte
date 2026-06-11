@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { Settings, Download, Upload, Database, BarChart3, FileJson, Stethoscope, BookOpen, Save, AlertTriangle } from '@lucide/svelte'
+  import { Settings, Download, Upload, Database, BarChart3, FileJson, Stethoscope, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
   import { apiJson, apiFetch } from '../lib/api.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -132,6 +132,28 @@
     } finally { obsSaving = false }
   }
 
+  async function clearLocalCache() {
+    try {
+      localStorage.clear()
+      const dbs = await (indexedDB.databases ? indexedDB.databases() : Promise.resolve([]))
+      for (const d of dbs) { if (d.name && d.name.startsWith('pif')) indexedDB.deleteDatabase(d.name) }
+      const keys = await caches.keys()
+      for (const k of keys) { if (k.startsWith('pif')) await caches.delete(k) }
+      const reg = await navigator.serviceWorker?.getRegistration()
+      if (reg?.waiting) reg.waiting.postMessage('skipWaiting')
+      toast('Cache curatat. Reincarca pagina (Ctrl+Shift+R).', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  async function forceSWUpdate() {
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration()
+      if (!reg) { toast('Niciun service worker activ', 'info'); return }
+      await reg.update()
+      toast('Service worker actualizat. Reincarca pagina.', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
   const severityColor = (s) => s === 'high' ? 'var(--danger)' : s === 'medium' ? 'var(--warning)' : 'var(--text-dim)'
 </script>
 
@@ -237,6 +259,15 @@
       </Card>
     {/if}
   {/if}
+
+  <h2 class="sec-title"><HardDriveDownload size={16} /> Cache &amp; Service Worker</h2>
+  <Card>
+    <div class="actions">
+      <Button variant="secondary" size="sm" onclick={clearLocalCache}><HardDriveDownload size={14} /> Curata Cache Local</Button>
+      <Button variant="secondary" size="sm" onclick={forceSWUpdate}><RefreshCw size={14} /> Actualizeaza Service Worker</Button>
+    </div>
+    <p class="hint"><AlertTriangle size={12} /> Curatarea cache-ului sterge localStorage, IndexedDB (pif*) si SW cache. Necesita reincarcarea paginii.</p>
+  </Card>
 
   <h2 class="sec-title"><BookOpen size={16} /> Integrare Obsidian</h2>
   <Card>

@@ -326,6 +326,8 @@
         {#if detail.nume}<div class="dsection"><h4 class="dsec-title">Nume</h4><p>{detail.nume}</p></div>{/if}
         {#if detail.cauza}<div class="dsection"><h4 class="dsec-title">Cauza</h4><p>{detail.cauza}</p></div>{/if}
         {#if detail.remediu || detail.solutie}<div class="dsection accent"><h4 class="dsec-title">Solutie / Remediu</h4><p>{detail.remediu || detail.solutie}</p></div>{/if}
+        {#if detail.reactie}<div class="dsection"><h4 class="dsec-title">Reactie drive</h4><p>{detail.reactie}</p></div>{/if}
+        {#if detail.confirmare}<div class="dsection"><h4 class="dsec-title">Confirmare / Reset</h4><p>{detail.confirmare}</p></div>{/if}
         {#if detail.extra && Object.keys(detail.extra).length > 0}
           {#each Object.entries(detail.extra) as [k, v]}
             <div class="dsection"><h4 class="dsec-title">{k}</h4>
