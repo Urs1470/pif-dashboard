@@ -11,11 +11,28 @@ Single-user Flask app with SQLite, deployed via Gunicorn + Cloudflare Tunnel (HT
 - **Auth:** PIN-based (env `PIF_DASHBOARD_PIN`), session cookie (30d), CSRF double-submit
 - **Deploy:** systemd service on Ubuntu laptop-server, Cloudflare Tunnel, webhook auto-deploy
 
+## Persistent Memory — READ FIRST
+
+To avoid re-exploring the codebase every session, start here instead of scanning large files:
+
+- `docs/memory/MEMORY.md` — curated memory: DB map, feature status, gotchas, recent decisions
+- `docs/memory/CODE_MAP.md` — auto-generated: every JS section + top-level function with line numbers (app.js is ~8k lines — find the section here, then read only that range)
+- `docs/memory/API_MAP.md` — auto-generated: all Flask routes (method, path, handler, line)
+- `SCHEMA_REFERENCE.md` — full SQL schema; `HERMES.md` — multi-agent rules + design system
+
+After structural changes (new/removed functions, JS sections, or routes), regenerate the maps and commit them with your change:
+
+```bash
+python scripts/gen_memory.py
+```
+
+Append important decisions/gotchas to the "Recent decisions" section of `docs/memory/MEMORY.md`.
+
 ## Architecture
 
 ```
 app.py                    # Flask entry, auth, CSP headers, rate limiter
-database.py               # Schema (19 tables), migrations v1-v14, WAL config
+database.py               # Schema (19 tables), migrations v1-v17, WAL config
 utils.py                  # login_required decorator, UUID, app_settings KV
 csrf.py                   # Double-submit CSRF (cookie + X-CSRF-Token header)
 labels.py                 # Centralized status labels (project + task states)
@@ -49,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 19 tables, 14 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 19 tables, 17 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), checklist_pif, checklist_categorii, jurnal, timer_sessions, global_tasks, global_task_sessions, atasamente, echipamente, clienti, project_templates
 
 **Specialized:** fault_codes (8 drive families, auto-seeded from data/fault_codes/*.json), budget_state (JSON blob per user), budget_audit (capped 5000 rows/user via trigger), assistant_memory, app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v14. Each is idempotent. Auto-runs on first request via `before_request`.
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v17. Each is idempotent. Auto-runs on first request via `before_request`.
 
 ## Key Patterns
 
