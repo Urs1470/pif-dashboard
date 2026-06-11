@@ -1,0 +1,26 @@
+#!/bin/sh
+# Auto-regenerare memorie proiect (docs/memory/CODE_MAP.md + API_MAP.md)
+# Activare (o singura data per clona): git config core.hooksPath .githooks
+# Ruleaza doar daca commit-ul atinge cod relevant; nu blocheaza commit-ul la eroare.
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMRD)
+
+echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/(app|mobile|core)\.js|static/budget/budget-tracker\.js)$' || exit 0
+
+if command -v python3 >/dev/null 2>&1; then
+    PY=python3
+elif command -v python >/dev/null 2>&1; then
+    PY=python
+else
+    echo "[pre-commit] python negasit - sar regenerarea memoriei (ruleaza manual: python scripts/gen_memory.py)" >&2
+    exit 0
+fi
+
+if $PY scripts/gen_memory.py >/dev/null 2>&1; then
+    git add docs/memory/CODE_MAP.md docs/memory/API_MAP.md
+    echo "[pre-commit] memorie regenerata (docs/memory/CODE_MAP.md + API_MAP.md)"
+else
+    echo "[pre-commit] AVERTISMENT: scripts/gen_memory.py a esuat - commit continua, regenereaza manual" >&2
+fi
+
+exit 0
