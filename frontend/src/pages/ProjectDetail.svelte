@@ -54,6 +54,7 @@
   let journalDate = $state('')
   let addingJournal = $state(false)
   let journalDeleteId = $state(null)
+  let journalDeleteSessionId = $state(null)
   let showJournalDelete = $state(false)
 
   let showEquipModal = $state(false)
@@ -218,7 +219,12 @@
   async function doDeleteJournal() {
     if (!journalDeleteId) return
     await deleteJournalEntry(journalDeleteId)
+    if (journalDeleteSessionId) {
+      await deleteTimerSession(journalDeleteSessionId).catch(() => {})
+      timerSessions = await loadProjectTimerSessions(params.id).catch(() => timerSessions)
+    }
     journalDeleteId = null
+    journalDeleteSessionId = null
     await reloadJournal()
     toast('Intrare stearsa', 'success')
   }
@@ -602,6 +608,34 @@
   const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat'))
   const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
   const projectTimerActive = $derived(timer.active?.kind === 'project' && timer.active?.project_id === params.id)
+
+  const mergedTimeline = $derived.by(() => {
+    const sessions = timerSessions.sessions || []
+    const matched = new Set()
+    const items = []
+    for (const j of journal) {
+      const jTime = new Date(j.data || j.created_at || 0).getTime()
+      const found = sessions.find(s => {
+        if (matched.has(s.id)) return false
+        const stopIso = s.stop_time || s.end_time
+        if (!stopIso) return false
+        return Math.abs(jTime - new Date(stopIso).getTime()) < 2 * 60 * 1000
+      })
+      if (found) {
+        matched.add(found.id)
+        items.push({ kind: 'journal', ...j, _duration: found.durata_secunde, _sessionId: found.id })
+      } else {
+        items.push({ kind: 'journal', ...j })
+      }
+    }
+    for (const s of sessions) {
+      if (!matched.has(s.id)) {
+        items.push({ kind: 'timer', id: s.id, data: s.stop_time || s.start_time, durata: s.durata_secunde, sessionId: s.id })
+      }
+    }
+    items.sort((a, b) => new Date(b.data || 0).getTime() - new Date(a.data || 0).getTime())
+    return items
+  })
 </script>
 
 <div class="page">
@@ -816,16 +850,32 @@
             <Button size="sm" loading={addingJournal} disabled={!journalText.trim()} onclick={addJournal}><Plus size={14} /> Adauga</Button>
           </div>
         </div>
-        {#if journal.length === 0}<p class="empty">Nicio intrare.</p>
+        {#if mergedTimeline.length === 0}<p class="empty">Nicio intrare.</p>
         {:else}
-          <div class="jlist">{#each journal as j (j.id)}
-            <div class="jentry">
-              <div class="jentry-top">
-                <div class="jdate">{formatDate(j.data || j.created_at)}</div>
-                <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = j.id; showJournalDelete = true }}><Trash2 size={13} /></button>
+          <div class="jlist">{#each mergedTimeline as item (item.id)}
+            {#if item.kind === 'journal'}
+              <div class="jentry">
+                <div class="jentry-top">
+                  <div class="jentry-meta">
+                    <div class="jdate">{formatDate(item.data || item.created_at)}</div>
+                    {#if item._duration}<span class="jdur"><Clock size={12} /> {formatDuration(item._duration)}</span>{/if}
+                  </div>
+                  <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = item.id; journalDeleteSessionId = item._sessionId || null; showJournalDelete = true }}><Trash2 size={13} /></button>
+                </div>
+                <div class="jtext">{item.continut || '—'}</div>
               </div>
-              <div class="jtext">{j.continut || '—'}</div>
-            </div>
+            {:else}
+              <div class="jentry jentry-timer">
+                <div class="jentry-top">
+                  <div class="jentry-meta">
+                    <div class="jdate">{formatDate(item.data)}</div>
+                    <span class="jdur"><Clock size={12} /> {formatDuration(item.durata)}</span>
+                  </div>
+                  <button class="jdel" title="Sterge sesiunea" onclick={() => handleDeleteSession(item.sessionId)}><Trash2 size={13} /></button>
+                </div>
+                <div class="jtext jtext-timer">Timer fara nota</div>
+              </div>
+            {/if}
           {/each}</div>
         {/if}
 
@@ -1164,6 +1214,10 @@
   .jdate { font-size: var(--font-tiny); color: var(--text-dim); }
   .jdel { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .jdel:hover { background: var(--danger-subtle); color: var(--danger); }
+  .jentry-meta { display: flex; align-items: center; gap: var(--space-sm); }
+  .jdur { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--accent); background: var(--accent-subtle); padding: 2px 7px; border-radius: var(--radius-xs); }
+  .jentry-timer { opacity: 0.7; }
+  .jtext-timer { font-style: italic; color: var(--text-dim); }
   .jtext { font-size: var(--font-small); color: var(--text); line-height: 1.55; white-space: pre-wrap; }
 
   /* Equipment */
