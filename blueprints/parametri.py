@@ -619,6 +619,29 @@ def get_parametru_detail(param_id):
     else:
         result['influentat_de'] = []
 
+    # Forward links: tokenize `influenteaza` (comma-separated codes) and resolve
+    # each code to a param in the same family so the UI can render clickable chips.
+    inf_text = result.get('influenteaza')
+    tokens = []
+    if inf_text and familie:
+        for tok in re.split(r'[,;]\s*', inf_text):
+            tok = tok.strip()
+            if not tok:
+                continue
+            entry = {'text': tok, 'id': None}
+            if len(tok) <= 24:
+                # codes may carry an index suffix (r0063[2]) absent from the master table
+                base = re.sub(r'\[\d+\]$', '', tok)
+                cursor.execute(
+                    'SELECT id FROM parametri_master WHERE familie = ? AND parametru = ? LIMIT 1',
+                    (familie, base)
+                )
+                hit = cursor.fetchone()
+                if hit:
+                    entry['id'] = hit['id']
+            tokens.append(entry)
+    result['influenteaza_tokens'] = tokens
+
     conn.close()
     return jsonify(result)
 

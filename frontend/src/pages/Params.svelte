@@ -214,7 +214,24 @@
         {#if detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Descriere</h4><p>{detail.descriere_scurta}</p></div>{/if}
         {#if detail.descriere && detail.descriere !== detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Detalii</h4><p>{detail.descriere}</p></div>{/if}
         {#if detail.explicatie}<div class="dsection accent"><h4 class="dsec-title">Explicatie</h4><p>{detail.explicatie}</p></div>{/if}
-        {#if detail.influenteaza}<div class="dsection"><h4 class="dsec-title">Influenteaza</h4><p>{detail.influenteaza}</p></div>{/if}
+        {#if detail.influenteaza}
+          <div class="dsection">
+            <h4 class="dsec-title">Influenteaza</h4>
+            {#if detail.influenteaza_tokens?.some(t => t.id)}
+              <div class="dlinks">
+                {#each detail.influenteaza_tokens as t}
+                  {#if t.id}
+                    <button class="dlink" onclick={() => jumpToParam(t.id)}>{t.text}</button>
+                  {:else}
+                    <span class="dtok">{t.text}</span>
+                  {/if}
+                {/each}
+              </div>
+            {:else}
+              <p>{detail.influenteaza}</p>
+            {/if}
+          </div>
+        {/if}
         {#if detail.influentat_de?.length > 0}
           <div class="dsection">
             <h4 class="dsec-title">Influentat de</h4>
@@ -298,6 +315,7 @@
   .dlinks { display: flex; gap: 6px; flex-wrap: wrap; }
   .dlink { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
   .dlink:hover { border-color: var(--accent); }
+  .dtok { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); }
 
   @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } }
 </style>
