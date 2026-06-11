@@ -116,3 +116,7 @@ export async function loadTaskTimer(taskId) {
 export async function loadGlobalTaskTimer(taskId) {
   return apiJson(`/api/global-tasks/${taskId}/timer`)
 }
+
+export async function loadSubtaskTimer(subtaskId) {
+  return apiJson(`/api/subtasks/${subtaskId}/timer`)
+}

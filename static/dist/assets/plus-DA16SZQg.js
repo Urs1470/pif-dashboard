@@ -1,0 +1,1 @@
+import{J as e,W as t,q as n}from"./index-CRysNmhn.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`M5 12h14`}],[`path`,{d:`M12 5v14`}]];t(i,e({name:`plus`},()=>o,{get iconNode(){return s}}))}export{i as t};

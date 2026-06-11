@@ -7,7 +7,7 @@
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer } from '../stores/timer.svelte.js'
+  import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -64,6 +64,11 @@
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
   let subtaskLoading = $state(false)
+
+  // Task/subtask session state
+  let taskSessionsCache = $state({})
+  let subSessionsCache = $state({})
+  let expandedSubSess = $state(null)
 
   // Equipment collapse state
   let expandedEquip = $state(new Set())
@@ -261,6 +266,7 @@
       return
     }
     expandedTask = taskId
+    expandedSubSess = null
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -269,6 +275,9 @@
       } catch (_) {
         subtasksCache = { ...subtasksCache, [taskId]: [] }
       } finally { subtaskLoading = false }
+    }
+    if (!taskSessionsCache[taskId]) {
+      taskSessionsCache = { ...taskSessionsCache, [taskId]: await loadTaskTimer(taskId).catch(() => ({ sessions: [], total_secunde: 0 })) }
     }
   }
 
@@ -415,6 +424,34 @@
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
     }
+  }
+
+  async function handleDeleteTaskSession(taskId, sessionId) {
+    try {
+      await deleteTimerSession(sessionId)
+      taskSessionsCache = { ...taskSessionsCache, [taskId]: await loadTaskTimer(taskId).catch(() => ({ sessions: [], total_secunde: 0 })) }
+      await reloadTasks()
+      toast('Sesiune stearsa', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  async function toggleSubSessions(subId) {
+    if (expandedSubSess === subId) { expandedSubSess = null; return }
+    expandedSubSess = subId
+    if (!subSessionsCache[subId]) {
+      subSessionsCache = { ...subSessionsCache, [subId]: await loadSubtaskTimer(subId).catch(() => ({ sessions: [], total_secunde: 0 })) }
+    }
+  }
+
+  async function handleDeleteSubSession(subId, sessionId) {
+    try {
+      await deleteTimerSession(sessionId)
+      subSessionsCache = { ...subSessionsCache, [subId]: await loadSubtaskTimer(subId).catch(() => ({ sessions: [], total_secunde: 0 })) }
+      const taskId = expandedTask
+      subtasksCache = { ...subtasksCache, [taskId]: await loadSubtasks(taskId) }
+      await reloadTasks()
+      toast('Sesiune stearsa', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
   async function handleSubtaskTimer(sub) {
@@ -580,15 +617,38 @@
                         <div class="sub-row" class:sub-done={sub.done}>
                           <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
                           <span class="sub-title">{sub.titlu}</span>
-                          {#if sub.timp_secunde}<span class="sub-time">{formatDuration(sub.timp_secunde)}</span>{/if}
+                          {#if sub.timp_secunde}<button class="sub-time" onclick={() => toggleSubSessions(sub.id)} title="Vezi sesiuni">{formatDuration(sub.timp_secunde)}</button>{/if}
                           <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><Clock size={12} /></button>
                           <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><Trash2 size={12} /></button>
                         </div>
+                        {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
+                          <div class="sub-sess">
+                            {#each subSessionsCache[sub.id].sessions as s (s.id)}
+                              <div class="sess mini">
+                                <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+                                <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+                                <button class="sess-del" title="Sterge" onclick={() => handleDeleteSubSession(sub.id, s.id)}><Trash2 size={10} /></button>
+                              </div>
+                            {/each}
+                          </div>
+                        {/if}
                       {/each}
                       <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
                         <input type="text" placeholder="Adauga subtask..." bind:value={newSubtaskTitle} />
                         <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
                       </form>
+                    {/if}
+                    {#if taskSessionsCache[t.id]?.sessions?.length > 0}
+                      <div class="tsess-section">
+                        <span class="tsess-label">Sesiuni ({taskSessionsCache[t.id].sessions.length}) — {formatDuration(taskSessionsCache[t.id].total_secunde)}</span>
+                        {#each taskSessionsCache[t.id].sessions as s (s.id)}
+                          <div class="sess">
+                            <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+                            <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+                            <button class="sess-del" title="Sterge" onclick={() => handleDeleteTaskSession(t.id, s.id)}><Trash2 size={11} /></button>
+                          </div>
+                        {/each}
+                      </div>
                     {/if}
                   </div>
                 {/if}
@@ -863,7 +923,8 @@
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
-  .sub-time { font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--accent); flex-shrink: 0; }
+  .sub-time { font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--accent); flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0; }
+  .sub-time:hover { text-decoration: underline; }
   .sub-timer { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
   .sub-timer.active { opacity: 1; color: var(--accent); background: var(--accent-subtle); }
   .sub-row:hover .sub-timer { opacity: 1; }
@@ -919,6 +980,11 @@
   .sess-del { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
   .sess:hover .sess-del { opacity: 1; }
   .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
+
+  .tsess-section { margin-top: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-sm); }
+  .tsess-label { font-size: var(--font-tiny); color: var(--text-dim); }
+  .sub-sess { margin-left: 1.5rem; margin-bottom: var(--space-xs); }
+  .sess.mini { font-size: 0.68rem; }
 
   .stopnote { display: flex; flex-direction: column; gap: var(--space-md); }
   .ta-field { display: flex; flex-direction: column; gap: 4px; }
