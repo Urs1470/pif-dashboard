@@ -8,7 +8,7 @@
   } from '../stores/projects.svelte.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
-  import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import { navigate } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -226,6 +226,14 @@
     taskDeleteId = null
     await reloadTasks()
     toast('Task sters', 'success')
+  }
+
+  const PRIO_CYCLE = ['normal', 'minor', 'urgent']
+  async function cycleTaskPriority(t) {
+    const cur = (t.prioritate || 'normal').toLowerCase()
+    const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
+    await updateTask(t.id, { prioritate: next })
+    await reloadTasks()
   }
 
   function editEquip(e) {
@@ -592,7 +600,6 @@
                       {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
                     </div>
                     <div class="tinfo">
-                      <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
                       {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
                       {#if t.subtask_total}
                         <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
@@ -602,6 +609,7 @@
                       {/if}
                     </div>
                   </button>
+                  <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
                   <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
                   <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
                 </div>
@@ -901,6 +909,8 @@
   :global(.tdesc-icon) { color: var(--text-faint); flex-shrink: 0; }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
+  .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .prio-badge:hover { opacity: .8; }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
   .tdeadline { font-size: 10px; }
   .tdeadline.overdue { color: var(--danger); font-weight: 600; }

@@ -3,9 +3,8 @@
   import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor } from '../lib/formatters.js'
+  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
-  import Badge from '../components/ui/Badge.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import Button from '../components/ui/Button.svelte'
@@ -155,6 +154,14 @@
     toast('Task sters', 'success')
   }
 
+  const PRIO_CYCLE = ['normal', 'minor', 'urgent']
+  async function cycleTaskPriority(t) {
+    const cur = (t.prioritate || 'normal').toLowerCase()
+    const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
+    await updateGlobalTask(t.id, { prioritate: next })
+    await loadGlobalTasks({ arhiva: showArchive })
+  }
+
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
@@ -201,7 +208,7 @@
               </div>
             </button>
             <div class="task-actions">
-              <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
+              <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
               <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
               <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                 <Clock size={14} />
@@ -278,7 +285,7 @@
                   </div>
                 </button>
                 <div class="task-actions">
-                  <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
+                  <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
                   <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                     <Clock size={14} />
                   </button>
@@ -382,6 +389,8 @@
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
+  .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .prio-badge:hover { opacity: .8; }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
   .trow:hover .task-del { opacity: 1; }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
