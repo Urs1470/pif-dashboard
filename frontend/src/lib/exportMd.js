@@ -19,14 +19,12 @@ export function formatFileSize(bytes) {
 }
 
 export async function exportMarkdown(projectId) {
-  const [project, tasks, jurnal, attachments, timer, checklist, checklistCat, echipamente] = await Promise.all([
+  const [project, tasks, jurnal, attachments, timer, echipamente] = await Promise.all([
     apiJson(`/api/proiecte/${projectId}`),
     apiJson(`/api/proiecte/${projectId}/tasks`).catch(() => []),
     apiJson(`/api/proiecte/${projectId}/jurnal`).catch(() => []),
     apiJson(`/api/proiecte/${projectId}/atasamente`).catch(() => []),
     apiJson(`/api/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 })),
-    apiJson(`/api/proiecte/${projectId}/checklist`).catch(() => []),
-    apiJson(`/api/proiecte/${projectId}/checklist-categorii`).catch(() => []),
     apiJson(`/api/proiecte/${projectId}/echipamente`).catch(() => []),
   ])
 
@@ -91,31 +89,7 @@ export async function exportMarkdown(projectId) {
     }
   }
 
-  // 3. Checklist PIF
-  if (isPIF && checklist.length > 0) {
-    md += `## ${section++}. Checklist PIF\n\n`
-    const byCat = new Map()
-    for (const it of checklist) {
-      const key = it.categorie_id != null ? String(it.categorie_id) : '0'
-      if (!byCat.has(key)) byCat.set(key, [])
-      byCat.get(key).push(it)
-    }
-    const ordered = [...checklistCat].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0))
-    const renderItems = (its) => its.map(it => `- [${it.completed ? 'x' : ' '}] ${escMd(it.titlu)}`).join('\n')
-    for (const cat of ordered) {
-      const its = byCat.get(String(cat.id)) || []
-      if (!its.length) continue
-      const done = its.filter(i => i.completed).length
-      md += `### ${escMd(cat.nume)} (${done}/${its.length})\n\n${renderItems(its)}\n\n`
-    }
-    const uncategorized = byCat.get('0') || []
-    if (uncategorized.length) {
-      const done = uncategorized.filter(i => i.completed).length
-      md += `### Fără categorie (${done}/${uncategorized.length})\n\n${renderItems(uncategorized)}\n\n`
-    }
-  }
-
-  // 4. Lista taskuri
+  // 3. Lista taskuri
   if (tasks.length > 0) {
     md += `## ${section++}. Listă taskuri\n\n`
     const prioOrder = { urgent: 0, normal: 1, minor: 2 }

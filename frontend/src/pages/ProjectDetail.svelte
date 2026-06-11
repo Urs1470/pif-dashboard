@@ -1,13 +1,12 @@
 <script>
   import { onMount } from 'svelte'
-  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, ClipboardList, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
+  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
-    loadProjectChecklist, loadChecklistCategories, deleteProject, updateProject,
-    createChecklistItem, updateChecklistItem, deleteChecklistItem,
+    deleteProject, updateProject,
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
-  import { updateTask, createTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
+  import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -30,8 +29,8 @@
   let tasks = $state([])
   let journal = $state([])
   let equipment = $state([])
-  let checklist = $state([])
-  let checklistCats = $state([])
+  let taskDeleteId = $state(null)
+  let showTaskDelete = $state(false)
   let timerSessions = $state({ sessions: [], total_secunde: 0 })
   let loading = $state(true)
   let error = $state(null)
@@ -54,8 +53,6 @@
   let addingJournal = $state(false)
   let journalDeleteId = $state(null)
   let showJournalDelete = $state(false)
-
-  let newItemTitles = $state({})
 
   let showEquipModal = $state(false)
   let editingEquipment = $state(null)
@@ -91,20 +88,9 @@
   let manualMinutes = $state(0)
   let manualSaving = $state(false)
 
-  // Checklist category collapse
-  let collapsedCats = $state(loadCatCollapse())
-
-  function loadCatCollapse() {
-    try { return JSON.parse(localStorage.getItem('pif:cl-collapse') || '{}') } catch (_) { return {} }
-  }
-  function saveCatCollapse() {
-    try { localStorage.setItem('pif:cl-collapse', JSON.stringify(collapsedCats)) } catch (_) {}
-  }
-
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'journal', label: 'Jurnal', icon: BookOpen },
-    { key: 'checklist', label: 'Checklist', icon: ClipboardList },
     { key: 'equipment', label: 'Echipamente', icon: Wrench },
     { key: 'attachments', label: 'Atasamente', icon: Paperclip },
     { key: 'info', label: 'Info', icon: Settings2 },
@@ -114,19 +100,15 @@
     loading = true
     try {
       project = await loadProjectDetail(params.id)
-      const [t, j, e, c, cc, ts] = await Promise.all([
+      const [t, j, e, ts] = await Promise.all([
         loadProjectTasks(params.id).catch(() => []),
         loadProjectJournal(params.id).catch(() => []),
         loadProjectEquipment(params.id).catch(() => []),
-        loadProjectChecklist(params.id).catch(() => []),
-        loadChecklistCategories(params.id).catch(() => []),
         loadProjectTimerSessions(params.id).catch(() => ({ sessions: [], total_secunde: 0 })),
       ])
       tasks = Array.isArray(t) ? t : t.tasks || []
       journal = Array.isArray(j) ? j : j.entries || []
       equipment = Array.isArray(e) ? e : e.echipamente || []
-      checklist = Array.isArray(c) ? c : c.items || c.checklist || []
-      checklistCats = Array.isArray(cc) ? cc : cc.categorii || []
       timerSessions = ts
     } catch (err) {
       error = err.message
@@ -136,11 +118,6 @@
   async function reloadJournal() {
     const j = await loadProjectJournal(params.id).catch(() => [])
     journal = Array.isArray(j) ? j : j.entries || []
-  }
-
-  async function reloadChecklist() {
-    const c = await loadProjectChecklist(params.id).catch(() => [])
-    checklist = Array.isArray(c) ? c : c.items || c.checklist || []
   }
 
   async function reloadEquipment() {
@@ -238,35 +215,12 @@
     toast('Intrare stearsa', 'success')
   }
 
-  async function toggleChecklistItem(item) {
-    const next = item.completed ? 0 : 1
-    checklist = checklist.map(c => c.id === item.id ? { ...c, completed: next } : c)
-    try {
-      await updateChecklistItem(item.id, { completed: next })
-    } catch (e) {
-      checklist = checklist.map(c => c.id === item.id ? { ...c, completed: item.completed } : c)
-      toast(`Eroare: ${e.message}`, 'error')
-    }
-  }
-
-  async function addChecklistItem(catId) {
-    const key = catId ?? '0'
-    const title = (newItemTitles[key] || '').trim()
-    if (!title) return
-    try {
-      const body = { titlu: title }
-      if (catId != null) body.categorie_id = catId
-      await createChecklistItem(params.id, body)
-      newItemTitles[key] = ''
-      await reloadChecklist()
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    }
-  }
-
-  async function removeChecklistItem(itemId) {
-    await deleteChecklistItem(itemId)
-    await reloadChecklist()
+  async function doDeleteTask() {
+    if (!taskDeleteId) return
+    await deleteTask(taskDeleteId)
+    taskDeleteId = null
+    await reloadTasks()
+    toast('Task sters', 'success')
   }
 
   function editEquip(e) {
@@ -353,12 +307,6 @@
       const subs = await loadSubtasks(taskId)
       subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
     }
-  }
-
-  function toggleCatCollapse(catId) {
-    const key = String(catId ?? '0')
-    collapsedCats = { ...collapsedCats, [key]: !collapsedCats[key] }
-    saveCatCollapse()
   }
 
   function exportPdf() {
@@ -488,24 +436,6 @@
   const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat'))
   const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
   const projectTimerActive = $derived(timer.active?.kind === 'project' && timer.active?.project_id === params.id)
-  const checklistGroups = $derived.by(() => {
-    const groups = []
-    const byCat = new Map()
-    for (const item of checklist) {
-      const key = item.categorie_id != null ? String(item.categorie_id) : '0'
-      if (!byCat.has(key)) byCat.set(key, [])
-      byCat.get(key).push(item)
-    }
-    const ordered = [...checklistCats].sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0))
-    for (const cat of ordered) {
-      groups.push({ id: cat.id, nume: cat.nume, items: byCat.get(String(cat.id)) || [] })
-    }
-    const uncat = byCat.get('0') || []
-    if (uncat.length || groups.length === 0) {
-      groups.push({ id: null, nume: groups.length === 0 ? null : 'Fara categorie', items: uncat })
-    }
-    return groups
-  })
 </script>
 
 <div class="page">
@@ -636,6 +566,7 @@
                     </div>
                   </button>
                   <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
+                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
                 </div>
                 {#if expandedTask === t.id}
                   <div class="subtask-body">
@@ -708,38 +639,6 @@
             </div>
           {/each}</div>
         {/if}
-
-      {:else if activeTab === 'checklist'}
-        {#each checklistGroups as group (group.id ?? 'uncat')}
-          {@const done = group.items.filter(i => i.completed).length}
-          {@const catKey = String(group.id ?? '0')}
-          {@const isColl = !!collapsedCats[catKey]}
-          <div class="clgroup">
-            {#if group.nume}
-              <button class="clgroup-head" onclick={() => toggleCatCollapse(group.id)}>
-                {#if isColl}<ChevronRight size={14} />{:else}<ChevronDown size={14} />{/if}
-                <span class="section-title">{group.nume}</span>
-                <span class="clgroup-count">{done}/{group.items.length}</span>
-              </button>
-            {/if}
-            {#if !isColl}
-              {#each group.items as item (item.id)}
-                <div class="clrow" class:done={item.completed}>
-                  <input type="checkbox" class="cbx" checked={!!item.completed} onchange={() => toggleChecklistItem(item)} />
-                  <div class="clmain">
-                    <div class="cllabel">{item.titlu || '—'}</div>
-                    {#if item.note}<div class="clcat">{item.note}</div>{/if}
-                  </div>
-                  <button class="jdel" title="Sterge" onclick={() => removeChecklistItem(item.id)}><Trash2 size={13} /></button>
-                </div>
-              {/each}
-              <form class="cladd" onsubmit={(e) => { e.preventDefault(); addChecklistItem(group.id) }}>
-                <input type="text" placeholder="Adauga element..." bind:value={newItemTitles[group.id ?? '0']} />
-                <button type="submit" class="cladd-btn" disabled={!(newItemTitles[group.id ?? '0'] || '').trim()}><Plus size={14} /></button>
-              </form>
-            {/if}
-          </div>
-        {/each}
 
       {:else if activeTab === 'equipment'}
         <div class="tab-header">
@@ -838,6 +737,7 @@
 <ConfirmDialog bind:open={showDeleteConfirm} title="Sterge proiect" message={`Stergi proiectul "${project?.nume}"? Toate datele (taskuri, jurnal, atasamente, echipamente) vor fi sterse definitiv.`} confirmLabel="Sterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
+<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
   <div class="manual-form">
@@ -949,6 +849,9 @@
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
+  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .trow:hover .task-del { opacity: 1; }
+  .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   /* Done separator */
   .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -987,23 +890,6 @@
   .jdel { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .jdel:hover { background: var(--danger-subtle); color: var(--danger); }
   .jtext { font-size: var(--font-small); color: var(--text); line-height: 1.55; white-space: pre-wrap; }
-
-  /* Checklist */
-  .clgroup { margin-bottom: var(--space-lg); }
-  .clgroup-head { display: flex; align-items: center; gap: var(--space-xs); padding-bottom: var(--space-xs); margin-bottom: var(--space-xs); border-bottom: 1px solid var(--border); cursor: pointer; width: 100%; }
-  .clgroup-head:hover { color: var(--text); }
-  .clgroup-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); }
-  .clrow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-xs); border-radius: var(--radius-xs); }
-  .clrow:hover { background: var(--bg-surface); }
-  .clrow.done .cllabel { text-decoration: line-through; color: var(--text-dim); }
-  .clmain { flex: 1; min-width: 0; }
-  .cllabel { font-size: var(--font-small); color: var(--text); }
-  .clcat { font-size: var(--font-tiny); color: var(--text-dim); }
-  .cladd { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
-  .cladd input { flex: 1; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
-  .cladd-btn { width: 38px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
-  .cladd-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
-  .cladd-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Equipment */
   .elist { display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -1055,7 +941,7 @@
     .trow { padding: var(--space-sm); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
-    .sub-del, .sub-timer { opacity: 1; }
+    .sub-del, .sub-timer, .task-del { opacity: 1; }
     .sess-del { opacity: 1; }
   }
 </style>

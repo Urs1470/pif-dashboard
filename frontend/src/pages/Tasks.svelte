@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText } from '@lucide/svelte'
-  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
+  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -11,8 +11,11 @@
   import Button from '../components/ui/Button.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
 
   let showArchive = $state(false)
+  let taskDeleteId = $state(null)
+  let showTaskDelete = $state(false)
   let showNewModal = $state(false)
   let newTitle = $state('')
   let creating = $state(false)
@@ -144,6 +147,14 @@
     }
   }
 
+  async function doDeleteTask() {
+    if (!taskDeleteId) return
+    await deleteGlobalTask(taskDeleteId)
+    taskDeleteId = null
+    await loadGlobalTasks({ arhiva: showArchive })
+    toast('Task sters', 'success')
+  }
+
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
@@ -195,6 +206,7 @@
               <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                 <Clock size={14} />
               </button>
+              <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
             </div>
           </div>
           {#if expandedTask === t.id}
@@ -270,6 +282,7 @@
                   <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                     <Clock size={14} />
                   </button>
+                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
                 </div>
               </div>
               {#if expandedTask === t.id}
@@ -331,6 +344,8 @@
   </div>
 </Modal>
 
+<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
+
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
@@ -367,6 +382,9 @@
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
+  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .trow:hover .task-del { opacity: 1; }
+  .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
   .done-sep:hover { color: var(--text-secondary); }
@@ -406,5 +424,5 @@
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
-  @media (max-width: 768px) { .page { padding: var(--space-md); } .sess-del { opacity: 1; } }
+  @media (max-width: 768px) { .page { padding: var(--space-md); } .sess-del, .task-del { opacity: 1; } }
 </style>

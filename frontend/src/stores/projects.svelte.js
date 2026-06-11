@@ -75,25 +75,6 @@ export async function loadProjectEquipment(id) {
   return apiJson(`/api/proiecte/${id}/echipamente`)
 }
 
-export async function loadProjectChecklist(id) {
-  return apiJson(`/api/proiecte/${id}/checklist`)
-}
-
-export async function loadChecklistCategories(id) {
-  return apiJson(`/api/proiecte/${id}/checklist-categorii`)
-}
-
-export async function createChecklistItem(projectId, data) {
-  return apiJson(`/api/proiecte/${projectId}/checklist`, { method: 'POST', body: data })
-}
-
-export async function updateChecklistItem(itemId, data) {
-  return apiJson(`/api/checklist/${itemId}`, { method: 'PUT', body: data })
-}
-
-export async function deleteChecklistItem(itemId) {
-  return apiJson(`/api/checklist/${itemId}`, { method: 'DELETE' })
-}
 
 export async function createJournalEntry(projectId, data) {
   return apiJson(`/api/proiecte/${projectId}/jurnal`, { method: 'POST', body: data })

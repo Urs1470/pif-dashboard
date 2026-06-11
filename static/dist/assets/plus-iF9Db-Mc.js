@@ -1,0 +1,1 @@
+import{G as e,H as t,K as n}from"./index-B8tu1ZKW.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`M5 12h14`}],[`path`,{d:`M12 5v14`}]];t(i,n({name:`plus`},()=>o,{get iconNode(){return s}}))}export{i as t};

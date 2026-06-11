@@ -73,6 +73,10 @@ export async function updateGlobalTask(id, data) {
   return result
 }
 
+export async function deleteGlobalTask(taskId) {
+  await apiJson(`/api/global-tasks/${taskId}`, { method: 'DELETE' })
+}
+
 export async function loadSubtasks(taskId) {
   return apiJson(`/api/tasks/${taskId}/subtasks`)
 }
