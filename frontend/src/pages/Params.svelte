@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
   import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft } from '@lucide/svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -14,6 +15,7 @@
   let detail = $state(null)
   let showDetail = $state(false)
   let detailLoading = $state(false)
+  let jumping = $state(false)
 
   function pickProducator(p) {
     producator = p
@@ -94,8 +96,10 @@
   }
 
   async function jumpToParam(id) {
-    detailLoading = true
-    try { detail = await loadParamDetail(id) } catch (_) {} finally { detailLoading = false }
+    // keep current content visible (dimmed) while the next param loads,
+    // so the modal doesn't collapse to a skeleton and jump back
+    jumping = true
+    try { detail = await loadParamDetail(id) } catch (_) {} finally { jumping = false }
   }
 
   onMount(() => { loadFamilies(); loadFaultFamilies() })
@@ -201,10 +205,11 @@
 </div>
 
 <Modal bind:open={showDetail} title={detail?.parametru || detail?.cod || 'Detalii'} size="md">
-  {#if detailLoading}
+  {#if detailLoading && !jumping}
     <Skeleton width="100%" height="120px" />
   {:else if detail}
-    <div class="detail">
+    {#key detail.id}
+    <div class="detail" class:dim={jumping} in:fade={{ duration: 120 }}>
       {#if activeTab === 'params'}
         <div class="dmeta">
           {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagina manual', detail.pagina]] as [label, val]}
@@ -258,6 +263,7 @@
         {/if}
       {/if}
     </div>
+    {/key}
   {/if}
 </Modal>
 
@@ -316,6 +322,8 @@
   .dlink { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
   .dlink:hover { border-color: var(--accent); }
   .dtok { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); }
+  .detail { transition: opacity var(--dur-fast) var(--ease); }
+  .detail.dim { opacity: 0.45; pointer-events: none; }
 
   @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } }
 </style>
