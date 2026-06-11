@@ -206,16 +206,18 @@
   {:else if detail}
     <div class="detail">
       {#if activeTab === 'params'}
-        {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagina manual', detail.pagina]] as [label, val]}
-          {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span>{val}</span></div>{/if}
-        {/each}
-        {#if detail.descriere_scurta}<div class="dfull"><span class="dlabel">Descriere</span><p>{detail.descriere_scurta}</p></div>{/if}
-        {#if detail.descriere && detail.descriere !== detail.descriere_scurta}<div class="dfull"><span class="dlabel">Detalii</span><p>{detail.descriere}</p></div>{/if}
-        {#if detail.explicatie}<div class="dfull"><span class="dlabel">Explicatie</span><p>{detail.explicatie}</p></div>{/if}
-        {#if detail.influenteaza}<div class="dfull"><span class="dlabel">Influenteaza</span><p>{detail.influenteaza}</p></div>{/if}
+        <div class="dmeta">
+          {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagina manual', detail.pagina]] as [label, val]}
+            {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span class="dval">{val}</span></div>{/if}
+          {/each}
+        </div>
+        {#if detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Descriere</h4><p>{detail.descriere_scurta}</p></div>{/if}
+        {#if detail.descriere && detail.descriere !== detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Detalii</h4><p>{detail.descriere}</p></div>{/if}
+        {#if detail.explicatie}<div class="dsection accent"><h4 class="dsec-title">Explicatie</h4><p>{detail.explicatie}</p></div>{/if}
+        {#if detail.influenteaza}<div class="dsection"><h4 class="dsec-title">Influenteaza</h4><p>{detail.influenteaza}</p></div>{/if}
         {#if detail.influentat_de?.length > 0}
-          <div class="dfull">
-            <span class="dlabel">Influentat de</span>
+          <div class="dsection">
+            <h4 class="dsec-title">Influentat de</h4>
             <div class="dlinks">
               {#each detail.influentat_de as inf}
                 <button class="dlink" onclick={() => jumpToParam(inf.id)}>{inf.parametru}</button>
@@ -224,15 +226,17 @@
           </div>
         {/if}
       {:else}
-        {#each [['Familie', familieLabel(detail.familie)], ['Cod', detail.cod], ['Cod secundar', detail.cod_secundar], ['Tip', detail.tip], ['Pagina manual', detail.pagina]] as [label, val]}
-          {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span>{val}</span></div>{/if}
-        {/each}
-        {#if detail.nume}<div class="dfull"><span class="dlabel">Nume</span><p>{detail.nume}</p></div>{/if}
-        {#if detail.cauza}<div class="dfull"><span class="dlabel">Cauza</span><p>{detail.cauza}</p></div>{/if}
-        {#if detail.solutie}<div class="dfull"><span class="dlabel">Solutie</span><p>{detail.solutie}</p></div>{/if}
+        <div class="dmeta">
+          {#each [['Familie', familieLabel(detail.familie)], ['Cod', detail.cod], ['Cod secundar', detail.cod_secundar], ['Tip', detail.tip], ['Pagina manual', detail.pagina]] as [label, val]}
+            {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span class="dval">{val}</span></div>{/if}
+          {/each}
+        </div>
+        {#if detail.nume}<div class="dsection"><h4 class="dsec-title">Nume</h4><p>{detail.nume}</p></div>{/if}
+        {#if detail.cauza}<div class="dsection"><h4 class="dsec-title">Cauza</h4><p>{detail.cauza}</p></div>{/if}
+        {#if detail.solutie}<div class="dsection accent"><h4 class="dsec-title">Solutie</h4><p>{detail.solutie}</p></div>{/if}
         {#if detail.extra && Object.keys(detail.extra).length > 0}
           {#each Object.entries(detail.extra) as [k, v]}
-            <div class="dfull"><span class="dlabel">{k}</span><p>{v}</p></div>
+            <div class="dsection"><h4 class="dsec-title">{k}</h4><p>{v}</p></div>
           {/each}
         {/if}
       {/if}
@@ -281,13 +285,18 @@
 
   .row-skel { padding: var(--space-sm); }
 
-  .detail { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .drow { display: flex; justify-content: space-between; font-size: var(--font-small); gap: var(--space-md); }
-  .dlabel { color: var(--text-dim); font-weight: 500; flex-shrink: 0; }
-  .dfull { display: flex; flex-direction: column; gap: 4px; }
-  .dfull p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; }
-  .dlinks { display: flex; gap: 4px; flex-wrap: wrap; }
-  .dlink { padding: 2px 10px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
+  .detail { display: flex; flex-direction: column; gap: var(--space-md); }
+  .dmeta { background: var(--bg-elevated); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--border); }
+  .drow { display: flex; justify-content: space-between; font-size: var(--font-small); gap: var(--space-md); padding: 3px 0; }
+  .dlabel { color: var(--text-dim); flex-shrink: 0; }
+  .dval { font-weight: 500; color: var(--text); text-align: right; }
+  .dsection { padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--border); }
+  .dsection.accent { background: var(--accent-subtle); border-color: var(--accent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+  .dsec-title { font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px 0; }
+  .dsection p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; margin: 0; }
+  .dsection.accent p { color: var(--text); }
+  .dlinks { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dlink { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
   .dlink:hover { border-color: var(--accent); }
 
   @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } }

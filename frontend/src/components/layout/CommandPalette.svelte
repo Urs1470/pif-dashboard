@@ -1,11 +1,15 @@
 <script>
-  import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Wallet, Settings } from '@lucide/svelte'
+  import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Wallet, Settings, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
+  import { apiJson } from '../../lib/api.js'
 
   let open = $state(false)
   let query = $state('')
   let selected = $state(0)
   let inputEl = $state(null)
+  let searchResults = $state([])
+  let searching = $state(false)
+  let searchTimer = null
 
   const commands = [
     { label: 'Acasa', path: '/', icon: Home, keywords: 'home dashboard' },
@@ -17,7 +21,22 @@
     { label: 'Admin', path: '/admin', icon: Settings, keywords: 'admin stats export' },
   ]
 
-  const filtered = $derived(
+  const TYPE_META = {
+    proiect:     { label: 'Proiecte', icon: FolderKanban },
+    observatie:  { label: 'Observatii', icon: FileText },
+    task:        { label: 'Taskuri', icon: CheckSquare },
+    global_task: { label: 'Taskuri zilnice', icon: CalendarCheck },
+    jurnal:      { label: 'Jurnal', icon: NotebookPen },
+    echipament:  { label: 'Echipamente', icon: Cpu },
+    client:      { label: 'Clienti', icon: Users },
+    parametru:   { label: 'Parametri', icon: Cpu },
+    fault_code:  { label: 'Coduri eroare', icon: AlertTriangle },
+    obsidian:    { label: 'Notite', icon: BookOpen },
+  }
+
+  const isSearchMode = $derived(query.trim().length >= 2)
+
+  const navFiltered = $derived(
     query.trim()
       ? commands.filter(c =>
           (c.label + ' ' + c.keywords).toLowerCase().includes(query.toLowerCase())
@@ -25,13 +44,102 @@
       : commands
   )
 
-  $effect(() => { selected = 0 })
+  const flatResults = $derived.by(() => {
+    if (!isSearchMode) return []
+    const items = []
+    let lastType = null
+    for (const r of searchResults) {
+      if (r.type !== lastType) {
+        items.push({ _group: true, type: r.type, label: TYPE_META[r.type]?.label || r.type })
+        lastType = r.type
+      }
+      items.push(r)
+    }
+    return items
+  })
+
+  const totalItems = $derived(isSearchMode ? flatResults.length : navFiltered.length)
+
+  function selectableIndex(idx) {
+    if (!isSearchMode) return true
+    return idx < flatResults.length && !flatResults[idx]._group
+  }
+
+  function nextSelectable(from, dir) {
+    let i = from + dir
+    while (i >= 0 && i < totalItems) {
+      if (selectableIndex(i)) return i
+      i += dir
+    }
+    return from
+  }
+
+  $effect(() => {
+    if (isSearchMode) {
+      clearTimeout(searchTimer)
+      const q = query.trim()
+      searching = true
+      searchTimer = setTimeout(async () => {
+        try {
+          const data = await apiJson(`/api/search?q=${encodeURIComponent(q)}`)
+          searchResults = data.results || []
+        } catch (_) {
+          searchResults = []
+        } finally { searching = false }
+      }, 200)
+    } else {
+      searchResults = []
+      searching = false
+    }
+    selected = 0
+  })
 
   function handleKey(e) {
-    if (e.key === 'ArrowDown') { e.preventDefault(); selected = Math.min(selected + 1, filtered.length - 1) }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); selected = Math.max(selected - 1, 0) }
-    else if (e.key === 'Enter' && filtered[selected]) { go(filtered[selected]) }
+    if (e.key === 'ArrowDown') { e.preventDefault(); selected = nextSelectable(selected, 1) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selected = nextSelectable(selected, -1) }
+    else if (e.key === 'Enter') { activateSelected() }
     else if (e.key === 'Escape') { close() }
+  }
+
+  function activateSelected() {
+    if (!isSearchMode) {
+      if (navFiltered[selected]) go(navFiltered[selected])
+      return
+    }
+    const item = flatResults[selected]
+    if (!item || item._group) return
+    activateResult(item)
+  }
+
+  function activateResult(r) {
+    close()
+    switch (r.type) {
+      case 'proiect':
+      case 'task':
+      case 'observatie':
+      case 'jurnal':
+      case 'echipament':
+        if (r.proiect_id) navigate(`/projects/${r.proiect_id}`)
+        else if (r.id) navigate(`/projects/${r.id}`)
+        break
+      case 'global_task':
+        navigate('/tasks')
+        break
+      case 'parametru':
+        navigate('/params')
+        break
+      case 'fault_code':
+        navigate('/params')
+        break
+      case 'obsidian':
+        navigate('/notes')
+        break
+      case 'client':
+        navigate('/projects')
+        break
+      default:
+        break
+    }
   }
 
   function go(cmd) {
@@ -42,6 +150,8 @@
   function close() {
     open = false
     query = ''
+    searchResults = []
+    selected = 0
   }
 
   function onGlobalKey(e) {
@@ -50,6 +160,12 @@
       open = !open
       if (open) requestAnimationFrame(() => inputEl?.focus())
     }
+  }
+
+  function highlight(text, q) {
+    if (!text || !q) return text || ''
+    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return text.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>')
   }
 
   $effect(() => {
@@ -67,31 +183,62 @@
           bind:this={inputEl}
           type="text"
           bind:value={query}
-          placeholder="Navigheaza..."
+          placeholder="Cauta in tot dashboardul..."
           autocomplete="off"
           spellcheck="false"
         />
         <kbd>Esc</kbd>
       </div>
       <div class="palette-list">
-        {#each filtered as cmd, i (cmd.path)}
-          <button
-            class="palette-item"
-            class:selected={i === selected}
-            onclick={() => go(cmd)}
-            onmouseenter={() => selected = i}
-            role="option"
-            aria-selected={i === selected}
-          >
-            <cmd.icon size={16} />
-            <span>{cmd.label}</span>
-            {#if router.path === cmd.path || (cmd.path !== '/' && router.path.startsWith(cmd.path))}
-              <span class="current">curent</span>
+        {#if !isSearchMode}
+          {#each navFiltered as cmd, i (cmd.path)}
+            <button
+              class="palette-item"
+              class:selected={i === selected}
+              onclick={() => go(cmd)}
+              onmouseenter={() => selected = i}
+              role="option"
+              aria-selected={i === selected}
+            >
+              <cmd.icon size={16} />
+              <span>{cmd.label}</span>
+              {#if router.path === cmd.path || (cmd.path !== '/' && router.path.startsWith(cmd.path))}
+                <span class="current">curent</span>
+              {/if}
+            </button>
+          {/each}
+          {#if navFiltered.length === 0}
+            <div class="palette-empty">Niciun rezultat</div>
+          {/if}
+        {:else if searching}
+          <div class="palette-empty">Se cauta...</div>
+        {:else if flatResults.length === 0}
+          <div class="palette-empty">Niciun rezultat pentru „{query.trim()}"</div>
+        {:else}
+          {#each flatResults as item, i}
+            {#if item._group}
+              {@const Icon = TYPE_META[item.type]?.icon || Search}
+              <div class="group-label">
+                <Icon size={12} />
+                {item.label}
+              </div>
+            {:else}
+              <button
+                class="palette-item result"
+                class:selected={i === selected}
+                onclick={() => activateResult(item)}
+                onmouseenter={() => selected = i}
+                role="option"
+                aria-selected={i === selected}
+              >
+                <div class="result-body">
+                  <span class="result-title">{@html highlight(item.title, query.trim())}</span>
+                  {#if item.subtitle}<span class="result-sub">{item.subtitle}</span>{/if}
+                  {#if item.snippet}<span class="result-snippet">{@html highlight(item.snippet, query.trim())}</span>{/if}
+                </div>
+              </button>
             {/if}
-          </button>
-        {/each}
-        {#if filtered.length === 0}
-          <div class="palette-empty">Niciun rezultat</div>
+          {/each}
         {/if}
       </div>
     </div>
@@ -107,7 +254,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 20vh;
+    padding-top: 15vh;
     animation: fadeIn var(--dur-fast) var(--ease);
   }
 
@@ -116,7 +263,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     width: 100%;
-    max-width: 480px;
+    max-width: 560px;
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     animation: slideUp var(--dur-fast) var(--ease);
@@ -150,7 +297,7 @@
   }
 
   .palette-list {
-    max-height: 320px;
+    max-height: 400px;
     overflow-y: auto;
     padding: var(--space-xs);
   }
@@ -178,6 +325,59 @@
     font-size: var(--font-tiny);
     color: var(--accent);
     opacity: 0.7;
+  }
+
+  .group-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-tiny);
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: var(--space-sm) var(--space-md) 2px;
+    margin-top: var(--space-xs);
+  }
+  .group-label:first-child { margin-top: 0; }
+
+  .palette-item.result {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 6px var(--space-md);
+  }
+  .result-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    width: 100%;
+  }
+  .result-title {
+    font-size: var(--font-small);
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-sub {
+    font-size: var(--font-tiny);
+    color: var(--text-dim);
+  }
+  .result-snippet {
+    font-size: var(--font-tiny);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .palette-item.result :global(mark) {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0 1px;
   }
 
   .palette-empty {
