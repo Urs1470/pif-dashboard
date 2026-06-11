@@ -1,1 +1,0 @@
-import{$ as e,J as t,et as n}from"./index-DkoVPhxs.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`m6 9 6 6 6-6`}]];t(i,n({name:`chevron-down`},()=>o,{get iconNode(){return s}}))}export{i as t};

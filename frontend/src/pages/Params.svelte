@@ -1,12 +1,36 @@
 <script>
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft } from '@lucide/svelte'
+  import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft, FileText, BookOpen, ExternalLink } from '@lucide/svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import ProducatorPicker from '../components/params/ProducatorPicker.svelte'
+
+  import { apiJson } from '../lib/api.js'
+
+  const MANUAL_MAP = {
+    'ACS880': 'ACS880_Primary_Firmware_Manual.pdf',
+    'ACS580': 'ACS580_Firmware_Manual.pdf',
+    'ACS380': 'ACS580_Firmware_Manual.pdf',
+    'ACS180': 'ACS580_Firmware_Manual.pdf',
+    'SINAMICS_G120': 'SINAMICS_G120_List_Manual.pdf',
+    'SINAMICS_G120C': 'SINAMICS_G120_List_Manual.pdf',
+    'SINAMICS_S120': 'SINAMICS_S120_S150_List_Manual.pdf',
+    'SINAMICS_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
+    'SINAMICS_S120_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
+    'SINAMICS_G130_G150': 'SINAMICS_G120_List_Manual.pdf',
+    'Danfoss_VLT_FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+    'FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+    'FC301': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+    'FC202': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
+    'Lenze_i550': 'Lenze_i550_Manual.pdf',
+    'i550': 'Lenze_i550_Manual.pdf',
+    'Lenze_i950': 'Lenze_i950_Manual.pdf',
+    'i650': 'Lenze_i950_Manual.pdf',
+    'i950': 'Lenze_i950_Manual.pdf',
+  }
 
   let activeTab = $state('params')
   let producator = $state('')
@@ -16,6 +40,32 @@
   let showDetail = $state(false)
   let detailLoading = $state(false)
   let jumping = $state(false)
+
+  let manuals = $state([])
+  let manualsLoading = $state(false)
+
+  async function loadManuals() {
+    manualsLoading = true
+    try {
+      const data = await apiJson('/api/manuals')
+      manuals = data.manuals || []
+    } catch (_) { manuals = [] }
+    finally { manualsLoading = false }
+  }
+
+  function openManualForDetail() {
+    if (!detail) return
+    const familie = detail.familie || ''
+    const filename = MANUAL_MAP[familie] || detail.sursa
+    if (!filename) return
+    let url = '/manuals/' + encodeURIComponent(filename)
+    if (detail.pagina) url += '#page=' + detail.pagina
+    window.open(url, '_blank')
+  }
+
+  const detailHasManual = $derived(
+    detail && (MANUAL_MAP[detail.familie] || detail.sursa)
+  )
 
   function pickProducator(p) {
     producator = p
@@ -124,9 +174,29 @@
   <div class="tabs">
     <button class="tab" class:active={activeTab === 'params'} onclick={() => switchTab('params')}>Parametri</button>
     <button class="tab" class:active={activeTab === 'faults'} onclick={() => switchTab('faults')}>Fault Codes</button>
+    <button class="tab" class:active={activeTab === 'manuals'} onclick={() => { activeTab = 'manuals'; loadManuals() }}><BookOpen size={14} /> Manuale</button>
   </div>
 
-  {#if !producator}
+  {#if activeTab === 'manuals'}
+    <div class="manuals-grid">
+      {#if manualsLoading}
+        {#each Array(4) as _}<div class="manual-card skel"><Skeleton width="100%" height="60px" /></div>{/each}
+      {:else if manuals.length === 0}
+        <EmptyState icon={BookOpen} title="Niciun manual" description="Nu s-au gasit manuale PDF pe server." />
+      {:else}
+        {#each manuals as m}
+          <button class="manual-card" onclick={() => window.open(m.url, '_blank')}>
+            <FileText size={28} class="manual-icon" />
+            <div class="manual-info">
+              <span class="manual-name">{m.name}</span>
+              <span class="manual-size">{m.size_kb > 1024 ? (m.size_kb / 1024).toFixed(1) + ' MB' : m.size_kb + ' KB'}</span>
+            </div>
+            <ExternalLink size={14} class="manual-ext" />
+          </button>
+        {/each}
+      {/if}
+    </div>
+  {:else if !producator}
     <ProducatorPicker families={activeTab === 'params' ? params.families : faultCodes.families} onpick={pickProducator} />
   {:else}
     <button class="back" onclick={backToPicker}><ArrowLeft size={14} /> Producatori</button>
@@ -270,6 +340,11 @@
           {/each}
         {/if}
       {/if}
+      {#if detailHasManual}
+        <button class="open-manual-btn" onclick={openManualForDetail}>
+          <BookOpen size={14} /> Deschide Manual{#if detail.pagina} (pag. {detail.pagina}){/if}
+        </button>
+      {/if}
     </div>
     {/key}
   {/if}
@@ -282,7 +357,7 @@
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
-  .tab { padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; min-height: 44px; }
+  .tab { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; min-height: 44px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
@@ -335,5 +410,18 @@
   .detail { transition: opacity var(--dur-fast) var(--ease); }
   .detail.dim { opacity: 0.45; pointer-events: none; }
 
-  @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } }
+  .manuals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-md); }
+  .manual-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease); text-align: left; }
+  .manual-card:hover { border-color: var(--accent); background: var(--accent-subtle); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  :global(.manual-icon) { color: var(--accent); flex-shrink: 0; }
+  .manual-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .manual-name { font-size: var(--font-small); font-weight: 500; color: var(--text); }
+  .manual-size { font-size: var(--font-tiny); color: var(--text-dim); }
+  :global(.manual-ext) { color: var(--text-faint); flex-shrink: 0; }
+  .manual-card.skel { pointer-events: none; }
+
+  .open-manual-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); cursor: pointer; transition: all var(--dur-fast); }
+  .open-manual-btn:hover { background: var(--accent); color: var(--bg); }
+
+  @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } .manuals-grid { grid-template-columns: 1fr; } }
 </style>
