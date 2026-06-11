@@ -79,6 +79,7 @@
   .modal-md { max-width: 560px; }
   .modal-lg { max-width: 720px; }
   .modal-xl { max-width: 960px; }
+  .modal-wide { max-width: 80%; }
 
   .modal-header {
     display: flex;

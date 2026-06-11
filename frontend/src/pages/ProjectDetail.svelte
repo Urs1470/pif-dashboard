@@ -774,7 +774,7 @@
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
 
-<Modal bind:open={showFieldEdit} title={editLabel} size="lg">
+<Modal bind:open={showFieldEdit} title={editLabel} size="wide">
   <div class="field-edit-modal">
     {#if showFieldEdit}
       <RichTextEditor bind:value={editValue} placeholder="Scrie aici..." />
