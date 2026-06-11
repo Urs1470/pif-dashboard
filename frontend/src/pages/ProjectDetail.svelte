@@ -527,10 +527,10 @@
     } finally { editSaving = false }
   }
 
-  function openManualTime(kind, id) {
+  function openManualTime(kind, id, date) {
     manualKind = kind
     manualId = id
-    manualDate = new Date().toISOString().slice(0, 10)
+    manualDate = date || new Date().toISOString().slice(0, 10)
     manualHours = 1
     manualMinutes = 0
     showManualTime = true
@@ -613,13 +613,17 @@
     const sessions = timerSessions.sessions || []
     const matched = new Set()
     const items = []
+    const toDay = iso => (iso || '').slice(0, 10)
     for (const j of journal) {
       const jTime = new Date(j.data || j.created_at || 0).getTime()
+      const jDay = toDay(j.data || j.created_at)
       const found = sessions.find(s => {
         if (matched.has(s.id)) return false
         const stopIso = s.stop_time || s.end_time
         if (!stopIso) return false
-        return Math.abs(jTime - new Date(stopIso).getTime()) < 2 * 60 * 1000
+        const diff = Math.abs(jTime - new Date(stopIso).getTime())
+        if (diff < 2 * 60 * 1000) return true
+        return toDay(stopIso) === jDay
       })
       if (found) {
         matched.add(found.id)
@@ -860,7 +864,10 @@
                     <div class="jdate">{formatDate(item.data || item.created_at)}</div>
                     {#if item._duration}<span class="jdur"><Clock size={12} /> {formatDuration(item._duration)}</span>{/if}
                   </div>
-                  <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = item.id; journalDeleteSessionId = item._sessionId || null; showJournalDelete = true }}><Trash2 size={13} /></button>
+                  <div class="jentry-actions">
+                    <button class="jtime-btn" title="Adauga timp manual" onclick={() => openManualTime('project', params.id, (item.data || item.created_at || '').slice(0, 10))}><Clock size={13} /></button>
+                    <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = item.id; journalDeleteSessionId = item._sessionId || null; showJournalDelete = true }}><Trash2 size={13} /></button>
+                  </div>
                 </div>
                 <div class="jtext">{item.continut || '—'}</div>
               </div>
@@ -1214,6 +1221,10 @@
   .jdate { font-size: var(--font-tiny); color: var(--text-dim); }
   .jdel { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .jdel:hover { background: var(--danger-subtle); color: var(--danger); }
+  .jentry-actions { display: flex; align-items: center; gap: 2px; }
+  .jtime-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); opacity: 0; }
+  .jentry:hover .jtime-btn { opacity: 1; }
+  .jtime-btn:hover { background: var(--accent-subtle); color: var(--accent); }
   .jentry-meta { display: flex; align-items: center; gap: var(--space-sm); }
   .jdur { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--accent); background: var(--accent-subtle); padding: 2px 7px; border-radius: var(--radius-xs); }
   .jentry-timer { opacity: 0.7; }
@@ -1291,7 +1302,7 @@
     .trow { padding: var(--space-sm); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
-    .sub-del, .sub-timer, .task-del { opacity: 1; }
+    .sub-del, .sub-timer, .task-del, .jtime-btn { opacity: 1; }
     .sess-del { opacity: 1; }
   }
 </style>
