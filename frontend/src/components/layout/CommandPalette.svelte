@@ -162,10 +162,17 @@
     }
   }
 
+  const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+
   function highlight(text, q) {
-    if (!text || !q) return text || ''
+    if (!text) return ''
+    // snippets from /api/search can contain raw HTML (WYSIWYG observatii) — strip
+    // tags and collapse whitespace so results stay one line, then escape the rest
+    const plain = String(text).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+    const escaped = plain.replace(/[&<>"']/g, ch => ESC_MAP[ch])
+    if (!q) return escaped
     const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    return text.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>')
+    return escaped.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>')
   }
 
   $effect(() => {

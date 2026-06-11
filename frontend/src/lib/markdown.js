@@ -33,6 +33,8 @@ function mdInline(text) {
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   s = s.replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>')
   s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>')
+  // _italic_ doar la margini de cuvant, ca sa nu strice snake_case (p0114, global_task)
+  s = s.replace(/(^|\s)_([^_\s][^_]*?)_(?=\s|$|[.,;:!?)])/g, '$1<em>$2</em>')
   s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>')
   s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>')
   s = s.replace(/(^|\s)#([a-zA-Z][\w/\-]*)/g, '$1<span class="md-tag">#$2</span>')

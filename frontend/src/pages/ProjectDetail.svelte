@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
   import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle } from '@lucide/svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
@@ -614,7 +615,7 @@
                   <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
                 </div>
                 {#if expandedTask === t.id}
-                  <div class="subtask-body">
+                  <div class="subtask-body" transition:slide={{ duration: 150 }}>
                     {#if t.descriere}
                       <div class="task-desc">{t.descriere}</div>
                     {/if}
@@ -630,7 +631,7 @@
                           <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><Trash2 size={12} /></button>
                         </div>
                         {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
-                          <div class="sub-sess">
+                          <div class="sub-sess" transition:slide={{ duration: 150 }}>
                             {#each subSessionsCache[sub.id].sessions as s (s.id)}
                               <div class="sess mini">
                                 <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
@@ -735,7 +736,7 @@
                   {#if isExpanded}<ChevronDown size={12} /> Ascunde parametri{:else}<ChevronRight size={12} /> {eparams.length} parametri{/if}
                 </button>
                 {#if isExpanded}
-                  <div class="eparams">
+                  <div class="eparams" transition:slide={{ duration: 150 }}>
                     {#each eparams as [k, v]}
                       <div class="eparam">
                         <span class="eparam-key">{k}</span>

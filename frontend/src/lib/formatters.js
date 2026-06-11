@@ -55,12 +55,14 @@ export function priorityColor(p) {
 export function formatDate(iso) {
   if (!iso) return '—'
   const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
   return d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 export function formatDateShort(iso) {
   if (!iso) return '—'
   const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
   return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
 }
 

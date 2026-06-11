@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
   import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
@@ -217,7 +218,7 @@
             </div>
           </div>
           {#if expandedTask === t.id}
-            <div class="subtask-body">
+            <div class="subtask-body" transition:slide={{ duration: 150 }}>
               {#if t.descriere}
                 <div class="task-desc">{t.descriere}</div>
               {/if}
@@ -268,6 +269,7 @@
           {doneTasks.length} finalizate
         </button>
         {#if showDoneTasks}
+          <div class="done-list" transition:slide={{ duration: 150 }}>
           {#each doneTasks as t (t.id)}
             <div class="trow-wrap">
               <div class="trow done" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
@@ -293,7 +295,7 @@
                 </div>
               </div>
               {#if expandedTask === t.id}
-                <div class="subtask-body">
+                <div class="subtask-body" transition:slide={{ duration: 150 }}>
                   {#if t.descriere}<div class="task-desc">{t.descriere}</div>{/if}
                   {#if subtaskLoading && !subtasksCache[t.id]}
                     <div class="sub-loading">Se incarca...</div>
@@ -312,6 +314,7 @@
               {/if}
             </div>
           {/each}
+          </div>
         {/if}
       {/if}
     </div>
