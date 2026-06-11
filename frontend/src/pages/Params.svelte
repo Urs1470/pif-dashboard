@@ -255,10 +255,18 @@
         </div>
         {#if detail.nume}<div class="dsection"><h4 class="dsec-title">Nume</h4><p>{detail.nume}</p></div>{/if}
         {#if detail.cauza}<div class="dsection"><h4 class="dsec-title">Cauza</h4><p>{detail.cauza}</p></div>{/if}
-        {#if detail.solutie}<div class="dsection accent"><h4 class="dsec-title">Solutie</h4><p>{detail.solutie}</p></div>{/if}
+        {#if detail.remediu || detail.solutie}<div class="dsection accent"><h4 class="dsec-title">Solutie / Remediu</h4><p>{detail.remediu || detail.solutie}</p></div>{/if}
         {#if detail.extra && Object.keys(detail.extra).length > 0}
           {#each Object.entries(detail.extra) as [k, v]}
-            <div class="dsection"><h4 class="dsec-title">{k}</h4><p>{v}</p></div>
+            <div class="dsection"><h4 class="dsec-title">{k}</h4>
+              {#if Array.isArray(v)}
+                <ul class="extra-list">{#each v as item}<li>{typeof item === 'object' ? JSON.stringify(item) : item}</li>{/each}</ul>
+              {:else if typeof v === 'object' && v !== null}
+                <pre class="extra-obj">{JSON.stringify(v, null, 2)}</pre>
+              {:else}
+                <p>{v}</p>
+              {/if}
+            </div>
           {/each}
         {/if}
       {/if}
@@ -318,6 +326,8 @@
   .dsec-title { font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px 0; }
   .dsection p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; margin: 0; }
   .dsection.accent p { color: var(--text); }
+  .extra-list { margin: 0; padding-left: var(--space-lg); font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; }
+  .extra-obj { margin: 0; font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-secondary); white-space: pre-wrap; }
   .dlinks { display: flex; gap: 6px; flex-wrap: wrap; }
   .dlink { padding: 3px 12px; font-size: var(--font-tiny); font-family: var(--font-mono); border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); border: 1px solid transparent; cursor: pointer; }
   .dlink:hover { border-color: var(--accent); }

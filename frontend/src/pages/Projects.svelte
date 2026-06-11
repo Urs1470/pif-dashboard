@@ -1,13 +1,15 @@
 <script>
   import { onMount } from 'svelte'
-  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive } from '@lucide/svelte'
-  import { projects, loadProjects } from '../stores/projects.svelte.js'
+  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, Trash2 } from '@lucide/svelte'
+  import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
+  import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
+  import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
 
   const statusOptions = [
@@ -31,6 +33,57 @@
   let showNewModal = $state(false)
   let showArchive = $state(false)
   let sort = $state({ key: 'nume', dir: 1 })
+
+  let batchMode = $state(false)
+  let selected = $state(new Set())
+  let batchStatus = $state('')
+  let showBatchDelete = $state(false)
+  let batchBusy = $state(false)
+
+  function toggleBatch() {
+    batchMode = !batchMode
+    if (!batchMode) selected = new Set()
+  }
+
+  function toggleSelect(id) {
+    const next = new Set(selected)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    selected = next
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === activeItems.length) {
+      selected = new Set()
+    } else {
+      selected = new Set(activeItems.map(p => p.id))
+    }
+  }
+
+  async function batchUpdateStatus() {
+    if (!batchStatus || selected.size === 0) return
+    batchBusy = true
+    try {
+      await Promise.all([...selected].map(id => updateProject(id, { status: batchStatus })))
+      toast(`${selected.size} proiecte actualizate`, 'success')
+      selected = new Set()
+      batchStatus = ''
+      await loadProjects()
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { batchBusy = false }
+  }
+
+  async function batchDeleteSelected() {
+    if (selected.size === 0) return
+    batchBusy = true
+    try {
+      for (const id of selected) await deleteProject(id)
+      toast(`${selected.size} proiecte sterse`, 'success')
+      selected = new Set()
+      showBatchDelete = false
+      await loadProjects()
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { batchBusy = false }
+  }
 
   function onSearch(e) {
     searchInput = e.target.value
@@ -91,8 +144,27 @@
       <h1>Proiecte</h1>
       <span class="count">{projects.items.length}</span>
     </div>
-    <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> Proiect Nou</Button>
+    <div class="header-btns">
+      <Button size="sm" variant={batchMode ? 'secondary' : 'ghost'} onclick={toggleBatch}><CheckSquare size={14} /> Selecteaza</Button>
+      <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> Proiect Nou</Button>
+    </div>
   </div>
+
+  {#if batchMode && selected.size > 0}
+    <div class="batch-bar">
+      <span class="batch-count">{selected.size} selectate</span>
+      <select class="batch-select" bind:value={batchStatus}>
+        <option value="">Schimba status...</option>
+        <option value="in_lucru">In Lucru</option>
+        <option value="in_asteptare">In Asteptare</option>
+        <option value="blocat">Blocat</option>
+        <option value="finalizat">Finalizat</option>
+      </select>
+      <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplica</Button>
+      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><Trash2 size={12} /> Sterge</Button>
+      <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselecteaza</Button>
+    </div>
+  {/if}
 
   <div class="toolbar">
     <div class="search-box">
@@ -121,6 +193,13 @@
       <table class="data-table">
         <thead>
           <tr>
+            {#if batchMode}
+              <th class="check-col">
+                <button class="batch-check" onclick={toggleSelectAll}>
+                  {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
+                </button>
+              </th>
+            {/if}
             {#each columns as col}
               <th onclick={() => toggleSort(col.key)} class="sortable">
                 <span class="th-inner">
@@ -135,7 +214,14 @@
         </thead>
         <tbody>
           {#each activeItems as p (p.id)}
-            <tr class="clickable-row" onclick={() => openProject(p)}>
+            <tr class="clickable-row" class:batch-selected={batchMode && selected.has(p.id)} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }}>
+              {#if batchMode}
+                <td class="check-col">
+                  <button class="batch-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
+                    {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
+                  </button>
+                </td>
+              {/if}
               <td class="name-cell">
                 {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
                 {p.nume || '—'}
@@ -184,6 +270,7 @@
 </div>
 
 <ProjectFormModal bind:open={showNewModal} onsaved={() => loadProjects()} />
+<ConfirmDialog bind:open={showBatchDelete} title="Sterge proiecte" message={`Stergi ${selected.size} proiecte selectate? Aceasta actiune este ireversibila.`} confirmLabel="Sterge" onconfirm={batchDeleteSelected} />
 
 <style>
   .page { padding: var(--space-lg); }
@@ -219,6 +306,15 @@
   .archive-toggle:hover { color: var(--text); }
   .archived { opacity: 0.7; }
 
+  .header-btns { display: flex; gap: var(--space-xs); }
+  .batch-bar { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
+  .batch-count { font-size: var(--font-small); font-weight: 600; color: var(--accent); }
+  .batch-select { padding: 4px 10px; font-size: var(--font-small); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); }
+  .check-col { width: 36px; text-align: center; padding: 0 !important; }
+  .batch-check { display: flex; align-items: center; justify-content: center; width: 36px; height: 100%; color: var(--text-dim); cursor: pointer; }
+  .batch-check:hover { color: var(--accent); }
+  .batch-selected { background: var(--accent-subtle) !important; }
+
   .row-skeleton { display: flex; flex-direction: column; gap: 6px; padding: var(--space-sm) var(--space-md); }
   .error-text { color: var(--danger); padding: var(--space-md); }
 
@@ -226,5 +322,6 @@
     .page { padding: var(--space-md); }
     .toolbar { flex-direction: column; align-items: stretch; }
     .search-box { max-width: none; }
+    .batch-bar { flex-direction: column; align-items: stretch; }
   }
 </style>

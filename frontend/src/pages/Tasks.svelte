@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText } from '@lucide/svelte'
+  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
@@ -17,8 +17,16 @@
   let taskDeleteId = $state(null)
   let showTaskDelete = $state(false)
   let showNewModal = $state(false)
-  let newTitle = $state('')
   let creating = $state(false)
+
+  let formTitle = $state('')
+  let formDesc = $state('')
+  let formPriority = $state('Normal')
+  let formCategory = $state('General')
+  let formDeadline = $state('')
+  let formRecurenta = $state('')
+  let editingTask = $state(null)
+  let showEditModal = $state(false)
 
   let expandedTask = $state(null)
   let subtasksCache = $state({})
@@ -54,13 +62,60 @@
     await loadActiveTimer()
   }
 
+  function resetForm() {
+    formTitle = ''; formDesc = ''; formPriority = 'Normal'
+    formCategory = 'General'; formDeadline = ''; formRecurenta = ''
+  }
+
+  function openNewModal() {
+    resetForm()
+    showNewModal = true
+  }
+
+  function openEditModal(t) {
+    editingTask = t
+    formTitle = t.titlu || ''
+    formDesc = t.descriere || ''
+    formPriority = t.prioritate || 'Normal'
+    formCategory = t.categorie || 'General'
+    formDeadline = t.data_scadenta || ''
+    formRecurenta = t.recurenta || ''
+    showEditModal = true
+  }
+
   async function handleCreate() {
-    if (!newTitle.trim()) return
+    if (!formTitle.trim()) return
     creating = true
     try {
-      await createGlobalTask({ titlu: newTitle.trim(), status: 'to_do' })
-      newTitle = ''
+      await createGlobalTask({
+        titlu: formTitle.trim(),
+        descriere: formDesc.trim() || undefined,
+        prioritate: formPriority,
+        categorie: formCategory,
+        data_scadenta: formDeadline || undefined,
+        recurenta: formRecurenta || undefined,
+        status: 'to_do',
+      })
+      resetForm()
       showNewModal = false
+    } finally { creating = false }
+  }
+
+  async function handleEdit() {
+    if (!editingTask || !formTitle.trim()) return
+    creating = true
+    try {
+      await updateGlobalTask(editingTask.id, {
+        titlu: formTitle.trim(),
+        descriere: formDesc.trim(),
+        prioritate: formPriority,
+        categorie: formCategory,
+        data_scadenta: formDeadline,
+        recurenta: formRecurenta || null,
+      })
+      showEditModal = false
+      editingTask = null
+      await loadGlobalTasks({ arhiva: showArchive })
     } finally { creating = false }
   }
 
@@ -173,7 +228,7 @@
       <h1>Taskuri</h1>
       <span class="count">{globalTasks.items.length}</span>
     </div>
-    <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> Nou</Button>
+    <Button size="sm" onclick={openNewModal}><Plus size={14} /> Nou</Button>
   </div>
 
   <div class="toolbar">
@@ -201,6 +256,7 @@
               </div>
               <div class="tinfo">
                 {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
+                {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
                 {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
                 {#if t.subtask_total}
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
@@ -210,6 +266,7 @@
             </button>
             <div class="task-actions">
               <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
+              <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><Pencil size={12} /></button>
               <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
               <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                 <Clock size={14} />
@@ -321,12 +378,84 @@
   {/if}
 </div>
 
-<Modal bind:open={showNewModal} title="Task Nou" size="sm">
-  <form onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
-    <Input label="Titlu" bind:value={newTitle} placeholder="Ce ai de facut?" />
+<Modal bind:open={showNewModal} title="Task Nou" size="md">
+  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
+    <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de facut?" />
+    <label class="mf-field">
+      <span class="mf-label">Descriere</span>
+      <textarea class="mf-textarea" bind:value={formDesc} placeholder="Detalii (optional)" rows="3"></textarea>
+    </label>
+    <div class="form-row-3">
+      <label class="mf-field">
+        <span class="mf-label">Prioritate</span>
+        <select class="mf-input" bind:value={formPriority}>
+          <option value="Normal">Normal</option>
+          <option value="Minor">Minor</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Categorie</span>
+        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Deadline</span>
+        <input type="date" class="mf-input" bind:value={formDeadline} />
+      </label>
+    </div>
+    <label class="mf-field">
+      <span class="mf-label">Recurenta</span>
+      <select class="mf-input" bind:value={formRecurenta}>
+        <option value="">Fara</option>
+        <option value="zilnic">Zilnic</option>
+        <option value="saptamanal">Saptamanal</option>
+        <option value="lunar">Lunar</option>
+      </select>
+    </label>
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showNewModal = false}>Anuleaza</Button>
-      <Button loading={creating} disabled={!newTitle.trim()} onclick={handleCreate}>Creeaza</Button>
+      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleCreate}>Creeaza</Button>
+    </div>
+  </form>
+</Modal>
+
+<Modal bind:open={showEditModal} title="Editeaza Task" size="md">
+  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
+    <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
+    <label class="mf-field">
+      <span class="mf-label">Descriere</span>
+      <textarea class="mf-textarea" bind:value={formDesc} placeholder="Detalii (optional)" rows="3"></textarea>
+    </label>
+    <div class="form-row-3">
+      <label class="mf-field">
+        <span class="mf-label">Prioritate</span>
+        <select class="mf-input" bind:value={formPriority}>
+          <option value="Normal">Normal</option>
+          <option value="Minor">Minor</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Categorie</span>
+        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Deadline</span>
+        <input type="date" class="mf-input" bind:value={formDeadline} />
+      </label>
+    </div>
+    <label class="mf-field">
+      <span class="mf-label">Recurenta</span>
+      <select class="mf-input" bind:value={formRecurenta}>
+        <option value="">Fara</option>
+        <option value="zilnic">Zilnic</option>
+        <option value="saptamanal">Saptamanal</option>
+        <option value="lunar">Lunar</option>
+      </select>
+    </label>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showEditModal = false}>Anuleaza</Button>
+      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleEdit}>Salveaza</Button>
     </div>
   </form>
 </Modal>
@@ -433,8 +562,21 @@
   .mf-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
+  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .trow:hover .task-edit { opacity: 1; }
+  .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
+  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: 500; }
+
+  .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
+  .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
+
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
-  @media (max-width: 768px) { .page { padding: var(--space-md); } .sess-del, .task-del { opacity: 1; } }
+  @media (max-width: 768px) {
+    .page { padding: var(--space-md); }
+    .sess-del, .task-del, .task-edit { opacity: 1; }
+    .form-row-3 { grid-template-columns: 1fr; }
+  }
 </style>

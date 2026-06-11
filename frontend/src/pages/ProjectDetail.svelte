@@ -73,6 +73,7 @@
 
   // Equipment collapse state
   let expandedEquip = $state(new Set())
+  let equipParamSearch = $state({})
 
   // Done tasks collapse
   let showDoneTasks = $state(false)
@@ -732,17 +733,27 @@
                 {#if e.serial_number}<span>Serie: {e.serial_number}</span>{/if}
               </div>
               {#if eparams.length > 0}
+                {@const pq = (equipParamSearch[e.id] || '').toLowerCase()}
+                {@const filteredParams = pq ? eparams.filter(([k, v]) => k.toLowerCase().includes(pq) || v.toLowerCase().includes(pq)) : eparams}
                 <button class="eparam-toggle" onclick={() => toggleEquipExpand(e.id)}>
                   {#if isExpanded}<ChevronDown size={12} /> Ascunde parametri{:else}<ChevronRight size={12} /> {eparams.length} parametri{/if}
                 </button>
                 {#if isExpanded}
-                  <div class="eparams" transition:slide={{ duration: 150 }}>
-                    {#each eparams as [k, v]}
-                      <div class="eparam">
-                        <span class="eparam-key">{k}</span>
-                        <span class="eparam-val">{v}</span>
-                      </div>
-                    {/each}
+                  <div class="eparams-wrap" transition:slide={{ duration: 150 }}>
+                    {#if eparams.length > 5}
+                      <input type="text" class="eparam-search" placeholder="Filtreaza parametri..." value={equipParamSearch[e.id] || ''} oninput={(ev) => { equipParamSearch = { ...equipParamSearch, [e.id]: ev.target.value } }} />
+                    {/if}
+                    <div class="eparams">
+                      {#each filteredParams as [k, v]}
+                        <div class="eparam">
+                          <span class="eparam-key">{k}</span>
+                          <span class="eparam-val">{v}</span>
+                        </div>
+                      {/each}
+                      {#if pq && filteredParams.length === 0}
+                        <div class="eparam-empty">Niciun parametru gasit</div>
+                      {/if}
+                    </div>
                   </div>
                 {/if}
               {/if}
@@ -971,7 +982,11 @@
   .edetails { display: flex; gap: var(--space-md); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
   .eparam-toggle { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-tiny); color: var(--accent); cursor: pointer; margin-top: var(--space-sm); padding: 4px 0; font-weight: 500; }
   .eparam-toggle:hover { text-decoration: underline; }
-  .eparams { margin-top: var(--space-xs); display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); background: var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }
+  .eparams-wrap { margin-top: var(--space-xs); }
+  .eparam-search { width: 100%; padding: 6px 10px; margin-bottom: var(--space-xs); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .eparam-search:focus { border-color: var(--accent); outline: none; }
+  .eparam-empty { padding: var(--space-sm); text-align: center; color: var(--text-dim); font-size: var(--font-tiny); grid-column: 1 / -1; background: var(--bg); }
+  .eparams { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); background: var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }
   .eparam { display: flex; justify-content: space-between; gap: var(--space-sm); padding: 6px var(--space-sm); background: var(--bg); font-size: var(--font-small); }
   .eparam-key { color: var(--accent); font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: 500; flex-shrink: 0; }
   .eparam-val { color: var(--text); font-weight: 500; text-align: right; }
