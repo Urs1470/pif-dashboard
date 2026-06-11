@@ -2,8 +2,9 @@
   import { onMount } from 'svelte'
   import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer } from '../stores/timer.svelte.js'
+  import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor } from '../lib/formatters.js'
+  import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -22,6 +23,15 @@
   let subtaskLoading = $state(false)
 
   let showDoneTasks = $state(false)
+
+  let showManualTime = $state(false)
+  let manualId = $state(null)
+  let manualDate = $state('')
+  let manualHours = $state(1)
+  let manualMinutes = $state(0)
+  let manualSaving = $state(false)
+
+  let taskSessions = $state({})
 
   const activeTasks = $derived(globalTasks.items.filter(t => t.status !== 'done'))
   const doneTasks = $derived(globalTasks.items.filter(t => t.status === 'done'))
@@ -57,6 +67,7 @@
       return
     }
     expandedTask = taskId
+    loadTaskSessions(taskId)
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -92,6 +103,45 @@
       [sub.task_id]: (subtasksCache[sub.task_id] || []).filter(s => s.id !== sub.id)
     }
     await loadGlobalTasks({ arhiva: showArchive })
+  }
+
+  function openManualTime(taskId) {
+    manualId = taskId
+    manualDate = new Date().toISOString().slice(0, 10)
+    manualHours = 1
+    manualMinutes = 0
+    showManualTime = true
+  }
+
+  async function saveManualTime() {
+    const sec = manualHours * 3600 + manualMinutes * 60
+    if (sec <= 0) { toast('Durata trebuie sa fie > 0', 'error'); return }
+    manualSaving = true
+    try {
+      await addManualTime('global_task', manualId, sec, manualDate || undefined)
+      showManualTime = false
+      toast('Timp adaugat', 'success')
+      await loadGlobalTasks({ arhiva: showArchive })
+      if (taskSessions[manualId]) {
+        taskSessions = { ...taskSessions, [manualId]: await loadGlobalTaskTimer(manualId).catch(() => taskSessions[manualId]) }
+      }
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { manualSaving = false }
+  }
+
+  async function handleDeleteSession(taskId, sessionId) {
+    try {
+      await deleteGlobalTimerSession(sessionId)
+      toast('Sesiune stearsa', 'success')
+      await loadGlobalTasks({ arhiva: showArchive })
+      taskSessions = { ...taskSessions, [taskId]: await loadGlobalTaskTimer(taskId).catch(() => taskSessions[taskId]) }
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  async function loadTaskSessions(taskId) {
+    if (!taskSessions[taskId]) {
+      taskSessions = { ...taskSessions, [taskId]: await loadGlobalTaskTimer(taskId).catch(() => ({ sessions: [], total_secunde: 0 })) }
+    }
   }
 
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
@@ -141,6 +191,7 @@
             </button>
             <div class="task-actions">
               <Badge label={TASK_STATUS_LABELS[t.status] || t.status} color={STATUS_COLORS[t.status] || 'var(--text-dim)'} small />
+              <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
               <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
                 <Clock size={14} />
               </button>
@@ -173,6 +224,18 @@
                   <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
                     <Plus size={14} />
                   </button>
+                </div>
+              {/if}
+              {#if taskSessions[t.id]?.sessions?.length > 0}
+                <div class="sess-section">
+                  <span class="sess-label">Sesiuni ({taskSessions[t.id].sessions.length}) — {formatDuration(taskSessions[t.id].total_secunde)}</span>
+                  {#each taskSessions[t.id].sessions as s (s.id)}
+                    <div class="sess">
+                      <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+                      <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+                      <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><Trash2 size={11} /></button>
+                    </div>
+                  {/each}
                 </div>
               {/if}
             </div>
@@ -245,6 +308,29 @@
   </form>
 </Modal>
 
+<Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
+  <div class="manual-form">
+    <label class="mf-field">
+      <span class="mf-label">Data</span>
+      <input type="date" bind:value={manualDate} class="mf-input" />
+    </label>
+    <div class="mf-row">
+      <label class="mf-field">
+        <span class="mf-label">Ore</span>
+        <input type="number" min="0" max="24" bind:value={manualHours} class="mf-input" />
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Minute</span>
+        <input type="number" min="0" max="59" step="5" bind:value={manualMinutes} class="mf-input" />
+      </label>
+    </div>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showManualTime = false}>Anuleaza</Button>
+      <Button loading={manualSaving} onclick={saveManualTime}>Adauga</Button>
+    </div>
+  </div>
+</Modal>
+
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
@@ -300,8 +386,25 @@
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
+  .timer-btn.manual { width: 28px; height: 28px; color: var(--text-faint); }
+  .timer-btn.manual:hover { color: var(--accent); }
+
+  .sess-section { margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); }
+  .sess-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-dim); margin-bottom: 4px; display: block; }
+  .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
+  .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
+  .sess-del { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .sess:hover .sess-del { opacity: 1; }
+  .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
+
+  .manual-form { display: flex; flex-direction: column; gap: var(--space-md); }
+  .mf-row { display: flex; gap: var(--space-md); }
+  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .mf-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
+
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
-  @media (max-width: 768px) { .page { padding: var(--space-md); } }
+  @media (max-width: 768px) { .page { padding: var(--space-md); } .sess-del { opacity: 1; } }
 </style>

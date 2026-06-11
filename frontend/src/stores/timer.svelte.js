@@ -80,3 +80,39 @@ export async function stopGlobalTaskTimer(taskId) {
   await apiJson(`/api/global-tasks/${taskId}/timer/stop`, { method: 'POST' })
   await loadActiveTimer()
 }
+
+export async function startSubtaskTimer(subtaskId) {
+  await apiJson(`/api/subtasks/${subtaskId}/timer/start`, { method: 'POST' })
+  await loadActiveTimer()
+}
+
+export async function stopSubtaskTimer(subtaskId) {
+  await apiJson(`/api/subtasks/${subtaskId}/timer/stop`, { method: 'POST' })
+  await loadActiveTimer()
+}
+
+export async function addManualTime(kind, id, durata_secunde, data) {
+  const endpoints = {
+    project: `/api/proiecte/${id}/timer/manual`,
+    task: `/api/tasks/${id}/timer/manual`,
+    global_task: `/api/global-tasks/${id}/timer/manual`,
+    subtask: `/api/subtasks/${id}/timer/manual`,
+  }
+  return apiJson(endpoints[kind], { method: 'POST', body: { durata_secunde, data } })
+}
+
+export async function deleteTimerSession(sessionId) {
+  return apiJson(`/api/timer/${sessionId}`, { method: 'DELETE' })
+}
+
+export async function deleteGlobalTimerSession(sessionId) {
+  return apiJson(`/api/global-task-timer/${sessionId}`, { method: 'DELETE' })
+}
+
+export async function loadTaskTimer(taskId) {
+  return apiJson(`/api/tasks/${taskId}/timer`)
+}
+
+export async function loadGlobalTaskTimer(taskId) {
+  return apiJson(`/api/global-tasks/${taskId}/timer`)
+}

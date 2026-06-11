@@ -8,7 +8,7 @@
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
   import { updateTask, createTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, loadActiveTimer } from '../stores/timer.svelte.js'
+  import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -81,6 +81,15 @@
   let editLabel = $state('')
   let editSaving = $state(false)
 
+
+  // Manual time entry modal
+  let showManualTime = $state(false)
+  let manualKind = $state('project')
+  let manualId = $state(null)
+  let manualDate = $state('')
+  let manualHours = $state(1)
+  let manualMinutes = $state(0)
+  let manualSaving = $state(false)
 
   // Checklist category collapse
   let collapsedCats = $state(loadCatCollapse())
@@ -426,6 +435,53 @@
     } finally { editSaving = false }
   }
 
+  function openManualTime(kind, id) {
+    manualKind = kind
+    manualId = id
+    manualDate = new Date().toISOString().slice(0, 10)
+    manualHours = 1
+    manualMinutes = 0
+    showManualTime = true
+  }
+
+  async function saveManualTime() {
+    const sec = manualHours * 3600 + manualMinutes * 60
+    if (sec <= 0) { toast('Durata trebuie sa fie > 0', 'error'); return }
+    manualSaving = true
+    try {
+      await addManualTime(manualKind, manualId, sec, manualDate || undefined)
+      showManualTime = false
+      toast('Timp adaugat', 'success')
+      timerSessions = await loadProjectTimerSessions(params.id).catch(() => timerSessions)
+      await reloadTasks()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { manualSaving = false }
+  }
+
+  async function handleDeleteSession(sessionId) {
+    try {
+      await deleteTimerSession(sessionId)
+      timerSessions = await loadProjectTimerSessions(params.id).catch(() => timerSessions)
+      toast('Sesiune stearsa', 'success')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
+  }
+
+  async function handleSubtaskTimer(sub) {
+    if (timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id) {
+      await stopSubtaskTimer(sub.id)
+    } else {
+      await startSubtaskTimer(sub.id)
+    }
+    await loadActiveTimer()
+  }
+
+  async function reloadTimerSessions() {
+    timerSessions = await loadProjectTimerSessions(params.id).catch(() => timerSessions)
+  }
+
   onMount(() => { load(); loadActiveTimer() })
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
@@ -471,6 +527,7 @@
           <Button variant={projectTimerActive ? 'danger' : 'secondary'} size="sm" onclick={handleProjectTimer}>
             {#if projectTimerActive}<span class="timer-dot"></span> {formatDuration(timer.elapsed)} · Stop{:else}<Play size={14} /> Timer{/if}
           </Button>
+          <Button variant="secondary" size="sm" onclick={() => openManualTime('project', params.id)}><Clock size={14} /> Manual</Button>
           <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><Pencil size={14} /> Edit</Button>
           <Button variant="secondary" size="sm" onclick={exportPdf}><FileDown size={14} /> PDF</Button>
           <Button variant="secondary" size="sm" onclick={exportMd}><FileText size={14} /> MD</Button>
@@ -592,6 +649,8 @@
                         <div class="sub-row" class:sub-done={sub.done}>
                           <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
                           <span class="sub-title">{sub.titlu}</span>
+                          {#if sub.timp_secunde}<span class="sub-time">{formatDuration(sub.timp_secunde)}</span>{/if}
+                          <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><Clock size={12} /></button>
                           <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><Trash2 size={12} /></button>
                         </div>
                       {/each}
@@ -733,10 +792,16 @@
           {/each}
           {#if timerSessions.sessions?.length > 0}
             <div class="ifull">
-              <span class="ilabel">Sesiuni timer ({timerSessions.sessions.length})</span>
+              <div class="sess-header">
+                <span class="ilabel">Sesiuni timer ({timerSessions.sessions.length}) — Total: {formatDuration(timerSessions.total_secunde)}</span>
+              </div>
               <div class="sess-list">
-                {#each timerSessions.sessions.slice(0, 10) as s}
-                  <div class="sess"><span>{s.start_time ? formatDate(s.start_time) : '—'}</span><span class="sess-dur">{formatDuration(s.durata_secunde)}</span></div>
+                {#each timerSessions.sessions as s (s.id)}
+                  <div class="sess">
+                    <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+                    <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+                    <button class="sess-del" title="Sterge sesiunea" onclick={() => handleDeleteSession(s.id)}><Trash2 size={12} /></button>
+                  </div>
                 {/each}
               </div>
             </div>
@@ -773,6 +838,29 @@
 <ConfirmDialog bind:open={showDeleteConfirm} title="Sterge proiect" message={`Stergi proiectul "${project?.nume}"? Toate datele (taskuri, jurnal, atasamente, echipamente) vor fi sterse definitiv.`} confirmLabel="Sterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
+
+<Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
+  <div class="manual-form">
+    <label class="mf-field">
+      <span class="mf-label">Data</span>
+      <input type="date" bind:value={manualDate} class="mf-input" />
+    </label>
+    <div class="mf-row">
+      <label class="mf-field">
+        <span class="mf-label">Ore</span>
+        <input type="number" min="0" max="24" bind:value={manualHours} class="mf-input" />
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Minute</span>
+        <input type="number" min="0" max="59" step="5" bind:value={manualMinutes} class="mf-input" />
+      </label>
+    </div>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showManualTime = false}>Anuleaza</Button>
+      <Button loading={manualSaving} onclick={saveManualTime}>Adauga</Button>
+    </div>
+  </div>
+</Modal>
 
 <Modal bind:open={showFieldEdit} title={editLabel} size="wide">
   <div class="field-edit-modal">
@@ -872,6 +960,11 @@
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
+  .sub-time { font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--accent); flex-shrink: 0; }
+  .sub-timer { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .sub-timer.active { opacity: 1; color: var(--accent); background: var(--accent-subtle); }
+  .sub-row:hover .sub-timer { opacity: 1; }
+  .sub-timer:hover { color: var(--accent); background: var(--accent-subtle); }
   .sub-del { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
@@ -933,14 +1026,24 @@
   .irow { display: flex; justify-content: space-between; font-size: var(--font-small); padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
   .ilabel { color: var(--text-dim); font-weight: 500; }
   .ifull { display: flex; flex-direction: column; gap: 4px; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
+  .sess-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .sess-list { display: flex; flex-direction: column; gap: 2px; }
-  .sess { display: flex; justify-content: space-between; font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
-  .sess-dur { font-family: var(--font-mono); color: var(--accent); }
+  .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
+  .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
+  .sess-del { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .sess:hover .sess-del { opacity: 1; }
+  .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   .stopnote { display: flex; flex-direction: column; gap: var(--space-md); }
   .ta-field { display: flex; flex-direction: column; gap: 4px; }
   .ta-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
   .ta-field textarea { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
+
+  .manual-form { display: flex; flex-direction: column; gap: var(--space-md); }
+  .mf-row { display: flex; gap: var(--space-md); }
+  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .mf-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
@@ -952,6 +1055,7 @@
     .trow { padding: var(--space-sm); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
-    .sub-del { opacity: 1; }
+    .sub-del, .sub-timer { opacity: 1; }
+    .sess-del { opacity: 1; }
   }
 </style>
