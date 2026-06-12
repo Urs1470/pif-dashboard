@@ -1456,7 +1456,7 @@ def dashboard_home():
                    t.proiect_id, p.nume as proiect_nume
             FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
             WHERE LOWER(t.prioritate) = 'urgent' AND t.status != 'done'
-              AND p.status NOT IN ('finalizat', 'anulat')
+              AND p.status != 'anulat'
         )
         ORDER BY data_scadenta IS NULL, data_scadenta
         LIMIT 10

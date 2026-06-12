@@ -6,7 +6,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 **Total: 129 rute.**
 
 
-## blueprints/admin.py (14 rute)
+## blueprints\admin.py (14 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -25,13 +25,13 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/search` | `global_search` | 1305 |
 | GET | `/api/dashboard/home` | `dashboard_home` | 1414 |
 
-## blueprints/assistant.py (1 rute)
+## blueprints\assistant.py (1 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
 | POST | `/chat` | `assistant_chat` | 814 |
 
-## blueprints/budget.py (7 rute)
+## blueprints\budget.py (7 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -43,7 +43,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/version` | `get_version` | 251 |
 | GET | `/api/quote/<symbol>` | `get_quote` | 285 |
 
-## blueprints/obsidian.py (5 rute)
+## blueprints\obsidian.py (5 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -53,7 +53,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/obsidian/note` | `obsidian_note_get` | 183 |
 | GET | `/api/obsidian/search` | `obsidian_search` | 206 |
 
-## blueprints/parametri.py (13 rute)
+## blueprints\parametri.py (13 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/manuals` | `get_manuals` | 651 |
 | GET | `/manuals/<path:filename>` | `serve_manual` | 672 |
 
-## blueprints/projects.py (39 rute)
+## blueprints\projects.py (39 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -115,7 +115,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/templates` | `get_templates` | 1639 |
 | POST | `/api/import/debrief` | `import_debrief` | 1713 |
 
-## blueprints/tasks.py (13 rute)
+## blueprints\tasks.py (13 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -133,7 +133,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 479 |
 | DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 534 |
 
-## blueprints/timer.py (20 rute)
+## blueprints\timer.py (20 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
