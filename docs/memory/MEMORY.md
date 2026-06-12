@@ -20,7 +20,7 @@ Other authoritative docs (do not duplicate here):
 | Budget | `budget_state` (JSON blob/user), `budget_audit` (capped 5000 rows/user via trigger) |
 | System | `assistant_memory`, `app_settings` (KV), `schema_version` |
 
-Migrations: in-code in `database.py` (`run_migrations()`), currently **v17**, idempotent, auto-run via `before_request`.
+Migrations: in-code in `database.py` (`run_migrations()`), currently **v18**, idempotent, auto-run via `before_request`.
 
 ## Feature status (last verified 2026-06-11)
 
@@ -50,6 +50,7 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v17**, id
 
 ## Recent decisions
 
+- 2026-06-12: Per-task attachments via migration v18: `atasamente` rebuilt with nullable `proiect_id` + `task_id`/`global_task_id` (FK CASCADE). Project-task files keep `proiect_id` set (visible in project Atasamente tab too); global-task files go to `uploads/global-tasks/<id>/`. Endpoints in projects.py reuse `_store_uploaded_file()`; task DELETE endpoints remove files from disk. UI: paperclip chips + count badge in expanded row, both pages.
 - 2026-06-12: Task notes upgraded to Observatii concept: rendered preview (max-height+fade) in expanded row + WYSIWYG RichTextEditor modal. Shared helpers extracted to `frontend/src/lib/storedText.js` (sanitizeHtml/renderStoredText — ProjectDetail now imports from there). Fixed pre-existing RichTextEditor `plainToHtml` bug (escaped its own `<br>` tags — affected legacy plain-text in Observatii too).
 - 2026-06-12: Task notes = the existing `descriere` column, edited inline in the expanded task row (click text / "Adauga notite..."), on both Tasks page (snippet, active+done) and ProjectDetail. No new table/endpoint; PUT COALESCE accepts '' to clear.
 - 2026-06-12: Inline quick-add for tasks (global + project): form under toolbar on Tasks (hidden in Arhiva view), ProjectDetail single-field "Task Nou" modal replaced by inline form. Backend untouched (endpoint defaults cover prioritate/categorie/status).
