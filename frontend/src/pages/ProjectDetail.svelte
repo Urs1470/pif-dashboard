@@ -40,6 +40,9 @@
 
   let newTaskTitle = $state('')
   let creatingTask = $state(false)
+  let noteEditId = $state(null)
+  let noteDraft = $state('')
+  let noteSaving = $state(false)
 
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
@@ -190,6 +193,33 @@
       newTaskTitle = ''
       await reloadTasks()
     } finally { creatingTask = false }
+  }
+
+  function focusNote(node) {
+    node.focus()
+    node.setSelectionRange(node.value.length, node.value.length)
+  }
+
+  function startNoteEdit(t) {
+    noteEditId = t.id
+    noteDraft = t.descriere || ''
+  }
+
+  function noteKeydown(e, t) {
+    if (e.key === 'Escape') noteEditId = null
+    else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveNote(t) }
+  }
+
+  async function saveNote(t) {
+    if (noteSaving) return
+    noteSaving = true
+    try {
+      await updateTask(t.id, { descriere: noteDraft.trim() })
+      noteEditId = null
+      await reloadTasks()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { noteSaving = false }
   }
 
   async function handleDeleteProject() {
@@ -775,8 +805,19 @@
                 </div>
                 {#if expandedTask === t.id}
                   <div class="subtask-body" transition:slide={{ duration: 150 }}>
-                    {#if t.descriere}
-                      <div class="task-desc">{t.descriere}</div>
+                    {#if noteEditId === t.id}
+                      <div class="note-edit">
+                        <textarea rows="3" bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." use:focusNote onkeydown={(e) => noteKeydown(e, t)}></textarea>
+                        <div class="note-actions">
+                          <span class="note-hint">Ctrl+Enter salveaza · Esc anuleaza</span>
+                          <button class="note-btn" onclick={() => noteEditId = null}>Anuleaza</button>
+                          <button class="note-btn primary" disabled={noteSaving} onclick={() => saveNote(t)}>Salveaza</button>
+                        </div>
+                      </div>
+                    {:else if t.descriere}
+                      <button class="task-desc editable" title="Click pentru a edita notitele" onclick={() => startNoteEdit(t)}>{t.descriere}</button>
+                    {:else}
+                      <button class="note-add" onclick={() => startNoteEdit(t)}><StickyNote size={12} /> Adauga notite...</button>
                     {/if}
                     {#if subtaskLoading && !subtasksCache[t.id]}
                       <div class="sub-loading">Se incarca...</div>
@@ -1192,6 +1233,19 @@
   /* Subtask expanded area */
   .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
   .task-desc { font-size: var(--font-small); color: var(--text-secondary); white-space: pre-wrap; line-height: 1.55; margin-bottom: var(--space-sm); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border-subtle); }
+  .task-desc.editable { display: block; width: 100%; text-align: left; cursor: pointer; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
+  .task-desc.editable:hover { background: var(--bg-hover); }
+  .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
+  .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
+  .note-edit { margin-bottom: var(--space-sm); }
+  .note-edit textarea { width: 100%; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--accent); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); font-family: inherit; line-height: 1.55; resize: vertical; outline: none; box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .note-actions { display: flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); justify-content: flex-end; }
+  .note-hint { font-size: var(--font-tiny); color: var(--text-faint); margin-right: auto; }
+  .note-btn { font-size: var(--font-tiny); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .note-btn:hover { background: var(--bg-hover); color: var(--text); }
+  .note-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-surface); font-weight: 600; }
+  .note-btn.primary:hover { opacity: 0.9; }
+  .note-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
