@@ -25,7 +25,7 @@
 
   function plainToHtml(s) {
     return s.split(/\n\n+/).map(p =>
-      '<p>' + p.replace(/\n/g, '<br>').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>'
+      '<p>' + p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>'
     ).join('')
   }
 
