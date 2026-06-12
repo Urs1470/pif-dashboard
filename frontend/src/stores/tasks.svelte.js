@@ -32,6 +32,22 @@ export async function loadGlobalTasks(opts = {}) {
   }
 }
 
+export async function loadTaskAttachments(taskId, isGlobal = false) {
+  const base = isGlobal ? 'global-tasks' : 'tasks'
+  return apiJson(`/api/${base}/${taskId}/atasamente`)
+}
+
+export async function uploadTaskAttachment(taskId, file, isGlobal = false) {
+  const base = isGlobal ? 'global-tasks' : 'tasks'
+  const fd = new FormData()
+  fd.append('file', file)
+  return apiJson(`/api/${base}/${taskId}/atasamente`, { method: 'POST', body: fd })
+}
+
+export async function deleteTaskAttachment(attId) {
+  return apiJson(`/api/atasamente/${attId}`, { method: 'DELETE' })
+}
+
 export async function createTask(projectId, data) {
   const result = await apiJson(`/api/proiecte/${projectId}/tasks`, {
     method: 'POST',

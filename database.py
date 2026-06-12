@@ -581,6 +581,47 @@ def migrate_v16_to_v17():
     logger.info("Migration v16->v17: added timer_sessions indexes on task_id, subtask_id")
 
 
+def migrate_v17_to_v18():
+    """v17 -> v18: per-task attachments. Rebuild atasamente with nullable
+    proiect_id plus task_id / global_task_id columns (FK CASCADE). Table
+    rebuild is required because SQLite cannot drop NOT NULL on proiect_id."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(atasamente)")
+    cols = [row[1] for row in cursor.fetchall()]
+    if 'task_id' not in cols:
+        cursor.execute('PRAGMA foreign_keys=OFF')
+        cursor.execute('''
+            CREATE TABLE atasamente_new (
+                id TEXT PRIMARY KEY,
+                proiect_id TEXT,
+                task_id TEXT,
+                global_task_id TEXT,
+                nume_fisier TEXT NOT NULL,
+                tip_fisier TEXT,
+                dimensiune INTEGER,
+                data TEXT,
+                cale_locala TEXT NOT NULL,
+                tip_atasament TEXT DEFAULT 'fisier',
+                FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
+                FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+                FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
+            )
+        ''')
+        cursor.execute('''
+            INSERT INTO atasamente_new (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala, tip_atasament)
+            SELECT id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala, tip_atasament FROM atasamente
+        ''')
+        cursor.execute('DROP TABLE atasamente')
+        cursor.execute('ALTER TABLE atasamente_new RENAME TO atasamente')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_task ON atasamente(task_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_global_task ON atasamente(global_task_id)')
+        conn.commit()
+        logger.info("Migration v17->v18: atasamente rebuilt with task_id/global_task_id, proiect_id nullable")
+    conn.close()
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -664,6 +705,11 @@ def run_migrations():
         migrate_v16_to_v17()
         set_schema_version(17)
         current_version = 17
+
+    if current_version < 18:
+        migrate_v17_to_v18()
+        set_schema_version(18)
+        current_version = 18
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
@@ -915,14 +961,18 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS atasamente (
             id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
+            proiect_id TEXT,
+            task_id TEXT,
+            global_task_id TEXT,
             nume_fisier TEXT NOT NULL,
             tip_fisier TEXT,
             dimensiune INTEGER,
             data TEXT,
             cale_locala TEXT NOT NULL,
             tip_atasament TEXT DEFAULT 'fisier',
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
         )
     ''')
 

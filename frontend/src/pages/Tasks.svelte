@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat, Search, StickyNote } from '@lucide/svelte'
-  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
+  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat, Search, StickyNote, Paperclip } from '@lucide/svelte'
+  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -44,6 +44,14 @@
   let noteTask = $state(null)
   let noteDraft = $state('')
   let noteSaving = $state(false)
+
+  let attCache = $state({})
+  let attInput = $state(null)
+  let attUploadTaskId = null
+  let attUploading = $state(false)
+  let attDeleteId = $state(null)
+  let attDeleteTaskId = $state(null)
+  let showAttDelete = $state(false)
 
   const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
   const STATUS_FILTER_OPTIONS = [
@@ -147,6 +155,46 @@
     } finally { quickAdding = false }
   }
 
+  async function loadAtt(taskId, force = false) {
+    if (force || !attCache[taskId]) {
+      attCache = { ...attCache, [taskId]: await loadTaskAttachments(taskId, true).catch(() => attCache[taskId] || []) }
+    }
+  }
+
+  function triggerAttUpload(taskId) {
+    attUploadTaskId = taskId
+    attInput?.click()
+  }
+
+  async function onAttFiles(e) {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (!files.length || !attUploadTaskId) return
+    const taskId = attUploadTaskId
+    attUploading = true
+    try {
+      for (const f of files) await uploadTaskAttachment(taskId, f, true)
+      toast(files.length === 1 ? 'Fisier atasat' : `${files.length} fisiere atasate`, 'success')
+      await Promise.all([loadAtt(taskId, true), loadGlobalTasks({ arhiva: showArchive })])
+    } catch (err) {
+      toast(`Eroare: ${err.message}`, 'error')
+    } finally { attUploading = false }
+  }
+
+  async function doDeleteAtt() {
+    if (!attDeleteId) return
+    try {
+      await deleteTaskAttachment(attDeleteId)
+      toast('Atasament sters', 'success')
+      const taskId = attDeleteTaskId
+      attDeleteId = null
+      attDeleteTaskId = null
+      if (taskId) await Promise.all([loadAtt(taskId, true), loadGlobalTasks({ arhiva: showArchive })])
+    } catch (err) {
+      toast(`Eroare: ${err.message}`, 'error')
+    }
+  }
+
   function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
@@ -191,6 +239,7 @@
     }
     expandedTask = taskId
     loadTaskSessions(taskId)
+    loadAtt(taskId)
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -303,6 +352,20 @@
   {/if}
 {/snippet}
 
+{#snippet taskAttachments(t)}
+  <div class="att-row">
+    {#each (attCache[t.id] || []) as a (a.id)}
+      <span class="att-chip">
+        <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => window.open(`/api/atasamente/${a.id}/download`, '_blank')}>
+          <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
+        </button>
+        <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><Trash2 size={11} /></button>
+      </span>
+    {/each}
+    <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
+  </div>
+{/snippet}
+
 <div class="page">
   <div class="page-header">
     <div class="page-title-row">
@@ -360,6 +423,7 @@
                 {#if t.subtask_total}
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                 {/if}
+                {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                 {#if t.data_scadenta}<span>{formatDate(t.data_scadenta)}</span>{/if}
               </div>
             </button>
@@ -377,6 +441,7 @@
           {#if expandedTask === t.id}
             <div class="subtask-body" transition:slide={{ duration: 150 }}>
               {@render taskNotes(t)}
+              {@render taskAttachments(t)}
               {#if subtaskLoading && !subtasksCache[t.id]}
                 <div class="sub-loading">Se incarca...</div>
               {:else}
@@ -452,6 +517,7 @@
               {#if expandedTask === t.id}
                 <div class="subtask-body" transition:slide={{ duration: 150 }}>
                   {@render taskNotes(t)}
+                  {@render taskAttachments(t)}
                   {#if subtaskLoading && !subtasksCache[t.id]}
                     <div class="sub-loading">Se incarca...</div>
                   {:else}
@@ -582,6 +648,8 @@
 </Modal>
 
 <ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
+<input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
 <Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
   <div class="note-modal">
@@ -668,6 +736,14 @@
   .note-preview :global(a) { color: var(--accent); text-decoration: underline; }
   .note-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+  .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
+  .att-open:hover { color: var(--accent); background: var(--bg-hover); }
+  .att-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .att-del { display: inline-flex; align-items: center; justify-content: center; width: 24px; align-self: stretch; color: var(--text-faint); cursor: pointer; border-left: 1px solid var(--border); }
+  .att-del:hover { color: var(--danger); background: var(--danger-subtle); }
+  .att-ind { display: inline-flex; align-items: center; gap: 3px; color: var(--text-dim); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }

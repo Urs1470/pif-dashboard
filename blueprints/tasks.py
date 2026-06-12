@@ -1,4 +1,5 @@
 import calendar
+import os
 from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
@@ -11,6 +12,18 @@ tasks_bp = Blueprint('tasks', __name__)
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
+
+def _delete_task_attachments(cursor, column, task_id):
+    """Remove attachment files from disk and their rows for a task being
+    deleted. column: 'task_id' or 'global_task_id'."""
+    cursor.execute(f'SELECT cale_locala FROM atasamente WHERE {column} = ?', (task_id,))
+    for row in cursor.fetchall():
+        try:
+            if row['cale_locala'] and os.path.exists(row['cale_locala']):
+                os.remove(row['cale_locala'])
+        except OSError:
+            pass
+    cursor.execute(f'DELETE FROM atasamente WHERE {column} = ?', (task_id,))
 
 def _next_recurrence_date(base_str, recurenta):
     """base_str: 'YYYY-MM-DD' (flatpickr format) or empty. Returns the next
@@ -140,9 +153,18 @@ def get_tasks(project_id):
         timer_map[r['t_id']] = {'timp_secunde': r['timp_secunde'],
                                  'timer_running': r['timer_running']}
 
+    # 4) Batch-fetch attachment counts (one query for all tasks).
+    cursor.execute(f'''
+        SELECT task_id, COUNT(*) AS atasamente_count
+        FROM atasamente
+        WHERE task_id IN ({placeholders})
+        GROUP BY task_id
+    ''', task_ids)
+    att_map = {r['task_id']: r['atasamente_count'] for r in cursor.fetchall()}
+
     conn.close()
 
-    # 4) Merge results in Python.
+    # 5) Merge results in Python.
     result = []
     for row in rows:
         d = row_to_dict(row)
@@ -152,6 +174,7 @@ def get_tasks(project_id):
         tm = timer_map.get(d['id'], {})
         d['timp_secunde'] = tm.get('timp_secunde', 0)
         d['timer_running'] = tm.get('timer_running', 0)
+        d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
     return jsonify(result)
@@ -258,6 +281,7 @@ def delete_task(task_id):
     try:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
+        _delete_task_attachments(cursor, 'task_id', task_id)
         cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
         conn.commit()
@@ -406,9 +430,18 @@ def get_global_tasks():
         timer_map[r['global_task_id']] = {'timp_secunde': r['timp_secunde'],
                                           'timer_running': r['timer_running']}
 
+    # 4) Batch-fetch attachment counts (one query for all tasks).
+    cursor.execute(f'''
+        SELECT global_task_id, COUNT(*) AS atasamente_count
+        FROM atasamente
+        WHERE global_task_id IN ({placeholders})
+        GROUP BY global_task_id
+    ''', task_ids)
+    att_map = {r['global_task_id']: r['atasamente_count'] for r in cursor.fetchall()}
+
     conn.close()
 
-    # 4) Merge results in Python — response shape identical to the old
+    # 5) Merge results in Python — response shape identical to the old
     #    correlated-subquery version (same keys, same 0 defaults).
     result = []
     for row in rows:
@@ -419,6 +452,7 @@ def get_global_tasks():
         tm = timer_map.get(d['id'], {})
         d['timp_secunde'] = tm.get('timp_secunde', 0)
         d['timer_running'] = tm.get('timer_running', 0)
+        d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
     return jsonify(result)
@@ -540,6 +574,7 @@ def delete_global_task(task_id):
         # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
         # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
+        _delete_task_attachments(cursor, 'global_task_id', task_id)
         cursor.execute('DELETE FROM global_tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
         conn.commit()

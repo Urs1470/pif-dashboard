@@ -568,57 +568,139 @@ def get_all_jurnal():
 
 # ============ ATTACHMENTS ============
 
+ATTACHMENT_TIP_MAP = {
+    '.pdf': 'PDF',
+    '.jpg': 'IMG', '.jpeg': 'IMG', '.png': 'IMG',
+    '.gif': 'IMG', '.bmp': 'IMG', '.webp': 'IMG',
+    '.msg': 'EMAIL', '.eml': 'EMAIL',
+    '.doc': 'DOC', '.docx': 'DOC',
+    '.xls': 'XLS', '.xlsx': 'XLS',
+    '.zip': 'ZIP', '.rar': 'ZIP'
+}
+
+
+def _store_uploaded_file(file, subfolder):
+    """Save an uploaded file under UPLOAD_FOLDER/<subfolder>/ and return
+    (attachment_id, original_name, tip, size, filepath). Sanitizes the
+    client-supplied name — never trust it for a filesystem path (blocks
+    ../ traversal and overwriting server files)."""
+    attachment_id = generate_uuid()
+    folder = os.path.join(UPLOAD_FOLDER, subfolder)
+    os.makedirs(folder, exist_ok=True)
+
+    original_name = file.filename
+    safe_name = secure_filename(original_name) or ('fisier_' + attachment_id[:8])
+    filepath = os.path.join(folder, safe_name)
+    if os.path.exists(filepath):
+        safe_name = attachment_id[:8] + '_' + safe_name
+        filepath = os.path.join(folder, safe_name)
+    file.save(filepath)
+
+    size = os.path.getsize(filepath)
+    # Type from the original name — keeps the real extension
+    ext = os.path.splitext(original_name)[1].lower()
+    tip = ATTACHMENT_TIP_MAP.get(ext, 'ALT')
+    return attachment_id, original_name, tip, size, filepath
+
+
+def _require_upload_file():
+    if 'file' not in request.files:
+        return None, (jsonify({'error': 'No file provided'}), 400)
+    file = request.files['file']
+    if file.filename == '':
+        return None, (jsonify({'error': 'No file selected'}), 400)
+    return file, None
+
+
 @projects_bp.route('/api/proiecte/<project_id>/atasamente', methods=['POST'])
 @login_required
 def upload_atasament(project_id):
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+    file, err = _require_upload_file()
+    if err:
+        return err
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, project_id)
 
     conn = get_db()
     cursor = conn.cursor()
-
-    now = datetime.now().isoformat()
-    attachment_id = generate_uuid()
-
-    # Create project folder if not exists
-    project_folder = os.path.join(UPLOAD_FOLDER, project_id)
-    os.makedirs(project_folder, exist_ok=True)
-
-    # Save file — sanitize the client-supplied name; never trust it for a
-    # filesystem path (blocks ../ traversal and overwriting server files).
-    original_name = file.filename
-    safe_name = secure_filename(original_name) or ('fisier_' + attachment_id[:8])
-    filepath = os.path.join(project_folder, safe_name)
-    if os.path.exists(filepath):
-        safe_name = attachment_id[:8] + '_' + safe_name
-        filepath = os.path.join(project_folder, safe_name)
-    file.save(filepath)
-
-    # Get file size
-    size = os.path.getsize(filepath)
-
-    # Determine file type (from the original name — keeps the real extension)
-    ext = os.path.splitext(original_name)[1].lower()
-    tip_map = {
-        '.pdf': 'PDF',
-        '.jpg': 'IMG', '.jpeg': 'IMG', '.png': 'IMG',
-        '.gif': 'IMG', '.bmp': 'IMG', '.webp': 'IMG',
-        '.msg': 'EMAIL', '.eml': 'EMAIL',
-        '.doc': 'DOC', '.docx': 'DOC',
-        '.xls': 'XLS', '.xlsx': 'XLS',
-        '.zip': 'ZIP', '.rar': 'ZIP'
-    }
-    tip = tip_map.get(ext, 'ALT')
-
     cursor.execute('''
         INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (attachment_id, project_id, original_name, tip, size, now[:10], filepath))
+    ''', (attachment_id, project_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
+    conn.commit()
+    conn.close()
 
+    return jsonify({'id': attachment_id}), 201
+
+
+@projects_bp.route('/api/tasks/<task_id>/atasamente', methods=['GET'])
+@login_required
+def get_task_atasamente(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM atasamente WHERE task_id = ? ORDER BY data DESC', (task_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([row_to_dict(row) for row in rows])
+
+
+@projects_bp.route('/api/tasks/<task_id>/atasamente', methods=['POST'])
+@login_required
+def upload_task_atasament(task_id):
+    file, err = _require_upload_file()
+    if err:
+        return err
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT proiect_id FROM tasks WHERE id = ?', (task_id,))
+    task = cursor.fetchone()
+    if not task:
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+
+    # Files live in the project folder so the project Atasamente tab sees them too.
+    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, task['proiect_id'])
+    cursor.execute('''
+        INSERT INTO atasamente (id, proiect_id, task_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (attachment_id, task['proiect_id'], task_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'id': attachment_id}), 201
+
+
+@projects_bp.route('/api/global-tasks/<task_id>/atasamente', methods=['GET'])
+@login_required
+def get_global_task_atasamente(task_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM atasamente WHERE global_task_id = ? ORDER BY data DESC', (task_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([row_to_dict(row) for row in rows])
+
+
+@projects_bp.route('/api/global-tasks/<task_id>/atasamente', methods=['POST'])
+@login_required
+def upload_global_task_atasament(task_id):
+    file, err = _require_upload_file()
+    if err:
+        return err
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM global_tasks WHERE id = ?', (task_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'Task not found'}), 404
+
+    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, os.path.join('global-tasks', task_id))
+    cursor.execute('''
+        INSERT INTO atasamente (id, global_task_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (attachment_id, task_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
     conn.commit()
     conn.close()
 

@@ -8,7 +8,7 @@
     createJournalEntry, deleteJournalEntry, deleteEquipment, loadProjectTimerSessions,
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
-  import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
+  import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -45,6 +45,14 @@
   let noteTask = $state(null)
   let noteDraft = $state('')
   let noteSaving = $state(false)
+
+  let attCache = $state({})
+  let attInput = $state(null)
+  let attUploadTaskId = null
+  let attUploading = $state(false)
+  let attDeleteId = $state(null)
+  let attDeleteTaskId = $state(null)
+  let showAttDelete = $state(false)
 
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
@@ -200,6 +208,46 @@
       newTaskTitle = ''
       await reloadTasks()
     } finally { creatingTask = false }
+  }
+
+  async function loadAtt(taskId, force = false) {
+    if (force || !attCache[taskId]) {
+      attCache = { ...attCache, [taskId]: await loadTaskAttachments(taskId).catch(() => attCache[taskId] || []) }
+    }
+  }
+
+  function triggerAttUpload(taskId) {
+    attUploadTaskId = taskId
+    attInput?.click()
+  }
+
+  async function onAttFiles(e) {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (!files.length || !attUploadTaskId) return
+    const taskId = attUploadTaskId
+    attUploading = true
+    try {
+      for (const f of files) await uploadTaskAttachment(taskId, f)
+      toast(files.length === 1 ? 'Fisier atasat' : `${files.length} fisiere atasate`, 'success')
+      await Promise.all([loadAtt(taskId, true), reloadTasks()])
+    } catch (err) {
+      toast(`Eroare: ${err.message}`, 'error')
+    } finally { attUploading = false }
+  }
+
+  async function doDeleteAtt() {
+    if (!attDeleteId) return
+    try {
+      await deleteTaskAttachment(attDeleteId)
+      toast('Atasament sters', 'success')
+      const taskId = attDeleteTaskId
+      attDeleteId = null
+      attDeleteTaskId = null
+      if (taskId) await Promise.all([loadAtt(taskId, true), reloadTasks()])
+    } catch (err) {
+      toast(`Eroare: ${err.message}`, 'error')
+    }
   }
 
   function openNoteModal(t) {
@@ -429,6 +477,7 @@
     }
     expandedTask = taskId
     expandedSubSess = null
+    loadAtt(taskId)
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -775,6 +824,7 @@
                       {#if t.subtask_total}
                         <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                       {/if}
+                      {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                       {#if t.deadline}
                         <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
                       {/if}
@@ -793,6 +843,17 @@
                     {:else}
                       <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
                     {/if}
+                    <div class="att-row">
+                      {#each (attCache[t.id] || []) as a (a.id)}
+                        <span class="att-chip">
+                          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => window.open(`/api/atasamente/${a.id}/download`, '_blank')}>
+                            <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
+                          </button>
+                          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><Trash2 size={11} /></button>
+                        </span>
+                      {/each}
+                      <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
+                    </div>
                     {#if subtaskLoading && !subtasksCache[t.id]}
                       <div class="sub-loading">Se incarca...</div>
                     {:else}
@@ -1076,6 +1137,8 @@
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
 <ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
+<input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
   <div class="manual-form">
@@ -1229,6 +1292,14 @@
   .note-preview :global(ul), .note-preview :global(ol) { padding-left: 20px; margin: 3px 0; }
   .note-preview :global(a) { color: var(--accent); text-decoration: underline; }
   .note-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
+  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+  .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
+  .att-open:hover { color: var(--accent); background: var(--bg-hover); }
+  .att-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .att-del { display: inline-flex; align-items: center; justify-content: center; width: 24px; align-self: stretch; color: var(--text-faint); cursor: pointer; border-left: 1px solid var(--border); }
+  .att-del:hover { color: var(--danger); background: var(--danger-subtle); }
+  .att-ind { display: inline-flex; align-items: center; gap: 3px; color: var(--text-dim); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
