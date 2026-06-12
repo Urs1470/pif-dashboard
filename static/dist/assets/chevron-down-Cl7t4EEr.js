@@ -1,0 +1,1 @@
+import{Y as e,et as t,tt as n}from"./index-CMk4naMx.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`m6 9 6 6 6-6`}]];e(i,n({name:`chevron-down`},()=>o,{get iconNode(){return s}}))}export{i as t};

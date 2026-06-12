@@ -180,9 +180,14 @@
   }
 
   async function handleTaskTimer(taskId) {
-    if (timer.active?.kind === 'task' && timer.active?.task_id === taskId) await stopTaskTimer(taskId)
+    const wasActive = timer.active?.kind === 'task' && timer.active?.task_id === taskId
+    if (wasActive) await stopTaskTimer(taskId)
     else await startTaskTimer(taskId)
     await loadActiveTimer()
+    if (wasActive) {
+      await reloadTasks()
+      taskSessionsCache = { ...taskSessionsCache, [taskId]: await loadTaskTimer(taskId).catch(() => taskSessionsCache[taskId] || { sessions: [], total_secunde: 0 }) }
+    }
   }
 
   async function handleCreateTask() {
@@ -618,12 +623,22 @@
   }
 
   async function handleSubtaskTimer(sub) {
-    if (timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id) {
+    const wasActive = timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id
+    if (wasActive) {
       await stopSubtaskTimer(sub.id)
     } else {
       await startSubtaskTimer(sub.id)
     }
     await loadActiveTimer()
+    if (wasActive) {
+      const taskId = sub.task_id || expandedTask
+      subSessionsCache = { ...subSessionsCache, [sub.id]: await loadSubtaskTimer(sub.id).catch(() => subSessionsCache[sub.id] || { sessions: [], total_secunde: 0 }) }
+      if (taskId) {
+        const subs = await loadSubtasks(taskId).catch(() => null)
+        if (subs) subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+      }
+      await reloadTimerSessions()
+    }
   }
 
   async function reloadTimerSessions() {

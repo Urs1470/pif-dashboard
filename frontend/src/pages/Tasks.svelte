@@ -83,12 +83,17 @@
   }
 
   async function toggleTimer(task) {
-    if (timer.active?.global_task_id === task.id) {
+    const wasActive = timer.active?.global_task_id === task.id
+    if (wasActive) {
       await stopGlobalTaskTimer(task.id)
     } else {
       await startGlobalTaskTimer(task.id)
     }
     await loadActiveTimer()
+    if (wasActive) {
+      await loadGlobalTasks({ arhiva: showArchive })
+      taskSessions = { ...taskSessions, [task.id]: await loadGlobalTaskTimer(task.id).catch(() => taskSessions[task.id] || { sessions: [], total_secunde: 0 }) }
+    }
   }
 
   function resetForm() {
