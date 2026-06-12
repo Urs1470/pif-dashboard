@@ -12,6 +12,8 @@
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
+  import RichTextEditor from '../components/ui/RichTextEditor.svelte'
+  import { renderStoredText } from '../lib/storedText.js'
 
   let showArchive = $state(false)
   let taskDeleteId = $state(null)
@@ -38,7 +40,8 @@
   let statusFilter = $state('')
   let quickTitle = $state('')
   let quickAdding = $state(false)
-  let noteEditId = $state(null)
+  let showNoteModal = $state(false)
+  let noteTask = $state(null)
   let noteDraft = $state('')
   let noteSaving = $state(false)
 
@@ -144,28 +147,20 @@
     } finally { quickAdding = false }
   }
 
-  function focusNote(node) {
-    node.focus()
-    node.setSelectionRange(node.value.length, node.value.length)
-  }
-
-  function startNoteEdit(t) {
-    noteEditId = t.id
+  function openNoteModal(t) {
+    noteTask = t
     noteDraft = t.descriere || ''
+    showNoteModal = true
   }
 
-  function noteKeydown(e, t) {
-    if (e.key === 'Escape') noteEditId = null
-    else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveNote(t) }
-  }
-
-  async function saveNote(t) {
-    if (noteSaving) return
+  async function saveNote() {
+    if (noteSaving || !noteTask) return
     noteSaving = true
     try {
-      await updateGlobalTask(t.id, { descriere: noteDraft.trim() })
-      noteEditId = null
+      await updateGlobalTask(noteTask.id, { descriere: noteDraft })
+      showNoteModal = false
       await loadGlobalTasks({ arhiva: showArchive })
+      toast('Salvat', 'success')
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
     } finally { noteSaving = false }
@@ -299,19 +294,12 @@
 </script>
 
 {#snippet taskNotes(t)}
-  {#if noteEditId === t.id}
-    <div class="note-edit">
-      <textarea rows="3" bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." use:focusNote onkeydown={(e) => noteKeydown(e, t)}></textarea>
-      <div class="note-actions">
-        <span class="note-hint">Ctrl+Enter salveaza · Esc anuleaza</span>
-        <button class="note-btn" onclick={() => noteEditId = null}>Anuleaza</button>
-        <button class="note-btn primary" disabled={noteSaving} onclick={() => saveNote(t)}>Salveaza</button>
-      </div>
-    </div>
-  {:else if t.descriere}
-    <button class="task-desc editable" title="Click pentru a edita notitele" onclick={() => startNoteEdit(t)}>{t.descriere}</button>
+  {#if t.descriere}
+    <button class="note-preview" title="Click pentru a edita notitele" onclick={() => openNoteModal(t)}>
+      {@html renderStoredText(t.descriere)}
+    </button>
   {:else}
-    <button class="note-add" onclick={() => startNoteEdit(t)}><StickyNote size={12} /> Adauga notite...</button>
+    <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
   {/if}
 {/snippet}
 
@@ -595,6 +583,18 @@
 
 <ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
 
+<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
+  <div class="note-modal">
+    {#if showNoteModal}
+      <RichTextEditor bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." />
+    {/if}
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showNoteModal = false}>Anuleaza</Button>
+      <Button loading={noteSaving} onclick={saveNote}>Salveaza</Button>
+    </div>
+  </div>
+</Modal>
+
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
@@ -656,20 +656,18 @@
   .done-sep:hover { color: var(--text-secondary); }
 
   .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
-  .task-desc { font-size: var(--font-small); color: var(--text-secondary); white-space: pre-wrap; line-height: 1.55; margin-bottom: var(--space-sm); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border-subtle); }
-  .task-desc.editable { display: block; width: 100%; text-align: left; cursor: pointer; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
-  .task-desc.editable:hover { background: var(--bg-hover); }
   .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
   .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
-  .note-edit { margin-bottom: var(--space-sm); }
-  .note-edit textarea { width: 100%; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--accent); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); font-family: inherit; line-height: 1.55; resize: vertical; outline: none; box-shadow: 0 0 0 3px var(--accent-subtle); }
-  .note-actions { display: flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); justify-content: flex-end; }
-  .note-hint { font-size: var(--font-tiny); color: var(--text-faint); margin-right: auto; }
-  .note-btn { font-size: var(--font-tiny); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
-  .note-btn:hover { background: var(--bg-hover); color: var(--text); }
-  .note-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-surface); font-weight: 600; }
-  .note-btn.primary:hover { opacity: 0.9; }
-  .note-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .note-preview { display: block; position: relative; width: 100%; max-height: 9.6em; overflow: hidden; text-align: left; cursor: pointer; font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-sm); padding: 2px 4px; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
+  .note-preview:hover { background: var(--bg-hover); }
+  .note-preview::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+  .note-preview :global(p) { margin: 3px 0; }
+  .note-preview :global(h1), .note-preview :global(h2) { color: var(--accent); font-size: 1rem; margin: 6px 0 3px; font-weight: 700; }
+  .note-preview :global(h3) { color: var(--text); font-size: 0.95rem; margin: 5px 0 2px; font-weight: 600; }
+  .note-preview :global(ul), .note-preview :global(ol) { padding-left: 20px; margin: 3px 0; }
+  .note-preview :global(a) { color: var(--accent); text-decoration: underline; }
+  .note-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
+  .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
