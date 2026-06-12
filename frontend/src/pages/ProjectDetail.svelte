@@ -38,7 +38,6 @@
   let error = $state(null)
   let activeTab = $state('tasks')
 
-  let showNewTask = $state(false)
   let newTaskTitle = $state('')
   let creatingTask = $state(false)
 
@@ -184,12 +183,11 @@
   }
 
   async function handleCreateTask() {
-    if (!newTaskTitle.trim()) return
+    if (!newTaskTitle.trim() || creatingTask) return
     creatingTask = true
     try {
       await createTask(params.id, { titlu: newTaskTitle.trim(), status: 'to_do' })
       newTaskTitle = ''
-      showNewTask = false
       await reloadTasks()
     } finally { creatingTask = false }
   }
@@ -742,8 +740,11 @@
       {#if activeTab === 'tasks'}
         <div class="tab-header">
           <span class="tab-sub">{tasksDone}/{tasks.length} finalizate</span>
-          <Button size="sm" variant="secondary" onclick={() => showNewTask = true}><Plus size={14} /> Task</Button>
         </div>
+        <form class="quick-add" onsubmit={(e) => { e.preventDefault(); handleCreateTask() }}>
+          <input type="text" placeholder="Task rapid... Enter pentru a adauga" bind:value={newTaskTitle} disabled={creatingTask} />
+          <button type="submit" class="quick-add-btn" disabled={!newTaskTitle.trim() || creatingTask} title="Adauga task"><Plus size={16} /></button>
+        </form>
         {#if tasks.length === 0}<p class="empty">Niciun task.</p>
         {:else}
           <div class="task-list">
@@ -974,13 +975,6 @@
   {/if}
 </div>
 
-<Modal bind:open={showNewTask} title="Task Nou" size="sm">
-  <form onsubmit={(e) => { e.preventDefault(); handleCreateTask() }}>
-    <Input label="Titlu" bind:value={newTaskTitle} placeholder="Descrie taskul..." />
-    <div class="modal-actions"><Button variant="secondary" onclick={() => showNewTask = false}>Anuleaza</Button><Button loading={creatingTask} disabled={!newTaskTitle.trim()} onclick={handleCreateTask}>Creeaza</Button></div>
-  </form>
-</Modal>
-
 <Modal bind:open={showStopNote} title="Opreste timer" size="sm">
   <div class="stopnote">
     <Input label="Titlu (optional)" bind:value={stopNoteTitle} placeholder="Ex: Configurare parametri" />
@@ -1150,6 +1144,13 @@
   .tab-content { min-height: 200px; }
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
   .tab-sub { font-size: var(--font-tiny); color: var(--text-dim); }
+  .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
+  .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  .quick-add input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); outline: none; }
+  .quick-add input::placeholder { color: var(--text-dim); }
+  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
   .error-text { color: var(--danger); }
 
@@ -1304,5 +1305,7 @@
     .subtask-body { margin-left: var(--space-sm); }
     .sub-del, .sub-timer, .task-del, .jtime-btn { opacity: 1; }
     .sess-del { opacity: 1; }
+    .quick-add input, .quick-add-btn { min-height: 44px; }
+    .quick-add-btn { width: 44px; }
   }
 </style>

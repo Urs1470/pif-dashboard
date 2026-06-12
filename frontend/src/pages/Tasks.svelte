@@ -36,6 +36,8 @@
   let showDoneTasks = $state(false)
   let taskSearch = $state('')
   let statusFilter = $state('')
+  let quickTitle = $state('')
+  let quickAdding = $state(false)
 
   const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
   const STATUS_FILTER_OPTIONS = [
@@ -123,6 +125,15 @@
       resetForm()
       showNewModal = false
     } finally { creating = false }
+  }
+
+  async function quickAdd() {
+    if (!quickTitle.trim() || quickAdding) return
+    quickAdding = true
+    try {
+      await createGlobalTask({ titlu: quickTitle.trim(), status: 'to_do' })
+      quickTitle = ''
+    } finally { quickAdding = false }
   }
 
   async function handleEdit() {
@@ -276,6 +287,13 @@
       <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhiva</button>
     </div>
   </div>
+
+  {#if !showArchive}
+    <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
+      <input type="text" placeholder="Task rapid... Enter pentru a adauga" bind:value={quickTitle} disabled={quickAdding} />
+      <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adauga task"><Plus size={16} /></button>
+    </form>
+  {/if}
 
   {#if globalTasks.loading}
     <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
@@ -539,6 +557,13 @@
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
   .search-box input::placeholder { color: var(--text-dim); }
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
+  .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  .quick-add input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); outline: none; }
+  .quick-add input::placeholder { color: var(--text-dim); }
+  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
   .filter-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
   .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
@@ -628,6 +653,8 @@
     .page { padding: var(--space-md); }
     .toolbar { flex-direction: column; align-items: stretch; }
     .search-box { max-width: none; }
+    .quick-add input, .quick-add-btn { min-height: 44px; }
+    .quick-add-btn { width: 44px; }
     .sess-del, .task-del, .task-edit { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
   }
