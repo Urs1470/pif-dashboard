@@ -739,7 +739,13 @@ def download_atasament(attachment_id):
     ext = os.path.splitext(row['nume_fisier'])[1].lower()
     inline_types = {'.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
     as_attachment = ext not in inline_types
-    return send_file(filepath, as_attachment=as_attachment, download_name=row['nume_fisier'])
+    resp = send_file(filepath, as_attachment=as_attachment, download_name=row['nume_fisier'])
+    # Allow the SPA to embed this file in a same-origin iframe (PDF preview).
+    # The global after_request sets X-Frame-Options/CSP via setdefault, so the
+    # explicit values below win for this response only.
+    resp.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    resp.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
+    return resp
 
 @projects_bp.route('/api/atasamente/<attachment_id>', methods=['DELETE'])
 @login_required

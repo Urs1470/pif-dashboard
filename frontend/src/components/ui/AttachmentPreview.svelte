@@ -36,7 +36,9 @@
         <p class="ap-hint">Acest tip de fisier nu poate fi previzualizat in browser. Descarca-l pentru a-l deschide.</p>
       </div>
     {/if}
+  </div>
 
+  {#snippet footer()}
     <div class="ap-actions">
       {#if ondelete}
         <Button variant="ghost" onclick={requestDelete}><Trash2 size={14} /> Sterge</Button>
@@ -45,14 +47,14 @@
       <a class="ap-link" href={url} target="_blank" rel="noopener"><ExternalLink size={14} /> Deschide in tab nou</a>
       <a class="ap-link primary" href={url} download={attachment?.nume_fisier}><Download size={14} /> Descarca</a>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <style>
-  .ap { display: flex; flex-direction: column; gap: var(--space-md); }
-  .ap-stage { display: flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-sm); max-height: 68vh; overflow: auto; }
-  .ap-img { max-width: 100%; max-height: 66vh; object-fit: contain; border-radius: var(--radius-xs); }
-  .ap-pdf { width: 100%; height: 72vh; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
+  .ap { display: flex; flex-direction: column; }
+  .ap-stage { display: flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-sm); }
+  .ap-img { max-width: 100%; max-height: 64vh; object-fit: contain; border-radius: var(--radius-xs); }
+  .ap-pdf { width: 100%; height: 68vh; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
   .ap-none { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); padding: var(--space-xl) var(--space-md); color: var(--text-dim); text-align: center; }
   .ap-name { font-size: var(--font-body); font-weight: 600; color: var(--text); word-break: break-all; }
   .ap-hint { font-size: var(--font-small); color: var(--text-dim); max-width: 420px; }

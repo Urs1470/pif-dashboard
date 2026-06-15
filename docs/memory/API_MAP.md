@@ -100,24 +100,24 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/global-tasks/<task_id>/atasamente` | `upload_global_task_atasament` | 685 |
 | GET | `/api/proiecte/<project_id>/atasamente` | `get_atasamente` | 709 |
 | GET | `/api/atasamente/<attachment_id>/download` | `download_atasament` | 719 |
-| DELETE | `/api/atasamente/<attachment_id>` | `delete_atasament` | 744 |
-| GET | `/api/clienti` | `get_clienti` | 771 |
-| POST | `/api/clienti` | `create_client` | 802 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 832 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 846 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 880 |
-| GET | `/api/proiecte/<project_id>/echipamente` | `get_echipamente` | 899 |
-| POST | `/api/proiecte/<project_id>/echipamente` | `create_echipament` | 909 |
-| GET | `/api/echipamente/<echipament_id>` | `get_echipament` | 950 |
-| PUT | `/api/echipamente/<echipament_id>` | `update_echipament` | 964 |
-| DELETE | `/api/echipamente/<echipament_id>` | `delete_echipament` | 1020 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 1039 |
-| POST | `/api/import-params/preview` | `preview_import_params` | 1218 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 1284 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 1602 |
-| POST | `/api/proiecte/<project_id>/echipamente/import-archive` | `import_archive_echipamente` | 1646 |
-| GET | `/api/templates` | `get_templates` | 1721 |
-| POST | `/api/import/debrief` | `import_debrief` | 1795 |
+| DELETE | `/api/atasamente/<attachment_id>` | `delete_atasament` | 750 |
+| GET | `/api/clienti` | `get_clienti` | 777 |
+| POST | `/api/clienti` | `create_client` | 808 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 838 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 852 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 886 |
+| GET | `/api/proiecte/<project_id>/echipamente` | `get_echipamente` | 905 |
+| POST | `/api/proiecte/<project_id>/echipamente` | `create_echipament` | 915 |
+| GET | `/api/echipamente/<echipament_id>` | `get_echipament` | 956 |
+| PUT | `/api/echipamente/<echipament_id>` | `update_echipament` | 970 |
+| DELETE | `/api/echipamente/<echipament_id>` | `delete_echipament` | 1026 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 1045 |
+| POST | `/api/import-params/preview` | `preview_import_params` | 1224 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 1290 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 1608 |
+| POST | `/api/proiecte/<project_id>/echipamente/import-archive` | `import_archive_echipamente` | 1652 |
+| GET | `/api/templates` | `get_templates` | 1727 |
+| POST | `/api/import/debrief` | `import_debrief` | 1801 |
 
 ## blueprints\tasks.py (13 rute)
 

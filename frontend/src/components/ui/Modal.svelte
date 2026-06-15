@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte'
 
-  let { open = $bindable(false), title = '', size = 'md', children } = $props()
+  let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
 
@@ -46,6 +46,11 @@
       <div class="modal-body">
         {@render children()}
       </div>
+      {#if footer}
+        <div class="modal-footer">
+          {@render footer()}
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -113,6 +118,14 @@
   .modal-body {
     padding: var(--space-lg);
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .modal-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   @keyframes fadeIn { from { opacity: 0; } }
