@@ -314,17 +314,21 @@ def create_subtask(task_id):
     if not titlu:
         return jsonify({'error': 'Titlu required'}), 400
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task_id,))
-    next_ordine = cursor.fetchone()[0]
-    sid = generate_uuid()
-    cursor.execute(
-        'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
-        (sid, task_id, titlu, next_ordine, datetime.now().isoformat())
-    )
-    conn.commit()
-    conn.close()
-    return jsonify({'id': sid}), 201
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task_id,))
+        next_ordine = cursor.fetchone()[0]
+        sid = generate_uuid()
+        cursor.execute(
+            'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+            (sid, task_id, titlu, next_ordine, datetime.now().isoformat())
+        )
+        conn.commit()
+        return jsonify({'id': sid}), 201
+    except Exception as e:
+        return jsonify({'error': str(e), 'type': type(e).__name__}), 500
+    finally:
+        conn.close()
 
 
 @tasks_bp.route('/api/subtasks/<subtask_id>', methods=['PUT'])

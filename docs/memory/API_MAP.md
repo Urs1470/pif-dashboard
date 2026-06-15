@@ -129,13 +129,13 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | DELETE | `/api/tasks/<task_id>` | `delete_task` | 277 |
 | GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 298 |
 | POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 309 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 330 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 345 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 364 |
-| POST | `/api/global-tasks` | `create_global_task` | 461 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 495 |
-| PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 513 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 568 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 334 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 349 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 368 |
+| POST | `/api/global-tasks` | `create_global_task` | 465 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 499 |
+| PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 517 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 572 |
 
 ## blueprints\timer.py (20 rute)
 
