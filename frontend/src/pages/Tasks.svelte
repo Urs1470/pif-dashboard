@@ -360,9 +360,10 @@
 
 {#snippet taskNotes(t)}
   {#if t.descriere}
-    <button class="note-preview" title="Click pentru a edita notitele" onclick={() => openNoteModal(t)}>
-      <RichText value={t.descriere} />
-    </button>
+    <div class="note-block">
+      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /></button>
+      <RichText value={t.descriere} class="note-content" />
+    </div>
   {:else}
     <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
   {/if}
@@ -743,15 +744,10 @@
   .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
   .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
   .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
-  .note-preview { display: block; position: relative; width: 100%; max-height: 9.6em; overflow: hidden; text-align: left; cursor: pointer; font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-sm); padding: 2px 4px; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
-  .note-preview:hover { background: var(--bg-hover); }
-  .note-preview::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
-  .note-preview :global(p) { margin: 3px 0; }
-  .note-preview :global(h1), .note-preview :global(h2) { color: var(--accent); font-size: 1rem; margin: 6px 0 3px; font-weight: 700; }
-  .note-preview :global(h3) { color: var(--text); font-size: 0.95rem; margin: 5px 0 2px; font-weight: 600; }
-  .note-preview :global(ul), .note-preview :global(ol) { padding-left: 20px; margin: 3px 0; }
-  .note-preview :global(a) { color: var(--accent); text-decoration: underline; }
-  .note-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
+  .note-block { position: relative; margin-bottom: var(--space-sm); }
+  .note-edit-btn { position: absolute; top: 0; right: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; opacity: 0; transition: all var(--dur-fast) var(--ease); }
+  .note-block:hover .note-edit-btn { opacity: 1; }
+  .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
   .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
   .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
@@ -809,7 +805,7 @@
     .search-box { max-width: none; }
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
-    .sess-del, .task-del, .task-edit { opacity: 1; }
+    .sess-del, .task-del, .task-edit, .note-edit-btn { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
   }
 </style>

@@ -14,4 +14,4 @@
   })
 </script>
 
-<div bind:this={el} class={cls}></div>
+<div bind:this={el} class="rich-content {cls}"></div>

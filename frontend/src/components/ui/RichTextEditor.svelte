@@ -1,12 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import {
-    Bold, Italic, Underline, Strikethrough,
-    Heading1, Heading2, Pilcrow,
-    List, ListOrdered, Outdent, Indent,
-    Link, Minus, Eraser, Undo2, Redo2, Eye, Pencil
-  } from '@lucide/svelte'
+  import { Eye, Pencil } from '@lucide/svelte'
   import RichText from './RichText.svelte'
+  import { renderStoredText } from '../../lib/storedText.js'
 
   let { value = $bindable(''), placeholder = 'Scrie aici...' } = $props()
 
@@ -22,74 +18,10 @@
 
   onMount(() => {
     if (editorEl) {
-      editorEl.innerHTML = renderStored(value)
+      editorEl.innerHTML = renderStoredText(value)
       updateCount()
     }
   })
-
-  function looksLikeHtml(s) {
-    return /<\/?[a-z][\s\S]*>/i.test(s)
-  }
-
-  function plainToHtml(s) {
-    return s.split(/\n\n+/).map(p =>
-      '<p>' + p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>'
-    ).join('')
-  }
-
-  const SAFE_TAGS = new Set([
-    'P','BR','DIV','H1','H2','H3','H4','H5','H6',
-    'UL','OL','LI','STRONG','B','EM','I','U','A','HR','BLOCKQUOTE','SPAN'
-  ])
-
-  function sanitizeHtml(html) {
-    const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    ;(function walk(node) {
-      const children = Array.from(node.childNodes)
-      for (const child of children) {
-        if (child.nodeType === 1) {
-          if (!SAFE_TAGS.has(child.tagName)) {
-            while (child.firstChild) node.insertBefore(child.firstChild, child)
-            child.remove()
-          } else {
-            const attrs = Array.from(child.attributes)
-            for (const a of attrs) {
-              if (child.tagName === 'A' && a.name === 'href') continue
-              child.removeAttribute(a.name)
-            }
-            walk(child)
-          }
-        }
-      }
-    })(tmp)
-    return tmp.innerHTML
-  }
-
-  function renderStored(raw) {
-    if (!raw || !raw.trim()) return ''
-    return looksLikeHtml(raw) ? sanitizeHtml(raw) : plainToHtml(raw)
-  }
-
-  function exec(cmd, val) {
-    if (!editorEl) return
-    editorEl.focus()
-    try { document.execCommand(cmd, false, val || null) } catch (_) {}
-    updateCount()
-  }
-
-  function formatBlock(tag) {
-    exec('formatBlock', tag)
-  }
-
-  function insertLink() {
-    const url = prompt('URL:')
-    if (url) exec('createLink', url)
-  }
-
-  function insertSeparator() {
-    exec('insertHTML', '<hr>')
-  }
 
   function updateCount() {
     if (editorEl) charCount = (editorEl.innerText || '').length
@@ -113,42 +45,10 @@
 
 <div class="rte">
   <div class="rte-toolbar">
-    <div class="rte-group">
-      <button type="button" class="rte-tool" title="Bold (Ctrl+B)" onclick={() => exec('bold')}><Bold size={14} /></button>
-      <button type="button" class="rte-tool" title="Italic (Ctrl+I)" onclick={() => exec('italic')}><Italic size={14} /></button>
-      <button type="button" class="rte-tool" title="Subliniat (Ctrl+U)" onclick={() => exec('underline')}><Underline size={14} /></button>
-      <button type="button" class="rte-tool" title="Taiat" onclick={() => exec('strikeThrough')}><Strikethrough size={14} /></button>
-    </div>
-    <span class="rte-divider"></span>
-    <div class="rte-group">
-      <button type="button" class="rte-tool" title="Titlu mare" onclick={() => formatBlock('h2')}><Heading1 size={14} /></button>
-      <button type="button" class="rte-tool" title="Titlu mic" onclick={() => formatBlock('h3')}><Heading2 size={14} /></button>
-      <button type="button" class="rte-tool" title="Paragraf" onclick={() => formatBlock('p')}><Pilcrow size={14} /></button>
-    </div>
-    <span class="rte-divider"></span>
-    <div class="rte-group">
-      <button type="button" class="rte-tool" title="Lista cu puncte" onclick={() => exec('insertUnorderedList')}><List size={14} /></button>
-      <button type="button" class="rte-tool" title="Lista numerotata" onclick={() => exec('insertOrderedList')}><ListOrdered size={14} /></button>
-      <button type="button" class="rte-tool" title="Scade indent" onclick={() => exec('outdent')}><Outdent size={14} /></button>
-      <button type="button" class="rte-tool" title="Creste indent" onclick={() => exec('indent')}><Indent size={14} /></button>
-    </div>
-    <span class="rte-divider"></span>
-    <div class="rte-group">
-      <button type="button" class="rte-tool" title="Link" onclick={insertLink}><Link size={14} /></button>
-      <button type="button" class="rte-tool" title="Linie separator" onclick={insertSeparator}><Minus size={14} /></button>
-    </div>
-    <span class="rte-divider"></span>
-    <div class="rte-group">
-      <button type="button" class="rte-tool" title="Curata formatare" onclick={() => exec('removeFormat')}><Eraser size={14} /></button>
-      <button type="button" class="rte-tool" title="Undo (Ctrl+Z)" onclick={() => exec('undo')}><Undo2 size={14} /></button>
-      <button type="button" class="rte-tool" title="Redo (Ctrl+Y)" onclick={() => exec('redo')}><Redo2 size={14} /></button>
-    </div>
-    <span class="rte-divider"></span>
-    <div class="rte-group">
-      <button type="button" class="rte-tool" class:active={previewMode} title={previewMode ? 'Editeaza' : 'Previzualizare (formule LaTeX: $...$ sau $$...$$)'} onclick={togglePreview}>
-        {#if previewMode}<Pencil size={14} />{:else}<Eye size={14} />{/if}
-      </button>
-    </div>
+    <span class="rte-hint">Lipeste text, tabele si formule LaTeX — <code>$...$</code> sau <code>$$...$$</code></span>
+    <button type="button" class="rte-tool" class:active={previewMode} title={previewMode ? 'Inapoi la editare' : 'Previzualizare finala'} onclick={togglePreview}>
+      {#if previewMode}<Pencil size={14} /> Editeaza{:else}<Eye size={14} /> Previzualizare{/if}
+    </button>
   </div>
 
   <div
@@ -189,38 +89,32 @@
 
   .rte-toolbar {
     display: flex;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
   }
 
-  .rte-group {
-    display: inline-flex;
-    gap: 2px;
-  }
-
-  .rte-divider {
-    width: 1px;
-    height: 20px;
-    background: var(--border);
-    margin: 0 2px;
-  }
+  .rte-hint { font-size: var(--font-tiny); color: var(--text-dim); }
+  .rte-toolbar code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
 
   .rte-tool {
-    width: 30px;
-    height: 30px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 10px;
+    font-size: var(--font-tiny);
     border-radius: var(--radius-xs);
     color: var(--text-secondary);
     cursor: pointer;
     background: transparent;
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
     transition: all var(--dur-fast) var(--ease);
+    flex-shrink: 0;
   }
   .rte-tool:hover {
     border-color: var(--accent);
@@ -284,6 +178,9 @@
   .rte-editor :global(a) { color: var(--accent); text-decoration: underline; }
   .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
   .rte-editor :global(blockquote) { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
+  .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; border: 1px solid var(--border); }
+  .rte-editor :global(th), .rte-editor :global(td) { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
+  .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; }
 
   .rte-footer {
     display: flex;
