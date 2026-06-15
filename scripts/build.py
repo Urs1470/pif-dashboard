@@ -17,8 +17,6 @@ DIST = os.path.join(STATIC, 'dist')
 
 JS_FILES = ['core.js', 'app.js', 'mobile.js']
 CSS_FILES = ['style.css', 'login.css', 'mobile-app.css']
-BUDGET_JS = ['budget/budget-tracker.js']
-BUDGET_CSS = ['budget/budget.css']
 
 
 def ensure_deps():
@@ -57,7 +55,7 @@ def main():
     rjsmin_mod, rcssmin_mod = ensure_deps()
 
     print("Minifying JS...")
-    for name in JS_FILES + BUDGET_JS:
+    for name in JS_FILES:
         src = os.path.join(STATIC, name)
         if not os.path.exists(src):
             print(f"  SKIP {name} (not found)")
@@ -66,7 +64,7 @@ def main():
         minify_file(src, dest, rjsmin_mod.jsmin)
 
     print("\nMinifying CSS...")
-    for name in CSS_FILES + BUDGET_CSS:
+    for name in CSS_FILES:
         src = os.path.join(STATIC, name)
         if not os.path.exists(src):
             print(f"  SKIP {name} (not found)")

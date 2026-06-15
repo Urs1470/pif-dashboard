@@ -314,75 +314,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `485:_tcardDeadlineState`, `500:_tcardChips`, `532:_tcardTimer`, `545:_tcardBody`, `579:renderTaskCard`
 
-## static/budget/budget-tracker.js (3823 linii)
+## app.py (594 linii)
 
-### =
+`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `115:inject_version`, `133:make_session_permanent`, `143:setup_logging`, `172:check_rate_limit`, `210:before_request_func`, `245:after_request_func`, `273:get_hashed_pin`, `282:_git_commit`, `296:healthz`, `302:health_redirect`, `307:login_page`, `314:login`, `326:logout`, `332:login_hash`, `352:_serve_frontend`, `361:index`, `369:spa_catchall`, `374:dist_assets`, `380:favicon`, `385:manifest`, `393:mobile`, `400:service_worker`, `405:add_sw_header`, `426:get_deploy_secret`, `434:webhook_deploy`, `519:api_deploy`, `575:page_not_found`, `582:internal_error`
 
-`6:_budgetCsrfToken`, `10:apiFetch`, `39:generateLuni`, `56:refreshLuni`, `66:diffMonths`, `75:totalFixeLuna`, `80:migrateReguliCategorizare`, `87:migrateImportedRefs`, `93:migrateGoals`, `99:migrateImportHistory`, `105:pruneImportHistory`, `122:migrateCleanDeadFields`, `134:migrateBonuriSold`, `141:migrateFondUrgenta`, `152:migrateSoldContCurent`, `167:migrateVwce`, `191:specialCatLabel`, `200:migrateCreditScadentar`, `216:migrateEmisiuniTezaur`, `228:migrateEmisiuniReduce`, `238:migrateCategoriiVenit`, `259:migrateCategoriiVar`, `272:ensureCategorieVar`, `284:renameCategorieVar`, `300:renameCategorieVenit`, `317:migrateCategoriesV2`, `338:ensureCategorieVenit`, `350:ensureRegula`, `363:migrateDropCheltuieliFixe`, `384:migrateLegacyMonthKeys`, `401:formatRON`, `407:round2`, `415:parseRON`, `443:esc`, `621:persistLocalBackup`, `628:readLocalBackup`, `640:hydrateLoadedData`, `686:loadData`, `733:syncFromServerIfStale`, `764:saveDataNow`, `811:handleSaveConflict`, `849:saveData`, `856:saveStatusMeta`, `865:setSaveStatus`, `875:cloneObj`, `876:getNextId`, `895:refreshIcons`, `903:enhanceSelect`, `959:enhanceAllSelects`, `964:initAllFlatpickrs`, `977:applyEnhancements`, `984:toggleTheme`, `993:showConfirm`, `1026:resetData`, `1042:showAudit`, `1100:updateProfil`, `1125:addCategorie`, `1131:updateCategorie`, `1152:addReguliCat`, `1163:updateReguliCat`, `1174:removeReguliCat`, `1180:addEmisiune`, `1186:updateEmisiune`, `1195:removeEmisiune`, `1201:addCategorieVenit`, `1207:updateCategorieVenit`, `1227:removeCategorieVenit`, `1255:removeCategorie`
+## database.py (1210 linii)
 
-### =
-
-`1289:luniReprezentative`, `1299:calcMediiVenituri`, `1315:calcMediiCheltuieli`, `1336:getScadentar`, `1340:platiTrecute`, `1344:platiViitoare`, `1348:soldDupaPlatiTrecute`, `1356:getSoldCurent`, `1362:rataCredituluiLuna`, `1376:prevMonthKey`, `1390:cheltuieliBonuriLuna`, `1411:investitiiLuna`, `1419:totalVenituriLuna`, `1424:totalCheltuieliLuna`, `1431:surplusLuna`, `1437:soldDisponibilLuna`, `1447:soldDisponibilCurent`, `1453:todayIso`, `1459:maturitateLuni`, `1468:addMonthsIso`, `1483:daysBetween`, `1492:tezaurMetrics`, `1523:fondValoareLa`, `1541:fondMetrics`, `1557:totalFondAzi`, `1561:calcLuniRamase`
-
-### =
-
-`1578:renderBugetLunar`
-
-### =
-
-`1722:renderSetari`, `1875:startMonthPicker`, `1896:onStartMonthChange`, `1906:statCard`
-
-### =
-
-`1918:renderCredite`
-
-### =
-
-`2006:svgLine`, `2047:svgBars`, `2087:svgDonut`, `2123:donutLegend`, `2136:toggleScadentarVizibil`, `2141:toggleCheltShowAll`, `2146:toggleActionsMenu`, `2158:closeActionsMenu`
-
-### =
-
-`2166:renderFondUrgenta`, `2339:addFond`, `2347:updateFond`, `2365:removeFond`, `2370:addTezaur`, `2385:updateTezaur`, `2400:removeTezaur`
-
-### =
-
-`2409:renderVenituri`, `2567:updateVenit`, `2573:updateCheltuiala`, `2580:updateBonuriSold`
-
-### =
-
-`2591:goalNeedPerMonth`, `2602:renderGoals`, `2679:addGoal`, `2695:updateGoal`, `2707:removeGoal`, `2712:contribuieGoal`
-
-### =
-
-`2730:vwceTotals`, `2746:renderInvestitii`, `2900:refreshVwcePrice`, `2938:setVwceRange`, `2944:renderInvestitiiTab`, `2948:addVwceTx`, `2961:updateVwceTx`, `2980:removeVwceTx`
-
-### =
-
-`2990:render`, `3065:switchTab`, `3071:maybeAutoRefreshVwce`
-
-### =
-
-`3085:exportCSV`, `3089:showExportModal`, `3161:generateAndDownloadCSV`
-
-### =
-
-`3217:csvSplit`, `3238:parseDataIngRo`, `3251:parseIngCsv`, `3303:suggestPatternFromTx`, `3316:categorizeAuto`, `3329:showImportModal`, `3586:deleteImport`, `3629:showImportHistory`, `3676:showRuleProposals`
-
-### =
-
-`3740:checkAppVersion`, `3758:showUpdateBanner`, `3786:startVersionChecks`
-
-### =
-
-`3795:init`
-
-## app.py (596 linii)
-
-`51:_client_ip`, `61:get_or_create_secret_key`, `82:file_hash`, `100:_asset_path`, `117:inject_version`, `135:make_session_permanent`, `145:setup_logging`, `174:check_rate_limit`, `212:before_request_func`, `247:after_request_func`, `275:get_hashed_pin`, `284:_git_commit`, `298:healthz`, `304:health_redirect`, `309:login_page`, `316:login`, `328:logout`, `334:login_hash`, `354:_serve_frontend`, `363:index`, `371:spa_catchall`, `376:dist_assets`, `382:favicon`, `387:manifest`, `395:mobile`, `402:service_worker`, `407:add_sw_header`, `428:get_deploy_secret`, `436:webhook_deploy`, `521:api_deploy`, `577:page_not_found`, `584:internal_error`
-
-## database.py (1224 linii)
-
-`10:get_db`, `31:close_db`, `61:get_schema_version`, `74:set_schema_version`, `83:migrate_v1_to_v2`, `155:migrate_v2_to_v3`, `182:migrate_v3_to_v4`, `213:migrate_v4_to_v5`, `248:migrate_v5_to_v6`, `270:migrate_v6_to_v7`, `292:migrate_v7_to_v8`, `332:migrate_v8_to_v9`, `347:migrate_v9_to_v10`, `377:migrate_v10_to_v11`, `399:migrate_v11_to_v12`, `445:migrate_v12_to_v13`, `490:migrate_v13_to_v14`, `529:migrate_v14_to_v15`, `552:migrate_v15_to_v16`, `571:migrate_v16_to_v17`, `584:migrate_v17_to_v18`, `625:migrate_v18_to_v19`, `665:run_migrations`, `823:seed_fault_codes`, `914:init_db`, `1217:row_to_dict`
+`10:get_db`, `31:close_db`, `61:get_schema_version`, `74:set_schema_version`, `83:migrate_v1_to_v2`, `155:migrate_v2_to_v3`, `182:migrate_v3_to_v4`, `213:migrate_v4_to_v5`, `248:migrate_v5_to_v6`, `270:migrate_v6_to_v7`, `292:migrate_v7_to_v8`, `332:migrate_v8_to_v9`, `347:migrate_v9_to_v10`, `377:migrate_v10_to_v11`, `399:migrate_v11_to_v12`, `445:migrate_v12_to_v13`, `490:migrate_v13_to_v14`, `529:migrate_v14_to_v15`, `552:migrate_v15_to_v16`, `571:migrate_v16_to_v17`, `584:migrate_v17_to_v18`, `625:migrate_v18_to_v19`, `665:migrate_v19_to_v20`, `682:run_migrations`, `845:seed_fault_codes`, `936:init_db`, `1203:row_to_dict`
 
 ## utils.py (90 linii)
 

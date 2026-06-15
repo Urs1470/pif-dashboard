@@ -10,7 +10,7 @@ la PIF Dashboard. Ion alege scope-ul, copiază blocul de mai jos, înlocuiește
 
 ```
 Lucrezi la PIF Dashboard, repo D:/Projects/pif-dashboard pe Windows-ul lui Ion.
-Tu ești sesiunea "<SCOPE>" (ex: PV, Import-Convertoare, Equipment-Card, Budget,
+Tu ești sesiunea "<SCOPE>" (ex: PV, Import-Convertoare, Equipment-Card,
 Audit, etc.). Alte sesiuni Claude lucrează în paralel pe același worktree.
 
 ÎNAINTE de orice modificare:

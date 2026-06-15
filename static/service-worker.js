@@ -99,7 +99,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // API requests: network-first with cache fallback
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/budget/api/')) {
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstWithCache(request, API_CACHE, event));
     return;
   }
@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
   // Static assets (JS, CSS, fonts): cache-first — require both path prefix AND
   // file extension so we don't accidentally cache-first random app routes that
   // happen to end with one of these extensions.
-  if ((url.pathname.startsWith('/static/') || url.pathname.startsWith('/budget/')) &&
+  if (url.pathname.startsWith('/static/') &&
       (url.pathname.endsWith('.js') ||
        url.pathname.endsWith('.css') ||
        url.pathname.endsWith('.woff2') ||

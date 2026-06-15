@@ -19,7 +19,7 @@ VALID_TABLES = {
     'proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'jurnal',
     'timer_sessions', 'atasamente', 'echipamente', 'clienti',
     'global_tasks', 'global_task_sessions', 'checklist_categorii',
-    'fault_codes', 'project_templates', 'budget_state', 'budget_audit',
+    'fault_codes', 'project_templates',
     'parametri_master',
 }
 

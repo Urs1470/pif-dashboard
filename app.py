@@ -25,7 +25,6 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 # ============ BLUEPRINTS ============
 
-from blueprints.budget import budget_bp
 from blueprints.assistant import assistant_bp
 from blueprints.projects import projects_bp
 from blueprints.tasks import tasks_bp
@@ -34,7 +33,6 @@ from blueprints.parametri import parametri_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 
-app.register_blueprint(budget_bp)
 app.register_blueprint(assistant_bp)
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)

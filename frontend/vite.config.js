@@ -11,7 +11,6 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': 'http://localhost:5000',
-      '/budget/api': 'http://localhost:5000',
       '/login': 'http://localhost:5000',
       '/logout': 'http://localhost:5000',
     },

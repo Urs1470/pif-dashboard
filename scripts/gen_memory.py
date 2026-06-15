@@ -21,7 +21,6 @@ JS_FILES = [
     'static/app.js',
     'static/mobile.js',
     'static/core.js',
-    'static/budget/budget-tracker.js',
 ]
 PY_FILES = ['app.py', 'database.py', 'utils.py', 'csrf.py', 'labels.py']
 
