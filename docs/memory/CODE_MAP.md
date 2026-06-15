@@ -380,9 +380,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `51:_client_ip`, `61:get_or_create_secret_key`, `82:file_hash`, `100:_asset_path`, `117:inject_version`, `135:make_session_permanent`, `145:setup_logging`, `174:check_rate_limit`, `212:before_request_func`, `247:after_request_func`, `275:get_hashed_pin`, `284:_git_commit`, `298:healthz`, `304:health_redirect`, `309:login_page`, `316:login`, `328:logout`, `334:login_hash`, `354:_serve_frontend`, `363:index`, `371:spa_catchall`, `376:dist_assets`, `382:favicon`, `387:manifest`, `395:mobile`, `402:service_worker`, `407:add_sw_header`, `428:get_deploy_secret`, `436:webhook_deploy`, `521:api_deploy`, `577:page_not_found`, `584:internal_error`
 
-## database.py (1179 linii)
+## database.py (1224 linii)
 
-`10:get_db`, `31:close_db`, `61:get_schema_version`, `74:set_schema_version`, `83:migrate_v1_to_v2`, `155:migrate_v2_to_v3`, `182:migrate_v3_to_v4`, `213:migrate_v4_to_v5`, `248:migrate_v5_to_v6`, `270:migrate_v6_to_v7`, `292:migrate_v7_to_v8`, `332:migrate_v8_to_v9`, `347:migrate_v9_to_v10`, `377:migrate_v10_to_v11`, `399:migrate_v11_to_v12`, `445:migrate_v12_to_v13`, `490:migrate_v13_to_v14`, `529:migrate_v14_to_v15`, `552:migrate_v15_to_v16`, `571:migrate_v16_to_v17`, `584:migrate_v17_to_v18`, `625:run_migrations`, `778:seed_fault_codes`, `869:init_db`, `1172:row_to_dict`
+`10:get_db`, `31:close_db`, `61:get_schema_version`, `74:set_schema_version`, `83:migrate_v1_to_v2`, `155:migrate_v2_to_v3`, `182:migrate_v3_to_v4`, `213:migrate_v4_to_v5`, `248:migrate_v5_to_v6`, `270:migrate_v6_to_v7`, `292:migrate_v7_to_v8`, `332:migrate_v8_to_v9`, `347:migrate_v9_to_v10`, `377:migrate_v10_to_v11`, `399:migrate_v11_to_v12`, `445:migrate_v12_to_v13`, `490:migrate_v13_to_v14`, `529:migrate_v14_to_v15`, `552:migrate_v15_to_v16`, `571:migrate_v16_to_v17`, `584:migrate_v17_to_v18`, `625:migrate_v18_to_v19`, `665:run_migrations`, `823:seed_fault_codes`, `914:init_db`, `1217:row_to_dict`
 
 ## utils.py (90 linii)
 

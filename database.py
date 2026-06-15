@@ -622,6 +622,46 @@ def migrate_v17_to_v18():
     conn.close()
 
 
+def migrate_v18_to_v19():
+    """v18 -> v19: drop the FK on task_subtasks.task_id. task_subtasks is shared
+    by BOTH project tasks (tasks.id) and global tasks (global_tasks.id), so the FK
+    to tasks(id) added in v14 wrongly rejects global-task subtasks (500 on insert).
+    Orphan cleanup on task delete is handled in app code (delete_task /
+    delete_global_task). Idempotent — skips if the table already has no FK."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.execute("PRAGMA foreign_keys = OFF")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='task_subtasks'")
+    if not cursor.fetchone():
+        conn.close()
+        return
+
+    cursor.execute("PRAGMA foreign_key_list(task_subtasks)")
+    if not cursor.fetchone():
+        conn.close()
+        return  # no FK — nothing to do
+
+    cursor.execute("BEGIN")
+    cursor.execute('''
+        CREATE TABLE task_subtasks_new (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL,
+            titlu TEXT NOT NULL,
+            done INTEGER DEFAULT 0,
+            ordine INTEGER DEFAULT 0,
+            created_at TEXT
+        )
+    ''')
+    cursor.execute("INSERT INTO task_subtasks_new SELECT id, task_id, titlu, done, ordine, created_at FROM task_subtasks")
+    cursor.execute("DROP TABLE task_subtasks")
+    cursor.execute("ALTER TABLE task_subtasks_new RENAME TO task_subtasks")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_task_subtasks_task ON task_subtasks(task_id, ordine)")
+    cursor.execute("COMMIT")
+    conn.close()
+    logger.info("Migration v18->v19: removed FK on task_subtasks.task_id (shared project+global tasks)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -710,6 +750,11 @@ def run_migrations():
         migrate_v17_to_v18()
         set_schema_version(18)
         current_version = 18
+
+    if current_version < 19:
+        migrate_v18_to_v19()
+        set_schema_version(19)
+        current_version = 19
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

@@ -325,8 +325,6 @@ def create_subtask(task_id):
         )
         conn.commit()
         return jsonify({'id': sid}), 201
-    except Exception as e:
-        return jsonify({'error': str(e), 'type': type(e).__name__}), 500
     finally:
         conn.close()
 
