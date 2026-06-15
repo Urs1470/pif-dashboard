@@ -5,7 +5,7 @@
 >
 > - **Sesiunile Claude spawned** ce rulează în paralel pe laptop-ul Windows al lui Ion
 >   în `D:/Projects/pif-dashboard` (PV generation, Import parametri, Equipment card,
->   Budget, etc.). Toate au identity git `Urs1470 <Urs1470@users.noreply.github.com>`.
+>   etc.). Toate au identity git `Urs1470 <Urs1470@users.noreply.github.com>`.
 > - **Claude main** — sesiunea principală a lui Ion, tot pe Windows, aceeași identity.
 > - **Hermes** — agent MiniMax pe laptop-server `/home/ion-ursu/Projects/pif-dashboard`,
 >   identity `Hermes <hermes@pif.iupif.org>`.
@@ -70,7 +70,6 @@ Cei doi agenți trebuie să **NU se suprascrie** și să **NU lase fișiere orfa
 | **Audit PDF**: `scripts/audit_pdf.py`, `scripts/audit_reports/*`, parsers nestate | **Hermes** |
 | **LLM batch** pe `parametri_master` (descrieri, explicații) | **Hermes** |
 | **UI bugs, Sprint refactor general**: `templates/index.html`, `templates/mobile.html`, `static/app.js`, `static/mobile.js`, `static/service-worker.js`, `templates/login.html` | **Claude main session** |
-| **Budget app**: `static/budget/*`, `blueprints/budget.py` | **Spawned-Budget session** (când există) |
 | `database.py` migrații | session-ul care introduce schema (anunță prin commit message clar) |
 | Manuale PDF în `manuals/` | **Hermes** (descarcă, validează) |
 | Memory files Ion (`~/.claude/projects/.../memory/*.md`) | **NU atinge** — locale Ion |
@@ -155,7 +154,6 @@ Aplicația are deja paletă, fonturi și pattern-uri stabilite. **NU introduce s
 - Login pagină coerentă, fără dependență externă (Lucide ca SVG inline)
 - Desktop: 5 taburi (Acasă, Taskuri Zilnice, Proiecte, Parametri, Administrativ), greeting + 4 stats color-coded, drill-down parametri (producător picker → familie mini-tabs → listă)
 - Mobile (`/m`): paritate cu desktop ca features. Bottom-nav cu Lucide icons. Drill-down parametri. Buton "+ Proiect nou" și "+ Notiță nouă" inline (NU FAB), Lucide peste tot.
-- Budget tracker (`/budget/`): redesign-uit aliniat cu PIF design system (alte sesiuni Claude)
 
 ### Data
 - DB SQLite (`pif_dashboard.db` pe server, **NU în repo** — e în `.gitignore`)

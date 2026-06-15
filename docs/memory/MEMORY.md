@@ -8,7 +8,7 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 Other authoritative docs (do not duplicate here):
 - `CLAUDE.md` — stack, env vars, deploy, key patterns
 - `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
-- `SCHEMA_REFERENCE.md` — full SQL schema (all 19 tables, columns, FKs, indexes)
+- `SCHEMA_REFERENCE.md` — full SQL schema (all 17 tables, columns, FKs, indexes)
 
 ## Database map by domain
 
@@ -17,10 +17,9 @@ Other authoritative docs (do not duplicate here):
 | Projects core | `proiecte`, `checklist_pif`, `checklist_categorii`, `jurnal`, `atasamente`, `echipamente`, `clienti`, `project_templates` |
 | Tasks & timers | `tasks`, `task_subtasks`, `timer_sessions`, `global_tasks`, `global_task_sessions` |
 | Drive knowledge | `parametri_master` (~15.3k params, 7 families), `fault_codes` (8 families, seeded from `data/fault_codes/*.json`) |
-| Budget | `budget_state` (JSON blob/user), `budget_audit` (capped 5000 rows/user via trigger) |
 | System | `assistant_memory`, `app_settings` (KV), `schema_version` |
 
-Migrations: in-code in `database.py` (`run_migrations()`), currently **v19**, idempotent, auto-run via `before_request`.
+Migrations: in-code in `database.py` (`run_migrations()`), currently **v20**, idempotent, auto-run via `before_request`.
 
 ## Feature status (last verified 2026-06-11)
 
@@ -28,7 +27,6 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v19**, id
 - Fault codes browser: all 8 families seeded and browsable (desktop + param/fault detail modals).
 - Journal: merged journal + timer entries view; manual time on entries with same-day dedup.
 - PDF manuals browser wired into param/fault detail.
-- Budget tracker: standalone SPA at `/budget/`, own session domain (`static/budget/*`, `blueprints/budget.py`).
 - Cowork API: Bearer `PIF_API_TOKEN`, endpoints `/api/proiecte`, `/api/proiecte/<id>/snapshot`, `/api/import/debrief`.
 
 ## Gotchas
@@ -50,6 +48,7 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v19**, id
 
 ## Recent decisions
 
+- 2026-06-15: Removed the Budget Tracker feature entirely. Deleted `blueprints/budget.py` (the `/budget/*` blueprint), the legacy vanilla SPA `static/budget/*`, the Svelte page/store/components (`frontend/src/pages/Budget.svelte`, `frontend/src/stores/budget.svelte.js`, `frontend/src/lib/budget-calc.js`, `frontend/src/components/budget/*`), and budget scripts (`dump_budget_state.py`, `sync_budget_from_server.py`, `test_budget_conflict.py`, `verify_budget_deploy.py`, `verify_budget_v2.py`). Removed all integration points: blueprint registration in `app.py`, the `/budget` route + nav entries (Sidebar, BottomNav, More, CommandPalette), the `/budget/api` vite proxy, and `/budget/*` handling in both service workers. Dropped `budget_state`/`budget_audit` (+ `prune_budget_audit` trigger, index) from `init_db` and added **migration v19→v20** to drop them on existing DBs; bumped `SCHEMA_VERSION` to 20. `upload_db.py` no longer pre-pulls budget tables. NOTE: historical migrations v4 (creates tables) and v12 (creates trigger) are left intact — on a fresh DB they run then v20 drops them; never re-add budget table creation to `init_db`.
 - 2026-06-13: `task_subtasks` is shared by BOTH project tasks (`tasks.id`) AND global tasks (`global_tasks.id`) — same `task_id` column. The v14 migration wrongly added `FOREIGN KEY task_subtasks.task_id REFERENCES tasks(id)`, so adding a subtask to a GLOBAL task 500'd (FK violation; global ids aren't in `tasks`). Migration v19 drops that FK (table rebuild). Orphan cleanup stays in app code (`delete_task`/`delete_global_task`). Never re-add an FK on `task_subtasks.task_id`.
 - 2026-06-13: Display math (`$$...$$`) is left-aligned (`.rich-content .katex-display { text-align:left }`) — KaTeX centers by default, which looked inconsistent next to left-aligned text/tables. RichText gained `collapsible`+`maxHeight` props: clamps tall content with a bottom fade (`--rt-fade` CSS var per context: notes=var(--bg), observatii field-body=var(--bg-surface)) + an "Arata tot/Restrange" toggle; measures overflow via scrollHeight in $effect + rAF. Notes maxHeight 200, observatii 240.
 - 2026-06-13: Observatii/notes are paste-and-render (user copy-pastes finished tables + equations, wants the final rendered version always visible — no formatting). Sanitizer (`storedText.js`) now keeps TABLE/THEAD/TBODY/TR/TD/TH/CAPTION/COL + colspan/rowspan. Global `.rich-content` styles (in `global.css`) render tables + KaTeX everywhere RichText is used. Read views are now selectable `<div>`s (not buttons) with an in-flow "Editeaza" button UNDER the note (`.note-block`/`.note-edit-btn`; observatii edit via existing field-header pencil). GOTCHA: do not absolute-position the edit button over the RichText — RichText's root is `position:relative` and paints later (DOM order), so an absolute top-right pencil sat at the far right of the full-width note and was unclickable; in-flow under the content is robust + better UX. RichTextEditor stripped to a paste box + Eye/Pencil preview toggle (no bold/heading/list buttons) and now imports renderStoredText from storedText (deduped). GOTCHA: a `class` prop passed into a child component (RichText) is NOT covered by the parent's scoped CSS — `.note-content` had to move to global.css.

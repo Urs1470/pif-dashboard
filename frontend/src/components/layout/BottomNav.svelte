@@ -13,7 +13,7 @@
   function isActive(itemPath) {
     if (itemPath === '/') return router.path === '/'
     if (itemPath === '/more') {
-      return ['/notes', '/budget', '/admin'].some(p => router.path.startsWith(p))
+      return ['/notes', '/admin'].some(p => router.path.startsWith(p))
     }
     return router.path.startsWith(itemPath)
   }

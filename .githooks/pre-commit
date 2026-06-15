@@ -5,7 +5,7 @@
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACMRD)
 
-echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/(app|mobile|core)\.js|static/budget/budget-tracker\.js)$' || exit 0
+echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/(app|mobile|core)\.js)$' || exit 0
 
 if command -v python3 >/dev/null 2>&1; then
     PY=python3

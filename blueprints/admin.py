@@ -700,7 +700,7 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'budget_state', 'budget_audit', 'parametri_master']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
     for table in tables:
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
@@ -954,7 +954,7 @@ def restore_database():
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'budget_state', 'budget_audit', 'parametri_master']
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)}')
 

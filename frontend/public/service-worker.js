@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (!url.protocol.startsWith('http')) return;
 
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/budget/api/')) {
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, API_CACHE, event));
     return;
   }

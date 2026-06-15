@@ -56,7 +56,7 @@ def close_db(exc=None):
 # v12: Dropped redundant indexes + orphan tables (audit_log, parametri_std),
 #      added prune_budget_audit trigger (cap 5000 rows/user)
 
-SCHEMA_VERSION = 17
+SCHEMA_VERSION = 20
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -662,6 +662,23 @@ def migrate_v18_to_v19():
     logger.info("Migration v18->v19: removed FK on task_subtasks.task_id (shared project+global tasks)")
 
 
+def migrate_v19_to_v20():
+    """v19 -> v20: permanently remove the Budget Tracker feature. Drops the
+    prune_budget_audit trigger, the idx_budget_audit_user_ts index, and the
+    budget_audit / budget_state tables (created in v4/v12). Idempotent —
+    DROP ... IF EXISTS, so it's a no-op once the objects are gone."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DROP TRIGGER IF EXISTS prune_budget_audit")
+    cursor.execute("DROP INDEX IF EXISTS idx_budget_audit_user_ts")
+    cursor.execute("DROP INDEX IF EXISTS idx_budget_audit_user")
+    cursor.execute("DROP TABLE IF EXISTS budget_audit")
+    cursor.execute("DROP TABLE IF EXISTS budget_state")
+    conn.commit()
+    conn.close()
+    logger.info("Migration v19->v20: dropped Budget Tracker tables (budget_state, budget_audit)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -755,6 +772,11 @@ def run_migrations():
         migrate_v18_to_v19()
         set_schema_version(19)
         current_version = 19
+
+    if current_version < 20:
+        migrate_v19_to_v20()
+        set_schema_version(20)
+        current_version = 20
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
@@ -1085,26 +1107,6 @@ def init_db():
         )
     ''')
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS budget_state (
-            user TEXT PRIMARY KEY,
-            data TEXT NOT NULL,
-            updated TEXT
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS budget_audit (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ts TEXT NOT NULL,
-            user TEXT NOT NULL,
-            action TEXT NOT NULL,
-            field TEXT,
-            old_value TEXT,
-            new_value TEXT
-        )
-    ''')
-
     # Generic key/value app settings (Obsidian vault path, future config).
     # Created with IF NOT EXISTS so it always exists without a dedicated migration.
     cursor.execute('''
@@ -1184,26 +1186,10 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_budget_audit_user_ts ON budget_audit(user, ts DESC)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
-
-    # Cap budget_audit at 5000 most-recent rows per user. Fresh DBs get the trigger
-    # here; existing DBs get it via migrate_v11_to_v12.
-    cursor.execute('''
-        CREATE TRIGGER IF NOT EXISTS prune_budget_audit
-        AFTER INSERT ON budget_audit
-        BEGIN
-          DELETE FROM budget_audit WHERE id IN (
-            SELECT id FROM budget_audit
-            WHERE user = NEW.user
-            ORDER BY id ASC
-            LIMIT MAX(0, (SELECT COUNT(*) FROM budget_audit WHERE user = NEW.user) - 5000)
-          );
-        END;
-    ''')
 
     conn.commit()
     conn.close()

@@ -43,7 +43,6 @@
     '/tasks': lazy(() => import('./pages/Tasks.svelte')),
     '/params': lazy(() => import('./pages/Params.svelte')),
     '/notes': lazy(() => import('./pages/Notes.svelte')),
-    '/budget': lazy(() => import('./pages/Budget.svelte')),
     '/admin': lazy(() => import('./pages/Admin.svelte')),
     '/more': lazy(() => import('./pages/More.svelte')),
   }

@@ -26,7 +26,7 @@ assistant_bp = Blueprint('assistant', __name__, url_prefix='/api/assistant')
 
 
 def login_required(f):
-    """Local login_required — same shape as app.py and budget.py versions."""
+    """Local login_required — same shape as the app.py version."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('authenticated'):

@@ -38,7 +38,7 @@ Append important decisions/gotchas to the "Recent decisions" section of `docs/me
 
 ```
 app.py                    # Flask entry, auth, CSP headers, rate limiter
-database.py               # Schema (19 tables), migrations v1-v17, WAL config
+database.py               # Schema (17 tables), migrations v1-v20, WAL config
 utils.py                  # login_required decorator, UUID, app_settings KV
 csrf.py                   # Double-submit CSRF (cookie + X-CSRF-Token header)
 labels.py                 # Centralized status labels (project + task states)
@@ -48,7 +48,6 @@ blueprints/
   tasks.py                # /api/proiecte/<id>/tasks/* — CRUD, subtasks, recurring
   timer.py                # /api/.../timer/* — per-project, per-task, global timers
   parametri.py            # /api/parametri/* — drive params (ABB, Siemens, Danfoss, Lenze)
-  budget.py               # /budget/* — standalone budget tracker SPA, audit trail
   obsidian.py             # /api/obsidian/* — read-only vault integration
   assistant.py            # /api/assistant/* — Hermes AI (MiniMax gateway)
   admin.py                # /api/stats/*, /api/export/*, /api/search/* — analytics, backup
@@ -64,21 +63,17 @@ static/
   core.js                 # Shared: API helpers, CSRF, date formatters, status labels
   style.css               # Design system with dark mode
   service-worker.js       # PWA cache strategy (STATIC_CACHE + API_CACHE 30s TTL)
-  budget/                 # Standalone budget tracker SPA
-    budget-tracker.js     # State machine, ING CSV import, VWCE portfolio
-    budget.css
-    index.html
 ```
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 19 tables, 17 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 17 tables, 20 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), checklist_pif, checklist_categorii, jurnal, timer_sessions, global_tasks, global_task_sessions, atasamente, echipamente, clienti, project_templates
 
-**Specialized:** fault_codes (8 drive families, auto-seeded from data/fault_codes/*.json), budget_state (JSON blob per user), budget_audit (capped 5000 rows/user via trigger), assistant_memory, app_settings (KV store), schema_version
+**Specialized:** fault_codes (8 drive families, auto-seeded from data/fault_codes/*.json), assistant_memory, app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v17. Each is idempotent. Auto-runs on first request via `before_request`.
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v20. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped the removed Budget Tracker tables.)
 
 ## Key Patterns
 
@@ -89,7 +84,6 @@ SQLite file: `pif_dashboard.db` (gitignored). 19 tables, 17 migrations (idempote
 - **Session cookie:** Secure=true (HTTPS only), HttpOnly, SameSite=Lax
 - **CSP:** `unsafe-inline` (hundreds of onclick handlers; nonce migration is future work)
 - **Recurring tasks:** zilnic/saptamanal/lunar — auto-spawn next on completion
-- **Budget user:** `session.get('budget_user', 'ion')` — not hardcoded
 
 ## Environment Variables
 
@@ -146,8 +140,6 @@ Or via webhook: push triggers POST `/webhook/deploy` (validates X-Hub-Signature-
 Ad-hoc test scripts in `scripts/`:
 - `test_suite.py` — main test harness
 - `test_timer_all.py` — timer logic
-- `test_budget_conflict.py` — budget state collision
-- `verify_budget_deploy.py` — deployment verification
 
 No pytest/unittest framework. Run with `python scripts/test_suite.py`.
 
@@ -156,7 +148,6 @@ No pytest/unittest framework. Run with `python scripts/test_suite.py`.
 From `HERMES.md` — when spawning sub-sessions:
 - **Main session:** templates/index.html, static/app.js, templates/mobile.html, static/mobile.js
 - **Import session:** scripts/parse_params/*
-- **Budget session:** static/budget/*, blueprints/budget.py
 - Always `git fetch && git pull --rebase` before push. No force push.
 
 ## Known Limitations
