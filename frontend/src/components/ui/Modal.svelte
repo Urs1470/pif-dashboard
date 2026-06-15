@@ -66,7 +66,7 @@
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal);
-    padding: var(--space-md);
+    padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
     animation: fadeIn var(--dur-fast) var(--ease);
   }
   .modal {
@@ -74,7 +74,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     width: 100%;
-    max-height: 85vh;
+    max-height: 85dvh;
     display: flex;
     flex-direction: column;
     box-shadow: var(--shadow-lg);
@@ -134,7 +134,7 @@
   @media (max-width: 768px) {
     .modal {
       max-width: 100%;
-      max-height: 90vh;
+      max-height: 90dvh;
     }
   }
 </style>

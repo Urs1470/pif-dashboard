@@ -70,7 +70,7 @@
 
   @media (max-width: 768px) {
     .toast-container {
-      bottom: 80px;
+      bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-md));
       left: var(--space-md);
       right: var(--space-md);
     }

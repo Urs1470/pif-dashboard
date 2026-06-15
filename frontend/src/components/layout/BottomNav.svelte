@@ -40,11 +40,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
+    height: calc(var(--bottom-nav-height) + var(--safe-bottom));
     background: var(--bg-surface);
     border-top: 1px solid var(--border);
     z-index: var(--z-sticky);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* Bara umple zona home-indicator; tab-urile stau peste inset. */
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
   }
 
   @media (max-width: 768px) {

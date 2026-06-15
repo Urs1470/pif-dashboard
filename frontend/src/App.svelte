@@ -256,8 +256,10 @@
     .app-layout.sidebar-collapsed {
       grid-template-columns: 1fr;
     }
+    /* Lasa loc pentru bottom-nav + home-indicator, ca ultimul rand de continut
+       sa nu fie ascuns sub bara de navigatie. */
     .app-content {
-      padding-bottom: 72px;
+      padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-sm));
     }
   }
 </style>
