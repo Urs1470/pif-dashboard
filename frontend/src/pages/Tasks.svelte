@@ -14,7 +14,7 @@
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
-  import { renderStoredText } from '../lib/storedText.js'
+  import RichText from '../components/ui/RichText.svelte'
 
   let showArchive = $state(false)
   let taskDeleteId = $state(null)
@@ -361,7 +361,7 @@
 {#snippet taskNotes(t)}
   {#if t.descriere}
     <button class="note-preview" title="Click pentru a edita notitele" onclick={() => openNoteModal(t)}>
-      {@html renderStoredText(t.descriere)}
+      <RichText value={t.descriere} />
     </button>
   {:else}
     <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>

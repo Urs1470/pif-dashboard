@@ -4,13 +4,21 @@
     Bold, Italic, Underline, Strikethrough,
     Heading1, Heading2, Pilcrow,
     List, ListOrdered, Outdent, Indent,
-    Link, Minus, Eraser, Undo2, Redo2
+    Link, Minus, Eraser, Undo2, Redo2, Eye, Pencil
   } from '@lucide/svelte'
+  import RichText from './RichText.svelte'
 
   let { value = $bindable(''), placeholder = 'Scrie aici...' } = $props()
 
   let editorEl = $state(null)
   let charCount = $state(0)
+  let previewMode = $state(false)
+
+  function togglePreview() {
+    // sync the latest HTML out of the contenteditable before previewing
+    if (!previewMode && editorEl) value = (editorEl.innerHTML || '').trim()
+    previewMode = !previewMode
+  }
 
   onMount(() => {
     if (editorEl) {
@@ -135,10 +143,17 @@
       <button type="button" class="rte-tool" title="Undo (Ctrl+Z)" onclick={() => exec('undo')}><Undo2 size={14} /></button>
       <button type="button" class="rte-tool" title="Redo (Ctrl+Y)" onclick={() => exec('redo')}><Redo2 size={14} /></button>
     </div>
+    <span class="rte-divider"></span>
+    <div class="rte-group">
+      <button type="button" class="rte-tool" class:active={previewMode} title={previewMode ? 'Editeaza' : 'Previzualizare (formule LaTeX: $...$ sau $$...$$)'} onclick={togglePreview}>
+        {#if previewMode}<Pencil size={14} />{:else}<Eye size={14} />{/if}
+      </button>
+    </div>
   </div>
 
   <div
     class="rte-editor"
+    class:rte-hidden={previewMode}
     contenteditable="true"
     spellcheck="true"
     data-placeholder={placeholder}
@@ -147,8 +162,18 @@
     onkeydown={onKeydown}
   ></div>
 
+  {#if previewMode}
+    <div class="rte-preview">
+      {#if value && value.trim()}
+        <RichText value={value} />
+      {:else}
+        <p class="rte-preview-empty">Nimic de previzualizat.</p>
+      {/if}
+    </div>
+  {/if}
+
   <div class="rte-footer">
-    <span class="rte-counter">{charCount} caractere</span>
+    <span class="rte-counter">{previewMode ? 'Previzualizare' : charCount + ' caractere'}</span>
   </div>
 </div>
 
@@ -202,6 +227,32 @@
     color: var(--accent);
     background: var(--accent-subtle);
   }
+  .rte-tool.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-subtle);
+  }
+
+  .rte-hidden { display: none; }
+
+  .rte-preview {
+    min-height: 280px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: var(--space-md);
+    font-size: var(--font-body);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .rte-preview-empty { color: var(--text-faint); font-style: italic; }
+  .rte-preview :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: 700; }
+  .rte-preview :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: 600; }
+  .rte-preview :global(p) { margin: 6px 0; }
+  .rte-preview :global(ul), .rte-preview :global(ol) { padding-left: 26px; margin: 6px 0; }
+  .rte-preview :global(li) { margin: 3px 0; }
+  .rte-preview :global(a) { color: var(--accent); text-decoration: underline; }
+  .rte-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .rte-preview :global(blockquote) { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
 
   .rte-editor {
     flex: 1;

@@ -12,7 +12,7 @@
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
-  import { renderStoredText } from '../lib/storedText.js'
+  import RichText from '../components/ui/RichText.svelte'
   import { navigate } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
@@ -762,7 +762,7 @@
         </div>
         {#if project.observatii}
           <button class="field-body field-html" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>
-            {@html renderStoredText(project.observatii)}
+            <RichText value={project.observatii} />
           </button>
         {:else}
           <button class="field-empty" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>Click pentru a adauga...</button>
@@ -778,7 +778,7 @@
           </div>
           {#if project.service_before}
             <button class="field-body field-html" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>
-              {@html renderStoredText(project.service_before)}
+              <RichText value={project.service_before} />
             </button>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>Click pentru a adauga...</button>
@@ -793,7 +793,7 @@
           </div>
           {#if project.service_after}
             <button class="field-body field-html" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>
-              {@html renderStoredText(project.service_after)}
+              <RichText value={project.service_after} />
             </button>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>Click pentru a adauga...</button>
@@ -854,7 +854,7 @@
                   <div class="subtask-body" transition:slide={{ duration: 150 }}>
                     {#if t.descriere}
                       <button class="note-preview" title="Click pentru a edita notitele" onclick={() => openNoteModal(t)}>
-                        {@html renderStoredText(t.descriere)}
+                        <RichText value={t.descriere} />
                       </button>
                     {:else}
                       <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
