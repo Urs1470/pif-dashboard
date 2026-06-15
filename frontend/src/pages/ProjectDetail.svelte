@@ -26,6 +26,7 @@
   import EquipmentFormModal from '../components/projects/EquipmentFormModal.svelte'
   import AttachmentsTab from '../components/projects/AttachmentsTab.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
+  import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
 
   let { params } = $props()
   let project = $state(null)
@@ -53,6 +54,9 @@
   let attDeleteId = $state(null)
   let attDeleteTaskId = $state(null)
   let showAttDelete = $state(false)
+  let attPreviewOpen = $state(false)
+  let attPreviewAtt = $state(null)
+  let attPreviewTaskId = null
 
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
@@ -219,6 +223,18 @@
   function triggerAttUpload(taskId) {
     attUploadTaskId = taskId
     attInput?.click()
+  }
+
+  function openAttPreview(att, taskId) {
+    attPreviewAtt = att
+    attPreviewTaskId = taskId
+    attPreviewOpen = true
+  }
+
+  function attPreviewDelete(att) {
+    attDeleteId = att.id
+    attDeleteTaskId = attPreviewTaskId
+    showAttDelete = true
   }
 
   async function onAttFiles(e) {
@@ -846,7 +862,7 @@
                     <div class="att-row">
                       {#each (attCache[t.id] || []) as a (a.id)}
                         <span class="att-chip">
-                          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => window.open(`/api/atasamente/${a.id}/download`, '_blank')}>
+                          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
                             <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
                           </button>
                           <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><Trash2 size={11} /></button>
@@ -1138,6 +1154,7 @@
 <ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
 <ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
 <ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
+<AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
