@@ -762,7 +762,7 @@
         </div>
         {#if project.observatii}
           <div class="field-body">
-            <RichText value={project.observatii} />
+            <RichText value={project.observatii} collapsible maxHeight={240} />
           </div>
         {:else}
           <button class="field-empty" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>Click pentru a adauga...</button>
@@ -778,7 +778,7 @@
           </div>
           {#if project.service_before}
             <div class="field-body">
-              <RichText value={project.service_before} />
+              <RichText value={project.service_before} collapsible maxHeight={240} />
             </div>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>Click pentru a adauga...</button>
@@ -793,7 +793,7 @@
           </div>
           {#if project.service_after}
             <div class="field-body">
-              <RichText value={project.service_after} />
+              <RichText value={project.service_after} collapsible maxHeight={240} />
             </div>
           {:else}
             <button class="field-empty" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>Click pentru a adauga...</button>
@@ -855,7 +855,7 @@
                     {#if t.descriere}
                       <div class="note-block">
                         <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /></button>
-                        <RichText value={t.descriere} class="note-content" />
+                        <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
                       </div>
                     {:else}
                       <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
@@ -1230,7 +1230,7 @@
   .field-label { flex: 1; font-weight: 600; }
   .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
-  .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; }
+  .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
   .field-empty { padding: var(--space-xs) var(--space-md) var(--space-sm); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
   .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }

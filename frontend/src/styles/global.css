@@ -149,8 +149,9 @@ input[type="checkbox"].cbx:focus {
 .rich-content th { background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; }
 .rich-content tbody tr:hover td { background: var(--bg-elevated); }
 .rich-content caption { caption-side: top; text-align: left; font-size: var(--font-tiny); color: var(--text-dim); margin-bottom: 4px; }
-/* Ecuatii pe bloc — permite scroll orizontal in loc de taiere */
-.rich-content .katex-display { margin: 10px 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+/* Ecuatii pe bloc — aliniate la stanga (coerent cu textul/tabelele), scroll orizontal in loc de taiere */
+.rich-content .katex-display { margin: 10px 0; text-align: left; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+.rich-content .katex-display > .katex { text-align: left; }
 
 /* Notite task (continut rich, randat de RichText intr-un sub-component) */
 .note-content { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; padding-right: 28px; overflow-x: auto; }

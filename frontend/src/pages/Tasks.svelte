@@ -362,7 +362,7 @@
   {#if t.descriere}
     <div class="note-block">
       <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /></button>
-      <RichText value={t.descriere} class="note-content" />
+      <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
     </div>
   {:else}
     <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
