@@ -1295,7 +1295,7 @@
   .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
   .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-block { position: relative; margin-bottom: var(--space-sm); }
-  .note-edit-btn { position: absolute; top: 0; right: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; opacity: 0; transition: all var(--dur-fast) var(--ease); }
+  .note-edit-btn { position: absolute; top: 0; right: 0; z-index: 2; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); background: var(--bg); color: var(--text-faint); cursor: pointer; opacity: 0; transition: all var(--dur-fast) var(--ease); }
   .note-block:hover .note-edit-btn { opacity: 1; }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
