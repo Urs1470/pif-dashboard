@@ -1,1 +1,0 @@
-import{Y as e,et as t,tt as n}from"./index-DhYRuHFS.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`m12 19-7-7 7-7`}],[`path`,{d:`M19 12H5`}]];e(i,n({name:`arrow-left`},()=>o,{get iconNode(){return s}}))}export{i as t};

@@ -361,8 +361,8 @@
 {#snippet taskNotes(t)}
   {#if t.descriere}
     <div class="note-block">
-      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /></button>
       <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
+      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /> Editeaza</button>
     </div>
   {:else}
     <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
@@ -744,9 +744,8 @@
   .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
   .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
   .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
-  .note-block { position: relative; margin-bottom: var(--space-sm); }
-  .note-edit-btn { position: absolute; top: 0; right: 0; z-index: 2; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); background: var(--bg); color: var(--text-faint); cursor: pointer; opacity: 0; transition: all var(--dur-fast) var(--ease); }
-  .note-block:hover .note-edit-btn { opacity: 1; }
+  .note-block { margin-bottom: var(--space-sm); }
+  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
   .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
