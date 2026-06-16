@@ -91,13 +91,15 @@
 
   @media (max-width: 768px) {
     .header {
-      padding: 0 var(--space-md);
       flex-wrap: wrap;
       height: auto;
       min-height: var(--header-height);
       gap: var(--space-xs);
-      padding-top: var(--space-xs);
+      /* Coboara sub notch/status-bar si respecta insets laterale. */
+      padding-top: calc(var(--space-xs) + var(--safe-top));
       padding-bottom: var(--space-xs);
+      padding-left: calc(var(--space-md) + var(--safe-left));
+      padding-right: calc(var(--space-md) + var(--safe-right));
     }
     .header-search {
       min-width: 0;

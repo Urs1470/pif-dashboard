@@ -403,6 +403,6 @@
   @keyframes slideUp { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 768px) {
-    .palette-backdrop { padding-top: var(--space-lg); padding-left: var(--space-md); padding-right: var(--space-md); }
+    .palette-backdrop { padding-top: calc(var(--space-lg) + var(--safe-top)); padding-left: calc(var(--space-md) + var(--safe-left)); padding-right: calc(var(--space-md) + var(--safe-right)); }
   }
 </style>

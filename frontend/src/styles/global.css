@@ -198,7 +198,7 @@ input[type="checkbox"].cbx:focus {
 
 .sw-update-bar {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(80px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
