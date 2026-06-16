@@ -846,9 +846,11 @@
                       {/if}
                     </div>
                   </button>
-                  <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                  <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
-                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
+                  <div class="task-actions">
+                    <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
+                    <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
+                    <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
+                  </div>
                 </div>
                 {#if expandedTask === t.id}
                   <div class="subtask-body" transition:slide={{ duration: 150 }}>
@@ -1260,6 +1262,7 @@
   .trow-wrap { display: flex; flex-direction: column; }
   .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
+  .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
@@ -1413,7 +1416,9 @@
     .pstats { gap: var(--space-md); flex-wrap: wrap; }
     .header-top { flex-direction: column; }
     .edetails { flex-wrap: wrap; gap: var(--space-sm); }
-    .trow { padding: var(--space-sm); }
+    .trow { padding: var(--space-sm); flex-wrap: wrap; align-items: flex-start; row-gap: 6px; }
+    .check { padding-top: 1px; }
+    .task-actions { flex-basis: 100%; justify-content: flex-end; }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
     .sub-del, .sub-timer, .task-del, .jtime-btn { opacity: 1; }

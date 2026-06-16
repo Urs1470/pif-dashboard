@@ -806,5 +806,10 @@
     .quick-add-btn { width: 44px; }
     .sess-del, .task-del, .task-edit, .note-edit-btn { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
+    /* Title gets the full width; the action bar wraps to its own line below
+       so a long title no longer squeezes into a tall narrow column. */
+    .trow { flex-wrap: wrap; align-items: flex-start; row-gap: 6px; padding: var(--space-sm); }
+    .check { padding-top: 1px; }
+    .task-actions { flex-basis: 100%; justify-content: flex-end; }
   }
 </style>
