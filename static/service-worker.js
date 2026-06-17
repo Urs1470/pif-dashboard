@@ -9,21 +9,14 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v40';
+const VERSION = 'v41';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
-// App shell files to cache on install. Include both desktop (/) and mobile (/m)
-// entry points plus the mobile bundle, so a cold offline start works even if the
-// user never browsed those assets while online.
+// App shell to cache on install. The legacy vanilla-JS app and the /m mobile
+// twin were removed; the Svelte SPA shell is served at '/'.
 const APP_SHELL = [
-  '/',
-  '/static/app.js',
-  '/static/manifest.json',
-  '/m',
-  '/static/mobile.js',
-  '/static/mobile-app.css',
-  '/static/lucide.min.js'
+  '/'
 ];
 
 // Cross-origin CDN hosts whose assets we cache-first at runtime (fonts + KaTeX),

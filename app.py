@@ -103,11 +103,9 @@ def _asset_path(name):
 
 
 _asset_versions = {
-    'js_version': file_hash('static/mobile.js'),
-    'sw_version': file_hash('static/service-worker.js'),
-    'app_version': file_hash('static/app.js'),
-    'core_version': file_hash('static/core.js'),
-    'style_version': file_hash('static/style.css'),
+    # Only the login page remains a server-rendered template; it versions
+    # login.css via `style_version`. The Svelte SPA self-versions its assets.
+    'style_version': file_hash('static/login.css'),
 }
 
 
@@ -350,10 +348,9 @@ _DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', '
 
 
 def _serve_frontend():
-    """Serve either the Svelte build (PIF_USE_DIST) or the legacy template."""
-    if _USE_DIST and os.path.isfile(os.path.join(_DIST_DIR, 'index.html')):
-        return send_from_directory(_DIST_DIR, 'index.html')
-    return render_template('index.html')
+    """Serve the Svelte build (the only frontend; the legacy vanilla-JS app and
+    its `/m` mobile twin were removed — the responsive SPA covers both)."""
+    return send_from_directory(_DIST_DIR, 'index.html')
 
 
 @app.route('/')
@@ -387,14 +384,6 @@ def manifest():
 
 
 # ============ PWA ROUTES ============
-
-@app.route('/m')
-@login_required
-def mobile():
-    """Mobile PWA shell — separate template, separate JS bundle.
-    Optimized for field use: bottom-nav, quick-capture FAB, offline IndexedDB."""
-    return render_template('mobile.html')
-
 
 @app.route('/service-worker.js')
 def service_worker():
