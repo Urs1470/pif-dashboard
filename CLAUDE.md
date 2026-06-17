@@ -6,8 +6,7 @@ Single-user Flask app with SQLite, deployed via Gunicorn + Cloudflare Tunnel (HT
 ## Stack
 
 - **Backend:** Flask 3.1.3, SQLite (WAL mode, foreign keys ON), Gunicorn 23.0.0
-- **Frontend:** Vanilla JS SPA (no framework), Lucide icons, Flatpickr, Chart.js
-- **Mobile:** PWA at `/m` with IndexedDB offline, separate JS bundle
+- **Frontend:** Svelte 5 SPA (Vite build in `static/dist/`), Lucide icons, KaTeX. Responsive — covers mobile too (the legacy vanilla-JS app + the separate `/m` PWA were removed 2026-06-17). The only server-rendered template left is `login.html`.
 - **Auth:** PIN-based (env `PIF_DASHBOARD_PIN`), session cookie (30d), CSRF double-submit
 - **Deploy:** systemd service on Ubuntu laptop-server, Cloudflare Tunnel, webhook auto-deploy
 
@@ -53,16 +52,13 @@ blueprints/
   admin.py                # /api/stats/*, /api/export/*, /api/search/* — analytics, backup
 
 templates/
-  index.html              # Main SPA shell (desktop)
-  mobile.html             # PWA shell (/m)
-  login.html              # PIN login
+  login.html              # PIN login (only remaining server-rendered template)
 
 static/
-  app.js                  # Desktop app logic
-  mobile.js               # Mobile PWA logic
-  core.js                 # Shared: API helpers, CSRF, date formatters, status labels
-  style.css               # Design system with dark mode
-  service-worker.js       # PWA cache strategy (STATIC_CACHE + API_CACHE 30s TTL)
+  dist/                   # Svelte SPA build (Vite) — the app, served at /
+  service-worker.js       # PWA cache strategy (STATIC_CACHE + API_CACHE); registered by the SPA
+  login.css               # login page styling
+  manifest.json           # legacy PWA manifest (SPA uses dist/manifest.json)
 ```
 
 ## Database
