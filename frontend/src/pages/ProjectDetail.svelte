@@ -42,6 +42,8 @@
 
   let newTaskTitle = $state('')
   let creatingTask = $state(false)
+  let editTaskId = $state(null)
+  let editTaskTitle = $state('')
   let showNoteModal = $state(false)
   let noteTask = $state(null)
   let noteDraft = $state('')
@@ -212,6 +214,29 @@
       newTaskTitle = ''
       await reloadTasks()
     } finally { creatingTask = false }
+  }
+
+  function startRename(t) {
+    editTaskId = t.id
+    editTaskTitle = t.titlu || ''
+  }
+
+  function focusSelect(node) {
+    node.focus()
+    node.select()
+  }
+
+  async function saveRename(t) {
+    if (editTaskId !== t.id) return
+    const newTitle = editTaskTitle.trim()
+    editTaskId = null
+    if (!newTitle || newTitle === t.titlu) return
+    try {
+      await updateTask(t.id, { titlu: newTitle })
+      await reloadTasks()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
   }
 
   async function loadAtt(taskId, force = false) {
@@ -830,24 +855,31 @@
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
                   </button>
-                  <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
-                    <div class="ttitle-row">
-                      <span class="ttitle">{t.titlu}</span>
-                      {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
-                    </div>
-                    <div class="tinfo">
-                      {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
-                      {#if t.subtask_total}
-                        <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
-                      {/if}
-                      {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
-                      {#if t.deadline}
-                        <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
-                      {/if}
-                    </div>
-                  </button>
+                  {#if editTaskId === t.id}
+                    <input class="trename" bind:value={editTaskTitle} use:focusSelect
+                      onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveRename(t) } else if (e.key === 'Escape') { editTaskId = null } }}
+                      onblur={() => saveRename(t)} />
+                  {:else}
+                    <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
+                      <div class="ttitle-row">
+                        <span class="ttitle">{t.titlu}</span>
+                        {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
+                      </div>
+                      <div class="tinfo">
+                        {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
+                        {#if t.subtask_total}
+                          <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
+                        {/if}
+                        {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
+                        {#if t.deadline}
+                          <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
+                        {/if}
+                      </div>
+                    </button>
+                  {/if}
                   <div class="task-actions">
                     <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
+                    <button class="task-edit" onclick={() => startRename(t)} title="Editeaza numele"><Pencil size={13} /></button>
                     <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
                     <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
                   </div>
@@ -1269,6 +1301,10 @@
   .trow.done .check { color: var(--success); }
   .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
+  .trename { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: 500; padding: 5px 8px; background: var(--bg-elevated); border: 1px solid var(--accent); border-radius: var(--radius-sm); color: var(--text); outline: none; box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .trow:hover .task-edit { opacity: 1; }
+  .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
@@ -1421,7 +1457,7 @@
     .task-actions { flex-basis: 100%; justify-content: flex-end; }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
-    .sub-del, .sub-timer, .task-del, .jtime-btn { opacity: 1; }
+    .sub-del, .sub-timer, .task-del, .jtime-btn, .task-edit { opacity: 1; }
     .sess-del, .note-edit-btn { opacity: 1; }
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }

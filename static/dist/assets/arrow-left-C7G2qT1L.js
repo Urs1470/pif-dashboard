@@ -1,0 +1,1 @@
+import{K as e,Q as t,Z as n}from"./index-DAHyZYkJ.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`m12 19-7-7 7-7`}],[`path`,{d:`M19 12H5`}]];e(i,t({name:`arrow-left`},()=>o,{get iconNode(){return s}}))}export{i as t};
