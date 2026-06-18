@@ -62,7 +62,6 @@
     { value: '', label: 'Toate' },
     { value: 'to_do', label: 'To Do' },
     { value: 'in_lucru', label: 'In Lucru' },
-    { value: 'done', label: 'Finalizat' },
   ]
 
   let showManualTime = $state(false)
@@ -705,7 +704,7 @@
   .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .chip:hover { background: var(--bg-hover); }
   .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
-  .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .status-badge:hover { opacity: .7; }
 
   .task-list { display: flex; flex-direction: column; }
@@ -720,8 +719,8 @@
   .check-empty.small { width: 14px; height: 14px; }
   .check:hover .check-empty { border-color: var(--accent); }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
-  .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
-  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; }
+  .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
+  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   :global(.tdesc-icon) { color: var(--text-faint); flex-shrink: 0; }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
@@ -729,13 +728,12 @@
   .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
-  .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+  .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
-  .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
-  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
-  .trow:hover .task-del { opacity: 1; }
+  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -786,8 +784,7 @@
   .mf-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
-  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
-  .trow:hover .task-edit { opacity: 1; }
+  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: 500; }
 

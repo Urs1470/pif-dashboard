@@ -1,6 +1,5 @@
 <script>
   import { fade } from 'svelte/transition'
-  import { Square } from '@lucide/svelte'
   import Sidebar from './components/layout/Sidebar.svelte'
   import Header from './components/layout/Header.svelte'
   import BottomNav from './components/layout/BottomNav.svelte'
@@ -8,25 +7,6 @@
   import CommandPalette from './components/layout/CommandPalette.svelte'
   import { ui } from './stores/ui.svelte.js'
   import { router, resolveRoute } from './lib/router.svelte.js'
-  import { timer, stopProjectTimer, stopTaskTimer, stopGlobalTaskTimer, loadActiveTimer } from './stores/timer.svelte.js'
-
-  const kindLabels = { project: 'Proiect', task: 'Task', global_task: 'Task global' }
-
-  function formatElapsed(sec) {
-    const h = Math.floor(sec / 3600)
-    const m = Math.floor((sec % 3600) / 60)
-    const s = sec % 60
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-  }
-
-  async function stopActive() {
-    const a = timer.active
-    if (!a) return
-    if (a.kind === 'project' && a.project_id) await stopProjectTimer(a.project_id)
-    else if (a.kind === 'task' && a.task_id) await stopTaskTimer(a.task_id)
-    else if (a.kind === 'global_task' && a.global_task_id) await stopGlobalTaskTimer(a.global_task_id)
-    await loadActiveTimer()
-  }
 
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'
@@ -88,17 +68,6 @@
 
   <div class="app-main">
     <Header />
-    {#if timer.active}
-      <div class="gtb">
-        <div class="gtb-dot"></div>
-        <div class="gtb-main">
-          <span class="gtb-label">{timer.active.label || '—'}</span>
-          <span class="gtb-kind">{kindLabels[timer.active.kind] || 'Timer'}</span>
-        </div>
-        <span class="gtb-elapsed">{formatElapsed(timer.elapsed)}</span>
-        <button class="gtb-stop" title="Opreste timerul" onclick={stopActive}><Square size={14} /></button>
-      </div>
-    {/if}
     <main class="app-content" id="main-content">
       {#key routeKey}
         <div class="content-width" in:fade={{ duration: 120 }}>
@@ -145,71 +114,6 @@
   .app-content {
     flex: 1;
     overflow-y: auto;
-  }
-
-  .gtb {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: 10px var(--space-lg);
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-  }
-  .gtb-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 1.5s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-  .gtb-main {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-  }
-  .gtb-label {
-    font-size: var(--font-small);
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .gtb-kind {
-    font-size: var(--font-tiny);
-    color: var(--accent);
-    font-weight: 500;
-  }
-  .gtb-elapsed {
-    font-family: var(--font-mono);
-    font-size: var(--font-small);
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.04em;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-  .gtb-stop {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    color: var(--danger);
-    cursor: pointer;
-    transition: all var(--dur-fast) var(--ease);
-    flex-shrink: 0;
-  }
-  .gtb-stop:hover {
-    background: var(--danger);
-    color: white;
   }
 
   .not-found {

@@ -45,6 +45,17 @@ export async function loadActiveTimer() {
   }
 }
 
+// Stop whichever timer is currently active (project/task/global), regardless of
+// where the stop was triggered (Header chip, Home card, project page).
+export async function stopActiveTimer() {
+  const a = timer.active
+  if (!a) return
+  if (a.kind === 'project' && a.project_id) await stopProjectTimer(a.project_id)
+  else if (a.kind === 'task' && a.task_id) await stopTaskTimer(a.task_id)
+  else if (a.kind === 'global_task' && a.global_task_id) await stopGlobalTaskTimer(a.global_task_id)
+  await loadActiveTimer()
+}
+
 export async function startProjectTimer(projectId) {
   await apiJson(`/api/proiecte/${projectId}/timer/start`, { method: 'POST' })
   await loadActiveTimer()

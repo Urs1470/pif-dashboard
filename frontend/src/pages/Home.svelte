@@ -2,14 +2,24 @@
   import { onMount } from 'svelte'
   import {
     Home as HomeIcon, FolderKanban, AlertTriangle, Clock,
-    CalendarClock, ChevronRight, RotateCcw
+    CalendarClock, ChevronRight, RotateCcw, Square
   } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
-  import { formatDuration, formatDate } from '../lib/formatters.js'
+  import { formatDuration, formatDate, formatElapsed } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
-  import { loadActiveTimer } from '../stores/timer.svelte.js'
+  import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
+
+  const kindLabels = { project: 'Proiect', task: 'Task', global_task: 'Task global' }
+
+  function goToActiveTimer() {
+    if (timer.active?.project_id) navigate(`/projects/${timer.active.project_id}`)
+  }
+  async function stopActive(e) {
+    e.stopPropagation()
+    await stopActiveTimer()
+  }
 
   let dashboard = $state(null)
   let loading = $state(true)
@@ -46,44 +56,54 @@
 
 <div class="page">
   <div class="page-head">
-    <h1 class="greeting">{greeting()}, Ion</h1>
-    <p class="today">{todayRO()}</p>
+    <div class="greet-left">
+      <h1 class="greeting">{greeting()}, Ion</h1>
+      <p class="today">{todayRO()}</p>
+    </div>
+    {#if timer.active}
+      <div class="timer-card" role="button" tabindex="0"
+        onclick={goToActiveTimer} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActiveTimer() } }}>
+        <span class="tc-dot"></span>
+        <div class="tc-main">
+          <span class="tc-eyebrow">Cronometru activ · {kindLabels[timer.active.kind] || 'Timer'}</span>
+          <span class="tc-name">{timer.active.label || '—'}</span>
+        </div>
+        <span class="tc-elapsed">{formatElapsed(timer.elapsed)}</span>
+        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><Square size={15} /></button>
+      </div>
+    {/if}
   </div>
 
   {#if loading}
-    <div class="stats-row">
-      {#each Array(4) as _}
-        <div class="stat-card"><Skeleton height="64px" /></div>
-      {/each}
-    </div>
+    <div class="kpi-skeleton"><Skeleton height="72px" /></div>
   {:else if error}
     <Card><p class="error-msg">Eroare: {error}</p></Card>
   {:else if dashboard}
     {@const s = dashboard.stats || {}}
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Proiecte Active</span><FolderKanban size={16} /></div>
-        <div class="stat-value accent">{s.active_projects ?? 0}</div>
-        <div class="stat-sub">din {s.total_projects ?? 0} total</div>
+    <div class="kpi-bar">
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Proiecte Active</span><FolderKanban size={15} /></div>
+        <div class="kpi-val accent">{s.active_projects ?? 0}</div>
+        <div class="kpi-sub">din {s.total_projects ?? 0} total</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Urgente</span><AlertTriangle size={16} /></div>
-        <div class="stat-value warn">{s.urgent_count ?? 0}</div>
-        <div class="stat-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Urgente</span><AlertTriangle size={15} /></div>
+        <div class="kpi-val warn">{s.urgent_count ?? 0}</div>
+        <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Ore Saptamana</span><Clock size={16} /></div>
-        <div class="stat-value success">{s.weekly_hours ?? 0}<span class="unit">h</span></div>
-        <div class="stat-sub">
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Ore Saptamana</span><Clock size={15} /></div>
+        <div class="kpi-val success">{s.weekly_hours ?? 0}<span class="unit">h</span></div>
+        <div class="kpi-sub">
           {#if (s.weekly_delta || 0) > 0}<span class="up">+{s.weekly_delta}h</span> vs. sapt. trecuta
           {:else if (s.weekly_delta || 0) < 0}<span class="down">{s.weekly_delta}h</span> vs. sapt. trecuta
           {:else}la fel ca sapt. trecuta{/if}
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-top"><span class="stat-label">Deadline-uri</span><CalendarClock size={16} /></div>
-        <div class="stat-value">{s.deadline_count ?? 0}</div>
-        <div class="stat-sub">in urmatoarele 7 zile</div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Deadline-uri</span><CalendarClock size={15} /></div>
+        <div class="kpi-val">{s.deadline_count ?? 0}</div>
+        <div class="kpi-sub">in urmatoarele 7 zile</div>
       </div>
     </div>
 
@@ -177,22 +197,35 @@
 
 <style>
   .page { padding: var(--space-lg); }
-  .page-head { margin-bottom: var(--space-lg); }
-  .greeting { font-size: var(--font-h1); font-weight: 700; color: var(--text); }
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap: wrap; }
+  .greeting { font-size: var(--font-h1); font-weight: 700; color: var(--text); white-space: nowrap; }
   .today { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; text-transform: capitalize; }
 
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
-  .stat-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); }
-  .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); margin-bottom: var(--space-sm); }
-  .stat-label { font-size: var(--font-tiny); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-  .stat-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
-  .stat-value.accent { color: var(--accent); }
-  .stat-value.warn { color: var(--warning); }
-  .stat-value.success { color: var(--success); }
+  .timer-card { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--accent-ring); cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
+  .timer-card:hover { border-color: var(--accent); }
+  .tc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: tcpulse 1.5s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes tcpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .tc-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tc-eyebrow { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); }
+  .tc-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+  .tc-elapsed { font-family: var(--font-mono); font-size: 19px; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; }
+  .tc-stop { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--danger); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
+  .tc-stop:hover { background: var(--danger); color: white; }
+
+  .kpi-skeleton { margin-bottom: var(--space-lg); }
+  .kpi-bar { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: var(--space-lg); }
+  .kpi { padding: 16px 18px; border-right: 1px solid var(--border-subtle); }
+  .kpi:last-child { border-right: none; }
+  .kpi-top { display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); margin-bottom: var(--space-sm); }
+  .kpi-label { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kpi-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1; }
+  .kpi-val.accent { color: var(--accent); }
+  .kpi-val.warn { color: var(--warning); }
+  .kpi-val.success { color: var(--success); }
   .unit { font-size: 14px; color: var(--text-dim); }
-  .stat-sub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
-  .stat-sub .up { color: var(--success); font-weight: 600; }
-  .stat-sub .down { color: var(--danger); font-weight: 600; }
+  .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+  .kpi-sub .up { color: var(--success); font-weight: 600; }
+  .kpi-sub .down { color: var(--danger); font-weight: 600; }
 
   .section { margin-bottom: var(--space-lg); }
   .section-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: var(--space-sm); }
@@ -227,8 +260,11 @@
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .kpi-bar { grid-template-columns: repeat(2, 1fr); }
+    .kpi:nth-child(2n) { border-right: none; }
+    .kpi:nth-child(n+3) { border-top: 1px solid var(--border-subtle); }
     .cards-grid { grid-template-columns: 1fr; }
-    .greeting { font-size: var(--font-h2); }
+    .greeting { font-size: var(--font-h2); white-space: normal; }
+    .timer-card { flex: 1; }
   }
 </style>

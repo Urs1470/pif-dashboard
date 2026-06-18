@@ -1,6 +1,17 @@
 <script>
-  import { Search, Sun, Moon } from '@lucide/svelte'
+  import { Search, Sun, Moon, Square } from '@lucide/svelte'
   import { ui, toggleTheme } from '../../stores/ui.svelte.js'
+  import { timer, stopActiveTimer } from '../../stores/timer.svelte.js'
+  import { formatElapsed } from '../../lib/formatters.js'
+  import { navigate } from '../../lib/router.svelte.js'
+
+  function goToActive() {
+    if (timer.active?.project_id) navigate(`/projects/${timer.active.project_id}`)
+  }
+  async function stopActive(e) {
+    e.stopPropagation()
+    await stopActiveTimer()
+  }
 </script>
 
 <header class="header">
@@ -11,6 +22,14 @@
   </button>
 
   <div class="header-actions">
+    {#if timer.active}
+      <div class="timer-chip" role="button" tabindex="0" title={timer.active.label || 'Cronometru activ'}
+        onclick={goToActive} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActive() } }}>
+        <span class="tc-dot"></span>
+        <span class="tc-time">{formatElapsed(timer.elapsed)}</span>
+        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><Square size={12} /></button>
+      </div>
+    {/if}
     <button class="header-btn" onclick={toggleTheme} title="Schimba tema">
       {#if ui.theme === 'dark'}
         <Sun size={18} />
@@ -73,6 +92,48 @@
     align-items: center;
     gap: var(--space-sm);
   }
+
+  .timer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 4px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--accent-ring);
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .timer-chip:hover { border-color: var(--accent); }
+  .tc-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: tcpulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes tcpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .tc-time {
+    font-family: var(--font-mono);
+    font-size: var(--font-tiny);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .tc-stop {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-xs);
+    color: var(--danger);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    flex-shrink: 0;
+  }
+  .tc-stop:hover { background: var(--danger); color: white; }
 
   .header-btn {
     width: 36px;

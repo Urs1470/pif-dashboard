@@ -23,7 +23,7 @@
   const columns = [
     { key: 'nume', label: 'Nume' },
     { key: 'client', label: 'Client' },
-    { key: 'producator', label: 'Producator' },
+    { key: 'tip', label: 'Tip' },
     { key: 'status', label: 'Status' },
     { key: 'deadline', label: 'Deadline' },
   ]
@@ -234,12 +234,9 @@
                   </button>
                 </td>
               {/if}
-              <td class="name-cell">
-                {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
-                {p.nume || '—'}
-              </td>
+              <td class="name-cell">{p.nume || '—'}</td>
               <td class="dim">{p.client || '—'}</td>
-              <td class="dim">{p.producator || '—'}</td>
+              <td>{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
               <td><button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button></td>
               <td class="dim">{p.deadline ? formatDate(p.deadline) : '—'}</td>
             </tr>
@@ -262,12 +259,9 @@
               <tbody>
                 {#each archivedItems as p (p.id)}
                   <tr class="clickable-row archived" onclick={() => openProject(p)}>
-                    <td class="name-cell">
-                      {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
-                      {p.nume || '—'}
-                    </td>
+                    <td class="name-cell">{p.nume || '—'}</td>
                     <td class="dim">{p.client || '—'}</td>
-                    <td class="dim">{p.producator || '—'}</td>
+                    <td>{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
                     <td><Badge label="Finalizat" color="var(--success)" small /></td>
                     <td class="dim">{p.deadline ? formatDate(p.deadline) : '—'}</td>
                   </tr>
@@ -309,7 +303,7 @@
 
   .name-cell { font-weight: 500; }
   .dim { color: var(--text-secondary); }
-  .ptip { font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); margin-right: 6px; }
+  .ptip { display: inline-block; font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .ptip.pif { background: var(--accent-subtle); color: var(--accent); }
   .ptip.service { background: var(--service-subtle); color: var(--service-accent); }
 
