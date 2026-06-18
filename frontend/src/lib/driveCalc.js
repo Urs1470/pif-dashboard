@@ -15,6 +15,7 @@
 
 export const FAMILIES = [
   { id: 'asincron', label: 'Asincron' },
+  { id: 'pompe', label: 'Pompe & ventilatoare' },
   { id: 'cc', label: 'Curent continuu' },
   { id: 'servo', label: 'Servo / PMSM' },
   { id: 'sincron', label: 'Sincron' },
@@ -24,18 +25,22 @@ export const FAMILIES = [
 // Ordinea logica de afisare a modulelor in fiecare familie (flux ingineresc:
 // de la marimile de placuta spre dimensionare/diagnoza).
 export const MODULE_ORDER = [
-  // asincron: turatie -> putere/curent -> cuplu -> sarcina -> pornire -> diagnoza
+  // asincron: marimi de baza -> diagnoza avansata (schema echiv./teste/randament)
   'motor-turatie', 'putere-curent', 'cuplu', 'sarcina-afinitate', 'pornire', 'incarcare',
+  'motor-echivalent', 'bilant-putere', 'teste-parametri', 'randament-sarcina', 'dezechilibru',
+  // pompe & ventilatoare
+  'pompa-sistem', 'turatie-minima', 'npsh', 'putere-pompa', 'ventilator-densitate', 'turatie-specifica',
   // c.c.: fundamental -> reglaj -> convertor
   'cc-baza', 'cc-reglaj', 'cc-drive',
   // servo: model -> dimensionare ciclu -> feedback
   'pmsm-model', 'pmsm-ciclu', 'pmsm-feedback',
   // sincron: turatie/excitatie -> putere/cuplu
   'sincron-turatie', 'sincron-putere',
-  // comune: selectie -> convertizor -> dinamica/tuning/rezonanta -> mecanica ->
-  //         energie -> instalatie (cablu/termic/armonici/cosfi) -> utilitar
+  // comune: selectie -> convertizor -> dinamica/tuning/rezonanta -> mecanica -> energie
+  //         -> instalatie (cablu/protectii/scurtcircuit/trafo/dip) -> calitate energie -> utilitar
   'selectie-drive', 'vfd', 'dinamica', 'raport-inertie', 'turatie-critica', 'transmisii',
-  'energie-roi', 'cablu', 'termic', 'armonici', 'compensare', 'conversii',
+  'energie-roi', 'cablu', 'cablu-protectii', 'scurtcircuit', 'transformator', 'dip-pornire',
+  'termic', 'armonici', 'ieee519', 'rezonanta-cond', 'compensare', 'conversii',
 ]
 
 // Proveninta formulelor (verificat din carti/ghiduri — vezi wiki_job/theory).
@@ -66,6 +71,23 @@ export const SOURCES = {
   'pmsm-feedback': 'Hughes (τ_e=L/R, τ_m=RJ/k², p.119) + metrologie encoder cuadratura',
   'sincron-turatie': 'Chapman — cap.4-5 (n_s ec.4-34, diagrama fazoriala p.261-263)',
   'sincron-putere': 'Chapman — cap.5.6 (ec. 5-20/5-21/5-22, p.264-265)',
+  'motor-echivalent': 'Chapman — schema echivalenta / Thevenin (ec. 7-41…7-50, p.383-385)',
+  'bilant-putere': 'Chapman — diagrama flux de putere (Fig. 7-13, p.371)',
+  'teste-parametri': 'Chapman — teste gol / c.c. / rotor blocat (ec. 7-58…7-68) + IEEE 112',
+  'randament-sarcina': 'Chapman — separare pierderi fixe/variabile (p.371-372) + ABB TGB',
+  'dezechilibru': 'NEMA MG-1 §14.35 (derating la dezechilibru de tensiune)',
+  'pompa-sistem': 'Hydraulic Institute — punct functionare curba sistem × pompa (datatool.pumps.org)',
+  'turatie-minima': 'Pumps & Systems — capcana capului static / turatie minima utila',
+  'npsh': 'Pumps & Systems — NPSH & Cavitation (eBook 2018); NPSHr ∝ n²',
+  'putere-pompa': 'Putere hidraulica P=ρgQH; wire-to-water (lant de randamente)',
+  'ventilator-densitate': 'EngineeringToolbox — fan affinity + densitate aer; TCF Fan Engineering FE-1600',
+  'turatie-specifica': 'KSB Centrifugal Pump Lexicon — turatie specifica n_q',
+  'cablu-protectii': 'IEC 60364-5-54 (I²t adiabatic, S=I√t/k) + IEC 60364-5-52 (ampacitate, factori)',
+  'scurtcircuit': 'IEC 60909-0 (Icc; Icc_trafo=I_n/u_k; contributie motor ~ rotor blocat)',
+  'ieee519': 'IEEE 519-2014/2022 — Tabel 2 (limita TDD din Isc/IL)',
+  'rezonanta-cond': 'Schneider Electrical Installation Guide — h_rez=√(S_sc/Q_c)',
+  'transformator': 'S_tr=k·P/η; Icc_sec=I_n/u_k; inrush 8-12× (IEEE/Larson Electronics)',
+  'dip-pornire': 'ΔU≈S_pornire/(S_pornire+S_cc) — IEEE 141 (limita ~15%)',
 }
 
 const SQRT3 = Math.sqrt(3)
@@ -820,6 +842,474 @@ export const MODULES = [
         calc: (v, r) => (r.ws ? (r.P * 1000) / r.ws : null), dec: 1 },
       { key: 'Mmax', label: 'Cuplu de desprindere', unit: 'Nm', tex: 'M_{max} = \\dfrac{U E}{X_s\\,\\omega_s}',
         calc: (v, r) => (v.Xs && r.ws ? (v.U * v.E) / v.Xs / r.ws : null), dec: 1 },
+    ],
+  },
+
+  // ============================================ P1: ASINCRON "REAL" (diagnoza)
+  {
+    id: 'motor-echivalent',
+    family: 'asincron',
+    tier: 3,
+    title: 'Schema echivalenta (Thevenin)',
+    subtitle: 'Cuplu si curent reale din R1,X1,Xm,R2,X2',
+    note: 'Tensiuni pe faza interne (U_linie/√3). Aproximatie clasica cu Rm neglijat.',
+    fields: [
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
+      { key: 'f', label: 'Frecventa', unit: 'Hz', default: 50, step: 1, min: 1 },
+      { key: 'p', label: 'Numar de poli', unit: '', default: 4, step: 2, min: 2 },
+      { key: 'R1', label: 'Rezistenta stator R1', unit: 'Ω', default: 0.5, step: 0.05, min: 0 },
+      { key: 'X1', label: 'Reactanta stator X1', unit: 'Ω', default: 1.2, step: 0.1, min: 0 },
+      { key: 'Xm', label: 'Reactanta magnetizare Xm', unit: 'Ω', default: 40, step: 1, min: 0.1 },
+      { key: 'R2', label: 'Rezistenta rotor R2', unit: 'Ω', default: 0.4, step: 0.05, min: 0.001 },
+      { key: 'X2', label: 'Reactanta rotor X2', unit: 'Ω', default: 1.2, step: 0.1, min: 0 },
+      { key: 'n', label: 'Turatie (punct)', unit: 'rpm', default: 1450, step: 10, min: 0 },
+    ],
+    charts: [
+      (v) => {
+        if (!v.p) return null
+        const ns = 120 * v.f / v.p, ws = omega(ns)
+        const Vth = (v.U / SQRT3) * v.Xm / Math.sqrt(v.R1 ** 2 + (v.X1 + v.Xm) ** 2)
+        const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2
+        const Xth = v.X1
+        const M = (n) => { const s = (ns - n) / ns || 1e-4; return (3 * Vth ** 2 * (v.R2 / s)) / (ws * ((Rth + v.R2 / s) ** 2 + (Xth + v.X2) ** 2)) }
+        const sOp = (ns - v.n) / ns || 1e-4
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+          series: [{ label: 'M(n) schema echiv.', color: COL.a, points: curve(1, ns, M) }],
+          markers: [{ x: v.n, y: M(v.n), label: 'functionare', color: COL.op }],
+        }
+      },
+      (v) => {
+        if (!v.p) return null
+        const ns = 120 * v.f / v.p
+        const Vth = (v.U / SQRT3) * v.Xm / Math.sqrt(v.R1 ** 2 + (v.X1 + v.Xm) ** 2)
+        const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2
+        const I2 = (n) => { const s = (ns - n) / ns || 1e-4; return Vth / Math.sqrt((Rth + v.R2 / s) ** 2 + (v.X1 + v.X2) ** 2) }
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Curent rotor I2 [A]',
+          series: [{ label: 'I2(n)', color: COL.c, points: curve(1, ns, I2) }],
+          markers: [{ x: v.n, y: I2(v.n), label: 'functionare', color: COL.op }],
+        }
+      },
+    ],
+    results: [
+      { key: 'Vth', label: 'Tensiune Thevenin', unit: 'V', tex: 'V_{th} = \\dfrac{V_{ph}\\,X_m}{\\sqrt{R_1^2+(X_1+X_m)^2}}',
+        calc: (v) => (v.U / SQRT3) * v.Xm / Math.sqrt(v.R1 ** 2 + (v.X1 + v.Xm) ** 2), dec: 1 },
+      { key: 'I2', label: 'Curent rotor (la n)', unit: 'A', tex: 'I_2 = \\dfrac{V_{th}}{\\sqrt{(R_{th}+R_2/s)^2+(X_{th}+X_2)^2}}',
+        calc: (v, r) => { if (!v.p) return null; const ns = 120 * v.f / v.p; const s = (ns - v.n) / ns || 1e-4; const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2; return r.Vth / Math.sqrt((Rth + v.R2 / s) ** 2 + (v.X1 + v.X2) ** 2) }, dec: 1 },
+      { key: 'M', label: 'Cuplu (la n)', unit: 'Nm', tex: 'M = \\dfrac{3\\,V_{th}^2\\,(R_2/s)}{\\omega_s[(R_{th}+R_2/s)^2+(X_{th}+X_2)^2]}',
+        calc: (v, r) => { if (!v.p) return null; const ns = 120 * v.f / v.p; const ws = omega(ns); const s = (ns - v.n) / ns || 1e-4; const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2; return (3 * r.Vth ** 2 * (v.R2 / s)) / (ws * ((Rth + v.R2 / s) ** 2 + (v.X1 + v.X2) ** 2)) }, dec: 1 },
+      { key: 'smax', label: 'Alunecare critica', unit: '%', tex: 's_{max} = \\dfrac{R_2}{\\sqrt{R_{th}^2+(X_{th}+X_2)^2}}',
+        calc: (v) => { const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2; return (v.R2 / Math.sqrt(Rth ** 2 + (v.X1 + v.X2) ** 2)) * 100 }, dec: 2 },
+      { key: 'Mmax', label: 'Cuplu maxim (breakdown)', unit: 'Nm', tex: 'M_{max} = \\dfrac{3\\,V_{th}^2}{2\\,\\omega_s[R_{th}+\\sqrt{R_{th}^2+(X_{th}+X_2)^2}]}',
+        calc: (v, r) => { if (!v.p) return null; const ws = omega(120 * v.f / v.p); const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2; return (3 * r.Vth ** 2) / (2 * ws * (Rth + Math.sqrt(Rth ** 2 + (v.X1 + v.X2) ** 2))) }, dec: 1 },
+    ],
+  },
+  {
+    id: 'bilant-putere',
+    family: 'asincron',
+    tier: 3,
+    title: 'Bilant de puteri & randament',
+    subtitle: 'Defalcarea pierderilor (power-flow)',
+    fields: [
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
+      { key: 'I', label: 'Curent de linie', unit: 'A', default: 18, step: 0.5, min: 0 },
+      { key: 'cosphi', label: 'Factor de putere', unit: '', default: 0.85, step: 0.01, min: 0 },
+      { key: 'R1', label: 'Rezistenta stator R1', unit: 'Ω', default: 0.5, step: 0.05, min: 0 },
+      { key: 's', label: 'Alunecare', unit: '%', default: 3.33, step: 0.1, min: 0 },
+      { key: 'Pcore', label: 'Pierderi in fier', unit: 'W', default: 150, step: 10, min: 0 },
+      { key: 'Pfw', label: 'Frecare + ventilatie', unit: 'W', default: 100, step: 10, min: 0 },
+      { key: 'Pstray', label: 'Pierderi suplimentare', unit: 'W', default: 50, step: 10, min: 0 },
+    ],
+    results: [
+      { key: 'Pin', label: 'Putere absorbita', unit: 'W', tex: 'P_{in} = \\sqrt{3}\\,U I\\cos\\varphi',
+        calc: (v) => SQRT3 * v.U * v.I * v.cosphi, dec: 0 },
+      { key: 'Pscl', label: 'Pierderi Cu stator', unit: 'W', tex: 'P_{scl} = 3 I^2 R_1',
+        calc: (v) => 3 * v.I ** 2 * v.R1, dec: 0 },
+      { key: 'Pag', label: 'Putere intrefier', unit: 'W', tex: 'P_{ag} = P_{in}-P_{scl}-P_{fier}',
+        calc: (v, r) => r.Pin - r.Pscl - v.Pcore, dec: 0 },
+      { key: 'Prcl', label: 'Pierderi Cu rotor', unit: 'W', tex: 'P_{rcl} = s\\,P_{ag}',
+        calc: (v, r) => (v.s / 100) * r.Pag, dec: 0 },
+      { key: 'Pout', label: 'Putere la arbore', unit: 'W', tex: 'P_{out} = (1-s)P_{ag}-P_{fw}-P_{stray}',
+        calc: (v, r) => r.Pag - r.Prcl - v.Pfw - v.Pstray, dec: 0 },
+      { key: 'eta', label: 'Randament', unit: '%', tex: '\\eta = \\dfrac{P_{out}}{P_{in}}\\cdot 100',
+        calc: (v, r) => (r.Pin ? (r.Pout / r.Pin) * 100 : null), dec: 1 },
+    ],
+  },
+  {
+    id: 'teste-parametri',
+    family: 'asincron',
+    tier: 3,
+    title: 'Parametri din teste',
+    subtitle: 'Schema echivalenta din test gol / c.c. / rotor blocat',
+    note: 'Test c.c. pe 2 faze (R1). Reactante la frecventa de test — corecteaza la f nominala.',
+    fields: [
+      { key: 'Vdc', label: 'Test c.c.: tensiune', unit: 'V', default: 10, step: 1, min: 0 },
+      { key: 'Idc', label: 'Test c.c.: curent', unit: 'A', default: 20, step: 1, min: 0.1 },
+      { key: 'Vnl', label: 'Gol: tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
+      { key: 'Inl', label: 'Gol: curent', unit: 'A', default: 8, step: 0.5, min: 0.1 },
+      { key: 'Vlr', label: 'Rotor blocat: tensiune', unit: 'V', default: 90, step: 5, min: 0 },
+      { key: 'Ilr', label: 'Rotor blocat: curent', unit: 'A', default: 30, step: 1, min: 0.1 },
+      { key: 'Plr', label: 'Rotor blocat: putere', unit: 'W', default: 1800, step: 50, min: 0 },
+    ],
+    results: [
+      { key: 'R1', label: 'Rezistenta stator R1', unit: 'Ω', tex: 'R_1 = \\dfrac{V_{dc}}{2 I_{dc}}',
+        calc: (v) => (v.Idc ? v.Vdc / (2 * v.Idc) : null), dec: 3 },
+      { key: 'R2', label: 'Rezistenta rotor R2', unit: 'Ω', tex: 'R_2 = Z_{lr}\\cos\\theta - R_1',
+        calc: (v, r) => { const Z = v.Vlr / SQRT3 / v.Ilr; const ct = v.Plr / (SQRT3 * v.Vlr * v.Ilr); return Z * ct - r.R1 }, dec: 3 },
+      { key: 'Xlr', label: 'Reactanta X1+X2', unit: 'Ω', tex: 'X_1+X_2 = Z_{lr}\\sin\\theta',
+        calc: (v) => { const Z = v.Vlr / SQRT3 / v.Ilr; const ct = v.Plr / (SQRT3 * v.Vlr * v.Ilr); return Z * Math.sqrt(Math.max(0, 1 - ct ** 2)) }, dec: 3 },
+      { key: 'Xm', label: 'Reactanta magnetizare Xm', unit: 'Ω', tex: 'X_m \\approx Z_{nl} - X_1',
+        calc: (v, r) => { const Znl = v.Vnl / SQRT3 / v.Inl; return Znl - r.Xlr / 2 }, dec: 2 },
+    ],
+  },
+  {
+    id: 'randament-sarcina',
+    family: 'asincron',
+    tier: 3,
+    title: 'Randament vs sarcina',
+    subtitle: 'De ce motorul supradimensionat e ineficient',
+    note: 'Randamentul scade sub ~50% sarcina; maxim acolo unde pierderile fixe = cele variabile.',
+    fields: [
+      { key: 'Pn', label: 'Putere nominala', unit: 'kW', default: 15, step: 0.5, min: 0.1 },
+      { key: 'etan', label: 'Randament nominal', unit: '%', default: 90, step: 0.5, min: 1 },
+      { key: 'Pconst', label: 'Pierderi fixe (fier+fw)', unit: 'W', default: 350, step: 10, min: 0 },
+    ],
+    charts: [(v) => {
+      const Ploss = v.Pn * 1000 * (1 / (v.etan / 100) - 1)
+      const Pvar = Math.max(0, Ploss - v.Pconst)
+      const eta = (x) => { const Po = x * v.Pn * 1000; return (Po / (Po + v.Pconst + x ** 2 * Pvar)) * 100 }
+      return {
+        xLabel: 'Sarcina [% din P_n]', yLabel: 'Randament η [%]',
+        series: [{ label: 'η(sarcina)', color: COL.a, points: curve(10, 120, (xp) => eta(xp / 100)) }],
+        markers: [{ x: 100, y: eta(1), label: 'nominal', color: COL.op }],
+      }
+    }],
+    results: [
+      { key: 'Pvar', label: 'Pierderi variabile nom.', unit: 'W', tex: 'P_{var} = P_{loss,n} - P_{const}',
+        calc: (v) => Math.max(0, v.Pn * 1000 * (1 / (v.etan / 100) - 1) - v.Pconst), dec: 0 },
+      { key: 'xopt', label: 'Sarcina la η maxim', unit: '%', tex: 'x^* = \\sqrt{P_{const}/P_{var}}',
+        calc: (v, r) => (r.Pvar > 0 ? Math.sqrt(v.Pconst / r.Pvar) * 100 : null), dec: 0 },
+      { key: 'eta50', label: 'Randament la 50%', unit: '%', tex: '\\eta(0.5)',
+        calc: (v, r) => { const Po = 0.5 * v.Pn * 1000; return (Po / (Po + v.Pconst + 0.25 * r.Pvar)) * 100 }, dec: 1 },
+      { key: 'eta25', label: 'Randament la 25%', unit: '%', tex: '\\eta(0.25)',
+        calc: (v, r) => { const Po = 0.25 * v.Pn * 1000; return (Po / (Po + v.Pconst + 0.0625 * r.Pvar)) * 100 }, dec: 1 },
+    ],
+  },
+  {
+    id: 'dezechilibru',
+    family: 'asincron',
+    tier: 3,
+    title: 'Dezechilibru de tensiune',
+    subtitle: 'Derating si supraincalzire (NEMA MG-1)',
+    note: 'Peste 5% dezechilibru: nu porni motorul. Factor derating ~ aproximare curba NEMA.',
+    fields: [
+      { key: 'Uab', label: 'Tensiune U_AB', unit: 'V', default: 400, step: 1, min: 0 },
+      { key: 'Ubc', label: 'Tensiune U_BC', unit: 'V', default: 395, step: 1, min: 0 },
+      { key: 'Uca', label: 'Tensiune U_CA', unit: 'V', default: 390, step: 1, min: 0 },
+    ],
+    results: [
+      { key: 'Umed', label: 'Tensiune medie', unit: 'V', tex: 'U_{med} = \\dfrac{U_{AB}+U_{BC}+U_{CA}}{3}',
+        calc: (v) => (v.Uab + v.Ubc + v.Uca) / 3, dec: 1 },
+      { key: 'UV', label: 'Dezechilibru', unit: '%', tex: 'UV = \\dfrac{\\Delta U_{max}}{U_{med}}\\cdot 100',
+        calc: (v, r) => { const d = Math.max(Math.abs(v.Uab - r.Umed), Math.abs(v.Ubc - r.Umed), Math.abs(v.Uca - r.Umed)); return r.Umed ? (d / r.Umed) * 100 : null }, dec: 2 },
+      { key: 'df', label: 'Factor de derating', unit: '×', tex: 'k \\approx 1 - 0.0125\\,UV^2',
+        calc: (v, r) => (r.UV <= 1 ? 1 : Math.max(0.7, 1 - 0.0125 * r.UV ** 2)), dec: 3 },
+      { key: 'dT', label: 'Supraincalzire estimata', unit: '°C', tex: '\\Delta\\theta \\approx 2\\,UV^2',
+        calc: (v, r) => 2 * r.UV ** 2, dec: 1 },
+      { key: 'Iunb', label: 'Dezechilibru de curent', unit: '%', tex: '\\approx 8\\,UV',
+        calc: (v, r) => 8 * r.UV, dec: 1 },
+    ],
+  },
+
+  // ===================================== P2: POMPE & VENTILATOARE
+  {
+    id: 'pompa-sistem',
+    family: 'pompe',
+    tier: 3,
+    title: 'Punct de functionare (curba sistem)',
+    subtitle: 'Pompa x sistem cu inaltime statica',
+    note: 'Cu cap static H_static > 0 economia e mai mica decat legea cubului si apare turatie minima.',
+    fields: [
+      { key: 'Hstatic', label: 'Inaltime statica', unit: 'm', default: 10, step: 1, min: 0 },
+      { key: 'Hnom', label: 'Inaltime la debit nom.', unit: 'm', default: 32, step: 1, min: 0 },
+      { key: 'Qnom', label: 'Debit nominal', unit: 'm³/h', default: 100, step: 5, min: 1 },
+      { key: 'Hshut', label: 'Inaltime la debit 0', unit: 'm', default: 40, step: 1, min: 0 },
+      { key: 'n1', label: 'Turatie nominala', unit: 'rpm', default: 1450, step: 10, min: 1 },
+      { key: 'Qtarget', label: 'Debit cerut', unit: 'm³/h', default: 70, step: 5, min: 0 },
+    ],
+    charts: [(v) => {
+      if (!v.Qnom || !v.Hshut) return null
+      const k = (v.Hnom - v.Hstatic) / v.Qnom ** 2
+      const a = (v.Hshut - v.Hnom) / v.Qnom ** 2
+      const r2 = (v.Hstatic + (k + a) * v.Qtarget ** 2) / v.Hshut
+      const nr = v.n1 * Math.sqrt(Math.max(0, r2))
+      const Qmax = v.Qnom * 1.15
+      return {
+        xLabel: 'Debit Q [m³/h]', yLabel: 'Inaltime H [m]',
+        series: [
+          { label: 'Sistem', color: COL.b, points: curve(0, Qmax, (Q) => v.Hstatic + k * Q ** 2) },
+          { label: 'Pompa @n1', color: COL.a, points: curve(0, Qmax, (Q) => v.Hshut - a * Q ** 2) },
+          { label: 'Pompa @n cerut', color: COL.c, dash: true, points: curve(0, Qmax, (Q) => v.Hshut * r2 - a * Q ** 2) },
+        ],
+        markers: [
+          { x: v.Qnom, y: v.Hnom, label: 'nominal', color: COL.a },
+          { x: v.Qtarget, y: v.Hstatic + k * v.Qtarget ** 2, label: 'cerut', color: COL.op },
+        ],
+      }
+    }],
+    results: [
+      { key: 'Hreq', label: 'Inaltime ceruta', unit: 'm', tex: 'H = H_{static} + k\\,Q^2',
+        calc: (v) => { const k = (v.Hnom - v.Hstatic) / v.Qnom ** 2; return v.Hstatic + k * v.Qtarget ** 2 }, dec: 1 },
+      { key: 'nreq', label: 'Turatie ceruta', unit: 'rpm', tex: 'n = n_1\\sqrt{\\dfrac{H_{static}+(k+a)Q^2}{H_{shut}}}',
+        calc: (v) => { if (!v.Hshut) return null; const k = (v.Hnom - v.Hstatic) / v.Qnom ** 2; const a = (v.Hshut - v.Hnom) / v.Qnom ** 2; return v.n1 * Math.sqrt(Math.max(0, (v.Hstatic + (k + a) * v.Qtarget ** 2) / v.Hshut)) }, dec: 0 },
+      { key: 'freq', label: 'Frecventa ceruta', unit: 'Hz', tex: 'f = 50\\,n/n_1',
+        calc: (v, r) => (v.n1 ? 50 * r.nreq / v.n1 : null), dec: 1 },
+    ],
+  },
+  {
+    id: 'turatie-minima',
+    family: 'pompe',
+    tier: 3,
+    title: 'Turatie minima utila',
+    subtitle: 'Pragul sub care pompa nu mai da debit',
+    note: 'Sub n_min, H_pompa < H_static => debit zero. Seteaza min frequency in drive peste acest prag.',
+    fields: [
+      { key: 'Hstatic', label: 'Inaltime statica', unit: 'm', default: 10, step: 1, min: 0 },
+      { key: 'Hshut', label: 'Inaltime la debit 0 (nom.)', unit: 'm', default: 40, step: 1, min: 0.1 },
+      { key: 'nnom', label: 'Turatie nominala', unit: 'rpm', default: 1450, step: 10, min: 1 },
+    ],
+    results: [
+      { key: 'ratio', label: 'Raport turatie minima', unit: '%', tex: '\\dfrac{n_{min}}{n_{nom}} = \\sqrt{\\dfrac{H_{static}}{H_{shut}}}',
+        calc: (v) => (v.Hshut ? Math.sqrt(v.Hstatic / v.Hshut) * 100 : null), dec: 1 },
+      { key: 'nmin', label: 'Turatie minima', unit: 'rpm', tex: 'n_{min} = n_{nom}\\sqrt{H_{static}/H_{shut}}',
+        calc: (v, r) => (r.ratio != null ? v.nnom * r.ratio / 100 : null), dec: 0 },
+      { key: 'fmin', label: 'Frecventa minima', unit: 'Hz', tex: 'f_{min} = 50\\sqrt{H_{static}/H_{shut}}',
+        calc: (v, r) => (r.ratio != null ? 50 * r.ratio / 100 : null), dec: 1 },
+    ],
+  },
+  {
+    id: 'npsh',
+    family: 'pompe',
+    tier: 3,
+    title: 'NPSH (cavitatie)',
+    subtitle: 'NPSH disponibil vs cerut + marja',
+    note: 'Conditie: NPSHa ≥ NPSHr + marja (0.5-1 m). La boost peste turatia nominala, NPSHr creste cu n².',
+    fields: [
+      { key: 'patm', label: 'Presiune atmosferica', unit: 'bar', default: 1.013, step: 0.01, min: 0 },
+      { key: 'pvap', label: 'Presiune vapori lichid', unit: 'bar', default: 0.023, step: 0.001, min: 0 },
+      { key: 'rho', label: 'Densitate lichid', unit: 'kg/m³', default: 1000, step: 10, min: 1 },
+      { key: 'Hasp', label: 'Inaltime aspiratie (+inecat)', unit: 'm', default: 2, step: 0.5, min: -20 },
+      { key: 'Hfrec', label: 'Pierderi pe aspiratie', unit: 'm', default: 1.5, step: 0.1, min: 0 },
+      { key: 'NPSHrn', label: 'NPSH cerut (nominal)', unit: 'm', default: 3, step: 0.5, min: 0 },
+      { key: 'nratio', label: 'Turatie', unit: '% nom', default: 100, step: 5, min: 0 },
+    ],
+    results: [
+      { key: 'NPSHa', label: 'NPSH disponibil', unit: 'm', tex: 'NPSH_a = \\dfrac{p_{atm}-p_{vap}}{\\rho g} + H_{asp} - H_{frec}',
+        calc: (v) => ((v.patm - v.pvap) * 1e5) / (v.rho * 9.81) + v.Hasp - v.Hfrec, dec: 2 },
+      { key: 'NPSHr', label: 'NPSH cerut (la n)', unit: 'm', tex: 'NPSH_r(n) = NPSH_{r,n}(n/n_{nom})^2',
+        calc: (v) => v.NPSHrn * (v.nratio / 100) ** 2, dec: 2 },
+      { key: 'marja', label: 'Marja', unit: 'm', tex: 'NPSH_a - NPSH_r',
+        calc: (v, r) => r.NPSHa - r.NPSHr, dec: 2 },
+    ],
+  },
+  {
+    id: 'putere-pompa',
+    family: 'pompe',
+    tier: 3,
+    title: 'Putere pompa (wire-to-water)',
+    subtitle: 'Hidraulica → arbore → motor → retea',
+    fields: [
+      { key: 'rho', label: 'Densitate', unit: 'kg/m³', default: 1000, step: 10, min: 1 },
+      { key: 'Q', label: 'Debit', unit: 'm³/h', default: 100, step: 5, min: 0 },
+      { key: 'H', label: 'Inaltime', unit: 'm', default: 32, step: 1, min: 0 },
+      { key: 'etap', label: 'Randament pompa', unit: '%', default: 75, step: 1, min: 1 },
+      { key: 'etam', label: 'Randament motor', unit: '%', default: 92, step: 1, min: 1 },
+      { key: 'etad', label: 'Randament drive', unit: '%', default: 97, step: 1, min: 1 },
+    ],
+    results: [
+      { key: 'Phid', label: 'Putere hidraulica', unit: 'kW', tex: 'P_{hid} = \\dfrac{\\rho g Q H}{1000}',
+        calc: (v) => (v.rho * 9.81 * (v.Q / 3600) * v.H) / 1000, dec: 2 },
+      { key: 'Parb', label: 'Putere la arbore', unit: 'kW', tex: 'P_{arb} = P_{hid}/\\eta_{pompa}',
+        calc: (v, r) => r.Phid / (v.etap / 100), dec: 2 },
+      { key: 'Pmot', label: 'Putere motor', unit: 'kW', tex: 'P_{mot} = P_{arb}/\\eta_{motor}',
+        calc: (v, r) => r.Parb / (v.etam / 100), dec: 2 },
+      { key: 'Pret', label: 'Putere din retea', unit: 'kW', tex: 'P_{retea} = P_{mot}/\\eta_{drive}',
+        calc: (v, r) => r.Pmot / (v.etad / 100), dec: 2 },
+    ],
+  },
+  {
+    id: 'ventilator-densitate',
+    family: 'pompe',
+    tier: 3,
+    title: 'Ventilator — corectie densitate',
+    subtitle: 'Presiune si putere vs temperatura/altitudine',
+    note: 'La densitate redusa (gaz cald, altitudine) presiunea si CUPLUL scad proportional cu ρ.',
+    fields: [
+      { key: 'T', label: 'Temperatura aer/gaz', unit: '°C', default: 20, step: 5, min: -50 },
+      { key: 'alt', label: 'Altitudine', unit: 'm', default: 0, step: 100, min: 0 },
+      { key: 'rho0', label: 'Densitate de referinta', unit: 'kg/m³', default: 1.2, step: 0.05, min: 0.1 },
+      { key: 'Pref', label: 'Putere la ρ referinta', unit: 'kW', default: 15, step: 0.5, min: 0 },
+    ],
+    results: [
+      { key: 'rho', label: 'Densitate reala', unit: 'kg/m³', tex: '\\rho = \\dfrac{p_{atm}}{R\\,(T+273.15)}',
+        calc: (v) => { const p = 101325 * (1 - 2.25577e-5 * v.alt) ** 5.25588; return p / (287.05 * (v.T + 273.15)) }, dec: 3 },
+      { key: 'ratio', label: 'Raport densitate', unit: '×', tex: '\\rho/\\rho_0',
+        calc: (v, r) => (v.rho0 ? r.rho / v.rho0 : null), dec: 3 },
+      { key: 'Preal', label: 'Putere reala', unit: 'kW', tex: 'P = P_{ref}\\,\\rho/\\rho_0',
+        calc: (v, r) => v.Pref * r.ratio, dec: 2 },
+    ],
+  },
+  {
+    id: 'turatie-specifica',
+    family: 'pompe',
+    tier: 3,
+    title: 'Turatie specifica (nq)',
+    subtitle: 'Tipul rotorului din n, Q, H',
+    note: 'nq ~10-30 radial · 30-80 mixt · 80-200 axial. Axialul are cuplu mare la debit mic.',
+    fields: [
+      { key: 'n', label: 'Turatie', unit: 'rpm', default: 1450, step: 10, min: 1 },
+      { key: 'Q', label: 'Debit (la BEP)', unit: 'm³/h', default: 100, step: 5, min: 0.1 },
+      { key: 'H', label: 'Inaltime (la BEP)', unit: 'm', default: 32, step: 1, min: 0.1 },
+    ],
+    results: [
+      { key: 'nq', label: 'Turatie specifica', unit: 'rpm', tex: 'n_q = \\dfrac{n\\sqrt{Q}}{H^{0.75}}',
+        calc: (v) => (v.n * Math.sqrt(v.Q / 3600)) / v.H ** 0.75, dec: 1 },
+    ],
+  },
+
+  // ============================= P3: INSTALATIE & CALITATEA ENERGIEI
+  {
+    id: 'cablu-protectii',
+    family: 'comun',
+    tier: 3,
+    title: 'Cablu — protectii (I²t & ampacitate)',
+    subtitle: 'Verificare termica scurtcircuit + curent admisibil',
+    note: 'k: Cu-PVC 115, Cu-XLPE 143, Al-PVC 76, Al-XLPE 94. Compara S_min cu sectiunea aleasa.',
+    fields: [
+      { key: 'Icc', label: 'Curent scurtcircuit', unit: 'A', default: 6000, step: 100, min: 0 },
+      { key: 't', label: 'Timp declansare', unit: 's', default: 0.1, step: 0.01, min: 0.001 },
+      { key: 'k', label: 'Constanta k (material)', unit: '', default: 143, step: 1, min: 1 },
+      { key: 'It', label: 'Curent admisibil tabelar', unit: 'A', default: 40, step: 1, min: 0 },
+      { key: 'Ca', label: 'Factor temperatura', unit: '', default: 0.94, step: 0.01, min: 0.1 },
+      { key: 'Cg', label: 'Factor grupare', unit: '', default: 0.8, step: 0.05, min: 0.1 },
+      { key: 'IB', label: 'Curent de sarcina I_B', unit: 'A', default: 28, step: 1, min: 0 },
+    ],
+    results: [
+      { key: 'Smin', label: 'Sectiune minima termica', unit: 'mm²', tex: 'S_{min} = \\dfrac{I_{cc}\\sqrt{t}}{k}',
+        calc: (v) => (v.k ? (v.Icc * Math.sqrt(v.t)) / v.k : null), dec: 2 },
+      { key: 'Iz', label: 'Curent admisibil corectat', unit: 'A', tex: 'I_z = I_t\\,C_a\\,C_g',
+        calc: (v) => v.It * v.Ca * v.Cg, dec: 1 },
+      { key: 'rezerva', label: 'Rezerva fata de sarcina', unit: 'A', tex: 'I_z - I_B',
+        calc: (v, r) => r.Iz - v.IB, dec: 1 },
+    ],
+  },
+  {
+    id: 'scurtcircuit',
+    family: 'comun',
+    tier: 3,
+    title: 'Curent de scurtcircuit (Icc)',
+    subtitle: 'La bara, din transformator + contributie motoare',
+    note: 'Pentru capacitatea de rupere a disjunctorului (Icu ≥ Icc). Contributia motoarelor ~ rotor blocat.',
+    fields: [
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'Strafo', label: 'Putere transformator', unit: 'kVA', default: 630, step: 10, min: 1 },
+      { key: 'uk', label: 'Tensiune de scurtcircuit', unit: '%', default: 6, step: 0.5, min: 0.1 },
+      { key: 'Pmot', label: 'Putere motoare (suma)', unit: 'kW', default: 200, step: 10, min: 0 },
+    ],
+    results: [
+      { key: 'Intr', label: 'Curent nominal trafo', unit: 'A', tex: 'I_n = \\dfrac{S\\cdot 1000}{\\sqrt{3}\\,U}',
+        calc: (v) => (v.Strafo * 1000) / (SQRT3 * v.U), dec: 0 },
+      { key: 'Icctr', label: 'Icc din transformator', unit: 'kA', tex: 'I_{cc} = \\dfrac{I_n}{u_k/100}',
+        calc: (v, r) => (v.uk ? r.Intr / (v.uk / 100) / 1000 : null), dec: 2 },
+      { key: 'Imot', label: 'Contributie motoare', unit: 'kA', tex: '\\approx 6\\cdot 1.9\\,P_{mot}',
+        calc: (v) => (6 * 1.9 * v.Pmot) / 1000, dec: 2 },
+      { key: 'Icctot', label: 'Icc total la bara', unit: 'kA', tex: 'I_{cc,tot} = I_{cc,trafo}+I_{motoare}',
+        calc: (v, r) => r.Icctr + r.Imot, dec: 2 },
+    ],
+  },
+  {
+    id: 'ieee519',
+    family: 'comun',
+    tier: 3,
+    title: 'IEEE 519 — THD la racord (PCC)',
+    subtitle: 'Limita TDD din raportul Isc/IL',
+    note: 'Drive 6-puls ~30-40% THD, cu reactor ~30%. Daca depasirea > 0 → reactor/filtru/AFE.',
+    fields: [
+      { key: 'IccPCC', label: 'Curent scurtcircuit la PCC', unit: 'A', default: 17000, step: 500, min: 1 },
+      { key: 'Iload', label: 'Curent sarcina max', unit: 'A', default: 200, step: 10, min: 1 },
+      { key: 'THDest', label: 'THD curent estimat', unit: '%', default: 35, step: 1, min: 0 },
+    ],
+    results: [
+      { key: 'ratio', label: 'Raport Isc/IL', unit: '', tex: 'I_{sc}/I_L',
+        calc: (v) => (v.Iload ? v.IccPCC / v.Iload : null), dec: 0 },
+      { key: 'TDD', label: 'Limita TDD admisa', unit: '%', tex: '\\text{IEEE 519 Tab.2}',
+        calc: (v, r) => { const x = r.ratio; return x < 20 ? 5 : x < 50 ? 8 : x < 100 ? 12 : x < 1000 ? 15 : 20 }, dec: 0 },
+      { key: 'depasire', label: 'Depasire fata de limita', unit: '%', tex: 'THD_{est} - TDD',
+        calc: (v, r) => v.THDest - r.TDD, dec: 1 },
+    ],
+  },
+  {
+    id: 'rezonanta-cond',
+    family: 'comun',
+    tier: 3,
+    title: 'Rezonanta cu baterie condensatoare',
+    subtitle: 'Ordinul de rezonanta paralela',
+    note: 'Daca h_rez ≈ 5 sau 7 → risc de ardere condensatoare. Solutie: reactor de detunare (p=7%, ~189 Hz).',
+    fields: [
+      { key: 'Ssc', label: 'Putere scurtcircuit', unit: 'MVA', default: 17, step: 0.5, min: 0.1 },
+      { key: 'Qc', label: 'Putere baterie', unit: 'Mvar', default: 0.5, step: 0.05, min: 0.001 },
+      { key: 'f1', label: 'Frecventa retea', unit: 'Hz', default: 50, step: 1, min: 1 },
+    ],
+    results: [
+      { key: 'hrez', label: 'Ordin de rezonanta', unit: '', tex: 'h_{rez} = \\sqrt{S_{sc}/Q_c}',
+        calc: (v) => (v.Qc ? Math.sqrt(v.Ssc / v.Qc) : null), dec: 2 },
+      { key: 'frez', label: 'Frecventa de rezonanta', unit: 'Hz', tex: 'f_{rez} = h_{rez}\\,f_1',
+        calc: (v, r) => r.hrez * v.f1, dec: 0 },
+    ],
+  },
+  {
+    id: 'transformator',
+    family: 'comun',
+    tier: 3,
+    title: 'Transformator pentru drive',
+    subtitle: 'Dimensionare kVA + inrush',
+    note: 'La sarcini neliniare (multe drive-uri) considera factor K / rezerva pentru armonici.',
+    fields: [
+      { key: 'Pdrive', label: 'Putere drive (suma)', unit: 'kW', default: 200, step: 10, min: 0 },
+      { key: 'eta', label: 'Randament drive+motor', unit: '', default: 0.9, step: 0.01, min: 0.1 },
+      { key: 'krez', label: 'Factor rezerva', unit: '', default: 1.1, step: 0.05, min: 1 },
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'uk', label: 'Tensiune scurtcircuit', unit: '%', default: 6, step: 0.5, min: 0.1 },
+    ],
+    results: [
+      { key: 'Str', label: 'Putere transformator', unit: 'kVA', tex: 'S_{tr} = k\\,P_{drive}/\\eta',
+        calc: (v) => (v.eta ? (v.krez * v.Pdrive) / v.eta : null), dec: 0 },
+      { key: 'Intr', label: 'Curent nominal', unit: 'A', tex: 'I_n = \\dfrac{S_{tr}\\cdot 1000}{\\sqrt{3}\\,U}',
+        calc: (v, r) => (r.Str * 1000) / (SQRT3 * v.U), dec: 0 },
+      { key: 'Iccsec', label: 'Icc secundar', unit: 'kA', tex: 'I_{cc} = I_n/(u_k/100)',
+        calc: (v, r) => (v.uk ? r.Intr / (v.uk / 100) / 1000 : null), dec: 2 },
+      { key: 'Iinrush', label: 'Curent inrush (varf)', unit: 'A', tex: '\\approx 10\\,I_n',
+        calc: (v, r) => 10 * r.Intr, dec: 0 },
+    ],
+  },
+  {
+    id: 'dip-pornire',
+    family: 'comun',
+    tier: 3,
+    title: 'Cadere de tensiune la pornire',
+    subtitle: 'Dip pe bara la pornirea motorului',
+    note: 'Limita uzuala ΔU ≤ 10-15% (IEEE 141). Peste → softstarter / VFD / stea-triunghi.',
+    fields: [
+      { key: 'Iporn', label: 'Curent de pornire', unit: 'A', default: 168, step: 5, min: 0 },
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'Sccbus', label: 'Putere scurtcircuit bara', unit: 'kVA', default: 2000, step: 100, min: 1 },
+    ],
+    results: [
+      { key: 'Sporn', label: 'Putere aparenta pornire', unit: 'kVA', tex: 'S_{p} = \\sqrt{3}\\,U I_{p}/1000',
+        calc: (v) => (SQRT3 * v.U * v.Iporn) / 1000, dec: 1 },
+      { key: 'dU', label: 'Cadere de tensiune', unit: '%', tex: '\\Delta U = \\dfrac{S_p}{S_p+S_{cc}}\\cdot 100',
+        calc: (v, r) => (r.Sporn / (r.Sporn + v.Sccbus)) * 100, dec: 2 },
     ],
   },
 ]
