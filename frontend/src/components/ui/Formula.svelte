@@ -19,6 +19,9 @@
 
 <style>
   .formula {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
     color: var(--text-secondary);
     font-size: 0.9em;
     line-height: 1.4;
