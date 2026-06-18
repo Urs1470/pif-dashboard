@@ -1349,7 +1349,7 @@ export const MODULES = [
       { key: 'Udc', label: 'Tensiune DC bus', unit: 'V', default: 540, step: 10, min: 0 },
       { key: 'I', label: 'Curent de iesire', unit: 'A', default: 28, step: 1, min: 0 },
       { key: 'fsw', label: 'Frecventa de comutatie', unit: 'kHz', default: 4, step: 0.5, min: 0.5 },
-      { key: 'Esw', label: 'Energie comutatie/eveniment', unit: 'mJ', default: 5, step: 0.5, min: 0 },
+      { key: 'Esw', label: 'Energie comutatie', unit: 'mJ', default: 5, step: 0.5, min: 0 },
       { key: 'Uce0', label: 'Cadere conductie Uce0', unit: 'V', default: 1.5, step: 0.1, min: 0 },
     ],
     charts: [(v) => ({
@@ -1765,7 +1765,7 @@ export const MODULES = [
       { key: 'U', label: 'Tensiune', unit: 'V', default: 440, step: 10, min: 0 },
       { key: 'Rt', label: 'Rezistenta totala (indus+exc)', unit: 'Ω', default: 0.3, step: 0.05, min: 0.001 },
       { key: 'kt', label: 'Constanta cuplu', unit: 'Nm/A²', default: 0.03, step: 0.005, min: 0 },
-      { key: 'c', label: 'Constanta tensiune', unit: 'V·min/(rot·A)', default: 0.005, step: 0.001, min: 0.0001 },
+      { key: 'c', label: 'Constanta tensiune', unit: 'V/(rpm·A)', default: 0.005, step: 0.001, min: 0.0001 },
       { key: 'Ia', label: 'Curent indus (punct)', unit: 'A', default: 80, step: 5, min: 1 },
     ],
     charts: [(v) => ({

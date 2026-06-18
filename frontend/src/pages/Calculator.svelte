@@ -194,8 +194,12 @@
     font-size: var(--font-tiny);
     font-weight: 500;
     color: var(--text-secondary);
+    line-height: 1.2;
+    min-height: 2.2em;
+    overflow-wrap: anywhere;
   }
   .inp-field {
+    margin-top: auto;
     padding: 8px 10px;
     min-height: 40px;
     background: var(--bg-elevated);
