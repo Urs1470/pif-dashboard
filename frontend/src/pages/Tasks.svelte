@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, FileText, Pencil, Repeat, Search, StickyNote, Paperclip } from '@lucide/svelte'
+  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, Pencil, Repeat, Search, StickyNote, Paperclip } from '@lucide/svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
@@ -430,7 +430,7 @@
               <div class="ttitle-row">
                 {#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
                 <span class="ttitle">{t.titlu}</span>
-                {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
+                {#if t.descriere}<span class="tdesc-icon" title="Are notiță"><StickyNote size={12} /></span>{/if}
               </div>
               <div class="tinfo">
                 {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
@@ -722,7 +722,7 @@
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  :global(.tdesc-icon) { color: var(--text-faint); flex-shrink: 0; }
+  :global(.tdesc-icon) { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
   .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }

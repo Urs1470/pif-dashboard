@@ -863,7 +863,7 @@
                     <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
                       <div class="ttitle-row">
                         <span class="ttitle">{t.titlu}</span>
-                        {#if t.descriere}<FileText size={12} class="tdesc-icon" />{/if}
+                        {#if t.descriere}<span class="tdesc-icon" title="Are notiță"><StickyNote size={12} /></span>{/if}
                       </div>
                       <div class="tinfo">
                         {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
@@ -1308,7 +1308,7 @@
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  :global(.tdesc-icon) { color: var(--text-faint); flex-shrink: 0; }
+  :global(.tdesc-icon) { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
   .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
