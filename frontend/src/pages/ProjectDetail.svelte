@@ -863,13 +863,13 @@
                     <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
                       <div class="ttitle-row">
                         <span class="ttitle">{t.titlu}</span>
-                        {#if t.descriere}<span class="tdesc-icon" title="Are notiță"><StickyNote size={12} /></span>{/if}
                       </div>
                       <div class="tinfo">
                         {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
                         {#if t.subtask_total}
                           <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                         {/if}
+                        {#if t.descriere}<span class="note-ind" title="Are notiță"><StickyNote size={10} /></span>{/if}
                         {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                         {#if t.deadline}
                           <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
@@ -1308,7 +1308,7 @@
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  :global(.tdesc-icon) { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
+  .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
   .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }

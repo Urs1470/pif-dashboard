@@ -430,7 +430,6 @@
               <div class="ttitle-row">
                 {#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
                 <span class="ttitle">{t.titlu}</span>
-                {#if t.descriere}<span class="tdesc-icon" title="Are notiță"><StickyNote size={12} /></span>{/if}
               </div>
               <div class="tinfo">
                 {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
@@ -439,6 +438,7 @@
                 {#if t.subtask_total}
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                 {/if}
+                {#if t.descriere}<span class="note-ind" title="Are notiță"><StickyNote size={10} /></span>{/if}
                 {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                 {#if t.data_scadenta}<span>{formatDate(t.data_scadenta)}</span>{/if}
               </div>
@@ -722,7 +722,7 @@
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
   .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  :global(.tdesc-icon) { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
+  .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
   .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }

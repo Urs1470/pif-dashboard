@@ -22,6 +22,7 @@
     '/projects/:id': lazy(() => import('./pages/ProjectDetail.svelte')),
     '/tasks': lazy(() => import('./pages/Tasks.svelte')),
     '/params': lazy(() => import('./pages/Params.svelte')),
+    '/calculator': lazy(() => import('./pages/Calculator.svelte')),
     '/notes': lazy(() => import('./pages/Notes.svelte')),
     '/admin': lazy(() => import('./pages/Admin.svelte')),
     '/more': lazy(() => import('./pages/More.svelte')),

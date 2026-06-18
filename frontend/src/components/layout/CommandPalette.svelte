@@ -1,5 +1,5 @@
 <script>
-  import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Settings, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
+  import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Settings, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare, Calculator } from '@lucide/svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
   import { apiJson } from '../../lib/api.js'
 
@@ -16,6 +16,7 @@
     { label: 'Proiecte', path: '/projects', icon: FolderKanban, keywords: 'projects lista' },
     { label: 'Taskuri', path: '/tasks', icon: ListTodo, keywords: 'tasks todo' },
     { label: 'Parametri', path: '/params', icon: Cpu, keywords: 'params drive fault' },
+    { label: 'Calculator', path: '/calculator', icon: Calculator, keywords: 'calculator actionari motor cuplu putere afinitate drive' },
     { label: 'Notite', path: '/notes', icon: StickyNote, keywords: 'notes obsidian' },
     { label: 'Admin', path: '/admin', icon: Settings, keywords: 'admin stats export' },
   ]

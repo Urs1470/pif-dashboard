@@ -1,8 +1,9 @@
 <script>
-  import { StickyNote, Settings, Menu } from '@lucide/svelte'
+  import { StickyNote, Settings, Menu, Calculator } from '@lucide/svelte'
   import { link } from '../lib/router.svelte.js'
 
   const items = [
+    { path: '/calculator', label: 'Calculator', icon: Calculator },
     { path: '/notes', label: 'Notite', icon: StickyNote },
     { path: '/admin', label: 'Admin', icon: Settings },
   ]

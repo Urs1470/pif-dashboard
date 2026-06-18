@@ -1,7 +1,7 @@
 <script>
   import {
     Home, FolderKanban, ListTodo, Cpu, StickyNote,
-    Settings, PanelLeftClose, PanelLeft
+    Settings, PanelLeftClose, PanelLeft, Calculator
   } from '@lucide/svelte'
   import { router, link, navigate } from '../../lib/router.svelte.js'
   import { ui, toggleSidebar } from '../../stores/ui.svelte.js'
@@ -11,6 +11,7 @@
     { path: '/projects', label: 'Proiecte', icon: FolderKanban },
     { path: '/tasks', label: 'Taskuri', icon: ListTodo },
     { path: '/params', label: 'Parametri', icon: Cpu },
+    { path: '/calculator', label: 'Calculator', icon: Calculator },
     { path: '/notes', label: 'Notite', icon: StickyNote },
     { path: '/admin', label: 'Admin', icon: Settings },
   ]
