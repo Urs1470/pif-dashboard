@@ -15,11 +15,58 @@
 
 export const FAMILIES = [
   { id: 'asincron', label: 'Asincron' },
-  { id: 'comun', label: 'Comune' },
   { id: 'cc', label: 'Curent continuu' },
   { id: 'servo', label: 'Servo / PMSM' },
   { id: 'sincron', label: 'Sincron' },
+  { id: 'comun', label: 'Comune' },
 ]
+
+// Ordinea logica de afisare a modulelor in fiecare familie (flux ingineresc:
+// de la marimile de placuta spre dimensionare/diagnoza).
+export const MODULE_ORDER = [
+  // asincron: turatie -> putere/curent -> cuplu -> sarcina -> pornire -> diagnoza
+  'motor-turatie', 'putere-curent', 'cuplu', 'sarcina-afinitate', 'pornire', 'incarcare',
+  // c.c.: fundamental -> reglaj -> convertor
+  'cc-baza', 'cc-reglaj', 'cc-drive',
+  // servo: model -> dimensionare ciclu -> feedback
+  'pmsm-model', 'pmsm-ciclu', 'pmsm-feedback',
+  // sincron: turatie/excitatie -> putere/cuplu
+  'sincron-turatie', 'sincron-putere',
+  // comune: selectie -> convertizor -> dinamica/tuning/rezonanta -> mecanica ->
+  //         energie -> instalatie (cablu/termic/armonici/cosfi) -> utilitar
+  'selectie-drive', 'vfd', 'dinamica', 'raport-inertie', 'turatie-critica', 'transmisii',
+  'energie-roi', 'cablu', 'termic', 'armonici', 'compensare', 'conversii',
+]
+
+// Proveninta formulelor (verificat din carti/ghiduri — vezi wiki_job/theory).
+export const SOURCES = {
+  'motor-turatie': 'Chapman, Electric Machinery Fundamentals — ec. 7-1/7-3/7-8 (p.363-365)',
+  'putere-curent': 'ABB Technical Guide Book No.4 (p.166) + triunghiul puterilor (No.6, p.260)',
+  'cuplu': 'ABB Technical Guide Book No.7 (p.169) + Chapman (cuplu max, p.388)',
+  'sarcina-afinitate': 'ABB Technical Guide Book No.7 — Load types, lege afinitate (p.288)',
+  'pornire': 'Hughes, Electric Motors and Drives — cap.6 Starting (p.197-200)',
+  'incarcare': 'P_ax: definitie putere trifazata. Incarcare din curent: regula practica de teren (estimare)',
+  'dinamica': 'ABB Technical Guide Book No.7 — Basic mechanical laws (cap.5.1, ec.5.2-5.4)',
+  'energie-roi': 'ABB Technical Guide Book No.7 — Load types, lege cubica P~n³ (p.288)',
+  'vfd': 'Mohan, Power Electronics (Udc=1.35·U, V/f cap.14) + ABB TGB No.4 (randament)',
+  'cablu': 'Cadere de tensiune trifazata: ΔU=√3·I·L·(R·cosφ+X·sinφ), aici cu X neglijat',
+  'termic': 'I_ech (RMS) / IEC 60034-1 regim S3 + derating ABB ACS880 (manual HW)',
+  'armonici': 'Impedanta procentuala reactor + regula THD: ABB TGB No.6 (p.248)',
+  'compensare': 'Triunghiul puterilor (Q=P·tanφ) — dimensionare baterie condensatoare',
+  'transmisii': 'ABB Technical Guide Book No.7 — Gears & inertia (cap.5.2, p.286-287)',
+  'selectie-drive': 'ABB ACS880-01 Single Drives Catalog (p.17, I_Hd / I_Ld)',
+  'raport-inertie': 'Regula de proiectare servo (raport inertie) + ABB TGB No.7 cap.5.2',
+  'turatie-critica': 'Frecventa naturala ω_n=√(k/m); ABB TGB No.4 (turatii critice, p.180)',
+  'conversii': 'Definitii de unitati SI',
+  'cc-baza': 'Chapman, Electric Machinery Fundamentals — cap.8-9 (ec. 8-38/8-49, 9-7)',
+  'cc-reglaj': 'Chapman cap.9.4 (slabire camp, p.520-521) + ABB TGB No.7 (putere const.)',
+  'cc-drive': 'Mohan, Power Electronics — punte comandata (ec. 6-40/6-41) + constante timp (ec. 13-25/26)',
+  'pmsm-model': 'Hughes (Kt=Ke, p.103-104) + Chapman (f_e, p.279)',
+  'pmsm-ciclu': 'Regula servo-sizing (cuplu RMS) — fise tehnice producatori (ABB/Siemens/B&R)',
+  'pmsm-feedback': 'Hughes (τ_e=L/R, τ_m=RJ/k², p.119) + metrologie encoder cuadratura',
+  'sincron-turatie': 'Chapman — cap.4-5 (n_s ec.4-34, diagrama fazoriala p.261-263)',
+  'sincron-putere': 'Chapman — cap.5.6 (ec. 5-20/5-21/5-22, p.264-265)',
+}
 
 const SQRT3 = Math.sqrt(3)
 const omega = (n) => (2 * Math.PI * n) / 60 // rpm -> rad/s
@@ -219,7 +266,7 @@ export const MODULES = [
     tier: 2,
     title: 'Incarcare din masuratori',
     subtitle: 'Estimarea incarcarii motorului din curent/putere',
-    note: 'Estimarea din curent e aproximativa la sarcini mici (cos φ scade).',
+    note: 'Foloseste incarcarea din PUTERE. Cea din curent e estimare grosiera (interpolare liniara) — supraestimeaza la sarcini medii, unde cos φ scade.',
     fields: [
       { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
       { key: 'Im', label: 'Curent masurat', unit: 'A', default: 22, step: 0.5, min: 0 },
@@ -462,7 +509,7 @@ export const MODULES = [
     tier: 2,
     title: 'Selectie drive (HD/ND)',
     subtitle: 'Curent si suprasarcina heavy/normal duty',
-    note: 'Drive ales dupa curent: I_drive,cont ≥ I_n motor. HD pt. cupluri de soc, ND pt. pompe/vent.',
+    note: 'Drive ales dupa curent: I_cont ≥ I_n motor. Suprasarcina ABB 150% (Heavy) / 110% (Light) timp de 1 min la fiecare 5 min. Curentul estimat e orientativ (~1.7 motoare eficiente ... 2.0 mici) — foloseste placuta.',
     fields: [
       { key: 'In', label: 'Curent nominal motor', unit: 'A', default: 28, step: 1, min: 0 },
       { key: 'Pn', label: 'Putere nominala', unit: 'kW', default: 15, step: 0.5, min: 0 },
@@ -472,8 +519,8 @@ export const MODULES = [
         calc: (v) => 1.5 * v.In, dec: 1 },
       { key: 'OLND', label: 'Suprasarcina ND (110%/60s)', unit: 'A', tex: 'I_{OL,ND} = 1.1\\,I_n',
         calc: (v) => 1.1 * v.In, dec: 1 },
-      { key: 'Inest', label: 'Curent estimat (la 400 V)', unit: 'A', tex: 'I_n \\approx 2\\,P[\\text{kW}]',
-        calc: (v) => 2 * v.Pn, dec: 1 },
+      { key: 'Inest', label: 'Curent estimat (la 400 V)', unit: 'A', tex: 'I_n \\approx 1.9\\,P[\\text{kW}]',
+        calc: (v) => 1.9 * v.Pn, dec: 1 },
     ],
   },
   {

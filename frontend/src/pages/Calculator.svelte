@@ -1,6 +1,6 @@
 <script>
-  import { Calculator as CalcIcon, Info } from '@lucide/svelte'
-  import { MODULES, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { Calculator as CalcIcon, Info, BookOpen } from '@lucide/svelte'
+  import { MODULES, MODULE_ORDER, SOURCES, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
 
@@ -14,7 +14,10 @@
     )
   )
 
-  const shown = $derived(MODULES.filter((m) => m.family === activeFamily))
+  const ord = (id) => { const i = MODULE_ORDER.indexOf(id); return i === -1 ? 999 : i }
+  const shown = $derived(
+    MODULES.filter((m) => m.family === activeFamily).sort((a, b) => ord(a.id) - ord(b.id))
+  )
 
   function unitLabel(label, unit) {
     return unit ? `${label} [${unit}]` : label
@@ -99,6 +102,9 @@
         {/if}
         {#if m.params}
           <p class="mod-params">{m.params}</p>
+        {/if}
+        {#if SOURCES[m.id]}
+          <p class="mod-source"><BookOpen size={11} /> {SOURCES[m.id]}</p>
         {/if}
       </div>
     {/each}
@@ -250,6 +256,14 @@
     color: var(--text-dim);
     border-top: 1px dashed var(--border);
     padding-top: var(--space-sm);
+  }
+  .mod-source {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--font-tiny);
+    color: var(--text-dim);
+    font-style: italic;
   }
 
   @media (max-width: 768px) {
