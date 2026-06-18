@@ -25,6 +25,19 @@ const SQRT3 = Math.sqrt(3)
 const omega = (n) => (2 * Math.PI * n) / 60 // rpm -> rad/s
 const rad = (deg) => (deg * Math.PI) / 180
 
+// Culori grafice (CSS vars se adapteaza light/dark; marker = aqua Everforest fix).
+const COL = { a: 'var(--accent)', b: 'var(--warning)', c: 'var(--danger)', op: '#7fbbb3' }
+// Genereaza puncte {x,y} pentru o functie y=fn(x) pe intervalul [xMin, xMax].
+function curve(xMin, xMax, fn, steps = 48) {
+  const pts = []
+  for (let i = 0; i <= steps; i++) {
+    const x = xMin + ((xMax - xMin) * i) / steps
+    const y = fn(x)
+    if (Number.isFinite(y)) pts.push({ x, y })
+  }
+  return pts
+}
+
 export const MODULES = [
   // ============================================================== ASINCRON
   {
@@ -81,6 +94,27 @@ export const MODULES = [
     title: 'Cuplu',
     subtitle: 'Cuplu nominal, de pornire si maxim',
     params: 'Limita cuplu: ABB 30.19/30.20 · Siemens p1520',
+    charts: [(v) => {
+      if (!v.n || !v.P) return null
+      const pp = Math.max(1, Math.round(3000 / v.n)); const ns = 3000 / pp
+      const Mn = (9550 * v.P) / v.n, Mmax = v.km * Mn, Mstart = v.kp * Mn
+      const X = Mstart > 0 ? (2 * Mmax) / Mstart : 0
+      let sk = X > 2 ? (X - Math.sqrt(X * X - 4)) / 2 : 0.2
+      if (!(sk > 0 && sk < 1)) sk = 0.2
+      const kloss = (s) => (2 * Mmax) / (s / sk + sk / s)
+      const motor = curve(1, ns, (n) => kloss((ns - n) / ns))
+      const load = curve(0, ns, (n) => Mn * (n / v.n) ** 2)
+      let op = null
+      for (let n = ns * 0.4; n <= ns; n += ns / 240) {
+        const Ml = Mn * (n / v.n) ** 2
+        if (kloss((ns - n) / ns) <= Ml) { op = { x: Math.round(n), y: Math.round(Ml), label: 'functionare', color: COL.op }; break }
+      }
+      return {
+        xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+        series: [{ label: 'M motor', color: COL.a, points: motor }, { label: 'M rezistent (pompa)', color: COL.b, dash: true, points: load }],
+        markers: op ? [op] : [],
+      }
+    }],
     fields: [
       { key: 'P', label: 'Putere', unit: 'kW', default: 15, step: 0.5, min: 0 },
       { key: 'n', label: 'Turatie nominala', unit: 'rpm', default: 1450, step: 10, min: 1 },
@@ -105,6 +139,25 @@ export const MODULES = [
     title: 'Legile afinitatii (pompe/ventilatoare)',
     subtitle: 'Debit, inaltime si putere la turatie variabila',
     note: 'Valabil pentru sarcina patratica (pompe centrifuge, ventilatoare).',
+    charts: [
+      (v) => {
+        if (!v.n1) return null
+        const xmax = Math.max(v.n1, v.n2)
+        const pts = curve(0, xmax, (n) => v.P1 * (n / v.n1) ** 3)
+        const op = { x: v.n2, y: v.P1 * (v.n2 / v.n1) ** 3, label: 'la n2', color: COL.op }
+        return { xLabel: 'Turatie n [rpm]', yLabel: 'Putere P [kW]', series: [{ label: 'P(n) ~ n³', color: COL.a, points: pts }], markers: [op] }
+      },
+      (v) => {
+        if (!v.Q1) return null
+        const a = v.H1 / v.Q1 ** 2
+        const pts = curve(0, v.Q1 * 1.15, (Q) => a * Q ** 2)
+        return {
+          xLabel: 'Debit Q [m³/h]', yLabel: 'Inaltime H [m]',
+          series: [{ label: 'Locus afinitate H~Q²', color: COL.b, points: pts }],
+          markers: [{ x: v.Q1, y: v.H1, label: 'n1', color: COL.a }, { x: v.Q1 * (v.n2 / v.n1), y: v.H1 * (v.n2 / v.n1) ** 2, label: 'n2', color: COL.op }],
+        }
+      },
+    ],
     fields: [
       { key: 'n1', label: 'Turatie initiala', unit: 'rpm', default: 1450, step: 10, min: 1 },
       { key: 'n2', label: 'Turatie noua', unit: 'rpm', default: 1160, step: 10, min: 0 },
@@ -130,6 +183,17 @@ export const MODULES = [
     title: 'Metode de pornire',
     subtitle: 'Curent de pornire: DOL, stea-triunghi, softstart, VFD',
     params: 'Limita curent VFD: ABB 30.17 · Siemens p0640',
+    charts: [(v) => {
+      const shape = (x) => v.In * (1 + (v.kDOL - 1) * (1 - (x / 100) ** 3))
+      return {
+        xLabel: 'Turatie [% sincron]', yLabel: 'Curent [A]',
+        series: [
+          { label: 'DOL', color: COL.c, points: curve(0, 100, shape) },
+          { label: 'Softstart', color: COL.b, points: curve(0, 100, (x) => shape(x) * (v.Usoft / 100)) },
+          { label: 'VFD', color: COL.a, points: curve(0, 100, () => v.climit * v.In) },
+        ],
+      }
+    }],
     fields: [
       { key: 'In', label: 'Curent nominal', unit: 'A', default: 28, step: 1, min: 0 },
       { key: 'kDOL', label: 'Factor pornire DOL', unit: '×In', default: 6, step: 0.5, min: 0 },
@@ -233,6 +297,16 @@ export const MODULES = [
     title: 'Convertizor de frecventa (VFD)',
     subtitle: 'Tensiune DC bus, V/f, derating, pierderi',
     params: 'V/f: Siemens p1300+ · Udc monitorizat',
+    charts: [(v) => {
+      if (!v.fn) return null
+      const boost = 0.08 * v.Ulinie
+      const Uf = (f) => (f <= v.fn ? boost + (v.Ulinie - boost) * (f / v.fn) : v.Ulinie)
+      return {
+        xLabel: 'Frecventa f [Hz]', yLabel: 'Tensiune U [V]',
+        series: [{ label: 'Caracteristica V/f', color: COL.a, points: curve(0, v.fn * 2, Uf) }],
+        markers: [{ x: v.f, y: Uf(v.f), label: 'punct curent', color: COL.op }],
+      }
+    }],
     fields: [
       { key: 'Ulinie', label: 'Tensiune retea/motor', unit: 'V', default: 400, step: 10, min: 0 },
       { key: 'fn', label: 'Frecventa nominala', unit: 'Hz', default: 50, step: 1, min: 1 },
@@ -475,6 +549,16 @@ export const MODULES = [
     title: 'Motor c.c. — marimi fundamentale',
     subtitle: 'TCEM, turatie, cuplu, putere (flux constant)',
     note: 'k·Φ in SI [V·s/rad = Nm/A]. M = k·Φ·Ia, E = k·Φ·ω.',
+    charts: [(v) => {
+      if (!v.kPhi) return null
+      const Mrated = v.kPhi * v.Ia
+      const nM = (M) => ((v.U - (M / v.kPhi) * v.Ra) * 60) / (2 * Math.PI * v.kPhi)
+      return {
+        xLabel: 'Cuplu M [Nm]', yLabel: 'Turatie n [rpm]',
+        series: [{ label: 'n(M) separat excitat', color: COL.a, points: curve(0, Math.max(Mrated * 2, 1), nM) }],
+        markers: [{ x: Mrated, y: nM(Mrated), label: 'functionare', color: COL.op }],
+      }
+    }],
     params: 'DCS880: U arm 99.12, Ia 99.11, Ra 27.32 · DCM: p50101/p50100/p50110',
     fields: [
       { key: 'U', label: 'Tensiune indus', unit: 'V', default: 440, step: 10, min: 0 },
@@ -551,6 +635,16 @@ export const MODULES = [
     title: 'Servo / PMSM — model de cuplu',
     subtitle: 'Cuplu, back-EMF, frecventa electrica',
     note: 'Kt din catalog (uzual Nm/A_rms). Kt[Nm/A] = Ke[V·s/rad].',
+    charts: [(v) => {
+      if (!v.n) return null
+      const Mcont = v.Kt * v.Iq, Mpeak = 3 * Mcont, nb = v.n, nmax = v.n * 3
+      const env = (Mflat) => curve(0, nmax, (n) => (n <= nb ? Mflat : (Mflat * nb) / n))
+      return {
+        xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+        series: [{ label: 'Cuplu varf (≈3×)', color: COL.b, dash: true, points: env(Mpeak) }, { label: 'Cuplu continuu', color: COL.a, points: env(Mcont) }],
+        markers: [{ x: nb, y: Mcont, label: 'nominal', color: COL.op }],
+      }
+    }],
     params: 'S120: tip motor p0300; Kt/Ke din date motor',
     fields: [
       { key: 'Kt', label: 'Constanta de cuplu', unit: 'Nm/A', default: 1.2, step: 0.1, min: 0 },
@@ -654,6 +748,15 @@ export const MODULES = [
     title: 'Motor sincron — putere & cuplu',
     subtitle: 'Unghi de sarcina, cuplu de desprindere',
     note: 'U, E = tensiuni de linie. Stabil pentru δ < 90°; pull-out la δ = 90°.',
+    charts: [(v) => {
+      if (!v.Xs) return null
+      const Pmax = (v.U * v.E) / v.Xs / 1000
+      return {
+        xLabel: 'Unghi de sarcina δ [°]', yLabel: 'Putere P [kW]',
+        series: [{ label: 'P(δ) = U·E·sinδ / Xs', color: COL.a, points: curve(0, 180, (deg) => Pmax * Math.sin(rad(deg))) }],
+        markers: [{ x: v.delta, y: Pmax * Math.sin(rad(v.delta)), label: 'δ curent', color: COL.op }],
+      }
+    }],
     fields: [
       { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
       { key: 'E', label: 'T.e.m. (excitatie)', unit: 'V', default: 420, step: 10, min: 0 },
@@ -697,6 +800,26 @@ export function computeModule(mod, rawValues) {
     r[res.key] = Number.isFinite(out) ? out : null
   }
   return r
+}
+
+// Construieste graficele unui modul din valorile date (returneaza [] daca nu are).
+export function computeCharts(mod, rawValues) {
+  if (!mod.charts) return []
+  const v = {}
+  for (const f of mod.fields) {
+    const num = Number(rawValues?.[f.key])
+    v[f.key] = Number.isFinite(num) ? num : 0
+  }
+  const out = []
+  for (const builder of mod.charts) {
+    try {
+      const c = builder(v)
+      if (c && (c.series || []).some((s) => (s.points || []).length > 1)) out.push(c)
+    } catch (_) {
+      // ignora graficul daca formula esueaza
+    }
+  }
+  return out
 }
 
 // Formatare numerica in stil RO (mono in UI).

@@ -1,7 +1,8 @@
 <script>
   import { Calculator as CalcIcon, Info } from '@lucide/svelte'
-  import { MODULES, visibleFamilies, computeModule, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
+  import Chart from '../components/ui/Chart.svelte'
 
   const families = visibleFamilies()
   let activeFamily = $state(families[0]?.id ?? 'asincron')
@@ -88,6 +89,10 @@
             </div>
           {/each}
         </div>
+
+        {#each computeCharts(m, values[m.id]) as chart}
+          <Chart {chart} />
+        {/each}
 
         {#if m.note}
           <p class="mod-note"><Info size={13} /> {m.note}</p>
