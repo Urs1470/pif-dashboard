@@ -54,7 +54,7 @@ export const MODULES = [
     tier: 1,
     title: 'Putere & curent',
     subtitle: 'Curent absorbit, putere aparenta si reactiva',
-    params: 'Date motor: ABB 99.06-99.12 · Siemens p0304-p0311',
+    params: 'Date motor: ABB 99.6-99.12 · Siemens p0304-p0312',
     fields: [
       { key: 'Pn', label: 'Putere nominala', unit: 'kW', default: 15, step: 0.5, min: 0 },
       { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
