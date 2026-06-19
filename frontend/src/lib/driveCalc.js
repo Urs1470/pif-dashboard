@@ -22,6 +22,44 @@ export const FAMILIES = [
   { id: 'comun', label: 'Comune' },
 ]
 
+// --- Structura noua: categorii de nivel 1 (taburi principale, pe domeniu/task) ---
+// 'motoare' are sub-taburi pe tip de motor (MOTOR_FAMS); restul sunt categorii de task.
+export const CATEGORIES = [
+  { id: 'motoare', label: 'Motoare' },
+  { id: 'pompe', label: 'Pompe & ventilatoare' },
+  { id: 'mecanica', label: 'Mecanica & transmisii' },
+  { id: 'vfd', label: 'Convertizor / VFD' },
+  { id: 'armonici', label: 'Armonici & calitate energie' },
+  { id: 'instalatie', label: 'Instalatie electrica' },
+  { id: 'termic', label: 'Termic, regimuri & eficienta' },
+  { id: 'utilitare', label: 'Utilitare' },
+]
+// Sub-taburi pentru categoria 'Motoare' (pe tip de motor).
+export const MOTOR_FAMS = [
+  { id: 'asincron', label: 'Asincron' },
+  { id: 'cc', label: 'Curent continuu' },
+  { id: 'servo', label: 'Servo / PMSM' },
+  { id: 'sincron', label: 'Sincron' },
+]
+// Categoria fiecarui modul. Modulele de motor NU apar aici -> cad pe 'motoare' (sub-tab = familia lor).
+export const CAT_OF = {
+  // pompe & ventilatoare
+  'pompa-sistem': 'pompe', 'turatie-minima': 'pompe', 'npsh': 'pompe', 'putere-pompa': 'pompe', 'ventilator-densitate': 'pompe', 'turatie-specifica': 'pompe', 'economie-profil': 'pompe', 'randament-pompa': 'pompe', 'debit-minim': 'pompe', 'trimming-rotor': 'pompe', 'sarcina-afinitate': 'pompe',
+  // mecanica & transmisii
+  'dinamica': 'mecanica', 'raport-inertie': 'mecanica', 'turatie-critica': 'mecanica', 'transmisii': 'mecanica', 'surub-bile': 'mecanica', 'liniar-raza': 'mecanica', 'macara': 'mecanica', 'contragreutate': 'mecanica', 'transportor': 'mecanica', 'winder': 'mecanica', 'taper': 'mecanica', 'frecare': 'mecanica', 'compresor-volant': 'mecanica',
+  // convertizor / VFD
+  'vfd': 'vfd', 'selectie-drive': 'vfd', 'comutatie': 'vfd', 'unda-reflectata': 'vfd', 'filtru-iesire': 'vfd', 'ride-through': 'vfd', 'kinetic-buffer': 'vfd', 'curenti-rulment': 'vfd', 'derating-vfd-motor': 'vfd',
+  // armonici & calitate energie
+  'armonici': 'armonici', 'ieee519': 'armonici', 'factor-k': 'armonici', 'factor-putere-vfd': 'armonici', 'comparatie-frontend': 'armonici', 'rezonanta-cond': 'armonici', 'reactor-detunare': 'armonici', 'compensare': 'armonici',
+  // instalatie electrica
+  'cablu': 'instalatie', 'cablu-protectii': 'instalatie', 'scurtcircuit': 'instalatie', 'transformator': 'instalatie', 'dip-pornire': 'instalatie',
+  // termic, regimuri & eficienta
+  'termic': 'termic', 'motor-termic': 'termic', 'regimuri-s': 'termic', 'porniri-ora': 'termic', 'derating-armonici-motor': 'termic', 'clase-ie': 'termic', 'energie-roi': 'termic',
+  // utilitare
+  'conversii': 'utilitare',
+}
+export function catOf(m) { return CAT_OF[m.id] || 'motoare' }
+
 // Ordinea logica de afisare a modulelor in fiecare familie (flux ingineresc:
 // de la marimile de placuta spre dimensionare/diagnoza).
 export const MODULE_ORDER = [

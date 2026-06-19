@@ -1,14 +1,15 @@
 <script>
-  import { Calculator as CalcIcon, Info, BookOpen, Maximize2 } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, docsForModule, symTeX, descLabel, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X } from '@lucide/svelte'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
-  const families = visibleFamilies()
-  let activeFamily = $state(families[0]?.id ?? 'asincron')
+  let activeCat = $state('motoare')
+  let activeMotorFam = $state('asincron')
+  let query = $state('')
 
   // Valorile de intrare per modul, initializate din default-uri.
   let values = $state(
@@ -18,13 +19,40 @@
   )
 
   const ord = (id) => { const i = MODULE_ORDER.indexOf(id); return i === -1 ? 999 : i }
-  const shown = $derived(
-    MODULES.filter((m) => m.family === activeFamily).sort((a, b) => ord(a.id) - ord(b.id))
-  )
+  const catLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label ?? id
 
-  function unitLabel(label, unit) {
-    return unit ? `${label} [${unit}]` : label
+  // Cautare in titlu / subtitlu / etichete & chei (campuri si rezultate).
+  function matchQ(m, q) {
+    if (m.title.toLowerCase().includes(q)) return true
+    if (m.subtitle && m.subtitle.toLowerCase().includes(q)) return true
+    for (const f of m.fields) if (f.label.toLowerCase().includes(q) || f.key.toLowerCase().includes(q)) return true
+    for (const r of m.results) if (r.label.toLowerCase().includes(q) || r.key.toLowerCase().includes(q)) return true
+    return false
   }
+  const searching = $derived(query.trim().length > 0)
+  const shown = $derived.by(() => {
+    const q = query.trim().toLowerCase()
+    if (q) return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id))
+    if (activeCat === 'motoare') return MODULES.filter((m) => catOf(m) === 'motoare' && m.family === activeMotorFam).sort((a, b) => ord(a.id) - ord(b.id))
+    return MODULES.filter((m) => catOf(m) === activeCat).sort((a, b) => ord(a.id) - ord(b.id))
+  })
+
+  // Segmenteaza un text in potriviri/nepotriviri pentru evidentiere la cautare.
+  function highlightParts(text, q) {
+    const needle = (q || '').trim()
+    if (!needle) return [{ text, hit: false }]
+    const parts = []; const low = text.toLowerCase(); const nl = needle.toLowerCase()
+    let i = 0
+    while (i < text.length) {
+      const j = low.indexOf(nl, i)
+      if (j === -1) { parts.push({ text: text.slice(i), hit: false }); break }
+      if (j > i) parts.push({ text: text.slice(i, j), hit: false })
+      parts.push({ text: text.slice(j, j + needle.length), hit: true })
+      i = j + needle.length
+    }
+    return parts
+  }
+  function selectCat(id) { query = ''; activeCat = id }
 
   // Extrasele de carti (protected) au drept de autor -> vizibile cand esti logat (dashboard mereu;
   // pe /calc doar dupa verificarea autentificarii). runtime.docsOk e reactiv (vezi runtime.svelte.js).
@@ -65,19 +93,28 @@
     <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
   </div>
 
-  <div class="fam-tabs" role="tablist">
-    {#each families as fam}
-      <button
-        class="fam-tab"
-        class:active={activeFamily === fam.id}
-        role="tab"
-        aria-selected={activeFamily === fam.id}
-        onclick={() => (activeFamily = fam.id)}
-      >
-        {fam.label}
-      </button>
-    {/each}
+  <div class="search-row">
+    <span class="search-ic"><Search size={16} /></span>
+    <input class="search-inp" type="search" placeholder="Cauta un calcul — titlu, simbol sau marime (ex. NPSH, cuplu, U_dc)..." bind:value={query} />
+    {#if searching}<button class="search-clear" title="Sterge cautarea" onclick={() => (query = '')}><X size={15} /></button>{/if}
   </div>
+
+  {#if !searching}
+    <div class="fam-tabs" role="tablist">
+      {#each CATEGORIES as c}
+        <button class="fam-tab" class:active={activeCat === c.id} role="tab" aria-selected={activeCat === c.id} onclick={() => selectCat(c.id)}>{c.label}</button>
+      {/each}
+    </div>
+    {#if activeCat === 'motoare'}
+      <div class="subfam-tabs" role="tablist">
+        {#each MOTOR_FAMS as f}
+          <button class="subfam-tab" class:active={activeMotorFam === f.id} role="tab" aria-selected={activeMotorFam === f.id} onclick={() => (activeMotorFam = f.id)}>{f.label}</button>
+        {/each}
+      </div>
+    {/if}
+  {:else}
+    <p class="search-info">{shown.length} {shown.length === 1 ? 'rezultat' : 'rezultate'} pentru „{query.trim()}"</p>
+  {/if}
 
   <div class="mod-grid">
     {#each shown as m (m.id)}
@@ -85,8 +122,9 @@
       <div class="mod-card">
         <div class="mod-head">
           <div class="mod-title">
-            <h2>{m.title}</h2>
+            <h2>{#if searching}{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{:else}{m.title}{/if}</h2>
             {#if m.subtitle}<span class="mod-sub">{m.subtitle}</span>{/if}
+            {#if searching}<span class="cat-badge">{catLabel(catOf(m))}</span>{/if}
           </div>
           <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
         </div>
@@ -231,6 +269,30 @@
   }
   .fam-tab:hover { background: var(--bg-hover); color: var(--text); }
   .fam-tab.active { background: var(--accent-subtle); color: var(--accent); }
+
+  /* sub-taburi pentru Motoare (pe tip) */
+  .subfam-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: calc(-1 * var(--space-md)) 0 var(--space-lg); }
+  .subfam-tab {
+    padding: 4px 13px; border-radius: 999px; font-size: var(--font-tiny); font-weight: 600;
+    color: var(--text-dim); border: 1px solid var(--border); background: var(--bg-surface);
+    cursor: pointer; transition: all var(--dur-fast) var(--ease);
+  }
+  .subfam-tab:hover { color: var(--text); border-color: var(--text-dim); }
+  .subfam-tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+  /* caseta de cautare */
+  .search-row { position: relative; display: flex; align-items: center; margin-bottom: var(--space-md); }
+  .search-ic { position: absolute; left: 12px; display: flex; color: var(--text-dim); pointer-events: none; }
+  .search-inp {
+    width: 100%; padding: 9px 38px; border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--bg-elevated); color: var(--text); font-size: var(--font-body);
+  }
+  .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .search-clear { position: absolute; right: 8px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
+  .search-clear:hover { background: var(--bg-hover); color: var(--text); }
+  .search-info { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-md); }
+  h2 :global(mark) { background: var(--accent-subtle); color: var(--accent); border-radius: 3px; padding: 0 2px; }
+  .cat-badge { display: inline-block; margin-top: 4px; width: fit-content; font-size: var(--font-tiny); color: var(--text-dim); background: var(--bg-hover); border-radius: 999px; padding: 1px 9px; }
 
   .mod-grid {
     display: grid;
