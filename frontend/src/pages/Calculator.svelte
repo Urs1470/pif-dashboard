@@ -94,7 +94,7 @@
         <div class="inputs">
           {#each m.fields as f (f.key)}
             <div class="inp">
-              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><span class="inp-sym"><Formula tex={symTeX(f.key)} inline /></span><span class="inp-desc">{descLabel(f.label, f.key)}{f.unit ? ` · ${f.unit}` : ''}</span></button>
+              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><span class="inp-sym"><Formula tex={symTeX(f.key)} inline /></span> {descLabel(f.label, f.key)}{f.unit ? ` [${f.unit}]` : ''}</button>
               <input
                 class="inp-field"
                 type="number"
@@ -290,9 +290,9 @@
     transition: color var(--dur-fast) var(--ease);
   }
   .inp-label:hover { color: var(--text); text-decoration: underline dotted; }
-  .inp-sym { color: var(--text); font-size: 1.05em; }
-  .inp-desc { color: var(--text-dim); margin-left: 6px; }
-  .inp-label:hover .inp-desc { color: var(--text-secondary); }
+  /* tot titlul e un singur link (simbol + text + [u.m.]); simbolul putin mai pronuntat */
+  .inp-sym { color: var(--text); font-size: 1.05em; margin-right: 5px; }
+  .inp-label:hover .inp-sym { color: inherit; }
   .inp-field {
     margin-top: auto;
     padding: 8px 10px;
