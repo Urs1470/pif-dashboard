@@ -4,6 +4,7 @@
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
+  import { lookupTerm } from '../lib/driveGlossary.js'
 
   const families = visibleFamilies()
   let activeFamily = $state(families[0]?.id ?? 'asincron')
@@ -33,6 +34,20 @@
   let zoomRef = $state(null)
   function openZoom(m, index) { zoomRef = { mod: m, index }; zoomOpen = true }
   const zoomChart = $derived(zoomRef ? computeCharts(zoomRef.mod, values[zoomRef.mod.id])[zoomRef.index] : null)
+
+  // Definitie marime (glosar) la click pe eticheta
+  let termOpen = $state(false)
+  let term = $state(null)
+  function openTerm(item, m, isResult) {
+    term = {
+      label: item.label,
+      unit: item.unit,
+      tex: isResult ? item.tex : null,
+      g: lookupTerm(item.key, m.family),
+      source: isResult ? (SOURCES[m.id] || null) : null,
+    }
+    termOpen = true
+  }
 </script>
 
 <div class="page">
@@ -72,8 +87,8 @@
 
         <div class="inputs">
           {#each m.fields as f (f.key)}
-            <label class="inp">
-              <span class="inp-label">{unitLabel(f.label, f.unit)}</span>
+            <div class="inp">
+              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}>{unitLabel(f.label, f.unit)}</button>
               <input
                 class="inp-field"
                 type="number"
@@ -81,7 +96,7 @@
                 min={f.min}
                 bind:value={values[m.id][f.key]}
               />
-            </label>
+            </div>
           {/each}
         </div>
 
@@ -89,7 +104,7 @@
           {#each m.results as res (res.key)}
             <div class="res-row">
               <div class="res-head">
-                <span class="res-label">{res.label}</span>
+                <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}>{res.label}</button>
                 <span class="res-right">
                   <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
                   {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
@@ -130,6 +145,22 @@
   <Modal bind:open={zoomOpen} title={zoomRef ? zoomRef.mod.title : ''} size="zoom">
     {#if zoomChart}
       <div class="zoom-body"><Chart chart={zoomChart} /></div>
+    {/if}
+  </Modal>
+
+  <Modal bind:open={termOpen} title={term ? term.label : ''} size="md">
+    {#if term}
+      <div class="term">
+        {#if term.unit}<div class="term-unit">Unitate: <b>{term.unit}</b></div>{/if}
+        {#if term.tex}
+          <div class="term-sec"><span class="term-h">Cum se calculeaza</span><Formula tex={term.tex} display /></div>
+        {/if}
+        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definitie</span><p>{term.g.def}</p></div>{/if}
+        {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p>{term.g.ia}</p></div>{/if}
+        {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p>{term.g.practic}</p></div>{/if}
+        {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src">{term.source}</p></div>{/if}
+        {#if !term.g && !term.tex}<p class="term-empty">Marime fara definitie detaliata inca. Vezi sursa modulului si formulele asociate.</p>{/if}
+      </div>
     {/if}
   </Modal>
 </div>
@@ -226,7 +257,15 @@
     line-height: 1.2;
     min-height: 2.2em;
     overflow-wrap: anywhere;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    cursor: help;
+    transition: color var(--dur-fast) var(--ease);
   }
+  .inp-label:hover { color: var(--text); text-decoration: underline dotted; }
   .inp-field {
     margin-top: auto;
     padding: 8px 10px;
@@ -264,7 +303,17 @@
     justify-content: space-between;
     gap: var(--space-md);
   }
-  .res-label { font-size: var(--font-small); color: var(--text); }
+  .res-label {
+    font-size: var(--font-small);
+    color: var(--text);
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
+    cursor: help;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .res-label:hover { color: var(--accent); text-decoration: underline dotted; }
   .res-right {
     display: flex;
     align-items: baseline;
@@ -325,6 +374,21 @@
   }
   .chart-zoom:hover .zoom-hint { opacity: 0.8; }
   .zoom-body { padding: var(--space-xs); }
+
+  .term { display: flex; flex-direction: column; gap: var(--space-md); }
+  .term-unit { font-size: var(--font-small); color: var(--text-secondary); }
+  .term-unit b { font-family: var(--font-mono); color: var(--text); }
+  .term-sec { display: flex; flex-direction: column; gap: 4px; }
+  .term-h {
+    font-size: var(--font-tiny);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+  .term-sec p { font-size: var(--font-body); color: var(--text); line-height: 1.5; }
+  .term-src { font-family: var(--font-mono); font-size: var(--font-tiny) !important; color: var(--text-dim) !important; }
+  .term-empty { font-size: var(--font-small); color: var(--text-dim); }
 
   @media (max-width: 768px) {
     .mod-grid { grid-template-columns: 1fr; }
