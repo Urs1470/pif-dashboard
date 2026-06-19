@@ -1,7 +1,8 @@
 <script>
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_MODULES, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
+  import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
@@ -9,7 +10,7 @@
 
   let activeCat = $state('aplicatii')
   let activeMotorFam = $state('asincron')
-  let activeApp = $state('pompe')
+  let activeApp = $state('pompe-vent')
   let query = $state('')
 
   // Valorile de intrare per modul, initializate din default-uri.
@@ -34,7 +35,7 @@
   const shown = $derived.by(() => {
     const q = query.trim().toLowerCase()
     if (q) return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id))
-    if (activeCat === 'aplicatii') return (APP_MODULES[activeApp] || []).map((id) => MODULES.find((m) => m.id === id)).filter(Boolean)
+    if (activeCat === 'aplicatii') return MODULES.filter((m) => APP_OF[m.id] === activeApp).sort((a, b) => ord(a.id) - ord(b.id))
     if (activeCat === 'motoare') return MODULES.filter((m) => catOf(m) === 'motoare' && m.family === activeMotorFam).sort((a, b) => ord(a.id) - ord(b.id))
     return MODULES.filter((m) => catOf(m) === activeCat).sort((a, b) => ord(a.id) - ord(b.id))
   })
@@ -131,7 +132,7 @@
         <div class="mod-head">
           <div class="mod-title">
             <h2>{#if searching}{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{:else}{m.title}{/if}</h2>
-            {#if m.subtitle}<span class="mod-sub">{m.subtitle}</span>{/if}
+            {#if m.subtitle}<span class="mod-sub"><MathText text={m.subtitle} /></span>{/if}
             {#if searching}<span class="cat-badge">{catLabel(catOf(m))}</span>{/if}
           </div>
           <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
@@ -156,7 +157,7 @@
           {#each m.results as res (res.key)}
             <div class="res-row">
               <div class="res-head">
-                <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}>{res.label}</button>
+                <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
                 <span class="res-right">
                   <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
                   {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
@@ -182,13 +183,13 @@
         {/each}
 
         {#if m.note}
-          <p class="mod-note"><Info size={13} /> {m.note}</p>
+          <p class="mod-note"><Info size={13} /> <MathText text={m.note} /></p>
         {/if}
         {#if m.params}
-          <p class="mod-params">{m.params}</p>
+          <p class="mod-params"><MathText text={m.params} /></p>
         {/if}
         {#if SOURCES[m.id]}
-          <p class="mod-source"><BookOpen size={11} /> {SOURCES[m.id]}</p>
+          <p class="mod-source"><BookOpen size={11} /> <MathText text={SOURCES[m.id]} /></p>
         {/if}
         {#if docsFor(m).length}
           <div class="mod-docs">
@@ -215,11 +216,11 @@
         {#if term.tex}
           <div class="term-sec"><span class="term-h">Cum se calculeaza</span><Formula tex={term.tex} display /></div>
         {/if}
-        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definitie</span><p>{term.g.def}</p></div>{/if}
-        {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p>{term.g.ia}</p></div>{/if}
-        {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p>{term.g.practic}</p></div>{/if}
-        {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p>{term.g.teorie}</p></div>{/if}
-        {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src">{term.source}</p></div>{/if}
+        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definitie</span><p><MathText text={term.g.def} /></p></div>{/if}
+        {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p><MathText text={term.g.ia} /></p></div>{/if}
+        {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p><MathText text={term.g.practic} /></p></div>{/if}
+        {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p><MathText text={term.g.teorie} /></p></div>{/if}
+        {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
         {#if term.docs?.length}
           <div class="term-sec"><span class="term-h">Documentatie</span>
             <div class="term-docs">

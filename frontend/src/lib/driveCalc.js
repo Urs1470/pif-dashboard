@@ -22,52 +22,44 @@ export const FAMILIES = [
   { id: 'comun', label: 'Comune' },
 ]
 
-// --- Structura noua: categorii de nivel 1 (taburi principale, pe domeniu/task) ---
-// 'motoare' are sub-taburi pe tip de motor (MOTOR_FAMS); restul sunt categorii de task.
+// --- Structura: categorii de nivel 1 (taburi principale) ---
+// 'aplicatii' si 'motoare' au sub-taburi; restul sunt categorii directe.
 export const CATEGORIES = [
   { id: 'aplicatii', label: 'Aplicatii' },
   { id: 'motoare', label: 'Motoare' },
-  { id: 'pompe', label: 'Pompe & ventilatoare' },
-  { id: 'mecanica', label: 'Mecanica & transmisii' },
   { id: 'vfd', label: 'Convertizor / VFD' },
   { id: 'armonici', label: 'Armonici & calitate energie' },
   { id: 'instalatie', label: 'Instalatie electrica' },
   { id: 'termic', label: 'Termic, regimuri & eficienta' },
   { id: 'utilitare', label: 'Utilitare' },
 ]
-// Vedere transversala pe APLICATIE (tip de masina/proces). Sub-taburi sub categoria 'aplicatii'.
-// Cardurile sunt aceleasi module, adunate per aplicatie (un modul poate aparea in mai multe).
-export const APPLICATIONS = [
-  { id: 'pompe', label: 'Pompe' },
-  { id: 'ventilatoare', label: 'Ventilatoare' },
-  { id: 'compresoare', label: 'Compresoare' },
-  { id: 'ridicare', label: 'Macarale & ridicare' },
-  { id: 'transportoare', label: 'Transportoare' },
-  { id: 'winder', label: 'Infasurare (winder)' },
-  { id: 'pozitionare', label: 'Pozitionare / servo' },
-]
-export const APP_MODULES = {
-  pompe: ['selectie-drive', 'pompa-sistem', 'npsh', 'turatie-minima', 'putere-pompa', 'turatie-specifica', 'randament-pompa', 'debit-minim', 'trimming-rotor', 'sarcina-afinitate', 'economie-profil', 'energie-roi'],
-  ventilatoare: ['selectie-drive', 'ventilator-densitate', 'sarcina-afinitate', 'economie-profil', 'energie-roi', 'putere-curent', 'turatie-critica'],
-  compresoare: ['selectie-drive', 'compresor-volant', 'cuplu', 'pornire', 'dinamica', 'regimuri-s'],
-  ridicare: ['selectie-drive', 'macara', 'contragreutate', 'dinamica', 'raport-inertie', 'frecare', 'kinetic-buffer', 'ride-through'],
-  transportoare: ['selectie-drive', 'transportor', 'frecare', 'dinamica', 'pornire', 'transmisii'],
-  winder: ['winder', 'taper', 'transmisii', 'raport-inertie', 'dinamica'],
-  pozitionare: ['pmsm-model', 'pmsm-ciclu', 'pmsm-feedback', 'profil-miscare', 'acordare-pi', 'raspuns-ord2', 'surub-bile', 'liniar-raza', 'ipmsm-mtpa', 'suprasarcina-servo'],
-}
-// Sub-taburi pentru categoria 'Motoare' (pe tip de motor).
+// Sub-taburi pentru 'Motoare' (pe tip de motor).
 export const MOTOR_FAMS = [
   { id: 'asincron', label: 'Asincron' },
   { id: 'cc', label: 'Curent continuu' },
   { id: 'servo', label: 'Servo / PMSM' },
   { id: 'sincron', label: 'Sincron' },
 ]
-// Categoria fiecarui modul. Modulele de motor NU apar aici -> cad pe 'motoare' (sub-tab = familia lor).
+// 'Aplicatii' inglobeaza fostele taburi Pompe & Mecanica (grupate pe tip de masina/proces).
+// APP_OF da O SINGURA casa fiecarui card -> FARA dublare.
+export const APPLICATIONS = [
+  { id: 'pompe-vent', label: 'Pompe & ventilatoare' },
+  { id: 'compresoare', label: 'Compresoare' },
+  { id: 'ridicare', label: 'Macarale & ridicare' },
+  { id: 'transportoare', label: 'Transportoare' },
+  { id: 'winder', label: 'Infasurare (winder)' },
+  { id: 'mecanica-gen', label: 'Mecanica generala' },
+]
+export const APP_OF = {
+  'pompa-sistem': 'pompe-vent', 'turatie-minima': 'pompe-vent', 'npsh': 'pompe-vent', 'putere-pompa': 'pompe-vent', 'ventilator-densitate': 'pompe-vent', 'turatie-specifica': 'pompe-vent', 'economie-profil': 'pompe-vent', 'randament-pompa': 'pompe-vent', 'debit-minim': 'pompe-vent', 'trimming-rotor': 'pompe-vent', 'sarcina-afinitate': 'pompe-vent',
+  'compresor-volant': 'compresoare',
+  'macara': 'ridicare', 'contragreutate': 'ridicare',
+  'transportor': 'transportoare', 'frecare': 'transportoare',
+  'winder': 'winder', 'taper': 'winder',
+  'dinamica': 'mecanica-gen', 'raport-inertie': 'mecanica-gen', 'transmisii': 'mecanica-gen', 'turatie-critica': 'mecanica-gen', 'surub-bile': 'mecanica-gen', 'liniar-raza': 'mecanica-gen',
+}
+// Categoria de domeniu a celorlalte module (cele de motor cad implicit pe 'motoare').
 export const CAT_OF = {
-  // pompe & ventilatoare
-  'pompa-sistem': 'pompe', 'turatie-minima': 'pompe', 'npsh': 'pompe', 'putere-pompa': 'pompe', 'ventilator-densitate': 'pompe', 'turatie-specifica': 'pompe', 'economie-profil': 'pompe', 'randament-pompa': 'pompe', 'debit-minim': 'pompe', 'trimming-rotor': 'pompe', 'sarcina-afinitate': 'pompe',
-  // mecanica & transmisii
-  'dinamica': 'mecanica', 'raport-inertie': 'mecanica', 'turatie-critica': 'mecanica', 'transmisii': 'mecanica', 'surub-bile': 'mecanica', 'liniar-raza': 'mecanica', 'macara': 'mecanica', 'contragreutate': 'mecanica', 'transportor': 'mecanica', 'winder': 'mecanica', 'taper': 'mecanica', 'frecare': 'mecanica', 'compresor-volant': 'mecanica',
   // convertizor / VFD
   'vfd': 'vfd', 'selectie-drive': 'vfd', 'comutatie': 'vfd', 'unda-reflectata': 'vfd', 'filtru-iesire': 'vfd', 'ride-through': 'vfd', 'kinetic-buffer': 'vfd', 'curenti-rulment': 'vfd', 'derating-vfd-motor': 'vfd',
   // armonici & calitate energie
@@ -79,7 +71,8 @@ export const CAT_OF = {
   // utilitare
   'conversii': 'utilitare',
 }
-export function catOf(m) { return CAT_OF[m.id] || 'motoare' }
+// Categoria unui modul: aplicatie (daca e in APP_OF) -> 'aplicatii'; altfel domeniul; altfel 'motoare'.
+export function catOf(m) { return APP_OF[m.id] ? 'aplicatii' : (CAT_OF[m.id] || 'motoare') }
 
 // Ordinea logica de afisare a modulelor in fiecare familie (flux ingineresc:
 // de la marimile de placuta spre dimensionare/diagnoza).
