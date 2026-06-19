@@ -313,6 +313,13 @@ def health_redirect():
     return redirect('/api/healthz', code=301)
 
 
+@app.route('/api/me')
+def whoami():
+    """Stare autentificare (public). Folosit de /calc ca sa afiseze extrasele de carti
+    (protejate) doar daca esti logat, fara a le expune colegilor anonimi."""
+    return jsonify({'authenticated': bool(session.get('authenticated'))})
+
+
 @app.route('/login')
 def login_page():
     if session.get('authenticated'):

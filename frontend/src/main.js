@@ -1,10 +1,8 @@
 import { mount } from 'svelte'
 import './styles/global.css'
 import App from './App.svelte'
-
-// Dashboard-ul e in spatele login-ului -> afiseaza si linkurile catre extrasele de carti (protected).
-// (calc-main.js NU seteaza acest flag, deci pe /calc public extrasele cu drept de autor sunt ascunse.)
-window.__PIF_DOCS_OK__ = true
+// Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
+// deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
 
 const app = mount(App, {
   target: document.getElementById('app'),

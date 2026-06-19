@@ -5,6 +5,7 @@
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
+  import { runtime } from '../lib/runtime.svelte.js'
 
   const families = visibleFamilies()
   let activeFamily = $state(families[0]?.id ?? 'asincron')
@@ -25,9 +26,9 @@
     return unit ? `${label} [${unit}]` : label
   }
 
-  // Extrasele de carti (protected) au drept de autor -> doar in dashboard (logat), nu pe /calc public.
-  const SHOW_PROTECTED = typeof window !== 'undefined' && !!window.__PIF_DOCS_OK__
-  const docsFor = (m) => docsForModule(m).filter((d) => SHOW_PROTECTED || !d.protected)
+  // Extrasele de carti (protected) au drept de autor -> vizibile cand esti logat (dashboard mereu;
+  // pe /calc doar dupa verificarea autentificarii). runtime.docsOk e reactiv (vezi runtime.svelte.js).
+  const docsFor = (m) => docsForModule(m).filter((d) => runtime.docsOk || !d.protected)
 
   function resetModule(m) {
     for (const f of m.fields) values[m.id][f.key] = f.default
