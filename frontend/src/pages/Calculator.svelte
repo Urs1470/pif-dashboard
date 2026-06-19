@@ -158,6 +158,7 @@
         {#if term.g?.def}<div class="term-sec"><span class="term-h">Definitie</span><p>{term.g.def}</p></div>{/if}
         {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p>{term.g.ia}</p></div>{/if}
         {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p>{term.g.practic}</p></div>{/if}
+        {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p>{term.g.teorie}</p></div>{/if}
         {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src">{term.source}</p></div>{/if}
         {#if !term.g && !term.tex}<p class="term-empty">Marime fara definitie detaliata inca. Vezi sursa modulului si formulele asociate.</p>{/if}
       </div>

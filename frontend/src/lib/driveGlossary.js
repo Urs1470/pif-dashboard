@@ -155,10 +155,35 @@ export const GLOSSARY = {
   etalow: { def: 'Randamentul clasei de eficienta joase (ex. IE2).', ia: 'Catalog motor.', practic: 'Comparatie de economie intre clase IE.' },
   etahigh: { def: 'Randamentul clasei superioare (ex. IE3/IE4).', ia: 'Catalog motor.', practic: 'Economia anuala fata de clasa joasa.' },
   dpret: { def: 'Diferenta de pret a motorului premium.', ia: 'Oferta.', practic: 'Payback = Δpret / economia anuala.' },
+  payback: { def: 'Perioada de recuperare a investitiei.', ia: 'Investitie / economia anuala.', practic: 'Sub ~2-3 ani justifica investitia in VFD sau motor premium.' },
+  Pies: { def: 'Puterea de iesire a convertizorului catre motor.', ia: 'Din puterea motorului.', practic: 'Baza estimarii pierderilor convertizorului si a deratingului.' },
+  Iech: { def: 'Curentul termic echivalent (RMS) pe ciclul de sarcina.', ia: 'I_ech = √(Σ I²·t / Σ t).', practic: 'Se compara cu curentul nominal pentru dimensionare termica la sarcini ciclice.', teorie: 'Incalzirea depinde de media patratica a curentului (efect Joule I²t).' },
+  I1: { def: 'Curentul primului segment al ciclului de sarcina.', ia: 'Din profilul de sarcina (regim intermitent).', practic: 'Intra in calculul curentului termic echivalent.' },
+  t1: { def: 'Durata primului segment de sarcina.', ia: 'Din ciclul de lucru.', practic: 'Pondereaza segmentul in curentul echivalent.' },
+  t2: { def: 'Durata celui de-al doilea segment de sarcina.', ia: 'Din ciclul de lucru.', practic: 'Pondereaza segmentul in curentul echivalent.' },
+  Ps3: { def: 'Puterea admisibila in regim intermitent S3.', ia: 'P_S1 / √(DC/100).', practic: 'Dimensionarea motorului la sarcina intermitenta periodica.', teorie: 'La DC < 100% puterea admisa creste cu 1/√DC fata de regimul continuu.' },
+  falt: { def: 'Factor de derating la altitudine.', ia: '1 − (H−1000)/10000, peste 1000 m.', practic: 'Reduce curentul admisibil; verifica curba producatorului.', teorie: 'Racirea scade cu densitatea aerului la altitudine (~1%/100 m).' },
+  ftemp: { def: 'Factor de derating la temperatura ambianta.', ia: '1 − (T−40)/100, peste 40°C.', practic: 'Reduce curentul admisibil ~1%/°C peste 40°C.', teorie: 'Capacitatea de evacuare a caldurii scade cu temperatura mediului.' },
+  OLHD: { def: 'Suprasarcina admisa in regim Heavy Duty.', ia: '150% I_n timp de 1 min la fiecare 5 min (ABB).', practic: 'Pentru cupluri de soc: concasoare, benzi incarcate, mecanisme de ridicat.' },
+  OLND: { def: 'Suprasarcina admisa in regim Normal / Light Duty.', ia: '110% I_n timp de 1 min la fiecare 5 min (ABB).', practic: 'Pentru pompe si ventilatoare (sarcina patratica).' },
+  Inest: { def: 'Curentul nominal estimat al motorului la 400 V.', ia: '~1.9·P[kW] (orientativ).', practic: 'Util cand lipseste placuta; verifica intotdeauna valoarea reala.', teorie: 'I = P / (√3·U·cosφ·η).' },
+  f1: { def: 'Frecventa retelei de alimentare.', ia: '50 Hz in Europa.', practic: 'Baza pentru frecventa de acord a reactorului si de rezonanta.' },
+  tride: { def: 'Timpul de sustinere a convertizorului la microintreruperi (ride-through).', ia: 'Energia DC bus / puterea sarcinii.', practic: 'Compara cu durata tipica a dip-urilor de retea (zeci de ms).', teorie: 't = ½·C·(U1² − U2²) / P.' },
+  I5: { def: 'Curentul armonic de ordin 5 (% din fundamentala).', ia: 'Masurat sau tipic redresor 6-puls.', practic: 'Cea mai mare armonica; pondere importanta in factorul K.', teorie: 'Armonica 5 e de secventa inversa.' },
+  I7: { def: 'Curentul armonic de ordin 7 (% din fundamentala).', ia: 'Masurat sau tipic 6-puls.', practic: 'Contribuie la factorul K si la incalzirea transformatorului.' },
+  I11: { def: 'Curentul armonic de ordin 11 (% din fundamentala).', ia: 'Masurat.', practic: 'Pondere mare in factorul K (creste cu h²).', teorie: 'Tipica puntilor de 6 pulsuri.' },
+  I13: { def: 'Curentul armonic de ordin 13 (% din fundamentala).', ia: 'Masurat.', practic: 'Pondere mare in factorul K (creste cu h²).' },
+  K: { def: 'Factorul K al transformatorului pentru sarcini neliniare.', ia: 'K = Σ (I_h/I_1)²·h².', practic: 'Alege transformator K-rated (K-4/13/20) sau deratuieste-l.', teorie: 'Cuantifica pierderile turbionare suplimentare produse de armonici.' },
 }
 
-// Cautare cu fallback pe familie.
+// Glosar extins (generat) — completeaza acoperirea la toate marimile.
+import EXTRA from './glossaryExtra.json'
+
+// Cautare cu fallback pe familie, apoi in glosarul extins.
 export function lookupTerm(key, family) {
   if (!key) return null
-  return GLOSSARY[`${family}:${key}`] || GLOSSARY[key] || null
+  return (
+    GLOSSARY[`${family}:${key}`] || GLOSSARY[key] ||
+    EXTRA[`${family}:${key}`] || EXTRA[key] || null
+  )
 }
