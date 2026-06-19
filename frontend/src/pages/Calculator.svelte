@@ -1,6 +1,6 @@
 <script>
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2 } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, docsForModule, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
@@ -45,6 +45,7 @@
       tex: isResult ? item.tex : null,
       g: lookupTerm(item.key, m.family),
       source: isResult ? (SOURCES[m.id] || null) : null,
+      docs: docsForModule(m),
     }
     termOpen = true
   }
@@ -138,6 +139,14 @@
         {#if SOURCES[m.id]}
           <p class="mod-source"><BookOpen size={11} /> {SOURCES[m.id]}</p>
         {/if}
+        {#if docsForModule(m).length}
+          <div class="mod-docs">
+            <span class="docs-h">Documentatie:</span>
+            {#each docsForModule(m) as d}
+              <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -160,6 +169,15 @@
         {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p>{term.g.practic}</p></div>{/if}
         {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p>{term.g.teorie}</p></div>{/if}
         {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src">{term.source}</p></div>{/if}
+        {#if term.docs?.length}
+          <div class="term-sec"><span class="term-h">Documentatie</span>
+            <div class="term-docs">
+              {#each term.docs as d}
+                <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
+              {/each}
+            </div>
+          </div>
+        {/if}
         {#if !term.g && !term.tex}<p class="term-empty">Marime fara definitie detaliata inca. Vezi sursa modulului si formulele asociate.</p>{/if}
       </div>
     {/if}
@@ -352,6 +370,28 @@
     color: var(--text-dim);
     font-style: italic;
   }
+  .mod-docs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .docs-h { font-size: var(--font-tiny); color: var(--text-dim); }
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--font-tiny);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    text-decoration: none;
+    line-height: 1.4;
+  }
+  .doc-link:hover { background: var(--bg-surface); border-color: var(--accent); }
+  .term-docs { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 
   .chart-zoom {
     position: relative;
