@@ -30,11 +30,11 @@
 
 <div class="page">
   <div class="page-head">
-    <CalcIcon size={24} />
-    <div>
+    <div class="head-row">
+      <CalcIcon size={26} />
       <h1>Calculator actionari electrice</h1>
-      <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
     </div>
+    <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
   </div>
 
   <div class="fam-tabs" role="tablist">
@@ -81,14 +81,14 @@
         <div class="results">
           {#each m.results as res (res.key)}
             <div class="res-row">
-              <div class="res-left">
+              <div class="res-head">
                 <span class="res-label">{res.label}</span>
-                <Formula tex={res.tex} />
+                <span class="res-right">
+                  <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
+                  {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
+                </span>
               </div>
-              <div class="res-right">
-                <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
-                {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
-              </div>
+              <Formula tex={res.tex} />
             </div>
           {/each}
         </div>
@@ -116,12 +116,17 @@
 
   .page-head {
     display: flex;
-    align-items: flex-start;
-    gap: var(--space-sm);
+    flex-direction: column;
+    gap: 2px;
     margin-bottom: var(--space-lg);
+  }
+  .head-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
     color: var(--text);
   }
-  .page-head h1 { font-size: var(--font-h1); font-weight: 700; }
+  .head-row h1 { font-size: var(--font-h1); font-weight: 700; }
   .sub {
     font-size: var(--font-small);
     color: var(--text-dim);
@@ -163,6 +168,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
+    min-width: 0;
   }
 
   .mod-head {
@@ -223,14 +229,18 @@
   }
   .res-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
+    flex-direction: column;
+    gap: 3px;
     padding: var(--space-sm) 0;
     border-bottom: 1px solid var(--border);
   }
   .res-row:last-child { border-bottom: none; }
-  .res-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .res-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
   .res-label { font-size: var(--font-small); color: var(--text); }
   .res-right {
     display: flex;
