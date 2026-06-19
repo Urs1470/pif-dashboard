@@ -4,7 +4,7 @@
   import katex from 'katex'
   import 'katex/dist/katex.min.css'
 
-  let { tex = '', display = false } = $props()
+  let { tex = '', display = false, inline = false } = $props()
 
   const html = $derived.by(() => {
     try {
@@ -15,7 +15,7 @@
   })
 </script>
 
-<span class="formula" class:block={display}>{@html html}</span>
+<span class="formula" class:block={display} class:inline={inline}>{@html html}</span>
 
 <style>
   .formula {
@@ -27,5 +27,12 @@
   }
   .formula.block {
     display: block;
+  }
+  /* simbol inline in eticheta (acelasi font/culoare ca textul din jur) */
+  .formula.inline {
+    display: inline;
+    max-width: none;
+    font-size: 1em;
+    color: inherit;
   }
 </style>

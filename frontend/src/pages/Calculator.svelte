@@ -1,6 +1,6 @@
 <script>
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2 } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, docsForModule, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, docsForModule, symTeX, descLabel, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
@@ -93,7 +93,7 @@
         <div class="inputs">
           {#each m.fields as f (f.key)}
             <div class="inp">
-              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}>{unitLabel(f.label, f.unit)}</button>
+              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><span class="inp-sym"><Formula tex={symTeX(f.key)} inline /></span><span class="inp-desc">{descLabel(f.label, f.key)}{f.unit ? ` · ${f.unit}` : ''}</span></button>
               <input
                 class="inp-field"
                 type="number"
@@ -289,6 +289,9 @@
     transition: color var(--dur-fast) var(--ease);
   }
   .inp-label:hover { color: var(--text); text-decoration: underline dotted; }
+  .inp-sym { color: var(--text); font-size: 1.05em; }
+  .inp-desc { color: var(--text-dim); margin-left: 6px; }
+  .inp-label:hover .inp-desc { color: var(--text-secondary); }
   .inp-field {
     margin-top: auto;
     padding: 8px 10px;

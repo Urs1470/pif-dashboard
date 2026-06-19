@@ -323,6 +323,51 @@ const BOOK_DOCS = {
   'acordare-pi': [BOOK.niseOrd2],
   'raspuns-ord2': [BOOK.niseOrd2],
 }
+// --- Simbol TeX dintr-o cheie de camp/rezultat, pentru randare KaTeX a etichetelor (subscript/superscript) ---
+const _GREEK = { omega: '\\omega', eta: '\\eta', rho: '\\rho', delta: '\\delta', tau: '\\tau', phi: '\\varphi', psi: '\\psi', mu: '\\mu', lambda: '\\lambda', sigma: '\\sigma', theta: '\\theta', zeta: '\\zeta', alpha: '\\alpha', beta: '\\beta', gamma: '\\gamma' }
+const _SYM = {
+  // litere/marimi cu notatie speciala
+  w: '\\omega', wn: '\\omega_n', cosphi: '\\cos\\varphi', cosphin: '\\cos\\varphi_n', kPhi: 'k\\Phi', psim: '\\psi_m',
+  nq: 'n_q', ratio: 'k', imp: 'N_{\\mathrm{imp}}', PPR: '\\mathrm{PPR}', RJ: 'R_J', dE: '\\Delta E', dpret: '\\Delta\\,\\mathrm{pret}',
+  // acronime / factori (roman drept)
+  THD: '\\mathrm{THD}', THDest: '\\mathrm{THD}_{\\mathrm{est}}', HVF: '\\mathrm{HVF}', PF: '\\mathrm{PF}', DPF: '\\mathrm{DPF}', DC: '\\mathrm{DC}', BVR: '\\mathrm{BVR}',
+  PF1: '\\mathrm{PF}_1', PF2: '\\mathrm{PF}_2', IB: 'I_B', kDOL: 'k_{\\mathrm{DOL}}', QBEP: 'Q_{\\mathrm{BEP}}',
+  NPSHrn: '\\mathrm{NPSH_r}', OLHD: '\\mathrm{OL_{HD}}', OLND: '\\mathrm{OL_{ND}}', Ps1: 'P_{S1}', Ps3: 'P_{S3}',
+  // cuvinte (nu sunt simboluri reale) -> roman
+  invest: '\\mathrm{invest}', pret: '\\mathrm{pret}', ore: '\\mathrm{ore}', drop: '\\mathrm{drop}', frac: '\\mathrm{frac}', taper: '\\mathrm{taper}', alt: '\\mathrm{alt}',
+  // tensiuni de test / armonice -> U (notatie romaneasca)
+  Vdc: 'U_{\\mathrm{dc}}', Vnl: 'U_{\\mathrm{nl}}', Vlr: 'U_{\\mathrm{lr}}', V5: 'U_5', V7: 'U_7', V11: 'U_{11}', V13: 'U_{13}',
+  // unitati (modulul conversii)
+  kW: '\\mathrm{kW}', hp: '\\mathrm{hp}', kgf: '\\mathrm{kgf}', kgfm: '\\mathrm{kgf{\\cdot}m}', rpm: '\\mathrm{rpm}', Nm: '\\mathrm{N{\\cdot}m}', N: 'N',
+  IccPCC: 'I_{cc,PCC}', Sccbus: 'S_{cc,bus}',
+}
+export function symTeX(key) {
+  if (!key) return ''
+  if (_SYM[key]) return _SYM[key]
+  // prefix grecesc: ex. etap -> \eta_p, omega -> \omega
+  for (const g in _GREEK) {
+    if (key === g) return _GREEK[g]
+    if (key.startsWith(g) && key.length > g.length) {
+      const rest = key.slice(g.length)
+      return _GREEK[g] + (/^[0-9]+$/.test(rest) ? `_{${rest}}` : `_{\\mathrm{${rest}}}`)
+    }
+  }
+  // acronim (>=2 majuscule) -> roman drept
+  if ((key.match(/[A-Z]/g) || []).length >= 2) return `\\mathrm{${key}}`
+  const base = key[0]
+  const rest = key.slice(1)
+  if (!rest) return base
+  if (/^[0-9]+$/.test(rest)) return `${base}_{${rest}}`
+  return `${base}_{\\mathrm{${rest}}}`
+}
+
+// Eticheta descriptiva fara simbolul lipit la coada (ex. "Cadere conductie Uce0" -> "Cadere conductie").
+export function descLabel(label, key) {
+  if (!label || !key) return label || ''
+  const esc = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return label.replace(new RegExp(`\\s*${esc}\\s*$`, 'i'), '').trim() || label
+}
+
 // Linkuri de documentatie pentru un modul: ABB/online (publice) + extrase carti (protected:true).
 export function docsForModule(mod) {
   const base = DOC_LINKS[mod.id] || FAM_DOCS[mod.family] || []
