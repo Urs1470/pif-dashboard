@@ -261,9 +261,55 @@ const DOC_LINKS = {
   'porniri-ora': [ABB.no7],
   'economie-profil': [ABB.no7, WEB.affinity],
 }
-// Linkuri de documentatie pentru un modul (specifice, altfel implicit pe familie).
+// Manuale cu drept de autor — DOAR paginile citate (extras), servite protejat la /docs (login).
+// protected:true => ascunse pe /calc public; vizibile doar in dashboard (logat). PDF.js deschide + hasureaza.
+const _bookView = (file, search) => `${_PDFJS}${encodeURIComponent('/docs/' + file)}#search=${encodeURIComponent(search)}&phrase=true`
+const _CHAP = 'chapman-electric-machinery-extras.pdf'
+const _MOHAN = 'mohan-power-electronics-extras.pdf'
+const _HUGHES = 'hughes-electric-motors-drives-extras.pdf'
+const _NISE = 'nise-control-systems-extras.pdf'
+const BOOK = {
+  chapThevenin: { protected: true, label: 'Chapman — schema echivalenta / Thevenin (extras)', href: _bookView(_CHAP, 'Thevenin equivalent') },
+  chapPowerFlow: { protected: true, label: 'Chapman — diagrama flux de putere (extras)', href: _bookView(_CHAP, 'power-flow diagram') },
+  chapVcurves: { protected: true, label: 'Chapman — curbele in V (sincron) (extras)', href: _bookView(_CHAP, 'Synchronous motor V curves') },
+  chapSyncP: { protected: true, label: 'Chapman — cuplu/putere masina sincrona (extras)', href: _bookView(_CHAP, 'induced torque in a synchronous') },
+  chapDCmotor: { protected: true, label: 'Chapman — schema echivalenta masina c.c. (extras)', href: _bookView(_CHAP, 'equivalent circuit of a dc motor') },
+  chapDCspeed: { protected: true, label: 'Chapman — reglaj turatie c.c. (extras)', href: _bookView(_CHAP, 'Speed Control of Shunt') },
+  mohanSwitch: { protected: true, label: 'Mohan — pierderi de comutatie (extras)', href: _bookView(_MOHAN, 'switching losses') },
+  mohanRect: { protected: true, label: 'Mohan — redresor Ud=1.35·U (extras)', href: _bookView(_MOHAN, '1.35') },
+  hughesStart: { protected: true, label: 'Hughes — pornire motor (extras)', href: _bookView(_HUGHES, 'torque per amp') },
+  hughesThermal: { protected: true, label: 'Hughes — constanta de timp termica (extras)', href: _bookView(_HUGHES, 'Thermal time constant') },
+  hughesMTPA: { protected: true, label: 'Hughes — cuplu maxim pe amper (extras)', href: _bookView(_HUGHES, 'maximum torque per ampere') },
+  niseOrd2: { protected: true, label: 'Nise — raspuns de ordin 2 (extras)', href: _bookView(_NISE, 'percent overshoot') },
+}
+const BOOK_DOCS = {
+  'motor-echivalent': [BOOK.chapThevenin],
+  'teste-parametri': [BOOK.chapThevenin],
+  'cuplu': [BOOK.chapThevenin],
+  'bilant-putere': [BOOK.chapPowerFlow],
+  'randament-sarcina': [BOOK.chapPowerFlow],
+  'sincron-putere': [BOOK.chapSyncP],
+  'sincron-poli-aparenti': [BOOK.chapSyncP],
+  'vcurves': [BOOK.chapVcurves],
+  'cc-baza': [BOOK.chapDCmotor],
+  'cc-serie': [BOOK.chapDCmotor],
+  'cc-randament': [BOOK.chapDCmotor],
+  'cc-reglaj': [BOOK.chapDCspeed],
+  'vfd': [BOOK.mohanRect],
+  'cc-drive': [BOOK.mohanRect],
+  'comutatie': [BOOK.mohanSwitch],
+  'filtru-iesire': [BOOK.mohanSwitch],
+  'pornire': [BOOK.hughesStart],
+  'motor-termic': [BOOK.hughesThermal],
+  'pmsm-model': [BOOK.hughesMTPA],
+  'ipmsm-mtpa': [BOOK.hughesMTPA],
+  'acordare-pi': [BOOK.niseOrd2],
+  'raspuns-ord2': [BOOK.niseOrd2],
+}
+// Linkuri de documentatie pentru un modul: ABB/online (publice) + extrase carti (protected:true).
 export function docsForModule(mod) {
-  return DOC_LINKS[mod.id] || FAM_DOCS[mod.family] || []
+  const base = DOC_LINKS[mod.id] || FAM_DOCS[mod.family] || []
+  return [...base, ...(BOOK_DOCS[mod.id] || [])]
 }
 
 const SQRT3 = Math.sqrt(3)

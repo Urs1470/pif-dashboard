@@ -25,6 +25,10 @@
     return unit ? `${label} [${unit}]` : label
   }
 
+  // Extrasele de carti (protected) au drept de autor -> doar in dashboard (logat), nu pe /calc public.
+  const SHOW_PROTECTED = typeof window !== 'undefined' && !!window.__PIF_DOCS_OK__
+  const docsFor = (m) => docsForModule(m).filter((d) => SHOW_PROTECTED || !d.protected)
+
   function resetModule(m) {
     for (const f of m.fields) values[m.id][f.key] = f.default
   }
@@ -45,7 +49,7 @@
       tex: isResult ? item.tex : null,
       g: lookupTerm(item.key, m.family),
       source: isResult ? (SOURCES[m.id] || null) : null,
-      docs: docsForModule(m),
+      docs: docsFor(m),
     }
     termOpen = true
   }
@@ -139,10 +143,10 @@
         {#if SOURCES[m.id]}
           <p class="mod-source"><BookOpen size={11} /> {SOURCES[m.id]}</p>
         {/if}
-        {#if docsForModule(m).length}
+        {#if docsFor(m).length}
           <div class="mod-docs">
             <span class="docs-h">Documentatie:</span>
-            {#each docsForModule(m) as d}
+            {#each docsFor(m) as d}
               <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
             {/each}
           </div>

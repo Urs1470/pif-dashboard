@@ -402,6 +402,17 @@ def calc_public():
     return send_from_directory(_DIST_DIR, 'calc.html')
 
 
+_DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'private_docs')
+
+
+@app.route('/docs/<path:filename>')
+@login_required
+def protected_docs(filename):
+    """Extrase din manualele cu drept de autor (doar paginile citate) — PROTEJAT cu login.
+    Folosit de linkurile 'Documentatie' din calculator (vizualizatorul PDF.js). NU e public."""
+    return send_from_directory(_DOCS_DIR, filename)
+
+
 # ============ PWA ROUTES ============
 
 @app.route('/service-worker.js')
