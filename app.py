@@ -252,6 +252,18 @@ def after_request_func(response):
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('Referrer-Policy', 'same-origin')
     response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    # Vizualizatorul PDF.js (gazduit local) are nevoie de worker/wasm/blob — CSP dedicat doar pe calea lui.
+    if request.path.startswith('/static/pdfjs/'):
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob:; "
+            "font-src 'self' data: blob:; "
+            "worker-src 'self' blob:; "
+            "connect-src 'self' blob: data:; "
+            "frame-ancestors 'none'; base-uri 'self'"
+        )
     response.headers.setdefault(
         'Content-Security-Policy',
         "default-src 'self'; "
@@ -381,6 +393,13 @@ def favicon():
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory(_DIST_DIR, 'manifest.json')
+
+
+@app.route('/calc')
+def calc_public():
+    """Calculator actionari electrice — varianta de sine statatoare, PUBLICA (fara login),
+    de impartit cu echipa. Doar calculatorul (fara sidebar/proiecte/date). Build: calc.html."""
+    return send_from_directory(_DIST_DIR, 'calc.html')
 
 
 # ============ PWA ROUTES ============

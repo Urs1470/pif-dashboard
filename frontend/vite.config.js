@@ -6,6 +6,12 @@ export default defineConfig({
   build: {
     outDir: '../static/dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        calc: 'calc.html',
+      },
+    },
   },
   server: {
     port: 5173,

@@ -4,9 +4,9 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## app.py (583 linii)
+## app.py (602 linii)
 
-`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `131:make_session_permanent`, `141:setup_logging`, `170:check_rate_limit`, `208:before_request_func`, `243:after_request_func`, `271:get_hashed_pin`, `280:_git_commit`, `294:healthz`, `300:health_redirect`, `305:login_page`, `312:login`, `324:logout`, `330:login_hash`, `350:_serve_frontend`, `358:index`, `366:spa_catchall`, `371:dist_assets`, `377:favicon`, `382:manifest`, `389:service_worker`, `394:add_sw_header`, `415:get_deploy_secret`, `423:webhook_deploy`, `508:api_deploy`, `564:page_not_found`, `571:internal_error`
+`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `131:make_session_permanent`, `141:setup_logging`, `170:check_rate_limit`, `208:before_request_func`, `243:after_request_func`, `283:get_hashed_pin`, `292:_git_commit`, `306:healthz`, `312:health_redirect`, `317:login_page`, `324:login`, `336:logout`, `342:login_hash`, `362:_serve_frontend`, `370:index`, `378:spa_catchall`, `383:dist_assets`, `389:favicon`, `394:manifest`, `399:calc_public`, `408:service_worker`, `413:add_sw_header`, `434:get_deploy_secret`, `442:webhook_deploy`, `527:api_deploy`, `583:page_not_found`, `590:internal_error`
 
 ## database.py (1210 linii)
 

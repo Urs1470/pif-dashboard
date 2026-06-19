@@ -140,13 +140,18 @@ export const SOURCES = {
 
 // --- Documentatie: manuale ABB gazduite (deep-link la pagina) + surse online (engleza) ---
 // Ghidurile ABB sunt compilate in abb-technical-guide-book.pdf (448 pag); #page sare la ghidul corect.
+// PDF.js viewer gazduit: deschide manualul la pagina SI cauta+hasureaza termenul (search + phrase=true).
+const _PDFJS = '/static/pdfjs/web/viewer.html?file='
+const _ABB_FILE = encodeURIComponent('/static/docs/abb-technical-guide-book.pdf')
+const _NO1_FILE = encodeURIComponent('/static/docs/abb-technical-guide-no1.pdf')
+const abbView = (search, page) => `${_PDFJS}${_ABB_FILE}#page=${page}&search=${encodeURIComponent(search)}&phrase=true`
 const ABB = {
-  no1: { label: 'ABB Technical Guide No.1 — Direct Torque Control', href: '/static/docs/abb-technical-guide-no1.pdf' },
-  no4: { label: 'ABB Technical Guide No.4 — Variable Speed Drives (p.151)', href: '/static/docs/abb-technical-guide-book.pdf#page=151' },
-  no6: { label: 'ABB Technical Guide No.6 — Harmonics (p.224)', href: '/static/docs/abb-technical-guide-book.pdf#page=224' },
-  no7: { label: 'ABB Technical Guide No.7 — Dimensioning (p.267)', href: '/static/docs/abb-technical-guide-book.pdf#page=267' },
-  no8: { label: 'ABB Technical Guide No.8 — Electrical Braking (p.307)', href: '/static/docs/abb-technical-guide-book.pdf#page=307' },
-  no9: { label: 'ABB Technical Guide No.9 — Motion Control (p.341)', href: '/static/docs/abb-technical-guide-book.pdf#page=341' },
+  no1: { label: 'ABB Technical Guide No.1 — Direct Torque Control', href: `${_PDFJS}${_NO1_FILE}#page=1&search=${encodeURIComponent('Direct torque control')}&phrase=true` },
+  no4: { label: 'ABB Technical Guide No.4 — Variable Speed Drives', href: abbView('throttling', 156) },
+  no6: { label: 'ABB Technical Guide No.6 — Harmonics', href: abbView('Total harmonic distortion', 249) },
+  no7: { label: 'ABB Technical Guide No.7 — Dimensioning', href: abbView('quadratic torque', 288) },
+  no8: { label: 'ABB Technical Guide No.8 — Electrical Braking', href: abbView('braking chopper', 311) },
+  no9: { label: 'ABB Technical Guide No.9 — Motion Control', href: abbView('following error', 388) },
 }
 // frag = textul evidentiat pe pagina (Scroll-To-Text-Fragment): browserul sare la el si il hasureaza.
 const W = (slug, label, frag) => ({
