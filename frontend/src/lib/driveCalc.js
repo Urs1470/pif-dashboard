@@ -426,7 +426,7 @@ export const MODULES = [
     fields: [
       { key: 'Pn', label: 'Putere nominala', unit: 'kW', default: 15, step: 0.5, min: 0 },
       { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 0 },
-      { key: 'cosphi', label: 'Factor de putere cos φ', unit: '', default: 0.85, step: 0.01, min: 0 },
+      { key: 'cosphi', label: 'Factor de putere', unit: '', default: 0.85, step: 0.01, min: 0 },
       { key: 'eta', label: 'Randament', unit: '%', default: 90, step: 1, min: 0 },
     ],
     results: [
@@ -471,8 +471,8 @@ export const MODULES = [
     fields: [
       { key: 'P', label: 'Putere', unit: 'kW', default: 15, step: 0.5, min: 0 },
       { key: 'n', label: 'Turatie nominala', unit: 'rpm', default: 1450, step: 10, min: 1 },
-      { key: 'kp', label: 'Factor cuplu pornire', unit: '×Mn', default: 2.0, step: 0.1, min: 0 },
-      { key: 'km', label: 'Factor cuplu maxim', unit: '×Mn', default: 2.5, step: 0.1, min: 0 },
+      { key: 'kp', label: 'Factor cuplu pornire', unit: '×Mₙ', default: 2.0, step: 0.1, min: 0 },
+      { key: 'km', label: 'Factor cuplu maxim', unit: '×Mₙ', default: 2.5, step: 0.1, min: 0 },
     ],
     results: [
       { key: 'Mn', label: 'Cuplu nominal', unit: 'Nm', tex: 'M_n = \\dfrac{9550\\,P}{n}',
@@ -549,9 +549,9 @@ export const MODULES = [
     }],
     fields: [
       { key: 'In', label: 'Curent nominal', unit: 'A', default: 28, step: 1, min: 0 },
-      { key: 'kDOL', label: 'Factor pornire DOL', unit: '×In', default: 6, step: 0.5, min: 0 },
+      { key: 'kDOL', label: 'Factor pornire DOL', unit: '×Iₙ', default: 6, step: 0.5, min: 0 },
       { key: 'Usoft', label: 'Tensiune softstart', unit: '%', default: 70, step: 5, min: 0 },
-      { key: 'climit', label: 'Factor curent VFD', unit: '×In', default: 1.3, step: 0.1, min: 0 },
+      { key: 'climit', label: 'Factor curent VFD', unit: '×Iₙ', default: 1.3, step: 0.1, min: 0 },
     ],
     results: [
       { key: 'IpDOL', label: 'Curent pornire DOL', unit: 'A', tex: 'I_{p,DOL} = k\\,I_n',
@@ -917,7 +917,7 @@ export const MODULES = [
       { key: 'U', label: 'Tensiune indus', unit: 'V', default: 440, step: 10, min: 0 },
       { key: 'Ia', label: 'Curent indus', unit: 'A', default: 80, step: 1, min: 0 },
       { key: 'Ra', label: 'Rezistenta indus', unit: 'Ω', default: 0.15, step: 0.01, min: 0 },
-      { key: 'kPhi', label: 'Constanta k·Φ', unit: 'V·s/rad', default: 2.6, step: 0.1, min: 0.01 },
+      { key: 'kPhi', label: 'Constanta masinii', unit: 'V·s/rad', default: 2.6, step: 0.1, min: 0.01 },
     ],
     results: [
       { key: 'E', label: 'TCEM (back-EMF)', unit: 'V', tex: 'E = U - I_a R_a',
@@ -966,7 +966,7 @@ export const MODULES = [
       { key: 'La', label: 'Inductanta indus', unit: 'mH', default: 5, step: 0.5, min: 0 },
       { key: 'Ra', label: 'Rezistenta indus', unit: 'Ω', default: 0.15, step: 0.01, min: 0.0001 },
       { key: 'J', label: 'Inertie', unit: 'kg·m²', default: 2, step: 0.5, min: 0 },
-      { key: 'kPhi', label: 'Constanta k·Φ', unit: 'V·s/rad', default: 2.6, step: 0.1, min: 0.01 },
+      { key: 'kPhi', label: 'Constanta masinii', unit: 'V·s/rad', default: 2.6, step: 0.1, min: 0.01 },
     ],
     results: [
       { key: 'Ud0', label: 'Tensiune medie max', unit: 'V', tex: 'U_{d0} = 1.35\\,U_{linie}',
@@ -1288,9 +1288,9 @@ export const MODULES = [
     subtitle: 'Derating si supraincalzire (NEMA MG-1)',
     note: 'Peste 5% dezechilibru: nu porni motorul. Factor derating ~ aproximare curba NEMA.',
     fields: [
-      { key: 'Uab', label: 'Tensiune U_AB', unit: 'V', default: 400, step: 1, min: 0 },
-      { key: 'Ubc', label: 'Tensiune U_BC', unit: 'V', default: 395, step: 1, min: 0 },
-      { key: 'Uca', label: 'Tensiune U_CA', unit: 'V', default: 390, step: 1, min: 0 },
+      { key: 'Uab', label: 'Tensiune A-B', unit: 'V', default: 400, step: 1, min: 0 },
+      { key: 'Ubc', label: 'Tensiune B-C', unit: 'V', default: 395, step: 1, min: 0 },
+      { key: 'Uca', label: 'Tensiune C-A', unit: 'V', default: 390, step: 1, min: 0 },
     ],
     results: [
       { key: 'Umed', label: 'Tensiune medie', unit: 'V', tex: 'U_{med} = \\dfrac{U_{AB}+U_{BC}+U_{CA}}{3}',
@@ -1477,7 +1477,7 @@ export const MODULES = [
       { key: 'It', label: 'Curent admisibil tabelar', unit: 'A', default: 40, step: 1, min: 0 },
       { key: 'Ca', label: 'Factor temperatura', unit: '', default: 0.94, step: 0.01, min: 0.1 },
       { key: 'Cg', label: 'Factor grupare', unit: '', default: 0.8, step: 0.05, min: 0.1 },
-      { key: 'IB', label: 'Curent de sarcina I_B', unit: 'A', default: 28, step: 1, min: 0 },
+      { key: 'IB', label: 'Curent de sarcina', unit: 'A', default: 28, step: 1, min: 0 },
     ],
     results: [
       { key: 'Smin', label: 'Sectiune minima termica', unit: 'mm²', tex: 'S_{min} = \\dfrac{I_{cc}\\sqrt{t}}{k}',
@@ -1893,8 +1893,8 @@ export const MODULES = [
     subtitle: 'Suprareglaj, timp de stabilizare, banda',
     note: 'Traduce cerinta procesului (suprareglaj/timp) in ζ, ω_n si banda buclei.',
     fields: [
-      { key: 'zeta', label: 'Factor de amortizare ζ', unit: '', default: 0.7, step: 0.05, min: 0.05 },
-      { key: 'wn', label: 'Pulsatie naturala ω_n', unit: 'rad/s', default: 100, step: 5, min: 1 },
+      { key: 'zeta', label: 'Factor de amortizare', unit: '', default: 0.7, step: 0.05, min: 0.05 },
+      { key: 'wn', label: 'Pulsatie naturala', unit: 'rad/s', default: 100, step: 5, min: 1 },
     ],
     results: [
       { key: 'Mp', label: 'Suprareglaj', unit: '%', tex: 'M_p = e^{-\\pi\\zeta/\\sqrt{1-\\zeta^2}}\\cdot 100',
@@ -1917,7 +1917,7 @@ export const MODULES = [
     fields: [
       { key: 'Udc', label: 'Tensiune DC bus', unit: 'V', default: 540, step: 10, min: 0 },
       { key: 'ppp', label: 'Perechi de poli', unit: '', default: 4, step: 1, min: 1 },
-      { key: 'psim', label: 'Flux magneti ψ_m', unit: 'Wb', default: 0.1, step: 0.01, min: 0.001 },
+      { key: 'psim', label: 'Flux magneti permanenti', unit: 'Wb', default: 0.1, step: 0.01, min: 0.001 },
       { key: 'Lq', label: 'Inductanta Lq', unit: 'mH', default: 8, step: 0.5, min: 0.1 },
       { key: 'Imax', label: 'Curent maxim', unit: 'A', default: 10, step: 1, min: 0 },
     ],
@@ -2158,7 +2158,7 @@ export const MODULES = [
     subtitle: 'cos φ scade puternic la sarcini partiale',
     note: 'Curentul de magnetizare e ~constant; la sarcina mica componenta activa scade → cos φ se prabuseste.',
     fields: [
-      { key: 'cosphin', label: 'cos φ nominal', unit: '', default: 0.85, step: 0.01, min: 0.1 },
+      { key: 'cosphin', label: 'Factor de putere nominal', unit: '', default: 0.85, step: 0.01, min: 0.1 },
       { key: 'In', label: 'Curent nominal', unit: 'A', default: 28, step: 1, min: 0 },
     ],
     charts: [(v) => {
@@ -2559,7 +2559,7 @@ export const MODULES = [
     note: 'La IPM (Lq>Ld) cu Id<0, termenul de reluctanta adauga cuplu (MTPA) → motor mai mic / curent mai mic.',
     fields: [
       { key: 'ppp', label: 'Perechi de poli', unit: '', default: 4, step: 1, min: 1 },
-      { key: 'psim', label: 'Flux magneti ψ_m', unit: 'Wb', default: 0.1, step: 0.01, min: 0 },
+      { key: 'psim', label: 'Flux magneti permanenti', unit: 'Wb', default: 0.1, step: 0.01, min: 0 },
       { key: 'Ld', label: 'Inductanta Ld', unit: 'mH', default: 8, step: 0.5, min: 0 },
       { key: 'Lq', label: 'Inductanta Lq', unit: 'mH', default: 12, step: 0.5, min: 0 },
       { key: 'Id', label: 'Curent axa d (negativ)', unit: 'A', default: -5, step: 1 },
