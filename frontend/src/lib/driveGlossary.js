@@ -178,12 +178,19 @@ export const GLOSSARY = {
 
 // Glosar extins (generat) — completeaza acoperirea la toate marimile.
 import EXTRA from './glossaryExtra.json'
+// Teorie aplicabila (generata) — pentru marimile fara campul "teorie".
+import TEORIE from './glossaryTeorie.json'
 
 // Cautare cu fallback pe familie, apoi in glosarul extins.
+// Daca intrarea gasita nu are "teorie", o completeaza din glossaryTeorie.json.
 export function lookupTerm(key, family) {
   if (!key) return null
-  return (
+  const base = (
     GLOSSARY[`${family}:${key}`] || GLOSSARY[key] ||
     EXTRA[`${family}:${key}`] || EXTRA[key] || null
   )
+  if (!base) return null
+  if (base.teorie && String(base.teorie).trim()) return base
+  const t = TEORIE[`${family}:${key}`] || TEORIE[key]
+  return t ? { ...base, teorie: t } : base
 }
