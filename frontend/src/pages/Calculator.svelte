@@ -1,8 +1,9 @@
 <script>
-  import { Calculator as CalcIcon, Info, BookOpen } from '@lucide/svelte'
+  import { Calculator as CalcIcon, Info, BookOpen, Maximize2 } from '@lucide/svelte'
   import { MODULES, MODULE_ORDER, SOURCES, visibleFamilies, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
+  import Modal from '../components/ui/Modal.svelte'
 
   const families = visibleFamilies()
   let activeFamily = $state(families[0]?.id ?? 'asincron')
@@ -26,6 +27,12 @@
   function resetModule(m) {
     for (const f of m.fields) values[m.id][f.key] = f.default
   }
+
+  // Zoom grafic in modal (70%)
+  let zoomOpen = $state(false)
+  let zoomRef = $state(null)
+  function openZoom(m, index) { zoomRef = { mod: m, index }; zoomOpen = true }
+  const zoomChart = $derived(zoomRef ? computeCharts(zoomRef.mod, values[zoomRef.mod.id])[zoomRef.index] : null)
 </script>
 
 <div class="page">
@@ -93,8 +100,18 @@
           {/each}
         </div>
 
-        {#each computeCharts(m, values[m.id]) as chart}
-          <Chart {chart} />
+        {#each computeCharts(m, values[m.id]) as chart, ci}
+          <div
+            class="chart-zoom"
+            role="button"
+            tabindex="0"
+            title="Click pentru marire"
+            onclick={() => openZoom(m, ci)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}
+          >
+            <Chart {chart} />
+            <span class="zoom-hint"><Maximize2 size={14} /></span>
+          </div>
         {/each}
 
         {#if m.note}
@@ -109,6 +126,12 @@
       </div>
     {/each}
   </div>
+
+  <Modal bind:open={zoomOpen} title={zoomRef ? zoomRef.mod.title : ''} size="zoom">
+    {#if zoomChart}
+      <div class="zoom-body"><Chart chart={zoomChart} /></div>
+    {/if}
+  </Modal>
 </div>
 
 <style>
@@ -279,6 +302,29 @@
     color: var(--text-dim);
     font-style: italic;
   }
+
+  .chart-zoom {
+    position: relative;
+    cursor: zoom-in;
+    border-radius: var(--radius-sm);
+    transition: background var(--dur-fast) var(--ease);
+  }
+  .chart-zoom:hover { background: var(--bg-hover); }
+  .chart-zoom:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-subtle);
+  }
+  .zoom-hint {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease);
+    pointer-events: none;
+  }
+  .chart-zoom:hover .zoom-hint { opacity: 0.8; }
+  .zoom-body { padding: var(--space-xs); }
 
   @media (max-width: 768px) {
     .mod-grid { grid-template-columns: 1fr; }
