@@ -1,14 +1,15 @@
 <script>
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_MODULES, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
-  let activeCat = $state('motoare')
+  let activeCat = $state('aplicatii')
   let activeMotorFam = $state('asincron')
+  let activeApp = $state('pompe')
   let query = $state('')
 
   // Valorile de intrare per modul, initializate din default-uri.
@@ -33,6 +34,7 @@
   const shown = $derived.by(() => {
     const q = query.trim().toLowerCase()
     if (q) return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id))
+    if (activeCat === 'aplicatii') return (APP_MODULES[activeApp] || []).map((id) => MODULES.find((m) => m.id === id)).filter(Boolean)
     if (activeCat === 'motoare') return MODULES.filter((m) => catOf(m) === 'motoare' && m.family === activeMotorFam).sort((a, b) => ord(a.id) - ord(b.id))
     return MODULES.filter((m) => catOf(m) === activeCat).sort((a, b) => ord(a.id) - ord(b.id))
   })
@@ -109,6 +111,12 @@
       <div class="subfam-tabs" role="tablist">
         {#each MOTOR_FAMS as f}
           <button class="subfam-tab" class:active={activeMotorFam === f.id} role="tab" aria-selected={activeMotorFam === f.id} onclick={() => (activeMotorFam = f.id)}>{f.label}</button>
+        {/each}
+      </div>
+    {:else if activeCat === 'aplicatii'}
+      <div class="subfam-tabs" role="tablist">
+        {#each APPLICATIONS as a}
+          <button class="subfam-tab" class:active={activeApp === a.id} role="tab" aria-selected={activeApp === a.id} onclick={() => (activeApp = a.id)}>{a.label}</button>
         {/each}
       </div>
     {/if}

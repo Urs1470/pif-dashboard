@@ -25,6 +25,7 @@ export const FAMILIES = [
 // --- Structura noua: categorii de nivel 1 (taburi principale, pe domeniu/task) ---
 // 'motoare' are sub-taburi pe tip de motor (MOTOR_FAMS); restul sunt categorii de task.
 export const CATEGORIES = [
+  { id: 'aplicatii', label: 'Aplicatii' },
   { id: 'motoare', label: 'Motoare' },
   { id: 'pompe', label: 'Pompe & ventilatoare' },
   { id: 'mecanica', label: 'Mecanica & transmisii' },
@@ -34,6 +35,26 @@ export const CATEGORIES = [
   { id: 'termic', label: 'Termic, regimuri & eficienta' },
   { id: 'utilitare', label: 'Utilitare' },
 ]
+// Vedere transversala pe APLICATIE (tip de masina/proces). Sub-taburi sub categoria 'aplicatii'.
+// Cardurile sunt aceleasi module, adunate per aplicatie (un modul poate aparea in mai multe).
+export const APPLICATIONS = [
+  { id: 'pompe', label: 'Pompe' },
+  { id: 'ventilatoare', label: 'Ventilatoare' },
+  { id: 'compresoare', label: 'Compresoare' },
+  { id: 'ridicare', label: 'Macarale & ridicare' },
+  { id: 'transportoare', label: 'Transportoare' },
+  { id: 'winder', label: 'Infasurare (winder)' },
+  { id: 'pozitionare', label: 'Pozitionare / servo' },
+]
+export const APP_MODULES = {
+  pompe: ['selectie-drive', 'pompa-sistem', 'npsh', 'turatie-minima', 'putere-pompa', 'turatie-specifica', 'randament-pompa', 'debit-minim', 'trimming-rotor', 'sarcina-afinitate', 'economie-profil', 'energie-roi'],
+  ventilatoare: ['selectie-drive', 'ventilator-densitate', 'sarcina-afinitate', 'economie-profil', 'energie-roi', 'putere-curent', 'turatie-critica'],
+  compresoare: ['selectie-drive', 'compresor-volant', 'cuplu', 'pornire', 'dinamica', 'regimuri-s'],
+  ridicare: ['selectie-drive', 'macara', 'contragreutate', 'dinamica', 'raport-inertie', 'frecare', 'kinetic-buffer', 'ride-through'],
+  transportoare: ['selectie-drive', 'transportor', 'frecare', 'dinamica', 'pornire', 'transmisii'],
+  winder: ['winder', 'taper', 'transmisii', 'raport-inertie', 'dinamica'],
+  pozitionare: ['pmsm-model', 'pmsm-ciclu', 'pmsm-feedback', 'profil-miscare', 'acordare-pi', 'raspuns-ord2', 'surub-bile', 'liniar-raza', 'ipmsm-mtpa', 'suprasarcina-servo'],
+}
 // Sub-taburi pentru categoria 'Motoare' (pe tip de motor).
 export const MOTOR_FAMS = [
   { id: 'asincron', label: 'Asincron' },
