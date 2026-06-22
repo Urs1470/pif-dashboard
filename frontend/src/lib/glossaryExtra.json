@@ -1,4 +1,124 @@
 {
+ "tha": {
+  "def": "Temperatura aerului din jurul transformatorului (mediul de racire), referinta pentru cresterile de temperatura si pentru incarcarea admisa.",
+  "ia": "Masurata la fata locului; IEC 60076-7 considera tipic 20°C medie anuala / 40°C maxim (ulei).",
+  "practic": "Cu cat $\\theta_a$ e mai mare, cu atat suprasarcina admisa scade (hot-spot-ul se apropie de limita).",
+  "teorie": "Temperatura hot-spot $\\theta_h = \\theta_a + \\Delta\\theta_o + \\Delta\\theta_h$; ambianta ridica direct intregul profil termic."
+ },
+ "tor": {
+  "def": "Cresterea de temperatura a uleiului din partea de sus fata de aer, la sarcina nominala (de pe placuta / testul de incalzire).",
+  "ia": "Placuta trafo sau testul de incalzire (IEC 60076-2); tipic ~55-60 K la ONAN.",
+  "practic": "Reper pentru recalcularea cresterii uleiului la alte sarcini.",
+  "teorie": "La sarcina $K$: $\\Delta\\theta_o = \\Delta\\theta_{o,r}\\,((1+RK^2)/(1+R))^{0.8}$, unde $R$ = raport pierderi sc/gol."
+ },
+ "gr": {
+  "def": "Gradientul hot-spot la nominal: diferenta de temperatura intre punctul cel mai cald al infasurarii si uleiul de sus, la sarcina nominala.",
+  "ia": "Date producator / test; tipic ~15-25 K.",
+  "practic": "La sarcini mari creste mult ($\\propto K^{1.6}$) si dicteaza imbatranirea izolatiei.",
+  "teorie": "$\\Delta\\theta_h = g_r\\,K^{1.6}$ (exponent infasurare ONAN)."
+ },
+ "dto": {
+  "def": "Cresterea de temperatura a uleiului de sus la factorul de incarcare curent.",
+  "ia": "$\\Delta\\theta_o = \\Delta\\theta_{o,r}\\,((1+RK^2)/(1+R))^{0.8}$.",
+  "practic": "Componenta principala a temperaturii uleiului; baza pentru hot-spot.",
+  "teorie": "Pierderile cresc cu $K^2$; uleiul se incalzeste cu exponentul 0,8 (regim ONAN)."
+ },
+ "dth": {
+  "def": "Gradientul hot-spot la sarcina curenta: cresterea punctului cald fata de uleiul de sus.",
+  "ia": "$\\Delta\\theta_h = g_r\\,K^{1.6}$.",
+  "practic": "Creste rapid cu sarcina; impreuna cu uleiul da temperatura hot-spot.",
+  "teorie": "Pierderile suplimentare in infasurare la suprasarcina ridica gradientul cu exponentul 1,6."
+ },
+ "thh": {
+  "def": "Temperatura punctului cald (hot-spot) al infasurarii — cel mai fierbinte loc, care determina imbatranirea izolatiei.",
+  "ia": "$\\theta_h = \\theta_a + \\Delta\\theta_o + \\Delta\\theta_h$.",
+  "practic": "Limite: 98°C durata normala, 120°C sarcina ciclica, 140°C avarie (IEC 60076-7).",
+  "teorie": "Imbatranirea hartiei depinde exponential de $\\theta_h$ (legea Montsinger); 98°C = viata normala pt hartie obisnuita."
+ },
+ "V": {
+  "def": "Rata de imbatranire relativa a izolatiei transformatorului fata de regimul normal (la 98°C hot-spot).",
+  "ia": "$V = 2^{(\\theta_h - 98)/6}$ (hartie normala).",
+  "practic": "$V=1$ la 98°C; $V=2$ la 104°C (imbatranire dubla). Integrala lui $V$ pe zi da pierderea de viata.",
+  "teorie": "Legea Montsinger: viteza degradarii izolatiei se dubleaza la fiecare ~6°C peste referinta."
+ },
+ "pas": {
+  "def": "Pasul de reglaj al unui plot (tap), in procente din tensiunea nominala.",
+  "ia": "Placuta trafo; uzual 2,5% (uneori 1,25% sau 2%).",
+  "practic": "Determina tensiunea castigata/pierduta la trecerea de la un plot la altul.",
+  "teorie": "Plotul modifica numarul de spire din IT, deci raportul de transformare cu $pas$% per pozitie."
+ },
+ "ntr": {
+  "def": "Numarul de plots (pozitii de reglaj) de o parte a pozitiei nominale.",
+  "ia": "Placuta trafo; uzual 2 (deci $\\pm2\\times pas$).",
+  "practic": "Cu pasul, da domeniul total de reglaj al tensiunii.",
+  "teorie": "Domeniu $= \\pm n\\cdot pas$; mai multe plots = reglaj mai fin pe acelasi domeniu sau domeniu mai larg."
+ },
+ "Umax": {
+  "def": "Tensiunea la plotul maxim (cea mai mare pozitie de reglaj).",
+  "ia": "$U_{max} = U_n(1 + n\\cdot pas)$.",
+  "practic": "Folosita cand tensiunea retelei e scazuta (compensezi crescand raportul).",
+  "teorie": "Plotul maxim adauga spire pe IT, ridicand tensiunea secundara la aceeasi tensiune de retea."
+ },
+ "Umin": {
+  "def": "Tensiunea la plotul minim (cea mai mica pozitie de reglaj).",
+  "ia": "$U_{min} = U_n(1 - n\\cdot pas)$.",
+  "practic": "Folosita cand tensiunea retelei e ridicata.",
+  "teorie": "Plotul minim scoate spire, coborand tensiunea secundara."
+ },
+ "Upas": {
+  "def": "Tensiunea castigata sau pierduta la trecerea cu un plot.",
+  "ia": "$U_{pas} = U_n\\cdot pas$.",
+  "practic": "Cat de fin poti regla; sub un plot nu poti corecta.",
+  "teorie": "Rezolutia reglajului de tensiune e data de un pas de plot."
+ },
+ "dom": {
+  "def": "Domeniul total de reglaj al tensiunii, in procente (de la plotul minim la maxim, simetric fata de nominal).",
+  "ia": "$\\pm n\\cdot pas$.",
+  "practic": "Trebuie sa acopere variatia tensiunii retelei la punctul de racord.",
+  "teorie": "Domeniul mai larg permite compensarea unor abateri mari de tensiune, dar creste complexitatea comutatorului."
+ },
+ "PFHd": {
+  "def": "Probabilitatea unui defect periculos pe ora (Probability of dangerous Failure per Hour) a unei functii de siguranta.",
+  "ia": "Din analiza de fiabilitate a lantului de siguranta (datasheet componente, structura).",
+  "practic": "Determina nivelul SIL / PL atins; se compara cu cerinta din evaluarea de risc.",
+  "teorie": "Cu cat $PFH$ e mai mic, cu atat integritatea e mai mare: $10^{-7}..10^{-6}$ = SIL2 / PLd."
+ },
+ "SIL": {
+  "def": "Nivelul de integritate a sigurantei (Safety Integrity Level, 1-3 la masini) atins de o functie de siguranta.",
+  "ia": "Din $PFH$ (IEC 62061/61508): SIL1 $10^{-6}..10^{-5}$, SIL2 $10^{-7}..10^{-6}$, SIL3 $10^{-8}..10^{-7}$.",
+  "practic": "STO la drive este uzual SIL2; trebuie sa fie $\\ge$ cerinta din evaluarea de risc.",
+  "teorie": "SIL cuantifica reducerea de risc realizata de functia de siguranta prin probabilitatea de defect periculos."
+ },
+ "PLidx": {
+  "def": "Nivelul de performanta (Performance Level, a-e) al unei functii de siguranta conform ISO 13849-1 (aici codat numeric a=1 .. e=5).",
+  "ia": "Din $PFH$ + Categorie + MTTFd + DC: PLd $10^{-7}..10^{-6}$, PLe $10^{-8}..10^{-7}$.",
+  "practic": "STO la drive este uzual PLd; PL atins trebuie $\\ge$ PLr (cerinta din evaluarea de risc).",
+  "teorie": "PL combina arhitectura (Categoria B/1/2/3/4), fiabilitatea (MTTFd) si acoperirea diagnostica (DC) intr-un nivel de la a la e."
+ },
+ "vmas": {
+  "def": "Viteza eficace (RMS) a vibratiei masurate pe lagar/carcasa, indicatorul de severitate.",
+  "ia": "Masurata cu vibrometru la turatie nominala, in 3 directii.",
+  "practic": "Se compara cu limita de grad A/B; depasirea indica dezechilibru, aliniere gresita sau lagar uzat.",
+  "teorie": "Viteza vibratiei (mm/s RMS) e proportionala cu energia vibratiei pe domeniul 10-1000 Hz (IEC 60034-14)."
+ },
+ "limA": {
+  "def": "Limita de severitate a vibratiei pentru gradul A (standard), functie de inaltimea de ax.",
+  "ia": "IEC 60034-14: H 56-132 → 1,6; 132-280 → 2,2; >280 → 3,5 mm/s (suspensie libera).",
+  "practic": "Majoritatea motoarelor industriale se incadreaza in grad A.",
+  "teorie": "Limitele cresc cu gabaritul fiindca masinile mari tolereaza viteze de vibratie mai mari la aceeasi solicitare."
+ },
+ "limB": {
+  "def": "Limita de severitate a vibratiei pentru gradul B (special), mai stricta decat A.",
+  "ia": "IEC 60034-14: H 56-132 → 0,7; 132-280 → 1,1; >280 → 1,8 mm/s.",
+  "practic": "Pentru aplicatii cu cerinte ridicate (masini-unelte, cuplaje de precizie).",
+  "teorie": "Gradul B (~jumatate din A) reduce solicitarea pe lagare si transmisia vibratiei spre sarcina."
+ },
+ "marjaA": {
+  "def": "Marja dintre limita de grad A si viteza masurata (pozitiva = sub limita, conform).",
+  "ia": "$lim_A - v_{mas}$.",
+  "practic": "Negativa = vibratie peste limita -> investigatie (echilibrare, aliniere, fundatie, lagare).",
+  "teorie": "O marja mica indica apropierea de limita; tendinta in timp (trend) prevede defectul de lagar."
+ },
  "transformator:k": {
   "def": "Factorul de compensare: puterea reactiva capacitiva (kvar) necesara pe unitate de putere activa (kW) pentru a ridica factorul de putere de la valoarea initiala la cea tinta.",
   "ia": "Calculat: $k = \\tan\\varphi_1 - \\tan\\varphi_2$.",
