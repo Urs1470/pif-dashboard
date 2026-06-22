@@ -180,17 +180,25 @@ export const GLOSSARY = {
 import EXTRA from './glossaryExtra.json'
 // Teorie aplicabila (generata) — pentru marimile fara campul "teorie".
 import TEORIE from './glossaryTeorie.json'
+// Strat imbogatit (def + teorie mai detaliate, notatie RO/IEC + KaTeX) — suprascrie baza.
+import RICH from './glossaryRich.json'
 
 // Cautare cu fallback pe familie, apoi in glosarul extins.
 // Daca intrarea gasita nu are "teorie", o completeaza din glossaryTeorie.json.
+// Stratul RICH (glossaryRich.json) suprascrie def + teorie cand exista.
 export function lookupTerm(key, family) {
   if (!key) return null
   const base = (
     GLOSSARY[`${family}:${key}`] || GLOSSARY[key] ||
     EXTRA[`${family}:${key}`] || EXTRA[key] || null
   )
-  if (!base) return null
-  if (base.teorie && String(base.teorie).trim()) return base
-  const t = TEORIE[`${family}:${key}`] || TEORIE[key]
-  return t ? { ...base, teorie: t } : base
+  const rich = RICH[`${family}:${key}`] || RICH[key] || null
+  if (!base && !rich) return null
+  let out = base ? { ...base } : {}
+  if (!(out.teorie && String(out.teorie).trim())) {
+    const t = TEORIE[`${family}:${key}`] || TEORIE[key]
+    if (t) out.teorie = t
+  }
+  if (rich) out = { ...out, ...rich }
+  return out
 }
