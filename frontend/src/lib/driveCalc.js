@@ -26,7 +26,7 @@ export const FAMILIES = [
 // 'aplicatii' si 'motoare' au sub-taburi; restul sunt categorii directe.
 export const CATEGORIES = [
   { id: 'aplicatii', label: 'Aplicatii' },
-  { id: 'motoare', label: 'Motoare' },
+  { id: 'motoare', label: 'Masini electrice' },
   { id: 'vfd', label: 'Convertizor / VFD' },
   { id: 'armonici', label: 'Armonici & calitate energie' },
   { id: 'instalatie', label: 'Instalatie electrica' },
@@ -39,6 +39,7 @@ export const MOTOR_FAMS = [
   { id: 'cc', label: 'Curent continuu' },
   { id: 'servo', label: 'Servo / PMSM' },
   { id: 'sincron', label: 'Sincron' },
+  { id: 'transformator', label: 'Transformatoare' },
 ]
 // 'Aplicatii' inglobeaza fostele taburi Pompe & Mecanica (grupate pe tip de masina/proces).
 // APP_OF da O SINGURA casa fiecarui card -> FARA dublare.
@@ -65,9 +66,10 @@ export const CAT_OF = {
   // convertizor / VFD
   'vfd': 'vfd', 'selectie-drive': 'vfd', 'comutatie': 'vfd', 'unda-reflectata': 'vfd', 'filtru-iesire': 'vfd', 'ride-through': 'vfd', 'kinetic-buffer': 'vfd', 'curenti-rulment': 'vfd', 'derating-vfd-motor': 'vfd',
   // armonici & calitate energie
-  'armonici': 'armonici', 'ieee519': 'armonici', 'factor-k': 'armonici', 'factor-putere-vfd': 'armonici', 'comparatie-frontend': 'armonici', 'rezonanta-cond': 'armonici', 'reactor-detunare': 'armonici', 'compensare': 'armonici',
+  'armonici': 'armonici', 'ieee519': 'armonici', 'factor-putere-vfd': 'armonici', 'comparatie-frontend': 'armonici', 'rezonanta-cond': 'armonici', 'reactor-detunare': 'armonici',
   // instalatie electrica
-  'cablu': 'instalatie', 'cablu-protectii': 'instalatie', 'scurtcircuit': 'instalatie', 'transformator': 'instalatie', 'dip-pornire': 'instalatie',
+  'cablu': 'instalatie', 'cablu-protectii': 'instalatie', 'scurtcircuit': 'instalatie', 'dip-pornire': 'instalatie',
+  // transformatoare (sub-tab in 'Masini electrice') — au family:'transformator', deci NU sunt in CAT_OF (cad pe 'motoare')
   // termic, regimuri & eficienta
   'termic': 'termic', 'motor-termic': 'termic', 'regimuri-s': 'termic', 'porniri-ora': 'termic', 'derating-armonici-motor': 'termic', 'clase-ie': 'termic', 'energie-roi': 'termic',
   // utilitare
@@ -96,13 +98,15 @@ export const MODULE_ORDER = [
   'ipmsm-mtpa', 'suprasarcina-servo',
   // sincron: turatie -> putere -> poli aparenti -> SynRM
   'sincron-turatie', 'sincron-putere', 'sincron-poli-aparenti', 'synrm', 'vcurves',
+  // transformatoare (sub-tab in Masini electrice)
+  'transformator', 'trafo-grupa-conexiuni', 'trafo-12pulse', 'trafo-scurtcircuit', 'factor-k', 'compensare',
   // comune: selectie -> convertizor -> dinamica/tuning/rezonanta -> mecanica -> energie
   //         -> instalatie (cablu/protectii/scurtcircuit/trafo/dip) -> calitate energie -> utilitar
   'selectie-drive', 'vfd', 'comutatie', 'unda-reflectata', 'filtru-iesire', 'ride-through', 'kinetic-buffer', 'curenti-rulment',
   'dinamica', 'raport-inertie', 'turatie-critica', 'transmisii',
   'surub-bile', 'liniar-raza', 'macara', 'contragreutate', 'transportor', 'winder', 'taper', 'frecare', 'compresor-volant',
-  'energie-roi', 'cablu', 'cablu-protectii', 'scurtcircuit', 'transformator', 'factor-k', 'dip-pornire',
-  'termic', 'armonici', 'factor-putere-vfd', 'ieee519', 'comparatie-frontend', 'rezonanta-cond', 'reactor-detunare', 'compensare', 'conversii',
+  'energie-roi', 'cablu', 'cablu-protectii', 'scurtcircuit', 'dip-pornire',
+  'termic', 'armonici', 'factor-putere-vfd', 'ieee519', 'comparatie-frontend', 'rezonanta-cond', 'reactor-detunare', 'conversii',
   // adaugiri PIF (verificare 2026)
   'izolatie', 'run-up', 'franare-rezistenta', 'encoder-offset', 'notch-rezonanta', 'sto-ss1', 'lovitura-berbec', 'pid-drive', 'retea-emc',
 ]
@@ -151,7 +155,10 @@ export const SOURCES = {
   'scurtcircuit': 'IEC 60909-0 (Icc; Icc_trafo=I_n/u_k; contributie motor ~ rotor blocat)',
   'ieee519': 'IEC 61000-3-12 (limite armonici cu Rsce) + IEC 61000-2-4 (niveluri compatibilitate) + EN 50160 (THD_U ≤ 8%); (IEEE 519 Tab.2 echiv. US)',
   'rezonanta-cond': 'Schneider Electrical Installation Guide — h_rez=√(S_sc/Q_c)',
-  'transformator': 'S_tr=k·P/η; Icc_sec=I_n/u_k; inrush 8-12× (IEEE/Larson Electronics)',
+  'transformator': 'IEC 60076-1 (putere nominala) + IEC 61378-1 (trafo pt convertizoare). Dimensionare din sarcina (S_tr=S·k_rez) SI din pornire (S_tr=k_por·S_mot·u_k/ΔU_max, legat de caderea la pornire). Raport trafo/motor pe tip de pornire.',
+  'trafo-grupa-conexiuni': 'IEC 60076-1 (marcarea bornelor & grupe de conexiuni); indice orar ×30°. Dyn11 standard JT. Paralel: aceeasi grupa + raport + u_k apropiat.',
+  'trafo-12pulse': 'IEC 61378-1 (trafo pt convertizoare) + IEC 61000-2-4 (niveluri compatibilitate industriale); doua secundare la 30° (Dy11+Dd0) -> 12 pulsuri; armonici caracteristice h=12k±1; anulare 5/7 ~85-95%.',
+  'trafo-scurtcircuit': 'IEC 60909-0 (Icc=I_n/u_k) + IEC 60076-5 (tinuta la scurtcircuit); varf i_p=κ√2·Icc (κ≈1.8 JT); I²t solicitare termica; inrush 8-12×I_n. (IEEE C57 echiv. US)',
   'dip-pornire': 'ΔU≈S_pornire/(S_pornire+S_cc); IEC/EN 60909 + EN 50160. (IEEE 141 echiv. US, limita ~15%)',
   'comutatie': 'Mohan — pierderi comutatie/conductie (ec. 2-6/2-7) + datasheet IGBT (E_on+E_off)',
   'unda-reflectata': 'IEC/EN 60034-25 + IEC/TS 60034-18-41 (anvelopa izolatie, dv/dt) + ABB TGB No.5; L_crit=v·t_r/2. (NEMA MG-1 Part 31 echiv. US)',
@@ -322,6 +329,9 @@ const DOC_LINKS = {
   'cablu-protectii': [WEB.cable],
   'scurtcircuit': [WEB.shortCircuit],
   'transformator': [WEB.transformer],
+  'trafo-grupa-conexiuni': [WEB.transformer],
+  'trafo-12pulse': [ABB.thd, WEB.thd],
+  'trafo-scurtcircuit': [WEB.shortCircuit, WEB.transformer],
   'dip-pornire': [WEB.voltageSag],
   'turatie-critica': [WEB.resonance],
   'termic': [WEB.duty],
@@ -910,7 +920,7 @@ export const MODULES = [
   },
   {
     id: 'compensare',
-    family: 'comun',
+    family: 'transformator',
     tier: 2,
     title: 'Compensare cos φ',
     subtitle: 'Putere reactiva, capacitate, curent baterie',
@@ -1728,26 +1738,119 @@ export const MODULES = [
   },
   {
     id: 'transformator',
-    family: 'comun',
-    tier: 3,
-    title: 'Transformator pentru drive',
-    subtitle: 'Dimensionare kVA + inrush',
-    note: 'La sarcini neliniare (multe drive-uri) considera factor K / rezerva pentru armonici.',
+    family: 'transformator',
+    tier: 2,
+    title: 'Transformator — dimensionare',
+    subtitle: 'Putere kVA, rezerva si raport trafo/motor pe tip de pornire',
+    note: 'Marimea ceruta de SARCINA: $S_{tr} \\ge S_{sarc}\\cdot k_{rez}$. Marimea ceruta de PORNIRE (sa tii caderea de tensiune sub limita): $S_{tr} \\ge k_{por}\\,S_{motor}\\,u_k/\\Delta U_{max}$. Alegi cea mai mare. Factor pornire $k_{por}$ (×S motor): DOL ~6, stea-triunghi ~2-3, softstarter ~3, VFD ~1.',
+    params: 'IEC 60076-1 (putere nominala) + IEC 61378-1 (transformatoare pentru convertizoare). La sarcini neliniare vezi factorul K.',
     fields: [
-      { key: 'Pdrive', label: 'Putere drive (suma)', unit: 'kW', default: 200, step: 10, min: 0 },
-      { key: 'eta', label: 'Randament drive+motor', unit: '', default: 0.9, step: 0.01, min: 0.1 },
-      { key: 'krez', label: 'Factor rezerva', unit: '', default: 1.1, step: 0.05, min: 1 },
+      { key: 'Psarc', label: 'Putere ceruta (suma)', unit: 'kW', default: 200, step: 10, min: 0 },
+      { key: 'cosphi', label: 'Factor de putere sarcina', unit: '', default: 0.85, step: 0.01, min: 0.1 },
+      { key: 'ku', label: 'Factor de simultaneitate', unit: '', default: 0.85, step: 0.05, min: 0.1 },
+      { key: 'krez', label: 'Factor de rezerva', unit: '', default: 1.2, step: 0.05, min: 1 },
+      { key: 'Pmot1', label: 'Cel mai mare motor', unit: 'kW', default: 55, step: 5, min: 0 },
+      { key: 'kpor', label: 'Factor pornire (×S motor)', unit: '', default: 6, step: 0.5, min: 1 },
+      { key: 'uk', label: 'Tensiune de scurtcircuit', unit: '%', default: 6, step: 0.5, min: 0.1 },
+      { key: 'dUmax', label: 'Cadere de tensiune admisa', unit: '%', default: 10, step: 1, min: 1 },
       { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 1 },
-      { key: 'uk', label: 'Tensiune scurtcircuit', unit: '%', default: 6, step: 0.5, min: 0.1 },
     ],
     results: [
-      { key: 'Str', label: 'Putere transformator', unit: 'kVA', tex: 'S_{tr} = k\\,P_{drive}/\\eta',
-        calc: (v) => (v.eta ? (v.krez * v.Pdrive) / v.eta : null), dec: 0 },
-      { key: 'Intr', label: 'Curent nominal', unit: 'A', tex: 'I_n = \\dfrac{S_{tr}\\cdot 1000}{\\sqrt{3}\\,U}',
-        calc: (v, r) => (r.Str * 1000) / (SQRT3 * v.U), dec: 0 },
-      { key: 'Iccsec', label: 'Icc secundar', unit: 'kA', tex: 'I_{cc} = I_n/(u_k/100)',
-        calc: (v, r) => (v.uk ? r.Intr / (v.uk / 100) / 1000 : null), dec: 2 },
-      { key: 'Iinrush', label: 'Curent inrush (varf)', unit: 'A', tex: '\\approx 10\\,I_n',
+      { key: 'Ssarc', label: 'Putere aparenta sarcina', unit: 'kVA', tex: 'S_{sarc} = \\dfrac{P\\,k_u}{\\cos\\varphi}',
+        calc: (v) => (v.cosphi ? (v.Psarc * v.ku) / v.cosphi : null), dec: 0 },
+      { key: 'Strec', label: 'Trafo din sarcina (cu rezerva)', unit: 'kVA', tex: 'S_{tr,sarc} = S_{sarc}\\,k_{rez}',
+        calc: (v, r) => (r.Ssarc != null ? r.Ssarc * v.krez : null), dec: 0 },
+      { key: 'Spor', label: 'Trafo din conditia de pornire', unit: 'kVA', tex: 'S_{tr,por} = k_{por}\\dfrac{P_{mot}}{\\cos\\varphi}\\dfrac{u_k}{\\Delta U_{max}}',
+        calc: (v) => (v.cosphi && v.dUmax ? v.kpor * (v.Pmot1 / v.cosphi) * (v.uk / v.dUmax) : null), dec: 0 },
+      { key: 'Strafo', label: 'Putere trafo recomandata', unit: 'kVA', tex: 'S_{tr} = \\max(S_{tr,sarc},\\,S_{tr,por})',
+        calc: (v, r) => Math.max(r.Strec || 0, r.Spor || 0), dec: 0 },
+      { key: 'ratioTM', label: 'Raport trafo / sarcina', unit: '×', tex: 'S_{tr}/P',
+        calc: (v, r) => (v.Psarc ? r.Strafo / v.Psarc : null), dec: 2 },
+      { key: 'Intr', label: 'Curent nominal trafo', unit: 'A', tex: 'I_n = \\dfrac{S_{tr}\\cdot 1000}{\\sqrt{3}\\,U}',
+        calc: (v, r) => (r.Strafo * 1000) / (SQRT3 * v.U), dec: 0 },
+    ],
+  },
+  {
+    id: 'trafo-grupa-conexiuni',
+    family: 'transformator',
+    tier: 2,
+    title: 'Grupa de conexiuni (vector group)',
+    subtitle: 'Defazaj primar-secundar, conexiuni, functionare in paralel',
+    note: 'Litera mare = primar (D = triunghi, Y = stea), litera mica = secundar (d/y), n = neutru scos, cifra = indicele orar (×30° defazaj). Uzual la JT: $Dyn11$ (secundar in stea cu neutru, secundarul intarzie 330° = avans 30°). Functionare in PARALEL: aceeasi grupa orara, acelasi raport de transformare si $u_k$ apropiat (±10%).',
+    params: 'IEC 60076-1 (marcarea bornelor & grupe de conexiuni). Dyn11 = standard pentru distributie JT.',
+    fields: [
+      { key: 'clock', label: 'Indice orar (0-11)', unit: '', default: 11, step: 1, min: 0 },
+    ],
+    results: [
+      { key: 'defazaj', label: 'Intarziere secundar fata de primar', unit: '°', tex: '\\Delta\\varphi = \\text{ora}\\times 30°',
+        calc: (v) => (v.clock % 12) * 30, dec: 0 },
+    ],
+  },
+  {
+    id: 'trafo-12pulse',
+    family: 'transformator',
+    tier: 3,
+    title: 'Transformator cu dubla infasurare (12 pulsuri)',
+    subtitle: 'Anularea armonicilor 5 si 7, THD redus',
+    note: 'Doua secundare defazate 30° (ex. $Dy11 + Dd0$) alimenteaza doua punti de 6 pulsuri -> sistem de 12 pulsuri. Armonicile 5 si 7 (si 17, 19) se anuleaza reciproc; raman caracteristice $h = 12k \\pm 1$ (11, 13, 23, 25...). THD scade de la ~30% (6 pulsuri) la ~13-14% (model teoretic 1/h; in practica putin mai mic datorita comutatiei).',
+    params: 'IEC 61378-1 (transformatoare pentru convertizoare) + IEC 61000-2-4 (niveluri compatibilitate in instalatii industriale). Anulare reala ~85-95% (dezechilibre de impedanta).',
+    charts: [(v) => {
+      const c = v.canc / 100
+      const H = [5, 7, 11, 13, 17, 19, 23, 25]
+      const A = { 5: 20, 7: 14.29, 11: 9.09, 13: 7.69, 17: 5.88, 19: 5.26, 23: 4.35, 25: 4.0 }
+      const cancel = (h) => h === 5 || h === 7 || h === 17 || h === 19
+      return {
+        xLabel: 'Ordin armonica h', yLabel: 'Amplitudine [% din I1]',
+        series: [
+          { label: '6 pulsuri', color: COL.c, dash: true, points: H.map((h) => ({ x: h, y: A[h] })) },
+          { label: '12 pulsuri', color: COL.a, points: H.map((h) => ({ x: h, y: cancel(h) ? A[h] * (1 - c) : A[h] })) },
+        ],
+      }
+    }],
+    fields: [
+      { key: 'canc', label: 'Grad de anulare 5/7', unit: '%', default: 90, step: 1, min: 0 },
+    ],
+    results: [
+      { key: 'THD6', label: 'THD curent 6 pulsuri (referinta)', unit: '%', tex: 'THD_6 = \\sqrt{\\textstyle\\sum (I_h/I_1)^2}',
+        calc: () => Math.sqrt([20, 14.29, 9.09, 7.69, 5.88, 5.26, 4.35, 4.0].reduce((s, a) => s + a * a, 0)), dec: 1 },
+      { key: 'THD12', label: 'THD curent 12 pulsuri', unit: '%', tex: 'THD_{12}\\ (5,7,17,19\\text{ anulate})',
+        calc: (v) => {
+          const c = v.canc / 100
+          const cancelled = [20, 14.29, 5.88, 5.26], remain = [9.09, 7.69, 4.35, 4.0]
+          let s = 0
+          for (const a of cancelled) s += (a * (1 - c)) ** 2
+          for (const a of remain) s += a * a
+          return Math.sqrt(s)
+        }, dec: 1 },
+      { key: 'reducere', label: 'Reducere THD', unit: '%', tex: '\\left(1 - THD_{12}/THD_6\\right)\\cdot 100',
+        calc: (v, r) => (r.THD6 ? (1 - r.THD12 / r.THD6) * 100 : null), dec: 0 },
+    ],
+  },
+  {
+    id: 'trafo-scurtcircuit',
+    family: 'transformator',
+    tier: 3,
+    title: 'Scurtcircuit la transformator',
+    subtitle: 'Icc secundar, curent de varf, solicitare termica',
+    note: 'Curentul de scurtcircuit secundar e limitat de $u_k$: $I_{cc} = I_n/u_k$. Varful dinamic $i_p = \\kappa\\sqrt{2}\\,I_{cc}$ ($\\kappa \\approx 1.8$ la JT) solicita mecanic barele; energia $I^2t$ (in $kA^2 s$) solicita termic conductoarele — formula simpla $I_{cc}^2 t_k$ e conservatoare (metoda exacta IEC 60909: $I_{th}=I_{cc}\\sqrt{m+n}$). Inrush la cuplare ~8-12×$I_n$. Disjunctor: $I_{cu} \\ge I_{cc}$.',
+    params: 'IEC 60909-0 (curenti de scurtcircuit) + IEC 60076-5 (tinuta la scurtcircuit).',
+    fields: [
+      { key: 'Strafo', label: 'Putere transformator', unit: 'kVA', default: 630, step: 10, min: 1 },
+      { key: 'uk', label: 'Tensiune de scurtcircuit', unit: '%', default: 6, step: 0.5, min: 0.1 },
+      { key: 'U', label: 'Tensiune linie', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'kappa', label: 'Factor de varf κ', unit: '', default: 1.8, step: 0.05, min: 1 },
+      { key: 'tk', label: 'Durata scurtcircuit', unit: 's', default: 1, step: 0.1, min: 0.01 },
+    ],
+    results: [
+      { key: 'Intr', label: 'Curent nominal trafo', unit: 'A', tex: 'I_n = \\dfrac{S\\cdot 1000}{\\sqrt{3}\\,U}',
+        calc: (v) => (v.Strafo * 1000) / (SQRT3 * v.U), dec: 0 },
+      { key: 'Iccsec', label: 'Icc secundar (permanent)', unit: 'kA', tex: 'I_{cc} = \\dfrac{I_n}{u_k/100}',
+        calc: (v, r) => (v.uk ? r.Intr / (v.uk / 100) / 1000 : null), dec: 1 },
+      { key: 'ipk', label: 'Curent de varf dinamic', unit: 'kA', tex: 'i_p = \\kappa\\sqrt{2}\\,I_{cc}',
+        calc: (v, r) => (r.Iccsec != null ? v.kappa * Math.SQRT2 * r.Iccsec : null), dec: 1 },
+      { key: 'I2t', label: 'Energie termica (I²t)', unit: 'kA²s', tex: 'I^2t = I_{cc}^2\\,t_k',
+        calc: (v, r) => (r.Iccsec != null ? r.Iccsec ** 2 * v.tk : null), dec: 1 },
+      { key: 'Iinrush', label: 'Curent inrush (varf)', unit: 'A', tex: 'i_{inrush} \\approx 10\\,I_n',
         calc: (v, r) => 10 * r.Intr, dec: 0 },
     ],
   },
@@ -2589,7 +2692,7 @@ export const MODULES = [
   },
   {
     id: 'factor-k',
-    family: 'comun',
+    family: 'transformator',
     tier: 3,
     title: 'Factor K transformator (sarcini neliniare)',
     subtitle: 'Supradimensionare pt. armonici (drive-uri)',

@@ -1,4 +1,118 @@
 {
+ "transformator:k": {
+  "def": "Factorul de compensare: puterea reactiva capacitiva (kvar) necesara pe unitate de putere activa (kW) pentru a ridica factorul de putere de la valoarea initiala la cea tinta.",
+  "ia": "Calculat: $k = \\tan\\varphi_1 - \\tan\\varphi_2$.",
+  "practic": "Puterea bateriei $Q_c = k\\,P$. Valori tipice 0,3-0,7 pentru ridicare de la 0,75-0,8 la 0,95.",
+  "teorie": "Compensarea reduce tangenta unghiului de defazaj de la $\\tan\\varphi_1$ la $\\tan\\varphi_2$; condensatoarele furnizeaza reactivul $Q_c = k\\,P$."
+ },
+ "ku": {
+  "def": "Factorul de simultaneitate: fractiunea din puterea instalata care functioneaza in acelasi timp, folosita la dimensionarea transformatorului.",
+  "ia": "Estimat din regimul de exploatare (tipic 0,7-0,9 la mai multe motoare).",
+  "practic": "$S_{sarc} = P\\,k_u/\\cos\\varphi$; evita supradimensionarea trafo cand nu toate sarcinile merg deodata.",
+  "teorie": "Rar toate consumatoarele cer putere maxima simultan; $k_u < 1$ reflecta cererea reala de varf."
+ },
+ "Pmot1": {
+  "def": "Puterea celui mai mare motor din instalatie, determinanta pentru caderea de tensiune la pornire.",
+  "ia": "Din lista de echipamente (cel mai mare consumator pornit direct).",
+  "practic": "Pornirea celui mai mare motor da cel mai mare dip; dimensioneaza trafo ca $\\Delta U$ sa ramana sub limita.",
+  "teorie": "Dip-ul depinde de $S_{pornire}/S_{cc}$; cel mai mare motor cu pornirea cea mai dura fixeaza marimea minima a trafo."
+ },
+ "kpor": {
+  "def": "Factorul de pornire: de cate ori puterea aparenta absorbita la pornire depaseste puterea nominala a motorului.",
+  "ia": "Din metoda de pornire: DOL ~6, stea-triunghi ~2-3, softstarter ~3, VFD ~1.",
+  "practic": "Intra direct in marimea trafo ceruta de pornire si in caderea de tensiune.",
+  "teorie": "Curentul de pornire DOL ~6 $I_n$ -> putere aparenta de pornire ~6 $S_n$; reducerea pornirii scade $k_{por}$."
+ },
+ "dUmax": {
+  "def": "Caderea de tensiune maxima admisa pe bara la pornirea unui motor.",
+  "ia": "Limita de proiectare; uzual 10-15% (practica de instalatie / specificatii interne; IEEE 141 echiv. US).",
+  "practic": "Sub limita eviti declansarea contactoarelor si pornirea grea a celorlalte sarcini.",
+  "teorie": "$\\Delta U \\approx S_{pornire}/(S_{pornire}+S_{cc})$; un trafo mai mare ($S_{cc}$ mai mare) scade dip-ul."
+ },
+ "Ssarc": {
+  "def": "Puterea aparenta totala ceruta de sarcina, baza pentru dimensionarea transformatorului.",
+  "ia": "$S_{sarc} = P\\,k_u/\\cos\\varphi$.",
+  "practic": "Se inmulteste cu factorul de rezerva si se alege trafo standard imediat superior.",
+  "teorie": "Transformatorul se dimensioneaza in kVA (putere aparenta), nu in kW, fiindca include si reactivul."
+ },
+ "Strec": {
+  "def": "Puterea de transformator ceruta de sarcina, incluzand factorul de rezerva.",
+  "ia": "$S_{tr,sarc} = S_{sarc}\\,k_{rez}$.",
+  "practic": "Una din cele doua conditii de dimensionare; se compara cu cea de pornire.",
+  "teorie": "Rezerva acopera cresterea sarcinii, pierderile si imbatranirea; tipic $k_{rez} = 1,1$-$1,3$."
+ },
+ "Spor": {
+  "def": "Puterea de transformator minima ceruta de conditia de pornire, ca sa tii caderea de tensiune sub limita.",
+  "ia": "$S_{tr,por} = k_{por}\\,S_{motor}\\,u_k/\\Delta U_{max}$.",
+  "practic": "La pornirea DOL a unui motor mare poate depasi conditia de sarcina -> dicteaza marimea trafo.",
+  "teorie": "Din $\\Delta U \\approx S_{pornire}\\,u_k/S_{tr}$ rezulta $S_{tr}$ minim pentru $\\Delta U$ admis."
+ },
+ "ratioTM": {
+  "def": "Raportul dintre puterea transformatorului si puterea sarcinii (kVA/kW), indicator al rezervei.",
+  "ia": "$S_{tr}/P$.",
+  "practic": "Orientativ 1,2-1,5 la sarcina cu VFD; mult mai mare daca domina pornirea DOL a unui motor mare.",
+  "teorie": "Cu cat pornirea e mai dura, cu atat raportul trebuie mai mare ca sa limiteze caderea de tensiune."
+ },
+ "clock": {
+  "def": "Indicele orar al grupei de conexiuni: defazajul dintre tensiunile primar si secundar, in multipli de 30° (ca acele de ceas).",
+  "ia": "Din placuta trafo (ex. Dyn11 -> ora 11).",
+  "practic": "Trafo in paralel trebuie sa aiba acelasi indice orar; conteaza la sistemele de 12 pulsuri.",
+  "teorie": "Conexiunea (D/Y) a fiecarei infasurari introduce defazaje de 30°; indicele orar le insumeaza."
+ },
+ "defazaj": {
+  "def": "Defazajul (intarzierea) tensiunii secundare fata de cea primara, dat de grupa de conexiuni.",
+  "ia": "$\\Delta\\varphi = \\text{ora}\\times 30°$.",
+  "practic": "Dyn11 = 330° (echivalent avans 30°); doua secundare la 30° diferenta dau 12 pulsuri.",
+  "teorie": "Conexiunile in stea/triunghi rotesc fazorii cu multipli de 30°; defazajul controleaza anularea armonicilor la 12 pulsuri."
+ },
+ "canc": {
+  "def": "Gradul de anulare a armonicilor 5 si 7 la un transformator cu dubla infasurare (12 pulsuri).",
+  "ia": "Tipic 85-95% (limitat de dezechilibrele de impedanta intre cele doua secundare).",
+  "practic": "Cu cat anularea e mai buna, cu atat THD-ul rezultant e mai mic.",
+  "teorie": "Defazajul de 30° intre cele doua punti inverseaza fazele armonicilor 5/7, care se aduna in antifaza si se anuleaza partial."
+ },
+ "THD6": {
+  "def": "Distorsiunea armonica totala de curent a unei punti de 6 pulsuri (redresor cu diode), de referinta.",
+  "ia": "Din spectrul caracteristic (h=6k±1, amplitudine ~1/h): ~29-30%.",
+  "practic": "Valoarea tipica a unui drive standard fara masuri; se compara cu varianta de 12 pulsuri.",
+  "teorie": "$THD = \\sqrt{\\sum (I_h/I_1)^2}$; armonicile 5 si 7 domina la 6 pulsuri."
+ },
+ "THD12": {
+  "def": "Distorsiunea armonica totala de curent a unui sistem de 12 pulsuri (doua punti pe secundare defazate 30°).",
+  "ia": "Calculat din spectrul ramas dupa anularea 5/7: ~13-14% (model teoretic 1/h; in practica putin mai mic).",
+  "practic": "Reducere substantiala fata de 6 pulsuri; poate evita filtre suplimentare.",
+  "teorie": "Raman doar armonicile $h = 12k\\pm1$ (11,13,23,25...); 5,7,17,19 se anuleaza dupa gradul de anulare."
+ },
+ "reducere": {
+  "def": "Reducerea procentuala a THD-ului prin trecerea de la 6 la 12 pulsuri.",
+  "ia": "$\\left(1 - THD_{12}/THD_6\\right)\\cdot 100$.",
+  "practic": "Cuantifica beneficiul transformatorului cu dubla infasurare.",
+  "teorie": "Anularea armonicilor 5/7 (cele mai mari) scade puternic suma patratica a armonicilor."
+ },
+ "kappa": {
+  "def": "Factorul de varf κ: raportul dintre curentul de soc (primul varf) si valoarea de regim a curentului de scurtcircuit.",
+  "ia": "Din raportul R/X al buclei de defect; tipic ~1,8 la JT (IEC 60909).",
+  "practic": "Determina solicitarea mecanica (electrodinamica) a barelor si a aparatajului.",
+  "teorie": "$i_p = \\kappa\\sqrt{2}\\,I_{cc}$; κ creste spre 2 cand reteaua e puternic inductiva (R/X mic)."
+ },
+ "tk": {
+  "def": "Durata scurtcircuitului pana la deconectare, folosita la verificarea solicitarii termice.",
+  "ia": "Din timpul de declansare al protectiei (tipic 0,1-1 s).",
+  "practic": "Intra in energia $I^2t$ care incalzeste conductoarele; trebuie sub tinuta termica a cablului/barei.",
+  "teorie": "Incalzirea adiabatica depinde de $I_{cc}^2\\,t_k$; protectia rapida reduce solicitarea."
+ },
+ "ipk": {
+  "def": "Curentul de varf (de soc) la scurtcircuit: primul maxim instantaneu al curentului.",
+  "ia": "$i_p = \\kappa\\sqrt{2}\\,I_{cc}$.",
+  "practic": "Aparatajul trebuie sa suporte $i_p$ (tinuta electrodinamica, $I_{cm}$).",
+  "teorie": "Componenta aperiodica suprapusa peste cea periodica da un varf initial mai mare decat $\\sqrt{2}\\,I_{cc}$."
+ },
+ "I2t": {
+  "def": "Integrala $I^2t$ a curentului de scurtcircuit: energia specifica ce solicita termic conductoarele.",
+  "ia": "$I^2t = I_{cc}^2\\,t_k$.",
+  "practic": "Se compara cu tinuta termica a cablului ($k^2 S^2$) si a aparatajului.",
+  "teorie": "Incalzirea adiabatica a unui conductor e proportionala cu $I^2t$; baza criteriului de scurtcircuit (IEC 60364-5-54)."
+ },
  "nmax": {
   "def": "Turatia maxima de functionare dorita pentru actionare, peste turatia de baza; in zona de slabire de camp cuplul disponibil scade $\\propto 1/n$, iar peste $n_2$ scade si puterea.",
   "ia": "Cerinta de proces / aplicatie; limitata mecanic de rotor si setata in drive (ABB 30.12 f_max, Siemens p1082).",
