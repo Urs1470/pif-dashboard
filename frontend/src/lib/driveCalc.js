@@ -73,7 +73,7 @@ export const CAT_OF = {
   // utilitare
   'conversii': 'utilitare',
   // adaugiri PIF
-  'izolatie': 'instalatie', 'franare-rezistenta': 'vfd', 'sto-ss1': 'vfd',
+  'izolatie': 'instalatie', 'franare-rezistenta': 'vfd', 'sto-ss1': 'vfd', 'retea-emc': 'instalatie',
 }
 // Categoria unui modul: aplicatie (daca e in APP_OF) -> 'aplicatii'; altfel domeniul; altfel 'motoare'.
 export function catOf(m) { return APP_OF[m.id] ? 'aplicatii' : (CAT_OF[m.id] || 'motoare') }
@@ -104,7 +104,7 @@ export const MODULE_ORDER = [
   'energie-roi', 'cablu', 'cablu-protectii', 'scurtcircuit', 'transformator', 'factor-k', 'dip-pornire',
   'termic', 'armonici', 'factor-putere-vfd', 'ieee519', 'comparatie-frontend', 'rezonanta-cond', 'reactor-detunare', 'compensare', 'conversii',
   // adaugiri PIF (verificare 2026)
-  'izolatie', 'run-up', 'franare-rezistenta', 'encoder-offset', 'notch-rezonanta', 'sto-ss1', 'lovitura-berbec', 'pid-drive',
+  'izolatie', 'run-up', 'franare-rezistenta', 'encoder-offset', 'notch-rezonanta', 'sto-ss1', 'lovitura-berbec', 'pid-drive', 'retea-emc',
 ]
 
 // Proveninta formulelor (verificat din carti/ghiduri — vezi wiki_job/theory).
@@ -203,6 +203,7 @@ export const SOURCES = {
   'sto-ss1': 'IEC/EN 61800-5-2 (functii de siguranta STO/SS1) + IEC 60204-1 (categorii de stop 0/1)',
   'lovitura-berbec': 'EN 805 (regim tranzitoriu retele de apa); principiul Joukowsky Δp=ρ·a·Δv; timp critic Tc=2L/a',
   'pid-drive': 'Ziegler-Nichols (oscilatie critica Ku/Tu); manuale ABB ACS580/880 (PID intern), Siemens G120 (technology controller)',
+  'retea-emc': 'IEC 60364 (legare la pamant TN/TT/IT) + IEC/EN 61800-3 (EMC C1-C4); manuale instalare ABB ACS580/880 si Siemens G120 (IT / corner-grounded)',
 }
 
 // --- Documentatie: manuale ABB gazduite (deep-link la pagina) + surse online (engleza) ---
@@ -2897,6 +2898,17 @@ export const MODULES = [
       { key: 'TiPID', label: 'Ti (regulator PID)', unit: 's', tex: 'T_i = 0.5\\,T_u', calc: (v) => 0.5 * v.Tu, dec: 2 },
       { key: 'TdPID', label: 'Td (regulator PID)', unit: 's', tex: 'T_d = 0.125\\,T_u', calc: (v) => 0.125 * v.Tu, dec: 2 },
     ],
+  },
+  {
+    id: 'retea-emc',
+    family: 'comun',
+    tier: 3,
+    title: 'Retea IT/TN & filtru EMC',
+    subtitle: 'Decizie la PIF — scoaterea surubului EMC/MOV',
+    note: 'Pe retea IT (neutru izolat) sau corner-grounded: SCOATE surubul filtrului EMC intern + varistorul (MOV) inainte de energizare — altfel primul defect de pamant arde filtrul si poate distruge drive-ul. Pe TN-S / TN-C-S: lasa filtrul EMC activ (conformitate EMC C1-C3). Confirma tipul retelei cu beneficiarul si manualul drive-ului (ABB ACS580/880 sectiunea "IT / corner-grounded"; Siemens SINAMICS G120).',
+    params: 'IEC 60364 (TN/TT/IT) + IEC/EN 61800-3 (categorii EMC C1-C4)',
+    fields: [],
+    results: [],
   },
 ]
 
