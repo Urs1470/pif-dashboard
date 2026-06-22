@@ -138,7 +138,7 @@
     const m = byId(id); if (!m) return
     locate(m); openModule(id)
     await tick()
-    document.getElementById('acc-' + id)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    document.getElementById('acc-' + id)?.scrollIntoView({ block: 'start' })
   }
   function step(m, dir) {
     const i = shown.findIndex((x) => x.id === m.id)
@@ -146,7 +146,7 @@
     const next = new Set(isMobile ? [] : expanded)
     next.delete(m.id); next.add(t.id)
     expanded = next; pushRecent(t.id)
-    tick().then(() => document.getElementById('acc-' + t.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }))
+    tick().then(() => document.getElementById('acc-' + t.id)?.scrollIntoView({ block: 'start' }))
   }
   const keyResult = (m, r) => {
     if (!m.results || !m.results.length) return null
@@ -426,6 +426,7 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease);
+    scroll-margin-top: 16px; /* la navigare cardul incepe de sus, cu putin spatiu */
   }
   .acc-item.open { border-color: var(--accent); }
   .acc-head {
