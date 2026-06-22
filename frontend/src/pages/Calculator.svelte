@@ -256,6 +256,7 @@
         </div>
 
         {#if open}
+          {@const charts = computeCharts(m, values[m.id])}
           <div class="acc-body">
             <div class="acc-body-head">
               <span class="cat-badge">{catLabel(catOf(m))}</span>
@@ -290,14 +291,18 @@
               </div>
             {/if}
 
-            {#each computeCharts(m, values[m.id]) as chart, ci}
-              <div class="chart-zoom" role="button" tabindex="0" title="Click pentru marire"
-                onclick={() => openZoom(m, ci)}
-                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}>
-                <Chart {chart} />
-                <span class="zoom-hint"><Maximize2 size={14} /></span>
+            {#if charts.length}
+              <div class="charts">
+                {#each charts as chart, ci}
+                  <div class="chart-zoom" role="button" tabindex="0" title="Click pentru marire"
+                    onclick={() => openZoom(m, ci)}
+                    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}>
+                    <Chart {chart} />
+                    <span class="zoom-hint"><Maximize2 size={14} /></span>
+                  </div>
+                {/each}
               </div>
-            {/each}
+            {/if}
 
             {#if m.note}<p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>{/if}
             {#if m.params}<p class="mod-params"><MathText text={m.params} /></p>{/if}
@@ -647,11 +652,14 @@
   .doc-link:hover { background: var(--bg-surface); border-color: var(--accent); }
   .term-docs { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 
+  .charts { display: flex; flex-wrap: wrap; gap: var(--space-md); }
   .chart-zoom {
     position: relative;
     cursor: zoom-in;
     border-radius: var(--radius-sm);
     transition: background var(--dur-fast) var(--ease);
+    flex: 1 1 360px;     /* 2 grafice stau alaturat; unul singur nu se intinde peste */
+    max-width: 560px;
   }
   .chart-zoom:hover { background: var(--bg-hover); }
   .chart-zoom:focus-visible {
