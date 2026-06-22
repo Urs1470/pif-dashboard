@@ -369,6 +369,8 @@ const BOOK = {
   chapSyncP: { protected: true, label: 'Chapman — cuplu/putere masina sincrona (extras)', href: _bookView(_CHAP, 'induced torque in a synchronous') },
   chapDCmotor: { protected: true, label: 'Chapman — schema echivalenta masina c.c. (extras)', href: _bookView(_CHAP, 'equivalent circuit of a dc motor') },
   chapDCspeed: { protected: true, label: 'Chapman — reglaj turatie c.c. (extras)', href: _bookView(_CHAP, 'Speed Control of Shunt') },
+  chapIndSpeed: { protected: true, label: 'Chapman — motor asincron: turatie / sincronism (extras)', href: _bookView(_CHAP, 'synchronous speed') },
+  chapSyncPhasor: { protected: true, label: 'Chapman — masina sincrona: diagrama fazoriala (extras)', href: _bookView(_CHAP, 'phasor diagram') },
   mohanSwitch: { protected: true, label: 'Mohan — pierderi de comutatie (extras)', href: _bookView(_MOHAN, 'switching losses') },
   mohanRect: { protected: true, label: 'Mohan — redresor Ud=1.35·U (extras)', href: _bookView(_MOHAN, '1.35') },
   hughesStart: { protected: true, label: 'Hughes — pornire motor (extras)', href: _bookView(_HUGHES, 'torque per amp') },
@@ -399,6 +401,14 @@ const BOOK_DOCS = {
   'ipmsm-mtpa': [BOOK.hughesMTPA],
   'acordare-pi': [BOOK.niseOrd2],
   'raspuns-ord2': [BOOK.niseOrd2],
+  // consistenta: module care citeaza o carte in SOURCES -> link clickabil catre extras (ancora verificata in extras)
+  'motor-turatie': [BOOK.chapIndSpeed],
+  'sincron-turatie': [BOOK.chapSyncPhasor],
+  'cosphi-sarcina': [BOOK.chapThevenin],
+  'pmsm-feedback': [BOOK.hughesMTPA],
+  'derating-vfd-motor': [BOOK.hughesThermal],
+  'porniri-ora': [BOOK.hughesStart],
+  'suprasarcina-servo': [BOOK.hughesThermal],
 }
 // --- Simbol TeX dintr-o cheie de camp/rezultat, pentru randare KaTeX a etichetelor (subscript/superscript) ---
 const _GREEK = { omega: '\\omega', eta: '\\eta', rho: '\\rho', delta: '\\delta', tau: '\\tau', phi: '\\varphi', psi: '\\psi', mu: '\\mu', lambda: '\\lambda', sigma: '\\sigma', theta: '\\theta', zeta: '\\zeta', alpha: '\\alpha', beta: '\\beta', gamma: '\\gamma' }

@@ -148,6 +148,48 @@
     expanded = next; pushRecent(t.id)
     tick().then(() => document.getElementById('acc-' + t.id)?.scrollIntoView({ block: 'start' }))
   }
+  // ---- Surse & standarde (modal in-app) ----
+  let surseOpen = $state(false)
+  const SURSE = [
+    { h: 'Standarde europene — IEC / EN / ISO (primare)', items: [
+      'IEC/EN 60034-1 — masini rotative: regimuri S, derating, demaraj, dezechilibru',
+      'IEC 60034-12 — caracteristici de pornire',
+      'IEC/EN 60034-18-41 / -25 — izolatie & masina pe convertizor (dv/dt, unda reflectata, encoder)',
+      'IEC/EN 60034-27-4 — rezistenta de izolatie & indice de polarizare (PI)',
+      'IEC 60034-30-1 / -30-2 — clase de randament IE1-IE5',
+      'IEC/EN 61800-2 / -3 / -5-1 / -5-2 — sisteme de actionare (nominale, EMC, siguranta STO/SS1)',
+      'IEC 60364 — instalatii JT: ampacitate (-5-52), I²t (-5-54), legare la pamant TN/TT/IT',
+      'IEC 61000-2-4 / -3-12 / -4-30 — armonici & calitatea energiei',
+      'IEC 60909-0 — curenti de scurtcircuit',
+      'IEC 60204-1 — echipament electric masini (categorii de stop) · IEC 60079-7 — Ex (timp tE)',
+      'IEC 60076-1 Anexa E — factor K transformator',
+      'EN ISO 9906 — incercari pompe (NPSH3) · EN 50160 — calitatea tensiunii (THD_U)',
+      'EN 805 — regim tranzitoriu retele de apa (lovitura de berbec)',
+    ] },
+    { h: 'Echivalent US (citate ca referinta)', items: [
+      'IEEE 43 (PI) · IEEE 112 (teste motor) · IEEE 141 (dip de pornire)',
+      'IEEE 519 (armonici / TDD) · IEEE C57.110 (derating trafo)',
+      'NEMA MG-1 (derating PWM, izolatie, porniri/ora, dezechilibru)',
+      'CEMA Belt Book (transportoare) · Hydraulic Institute (pompe)',
+    ] },
+    { h: 'Carti de referinta (extras la /docs, cu login)', items: [
+      'Chapman — Electric Machinery Fundamentals',
+      'Mohan — Power Electronics',
+      'Hughes — Electric Motors and Drives',
+      'Nise — Control Systems Engineering',
+      'Leonhard — Control of Electrical Drives · Fitzgerald — Electric Machinery (citate)',
+    ] },
+    { h: 'Ghiduri & producatori', items: [
+      'ABB Technical Guide Book No.1-No.9 (gazduit public)',
+      'ABB ACS580/880 (catalog, PID intern) · Siemens SINAMICS S120 / G120 (parametri)',
+      'KSB Centrifugal Pump Lexicon · WEG (motoare pe PWM) · Danfoss / SEW (franare)',
+    ] },
+    { h: 'Resurse online', items: [
+      'Wikipedia EN (26 articole de baza) · MathWorks (PMSM / IPMSM)',
+      'EngineeringToolbox · Oriental Motor · Schneider EIG · NPTEL · Pumps & Systems',
+    ] },
+  ]
+
   // ---- Autocomplete cautare: navigare cu tastatura ----
   let acIndex = $state(-1)
   function acSelect(i) {
@@ -169,6 +211,7 @@
     <div class="head-row">
       <CalcIcon size={26} />
       <h1>Calculator actionari electrice</h1>
+      <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
     </div>
     <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
   </div>
@@ -347,6 +390,18 @@
       </div>
     {/if}
   </Modal>
+
+  <Modal bind:open={surseOpen} title="Surse & standarde" size="lg">
+    <div class="surse">
+      <p class="surse-intro">Notatie & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card isi afiseaza sursa proprie. Standardele sunt documente cu plata — citate ca text, nu gazduite. Cartile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
+      {#each SURSE as g}
+        <div class="surse-sec">
+          <h3>{g.h}</h3>
+          <ul>{#each g.items as it}<li>{it}</li>{/each}</ul>
+        </div>
+      {/each}
+    </div>
+  </Modal>
 </div>
 
 <style>
@@ -371,6 +426,20 @@
     margin-top: 2px;
     max-width: 70ch;
   }
+  .surse-btn {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+  }
+  .surse-btn:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .surse { display: flex; flex-direction: column; gap: var(--space-md); }
+  .surse-intro { font-size: var(--font-small); color: var(--text-dim); line-height: 1.5; }
+  .surse-sec h3 { font-size: var(--font-small); font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .surse-sec li { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; padding-left: 12px; position: relative; }
+  .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
 
   .fam-tabs {
     display: flex;
