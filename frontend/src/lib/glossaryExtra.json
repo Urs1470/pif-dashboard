@@ -1,4 +1,22 @@
 {
+ "nmax": {
+  "def": "Turatia maxima de functionare dorita pentru actionare, peste turatia de baza; in zona de slabire de camp cuplul disponibil scade $\\propto 1/n$, iar peste $n_2$ scade si puterea.",
+  "ia": "Cerinta de proces / aplicatie; limitata mecanic de rotor si setata in drive (ABB 30.12 f_max, Siemens p1082).",
+  "practic": "La PIF verifici ca la $n_{max}$ motorul inca furnizeaza cuplul cerut de sarcina si ca turatia respecta limita mecanica a rotorului.",
+  "teorie": "Raportul $n_{max}/n_{baza}$ fixeaza adancimea slabirii de camp: fluxul scade $\\propto n_{baza}/n_{max}$, iar cuplul de rasturnare $\\propto (n_{baza}/n_{max})^2$. Daca $n_{max} > n_2 = k_m n_{baza}$ se intra in zona limitata de rasturnare unde $P \\propto 1/n$."
+ },
+ "ncp": {
+  "def": "Turatia la care se incheie zona de putere constanta (zona II) si incepe zona limitata de cuplul de rasturnare (zona III), la motorul asincron in slabire de camp.",
+  "ia": "Calculata: $n_2 = k_m\\,n_{baza}$, unde $k_m = M_{max}/M_n$ este factorul de cuplu maxim de pe placuta/catalog.",
+  "practic": "Peste $n_2$ motorul nu mai poate mentine puterea nominala; la PIF eviti sa ceri putere plina peste aceasta turatie.",
+  "teorie": "In zona II cuplul disponibil ($\\propto 1/n$) ramane sub cuplul de rasturnare ($\\propto 1/n^2$). Cele doua curbe se intalnesc la $n_2 = k_m n_{baza}$ (din $M_n n_{baza}/n = k_m M_n (n_{baza}/n)^2$). Peste $n_2$ functionarea e limitata de rasturnare, deci $P \\propto 1/n$."
+ },
+ "Pdisp": {
+  "def": "Puterea mecanica la arbore disponibila la turatia maxima ceruta, tinand cont de zona de slabire de camp in care se afla motorul.",
+  "ia": "Calculata: $P_{disp} = M_{disp}\\,n_{max}/9550$, cu $M_{disp}$ cuplul disponibil la $n_{max}$.",
+  "practic": "Se compara cu puterea ceruta de sarcina la turatia maxima; daca $P_{disp}$ este sub necesar, motorul e subdimensionat pentru acel punct de functionare.",
+  "teorie": "In zona de cuplu constant $P$ creste liniar cu $n$; in zona de putere constanta (II) $P = P_n$; in zona de rasturnare (III) $P \\propto 1/n$ deoarece $M \\propto 1/n^2$. $P_{disp}$ reflecta zona in care cade $n_{max}$."
+ },
  "asincron:I2": {
   "def": "Curentul prin infasurarea rotorica la turatia de regim n, in schema echivalenta.",
   "ia": "Calculat din schema echivalenta: Vth impartit la impedanta ramurii rotorice la alunecarea s.",

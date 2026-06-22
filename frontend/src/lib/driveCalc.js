@@ -82,7 +82,7 @@ export function catOf(m) { return APP_OF[m.id] ? 'aplicatii' : (CAT_OF[m.id] || 
 // de la marimile de placuta spre dimensionare/diagnoza).
 export const MODULE_ORDER = [
   // asincron: marimi de baza -> diagnoza avansata (schema echiv./teste/randament)
-  'motor-turatie', 'putere-curent', 'cuplu', 'sarcina-afinitate', 'pornire', 'incarcare',
+  'motor-turatie', 'putere-curent', 'cuplu', 'asincron-camp-slabit', 'sarcina-afinitate', 'pornire', 'incarcare',
   'motor-echivalent', 'bilant-putere', 'teste-parametri', 'randament-sarcina', 'dezechilibru',
   'motor-termic', 'clase-ie', 'derating-vfd-motor',
   'cosphi-sarcina', 'derating-armonici-motor', 'regimuri-s', 'porniri-ora',
@@ -112,6 +112,7 @@ export const SOURCES = {
   'motor-turatie': 'Chapman, Electric Machinery Fundamentals — ec. 7-1/7-3/7-8 (p.363-365)',
   'putere-curent': 'ABB Technical Guide Book No.4 (p.166) + triunghiul puterilor (No.6, p.260)',
   'cuplu': 'ABB Technical Guide Book No.7 (p.169) + Chapman (cuplu max, p.388)',
+  'asincron-camp-slabit': 'ABB Technical Guide Book No.7 (zona de putere constanta) + Mohan/Leonhard (M~1/n zona II, M_max~1/n² zona III); IEC 60034-1. Putere constanta pana la n2 = k_m·n_baza.',
   'sarcina-afinitate': 'ABB Technical Guide Book No.7 — Load types, lege afinitate (p.288)',
   'pornire': 'Hughes, Electric Motors and Drives — cap.6 Starting (p.197-200)',
   'incarcare': 'P_ax: definitie putere trifazata. Incarcare din curent: regula practica de teren (estimare)',
@@ -273,6 +274,7 @@ const DOC_LINKS = {
   // asincron
   'putere-curent': [WEB.pf],
   'cuplu': [WEB.induction],
+  'asincron-camp-slabit': [ABB.mech, WEB.vfd],
   'sarcina-afinitate': [ABB.load, WEB.affinity],
   'incarcare': [ABB.load],
   'motor-echivalent': [WEB.induction],
@@ -558,6 +560,70 @@ export const MODULES = [
         calc: (v, r) => (r.Mn != null ? v.km * r.Mn : null), dec: 1 },
       { key: 'w', label: 'Viteza unghiulara', unit: 'rad/s', tex: '\\omega = \\dfrac{2\\pi n}{60}',
         calc: (v) => omega(v.n), dec: 2 },
+    ],
+  },
+  {
+    id: 'asincron-camp-slabit',
+    family: 'asincron',
+    tier: 2,
+    title: 'Slabire de camp',
+    subtitle: 'Cuplu si putere vs turatie peste turatia de baza',
+    note: 'Peste $n_{baza}$ (la $f_n$) tensiunea e plafonata, deci fluxul scade $\\propto 1/n$. Zona I (sub $n_{baza}$): cuplu constant $M_n$. Zona II (pana la $n_2 = k_m\\,n_{baza}$): putere constanta, $M \\propto 1/n$. Zona III (peste $n_2$): limitat de cuplul de rasturnare, $M \\propto 1/n^2$ si $P \\propto 1/n$.',
+    params: 'Limita turatie/flux: ABB 30.12 (f_max) · Siemens p1082 (n_max). La PIF verifica M_sarcina < M disponibil pe tot domeniul de turatie.',
+    charts: [
+      (v) => {
+        if (!v.Pn || !v.nbaza) return null
+        const Mn = (9550 * v.Pn) / v.nbaza
+        const n2 = v.km * v.nbaza
+        const nx = Math.max(v.nmax * 1.05, n2 * 1.3, v.nbaza * 1.1) // arata toate cele 3 zone
+        const Mavail = (n) => (n <= v.nbaza ? Mn : (n <= n2 ? (Mn * v.nbaza) / n : v.km * Mn * (v.nbaza / n) ** 2))
+        const Mbreak = (n) => (n <= v.nbaza ? v.km * Mn : v.km * Mn * (v.nbaza / n) ** 2)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+          series: [
+            { label: 'M rasturnare ~1/n²', color: COL.c, dash: true, points: curve(0, nx, Mbreak) },
+            { label: 'M disponibil', color: COL.a, points: curve(0, nx, Mavail) },
+          ],
+          markers: [
+            { x: v.nbaza, y: Mn, label: 'n baza', color: COL.op },
+            { x: Math.round(n2), y: (Mn * v.nbaza) / n2, label: 'n2', color: COL.b },
+            { x: v.nmax, y: Mavail(v.nmax), label: 'n max', color: COL.op },
+          ],
+        }
+      },
+      (v) => {
+        if (!v.Pn || !v.nbaza) return null
+        const n2 = v.km * v.nbaza
+        const nx = Math.max(v.nmax * 1.05, n2 * 1.3, v.nbaza * 1.1)
+        const P = (n) => (n <= v.nbaza ? v.Pn * (n / v.nbaza) : (n <= n2 ? v.Pn : (v.Pn * n2) / n))
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Putere P [kW]',
+          series: [{ label: 'P disponibil', color: COL.a, points: curve(0, nx, P) }],
+          markers: [
+            { x: v.nbaza, y: v.Pn, label: 'n baza', color: COL.op },
+            { x: Math.round(n2), y: v.Pn, label: 'n2 (sfarsit P const)', color: COL.b },
+            { x: v.nmax, y: P(v.nmax), label: 'n max', color: COL.op },
+          ],
+        }
+      },
+    ],
+    fields: [
+      { key: 'Pn', label: 'Putere nominala', unit: 'kW', default: 15, step: 0.5, min: 0 },
+      { key: 'nbaza', label: 'Turatie de baza', unit: 'rpm', default: 1450, step: 10, min: 1 },
+      { key: 'km', label: 'Factor cuplu maxim', unit: '×Mₙ', default: 2.5, step: 0.1, min: 1 },
+      { key: 'nmax', label: 'Turatie maxima dorita', unit: 'rpm', default: 3000, step: 10, min: 1 },
+    ],
+    results: [
+      { key: 'Mn', label: 'Cuplu nominal', unit: 'Nm', tex: 'M_n = \\dfrac{9550\\,P_n}{n_{baza}}',
+        calc: (v) => (v.nbaza ? (9550 * v.Pn) / v.nbaza : null), dec: 1 },
+      { key: 'ncp', label: 'Turatie sfarsit putere constanta', unit: 'rpm', tex: 'n_2 = k_m\\,n_{baza}',
+        calc: (v) => v.km * v.nbaza, dec: 0 },
+      { key: 'rcamp', label: 'Raport flux la n_max (Φ/Φₙ)', unit: '%', tex: '\\dfrac{\\Phi}{\\Phi_n} = \\dfrac{n_{baza}}{n_{max}}',
+        calc: (v) => (v.nmax > v.nbaza ? (v.nbaza / v.nmax) * 100 : 100), dec: 1 },
+      { key: 'Mdisp', label: 'Cuplu disponibil la n_max', unit: 'Nm', tex: 'M_{disp} = M_n\\dfrac{n_{baza}}{n}\\ (\\text{zona II})',
+        calc: (v, r) => { const Mn = r.Mn; if (Mn == null) return null; const n = v.nmax, nb = v.nbaza, n2 = v.km * v.nbaza; if (n <= nb) return Mn; if (n <= n2) return (Mn * nb) / n; return v.km * Mn * (nb / n) ** 2 }, dec: 1 },
+      { key: 'Pdisp', label: 'Putere disponibila la n_max', unit: 'kW', tex: 'P_{disp} = \\dfrac{M_{disp}\\,n_{max}}{9550}',
+        calc: (v, r) => (r.Mdisp != null ? (r.Mdisp * v.nmax) / 9550 : null), dec: 2 },
     ],
   },
   {
@@ -1011,8 +1077,31 @@ export const MODULES = [
     tier: 2,
     title: 'Motor c.c. — reglaj de turatie',
     subtitle: 'Turatie de baza si slabire de camp',
-    note: 'Peste n_baza: slabire de camp (putere constanta). If din curba de magnetizare.',
+    note: 'Peste $n_{baza}$: slabire de camp (putere constanta), $M \\propto 1/n$. $I_f$ din curba de magnetizare. Raport tipic de slabire 2:1...4:1 (limitat de comutatie).',
     params: 'DCS880: EMF/field mode 28.17, turatie baza 99.14 · DCM: p50081/p50115',
+    charts: [
+      (v) => {
+        if (!v.nbaza) return null
+        const nmax = Math.max(v.ndorit, v.nbaza * 1.05)
+        const M = (n) => (n <= v.nbaza ? v.Mnom : (v.Mnom * v.nbaza) / n)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+          series: [{ label: 'M disponibil (∝1/n in slabire)', color: COL.a, points: curve(0, nmax, M) }],
+          markers: [{ x: v.nbaza, y: v.Mnom, label: 'n baza', color: COL.op }],
+        }
+      },
+      (v) => {
+        if (!v.nbaza) return null
+        const nmax = Math.max(v.ndorit, v.nbaza * 1.05)
+        const Pmax = (v.Mnom * v.nbaza) / 9550
+        const P = (n) => (n <= v.nbaza ? Pmax * (n / v.nbaza) : Pmax)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Putere P [kW]',
+          series: [{ label: 'P (constanta peste n baza)', color: COL.b, points: curve(0, nmax, P) }],
+          markers: [{ x: v.nbaza, y: Pmax, label: 'n baza', color: COL.op }],
+        }
+      },
+    ],
     fields: [
       { key: 'nbaza', label: 'Turatie de baza', unit: 'rpm', default: 1500, step: 10, min: 1 },
       { key: 'ndorit', label: 'Turatie dorita', unit: 'rpm', default: 2200, step: 10, min: 1 },
@@ -1988,7 +2077,25 @@ export const MODULES = [
     tier: 3,
     title: 'PMSM in slabire de camp',
     subtitle: 'Turatie de baza, curent caracteristic',
-    note: 'Daca I_ch < I_max → gama de putere constanta extinsa. V_max ≈ U_dc/√3 (SVM).',
+    note: 'Daca $I_{ch} < I_{max}$ → gama de putere constanta extinsa (slabire prin $I_d<0$). $U_{max} \\approx U_{dc}/\\sqrt{3}$ (SVM). Peste $n_{baza}$: cuplu $\\propto 1/n$ la putere constanta.',
+    charts: [
+      (v) => {
+        if (!v.psim || !v.ppp) return null
+        const Vmax = v.Udc / SQRT3
+        const Ld = v.Lq / 1000
+        const we = Vmax / Math.sqrt(v.psim ** 2 + (Ld * v.Imax) ** 2)
+        const nb = ((we / v.ppp) * 60) / (2 * Math.PI)
+        if (!(nb > 0)) return null
+        const Mbase = 1.5 * v.ppp * v.psim * v.Imax
+        const nmax = nb * 3
+        const M = (n) => (n <= nb ? Mbase : (Mbase * nb) / n)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M [Nm]',
+          series: [{ label: 'M (constant → ∝1/n in slabire)', color: COL.a, points: curve(0, nmax, M) }],
+          markers: [{ x: Math.round(nb), y: Mbase, label: 'n baza', color: COL.op }],
+        }
+      },
+    ],
     fields: [
       { key: 'Udc', label: 'Tensiune DC bus', unit: 'V', default: 540, step: 10, min: 0 },
       { key: 'ppp', label: 'Perechi de poli', unit: '', default: 4, step: 1, min: 1 },
