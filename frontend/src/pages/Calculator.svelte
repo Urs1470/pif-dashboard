@@ -1,5 +1,6 @@
 <script>
-  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X } from '@lucide/svelte'
+  import { tick } from 'svelte'
+  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock } from '@lucide/svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
@@ -31,13 +32,17 @@
     for (const r of m.results) if (r.label.toLowerCase().includes(q) || r.key.toLowerCase().includes(q)) return true
     return false
   }
-  const searching = $derived(query.trim().length > 0)
+  // Lista din tab-ul curent (cautarea NU mai inlocuieste lista — vezi autocomplete-ul acResults).
   const shown = $derived.by(() => {
-    const q = query.trim().toLowerCase()
-    if (q) return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id))
     if (activeCat === 'aplicatii') return MODULES.filter((m) => APP_OF[m.id] === activeApp).sort((a, b) => ord(a.id) - ord(b.id))
     if (activeCat === 'motoare') return MODULES.filter((m) => catOf(m) === 'motoare' && m.family === activeMotorFam).sort((a, b) => ord(a.id) - ord(b.id))
     return MODULES.filter((m) => catOf(m) === activeCat).sort((a, b) => ord(a.id) - ord(b.id))
+  })
+  // Autocomplete cautare: max 8 potriviri, doar de la 2 caractere.
+  const acResults = $derived.by(() => {
+    const q = query.trim().toLowerCase()
+    if (q.length < 2) return []
+    return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id)).slice(0, 8)
   })
 
   // Segmenteaza un text in potriviri/nepotriviri pentru evidentiere la cautare.
@@ -85,6 +90,85 @@
     }
     termOpen = true
   }
+
+  // ---- Acordeon: ce module sunt deschise (pe mobil doar unul) ----
+  let expanded = $state(new Set())
+  let isMobile = $state(false)
+  $effect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const upd = () => (isMobile = mq.matches)
+    upd(); mq.addEventListener('change', upd)
+    return () => mq.removeEventListener('change', upd)
+  })
+  function isOpen(id) { return expanded.has(id) }
+  function toggle(id) {
+    const open = expanded.has(id)
+    let next
+    if (isMobile) next = open ? new Set() : new Set([id])
+    else { next = new Set(expanded); if (open) next.delete(id); else next.add(id) }
+    if (!open) pushRecent(id)
+    expanded = next
+  }
+  function openModule(id) {
+    expanded = isMobile ? new Set([id]) : new Set(expanded).add(id)
+    pushRecent(id)
+  }
+
+  // ---- Favorite + Recente (localStorage, partajat dashboard + /calc) ----
+  function loadLS(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : def } catch { return def } }
+  let favorites = $state(loadLS('pif-calc-fav', []))
+  let recents = $state(loadLS('pif-calc-recent', []))
+  $effect(() => { try { localStorage.setItem('pif-calc-fav', JSON.stringify(favorites)) } catch {} })
+  $effect(() => { try { localStorage.setItem('pif-calc-recent', JSON.stringify(recents)) } catch {} })
+  function isFav(id) { return favorites.includes(id) }
+  function toggleFav(id) { favorites = favorites.includes(id) ? favorites.filter((x) => x !== id) : [...favorites, id] }
+  function pushRecent(id) { recents = [id, ...recents.filter((x) => x !== id)].slice(0, 5) }
+  const byId = (id) => MODULES.find((m) => m.id === id)
+  const favMods = $derived(favorites.map(byId).filter(Boolean))
+  const recentMods = $derived(recents.map(byId).filter(Boolean))
+
+  // ---- Navigare la un modul (din chip / autocomplete / prev-next) ----
+  function locate(m) {
+    const cat = catOf(m)
+    activeCat = cat
+    if (cat === 'aplicatii') activeApp = APP_OF[m.id]
+    else if (cat === 'motoare') activeMotorFam = m.family
+  }
+  async function goTo(id) {
+    const m = byId(id); if (!m) return
+    locate(m); openModule(id)
+    await tick()
+    document.getElementById('acc-' + id)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+  function step(m, dir) {
+    const i = shown.findIndex((x) => x.id === m.id)
+    const t = shown[i + dir]; if (!t) return
+    const next = new Set(isMobile ? [] : expanded)
+    next.delete(m.id); next.add(t.id)
+    expanded = next; pushRecent(t.id)
+    tick().then(() => document.getElementById('acc-' + t.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }))
+  }
+  const keyResult = (m, r) => {
+    if (!m.results || !m.results.length) return null
+    const res = m.results[0]; const val = r[res.key]
+    if (val == null) return null
+    return { label: res.label, val: fmtNum(val, res.dec), unit: res.unit }
+  }
+
+  // ---- Autocomplete cautare: navigare cu tastatura ----
+  let acIndex = $state(-1)
+  function acSelect(i) {
+    const m = acResults[i] ?? acResults[0]; if (!m) return
+    query = ''; acIndex = -1
+    goTo(m.id)
+  }
+  function onSearchKey(e) {
+    if (!acResults.length) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); acIndex = (acIndex + 1) % acResults.length }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); acIndex = (acIndex - 1 + acResults.length) % acResults.length }
+    else if (e.key === 'Enter') { e.preventDefault(); acSelect(acIndex < 0 ? 0 : acIndex) }
+    else if (e.key === 'Escape') { query = ''; acIndex = -1 }
+  }
 </script>
 
 <div class="page">
@@ -96,111 +180,144 @@
     <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
   </div>
 
-  <div class="search-row">
-    <span class="search-ic"><Search size={16} /></span>
-    <input class="search-inp" type="search" placeholder="Cauta un calcul — titlu, simbol sau marime (ex. NPSH, cuplu, U_dc)..." bind:value={query} />
-    {#if searching}<button class="search-clear" title="Sterge cautarea" onclick={() => (query = '')}><X size={15} /></button>{/if}
+  <div class="search-wrap">
+    <div class="search-row">
+      <span class="search-ic"><Search size={16} /></span>
+      <input class="search-inp" type="search" autocomplete="off"
+        placeholder="Cauta un calcul — titlu, simbol sau marime (ex. NPSH, cuplu, U_dc)..."
+        bind:value={query} onkeydown={onSearchKey} />
+      {#if query}<button class="search-clear" title="Sterge cautarea" onclick={() => { query = ''; acIndex = -1 }}><X size={15} /></button>{/if}
+    </div>
+    {#if acResults.length}
+      <ul class="ac-list" role="listbox">
+        {#each acResults as m, i (m.id)}
+          <li>
+            <button class="ac-item" class:active={i === acIndex} role="option" aria-selected={i === acIndex}
+              onmouseenter={() => (acIndex = i)} onclick={() => acSelect(i)}>
+              <span class="ac-title">{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{#if m.subtitle}<span class="ac-sub"> — <MathText text={m.subtitle} /></span>{/if}</span>
+              <span class="cat-badge">{catLabel(catOf(m))}</span>
+            </button>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </div>
 
-  {#if !searching}
-    <div class="fam-tabs" role="tablist">
-      {#each CATEGORIES as c}
-        <button class="fam-tab" class:active={activeCat === c.id} role="tab" aria-selected={activeCat === c.id} onclick={() => selectCat(c.id)}>{c.label}</button>
+  <div class="fam-tabs" role="tablist">
+    {#each CATEGORIES as c}
+      <button class="fam-tab" class:active={activeCat === c.id} role="tab" aria-selected={activeCat === c.id} onclick={() => selectCat(c.id)}>{c.label}</button>
+    {/each}
+  </div>
+  {#if activeCat === 'motoare'}
+    <div class="subfam-tabs" role="tablist">
+      {#each MOTOR_FAMS as f}
+        <button class="subfam-tab" class:active={activeMotorFam === f.id} role="tab" aria-selected={activeMotorFam === f.id} onclick={() => (activeMotorFam = f.id)}>{f.label}</button>
       {/each}
     </div>
-    {#if activeCat === 'motoare'}
-      <div class="subfam-tabs" role="tablist">
-        {#each MOTOR_FAMS as f}
-          <button class="subfam-tab" class:active={activeMotorFam === f.id} role="tab" aria-selected={activeMotorFam === f.id} onclick={() => (activeMotorFam = f.id)}>{f.label}</button>
-        {/each}
-      </div>
-    {:else if activeCat === 'aplicatii'}
-      <div class="subfam-tabs" role="tablist">
-        {#each APPLICATIONS as a}
-          <button class="subfam-tab" class:active={activeApp === a.id} role="tab" aria-selected={activeApp === a.id} onclick={() => (activeApp = a.id)}>{a.label}</button>
-        {/each}
-      </div>
-    {/if}
-  {:else}
-    <p class="search-info">{shown.length} {shown.length === 1 ? 'rezultat' : 'rezultate'} pentru „{query.trim()}"</p>
+  {:else if activeCat === 'aplicatii'}
+    <div class="subfam-tabs" role="tablist">
+      {#each APPLICATIONS as a}
+        <button class="subfam-tab" class:active={activeApp === a.id} role="tab" aria-selected={activeApp === a.id} onclick={() => (activeApp = a.id)}>{a.label}</button>
+      {/each}
+    </div>
   {/if}
 
-  <div class="mod-grid">
+  {#if favMods.length || recentMods.length}
+    <div class="quick-rows">
+      {#if favMods.length}
+        <div class="quick-row">
+          <span class="quick-h"><Star size={13} /> Favorite</span>
+          {#each favMods as m (m.id)}<button class="chip" onclick={() => goTo(m.id)}>{m.title}</button>{/each}
+        </div>
+      {/if}
+      {#if recentMods.length}
+        <div class="quick-row">
+          <span class="quick-h"><Clock size={13} /> Recente</span>
+          {#each recentMods as m (m.id)}<button class="chip" onclick={() => goTo(m.id)}>{m.title}</button>{/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  <div class="acc-list">
     {#each shown as m (m.id)}
       {@const r = computeModule(m, values[m.id])}
-      <div class="mod-card">
-        <div class="mod-head">
-          <div class="mod-title">
-            <h2>{#if searching}{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{:else}{m.title}{/if}</h2>
-            {#if m.subtitle}<span class="mod-sub"><MathText text={m.subtitle} /></span>{/if}
-            {#if searching}<span class="cat-badge">{catLabel(catOf(m))}</span>{/if}
-          </div>
-          <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
+      {@const k = keyResult(m, r)}
+      {@const open = isOpen(m.id)}
+      <div class="acc-item" id={'acc-' + m.id} class:open>
+        <div class="acc-head" role="button" tabindex="0"
+          onclick={() => toggle(m.id)}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.id) } }}>
+          <span class="acc-chev" class:open><ChevronRight size={16} /></span>
+          <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
+          {#if k}<span class="acc-key"><MathText text={k.label} /> = <b>{k.val}</b>{#if k.unit}&nbsp;{k.unit}{/if}</span>{/if}
+          <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
+            onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}><Star size={15} /></button>
         </div>
 
-        <div class="inputs">
-          {#each m.fields as f (f.key)}
-            <div class="inp">
-              <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
-              <input
-                class="inp-field"
-                type="number"
-                step={f.step ?? 'any'}
-                min={f.min}
-                bind:value={values[m.id][f.key]}
-              />
+        {#if open}
+          <div class="acc-body">
+            <div class="acc-body-head">
+              <span class="cat-badge">{catLabel(catOf(m))}</span>
+              <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
             </div>
-          {/each}
-        </div>
 
-        <div class="results">
-          {#each m.results as res (res.key)}
-            <div class="res-row">
-              <div class="res-head">
-                <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
-                <span class="res-right">
-                  <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
-                  {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
-                </span>
+            {#if m.fields.length}
+              <div class="inputs">
+                {#each m.fields as f (f.key)}
+                  <div class="inp">
+                    <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
+                    <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min} bind:value={values[m.id][f.key]} />
+                  </div>
+                {/each}
               </div>
-              <Formula tex={res.tex} />
-            </div>
-          {/each}
-        </div>
+            {/if}
 
-        {#each computeCharts(m, values[m.id]) as chart, ci}
-          <div
-            class="chart-zoom"
-            role="button"
-            tabindex="0"
-            title="Click pentru marire"
-            onclick={() => openZoom(m, ci)}
-            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}
-          >
-            <Chart {chart} />
-            <span class="zoom-hint"><Maximize2 size={14} /></span>
-          </div>
-        {/each}
+            {#if m.results.length}
+              <div class="results">
+                {#each m.results as res (res.key)}
+                  <div class="res-row">
+                    <div class="res-head">
+                      <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
+                      <span class="res-right">
+                        <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
+                        {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
+                      </span>
+                    </div>
+                    <Formula tex={res.tex} />
+                  </div>
+                {/each}
+              </div>
+            {/if}
 
-        {#if m.note}
-          <p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>
-        {/if}
-        {#if m.params}
-          <p class="mod-params"><MathText text={m.params} /></p>
-        {/if}
-        {#if SOURCES[m.id]}
-          <p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>
-        {/if}
-        {#if docsFor(m).length}
-          <div class="mod-docs">
-            <span class="docs-h">Documentatie:</span>
-            {#each docsFor(m) as d}
-              <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
+            {#each computeCharts(m, values[m.id]) as chart, ci}
+              <div class="chart-zoom" role="button" tabindex="0" title="Click pentru marire"
+                onclick={() => openZoom(m, ci)}
+                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}>
+                <Chart {chart} />
+                <span class="zoom-hint"><Maximize2 size={14} /></span>
+              </div>
             {/each}
+
+            {#if m.note}<p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>{/if}
+            {#if m.params}<p class="mod-params"><MathText text={m.params} /></p>{/if}
+            {#if SOURCES[m.id]}<p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>{/if}
+            {#if docsFor(m).length}
+              <div class="mod-docs">
+                <span class="docs-h">Documentatie:</span>
+                {#each docsFor(m) as d}<a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>{/each}
+              </div>
+            {/if}
+
+            <div class="acc-nav">
+              <button class="nav-btn" disabled={shown[0]?.id === m.id} onclick={() => step(m, -1)}>‹ Anterior</button>
+              <button class="nav-btn" disabled={shown[shown.length - 1]?.id === m.id} onclick={() => step(m, 1)}>Urmator ›</button>
+            </div>
           </div>
         {/if}
       </div>
     {/each}
+    <p class="acc-status">{shown.length} {shown.length === 1 ? 'modul' : 'module'} • {[...expanded].filter((id) => shown.some((m) => m.id === id)).length} deschise</p>
   </div>
 
   <Modal bind:open={zoomOpen} title={zoomRef ? zoomRef.mod.title : ''} size="zoom">
@@ -299,35 +416,83 @@
   .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
   .search-clear { position: absolute; right: 8px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .search-clear:hover { background: var(--bg-hover); color: var(--text); }
-  .search-info { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-md); }
-  h2 :global(mark) { background: var(--accent-subtle); color: var(--accent); border-radius: 3px; padding: 0 2px; }
   .cat-badge { display: inline-block; margin-top: 4px; width: fit-content; font-size: var(--font-tiny); color: var(--text-dim); background: var(--bg-hover); border-radius: 999px; padding: 1px 9px; }
 
-  .mod-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: var(--space-md);
-  }
-
-  .mod-card {
+  /* === Acordeon === */
+  .acc-list { display: flex; flex-direction: column; gap: 8px; }
+  .acc-item {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--space-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    min-width: 0;
+    overflow: hidden;
+    transition: border-color var(--dur-fast) var(--ease);
   }
+  .acc-item.open { border-color: var(--accent); }
+  .acc-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer; user-select: none;
+    transition: background var(--dur-fast) var(--ease);
+  }
+  .acc-head:hover { background: var(--bg-hover); }
+  .acc-chev { display: flex; flex-shrink: 0; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
+  .acc-chev.open { transform: rotate(90deg); color: var(--accent); }
+  .acc-title {
+    flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;
+    font-size: var(--font-body); font-weight: 700; color: var(--text);
+  }
+  .acc-sub { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acc-key {
+    flex-shrink: 0; max-width: 42%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: var(--font-small); color: var(--text-secondary);
+  }
+  .acc-key b { color: var(--accent); font-weight: 700; }
+  .star-btn { display: flex; flex-shrink: 0; padding: 4px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
+  .star-btn:hover { background: var(--bg-hover); color: var(--text); }
+  .star-btn.on { color: var(--warning); }
+  .star-btn.on :global(svg) { fill: var(--warning); }
+  .acc-body {
+    padding: var(--space-md); border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: var(--space-md); min-width: 0;
+  }
+  .acc-body-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+  .acc-nav { display: flex; justify-content: space-between; gap: var(--space-sm); border-top: 1px dashed var(--border); padding-top: var(--space-sm); }
+  .nav-btn {
+    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); border-color: var(--text-dim); }
+  .nav-btn:disabled { opacity: 0.4; cursor: default; }
+  .acc-status { text-align: center; font-size: var(--font-tiny); color: var(--text-dim); padding-top: var(--space-sm); }
 
-  .mod-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-sm);
+  /* === Autocomplete cautare === */
+  .search-wrap { position: relative; margin-bottom: var(--space-md); }
+  .search-wrap .search-row { margin-bottom: 0; }
+  .ac-list {
+    position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); padding: 4px;
   }
-  .mod-title h2 { font-size: 1rem; font-weight: 700; color: var(--text); }
-  .mod-sub { font-size: var(--font-tiny); color: var(--text-dim); }
+  .ac-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+    padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; text-align: left;
+  }
+  .ac-item.active { background: var(--accent-subtle); }
+  .ac-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--font-small); color: var(--text); }
+  .ac-sub { color: var(--text-dim); }
+  .ac-item .cat-badge { margin-top: 0; flex-shrink: 0; }
+  .ac-title :global(mark) { background: var(--accent-subtle); color: var(--accent); border-radius: 3px; padding: 0 2px; }
+
+  /* === Favorite / Recente === */
+  .quick-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-md); }
+  .quick-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .quick-h { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-tiny); font-weight: 700; color: var(--text-dim); margin-right: 2px; }
+  .chip {
+    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    padding: 3px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-surface);
+    cursor: pointer; transition: all var(--dur-fast) var(--ease);
+  }
+  .chip:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .reset-btn {
     font-size: var(--font-tiny);
     color: var(--text-dim);
@@ -520,6 +685,8 @@
   .term-empty { font-size: var(--font-small); color: var(--text-dim); }
 
   @media (max-width: 768px) {
-    .mod-grid { grid-template-columns: 1fr; }
+    .acc-sub { display: none; }
+    .acc-key { max-width: 50%; font-size: var(--font-tiny); }
+    .acc-head { padding: 10px 12px; gap: 8px; }
   }
 </style>
