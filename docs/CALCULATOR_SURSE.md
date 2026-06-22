@@ -98,11 +98,15 @@ ascunse pe `/calc` public. PDF.js le deschide la pagină + evidențiază termenu
 
 | Locație | Conținut | Acces |
 |---|---|---|
-| `private_docs/` | extrase Chapman / Hughes / Mohan / Nise (doar paginile citate) | login `/docs` (ascuns pe /calc public) |
+| `private_docs/` | extrase Chapman / Hughes / Mohan / Nise (doar paginile citate) | `/docs` public + noindex (accesibil și de pe /calc) |
+| `private_docs/standards/` | **18 standarde IEC/EN ca extrase** (doar paginile citate) | `/docs/standards` public + noindex |
 | `static/docs/` | ABB Technical Guide Book + No.1 (ghiduri ABB libere) | public |
 
-**Standardele IEC / EN / IEEE / ISO / NEMA NU se găzduiesc** — sunt documente cu plată/copyright,
-fără PDF local; rămân ca citări text (standard + clauză) pe fiecare card.
+**Standardele IEC/EN cu PDF local** (60034-1/-12/-25/-18-41/-30-1, 61800-2/-3/-5-1/-5-2, 60364-5-52,
+60909, 60204-1, 61000-2/-3-12/-4-30, 60076-1, ISO 9906, EN 50160) au extrase cu paginile citate +
+link cu evidențiere (PDF.js). Standardele **fără PDF local** (60034-27-4, 60076-5, 61378-1, 60079-7,
+EN 805) și cele americane (IEEE/NEMA) rămân ca citări text. Extrasele de standarde sunt cited-pages-only
++ `noindex` (documente cu plată — mitigare de copyright).
 
 ---
 
