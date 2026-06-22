@@ -148,13 +148,6 @@
     expanded = next; pushRecent(t.id)
     tick().then(() => document.getElementById('acc-' + t.id)?.scrollIntoView({ block: 'start' }))
   }
-  const keyResult = (m, r) => {
-    if (!m.results || !m.results.length) return null
-    const res = m.results[0]; const val = r[res.key]
-    if (val == null) return null
-    return { label: res.label, val: fmtNum(val, res.dec), unit: res.unit }
-  }
-
   // ---- Autocomplete cautare: navigare cu tastatura ----
   let acIndex = $state(-1)
   function acSelect(i) {
@@ -241,8 +234,6 @@
 
   <div class="acc-list">
     {#each shown as m (m.id)}
-      {@const r = computeModule(m, values[m.id])}
-      {@const k = keyResult(m, r)}
       {@const open = isOpen(m.id)}
       <div class="acc-item" id={'acc-' + m.id} class:open>
         <div class="acc-head" role="button" tabindex="0"
@@ -250,12 +241,12 @@
           onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.id) } }}>
           <span class="acc-chev" class:open><ChevronRight size={16} /></span>
           <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
-          {#if k}<span class="acc-key"><MathText text={k.label} /> = <b>{k.val}</b>{#if k.unit}&nbsp;{k.unit}{/if}</span>{/if}
           <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
             onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}><Star size={15} /></button>
         </div>
 
         {#if open}
+          {@const r = computeModule(m, values[m.id])}
           {@const charts = computeCharts(m, values[m.id])}
           <div class="acc-body">
             <div class="acc-body-head">
@@ -447,11 +438,6 @@
     font-size: var(--font-body); font-weight: 700; color: var(--text);
   }
   .acc-sub { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .acc-key {
-    flex-shrink: 0; max-width: 42%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    font-size: var(--font-small); color: var(--text-secondary);
-  }
-  .acc-key b { color: var(--accent); font-weight: 700; }
   .star-btn { display: flex; flex-shrink: 0; padding: 4px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .star-btn:hover { background: var(--bg-hover); color: var(--text); }
   .star-btn.on { color: var(--warning); }
@@ -695,7 +681,6 @@
 
   @media (max-width: 768px) {
     .acc-sub { display: none; }
-    .acc-key { max-width: 50%; font-size: var(--font-tiny); }
     .acc-head { padding: 10px 12px; gap: 8px; }
   }
 </style>
