@@ -183,13 +183,13 @@
         {/each}
 
         {#if m.note}
-          <p class="mod-note"><Info size={13} /> <MathText text={m.note} /></p>
+          <p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>
         {/if}
         {#if m.params}
           <p class="mod-params"><MathText text={m.params} /></p>
         {/if}
         {#if SOURCES[m.id]}
-          <p class="mod-source"><BookOpen size={11} /> <MathText text={SOURCES[m.id]} /></p>
+          <p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>
         {/if}
         {#if docsFor(m).length}
           <div class="mod-docs">
@@ -427,10 +427,21 @@
 
   .mod-note {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 6px;
     font-size: var(--font-tiny);
     color: var(--text-dim);
+  }
+  /* iconul ramane fix sus; textul + formulele KaTeX curg ca un paragraf normal in note-body */
+  .mod-note > :global(svg),
+  .mod-source > :global(svg) {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .note-body {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.45;
   }
   .mod-params {
     font-family: var(--font-mono);
@@ -441,7 +452,7 @@
   }
   .mod-source {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
     font-size: var(--font-tiny);
     color: var(--text-dim);
