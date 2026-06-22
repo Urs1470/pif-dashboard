@@ -1840,5 +1840,233 @@
   "ia": "Calculat din Ld pe Lq sau Xd pe Xq",
   "practic": "Mai mare da cuplu de reluctanta mai mare pe SynRM",
   "teorie": "Salienta egala cu 1 inseamna masina cu intrefier uniform"
+ },
+ "comun:Riso1": {
+  "def": "Rezistenta de izolatie masurata la 1 minut.",
+  "ia": "Megohmmetru, citire la 60 s.",
+  "practic": "Numitorul indicelui de polarizare.",
+  "teorie": "Curentul de absorbtie dielectrica scade in timp; raportul 10min/1min arata starea izolatiei."
+ },
+ "comun:Riso10": {
+  "def": "Rezistenta de izolatie la 10 minute.",
+  "ia": "Megohmmetru, citire la 10 min.",
+  "practic": "Numaratorul indicelui de polarizare.",
+  "teorie": "La izolatie buna R creste mult de la 1 la 10 min (PI>=2)."
+ },
+ "comun:Riso30": {
+  "def": "Rezistenta de izolatie la 30 secunde.",
+  "ia": "Megohmmetru, 30 s.",
+  "practic": "Numitorul raportului DAR.",
+  "teorie": "Test scurt cand nu astepti 10 minute."
+ },
+ "comun:Riso60": {
+  "def": "Rezistenta de izolatie la 60 secunde.",
+  "ia": "Megohmmetru, 60 s.",
+  "practic": "Numaratorul raportului DAR.",
+  "teorie": "DAR = R60/R30, criteriu rapid de absorbtie."
+ },
+ "comun:IRmin": {
+  "def": "Rezistenta de izolatie minima admisa (la 40 grade C).",
+  "ia": "Formula (U_n[kV]+1) MOhm.",
+  "practic": "Criteriu GO/NO-GO inainte de energizare.",
+  "teorie": "IEC 60034-27-4 / IEEE 43: prag minim functie de tensiune."
+ },
+ "comun:PI": {
+  "def": "Indicele de polarizare = R(10 min)/R(1 min).",
+  "ia": "Doua citiri cu megohmmetrul.",
+  "practic": "PI>=2 bun, 1-2 suspect, <1 necesita uscare.",
+  "teorie": "Masoara absorbtia dielectrica; valori mici = umezeala/contaminare."
+ },
+ "comun:DAR": {
+  "def": "Raport de absorbtie dielectrica = R(60s)/R(30s).",
+  "ia": "Doua citiri scurte.",
+  "practic": ">1.4 bun; alternativa rapida la PI.",
+  "teorie": "Aceeasi idee ca PI, pe interval scurt."
+ },
+ "comun:tstall": {
+  "def": "Timpul termic admis cu rotorul blocat.",
+  "ia": "Placuta/catalog motor (la cald si la rece).",
+  "practic": "Pornirea trebuie sa fie mai scurta decat el.",
+  "teorie": "IEC 60034-1: peste t_stall infasurarea depaseste limita termica."
+ },
+ "comun:tstart": {
+  "def": "Timpul de accelerare de la 0 la turatia nominala.",
+  "ia": "t = J·omega/M_acc.",
+  "practic": "Se compara cu timpul la rotor blocat.",
+  "teorie": "Din ecuatia de miscare J·domega/dt = M_acc."
+ },
+ "comun:marjat": {
+  "def": "Marja dintre timpul la rotor blocat si timpul de pornire.",
+  "ia": "t_stall - t_start.",
+  "practic": "Pozitiva = pornire sigura; negativa = ajusteaza rampa/cuplu.",
+  "teorie": "Rezerva termica la demaraj."
+ },
+ "comun:Uchop": {
+  "def": "Pragul de tensiune DC la care intra choperul de franare.",
+  "ia": "Manual drive (~780 V la retea 400 V).",
+  "practic": "Determina rezistenta maxima de franare.",
+  "teorie": "Peste prag, energia regenerata se disipa in rezistenta in loc sa urce bus-ul."
+ },
+ "comun:Ebr": {
+  "def": "Energia ce trebuie disipata la franare.",
+  "ia": "E = ½J(omega1²-omega2²).",
+  "practic": "Baza alegerii rezistentei.",
+  "teorie": "Energia cinetica a maselor revine in bus-ul DC la decelerare."
+ },
+ "comun:Ppk": {
+  "def": "Puterea de varf de franare.",
+  "ia": "E / timp de decelerare.",
+  "practic": "Determina rezistenta maxima si varful rezistentei.",
+  "teorie": "Puterea maxima in timpul rampei de oprire."
+ },
+ "comun:Rmax": {
+  "def": "Rezistenta de franare maxima admisa.",
+  "ia": "U_chop² / P_peak.",
+  "practic": "Alege R intre R_min al drive-ului si R_max.",
+  "teorie": "R prea mare nu disipa destul; bus-ul tot urca la trip."
+ },
+ "comun:Pmed": {
+  "def": "Puterea medie disipata in rezistenta.",
+  "ia": "P_peak × durata de conectare.",
+  "practic": "Dimensioneaza puterea termica a rezistentei.",
+  "teorie": "Media pe ciclu la franari intermitente."
+ },
+ "servo:dthmec": {
+  "def": "Eroarea de aliniere a senzorului, in grade mecanice.",
+  "ia": "Din rutina de autophasing / masurare.",
+  "practic": "Se amplifica cu numarul de perechi de poli.",
+  "teorie": "Offset intre zero-ul encoderului si axa magnetica a rotorului."
+ },
+ "servo:dthel": {
+  "def": "Eroarea de aliniere in grade electrice.",
+  "ia": "p × eroarea mecanica.",
+  "practic": "Determina pierderea de cuplu.",
+  "teorie": "Unghiul electric = p × unghiul mecanic."
+ },
+ "servo:Mprod": {
+  "def": "Cuplul efectiv produs la o eroare de aliniere.",
+  "ia": "M_max·cos(eroare electrica).",
+  "practic": "Scade cu cosinusul erorii de aliniere.",
+  "teorie": "In FOC cuplul maxim e cu I_q pe axa q; eroarea reduce proiectia."
+ },
+ "servo:pierdcup": {
+  "def": "Pierderea de cuplu din alinierea gresita.",
+  "ia": "(1-cos(eroare))·100.",
+  "practic": "Sub ~5 grade electrice e neglijabila.",
+  "teorie": "1-cos creste patratic la unghiuri mici."
+ },
+ "servo:Ktor": {
+  "def": "Rigiditatea torsionala a cuplajului.",
+  "ia": "Fisa tehnica a cuplajului [Nm/rad].",
+  "practic": "Fixeaza frecventa de rezonanta mecanica.",
+  "teorie": "Arc torsional intre motor si sarcina (sistem 2 inertii)."
+ },
+ "servo:fanti": {
+  "def": "Frecventa de antirezonanta a sistemului.",
+  "ia": "(1/2pi)√(K_tor/J_sarcina).",
+  "practic": "Apare ca o cadere in raspuns, sub rezonanta.",
+  "teorie": "Sarcina oscileaza in antifaza la antirezonanta."
+ },
+ "comun:Nrot": {
+  "def": "Numarul de rotatii ale motorului pana la oprire pe rampa SS1.",
+  "ia": "½·(n/60)·timp rampa.",
+  "practic": "Verifica oprirea in zona sigura.",
+  "teorie": "Aria de sub rampa de viteza = numar de rotatii."
+ },
+ "comun:unghiopr": {
+  "def": "Unghiul la iesirea reductorului pana la oprire.",
+  "ia": "360·N/i.",
+  "practic": "Pentru axe rotative cu pozitie de siguranta.",
+  "teorie": "Rotatiile motorului impartite la raportul de transmisie."
+ },
+ "comun:distopr": {
+  "def": "Distanta liniara parcursa pana la oprire (SS1).",
+  "ia": "N·pas/i.",
+  "practic": "Verifica oprirea inainte de capat/zona periculoasa.",
+  "teorie": "Rotatii × avansul liniar pe rotatie."
+ },
+ "pompe:L": {
+  "def": "Lungimea conductei de refulare.",
+  "ia": "Plan instalatie.",
+  "practic": "Intra in timpul critic 2L/a.",
+  "teorie": "Unda de presiune parcurge L si se intoarce in 2L/a."
+ },
+ "pompe:dvf": {
+  "def": "Variatia de viteza a fluidului la oprire.",
+  "ia": "Debit / sectiune conducta.",
+  "practic": "Direct proportionala cu socul de presiune.",
+  "teorie": "Joukowsky: Δp = ρ·a·Δv."
+ },
+ "pompe:aund": {
+  "def": "Viteza de propagare a undei de presiune.",
+  "ia": "~1000-1300 m/s (apa, otel).",
+  "practic": "Depinde de fluid si elasticitatea conductei.",
+  "teorie": "a = √(K/ρ) corectat cu elasticitatea peretelui."
+ },
+ "pompe:tinch": {
+  "def": "Timpul de oprire a pompei / inchidere a vanei.",
+  "ia": "Rampa de oprire a drive-ului.",
+  "practic": "Peste timpul critic = soc redus.",
+  "teorie": "Inchidere lenta (t>2L/a) reduce Δp proportional."
+ },
+ "pompe:Tcrit": {
+  "def": "Timpul critic al conductei.",
+  "ia": "2L/a.",
+  "practic": "Oprire mai lenta decat el = fara soc maxim.",
+  "teorie": "Timpul dus-intors al undei de presiune."
+ },
+ "pompe:dPmax": {
+  "def": "Socul de presiune la inchidere brusca.",
+  "ia": "ρ·a·Δv (Joukowsky).",
+  "practic": "Cazul cel mai defavorabil.",
+  "teorie": "Energia cinetica se converteste in presiune instantaneu."
+ },
+ "pompe:dPreal": {
+  "def": "Socul de presiune la timpul real de oprire.",
+  "ia": "ρ·L·Δv/t (daca t>Tcrit), altfel ρ·a·Δv.",
+  "practic": "Seteaza rampa ca dP sa fie acceptabil.",
+  "teorie": "Inchidere lenta (Michaud): Δp scade cu 1/t."
+ },
+ "pompe:Ku": {
+  "def": "Castigul critic la care bucla oscileaza sustinut.",
+  "ia": "Cresti Kp pana la oscilatie constanta.",
+  "practic": "Baza valorilor Ziegler-Nichols.",
+  "teorie": "La Ku sistemul e la limita de stabilitate."
+ },
+ "pompe:Tu": {
+  "def": "Perioada oscilatiei sustinute la Ku.",
+  "ia": "Masoara perioada oscilatiei.",
+  "practic": "Fixeaza Ti si Td.",
+  "teorie": "Perioada la limita de stabilitate (Ziegler-Nichols)."
+ },
+ "pompe:KpPI": {
+  "def": "Castigul proportional pentru regulator PI.",
+  "ia": "0.45·Ku.",
+  "practic": "Valoare de start, apoi reglaj fin.",
+  "teorie": "Ziegler-Nichols pentru PI."
+ },
+ "pompe:TiPI": {
+  "def": "Timpul integral pentru regulator PI.",
+  "ia": "0.83·Tu.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PI."
+ },
+ "pompe:KpPID": {
+  "def": "Castigul proportional pentru regulator PID.",
+  "ia": "0.6·Ku.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PID."
+ },
+ "pompe:TiPID": {
+  "def": "Timpul integral pentru regulator PID.",
+  "ia": "0.5·Tu.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PID."
+ },
+ "pompe:TdPID": {
+  "def": "Timpul derivativ pentru regulator PID.",
+  "ia": "0.125·Tu.",
+  "practic": "Valoare de start (atentie la zgomot).",
+  "teorie": "Ziegler-Nichols pentru PID."
  }
 }
