@@ -170,7 +170,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/manifest.json` | `manifest` | 400 |
 | GET | `/calc` | `calc_public` | 405 |
 | GET | `/docs/<path:filename>` | `protected_docs` | 415 |
-| GET | `/service-worker.js` | `service_worker` | 425 |
-| POST | `/webhook/deploy` | `webhook_deploy` | 459 |
-| POST | `/api/deploy` | `api_deploy` | 544 |
+| GET | `/service-worker.js` | `service_worker` | 427 |
+| POST | `/webhook/deploy` | `webhook_deploy` | 461 |
+| POST | `/api/deploy` | `api_deploy` | 546 |
 

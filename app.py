@@ -413,11 +413,13 @@ _DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'private_do
 
 
 @app.route('/docs/<path:filename>')
-@login_required
 def protected_docs(filename):
-    """Extrase din manualele cu drept de autor (doar paginile citate) — PROTEJAT cu login.
-    Folosit de linkurile 'Documentatie' din calculator (vizualizatorul PDF.js). NU e public."""
-    return send_from_directory(_DOCS_DIR, filename)
+    """Extrase din manuale (DOAR paginile citate, drept de autor respectat) — accesibile public,
+    inclusiv din /calc. Folosit de linkurile 'Documentatie' din calculator (vizualizatorul PDF.js).
+    X-Robots-Tag: noindex/noarchive ca extrasele sa nu fie indexate de motoarele de cautare."""
+    resp = send_from_directory(_DOCS_DIR, filename)
+    resp.headers['X-Robots-Tag'] = 'noindex, noarchive'
+    return resp
 
 
 # ============ PWA ROUTES ============
