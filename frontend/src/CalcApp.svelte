@@ -14,7 +14,7 @@
     {#if theme === 'dark'}<Sun size={18} />{:else}<Moon size={18} />{/if}
   </button>
   <div class="sa-main">
-    <Calculator />
+    <Calculator standalone={true} />
   </div>
   <footer class="sa-foot">Valori orientative — verifica intotdeauna catalogul / manualul. · Electroglobal PIF</footer>
 </div>

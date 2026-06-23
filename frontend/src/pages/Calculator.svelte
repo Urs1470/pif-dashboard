@@ -9,6 +9,10 @@
   import { lookupTerm } from '../lib/driveGlossary.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
+  // standalone=true pe aplicatia publica /calc (impartita cu colegii): ascunde tot ce tine de
+  // proiectele mele private (import "Din proiect" etc.). In dashboard (logat) ramane disponibil.
+  let { standalone = false } = $props()
+
   let activeCat = $state('aplicatii')
   let activeMotorFam = $state('asincron')
   let activeApp = $state('pompe-vent')
@@ -498,8 +502,8 @@
   }
   async function openImport() {
     importOpen = true; importMsg = ''; importDrives = []
-    if (!authed) importTab = 'fisier'
-    if (authed && !projList.length) {
+    if (standalone || !authed) importTab = 'fisier'
+    if (!standalone && authed && !projList.length) {
       try { const r = await fetch('/api/proiecte', { credentials: 'same-origin' }); if (r.ok) { const d = await r.json(); projList = Array.isArray(d) ? d : (d.proiecte || d.items || []) } } catch {}
     }
   }
@@ -573,7 +577,7 @@
       </div>
       <div class="equip-foot">
         <div class="equip-foot-grp">
-          <button class="ef-import" onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import backup</button>
+          <button class="ef-import" onclick={openImport} title={standalone ? 'Import din backup-uri drive (ABB/Siemens)' : 'Import din backup-uri drive (ABB/Siemens) sau din proiect'}>Import backup</button>
           <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
           <button onclick={saveEquip}>Salveaza</button>
         </div>
@@ -797,11 +801,13 @@
 
   <Modal bind:open={importOpen} title="Import date echipament" size="md">
     <div class="imp">
-      <div class="imp-tabs">
-        <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Incarca backup</button>
-        <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
-      </div>
-      {#if importTab === 'proiect'}
+      {#if !standalone}
+        <div class="imp-tabs">
+          <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Incarca backup</button>
+          <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
+        </div>
+      {/if}
+      {#if !standalone && importTab === 'proiect'}
         {#if !authed}
           <p class="imp-hint">„Din proiect" e disponibil doar logat in dashboard. Pentru colegi: foloseste „Incarca backup" si incarca direct fisierul de backup al drive-ului.</p>
         {:else}
