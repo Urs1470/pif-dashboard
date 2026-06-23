@@ -390,8 +390,10 @@
   })
 
   // ============ Import din backup-uri drive (doar autentificat in dashboard) ============
+  // coduri reale de placuta verificate pe backup-uri: ABB grup 99 (Drive Composer .dcparamsbak),
+  // Siemens p03xx (STARTER), Danfoss 1-xx. ABB nu are eta/poli ca parametru direct.
   const NAMEPLATE_CODES = {
-    ABB: { Pn: '30.11', U: '30.19', n: '30.20', In: '30.21', cosphi: '30.22', eta: '30.23', poli: '30.24', f: '30.13' },
+    ABB: { Pn: '99.10', U: '99.07', n: '99.09', In: '99.06', cosphi: '99.11', f: '99.08' },
     Siemens: { Pn: 'p0307', U: 'p0304', In: 'p0305', cosphi: 'p0308', eta: 'p0309', n: 'p0311', poli: 'p0314', f: 'p0310' },
     Danfoss: { Pn: '1-20', U: '1-22', f: '1-23', In: '1-24', n: '1-25', poli: '1-39' },
   }
@@ -414,7 +416,9 @@
   function applyImport(producator, params) {
     const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
     let n = 0
-    const set = (g, k, code) => { const v = params[code]; if (code && v != null && v !== '' && Number.isFinite(+v)) { equip[g][k] = +v; n++ } }
+    // valoarea poate fi "220 kW" (ABB) sau "400" (Siemens) -> scoate numarul; sare valorile <=0 (nesetate)
+    const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) ? x : null }
+    const set = (g, k, code) => { if (!code) return; const x = num(params[code]); if (x != null && x > 0) { equip[g][k] = x; n++ } }
     set('retea', 'U', map.U); set('retea', 'f', map.f)
     set('asincron', 'Pn', map.Pn); set('asincron', 'In', map.In); set('asincron', 'n', map.n)
     set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta); set('asincron', 'poli', map.poli)
