@@ -462,6 +462,22 @@ const STD = {
   iec61800_6: { protected: true, label: 'IEC 61800-6 — tipuri de sarcina / dimensionare curent (extras)', href: _stdView('iec61800-6-extras.pdf', 'duty') },
   npi7: { protected: true, label: 'NP I7-2011 — normativ instalatii electrice JT (RO) (extras)', href: _stdView('npi7-2011-extras.pdf', 'sectiune') },
 }
+// Link direct catre figura regimului, la pagina ei in extrasul IEC 60034-1 deja gazduit
+// (deschide figura REALA in vizualizatorul PDF.js — nu o incorporam ca imagine). Fraza e unica per figura.
+const _figIEC = (search, n) => ({ href: _stdView('iec60034-1-extras.pdf', search), label: `Figura ${n} — regim S${n} (IEC 60034-1)` })
+export const FIG_LINKS = {
+  Ps1: _figIEC('Continuous running duty', 1),
+  PS2: _figIEC('Short-time duty', 2), tP: _figIEC('Short-time duty', 2),
+  PS3: _figIEC('Duty type S3', 3), DC: _figIEC('Duty type S3', 3), CDFcalc: _figIEC('Duty type S3', 3),
+  tload: _figIEC('Duty type S3', 3), tpauza: _figIEC('Duty type S3', 3), kp: _figIEC('Duty type S3', 3),
+  PS6: _figIEC('Duty type S6', 6), k0: _figIEC('Duty type S6', 6), Pech: _figIEC('Duty type S6', 6),
+  TL: _figIEC('discrete constant loads', 10), AR: _figIEC('discrete constant loads', 10),
+  dTref: _figIEC('discrete constant loads', 10), H: _figIEC('discrete constant loads', 10),
+  p1: _figIEC('discrete constant loads', 10), p2: _figIEC('discrete constant loads', 10),
+  p3: _figIEC('discrete constant loads', 10), p4: _figIEC('discrete constant loads', 10),
+  f1: _figIEC('discrete constant loads', 10), f2: _figIEC('discrete constant loads', 10),
+  f3: _figIEC('discrete constant loads', 10), f4: _figIEC('discrete constant loads', 10),
+}
 const STD_DOCS = {
   'regimuri-s': [STD.iec60034_1], 'viata-termica-s10': [STD.iec60034_1], 'termic': [STD.iec60034_1], 'asincron-camp-slabit': [STD.iec60034_1],
   'dezechilibru': [STD.iec60034_1, STD.iec61000_4_30],

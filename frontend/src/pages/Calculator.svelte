@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte'
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock, Cpu, Link2, Download } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
@@ -92,6 +92,7 @@
       g: lookupTerm(item.key, m.family),
       source: isResult ? (SOURCES[m.id] || null) : null,
       docs: docsFor(m),
+      figLink: FIG_LINKS[item.key] || null,
     }
     termOpen = true
   }
@@ -772,6 +773,7 @@
         {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p><MathText text={term.g.ia} /></p></div>{/if}
         {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p><MathText text={term.g.practic} /></p></div>{/if}
         {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p><MathText text={term.g.teorie} /></p></div>{/if}
+        {#if term.figLink}<div class="term-sec"><span class="term-h">Diagrama</span><a class="fig-link" href={term.figLink.href} target="_blank" rel="noopener"><BookOpen size={14} /> {term.figLink.label}</a></div>{/if}
         {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
         {#if term.docs?.length}
           <div class="term-sec"><span class="term-h">Documentatie</span>
@@ -1223,6 +1225,14 @@
     line-height: 1.4;
   }
   .doc-link:hover { background: var(--bg-surface); border-color: var(--accent); }
+  .fig-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--font-small); font-weight: 600;
+    padding: 7px 12px; border-radius: var(--radius-md);
+    background: var(--accent-subtle); border: 1px solid var(--accent);
+    color: var(--accent); text-decoration: none; width: fit-content;
+  }
+  .fig-link:hover { filter: brightness(1.07); }
   .term-docs { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 
   .charts { display: flex; flex-wrap: wrap; gap: var(--space-md); }
