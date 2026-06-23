@@ -215,18 +215,18 @@
       { key: 'f', label: 'Frecventa', unit: 'Hz', def: 50, fills: ['f', 'fn', 'f1'] },
     ],
     asincron: [
-      { key: 'Pn', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'] },
-      { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'] },
-      { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'] },
-      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'] },
-      { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'] },
-      { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'] },
+      { key: 'Pn', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'], sec: 'Placuta' },
+      { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'], sec: 'Placuta' },
+      { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'], sec: 'Placuta' },
+      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'], sec: 'Placuta' },
+      { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'], sec: 'Placuta' },
+      { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'], sec: 'Placuta' },
       // date extinse importabile din backup-uri drive (unitatile trebuie IDENTICE cu cele din driveCalc.js)
-      { key: 'nmax', label: 'Turatie maxima', unit: 'rpm', def: 3000, fills: ['nmax'] },
-      { key: 'tdec', label: 'Timp decelerare', unit: 's', def: 5, fills: ['tdec'] },
-      { key: 'fsw', label: 'Frecventa comutatie', unit: 'kHz', def: 4, fills: ['fsw'] },
-      { key: 'R1', label: 'Rezistenta stator', unit: 'Ω', def: 0.5, fills: ['R1'] },
-      { key: 'J', label: 'Inertie', unit: 'kg·m²', def: 2, fills: ['J', 'Jmot'] },
+      { key: 'nmax', label: 'Turatie maxima', unit: 'rpm', def: 3000, fills: ['nmax'], sec: 'Date drive' },
+      { key: 'tdec', label: 'Timp decelerare', unit: 's', def: 5, fills: ['tdec'], sec: 'Date drive' },
+      { key: 'fsw', label: 'Frecventa comutatie', unit: 'kHz', def: 4, fills: ['fsw'], sec: 'Date drive' },
+      { key: 'R1', label: 'Rezistenta stator', unit: 'Ω', def: 0.5, fills: ['R1'], sec: 'Date drive' },
+      { key: 'J', label: 'Inertie', unit: 'kg·m²', def: 2, fills: ['J', 'Jmot'], sec: 'Date drive' },
     ],
     cc: [
       { key: 'Ua', label: 'Tensiune indus', unit: 'V', def: 440, fills: ['U'] },
@@ -259,6 +259,17 @@
   function freshEquip() { const o = {}; for (const g in EQUIP_GROUPS) o[g] = Object.fromEntries(EQUIP_GROUPS[g].map((c) => [c.key, c.def])); return o }
   const groupLabel = (g) => (g === 'retea' ? 'Retea' : (MOTOR_FAMS.find((f) => f.id === g)?.label ?? g))
   function groupForModule(m) { return MACHINE_GROUPS.includes(m.family) ? m.family : 'asincron' }
+  // imparte conceptele unui grup pe sub-sectiuni (ex. Placuta / Date drive la asincron); fara `sec` -> o sectiune fara titlu
+  function sectionsFor(g) {
+    const out = []
+    for (const c of EQUIP_GROUPS[g]) {
+      const lbl = c.sec || ''
+      let s = out.find((x) => x.label === lbl)
+      if (!s) { s = { label: lbl, items: [] }; out.push(s) }
+      s.items.push(c)
+    }
+    return out
+  }
   function loadObj(k) { try { const v = JSON.parse(localStorage.getItem(k)); return v && typeof v === 'object' && !Array.isArray(v) ? v : null } catch { return null } }
   function loadEquipData() {
     const fresh = freshEquip()
@@ -463,7 +474,18 @@
     set('asincron', 'Pn', map.Pn); set('asincron', 'In', map.In); set('asincron', 'n', map.n)
     set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta)
     // Siemens p0314 = PERECHI de poli -> nr poli = 2x; ABB n-are cod direct, Danfoss 1-39 = nr poli
+    const _poliBefore = equip.asincron.poli
     set('asincron', 'poli', map.poli, producator === 'Siemens' ? 2 : 1)
+    // nr poli lipsa din backup (ABB n-are cod, Siemens p0314=0) -> deriva din frecventa si turatie:
+    // cei mai multi poli (turatia sincrona cea mai mica) inca peste turatia nominala
+    if (equip.asincron.poli === _poliBefore) {
+      const fv = _num((params || {})[map.f]), nv = _num((params || {})[map.n])
+      if (fv > 0 && nv > 0) {
+        let pp = 0
+        for (let k = 2; k <= 16; k += 2) if ((120 * fv) / k >= nv) pp = k
+        if (pp) { equip.asincron.poli = pp; n++ }
+      }
+    }
     // date extinse de drive/motor: turatie max, rampa decelerare, frecventa comutatie, Rs stator, inertie
     set('asincron', 'nmax', map.nmax); set('asincron', 'tdec', map.tdec)
     set('asincron', 'fsw', map.fsw); set('asincron', 'R1', map.R1); set('asincron', 'J', map.J)
@@ -524,32 +546,42 @@
       <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu placuta o data — toate cardurile se completeaza">
         <span class="equip-chev" class:open={panelOpen}><ChevronRight size={15} /></span>
         <Cpu size={16} /> <b>Date echipament</b>
+        <span class="equip-sub">placuta + date drive — completeaza automat cardurile</span>
       </button>
-      <label class="equip-switch" title="Cardurile folosesc datele partajate de mai jos">
-        <input type="checkbox" bind:checked={sharedOn} /> partajat
+      <label class="equip-switch" title="Cardurile folosesc datele de mai jos">
+        <input type="checkbox" bind:checked={sharedOn} /> aplica la carduri
       </label>
-      <div class="equip-actions">
-        <button onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import</button>
-        <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
-        <button onclick={saveEquip}>Salveaza</button>
-        <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
-        <button onclick={resetShared} title="Reseteaza datele la implicit">Reset</button>
-      </div>
     </div>
     {#if panelOpen}
-      {#each panelGroups as g (g)}
-        <div class="equip-group">
-          <span class="equip-group-h">{groupLabel(g)}</span>
-          <div class="equip-grid">
-            {#each EQUIP_GROUPS[g] as c (c.key)}
-              <div class="equip-field">
-                <label>{c.label}{c.unit ? ` [${c.unit}]` : ''}</label>
-                <input type="number" step="any" bind:value={equip[g][c.key]} disabled={!sharedOn} />
+      <div class="equip-body">
+        {#each panelGroups as g (g)}
+          <div class="equip-group">
+            <span class="equip-group-h">{groupLabel(g)}</span>
+            {#each sectionsFor(g) as sec (sec.label)}
+              {#if sec.label}<span class="equip-sec-h">{sec.label}</span>{/if}
+              <div class="equip-grid">
+                {#each sec.items as c (c.key)}
+                  <div class="equip-field">
+                    <label>{c.label}{c.unit ? ` [${c.unit}]` : ''}</label>
+                    <input type="number" step="any" bind:value={equip[g][c.key]} disabled={!sharedOn} />
+                  </div>
+                {/each}
               </div>
             {/each}
           </div>
+        {/each}
+      </div>
+      <div class="equip-foot">
+        <div class="equip-foot-grp">
+          <button class="ef-import" onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import backup</button>
+          <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
+          <button onclick={saveEquip}>Salveaza</button>
         </div>
-      {/each}
+        <div class="equip-foot-grp">
+          <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
+          <button onclick={resetShared} title="Reseteaza datele la implicit">Reset</button>
+        </div>
+      </div>
       {#if equipments.length}
         <div class="equip-chips">
           <span class="equip-chips-h">Salvate:</span>
@@ -850,21 +882,27 @@
 
   /* === Date echipament partajate === */
   .equip-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
-  .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
   .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
+  .equip-sub { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
   .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
   .equip-chev.open { transform: rotate(90deg); color: var(--accent); }
   .equip-switch { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; }
-  .equip-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: auto; }
-  .equip-actions button {
+  .equip-body { margin-top: 4px; }
+  /* toolbar de actiuni: stanga = intrare (import backup / salveaza), dreapta = iesire (export / reset) */
+  .equip-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 11px; border-top: 1px solid var(--border); }
+  .equip-foot-grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .equip-foot button {
     font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
-    padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 6px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
     transition: all var(--dur-fast) var(--ease);
   }
-  .equip-actions button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
-  .equip-name { font-size: var(--font-tiny); padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
-  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 10px; }
+  .equip-foot button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .equip-foot .ef-import { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .equip-foot .ef-import:hover { filter: brightness(1.07); }
+  .equip-name { font-size: var(--font-tiny); padding: 6px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
+  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 6px; }
   .equip-field { display: flex; flex-direction: column; gap: 3px; }
   .equip-field label { font-size: var(--font-tiny); color: var(--text-dim); }
   .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: 600; }
@@ -883,8 +921,10 @@
   .link-btn { display: flex; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); cursor: pointer; background: var(--bg-surface); }
   .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
-  .equip-group { margin-top: 10px; }
+  .equip-group { margin-top: 12px; }
   .equip-group-h { display: block; font-size: var(--font-tiny); font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .equip-sec-h { display: block; font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary); margin: 9px 0 0; }
+  .equip-sec-h:first-of-type { margin-top: 2px; }
 
   /* sub-antet de sectiune in accordion */
   .acc-section-head { font-size: var(--font-tiny); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); padding: 12px 2px 3px; }

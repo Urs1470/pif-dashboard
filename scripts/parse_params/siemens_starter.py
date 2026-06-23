@@ -46,6 +46,16 @@ _FLOAT_TYPES = {'14'}
 # Bit din coloana `flag` a `varval` care marchează "valoare instanță" (modificat).
 _MODIFIED_BIT = 0x10000
 
+# Parametri de date-motor pe care SINAMICS ii AUTO-CALCULEAZA (la p0340, din curentul/
+# tensiunea introduse) si ii stocheaza cu flag=-1 (= "nemodificat manual") DESI au o
+# valoare reala. Daca filtram doar dupa bitul "modificat", se pierd putere/cos phi/inertie/
+# Rs etc. (ex: comisionare pe baza de curent -> p0307 putere ramane flag=-1 cu valoarea reala).
+# Pentru acest set le includem in preview chiar daca flag=-1 (valorile 0/nesetate sar oricum).
+_NAMEPLATE_PNUS = {
+    304, 305, 307, 308, 309, 310, 311, 314, 316, 320, 322,
+    335, 340, 341, 345, 350, 352, 356, 360, 625,
+}
+
 
 def _clean_float(s: str) -> str:
     """'3.349999905' -> '3.35', '50' -> '50', '1.5' -> '1.5'.
@@ -205,15 +215,21 @@ def _read_project_drives(db_path: str) -> List[Dict]:
 
         const_pool = _parse_const(group['const'])
         modified: Dict[str, str] = {}
+        nameplate: Dict[str, str] = {}
         total = 0
         for pnu, index, const_idx, flag in _parse_varval(group['varval']):
             total += 1
-            if not (flag != -1 and (flag & _MODIFIED_BIT)):
-                continue
             val = _resolve_value(const_idx, const_pool)
             if val is None:
                 continue
-            modified[_format_code(pnu, index)] = val
+            if flag != -1 and (flag & _MODIFIED_BIT):
+                modified[_format_code(pnu, index)] = val
+            elif index == 0 and pnu in _NAMEPLATE_PNUS and val not in ('', '0', '0.0'):
+                # date-motor auto-calculate (flag=-1) cu valoare reala -> le pastram
+                nameplate.setdefault(_format_code(pnu, index), val)
+        # completeaza placuta auto-calculata FARA a suprascrie valorile setate manual
+        for code, val in nameplate.items():
+            modified.setdefault(code, val)
 
         drives.append({
             'nume': nume,
