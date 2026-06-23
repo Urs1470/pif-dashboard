@@ -1,6 +1,6 @@
 <script>
   import { tick } from 'svelte'
-  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock } from '@lucide/svelte'
+  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock, Cpu, Link2, Download } from '@lucide/svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
@@ -68,13 +68,14 @@
 
   function resetModule(m) {
     for (const f of m.fields) values[m.id][f.key] = f.default
+    overrides = new Set([...overrides].filter((id) => !id.startsWith(m.id + ':')))
   }
 
   // Zoom grafic in modal (70%)
   let zoomOpen = $state(false)
   let zoomRef = $state(null)
   function openZoom(m, index) { zoomRef = { mod: m, index }; zoomOpen = true }
-  const zoomChart = $derived(zoomRef ? computeCharts(zoomRef.mod, values[zoomRef.mod.id])[zoomRef.index] : null)
+  const zoomChart = $derived(zoomRef ? computeCharts(zoomRef.mod, effVals(zoomRef.mod))[zoomRef.index] : null)
 
   // Definitie marime (glosar) la click pe eticheta
   let termOpen = $state(false)
@@ -204,6 +205,92 @@
     else if (e.key === 'Enter') { e.preventDefault(); acSelect(acIndex < 0 ? 0 : acIndex) }
     else if (e.key === 'Escape') { query = ''; acIndex = -1 }
   }
+
+  // ============ DATE ECHIPAMENT PARTAJATE ============
+  // Introduci placuta o data; orice card care are un camp cu aceeasi marime (cheie + unitate)
+  // foloseste valoarea partajata. Override local per camp (deconectezi un camp de la datele comune).
+  const SHARED = [
+    { key: 'P', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'] },
+    { key: 'U', label: 'Tensiune', unit: 'V', def: 400, fills: ['U', 'Un', 'Ulinie'] },
+    { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'] },
+    { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'] },
+    { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'] },
+    { key: 'fn', label: 'Frecventa', unit: 'Hz', def: 50, fills: ['fn', 'f1'] },
+    { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'] },
+    { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'] },
+    { key: 'Strafo', label: 'Putere trafo', unit: 'kVA', def: 630, fills: ['Strafo'] },
+    { key: 'uk', label: 'uk trafo', unit: '%', def: 6, fills: ['uk'] },
+  ]
+  const _F2S = {}
+  for (const s of SHARED) for (const fk of s.fills) (_F2S[fk] = _F2S[fk] || []).push(s)
+  function loadObj(k) { try { const v = JSON.parse(localStorage.getItem(k)); return v && typeof v === 'object' && !Array.isArray(v) ? v : null } catch { return null } }
+
+  let sharedOn = $state(true)
+  let panelOpen = $state(true)
+  let shared = $state({ ...Object.fromEntries(SHARED.map((s) => [s.key, s.def])), ...(loadObj('pif-calc-shared') || {}) })
+  let overrides = $state(new Set())
+  let equipments = $state(loadLS('pif-calc-equip', []))
+  let equipName = $state('')
+  let exportMsg = $state('')
+  $effect(() => { try { localStorage.setItem('pif-calc-shared', JSON.stringify(shared)) } catch {} })
+  $effect(() => { try { localStorage.setItem('pif-calc-equip', JSON.stringify(equipments)) } catch {} })
+
+  // conceptul partajat pt un camp (potrivire pe cheie SI unitate, ca sa nu legam kV/% gresit)
+  function conceptFor(f) {
+    if (!sharedOn) return null
+    const cands = _F2S[f.key]; if (!cands) return null
+    return cands.find((s) => s.unit === (f.unit ?? '')) || null
+  }
+  function isLinked(m, f) { const s = conceptFor(f); return !!(s && !overrides.has(m.id + ':' + f.key)) }
+  function fieldVal(m, f) { const s = conceptFor(f); return s && !overrides.has(m.id + ':' + f.key) ? shared[s.key] : values[m.id][f.key] }
+  function setFieldVal(m, f, raw) {
+    const val = raw === '' ? '' : +raw
+    const s = conceptFor(f)
+    if (s && !overrides.has(m.id + ':' + f.key)) shared[s.key] = val
+    else values[m.id][f.key] = val
+  }
+  function toggleLink(m, f) {
+    const id = m.id + ':' + f.key, next = new Set(overrides)
+    if (next.has(id)) next.delete(id)
+    else { const s = conceptFor(f); if (s) values[m.id][f.key] = shared[s.key]; next.add(id) }
+    overrides = next
+  }
+  // valorile efective pt calcul (partajat suprascrie local, daca nu e override)
+  function effVals(m) {
+    const v = { ...values[m.id] }
+    if (sharedOn) for (const f of m.fields) { const s = conceptFor(f); if (s && !overrides.has(m.id + ':' + f.key)) v[f.key] = shared[s.key] }
+    return v
+  }
+
+  // echipamente salvate
+  function saveEquip() {
+    const name = (equipName || '').trim() || ('Echipament ' + (equipments.length + 1))
+    equipments = [...equipments.filter((e) => e.name !== name), { name, data: { ...shared } }]
+    equipName = ''
+  }
+  function loadEquip(e) { shared = { ...Object.fromEntries(SHARED.map((s) => [s.key, s.def])), ...e.data }; overrides = new Set() }
+  function delEquip(e) { equipments = equipments.filter((x) => x.name !== e.name) }
+  function resetShared() { shared = Object.fromEntries(SHARED.map((s) => [s.key, s.def])); overrides = new Set() }
+
+  // export rezultate (cardurile deschise; daca niciunul -> tab-ul curent) pentru raportul PIF
+  function exportResults() {
+    const work = shown.filter((m) => expanded.has(m.id))
+    const list = work.length ? work : shown
+    const L = ['# Rezultate calculator actionari electrice', '', '## Date echipament']
+    for (const s of SHARED) L.push(`- ${s.label}: ${shared[s.key]}${s.unit ? ' ' + s.unit : ''}`)
+    L.push('')
+    for (const m of list) {
+      const ev = effVals(m), r = computeModule(m, ev)
+      L.push('## ' + m.title)
+      for (const f of m.fields) L.push(`  ${descLabel(f.label, f.key)}: ${ev[f.key]}${f.unit ? ' ' + f.unit : ''}`)
+      for (const res of m.results) L.push(`- ${res.label} = ${fmtNum(r[res.key], res.dec)}${res.unit ? ' ' + res.unit : ''}`)
+      L.push('')
+    }
+    const text = L.join('\n')
+    try { navigator.clipboard.writeText(text); exportMsg = `Copiat in clipboard (${list.length} ${list.length === 1 ? 'card' : 'carduri'}).` }
+    catch { exportMsg = 'Nu am putut copia automat.' }
+    setTimeout(() => (exportMsg = ''), 3500)
+  }
 </script>
 
 <div class="page">
@@ -214,6 +301,43 @@
       <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
     </div>
     <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
+  </div>
+
+  <div class="equip-panel">
+    <div class="equip-head">
+      <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu placuta o data — toate cardurile se completeaza">
+        <span class="equip-chev" class:open={panelOpen}><ChevronRight size={15} /></span>
+        <Cpu size={16} /> <b>Date echipament</b>
+      </button>
+      <label class="equip-switch" title="Cardurile folosesc datele partajate de mai jos">
+        <input type="checkbox" bind:checked={sharedOn} /> partajat
+      </label>
+      <div class="equip-actions">
+        <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
+        <button onclick={saveEquip}>Salveaza</button>
+        <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
+        <button onclick={resetShared} title="Reseteaza datele la implicit">Reset</button>
+      </div>
+    </div>
+    {#if panelOpen}
+      <div class="equip-grid">
+        {#each SHARED as s (s.key)}
+          <div class="equip-field">
+            <label>{s.label}{s.unit ? ` [${s.unit}]` : ''}</label>
+            <input type="number" step="any" bind:value={shared[s.key]} disabled={!sharedOn} />
+          </div>
+        {/each}
+      </div>
+      {#if equipments.length}
+        <div class="equip-chips">
+          <span class="equip-chips-h">Salvate:</span>
+          {#each equipments as e (e.name)}
+            <span class="equip-chip"><button onclick={() => loadEquip(e)}>{e.name}</button><button class="chip-x" title="Sterge" onclick={() => delEquip(e)}>×</button></span>
+          {/each}
+        </div>
+      {/if}
+      {#if exportMsg}<p class="equip-msg">{exportMsg}</p>{/if}
+    {/if}
   </div>
 
   <div class="search-wrap">
@@ -289,8 +413,9 @@
         </div>
 
         {#if open}
-          {@const r = computeModule(m, values[m.id])}
-          {@const charts = computeCharts(m, values[m.id])}
+          {@const ev = effVals(m)}
+          {@const r = computeModule(m, ev)}
+          {@const charts = computeCharts(m, ev)}
           <div class="acc-body">
             <div class="acc-body-head">
               <span class="cat-badge">{catLabel(catOf(m))}</span>
@@ -300,9 +425,16 @@
             {#if m.fields.length}
               <div class="inputs">
                 {#each m.fields as f (f.key)}
+                  {@const linked = isLinked(m, f)}
                   <div class="inp">
                     <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
-                    <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min} bind:value={values[m.id][f.key]} />
+                    <div class="inp-row">
+                      <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
+                        value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
+                      {#if conceptFor(f)}
+                        <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului — click pentru valoare locala' : 'Valoare locala — click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
+                      {/if}
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -440,6 +572,42 @@
   .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
   .surse-sec li { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; padding-left: 12px; position: relative; }
   .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
+
+  /* === Date echipament partajate === */
+  .equip-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
+  .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
+  .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
+  .equip-chev.open { transform: rotate(90deg); color: var(--accent); }
+  .equip-switch { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; }
+  .equip-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: auto; }
+  .equip-actions button {
+    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    transition: all var(--dur-fast) var(--ease);
+  }
+  .equip-actions button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .equip-name { font-size: var(--font-tiny); padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
+  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 10px; }
+  .equip-field { display: flex; flex-direction: column; gap: 3px; }
+  .equip-field label { font-size: var(--font-tiny); color: var(--text-dim); }
+  .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: 600; }
+  .equip-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .equip-field input:disabled { opacity: 0.45; }
+  .equip-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .equip-chips-h { font-size: var(--font-tiny); color: var(--text-dim); }
+  .equip-chip { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .equip-chip > button { font-size: var(--font-tiny); padding: 3px 10px; color: var(--text-secondary); cursor: pointer; background: var(--bg-surface); }
+  .equip-chip > button:hover { background: var(--accent-subtle); color: var(--accent); }
+  .equip-chip .chip-x { padding: 3px 8px; color: var(--text-dim); border-left: 1px solid var(--border); }
+  .equip-msg { font-size: var(--font-tiny); color: var(--accent); margin-top: 8px; }
+  /* input cu buton de legare la datele partajate */
+  .inp-row { display: flex; align-items: stretch; gap: 4px; margin-top: auto; }
+  .inp-row .inp-field { flex: 1; min-width: 0; margin-top: 0; }
+  .link-btn { display: flex; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); cursor: pointer; background: var(--bg-surface); }
+  .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
   .fam-tabs {
     display: flex;
