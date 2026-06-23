@@ -389,7 +389,8 @@
     return out
   })
 
-  // ============ Import din backup-uri drive (doar autentificat in dashboard) ============
+  // ============ Import din backup-uri drive ============
+  // "Incarca backup" e PUBLIC (merge si pe /calc, fara login - util pt colegi); "Din proiect" cere login.
   // coduri reale de placuta verificate pe backup-uri: ABB grup 99 (Drive Composer .dcparamsbak),
   // Siemens p03xx (STARTER), Danfoss 1-xx. ABB nu are eta/poli ca parametru direct.
   const NAMEPLATE_CODES = {
@@ -399,7 +400,7 @@
   }
   let authed = $state(false)
   let importOpen = $state(false)
-  let importTab = $state('proiect')
+  let importTab = $state('fisier')
   let importMsg = $state('')
   let importBusy = $state(false)
   let projList = $state([])
@@ -413,22 +414,55 @@
     const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/)
     return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}
   }
-  function applyImport(producator, params) {
+  // valoarea poate fi "220 kW" (ABB) sau "400" (Siemens) -> scoate numarul
+  const _num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) ? x : null }
+  const TYPE_LABEL = { asincron: 'asincron', cc: 'c.c.', servo: 'servo / PMSM', sincron: 'sincron' }
+  // tipul masinii din backup (ca sa nu importi un drive c.c. pe tabul asincron)
+  function backupType(producator, params, model) {
+    if (/dcs|simoreg|6ra/i.test(model || '')) return 'cc'
+    if (producator === 'ABB') {
+      const mt = String((params || {})['99.03'] || '').toLowerCase()
+      if (mt.includes('permanent')) return 'servo'
+      if (mt.includes('reluctance') || (mt.includes('synchronous') && !mt.includes('asynchronous'))) return 'sincron'
+      return 'asincron'
+    }
+    if (producator === 'Siemens') {
+      const mt = String((params || {})['p0300'] || '')
+      if (parseInt(mt) === 2 || parseInt(mt) === 5 || /perman|sync/i.test(mt)) return 'servo'
+      return 'asincron'
+    }
+    return 'asincron'
+  }
+  function drivePreview(producator, params) {
+    const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
+    const g = (code) => { const x = _num((params || {})[code]); return x != null && x > 0 ? x : null }
+    const bits = []; const P = g(map.Pn), U = g(map.U), I = g(map.In)
+    if (P) bits.push(P + ' kW'); if (U) bits.push(U + ' V'); if (I) bits.push(I + ' A')
+    return bits.join(' · ')
+  }
+  function applyImport(producator, params, model) {
+    // pe un tab de masina non-asincron: importul aduce date de motor asincron -> nu lasa
+    if (activeCat === 'motoare' && activeMotorFam !== 'asincron') {
+      importMsg = `Esti pe tabul ${groupLabel(activeMotorFam)}. Importul aduce date de motor — comuta pe tabul Asincron.`; return
+    }
+    const t = backupType(producator, params, model)
+    if (t !== 'asincron') {
+      importMsg = `Backup-ul pare un motor ${TYPE_LABEL[t] || t} — importul suporta deocamdata doar motoare asincrone.`; return
+    }
     const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
     let n = 0
-    // valoarea poate fi "220 kW" (ABB) sau "400" (Siemens) -> scoate numarul; sare valorile <=0 (nesetate)
-    const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return Number.isFinite(x) ? x : null }
-    const set = (g, k, code) => { if (!code) return; const x = num(params[code]); if (x != null && x > 0) { equip[g][k] = x; n++ } }
+    const set = (g, k, code) => { if (!code) return; const x = _num((params || {})[code]); if (x != null && x > 0) { equip[g][k] = x; n++ } }
     set('retea', 'U', map.U); set('retea', 'f', map.f)
     set('asincron', 'Pn', map.Pn); set('asincron', 'In', map.In); set('asincron', 'n', map.n)
     set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta); set('asincron', 'poli', map.poli)
     overrides = new Set()
-    importMsg = n ? `Importat ${n} valori in grupul Asincron (verifica poli/cosphi).` : 'Nu am gasit date de placuta in acest backup.'
-    if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1300) }
+    importMsg = n ? `Importat ${n} valori in Asincron + Retea (verifica poli/cosphi).` : 'Nu am gasit date de placuta in acest backup.'
+    if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1400) }
   }
   async function openImport() {
     importOpen = true; importMsg = ''; importDrives = []
-    if (!projList.length) {
+    if (!authed) importTab = 'fisier'
+    if (authed && !projList.length) {
       try { const r = await fetch('/api/proiecte', { credentials: 'same-origin' }); if (r.ok) { const d = await r.json(); projList = Array.isArray(d) ? d : (d.proiecte || d.items || []) } } catch {}
     }
   }
@@ -438,7 +472,7 @@
   }
   function pickEquip(eq) {
     let p = eq.params_json; if (typeof p === 'string') { try { p = JSON.parse(p) } catch { p = {} } }
-    applyImport(eq.producator || 'ABB', p || {})
+    applyImport(eq.producator || 'ABB', p || {}, eq.model || eq.tip || '')
   }
   async function onBackupFile(e) {
     const files = e.target.files; if (!files || !files.length) return
@@ -449,10 +483,10 @@
     const url = isZip ? '/api/import-archive/preview' : '/api/import-abb-multi/preview'
     try {
       const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: csrfHeader(), body: fd })
-      if (!r.ok) { importMsg = 'Eroare ' + r.status + ' (esti logat in dashboard?).'; importBusy = false; e.target.value = ''; return }
+      if (!r.ok) { importMsg = r.status === 413 ? 'Fisier prea mare (max 30 MB).' : 'Eroare ' + r.status + ' la citirea backup-ului.'; importBusy = false; e.target.value = ''; return }
       const d = await r.json(); const drives = d.drives || []
       if (!drives.length) importMsg = 'Backup fara date de placuta.'
-      else if (drives.length === 1) applyImport(drives[0].producator, drives[0].params || {})
+      else if (drives.length === 1) applyImport(drives[0].producator, drives[0].params || {}, drives[0].model || '')
       else importDrives = drives
     } catch { importMsg = 'Nu am putut citi backup-ul.' }
     importBusy = false; e.target.value = ''
@@ -479,7 +513,7 @@
         <input type="checkbox" bind:checked={sharedOn} /> partajat
       </label>
       <div class="equip-actions">
-        {#if authed}<button onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import</button>{/if}
+        <button onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import</button>
         <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
         <button onclick={saveEquip}>Salveaza</button>
         <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
@@ -715,38 +749,47 @@
   <Modal bind:open={importOpen} title="Import date echipament" size="md">
     <div class="imp">
       <div class="imp-tabs">
-        <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
         <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Incarca backup</button>
+        <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
       </div>
       {#if importTab === 'proiect'}
-        <div class="imp-row">
-          <label for="imp-proj">Proiect</label>
-          <select id="imp-proj" bind:value={selProj} onchange={onSelProj}>
-            <option value="">— alege proiect —</option>
-            {#each projList as p (p.id)}<option value={p.id}>{p.nume || p.titlu || p.id}</option>{/each}
-          </select>
-        </div>
-        {#if equipList.length}
-          <div class="imp-equip">
-            {#each equipList as eq (eq.id)}
-              <button class="imp-eq" onclick={() => pickEquip(eq)}>{eq.nume || eq.model || 'Echipament'}<span>{eq.producator || ''} {eq.model || ''}</span></button>
-            {/each}
+        {#if !authed}
+          <p class="imp-hint">„Din proiect" e disponibil doar logat in dashboard. Pentru colegi: foloseste „Incarca backup" si incarca direct fisierul de backup al drive-ului.</p>
+        {:else}
+          <div class="imp-row">
+            <label for="imp-proj">Proiect</label>
+            <select id="imp-proj" bind:value={selProj} onchange={onSelProj}>
+              <option value="">— alege proiect —</option>
+              {#each projList as p (p.id)}<option value={p.id}>{p.nume || p.titlu || p.id}</option>{/each}
+            </select>
           </div>
-        {:else if selProj}<p class="imp-hint">Niciun echipament cu parametri in acest proiect.</p>{/if}
+          {#if equipList.length}
+            <div class="imp-equip">
+              {#each equipList as eq (eq.id)}
+                <button class="imp-eq" onclick={() => pickEquip(eq)}><span class="imp-eq-name">{eq.nume || eq.model || 'Echipament'}</span><span>{eq.producator || ''} {eq.model || ''}</span></button>
+              {/each}
+            </div>
+          {:else if selProj}<p class="imp-hint">Niciun echipament cu parametri in acest proiect.</p>{/if}
+        {/if}
       {:else}
-        <p class="imp-hint">Incarca un backup de drive: ABB <code>.dcparamsbak</code> (poti selecta mai multe) sau Siemens STARTER <code>.zip</code>.</p>
+        <p class="imp-hint">Incarca un backup de drive: ABB <code>.dcparamsbak</code> (poti selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge si fara login.</p>
         <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
         {#if importDrives.length}
-          <p class="imp-hint">Mai multe drive-uri — alege:</p>
+          <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
           <div class="imp-equip">
             {#each importDrives as dr, i (i)}
-              <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {})}>{dr.nume || 'Drive'}<span>{dr.producator || ''} {dr.model || ''}</span></button>
+              {@const tp = backupType(dr.producator, dr.params || {}, dr.model || '')}
+              {@const pv = drivePreview(dr.producator, dr.params)}
+              <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {}, dr.model || '')}>
+                <span class="imp-eq-name">{dr.nume || 'Drive'} <em class="imp-eq-tag" class:warn={tp !== 'asincron'}>{TYPE_LABEL[tp] || tp}</em></span>
+                <span>{dr.producator || ''} {dr.model || ''}{#if pv} · {pv}{/if}</span>
+              </button>
             {/each}
           </div>
         {/if}
       {/if}
       {#if importMsg}<p class="imp-msg">{importMsg}</p>{/if}
-      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b> din datele de placuta ale motorului (cod producator: ABB 30.xx, Siemens p03xx, Danfoss 1-xx).</p>
+      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b> din datele de placuta ale motorului (cod producator: ABB grup 99, Siemens p03xx, Danfoss 1-xx). Un backup de alt tip (c.c./servo) nu se importa pe tabul asincron.</p>
     </div>
   </Modal>
 </div>
@@ -841,6 +884,9 @@
   .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: 600; cursor: pointer; }
   .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }
   .imp-eq span { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
+  .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: 600; color: var(--text); }
+  .imp-eq-tag { font-style: normal; font-size: var(--font-tiny); font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-subtle); color: var(--accent); }
+  .imp-eq-tag.warn { background: rgba(230, 152, 117, 0.18); color: #e69875; }
   .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
   .imp-hint { font-size: var(--font-tiny); color: var(--text-dim); }
   .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }

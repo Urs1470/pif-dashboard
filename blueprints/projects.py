@@ -5,6 +5,7 @@ import os
 import json
 import shutil
 import logging
+import sqlite3
 from datetime import datetime
 
 from flask import Blueprint, request, jsonify, send_file
@@ -1288,7 +1289,8 @@ def preview_import_params():
 # ============ IMPORT MULTI-FILE ABB (.dcparamsbak) ============
 
 @projects_bp.route('/api/import-abb-multi/preview', methods=['POST'])
-@login_required
+# PUBLIC (fara login): doar parseaza fisierul incarcat -> nu atinge DB/date private.
+# Permite importul de placuta in calculatorul public /calc pentru colegi.
 def preview_import_abb_multi():
     """Parsează multiple fișiere .dcparamsbak ABB și returnează preview multi-drive.
 
@@ -1299,6 +1301,8 @@ def preview_import_abb_multi():
     Returnează aceeași structură ca /import-archive/preview, compatibilă cu
     POST .../echipamente/import-archive pentru persistare.
     """
+    if (request.content_length or 0) > 30 * 1024 * 1024:
+        return jsonify({'error': 'Fisier prea mare (max 30 MB)'}), 413
     files = request.files.getlist('files')
     if not files or all(not f.filename for f in files):
         return jsonify({'error': 'Niciun fișier selectat (field "files")'}), 400
@@ -1407,6 +1411,12 @@ def _familie_param_meta(drives):
     meta = {}
     conn = get_db()
     cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT 1 FROM parametri_master LIMIT 1')
+    except sqlite3.OperationalError:
+        # tabela parametri_master lipseste pe aceasta instanta (fara seed de parametri)
+        # -> sarim imbogatirea (optionala); parametrii de placuta raman disponibili
+        return {}
     for fam, codes in by_familie.items():
         codes = list(codes)
         meta[fam] = {}
@@ -1606,7 +1616,7 @@ def _filter_drive_params(drives, meta):
 
 
 @projects_bp.route('/api/import-archive/preview', methods=['POST'])
-@login_required
+# PUBLIC (fara login): doar parseaza arhiva incarcata -> nu atinge DB/date private.
 def preview_import_archive():
     """Parsează o arhivă ZIP de proiect Siemens STARTER și returnează drive-urile.
 
@@ -1615,6 +1625,8 @@ def preview_import_archive():
 
     Nu modifică DB. Persistarea se face prin POST .../echipamente/import-archive.
     """
+    if (request.content_length or 0) > 30 * 1024 * 1024:
+        return jsonify({'error': 'Fisier prea mare (max 30 MB)'}), 413
     if 'file' not in request.files:
         return jsonify({'error': 'Fișier lipsă (field "file")'}), 400
     upload = request.files['file']
