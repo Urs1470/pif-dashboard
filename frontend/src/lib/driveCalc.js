@@ -478,6 +478,28 @@ export const FIG_LINKS = {
   f1: _figIEC('discrete constant loads', 10), f2: _figIEC('discrete constant loads', 10),
   f3: _figIEC('discrete constant loads', 10), f4: _figIEC('discrete constant loads', 10),
 }
+// Figura/tabelul-cheie din extrasul standardului, la nivel de CARD (orice marime din card o primeste
+// daca nu are deja una proprie in FIG_LINKS). Deschide pagina reala in PDF.js — nu incorporam imaginea.
+// Frazele de cautare sunt verificate ca aterizeaza pe pagina figurii.
+const _figSTD = (file, search, label) => ({ href: _stdView(file, search), label })
+export const MODULE_FIG = {
+  'scurtcircuit': _figSTD('iec60909-extras.pdf', 'Short-circuit current of a far-from-generator', 'Forme de curent de scurtcircuit (IEC 60909, Fig. 1-3)'),
+  'trafo-scurtcircuit': _figSTD('iec60909-extras.pdf', 'Short-circuit current of a far-from-generator', 'Forme de curent de scurtcircuit (IEC 60909)'),
+  'clase-ie': _figSTD('iec60034-30-1-extras.pdf', 'Nominal efficiency limits', 'Tabele limite de randament IE1-IE4 (IEC 60034-30-1)'),
+  'grade-ip': _figSTD('iec60034-5-extras.pdf', 'Degrees of protection indicated by the first', 'Tabel grade de protectie IP (IEC 60034-5)'),
+  'comutatie': _figSTD('iec60034-25-extras.pdf', 'Additional losses', 'Pierderi suplimentare vs frecventa de puls (IEC 60034-25, Fig. 6)'),
+  'derating-vfd-motor': _figSTD('iec60034-25-extras.pdf', 'Additional losses', 'Pierderi pe convertizor vs frecventa de puls (IEC 60034-25, Fig. 6)'),
+  'derating-armonici-motor': _figSTD('iec60034-17-extras.pdf', 'Waveform of phase current', 'Forme de unda & pierderi pe convertizor (IEC 60034-17)'),
+  'franare-rezistenta': _figSTD('iec61800-2-extras.pdf', 'Operating quadrants', 'Cadrane de functionare (IEC 61800-2, Fig. 3)'),
+  'cablu': _figSTD('iec60364-5-52-extras.pdf', 'methods of installation', 'Metode de pozare a cablurilor (IEC 60364-5-52, Tab. 52-3)'),
+  'cablu-protectii': _figSTD('iec60364-5-52-extras.pdf', 'methods of installation', 'Metode de pozare a cablurilor (IEC 60364-5-52)'),
+  'ploturi': _figSTD('iec60076-21-extras.pdf', 'Limits of temperature rise', 'Limite de temperatura & ploturi trafo (IEC 60076-21)'),
+  'izolatie': _figSTD('iec60034-18-extras.pdf', 'Candidate system qualified', 'Calificare sistem de izolatie (IEC 60034-18, Fig. 1-2)'),
+  'unda-reflectata': _figSTD('iec60034-18-41-extras.pdf', 'Allowable voltage waveforms', 'Forme de unda admise la test PD (IEC 60034-18-41, Tab. 5)'),
+  'sil-pl': _figSTD('iec62061-extras.pdf', 'Relationship of IEC 62061 to other', 'Relatia IEC 62061 cu alte standarde (Fig. 1)'),
+  'vibratii': _figSTD('iec60034-14-extras.pdf', 'For speeds lower than 600', 'Limite de vibratii vs turatie (IEC 60034-14, Fig. 1)'),
+  'ieee519': _figSTD('iec61000-3-12-extras.pdf', 'Current emission limits', 'Limite de emisie armonica (IEC 61000-3-12)'),
+}
 const STD_DOCS = {
   'regimuri-s': [STD.iec60034_1], 'viata-termica-s10': [STD.iec60034_1], 'termic': [STD.iec60034_1], 'asincron-camp-slabit': [STD.iec60034_1],
   'dezechilibru': [STD.iec60034_1, STD.iec61000_4_30],

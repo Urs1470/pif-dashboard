@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte'
   import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock, Cpu, Link2, Download } from '@lucide/svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
@@ -92,7 +92,7 @@
       g: lookupTerm(item.key, m.family),
       source: isResult ? (SOURCES[m.id] || null) : null,
       docs: docsFor(m),
-      figLink: FIG_LINKS[item.key] || null,
+      figLink: FIG_LINKS[item.key] || MODULE_FIG[m.id] || null,
     }
     termOpen = true
   }
