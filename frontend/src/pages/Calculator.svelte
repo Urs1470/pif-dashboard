@@ -221,6 +221,12 @@
       { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'] },
       { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'] },
       { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'] },
+      // date extinse importabile din backup-uri drive (unitatile trebuie IDENTICE cu cele din driveCalc.js)
+      { key: 'nmax', label: 'Turatie maxima', unit: 'rpm', def: 3000, fills: ['nmax'] },
+      { key: 'tdec', label: 'Timp decelerare', unit: 's', def: 5, fills: ['tdec'] },
+      { key: 'fsw', label: 'Frecventa comutatie', unit: 'kHz', def: 4, fills: ['fsw'] },
+      { key: 'R1', label: 'Rezistenta stator', unit: 'Ω', def: 0.5, fills: ['R1'] },
+      { key: 'J', label: 'Inertie', unit: 'kg·m²', def: 2, fills: ['J', 'Jmot'] },
     ],
     cc: [
       { key: 'Ua', label: 'Tensiune indus', unit: 'V', def: 440, fills: ['U'] },
@@ -393,9 +399,10 @@
   // "Incarca backup" e PUBLIC (merge si pe /calc, fara login - util pt colegi); "Din proiect" cere login.
   // coduri reale de placuta verificate pe backup-uri: ABB grup 99 (Drive Composer .dcparamsbak),
   // Siemens p03xx (STARTER), Danfoss 1-xx. ABB nu are eta/poli ca parametru direct.
+  // nameplate = grup 99 ABB / p030x Siemens / 1-2x Danfoss; date extinse: rampa/turatie max/comutatie/Rs/inertie
   const NAMEPLATE_CODES = {
-    ABB: { Pn: '99.10', U: '99.07', n: '99.09', In: '99.06', cosphi: '99.11', f: '99.08' },
-    Siemens: { Pn: 'p0307', U: 'p0304', In: 'p0305', cosphi: 'p0308', eta: 'p0309', n: 'p0311', poli: 'p0314', f: 'p0310' },
+    ABB: { Pn: '99.10', U: '99.07', n: '99.09', In: '99.06', cosphi: '99.11', f: '99.08', nmax: '30.12', tdec: '23.13' },
+    Siemens: { Pn: 'p0307', U: 'p0304', In: 'p0305', cosphi: 'p0308', eta: 'p0309', n: 'p0311', poli: 'p0314', f: 'p0310', nmax: 'p1082', tdec: 'p1121', fsw: 'p1800', R1: 'p0350', J: 'p0341' },
     Danfoss: { Pn: '1-20', U: '1-22', f: '1-23', In: '1-24', n: '1-25', poli: '1-39' },
   }
   let authed = $state(false)
@@ -451,13 +458,21 @@
     }
     const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
     let n = 0
-    const set = (g, k, code) => { if (!code) return; const x = _num((params || {})[code]); if (x != null && x > 0) { equip[g][k] = x; n++ } }
+    const set = (g, k, code, mult = 1) => { if (!code) return; const x = _num((params || {})[code]); if (x != null && x > 0) { equip[g][k] = x * mult; n++ } }
     set('retea', 'U', map.U); set('retea', 'f', map.f)
     set('asincron', 'Pn', map.Pn); set('asincron', 'In', map.In); set('asincron', 'n', map.n)
-    set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta); set('asincron', 'poli', map.poli)
+    set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta)
+    // Siemens p0314 = PERECHI de poli -> nr poli = 2x; ABB n-are cod direct, Danfoss 1-39 = nr poli
+    set('asincron', 'poli', map.poli, producator === 'Siemens' ? 2 : 1)
+    // date extinse de drive/motor: turatie max, rampa decelerare, frecventa comutatie, Rs stator, inertie
+    set('asincron', 'nmax', map.nmax); set('asincron', 'tdec', map.tdec)
+    set('asincron', 'fsw', map.fsw); set('asincron', 'R1', map.R1); set('asincron', 'J', map.J)
     overrides = new Set()
-    importMsg = n ? `Importat ${n} valori in Asincron + Retea (verifica poli/cosphi).` : 'Nu am gasit date de placuta in acest backup.'
-    if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1400) }
+    const jImported = !!(map.J && _num((params || {})[map.J]) > 0)
+    importMsg = n
+      ? `Importat ${n} valori in Asincron + Retea.${jImported ? ' Inertia importata e a motorului — adauga sarcina.' : ''} Verifica poli/cosphi.`
+      : 'Nu am gasit date de placuta in acest backup.'
+    if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1500) }
   }
   async function openImport() {
     importOpen = true; importMsg = ''; importDrives = []
@@ -503,6 +518,7 @@
     <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
   </div>
 
+  {#if activeCat === 'motoare'}
   <div class="equip-panel">
     <div class="equip-head">
       <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu placuta o data — toate cardurile se completeaza">
@@ -545,6 +561,7 @@
       {#if exportMsg}<p class="equip-msg">{exportMsg}</p>{/if}
     {/if}
   </div>
+  {/if}
 
   <div class="search-wrap">
     <div class="search-row">
@@ -789,7 +806,7 @@
         {/if}
       {/if}
       {#if importMsg}<p class="imp-msg">{importMsg}</p>{/if}
-      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b> din datele de placuta ale motorului (cod producator: ABB grup 99, Siemens p03xx, Danfoss 1-xx). Un backup de alt tip (c.c./servo) nu se importa pe tabul asincron.</p>
+      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b>: placuta (P/U/I/n/cosφ/η/poli) + date drive cand exista (turatie max, rampa decelerare, frecventa comutatie, R stator, inertie). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importa pe tabul asincron.</p>
     </div>
   </Modal>
 </div>
