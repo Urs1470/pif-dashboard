@@ -206,78 +206,134 @@
     else if (e.key === 'Escape') { query = ''; acIndex = -1 }
   }
 
-  // ============ DATE ECHIPAMENT PARTAJATE ============
-  // Introduci placuta o data; orice card care are un camp cu aceeasi marime (cheie + unitate)
-  // foloseste valoarea partajata. Override local per camp (deconectezi un camp de la datele comune).
-  const SHARED = [
-    { key: 'P', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'] },
-    { key: 'U', label: 'Tensiune', unit: 'V', def: 400, fills: ['U', 'Un', 'Ulinie'] },
-    { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'] },
-    { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'] },
-    { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'] },
-    { key: 'fn', label: 'Frecventa', unit: 'Hz', def: 50, fills: ['fn', 'f1'] },
-    { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'] },
-    { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'] },
-    { key: 'Strafo', label: 'Putere trafo', unit: 'kVA', def: 630, fills: ['Strafo'] },
-    { key: 'uk', label: 'uk trafo', unit: '%', def: 6, fills: ['uk'] },
-  ]
+  // ============ DATE ECHIPAMENT — pe tip de masina (contextual) ============
+  // Introduci placuta o data; cardurile cu acelasi camp (cheie + unitate, in grupul masinii sau retea)
+  // folosesc valoarea partajata. Override local per camp. Import din backup-uri (doar logat).
+  const EQUIP_GROUPS = {
+    retea: [
+      { key: 'U', label: 'Tensiune retea', unit: 'V', def: 400, fills: ['U', 'Un', 'Ulinie'] },
+      { key: 'f', label: 'Frecventa', unit: 'Hz', def: 50, fills: ['f', 'fn', 'f1'] },
+    ],
+    asincron: [
+      { key: 'Pn', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'] },
+      { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'] },
+      { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'] },
+      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'] },
+      { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'] },
+      { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'] },
+    ],
+    cc: [
+      { key: 'Ua', label: 'Tensiune indus', unit: 'V', def: 440, fills: ['U'] },
+      { key: 'Ia', label: 'Curent indus', unit: 'A', def: 80, fills: ['Ia'] },
+      { key: 'Ra', label: 'Rezistenta indus', unit: 'Ω', def: 0.15, fills: ['Ra'] },
+      { key: 'kPhi', label: 'Constanta masinii', unit: 'V·s/rad', def: 2.6, fills: ['kPhi'] },
+      { key: 'n', label: 'Turatie', unit: 'rpm', def: 1500, fills: ['nbaza', 'ndorit'] },
+    ],
+    servo: [
+      { key: 'ppp', label: 'Perechi de poli', unit: '', def: 4, fills: ['ppp'] },
+      { key: 'Kt', label: 'Constanta cuplu', unit: 'Nm/A', def: 1.2, fills: ['Kt'] },
+      { key: 'Iq', label: 'Curent cuadratura', unit: 'A', def: 8, fills: ['Iq'] },
+      { key: 'psim', label: 'Flux magneti', unit: 'Wb', def: 0.1, fills: ['psim'] },
+      { key: 'Lq', label: 'Inductanta', unit: 'mH', def: 8, fills: ['Lq', 'Ld'] },
+    ],
+    sincron: [
+      { key: 'Xs', label: 'Reactanta sincrona', unit: 'Ω', def: 2.5, fills: ['Xs'] },
+      { key: 'E', label: 'T.e.m. excitatie', unit: 'V', def: 420, fills: ['E'] },
+      { key: 'ns', label: 'Turatie sincrona', unit: 'rpm', def: 1500, fills: ['ns'] },
+    ],
+    transformator: [
+      { key: 'Strafo', label: 'Putere trafo', unit: 'kVA', def: 630, fills: ['Strafo'] },
+      { key: 'uk', label: 'uk trafo', unit: '%', def: 6, fills: ['uk'] },
+      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi'] },
+    ],
+  }
+  const MACHINE_GROUPS = ['asincron', 'cc', 'servo', 'sincron', 'transformator']
   const _F2S = {}
-  for (const s of SHARED) for (const fk of s.fills) (_F2S[fk] = _F2S[fk] || []).push(s)
+  for (const g in EQUIP_GROUPS) { _F2S[g] = {}; for (const c of EQUIP_GROUPS[g]) for (const fk of c.fills) (_F2S[g][fk] = _F2S[g][fk] || []).push(c) }
+  function freshEquip() { const o = {}; for (const g in EQUIP_GROUPS) o[g] = Object.fromEntries(EQUIP_GROUPS[g].map((c) => [c.key, c.def])); return o }
+  const groupLabel = (g) => (g === 'retea' ? 'Retea' : (MOTOR_FAMS.find((f) => f.id === g)?.label ?? g))
+  function groupForModule(m) { return MACHINE_GROUPS.includes(m.family) ? m.family : 'asincron' }
   function loadObj(k) { try { const v = JSON.parse(localStorage.getItem(k)); return v && typeof v === 'object' && !Array.isArray(v) ? v : null } catch { return null } }
+  function loadEquipData() {
+    const fresh = freshEquip()
+    const nested = loadObj('pif-calc-equip-data')
+    if (nested) { for (const g in fresh) Object.assign(fresh[g], nested[g] || {}); return fresh }
+    const old = loadObj('pif-calc-shared')
+    if (old) {
+      const r = fresh.retea, a = fresh.asincron, t = fresh.transformator
+      if (old.U != null) r.U = old.U; if (old.fn != null) r.f = old.fn
+      if (old.P != null) a.Pn = old.P; if (old.In != null) a.In = old.In; if (old.n != null) a.n = old.n
+      if (old.cosphi != null) a.cosphi = old.cosphi; if (old.eta != null) a.eta = old.eta; if (old.poli != null) a.poli = old.poli
+      if (old.Strafo != null) t.Strafo = old.Strafo; if (old.uk != null) t.uk = old.uk
+    }
+    return fresh
+  }
 
   let sharedOn = $state(true)
   let panelOpen = $state(true)
-  let shared = $state({ ...Object.fromEntries(SHARED.map((s) => [s.key, s.def])), ...(loadObj('pif-calc-shared') || {}) })
+  let equip = $state(loadEquipData())
   let overrides = $state(new Set())
   let equipments = $state(loadLS('pif-calc-equip', []))
   let equipName = $state('')
   let exportMsg = $state('')
-  $effect(() => { try { localStorage.setItem('pif-calc-shared', JSON.stringify(shared)) } catch {} })
+  $effect(() => { try { localStorage.setItem('pif-calc-equip-data', JSON.stringify(equip)) } catch {} })
   $effect(() => { try { localStorage.setItem('pif-calc-equip', JSON.stringify(equipments)) } catch {} })
 
-  // conceptul partajat pt un camp (potrivire pe cheie SI unitate, ca sa nu legam kV/% gresit)
-  function conceptFor(f) {
+  // grupul activ pt PANOU (condus de navigare); pe sistem/aplicatii = asincron (motorul condus)
+  const activeGroup = $derived(activeCat === 'motoare' ? activeMotorFam : activeCat === 'utilitare' ? null : 'asincron')
+  const panelGroups = $derived(activeGroup ? ['retea', activeGroup] : ['retea'])
+
+  // conceptul partajat pt un camp: grupul masinii intai (cheie + UNITATE), apoi retea
+  function conceptFor(m, f) {
     if (!sharedOn) return null
-    const cands = _F2S[f.key]; if (!cands) return null
-    return cands.find((s) => s.unit === (f.unit ?? '')) || null
+    const u = f.unit ?? ''
+    const g = groupForModule(m)
+    const inG = (_F2S[g]?.[f.key] || []).find((c) => c.unit === u)
+    if (inG) return { group: g, concept: inG }
+    const inR = (_F2S.retea[f.key] || []).find((c) => c.unit === u)
+    return inR ? { group: 'retea', concept: inR } : null
   }
-  function isLinked(m, f) { const s = conceptFor(f); return !!(s && !overrides.has(m.id + ':' + f.key)) }
-  function fieldVal(m, f) { const s = conceptFor(f); return s && !overrides.has(m.id + ':' + f.key) ? shared[s.key] : values[m.id][f.key] }
+  const ov = (m, f) => overrides.has(m.id + ':' + f.key)
+  function isLinked(m, f) { const s = conceptFor(m, f); return !!(s && !ov(m, f)) }
+  function fieldVal(m, f) { const s = conceptFor(m, f); return s && !ov(m, f) ? equip[s.group][s.concept.key] : values[m.id][f.key] }
   function setFieldVal(m, f, raw) {
     const val = raw === '' ? '' : +raw
-    const s = conceptFor(f)
-    if (s && !overrides.has(m.id + ':' + f.key)) shared[s.key] = val
+    const s = conceptFor(m, f)
+    if (s && !ov(m, f)) equip[s.group][s.concept.key] = val
     else values[m.id][f.key] = val
   }
   function toggleLink(m, f) {
     const id = m.id + ':' + f.key, next = new Set(overrides)
     if (next.has(id)) next.delete(id)
-    else { const s = conceptFor(f); if (s) values[m.id][f.key] = shared[s.key]; next.add(id) }
+    else { const s = conceptFor(m, f); if (s) values[m.id][f.key] = equip[s.group][s.concept.key]; next.add(id) }
     overrides = next
   }
-  // valorile efective pt calcul (partajat suprascrie local, daca nu e override)
   function effVals(m) {
     const v = { ...values[m.id] }
-    if (sharedOn) for (const f of m.fields) { const s = conceptFor(f); if (s && !overrides.has(m.id + ':' + f.key)) v[f.key] = shared[s.key] }
+    if (sharedOn) for (const f of m.fields) { const s = conceptFor(m, f); if (s && !ov(m, f)) v[f.key] = equip[s.group][s.concept.key] }
     return v
   }
 
-  // echipamente salvate
+  // echipamente salvate (intregul equip = toate masinile dintr-un job)
+  function mergeEquip(saved) { const base = freshEquip(); for (const g in base) Object.assign(base[g], saved?.[g] || {}); return base }
   function saveEquip() {
     const name = (equipName || '').trim() || ('Echipament ' + (equipments.length + 1))
-    equipments = [...equipments.filter((e) => e.name !== name), { name, data: { ...shared } }]
+    equipments = [...equipments.filter((e) => e.name !== name), { name, data: JSON.parse(JSON.stringify(equip)) }]
     equipName = ''
   }
-  function loadEquip(e) { shared = { ...Object.fromEntries(SHARED.map((s) => [s.key, s.def])), ...e.data }; overrides = new Set() }
+  function loadEquip(e) { equip = mergeEquip(e.data); overrides = new Set() }
   function delEquip(e) { equipments = equipments.filter((x) => x.name !== e.name) }
-  function resetShared() { shared = Object.fromEntries(SHARED.map((s) => [s.key, s.def])); overrides = new Set() }
+  function resetShared() { equip = freshEquip(); overrides = new Set() }
 
-  // export rezultate (cardurile deschise; daca niciunul -> tab-ul curent) pentru raportul PIF
+  // export rezultate (cardurile deschise) pentru raportul PIF
   function exportResults() {
     const work = shown.filter((m) => expanded.has(m.id))
     const list = work.length ? work : shown
     const L = ['# Rezultate calculator actionari electrice', '', '## Date echipament']
-    for (const s of SHARED) L.push(`- ${s.label}: ${shared[s.key]}${s.unit ? ' ' + s.unit : ''}`)
+    for (const g of ['retea', ...MACHINE_GROUPS]) {
+      L.push(`### ${groupLabel(g)}`)
+      for (const c of EQUIP_GROUPS[g]) L.push(`- ${c.label}: ${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`)
+    }
     L.push('')
     for (const m of list) {
       const ev = effVals(m), r = computeModule(m, ev)
@@ -290,6 +346,112 @@
     try { navigator.clipboard.writeText(text); exportMsg = `Copiat in clipboard (${list.length} ${list.length === 1 ? 'card' : 'carduri'}).` }
     catch { exportMsg = 'Nu am putut copia automat.' }
     setTimeout(() => (exportMsg = ''), 3500)
+  }
+
+  // ============ Sub-anteturi de sectiune (taburi de sistem) ============
+  const SECTIONS = {
+    vfd: [
+      { label: 'Convertizor', ids: ['selectie-drive', 'vfd', 'comutatie'] },
+      { label: 'Iesire & cablu', ids: ['unda-reflectata', 'filtru-iesire', 'curenti-rulment'] },
+      { label: 'Franare & energie', ids: ['franare-rezistenta', 'ride-through', 'kinetic-buffer'] },
+      { label: 'Siguranta', ids: ['sto-ss1', 'sil-pl'] },
+      { label: 'Motor pe VFD', ids: ['derating-vfd-motor'] },
+    ],
+    armonici: [
+      { label: 'Generare & factor de putere', ids: ['armonici', 'factor-putere-vfd', 'comparatie-frontend'] },
+      { label: 'Limite la racord', ids: ['ieee519'] },
+      { label: 'Mitigare', ids: ['rezonanta-cond', 'reactor-detunare'] },
+    ],
+    instalatie: [
+      { label: 'Cablu & tensiune', ids: ['cablu', 'cablu-protectii', 'dip-pornire'] },
+      { label: 'Scurtcircuit', ids: ['scurtcircuit'] },
+      { label: 'Izolatie & EMC', ids: ['izolatie', 'retea-emc'] },
+    ],
+    termic: [
+      { label: 'Model termic motor', ids: ['motor-termic', 'porniri-ora', 'regimuri-s'] },
+      { label: 'Eficienta', ids: ['clase-ie'] },
+      { label: 'Derating & energie', ids: ['derating-armonici-motor', 'energie-roi', 'termic'] },
+    ],
+  }
+  const rows = $derived.by(() => {
+    const secs = SECTIONS[activeCat]
+    if (!secs) return shown.map((m) => ({ kind: 'mod', m }))
+    const byId = new Map(shown.map((m) => [m.id, m]))
+    const out = []; const placed = new Set()
+    for (const s of secs) {
+      const mods = s.ids.map((id) => byId.get(id)).filter(Boolean)
+      if (!mods.length) continue
+      out.push({ kind: 'head', label: s.label, key: 'sec:' + s.label })
+      for (const m of mods) { out.push({ kind: 'mod', m }); placed.add(m.id) }
+    }
+    const rest = shown.filter((m) => !placed.has(m.id))
+    if (rest.length) { out.push({ kind: 'head', label: 'Altele', key: 'sec:Altele' }); for (const m of rest) out.push({ kind: 'mod', m }) }
+    return out
+  })
+
+  // ============ Import din backup-uri drive (doar autentificat in dashboard) ============
+  const NAMEPLATE_CODES = {
+    ABB: { Pn: '30.11', U: '30.19', n: '30.20', In: '30.21', cosphi: '30.22', eta: '30.23', poli: '30.24', f: '30.13' },
+    Siemens: { Pn: 'p0307', U: 'p0304', In: 'p0305', cosphi: 'p0308', eta: 'p0309', n: 'p0311', poli: 'p0314', f: 'p0310' },
+    Danfoss: { Pn: '1-20', U: '1-22', f: '1-23', In: '1-24', n: '1-25', poli: '1-39' },
+  }
+  let authed = $state(false)
+  let importOpen = $state(false)
+  let importTab = $state('proiect')
+  let importMsg = $state('')
+  let importBusy = $state(false)
+  let projList = $state([])
+  let selProj = $state('')
+  let equipList = $state([])
+  let importDrives = $state([])
+  $effect(() => {
+    fetch('/api/me', { credentials: 'same-origin' }).then((r) => (r.ok ? r.json() : null)).then((d) => { authed = !!(d && d.authenticated) }).catch(() => {})
+  })
+  function csrfHeader() {
+    const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/)
+    return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}
+  }
+  function applyImport(producator, params) {
+    const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
+    let n = 0
+    const set = (g, k, code) => { const v = params[code]; if (code && v != null && v !== '' && Number.isFinite(+v)) { equip[g][k] = +v; n++ } }
+    set('retea', 'U', map.U); set('retea', 'f', map.f)
+    set('asincron', 'Pn', map.Pn); set('asincron', 'In', map.In); set('asincron', 'n', map.n)
+    set('asincron', 'cosphi', map.cosphi); set('asincron', 'eta', map.eta); set('asincron', 'poli', map.poli)
+    overrides = new Set()
+    importMsg = n ? `Importat ${n} valori in grupul Asincron (verifica poli/cosphi).` : 'Nu am gasit date de placuta in acest backup.'
+    if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1300) }
+  }
+  async function openImport() {
+    importOpen = true; importMsg = ''; importDrives = []
+    if (!projList.length) {
+      try { const r = await fetch('/api/proiecte', { credentials: 'same-origin' }); if (r.ok) { const d = await r.json(); projList = Array.isArray(d) ? d : (d.proiecte || d.items || []) } } catch {}
+    }
+  }
+  async function onSelProj() {
+    equipList = []; if (!selProj) return
+    try { const r = await fetch(`/api/proiecte/${selProj}/echipamente`, { credentials: 'same-origin' }); if (r.ok) equipList = await r.json() } catch {}
+  }
+  function pickEquip(eq) {
+    let p = eq.params_json; if (typeof p === 'string') { try { p = JSON.parse(p) } catch { p = {} } }
+    applyImport(eq.producator || 'ABB', p || {})
+  }
+  async function onBackupFile(e) {
+    const files = e.target.files; if (!files || !files.length) return
+    importBusy = true; importMsg = 'Se incarca...'; importDrives = []
+    const isZip = /\.zip$/i.test(files[0].name)
+    const fd = new FormData()
+    if (isZip) fd.append('file', files[0]); else for (const f of files) fd.append('files', f)
+    const url = isZip ? '/api/import-archive/preview' : '/api/import-abb-multi/preview'
+    try {
+      const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: csrfHeader(), body: fd })
+      if (!r.ok) { importMsg = 'Eroare ' + r.status + ' (esti logat in dashboard?).'; importBusy = false; e.target.value = ''; return }
+      const d = await r.json(); const drives = d.drives || []
+      if (!drives.length) importMsg = 'Backup fara date de placuta.'
+      else if (drives.length === 1) applyImport(drives[0].producator, drives[0].params || {})
+      else importDrives = drives
+    } catch { importMsg = 'Nu am putut citi backup-ul.' }
+    importBusy = false; e.target.value = ''
   }
 </script>
 
@@ -313,6 +475,7 @@
         <input type="checkbox" bind:checked={sharedOn} /> partajat
       </label>
       <div class="equip-actions">
+        {#if authed}<button onclick={openImport} title="Import din backup-uri drive (ABB/Siemens) sau din proiect">Import</button>{/if}
         <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
         <button onclick={saveEquip}>Salveaza</button>
         <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
@@ -320,14 +483,19 @@
       </div>
     </div>
     {#if panelOpen}
-      <div class="equip-grid">
-        {#each SHARED as s (s.key)}
-          <div class="equip-field">
-            <label>{s.label}{s.unit ? ` [${s.unit}]` : ''}</label>
-            <input type="number" step="any" bind:value={shared[s.key]} disabled={!sharedOn} />
+      {#each panelGroups as g (g)}
+        <div class="equip-group">
+          <span class="equip-group-h">{groupLabel(g)}</span>
+          <div class="equip-grid">
+            {#each EQUIP_GROUPS[g] as c (c.key)}
+              <div class="equip-field">
+                <label>{c.label}{c.unit ? ` [${c.unit}]` : ''}</label>
+                <input type="number" step="any" bind:value={equip[g][c.key]} disabled={!sharedOn} />
+              </div>
+            {/each}
           </div>
-        {/each}
-      </div>
+        </div>
+      {/each}
       {#if equipments.length}
         <div class="equip-chips">
           <span class="equip-chips-h">Salvate:</span>
@@ -400,7 +568,11 @@
   {/if}
 
   <div class="acc-list">
-    {#each shown as m (m.id)}
+    {#each rows as row (row.kind === 'head' ? row.key : row.m.id)}
+      {#if row.kind === 'head'}
+        <div class="acc-section-head">{row.label}</div>
+      {:else}
+      {@const m = row.m}
       {@const open = isOpen(m.id)}
       <div class="acc-item" id={'acc-' + m.id} class:open>
         <div class="acc-head" role="button" tabindex="0"
@@ -431,7 +603,7 @@
                     <div class="inp-row">
                       <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
                         value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
-                      {#if conceptFor(f)}
+                      {#if conceptFor(m, f)}
                         <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului — click pentru valoare locala' : 'Valoare locala — click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
                       {/if}
                     </div>
@@ -487,6 +659,7 @@
           </div>
         {/if}
       </div>
+      {/if}
     {/each}
     <p class="acc-status">{shown.length} {shown.length === 1 ? 'modul' : 'module'} • {[...expanded].filter((id) => shown.some((m) => m.id === id)).length} deschise</p>
   </div>
@@ -532,6 +705,44 @@
           <ul>{#each g.items as it}<li>{it}</li>{/each}</ul>
         </div>
       {/each}
+    </div>
+  </Modal>
+
+  <Modal bind:open={importOpen} title="Import date echipament" size="md">
+    <div class="imp">
+      <div class="imp-tabs">
+        <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
+        <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Incarca backup</button>
+      </div>
+      {#if importTab === 'proiect'}
+        <div class="imp-row">
+          <label for="imp-proj">Proiect</label>
+          <select id="imp-proj" bind:value={selProj} onchange={onSelProj}>
+            <option value="">— alege proiect —</option>
+            {#each projList as p (p.id)}<option value={p.id}>{p.nume || p.titlu || p.id}</option>{/each}
+          </select>
+        </div>
+        {#if equipList.length}
+          <div class="imp-equip">
+            {#each equipList as eq (eq.id)}
+              <button class="imp-eq" onclick={() => pickEquip(eq)}>{eq.nume || eq.model || 'Echipament'}<span>{eq.producator || ''} {eq.model || ''}</span></button>
+            {/each}
+          </div>
+        {:else if selProj}<p class="imp-hint">Niciun echipament cu parametri in acest proiect.</p>{/if}
+      {:else}
+        <p class="imp-hint">Incarca un backup de drive: ABB <code>.dcparamsbak</code> (poti selecta mai multe) sau Siemens STARTER <code>.zip</code>.</p>
+        <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
+        {#if importDrives.length}
+          <p class="imp-hint">Mai multe drive-uri — alege:</p>
+          <div class="imp-equip">
+            {#each importDrives as dr, i (i)}
+              <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {})}>{dr.nume || 'Drive'}<span>{dr.producator || ''} {dr.model || ''}</span></button>
+            {/each}
+          </div>
+        {/if}
+      {/if}
+      {#if importMsg}<p class="imp-msg">{importMsg}</p>{/if}
+      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b> din datele de placuta ale motorului (cod producator: ABB 30.xx, Siemens p03xx, Danfoss 1-xx).</p>
     </div>
   </Modal>
 </div>
@@ -608,6 +819,29 @@
   .link-btn { display: flex; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); cursor: pointer; background: var(--bg-surface); }
   .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .equip-group { margin-top: 10px; }
+  .equip-group-h { display: block; font-size: var(--font-tiny); font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+
+  /* sub-antet de sectiune in accordion */
+  .acc-section-head { font-size: var(--font-tiny); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); padding: 12px 2px 3px; }
+
+  /* modal import */
+  .imp { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .imp-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .imp-tabs button { font-size: var(--font-small); font-weight: 600; color: var(--text-secondary); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
+  .imp-tabs button.active { background: var(--accent-subtle); color: var(--accent); }
+  .imp-row { display: flex; align-items: center; gap: 8px; }
+  .imp-row label { font-size: var(--font-small); color: var(--text-dim); }
+  .imp-row select { flex: 1; padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); }
+  .imp-equip { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
+  .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: 600; cursor: pointer; }
+  .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }
+  .imp-eq span { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
+  .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
+  .imp-hint { font-size: var(--font-tiny); color: var(--text-dim); }
+  .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }
+  .imp-msg { font-size: var(--font-small); color: var(--accent); font-weight: 600; }
+  .imp-note { font-size: var(--font-tiny); color: var(--text-dim); border-top: 1px dashed var(--border); padding-top: 8px; }
 
   .fam-tabs {
     display: flex;
