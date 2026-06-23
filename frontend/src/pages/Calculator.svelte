@@ -908,9 +908,12 @@
   .equip-foot .ef-import { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .equip-foot .ef-import:hover { filter: brightness(1.07); }
   .equip-name { font-size: var(--font-tiny); padding: 6px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
-  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 6px; }
+  /* align-items:end -> inputurile se aliniaza la baza chiar daca o eticheta se rupe pe 2 randuri */
+  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px 10px; margin-top: 6px; align-items: end; }
   .equip-field { display: flex; flex-direction: column; gap: 3px; }
-  .equip-field label { font-size: var(--font-tiny); color: var(--text-dim); }
+  /* min-height = 2 randuri -> etichetele scurte si cele care se rup pe 2 randuri rezerva aceeasi zona,
+     deci inputurile se aliniaza uniform (impreuna cu align-items:end pe grid) */
+  .equip-field label { font-size: var(--font-tiny); color: var(--text-dim); line-height: 1.2; min-height: 2.4em; display: flex; align-items: flex-start; }
   .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: 600; }
   .equip-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
   .equip-field input:disabled { opacity: 0.45; }
