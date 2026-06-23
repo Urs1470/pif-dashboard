@@ -7,7 +7,6 @@
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
-  import { FIGURES, FIG_FOR } from '../lib/figures.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
   // standalone=true pe aplicatia publica /calc (impartita cu colegii): ascunde tot ce tine de
@@ -93,7 +92,6 @@
       g: lookupTerm(item.key, m.family),
       source: isResult ? (SOURCES[m.id] || null) : null,
       docs: docsFor(m),
-      fig: FIG_FOR[item.key] ? FIGURES[FIG_FOR[item.key]] : null,
     }
     termOpen = true
   }
@@ -774,7 +772,6 @@
         {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p><MathText text={term.g.ia} /></p></div>{/if}
         {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p><MathText text={term.g.practic} /></p></div>{/if}
         {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p><MathText text={term.g.teorie} /></p></div>{/if}
-        {#if term.fig}<div class="term-sec"><span class="term-h">Diagrama (IEC 60034-1)</span><div class="term-fig">{@html term.fig}</div></div>{/if}
         {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
         {#if term.docs?.length}
           <div class="term-sec"><span class="term-h">Documentatie</span>
@@ -1258,8 +1255,6 @@
   .term-unit { font-size: var(--font-small); color: var(--text-secondary); }
   .term-unit b { font-family: var(--font-mono); color: var(--text); }
   .term-sec { display: flex; flex-direction: column; gap: 4px; }
-  .term-fig { margin-top: 2px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); }
-  .term-fig :global(svg) { display: block; width: 100%; height: auto; }
   .term-h {
     font-size: var(--font-tiny);
     font-weight: 700;
