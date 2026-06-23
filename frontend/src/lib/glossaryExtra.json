@@ -1,4 +1,60 @@
 {
+ "Pech": {
+  "def": "Putere echivalenta termic pe un ciclu de serviciu: sarcina constanta care produce aceeasi incalzire ca ciclul real. Motorul e OK termic daca Pech <= Pn (S1).",
+  "ia": "Metoda RMS termic (IEC 60034-1, regimuri S6/S8). Pauza ponderata cu factorul de racire kp; la kp=1 revine la Pload*sqrt(CDF)."
+ },
+ "marja": {
+  "def": "Rezerva termica = Pn(S1) / Pech: cat de incarcat termic e motorul pe ciclu. >=1 = acceptabil, recomandat >=1.05...1.10.",
+  "ia": "Pentru regimuri cu porniri/franare (S4/S5/S7) foloseste marja din cardul Porniri pe ora (caldura de comutatie domina)."
+ },
+ "k0": {
+  "def": "Raport pierderi mers-in-gol / pierderi nominale, (P0/Pn)^2. Tipic 0,1...0,3. Determina cat de putin se raceste motorul la S6 (mers in gol intre sarcini).",
+  "ia": "IEC 60034-1 S6. k0=0 -> ca S3 (repaus rece); k0=1 -> fara uprating (PS6=Pn)."
+ },
+ "CDFcalc": {
+  "def": "Factorul de durata ciclica calculat din durate: CDF = tload/(tload+tpauza). Fractia din ciclu in care motorul e sub sarcina.",
+  "ia": "IEC 60034-1: S3/S6 -> numarator = durata la sarcina; S4 adauga timpul de pornire; S5/S7 adauga si franarea."
+ },
+ "tload": {
+  "def": "Durata fazei de lucru (la sarcina) dintr-un ciclu de serviciu.",
+  "ia": "Folosit la echivalentul termic pe ciclu (regimuri S6/S8)."
+ },
+ "tpauza": {
+  "def": "Durata pauzei (mers in gol sau repaus) dintr-un ciclu de serviciu.",
+  "ia": "Ponderata cu factorul de racire kp in puterea echivalenta termic."
+ },
+ "kp": {
+  "def": "Factor de racire in pauza (0...1): cat de eficient se raceste motorul cand nu e sub sarcina. 1 = autoventilat care sta, <1 = racire fortata separata sau motor oprit.",
+  "ia": "IEC 60034-1, regimuri intermitente. Intra in numitorul puterii echivalente termic."
+ },
+ "tP": {
+  "def": "Durata de functionare la sarcina constanta in regim S2 (scurt-durata), mai mica decat timpul pana la echilibru termic.",
+  "ia": "IEC 60034-1 S2 (ex. 'S2 60 min' — desemnare prin timp). PS2 = Pn/sqrt(1-e^(-tP/tau))."
+ },
+ "TL": {
+  "def": "Durata de viata termica relativa a izolatiei (fata de regimul continuu S1 = 1). TL>=1 = viata cel putin egala cu referinta; TL<1 = viata scurtata.",
+  "ia": "IEC 60034-1 S10 + Annex A. TL = 1/AR. Exemplu IEC: TL~0,6."
+ },
+ "AR": {
+  "def": "Rata medie de imbatranire a izolatiei pe un ciclu cu sarcini discrete: media ponderata in timp a factorului de imbatranire 2^((p^2-1)*dTref/H).",
+  "ia": "IEC 60034-1 S10 / regula Montsinger (10K). AR>1 = imbatranire mai rapida ca la S1."
+ },
+ "dTref": {
+  "def": "Cresterea de temperatura a infasurarii la sarcina de referinta (S1), in K. Aproximativ limita clasei termice: B~80, F~105, H~125 K.",
+  "ia": "Baza pentru excesul de temperatura (p^2-1)*dTref in calculul duratei de viata termice (S10)."
+ },
+ "H": {
+  "def": "Intervalul de injumatatire a duratei de viata a izolatiei: cresterea de temperatura care injumatateste viata termica. Regula Montsinger ~10 K.",
+  "ia": "IEC 60085 (clase termice) / IEC 60034-1 S10. Factor de imbatranire = 2^(dTheta/H)."
+ },
+ "p1": { "def": "Sarcina relativa (fata de Pref din S1) a treptei 1 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 inseamna repaus ('r' in notatia IEC)." },
+ "p2": { "def": "Sarcina relativa (fata de Pref din S1) a treptei 2 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 inseamna repaus ('r' in notatia IEC)." },
+ "p3": { "def": "Sarcina relativa (fata de Pref din S1) a treptei 3 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 inseamna repaus ('r' in notatia IEC)." },
+ "p4": { "def": "Sarcina relativa (fata de Pref din S1) a treptei 4 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 inseamna repaus ('r' in notatia IEC)." },
+ "f1": { "def": "Fractia de timp (% din ciclu) petrecuta la sarcina treptei 1 in regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
+ "f2": { "def": "Fractia de timp (% din ciclu) petrecuta la sarcina treptei 2 in regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
+ "f3": { "def": "Fractia de timp (% din ciclu) petrecuta la sarcina treptei 3 in regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
+ "f4": { "def": "Fractia de timp (% din ciclu) petrecuta la sarcina treptei 4 in regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
  "tha": {
   "def": "Temperatura aerului din jurul transformatorului (mediul de racire), referinta pentru cresterile de temperatura si pentru incarcarea admisa.",
   "ia": "Masurata la fata locului; IEC 60076-7 considera tipic 20°C medie anuala / 40°C maxim (ulei).",

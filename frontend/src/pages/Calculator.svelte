@@ -389,7 +389,7 @@
       { label: 'Izolatie & EMC', ids: ['izolatie', 'retea-emc'] },
     ],
     termic: [
-      { label: 'Model termic motor', ids: ['motor-termic', 'porniri-ora', 'regimuri-s'] },
+      { label: 'Model termic motor', ids: ['motor-termic', 'porniri-ora', 'regimuri-s', 'viata-termica-s10'] },
       { label: 'Eficienta', ids: ['clase-ie'] },
       { label: 'Derating & energie', ids: ['derating-armonici-motor', 'energie-roi', 'termic'] },
     ],
