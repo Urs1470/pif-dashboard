@@ -1,4 +1,16 @@
 {
+ "fop": { "def": "Frecventa de lucru (de iesire) a convertizorului — frecventa la care e alimentat motorul in acest punct de functionare. Distinct de frecventa nominala fn.", "ia": "Variabila independenta in caracteristica V/f; intre 0 si fn (sau peste, in slabire de camp)." },
+ "boost": { "def": "Boost de tensiune (IR compensation): tensiunea suplimentara adaugata la frecvente joase in V/f scalar, ca procent din Un, ca sa compenseze caderea pe rezistenta statorica si sa asigure cuplu de pornire.", "ia": "Tipic 2-8% din Un. Prea mare → supraexcitare/saturatie la f mic." },
+ "Uf": { "def": "Tensiunea aplicata motorului la frecventa de lucru in control scalar V/f.", "ia": "U(f) = Ub + (Un-Ub)(f/fn)^p; la f=fn devine Un." },
+ "VfRatio": { "def": "Raportul tensiune/frecventa U/f [V/Hz] — proportional cu fluxul magnetic. Constant in zona de cuplu constant.", "ia": "Nominal = Un/fn (ex. 400/50 = 8 V/Hz)." },
+ "dfslip": { "def": "Compensarea de alunecare: incrementul de frecventa adaugat la referinta pentru a mentine turatia rotorului constanta sub sarcina (V/f scalar).", "ia": "Δf = s_n·f_n·(M/Mn); creste cu cuplul de sarcina." },
+ "Uretea": { "def": "Tensiunea de linie a retelei de alimentare a convertizorului (intrarea redresorului).", "ia": "Determina tensiunea bus-ului DC: Udc ≈ 1,35·Uretea (redresor diode 6 pulsuri)." },
+ "kdc": { "def": "Factorul de conversie redresor: raportul intre tensiunea bus DC si tensiunea de retea. 1,35 pentru redresor cu diode 6 pulsuri; ~1,41-1,50 pentru front-end activ (AFE).", "ia": "Udc = kdc·Uretea." },
+ "Uoutmax": { "def": "Tensiunea maxima de iesire (linie-linie RMS) pe care o poate produce invertorul din bus-ul DC, in regiunea liniara de modulatie.", "ia": "Cu SVPWM: Uoutmax = Udc/√2 ≈ 0,707·Udc (cu PWM sinusoidal pur doar 0,612·Udc)." },
+ "rezerva": { "def": "Rezerva (sau deficitul) de tensiune: cat la suta peste tensiunea nominala a motorului poate da invertorul. Negativ = deficit (motorul nu atinge Un la frecventa nominala).", "ia": "(Uout,max - Un)/Un·100. Deficit tipic ~-4% pe 400V cu redresor diode." },
+ "ffw": { "def": "Frecventa de debut a slabirii de camp: peste ea tensiunea disponibila nu mai poate creste, fluxul scade ~1/f si cuplul maxim scade.", "ia": "ffw = fn·Uout,max/Un. Daca Uout,max<Un, slabirea incepe deja sub fn." },
+ "dIpp": { "def": "Ondulatia (varf-varf) de curent introdusa de comutatia PWM, pe inductanta de scapari a motorului (aproximare medie la duty 50%).", "ia": "ΔIpp ≈ Udc/(8·Lσ·fsw). Scade cu fsw si Lσ." },
+ "dImax": { "def": "Ondulatia de curent de varf in cazul cel mai defavorabil (unipolar) introdusa de PWM.", "ia": "ΔImax ≈ Udc/(4·Lσ·fsw) — dublul aproximarii medii." },
  "Pech": {
   "def": "Putere echivalenta termic pe un ciclu de serviciu: sarcina constanta care produce aceeasi incalzire ca ciclul real. Motorul e OK termic daca Pech <= Pn (S1).",
   "ia": "Metoda RMS termic (IEC 60034-1, regimuri S6/S8). Pauza ponderata cu factorul de racire kp; la kp=1 revine la Pload*sqrt(CDF)."

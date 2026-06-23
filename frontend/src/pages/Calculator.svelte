@@ -374,6 +374,7 @@
   const SECTIONS = {
     vfd: [
       { label: 'Convertizor', ids: ['selectie-drive', 'vfd', 'comutatie'] },
+      { label: 'Control', ids: ['moduri-control', 'control-vf', 'modulatie-busdc', 'ripple-pwm'] },
       { label: 'Iesire & cablu', ids: ['unda-reflectata', 'filtru-iesire', 'curenti-rulment'] },
       { label: 'Franare & energie', ids: ['franare-rezistenta', 'ride-through', 'kinetic-buffer'] },
       { label: 'Siguranta', ids: ['sto-ss1', 'sil-pl'] },

@@ -65,6 +65,7 @@ export const APP_OF = {
 export const CAT_OF = {
   // convertizor / VFD
   'vfd': 'vfd', 'selectie-drive': 'vfd', 'comutatie': 'vfd', 'unda-reflectata': 'vfd', 'filtru-iesire': 'vfd', 'ride-through': 'vfd', 'kinetic-buffer': 'vfd', 'curenti-rulment': 'vfd', 'derating-vfd-motor': 'vfd',
+  'moduri-control': 'vfd', 'control-vf': 'vfd', 'modulatie-busdc': 'vfd', 'ripple-pwm': 'vfd',
   // armonici & calitate energie
   'armonici': 'armonici', 'ieee519': 'armonici', 'factor-putere-vfd': 'armonici', 'comparatie-frontend': 'armonici', 'rezonanta-cond': 'armonici', 'reactor-detunare': 'armonici',
   // instalatie electrica
@@ -102,7 +103,7 @@ export const MODULE_ORDER = [
   'transformator', 'ploturi', 'trafo-grupa-conexiuni', 'trafo-12pulse', 'trafo-scurtcircuit', 'incarcare-trafo', 'factor-k', 'compensare',
   // comune: selectie -> convertizor -> dinamica/tuning/rezonanta -> mecanica -> energie
   //         -> instalatie (cablu/protectii/scurtcircuit/trafo/dip) -> calitate energie -> utilitar
-  'selectie-drive', 'vfd', 'comutatie', 'unda-reflectata', 'filtru-iesire', 'ride-through', 'kinetic-buffer', 'curenti-rulment',
+  'selectie-drive', 'vfd', 'moduri-control', 'control-vf', 'modulatie-busdc', 'ripple-pwm', 'comutatie', 'unda-reflectata', 'filtru-iesire', 'ride-through', 'kinetic-buffer', 'curenti-rulment',
   'dinamica', 'raport-inertie', 'turatie-critica', 'transmisii',
   'surub-bile', 'liniar-raza', 'macara', 'contragreutate', 'transportor', 'winder', 'taper', 'frecare', 'compresor-volant',
   'energie-roi', 'cablu', 'cablu-protectii', 'scurtcircuit', 'dip-pornire',
@@ -166,6 +167,10 @@ export const SOURCES = {
   'grade-ip': 'IEC 60034-5 (grade de protectie IP pentru masini rotative): prima cifra=corpuri solide, a doua=apa.',
   'dip-pornire': 'ΔU≈S_pornire/(S_pornire+S_cc); IEC/EN 60909 + EN 50160. (IEEE 141 echiv. US, limita ~15%)',
   'comutatie': 'Mohan — pierderi comutatie/conductie (ec. 2-6/2-7) + datasheet IGBT (E_on+E_off)',
+  'moduri-control': 'Mohan/Leonhard (V/f, FOC) + ABB Technical Guide (DTC, ghid nr.1); cifre acuratete catalog ABB/Siemens',
+  'control-vf': 'V/f scalar (Mohan cap.8 / Leonhard); boost IR + compensare alunecare din manuale ABB/Siemens/Danfoss',
+  'modulatie-busdc': 'Mohan — SVPWM (U_LL,RMS = U_dc/√2 ≈ 0.707·U_dc); redresor diode 6-puls U_dc = 1.35·U_retea (3√2/π)',
+  'ripple-pwm': 'Mohan — ondulatie de curent PWM; ΔI_pp ≈ U_dc/(8·L_σ·f_sw) (aproximare medie, L_σ = inductanta de scapari)',
   'unda-reflectata': 'IEC/EN 60034-25 + IEC/TS 60034-18-41 (anvelopa izolatie, dv/dt) + ABB TGB No.5; L_crit=v·t_r/2. (NEMA MG-1 Part 31 echiv. US)',
   'ride-through': 'E=½C·U²; prag undervoltage VFD ~0.65·U_dc (voltage-disturbance.com)',
   'curenti-rulment': 'ABB Technical Guide Book No.5 (Bearing currents) — U_cm∝U_dc, BVR',
@@ -516,6 +521,7 @@ export const MODULE_FIG = {
   'acordare-pi': _figABB(357, 'Bucla cascadata turatie & curent (ABB Fig. 4.2)'),
   'encoder-offset': _figABB(363, 'Semnal encoder SinCos & interpolare (ABB Fig. 6.3/6.4)'),
   'winder': _figABB(368, 'Limitator dinamic follower (ABB Fig. 8.6)'),
+  'moduri-control': _figABB(328, 'Diagrama de control DTC (ABB Fig. 3.7)'),
   // figuri/tabele din extrase de standard (pagini verificate)
   'motor-termic': _figPg('iec60034-1-extras.pdf', 2, 'Regim continuu S1 — incalzire (IEC 60034-1, Fig. 1)'),
   'pmsm-ciclu': _figPg('iec60034-1-extras.pdf', 4, 'Regim intermitent S3 (IEC 60034-1, Fig. 3)'),
@@ -2101,6 +2107,106 @@ export const MODULES = [
   },
 
   // ===================================== P4: VFD & ELECTRONICA DE PUTERE
+  {
+    id: 'moduri-control',
+    family: 'comun',
+    tier: 2,
+    title: 'Moduri de control (scalar / vector / FOC / DTC)',
+    subtitle: 'Ce mod alegi: acuratete, cuplu la 0, banda',
+    note: 'Scalar (V/f): acuratete turatie ±1-3% (±0,5% cu compensare de alunecare), fara cuplu controlat la 0 turatii (doar cuplu de smulgere din boost), fara feedback, simplu, ieftin, mai multe motoare pe un drive → pompe, ventilatoare. · Vector sensorless (SVC): ±0,1-0,5%, cuplu bun la turatie joasa dar limitat exact la 0 turatii sustinut (estimatorul de flux pierde observabilitatea la frecventa statorica ~0), fara encoder → cuplu constant, dinamica medie. · FOC cu encoder (control orientat pe camp, regleaza $i_d/i_q$): ±0,01% din nominal, cuplu PLIN la 0 turatii, banda mare → servo, pozitionare, ridicare, extrudere. · DTC (Direct Torque Control, ABB): control direct al cuplului si fluxului prin comparatoare cu histereza + tabela de comutatie (frecventa de comutatie variabila, fara modulator PWM clasic), raspuns de cuplu ~1-2 ms, ±0,1-0,5% sensorless (mai bun cu encoder) → laminoare, macarale, sarcini cu socuri. · Regula: pompe/vent → scalar; cuplu constant fara encoder → vector sensorless; cuplu la 0 turatii / precizie → FOC cu encoder; raspuns de cuplu foarte rapid → DTC.',
+    params: 'Cifre orientative de catalog (ABB/Siemens); acuratetea = % din turatia nominala.',
+    fields: [],
+    results: [],
+  },
+  {
+    id: 'control-vf',
+    family: 'comun',
+    tier: 3,
+    title: 'Control V/f (scalar)',
+    subtitle: 'Curba V/f, boost IR, compensare alunecare',
+    note: 'Scalar V/f: tensiunea creste cu frecventa pastrand fluxul ~ constant ($U/f$ = const). V/f liniar pt cuplu constant; V/f patratic pt pompe/ventilatoare ($M\\sim n^2$). Boost-ul (IR comp) ridica tensiunea la frecvente joase ca sa compenseze caderea pe $R_s$ si sa dea cuplu de pornire. La $f$ mic, fluxul aproximativ poate depasi 100% (supraexcitare → risc de saturatie/supracurent). Compensarea de alunecare adauga $\\Delta f$ la referinta ca sa tina turatia sub sarcina.',
+    params: 'V/f scalar (ABB/Siemens/Danfoss); flux aproximativ neglijeaza caderea IR.',
+    fields: [
+      { key: 'Un', label: 'Tensiune nominala motor', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'fn', label: 'Frecventa nominala (de baza)', unit: 'Hz', default: 50, step: 1, min: 1 },
+      { key: 'fop', label: 'Frecventa de lucru', unit: 'Hz', default: 25, step: 1, min: 0.5 },
+      { key: 'boost', label: 'Boost de tensiune la 0 Hz (IR)', unit: '%', default: 5, step: 0.5, min: 0, max: 30 },
+      { key: 'tip', label: 'Caracteristica (0=liniar, 1=patratic)', unit: '', default: 0, step: 1, min: 0, max: 1 },
+      { key: 'sn', label: 'Alunecare nominala', unit: '%', default: 3, step: 0.5, min: 0 },
+      { key: 'Mload', label: 'Cuplu de sarcina', unit: '%', default: 100, step: 5, min: 0 },
+    ],
+    charts: [(v) => { const Ub = (v.boost / 100) * v.Un; return {
+      xLabel: 'Frecventa [Hz]', yLabel: 'Tensiune [V]',
+      series: [
+        { label: 'V/f liniar', color: COL.a, points: curve(0, v.fn, (f) => Ub + (v.Un - Ub) * (f / v.fn)) },
+        { label: 'V/f patratic', color: COL.b, points: curve(0, v.fn, (f) => Ub + (v.Un - Ub) * (f / v.fn) ** 2) },
+      ],
+    }; }],
+    results: [
+      { key: 'Uf', label: 'Tensiune la frecventa de lucru', unit: 'V', tex: 'U(f) = U_b + (U_n - U_b)(f/f_n)^{p}',
+        calc: (v) => { const Ub = (v.boost / 100) * v.Un; const p = v.tip >= 1 ? 2 : 1; return Ub + (v.Un - Ub) * Math.pow(v.fop / v.fn, p) }, dec: 1 },
+      { key: 'VfRatio', label: 'Raport V/f', unit: 'V/Hz', tex: 'U(f)/f',
+        calc: (v, r) => (v.fop > 0 ? r.Uf / v.fop : null), dec: 2 },
+      { key: 'flux', label: 'Flux relativ (aprox, fara IR)', unit: '%', tex: '\\dfrac{U(f)/f}{U_n/f_n}\\cdot100',
+        calc: (v, r) => (v.fop > 0 ? ((r.Uf / v.fop) / (v.Un / v.fn)) * 100 : null), dec: 0 },
+      { key: 'dfslip', label: 'Compensare alunecare (Δf)', unit: 'Hz', tex: '\\Delta f = s_n f_n (M/M_n)',
+        calc: (v) => (v.sn / 100) * v.fn * (v.Mload / 100), dec: 2 },
+    ],
+  },
+  {
+    id: 'modulatie-busdc',
+    family: 'comun',
+    tier: 3,
+    title: 'Modulatie & utilizare bus DC',
+    subtitle: 'Tensiune max de iesire, indice de modulatie, rezerva',
+    note: 'Redresor cu diode (6 pulsuri): $U_{dc}\\approx1{,}35\\,U_{retea}$ (la gol; sub sarcina ~1,30-1,32). Cu SVPWM (injectie de armonica 3) tensiunea max de iesire linie-linie RMS = $U_{dc}/\\sqrt2\\approx0{,}707\\,U_{dc}$ (cu PWM sinusoidal pur doar $0{,}612\\,U_{dc}$). Daca $U_{out,max}<U_n$ → indice de modulatie $m>1$ (supramodulatie) si motorul intra in slabire de camp deja sub frecventa nominala. In plus se mai pierd 2-5% pe caderi IGBT / timp mort.',
+    params: 'SVPWM in regiune liniara; Udc ideal redresor diode 6 pulsuri = 1,35*Uretea.',
+    fields: [
+      { key: 'Uretea', label: 'Tensiune retea (alimentare)', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'Un', label: 'Tensiune nominala motor', unit: 'V', default: 400, step: 10, min: 1 },
+      { key: 'fn', label: 'Frecventa nominala motor', unit: 'Hz', default: 50, step: 1, min: 1 },
+      { key: 'kdc', label: 'Factor redresor (1.35 diode, ~1.45 AFE)', unit: '', default: 1.35, step: 0.01, min: 1 },
+    ],
+    results: [
+      { key: 'Udc', label: 'Tensiune bus DC', unit: 'V', tex: 'U_{dc} = k\\,U_{retea}',
+        calc: (v) => v.kdc * v.Uretea, dec: 0 },
+      { key: 'Uoutmax', label: 'Tensiune max iesire (SVPWM, L-L RMS)', unit: 'V', tex: 'U_{out,max} = U_{dc}/\\sqrt2',
+        calc: (v, r) => r.Udc / Math.SQRT2, dec: 0 },
+      { key: 'm', label: 'Indice modulatie pt Un (>1 = deficit)', unit: '', tex: 'm = U_n/U_{out,max}',
+        calc: (v, r) => v.Un / r.Uoutmax, dec: 3 },
+      { key: 'rezerva', label: 'Rezerva de tensiune', unit: '%', tex: '\\dfrac{U_{out,max}-U_n}{U_n}\\cdot100',
+        calc: (v, r) => ((r.Uoutmax - v.Un) / v.Un) * 100, dec: 1 },
+      { key: 'ffw', label: 'Debut slabire de camp', unit: 'Hz', tex: 'f_{fw} = f_n\\,U_{out,max}/U_n',
+        calc: (v, r) => (v.fn * r.Uoutmax) / v.Un, dec: 1 },
+    ],
+  },
+  {
+    id: 'ripple-pwm',
+    family: 'comun',
+    tier: 3,
+    title: 'Ripple de curent PWM',
+    subtitle: 'Ondulatia de curent din comutatie',
+    note: 'Ondulatia (varf-varf) de curent introdusa de PWM, pe inductanta de scapari a motorului. Aproximare medie (duty 50%): $\\Delta I_{pp}\\approx U_{dc}/(8 L_\\sigma f_{sw})$; varful real unipolar poate ajunge la $U_{dc}/(4 L_\\sigma f_{sw})$. Ripple mare → pierderi suplimentare, incalzire si zgomot acustic → creste $f_{sw}$ sau adauga reactor de motor (du/dt). ATENTIE: $L_\\sigma$ = inductanta de SCAPARI pe faza ($L_{\\sigma s}+L_{\\sigma r}$), NU inductanta totala/sincrona (care include magnetizarea, mult mai mare) — pt ~15 kW $L_\\sigma$ ~ 2-5 mH.',
+    params: 'Aproximare ripple PWM; L = inductanta de scapari pe faza (nu cea totala).',
+    fields: [
+      { key: 'Udc', label: 'Tensiune bus DC', unit: 'V', default: 540, step: 10, min: 1 },
+      { key: 'L', label: 'Inductanta de scapari pe faza (Lσ)', unit: 'mH', default: 3, step: 0.5, min: 0.1 },
+      { key: 'fsw', label: 'Frecventa de comutatie', unit: 'kHz', default: 4, step: 0.5, min: 0.5 },
+      { key: 'In', label: 'Curent nominal motor', unit: 'A', default: 28, step: 1, min: 0 },
+    ],
+    charts: [(v) => ({
+      xLabel: 'fsw [kHz]', yLabel: 'Ripple varf-varf [A]',
+      series: [{ label: 'ΔIpp (mediu)', color: COL.a, points: curve(1, 16, (fs) => v.Udc / (8 * v.L * fs)) }],
+    })],
+    results: [
+      { key: 'dIpp', label: 'Ripple curent (varf-varf, mediu)', unit: 'A', tex: '\\Delta I_{pp}\\approx\\dfrac{U_{dc}}{8 L_\\sigma f_{sw}}',
+        calc: (v) => v.Udc / (8 * v.L * v.fsw), dec: 2 },
+      { key: 'dImax', label: 'Ripple varf (worst-case unipolar)', unit: 'A', tex: '\\Delta I_{max}\\approx\\dfrac{U_{dc}}{4 L_\\sigma f_{sw}}',
+        calc: (v) => v.Udc / (4 * v.L * v.fsw), dec: 2 },
+      { key: 'dIpct', label: 'Ripple din In', unit: '%', tex: '\\Delta I_{pp}/I_n\\cdot100',
+        calc: (v, r) => (v.In > 0 ? (r.dIpp / v.In) * 100 : null), dec: 1 },
+    ],
+  },
   {
     id: 'comutatie',
     family: 'comun',
