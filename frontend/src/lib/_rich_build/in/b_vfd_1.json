@@ -1,0 +1,545 @@
+[
+ {
+  "mk": "BVR",
+  "key": "BVR",
+  "family": "comun",
+  "labels": [
+   "Raport tensiune ax (BVR)"
+  ],
+  "units": [],
+  "modules": [
+   "Curenti de rulment (mod comun) / Risc EDM la rulmenti"
+  ],
+  "def": "Raportul intre tensiunea pe ax si tensiunea de mod comun (bearing voltage ratio).",
+  "ia": "Tipic 0.03-0.1 din datele motorului sau valori uzuale.",
+  "practic": "Estimeaza tensiunea pe rulment; peste prag monteaza inel/perii de masa.",
+  "teorie": "Cuplaj capacitiv stator-rotor determina raportul tensiunii pe ax."
+ },
+ {
+  "mk": "Cdc",
+  "key": "Cdc",
+  "family": "comun",
+  "labels": [
+   "Capacitate DC bus"
+  ],
+  "units": [
+   "µF"
+  ],
+  "modules": [
+   "Ride-through DC bus / Autonomie la microintreruperi"
+  ],
+  "def": "Capacitatea totala a condensatoarelor de pe bara DC.",
+  "ia": "Din fisa tehnica a convertizorului sau suma condensatoarelor.",
+  "practic": "Determina energia tampon pentru ride-through la caderi de tensiune.",
+  "teorie": "Energia stocata E = 0.5 x C x U la patrat."
+ },
+ {
+  "mk": "Cf",
+  "key": "Cf",
+  "family": "comun",
+  "labels": [
+   "Capacitate filtru"
+  ],
+  "units": [
+   "µF"
+  ],
+  "modules": [
+   "Filtru de iesire (du/dt / sinus) / Frecventa de taiere LC"
+  ],
+  "def": "Capacitatea filtrului de iesire spre motor.",
+  "ia": "Din fisa filtrului sau dimensionata pentru frecventa de taiere.",
+  "practic": "Componenta capacitiva a filtrului LC de iesire.",
+  "teorie": "Impreuna cu Lf stabileste frecventa de taiere a filtrului."
+ },
+ {
+  "mk": "comun:distopr",
+  "key": "distopr",
+  "family": "comun",
+  "labels": [
+   "Distanta liniara de oprire"
+  ],
+  "units": [
+   "mm"
+  ],
+  "modules": [
+   "STO / SS1 (oprire de siguranta) / Validare functie de siguranta la PIF"
+  ],
+  "def": "Distanta liniara parcursa pana la oprire (SS1).",
+  "ia": "N·pas/i.",
+  "practic": "Verifica oprirea inainte de capat/zona periculoasa.",
+  "teorie": "Rotatii × avansul liniar pe rotatie."
+ },
+ {
+  "mk": "comun:Ebr",
+  "key": "Ebr",
+  "family": "comun",
+  "labels": [
+   "Energie de franat"
+  ],
+  "units": [
+   "kJ"
+  ],
+  "modules": [
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Energia ce trebuie disipata la franare.",
+  "ia": "E = ½J(omega1²-omega2²).",
+  "practic": "Baza alegerii rezistentei.",
+  "teorie": "Energia cinetica a maselor revine in bus-ul DC la decelerare."
+ },
+ {
+  "mk": "comun:Nrot",
+  "key": "Nrot",
+  "family": "comun",
+  "labels": [
+   "Rotatii motor pana la oprire"
+  ],
+  "units": [
+   "rot"
+  ],
+  "modules": [
+   "STO / SS1 (oprire de siguranta) / Validare functie de siguranta la PIF"
+  ],
+  "def": "Numarul de rotatii ale motorului pana la oprire pe rampa SS1.",
+  "ia": "½·(n/60)·timp rampa.",
+  "practic": "Verifica oprirea in zona sigura.",
+  "teorie": "Aria de sub rampa de viteza = numar de rotatii."
+ },
+ {
+  "mk": "comun:Pmed",
+  "key": "Pmed",
+  "family": "comun",
+  "labels": [
+   "Putere medie rezistenta"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Puterea medie disipata in rezistenta.",
+  "ia": "P_peak × durata de conectare.",
+  "practic": "Dimensioneaza puterea termica a rezistentei.",
+  "teorie": "Media pe ciclu la franari intermitente."
+ },
+ {
+  "mk": "comun:Ppk",
+  "key": "Ppk",
+  "family": "comun",
+  "labels": [
+   "Putere de varf de franare"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Puterea de varf de franare.",
+  "ia": "E / timp de decelerare.",
+  "practic": "Determina rezistenta maxima si varful rezistentei.",
+  "teorie": "Puterea maxima in timpul rampei de oprire."
+ },
+ {
+  "mk": "comun:Ptot",
+  "key": "Ptot",
+  "family": "comun",
+  "labels": [
+   "Pierderi totale"
+  ],
+  "units": [
+   "W"
+  ],
+  "modules": [
+   "Pierderi convertizor vs frecventa comutatie / Pierderi de comutatie + conductie"
+  ],
+  "def": "Pierderile totale de putere ale convertizorului.",
+  "ia": "Ptot = Psw + Pcond plus pierderi auxiliare.",
+  "practic": "Baza pentru bilantul termic si dimensionarea climatizarii dulapului.",
+  "teorie": "Suma pierderilor de comutatie si conductie pe toate dispozitivele."
+ },
+ {
+  "mk": "comun:Rmax",
+  "key": "Rmax",
+  "family": "comun",
+  "labels": [
+   "Rezistenta maxima"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Rezistenta de franare maxima admisa.",
+  "ia": "U_chop² / P_peak.",
+  "practic": "Alege R intre R_min al drive-ului si R_max.",
+  "teorie": "R prea mare nu disipa destul; bus-ul tot urca la trip."
+ },
+ {
+  "mk": "comun:Uchop",
+  "key": "Uchop",
+  "family": "comun",
+  "labels": [
+   "Prag chopper DC"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Pragul de tensiune DC la care intra choperul de franare.",
+  "ia": "Manual drive (~780 V la retea 400 V).",
+  "practic": "Determina rezistenta maxima de franare.",
+  "teorie": "Peste prag, energia regenerata se disipa in rezistenta in loc sa urce bus-ul."
+ },
+ {
+  "mk": "comun:unghiopr",
+  "key": "unghiopr",
+  "family": "comun",
+  "labels": [
+   "Unghi la iesire"
+  ],
+  "units": [
+   "°"
+  ],
+  "modules": [
+   "STO / SS1 (oprire de siguranta) / Validare functie de siguranta la PIF"
+  ],
+  "def": "Unghiul la iesirea reductorului pana la oprire.",
+  "ia": "360·N/i.",
+  "practic": "Pentru axe rotative cu pozitie de siguranta.",
+  "teorie": "Rotatiile motorului impartite la raportul de transmisie."
+ },
+ {
+  "mk": "derT",
+  "key": "derT",
+  "family": "comun",
+  "labels": [
+   "Derating temperatura"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Convertizor de frecventa (VFD) / Tensiune DC bus, V/f, derating, pierderi"
+  ],
+  "def": "Reducerea procentuala a curentului admisibil la temperatura ambianta ridicata.",
+  "ia": "Din tabelul de derating al producatorului functie de temperatura mediu.",
+  "practic": "Peste 40 grade aplica deratingul la dimensionare; verifica ventilatia dulapului.",
+  "teorie": "Capacitatea de evacuare a caldurii scade cu cresterea temperaturii ambiante."
+ },
+ {
+  "mk": "drop",
+  "key": "drop",
+  "family": "comun",
+  "labels": [
+   "Scadere turatie permisa"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Kinetic buffering (sustinere din inertie) / Autonomie la microintreruperi din energia cinetica"
+  ],
+  "def": "Scaderea de turatie permisa in timpul sustinerii cinetice.",
+  "ia": "Aleasa de aplicatie, tipic 10-30% fara afectarea procesului.",
+  "practic": "Mai multa scadere permite mai multa energie cinetica extrasa.",
+  "teorie": "Energia extrasa creste cu patratul scaderii relative de turatie."
+ },
+ {
+  "mk": "Edisp",
+  "key": "Edisp",
+  "family": "comun",
+  "labels": [
+   "Energie disponibila"
+  ],
+  "units": [
+   "J"
+  ],
+  "modules": [
+   "Ride-through DC bus / Autonomie la microintreruperi"
+  ],
+  "def": "Energia utila stocata pe bara DC disponibila la o cadere de retea.",
+  "ia": "Edisp = 0.5 x Cdc x (Udc1 patrat - Udc2 patrat).",
+  "practic": "Imparte la putere pentru a estima timpul de sustinere fara retea.",
+  "teorie": "Diferenta energiilor stocate intre tensiunea initiala si prag."
+ },
+ {
+  "mk": "Ekin",
+  "key": "Ekin",
+  "family": "comun",
+  "labels": [
+   "Energie cinetica disponibila"
+  ],
+  "units": [
+   "J"
+  ],
+  "modules": [
+   "Kinetic buffering (sustinere din inertie) / Autonomie la microintreruperi din energia cinetica"
+  ],
+  "def": "Energia cinetica disponibila in masele rotative pentru sustinere.",
+  "ia": "Ekin = 0.5 x J x omega la patrat din inertia sistemului.",
+  "practic": "Foloseste pentru ride-through prin franare regenerativa controlata.",
+  "teorie": "Inertia permite mentinerea barei DC scazand turatia (kinetic buffering)."
+ },
+ {
+  "mk": "Esw",
+  "key": "Esw",
+  "family": "comun",
+  "labels": [
+   "Energie comutatie"
+  ],
+  "units": [
+   "mJ"
+  ],
+  "modules": [
+   "Pierderi convertizor vs frecventa comutatie / Pierderi de comutatie + conductie"
+  ],
+  "def": "Energia disipata intr-un singur eveniment de comutatie al tranzistorului.",
+  "ia": "Din fisa de catalog IGBT/SiC: Eon+Eoff la tensiunea si curentul de test.",
+  "practic": "Sta la baza calculului pierderilor de comutatie la frecventa aleasa.",
+  "teorie": "Energia se scaleaza aproximativ liniar cu tensiunea si curentul comutat."
+ },
+ {
+  "mk": "fc",
+  "key": "fc",
+  "family": "comun",
+  "labels": [
+   "Frecventa de taiere"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Filtru de iesire (du/dt / sinus) / Frecventa de taiere LC"
+  ],
+  "def": "Frecventa de taiere a filtrului LC de iesire.",
+  "ia": "fc = 1 / (2 x pi x radical(Lf x Cf)).",
+  "practic": "Aseaza-o intre frecventa de iesire si cea de comutatie.",
+  "teorie": "Filtru trece-jos: peste fc atenueaza componentele de comutatie."
+ },
+ {
+  "mk": "fn",
+  "key": "fn",
+  "family": "comun",
+  "labels": [
+   "Frecventa nominala",
+   "Frecventa"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Convertizor de frecventa (VFD) / Tensiune DC bus, V/f, derating, pierderi",
+   "Armonici & reactoare / Inductanta reactor, cadere, regula THD",
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Frecventa nominala de pe placuta motorului (uzual 50 Hz).",
+  "ia": "Placuta motorului.",
+  "practic": "Punctul de baza al caracteristicii V/f; peste ea intri in slabire de camp.",
+  "teorie": "Reper pentru zona U/f constant; peste fn fluxul scade si motorul intra in slabire de camp."
+ },
+ {
+  "mk": "foutmax",
+  "key": "foutmax",
+  "family": "comun",
+  "labels": [
+   "Frecventa iesire max"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Filtru de iesire (du/dt / sinus) / Frecventa de taiere LC"
+  ],
+  "def": "Frecventa fundamentala maxima de iesire ceruta de aplicatie.",
+  "ia": "Din turatia maxima a motorului si numarul de poli.",
+  "practic": "Filtrul de iesire trebuie sa o lase nealterata (fc mult peste).",
+  "teorie": "fout = p x n / 120; limita superioara a benzii utile."
+ },
+ {
+  "mk": "fsw",
+  "key": "fsw",
+  "family": "comun",
+  "labels": [
+   "Frecventa de comutatie",
+   "Frecventa comutatie"
+  ],
+  "units": [
+   "kHz"
+  ],
+  "modules": [
+   "Pierderi convertizor vs frecventa comutatie / Pierderi de comutatie + conductie",
+   "Filtru de iesire (du/dt / sinus) / Frecventa de taiere LC"
+  ],
+  "def": "Frecventa de comutatie (purtatoare PWM).",
+  "ia": "Setare convertizor.",
+  "practic": "Compromis: mai mare = mai silentios dar pierderi mai mari → derating de curent.",
+  "teorie": "Frecventa inalta neteziti curentul si reduce zgomotul, dar creste pierderile de comutatie in tranzistoare."
+ },
+ {
+  "mk": "Iforced",
+  "key": "Iforced",
+  "family": "asincron",
+  "labels": [
+   "Curent admisibil (fortat)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Curentul admisibil cu ventilatie fortata independenta de turatia motorului",
+  "ia": "Din curentul nominal, racirea fiind asigurata de ventilator separat la debit constant",
+  "practic": "Justifica ventilatie fortata la aplicatii cu turatie mica si cuplu constant prelungit",
+  "teorie": "Ventilatorul separat mentine racirea la orice turatie, deci motorul pastreaza cuplul nominal"
+ },
+ {
+  "mk": "Inest",
+  "key": "Inest",
+  "family": "comun",
+  "labels": [
+   "Curent estimat (la 400 V)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Selectie drive (HD/ND) / Curent si suprasarcina heavy/normal duty"
+  ],
+  "def": "Curentul nominal estimat al motorului la 400 V.",
+  "ia": "~1.9·P[kW] (orientativ).",
+  "practic": "Util cand lipseste placuta; verifica intotdeauna valoarea reala.",
+  "teorie": "I = P / (√3·U·cosφ·η)."
+ },
+ {
+  "mk": "Iself",
+  "key": "Iself",
+  "family": "asincron",
+  "labels": [
+   "Curent admisibil (autovent.)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Curentul admisibil al motorului autoventilat la turatia de functionare data",
+  "ia": "Din curentul nominal inmultit cu factorul de autoventilatie kself la turatia respectiva",
+  "practic": "Indica deratingul necesar la functionare prelungita la turatie joasa fara ventilatie externa",
+  "teorie": "Racirea proprie depinde de turatie; la viteze mici scade capacitatea de incarcare termica"
+ },
+ {
+  "mk": "kself",
+  "key": "kself",
+  "family": "asincron",
+  "labels": [
+   "Factor autoventilatie"
+  ],
+  "units": [
+   "×"
+  ],
+  "modules": [
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Factorul de reducere a curentului admisibil la turatie redusa pentru motor autoventilat",
+  "ia": "Din curba de incarcare admisa functie de turatie, ventilatorul fiind pe ax",
+  "practic": "Esential la VFD: la turatie mica racirea scade, deci motorul nu suporta curent nominal",
+  "teorie": "Ventilatorul propriu scade debitul cu turatia; la frecventa joasa racirea e insuficienta"
+ },
+ {
+  "mk": "Lcrit",
+  "key": "Lcrit",
+  "family": "comun",
+  "labels": [
+   "Lungime critica"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "Unda reflectata (lungime cablu motor) / dv/dt: lungime critica si supratensiune la borne"
+  ],
+  "def": "Lungimea de cablu de la care apar supratensiuni de unda reflectata la motor.",
+  "ia": "Lcrit = vw x tr / 2 din timpul de crestere si viteza undei.",
+  "practic": "Peste aceasta lungime monteaza filtru dU/dt sau sinus la iesire.",
+  "teorie": "Reflexia se dubleaza cand timpul dus-intors depaseste timpul de crestere."
+ },
+ {
+  "mk": "Lf",
+  "key": "Lf",
+  "family": "comun",
+  "labels": [
+   "Inductanta filtru"
+  ],
+  "units": [
+   "mH"
+  ],
+  "modules": [
+   "Filtru de iesire (du/dt / sinus) / Frecventa de taiere LC"
+  ],
+  "def": "Inductanta filtrului de iesire (sinus/dU dt) catre motor.",
+  "ia": "Din fisa filtrului ales sau proiectata pentru fc dorita.",
+  "practic": "Cu Cf formeaza filtrul care netezeste tensiunea spre motor.",
+  "teorie": "Filtru LC trece-jos: fc = 1/(2 pi radical(Lf Cf))."
+ },
+ {
+  "mk": "Lsafe",
+  "key": "Lsafe",
+  "family": "comun",
+  "labels": [
+   "Lungime sigura (λ/10)"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "Unda reflectata (lungime cablu motor) / dv/dt: lungime critica si supratensiune la borne"
+  ],
+  "def": "Lungimea de cablu sub care supratensiunea ramane neglijabila.",
+  "ia": "Lsafe = Lcrit / 10 (regula lambda pe zece).",
+  "practic": "Sub aceasta lungime nu este necesar filtru de iesire.",
+  "teorie": "Sub o zecime din lungimea critica reflexia nu se acumuleaza semnificativ."
+ },
+ {
+  "mk": "OLHD",
+  "key": "OLHD",
+  "family": "comun",
+  "labels": [
+   "Suprasarcina HD (150%/60s)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Selectie drive (HD/ND) / Curent si suprasarcina heavy/normal duty"
+  ],
+  "def": "Suprasarcina admisa in regim Heavy Duty.",
+  "ia": "150% I_n timp de 1 min la fiecare 5 min (ABB).",
+  "practic": "Pentru cupluri de soc: concasoare, benzi incarcate, mecanisme de ridicat.",
+  "teorie": "Capacitatea de suprasarcina grea acopera cupluri mari de pornire la sarcini cu inertie sau frecare ridicata."
+ },
+ {
+  "mk": "OLND",
+  "key": "OLND",
+  "family": "comun",
+  "labels": [
+   "Suprasarcina ND (110%/60s)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Selectie drive (HD/ND) / Curent si suprasarcina heavy/normal duty"
+  ],
+  "def": "Suprasarcina admisa in regim Normal / Light Duty.",
+  "ia": "110% I_n timp de 1 min la fiecare 5 min (ABB).",
+  "practic": "Pentru pompe si ventilatoare (sarcina patratica).",
+  "teorie": "Suprasarcina usoara este suficienta pentru pompe si ventilatoare cu cuplu patratic si porniri line."
+ }
+]

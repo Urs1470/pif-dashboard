@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "servo:pas",
+  "def": "Rezolutia unghiulara minima a axei motorului servo, determinata de numarul de pasi (impulsuri) pe rotatie ai encoderului incremental sau absolut montat pe ax.",
+  "teorie": "Pasul unghiular este $\\theta_{pas} = 360° / N_{ppr}$, unde $N_{ppr}$ este numarul de impulsuri pe rotatie al encoderului. La encodere incrementale cu interpolare electronica (ex. $\\times4$), rezolutia efectiva poate fi $\\theta_{pas} = 360° / (4 \\cdot N_{ppr})$. Valori tipice: 0.09° (4000 ppr), 0.022° (16384 ppr), 0.00055° (655360 ppr encoder absolut EnDat). La PIF, rezolutia insuficienta a encoderului limiteaza rigiditatea buclei de pozitie si produce trept de curent la viteze mici (efect cogging amplificat)."
+ },
+ {
+  "mk": "servo:pierdcup",
+  "def": "Pierderea de cuplu relativa (procentuala) cauzata de eroarea de aliniere a unghiului electric (phasing) intre axa magnetica a rotorului si originea encoderului, la motoare PMSM.",
+  "teorie": "Cuplul motorului PMSM in control vectorial depinde de componenta in cuadratura: $M = k_t \\cdot I_q$. La o eroare de aliniere $\\Delta\\theta$ (electrica), cuplul efectiv devine $M_{ef} = M_{max} \\cdot \\cos(\\Delta\\theta)$, deci pierderea relativa este $(1 - \\cos\\Delta\\theta) \\cdot 100\\%$. La $\\Delta\\theta = 5°$ pierderea este $\\approx 0.4\\%$ (neglijabila), la $\\Delta\\theta = 20°$ ajunge la $\\approx 6\\%$, iar la $\\Delta\\theta = 90°$ cuplul util este zero. La PIF, alinierea corecta (auto-phasing sau phasing manual cu injectie de curent dc) este obligatorie si se verifica masurandu-se cuplul la sarcina cunoscuta inainte de punere in functiune."
+ },
+ {
+  "mk": "sincron:Ptot",
+  "def": "Puterea electromagnetica totala transferata prin intrefier la motorul sincron cu poli aparenti (reluctanta), suma a componentei de excitatie si a componentei de reluctanta.",
+  "teorie": "La motorul sincron cu poli aparenti: $P_{tot} = P_{ex} + P_{rel} = \\frac{U \\cdot E}{X_d} \\sin\\delta + \\frac{U^2}{2}\\left(\\frac{1}{X_q} - \\frac{1}{X_d}\\right)\\sin 2\\delta$, unde $\\delta$ este unghiul de sarcina (intre $U$ si $E$), $X_d$ si $X_q$ sunt reactantele sincrone pe axa directa si in cuadratura, iar $E$ este t.e.m. de excitatie. Cuplul maxim apare sub $\\delta = 90°$ datorita componentei $\\sin 2\\delta$ a reluctantei. La PIF, este critic sa nu se depaseasca unghiul de sarcina corespunzator puterii maxime (limita de stabilitate statica); reglajul excitatie si al sarcinii trebuie sa mentina $\\delta < \\delta_{max}$."
+ },
+ {
+  "mk": "smax",
+  "def": "Alunecarea critica (de rasturnare) a motorului asincron, valoarea alunecarii la care se dezvolta cuplul electromagnetic maxim (cuplul de rasturnare), determinata din schema echivalenta Thevenin.",
+  "teorie": "Din schema Thevenin, alunecarea critica este $s_{max} = \\frac{R_2'}{\\sqrt{R_{th}^2 + (X_{th} + X_2')^2}}$, unde $R_2'$ este rezistenta rotorica redusa, $R_{th}$ si $X_{th}$ sunt parametrii echivalentului Thevenin, iar $X_2'$ este reactanta de dispersie rotorica. Valori tipice: $s_{max} = 0.05 \\ldots 0.20$ (5–20%). $s_{max}$ nu depinde de tensiunea de alimentare, dar cuplul maxim $M_{max} \\propto U^2$. La PIF, motoarele cu $s_{max}$ mic sunt sensibile la caderi de tensiune si suprasarcini bruste; functionarea stabila impune $s < s_{max}$ in regim permanent (conform IEC 60034-1)."
+ },
+ {
+  "mk": "t",
+  "def": "Durata de timp cu rol functional dependent de context: timp de masura al intervalului de esantionare a vitezei (encoder), timp de declansare al protectiei termice a cablului ($I^2t$), sau timp de deplasare dintr-un profil de miscare trapezoidal.",
+  "teorie": "Rolul lui $t$ difera prin modul de utilizare: in modulul encoder, $t$ fixeaza fereastra de masura a vitezei si influenteaza rezolutia vitezei la turatii mici; in protectia cablului, energia termica disipata este proportionala cu $I^2 \\cdot t$ (IEC 60364-5-52, IEC 60269), iar conditia de protectie impune $I^2 \\cdot t \\leq K^2 \\cdot S^2$; in profilul de miscare, $t$ determina acceleratia necesara prin $a = \\Delta v / t$ si implicit cuplul dinamic $M_{dyn} = J \\cdot \\alpha$. La PIF, configurarea corecta a timpilor de rampa evita declansarile prin supracurent si limiteaza solicitarile mecanice la pornire/oprire."
+ },
+ {
+  "mk": "taua",
+  "def": "Constanta de timp electrica a circuitului de indus al motorului de curent continuu, definind viteza de variatie a curentului de indus la o treapta de tensiune.",
+  "teorie": "Constanta de timp electrica a indusului este $\\tau_a = L_a / R_a$, unde $L_a$ este inductanta circuitului de indus (inclusiv inductanta de comutatie) si $R_a$ este rezistenta totala a indusului. Valori tipice: $\\tau_a = 5 \\ldots 50\\,ms$ pentru masini cc industriale. Bucla de curent a convertorului cc trebuie sa aiba o banda de trecere de aproximativ $f_{ci} \\leq 1 / (3\\tau_a)$ pentru a filtra oscilatiile. La PIF, $\\tau_a$ se masoara prin injectie treapta de tensiune la motor oprit si se foloseste direct la acordarea regulatorului de curent (constanta de timp de integrare $T_i = \\tau_a$)."
+ },
+ {
+  "mk": "taue",
+  "def": "Constanta de timp electrica a infasurarii unui motor servo PMSM sau BLDC, definind dinamica curentului de faza la aplicarea unei trepte de tensiune.",
+  "teorie": "Constanta de timp electrica este $\\tau_e = L_s / R_s$ (pentru PMSM: $L_s$ — inductanta sincronizata pe axa q, $R_s$ — rezistenta statorica pe faza). Valori tipice: $\\tau_e = 0.5 \\ldots 10\\,ms$ la servo-motoare industriale. Frecventa maxima a buclei de curent este limitata la $f_{ci,max} \\approx 1 / (6 \\tau_e)$ pentru a evita instabilitatea. La PIF (acordare prin Modulus Optimum), constanta de integrare a regulatorului de curent se seteaza $T_i = \\tau_e$, iar castigul $k_p = L_s / (2 T_{sum})$, unde $T_{sum}$ este suma intarzierilor mici."
+ },
+ {
+  "mk": "taum",
+  "def": "Constanta de timp mecanica a sistemului de actionare, reprezentand intervalul de timp in care turatia ar atinge valoarea nominala de la zero daca s-ar aplica cuplul electromagnetic nominal fara sarcina rezistenta.",
+  "teorie": "Constanta de timp mecanica este $\\tau_m = J \\cdot R_a / (K_e \\cdot K_t)$ (la motoare cc) sau echivalent $\\tau_m = J \\cdot \\omega_n / M_n$ (forma generala), unde $J$ este momentul de inertie total redus la ax, $K_e$ constanta t.e.m., $K_t$ constanta de cuplu. Valori tipice: $\\tau_m = 10 \\ldots 200\\,ms$ pentru servo-actionari, $\\tau_m = 0.5 \\ldots 5\\,s$ pentru actionari industriale cc de putere mare. Raportul $\\tau_m / \\tau_a$ (constanta de timp mecanica / electrica) determina structura optima a regulatoarelor; daca $\\tau_m \\gg \\tau_a$ se poate folosi cascada curent-viteza clasica. La PIF, $\\tau_m$ se determina din test de libera accelerare sau din datele motorului si ale sarcinii."
+ },
+ {
+  "mk": "tciclu",
+  "def": "Durata totala a unui ciclu complet de miscare al servo-actionarii, incluzand fazele de accelerare, viteza constanta, decelerare si pauza (dwell).",
+  "teorie": "Ciclul de miscare are structura $t_{ciclu} = t_{acc} + t_{const} + t_{dec} + t_{dwell}$. Solicitarea termica efectiva a motorului pe ciclu se evalueaza prin cuplul termic echivalent (RMS): $M_{RMS} = \\sqrt{(M_{acc}^2 \\cdot t_{acc} + M_{const}^2 \\cdot t_{const} + M_{dec}^2 \\cdot t_{dec}) / t_{ciclu}}$. Conditia de functionare termica corecta este $M_{RMS} \\leq M_n$ (curent RMS sub nominal). Frecventa ciclului $f = 1/t_{ciclu}$ influenteaza si pierderile in rezistenta de franare si energia regenerativa. La PIF, $t_{ciclu}$ se determina din cerintele de productivitate si se verifica prin simularea curbei $M(t)$ inainte de punere in functiune."
+ },
+ {
+  "mk": "tconst",
+  "def": "Durata fazei de viteza constanta dintr-un profil de miscare trapezoidal sau in S, interval in care motorul ruleaza la viteza de regim fara acceleratie.",
+  "teorie": "In faza de viteza constanta, acceleratia este zero si cuplul electromagnetic echilibreaza doar sarcina utila si frecarea: $M_{const} = M_{sarcina} + M_{frecare}$. Aceasta faza contribuie la incarcarea termica a motorului prin termenul $M_{const}^2 \\cdot t_{const}$ din integrala cuplului RMS: $M_{RMS} = \\sqrt{\\frac{1}{t_{ciclu}}\\int_0^{t_{ciclu}} M^2(t)\\,dt}$. Distanta parcursa in viteza constanta este $d_{const} = v_{max} \\cdot t_{const}$. La PIF, daca $t_{const}$ este prea mic (ciclu scurt, distanta mica), motorul poate sa nu atinga niciodata $v_{max}$, necesitand reverificarea profilului trapezoidal si posibil trecerea la profil triunghiular."
+ },
+ {
+  "mk": "tdec",
+  "def": "Durata fazei de decelerare a profilului de miscare, intervalul de timp in care viteza scade de la valoarea de regim la zero (sau la viteza urmatoare), relevant si pentru rampa SS1 in aplicatii de siguranta.",
+  "teorie": "Deceleratia necesara este $a_{dec} = v_{max} / t_{dec}$, generand un cuplu de franare $M_{dec} = J \\cdot \\alpha + M_{sarcina}$. Energia cinetica eliberata in decelerare este $W_{kin} = \\frac{1}{2} J \\cdot \\omega_{max}^2$, care trebuie disipata in rezistenta de franare sau returnata in retea (regenerativ). Conditia rezistentei de franare: puterea de varf $P_{fran} = W_{kin} / t_{dec} \\leq P_{R,max}$. In context STO/SS1 (IEC 61800-5-2), $t_{dec}$ (rampa SS1) trebuie sa fie suficient de scurt pentru a asigura oprirea in limita de timp impusa de evaluarea riscului (PLd/SIL2 tipic). La PIF, se verifica tensiunea pe bara de c.c. (trip OV) si temperatura rezistentei de franare pe durata decelararilor repetate."
+ },
+ {
+  "mk": "tdwell",
+  "def": "Durata pauzei dintre doua miscari succesive (motorul oprit sau in mentinere), interval in care nu se produce deplasare mecanica.",
+  "teorie": "In faza de pauza, curentul motorului este de mentinere (holding): $I_{hold} \\approx M_{sarcina,static} / k_t$, de regula mai mic decat curentul de varf. Contributia termica la cuplul RMS al ciclului este $M_{hold}^2 \\cdot t_{dwell}$, in timp ce motorul se poate raci partial. Cuplul RMS se calculeaza ca $M_{RMS} = \\sqrt{\\sum_i M_i^2 \\cdot t_i / t_{ciclu}}$ cu suma pe toate fazele inclusiv $t_{dwell}$. La PIF, un $t_{dwell}$ marit permite reducerea $M_{RMS}$ sub nominal si imbunatateste fiabilitatea termica; in aplicatii cu frana mecanica, curentul de mentinere poate fi eliminat si $t_{dwell}$ nu mai contribuie la incalzire."
+ },
+ {
+  "mk": "Tn",
+  "def": "Constanta de timp de integrare a regulatorului PI de turatie (viteza), determinata prin criteriul de optimum simetric in raport cu intarzierile mici ale sistemului.",
+  "teorie": "Prin criteriul Optimum Simetric (Symmetrical Optimum), constanta de integrare a buclei de turatie se alege $T_n = 4 \\cdot T_{sum}$, unde $T_{sum}$ este suma tuturor intarzierilor mici (PWM, esantionare, filtre). Castigul proportional al buclei de turatie este $k_{pn} = J / (2 \\cdot k_t \\cdot T_{sum})$. Aceasta acordare minimizeaza suprareglajul la perturbatii de sarcina (tipic $< 43\\%$ la treapta de referinta) si asigura o banda de trecere $\\omega_n \\approx 1 / (2 T_{sum})$. La PIF, $T_n$ se seteaza initial prin calcul si se ajusteaza empiric pe baza raspunsului la treapta de referinta de turatie, verificand suprareglajul si timpul de stabilizare."
+ },
+ {
+  "mk": "tOL",
+  "def": "Durata maxima admisibila de functionare continua la curentul (cuplul) de varf, determinata de caracteristica termica a motorului si/sau convertorului pentru regimul de suprasarcina.",
+  "teorie": "Limita de suprasarcina este determinata de modelul termic $I^2 t$: $t_{OL} = \\tau_{th} \\cdot \\ln\\frac{I_{OL}^2 - I_{n}^2(1 - e^{-t_0/\\tau_{th}})}{I_{OL}^2 - I_{n}^2}$, unde $\\tau_{th}$ este constanta de timp termica, $I_{OL}$ curentul de varf si $I_n$ curentul nominal. In practica, producatorii de servo-drive-uri definesc curba $t_{OL}(I_{OL}/I_n)$: tipic $I_{OL} = 2 \\cdot I_n$ admis 10 s, $I_{OL} = 3 \\cdot I_n$ admis 2 s. La PIF, se verifica ca $t_{acc}$ (durata accelerarii la cuplu de varf) sa fie mai mic decat $t_{OL}$; daca nu, se mareste $t_{acc}$ sau se supradimensioneaza drive-ul si motorul."
+ },
+ {
+  "mk": "tp",
+  "def": "Timpul pana la prima valoare de varf (peak time) a raspunsului tranzitoriu al buclei de reglare de ordin 2, parametru de calitate a raspunsului la treapta.",
+  "teorie": "Pentru un sistem de ordin 2 cu frecventa naturala $\\omega_n$ si factor de amortizare $\\zeta$, timpul de varf este $t_p = \\pi / (\\omega_n \\sqrt{1 - \\zeta^2})$ (valabil pentru $\\zeta < 1$, regim subamortizat). Suprareglajul procentual corespunzator: $\\sigma\\% = e^{-\\pi\\zeta/\\sqrt{1-\\zeta^2}} \\cdot 100\\%$. Valori tipice pentru bucle de pozitie servo: $t_p = 5 \\ldots 50\\,ms$, $\\zeta = 0.5 \\ldots 0.8$. La PIF, $t_p$ mic (raspuns rapid) implica castig mare si risc de instabilitate; $t_p$ se verifica experimental prin treapta de referinta de pozitie si se coreleaza cu rigiditatea mecanica a axei."
+ },
+ {
+  "mk": "ts",
+  "def": "Timpul de stabilizare al raspunsului tranzitoriu, intervalul de la aplicarea treptei pana cand iesirea ramane in banda de $\\pm 2\\%$ in jurul valorii finale, parametru de calitate a buclei de reglare.",
+  "teorie": "Pentru sistem de ordin 2 subamortizat, aproximatia clasica este $t_s \\approx 4 / (\\zeta \\cdot \\omega_n)$ (criteriu 2% banda). Aceasta relatie evidentiaza ca un factor de amortizare $\\zeta$ mai mare reduce $t_s$, dar creste $t_p$. La $\\zeta = 0.707$ (Butterworth / Modulus Optimum), $t_s \\approx 5.6 / \\omega_n$. In servo-actionari, $t_s$ tipic: $10 \\ldots 100\\,ms$ pentru bucla de pozitie, $2 \\ldots 20\\,ms$ pentru bucla de turatie. La PIF, $t_s$ se masoara din raspunsul la treapta inregistrat cu osciloscopul drive-ului si se compara cu cerinta aplicatiei (ex. robotica, CNC); un $t_s$ prea mare indica fie castig insuficient, fie inertie mecanica mare necompensata."
+ },
+ {
+  "mk": "Tsum",
+  "def": "Constanta de timp mica echivalenta, suma intarzierilor parazite din bucla de reglare: perioada de comutatie PWM, intarzierea de esantionare a curentului si constantele de timp ale filtrelor de masura.",
+  "teorie": "Suma intarzierilor mici se calculeaza ca $T_{sum} = T_{PWM}/2 + T_{esant} + T_{filtru}$, unde $T_{PWM}/2$ reprezinta intarzierea medie a modulatiei, $T_{esant}$ intarzierea de esantionare si $T_{filtru}$ suma constantelor de timp ale filtrelor analogice/digitale. Valori tipice: $T_{sum} = 0.5 \\ldots 2\\,ms$ la frecvente PWM de 4–16 kHz. Toate aceste intarzieri sunt mult mai mici decat $\\tau_e$ si $\\tau_m$, justificand modelarea lor ca un singur pol echivalent $1/(1 + s \\cdot T_{sum})$. La PIF, $T_{sum}$ este parametrul cheie pentru acordarea buclelor prin Modulus Optimum ($T_i = \\tau_e$, $k_p = L_s / (2 T_{sum})$) si Optimum Simetric ($T_n = 4 T_{sum}$)."
+ },
+ {
+  "mk": "U",
+  "def": "Tensiunea electrica de linie (intre faze) aplicata motorului sau la iesirea convertorului, marime fundamentala de alimentare utilizata in calculele de putere, curent si cadere de tensiune.",
+  "teorie": "Tensiunea de linie si cea de faza sunt legate prin $U_{linie} = \\sqrt{3} \\cdot U_{faza}$ (sistem trifazat simetric). Cuplul motorului asincron este $M \\propto U^2 / f^2$; o scadere de 10% a tensiunii reduce cuplul cu $\\approx 19\\%$. La invertoare VFD, tensiunea de iesire este modulata proportional cu frecventa: $U/f = const$ (legea Volt/Hz), respectand caracteristica fluxului nominal. Caderea de tensiune pe cablu $\\Delta U = \\sqrt{3} \\cdot I \\cdot (R_c \\cos\\varphi + X_c \\sin\\varphi) \\cdot l$ se limiteaza la $< 3\\%$ conform IEC 60364-5-52. La PIF, tensiunea la bornele motorului (nu la tablou) se masoara cu voltmetrul si se verifica ca este in limita $\\pm 10\\%$ fata de $U_n$ (IEC 60034-1)."
+ },
+ {
+  "mk": "Uab",
+  "def": "Tensiunea de linie intre fazele A si B, masurata la bornele de alimentare ale motorului asincron, una din cele trei tensiuni necesare evaluarii dezechilibrului de tensiune.",
+  "teorie": "Intr-un sistem trifazat ideal, $U_{AB} = U_{BC} = U_{CA} = U_{linie}$. Dezechilibrul de tensiune conform IEC 60034-26 se calculeaza ca $UV = \\frac{\\max|U_i - U_{med}|}{U_{med}} \\cdot 100\\%$, unde $U_{med} = (U_{AB} + U_{BC} + U_{CA})/3$. Fiecare procent de dezechilibru de tensiune produce $\\approx 6\\%$ dezechilibru de curent (raport amplificat de impedanta mica a motorului la secventa inversa), crescand pierderile rotorului cu $\\approx 20\\%$ conform IEC 60034-1 si impunand derating. La PIF, $U_{AB}$ se masoara cu voltmetrul calibrat si se inregistreaza inainte de prima pornire."
+ },
+ {
+  "mk": "Ubc",
+  "def": "Tensiunea de linie intre fazele B si C, masurata la bornele de alimentare ale motorului asincron, componenta a tripletului de tensiuni necesare calculului dezechilibrului.",
+  "teorie": "Asimetria $U_{BC}$ fata de celelalte doua tensiuni de linie introduce o componenta de secventa inversa $U^-$ care creeaza un camp magnetic rotitor invers in motor. Cuplul de frana al componentei inverse reduce cuplul util si creste pierderile: $\\Delta P \\approx 2 \\cdot (U^-/U^+)^2 \\cdot P_n / s_{nominal}$. IEC 60034-1 recomanda $UV < 1\\%$ pentru functionare la putere nominala; intre 1–5% se aplica factorul de derating (Figura B.4 din standard). La PIF, inregistrarea $U_{AB}$, $U_{BC}$, $U_{CA}$ pe toate cele trei faze permite identificarea fazei cu impedanta de retea mai mare (conexiune slaba, siguranta uzata) ca sursa a dezechilibrului."
+ },
+ {
+  "mk": "Uca",
+  "def": "Tensiunea de linie intre fazele C si A, masurata la bornele motorului asincron, a treia componenta a tripletului necesar calculului dezechilibrului de tensiune trifazat.",
+  "teorie": "Cele trei tensiuni de linie $U_{AB}$, $U_{BC}$, $U_{CA}$ formeaza un sistem trifazat. Suma vectoriala a celor trei tensiuni de linie este zero ($\\vec{U}_{AB} + \\vec{U}_{BC} + \\vec{U}_{CA} = 0$), deci masurarea a doua tensiuni de linie si a tensiunilor de faza poate confirma corectitudinea masuratorilor. Dezechilibrul maxim admis conform IEC 60038 pentru reteaua publica este $\\leq 2\\%$ (in punctul de conexiune), mai strict la motor datorita impedantei mici. La PIF, toate cele trei tensiuni se verifica atat la alimentare (tablou electric) cat si la bornele motorului pentru a evidentia caderi pe cabluri dezechilibrate sau contacte cu rezistenta de tranzitie ridicata."
+ },
+ {
+  "mk": "Ud",
+  "def": "Tensiunea medie redresata (tensiunea de indus) aplicata de convertorul tiristorat motorului de curent continuu, variabila principala de reglaj a turatiei.",
+  "teorie": "Pentru redresorul trifazat in punte (B6), tensiunea medie este $U_d = U_{d0} \\cdot \\cos\\alpha - \\Delta U_{comut}$, unde $U_{d0} = 2.34 \\cdot U_{faza}$ (sau $U_{d0} \\approx 1.35 \\cdot U_{linie}$), $\\alpha$ este unghiul de aprindere al tiristoarelor si $\\Delta U_{comut}$ este caderea de tensiune de comutatie. Turatia motorului cc este $n = (U_d - I_a \\cdot R_a) / (K_e \\cdot \\Phi)$, deci reglajul lui $\\alpha$ permite reglajul continuu al turatiei de la 0 la $n_{max}$. La PIF, se verifica tensiunea $U_d$ la mers in gol si in sarcina, se calculeaza caderea interna $\\Delta U = I_a \\cdot R_a$ si se confirma caracteristica $U_d(\\alpha)$ conform datelor convertorului (ex. ABB DCS880)."
+ },
+ {
+  "mk": "Ud0",
+  "def": "Tensiunea medie maxima a redresorului comandat, valoarea teoretica obtinuta la unghi de aprindere $\\alpha = 0°$, reper pentru domeniul de reglaj al tensiunii de indus.",
+  "teorie": "Tensiunea medie la unghi de aprindere zero depinde de schema redresorului: punte monofazata $U_{d0} = 0.9 \\cdot U$; punte trifazata (B6) $U_{d0} = 2.34 \\cdot U_{faza} \\approx 1.35 \\cdot U_{linie}$; la $U_{linie} = 400\\,V$: $U_{d0} \\approx 540\\,V$. Tensiunea de regim este $U_d = U_{d0} \\cdot \\cos\\alpha$, deci $U_d$ variaza de la $U_{d0}$ (la $\\alpha=0$) pana la $-U_{d0}$ (la $\\alpha=180°$, redresoare reversibile). La PIF, $U_{d0}$ se masoara la mers in gol cu $\\alpha = 0°$ si se compara cu valoarea calculata; o diferenta mai mare de 3–5% indica pierderi de comutatie mari sau o problema la tiristoare."
+ },
+ {
+  "mk": "Uf",
+  "def": "Tensiunea aplicata infasurarii de excitatie a motorului de curent continuu cu excitatie separata, care stabileste curentul de excitatie si deci fluxul inductor.",
+  "teorie": "In regim stationar, relatia dintre tensiunea si curentul de excitatie este $U_f = R_f \\cdot I_f + L_f \\cdot dI_f/dt$ (in regim stationar $U_f = R_f \\cdot I_f$). Fluxul inductor $\\Phi = f(I_f)$ urmeaza caracteristica de magnetizare a masinii (neliniara); in zona liniara: $\\Phi \\approx k_f \\cdot I_f$. Slabirea de flux (field weakening) se realizeaza reducand $U_f$ (si implicit $I_f$) sub valorile nominale, permitand cresterea turatiei deasupra turatiei de baza: $n > n_n$ la $P \\approx const$. La PIF, $U_f$ se monitorizeaza cu voltmetrul si se verifica ca $I_f = U_f / R_f$ este in gama specificata pe placuta motorului; excitatie insuficienta duce la scantei la colector si slaba comutatie."
+ },
+ {
+  "mk": "Umed",
+  "def": "Media aritmetica a celor trei tensiuni de linie masurate la bornele motorului asincron, utilizata ca referinta pentru calculul dezechilibrului de tensiune.",
+  "teorie": "Tensiunea medie este $U_{med} = (U_{AB} + U_{BC} + U_{CA}) / 3$. Aceasta valoare serveste ca referinta pentru calculul dezechilibrului conform IEC 60034-26: $UV = \\frac{\\max(|U_{AB} - U_{med}|,\\,|U_{BC} - U_{med}|,\\,|U_{CA} - U_{med}|)}{U_{med}} \\cdot 100\\%$. $U_{med}$ trebuie sa fie in gama $\\pm 10\\%$ fata de $U_n$ al motorului conform IEC 60034-1, altfel motorul trebuie derating-uit sau inlocuit. La PIF, daca $U_{med}$ este semnificativ sub $U_n$, se verifica prizele transformatorului si treapta de reglaj."
+ },
+ {
+  "mk": "Usoft",
+  "def": "Tensiunea initiala de pornire (pedestal) setata in softstarter, exprimata procentual din tensiunea nominala a retelei, care determina curentul si cuplul disponibil la demaraj.",
+  "teorie": "Softstarter-ul creste progresiv unghiul de conductie al tiristoarelor de la tensiunea initiala $U_{soft}$ pana la $U_n$ in timpul de rampa $t_{ramp}$. Deoarece $M \\propto U^2$, cuplul de pornire la tensiunea initiala este $M_{start} = M_n \\cdot (U_{soft}/100)^2 \\cdot (M_{porn,rel})$, unde $M_{porn,rel}$ este cuplul relativ la tensiune nominala. Curentul de pornire este redus proportional: $I_{start} \\approx I_{porn,DOL} \\cdot (U_{soft}/100)^2$. Valori tipice: $U_{soft} = 40 \\ldots 60\\%$ pentru pompele centrifuge (sarcina patrata), $U_{soft} = 60 \\ldots 80\\%$ pentru compresoare (sarcina constanta). La PIF, $U_{soft}$ se ajusteaza pana cand motorul porneste ferm (fara blocaj) si curentul de pornire se incadreaza in limita protectiei de supracurent."
+ },
+ {
+  "mk": "UV",
+  "def": "Dezechilibrul de tensiune intre fazele retelei de alimentare a motorului asincron, exprimat procentual ca abatere relativa maxima fata de tensiunea medie de linie.",
+  "teorie": "Dezechilibrul de tensiune se calculeaza ca $UV = \\frac{\\max(|U_{AB}-U_{med}|,\\,|U_{BC}-U_{med}|,\\,|U_{CA}-U_{med}|)}{U_{med}} \\cdot 100\\%$. Fiecare procent de dezechilibru de tensiune produce un dezechilibru de curent de $\\approx 6 \\ldots 10$ ori mai mare (datorita impedantei mici a motorului la secventa negativa), ceea ce supraincalzeste infasurarile rotorului. IEC 60034-1 impune derating al puterii nominale la $UV > 1\\%$: la $UV = 3\\%$ derating-ul tipic este $\\approx 10\\%$, la $UV = 5\\%$ ajunge la $\\approx 25\\%$. La PIF, $UV > 2\\%$ impune investigarea cauzei (dezechilibru de sarcini monofazate, siguranta uzata, cablu cu rezistenta diferita) inainte de punerea in functiune a motorului la sarcina nominala."
+ },
+ {
+  "mk": "Vdc",
+  "def": "Tensiunea continua injectata in infasurarea statorica a motorului asincron in cadrul testului cu curent continuu (DC test), utilizata impreuna cu curentul masurat pentru determinarea rezistentei statorice $R_1$.",
+  "teorie": "La testul dc, se aplica o tensiune continua $U_{dc}$ intre doua borne ale statorului (curentul alternativ nu produce camp rotitor), iar reactantele nu au efect. Rezistenta intre doua borne (conexiune stea: $2 R_1$; conexiune triunghi: $2 R_1 / 3$) se obtine din $R_{masurat} = U_{dc} / I_{dc}$. Din aceasta, $R_1 = R_{masurat}/2$ (stea) sau $R_1 = 1.5 \\cdot R_{masurat}$ (triunghi). Temperatura infasurarii la momentul masuratorii trebuie inregistrata si $R_1$ corectat la 75°C: $R_{75} = R_{mas} \\cdot (235 + 75) / (235 + T_{mas})$ pentru cupru (IEC 60034-2-1). La PIF, $R_1$ masurat confirma integritatea infasurarii si se introduce in schema echivalenta pentru calculul parametrilor."
+ },
+ {
+  "mk": "Vlr",
+  "def": "Tensiunea redusa de linie aplicata la bornele motorului asincron in testul cu rotorul blocat (locked rotor test), ajustata astfel incat curentul de test sa atinga valoarea nominala.",
+  "teorie": "La testul cu rotorul blocat ($s = 1$), impedanta motorului este minima (dominata de $R_2' + j(X_1 + X_2')$), deci se aplica tensiune redusa $U_{lr} \\approx (20 \\ldots 35)\\% \\cdot U_n$ pentru a limita curentul la $I_n$. Din masuratorile $U_{lr}$, $I_{lr}$, $P_{lr}$ se calculeaza: impedanta de scurtcircuit $Z_{sc} = U_{lr}/(\\sqrt{3} \\cdot I_{lr})$, rezistenta $R_{sc} = P_{lr}/(3 \\cdot I_{lr}^2) = R_1 + R_2'$, reactanta $X_{sc} = \\sqrt{Z_{sc}^2 - R_{sc}^2} = X_1 + X_2'$ (impartire conventionala: $X_1 = X_2' = X_{sc}/2$ conform IEC 60034-2-1). La PIF, testul cu rotorul blocat permite determinarea reactantelor de dispersie necesare acordarii regulatoarelor de flux si curent la motoarele controlate vectorial."
+ },
+ {
+  "mk": "vmax",
+  "def": "Viteza maxima atinsa in profilul de miscare trapezoidal sau in S al servosistemului, exprimata in unitati pe secunda (u/s, unde u poate fi mm, grade, rotatii etc.).",
+  "teorie": "Intr-un profil trapezoidal, viteza maxima este legata de distanta totala $d$, acceleratia $a$ si timpii de rampa prin $d = v_{max} \\cdot t_{total} - v_{max}^2 / a$ (profil complet). Daca $d < v_{max}^2 / a$, profilul devine triunghiular si $v_{max,real} = \\sqrt{a \\cdot d}$. La turatie: $v_{max}\\,[rpm] = v_{max}\\,[u/s] \\cdot 60 / (i \\cdot pas_{mecanic})$, unde $i$ este raportul de transmisie. $v_{max}$ trebuie sa fie mai mica decat turatia maxima mecanica a motorului (verificata in fisa tehnica) si decat turatia de flux slabit maxima a drive-ului. La PIF, $v_{max}$ se verifica in test de mers in gol la profilul nominal, urmarind curentul, tensiunea pe bara dc si vibratiile mecanice la viteza maxima."
+ }
+]

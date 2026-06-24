@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "Phid",
+  "def": "Puterea hidraulica utila transmisa efectiv lichidului de catre pompa, reprezentand produsul dintre debitul volumic, inaltimea manometrica si greutatea specifica a lichidului; este energia pe unitatea de timp adaugata fluidului, exclusiv pierderile interne ale pompei.",
+  "teorie": "Relatia de baza este $P_{hid} = \\frac{\\rho \\cdot g \\cdot Q \\cdot H}{1000}$ [kW], unde $\\rho$ [kg/m³] este densitatea lichidului, $g = 9{,}81$ m/s², $Q$ [m³/s] debitul si $H$ [m] inaltimea manometrica totala. Randamentul hidraulic al pompei $\\eta_h$ defineste cat din puterea la arbore se regaseste in $P_{hid}$. La PIF, $P_{hid}$ este marimea de referinta minima: orice calcul al puterii motorului porneste de la aceasta valoare si adauga succesiv pierderile de randament."
+ },
+ {
+  "mk": "Pmot",
+  "def": "Puterea absorbita la bornele motorului electric din reteaua de alimentare (sau de la convertizor), incluzand pierderile electrice si magnetice ale motorului; in contextul sumei motoarelor, reprezinta contributia agregata a tuturor motoarelor la curentul de scurtcircuit al barei.",
+  "teorie": "Pentru un singur motor: $P_{mot} = \\frac{P_{arb}}{\\eta_{mot}}$, unde $\\eta_{mot}$ este randamentul motorului la sarcina de lucru (tipic 0,88–0,96 pentru motoare IE2/IE3 conform IEC 60034-30-1). La calculul curentului de scurtcircuit (IEC 60909), contributia motoarelor asincrone la bara se estimeaza ca $I_{mot} = \\frac{P_{mot,total}}{\\sqrt{3} \\cdot U_n \\cdot \\eta_{mot} \\cdot \\cos\\varphi}$ si se insumeaza vectorial. La PIF, valoarea calculata se rotunjeste la puterea standardizata imediat superioara (serie IEC 60072) si se verifica incadrarea termica."
+ },
+ {
+  "mk": "Pmotor",
+  "def": "Puterea nominala inscrisa pe placuta de identificare a motorului electric, reprezentand puterea mecanica disponibila la arbore in regim continuu S1 la conditiile nominale de tensiune, frecventa si temperatura.",
+  "teorie": "Puterea nominala $P_n$ [kW] este garantata de producator conform IEC 60034-1 la tensiunea nominala $U_n$, frecventa $f_n$ si temperatura ambianta $\\theta_a = 40°C$. Relatia cu cuplul nominal este $P_n = \\frac{M_n \\cdot n_n}{9550}$ [kW], cu $M_n$ in N$\\cdot$m si $n_n$ in rot/min. La alegerea convertizorului de frecventa (VFD), puterea motorului conditioneaza curentul nominal al invertorului; la PIF se verifica ca $P_{cerut} \\leq P_{motor}$ cu o rezerva de minim 10–15% pentru a evita suprasarcina termica in regim de lucru."
+ },
+ {
+  "mk": "pompe:aund",
+  "def": "Viteza de propagare a undei de presiune (viteza celeritate) prin coloana de lichid din conducta, determinata de compresibilitatea fluidului si de elasticitatea peretilor conductei; guverneaza viteza cu care perturbatia de presiune se transmite in lungul instalatiei.",
+  "teorie": "Relatia lui Korteweg: $a = \\sqrt{\\frac{K/\\rho}{1 + (K/E)\\cdot(D/e)}}$ [m/s], unde $K$ este modulul de compresibilitate al lichidului, $E$ modulul de elasticitate al conductei, $D$ diametrul interior si $e$ grosimea peretelui. Pentru apa in teava de otel valorile tipice sunt $a = 1000\\text{–}1300$ m/s; pentru PVC sau PE scade la $a = 300\\text{–}500$ m/s. Valoarea $a$ fixeaza timpul critic $T_{crit} = 2L/a$ si, prin formula Joukowsky $\\Delta p = \\rho \\cdot a \\cdot \\Delta v$, amplitudinea maxima a socului de presiune — esential la PIF pentru a stabili rampa minima de oprire a drive-ului."
+ },
+ {
+  "mk": "pompe:dPmax",
+  "def": "Suprapresiunea instantanee maxima generata de lovitura de berbec la inchiderea brusca a vanei sau la oprirea brusca a pompei, corespunzatoare cazului cel mai defavorabil in care intreaga energie cinetica a coloanei de lichid se converteste in presiune.",
+  "teorie": "Formula Joukowsky: $\\Delta p_{max} = \\rho \\cdot a \\cdot \\Delta v$ [Pa], unde $\\rho$ este densitatea lichidului, $a$ viteza undei si $\\Delta v$ variatia vitezei fluidului. In [bar]: $\\Delta p_{max} = \\frac{\\rho \\cdot a \\cdot \\Delta v}{10^5}$. Valoarea este independenta de lungimea conductei si apare in intervalul $t < T_{crit} = 2L/a$. La PIF aceasta reprezinta limita superioara absoluta: presiunea de calcul a conductei si a flansei trebuie sa depaseasca $p_{static} + \\Delta p_{max}$ cu factorul de siguranta impus de EN 13480 sau EN 806."
+ },
+ {
+  "mk": "pompe:dPreal",
+  "def": "Suprapresiunea efectiva generata la oprirea pompei cu rampa de decelerare programata in drive, mai mica decat socul maxim Joukowsky atunci cand durata rampei depaseste timpul critic al conductei.",
+  "teorie": "Daca $t_{inch} > T_{crit} = 2L/a$, se aplica formula Michaud: $\\Delta p_{real} = \\frac{\\rho \\cdot L \\cdot \\Delta v}{t_{inch}}$ [Pa], care arata ca $\\Delta p$ scade invers proportional cu durata de oprire. Daca $t_{inch} \\leq T_{crit}$, se aplica relatia Joukowsky ($\\Delta p_{real} = \\Delta p_{max}$). In practica PIF, rampa de decelerare a VFD-ului se seteaza astfel incat $\\Delta p_{real}$ sa ramana sub presiunea admisibila a conductei; o rampa de 10–30 s este uzuala pentru conducte lungi (>200 m)."
+ },
+ {
+  "mk": "pompe:dvf",
+  "def": "Variatia vitezei medii a fluidului in sectiunea conductei la trecerea de la debitul de regim la debit zero la oprirea pompei; marimea direct proportionala cu amplitudinea socului de presiune Joukowsky.",
+  "teorie": "Viteza medie a fluidului este $v = Q/A$ [m/s], unde $A = \\pi D^2/4$ este sectiunea interioara a conductei. La oprire, variatia este $\\Delta v = v_{regim} - 0 = Q/(\\pi D^2/4)$. Prin relatia Joukowsky $\\Delta p = \\rho \\cdot a \\cdot \\Delta v$, $\\Delta v$ este factorul de amplificare al socului: la o conducta cu $D = 200$ mm si $Q = 100$ m³/h rezulta $\\Delta v \\approx 0{,}88$ m/s, dand $\\Delta p \\approx 11$ bar in otel. La PIF, reducerea $\\Delta v$ prin limitarea debitului maxim sau prin reducerea treptata a turatiei cu VFD diminueaza direct riscul de lovitura de berbec."
+ },
+ {
+  "mk": "pompe:KpPI",
+  "def": "Castigul proportional al regulatorului PI integrat in convertizorul de frecventa, folosit pentru reglarea presiunii sau debitului in bucla inchisa; determina reactia imediata a ieserii la eroarea de reglare.",
+  "teorie": "Conform metodei Ziegler-Nichols in bucla inchisa: $K_{p,PI} = 0{,}45 \\cdot K_u$, unde $K_u$ este castigul critic la care bucla oscileaza sustinut cu perioada $T_u$. Functia de transfer a regulatorului PI este $G_{PI}(s) = K_p \\left(1 + \\frac{1}{T_i \\cdot s}\\right)$. Valoarea de start calculata prin Z-N asigura o marja de faza de aproximativ 45°; in practica PIF se ajusteaza ulterior deoarece caracteristica hidraulica nelineara (Q-H) si inertia conductei pot cere $K_p$ mai mic pentru stabilitate la sarcini partiale."
+ },
+ {
+  "mk": "pompe:KpPID",
+  "def": "Castigul proportional al regulatorului PID integrat in drive, pentru reglarea presiunii sau debitului; valoare de start calculata prin metoda Ziegler-Nichols, mai mare decat pentru PI datorita actiunii derivate care stabilizeaza bucla.",
+  "teorie": "Formula Z-N pentru PID: $K_{p,PID} = 0{,}6 \\cdot K_u$. Regulatorul PID are functia: $G_{PID}(s) = K_p \\left(1 + \\frac{1}{T_i \\cdot s} + T_d \\cdot s\\right)$. Castigul mai mare fata de PI ($0{,}6 K_u$ vs $0{,}45 K_u$) este compensat de actiunea derivata $T_d$ care amortizeaza oscilatiile. La PIF pe sisteme de pompe cu conducte lungi, componenta derivata poate amplifica zgomotul transducerului de presiune; in acest caz se filtreaza semnalul sau se renunta la D (de preferinta un PI bine ajustat)."
+ },
+ {
+  "mk": "pompe:Ku",
+  "def": "Castigul critic (ultimate gain) al regulatorului proportional pur la care bucla de reglare a presiunii/debitului se afla exact la limita de stabilitate, manifestand oscilatii sustinute cu amplitudine constanta si perioada $T_u$.",
+  "teorie": "Determinarea experimentala: se porneste cu $K_p$ mic si se creste treptat, cu $T_i \\to \\infty$ si $T_d = 0$, pana la aparitia oscilatiei sustinute; valoarea $K_p$ la acel moment este $K_u$. Matematic, la $K_u$ polii buclei inchise se afla pe axa imaginara ($j\\omega$). Valorile $K_u$ si $T_u$ sunt baza intregului set de parametri Z-N: $K_{p,PI} = 0{,}45 K_u$, $T_{i,PI} = 0{,}83 T_u$; $K_{p,PID} = 0{,}6 K_u$, $T_{i,PID} = 0{,}5 T_u$, $T_{d,PID} = 0{,}125 T_u$. La PIF, determinarea lui $K_u$ se face la debit stabil, ferit de socuri hidraulice."
+ },
+ {
+  "mk": "pompe:L",
+  "def": "Lungimea totala a conductei de refulare de la pompa pana la punctul de consum sau vana de reglare, parametru geometric fundamental care determina volumul de lichid implicat in fenomenul de lovitura de berbec si energia cinetica stocata in coloana de fluid.",
+  "teorie": "Lungimea $L$ [m] intra direct in calculul timpului critic $T_{crit} = 2L/a$ [s], care reprezinta durata totala a propagarii undei dus-intors in conducta. De asemenea, in formula Michaud pentru inchidere lenta: $\\Delta p = \\frac{\\rho \\cdot L \\cdot \\Delta v}{t_{inch}}$, $L$ amplifica socul — o conducta mai lunga necesita o rampa mai lunga pentru acelasi $\\Delta p$ admisibil. La PIF, cunoasterea exacta a $L$ (din planul isometric P&ID) este obligatorie inainte de setarea rampei de decelerare a drive-ului."
+ },
+ {
+  "mk": "pompe:Q",
+  "def": "Debitul volumic al pompei sau ventilatorului, adica volumul de fluid transferat pe unitatea de timp; marimea principala a caracteristicii hidraulice Q-H, determinata de turatia rotorului si de geometria palelor conform legilor de afinitate.",
+  "teorie": "Prima lege de afinitate: $Q_2 = Q_1 \\cdot \\frac{n_2}{n_1}$, valabila pentru geometrie similara si fluid incompresibil. Debitul apare in toate relatiile de putere hidraulica ($P_{hid} = \\rho g Q H / 1000$) si in calculul NPSH disponibil. La BEP (Best Efficiency Point) randamentul $\\eta$ este maxim; operarea la $Q < 0{,}7 \\cdot Q_{BEP}$ sau $Q > 1{,}2 \\cdot Q_{BEP}$ creste incarcarea axiala si riscul de cavitatie. La PIF cu VFD, turatia se regleaza pentru a mentine $Q$ cerut de proces, cu economie de energie proportionala cu cubul raportului de turatie."
+ },
+ {
+  "mk": "pompe:T",
+  "def": "Temperatura aerului sau gazului vehiculat de ventilator la intrarea in rotor, de care depinde densitatea si deci presiunea disponibila, puterea absorbita si necesarul de racire al motorului si convertizorului.",
+  "teorie": "Densitatea aerului ideal: $\\rho = \\frac{p}{R_{aer} \\cdot (273{,}15 + T)}$ [kg/m³], unde $T$ este in °C si $R_{aer} = 287$ J/(kg$\\cdot$K). Presiunea dezvoltata de ventilator si puterea absorbita sunt direct proportionale cu densitatea: $P \\propto \\rho \\propto 1/(273 + T)$. La $T = 80°C$ fata de $T = 20°C$, densitatea scade cu ~17%, reducand si capacitatea de racire a motorului; conform IEC 60034-1, motoarele standard sunt garantate pana la $\\theta_a = 40°C$ si necesita derating deasupra acestei valori. La PIF se aplica factorul de corectie al VFD-ului pentru aer cald."
+ },
+ {
+  "mk": "pompe:Tcrit",
+  "def": "Timpul critic al conductei, egal cu durata dus-intors a undei de presiune in intreaga lungime a conductei; pragul care separa regimul de inchidere brusca (soc maxim Joukowsky) de regimul de inchidere lenta (soc redus Michaud).",
+  "teorie": "Formula: $T_{crit} = \\frac{2L}{a}$ [s], unde $L$ [m] este lungimea conductei si $a$ [m/s] viteza celeritate. Daca durata rampei de oprire $t_{inch} < T_{crit}$, unda se suprapune cu reflexia sa si socul atinge valoarea maxima $\\Delta p = \\rho \\cdot a \\cdot \\Delta v$. Daca $t_{inch} > T_{crit}$, unda se stinge partial si $\\Delta p = \\rho \\cdot L \\cdot \\Delta v / t_{inch}$. La PIF, $T_{crit}$ se calculeaza primul si rampa de decelerare a drive-ului se seteaza la minim $1{,}5 \\cdot T_{crit}$ pentru marja de siguranta."
+ },
+ {
+  "mk": "pompe:TdPID",
+  "def": "Timpul derivativ al regulatorului PID din drive, care introduce o actiune anticipativa proportionala cu viteza de variatie a erorii de reglare; limiteaza suprareglajul si mareste viteza de raspuns a buclei de presiune/debit.",
+  "teorie": "Formula Z-N: $T_{d,PID} = 0{,}125 \\cdot T_u$ [s]. Actiunea derivata produce iesirea $u_D = K_p \\cdot T_d \\cdot \\frac{de}{dt}$, care amplifica zgomotul de masura; in practica se filtreaza cu un filtru de ordinul I cu constanta de timp $T_f = T_d/N$, unde $N = 5\\text{–}20$. La sisteme hidraulice cu presiune fluctuanta (pompe centrifuge cu pulsatii) $T_d$ se reduce sau se elimina; componenta D este utila mai ales la sisteme termice sau mecanice cu dinamica lenta si zgomot redus."
+ },
+ {
+  "mk": "pompe:tinch",
+  "def": "Durata rampei de decelerare a pompei programata in drive sau durata de inchidere a vanei, parametru de reglaj care determina viteza de reducere a debitului si, implicit, amplitudinea socului de presiune in conducta.",
+  "teorie": "Criteriul de decizie: daca $t_{inch} > T_{crit} = 2L/a$, socul se calculeaza cu formula Michaud: $\\Delta p = \\rho \\cdot L \\cdot \\Delta v / t_{inch}$, reducandu-se proportional cu $t_{inch}$. Exemplu: pentru $L = 500$ m, $a = 1200$ m/s, $T_{crit} = 0{,}83$ s; o rampa de 5 s reduce $\\Delta p$ la 1/6 din valoarea maxima Joukowsky. La PIF, $t_{inch}$ se seteaza in parametrul de decelerare al drive-ului (ex. ABB: par. 23.13 Deceleration time 1) si se verifica pe teren cu traductor de presiune la capatul conductei."
+ },
+ {
+  "mk": "pompe:TiPI",
+  "def": "Timpul integral al regulatorului PI din drive, care determina viteza cu care actiunea integratoare anuleaza eroarea stationara de presiune sau debit; o valoare prea mica produce oscilatii, una prea mare lasa eroare reziduala pentru durata lunga.",
+  "teorie": "Formula Z-N: $T_{i,PI} = 0{,}83 \\cdot T_u$ [s]. Actiunea integrala produce $u_I = \\frac{K_p}{T_i} \\int e \\, dt$, eliminand offset-ul static. Comparativ cu PID, PI are $T_i$ mai mare ($0{,}83 T_u$ vs $0{,}5 T_u$), ceea ce da o actiune integrala mai lenta si o bucla mai stabila. La sistemele hidraulice cu presiune de referinta constanta (pompe de recirculare, sisteme cu vas de presiune), PI este preferat fata de PID; ajustarea finala se face prin reducerea $K_p$ si $T_i$ pana la disparitia oscilatiei."
+ },
+ {
+  "mk": "pompe:TiPID",
+  "def": "Timpul integral al regulatorului PID din drive, mai mic decat la PI datorita actiunii derivate care compenseaza tendinta de oscilatie; determina viteza de eliminare a erorii statice in bucla de reglare a presiunii sau debitului.",
+  "teorie": "Formula Z-N: $T_{i,PID} = 0{,}5 \\cdot T_u$ [s], adica actiunea integrala este de doua ori mai rapida decat la PI ($0{,}5 T_u$ vs $0{,}83 T_u$). Tripleta Z-N pentru PID completa: $K_p = 0{,}6 K_u$, $T_i = 0{,}5 T_u$, $T_d = 0{,}125 T_u$ asigura amortizare de ~$\\frac{1}{4}$ din amplitudine per ciclu. La PIF pe pompe, $T_i$ se creste (actiune integrala mai lenta) daca apar oscilatii lente ale presiunii din reteaua de distributie sau din variatia consumului."
+ },
+ {
+  "mk": "pompe:Tu",
+  "def": "Perioada oscilatiei sustinute a variabilei de proces (presiune sau debit) la castigul critic $K_u$ cu regulator proportional pur; impreuna cu $K_u$ formeaza perechea de parametri de caracterizare a buclei folosita de metoda Ziegler-Nichols.",
+  "teorie": "La $K_p = K_u$, polii buclei inchise se afla pe axa imaginara la frecventa $\\omega_u = 2\\pi/T_u$, dand oscilatii cu amplitudine constanta. $T_u$ se masoara ca perioada semnalului oscilant observat pe variabila de proces (presiune la traducto) sau pe iesirea regulatorului. Din $T_u$ se calculeaza: $T_{i,PI} = 0{,}83 T_u$; $T_{i,PID} = 0{,}5 T_u$; $T_{d,PID} = 0{,}125 T_u$. Precizia masurarii $T_u$ conditioneaza calitatea acordarii: la sisteme hidraulice cu volum mare (rezervoare tampon), $T_u$ poate fi de zeci de secunde."
+ },
+ {
+  "mk": "Preal",
+  "def": "Puterea mecanica efectiv ceruta ventilatorului la conditiile reale de exploatare (temperatura si altitudine efectiva), obtinuta prin corectia puterii de catalog cu raportul dintre densitatea reala si densitatea de referinta a aerului.",
+  "teorie": "Relatia de corectie: $P_{real} = P_{ref} \\cdot \\frac{\\rho_{real}}{\\rho_0}$, unde $\\rho_0 = 1{,}2$ kg/m³ (aer uscat la 20°C, 1013 mbar conform ISO 1217) si $\\rho_{real}$ se calculeaza din temperatura si altitudine. Deoarece puterea ventilatorului este proportionala cu densitatea ($P \\propto \\rho$) dar debitul volumic ramane aproximativ constant la aceeasi turatie, puterea absorbita scade la aer cald/rarefiat. La PIF, $P_{real}$ determina daca motorul ales la conditii standard este supradimensionat la conditii de vara sau altitudine mare, permitand eventual reducerea puterii nominale a motorului."
+ },
+ {
+  "mk": "Pref",
+  "def": "Puterea absorbita a ventilatorului masurata sau garantata in catalogul producatorului la densitatea aerului de referinta standard ($\\rho_0 = 1{,}2$ kg/m³), punct de plecare obligatoriu pentru corectia la conditii reale de exploatare.",
+  "teorie": "Conditiile de referinta conform ISO 13347: $T_{ref} = 20°C$, $p_{atm} = 101{,}3$ kPa, $\\rho_0 = 1{,}2$ kg/m³. Catalogul ventilatorului specifica $P_{ref}$, presiunea statica si debitul volumic la aceste conditii. Corectia la conditii reale: $P_{real} = P_{ref} \\cdot \\rho_{real}/\\rho_0$ si $\\Delta p_{real} = \\Delta p_{ref} \\cdot \\rho_{real}/\\rho_0$, in timp ce debitul volumic $Q$ ramane neschimbat la aceeasi turatie. La PIF, comparatia $P_{ref}$ vs $P_{real}$ indica marja termica disponibila a motorului in conditii de vara."
+ },
+ {
+  "mk": "Pret",
+  "def": "Puterea electrica activa absorbita din reteaua de distributie de catre ansamblul convertizor de frecventa plus motor plus transmisie, reprezentand suma tuturor pierderilor in lantul energetic plus puterea utila hidraulica; aceasta este energia facturata de furnizor.",
+  "teorie": "Relatia completa a lantului wire-to-water: $P_{ret} = \\frac{P_{hid}}{\\eta_{hid} \\cdot \\eta_{arb} \\cdot \\eta_{mot} \\cdot \\eta_{VFD}}$, unde $\\eta_{hid}$ este randamentul hidraulic al pompei, $\\eta_{arb}$ al transmisiei mecanice, $\\eta_{mot}$ al motorului si $\\eta_{VFD}$ al convertizorului (tipic 0,97–0,98). Economia anuala prin VFD fata de reglare cu vana: $\\Delta W = (P_{ret,vana} - P_{ret,VFD}) \\cdot h_{an}$ [kWh]. La PIF, $P_{ret}$ se masoara cu analizor de putere si se compara cu valoarea calculata pentru validarea bilantului energetic."
+ },
+ {
+  "mk": "Prid",
+  "def": "Puterea mecanica ceruta motorului pentru ridicarea sarcinii utile cu viteza liniara data, calculata din forta de ridicare (greutatea sarcinii plus organele de prindere) si viteza de ridicare, tinand cont de randamentul mecanismului de ridicare.",
+  "teorie": "Relatia de baza: $P_{rid} = \\frac{F_{rid} \\cdot v_{rid}}{\\eta_{mec} \\cdot 1000}$ [kW], unde $F_{rid} = (m_{sarcina} + m_{carlig}) \\cdot g$ [N], $v_{rid}$ [m/s] este viteza liniara si $\\eta_{mec}$ randamentul mecanismului (scripeti, reductor). Cuplul la arbore motor: $M_{rid} = \\frac{P_{rid} \\cdot 9550}{n_n}$ [N$\\cdot$m]. La PIF se verifica si regimul de coborare (generator → frana sau recuperare energie) si regimul de mentinere la zero viteza (frana mecanica); convertizorul trebuie sa asigure $M_{brake} \\geq M_{rid}$ pe toata cursa, conform IEC 61800-5-2 pentru functii de siguranta STO/SS1 la mecanisme de ridicare."
+ },
+ {
+  "mk": "pvap",
+  "def": "Presiunea de vapori saturati a lichidului pompat la temperatura efectiva de lucru; este presiunea minima sub care lichidul trece la starea de vapori si declanseaza cavitatia in pompa, cu efecte de eroziune, vibratii si pierdere de performanta.",
+  "teorie": "$p_{vap}$ creste exponential cu temperatura conform ecuatiei Antoine si se scade din presiunea absoluta disponibila la aspiratia pompei in calculul NPSH disponibil: $NPSH_a = \\frac{p_{atm} - p_{vap}}{\\rho g} + z_a - h_{f,asp}$ [m], unde $z_a$ este cota rezervorului fata de pompa si $h_{f,asp}$ pierderile de presiune pe aspiratie. Conditia de functionare fara cavitatie: $NPSH_a \\geq NPSH_r + 0{,}5$ m (marja minima conform ISO 9906). La PIF, $p_{vap}$ este critic la pompe de apa calda, pompe de condensat si instalatii la altitudine; se extrage din tabele termodinamice sau din REFPROP."
+ },
+ {
+  "mk": "q1",
+  "def": "Primul nivel de incarcare al profilului de functionare anual al pompei, exprimat ca procent din debitul nominal; impreuna cu numarul de ore aferent, defineste primul segment al profilului de sarcina pentru calculul economiei de energie prin VFD.",
+  "teorie": "Puterea absorbita la debitul partial $q_1\\%$ se calculeaza pe curba pompei: cu VFD, turatia se reduce la $n_2 = n_1 \\cdot q_1/100$, iar puterea scade cu cubul: $P_{VFD} = P_n \\cdot (q_1/100)^3$. Cu vana (turatie fixa), pompa functioneaza pe curba la turatie nominala, disipand energia in vana: $P_{vana} = P_n \\cdot (q_1/100) \\cdot f_{curba}$, unde $f_{curba}$ depinde de panta caracteristicii Q-H. Economia pe segment: $\\Delta E_1 = (P_{vana,1} - P_{VFD,1}) \\cdot h_1$ [kWh/an]. Cu cat $q_1$ este mai mic, cu atat economia VFD este mai mare pentru acel segment."
+ },
+ {
+  "mk": "Q1",
+  "def": "Debitul initial al pompei sau ventilatorului la turatia (sau diametrul rotorului) initiala, punct de referinta pentru aplicarea legilor de afinitate in calculul noului debit la turatie modificata sau dupa trimmingul rotorului.",
+  "teorie": "Prima lege de afinitate: $Q_2 = Q_1 \\cdot \\frac{n_2}{n_1}$ (la diametru constant) sau $Q_2 = Q_1 \\cdot \\frac{D_2}{D_1}$ (la turatie constanta, trimming). $Q_1$ se citeste din curba de performanta a pompei la punctul de functionare initial (intersectia curbei Q-H cu curba retelei). La PIF cu VFD, $Q_1$ si $H_1$ sunt punctul de pornire pentru proiectarea rampei de turatie si pentru verificarea ca noul punct de functionare $(Q_2, H_2)$ ramane in zona de functionare stabila (dreapta limitei de pompaj, stanga debitului maxim)."
+ },
+ {
+  "mk": "q2",
+  "def": "Al doilea nivel de incarcare al profilului de functionare anual, procent din debitul nominal; impreuna cu orele alocate reprezinta segmentul intermediar al profilului de sarcina, cel mai frecvent cel mai larg segment pentru instalatii cu variatie moderata de consum.",
+  "teorie": "La debitul $q_2\\%$ cu VFD: $P_2 = P_n \\cdot (q_2/100)^3$ (legea cubica, valabila pentru sarcina predominant hidraulica fara incarcare statica dominanta). Energia consumata pe acest segment: $E_2 = P_{VFD,2} \\cdot h_2$ [kWh]. Comparatia cu vana (la turatie fixa) se face calculand puterea pe curba sistemului la debitul $q_2$ cu vana partial inchisa. In practica, $q_2$ de 60–80% din nominal este punctul unde economia VFD este semnificativa si justifica investitia; la $q_2 > 90\\%$, economia este minima."
+ },
+ {
+  "mk": "Q2",
+  "def": "Debitul obtinut dupa modificarea turatiei sau a diametrului rotorului (trimming), calculat din debitul initial $Q_1$ prin aplicarea legilor de afinitate; valoarea target pe care se regleaza VFD-ul sau la care se dimensioneaza rotorul taiat.",
+  "teorie": "La modificarea turatiei: $Q_2 = Q_1 \\cdot \\frac{n_2}{n_1}$; la trimming: $Q_2 = Q_1 \\cdot \\frac{D_2}{D_1}$. Inaltimea evolueaza ca $H_2 = H_1 \\cdot (n_2/n_1)^2$ respectiv $H_2 = H_1 \\cdot (D_2/D_1)^2$, iar puterea ca $P_2 = P_1 \\cdot (n_2/n_1)^3$ respectiv $P_2 = P_1 \\cdot (D_2/D_1)^3$. La PIF, $Q_2$ este debitul cerut de procesul tehnologic; se calculeaza $n_2/n_1$ necesar si se programeaza ca referinta de viteza in VFD. Trimming-ul rotorului este o solutie alternativa (permanenta) la VFD pentru instalatii cu debit constant mai mic decat cel al pompei disponibile."
+ },
+ {
+  "mk": "q3",
+  "def": "Al treilea nivel de incarcare din profilul de functionare anual, reprezentand de regula debitul maxim sau aproape de nominal; economia VFD fata de vana este cea mai mica in acest segment, dar volumul de energie consumata poate fi semnificativ din cauza puterii ridicate.",
+  "teorie": "La $q_3 \\approx 100\\%$: $P_{VFD} \\approx P_n$, practic egala cu $P_{vana}$, deci economia acestui segment este minima sau nula. Contributia la energia totala anuala: $E_3 = P_n \\cdot h_3$ [kWh]. Desi economia specifica este mica, daca $h_3$ (ore la debit maxim) este mare, se justifica VFD-ul si prin confort operational (pornire lina, eliminarea socului hidraulic). Suma celor trei segmente $E_{total} = E_1 + E_2 + E_3$ da consumul anual; comparatia cu varianta cu vana furnizeaza economia monetara si timpul de recuperare a investitiei."
+ },
+ {
+  "mk": "QBEP",
+  "def": "Debitul la punctul de randament maxim (Best Efficiency Point) al pompei, punctul din curba Q-H unde randamentul hidraulic $\\eta_{hid}$ atinge valoarea de varf; este punctul de proiectare optim recomandat de producator si de ISO 9906.",
+  "teorie": "La BEP, fortele hidrodinamice pe rotor sunt echilibrate: nici recirculare interna (la $Q < Q_{BEP}$), nici supraincarcare si inclinare a palelor (la $Q > Q_{BEP}$). Deviatia fata de BEP creste rapid pierderile si temperatura lagarelor: operarea la $Q < 0{,}7 \\cdot Q_{BEP}$ (sub MCSF — minimum continuous stable flow) produce recirculare, vibratii si cavitatie incipienata chiar la NPSH $> NPSH_r$. La PIF cu VFD, scopul reglajului de turatie este sa deplaseze $Q_{BEP}$ odata cu punctul de functionare, mentinand pompa in zona $\\pm 20\\%$ fata de BEP la turatia de lucru (legea afinitatii deplaseaza BEP proportional cu $n$)."
+ }
+]

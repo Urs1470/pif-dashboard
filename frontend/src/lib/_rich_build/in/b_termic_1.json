@@ -1,0 +1,557 @@
+[
+ {
+  "mk": "Cecon",
+  "key": "Cecon",
+  "family": "asincron",
+  "labels": [
+   "Economie in bani"
+  ],
+  "units": [
+   "lei/an"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Economia anuala exprimata in bani din reducerea consumului la clasa de randament superioara",
+  "ia": "Din energia economisita inmultita cu tariful energiei electrice",
+  "practic": "Transforma economia tehnica in argument financiar direct pentru client la ofertare",
+  "teorie": "Cuantifica in bani castigul anual din alegerea unei clase de randament superioare."
+ },
+ {
+  "mk": "comun:I2",
+  "key": "I2",
+  "family": "comun",
+  "labels": [
+   "Curent segment 2"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Curentul celui de-al doilea segment al ciclului termic de sarcina.",
+  "ia": "Din profilul de sarcina (regimul de lucru intermitent S3-S6).",
+  "practic": "Foloseste la curentul efectiv termic pentru dimensionarea drive-ului.",
+  "teorie": "Curent efectiv = radical(suma I la patrat x timpi / timp total)."
+ },
+ {
+  "mk": "Csav",
+  "key": "Csav",
+  "family": "comun",
+  "labels": [
+   "Economie in bani"
+  ],
+  "units": [
+   "lei/an"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback",
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Economia financiara anuala obtinuta prin trecerea de la vana la VFD.",
+  "ia": "Energia economisita inmultita cu tariful energiei electrice.",
+  "practic": "Argument cheie pentru justificarea investitiei in convertizor.",
+  "teorie": "Csav egal Wsav inmultit cu pretul pe kWh."
+ },
+ {
+  "mk": "DC",
+  "key": "DC",
+  "family": "comun",
+  "labels": [
+   "Durata de conectare (S3)",
+   "Durata de conectare (S3/S6)",
+   "Durata de conectare"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating",
+   "Regimuri de functionare (S2/S3/S6) / Putere admisibila pe tip de serviciu",
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Durata de conectare (factor de serviciu intermitent).",
+  "ia": "Din ciclul real de sarcina (regim S3/S6).",
+  "practic": "La DC < 100% poti incarca motorul peste P_S1: P ∝ 1/√(DC).",
+  "teorie": "Functionarea intermitenta permite supradimensionarea cuplului fiindca incalzirea termica medie ramane sub limita admisa."
+ },
+ {
+  "mk": "dP",
+  "key": "dP",
+  "family": "comun",
+  "labels": [
+   "Economie de putere"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback"
+  ],
+  "def": "Economia de putere obtinuta prin reglaj de turatie cu VFD fata de strangulare.",
+  "ia": "Din diferenta dintre puterea fara VFD si puterea cu VFD la sarcina partiala.",
+  "practic": "Argument de economie la pompe si ventilatoare; mare la sarcini reduse.",
+  "teorie": "Legea afinitatii: puterea scade cu cubul turatiei la pompe si ventilatoare."
+ },
+ {
+  "mk": "dpret",
+  "key": "dpret",
+  "family": "asincron",
+  "labels": [
+   "Diferenta de pret motor"
+  ],
+  "units": [
+   "lei"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Diferenta de pret a motorului premium.",
+  "ia": "Oferta.",
+  "practic": "Payback = Δpret / economia anuala.",
+  "teorie": "Surplusul de pret al motorului premium se compara cu economia de energie pentru a evalua oportunitatea."
+ },
+ {
+  "mk": "Ebudget",
+  "key": "Ebudget",
+  "family": "asincron",
+  "labels": [
+   "Buget termic pornire"
+  ],
+  "units": [
+   "kJ/h"
+  ],
+  "modules": [
+   "Porniri pe ora & energie de pornire / Verificare regim de porniri dese"
+  ],
+  "def": "Bugetul termic orar disponibil pentru porniri, caldura admisa fara depasire termica",
+  "ia": "Din datele motorului sau estimat din masa termica si capacitatea de racire pe ora",
+  "practic": "Sta la baza calculului numarului de porniri admisibile la dimensionare",
+  "teorie": "Reprezinta caldura ce poate fi evacuata intr-o ora peste regimul de sarcina normal"
+ },
+ {
+  "mk": "Estart",
+  "key": "Estart",
+  "family": "asincron",
+  "labels": [
+   "Energie pe pornire"
+  ],
+  "units": [
+   "J"
+  ],
+  "modules": [
+   "Porniri pe ora & energie de pornire / Verificare regim de porniri dese"
+  ],
+  "def": "Energia disipata in motor la o pornire, in principal in rotor si infasurari",
+  "ia": "Din curentul de pornire, rezistente si timpul de pornire, integrata pe durata accelerarii",
+  "practic": "Limiteaza numarul de porniri pe ora si dimensionarea termica la aplicatii cu cicluri dese",
+  "teorie": "La pornire alunecarea mare disipa energie ca in reostat; caldura se concentreaza in rotor"
+ },
+ {
+  "mk": "etahigh",
+  "key": "etahigh",
+  "family": "asincron",
+  "labels": [
+   "Randament clasa superioara"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Randamentul clasei superioare (ex. IE3/IE4).",
+  "ia": "Catalog motor.",
+  "practic": "Economia anuala fata de clasa joasa.",
+  "teorie": "Clasa IE3/IE4 reduce pierderile si consumul; justifica costul suplimentar prin economie pe durata exploatarii."
+ },
+ {
+  "mk": "etalow",
+  "key": "etalow",
+  "family": "asincron",
+  "labels": [
+   "Randament clasa joasa"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Randamentul clasei de eficienta joase (ex. IE2).",
+  "ia": "Catalog motor.",
+  "practic": "Comparatie de economie intre clase IE.",
+  "teorie": "Reper de comparatie pentru clasa IE2; randament mai mic inseamna pierderi si cost energetic mai mare."
+ },
+ {
+  "mk": "falt",
+  "key": "falt",
+  "family": "comun",
+  "labels": [
+   "Factor derating altitudine"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Factor de derating la altitudine.",
+  "ia": "1 − (H−1000)/10000, peste 1000 m.",
+  "practic": "Reduce curentul admisibil; verifica curba producatorului.",
+  "teorie": "Racirea scade cu densitatea aerului la altitudine (~1%/100 m)."
+ },
+ {
+  "mk": "ftemp",
+  "key": "ftemp",
+  "family": "comun",
+  "labels": [
+   "Factor derating temperatura"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Factor de derating la temperatura ambianta.",
+  "ia": "1 − (T−40)/100, peste 40°C.",
+  "practic": "Reduce curentul admisibil ~1%/°C peste 40°C.",
+  "teorie": "Capacitatea de evacuare a caldurii scade cu temperatura mediului."
+ },
+ {
+  "mk": "H",
+  "key": "H",
+  "family": "comun",
+  "labels": [
+   "Altitudine",
+   "Inaltime",
+   "Inaltime (la BEP)"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating",
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea",
+   "Turatie specifica (nq) / Tipul rotorului din n, Q, H",
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP"
+  ],
+  "def": "Inaltimea de pompare (presiunea exprimata in m coloana).",
+  "ia": "Curba pompei / cerinta sistemului.",
+  "practic": "H ∝ n² (afinitate); cu inaltime statica apare o turatie minima utila.",
+  "teorie": "Inaltimea scade cu patratul turatiei, iar puterea cu cubul; baza economiei de energie la reglajul prin invertor."
+ },
+ {
+  "mk": "HVF",
+  "key": "HVF",
+  "family": "asincron",
+  "labels": [
+   "Harmonic Voltage Factor"
+  ],
+  "units": [],
+  "modules": [
+   "Derating motor la armonici (HVF) / Pierdere de putere admisibila pe retea poluata"
+  ],
+  "def": "Factorul armonic de tensiune ce cuantifica efectul termic global al armonicilor de retea",
+  "ia": "Calculat din amplitudinile relative ale armonicilor impartite la ordinul lor, sub radical",
+  "practic": "Indica nivelul de derating al motorului alimentat din retea poluata armonic",
+  "teorie": "Armonicile produc pierderi suplimentare in fier si cupru; efectul scade cu ordinul armonicii"
+ },
+ {
+  "mk": "I1",
+  "key": "I1",
+  "family": "comun",
+  "labels": [
+   "Curent segment 1"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Curentul primului segment al ciclului de sarcina.",
+  "ia": "Din profilul de sarcina (regim intermitent).",
+  "practic": "Intra in calculul curentului termic echivalent.",
+  "teorie": "Primul segment al ciclului defineste solicitarea termica initiala pentru calculul curentului efectiv echivalent."
+ },
+ {
+  "mk": "Iech",
+  "key": "Iech",
+  "family": "comun",
+  "labels": [
+   "Curent termic echivalent"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Curentul termic echivalent (RMS) pe ciclul de sarcina.",
+  "ia": "I_ech = √(Σ I²·t / Σ t).",
+  "practic": "Se compara cu curentul nominal pentru dimensionare termica la sarcini ciclice.",
+  "teorie": "Incalzirea depinde de media patratica a curentului (efect Joule I²t)."
+ },
+ {
+  "mk": "invest",
+  "key": "invest",
+  "family": "comun",
+  "labels": [
+   "Investitie VFD"
+  ],
+  "units": [
+   "lei"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback"
+  ],
+  "def": "Investitia (cost echipament).",
+  "ia": "Oferta.",
+  "practic": "Payback = investitie / economie anuala.",
+  "teorie": "Investitia se compara cu economia anuala deci se calculeaza perioada de recuperare a variatorului la PIF."
+ },
+ {
+  "mk": "losshigh",
+  "key": "losshigh",
+  "family": "asincron",
+  "labels": [
+   "Pierderi clasa superioara"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Pierderile totale ale motorului la clasa de randament superioara, la aceeasi sarcina",
+  "ia": "Din puterea utila si randamentul clasei superioare, analog calculului clasei joase",
+  "practic": "Permite calculul direct al economiei de pierderi si al energiei economisite anual",
+  "teorie": "Pierderile clasei superioare arata caldura disipata redusa si baza de calcul a economiei energetice."
+ },
+ {
+  "mk": "losslow",
+  "key": "losslow",
+  "family": "asincron",
+  "labels": [
+   "Pierderi clasa joasa"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Pierderile totale ale motorului la clasa de randament inferioara, la sarcina data",
+  "ia": "Din puterea utila si randamentul clasei joase: pierderi egal putere ori unu minus randament pe randament",
+  "practic": "Baza de comparatie pentru a cuantifica castigul prin upgrade de clasa de eficienta",
+  "teorie": "Pierderile cuprind cuprul, fierul, mecanice si suplimentare; cele inferioare au pierderi mai mari"
+ },
+ {
+  "mk": "nproc",
+  "key": "nproc",
+  "family": "comun",
+  "labels": [
+   "Turatie proces"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback"
+  ],
+  "def": "Turatia de proces (% din nominal).",
+  "ia": "Cerinta procesului.",
+  "practic": "Economia cu VFD ∝ (n%)³ la sarcina patratica.",
+  "teorie": "Turatia de proces sub nominal aduce economie cubica de putere deci variatorul reduce consumul fata de vana."
+ },
+ {
+  "mk": "nrh",
+  "key": "nrh",
+  "family": "asincron",
+  "labels": [
+   "Porniri admisibile/ora"
+  ],
+  "units": [
+   "1/h"
+  ],
+  "modules": [
+   "Porniri pe ora & energie de pornire / Verificare regim de porniri dese"
+  ],
+  "def": "Numarul maxim de porniri pe ora admisibil termic pentru motor",
+  "ia": "Din bugetul termic de pornire impartit la energia disipata per pornire",
+  "practic": "Critic la pompe, compresoare si benzi cu reporniri dese; evita arderea rotorului",
+  "teorie": "Fiecare pornire injecteaza caldura; racirea intre porniri trebuie sa evacueze surplusul"
+ },
+ {
+  "mk": "ore",
+  "key": "ore",
+  "family": "comun",
+  "labels": [
+   "Ore functionare"
+  ],
+  "units": [
+   "h/an"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback",
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Orele de functionare pe an.",
+  "ia": "Regimul de exploatare.",
+  "practic": "Multiplica economia de putere → economie anuala.",
+  "teorie": "Orele anuale multiplica economia orara deci o functionare indelungata recupereaza rapid costul variatorului."
+ },
+ {
+  "mk": "payback",
+  "key": "payback",
+  "family": "comun",
+  "labels": [
+   "Recuperare investitie"
+  ],
+  "units": [
+   "ani"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback",
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium"
+  ],
+  "def": "Perioada de recuperare a investitiei.",
+  "ia": "Investitie / economia anuala.",
+  "practic": "Sub ~2-3 ani justifica investitia in VFD sau motor premium.",
+  "teorie": "Arata in cati ani economia de energie acopera investitia suplimentara in solutia eficienta."
+ },
+ {
+  "mk": "pret",
+  "key": "pret",
+  "family": "comun",
+  "labels": [
+   "Pret energie"
+  ],
+  "units": [
+   "lei/kWh"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback",
+   "Clase de randament IE & economie / Compara pierderi + payback motor premium",
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Pretul energiei electrice.",
+  "ia": "Factura / contract (lei/kWh).",
+  "practic": "Baza calculului de economie si payback.",
+  "teorie": "Pretul energiei transforma economia de putere in bani deci justifica investitia in variator fata de reglajul prin vana."
+ },
+ {
+  "mk": "Ps1",
+  "key": "Ps1",
+  "family": "comun",
+  "labels": [
+   "Putere in S1",
+   "Putere in S1 (continuu)"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating",
+   "Regimuri de functionare (S2/S3/S6) / Putere admisibila pe tip de serviciu"
+  ],
+  "def": "Puterea in regim continuu S1.",
+  "ia": "Placuta motorului.",
+  "practic": "Baza recalcularii la regim intermitent: P ∝ 1/√(DC).",
+  "teorie": "Defineste puterea termica continua admisa la 100% sarcina nelimitata in timp, baza dimensionarii standard."
+ },
+ {
+  "mk": "PS2",
+  "key": "PS2",
+  "family": "asincron",
+  "labels": [
+   "Putere admisibila S2"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Regimuri de functionare (S2/S3/S6) / Putere admisibila pe tip de serviciu"
+  ],
+  "def": "Puterea admisibila in regim S2 pentru durata data, peste puterea nominala continua",
+  "ia": "Din puterea nominala corectata cu factorul termic specific duratei S2 alese",
+  "practic": "Permite alegerea unui motor mai mic pentru aplicatii cu functionare scurta intermitenta",
+  "teorie": "Cu cat durata S2 e mai scurta, cu atat puterea admisibila creste fata de regim continuu S1"
+ },
+ {
+  "mk": "Ps3",
+  "key": "Ps3",
+  "family": "comun",
+  "labels": [
+   "Putere admisibila S3"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Termic & regimuri / Curent echivalent, regim S3, derating"
+  ],
+  "def": "Puterea admisibila in regim intermitent S3.",
+  "ia": "P_S1 / √(DC/100).",
+  "practic": "Dimensionarea motorului la sarcina intermitenta periodica.",
+  "teorie": "La DC < 100% puterea admisa creste cu 1/√DC fata de regimul continuu."
+ },
+ {
+  "mk": "PS3",
+  "key": "PS3",
+  "family": "asincron",
+  "labels": [
+   "Putere admisibila S3"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Regimuri de functionare (S2/S3/S6) / Putere admisibila pe tip de serviciu"
+  ],
+  "def": "Puterea admisibila in regim intermitent periodic S3 fara influenta pornirii",
+  "ia": "Din puterea nominala si factorul de durata de actionare (cdf), fara contributie de pornire",
+  "practic": "Dimensioneaza motorul pentru cicluri repetate cu pauze, evitand supradimensionarea",
+  "teorie": "In S3 alternanta sarcina-pauza limiteaza temperatura medie; cdf mai mic permite putere mai mare"
+ },
+ {
+  "mk": "PS6",
+  "key": "PS6",
+  "family": "asincron",
+  "labels": [
+   "Putere admisibila S6"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Regimuri de functionare (S2/S3/S6) / Putere admisibila pe tip de serviciu"
+  ],
+  "def": "Puterea admisibila in regim de functionare continua cu sarcina intermitenta S6",
+  "ia": "Din puterea nominala si factorul de durata de actionare, motorul ramanand alimentat in pauze",
+  "practic": "Util la aplicatii cu mers in gol intre incarcari (laminoare, masini-unelte)",
+  "teorie": "In S6 nu exista oprire, doar mers in gol; racirea continua permite suprasarcina periodica"
+ },
+ {
+  "mk": "Pvana",
+  "key": "Pvana",
+  "family": "comun",
+  "labels": [
+   "Putere cu vana (100%)"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Energie & economii VFD / Economie fata de reglaj prin vana/clapeta + payback",
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Puterea cu reglaj prin vana/clapeta (100% debit).",
+  "ia": "Regimul actual, fara VFD.",
+  "practic": "Referinta pentru economia adusa de VFD.",
+  "teorie": "Reglajul prin vana mentine turatia maxima si arde energie pe strangulare deci serveste ca referinta pentru economie."
+ }
+]

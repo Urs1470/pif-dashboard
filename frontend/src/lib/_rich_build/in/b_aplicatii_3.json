@@ -1,0 +1,557 @@
+[
+ {
+  "mk": "marja",
+  "key": "marja",
+  "family": "pompe",
+  "labels": [
+   "Marja",
+   "Marja fata de 15% BEP"
+  ],
+  "units": [
+   "m",
+   "m³/h"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja",
+   "Debit minim stabil (MCSF) / Sub care apare recirculare/instabilitate"
+  ],
+  "def": "Rezerva de siguranta intre NPSH disponibil si cel cerut sau pe debit.",
+  "ia": "Diferenta NPSHa minus NPSHr sau distanta fata de debitul minim.",
+  "practic": "Marja recomandata circa 0.5 pana la 1 m pentru evitarea cavitatiei.",
+  "teorie": "Cavitatie evitata cand NPSHa depaseste NPSHr plus marja."
+ },
+ {
+  "mk": "mcabina",
+  "key": "mcabina",
+  "family": "comun",
+  "labels": [
+   "Masa cabina"
+  ],
+  "units": [
+   "kg"
+  ],
+  "modules": [
+   "Contragreutate (ascensor/macara) / Cuplu net cu echilibrare"
+  ],
+  "def": "Masa proprie a cabinei sau a structurii mobile, fara sarcina utila.",
+  "ia": "Din fisa tehnica a echipamentului sau cantarire.",
+  "practic": "Intra in bilantul de forte; nu o uita la calculul contragreutatii.",
+  "teorie": "Masa cabinei intra in bilantul de forte la ax si in calculul cuplului de ridicare al ascensorului."
+ },
+ {
+  "mk": "mcg",
+  "key": "mcg",
+  "family": "comun",
+  "labels": [
+   "Masa contragreutate"
+  ],
+  "units": [
+   "kg"
+  ],
+  "modules": [
+   "Contragreutate (ascensor/macara) / Cuplu net cu echilibrare"
+  ],
+  "def": "Masa contragreutatii folosita pentru echilibrarea cabinei si a sarcinii.",
+  "ia": "Din proiectul mecanic sau cantarire a blocului de contragreutate.",
+  "practic": "Aleasa pentru gradul de compensare dorit; afecteaza forta neta.",
+  "teorie": "Contragreutatea echilibreaza cabina, reducand cuplul si puterea cerute motorului de ridicare."
+ },
+ {
+  "mk": "Min",
+  "key": "Min",
+  "family": "comun",
+  "labels": [
+   "Cuplu la motor"
+  ],
+  "units": [
+   "Nm"
+  ],
+  "modules": [
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara"
+  ],
+  "def": "Cuplul cerut la arborele de intrare al reductorului, adica la motor.",
+  "ia": "Din cuplul de iesire impartit la raport si randament: Min=Mout/(i*eta).",
+  "practic": "Compara-l cu cuplul nominal al motorului plus rezerva; aici se alege motorul.",
+  "teorie": "Conservarea puterii prin reductor minus pierderile date de randament."
+ },
+ {
+  "mk": "Mload",
+  "key": "Mload",
+  "family": "comun",
+  "labels": [
+   "Cuplu rezistent"
+  ],
+  "units": [
+   "Nm"
+  ],
+  "modules": [
+   "Dinamica (rampe) / Timp de accelerare si energie cinetica",
+   "Porniri pe ora & energie de pornire / Verificare regim de porniri dese"
+  ],
+  "def": "Cuplul rezistent al sarcinii.",
+  "ia": "Din tipul de sarcina (pompa, banda, etc.) sau masurat.",
+  "practic": "Daca depaseste cuplul motorului, motorul nu porneste/accelereaza.",
+  "teorie": "Cuplul rezistent trebuie acoperit permanent; tipul lui (constant, ventilator) dicteaza profilul rampei."
+ },
+ {
+  "mk": "Mout",
+  "key": "Mout",
+  "family": "comun",
+  "labels": [
+   "Cuplu la iesire"
+  ],
+  "units": [
+   "Nm"
+  ],
+  "modules": [
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara"
+  ],
+  "def": "Cuplul disponibil la arborele de iesire al reductorului, catre sarcina.",
+  "ia": "Din cuplul la motor inmultit cu raport si randament, sau din cerinta sarcinii.",
+  "practic": "Verifica sa nu depaseasca cuplul admis al reductorului (rating termic si mecanic).",
+  "teorie": "Multiplicarea cuplului prin raportul de transmitere, redusa de randament."
+ },
+ {
+  "mk": "msarcina",
+  "key": "msarcina",
+  "family": "comun",
+  "labels": [
+   "Masa sarcina"
+  ],
+  "units": [
+   "kg"
+  ],
+  "modules": [
+   "Contragreutate (ascensor/macara) / Cuplu net cu echilibrare"
+  ],
+  "def": "Masa utila transportata, variabila intre gol si plin.",
+  "ia": "Din specificatia de proces sau sarcina nominala admisa.",
+  "practic": "Calculezi cazul cel mai greu si cel mai usor pentru frana si motor.",
+  "teorie": "Sarcina utila se adauga masei cabinei si determina cuplul si puterea de ridicare necesare."
+ },
+ {
+  "mk": "mtot",
+  "key": "mtot",
+  "family": "comun",
+  "labels": [
+   "Masa totala (banda+sarcina)"
+  ],
+  "units": [
+   "kg"
+  ],
+  "modules": [
+   "Transportor cu banda / Forta de tractiune si putere"
+  ],
+  "def": "Masa totala in miscare: banda transportoare plus sarcina utila.",
+  "ia": "Din suma masei benzii, a partilor mobile si a sarcinii.",
+  "practic": "Intra in frecare, panta si inertie; nu omite masa benzii.",
+  "teorie": "Masa totala in miscare determina forta de tractiune si puterea ceruta de banda transportoare."
+ },
+ {
+  "mk": "mu",
+  "key": "mu",
+  "family": "comun",
+  "labels": [
+   "Coeficient de frecare",
+   "Factor de distorsiune"
+  ],
+  "units": [],
+  "modules": [
+   "Transportor cu banda / Forta de tractiune si putere",
+   "Factor de putere front-end VFD / PF real din DPF si THD (punte de diode)"
+  ],
+  "def": "Raport adimensional intre forta de frecare si sarcina normala.",
+  "ia": "Din tabele material-material sau masuratori; tipic 0.1-0.6.",
+  "practic": "Alege valoarea acoperitoare; conditii umede sau murdare o schimba mult.",
+  "teorie": "Coeficient de frecare in modelul Coulomb, static sau dinamic."
+ },
+ {
+  "mk": "mud",
+  "key": "mud",
+  "family": "comun",
+  "labels": [
+   "Frecare dinamica"
+  ],
+  "units": [],
+  "modules": [
+   "Cuplu de frecare & desprindere / Breakaway (stiction) vs cuplu de mers"
+  ],
+  "def": "Coeficientul de frecare in miscare, de regula mai mic decat cel static.",
+  "ia": "Din tabele sau incercari la viteza de lucru.",
+  "practic": "Foloseste-l pentru cuplul de mers; cel static pentru pornire.",
+  "teorie": "Frecarea cinetica este mai mica decat frecarea statica."
+ },
+ {
+  "mk": "n1",
+  "key": "n1",
+  "family": "asincron",
+  "labels": [
+   "Turatie initiala",
+   "Turatie nominala"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Dinamica (rampe) / Timp de accelerare si energie cinetica",
+   "Punct de functionare (curba sistem) / Pompa x sistem cu inaltime statica",
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Turatia initiala / de referinta.",
+  "ia": "Nominala sau masurata.",
+  "practic": "Punct de plecare pentru legile afinitatii.",
+  "teorie": "Turatia initiala este baza legilor de afinitate deci de la ea se calculeaza noul punct la PIF."
+ },
+ {
+  "mk": "n2",
+  "key": "n2",
+  "family": "asincron",
+  "labels": [
+   "Turatie noua",
+   "Turatie finala"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Dinamica (rampe) / Timp de accelerare si energie cinetica",
+   "Rezistenta de franare (dimensionare) / Energie regenerativa la decelerare → evita trip OV DC"
+  ],
+  "def": "Turatia noua / dorita.",
+  "ia": "Cerinta procesului.",
+  "practic": "La pompe Q∝n, H∝n², P∝n³.",
+  "teorie": "Turatia noua dorita defineste prin afinitate debitul inaltimea si puterea deci se programeaza ca referinta in variator."
+ },
+ {
+  "mk": "ncrit",
+  "key": "ncrit",
+  "family": "comun",
+  "labels": [
+   "Turatie critica"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Turatie critica & skip / Rezonanta mecanica si benzi de evitat"
+  ],
+  "def": "Turatia la care arborele intra in rezonanta de incovoiere (turatie critica).",
+  "ia": "Din rigiditatea si masa rotorului sau din catalog producator.",
+  "practic": "Evita stationarea aproape de ea; o traversezi rapid la accelerare.",
+  "teorie": "La turatia critica frecventa de excitatie egaleaza frecventa proprie a arborelui."
+ },
+ {
+  "mk": "ngol",
+  "key": "ngol",
+  "family": "comun",
+  "labels": [
+   "Turatie la diametru gol"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Infasurare / derulare (winder) / Cuplu si turatie vs diametru (putere constanta)"
+  ],
+  "def": "Turatia winderului la diametru gol, cea mai mare din ciclu.",
+  "ia": "Din viteza liniara a benzii si diametrul gol: n=v/(pi*d).",
+  "practic": "Verifica turatia maxima fata de limita motor si VFD la miez.",
+  "teorie": "La diametru mic, aceeasi viteza liniara cere turatie mare."
+ },
+ {
+  "mk": "nin",
+  "key": "nin",
+  "family": "comun",
+  "labels": [
+   "Turatie intrare"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara"
+  ],
+  "def": "Turatia la arborele de intrare al reductorului, adica turatia motorului.",
+  "ia": "De pe placuta motorului sau setarea de viteza la VFD.",
+  "practic": "Impreuna cu raportul da turatia de iesire si viteza liniara.",
+  "teorie": "Turatia de intrare in reductor, raportata la cea de iesire, da raportul de transmisie si cuplul."
+ },
+ {
+  "mk": "nmin",
+  "key": "nmin",
+  "family": "pompe",
+  "labels": [
+   "Turatie minima"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Turatie minima utila / Pragul sub care pompa nu mai da debit"
+  ],
+  "def": "Turatia minima admisa pentru acoperirea inaltimii statice a sistemului.",
+  "ia": "Calcul din inaltimea statica si curba pompei prin afinitate.",
+  "practic": "Sub aceasta turatie pompa nu mai invinge inaltimea statica.",
+  "teorie": "H proportional cu n la patrat; necesita H minim egal Hstatic."
+ },
+ {
+  "mk": "nnom",
+  "key": "nnom",
+  "family": "pompe",
+  "labels": [
+   "Turatie nominala"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Turatie minima utila / Pragul sub care pompa nu mai da debit",
+   "Timp de pornire vs timp termic / Demaraj < timp admis la rotor blocat"
+  ],
+  "def": "Turatia nominala a pompei la frecventa de retea, de pe eticheta.",
+  "ia": "Placuta motor sau fisa pompa la 50 Hz.",
+  "practic": "Referinta pentru calculul turatiei si frecventei de lucru.",
+  "teorie": "La 50 Hz turatia depinde de numarul de poli ai motorului."
+ },
+ {
+  "mk": "nout",
+  "key": "nout",
+  "family": "comun",
+  "labels": [
+   "Turatie iesire"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara"
+  ],
+  "def": "Turatia la arborele de iesire al reductorului, spre sarcina.",
+  "ia": "Din turatia de intrare impartita la raportul reductorului.",
+  "practic": "Verifica sa dea viteza de proces ceruta la tambur sau rola.",
+  "teorie": "Reductorul scade turatia cu raportul si creste cuplul corespunzator."
+ },
+ {
+  "mk": "nplin",
+  "key": "nplin",
+  "family": "comun",
+  "labels": [
+   "Turatie la diametru plin"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Infasurare / derulare (winder) / Cuplu si turatie vs diametru (putere constanta)"
+  ],
+  "def": "Turatia winderului la diametru plin, cea mai mica din ciclu.",
+  "ia": "Din viteza liniara a benzii si diametrul plin: n=v/(pi*d).",
+  "practic": "Defineste raportul de reglaj turatie intre gol si plin (CPR).",
+  "teorie": "La diametru mare, aceeasi viteza liniara cere turatie mica."
+ },
+ {
+  "mk": "NPSHa",
+  "key": "NPSHa",
+  "family": "pompe",
+  "labels": [
+   "NPSH disponibil"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "Sarcina neta pozitiva la aspiratie disponibila in instalatie la intrarea pompei.",
+  "ia": "Calcul din presiune atmosferica, vapori, inaltime aspiratie si pierderi.",
+  "practic": "Trebuie sa depaseasca NPSHr cu marja pentru evitarea cavitatiei.",
+  "teorie": "NPSHa egal patm minus pvap impartit la rho g plus minus Hasp minus Hfrec."
+ },
+ {
+  "mk": "NPSHr",
+  "key": "NPSHr",
+  "family": "pompe",
+  "labels": [
+   "NPSH cerut (la n)"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "Sarcina neta pozitiva la aspiratie ceruta de pompa pentru a evita cavitatia.",
+  "ia": "Curba NPSHr a producatorului, corectata la turatia de lucru.",
+  "practic": "Creste cu debitul; la turatie redusa scade favorabil exploatarii.",
+  "teorie": "NPSHr variaza aproximativ cu patratul turatiei prin legile afinitatii."
+ },
+ {
+  "mk": "NPSHrn",
+  "key": "NPSHrn",
+  "family": "pompe",
+  "labels": [
+   "NPSH cerut (nominal)"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "NPSH cerut de pompa la turatia nominala.",
+  "ia": "Curba producatorului pompei.",
+  "practic": "NPSH_a trebuie sa fie ≥ NPSH_r + marja, altfel cavitatie.",
+  "teorie": "Variatorul reduce turatia deci scade NPSH cerut prevenind cavitatia la PIF cand aspiratia este saraca."
+ },
+ {
+  "mk": "nq",
+  "key": "nq",
+  "family": "pompe",
+  "labels": [
+   "Turatie specifica"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Turatie specifica (nq) / Tipul rotorului din n, Q, H"
+  ],
+  "def": "Turatia specifica a pompei.",
+  "ia": "n_q = n·√Q / H^0.75.",
+  "practic": "Identifica tipul rotorului (radial/mixt/axial) si forma curbei.",
+  "teorie": "Caracterizeaza forma rotorului deci indica daca pompa este radiala sau axiala influentand legile de afinitate."
+ },
+ {
+  "mk": "nratio",
+  "key": "nratio",
+  "family": "pompe",
+  "labels": [
+   "Turatie"
+  ],
+  "units": [
+   "% nom"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "Turatia de lucru exprimata ca procent din turatia nominala a pompei.",
+  "ia": "Comanda VFD; raport intre frecventa de lucru si cea nominala.",
+  "practic": "Reducerea turatiei scade puternic consumul si NPSHr.",
+  "teorie": "Q proportional cu n, H cu n la patrat, P cu n la cub."
+ },
+ {
+  "mk": "nreq",
+  "key": "nreq",
+  "family": "pompe",
+  "labels": [
+   "Turatie ceruta"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Punct de functionare (curba sistem) / Pompa x sistem cu inaltime statica"
+  ],
+  "def": "Turatia ceruta pompei pentru a satisface debitul si inaltimea ceruta.",
+  "ia": "Din legile afinitatii aplicate punctului de functionare dorit.",
+  "practic": "Determina frecventa de setat pe convertizor.",
+  "teorie": "Q proportional cu n; H cu n la patrat fata de punctul nominal."
+ },
+ {
+  "mk": "omega",
+  "key": "omega",
+  "family": "comun",
+  "labels": [
+   "Viteza unghiulara"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Compresor cu piston — volant (GD²) / Inertie pt. limitarea pulsatiei de turatie"
+  ],
+  "def": "Viteza unghiulara mecanica.",
+  "ia": "ω = 2π·n / 60.",
+  "practic": "Leaga cuplul de putere si intra in timpii de rampa.",
+  "teorie": "omega egal 2 pi n impartit la 60; folosita la calculul puterii din cuplu, P egal M ori omega."
+ },
+ {
+  "mk": "P1",
+  "key": "P1",
+  "family": "asincron",
+  "labels": [
+   "Putere la n1",
+   "Putere la D1"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Trimming rotor (taiere diametru) / Echivalent cu reducere de turatie"
+  ],
+  "def": "Puterea la turatia initiala.",
+  "ia": "Nominala.",
+  "practic": "P ∝ n³.",
+  "teorie": "Puterea initiala este referinta deci scaderea ei cu cubul turatiei masoara economia obtinuta cu variatorul."
+ },
+ {
+  "mk": "P2",
+  "key": "P2",
+  "family": "asincron",
+  "labels": [
+   "Putere la n2",
+   "Putere la D2"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Trimming rotor (taiere diametru) / Echivalent cu reducere de turatie"
+  ],
+  "def": "Puterea la turatia noua.",
+  "ia": "Calculat.",
+  "practic": "P2 = P1·(n2/n1)³ — baza economiei VFD.",
+  "teorie": "Puterea noua scade cu cubul turatiei deci verifica ca motorul nu este suprasolicitat la noul punct."
+ },
+ {
+  "mk": "Parb",
+  "key": "Parb",
+  "family": "pompe",
+  "labels": [
+   "Putere la arbore"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea",
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP"
+  ],
+  "def": "Puterea mecanica la arborele pompei, mai mare decat cea hidraulica.",
+  "ia": "Phid impartit la randamentul pompei la debitul de lucru.",
+  "practic": "Determina cuplul cerut si solicitarea arborelui.",
+  "teorie": "Parb egal Phid impartit la etaQ."
+ },
+ {
+  "mk": "patm",
+  "key": "patm",
+  "family": "pompe",
+  "labels": [
+   "Presiune atmosferica"
+  ],
+  "units": [
+   "bar"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "Presiunea atmosferica locala folosita in bilantul NPSH disponibil.",
+  "ia": "Tabel functie de altitudine; circa 1.013 bar la nivelul marii.",
+  "practic": "Scade cu altitudinea, reducand NPSHa la instalatii montane.",
+  "teorie": "Componenta pozitiva dominanta in formula NPSHa."
+ }
+]

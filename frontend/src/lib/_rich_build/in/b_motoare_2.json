@@ -1,0 +1,564 @@
+[
+ {
+  "mk": "Igol",
+  "key": "Igol",
+  "family": "asincron",
+  "labels": [
+   "Curent de gol (estimat ~30%)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Factor de putere vs sarcina / cos φ scade puternic la sarcini partiale"
+  ],
+  "def": "Curentul de mers in gol (de magnetizare).",
+  "ia": "≈ I_n·sin φ_n.",
+  "practic": "Explica de ce cos φ se prabuseste la sarcini mici.",
+  "teorie": "Componenta reactiva pentru magnetizare; la PIF un I0 mare indica intrefier sau tensiune incorecta."
+ },
+ {
+  "mk": "Ilr",
+  "key": "Ilr",
+  "family": "asincron",
+  "labels": [
+   "Rotor blocat: curent"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Curentul absorbit cu rotorul blocat la tensiune redusa, simuland pornirea.",
+  "ia": "Masurat cu rotorul imobilizat mecanic si tensiune redusa pana la curent nominal.",
+  "practic": "Determina reactantele de dispersie si estimeaza curentul de pornire.",
+  "teorie": "Cu rotorul blocat s=1, ramura de magnetizare e neglijabila, curentul curgand prin dispersii si rezistente."
+ },
+ {
+  "mk": "Im",
+  "key": "Im",
+  "family": "asincron",
+  "labels": [
+   "Curent masurat"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere"
+  ],
+  "def": "Curentul de linie masurat efectiv la bornele motorului in functionare",
+  "ia": "Masurat cu cleste ampermetric sau analizor pe faza, in regim stabilizat",
+  "practic": "Baza pentru estimarea incarcarii si verificarea fata de curentul nominal de placuta",
+  "teorie": "Curentul masurat confirma incarcarea reala a motorului si valideaza dimensionarea fata de cea nominala."
+ },
+ {
+  "mk": "Imax",
+  "key": "Imax",
+  "family": "servo",
+  "labels": [
+   "Curent maxim"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "PMSM in slabire de camp / Turatie de baza, curent caracteristic",
+   "Rezistente de pornire in trepte (c.c.) / Numar de trepte si valori (progresie geometrica)"
+  ],
+  "def": "Curentul maxim (de varf).",
+  "ia": "Catalog drive/motor.",
+  "practic": "Limiteaza cuplul de varf si gama de putere constanta.",
+  "teorie": "Curentul maxim de varf limiteaza cuplul de accelerare deci variatorul se dimensioneaza sa il sustina scurt timp."
+ },
+ {
+  "mk": "Imin",
+  "key": "Imin",
+  "family": "cc",
+  "labels": [
+   "Curent la trecere"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Rezistente de pornire in trepte (c.c.) / Numar de trepte si valori (progresie geometrica)"
+  ],
+  "def": "Curentul la care se trece pe treapta urmatoare de pornire",
+  "ia": "Ales peste curentul de sarcina, sub Imax",
+  "practic": "Stabileste momentul scurtcircuitarii unei trepte",
+  "teorie": "Raportul Imax pe Imin defineste ratia treptelor"
+ },
+ {
+  "mk": "imp",
+  "key": "imp",
+  "family": "servo",
+  "labels": [
+   "Impulsuri numarate"
+  ],
+  "units": [],
+  "modules": [
+   "Servo — feedback & dinamica / Encoder, viteza, constante de timp"
+  ],
+  "def": "Impulsuri numarate intr-o fereastra de timp.",
+  "ia": "Din encoder.",
+  "practic": "Turatie = 60·imp/(4·PPR·t).",
+  "teorie": "Impulsurile numarate intr-o fereastra dau turatia deci variatorul calculeaza viteza reala pentru reglajul in bucla inchisa."
+ },
+ {
+  "mk": "In",
+  "key": "In",
+  "family": "asincron",
+  "labels": [
+   "Curent nominal",
+   "Curent nominal motor"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD",
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere",
+   "Armonici & reactoare / Inductanta reactor, cadere, regula THD",
+   "Selectie drive (HD/ND) / Curent si suprasarcina heavy/normal duty",
+   "Model termic motor (I²t) / Timp pana la limita la suprasarcina + racire",
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Curentul nominal al motorului.",
+  "ia": "Placuta motorului.",
+  "practic": "Referinta pentru protectia termica si alegerea convertizorului.",
+  "teorie": "Valoare de dimensionare a invertorului si cablurilor; protectia termica se seteaza in jurul ei."
+ },
+ {
+  "mk": "incI",
+  "key": "incI",
+  "family": "asincron",
+  "labels": [
+   "Incarcare din curent"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere"
+  ],
+  "def": "Gradul de incarcare al motorului estimat din curentul masurat fata de cel nominal",
+  "ia": "Din curentul masurat raportat la curentul nominal de placuta",
+  "practic": "Estimare rapida pe teren a incarcarii, dar inexacta la sarcini mici din cauza magnetizarii",
+  "teorie": "Curentul nu scade liniar cu sarcina: la gol ramane curentul de magnetizare semnificativ"
+ },
+ {
+  "mk": "incP",
+  "key": "incP",
+  "family": "asincron",
+  "labels": [
+   "Incarcare din putere"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere"
+  ],
+  "def": "Gradul de incarcare al motorului estimat din puterea activa absorbita",
+  "ia": "Din puterea activa masurata raportata la puterea de intrare nominala",
+  "practic": "Estimare mai exacta a incarcarii decat din curent, mai ales la sarcini partiale",
+  "teorie": "Puterea activa urmareste mai fidel sarcina mecanica decat curentul total"
+ },
+ {
+  "mk": "Inl",
+  "key": "Inl",
+  "family": "asincron",
+  "labels": [
+   "Gol: curent"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Curentul absorbit de motor in functionare la gol, fara sarcina mecanica.",
+  "ia": "Masurat cu motorul rotind liber la tensiune nominala, fara cuplu rezistent.",
+  "practic": "Indica curentul de magnetizare si verifica pierderile mecanice si in fier.",
+  "teorie": "La gol alunecarea e foarte mica, curentul fiind dominat de magnetizare prin reactanta Xm."
+ },
+ {
+  "mk": "IpDOL",
+  "key": "IpDOL",
+  "family": "asincron",
+  "labels": [
+   "Curent pornire DOL"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Curentul absolut de pornire la pornire directa de la retea",
+  "ia": "Din curentul nominal inmultit cu factorul kDOL de pornire directa",
+  "practic": "Verifica capacitatea retelei, setarea sigurantelor si caderea de tensiune admisibila",
+  "teorie": "Curent maxim dintre metode; solicita puternic reteaua si contactoarele la demaraj"
+ },
+ {
+  "mk": "IpSoft",
+  "key": "IpSoft",
+  "family": "asincron",
+  "labels": [
+   "Curent pornire softstart"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Curentul de pornire limitat de softstarter prin reducerea tensiunii",
+  "ia": "Din curentul de pornire directa scalat cu tensiunea de start aplicata de softstarter",
+  "practic": "Permite pornire lina cu curent controlat, intre DOL si VFD ca performanta",
+  "teorie": "Curentul scade proportional cu tensiunea aplicata, iar cuplul cu patratul tensiunii"
+ },
+ {
+  "mk": "IpVFD",
+  "key": "IpVFD",
+  "family": "asincron",
+  "labels": [
+   "Curent pornire VFD"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Curentul de pornire la alimentare prin convertizor de frecventa",
+  "ia": "Din curentul nominal inmultit cu factorul climit setat in convertizor",
+  "practic": "Cel mai mic curent de pornire; elimina socurile si permite porniri foarte dese",
+  "teorie": "Controlul vectorial mentine flux si cuplu la frecventa joasa fara curent de magnetizare excesiv"
+ },
+ {
+  "mk": "IpY",
+  "key": "IpY",
+  "family": "asincron",
+  "labels": [
+   "Curent pornire stea-triunghi"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Curentul de pornire in conexiune stea la pornirea stea-triunghi",
+  "ia": "Din curentul de pornire directa redus la o treime in conexiune stea",
+  "practic": "Reduce socul de curent si cuplul la o treime; util la pornire in gol sau sarcina mica",
+  "teorie": "In stea tensiunea pe faza scade de radical din 3, deci curentul si cuplul scad la o treime"
+ },
+ {
+  "mk": "Iq",
+  "key": "Iq",
+  "family": "servo",
+  "labels": [
+   "Curent de cuadratura",
+   "Curent axa q"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Servo / PMSM — model de cuplu / Cuplu, back-EMF, frecventa electrica",
+   "IPMSM — cuplu cu reluctanta / Aport reluctanta (Id<0) peste cuplul de magneti"
+  ],
+  "def": "Curentul de cuadratura (axa q).",
+  "ia": "Comanda de cuplu in control vectorial.",
+  "practic": "Componenta producatoare de cuplu (cu I_d = 0 la SPM).",
+  "teorie": "Curentul aliniat in cuadratura cu fluxul produce cuplul in controlul vectorial al PMSM."
+ },
+ {
+  "mk": "Iunb",
+  "key": "Iunb",
+  "family": "asincron",
+  "labels": [
+   "Dezechilibru de curent"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Dezechilibru de tensiune / Derating si supraincalzire (IEC 60034-1)"
+  ],
+  "def": "Dezechilibrul curentilor de faza absorbiti de motor, exprimat procentual.",
+  "ia": "Calculat: abaterea maxima a curentilor de faza fata de medie, in procente.",
+  "practic": "Indica dezechilibru de tensiune sau defect de infasurare; amplifica incalzirea.",
+  "teorie": "Un mic dezechilibru de tensiune produce un dezechilibru de curent de cateva ori mai mare, datorita secventei inverse."
+ },
+ {
+  "mk": "jerk",
+  "key": "jerk",
+  "family": "servo",
+  "labels": [
+   "Jerk"
+  ],
+  "units": [
+   "u/s³"
+  ],
+  "modules": [
+   "Profil de miscare (trapezoidal vs S-curve) / Acceleratie de varf si jerk"
+  ],
+  "def": "Variatia in timp a acceleratiei",
+  "ia": "Calculat sau impus pe profilul S-curve",
+  "practic": "Limitarea lui reduce vibratiile si uzura mecanica",
+  "teorie": "Derivata acceleratiei, a treia derivata a pozitiei"
+ },
+ {
+  "mk": "kDOL",
+  "key": "kDOL",
+  "family": "asincron",
+  "labels": [
+   "Factor pornire DOL"
+  ],
+  "units": [
+   "×Iₙ"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Factorul de curent la pornire directa, raportul curent de pornire la curent nominal",
+  "ia": "Din placuta sau catalog motor; tipic 5 pana la 8 ori curentul nominal",
+  "practic": "Dimensioneaza protectii, cabluri si verifica caderea de tensiune la pornire directa",
+  "teorie": "La pornire directa rotorul blocat se comporta ca un transformator in scurt, curent mare"
+ },
+ {
+  "mk": "Kii",
+  "key": "Kii",
+  "family": "servo",
+  "labels": [
+   "Ki bucla curent"
+  ],
+  "units": [
+   "1/s"
+  ],
+  "modules": [
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Castig integral al regulatorului PI de curent",
+  "ia": "Calculat din rezistenta si banda buclei",
+  "practic": "Elimina eroarea stationara de curent",
+  "teorie": "Kii egal cu wci inmultit cu R, raport Kii pe Kpi egal R pe L"
+ },
+ {
+  "mk": "km",
+  "key": "km",
+  "family": "asincron",
+  "labels": [
+   "Factor cuplu maxim"
+  ],
+  "units": [
+   "×Mₙ"
+  ],
+  "modules": [
+   "Cuplu / Cuplu nominal, de pornire si maxim"
+  ],
+  "def": "Factorul cuplului maxim (multiplu din M_n).",
+  "ia": "Catalog / placuta.",
+  "practic": "Tipic 2-3; marja fata de varfurile de cuplu ale procesului.",
+  "teorie": "km egal Mmax impartit la Mn; rezerva de cuplu inainte de rasturnare, tipic 2 pana la 3."
+ },
+ {
+  "mk": "kp",
+  "key": "kp",
+  "family": "asincron",
+  "labels": [
+   "Factor cuplu pornire"
+  ],
+  "units": [
+   "×Mₙ"
+  ],
+  "modules": [
+   "Cuplu / Cuplu nominal, de pornire si maxim"
+  ],
+  "def": "Factorul cuplului de pornire (multiplu din M_n).",
+  "ia": "Catalog / placuta (clasa NEMA/IEC).",
+  "practic": "Tipic 1.5-2.5; verifica fata de cuplul de desprindere al sarcinii.",
+  "teorie": "kp egal Mp impartit la Mn; arata cat suprasarcina suporta motorul la pornire directa."
+ },
+ {
+  "mk": "kPhi",
+  "key": "kPhi",
+  "family": "cc",
+  "labels": [
+   "Constanta masinii"
+  ],
+  "units": [
+   "V·s/rad"
+  ],
+  "modules": [
+   "Motor c.c. — marimi fundamentale / TCEM, turatie, cuplu, putere (flux constant)",
+   "Convertor c.c. (DC drive) / Redresor comandat, constante de timp"
+  ],
+  "def": "Constanta masinii × fluxul (k·Φ), in SI [V·s/rad = Nm/A].",
+  "ia": "Din datele motorului c.c. / identificare.",
+  "practic": "Leaga E de ω si M de I_a; la flux constant M ∝ I_a.",
+  "teorie": "E egal kPhi inmultit cu omega si M egal kPhi inmultit cu I; leaga tensiunea si cuplul de flux."
+ },
+ {
+  "mk": "Kpi",
+  "key": "Kpi",
+  "family": "servo",
+  "labels": [
+   "Kp bucla curent"
+  ],
+  "units": [
+   "V/A"
+  ],
+  "modules": [
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Castig proportional al regulatorului PI de curent",
+  "ia": "Calculat din inductanta si banda dorita a buclei",
+  "practic": "Se acordeaza pentru raspuns rapid fara depasire de curent",
+  "teorie": "Kpi egal cu wci inmultit cu L pentru anularea polului"
+ },
+ {
+  "mk": "Kpn",
+  "key": "Kpn",
+  "family": "servo",
+  "labels": [
+   "Kp bucla turatie"
+  ],
+  "units": [],
+  "modules": [
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Castig proportional al regulatorului de turatie",
+  "ia": "Calculat din inertie si banda buclei de turatie",
+  "practic": "Mai mare da raspuns ferm dar risca instabilitate si zgomot",
+  "teorie": "Kpn proportional cu J inmultit cu wcn"
+ },
+ {
+  "mk": "kt",
+  "key": "kt",
+  "family": "cc",
+  "labels": [
+   "Constanta cuplu"
+  ],
+  "units": [
+   "Nm/A²"
+  ],
+  "modules": [
+   "Motor c.c. serie / M ~ Ia², n ~ 1/Ia (tractiune)"
+  ],
+  "def": "Constanta de cuplu (model c.c. serie).",
+  "ia": "Date motor.",
+  "practic": "M = k_t·I_a² (pana la saturatie).",
+  "teorie": "Constanta de cuplu leaga curentul de cuplu la c.c. serie deci permite estimarea cuplului din curentul masurat."
+ },
+ {
+  "mk": "Kt",
+  "key": "Kt",
+  "family": "servo",
+  "labels": [
+   "Constanta de cuplu"
+  ],
+  "units": [
+   "Nm/A"
+  ],
+  "modules": [
+   "Servo / PMSM — model de cuplu / Cuplu, back-EMF, frecventa electrica",
+   "Servo — feedback & dinamica / Encoder, viteza, constante de timp",
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Constanta de cuplu (servo/PMSM).",
+  "ia": "Catalog servo (uzual Nm/A_rms).",
+  "practic": "M = K_t·I_q. Ia-o din catalog — nu o recalcula din tensiune.",
+  "teorie": "Kt egal M impartit la Iq; cuplul servo creste liniar cu curentul de cuadratura."
+ },
+ {
+  "mk": "La",
+  "key": "La",
+  "family": "cc",
+  "labels": [
+   "Inductanta indus"
+  ],
+  "units": [
+   "mH"
+  ],
+  "modules": [
+   "Convertor c.c. (DC drive) / Redresor comandat, constante de timp"
+  ],
+  "def": "Inductanta circuitului de indus.",
+  "ia": "Autotuning sau catalog.",
+  "practic": "Constanta de timp electrica τ_a = L_a/R_a (raspunsul curentului).",
+  "teorie": "Inductanta neteziti curentul si limiteaza ondulatia; constanta electrica fixeaza viteza de raspuns a curentului."
+ },
+ {
+  "mk": "Ld",
+  "key": "Ld",
+  "family": "sincron",
+  "labels": [
+   "Inductanta Ld"
+  ],
+  "units": [
+   "H",
+   "mH"
+  ],
+  "modules": [
+   "SynRM / IPM — cuplu de reluctanta / Cuplu si raport de salienta (MTPA la 45°)",
+   "IPMSM — cuplu cu reluctanta / Aport reluctanta (Id<0) peste cuplul de magneti"
+  ],
+  "def": "Inductanta pe axa d (PMSM/sincron).",
+  "ia": "Date motor.",
+  "practic": "Curent caracteristic I_ch = ψ_m/L_d (slabire de camp).",
+  "teorie": "Inductanta pe axa d influenteaza slabirea de camp deci se introduce in model pentru reglajul vectorial al PMSM."
+ },
+ {
+  "mk": "Lq",
+  "key": "Lq",
+  "family": "servo",
+  "labels": [
+   "Inductanta Lq"
+  ],
+  "units": [
+   "mH",
+   "H"
+  ],
+  "modules": [
+   "PMSM in slabire de camp / Turatie de baza, curent caracteristic",
+   "SynRM / IPM — cuplu de reluctanta / Cuplu si raport de salienta (MTPA la 45°)",
+   "IPMSM — cuplu cu reluctanta / Aport reluctanta (Id<0) peste cuplul de magneti"
+  ],
+  "def": "Inductanta pe axa q (PMSM/sincron).",
+  "ia": "Date motor.",
+  "practic": "La IPM (Lq>Ld) apare cuplu de reluctanta.",
+  "teorie": "Inductanta pe axa q determina cuplul deci valoarea ei corecta asigura reglajul vectorial precis al motorului sincron."
+ },
+ {
+  "mk": "M",
+  "key": "M",
+  "family": "cc",
+  "labels": [
+   "Cuplu electromagnetic",
+   "Cuplu",
+   "Cuplu (la n)",
+   "Cuplu (MTPA, 45°)",
+   "Cuplu total"
+  ],
+  "units": [
+   "Nm"
+  ],
+  "modules": [
+   "Motor c.c. — marimi fundamentale / TCEM, turatie, cuplu, putere (flux constant)",
+   "Servo / PMSM — model de cuplu / Cuplu, back-EMF, frecventa electrica",
+   "Motor sincron — putere & cuplu / Unghi de sarcina, cuplu de desprindere",
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2",
+   "Sincron cu poli aparenti / Putere de excitatie + cuplu de reluctanta",
+   "SynRM / IPM — cuplu de reluctanta / Cuplu si raport de salienta (MTPA la 45°)"
+  ],
+  "def": "Cuplul (electromagnetic / la arbore).",
+  "ia": "M = 9550·P / n  (P in kW, n in rpm).",
+  "practic": "Marimea-cheie la potrivirea motor-sarcina.",
+  "teorie": "Cuplul provine din interactiunea flux curent rotor; la PIF il estimezi din curentul activ absorbit."
+ }
+]

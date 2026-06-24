@@ -1,0 +1,20 @@
+{
+ "iec60034-1": "duty type",
+ "iec60034-12": "locked rotor",
+ "iec60034-25": "voltage stress",
+ "iec60034-18-41": "partial discharge",
+ "iec60034-30-1": "efficiency classes",
+ "iec61800-2": "overload",
+ "iec61800-3": null,
+ "iec61800-5-1": "protective",
+ "iec61800-5-2": "Safe torque off",
+ "iec60364-5-52": "current-carrying capacity",
+ "iec60909": "short-circuit current",
+ "iec60204-1": "stop category",
+ "iec61000-3-12": "harmonic current",
+ "iec61000-2": "compatibility level",
+ "iec61000-4-30": "measurement method",
+ "iec60076-1": "rated power",
+ "iso9906": "NPSH",
+ "en50160": "harmonic voltage"
+}

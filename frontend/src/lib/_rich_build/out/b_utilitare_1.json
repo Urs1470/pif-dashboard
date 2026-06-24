@@ -1,0 +1,42 @@
+[
+ {
+  "mk": "hp",
+  "def": "Calul-putere (horsepower, HP) este o unitate non-SI de putere mecanica, definita conventional ca $1\\,\\text{HP} = 745{,}7\\,\\text{W}$, utilizata pe placutele motoarelor de origine americana sau pe documentatia tehnica mai veche; echivalentul european este kilowattul (kW).",
+  "teorie": "Relatia de conversie exacta este $P_{\\text{kW}} = P_{\\text{HP}} \\cdot 0{,}7457$, respectiv $P_{\\text{HP}} = P_{\\text{kW}} / 0{,}7457$. In practica PIF, conversia este necesara la comparatia puterii nominale inscrise pe placuta unui motor de import cu valorile din catalog VFD-ului european: un motor de $10\\,\\text{HP}$ corespunde la $7{,}46\\,\\text{kW}$, deci se alege VFD-ul de $7{,}5\\,\\text{kW}$. IEC 60034-1 impune exprimarea puterii nominale in kW pe placuta masinilor electrice conform standardelor europene; HP apare doar ca referinta suplimentara."
+ },
+ {
+  "mk": "kgf",
+  "def": "Kilogramul-forta (kgf) este o unitate tehnica (non-SI) de forta, definita ca forta exercitata de gravitatia standard ($g_n = 9{,}806\\,65\\,\\text{m/s}^2$) asupra unei mase de un kilogram: $1\\,\\text{kgf} = 9{,}806\\,65\\,\\text{N} \\approx 9{,}81\\,\\text{N}$.",
+  "teorie": "Conversia fundamentala este $F_{\\text{N}} = F_{\\text{kgf}} \\cdot 9{,}81$. Unitatea apare frecvent in documentatia tehnica mai veche (fisele de echipamente, dinamometre cu scara in kgf, calcule de tensiune curele/lant). La PIF, fortele de franare mecanica, tensiunea din curele sau forta de apasare a frenelor liniare sunt uneori date in kgf; conversia in N este obligatorie inainte de a introduce valorile in formulele de cuplu sau putere, deoarece acestea opereaza in unitati SI."
+ },
+ {
+  "mk": "kgfm",
+  "def": "Kilogramul-forta metru (kgf·m) este o unitate tehnica (non-SI) de cuplu, egala cu forta de $1\\,\\text{kgf}$ aplicata la un brat de $1\\,\\text{m}$: $1\\,\\text{kgf}\\cdot\\text{m} = 9{,}806\\,65\\,\\text{N}\\cdot\\text{m} \\approx 9{,}81\\,\\text{N}\\cdot\\text{m}$.",
+  "teorie": "Relatia de conversie este $M_{\\text{Nm}} = M_{\\text{kgfm}} \\cdot 9{,}81$. Unitatea apare pe fise de motoare sau reductoare mai vechi, mai ales de origine est-europeana sau sovietica. La PIF, cuplul de pornire sau cuplul nominal inscris in kgf·m trebuie convertit in N·m pentru a fi comparat cu curentul de pornire calculat prin $M = 9550 \\cdot P/n$ (unde $P$ in kW, $n$ in rpm) sau pentru configurarea limitei de cuplu in VFD. IEC 60034-1 impune exprimarea cuplului in N·m."
+ },
+ {
+  "mk": "kW",
+  "def": "Kilowattul (kW) este unitatea SI de putere electrica sau mecanica echivalenta cu $1000\\,\\text{W}$, folosita ca referinta principala pe placutele motoarelor electrice si in cataloagele echipamentelor conform IEC 60034-1.",
+  "teorie": "Puterea mecanica la arborele motorului se calculeaza cu $P = M \\cdot \\omega = M \\cdot 2\\pi n / 60$, unde $M$ este in N·m si $n$ in rpm, rezultand $P$ in W (impartit cu 1000 => kW); echivalent, $P\\,[\\text{kW}] = M\\,[\\text{N}\\cdot\\text{m}] \\cdot n\\,[\\text{rpm}] / 9550$. La PIF, puterea nominala in kW este parametrul de selectie al VFD-ului si al sigurantelor; un motor de $1\\,\\text{HP} \\approx 0{,}746\\,\\text{kW}$, iar conversia este necesara la echipamentele de import. Valorile tipice pentru actionari industriale: $0{,}37\\,\\text{kW}$ (ventilator mic) pana la sute de kW (compresoare, pompe mari)."
+ },
+ {
+  "mk": "N",
+  "def": "Newtonul (N) este unitatea SI de forta, definita ca forta care imprima unei mase de $1\\,\\text{kg}$ o acceleratie de $1\\,\\text{m/s}^2$: $1\\,\\text{N} = 1\\,\\text{kg}\\cdot\\text{m/s}^2$; in contextul acestui calculator apare atat la conversii de unitati (din kgf) cat si la calculul fortelor normale de contact in mecanismele cu frecare.",
+  "teorie": "Relatia de baza este $F = m \\cdot a$; in camp gravitational standard, greutatea unui kilogram este $G = m \\cdot g_n = 1\\,\\text{kg} \\cdot 9{,}81\\,\\text{m/s}^2 = 9{,}81\\,\\text{N}$. In modulul de cuplu de frecare si desprindere, forta normala $F_N$ determina cuplul de frecare static: $M_{\\text{frictiune}} = \\mu_s \\cdot F_N \\cdot r$, unde $\\mu_s$ este coeficientul de frecare statica si $r$ raza de contact. Neconvertirea corecta a fortelor din kgf in N este o sursa frecventa de erori la PIF, ducand la subdimensionarea cuplului de pornire al VFD-ului."
+ },
+ {
+  "mk": "Nm",
+  "def": "Newton-metrul (N·m) este unitatea SI de cuplu, definita ca momentul fortei de $1\\,\\text{N}$ aplicata la un brat de $1\\,\\text{m}$; reprezinta unitatea de referinta pentru cuplul nominal al motoarelor electrice conform IEC 60034-1 si pentru setarile de cuplu in VFD-uri.",
+  "teorie": "Cuplul la arbore se calculeaza din putere si turatie prin $M\\,[\\text{N}\\cdot\\text{m}] = 9550 \\cdot P\\,[\\text{kW}] / n\\,[\\text{rpm}]$, respectiv $M = P / \\omega$ cu $\\omega = 2\\pi n/60$. Conversia din unitati vechi: $1\\,\\text{kgf}\\cdot\\text{m} = 9{,}81\\,\\text{N}\\cdot\\text{m}$. La PIF, cuplul nominal in N·m este parametrul cheie pentru: (1) verificarea cuplului de pornire fata de cuplul rezistent al sarcinii, (2) setarea limitei de curent/cuplu in VFD, (3) selectia reductorului. Un motor de $4\\,\\text{kW}$ la $1450\\,\\text{rpm}$ dezvolta $M_n = 9550 \\cdot 4/1450 \\approx 26{,}3\\,\\text{N}\\cdot\\text{m}$."
+ },
+ {
+  "mk": "rads",
+  "def": "Viteza unghiulara exprimata in radiani pe secunda (rad/s) este marimea SI care descrie rata de variatie a unghiului de rotatie in timp; se obtine din turatia in rpm prin relatia $\\omega\\,[\\text{rad/s}] = 2\\pi n\\,[\\text{rpm}] / 60$.",
+  "teorie": "Radianul pe secunda este unitatea coerenta a sistemului SI pentru viteza unghiulara, ceea ce permite calculul direct al puterii mecanice prin $P\\,[\\text{W}] = M\\,[\\text{N}\\cdot\\text{m}] \\cdot \\omega\\,[\\text{rad/s}]$, fara factori de conversie. Turatia sincrona a unui motor asincron la $50\\,\\text{Hz}$ cu $p$ perechi de poli este $\\omega_s = 2\\pi f/p$, de exemplu $\\omega_s = 2\\pi \\cdot 50/2 = 157\\,\\text{rad/s}$ pentru $p=2$ (motor 4 poli). La PIF, conversia rpm $\\to$ rad/s este necesara in calculele de inertie ($E_c = J\\omega^2/2$), de frana ($P_{\\text{franare}} = M_f \\cdot \\omega$) si in proiectarea buclei de reglare viteza a VFD-ului."
+ },
+ {
+  "mk": "rpm",
+  "def": "Turatia exprimata in rotatii pe minut (rpm sau rot/min) este marimea practica cea mai utilizata pentru descrierea vitezei de rotatie a unui motor sau arbore; pe placuta motorului conform IEC 60034-1 apare ca $n_n$ (turatia nominala) sau $n_s$ (turatia sincrona).",
+  "teorie": "Turatia sincrona a unui motor asincron trifazat este $n_s = 60 f / p$, unde $f$ este frecventa retelei (50 Hz in Europa) si $p$ numarul de perechi de poli; turatia reala la sarcina nominala este $n_n = n_s(1-s)$, cu alunecarea nominala $s$ tipic $0{,}02\\ldots0{,}08$. Conversia in rad/s se face cu $\\omega = 2\\pi n/60$; conversia in putere: $P = M \\cdot 2\\pi n / 60$. La PIF, turatia este parametrul de verificare imediat dupa energizarea motorului: se masoara cu tahometru si se compara cu valoarea de pe placuta; devierea excesiva indica alunecarea prea mare (suprasarcina) sau polaritatea gresita a unui traductor de viteza."
+ }
+]

@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "Cecon",
+  "def": "Economia financiara anuala (in lei/an) obtinuta prin inlocuirea motorului din clasa de randament inferioara cu unul dintr-o clasa superioara, calculata ca diferenta de pierderi inmultita cu orele de functionare si pretul energiei.",
+  "teorie": "Economia provine din reducerea pierderilor totale: $C_{econ} = (P_{loss,low} - P_{loss,high}) \\cdot ore \\cdot p_{ret}$. Pierderile suplimentare ale clasei inferioare sunt convertite in cost anual, permitand comparatia cu supracostul motorului premium. La PIF, acest indicator justifica recomandarea clasei IE3/IE4 conform IEC 60034-30-1 si se include in oferta tehnico-economica."
+ },
+ {
+  "mk": "comun:I2",
+  "def": "Curentul eficace al celui de-al doilea interval din ciclul periodic de sarcina (regim intermitent S3-S6), reprezentand valoarea RMS a curentului in durata de sarcina a segmentului respectiv.",
+  "teorie": "Curentul termic echivalent al unui ciclu cu $n$ segmente se calculeaza dupa regula efectului Joule: $I_{ech} = \\sqrt{\\frac{\\sum_{i} I_i^2 \\cdot t_i}{\\sum_{i} t_i}}$. Segmentul 2 contribuie proportional cu $I_2^2 \\cdot t_2$ la incalzirea totala a masinii. La PIF, profilul complet de curent al ciclului (S3/S6 conform IEC 60034-1) se impune convertorului, care trebuie sa asigure $I_{ech} \\leq I_{n,VFD}$ la temperatura si altitudinea instalatiei."
+ },
+ {
+  "mk": "Csav",
+  "def": "Economia financiara anuala (lei/an) realizata prin inlocuirea reglajului prin strangulare (vana/clapeta) cu un variator de frecventa, calculata ca produs intre energia economisita si pretul energiei electrice.",
+  "teorie": "La pompe si ventilatoare, puterea absorbita scade cu cubul turatiei relative: $P_{VFD} = P_{vana} \\cdot (n/n_0)^3$. Economia de putere $\\Delta P = P_{vana} - P_{VFD}$ si economia anuala $C_{sav} = \\Delta P \\cdot ore \\cdot p_{ret}$. La aplicatii cu turatie medie de 70-80% din nominal, economia tipica este 35-50% din energia consumata. Calculul la PIF sustine decizia de investitie in VFD si se calculeaza ponderat pe profilul real de sarcina."
+ },
+ {
+  "mk": "DC",
+  "def": "Durata de conectare (Duty Cycle), exprimata procentual, reprezinta raportul dintre durata de functionare sub sarcina si durata totala a ciclului periodic, conform definitiei regimului S3/S6 din IEC 60034-1.",
+  "teorie": "In regim intermitent, incalzirea medie a motorului este proportionala cu $I^2 \\cdot DC/100$, ceea ce permite suprasarcina la $DC < 100\\%$: puterea admisibila creste aproximativ cu $P_{S3} \\approx P_{S1}/\\sqrt{DC/100}$. La rezistenta de franare, DC limiteaza energia disipata pe ciclu si se verifica pe durata ciclului de decelerare repetata. La PIF, DC se verifica atat pentru motor (protectie termica) cat si pentru convertorul de frecventa (curent continuu admisibil in regim pulsat)."
+ },
+ {
+  "mk": "dP",
+  "def": "Economia de putere activa (kW) obtinuta prin reglajul de turatie cu VFD comparativ cu reglajul prin strangulare la aceeasi turatie de proces, reprezentand diferenta dintre puterea consumata cu vana si cea consumata cu variatorul.",
+  "teorie": "La masini cu cuplu patratic (pompe centrifuge, ventilatoare), puterea consumata respecta legea afinitatii: $P \\propto n^3$. Strangularea mentine $n = n_0$ si arde energia pe rezistenta hidraulica a vanei; VFD reduce $n$ si elimina aceasta pierdere: $\\Delta P = P_{vana} - P_{VFD} = P_{S1}\\left[1 - \\left(\\frac{n_{proc}}{n_0}\\right)^3\\right]$. La 80% turatie, economia este ~49%; la 70%, ~66%. Aceasta este baza tehnica a oricarui calcul de eficienta energetica la PIF pentru aplicatii cu turatie variabila."
+ },
+ {
+  "mk": "dpret",
+  "def": "Diferenta de pret (lei) dintre motorul din clasa de randament superioara si motorul echivalent din clasa inferioara, reprezentand investitia suplimentara necesara pentru upgrade-ul de eficienta.",
+  "teorie": "Surplusul de pret al unui motor IE3/IE4 fata de IE2 echivalent se recupereaza prin economia de energie: $payback = \\Delta pret / C_{econ}$ (ani). Conform Regulamentului EU 2019/1781 (si predecesorul EU 640/2009), motoarele de 0.75-375 kW trebuie sa fie cel putin IE3 incepand cu iulie 2023. La PIF, surplusul de pret reprezinta argumentul financiar central in recomandarea clasei de motor si se include obligatoriu in oferta; clasa minima obligatorie conform IEC 60034-30-1."
+ },
+ {
+  "mk": "Ebudget",
+  "def": "Bugetul termic orar disponibil pentru cicluri de pornire (kJ/h), adica caldura maxima pe care motorul o poate absorbi suplimentar, peste regimul termic stationar, intr-o ora de functionare.",
+  "teorie": "La fiecare pornire directa (DOL), energia disipata in rotor este cel putin egala cu energia cinetica acumulata: $E_{start} \\geq \\frac{1}{2} J \\omega_0^2$ (la pornire in gol), cu un supliment dependent de cuplul rezistent. Bugetul termic orar se estimeaza din masa termica si capacitatea de racire: $E_{budget} \\approx (\\theta_{max} - \\theta_{amb}) \\cdot m \\cdot c_p \\cdot K_{racire}$ [kJ/h], unde $K_{racire}$ exprima fractia de caldura evacuabila pe ora. Depasirea bugetului duce la degradarea izolatiei conform legii Arrhenius: fiecare 10 K peste limita injumatateste durata de viata a izolatiei (IEC 60034-1). La PIF, $E_{budget}$ se compara cu $n_{rh} \\cdot E_{start}$ pentru validarea regimului de porniri."
+ },
+ {
+  "mk": "Estart",
+  "def": "Energia termica disipata in motorul asincron la o singura pornire directa (J), in principal sub forma de caldura in rezistentele rotorice si statorice pe durata accelerarii de la zero la turatia nominala.",
+  "teorie": "La pornire directa (DOL), alunecarea mare produce pierderi Joule mari in rotor: energia minima disipata la pornire in gol este $E_{start,gol} = \\frac{1}{2} J \\omega_0^2$, iar cu sarcina rezistenta constanta aceasta se dubleaza. Integral pe durata accelerarii: $E_{start} = \\int_0^{t_{acc}} I_{acc}^2(t) \\cdot R_{eq}\\, dt$. Energia se concentreaza in bara rotorica, ridicand temperatura locala rapid — limita de porniri pe ora este impusa de temperatura maxima admisa a izolatiei (clasa F: 155°C, clasa H: 180°C conform IEC 60034-1). La PIF, $E_{start}$ se verifica fata de $E_{budget}$ si se compara cu pornirea prin soft-starter sau VFD care reduce dramatic energia la pornire."
+ },
+ {
+  "mk": "etahigh",
+  "def": "Randamentul clasei de eficienta superioare (de exemplu IE3 sau IE4) al motorului asincron la sarcina nominala, exprimat procentual, extras din datele de catalog conform IEC 60034-30-1.",
+  "teorie": "Randamentul unui motor asincron la sarcina nominala este $\\eta = P_2 / P_1 = P_2 / (P_2 + P_{Cu1} + P_{Fe} + P_{Cu2} + P_{mec} + P_{add})$. Clasa IE3 impune randamente minime definite in IEC 60034-30-1 (ex: 92.1% la 7.5 kW, 4 poli), iar IE4 adauga inca ~0.3-1% fata de IE3. Reducerea pierderilor se obtine prin sectiuni mai mari de cupru, tole de calitate superioara si geometrie optimizata. La PIF, $\\eta_{high}$ intra direct in calculul de pierderi si economie: $P_{loss,high} = P_2 \\cdot \\frac{1 - \\eta_{high}}{\\eta_{high}}$."
+ },
+ {
+  "mk": "etalow",
+  "def": "Randamentul clasei de eficienta inferioare (de exemplu IE2) al motorului asincron la sarcina nominala, exprimat procentual, folosit ca referinta de comparatie in calculul economiei de energie la upgrade de clasa.",
+  "teorie": "Randamentul IE2 (corespunzator fostei clase High Efficiency conform EN 60034-30:2009) este reper minim acceptat legal in UE pentru motoare de uz general pana in 2023 (Regulamentul EU 2019/1781 impune IE3 de la 0.75 kW, clasificare conform IEC 60034-30-1). Pierderea suplimentara fata de clasa superioara: $\\Delta P_{loss} = P_2 \\cdot \\left(\\frac{1}{\\eta_{low}} - \\frac{1}{\\eta_{high}}\\right)$. La PIF, $\\eta_{low}$ caracterizeaza motorul existent sau motorul de referinta al competitorului, iar diferenta de randament de 1-4% se traduce in economii semnificative la functionare 4000-8000 h/an."
+ },
+ {
+  "mk": "falt",
+  "def": "Factorul de derating (reducere) al curentului admisibil al convertorului sau motorului in functie de altitudinea de instalare, subunitar pentru instalatii peste 1000 m altitudine.",
+  "teorie": "Densitatea aerului scade cu altitudinea (aproximativ $\\rho \\propto e^{-H/8500}$), reducand capacitatea de racire convectiva. Conform IEC 61800-2 si IEC 60034-1, se aplica un factor de derating de aproximativ 1% per 100 m peste 1000 m: $f_{alt} \\approx 1 - (H - 1000)/10000$. Temperatura de jonctiune a componentelor de putere creste la acelasi curent, deci fie curentul se reduce, fie se accepta risc termic crescut. La PIF peste 1000 m altitudine (zona de munte sau statii de altitudine), $f_{alt}$ se aplica obligatoriu si se verifica in catalogul producatorului (unii impun curba specifica)."
+ },
+ {
+  "mk": "ftemp",
+  "def": "Factorul de derating al curentului admisibil al convertorului sau motorului in functie de temperatura ambianta, subunitar pentru temperaturi de instalare peste valoarea nominala de referinta (de regula 40°C).",
+  "teorie": "Temperatura de jonctiune a IGBT-urilor si temperatura infasurarii motorului sunt limitate absolut (ex. 125°C jonctiune IGBT, 155°C izolatie clasa F). La temperatura ambianta $T_a > 40°C$, diferenta $\\theta_{max} - T_a$ scade, reducand caldura evacuabila la acelasi curent: $f_{temp} \\approx 1 - (T_a - 40)/100$ (aproximare liniara; curba exacta variaza per producator). Conform IEC 61800-2, temperatura ambianta nominala de referinta pentru convertoare este 40°C. La PIF in spatii cu temperatura ridicata (camere electrice neracite, climat tropical), $f_{temp}$ poate reduce curentul admisibil cu 5-20% si este factor de dimensionare critic."
+ },
+ {
+  "mk": "H",
+  "def": "Inaltimea de pompare (m coloana lichid), reprezentand energia specifica transferata de pompa lichidului pe unitatea de greutate, incluzand componentele de presiune statica, viteza si cota geometrica.",
+  "teorie": "Inaltimea totala a pompei este $H = \\frac{p_2 - p_1}{\\rho g} + \\frac{v_2^2 - v_1^2}{2g} + z_2 - z_1$ (ecuatia Bernoulli extinsa). Conform legilor afinitatii (similitudine hidraulica): $H \\propto n^2$, deci reducerea turatiei cu 10% reduce inaltimea cu 19%. Punctul de functionare optim (BEP — Best Efficiency Point) minimizeaza pierderile hidraulice si solicitarile axiale; la PIF se verifica operarea pompei in banda $0.7 \\cdot Q_{BEP} \\ldots 1.2 \\cdot Q_{BEP}$ pentru a evita cavitatia si supraincalzirea. Convertorul de frecventa permite deplasarea punctului de operare pe curba caracteristica fara pierderi prin vana."
+ },
+ {
+  "mk": "HVF",
+  "def": "Factorul armonic de tensiune (Harmonic Voltage Factor), marime adimensionala ce cuantifica efectul termic cumulat al armonicilor de tensiune de retea asupra motorului asincron, calculat ca radacina patratica a sumei patratelor tensiunilor armonice relative impartite la ordinul lor.",
+  "teorie": "Formula standardizata: $HVF = \\sqrt{\\sum_{n=5,7,11,...} \\left(\\frac{U_n/U_1}{n}\\right)^2}$. Armonicile de tensiune produc curenti armonici in motor cu amplitudine $I_n \\approx U_n / (n \\cdot X_\\sigma)$, generand pierderi suplimentare in cupru ($\\propto I_n^2$) si in fier. La $HVF > 0.02$ (2%) se impune derating conform IEC 60034-17 (efectul tensiunilor nesinusoidale asupra motoarelor asincrone): factorul de serviciu se reduce pentru a limita temperatura. La PIF, HVF se calculeaza din masuratorile de calitate a energiei (analizor de retea conform IEC 61000-4-7) si determina necesitatea filtrului armonic sau a reactantei de linie."
+ },
+ {
+  "mk": "I1",
+  "def": "Curentul eficace al primului interval din ciclul periodic de sarcina (regim intermitent S3-S6), reprezentand valoarea RMS a curentului absorbit de motor sau impus de convertoare pe durata primului segment de sarcina.",
+  "teorie": "In calculul curentului termic echivalent $I_{ech} = \\sqrt{\\frac{I_1^2 t_1 + I_2^2 t_2 + \\ldots}{t_1 + t_2 + \\ldots}}$, segmentul 1 este de regula segmentul cu sarcina principala (sarcina plina sau accelerare). Caldura produsa in rezistentele motorului este $Q_1 \\propto I_1^2 \\cdot t_1$ (efect Joule). La PIF, $I_1$ se masoara direct cu clestele de curent sau se extrage din caracteristica de sarcina a procesului, iar valoarea sa determina dimensionarea termica a convertorului la regim ciclic."
+ },
+ {
+  "mk": "Iech",
+  "def": "Curentul termic echivalent (valoarea RMS a curentului pe ciclul complet de sarcina), reprezentand curentul continuu care ar produce aceeasi incalzire medie a infasurarilor ca profilul real de curent ciclic.",
+  "teorie": "Definitia formala: $I_{ech} = \\sqrt{\\frac{\\sum_{i=1}^{n} I_i^2 \\cdot t_i}{T_{ciclu}}}$ unde $T_{ciclu} = \\sum t_i$ include si pauzele (cu $I_i = 0$ sau $I_{mers\\ gol}$). Principiul se bazeaza pe efectul Joule: pierderile in cupru sunt $P_{Cu} = I^2 \\cdot R$, deci efectul termic cumulat pe un ciclu este egal cu cel al curentului $I_{ech}$ constant. La PIF, $I_{ech}$ se compara cu curentul nominal al drive-ului corectat cu $f_{alt} \\cdot f_{temp}$; daca $I_{ech} > I_{n,DRIVE}$ drive-ul se supradimensioneaza o treapta. Regim S3 definit in IEC 60034-1."
+ },
+ {
+  "mk": "invest",
+  "def": "Costul total al investitiei in variatorul de frecventa (VFD), incluzand echipamentul principal si accesoriile necesare (reactanta de linie, filtru EMC, cablu, comisionare), exprimat in lei.",
+  "teorie": "Perioada de recuperare a investitiei (payback simplu): $payback = invest / C_{sav}$ (ani). Analiza economica mai riguroasa include valoarea actualizata neta (VAN) si rata interna de rentabilitate (RIR), dar pentru scopuri de ofertare se foloseste payback simplu. Convertoarele moderne sunt clasificate ca sisteme de actionare electrica de putere (PDS) conform IEC 61800-9-2 (Ecodesign), care introduce clase de randament sistem $IE_{C0} \\ldots IE_{C3}$, permitand comparatia sistemica motor+convertor. La PIF, investitia se justifica cand $payback <$ durata de viata a echipamentului (tipic 10-15 ani), iar valoarea sa este argumentul principal fata de client."
+ },
+ {
+  "mk": "losshigh",
+  "def": "Pierderile totale de putere activa (kW) ale motorului din clasa superioara de randament (IE3/IE4) la sarcina nominala, reprezentand diferenta dintre puterea electrica absorbita si puterea mecanica utila la arbore.",
+  "teorie": "Pierderile totale sunt suma componentelor: $P_{loss} = P_{Cu1} + P_{Cu2} + P_{Fe} + P_{mec} + P_{add}$, sau echivalent din randament: $P_{loss,high} = P_2 \\cdot \\frac{1 - \\eta_{high}}{\\eta_{high}}$. Clasa IE3 reduce in principal pierderile in cupru (sectiune mai mare) si in fier (tole de calitate superioara), ducand la $P_{loss,high} < P_{loss,low}$ cu 15-30% la aceeasi putere utila. La PIF, diferenta $P_{loss,low} - P_{loss,high}$ inmultita cu orele de functionare si pretul energiei da economia anuala $C_{econ}$."
+ },
+ {
+  "mk": "losslow",
+  "def": "Pierderile totale de putere activa (kW) ale motorului din clasa inferioara de randament (IE2 sau mai mica) la sarcina nominala, reprezentand caldura totala disipata de motor in mediul ambiant in functionare.",
+  "teorie": "Calculul direct din randament: $P_{loss,low} = P_2 \\cdot \\frac{1 - \\eta_{low}}{\\eta_{low}}$. La motoare IE2 de puteri medii (4-22 kW), randamentul tipic este 86-91%, rezultand pierderi de 10-17% din puterea utila. Componentele principale: pierderi in cupru stator $P_{Cu1} = 3 I_1^2 R_1$ (35-45% din total), pierderi in cupru rotor $P_{Cu2} = s \\cdot P_{em}$ (20-30%), pierderi in fier $P_{Fe}$ (15-25%) si mecanice+suplimentare (5-10%). La PIF, $P_{loss,low}$ este valoarea de referinta care arata motivul tehnic al supraincalzirii la motoarele vechi si baza cuantificarii beneficiilor upgrade-ului."
+ },
+ {
+  "mk": "nproc",
+  "def": "Turatia de regim a procesului, exprimata ca procent din turatia nominala a motorului, reprezentand punctul de operare real cerut de aplicatie la sarcina de proiectare.",
+  "teorie": "Conform legilor de similitudine pentru masini centrifuge (pompe, ventilatoare): $P_{proc} = P_{nom} \\cdot (n_{proc}/100)^3$. Economie de energie relativa fata de functionarea la turatie nominala: $\\eta_{sav} = 1 - (n_{proc}/100)^3$. La $n_{proc} = 80\\%$, economie de ~49%; la $n_{proc} = 70\\%$, economie de ~66%. VFD-ul permite reglarea continua a turatiei, spre deosebire de vana care mentine $n = 100\\%$ si arde energia pe rezistenta hidraulica. La PIF, $n_{proc}$ se determina din cerinta procesului sau masuratori pe instalatia existenta."
+ },
+ {
+  "mk": "nrh",
+  "def": "Numarul maxim de porniri pe ora admisibil termic pentru motorul asincron, determinat de bilantul termic dintre energia disipata la fiecare pornire si capacitatea de racire a motorului intre porniri.",
+  "teorie": "Relatia de baza: $n_{rh} = E_{budget} / E_{start}$ unde $E_{budget}$ este bugetul termic orar si $E_{start}$ energia pe pornire. La motoare standard mici (sub 4 kW) valori tipice: 10-30 porniri/ora; la motoare mari (peste 30 kW) adesea sub 5 porniri/ora din catalog. IEC 60034-1 impune producatorului sa declare $n_{rh}$ pentru porniri la rece si la cald. La PIF, depasirea $n_{rh}$ este cauza frecventa de ardere a motoarelor la pompe de incendiu, compresoare sau benzi transportoare cu cicluri scurte; solutia este soft-starter sau VFD care limiteaza curentul de pornire si reduce $E_{start}$ cu 50-70%."
+ },
+ {
+  "mk": "ore",
+  "def": "Numarul de ore de functionare anuala ale echipamentului (h/an), reprezentand durata totala in care motorul sau sistemul de actionare functioneaza sub sarcina intr-un an calendaristic.",
+  "teorie": "Economia anuala de energie se calculeaza multiplicand economia de putere cu orele de functionare: $W_{sav} = \\Delta P \\cdot ore$ (kWh/an) si $C_{sav} = W_{sav} \\cdot p_{ret}$ (lei/an). Valori tipice de ore/an: functionare continua 24/7 — 8760 h; 3 schimburi — 6000-7000 h; 2 schimburi — 4000 h; 1 schimb — 2000 h. La PIF, orele de functionare sunt factorul principal de sensibilitate in analiza de payback: dublarea orelor halveaza perioada de recuperare, de aceea la procese continue VFD-ul este intotdeauna rentabil fata de strangulare."
+ },
+ {
+  "mk": "payback",
+  "def": "Perioada simpla de recuperare a investitiei (ani), calculata ca raport intre investitia initiala si economia financiara anuala generata de solutia mai eficienta (VFD sau motor premium).",
+  "teorie": "Formula simpla: $payback = invest / C_{sav}$ (ani). Aceasta nu tine cont de valoarea in timp a banilor (fara actualizare), dar este indicatorul standard de decizie rapida in industrie. Valori de referinta: $payback < 2$ ani — investitie excelenta; 2-5 ani — acceptabila; peste 7 ani — greu de justificat. Payback-ul mediu al unui VFD pe aplicatii cu sarcina patratica este 1-3 ani la procese cu 4000+ h/an functionare. La PIF, payback-ul se prezinta clientului alaturi de economia anuala ca argument central de ofertare pentru variatorul de frecventa sau pentru upgrade-ul de clasa motor."
+ },
+ {
+  "mk": "pret",
+  "def": "Pretul mediu al energiei electrice active platit de utilizator (lei/kWh), inclusiv toate componentele tarifului (energie activa, transport, distributie, certificate verzi, taxe), folosit pentru conversia economiei de putere in economie financiara.",
+  "teorie": "Economia financiara anuala se calculeaza ca: $C_{sav} = \\Delta P \\cdot ore \\cdot p_{ret}$ (lei/an) si $C_{econ} = (P_{loss,low} - P_{loss,high}) \\cdot ore \\cdot p_{ret}$ pentru motoare. Pretul energiei industriale in Romania (2024) este tipic 0.5-1.0 lei/kWh (incluzand toate taxele), variind dupa tipul contractului (spot vs contract fix). La PIF, pretul se solicita din factura clientului sau se foloseste valoarea de referinta ANRE; sensibilitatea payback-ului la pret este liniara — dublarea pretului halveaza payback-ul, argument puternic in context de crestere a costurilor energetice."
+ },
+ {
+  "mk": "Ps1",
+  "def": "Puterea nominala a motorului in regim de functionare continua S1 (functionare la sarcina constanta, timp nelimitat, pana la atingerea echilibrului termic), definita conform IEC 60034-1 si inscrisa pe placuta motorului.",
+  "teorie": "In regim S1, temperatura infasurarii atinge valoarea de echilibru $\\theta_{ec} = \\theta_{amb} + P_{loss}/G_{termic}$ unde $G_{termic}$ este conductanta termica a sistemului de racire. Aceasta este baza pentru toate regimurile derivate: $P_{S2} > P_{S1}$ (serviciu scurt), $P_{S3} = P_{S1}/\\sqrt{DC/100}$ (intermitent periodic). La convertoare, $I_{n,S1}$ este curentul nominal de catalog (curent continuu admisibil), iar supraincarcarile temporare (150% / 60 s) sunt definite suplimentar. La PIF, $P_{S1}$ este valoarea fundamentala de referinta pentru orice calcul de dimensionare termica si selectie motor+convertor."
+ },
+ {
+  "mk": "PS2",
+  "def": "Puterea admisibila in regim de functionare de scurta durata S2 (functionare la sarcina constanta pe durata definita, urmata de repaus pana la racire la temperatura ambianta), mai mare decat puterea nominala S1 datorita capacitatii termice a masinii.",
+  "teorie": "In S2, temperatura nu atinge echilibrul termic pe durata de functionare; energia termica se acumuleaza in masa termica a motorului. Relatia termica riguroasa, bazata pe constanta de timp termica $\\tau$, da: $P_{S2} \\approx P_{S1} / \\sqrt{1 - e^{-T_{S2}/\\tau}}$. Valori tipice definite in IEC 60034-1: S2-10min, S2-30min, S2-60min, S2-90min; la 10 minute suprasarcina poate fi de 1.5-2x puterea nominala (depinde de $\\tau$ al motorului, tipic 20-60 min). La PIF, regimul S2 este tipic pentru actionarile de macarale, valve sau mecanisme de pozitionare care functioneaza scurt si au pauze lungi."
+ },
+ {
+  "mk": "Ps3",
+  "def": "Puterea admisibila in regim intermitent periodic S3 (cicluri repetate de sarcina-pauza fara porniri frecvente) pentru un factor de durata de conectare DC dat, depasind puterea nominala S1 datorita pauzelor de racire.",
+  "teorie": "Relatia de dimensionare rapida: $P_{S3} = P_{S1} / \\sqrt{DC/100}$. De exemplu, la $DC = 40\\%$: $P_{S3} = P_{S1}/\\sqrt{0.4} \\approx 1.58 \\cdot P_{S1}$. Aceasta aproximare este valabila cand durata ciclului este mult mai mica decat constanta de timp termica a motorului ($T_{ciclu} \\ll \\tau_{termic}$), situatie tipica in practica (cicluri de 4-10 min vs. $\\tau$ de 20-60 min). Conform IEC 60034-1, valorile standardizate de DC pentru S3 sunt: 15%, 25%, 40%, 60%. La PIF, motorul ales pentru S3 trebuie sa aiba marcata pe placuta mentiunea de regim; nu orice motor S1 poate fi operat in S3 fara verificare termica."
+ },
+ {
+  "mk": "PS3",
+  "def": "Puterea admisibila in regim intermitent periodic S3, calculata cu factorul de durata de actionare (cdf), pentru motoare asincrone in modulul de analiza comparativa a regimurilor de functionare.",
+  "teorie": "In analiza regimurilor de functionare S2/S3/S6, puterea admisibila S3 fara influenta pornirilor se determina cu: $P_{S3} = P_{S1} / \\sqrt{cdf}$ unde $cdf = DC/100$. In comparatie cu S6, regimul S3 implica oprire completa in pauze (curent zero), ceea ce permite racire mai eficienta si deci putere mai mare la acelasi $cdf$. Valorile tipice: la $cdf = 0.25$ (25% DC): $P_{S3} \\approx 2 \\cdot P_{S1}$; la $cdf = 0.60$: $P_{S3} \\approx 1.29 \\cdot P_{S1}$. La PIF, aceasta marime se foloseste pentru verificarea daca motorul existent suporta profilul de sarcina impus de proces, inainte de a recomanda un motor de putere mai mare."
+ },
+ {
+  "mk": "PS6",
+  "def": "Puterea admisibila in regim de functionare continua cu sarcina intermitenta S6 (cicluri repetate de sarcina plina si functionare in gol, fara oprire), pentru un factor de durata de actionare cdf dat.",
+  "teorie": "Spre deosebire de S3, in S6 motorul ramane alimentat si in pauze (mers in gol cu $I_0 \\approx 0.3 \\cdot I_n$), ceea ce reduce castigul termic al pauzelor: $P_{S6} < P_{S3}$ la acelasi $cdf$. Relatia de aproximare: $P_{S6} = P_{S1} / \\sqrt{cdf + (1-cdf) \\cdot (I_0/I_n)^2}$. La mers in gol, pierderile sunt reduse dar nu nule (pierderi in fier + mecanice + cupru stator la $I_0$). Regimul S6 este tipic la masini-unelte (strunguri, freze), laminoare si aplicatii cu avans continuu cu cicluri de sarcina. La PIF, alegerea intre S3 si S6 depinde de tehnologia de process: daca motorul ramane alimentat intre cicluri se aplica S6."
+ },
+ {
+  "mk": "Pvana",
+  "def": "Puterea electrica consumata de motor la functionarea la turatie nominala cu reglaj prin strangulare (vana sau clapeta) la debitul de 100%, reprezentand referinta de consum pentru calculul economiei aduse de VFD.",
+  "teorie": "Cu reglaj prin vana, pompa/ventilatorul functioneaza permanent la $n_0$ (turatie nominala), iar debitul se controleaza prin cresterea rezistentei hidraulice: energia excedentar nu este eliminata, ci disipata pe vana ($P_{vana} \\approx P_{n,motor}$). Prin contrast, cu VFD la turatie redusa: $P_{VFD} = P_{vana} \\cdot (n_{proc}/n_0)^3$. Puterea cu vana la 100% debit este practic puterea nominala a motorului (minus mici pierderi de racire): $P_{vana} \\approx P_n$. La PIF, $P_{vana}$ se masoara direct pe instalatia existenta (analizor de putere) sau se ia din datele de catalog ale pompei la punctul de functionare cu vana deschisa; aceasta valoare este baza de referinta pentru calculul de economie."
+ }
+]

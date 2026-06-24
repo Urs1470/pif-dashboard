@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "marja",
+  "def": "Rezerva de siguranta intre NPSH disponibil (NPSHa) si NPSH cerut de pompa (NPSHr), sau distanta pe axa debitului fata de 15% din debitul la randament maxim (BEP), sub care apare recirculare interna si instabilitate hidraulica.",
+  "teorie": "Conditia de functionare fara cavitatie impune $\\text{NPSHa} \\geq \\text{NPSHr} + \\Delta\\text{NPSH}$, unde marja minima recomandata de ISO 9906 este $\\Delta\\text{NPSH} \\geq 0{,}5 \\div 1{,}0\\,\\text{m}$; in practice se adopta $0{,}5 \\div 2\\,\\text{m}$ in functie de regimul tranzitoriu. Pe axa debitului, marja fata de MCSF (minimum continuous stable flow) este tipic $\\geq 15\\%\\,Q_{BEP}$: sub aceasta limita energia disipata in recirculare produce vibratii, eroziune si supraincalzire — la PIF aceasta marja se verifica la cel mai mic debit de regim impus de VFD."
+ },
+ {
+  "mk": "mcabina",
+  "def": "Masa proprie a cabinei (structura, usi, finisaje, cablaj interior) fara sarcina utila si fara contragreutate, exprimata in kg; intra ca sarcina permanenta in bilantul de forte al sistemului de ridicare.",
+  "teorie": "La un ascensor, forta neta la franghie este $F_{net} = (m_{cabina} + m_{sarcina} - m_{cg}) \\cdot g$; motorul trebuie sa dezvolte cuplul $M = F_{net} \\cdot r_{scripete} / \\eta_{mec}$. Masa cabinei determina gradul de compensare al contragreutatii si, implicit, puterea motorului in cazul cel mai grav (cabina plina, urcand). La PIF, valoarea se verifica prin cantarire directa sau conform fisii tehnice a producatorului, deoarece o eroare de calcul duce la suprasolicitarea motorului sau la alegerea incorecta a franei mecanice (EN 81-20)."
+ },
+ {
+  "mk": "mcg",
+  "def": "Masa blocului de contragreutate, exprimata in kg, dimensionata pentru a echilibra partial sau total cabina plus o fractie din sarcina nominala, reducand efortul motorului.",
+  "teorie": "Gradul de compensare optim (tipic $m_{cg} = m_{cabina} + 0{,}4 \\div 0{,}5 \\cdot m_{sarcina,nom}$) minimizeaza puterea medie a motorului pe un ciclu complet urc-cobor. Forta neta de ridicare devine $F = (m_{cabina} + m_{sarcina} - m_{cg}) \\cdot g$, pozitiva la urcare plina si negativa la urcare goala — in ambele cazuri motorul lucreaza cu putere redusa fata de sistemul necompensat. La PIF se verifica ca motorul poate acoperi ambele cazuri limita (cabina plina si cabina goala) si ca frana de siguranta este corect calibrata conform EN 81-20."
+ },
+ {
+  "mk": "Min",
+  "def": "Cuplul mecanic la arborele de intrare al reductorului, egal cu cuplul furnizat de motor, exprimat in Nm; reprezinta incarcarea cuplica efectiva a motorului la conditiile date ale sarcinii.",
+  "teorie": "Conservarea puterii prin reductor impune $P_{in} = P_{out} / \\eta_{red}$, deci $M_{in} = M_{out} / (i \\cdot \\eta_{red})$, unde $i$ este raportul de transmitere si $\\eta_{red}$ randamentul reductorului (tipic $0{,}94 \\div 0{,}98$ per treapta). La PIF, $M_{in}$ se compara cu cuplul nominal al motorului $M_n = 9550 \\cdot P_n / n_n$; coeficientul de siguranta recomandat este $M_{in} \\leq 0{,}9 \\cdot M_n$ pentru regim continuu S1 (IEC 60034-1). Suprasolicitarea cuplica la pornire se verifica separat fata de cuplul maxim al VFD si al motorului."
+ },
+ {
+  "mk": "Mload",
+  "def": "Cuplul rezistent al sarcinii la arborele motorului, exprimat in Nm; reprezinta suma tuturor cuplurilor opuse miscarii (frecare, sarcina utila, gravitatie) reduse la arborele rapid.",
+  "teorie": "Ecuatia dinamica a actionarii este $M_{motor} - M_{load} = J_{tot} \\cdot \\frac{d\\omega}{dt}$, unde $J_{tot}$ este momentul de inertie total redus la arborele motorului. Tipul curbei $M_{load}(n)$ este esential: cuplu constant (banda, macara) necesita curent constant pe rampa, cuplu ventilator ($M \\propto n^2$) permite pornire usoara dar consuma mult la viteza nominala, cuplu rezistent static (compresoare) necesita cuplu de pornire mare. La PIF, $M_{load}$ se masoara sau se calculeaza si se verifica sa nu depaseasca cuplul limita al VFD la frecvente mici, unde racirea motorului este redusa."
+ },
+ {
+  "mk": "Mout",
+  "def": "Cuplul mecanic la arborele de iesire al reductorului, spre sarcina; este produsul dintre cuplul de intrare, raportul de transmitere si randamentul reductorului, exprimat in Nm.",
+  "teorie": "Relatia fundamentala este $M_{out} = M_{in} \\cdot i \\cdot \\eta_{red}$, cu pierderea $\\Delta P = P_{in} \\cdot (1 - \\eta_{red})$ disipata termic in reductor. La PIF se verifica doua conditii: (1) $M_{out}$ sa nu depaseasca cuplul admis termic si mecanic al reductorului din catalog (IEC 60034); (2) la pornire sau franare dinamica, cuplul tranzitoriu sa nu depaseasca cuplul de varf admis — de regula $2 \\div 2{,}5 \\cdot M_{n,red}$. Suprasolicitarea reductorului este o cauza frecventa de avarie la PIF cand acceleratia este setata prea agresiv."
+ },
+ {
+  "mk": "msarcina",
+  "def": "Masa utila transportata in cabina sau ridicata de macara, variabila intre zero (gol) si valoarea nominala maxima admisa, exprimata in kg.",
+  "teorie": "Sarcina utila determina direct forta de ridicare $F = m_{sarcina} \\cdot g$ si influenteaza bilantul cu contragreutatea: $F_{net} = (m_{cabina} + m_{sarcina} - m_{cg}) \\cdot g$. Cazul critic pentru motor este cabina plina in urcare ($m_{sarcina} = m_{nom}$), iar cazul critic pentru frana de siguranta este cabina goala in cobor (forta negativa). La PIF se parametrizeaza limitatorul de sarcina (load cell sau curent motor) conform EN 81-20 / EN 13001 si se verifica functionarea la 100% si 110% din sarcina nominala."
+ },
+ {
+  "mk": "mtot",
+  "def": "Masa totala in miscare pe un transportor cu banda, suma dintre masa proprie a benzii (inclusiv partile rotative: role, tamburi) si masa sarcinii utile distribuite pe banda, exprimata in kg.",
+  "teorie": "Forta de tractiune necesara este $F = \\mu \\cdot m_{tot} \\cdot g \\cdot \\cos\\theta + m_{sarcina} \\cdot g \\cdot \\sin\\theta + F_{rigiditate}$, iar puterea la arbore $P = F \\cdot v / \\eta_{red}$. Masa benzii este de regula $30 \\div 60\\%$ din masa totala si nu trebuie neglijata la pornire, deoarece energia cinetica $E_c = \\frac{1}{2} m_{tot} v^2$ dicteaza timpul de rampa minim fara alunecare. La PIF, inertia totala redusa la motor determina setarea rampei de accelerare si se verifica ca cuplul de pornire al VFD acopere $M_{start} = F \\cdot r_{tambur} / \\eta$ cu marja de $\\geq 20\\%$."
+ },
+ {
+  "mk": "mu",
+  "def": "Coeficient adimensional care descrie raportul dintre forta de frecare si forta normala (model Coulomb), utilizat atat la calculul fortei de tractiune a benzilor transportoare cat si ca factor de distorsiune in calculul factorului de putere real al unui convertizor cu punte de diode.",
+  "teorie": "In mecanica, legea Coulomb: $F_{frecare} = \\mu \\cdot F_{normala}$, cu valori tipice $\\mu = 0{,}1 \\div 0{,}25$ (role pe sine lubrifiate) pana la $0{,}5 \\div 0{,}6$ (cauciuc pe beton uscat); umezeala sau contaminarea poate reduce $\\mu$ la $0{,}05$, ducand la alunecare. In analiza armonicilor unui VFD cu punte de diode (IEC 61000-3-12), factorul de distorsiune $\\mu = 1 / \\sqrt{1 + THD_I^2}$ leaga $\\cos\\varphi_{real} = DPF \\cdot \\mu$ de factorul de deplasare $DPF$ si de distorsiunea armonica $THD_I$; la convertizoare tipice $THD_I = 30 \\div 50\\%$ deci $\\mu \\approx 0{,}89 \\div 0{,}97$. La PIF se aleg valorile corespunzatoare conditiilor reale de exploatare."
+ },
+ {
+  "mk": "mud",
+  "def": "Coeficientul de frecare cinetic (dinamic), valabil in timpul miscarii relative intre suprafete, intotdeauna mai mic decat coeficientul de frecare static (de desprindere), adimensional.",
+  "teorie": "In modelul clasic Coulomb-Amontons, $F_{kinetic} = \\mu_d \\cdot F_n$ cu $\\mu_d < \\mu_s$; diferenta $\\mu_s - \\mu_d$ produce efectul de stick-slip care cauzeaza vibratii la viteze mici (problematic la servo si la actionari cu VFD la frecvente joase). Valori tipice: otel-otel lubrifiat $\\mu_d \\approx 0{,}05 \\div 0{,}10$, bronz-otel $\\mu_d \\approx 0{,}08 \\div 0{,}12$, cauciuc-metal uscat $\\mu_d \\approx 0{,}4 \\div 0{,}6$. La PIF se foloseste $\\mu_d$ pentru calculul cuplului de mers continuu $M_{mers} = \\mu_d \\cdot F_n \\cdot r$ si $\\mu_s$ pentru cuplul de desprindere la pornire — distinctia este critica la alegerea cuplului de varf al VFD si la setarea boost-ului de tensiune la frecventa zero."
+ },
+ {
+  "mk": "n1",
+  "def": "Turatia initiala (de referinta) a pompei sau ventilatorului, exprimata in rpm, fata de care se aplica legile de afinitate pentru calculul debitului, inaltimii si puterii la turatia noua; poate fi turatia nominala de pe eticheta sau o turatie de regim masurata.",
+  "teorie": "Legile de afinitate (ISO 9906 pentru pompe rotordinamice) stabilesc: $Q_2/Q_1 = n_2/n_1$, $H_2/H_1 = (n_2/n_1)^2$, $P_2/P_1 = (n_2/n_1)^3$. La dinamica rampei, $n_1$ este turatia de la care incepe decelerarea si determina energia cinetica $E_c = \\frac{1}{2} J \\omega_1^2$ ce trebuie disipata in rezistenta de franare sau recuperata regenerativ. La PIF, $n_1$ se citeste de pe placa motorului sau se masoara cu tahometru si se introduce in VFD ca referinta pentru scalarea parametrilor de reglaj."
+ },
+ {
+  "mk": "n2",
+  "def": "Turatia noua (dorita) la care urmeaza sa functioneze pompa sau ventilatorul dupa reglajul cu VFD sau dupa taierea rotorului, exprimata in rpm; defineste noul punct de functionare in raport cu $n_1$.",
+  "teorie": "Din legile de afinitate rezulta: $Q_2 = Q_1 \\cdot (n_2/n_1)$, $H_2 = H_1 \\cdot (n_2/n_1)^2$, $P_2 = P_1 \\cdot (n_2/n_1)^3$, deci o reducere de turatie de la $n_1$ la $n_2 = 0{,}8 \\cdot n_1$ reduce puterea la $51{,}2\\%$. Economia energetica este motivul principal al instalarii VFD pe pompe si ventilatoare (IEC 61800-9-2 eficienta sistem). La PIF, $n_2$ se programeaza ca referinta de viteza maxima sau ca set-point PID si se verifica ca punctul $(Q_2, H_2)$ se afla pe curba pompei la $n_2$, nu la dreapta ei unde randamentul scade."
+ },
+ {
+  "mk": "ncrit",
+  "def": "Turatia critica de incovoiere a arborelui, la care frecventa de rotatie coincide cu prima frecventa proprie de incovoiere a sistemului rotor-arbore-lagare, producand rezonanta mecanica si amplitudini mari de vibratie, exprimata in rpm.",
+  "teorie": "Prima turatie critica se estimeaza prin formula Rankine-Dunkerley: $n_{crit} = 30/\\pi \\cdot \\sqrt{g / \\delta_{static}}$, unde $\\delta_{static}$ este sageata statica a arborelui sub greutatea rotorului. In practica, $n_{crit}$ se determina experimental cu accelerometre sau din catalogul producatorului. VFD-ul permite trecerea rapida prin zona critica cu rampa accelerata si evitarea stationarii in banda $n_{crit} \\pm 5 \\div 10\\%$ prin functia de skip frequency (parametru standard in toate VFD-urile ABB/Siemens). La PIF se programeaza cel putin o banda de evitare si se verifica prin proba de accelerare cu masurare vibratie (ISO 10816-3)."
+ },
+ {
+  "mk": "ngol",
+  "def": "Turatia de rotatie a winderului (bobinatorului) corespunzatoare diametrului minim (miez gol), cea mai mare turatie din ciclul de infasurare, exprimata in rpm.",
+  "teorie": "La viteza liniara constanta a benzii $v$, turatia winderului variaza invers proportional cu diametrul instantaneu $D$: $n = \\frac{60 \\cdot v}{\\pi \\cdot D}$, deci la $D_{min}$ (miez gol) turatia este maxima: $n_{gol} = 60v/(\\pi D_{gol})$. Raportul de variatia turatii $CPR = n_{gol}/n_{plin}$ trebuie sa fie in domeniul de reglaj al VFD si sub turatia maxima admisa a motorului (de regula $n_{max} = 1{,}2 \\div 1{,}5 \\cdot n_n$ pentru motoare standard IEC 60034). La PIF se verifica ca $n_{gol}$ nu depaseste limita mecanica a arborelui si a mandrinei si ca VFD-ul poate furniza cuplul cerut la turatia maxima cu tensiune suficienta."
+ },
+ {
+  "mk": "nin",
+  "def": "Turatia la arborele de intrare al reductorului, identica cu turatia motorului, exprimata in rpm; reprezinta viteza rapida din transmisie.",
+  "teorie": "Raportul de transmitere al reductorului este definit prin $i = n_{in}/n_{out} = M_{out}/(M_{in} \\cdot \\eta_{red})$. Cuplul se transforma invers: $M_{out} = M_{in} \\cdot i \\cdot \\eta_{red}$, iar puterea se conserva minus pierderile: $P_{out} = P_{in} \\cdot \\eta_{red}$. La PIF, $n_{in}$ se obtine din referinta VFD sau de pe placa motorului si se verifica sa nu depaseasca turatia maxima admisa de reductor la intrare (din catalog, functie de tipul rulmentilor si al ungerii). Turatia de intrare determina si frecventa de excitatie a dintilor ($f_{dinti} = n_{in} \\cdot z / 60$) relevanta pentru analiza vibratiilor."
+ },
+ {
+  "mk": "nmin",
+  "def": "Turatia minima utila a pompei controlata prin VFD, sub care pompa nu mai poate depasi inaltimea statica a sistemului si debitul util devine zero, exprimata in rpm.",
+  "teorie": "Curba pompei la turatia $n$ este $H(Q,n) = H_0 \\cdot (n/n_n)^2 - k \\cdot Q^2$; la $Q = 0$ si $H = H_{static}$, turatia minima rezulta din $H_{static} = H_{0n} \\cdot (n_{min}/n_n)^2$, deci $n_{min} = n_n \\cdot \\sqrt{H_{static}/H_{0n}}$. Sub $n_{min}$ pompa nu invinge inaltimea statica si poate functiona cu debit zero sau chiar poate lucra ca turbina — situatie periculoasa ce produce supraincalzire si cavitatie. La PIF, frecventa minima a VFD ($f_{min}$) se seteaza astfel incat $n_{min} = n_n \\cdot f_{min}/50$ sa depaseasca pragul calculat cu marja de $5 \\div 10\\%$."
+ },
+ {
+  "mk": "nnom",
+  "def": "Turatia nominala a pompei / motorului la frecventa nominala de retea (50 Hz), de pe eticheta motorului sau din fisa tehnica a pompei, exprimata in rpm; reprezinta punctul de referinta pentru toate calculele de afinitate si de dimensionare.",
+  "teorie": "Pentru un motor asincron cu $p$ perechi de poli, turatia sincrona este $n_s = 3000/p$ rpm la 50 Hz, iar turatia nominala cu alunecare nominala $s_n$ este $n_n = n_s \\cdot (1 - s_n)$; tipic $s_n = 2 \\div 5\\%$ deci $n_n = 1450{,}\\,2900{,}\\,960$ rpm pentru 4, 2, 6 poli (IEC 60034-1). La verificarea timpului de pornire in raport cu protectia termica de rotor blocat ($t_{start} \\leq t_{E}$ conform IEC 60034-12), $n_n$ defineste viteza la care motorul trece din regim de pornire in regim normal si curentul scade sub $I_n$. La PIF este referinta absoluta pentru scalarea frecventei convertizorului."
+ },
+ {
+  "mk": "nout",
+  "def": "Turatia la arborele de iesire al reductorului, spre sarcina (tambur, rola, melc etc.), exprimata in rpm; este turatia lenta a transmisiei.",
+  "teorie": "Relatia de baza: $n_{out} = n_{in} / i$, unde $i > 1$ pentru reductoare (demultiplicare). Viteza liniara la periferia tamburului sau a rolei de iesire este $v = \\pi \\cdot D_{tambur} \\cdot n_{out} / 60$. La PIF, $n_{out}$ se verifica prin masurare directa (tahometru pe arborele lent) si se compara cu valoarea calculata — o diferenta > 2% indica uzura sau joc excesiv in cuplaj. Prin monitorizarea $n_{out}$ la VFD (encoder pe arborele lent sau calcul din $n_{in}$ cu $i$ cunoscut) se poate implementa controlul in bucla inchisa de viteza al procesului."
+ },
+ {
+  "mk": "nplin",
+  "def": "Turatia de rotatie a winderului corespunzatoare diametrului maxim (rola plina), cea mai mica turatie din ciclul de infasurare, exprimata in rpm.",
+  "teorie": "La viteza liniara constanta a benzii $v$, turatia la rola plina este $n_{plin} = 60v/(\\pi D_{plin})$, cea mai mica din ciclu. Raportul $CPR = n_{gol}/n_{plin} = D_{plin}/D_{gol}$ (constant-power range) trebuie sa fie acoperit de domeniul de reglaj al VFD; pentru winder tipic $CPR = 3 \\div 10$. In zona de putere constanta ($n > n_n$, slabire camp la motor CC sau la motor sincron cu magneti permanenti), cuplul scade proportional cu $1/n$, deci tensiunea benzii $T = M/r$ ramane aproximativ constanta daca motorul functioneaza in zona de slabire corecta. La PIF se verifica profilul $M(D)$ si se calibreaza reglatorul de tensiune banda (tension controller)."
+ },
+ {
+  "mk": "NPSHa",
+  "def": "NPSH disponibil (Net Positive Suction Head available): sarcina hidrodinamica neta la flansa de aspiratie a pompei, disponibila in instalatie, exprimata in metri coloana de lichid; reprezinta marja de presiune fata de tensiunea de vaporizare a lichidului la temperatura de lucru.",
+  "teorie": "Formula de calcul conform ISO 9906: $\\text{NPSHa} = \\frac{p_{atm} - p_{vap}}{\\rho g} - H_{asp} - \\sum h_{f,asp}$, unde $p_{atm}$ este presiunea la suprafata libera, $p_{vap}$ tensiunea de vapori, $H_{asp}$ inaltimea de aspiratie (pozitiva la aspiratie sub pompa) si $\\sum h_{f,asp}$ pierderile de sarcina pe conducta de aspiratie. NPSHa trebuie sa depaseasca NPSHr cu marja: $\\text{NPSHa} \\geq \\text{NPSHr} + \\Delta h$ (tipic $\\Delta h \\geq 0{,}5 \\div 1{,}0\\,\\text{m}$). La PIF, NPSHa se calculeaza la debitul maxim si la temperatura maxima a lichidului, ambele agravand conditia — reducerea turatii cu VFD scade NPSHr si amelioreaza marja."
+ },
+ {
+  "mk": "NPSHr",
+  "def": "NPSH cerut (Net Positive Suction Head required): sarcina minima necesara la flansa de aspiratie a pompei pentru a evita cavitatia, la turatia si debitul de lucru, exprimata in metri; este caracteristica pompei, furnizata de producator.",
+  "teorie": "NPSHr variaza cu debitul si cu turatia conform relatiei de afinitate: $\\text{NPSHr}(n_2) = \\text{NPSHr}(n_1) \\cdot (n_2/n_1)^2$; la turatii reduse impuse de VFD, NPSHr scade semnificativ, imbunatatind marja anticavitatie. Curba NPSHr vs $Q$ furnizata de producator (la $n_n$) atinge un minim la BEP si creste spre debitele mari si mici; la PIF se corecteaza curba la turatia de lucru $n_{lucru}$ prin scalare cu $(n_{lucru}/n_n)^2$ si se suprapune cu NPSHa pentru a identifica debitul maxim sigur. Depasirea NPSHr produce vaporizare locala la rotor, implozie bulelor si eroziune (pitting) conform ISO 9906."
+ },
+ {
+  "mk": "NPSHrn",
+  "def": "NPSH cerut de pompa la turatia nominala (de pe eticheta), la debitul de lucru, citit direct de pe curba producatorului fara corectie de turatie, exprimat in metri.",
+  "teorie": "NPSHrn este valoarea de referinta din catalogul pompei (ISO 9906, clasa 1 sau 2); la alte turatii se scaleaza: $\\text{NPSHr}(n) = \\text{NPSHr}_n \\cdot (n/n_n)^2$. La PIF cu VFD, lucrul la $n < n_n$ reduce NPSHr sub NPSHrn, oferind o rezerva suplimentara utila mai ales la instalatiile cu aspiratie slaba (altitudine, lichid cald, conducte lungi). Conditia de siguranta globala ramane $\\text{NPSHa} \\geq \\text{NPSHr}(n_{lucru}) + 0{,}5\\,\\text{m}$; la punerea in functiune se masoara presiunea la aspiratie si se compara cu valoarea calculata pentru validarea bilantului hidraulic."
+ },
+ {
+  "mk": "nq",
+  "def": "Turatia specifica hidraulica a pompei centrifuge, indice adimensional care caracterizeaza tipul geometric al rotorului (radial, mixt sau axial) si forma curbei caracteristice H-Q, calculata conform ISO 9906.",
+  "teorie": "Formula ISO: $n_q = n \\cdot \\sqrt{Q} / H^{0{,}75}$ (cu $n$ in rpm, $Q$ in m³/s, $H$ in m). Domeniile tipice: $n_q < 25$ — rotor radial, curba H-Q abrupt descrescatoare, susceptibil la instabilitate la debit mic; $n_q = 25 \\div 80$ — rotor mixt, curba H-Q moderata; $n_q > 80$ — rotor axial, curba H-Q plata sau cu instabilitate (curba in S). La PIF, cunoasterea $n_q$ permite anticiparea comportamentului pompei in zona de debit mic (recirculare) si alegerea corecta a MCSF; pompe cu $n_q < 20$ sunt predispuse la curba H-Q cu maxim interior (hunching) care poate provoca instabilitate in sistem."
+ },
+ {
+  "mk": "nratio",
+  "def": "Turatia de lucru a pompei exprimata ca procent din turatia nominala, adimensional (% nom); reflecta direct raportul de frecventa setat pe convertizorul de frecventa.",
+  "teorie": "La $f_{VFD}/f_{50} = n_{ratio}/100$, legile de afinitate dau: $Q = Q_n \\cdot (n_{ratio}/100)$, $H = H_n \\cdot (n_{ratio}/100)^2$, $P = P_n \\cdot (n_{ratio}/100)^3$. Economia de energie fata de reglajul prin vana este $\\Delta P = P_n \\cdot [1 - (n_{ratio}/100)^3]$; la $n_{ratio} = 80\\%$ se economiseste aproximativ $49\\%$ din putere. La PIF, $n_{ratio}$ minim se seteaza pentru a asigura depasirea inaltimii statice si functionarea deasupra MCSF; $n_{ratio}$ maxim (de regula $100 \\div 105\\%$) se limiteaza pentru a nu suprasolicita motorul si pentru a mentine NPSHr < NPSHa."
+ },
+ {
+  "mk": "nreq",
+  "def": "Turatia ceruta pompei pentru a satisface simultan debitul si inaltimea cerute de sistem, calculata prin aplicarea inversa a legilor de afinitate fata de punctul nominal, exprimata in rpm.",
+  "teorie": "Din intersectia curbei pompei scalate cu curba sistemului, se determina $n_{req}$ astfel incat $Q_{cerut} = Q_n \\cdot (n_{req}/n_n)$ si $H_{cerut} = H_n \\cdot (n_{req}/n_n)^2 + H_{static}$. Frecventa corespunzatoare de setat pe VFD este $f_{req} = 50 \\cdot n_{req}/n_n$. La PIF, $n_{req}$ se verifica prin masurare la debitmetre si manometre dupa reglaj; daca punctul real difera de cel calculat, cauza este erorile de estimare a curbei sistemului (depuneri, valve partial inchise) si nu defectul pompei sau al VFD-ului."
+ },
+ {
+  "mk": "omega",
+  "def": "Viteza unghiulara mecanica a arborelui motorului sau al compresoarei, exprimata in rad/s; legatura directa intre turatia in rpm si marimile mecanice (cuplu, putere, inertie).",
+  "teorie": "Conversia din turatie: $\\omega = 2\\pi n / 60$; puterea mecanica la arbore: $P = M \\cdot \\omega$; energia cinetica stocata in masa rotanta: $E_c = \\frac{1}{2} J \\omega^2$. La un compresor cu piston echipat cu volant (GD²), neuniformitatea turatiei intre cursa activa si pasiva se exprima ca $\\delta = \\Delta\\omega / \\omega_{med}$; volantul necesar este $GD^2 = 375 P / (\\omega \\cdot n \\cdot \\delta)$ (formula clasica IEC). La PIF, $\\omega$ intra in calculul timpilor de rampa $t_{acc} = J_{tot} \\cdot \\Delta\\omega / M_{acc}$ si in setarea protectiei la supravieza a VFD (parametru $\\omega_{max}$)."
+ },
+ {
+  "mk": "P1",
+  "def": "Puterea absorbita de pompa sau ventilator la turatia initiala $n_1$ (sau diametrul initial $D_1$ la trimming), exprimata in kW; reprezinta consumul de referinta inainte de reglaj.",
+  "teorie": "Din legile de afinitate: $P_2/P_1 = (n_2/n_1)^3$ (sau $(D_2/D_1)^3$ la trimming). $P_1$ se masoara la pornire prin produsul $P_1 = \\sqrt{3} \\cdot U \\cdot I_1 \\cdot \\cos\\varphi_1 \\cdot \\eta_{motor}$ sau cu wattmetru la arborele pompei. La PIF, $P_1$ este punctul de plecare pentru justificarea economica a VFD: daca procesul functioneaza la $n_2 = 0{,}8 n_1$, economia anuala de energie este $\\Delta P = P_1 [1-(n_2/n_1)^3] = 0{,}488 P_1$ inmultita cu orele de functionare si tariful energiei (IEC 61800-9-2 clasa IE2 sistem)."
+ },
+ {
+  "mk": "P2",
+  "def": "Puterea absorbita de pompa sau ventilator la turatia noua $n_2$ (sau diametrul taiat $D_2$ la trimming), exprimata in kW; reprezinta consumul dupa reglaj, intotdeauna mai mic decat $P_1$.",
+  "teorie": "Relatia de afinitate: $P_2 = P_1 \\cdot (n_2/n_1)^3$ (sau $P_2 = P_1 \\cdot (D_2/D_1)^3$ pentru trimming, cu aproximatie mai mica de precizie). Trimmingul rotorului este o solutie permanenta si ireversibila — VFD-ul permite reglaj continuu si reversibil. La PIF cu VFD, $P_2$ se verifica prin masurare efectiva (analizor de putere pe tabloul MCC sau display VFD) si trebuie sa corespunda cu valoarea calculata in limita $\\pm 5\\%$; o diferenta mai mare indica ca pompa nu functioneaza la punctul estimat pe curba H-Q (sistem real diferit de cel proiectat)."
+ },
+ {
+  "mk": "Parb",
+  "def": "Puterea mecanica la arborele pompei, egala cu produsul cuplu-viteza unghiulara la arborele de intrare al pompei, exprimata in kW; intotdeauna mai mare decat puterea hidraulica utila datorita pierderilor interne ale pompei.",
+  "teorie": "Relatia de baza: $P_{arb} = P_{hid} / \\eta_{pompa} = \\rho g Q H / \\eta_{pompa}$, unde $\\eta_{pompa}$ include randamentul volumetric, hidraulic si mecanic. Puterea la arborele motorului este si mai mare: $P_{motor} = P_{arb} / \\eta_{cupl}$ (pierderile in cuplaj elastic sunt tipic $1 \\div 2\\%$). La PIF, $P_{arb}$ la diferite debite se citeste de pe curba producatorului (curba de putere la ax vs Q) si se compara cu puterea nominala a motorului; motorul trebuie sa acopere $P_{arb,max}$ (de regula la $Q_{max}$) cu cel putin $10 \\div 15\\%$ marja, conform IEC 60034-1 si ISO 9906 (acceptanta hidraulica pompe)."
+ },
+ {
+  "mk": "patm",
+  "def": "Presiunea atmosferica locala la altitudinea instalatiei, exprimata in bar; intra ca termen pozitiv dominant in calculul NPSHa si scade proportional cu altitudinea.",
+  "teorie": "Modelul atmosferei standard ISO 2533: $p_{atm}(h) \\approx 1{,}013 \\cdot e^{-h/8500}$ bar, deci la $h = 1000\\,\\text{m}$ altitudine $p_{atm} \\approx 0{,}899\\,\\text{bar}$ (scadere de $\\sim 0{,}1\\,\\text{m}$ NPSH per 100 m altitudine). In formula $\\text{NPSHa} = (p_{atm} - p_{vap})/(\\rho g) - H_{asp} - \\sum h_f$, reducerea lui $p_{atm}$ la altitudine reduce direct NPSHa, putand provoca cavitatie chiar daca instalatia a functionat corect la altitudine joasa. La PIF in zone montane (ex. Romania: Sinaia, Brasov la 600-1000 m) aceasta corectie este obligatorie si poate impune reducerea turatii pompei cu VFD pentru compensarea deficitului de NPSHa."
+ }
+]

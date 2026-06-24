@@ -1,0 +1,547 @@
+[
+ {
+  "mk": "Phid",
+  "key": "Phid",
+  "family": "pompe",
+  "labels": [
+   "Putere hidraulica"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea"
+  ],
+  "def": "Puterea hidraulica utila transmisa lichidului de catre pompa.",
+  "ia": "Calcul din debit, inaltime si densitate lichid.",
+  "practic": "Baza pentru dimensionarea puterii la arbore si motor.",
+  "teorie": "Phid egal rho g Q H impartit la 3.6 milioane pentru kW."
+ },
+ {
+  "mk": "Pmot",
+  "key": "Pmot",
+  "family": "pompe",
+  "labels": [
+   "Putere absorbita motor",
+   "Putere motoare (suma)"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea",
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare"
+  ],
+  "def": "Puterea ceruta la arborele motorului electric, cu marja de proiectare.",
+  "ia": "Parb impartit la randamentul transmisiei, plus marja de siguranta.",
+  "practic": "Se alege motor standardizat imediat superior valorii calculate.",
+  "teorie": "Include pierderile cuplaj si rezerva pentru variatii de regim."
+ },
+ {
+  "mk": "Pmotor",
+  "key": "Pmotor",
+  "family": "comun",
+  "labels": [
+   "Putere motor"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara"
+  ],
+  "def": "Puterea nominala a motorului care actioneaza sistemul.",
+  "ia": "De pe placuta motorului sau din alegerea de proiect.",
+  "practic": "Compara cu puterea ceruta plus rezerva si cu regimul termic.",
+  "teorie": "Puterea nominala a motorului limiteaza superior sarcina continua si conditioneaza alegerea convertizorului."
+ },
+ {
+  "mk": "pompe:aund",
+  "key": "aund",
+  "family": "pompe",
+  "labels": [
+   "Viteza undei de presiune"
+  ],
+  "units": [
+   "m/s"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Viteza de propagare a undei de presiune.",
+  "ia": "~1000-1300 m/s (apa, otel).",
+  "practic": "Depinde de fluid si elasticitatea conductei.",
+  "teorie": "a = √(K/ρ) corectat cu elasticitatea peretelui."
+ },
+ {
+  "mk": "pompe:dPmax",
+  "key": "dPmax",
+  "family": "pompe",
+  "labels": [
+   "Soc presiune (inchidere brusca)"
+  ],
+  "units": [
+   "bar"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Socul de presiune la inchidere brusca.",
+  "ia": "ρ·a·Δv (Joukowsky).",
+  "practic": "Cazul cel mai defavorabil.",
+  "teorie": "Energia cinetica se converteste in presiune instantaneu."
+ },
+ {
+  "mk": "pompe:dPreal",
+  "key": "dPreal",
+  "family": "pompe",
+  "labels": [
+   "Soc presiune (la timpul setat)"
+  ],
+  "units": [
+   "bar"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Socul de presiune la timpul real de oprire.",
+  "ia": "ρ·L·Δv/t (daca t>Tcrit), altfel ρ·a·Δv.",
+  "practic": "Seteaza rampa ca dP sa fie acceptabil.",
+  "teorie": "Inchidere lenta (Michaud): Δp scade cu 1/t."
+ },
+ {
+  "mk": "pompe:dvf",
+  "key": "dvf",
+  "family": "pompe",
+  "labels": [
+   "Variatie viteza fluid"
+  ],
+  "units": [
+   "m/s"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Variatia de viteza a fluidului la oprire.",
+  "ia": "Debit / sectiune conducta.",
+  "practic": "Direct proportionala cu socul de presiune.",
+  "teorie": "Joukowsky: Δp = ρ·a·Δv."
+ },
+ {
+  "mk": "pompe:KpPI",
+  "key": "KpPI",
+  "family": "pompe",
+  "labels": [
+   "Kp (regulator PI)"
+  ],
+  "units": [],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Castigul proportional pentru regulator PI.",
+  "ia": "0.45·Ku.",
+  "practic": "Valoare de start, apoi reglaj fin.",
+  "teorie": "Ziegler-Nichols pentru PI."
+ },
+ {
+  "mk": "pompe:KpPID",
+  "key": "KpPID",
+  "family": "pompe",
+  "labels": [
+   "Kp (regulator PID)"
+  ],
+  "units": [],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Castigul proportional pentru regulator PID.",
+  "ia": "0.6·Ku.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PID."
+ },
+ {
+  "mk": "pompe:Ku",
+  "key": "Ku",
+  "family": "pompe",
+  "labels": [
+   "Castig critic (la oscilatie)"
+  ],
+  "units": [],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Castigul critic la care bucla oscileaza sustinut.",
+  "ia": "Cresti Kp pana la oscilatie constanta.",
+  "practic": "Baza valorilor Ziegler-Nichols.",
+  "teorie": "La Ku sistemul e la limita de stabilitate."
+ },
+ {
+  "mk": "pompe:L",
+  "key": "L",
+  "family": "pompe",
+  "labels": [
+   "Lungime conducta"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Lungimea conductei de refulare.",
+  "ia": "Plan instalatie.",
+  "practic": "Intra in timpul critic 2L/a.",
+  "teorie": "Unda de presiune parcurge L si se intoarce in 2L/a."
+ },
+ {
+  "mk": "pompe:Q",
+  "key": "Q",
+  "family": "pompe",
+  "labels": [
+   "Debit",
+   "Debit (la BEP)",
+   "Debit de lucru"
+  ],
+  "units": [
+   "m³/h"
+  ],
+  "modules": [
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea",
+   "Turatie specifica (nq) / Tipul rotorului din n, Q, H",
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP"
+  ],
+  "def": "Debitul pompei/ventilatorului.",
+  "ia": "Cerinta procesului / curba pompei.",
+  "practic": "La turatie variabila Q ∝ n (legea afinitatii).",
+  "teorie": "Debitul scade liniar cu turatia conform primei legi de afinitate a pompelor si ventilatoarelor."
+ },
+ {
+  "mk": "pompe:T",
+  "key": "T",
+  "family": "pompe",
+  "labels": [
+   "Temperatura aer/gaz"
+  ],
+  "units": [
+   "°C"
+  ],
+  "modules": [
+   "Ventilator — corectie densitate / Presiune si putere vs temperatura/altitudine"
+  ],
+  "def": "Temperatura aerului/gazului.",
+  "ia": "Proces.",
+  "practic": "Densitatea scade cu temperatura → presiune si cuplu mai mici.",
+  "teorie": "Temperatura ridicata reduce capacitatea de racire si impune derating la convertizor si motor."
+ },
+ {
+  "mk": "pompe:Tcrit",
+  "key": "Tcrit",
+  "family": "pompe",
+  "labels": [
+   "Timp critic"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Timpul critic al conductei.",
+  "ia": "2L/a.",
+  "practic": "Oprire mai lenta decat el = fara soc maxim.",
+  "teorie": "Timpul dus-intors al undei de presiune."
+ },
+ {
+  "mk": "pompe:TdPID",
+  "key": "TdPID",
+  "family": "pompe",
+  "labels": [
+   "Td (regulator PID)"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Timpul derivativ pentru regulator PID.",
+  "ia": "0.125·Tu.",
+  "practic": "Valoare de start (atentie la zgomot).",
+  "teorie": "Ziegler-Nichols pentru PID."
+ },
+ {
+  "mk": "pompe:tinch",
+  "key": "tinch",
+  "family": "pompe",
+  "labels": [
+   "Timp de oprire/inchidere"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Timpul de oprire a pompei / inchidere a vanei.",
+  "ia": "Rampa de oprire a drive-ului.",
+  "practic": "Peste timpul critic = soc redus.",
+  "teorie": "Inchidere lenta (t>2L/a) reduce Δp proportional."
+ },
+ {
+  "mk": "pompe:TiPI",
+  "key": "TiPI",
+  "family": "pompe",
+  "labels": [
+   "Ti (regulator PI)"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Timpul integral pentru regulator PI.",
+  "ia": "0.83·Tu.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PI."
+ },
+ {
+  "mk": "pompe:TiPID",
+  "key": "TiPID",
+  "family": "pompe",
+  "labels": [
+   "Ti (regulator PID)"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Timpul integral pentru regulator PID.",
+  "ia": "0.5·Tu.",
+  "practic": "Valoare de start.",
+  "teorie": "Ziegler-Nichols pentru PID."
+ },
+ {
+  "mk": "pompe:Tu",
+  "key": "Tu",
+  "family": "pompe",
+  "labels": [
+   "Perioada de oscilatie"
+  ],
+  "units": [
+   "s"
+  ],
+  "modules": [
+   "Acordare PID drive (presiune/debit) / Valori de start Ziegler-Nichols (regulator intern)"
+  ],
+  "def": "Perioada oscilatiei sustinute la Ku.",
+  "ia": "Masoara perioada oscilatiei.",
+  "practic": "Fixeaza Ti si Td.",
+  "teorie": "Perioada la limita de stabilitate (Ziegler-Nichols)."
+ },
+ {
+  "mk": "Preal",
+  "key": "Preal",
+  "family": "pompe",
+  "labels": [
+   "Putere reala"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Ventilator — corectie densitate / Presiune si putere vs temperatura/altitudine"
+  ],
+  "def": "Puterea reala ceruta dupa corectia pentru densitatea efectiva a fluidului.",
+  "ia": "Pref scalata cu raportul densitatii reale fata de referinta.",
+  "practic": "Esential la ventilatoare cu aer cald sau gaz de alta densitate.",
+  "teorie": "Preal egal Pref inmultit cu rho real impartit la rho0."
+ },
+ {
+  "mk": "Pref",
+  "key": "Pref",
+  "family": "pompe",
+  "labels": [
+   "Putere la ρ referinta"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Ventilator — corectie densitate / Presiune si putere vs temperatura/altitudine"
+  ],
+  "def": "Puterea de catalog masurata la densitatea de referinta a aerului.",
+  "ia": "Fisa tehnica ventilator la conditii standard de densitate.",
+  "practic": "Trebuie corectata la densitatea reala de exploatare.",
+  "teorie": "Punct de plecare in corectia de densitate a puterii."
+ },
+ {
+  "mk": "Pret",
+  "key": "Pret",
+  "family": "pompe",
+  "labels": [
+   "Putere din retea"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea"
+  ],
+  "def": "Puterea electrica absorbita din retea de ansamblul motor plus convertizor.",
+  "ia": "Pmot impartit la randamentul motorului si al convertizorului.",
+  "practic": "Valoarea facturata; baza calculului economiei de energie.",
+  "teorie": "Pret egal Parb impartit la produsul randamentelor lant."
+ },
+ {
+  "mk": "Prid",
+  "key": "Prid",
+  "family": "comun",
+  "labels": [
+   "Putere de ridicare"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Mecanism de ridicare (macara) / Cuplu ridicare / coborare / mentinere"
+  ],
+  "def": "Puterea mecanica necesara pentru ridicarea sarcinii cu viteza data.",
+  "ia": "Din forta de ridicare si viteza: P=F*v, impartita la randament.",
+  "practic": "Dimensioneaza motorul la regim continuu de ridicare; atentie la ciclul de lucru.",
+  "teorie": "Puterea ca produs intre forta si viteza pe directia miscarii."
+ },
+ {
+  "mk": "pvap",
+  "key": "pvap",
+  "family": "pompe",
+  "labels": [
+   "Presiune vapori lichid"
+  ],
+  "units": [
+   "bar"
+  ],
+  "modules": [
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja"
+  ],
+  "def": "Presiunea de vapori a lichidului la temperatura de lucru.",
+  "ia": "Tabele termodinamice functie de lichid si temperatura.",
+  "practic": "Creste cu temperatura; apa fierbinte reduce NPSHa drastic.",
+  "teorie": "Termen scazut din presiunea atmosferica in bilantul NPSHa."
+ },
+ {
+  "mk": "q1",
+  "key": "q1",
+  "family": "pompe",
+  "labels": [
+   "Debit 1"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Primul nivel de debit din profilul de functionare, procent din nominal.",
+  "ia": "Profil de exploatare estimat sau masurat pe instalatie.",
+  "practic": "Defineste un punct de regim pentru calculul economiei pe an.",
+  "teorie": "Puterea la acest debit scade cu turatia la cub."
+ },
+ {
+  "mk": "Q1",
+  "key": "Q1",
+  "family": "asincron",
+  "labels": [
+   "Debit la n1",
+   "Debit la D1"
+  ],
+  "units": [
+   "m³/h"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Trimming rotor (taiere diametru) / Echivalent cu reducere de turatie"
+  ],
+  "def": "Debitul la turatia initiala.",
+  "ia": "Punctul de functionare nominal.",
+  "practic": "Q ∝ n (afinitate).",
+  "teorie": "Debitul initial scaleaza liniar cu turatia deci la noua turatie devine reper pentru recalcularea debitului."
+ },
+ {
+  "mk": "q2",
+  "key": "q2",
+  "family": "pompe",
+  "labels": [
+   "Debit 2"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Al doilea nivel de debit din profilul de functionare, procent din nominal.",
+  "ia": "Profil de exploatare estimat sau masurat pe instalatie.",
+  "practic": "Punct intermediar tipic de regim in calculul anual.",
+  "teorie": "Contributie la energia totala dupa orele alocate."
+ },
+ {
+  "mk": "Q2",
+  "key": "Q2",
+  "family": "asincron",
+  "labels": [
+   "Debit la n2",
+   "Debit la D2"
+  ],
+  "units": [
+   "m³/h"
+  ],
+  "modules": [
+   "Legile afinitatii (pompe/ventilatoare) / Debit, inaltime si putere la turatie variabila",
+   "Trimming rotor (taiere diametru) / Echivalent cu reducere de turatie"
+  ],
+  "def": "Debitul la turatia noua.",
+  "ia": "Calculat din afinitate.",
+  "practic": "Q2 = Q1·(n2/n1).",
+  "teorie": "Debitul nou este proportional cu turatia deci variatorul se regleaza pana atinge debitul cerut de proces."
+ },
+ {
+  "mk": "q3",
+  "key": "q3",
+  "family": "pompe",
+  "labels": [
+   "Debit 3"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Economie pe profil de sarcina / VFD vs strangulare (vana), ponderat pe ore"
+  ],
+  "def": "Al treilea nivel de debit din profilul de functionare, procent din nominal.",
+  "ia": "Profil de exploatare estimat sau masurat pe instalatie.",
+  "practic": "De obicei debitul maxim al profilului de regim.",
+  "teorie": "Aproape de nominal economia VFD fata de vana este mica."
+ },
+ {
+  "mk": "QBEP",
+  "key": "QBEP",
+  "family": "pompe",
+  "labels": [
+   "Debit la BEP"
+  ],
+  "units": [
+   "m³/h"
+  ],
+  "modules": [
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP",
+   "Debit minim stabil (MCSF) / Sub care apare recirculare/instabilitate"
+  ],
+  "def": "Debitul la randament maxim (BEP).",
+  "ia": "Curba pompei.",
+  "practic": "Pompa lucreaza eficient si stabil langa BEP.",
+  "teorie": "Debitul la randament maxim este zona optima deci variatorul se regleaza sa tina functionarea aproape de BEP."
+ }
+]

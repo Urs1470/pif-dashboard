@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "Mconst",
+  "def": "Cuplul cerut mecanismului in faza de mers la viteza constanta, adica suma cuplurilor rezistente (frecare, sarcina utila, pierderi mecanice) la acceleratie nula.",
+  "teorie": "In faza de viteza constanta, acceleratia unghiulara este zero, deci ecuatia de miscare se reduce la $M_{const} = M_{rezistent}$. Valoarea depinde de tipul sarcinii: cuplu constant la transportoare ($M = const$), cuplu cu viteza la ventilatoare ($M \\propto n^2$). La PIF se masoara sau calculeaza din forta axiala/radiala si raza de actiune: $M_{const} = F \\cdot r$. Trebuie sa fie sub cuplul nominal continuu al servomotorului pentru a asigura bilant termic pe termen lung; daca depaseste cuplul nominal, motorul se supraincalzeste chiar si in regim de mers (fara accelerari)."
+ },
+ {
+  "mk": "Mcont",
+  "def": "Cuplul continuu nominal al servomotorului, adica cuplul maxim pe care il poate furniza indefinit fara a depasi temperatura admisibila a infasurarii, conform IEC 60034-1.",
+  "teorie": "Limita termica de durata este impusa de rezistenta izolatiei la temperatura ($\\Delta T \\propto I^2 \\cdot R$, deci $\\propto M^2$). Conditia de selectie a motorului in drive servo este $M_{rms} \\leq M_{cont}$, unde $M_{rms} = \\sqrt{\\sum M_i^2 \\cdot t_i / \\sum t_i}$ este cuplul termic echivalent pe ciclu. In catalogul ABB/Siemens, $M_{cont}$ este dat la viteza nominala cu racire nominala (autoventilat sau fortat); la turatie redusa, $M_{cont}$ poate scadea daca racirea este insuficienta. La PIF se verifica in datasheetul motorului si se compara cu profilul de sarcina calculat."
+ },
+ {
+  "mk": "Mdec",
+  "def": "Cuplul electromagnetic cerut motorului in faza de decelerare pentru a reduce turatia de la viteza de lucru la zero (sau la alta viteza), incluzand aportul inertiei si al sarcinii rezistente.",
+  "teorie": "In faza de decelerare, ecuatia de miscare este $M_{dec} = J \\cdot \\alpha + M_{rezistent}$, unde $\\alpha < 0$ (deceleratie). Daca sarcina este de tip motor (ex. la coborare cu incarcare), cuplul de decelerare poate fi negativ (generator), impunand frana prin rezistenta de franare sau recuperare in retea (regenerare). La PIF se verifica daca convertizorul poate absorbi energia returnata: $E_{fr} = \\frac{1}{2} J \\omega^2$. Un $M_{dec}$ mare in timp scurt poate depasi limita de curent a driveului sau poate supraincarca rezistenta de franare."
+ },
+ {
+  "mk": "Mdisp",
+  "def": "Cuplul disponibil la arborele motorului de curent continuu in zona de slabire de camp, adica cuplul maxim pe care il poate furniza masina la o turatie data peste turatia de baza, la tensiunea de indus maxima.",
+  "teorie": "In zona de slabire de camp ($n > n_{baza}$), tensiunea de indus este la maxim iar fluxul de excitatie se reduce proportional cu turatia: $\\Phi \\propto 1/n$. Deoarece $M = k \\cdot \\Phi \\cdot I_a$, cuplul disponibil scade: $M_{disp} = M_{nom} \\cdot n_{baza} / n$. Puterea ramane aproximativ constanta: $P = M \\cdot \\omega \\approx const$. La PIF se traseaza curba $M_{disp}(n)$ pentru a verifica ca sarcina se incadreaza sub ea in tot intervalul de turatie utilizat; depasirea inseamna supracurent in indus sau colmatare a colectorului."
+ },
+ {
+  "mk": "Mmax",
+  "def": "Cuplul maxim (de desprindere, breakdown) al motorului, adica valoarea de varf a curbei cuplu-viteza peste care motorul nu mai poate functiona stabil si se opreste brut.",
+  "teorie": "La motorul asincron, cuplul maxim apare la alunecarea critica $s_k = R_2 / \\sqrt{R_1^2 + (X_1+X_2)^2}$ si are valoarea $M_{max} \\propto U^2 / (X_1 + X_2)$; este independent de $R_2$ (rezistenta rotorului). Conform IEC 60034-1, $M_{max} \\geq 1{,}6 \\cdot M_n$ pentru motoare standard. La motorul sincron, cuplul de desprindere (pull-out) apare la unghi de sarcina $\\delta = 90°$ pentru masini cu poli cilindri: $M_{max} = \\frac{3U E_f}{\\omega_s X_d}$. La PIF, $M_{max}$ stabileste marja de stabilitate la varsarile de tensiune; o cadere de $10\\%$ a tensiunii reduce $M_{max}$ cu $\\approx 19\\%$."
+ },
+ {
+  "mk": "Mn",
+  "def": "Cuplul nominal al motorului asincron, adica cuplul la arborele mecanic in punctul nominal de functionare (putere nominala la turatie nominala), inscris pe placuta de identificare.",
+  "teorie": "Relatia fundamentala de calcul este $M_n = 9550 \\cdot P_n [kW] / n_n [rpm]$ (in Nm), derivata din $P = M \\cdot \\omega$ cu $\\omega = 2\\pi n/60$. $M_n$ este referinta pentru toti ceilalti parametri de cuplu: cuplul de pornire $M_p = k_p \\cdot M_n$ (tipic $k_p = 1{,}5\\ldots2{,}5$), cuplul maxim $M_{max} = k_m \\cdot M_n$ (tipic $k_m = 2\\ldots3{,}5$, conform IEC 60034-1 tabel 10). La PIF, se verifica ca sarcina la pornire si in regim sa nu depaseasca $M_n$ pe termen lung si $M_{max}$ la varfuri."
+ },
+ {
+  "mk": "Mnom",
+  "def": "Cuplul nominal de durata al motorului de curent continuu, corespunzator puterii nominale la turatia nominala, inscris pe placuta de identificare conform IEC 60034-1.",
+  "teorie": "Se calculeaza din puterea si turatia nominale: $M_{nom} = 9550 \\cdot P_n [kW] / n_n [rpm]$. La motorul c.c. separat excitat cu flux constant, $M_{nom}$ este limitat termic de curentul de indus ($M \\propto \\Phi \\cdot I_a$, iar $I_a \\leq I_{a,nom}$). Acest cuplu este valabil pana la turatia de baza; deasupra ei intra slabirea de camp si cuplul disponibil scade. La PIF se compara profilul de sarcina cu $M_{nom}$ pentru a verifica dimensionarea si se calculeaza factorii de suprasarcina admisa la pornire (uzual $1{,}5\\ldots2 \\cdot M_{nom}$ pe durata limitata)."
+ },
+ {
+  "mk": "Mp",
+  "def": "Cuplul de pornire al motorului asincron la turatie zero (alunecare $s = 1$), adica cuplul cu care motorul porneste sub tensiune plina direct din retea (DOL).",
+  "teorie": "La $s = 1$, cuplul de pornire este $M_p = \\frac{3 U^2 R_2}{\\omega_s [(R_1 + R_2)^2 + (X_1+X_2)^2]}$, proportional cu $U^2$. Conform IEC 60034-12, clasele de pornire (A, B, C, D) definesc cuplul de pornire minim (tipic $M_p \\geq 0{,}5\\ldots2{,}5 \\cdot M_n$ in functie de clasa si putere). La pornire prin convertizor (VFD), curentul si cuplul se regleaza independent de turatie, iar boost-ul de tensiune asigura flux si cuplu adecvat la $n = 0$. La PIF se verifica $M_p > M_{rezistent,pornire}$ cu o marja de minimum 20%; la softstart, cuplul efectiv este redus proportional cu $U_{start}^2$."
+ },
+ {
+  "mk": "Mpm",
+  "def": "Componenta de cuplu produsa exclusiv de interactiunea magnetilor permanenti cu curentul pe axa q al rotorului, la un motor IPMSM (Interior Permanent Magnet Synchronous Motor).",
+  "teorie": "Ecuatia componentei de cuplu datorata magnetilor este $M_{pm} = \\frac{3}{2} p \\cdot \\Psi_{PM} \\cdot I_q$, unde $p$ este numarul de perechi de poli, $\\Psi_{PM}$ este fluxul concatenat al magnetilor permanenti (in Wb) si $I_q$ este componenta de curent pe axa q in referentialul rotorului (dq). Aceasta componenta este liniara cu $I_q$ si dominanta la sarcini moderate. La IPMSM, la turatii ridicate se adauga componenta de reluctanta prin injectie de $I_d < 0$ (strategia MTPA), care mareste cuplul total fara a creste curentul. La PIF se verifica prin estimatorul driveului sau prin test la $I_d = 0$."
+ },
+ {
+  "mk": "Mrel",
+  "def": "Componenta de cuplu de reluctanta la motorul IPMSM sau SynRM, produsa de diferenta de reluctanta (inductanta) intre axele d si q ale rotorului.",
+  "teorie": "Cuplul de reluctanta este $M_{rel} = \\frac{3}{2} p (L_d - L_q) I_d I_q$, unde $L_d$ si $L_q$ sunt inductantele pe axele directa si respectiv in cuadratura. La IPMSM cu magneti ingropati, $L_d < L_q$ (inductanta pe axa d este mai mica datorita barierelor de flux ale magnetilor), deci $M_{rel}$ are sens pozitiv cand $I_d < 0$. La SynRM (fara magneti), cuplul este exclusiv de reluctanta. Strategia MTPA (Maximum Torque Per Ampere) optimizeaza raportul $I_d/I_q$ pentru a maximiza cuplul total $M = M_{pm} + M_{rel}$ la curent dat. La PIF se verifica prin identificarea parametrilor $L_d$, $L_q$ in procedura de autotuning a driveului."
+ },
+ {
+  "mk": "Mrms",
+  "def": "Cuplul termic echivalent (RMS) al servomotorului pe un ciclu de miscare repetitiv, adica valoarea de cuplu constant care ar produce aceeasi incalzire ca profilul de cuplu variabil real.",
+  "teorie": "Se calculeaza conform $M_{rms} = \\sqrt{\\sum_{i} M_i^2 \\cdot t_i / \\sum_i t_i}$, unde $M_i$ si $t_i$ sunt cuplul si durata fiecarei faze a ciclului (accelerare, regim, decelerare, pauza). Incalzirea motorului este proportionala cu $M_{rms}^2$ (deoarece $P_{pierderi} \\propto I^2 \\propto M^2$). Criteriul de selectie este $M_{rms} \\leq M_{cont}$; daca $M_{rms} > M_{cont}$, motorul se supraincalzeste pe termen lung chiar daca $M_{varf} \\leq M_{max}$. La PIF se calculeaza din profilul cinematic al aplicatiei si se compara cu datasheetul motorului servo inainte de punere in functiune."
+ },
+ {
+  "mk": "MSoft",
+  "def": "Cuplul de pornire efectiv furnizat de motor la demarajul cu softstarter, exprimat ca procent din cuplul de pornire directa (DOL), rezultand din reducerea tensiunii aplicate la bornele motorului.",
+  "teorie": "Deoarece $M \\propto U^2$, reducerea tensiunii de start la valoarea $U_{start} = k \\cdot U_n$ produce un cuplu de pornire redus: $M_{Soft} = k^2 \\cdot M_p$. De exemplu, la $U_{start} = 50\\%$ din $U_n$, cuplul este redus la $25\\%$ din $M_p$. Conditia de pornire este $M_{Soft} > M_{rezistent,0}$ (cuplul rezistent la turatie zero). Softstarter-ul nu este potrivit pentru sarcini cu cuplu static ridicat la pornire (ex. pompe cu ventil inchis, compresoare neincarcate); este potrivit pentru pompe centrifuge si ventilatoare ($M \\propto n^2$). La PIF se verifica curba cuplului de pornire a sarcinii si se compara cu $M_{Soft}$ la tensiunea de start configurata."
+ },
+ {
+  "mk": "Mvarf",
+  "def": "Cuplul de varf cerut de profilul de miscare al aplicatiei servo, tipic in faza de accelerare, care trebuie sa fie acoperit de cuplul de varf al sistemului motor-variator.",
+  "teorie": "Cuplul de varf apare in faza de accelerare: $M_{varf} = J_{total} \\cdot \\alpha_{max} + M_{rezistent}$, unde $J_{total}$ include inertia motorului si a sarcinii reflectate la arborele motorului. Conditia de selectie este $M_{varf} \\leq M_{varf,motor}$ (limita de curent de varf a driveului, tipic $2\\ldots3 \\cdot M_{cont}$ pentru servomotoare). Durata de aplicare a cuplului de varf este limitata de capabilitatea $I^2 t$ a driveului si motorului; depasirea timpului admisibil duce la interventia protectiei termice. La PIF se verifica atat amplitudinea cat si durata cuplului de varf fata de curba $I^2 t$ a sistemului."
+ },
+ {
+  "mk": "n",
+  "def": "Turatia mecanica a arborelui motorului, exprimata in rotatii pe minut (rpm), reprezentand numarul de rotatii complete ale arborelui in unitatea de timp.",
+  "teorie": "Turatia mecanica si viteza unghiulara sunt legate prin $\\omega = 2\\pi n / 60$ (rad/s). La motorul asincron, turatia reala este $n = n_s(1-s)$, intotdeauna mai mica decat turatia sincrona $n_s = 60 f / p_p$ (unde $p_p$ este numarul de perechi de poli). La motor nominal, alunecarea este $s_n \\approx 1\\ldots8\\%$ in functie de marimea motorului. Puterea mecanica la arbore este $P = M \\cdot \\omega = M \\cdot 2\\pi n / 60$, ceea ce da relatia practica $M[Nm] = 9550 \\cdot P[kW] / n[rpm]$. La PIF, turatia se masoara cu encoder sau tahogenerator si se compara cu referinta pentru validarea reglajului de turatie al driveului."
+ },
+ {
+  "mk": "nbaza",
+  "def": "Turatia de baza (de colt) a motorului, adica turatia la care tensiunea de indus (la m.c.c.) sau tensiunea statorica (la PMSM) atinge valoarea maxima admisa, delimitand zona de cuplu constant de zona de putere constanta.",
+  "teorie": "Sub turatia de baza, fluxul este nominal si cuplul disponibil este maxim ($M \\leq M_{nom}$, $P = M \\cdot \\omega$ creste cu $n$). Deasupra lui $n_{baza}$, tensiunea ramane constanta iar fluxul se reduce: la m.c.c. prin reducerea curentului de excitatie ($\\Phi \\downarrow$), la PMSM prin componenta $I_d < 0$ (demagnetizare controlata). In ambele cazuri $P \\approx const$ si $M_{disp} = M_{nom} \\cdot n_{baza}/n$ scade. In practica $n_{baza}$ coincide cu turatia nominala de pe placuta. La PIF se verifica prin monitorizarea tensiunii de iesire a driveului la cresterea referintei de turatie: punctul unde tensiunea satureaza este $n_{baza}$."
+ },
+ {
+  "mk": "ndorit",
+  "def": "Turatia de regim solicitata de procesul tehnologic, adica referinta de turatie impusa convertizorului pentru a satisface cerinta aplicatiei.",
+  "teorie": "La motor c.c. separat excitat, turatia se regleaza in doua zone: sub $n_{baza}$ prin variatia tensiunii de indus ($n \\propto U_a$ la flux constant, din ecuatia $U_a = E + I_a R_a = k \\Phi n + I_a R_a$), iar deasupra lui $n_{baza}$ prin reducerea curentului de excitatie (slabire de camp, $n \\propto 1/\\Phi$ la $U_a = U_{a,max}$). La PIF, $n_{dorit}$ se introduce ca referinta in regulatorul de turatie al driveului si se verifica raspunsul dinamic (suprareglaj, timp de stabilizare) prin inregistrarea turatiei reale."
+ },
+ {
+  "mk": "nimp",
+  "def": "Turatia calculata din rata de impulsuri a encoderului incremental, reprezentand feedback-ul de turatie pentru regulatorul de viteza al servosistemului.",
+  "teorie": "Relatia de calcul este $n[rpm] = \\frac{f_{imp}[Hz]}{PPR} \\cdot 60$, unde $f_{imp}$ este frecventa impulsurilor encoder si $PPR$ (pulses per revolution) este rezolutia encoderului. Rezolutia minima necesara pentru control de turatie precis: $PPR_{min} \\geq \\frac{n_{max}}{60} \\cdot T_{sample}^{-1} / n_{rezolutie}$. La PIF se verifica prin comparatia $n_{imp}$ cu un tahometru de referinta sau cu un encoder extern de referinta; diferentele pot indica erori de cablare (zgomot electromagnetic), rezolutie insuficienta sau pierderi de impulsuri. Encoderele tipice au $PPR = 1024\\ldots65536$."
+ },
+ {
+  "mk": "ns",
+  "def": "Turatia sincrona (de sincronism) a campului magnetic invartitor din masina electrica, adica turatia cu care campul statoric se roteste in spatiu, determinata exclusiv de frecventa tensiunii si numarul de poli.",
+  "teorie": "Relatia fundamentala este $n_s = 60 f / p_p$ [rpm], unde $f$ este frecventa retelei (50 Hz in Europa, conform EN 50160) si $p_p$ este numarul de perechi de poli. Valorile standard la 50 Hz: 3000 (2 poli), 1500 (4 poli), 1000 (6 poli), 750 (8 poli) rpm. La motorul asincron, rotorul se roteste la $n < n_s$ (alunecarea $s = (n_s - n)/n_s > 0$); la motorul sincron, $n = n_s$ in regim stabil. La PIF, $n_s$ stabileste frecventa maxima de iesire a driveului si parametrul de configurare al numarului de poli (ex. ABB ACS880 param. 99.04 / Siemens p0304)."
+ },
+ {
+  "mk": "nsteps",
+  "def": "Numarul de trepte de rezistenta introduse in circuitul de rotor sau de indus la pornirea motorului de curent continuu, fiecare treapta fiind eliminata succesiv pe masura ce curentul scade.",
+  "teorie": "Treptele de rezistenta formeaza o progresie geometrica cu ratia $\\lambda = I_{max}/I_{min}$ (unde $I_{max}$ este curentul de comutare si $I_{min}$ curentul la care se trece la treapta urmatoare). Numarul de trepte este $n_{steps} = \\log(R_{total}/R_{indus}) / \\log(\\lambda)$, rotunjit la intreg. Rezistenta pe fiecare treapta $k$ este $R_k = R_{total} / \\lambda^k$. Mai multe trepte dau un profil de curent mai uniform si pornire mai lina, dar implica mai multe contactoare si costuri mai mari. La PIF se verifica valoarea rezistentelor masurand curentul de comutare la fiecare treapta si comparand cu calculul teoretic."
+ },
+ {
+  "mk": "p",
+  "def": "Numarul total de poli ai motorului electric (intotdeauna par: 2, 4, 6, 8, ...), determinand turatia sincrona si frecventa electrica a masinii.",
+  "teorie": "Numarul de poli $p$ (sau numarul de perechi de poli $p_p = p/2$) fixeaza turatia sincrona prin $n_s = 60 f / p_p$ si frecventa electrica a rotorului servomotorului prin $f_{el} = p_p \\cdot n/60$. In schema echivalenta a motorului asincron, $p$ influenteaza calculul reactantelor si al cuplului electromagnetic. La PIF, numarul de poli se introduce obligatoriu in parametrii driveului (ex. ABB ACS880 par. 99.04, Siemens SINAMICS p0304) inainte de identificarea motorului; o valoare gresita produce erori de frecventa de iesire si instabilitate in controlul vectorial."
+ },
+ {
+  "mk": "P",
+  "def": "Puterea activa (mecanica la arbore sau electrica absorbita, in functie de context), exprimata in kilowati, reprezentand lucrul mecanic sau electric util furnizat sau absorbit de masina in unitatea de timp.",
+  "teorie": "Puterea mecanica la arbore este $P_{mec} = M \\cdot \\omega = M \\cdot 2\\pi n / 60$, deci $P[kW] = M[Nm] \\cdot n[rpm] / 9550$. Puterea electrica activa absorbita din retea este $P_{el} = \\sqrt{3} \\cdot U_L \\cdot I_L \\cdot \\cos\\varphi$. Diferenta $P_{el} - P_{mec}$ reprezinta pierderile totale (cupru, fier, mecanice), iar randamentul $\\eta = P_{mec}/P_{el}$. In contextul motorului sincron, puterea electromagnetica transferata este $P_{em} = (3 U E_f / X_d) \\sin\\delta$, unde $\\delta$ este unghiul de sarcina. La PIF, puterea este marimea de referinta pentru selectia echipamentelor (motor, variator, sigurante, cabluri)."
+ },
+ {
+  "mk": "Pag",
+  "def": "Puterea electromagnetica transferata prin intrefierul masinii asincrone de la campul magnetic statoric la rotor, reprezentand puterea disponibila in rotor inainte de pierderile in cupru rotoric.",
+  "teorie": "In bilantul de puteri al motorului asincron: $P_{ag} = P_{el} - P_{Cu1} - P_{Fe}$, unde $P_{Cu1} = 3 I_1^2 R_1$ sunt pierderile in cupru stator si $P_{Fe}$ sunt pierderile in miezul magnetic. Puterea intrefierului se imparte: $P_{Cu2} = s \\cdot P_{ag}$ (pierderi in cupru rotor) si $P_{mec} = (1-s) \\cdot P_{ag}$ (putere mecanica). Cuplul electromagnetic este $M_{em} = P_{ag} / \\omega_s$. La $s = 0{,}05$ (incarcare nominala tipica), 95% din $P_{ag}$ devine putere mecanica. La PIF, $P_{ag}$ se calculeaza din masuratori de putere activa si curent stator pentru a estima pierderile si verifica randamentul real."
+ },
+ {
+  "mk": "Pax",
+  "def": "Puterea mecanica estimata sau masurata la arborele motorului, exprimata in kW, calculata din bilantul de puteri prin scaderea pierderilor din puterea absorbita.",
+  "teorie": "In bilantul de puteri: $P_{ax} = P_{ag} - P_{Cu2} - P_{fw} = (1-s) \\cdot P_{ag} - P_{fw}$, unde $P_{fw}$ sunt pierderile prin frecare si ventilatie. Estimarea din masuratori de curent: $P_{ax} \\approx \\eta \\cdot P_{el}$, iar $P_{el} = \\sqrt{3} \\cdot U \\cdot I \\cdot \\cos\\varphi$. Raportul $P_{ax}/P_{nom}$ indica gradul de incarcare al motorului: la sub 50% din sarcina nominala, randamentul scade semnificativ (pierderi fixe dominante). La PIF se compara $P_{ax}$ cu puterea nominala a motorului pentru a detecta supradimensionarea sau subdimensionarea si a optimiza selectia."
+ },
+ {
+  "mk": "Pconst",
+  "def": "Pierderile constante (independente de sarcina) ale motorului, cuprinzand pierderile in miezul magnetic (histerezis si curenti turbionari), pierderile prin frecare in lagare si pierderile de ventilatie.",
+  "teorie": "Pierderile constante se descompun: $P_{const} = P_{Fe} + P_{fw}$, unde $P_{Fe,hist} \\propto f \\cdot B^n$ cu $n \\approx 1{,}6\\ldots2$ (pierderi prin histerezis, exponent Steinmetz) si $P_{Fe,ec} \\propto f^2 \\cdot B^2$ (pierderi prin curenti turbionari), ambele proportionale cu $U^2$ la tensiune fixa si frecventa constanta. Aceste pierderi nu variaza cu curentul de sarcina, deci la sarcina mica ele reprezinta o fractie mai mare din puterea absorbita, scazand randamentul: $\\eta = P_{mec} / (P_{mec} + P_{var} + P_{const})$. Randamentul maxim se atinge cand $P_{var} = P_{const}$ (pierderile variabile egaleaza cele fixe), adica la circa $70\\ldots80\\%$ din sarcina nominala. La PIF, cunoasterea $P_{const}$ permite estimarea consumului la mers in gol si calculul economiei de energie prin VFD."
+ },
+ {
+  "mk": "Pcore",
+  "def": "Pierderile in miezul magnetic al motorului prin histerezis si curenti turbionari (Foucault), produse de campul magnetic alternativ in tablele electrotehnice ale statorului si rotorului.",
+  "teorie": "Pierderile in fier se calculeaza dupa modelul Steinmetz extins: $P_{Fe} = k_h f B^n V + k_e f^2 B^2 V$, unde $k_h$, $k_e$ sunt constante ale materialului, $n \\approx 1{,}6\\ldots2$, $B$ inductia si $V$ volumul miezului. La alimentare prin convertizor cu PWM, armonicele de tensiune maresc $P_{Fe}$ cu $10\\ldots30\\%$ fata de alimentarea sinusoidala, motiv pentru care IEC 60034-17 prevede factori de derating. $P_{core}$ se determina experimental prin testul de mers in gol la tensiune variabila; la tensiune nominala si frecventa nominala, $P_{core}$ reprezinta tipic $1\\ldots3\\%$ din $P_n$. La PIF se ia in considerare la bilantul de pierderi si la selectia filtrului de iesire al driveului."
+ },
+ {
+  "mk": "Pel",
+  "def": "Puterea activa electrica absorbita de motor din reteaua de alimentare (sau de la iesirea convertizorului), reprezentand totalul de energie electrica consumata pe unitatea de timp.",
+  "teorie": "In sistem trifazat echilibrat: $P_{el} = \\sqrt{3} \\cdot U_L \\cdot I_L \\cdot \\cos\\varphi = 3 U_f I_f \\cos\\varphi$. Relatia cu puterea mecanica: $P_{el} = P_{mec} / \\eta$, deci la randament $\\eta = 92\\%$ si $P_{mec} = 100$ kW rezulta $P_{el} = 108{,}7$ kW. Factorul de putere $\\cos\\varphi$ la motoarele asincrone cu incarcare nominala este tipic $0{,}8\\ldots0{,}92$; la sarcina mica, $\\cos\\varphi$ scade semnificativ. La PIF, $P_{el}$ se masoara cu un analizor de retea (ex. Fluke 435) si se compara cu valoarea calculata pentru validarea bilantului energetic si detectarea anomaliilor (defecte de izolatie, dezechilibru de faze, armonici excesive)."
+ },
+ {
+  "mk": "Pem",
+  "def": "Puterea electromagnetica a motorului de curent continuu, transferata de la circuitul electric al indusului la circuitul mecanic prin interactiunea electromagnetica in intrefier.",
+  "teorie": "La motorul c.c., puterea electromagnetica este $P_{em} = E \\cdot I_a = k \\Phi n I_a$, unde $E$ este tensiunea electromotoare contra-electromotoare (TEM), $I_a$ curentul de indus si $k \\Phi$ constanta de cuplu-flux. Echivalent mecanic: $P_{em} = M_{em} \\cdot \\omega$, unde $M_{em} = k \\Phi I_a$. Bilantul de puteri: $P_{el} = U_a I_a = E I_a + I_a^2 R_a = P_{em} + P_{Cu,indus}$, respectiv $P_{em} = P_{mec} + P_{fw}$. La PIF se verifica prin masurarea $U_a$, $I_a$ si $n$: consistenta intre $P_{em}$ calculat electric si mecanic confirma calibrarea traductorilor si corectitudinea parametrilor driveului."
+ },
+ {
+  "mk": "Pex",
+  "def": "Componenta de putere electromagnetica a motorului sincron datorata excitarii (campului magnetic de excitatie), calculata din tensiunea de excitatie, tensiunea statorica si reactanta pe axa d.",
+  "teorie": "La masina sincrona cu poli cilindri, puterea de excitatie este $P_{ex} = \\frac{3 U E_f}{X_d} \\sin\\delta$, unde $U$ este tensiunea fazica statorica, $E_f$ este TEM de excitatie (proportionala cu curentul de excitatie), $X_d$ este reactanta sincrona pe axa d si $\\delta$ este unghiul de sarcina (unghiul intre $U$ si $E_f$). La masina cu poli aparenti, puterea totala include si componenta de reluctanta: $P_{tot} = P_{ex} + P_{rel}$, cu $P_{rel} = \\frac{3 U^2}{2}\\left(\\frac{1}{X_q} - \\frac{1}{X_d}\\right)\\sin 2\\delta$. Cuplul de desprindere (pull-out) apare la $\\delta = 90°$ pentru masina cu poli cilindri. La PIF se verifica prin masurarea unghiului de sarcina si comparatia cu valorile calculate din parametrii masinii."
+ },
+ {
+  "mk": "Pfw",
+  "def": "Pierderile mecanice ale motorului prin frecarea in lagare si ventilatie (frecare + windage), componenta a pierderilor fixe care nu depinde de sarcina electrica.",
+  "teorie": "Pierderile prin frecare depind de turatie: $P_{fw} \\propto n$ (lagare alunecare) sau $P_{fw} \\propto n^{1{,}5\\ldots2}$ (ventilatie). La frecventa fixa sunt practic constante si se determina din testul de mers in gol prin extrapolarea curbei de putere la tensiune zero (dupa scaderea pierderilor in cupru la mers in gol). Valorile tipice: $P_{fw} \\approx 0{,}5\\ldots2\\%$ din $P_n$ pentru motoare IEC standard cu ventilatie axiala. La functionarea cu VFD la turatie redusa, $P_{fw}$ scade (avantaj energetic), dar racirea poate fi insuficienta daca motorul are ventilatie proprie; in acest caz se impune ventilatie fortata externa (IEC 60034-6, metoda IC416)."
+ },
+ {
+  "mk": "phi",
+  "def": "Unghiul de defazaj intre tensiunea statorica si curentul absorbit de motorul sincron, definind factorul de putere $\\cos\\varphi$ si determinand schimbul de putere reactiva cu reteaua.",
+  "teorie": "La motorul sincron, $\\cos\\varphi$ si sensul puterii reactive ($Q$) sunt controlabile prin curentul de excitatie $I_f$: la subexcitare ($E_f < U$), masina absoarbe $Q$ inductiva (comportament inductiv, $\\varphi > 0$); la supraexcitare ($E_f > U$), masina furnizeaza $Q$ capacitiva (compensatie, $\\varphi < 0$). Relatia diagramei fazoriale: $\\vec{U} = \\vec{E_f} + j X_d \\vec{I} + R_a \\vec{I}$. Puterea reactiva: $Q = 3 U I \\sin\\varphi = \\frac{3U}{X_d}(E_f \\cos\\delta - U)$. La PIF, $\\cos\\varphi$ se regleaza prin curentul de excitatie (AVR — Automatic Voltage Regulator) pentru a minimiza curentul absorbit din retea sau pentru compensarea reactiva locala; se verifica cu analizor de retea conform IEC 61000-4-30."
+ }
+]

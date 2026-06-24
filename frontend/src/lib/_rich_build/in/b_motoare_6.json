@@ -1,0 +1,349 @@
+[
+ {
+  "mk": "Vmax",
+  "key": "Vmax",
+  "family": "servo",
+  "labels": [
+   "Tensiune maxima"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "PMSM in slabire de camp / Turatie de baza, curent caracteristic"
+  ],
+  "def": "Tensiune maxima de faza disponibila la iesirea invertorului",
+  "ia": "Din tensiunea circuit intermediar si modulatie",
+  "practic": "Limiteaza turatia maxima si pragul de slabire camp",
+  "teorie": "Vmax aprox Udc pe radical din 3 la modulatie spatiala vectoriala"
+ },
+ {
+  "mk": "Vnl",
+  "key": "Vnl",
+  "family": "asincron",
+  "labels": [
+   "Gol: tensiune linie"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Tensiunea de linie aplicata in timpul testului de mers in gol.",
+  "ia": "Masurat la bornele motorului la functionarea in gol, de regula tensiune nominala.",
+  "practic": "Referinta pentru separarea pierderilor in fier de cele mecanice.",
+  "teorie": "Pierderile in fier variaza cu patratul tensiunii, permitand separarea lor prin teste la tensiuni diferite."
+ },
+ {
+  "mk": "Vth",
+  "key": "Vth",
+  "family": "asincron",
+  "labels": [
+   "Tensiune Thevenin"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2"
+  ],
+  "def": "Tensiunea echivalenta Thevenin vazuta dinspre rotor, dupa reducerea retelei stator-magnetizare.",
+  "ia": "Calculat: Uf inmultit cu Xm impartit la impedanta serie stator plus Xm.",
+  "practic": "Permite estimarea rapida a cuplului maxim si a curentului rotoric fara schema completa.",
+  "teorie": "Teorema Thevenin reduce statorul la o sursa echivalenta, simplificand calculul cuplului si alunecarii critice."
+ },
+ {
+  "mk": "w",
+  "key": "w",
+  "family": "asincron",
+  "labels": [
+   "Viteza unghiulara"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Motor & turatie / Turatie sincrona, alunecare, viteza unghiulara",
+   "Cuplu / Cuplu nominal, de pornire si maxim"
+  ],
+  "def": "Viteza unghiulara mecanica a arborelui.",
+  "ia": "Calculata: ω = 2π·n / 60.",
+  "practic": "Baza pentru putere (P = M·ω) si energie cinetica (½J·ω²).",
+  "teorie": "omega egal 2 pi n impartit la 60; leaga turatia in rot pe min de viteza unghiulara."
+ },
+ {
+  "mk": "wBW",
+  "key": "wBW",
+  "family": "servo",
+  "labels": [
+   "Banda de frecventa"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Raspuns bucla (ordin 2) / Suprareglaj, timp de stabilizare, banda"
+  ],
+  "def": "Latimea de banda de frecventa a sistemului inchis",
+  "ia": "Calculata din wn si zeta",
+  "practic": "Indica domeniul de frecvente urmarit fidel",
+  "teorie": "Frecventa la care castigul scade cu 3 dB"
+ },
+ {
+  "mk": "wci",
+  "key": "wci",
+  "family": "servo",
+  "labels": [
+   "Banda bucla curent"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Latimea de banda a buclei inchise de curent",
+  "ia": "Aleasa de proiectant, fractie din pulsatia de comutatie",
+  "practic": "Tipic cateva sute pana la mii rad pe s pe servo",
+  "teorie": "Limitata de intarzierea PWM si esantionare"
+ },
+ {
+  "mk": "wcn",
+  "key": "wcn",
+  "family": "servo",
+  "labels": [
+   "Banda bucla turatie"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Acordare bucle PI (curent + turatie) / Modulus & symmetric optimum"
+  ],
+  "def": "Latimea de banda a buclei inchise de turatie",
+  "ia": "Aleasa sub banda buclei de curent",
+  "practic": "De regula de 5 pana la 10 ori mai mica decat wci",
+  "teorie": "Separarea benzilor asigura decuplarea buclelor in cascada"
+ },
+ {
+  "mk": "wn",
+  "key": "wn",
+  "family": "servo",
+  "labels": [
+   "Pulsatie naturala",
+   "Viteza unghiulara nominala"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Raspuns bucla (ordin 2) / Suprareglaj, timp de stabilizare, banda",
+   "Timp de pornire vs timp termic / Demaraj < timp admis la rotor blocat"
+  ],
+  "def": "Pulsatia naturala a sistemului de ordin doi",
+  "ia": "Impusa odata cu banda dorita",
+  "practic": "Mai mare inseamna raspuns mai rapid",
+  "teorie": "Frecventa de oscilatie a sistemului neamortizat"
+ },
+ {
+  "mk": "ws",
+  "key": "ws",
+  "family": "sincron",
+  "labels": [
+   "Viteza unghiulara"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Motor sincron — turatie & excitatie / Turatie sincrona, t.e.m. din excitatie",
+   "Motor sincron — putere & cuplu / Unghi de sarcina, cuplu de desprindere"
+  ],
+  "def": "Viteza unghiulara de sincronism a campului",
+  "ia": "Calculata din frecventa si numarul de perechi de poli",
+  "practic": "Masina sincrona mentine exact aceasta viteza la arbore",
+  "teorie": "ws egal cu 2 pi f pe p"
+ },
+ {
+  "mk": "x",
+  "key": "x",
+  "family": "servo",
+  "labels": [
+   "Raport varf/continuu"
+  ],
+  "units": [
+   "×"
+  ],
+  "modules": [
+   "Suprasarcina servo (I²t) / Timp admisibil la cuplu de varf"
+  ],
+  "def": "Raportul intre curentul de varf si cel continuu",
+  "ia": "Din placuta sau datasheet drive si motor",
+  "practic": "Indica suprasarcina disponibila pentru accelerari scurte",
+  "teorie": "Limitat termic, valabil doar pe durata admisibila"
+ },
+ {
+  "mk": "X1",
+  "key": "X1",
+  "family": "asincron",
+  "labels": [
+   "Reactanta stator X1"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2"
+  ],
+  "def": "Reactanta de dispersie a infasurarii statorice in schema echivalenta.",
+  "ia": "Din testul de rotor blocat, impartind reactanta totala intre stator si rotor dupa clasa motorului.",
+  "practic": "Influenteaza curentul de pornire si caderea de tensiune interna la sarcina.",
+  "teorie": "Reprezinta fluxul de dispersie statoric ce nu se inlantuie cu rotorul; limiteaza curentul tranzitoriu."
+ },
+ {
+  "mk": "X2",
+  "key": "X2",
+  "family": "asincron",
+  "labels": [
+   "Reactanta rotor X2"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2"
+  ],
+  "def": "Reactanta de dispersie a infasurarii rotorice raportata la stator.",
+  "ia": "Din testul de rotor blocat, repartizand reactanta totala dupa clasa NEMA a motorului.",
+  "practic": "Afecteaza cuplul de pornire si alunecarea critica a motorului.",
+  "teorie": "Modeleaza fluxul de dispersie rotoric; impreuna cu R2 determina forma caracteristicii cuplu-alunecare."
+ },
+ {
+  "mk": "Xd",
+  "key": "Xd",
+  "family": "sincron",
+  "labels": [
+   "Reactanta axa d"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Sincron cu poli aparenti / Putere de excitatie + cuplu de reluctanta"
+  ],
+  "def": "Reactanta sincrona pe axa d, in lungul polilor",
+  "ia": "Din probe sau date producator",
+  "practic": "Foloseste la calculul tem si al puterii de excitatie",
+  "teorie": "Mai mare decat Xq pe masini cu poli aparenti"
+ },
+ {
+  "mk": "Xlr",
+  "key": "Xlr",
+  "family": "asincron",
+  "labels": [
+   "Reactanta X1+X2"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Reactanta de scapari totala X1 plus X2 din test",
+  "ia": "Din proba de rotor blocat sau de scurtcircuit",
+  "practic": "Foloseste la estimarea curentului de pornire si scurtcircuit",
+  "teorie": "Suma reactantelor de scapari stator si rotor raportat"
+ },
+ {
+  "mk": "Xm",
+  "key": "Xm",
+  "family": "asincron",
+  "labels": [
+   "Reactanta magnetizare Xm"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2",
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Reactanta de magnetizare ce reprezinta curentul necesar producerii fluxului din intrefier.",
+  "ia": "Din testul de mers in gol, scazand reactanta statorica din reactanta masurata la gol.",
+  "practic": "Indica nivelul curentului de magnetizare si starea circuitului magnetic.",
+  "teorie": "Curentul de magnetizare creeaza fluxul rotitor; valoare mare inseamna intrefier mic si magnetizare eficienta."
+ },
+ {
+  "mk": "xopt",
+  "key": "xopt",
+  "family": "asincron",
+  "labels": [
+   "Sarcina la η maxim"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Randament vs sarcina / De ce motorul supradimensionat e ineficient"
+  ],
+  "def": "Gradul de incarcare la care motorul atinge randamentul maxim",
+  "ia": "Din raportul pierderi fixe la pierderi variabile, ca radical din raportul lor",
+  "practic": "Ghideaza dimensionarea: motorul ales sa lucreze in jurul acestui punct optim",
+  "teorie": "Randament maxim cand pierderile constante egaleaza cele dependente de patratul sarcinii"
+ },
+ {
+  "mk": "Xq",
+  "key": "Xq",
+  "family": "sincron",
+  "labels": [
+   "Reactanta axa q"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Sincron cu poli aparenti / Putere de excitatie + cuplu de reluctanta"
+  ],
+  "def": "Reactanta sincrona pe axa q, intre poli",
+  "ia": "Din probe sau date producator",
+  "practic": "Diferenta fata de Xd da cuplul de reluctanta",
+  "teorie": "Pe SynRM se cauta raport Xd pe Xq cat mai mare"
+ },
+ {
+  "mk": "Xs",
+  "key": "Xs",
+  "family": "sincron",
+  "labels": [
+   "Reactanta sincrona"
+  ],
+  "units": [
+   "Ω"
+  ],
+  "modules": [
+   "Motor sincron — turatie & excitatie / Turatie sincrona, t.e.m. din excitatie",
+   "Motor sincron — putere & cuplu / Unghi de sarcina, cuplu de desprindere",
+   "Sincron — curbele in V / Curent stator vs excitatie la putere constanta"
+  ],
+  "def": "Reactanta sincrona (masina sincrona).",
+  "ia": "Date motor / catalog.",
+  "practic": "Limiteaza puterea: P = U·E·sinδ / X_s.",
+  "teorie": "Xs egal 2 pi f inmultit cu Ls; reactanta sincrona limiteaza curentul si determina unghiul de sarcina."
+ },
+ {
+  "mk": "zeta",
+  "key": "zeta",
+  "family": "servo",
+  "labels": [
+   "Factor de amortizare"
+  ],
+  "units": [],
+  "modules": [
+   "Raspuns bucla (ordin 2) / Suprareglaj, timp de stabilizare, banda"
+  ],
+  "def": "Factor de amortizare al sistemului de ordin doi",
+  "ia": "Impus de cerintele de raspuns ale buclei",
+  "practic": "Tipic 0.7 pentru compromis viteza si depasire",
+  "teorie": "zeta sub 1 oscilant, egal 1 critic, peste 1 supraamortizat"
+ }
+]

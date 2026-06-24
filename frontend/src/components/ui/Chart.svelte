@@ -75,21 +75,29 @@
     return { c, xp, yp, xinv, path, xticks: ax.ticks, yticks: ay.ticks, xminor: ax.minor, yminor: ay.minor, fmt, xlbl: parseLabel(c.xLabel || ''), ylbl: parseLabel(c.yLabel || ''), plotW, plotH }
   })
 
+  // y interpolat liniar la x exact (puncte sortate crescator pe x)
+  function interpY(pts, x) {
+    const n = pts ? pts.length : 0
+    if (!n) return null
+    if (x <= pts[0].x) return pts[0].y
+    if (x >= pts[n - 1].x) return pts[n - 1].y
+    let lo = 0, hi = n - 1
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (pts[mid].x <= x) lo = mid; else hi = mid }
+    const a = pts[lo], b = pts[hi], dx = b.x - a.x
+    return dx ? a.y + ((b.y - a.y) * (x - a.x)) / dx : a.y
+  }
+
   function onMove(e) {
     if (!d || !svgEl) return
     const rect = svgEl.getBoundingClientRect()
     const vbx = ((e.clientX - rect.left) / rect.width) * W
     if (vbx < L - 1 || vbx > W - R + 1) { hover = null; return }
-    const dataX = d.xinv(vbx)
-    let snapX = dataX, bd0 = Infinity
-    const s0 = (d.c.series || [])[0]
-    if (s0) for (const p of s0.points || []) { const dd = Math.abs(p.x - dataX); if (dd < bd0) { bd0 = dd; snapX = p.x } }
-    const items = (d.c.series || []).map((s) => {
-      let best = (s.points || [])[0], bd = Infinity
-      for (const p of s.points || []) { const dd = Math.abs(p.x - snapX); if (dd < bd) { bd = dd; best = p } }
-      return { label: s.label, color: s.color, y: best ? best.y : null }
-    })
-    hover = { x: snapX, px: d.xp(snapX), items }
+    const px = Math.max(L, Math.min(W - R, vbx))
+    const dataX = d.xinv(px)
+    const items = (d.c.series || []).map((s) => ({
+      label: s.label, color: s.color, y: interpY(s.points || [], dataX)
+    }))
+    hover = { x: dataX, px, items }
   }
   function onLeave() { hover = null }
 </script>

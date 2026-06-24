@@ -1,0 +1,578 @@
+[
+ {
+  "mk": "alpha",
+  "key": "alpha",
+  "family": "cc",
+  "labels": [
+   "Unghi de aprindere"
+  ],
+  "units": [
+   "°"
+  ],
+  "modules": [
+   "Convertor c.c. (DC drive) / Redresor comandat, constante de timp"
+  ],
+  "def": "Unghiul de aprindere a tiristoarelor fata de comutatie naturala",
+  "ia": "Comandat de regulator",
+  "practic": "Mareste unghiul scade tensiunea, peste 90 grade regim de invertor",
+  "teorie": "Ud egal Ud0 inmultit cu cosinus alpha"
+ },
+ {
+  "mk": "ascurve",
+  "key": "ascurve",
+  "family": "servo",
+  "labels": [
+   "Acceleratie de varf S-curve"
+  ],
+  "units": [
+   "u/s²"
+  ],
+  "modules": [
+   "Profil de miscare (trapezoidal vs S-curve) / Acceleratie de varf si jerk"
+  ],
+  "def": "Acceleratia de varf intr-un profil S-curve",
+  "ia": "Calculata din profil, viteza si jerk",
+  "practic": "Mai mica decat trapezoidal la acelasi timp dar mai lina",
+  "teorie": "Profilul S limiteaza jerkul reducand socurile mecanice"
+ },
+ {
+  "mk": "asincron:I2",
+  "key": "I2",
+  "family": "asincron",
+  "labels": [
+   "Curent rotor (la n)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2"
+  ],
+  "def": "Curentul prin infasurarea rotorica la turatia de regim n, in schema echivalenta.",
+  "ia": "Calculat din schema echivalenta: Vth impartit la impedanta ramurii rotorice la alunecarea s.",
+  "practic": "Verifica incarcarea rotorului si compara cu curentul nominal pentru a confirma functionarea corecta.",
+  "teorie": "Curentul rotoric scade cu alunecarea; la s mic creste impedanta R2/s, limitand curentul si cuplul."
+ },
+ {
+  "mk": "atrap",
+  "key": "atrap",
+  "family": "servo",
+  "labels": [
+   "Acceleratie trapezoidal"
+  ],
+  "units": [
+   "u/s²"
+  ],
+  "modules": [
+   "Profil de miscare (trapezoidal vs S-curve) / Acceleratie de varf si jerk"
+  ],
+  "def": "Acceleratia constanta intr-un profil trapezoidal",
+  "ia": "Calculata din viteza si timpul de accelerare",
+  "practic": "Cel mai rapid profil dar genereaza socuri la tranzitii",
+  "teorie": "Variatia treapta a acceleratiei da jerk teoretic infinit"
+ },
+ {
+  "mk": "c",
+  "key": "c",
+  "family": "cc",
+  "labels": [
+   "Constanta tensiune",
+   "Curbura η(Q)"
+  ],
+  "units": [
+   "V/(rpm·A)"
+  ],
+  "modules": [
+   "Motor c.c. serie / M ~ Ia², n ~ 1/Ia (tractiune)",
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP"
+  ],
+  "def": "Constanta de tensiune (model c.c. serie).",
+  "ia": "Identificare.",
+  "practic": "Turatia ~ 1/I_a → pericol de ambalare la gol.",
+  "teorie": "Constanta de tensiune leaga turatia de tensiunea indusa deci modeleaza comportarea motorului serie la reglaj."
+ },
+ {
+  "mk": "climit",
+  "key": "climit",
+  "family": "asincron",
+  "labels": [
+   "Factor curent VFD"
+  ],
+  "units": [
+   "×Iₙ"
+  ],
+  "modules": [
+   "Metode de pornire / Curent de pornire: DOL, stea-triunghi, softstart, VFD"
+  ],
+  "def": "Factorul de limitare a curentului de pornire la alimentare prin convertizor de frecventa",
+  "ia": "Setat in convertizor ca limita de curent, tipic 1.1 pana la 1.5 ori curentul nominal",
+  "practic": "Arata avantajul VFD: pornire cu curent mic, fara socuri in retea si fara cadere de tensiune",
+  "teorie": "VFD porneste la frecventa joasa cu flux nominal, deci cuplu mare la curent redus"
+ },
+ {
+  "mk": "cosphi",
+  "key": "cosphi",
+  "family": "asincron",
+  "labels": [
+   "Factor de putere",
+   "cos φ masurat",
+   "cos φ"
+  ],
+  "units": [],
+  "modules": [
+   "Putere & curent / Curent absorbit, putere aparenta si reactiva",
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere",
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "Bilant de puteri & randament / Defalcarea pierderilor (power-flow)"
+  ],
+  "def": "Factorul de putere: cos al unghiului dintre tensiune si curent.",
+  "ia": "Placuta (cos φ nominal) sau masurat.",
+  "practic": "Scade mult la sarcini partiale; afecteaza curentul si compensarea.",
+  "teorie": "Defazajul curent tensiune scade cosphi la sarcina mica; invertorul amelioreaza factorul vazut de retea."
+ },
+ {
+  "mk": "cosphi25",
+  "key": "cosphi25",
+  "family": "asincron",
+  "labels": [
+   "cos φ la 25% sarcina"
+  ],
+  "units": [],
+  "modules": [
+   "Factor de putere vs sarcina / cos φ scade puternic la sarcini partiale"
+  ],
+  "def": "Factorul de putere al motorului la 25% din sarcina nominala",
+  "ia": "Din curbele de catalog ale motorului sau estimat; scade mult la sarcini mici",
+  "practic": "Semnaleaza factor de putere slab la mers in gol, cerand compensare sau redimensionare",
+  "teorie": "La sarcina mica curentul de magnetizare domina, deci cos fi scade puternic"
+ },
+ {
+  "mk": "cosphi50",
+  "key": "cosphi50",
+  "family": "asincron",
+  "labels": [
+   "cos φ la 50% sarcina"
+  ],
+  "units": [],
+  "modules": [
+   "Factor de putere vs sarcina / cos φ scade puternic la sarcini partiale"
+  ],
+  "def": "Factorul de putere al motorului la 50% din sarcina nominala",
+  "ia": "Din curbele de catalog ale motorului sau interpolat intre punctele cunoscute",
+  "practic": "Ajuta la dimensionarea compensarii reactive si la evaluarea incarcarii reale",
+  "teorie": "Cos fi creste cu sarcina pana aproape de nominal, apoi se stabilizeaza"
+ },
+ {
+  "mk": "cosphin",
+  "key": "cosphin",
+  "family": "asincron",
+  "labels": [
+   "Factor de putere nominal"
+  ],
+  "units": [],
+  "modules": [
+   "Factor de putere vs sarcina / cos φ scade puternic la sarcini partiale"
+  ],
+  "def": "Factorul de putere nominal.",
+  "ia": "Placuta motorului.",
+  "practic": "Referinta pentru curba cos φ vs sarcina.",
+  "teorie": "Reper de placuta pentru calculul S si Q la sarcina nominala a motorului."
+ },
+ {
+  "mk": "delta",
+  "key": "delta",
+  "family": "sincron",
+  "labels": [
+   "Unghi de sarcina"
+  ],
+  "units": [
+   "°"
+  ],
+  "modules": [
+   "Motor sincron — putere & cuplu / Unghi de sarcina, cuplu de desprindere",
+   "Sincron cu poli aparenti / Putere de excitatie + cuplu de reluctanta"
+  ],
+  "def": "Unghiul de sarcina (intre tensiune si t.e.m.).",
+  "ia": "Rezulta din incarcare.",
+  "practic": "Cuplu maxim (pull-out) la δ = 90°; stabil doar pentru δ < 90°.",
+  "teorie": "Cuplul masinii sincrone creste cu sinusul lui delta; peste 90 de grade masina pierde sincronismul."
+ },
+ {
+  "mk": "dT",
+  "key": "dT",
+  "family": "asincron",
+  "labels": [
+   "Crestere incalzire (relativ)"
+  ],
+  "units": [
+   "% nom"
+  ],
+  "modules": [
+   "Dezechilibru de tensiune / Derating si supraincalzire (IEC 60034-1)"
+  ],
+  "def": "Cresterea suplimentara de temperatura a infasurarii cauzata de dezechilibrul de tensiune.",
+  "ia": "Estimat: aproximativ de doua ori patratul procentului de dezechilibru de tensiune.",
+  "practic": "Anticipeaza riscul de supraincalzire si necesitatea de derating la dezechilibru.",
+  "teorie": "Componenta inversa, cu reactanta mica, produce curenti mari ce incalzesc puternic infasurarea."
+ },
+ {
+  "mk": "E",
+  "key": "E",
+  "family": "cc",
+  "labels": [
+   "TCEM (back-EMF)",
+   "Back-EMF",
+   "T.e.m. indusa",
+   "T.e.m. (excitatie)",
+   "T.c.e.m."
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Motor c.c. — marimi fundamentale / TCEM, turatie, cuplu, putere (flux constant)",
+   "Servo / PMSM — model de cuplu / Cuplu, back-EMF, frecventa electrica",
+   "Motor sincron — turatie & excitatie / Turatie sincrona, t.e.m. din excitatie",
+   "Motor sincron — putere & cuplu / Unghi de sarcina, cuplu de desprindere",
+   "Sincron cu poli aparenti / Putere de excitatie + cuplu de reluctanta",
+   "Motor c.c. serie / M ~ Ia², n ~ 1/Ia (tractiune)"
+  ],
+  "def": "Tensiunea electromotoare indusa (t.c.e.m. / back-EMF).",
+  "ia": "E = k·Φ·ω (c.c.) sau din excitatie (sincron).",
+  "practic": "Proportionala cu turatia; bază pentru reglajul de tensiune/turatie.",
+  "teorie": "E creste cu turatia si se opune tensiunii aplicate; limiteaza viteza maxima la tensiunea disponibila."
+ },
+ {
+  "mk": "eta",
+  "key": "eta",
+  "family": "asincron",
+  "labels": [
+   "Randament",
+   "Randament reductor",
+   "Randament drive+motor",
+   "Randament surub",
+   "Randament mecanism"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Putere & curent / Curent absorbit, putere aparenta si reactiva",
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere",
+   "Transmisii mecanice / Reductor: turatie, cuplu, inertie redusa, viteza liniara",
+   "Bilant de puteri & randament / Defalcarea pierderilor (power-flow)",
+   "Transformator pentru drive / Dimensionare kVA + inrush",
+   "Surub cu bile (forta → cuplu) / Axa liniara de pozitionare"
+  ],
+  "def": "Randamentul: raportul putere utila / putere absorbita.",
+  "ia": "Placuta / clasa IE / masurat (bilant de putere).",
+  "practic": "Motor supradimensionat → randament prost sub ~50% sarcina.",
+  "teorie": "eta egal P util impartit la P absorbit; pierderile devin caldura ce trebuie evacuata la PIF."
+ },
+ {
+  "mk": "eta25",
+  "key": "eta25",
+  "family": "asincron",
+  "labels": [
+   "Randament la 25%"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Randament vs sarcina / De ce motorul supradimensionat e ineficient"
+  ],
+  "def": "Randamentul motorului la 25% din sarcina nominala",
+  "ia": "Din curbele de randament din catalog sau date IE; scade la sarcini foarte mici",
+  "practic": "Avertizeaza ca motor supradimensionat lucreaza ineficient la sarcina redusa",
+  "teorie": "La sarcina mica pierderile fixe (fier, mecanice) domina, scazand randamentul"
+ },
+ {
+  "mk": "eta50",
+  "key": "eta50",
+  "family": "asincron",
+  "labels": [
+   "Randament la 50%"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Randament vs sarcina / De ce motorul supradimensionat e ineficient"
+  ],
+  "def": "Randamentul motorului la 50% din sarcina nominala",
+  "ia": "Din curbele de randament de catalog; aproape de plafonul de randament la multe motoare",
+  "practic": "Punct relevant: multe motoare au randament maxim intre 50 si 75% sarcina",
+  "teorie": "Randamentul e maxim cand pierderile fixe egaleaza pierderile variabile"
+ },
+ {
+  "mk": "etan",
+  "key": "etan",
+  "family": "asincron",
+  "labels": [
+   "Randament nominal"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Randament vs sarcina / De ce motorul supradimensionat e ineficient"
+  ],
+  "def": "Randamentul nominal.",
+  "ia": "Placuta / clasa IE.",
+  "practic": "Referinta pentru curba randament vs sarcina.",
+  "teorie": "Randamentul nominal leaga puterea hidraulica de cea electrica deci estimeaza consumul real al pompei la PIF."
+ },
+ {
+  "mk": "Eunit",
+  "key": "Eunit",
+  "family": "sincron",
+  "labels": [
+   "T.e.m. la cos φ=1"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Sincron — curbele in V / Curent stator vs excitatie la putere constanta"
+  ],
+  "def": "Tensiunea electromotoare la factor de putere unitar",
+  "ia": "Calculata din tensiune, curent si reactanta sincrona",
+  "practic": "Reper pentru reglajul excitatiei la cos fi unu",
+  "teorie": "Punct din caracteristica V unde curentul stator e minim"
+ },
+ {
+  "mk": "f",
+  "key": "f",
+  "family": "asincron",
+  "labels": [
+   "Frecventa",
+   "Frecventa de lucru"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Motor & turatie / Turatie sincrona, alunecare, viteza unghiulara",
+   "Convertizor de frecventa (VFD) / Tensiune DC bus, V/f, derating, pierderi",
+   "Compensare cos φ / Putere reactiva, capacitate, curent baterie",
+   "Motor sincron — turatie & excitatie / Turatie sincrona, t.e.m. din excitatie",
+   "Schema echivalenta (Thevenin) / Cuplu si curent reale din R1,X1,Xm,R2,X2",
+   "Derating motor pe VFD (autoventilatie) / Curent admisibil la turatie redusa"
+  ],
+  "def": "Frecventa tensiunii de alimentare la bornele motorului.",
+  "ia": "Retea (50 Hz) sau setarea/referinta convertizorului de frecventa.",
+  "practic": "Pe convertizor o reglezi direct; determina turatia campului si a motorului.",
+  "teorie": "Tensiunea variabila de la invertor controleaza turatia: n creste proportional cu f pana la frecventa nominala."
+ },
+ {
+  "mk": "fe",
+  "key": "fe",
+  "family": "servo",
+  "labels": [
+   "Frecventa electrica"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Servo / PMSM — model de cuplu / Cuplu, back-EMF, frecventa electrica"
+  ],
+  "def": "Frecventa electrica a marimilor statorice",
+  "ia": "Calculata din turatie si numar perechi de poli",
+  "practic": "Verifica frecventa de iesire fata de limita invertorului",
+  "teorie": "fe egal cu p inmultit cu n pe 60"
+ },
+ {
+  "mk": "fr",
+  "key": "fr",
+  "family": "asincron",
+  "labels": [
+   "Frecventa rotorica"
+  ],
+  "units": [
+   "Hz"
+  ],
+  "modules": [
+   "Motor & turatie / Turatie sincrona, alunecare, viteza unghiulara"
+  ],
+  "def": "Frecventa curentilor indusi in rotor (frecventa de alunecare).",
+  "ia": "f_r = s·f.",
+  "practic": "~1-3 Hz la sarcina nominala; benzile de slip in spectru (MCSA) indica bare rupte.",
+  "teorie": "fr egal s inmultit cu f; la pornire e maxima, scade spre zero cand motorul prinde turatia."
+ },
+ {
+  "mk": "frac",
+  "key": "frac",
+  "family": "servo",
+  "labels": [
+   "Fractie de accelerare"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Profil de miscare (trapezoidal vs S-curve) / Acceleratie de varf si jerk"
+  ],
+  "def": "Fractia din timpul de ciclu alocata accelerarii",
+  "ia": "Impusa de proiectant la definirea profilului",
+  "practic": "Controleaza forma profilului si solicitarea de cuplu",
+  "teorie": "Determina raportul faze accelerare fata de mers constant"
+ },
+ {
+  "mk": "I",
+  "key": "I",
+  "family": "asincron",
+  "labels": [
+   "Curent absorbit",
+   "Curent",
+   "Curent de linie",
+   "Curent de iesire"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Putere & curent / Curent absorbit, putere aparenta si reactiva",
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "Bilant de puteri & randament / Defalcarea pierderilor (power-flow)",
+   "Pierderi convertizor vs frecventa comutatie / Pierderi de comutatie + conductie",
+   "SynRM / IPM — cuplu de reluctanta / Cuplu si raport de salienta (MTPA la 45°)",
+   "Model termic motor (I²t) / Timp pana la limita la suprasarcina + racire"
+  ],
+  "def": "Curentul absorbit de linie.",
+  "ia": "Calculat din putere sau masurat cu clestele ampermetric.",
+  "practic": "Dimensionare cablu/protectii/drive; orientativ ~1.7-2 A/kW la 400 V.",
+  "teorie": "Curentul de linie creste cu sarcina; la PIF il limitezi sub In prin reglajul protectiilor."
+ },
+ {
+  "mk": "I0",
+  "key": "I0",
+  "family": "asincron",
+  "labels": [
+   "Curent mers in gol"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Incarcare din masuratori / Estimarea incarcarii motorului din curent/putere"
+  ],
+  "def": "Curentul de mers in gol (de magnetizare).",
+  "ia": "Masurat la gol sau ~ I_n·sin φ_n.",
+  "practic": "Aproape constant; sub el curentul nu mai scade cu sarcina.",
+  "teorie": "Curentul de magnetizeaza fluxul, defazat aproape 90 de grade; ramane prezent si in gol."
+ },
+ {
+  "mk": "Ia",
+  "key": "Ia",
+  "family": "cc",
+  "labels": [
+   "Curent indus",
+   "Curent indus (punct)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Motor c.c. — marimi fundamentale / TCEM, turatie, cuplu, putere (flux constant)",
+   "Motor sincron — turatie & excitatie / Turatie sincrona, t.e.m. din excitatie",
+   "Motor c.c. serie / M ~ Ia², n ~ 1/Ia (tractiune)",
+   "Motor c.c. — randament & pierderi / Bilant de putere (separat excitat)"
+  ],
+  "def": "Curentul de indus (rotor) la masina de c.c.",
+  "ia": "Masurat / nominal.",
+  "practic": "La flux constant M ∝ I_a; limita de curent = limita de cuplu.",
+  "teorie": "Curentul de indus este proportional cu cuplul la masina de c.c. deci se limiteaza pentru a proteja motorul."
+ },
+ {
+  "mk": "Iamin",
+  "key": "Iamin",
+  "family": "sincron",
+  "labels": [
+   "Curent stator minim"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Sincron — curbele in V / Curent stator vs excitatie la putere constanta"
+  ],
+  "def": "Curentul minim de stator, la factor de putere unitar",
+  "ia": "Din varful caracteristicii V de excitatie",
+  "practic": "Indica excitatia optima pentru pierderi minime",
+  "teorie": "La cos fi unu curentul reactiv e nul, doar componenta activa"
+ },
+ {
+  "mk": "Ich",
+  "key": "Ich",
+  "family": "servo",
+  "labels": [
+   "Curent caracteristic"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "PMSM in slabire de camp / Turatie de baza, curent caracteristic"
+  ],
+  "def": "Curent caracteristic al masinii, raport flux magneti pe inductanta",
+  "ia": "Calculat din PsiPM/Ld",
+  "practic": "Indica daca slabirea de camp e fezabila si pana unde",
+  "teorie": "Ich egal cu curentul nominal da camp slabit ideal pana la infinit"
+ },
+ {
+  "mk": "Id",
+  "key": "Id",
+  "family": "servo",
+  "labels": [
+   "Curent axa d (negativ)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "IPMSM — cuplu cu reluctanta / Aport reluctanta (Id<0) peste cuplul de magneti"
+  ],
+  "def": "Componenta de curent pe axa d, negativa la slabire camp",
+  "ia": "Impusa de regulator pentru control flux sau MTPA",
+  "practic": "Negativa pentru a slabi campul peste turatia de baza",
+  "teorie": "Pe IPMSM aduce si cuplu de reluctanta prin MTPA"
+ },
+ {
+  "mk": "Idc",
+  "key": "Idc",
+  "family": "asincron",
+  "labels": [
+   "Test c.c.: curent"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Parametri din teste / Schema echivalenta din test gol / c.c. / rotor blocat"
+  ],
+  "def": "Curentul continuu injectat in infasurare pentru determinarea rezistentei statorice.",
+  "ia": "Masurat cu sursa de c.c. aplicata pe doua faze ale infasurarii statorice.",
+  "practic": "Permite calculul R1 fara efectul reactantei sau al curentilor alternativi.",
+  "teorie": "In c.c. reactanta este nula, deci raportul tensiune-curent da pur rezistenta ohmica a infasurarii."
+ },
+ {
+  "mk": "If",
+  "key": "If",
+  "family": "cc",
+  "labels": [
+   "Curent excitatie"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Motor c.c. — randament & pierderi / Bilant de putere (separat excitat)"
+  ],
+  "def": "Curentul prin infasurarea de excitatie",
+  "ia": "Masurat sau din placuta de excitatie",
+  "practic": "Regleaza fluxul si implicit slabirea de camp",
+  "teorie": "Produce fluxul de excitatie pe portiunea neliniara saturat"
+ }
+]

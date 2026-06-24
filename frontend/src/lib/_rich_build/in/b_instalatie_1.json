@@ -1,0 +1,549 @@
+[
+ {
+  "mk": "Ca",
+  "key": "Ca",
+  "family": "comun",
+  "labels": [
+   "Factor temperatura"
+  ],
+  "units": [],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Factorul de corectie a curentului admisibil functie de temperatura mediu.",
+  "ia": "Din tabele norma, raportat la 30 grade referinta de pozare.",
+  "practic": "Subunitar peste temperatura de referinta; reduce curentul admisibil.",
+  "teorie": "Conductivitatea termica si limita de izolatie scad cu temperatura."
+ },
+ {
+  "mk": "Cg",
+  "key": "Cg",
+  "family": "comun",
+  "labels": [
+   "Factor grupare"
+  ],
+  "units": [],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Factorul de corectie pentru gruparea mai multor cabluri alaturate.",
+  "ia": "Din tabele norma functie de numarul de circuite si mod de pozare.",
+  "practic": "Cabluri grupate se incalzesc reciproc; aplica deratingul la dimensionare.",
+  "teorie": "Disiparea termica scade cand cablurile sunt apropiate."
+ },
+ {
+  "mk": "comun:DAR",
+  "key": "DAR",
+  "family": "comun",
+  "labels": [
+   "Raport absorbtie dielectrica"
+  ],
+  "units": [],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Raport de absorbtie dielectrica = R(60s)/R(30s).",
+  "ia": "Doua citiri scurte.",
+  "practic": ">1.4 bun; alternativa rapida la PI.",
+  "teorie": "Aceeasi idee ca PI, pe interval scurt."
+ },
+ {
+  "mk": "comun:IRmin",
+  "key": "IRmin",
+  "family": "comun",
+  "labels": [
+   "IR minim admis (40°C)"
+  ],
+  "units": [
+   "MΩ"
+  ],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Rezistenta de izolatie minima admisa (la 40 grade C).",
+  "ia": "Formula (U_n[kV]+1) MOhm.",
+  "practic": "Criteriu GO/NO-GO inainte de energizare.",
+  "teorie": "IEC 60034-27-4 / IEEE 43: prag minim functie de tensiune."
+ },
+ {
+  "mk": "comun:L",
+  "key": "L",
+  "family": "comun",
+  "labels": [
+   "Lungime cablu"
+  ],
+  "units": [
+   "m"
+  ],
+  "modules": [
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "Unda reflectata (lungime cablu motor) / dv/dt: lungime critica si supratensiune la borne"
+  ],
+  "def": "Lungimea cablului motor.",
+  "ia": "Traseul instalatiei.",
+  "practic": "Peste o lungime critica apare supratensiune la borne (du/dt).",
+  "teorie": "Cablu lung creste capacitatea parazita si supratensiunile la borne, impunand reactor de iesire sau filtru du/dt."
+ },
+ {
+  "mk": "comun:PI",
+  "key": "PI",
+  "family": "comun",
+  "labels": [
+   "Indice de polarizare"
+  ],
+  "units": [],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Indicele de polarizare = R(10 min)/R(1 min).",
+  "ia": "Doua citiri cu megohmmetrul.",
+  "practic": "PI>=2 bun, 1-2 suspect, <1 necesita uscare.",
+  "teorie": "Masoara absorbtia dielectrica; valori mici = umezeala/contaminare."
+ },
+ {
+  "mk": "comun:Riso1",
+  "key": "Riso1",
+  "family": "comun",
+  "labels": [
+   "R izolatie la 1 min"
+  ],
+  "units": [
+   "MΩ"
+  ],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Rezistenta de izolatie masurata la 1 minut.",
+  "ia": "Megohmmetru, citire la 60 s.",
+  "practic": "Numitorul indicelui de polarizare.",
+  "teorie": "Curentul de absorbtie dielectrica scade in timp; raportul 10min/1min arata starea izolatiei."
+ },
+ {
+  "mk": "comun:Riso10",
+  "key": "Riso10",
+  "family": "comun",
+  "labels": [
+   "R izolatie la 10 min"
+  ],
+  "units": [
+   "MΩ"
+  ],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Rezistenta de izolatie la 10 minute.",
+  "ia": "Megohmmetru, citire la 10 min.",
+  "practic": "Numaratorul indicelui de polarizare.",
+  "teorie": "La izolatie buna R creste mult de la 1 la 10 min (PI>=2)."
+ },
+ {
+  "mk": "comun:Riso30",
+  "key": "Riso30",
+  "family": "comun",
+  "labels": [
+   "R izolatie la 30 s"
+  ],
+  "units": [
+   "MΩ"
+  ],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Rezistenta de izolatie la 30 secunde.",
+  "ia": "Megohmmetru, 30 s.",
+  "practic": "Numitorul raportului DAR.",
+  "teorie": "Test scurt cand nu astepti 10 minute."
+ },
+ {
+  "mk": "comun:Riso60",
+  "key": "Riso60",
+  "family": "comun",
+  "labels": [
+   "R izolatie la 60 s"
+  ],
+  "units": [
+   "MΩ"
+  ],
+  "modules": [
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Rezistenta de izolatie la 60 secunde.",
+  "ia": "Megohmmetru, 60 s.",
+  "practic": "Numaratorul raportului DAR.",
+  "teorie": "DAR = R60/R30, criteriu rapid de absorbtie."
+ },
+ {
+  "mk": "dU",
+  "key": "dU",
+  "family": "comun",
+  "labels": [
+   "Cadere de tensiune"
+  ],
+  "units": [
+   "V",
+   "%"
+  ],
+  "modules": [
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "Cadere de tensiune la pornire / Dip pe bara la pornirea motorului"
+  ],
+  "def": "Caderea de tensiune absoluta pe cablu la curentul de sarcina.",
+  "ia": "dU = radical(3) x IB x L x (R cos fi + X sin fi) la trifazat.",
+  "practic": "Verifica la capatul liniei mai ales la cabluri lungi spre motor.",
+  "teorie": "Cadere ohmica si inductiva proportionala cu lungimea si curentul."
+ },
+ {
+  "mk": "dUproc",
+  "key": "dUproc",
+  "family": "comun",
+  "labels": [
+   "Cadere de tensiune"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima"
+  ],
+  "def": "Caderea de tensiune exprimata procentual din tensiunea nominala.",
+  "ia": "dUproc = dU / Unom x 100.",
+  "practic": "Recomandat sub 3% forta, sub 5% total pana la consumator.",
+  "teorie": "Caderea procentuala creste cu lungimea si scade cu sectiunea."
+ },
+ {
+  "mk": "IB",
+  "key": "IB",
+  "family": "comun",
+  "labels": [
+   "Curent de sarcina"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Curentul de utilizare absorbit efectiv de sarcina in regim normal.",
+  "ia": "Din puterea si tensiunea aplicatiei; la convertizor curentul de intrare.",
+  "practic": "Punct de plecare pentru dimensionarea cablului si a protectiei.",
+  "teorie": "IB <= In <= Iz: regula de coordonare sarcina-protectie-cablu."
+ },
+ {
+  "mk": "Icc",
+  "key": "Icc",
+  "family": "comun",
+  "labels": [
+   "Curent scurtcircuit"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Curentul de scurtcircuit prezumat.",
+  "ia": "I_cc = I_n_trafo / (u_k/100) + contributia motoarelor.",
+  "practic": "Alegerea capacitatii de rupere a disjunctorului (Icu ≥ Icc).",
+  "teorie": "Icc egal In impartit la uk; dicteaza capacitatea de rupere a protectiilor din amonte."
+ },
+ {
+  "mk": "Iccsec",
+  "key": "Iccsec",
+  "family": "comun",
+  "labels": [
+   "Icc secundar"
+  ],
+  "units": [
+   "kA"
+  ],
+  "modules": [
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Curentul de scurtcircuit la bornele secundare ale transformatorului.",
+  "ia": "Iccsec = Intr / uk (tensiunea de scurtcircuit procentuala).",
+  "practic": "Determina capacitatea de rupere necesara a aparatajului JT.",
+  "teorie": "Limitat de impedanta interna (uk) a transformatorului."
+ },
+ {
+  "mk": "Icctot",
+  "key": "Icctot",
+  "family": "comun",
+  "labels": [
+   "Icc total la bara"
+  ],
+  "units": [
+   "kA"
+  ],
+  "modules": [
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare"
+  ],
+  "def": "Curentul total de scurtcircuit pe bara, suma surselor.",
+  "ia": "Icctot = Icctr + Imot.",
+  "practic": "Compara cu capacitatea de rupere (Icu/Ics) a aparatajului.",
+  "teorie": "Suma contributiilor retelei si masinilor rotative."
+ },
+ {
+  "mk": "Icctr",
+  "key": "Icctr",
+  "family": "comun",
+  "labels": [
+   "Icc din transformator"
+  ],
+  "units": [
+   "kA"
+  ],
+  "modules": [
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare"
+  ],
+  "def": "Contributia transformatorului la curentul de scurtcircuit pe bara.",
+  "ia": "Calculata din puterea si uk transformatorului.",
+  "practic": "Componenta principala a Icc total la bara JT.",
+  "teorie": "Invers proportionala cu impedanta de scurtcircuit a sursei."
+ },
+ {
+  "mk": "Iinrush",
+  "key": "Iinrush",
+  "family": "comun",
+  "labels": [
+   "Curent inrush (varf)"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Curentul de varf de magnetizare la conectarea transformatorului.",
+  "ia": "Tipic 8-12 x curentul nominal, scade in cateva perioade.",
+  "practic": "Regleaza protectia magnetica sa nu declanseze la pornire.",
+  "teorie": "Saturatia miezului la conectare produce varf de curent tranzitoriu."
+ },
+ {
+  "mk": "Imot",
+  "key": "Imot",
+  "family": "comun",
+  "labels": [
+   "Contributie motoare"
+  ],
+  "units": [
+   "kA"
+  ],
+  "modules": [
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare"
+  ],
+  "def": "Contributia motoarelor in functiune la curentul de scurtcircuit.",
+  "ia": "Tipic 4-6 x curentul nominal cumulat al motoarelor.",
+  "practic": "Adauga la Icc al transformatorului pentru valoarea totala.",
+  "teorie": "Motoarele asincrone debiteaza tranzitoriu la scurtcircuit."
+ },
+ {
+  "mk": "Intr",
+  "key": "Intr",
+  "family": "comun",
+  "labels": [
+   "Curent nominal trafo",
+   "Curent nominal"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare",
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Curentul nominal pe partea joasa a transformatorului.",
+  "ia": "Intr = Str / (radical(3) x Usecundar).",
+  "practic": "Baza pentru protectia generala si dimensionarea barei JT.",
+  "teorie": "Curent nominal trifazat la puterea aparenta data."
+ },
+ {
+  "mk": "Iporn",
+  "key": "Iporn",
+  "family": "comun",
+  "labels": [
+   "Curent de pornire"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cadere de tensiune la pornire / Dip pe bara la pornirea motorului"
+  ],
+  "def": "Curentul de pornire.",
+  "ia": "I_p = k·I_n (DOL, k~5-7).",
+  "practic": "Provoaca dip de tensiune pe bara la pornire.",
+  "teorie": "Curentul de pornire stresseaza reteaua deci variatorul il limiteaza prin rampa evitand caderi de tensiune la PIF."
+ },
+ {
+  "mk": "It",
+  "key": "It",
+  "family": "comun",
+  "labels": [
+   "Curent admisibil tabelar"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Curentul admisibil tabelar al cablului in conditii de referinta.",
+  "ia": "Din tabelele de pozare (ex. SR HD 60364, IEC) dupa sectiune si mod.",
+  "practic": "Valoare de baza inainte de aplicarea factorilor de corectie.",
+  "teorie": "Capacitate limitata de temperatura maxima admisa a izolatiei."
+ },
+ {
+  "mk": "Iz",
+  "key": "Iz",
+  "family": "comun",
+  "labels": [
+   "Curent admisibil corectat"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Curentul admisibil al cablului corectat cu factorii de mediu.",
+  "ia": "Iz = It x Ca x Cg.",
+  "practic": "Trebuie sa fie cel putin egal cu curentul protectiei In.",
+  "teorie": "Curent maxim continuu fara depasirea temperaturii izolatiei."
+ },
+ {
+  "mk": "krez",
+  "key": "krez",
+  "family": "comun",
+  "labels": [
+   "Factor rezerva"
+  ],
+  "units": [],
+  "modules": [
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Factorul de rezerva aplicat la dimensionarea puterii.",
+  "ia": "Ales de proiectant, tipic 1.1-1.25 pentru extindere.",
+  "practic": "Evita supradimensionarea excesiva dar lasa margine de crestere.",
+  "teorie": "Coeficient de siguranta peste sarcina calculata."
+ },
+ {
+  "mk": "Pdrive",
+  "key": "Pdrive",
+  "family": "comun",
+  "labels": [
+   "Putere drive (suma)"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Puterea totala a drive-urilor alimentate.",
+  "ia": "Suma sarcinilor.",
+  "practic": "Dimensionarea transformatorului (kVA).",
+  "teorie": "Puterea totala a drive-urilor incarca transformatorul deci se compara cu puterea lui pentru dimensionarea alimentarii."
+ },
+ {
+  "mk": "rezerva",
+  "key": "rezerva",
+  "family": "comun",
+  "labels": [
+   "Rezerva fata de sarcina"
+  ],
+  "units": [
+   "A"
+  ],
+  "modules": [
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Marja de curent intre admisibilul cablului si sarcina efectiva.",
+  "ia": "rezerva = Iz - IB.",
+  "practic": "Rezerva pozitiva confirma dimensionarea; ofera margine de extindere.",
+  "teorie": "Rezerva asigura functionare sub limita termica a cablului."
+ },
+ {
+  "mk": "rho",
+  "key": "rho",
+  "family": "comun",
+  "labels": [
+   "Rezistivitate",
+   "Densitate lichid",
+   "Densitate",
+   "Densitate reala",
+   "Densitate fluid"
+  ],
+  "units": [
+   "Ω·mm²/m",
+   "kg/m³"
+  ],
+  "modules": [
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "NPSH (cavitatie) / NPSH disponibil vs cerut + marja",
+   "Putere pompa (wire-to-water) / Hidraulica → arbore → motor → retea",
+   "Ventilator — corectie densitate / Presiune si putere vs temperatura/altitudine",
+   "Randament pompa vs debit (BEP) / Putere la arbore reala departe de BEP",
+   "Lovitura de berbec (Joukowsky) / Supra-presiune la oprirea pompei"
+  ],
+  "def": "Densitatea fluidului.",
+  "ia": "Tabel / proces (apa ~1000, aer ~1.2 kg/m³).",
+  "practic": "Presiunea si puterea pompei/ventilatorului sunt proportionale cu ρ.",
+  "teorie": "Densitatea intra direct in cuplul si puterea hidraulica deci la fluide grele motorul trebuie redimensionat."
+ },
+ {
+  "mk": "Sccbus",
+  "key": "Sccbus",
+  "family": "comun",
+  "labels": [
+   "Putere scurtcircuit bara"
+  ],
+  "units": [
+   "kVA"
+  ],
+  "modules": [
+   "Cadere de tensiune la pornire / Dip pe bara la pornirea motorului"
+  ],
+  "def": "Puterea de scurtcircuit a barei.",
+  "ia": "Din retea / transformator.",
+  "practic": "Dip ≈ S_pornire/(S_pornire + S_cc).",
+  "teorie": "Puterea de scurtcircuit a barei fixeaza curentul de defect deci dimensioneaza protectiile si robustetea drive-ului."
+ },
+ {
+  "mk": "Smin",
+  "key": "Smin",
+  "family": "comun",
+  "labels": [
+   "Sectiune minima (3%)",
+   "Sectiune minima termica"
+  ],
+  "units": [
+   "mm²"
+  ],
+  "modules": [
+   "Cablu & cadere de tensiune / Cadere de tensiune si sectiune minima",
+   "Cablu — protectii (I²t & ampacitate) / Verificare termica scurtcircuit + curent admisibil"
+  ],
+  "def": "Sectiunea minima de cablu care satisface curentul si caderea de tensiune.",
+  "ia": "Din IB corectat si verificarea caderii de tensiune admise.",
+  "practic": "Alege sectiunea standard imediat superioara celei calculate.",
+  "teorie": "Limitata de incalzire, cadere de tensiune si scurtcircuit."
+ },
+ {
+  "mk": "Sporn",
+  "key": "Sporn",
+  "family": "comun",
+  "labels": [
+   "Putere aparenta pornire"
+  ],
+  "units": [
+   "kVA"
+  ],
+  "modules": [
+   "Cadere de tensiune la pornire / Dip pe bara la pornirea motorului"
+  ],
+  "def": "Puterea aparenta absorbita la pornirea directa a motorului.",
+  "ia": "Sporn = radical(3) x Upornire x Iporn (6-8 x In).",
+  "practic": "Verifica daca sursa sustine pornirea fara cadere de tensiune.",
+  "teorie": "Curentul de pornire ridicat cere putere aparenta mare tranzitoriu."
+ }
+]

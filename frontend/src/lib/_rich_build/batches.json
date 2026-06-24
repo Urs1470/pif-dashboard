@@ -1,0 +1,102 @@
+[
+ {
+  "name": "b_aplicatii_1.json",
+  "cat": "aplicatii",
+  "count": 30
+ },
+ {
+  "name": "b_aplicatii_2.json",
+  "cat": "aplicatii",
+  "count": 30
+ },
+ {
+  "name": "b_aplicatii_3.json",
+  "cat": "aplicatii",
+  "count": 30
+ },
+ {
+  "name": "b_aplicatii_4.json",
+  "cat": "aplicatii",
+  "count": 30
+ },
+ {
+  "name": "b_aplicatii_5.json",
+  "cat": "aplicatii",
+  "count": 23
+ },
+ {
+  "name": "b_armonici_1.json",
+  "cat": "armonici",
+  "count": 30
+ },
+ {
+  "name": "b_armonici_2.json",
+  "cat": "armonici",
+  "count": 4
+ },
+ {
+  "name": "b_instalatie_1.json",
+  "cat": "instalatie",
+  "count": 30
+ },
+ {
+  "name": "b_instalatie_2.json",
+  "cat": "instalatie",
+  "count": 2
+ },
+ {
+  "name": "b_motoare_1.json",
+  "cat": "motoare",
+  "count": 30
+ },
+ {
+  "name": "b_motoare_2.json",
+  "cat": "motoare",
+  "count": 30
+ },
+ {
+  "name": "b_motoare_3.json",
+  "cat": "motoare",
+  "count": 30
+ },
+ {
+  "name": "b_motoare_4.json",
+  "cat": "motoare",
+  "count": 30
+ },
+ {
+  "name": "b_motoare_5.json",
+  "cat": "motoare",
+  "count": 30
+ },
+ {
+  "name": "b_motoare_6.json",
+  "cat": "motoare",
+  "count": 19
+ },
+ {
+  "name": "b_termic_1.json",
+  "cat": "termic",
+  "count": 30
+ },
+ {
+  "name": "b_termic_2.json",
+  "cat": "termic",
+  "count": 15
+ },
+ {
+  "name": "b_utilitare_1.json",
+  "cat": "utilitare",
+  "count": 8
+ },
+ {
+  "name": "b_vfd_1.json",
+  "cat": "vfd",
+  "count": 30
+ },
+ {
+  "name": "b_vfd_2.json",
+  "cat": "vfd",
+  "count": 23
+ }
+]

@@ -1,0 +1,83 @@
+[
+ {
+  "mk": "THDest",
+  "key": "THDest",
+  "family": "comun",
+  "labels": [
+   "THD curent estimat"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "IEEE 519 — THD la racord (PCC) / Limita TDD din raportul Isc/IL"
+  ],
+  "def": "Distorsiunea armonica de curent estimata generata de convertizor.",
+  "ia": "Din tipul redresorului: 6-puls ~30%, 12-puls ~10%, AFE <5%.",
+  "practic": "Compara cu limita TDD pentru a decide masuri de atenuare.",
+  "teorie": "Topologia redresorului determina spectrul armonic injectat."
+ },
+ {
+  "mk": "UC",
+  "key": "UC",
+  "family": "comun",
+  "labels": [
+   "Tensiune condensatoare"
+  ],
+  "units": [
+   "V"
+  ],
+  "modules": [
+   "Reactor de detunare (baterie cond.) / Frecventa de acord si tensiunea condensatoarelor"
+  ],
+  "def": "Tensiunea efectiva pe condensatoarele bateriei cu reactor de detunare.",
+  "ia": "Mai mare decat tensiunea retelei din cauza reactorului serie.",
+  "practic": "Alege condensatoare cu tensiune nominala majorata (ex. 440-525 V).",
+  "teorie": "Reactorul serie ridica tensiunea pe condensator peste cea de retea."
+ },
+ {
+  "mk": "uk",
+  "key": "uk",
+  "family": "comun",
+  "labels": [
+   "Impedanta reactor",
+   "Tensiune de scurtcircuit",
+   "Tensiune scurtcircuit"
+  ],
+  "units": [
+   "%"
+  ],
+  "modules": [
+   "Armonici & reactoare / Inductanta reactor, cadere, regula THD",
+   "Curent de scurtcircuit (Icc) / La bara, din transformator + contributie motoare",
+   "Transformator pentru drive / Dimensionare kVA + inrush"
+  ],
+  "def": "Tensiunea de scurtcircuit / impedanta procentuala.",
+  "ia": "Placuta transformatorului / reactorului.",
+  "practic": "I_cc = I_n / (u_k/100); determina si caderea pe reactor.",
+  "teorie": "uk procentual da curentul de scurtcircuit si caderea de tensiune; un uk mic inseamna Icc mare."
+ },
+ {
+  "mk": "Un",
+  "key": "Un",
+  "family": "comun",
+  "labels": [
+   "Tensiune linie",
+   "Tensiune retea",
+   "Tensiune nominala"
+  ],
+  "units": [
+   "V",
+   "kV"
+  ],
+  "modules": [
+   "Armonici & reactoare / Inductanta reactor, cadere, regula THD",
+   "Reactor de detunare (baterie cond.) / Frecventa de acord si tensiunea condensatoarelor",
+   "Rezistenta de izolatie & PI / Megohmmetru — primul test inainte de energizare"
+  ],
+  "def": "Tensiunea nominala a motorului.",
+  "ia": "Placuta motorului.",
+  "practic": "Referinta pentru V/f si pentru caracteristica de cuplu.",
+  "teorie": "Punctul de baza al curbei U/f; peste Un tensiunea ramane plafonata la valoarea retelei."
+ }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "mk": "alpha",
+    "def": "Unghiul de aprindere $\\alpha$ al tiristoarelor dintr-un redresor comandat (convertor c.c.), masurat in grade electrice fata de momentul de comutatie naturala al tensiunii de retea.",
+    "teorie": "Tensiunea medie redresata este $U_d = U_{d0}\\cos\\alpha$, unde $U_{d0} = \\frac{3\\sqrt{6}}{\\pi}\\,U_{faza} \\approx 2{,}34\\,U_{faza}$ pentru un pod trifazat complet comandat (6 pulsuri). La $\\alpha = 0°$ tensiunea e maxima; la $\\alpha = 90°$ tensiunea medie devine zero; pentru $\\alpha > 90°$ convertorul trece in regim de invertor (franare regenerativa), conditie permisa doar la curent continuu (IEC 61800-2). La PIF se verifica raspunsul regulatorului de curent: $\\alpha$ trebuie sa varieze lin intre $5°$ si $165°$ fara sarituri, iar forma de unda pe osciloscop confirma simetria celor 6 pulsuri."
+  },
+  {
+    "mk": "ascurve",
+    "def": "Acceleratia de varf $a_{peak}$ dintr-un profil S-curve, adica acceleratia maxima instantanee atinsa in faza cu jerk constant, exprimata in unitati de viteza pe secunda la patrat ($u/s^2$).",
+    "teorie": "Intr-un profil S-curve, acceleratia creste si scade lin cu o rata constanta numita jerk $j$ (derivata a acceleratiei): $a_{peak} = j \\cdot t_j$, unde $t_j$ este durata fazei de jerk. La aceeasi distanta si timp total fata de profilul trapezoidal, $a_{peak}$ este mai mare decat acceleratia constanta a trapezoidului, dar tranzitiile sunt line. Aceasta reduce solicitarile mecanice (rezonante, uzura angrenaje) si este preferata in servo-pozitionare (IEC 61800-2 clasa de performanta dinamica). La PIF se verifica ca $a_{peak}$ nu depaseste limita de cuplu a servomotorului si ca oscilatiile de pozitie la oprire sunt in banda de toleranta."
+  },
+  {
+    "mk": "asincron:I2",
+    "def": "Curentul rotoric $I_2$ (raportat la stator) al motorului asincron la turatia de regim $n$, calculat din schema echivalenta monofazata prin bransa rotorica cu impedanta $\\underline{Z}_2 = R_2/s + jX_2$.",
+    "teorie": "Din teorema Thevenin aplicata schemei echivalente, $I_2 = U_{Th} / \\sqrt{(R_{Th} + R_2/s)^2 + (X_{Th}+X_2)^2}$. La alunecare nominala ($s_n \\approx 0{,}02..0{,}05$), $R_2/s$ domina si limiteaza $I_2$; la pornire ($s=1$) $I_2$ atinge 5..7 ori valoarea nominala. Cuplul electromagnetic este $M = 3 \\cdot I_2^2 \\cdot R_2 / (s \\cdot \\omega_1)$ (IEC 60034-1), deci $I_2$ este proxy direct al incarcarii mecanice. La PIF, comparatia $I_2$ calculat vs curentul masurat valideaza parametrii $R_1, X_1, X_m, R_2, X_2$ introdusi in schema echivalenta."
+  },
+  {
+    "mk": "atrap",
+    "def": "Acceleratia constanta $a_{trap}$ dintr-un profil trapezoidal de miscare, adica panta viteza-timp in faza de accelerare sau decelerare, exprimata in $u/s^2$.",
+    "teorie": "Profilul trapezoidal are trei faze: accelerare la $a_{trap}$ constant, mers la viteza constanta $v_{max}$, decelerare la $-a_{trap}$. Distanta totala este $d = v_{max}^2/a_{trap} + v_{max} \\cdot t_{cst}$, iar cuplul necesar este $M = J \\cdot a_{trap} + M_{rezistent}$. Variatia in treapta a acceleratiei implica jerk teoretic infinit ($j \\to \\infty$), ceea ce excita frecventele de rezonanta ale transmisiei mecanice. Profilul trapezoidal e optim ca timp ciclu pe axe rigide (masa mica, cuplaj direct), insa pe transmisii elastice (curele, surub lung) este recomandat profilul S-curve. La PIF se verifica absenta vibratiilor la pornire/oprire si respectarea limitei de curent de varf."
+  },
+  {
+    "mk": "c",
+    "def": "Constanta de tensiune $c$ a motorului c.c. serie, care leaga t.e.m. indusa de produsul turatie-curent de indus: $E = c \\cdot I_a \\cdot n$ (fluxul proportional cu $I_a$ la functionare nesaturata).",
+    "teorie": "La motorul c.c. serie, fluxul $\\Phi \\propto I_a$ (zona liniara a curbei de magnetizare), deci $E = c \\cdot I_a \\cdot n$ si $M = c \\cdot I_a^2$: cuplul creste cu patratul curentului, util la tractiune. Turatia rezulta $n = (U_a - I_a \\cdot R_{tot}) / (c \\cdot I_a)$: la sarcina mica $I_a \\to 0$ si $n \\to \\infty$ — risc de ambalare in gol. La PIF se verifica ca motorul nu porneste niciodata decuplat de sarcina si ca limitatorul de curent al convertorului e setat corect. Constanta $c$ se identifica experimental din doua puncte $(n, I_a, U_a)$ masurate in regim stationar."
+  },
+  {
+    "mk": "climit",
+    "def": "Factorul de limitare a curentului de pornire la alimentare prin convertizor de frecventa (VFD), exprimat ca multiplu al curentului nominal $I_n$, setat ca parametru de limita de curent in drive.",
+    "teorie": "La pornire DOL curentul atinge $I_{st} = (5..8) \\cdot I_n$; la pornire prin VFD curentul poate fi limitat la $I_{lim} = c_{limit} \\cdot I_n$, tipic $1{,}1..1{,}5 \\cdot I_n$, deoarece VFD controleaza separat tensiunea si frecventa, mentinand fluxul nominal la frecvente joase ($U/f = const$, IEC 61800-2). Aceasta elimina caderea de tensiune in retea si solicitarile mecanice de soc. La PIF se seteaza $c_{limit}$ in parametrii drive-ului (ex. ABB ACS880: parametru 30.17) si se verifica forma de unda a curentului la pornire pe analizor — trebuie sa ramana sub limita setata pe toata durata rampei."
+  },
+  {
+    "mk": "cosphi",
+    "def": "Factorul de putere $\\cos\\varphi$, egal cu cosinusul unghiului de defazaj $\\varphi$ dintre tensiunea fundamentala si curentul fundamental absorbit de motor, reprezentand raportul putere activa / putere aparenta: $\\cos\\varphi = P/S$.",
+    "teorie": "La motorul asincron, $S = \\sqrt{3}\\,U\\,I$, $P = \\eta \\cdot P_{mec}$, $Q = S\\sin\\varphi$; factorul de putere scade puternic sub 50% sarcina deoarece curentul de magnetizare $I_0$ (aproape pur reactiv) ramane constant. Un $\\cos\\varphi < 0{,}7$ la sarcina partiala creste curentul de linie si pierderile in cablu, influentand dimensionarea sectiunii. Invertorul VFD imbunatateste $\\cos\\varphi$ vazut de retea la $\\approx 0{,}95..0{,}99$ prin drivere cu factor de putere unitar (AFE) sau cu reactor de intrare. La PIF se masoara $\\cos\\varphi$ cu analizor de retea si se compara cu valoarea de placa; diferente mari indica o incarcare reala sub cea nominala sau probleme de conexiune."
+  },
+  {
+    "mk": "cosphi25",
+    "def": "Factorul de putere $\\cos\\varphi$ al motorului asincron la 25% din sarcina nominala, conform curbelor de catalog sau standardului IEC 60034-2-1.",
+    "teorie": "La 25% sarcina, componenta activa a curentului este mica ($I_{activ} \\approx 0{,}25 \\cdot I_{n,activ}$), in timp ce $I_0$ (reactiv) ramane aproape constant, deci $\\cos\\varphi_{25} \\approx 0{,}3..0{,}5$ pentru motoare standard, mult sub valoarea nominala. Aceasta valoare este importanta la sisteme cu sarcina variabila (pompe cu debite mici, transport cu banda neincarcata): un motor supradimensionat poate degrada factorul de putere al instalatiei sub limita impusa de distribuitor. La PIF se evalueaza daca compensarea locala sau inlocuirea motorului este justificata economic pe baza orelor de functionare la sarcina partiala."
+  },
+  {
+    "mk": "cosphi50",
+    "def": "Factorul de putere $\\cos\\varphi$ al motorului asincron la 50% din sarcina nominala, conform curbelor de catalog sau standardului IEC 60034-2-1.",
+    "teorie": "La 50% sarcina, $\\cos\\varphi_{50} \\approx 0{,}7..0{,}85$ pentru motoare IE2/IE3 — deja apropiat de valoarea nominala pentru motoarele moderne cu eficienta ridicata. Relatia $\\cos\\varphi = P/(\\sqrt{3}\\,U\\,I)$ permite estimarea puterii absorbite din masuratori de curent si tensiune fara wattmetru dedicat. Punctul de 50% sarcina este relevant pentru motoare care functioneaza frecvent la sarcina partiala (ventilatoare cu debit reglat prin clapeta, inainte de montarea VFD). La PIF, comparatia valorii masurate cu cea din catalog confirma starea de sanatate a motorului si corectitudinea identificarii parametrilor."
+  },
+  {
+    "mk": "cosphin",
+    "def": "Factorul de putere nominal $\\cos\\varphi_n$ al motorului asincron la sarcina nominala si tensiunea nominala, inscris pe placuta de identificare conform IEC 60034-1.",
+    "teorie": "La sarcina nominala, $P_n = \\sqrt{3}\\,U_n\\,I_n\\,\\cos\\varphi_n\\,\\eta_n$, deci $\\cos\\varphi_n$ este parametru de baza pentru calculul curentului de linie ($I_n = P_n / (\\sqrt{3}\\,U_n\\,\\cos\\varphi_n\\,\\eta_n)$) si al puterii reactive nominale ($Q_n = P_n \\cdot \\tan\\varphi_n$). Valori tipice IEC 60034: $0{,}80..0{,}90$ pentru motoare de uz general 4-6 poli la putere nominala; motoarele IE4/IE5 pot atinge $0{,}91..0{,}93$. La PIF, $\\cos\\varphi_n$ sta la baza dimensionarii condensatoarelor de compensare si a alegerii sectiunii cablului de alimentare."
+  },
+  {
+    "mk": "delta",
+    "def": "Unghiul de sarcina $\\delta$ al masinii sincrone, definit ca defazajul dintre fasorul tensiunii de alimentare $\\underline{U}$ si fasorul t.e.m. de excitatie $\\underline{E}$, masurat in grade electrice.",
+    "teorie": "Puterea activa a motorului sincron cu poli netezi este $P = (3\\,U\\,E/X_s)\\sin\\delta$ si atinge maximul (pull-out) la $\\delta = 90°$ (IEC 60034-1). La motoarele cu poli aparenti apare si componenta de reluctanta: $P = (3\\,U\\,E/X_d)\\sin\\delta + (3\\,U^2/2)(1/X_q - 1/X_d)\\sin 2\\delta$. Stabilitatea statica impune $\\delta < 90°$ in regim permanent; la perturbatii tranzitorii motorul oscileaza in jurul lui $\\delta$ — amortizarea e asigurata de infasurarile amortizoare (ecuivalentul curentilor rotorici). La PIF se monitorizeaza $\\delta$ calculat din masuratori de $P$, $U$, $I$, $\\cos\\varphi$ pentru a confirma rezerva de stabilitate suficienta ($\\delta_n < 40..50°$)."
+  },
+  {
+    "mk": "dT",
+    "def": "Cresterea relativa de temperatura $\\Delta T$ a infasurarilor statorice, exprimata procentual fata de incalzirea nominala, cauzata de dezechilibrul de tensiune de retea conform IEC 60034-26.",
+    "teorie": "Dezechilibrul de tensiune $\\epsilon_U$ (definit ca abaterea maxima fata de medie, raportata la medie, exprimat in %) produce o componenta inversa de tensiune $U_2 \\approx (\\epsilon_U/100) \\cdot U_n$ care, prin impedanta de secventa inversa $Z_2 \\ll Z_1$, genereaza curenti inversi mari. Supraincalzirea suplimentara se estimeaza $\\Delta T[\\%] \\approx 2\\,\\epsilon_U^2$ (regula practica IEC 60034-26, cu $\\epsilon_U$ in %): la $\\epsilon_U = 2\\%$ rezulta $\\Delta T \\approx 8\\%$ fata de incalzirea nominala. Aceasta degradeaza durata de viata a izolatiei (regula Montsinger: fiecare $10°C$ in plus injumatateste durata de viata a izolatiei). La PIF se masoara dezechilibrul cu analizor de retea si se aplica derating conform graficelor IEC 60034-26 inainte de pornire."
+  },
+  {
+    "mk": "E",
+    "def": "Tensiunea electromotoare indusa (t.e.m. / t.c.e.m. / back-EMF) $E$, tensiunea generata prin efectul electrodinamic al fluxului magnetic ce se roteste in raport cu infasurarea, opusa tensiunii aplicate.",
+    "teorie": "La masina c.c.: $E = k_e \\cdot \\Phi \\cdot n = k_e \\cdot \\Phi \\cdot \\omega / (2\\pi)$, unde $k_e$ este constanta constructiva. La PMSM (servo): $E = k_e \\cdot \\omega_e = k_e \\cdot p \\cdot \\omega_m$, proportionala cu turatia mecanica si numarul de perechi de poli $p$. La masina sincrona, $E$ depinde de curentul de excitatie $I_f$ si de curba de magnetizare. Ecuatia de tensiune in regim stationar la c.c. este $U_a = E + I_a \\cdot R_a$, deci $E$ limiteaza turatia maxima la tensiunea disponibila: $n_{max} = (U_{a,max} - I_a \\cdot R_a) / (k_e \\cdot \\Phi)$. La PIF, masurarea back-EMF la gol (cu excitatia intacta, drive deconectat) valideaza constanta $k_e$ a masinii."
+  },
+  {
+    "mk": "eta",
+    "def": "Randamentul $\\eta$ al unui element din lantul de actionare (motor, reductor, mecanism, ansamblu drive+motor), definit ca raportul dintre puterea utila la iesire si puterea absorbita la intrare: $\\eta = P_{util}/P_{abs}$.",
+    "teorie": "La motor asincron, $\\eta = P_{mec}/(\\sqrt{3}\\,U\\,I\\,\\cos\\varphi)$; pierderile includ: pierderi in cupru stator $P_{Cu1} = 3 I_1^2 R_1$, pierderi in cupru rotor $P_{Cu2} = 3 I_2^2 R_2$, pierderi in fier $P_{Fe}$ si pierderi mecanice $P_{mec,fric}$ (IEC 60034-2-1). Randamentul este maxim cand pierderile variabile (cupru) egalaza pierderile fixe (fier + mecanice): $I_{opt} = \\sqrt{P_{Fe}/R_{tot}}$. Clasele de eficienta IEC 60034-30-1: IE2, IE3 (standard UE obligatoriu $\\geq 0{,}75$ kW), IE4, IE5. La PIF, bilantul de puteri masurat (wattmetru la intrare + tensiometru/nometric la arbore) confirma incadrarea in clasa declarata si detecteaza deteriorari ale izolatiei sau rulmentilor (cresc pierderile mecanice)."
+  },
+  {
+    "mk": "eta25",
+    "def": "Randamentul $\\eta_{25}$ al motorului asincron la 25% din sarcina nominala, din curbele de catalog conform IEC 60034-2-1 sau metodei de bilant de puteri.",
+    "teorie": "La sarcina de 25%, pierderile fixe (fier $P_{Fe}$, mecanice $P_{mec,fric}$) reprezinta proportional mult mai mult decat la sarcina nominala, in timp ce pierderile in cupru $P_{Cu} \\propto I^2$ sunt mici, deci randamentul scade: $\\eta_{25} < \\eta_n$, tipic cu $5..15\\%$ la motoare de uz general. Randamentul scazut la sarcina mica penalizeaza motoarele supradimensionate: la un motor de 45 kW care functioneaza la 11 kW, $\\eta_{25}$ poate fi 88% vs $\\eta_n = 94\\%$, insemnand pierderi suplimentare de 1,5 kW permanent. La PIF si la auditul energetic, $\\eta_{25}$ ghideaza decizia de inlocuire sau redimensionare a motorului."
+  },
+  {
+    "mk": "eta50",
+    "def": "Randamentul $\\eta_{50}$ al motorului asincron la 50% din sarcina nominala, din curbele de catalog conform IEC 60034-2-1.",
+    "teorie": "Randamentul motorului este maxim cand pierderile in cupru (variabile, $\\propto I^2$) egaleaza pierderile fixe: pentru multe motoare IE2/IE3 de uz general aceasta se intampla intre 50% si 75% din sarcina nominala, deci $\\eta_{50} \\approx \\eta_{n}$ sau chiar $\\eta_{50} > \\eta_{n}$ la motoarele optimizate energetic. Relatia $\\eta = (P_n \\cdot x)/(P_n \\cdot x + P_{Fe} + x^2 \\cdot P_{Cu,n})$, unde $x$ este fractia de sarcina, permite interpolarea randamentului la orice sarcina. La PIF, $\\eta_{50}$ este relevant pentru sisteme cu sarcina variabila unde motorul functioneaza frecvent la jumatate din capacitate."
+  },
+  {
+    "mk": "etan",
+    "def": "Randamentul nominal $\\eta_n$ al motorului asincron la sarcina nominala, tensiunea nominala si frecventa nominala, inscris pe placuta de identificare conform IEC 60034-1 si clasificat in clase IE (IEC 60034-30-1).",
+    "teorie": "Randamentul nominal este parametrul de baza pentru bilantul energetic: $P_{abs,n} = P_n/\\eta_n$ si $I_n = P_n/(\\sqrt{3}\\,U_n\\,\\cos\\varphi_n\\,\\eta_n)$. Clasele IEC 60034-30-1: IE2 ($\\eta_n \\approx 88..94\\%$ pentru 1,5..90 kW), IE3 ($\\eta_n \\approx 89..95\\%$), IE4 ($\\eta_n \\approx 91..96\\%$), obligatoriu IE3 in UE pentru $\\geq 0{,}75$ kW din 2021 (Regulamentul (UE) 2019/1781). La PIF, $\\eta_n$ sta la baza calculului curentului nominal de protectie si verificarii incadrarilor termice; diferenta intre puterea calculata si cea masurata la arbore dezvaluie starea mecano-termica a motorului."
+  },
+  {
+    "mk": "Eunit",
+    "def": "Tensiunea electromotoare de excitatie $E_1$ a motorului sincron corespunzatoare punctului de functionare la factor de putere unitar ($\\cos\\varphi = 1$), adica excitatia normala pentru care curentul stator este pur activ.",
+    "teorie": "La $\\cos\\varphi = 1$, curentul stator $\\underline{I}$ este in faza cu $\\underline{U}$, deci diagrama fazoriala da $E_1 = \\sqrt{U^2 + (I \\cdot X_s)^2}$ (poli netezi). Aceasta valoare reprezinta pragul intre subexcitare ($E < E_1$, motor absoarbe putere reactiva capacitiva) si supraexcitare ($E > E_1$, motor absoarbe putere reactiva inductiva). Pe caracteristica V (curba Mordey), $E_1$ corespunde minimului de curent stator $I_{a,min}$. La PIF se ajusteaza curentul de excitatie $I_f$ pana cand puterea reactiva masurata este nula (analizor de retea), obtinand punctul de functionare optim pentru instalatii care nu necesita compensare reactiva."
+  },
+  {
+    "mk": "f",
+    "def": "Frecventa $f$ a tensiunii de alimentare la bornele motorului, in Hz; la alimentare directa din retea este 50 Hz (Europa, IEC), iar la alimentare prin VFD este frecventa de iesire setata de convertizor.",
+    "teorie": "Turatia sincrona depinde de frecventa: $n_1 = 60\\,f/p$ (rot/min), unde $p$ este numarul de perechi de poli. Reglajul continuu al frecventei de la VFD permite reglajul continuu al turatiei motorului asincron, pastrand $U/f = const$ pana la frecventa nominala (control scalar, IEC 61800-2). Peste frecventa nominala, tensiunea ramane constanta (limita invertor) iar fluxul scade ($\\Phi \\propto U/f$), intrandu-se in zona de slabire de camp. La PIF se verifica frecventa de iesire a VFD cu un multimetru de putere sau cu analizor de calitate a energiei si se compara cu setarea de referinta, pentru a detecta alunecarile de frecventa datorate supraincarcarii."
+  },
+  {
+    "mk": "fe",
+    "def": "Frecventa electrica $f_e$ a marimilor statorice ale unui servomotor PMSM, adica frecventa tensiunii si curentului de alimentare generate de invertor, legata direct de turatia mecanica si numarul de perechi de poli.",
+    "teorie": "Relatia fundamentala este $f_e = p \\cdot n / 60$, unde $p$ este numarul de perechi de poli si $n$ este turatia in rot/min, echivalent $f_e = p \\cdot \\omega_m / (2\\pi)$. Viteza unghiulara electrica este $\\omega_e = 2\\pi f_e = p \\cdot \\omega_m$. La un servomotor cu $p = 4$ si $n = 3000$ rot/min, $f_e = 200$ Hz; invertorul trebuie sa genereze tensiune la aceasta frecventa cu suficienta rezolutie PWM. La PIF se verifica ca frecventa maxima de iesire a invertorului (parametru hardware) depaseste $f_{e,max}$ corespunzatoare turatiei maxime de lucru, altfel motorul nu poate atinge viteza ceruta."
+  },
+  {
+    "mk": "fr",
+    "def": "Frecventa rotorica $f_r$ (frecventa de alunecare), frecventa curentilor electrici indusi in infasurarea (sau barele) rotorului motorului asincron, proportionala cu alunecarea $s$.",
+    "teorie": "Relatia de definitie este $f_r = s \\cdot f$, unde $s = (n_1 - n)/n_1$ este alunecarea motorului. La regim nominal, $s_n \\approx 0{,}02..0{,}05$, deci $f_r \\approx 1..2{,}5$ Hz la 50 Hz; la pornire directa (DOL) $s = 1$ si $f_r = 50$ Hz (curentii rotorici au aceeasi frecventa cu cei statorici). In diagnostica prin analiza spectrului curentului stator (MCSA), barele rupte de rotor genereaza componente laterale la frecventele $f \\pm k \\cdot 2\\,s\\,f$ (IEC 60034-4-1 metode de masura si diagnosticare). La PIF se monitorizeaza $f_r$ calculat din parametrii de drive (slip compensare) pentru verificarea reglajului de turatie si detectarea supraincarcarii."
+  },
+  {
+    "mk": "frac",
+    "def": "Fractia de accelerare $f_{acc}$, parametru adimensional exprimat procentual, care reprezinta ponderea duratei fazei de accelerare fata de durata totala a unui ciclu de miscare in profilul trapezoidal sau S-curve.",
+    "teorie": "Intr-un ciclu simetric (accelerare + mers constant + decelerare), daca $f_{acc}$ este fractia de accelerare si $f_{dec}$ cea de decelerare, timpul de mers constant este $(1 - f_{acc} - f_{dec}) \\cdot t_{ciclu}$. Viteza de varf este $v_{max} = d / [(1 - f_{acc}/2 - f_{dec}/2) \\cdot t_{ciclu}]$ pentru profil trapezoidal simetric. Fractia de accelerare determina direct cuplul de varf necesar: $M_{varf} = J \\cdot a_{max} + M_{rez}$, iar $a_{max} = v_{max} / (f_{acc} \\cdot t_{ciclu})$. La PIF se verifica ca fractia aleasa nu impune un cuplu de varf care sa depaseasca limita termica sau de curent a servomotorului si a invertorului."
+  },
+  {
+    "mk": "I",
+    "def": "Curentul de linie absorbit $I$ de motorul electric (sau livrat de convertizor), masurat in amperi la bornele de alimentare, valoare eficace (RMS).",
+    "teorie": "La motor asincron trifazat, $I = P/(\\sqrt{3}\\,U\\,\\cos\\varphi\\,\\eta)$; valoarea orientativa este $\\approx 1{,}7..2{,}0$ A/kW la $400$ V, $\\cos\\varphi = 0{,}85$, $\\eta = 0{,}92$. Curentul de linie sta la baza: dimensionarii cablului ($I_{admis} \\geq I$, IEC 60364-5-52), alegerii sigurantelor ($I_n^{siguranta} \\geq I$, IEC 60269), setarii protectiei termice a drive-ului si intreruptorului de motor. Modelul termic $I^2 t$ (IEC 61800-5-1) integreaza patratul curentului in timp pentru a detecta supraincalzirea. La PIF, curentul de linie se masoara cu clestele ampermetric la pornire (verifica limita de curent setata in drive) si in regim stationar (verifica incadrarea sub $I_n$)."
+  },
+  {
+    "mk": "I0",
+    "def": "Curentul de mers in gol $I_0$ al motorului asincron, curentul absorbit de motor la functionare fara sarcina la arbore, reprezentand practic curentul de magnetizare necesar stabilirii fluxului in miezul de fier.",
+    "teorie": "Curentul de mers in gol are doua componente: magnetizanta $I_m$ (in cuadratura cu $U$, produce fluxul $\\Phi$) si activa $I_{Fe}$ (in faza cu $U$, acopera pierderile in fier): $I_0 = \\sqrt{I_m^2 + I_{Fe}^2}$. Tipic, $I_0 \\approx (0{,}25..0{,}50) \\cdot I_n$ la motoare standard (valori mai mari la motoare cu multi poli sau putere mica). In schema echivalenta, $I_0$ corespunde curentului prin bransa de magnetizare $X_m$ (reactanta de magnetizare). La PIF, masurarea $I_0$ la testul de mers in gol (alimentare la $U_n$, $f_n$, arbore liber) permite identificarea $X_m$ si $R_{Fe}$; valori anormal de mari indica defecte ale circuitului magnetic (laminatii scurtcircuitate, miez deteriorat)."
+  },
+  {
+    "mk": "Ia",
+    "def": "Curentul de indus $I_a$ al masinii de curent continuu, curentul care circula prin infasurarea de indus (rotor), proportional cu cuplul electromagnetic produs la flux magnetic constant.",
+    "teorie": "La masina c.c. cu excitatie separata (flux $\\Phi = const$), cuplul este $M = k_m \\cdot \\Phi \\cdot I_a$, deci $M \\propto I_a$ — reglajul de cuplu se reduce la reglajul de curent. Ecuatia de tensiune este $U_a = E + I_a \\cdot R_a = k_e \\cdot \\Phi \\cdot n + I_a \\cdot R_a$; la turatie constanta, $I_a = (U_a - E)/R_a$. Curentul de indus este limitat de comutator (scantei la comutatie) si de incalzirea infasurarii; limitatorul de curent din drive seteaza $I_{a,max} = (1{,}5..2{,}0) \\cdot I_{a,n}$ pentru pornire si suprasarcina scurta. La PIF se verifica forma de unda a lui $I_a$ pe osciloscop: ondulatia de curent (ripple) excesiva indica constanta de timp $L_a/R_a$ mica sau frecventa de comutatie redusa."
+  },
+  {
+    "mk": "Iamin",
+    "def": "Curentul minim de stator $I_{a,min}$ al motorului sincron, valoarea minima a curentului absorbit la putere activa constanta, atinsa la excitatia normala (factor de putere unitar), conform caracteristicii V (Mordey).",
+    "teorie": "Pe caracteristica V ($I$ vs $I_f$ la $P = const$), curentul stator are un minim $I_{a,min}$ in punctul $\\cos\\varphi = 1$: la subexcitare ($I_f < I_{f,norm}$) motorul absoarbe putere reactiva capacitiva si $I$ creste; la supraexcitare ($I_f > I_{f,norm}$) motorul absoarbe putere reactiva inductiva si $I$ creste din nou. La excitatia normala, $I_{a,min} = P/(\\sqrt{3}\\,U)$ (numai componenta activa). Curentul minim este limita inferioara a curentului de stator la sarcina data si indica functia de compensare reactiva a motorului sincron: supraexcitat, motorul este echivalent unui condensator pentru retea. La PIF se ajusteaza $I_f$ pentru a obtine $I_{a,min}$ masurat, validand excitatia normala."
+  },
+  {
+    "mk": "Ich",
+    "def": "Curentul caracteristic $I_{ch}$ al unui motor PMSM, definit ca raportul dintre fluxul creat de magneti permanenti $\\Psi_{PM}$ si inductanta pe axa directa $L_d$: $I_{ch} = \\Psi_{PM}/L_d$.",
+    "teorie": "Curentul caracteristic determina capacitatea de slabire a campului (flux weakening) a motorului PMSM: daca $I_{ch} \\leq I_n$ (conditia de slabire ideala), atunci prin aplicarea unui curent de axa d egal si opus ($I_d = -I_{ch}$) se anuleaza fluxul de magneti si motorul poate functiona teoretic la viteza infinita la putere constanta. In practica, $I_{ch}/I_n \\in [0{,}7..1{,}1]$ — valori subunitare permit slabire profunda a campului, supraunitare limiteaza gama de turatie in camp slabit. La PIF se calculeaza $I_{ch}$ din parametrii identificati ai masinii ($\\Psi_{PM}$, $L_d$) si se compara cu $I_n$ pentru a stabili turatia maxima realizabila in camp slabit si parametrii regulatorului de flux."
+  },
+  {
+    "mk": "Id",
+    "def": "Componenta de curent pe axa directa $I_d$ (axa d, aliniata cu fluxul rotorului) in sistemul de coordonate dq al masinii sincrone cu magneti permanenti, cu valoare negativa in regim de slabire a campului.",
+    "teorie": "In controlul orientat pe camp (FOC) al PMSM, cuplul este $M = \\frac{3}{2}\\,p\\,(\\Psi_{PM} + (L_d - L_q)\\,I_d)\\,I_q$ (IEC 61800-2). Pentru IPMSM ($L_d < L_q$), componenta $I_d < 0$ adauga cuplu de reluctanta $M_{rel} = \\frac{3}{2}\\,p\\,(L_d - L_q)\\,I_d\\,I_q$ (negativ inmultit negativ = pozitiv). Strategia MTPA (Maximum Torque Per Ampere) optimizeaza raportul $I_d/I_q$ pentru cuplu maxim la curent minim, iar in camp slabit $I_d$ este redus negativ pentru a combate t.e.m. de magneti si a permite functionarea la turatie inalta. La PIF se verifica ca regulatorul de curent (PI pe axa d) mentine $I_d$ la referinta in regim dinamic, fara suprareglaj care sa satureze convertorul."
+  },
+  {
+    "mk": "Idc",
+    "def": "Curentul continuu de test $I_{DC}$ injectat in doua faze ale infasurarii statorice a motorului asincron, utilizat pentru masurarea rezistentei statorice $R_1$ prin metoda voltmetru-ampermetru in curent continuu.",
+    "teorie": "In curent continuu, reactantele statorice ($X_1$, $X_m$) sunt infinite si nu conduc curent, deci impedanta masurata este pur rezistiva. Rezistenta pe faza: $R_1 = U_{DC}/(2\\,I_{DC})$ (doua faze in serie pentru montaj bifazic). Masurarea se face la temperatura de lucru si se corecteaza la $75°C$ conform IEC 60034-2-1: $R_{75} = R_{masurat} \\cdot (235 + 75)/(235 + T_{masurat})$ (cupru). $R_1$ masurata corect este esentiala pentru: calculul pierderilor in cupru stator, estimarea caderii de tensiune la pornire si compensarea rezistentei in reglajul scalar $U/f$ (boost de tensiune la frecvente joase). La PIF se efectueaza testul DC inainte de primul start pentru a valida parametrii modelului motorului introdusi in drive."
+  },
+  {
+    "mk": "If",
+    "def": "Curentul de excitatie $I_f$ prin infasurarea de excitatie a masinii de curent continuu (excitatie separata), care determina fluxul magnetic in intrefier si implicit t.e.m. indusa si caracteristicile cuplului.",
+    "teorie": "Fluxul magnetic este $\\Phi = f(I_f)$ — relatia este neliniara (curba de magnetizare), cu saturatie la $I_f$ mare. La flux constant ($I_f = const$), t.e.m. $E = k_e \\cdot \\Phi \\cdot n$ si cuplul $M = k_m \\cdot \\Phi \\cdot I_a$ sunt proportionale cu $n$ respectiv $I_a$. Reglajul in zona de slabire de camp se face prin reducerea $I_f$ sub valoarea nominala: $n > n_n$ la $U_a = U_{a,n}$, cu mentinerea $P \\approx const$ (putere constanta). Sursa de excitatie trebuie sa fie stabila si izolata; o intrerupere accidentala a circuitului de excitatie duce la scaderea fluxului si ambalarea motorului ($n \\to \\infty$). La PIF se masoara $I_f$ si $U_f$, se verifica rezistenta de excitatie $R_f = U_f/I_f$ si se seteaza curentul nominal de excitatie in regulatorul de flux al convertorului."
+  }
+]

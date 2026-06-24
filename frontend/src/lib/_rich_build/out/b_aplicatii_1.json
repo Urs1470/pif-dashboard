@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "alt",
+  "def": "Altitudinea locului de montaj fata de nivelul marii, exprimata in metri, care determina presiunea atmosferica locala si densitatea aerului si influenteaza direct capacitatea termica a motorului si caracteristicile hidraulice ale pompelor/ventilatoarelor.",
+  "teorie": "Conform IEC 60034-1, motoarele sunt garantate pana la 1000 m altitudine; peste aceasta limita se aplica un factor de derating termic deoarece densitatea aerului scade aproximativ dupa $p = p_0 \\cdot e^{-h/8500}$ (Pa). La ventilatoare, puterea absorbita scade cu densitatea aerului: $P \\propto \\rho$, deci la altitudine mare se recalculeaza presiunea si puterea. La pompe, NPSH disponibil scade cu presiunea barometrica: $NPSH_{disp} = (p_{atm} - p_v)/(\\rho g) - H_s$, riscul de cavitatie crescand."
+ },
+ {
+  "mk": "beta",
+  "def": "Unghiul de inclinare $\\beta$ (in grade) al planului transportorului fata de orizontala, care determina componenta gravitationala a fortei de tractiune necesare deplasarii sarcinii pe banda.",
+  "teorie": "Forta totala de tractiune pe un transportor inclinat este $F = F_{frictiune} + m \\cdot g \\cdot \\sin\\beta$, unde componenta de panta $m \\cdot g \\cdot \\sin\\beta$ poate fi pozitiva (urcare) sau negativa (coborare, regim generator). Puterea motorului este $P = F \\cdot v / \\eta_{transmisie}$. La PIF se verifica daca unghiul depaseste unghiul de alunecare al materialului (~15-20° pentru materiale in vrac) si daca la coborare drive-ul poate disipa energia prin franare regenerativa sau rezistor de franare."
+ },
+ {
+  "mk": "bjos",
+  "def": "Limita inferioara a benzii de frecvente de iesire interzise (skip band) programate in VFD, sub care convertizorul functioneaza normal fara restrictie de tranzit.",
+  "teorie": "Structurile mecanice au frecvente proprii de rezonanta la care amplitudinile vibratiei cresc periculos; VFD-ul evita stationarea in aceste frecvente prin programarea unei benzi skip $[f_{jos}, f_{sus}]$. Frecventa de rezonanta se determina din analiza modala sau la PIF prin baleiaj de frecventa si masurare vibratii (accelerometru). Trecerea prin banda se face cu acceleratie maxima, fara oprire. Parametru ABB: par. 28.74 / Siemens: p1091."
+ },
+ {
+  "mk": "bsus",
+  "def": "Limita superioara a benzii de frecvente de iesire interzise (skip band) programate in VFD, peste care convertizorul functioneaza normal dupa traversarea rapida a benzii.",
+  "teorie": "Banda skip $[f_{jos}, f_{sus}]$ trebuie sa acopere complet frecventa de rezonanta mecanica cu o marja de cel putin 1-2 Hz de o parte si de alta. Latimea tipica este 2-5 Hz. La PIF se verifica ca drive-ul nu stationeaza niciodata intre $f_{jos}$ si $f_{sus}$ la nicio referinta de viteza; tranzitul se efectueaza cu rampa maxima. Frecventele tipice de rezonanta la pompe si ventilatoare industriale sunt in intervalul 15-45 Hz."
+ },
+ {
+  "mk": "comp",
+  "def": "Gradul de compensare, exprimat procentual, reprezinta fractiunea din greutatea nominala a sarcinii utile care este echilibrata de contragreutate in aplicatii de ridicare (ascensoare, macarale).",
+  "teorie": "Contragreutatea are masa $m_{CG} = m_{cabina} + k \\cdot m_{sarcina\\_nominala}$, unde $k$ este gradul de compensare (tipic $k = 0.4...0.5$ la lifturi conform EN 81-1). Cuplul net al motorului pe ciclu ascendent/descendent se reduce semnificativ, micsorand puterea instalata si consumul mediu. La PIF se calculeaza cuplul maxim in ambele sensuri si se verifica ca motorul si VFD-ul pot acoperi varful de cuplu la pornire in sarcina in ambele directii."
+ },
+ {
+  "mk": "comun:marjat",
+  "def": "Marja termica de siguranta la pornire, calculata ca diferenta dintre timpul admis la rotor blocat $t_{stall}$ si timpul efectiv de pornire $t_{start}$, indicand rezerva disponibila inainte de deteriorarea termica a infasurarii rotorului.",
+  "teorie": "Conditia de pornire sigura din punct de vedere termic este $t_{start} < t_{stall}$, deci marja $\\Delta t = t_{stall} - t_{start} > 0$. Curentul la rotor blocat este tipic $5...7 \\cdot I_n$, producand pierderi $\\propto I^2 R$. Daca marja este negativa se reduce curentul de pornire (rampa mai lunga, limitare cuplu) sau se alege motor cu clasa termica superioara (F, H) ori $t_{stall}$ mai mare. IEC 60034-1 specifica $t_{stall}$ la cald si la rece pe placuta motorului."
+ },
+ {
+  "mk": "comun:pas",
+  "def": "Pasul surubului cu bile sau al surubului trapezoidal, reprezentand avansul liniar al piulitei (in mm) la o rotatie completa a surubului, parametru fundamental al conversiei miscare rotativa in miscare liniara pe axele de pozitionare.",
+  "teorie": "Relatia cinematica este $v_{lin} = n \\cdot p / 60$ (mm/s), iar conversia fortei in cuplu: $M = F_{ax} \\cdot p / (2\\pi \\cdot \\eta_{surub})$, unde $\\eta_{surub}$ este randamentul surubului (0.85-0.95 pentru surub cu bile, 0.3-0.5 pentru surub trapezoidal). Inertia redusa la axul motorului este $J_{red} = m \\cdot (p/2\\pi)^2$. La PIF se verifica ca motorul genereaza cuplu suficient pentru forta axiala ceruta si ca inertia reflectata este compatibila cu dinamica ceruta."
+ },
+ {
+  "mk": "comun:T",
+  "def": "Cuplul la axul de iesire al transmisiei sau al motorului, exprimat in Nm, reprezentand momentul fortat care produce sau se opune miscarii de rotatie in punctul de masura.",
+  "teorie": "Cuplul este legat de putere si turatie prin $M = 9550 \\cdot P / n$ (Nm, kW, rpm) sau $M = P / \\omega$ (Nm, W, rad/s). In transmisii liniare (curea, cremaliera) relatia forta-cuplu este $M = F \\cdot D/2$, iar in aplicatii winder cuplul variaza invers proportional cu diametrul curent pentru a mentine tensiunea in material: $M = F_{tensiune} \\cdot d/2$. La PIF se verifica ca VFD-ul poate furniza cuplul de varf cerut la pornire si in regim dinamic, incluzand cuplul de accelerare $M_{acc} = J_{tot} \\cdot d\\omega/dt$."
+ },
+ {
+  "mk": "comun:tstall",
+  "def": "Timpul termic admis cu rotorul blocat la motor cald, conform IEC 60034-1, reprezentand durata maxima in care motorul poate sustine curentul de scurtcircuit fara deteriorarea ireversibila a izolatiei infasurarii.",
+  "teorie": "La rotor blocat curentul atinge $I_{LR} \\approx 5...7 \\cdot I_n$, producand pierderi termice $\\propto I_{LR}^2 \\cdot R$. Energia termica acumulata este limitata de capacitatea calorica a infasurarii: $W_{adm} = c \\cdot \\Delta\\theta_{max}$. IEC 60034-1 impune producatorului sa declare $t_{stall}$ la cald (motor la temperatura de regim) si la rece (motor la temperatura ambianta); valoarea la cald este mai restrictiva si aceasta se compara cu $t_{start}$ calculat. Tipic $t_{stall} = 5...30$ s la motoare standard."
+ },
+ {
+  "mk": "comun:tstart",
+  "def": "Timpul de accelerare al sistemului de la repaus pana la turatia nominala, calculat din ecuatia de miscare a sistemului cu inertia totala redusa la axul motorului.",
+  "teorie": "Din ecuatia de miscare $M_{acc} = J_{tot} \\cdot d\\omega/dt$ rezulta $t_{start} = J_{tot} \\cdot \\omega_n / M_{acc,med}$, unde $M_{acc,med} = M_{motor\\_med} - M_{rezistent}$ este cuplul mediu de accelerare. La pornire directa (DOL) $t_{start}$ depinde de caracteristica mecanica a motorului; cu VFD se poate impune rampa dorita. Conditia termica impune $t_{start} < t_{stall}$. La macarale si pompe mari se verifica si energia de accelerare $E = \\frac{1}{2} J_{tot} \\omega_n^2$ pentru dimensionarea rezistorului de franare."
+ },
+ {
+  "mk": "Cs",
+  "def": "Coeficientul de neuniformitate a vitezei unghiulare, marime adimensionala definita ca raportul dintre variatia maxima a vitezei unghiulare pe ciclu si viteza unghiulara medie, caracteristic aplicatiilor cu sarcina ciclica pulsanta (compresoare cu piston, prese).",
+  "teorie": "Definitia este $C_s = \\Delta\\omega / \\omega_{med} = (\\omega_{max} - \\omega_{min}) / \\omega_{med}$. Volantul limiteaza aceasta variatie prin inertia sa: $J_{volant} = \\delta E / (C_s \\cdot \\omega_{med}^2)$, unde $\\delta E$ este energia fluctuanta pe ciclu (J). Valori tipice: $C_s = 0.002...0.005$ pentru pompe de alimentare, $0.01...0.02$ pentru compresoare, $0.03...0.05$ pentru prese. Un $C_s$ mic cere un volant mai greu, ceea ce creste inertia totala si timpul de accelerare; la PIF se verifica compatibilitatea cu timpul de pornire termic admis."
+ },
+ {
+  "mk": "d",
+  "def": "Diametrul curent al rolei de infasurare la momentul de calcul, variind continuu de la diametrul gol $d_{gol}$ la diametrul plin $d_{plin}$ pe masura ce materialul se infasoara, parametru cheie in controlul winder-ului.",
+  "teorie": "In regimul de putere constanta (flux slabit) al unui winder, relatia dintre cuplu, tensiune in material si diametru curent este $M = F_{tensiune} \\cdot d/2$, iar turatia rolei $n = v_{material} \\cdot 60 / (\\pi \\cdot d)$. Pe masura cresterii lui $d$, turatia scade si cuplul creste la putere constanta $P = M \\cdot \\omega = const$. La taper control, tensiunea in material se reduce programat cu $d$: $F(d) = F_0 \\cdot (d_{gol}/d)^k$, pentru a evita strivirea straturilor interioare. La PIF se calibreaza senzorul de diametru sau calculul indirect din numarul de rotatii si grosimea materialului."
+ },
+ {
+  "mk": "D",
+  "def": "Diametrul (tambur, roata, pinion sau rotor), exprimat in metri, parametru geometric care realizeaza conversia intre viteza liniara si turatia de rotatie si intre forta si cuplu in transmisii mecanice.",
+  "teorie": "Relatiile fundamentale: viteza liniara $v = \\pi \\cdot D \\cdot n / 60$ (m/s) si cuplul $M = F \\cdot D/2$ (Nm). La un tambur de transportor sau de ridicare, diametrul determina atat viteza benzii cat si cuplul cerut motorului. La transmisii cu roti dintate sau curea, raportul diametrelor da raportul de transmitere $i = D_2/D_1 = n_1/n_2$. La PIF se verifica ca turatia liniara calculata corespunde vitezei procesului si ca cuplul motorului acopera forta ceruta cu rezerva corespunzatoare factorului de serviciu."
+ },
+ {
+  "mk": "D1",
+  "def": "Diametrul exterior al rotorului pompei centrifuge inainte de operatia de taiere (trimming), conform fisei tehnice a producatorului, punct de referinta pentru calculul legilor de afinitate la taiere.",
+  "teorie": "Legile de afinitate la taiere diametrala: $Q_2/Q_1 = D_2/D_1$, $H_2/H_1 = (D_2/D_1)^2$, $P_2/P_1 = (D_2/D_1)^3$. Aceste relatii sunt aproximative (valabile exact numai la turatie constanta si geometrie similara) si devin tot mai putin precise pentru taieri mai mari de 15-20% din diametru. Taierile mici (sub 5-10%) sunt nerecomandabile datorita impreciziei relative. La PIF, taierea este o alternativa permanenta (ireversibila) la VFD pentru ajustarea punctului de functionare pe o instalatie fixata."
+ },
+ {
+  "mk": "D2",
+  "def": "Diametrul rotorului pompei centrifuge dupa operatia de taiere mecanica (trimming), ales astfel incat punctul de functionare al pompei sa corespunda debitului si inaltimii cerute de instalatie.",
+  "teorie": "Diametrul taiat se calculeaza din inaltimea ceruta: $D_2 = D_1 \\cdot \\sqrt{H_2/H_1}$, sau din debit: $D_2 = D_1 \\cdot Q_2/Q_1$. Cele doua valori difera usor; se alege valoarea conservatoare si se verifica experimental. Randamentul la BEP scade usor dupa taiere. Dupa taiere, curba pompei este definitiva — spre deosebire de VFD care permite reglaj continuu; aceasta solutie este preferata cand instalatia are turatie fixa si punctul de functionare este stabil."
+ },
+ {
+  "mk": "dE",
+  "def": "Energia care fluctueaza intr-un ciclu complet al masinii cu piston (compresor, presa, pompa cu piston), reprezentand surplusul si deficitul de energie mecanica fata de media ciclului, dimensionanta pentru alegerea volantului.",
+  "teorie": "Energia fluctuanta se obtine din integrarea diagramei $M(\\varphi) - M_{med}$ pe ciclu: $\\delta E = \\int_0^{2\\pi} |M(\\varphi) - M_{med}| \\, d\\varphi / 2$. Aceasta energie se acumuleaza si se elibereaza din volant. Inertia volantului necesar este $J_{volant} = \\delta E / (C_s \\cdot \\omega_{med}^2)$. La PIF cu VFD, regulatorul de viteza poate prelua partial rolul volantului, permitand reducerea $GD^2$; se verifica ca banda de reglare a VFD-ului este suficient de larga pentru a amortiza pulsatiile."
+ },
+ {
+  "mk": "df",
+  "def": "Factor de derating (subunitar), exprimat ca multiplu sau procent, cu care se reduce capacitatea nominala a unui echipament (motor, convertizor) in conditii de mediu sau retea diferite de conditiile de referinta IEC.",
+  "teorie": "Capacitatea efectiva disponibila este $P_{ef} = P_n \\cdot df$. Principalele cauze de derating: dezechilibrul de tensiune (IEC 60034-26: la dezechilibru 2% se aplica df ~ 0.95), temperatura ridicata si altitudine (IEC 60034-1), armonici de curent (factor HVF — Harmonic Voltage Factor conform IEC 60034-17). La VFD se aplica derating termic la temperatura ambianta peste 40°C (tipic -2%/°C conform fisei drive-ului) si derating de curent la frecventa de comutatie ridicata. La PIF se verifica ca echipamentul selectat acopera sarcina maxima dupa aplicarea tuturor factorilor de derating cumulati."
+ },
+ {
+  "mk": "dgol",
+  "def": "Diametrul interior al miezului (tubului sau mandrinei) rolei la inceputul ciclului de infasurare, reprezentand valoarea minima a diametrului curent si determinand viteza maxima a axei winder-ului si cuplul minim cerut.",
+  "teorie": "La inceputul infasurarii $d = d_{gol}$, turatia rolei este maxima: $n_{max} = v_{material} \\cdot 60 / (\\pi \\cdot d_{gol})$. Cuplul la gol este minim: $M_{min} = F_{tensiune} \\cdot d_{gol}/2$. Raportul de reglare al actionarii este impus de raportul diametrelor: $n_{max}/n_{min} = d_{plin}/d_{gol}$. La PIF se verifica ca turatia maxima a motorului si a VFD-ului acopera $n_{max}$ si ca cuplul de pierderi (frecare, inertie accelerare) este mic in raport cu cuplul util la diametru gol."
+ },
+ {
+  "mk": "dplin",
+  "def": "Diametrul exterior al rolei la sfarsitul ciclului de infasurare, reprezentand valoarea maxima a diametrului curent si determinand viteza minima a axei winder-ului si cuplul maxim cerut motorului.",
+  "teorie": "La diametrul plin, turatia rolei este minima: $n_{min} = v_{material} \\cdot 60 / (\\pi \\cdot d_{plin})$. Cuplul este maxim: $M_{max} = F_{tensiune} \\cdot d_{plin}/2$. Puterea este constanta pe intregul ciclu in regim ideal: $P = F_{tensiune} \\cdot v_{material} = const$. Raportul de reglare de turatie cerut actionarii: $i_{reg} = d_{plin}/d_{gol}$; valori tipice 5:1 ... 20:1. La PIF, motorul si VFD-ul se dimensioneaza la puterea corespunzatoare vitezei maxime si tensiunii in material, verificandu-se cuplul de varf la $d_{plin}$."
+ },
+ {
+  "mk": "dw",
+  "def": "Variatia vitezei unghiulare pe ciclu, exprimata in rad/s, egala cu produsul dintre coeficientul de neuniformitate si viteza unghiulara medie, reprezentand amplitudinea oscilatiei de viteza la masini cu sarcina ciclica.",
+  "teorie": "Relatia de definitie este $\\Delta\\omega = C_s \\cdot \\omega_{med}$. Energia inmagazinata si eliberata de volant este $\\delta E = J_{volant} \\cdot \\omega_{med} \\cdot \\Delta\\omega = J_{volant} \\cdot C_s \\cdot \\omega_{med}^2$. La VFD cu control vectorial, regulatorul de viteza (PI) incearca sa anuleze $\\Delta\\omega$, dar cu inertie mare banda de reglare este limitata; daca frecventa pulsatiei de cuplu depaseste banda regulatorului, oscilatie persista in turatie. La PIF se masoara $\\Delta\\omega$ cu tachimetru sau encoder si se ajusteaza regulatorul sau inertia."
+ },
+ {
+  "mk": "Ecin",
+  "def": "Energia cinetica acumulata in masele in rotatie ale sistemului (motor plus sarcina redusa la axul motorului) la turatia $n_2$, reprezentand energia care trebuie disipata sau recuperata la franare.",
+  "teorie": "Formula de calcul: $E_{cin} = \\frac{1}{2} J_{tot} \\omega_2^2 = \\frac{1}{2} J_{tot} \\left(\\frac{2\\pi n_2}{60}\\right)^2$ (J). La franare regenerativa aceasta energie se returneaza in reteaua DC sau in retea (daca VFD are modul de recuperare). Daca se foloseste rezistor de franare, acesta trebuie sa disipeze $E_{cin}$ in timpul de franare impus: $P_{rezistor\\_min} = E_{cin} / t_{franare}$. La macarale si centrifuge cu inertie mare, $E_{cin}$ este criteriul determinant pentru alegerea tipului de franare si dimensionarea rezistorului conform IEC 61800-2."
+ },
+ {
+  "mk": "econ",
+  "def": "Economia de putere electrica, exprimata procentual, obtinuta prin reglarea turatiei cu VFD comparativ cu reglarea prin strangulare la pompe centrifuge si ventilatoare functionand la debit partial.",
+  "teorie": "Conform legilor de afinitate: $P \\propto n^3$, deci la turatia relativa $x = n/n_n$ puterea VFD este $P_{VFD} = P_n \\cdot x^3$. Prin strangulare, puterea ramane aproape de valoarea nominala deoarece curba pompei nu se modifica. Economia relativa este $econ = 1 - x^3$ la debit $Q = Q_n \\cdot x$. De exemplu, la 80% debit ($x=0.8$): $econ = 1 - 0.512 = 48.8\\%$. In practica se aplica un profil real de sarcina (ponderat pe ore) si se calculeaza $E_{economie\\_an} = \\int_0^{8760} [P_{vana}(t) - P_{VFD}(t)] dt$ (kWh/an). Aceasta valoare fundamenteaza analiza de rentabilitate a investitiei in VFD."
+ },
+ {
+  "mk": "etaBEP",
+  "def": "Randamentul hidraulic al pompei centrifuge in punctul de eficienta maxima (Best Efficiency Point — BEP), valoarea de varf a curbei $\\eta(Q)$ furnizata de producator si atinsa la debitul optim de proiectare al rotorului.",
+  "teorie": "BEP este definit ca punctul de pe curba caracteristica $H(Q)$ unde randamentul $\\eta_p = \\rho g Q H / P_{arbore}$ atinge valoarea maxima; abaterea de la BEP creste pierderile hidraulice prin soc si recirculare. Conform EN ISO 9906, pompele de clasa 1 au tolerante stranse la BEP. Functionarea continua la peste $\\pm 10\\%$ fata de $Q_{BEP}$ scurteaza durata de viata a lagarelor si garniturilor. La PIF se verifica pozitionarea punctului de functionare pe curba pompei si se urmareste ca acesta sa se afle in intervalul $0.7...1.2 \\cdot Q_{BEP}$."
+ },
+ {
+  "mk": "etad",
+  "def": "Randamentul electric al convertizorului de frecventa (VFD), reprezentand raportul dintre puterea mecanica la iesire (putere electrica furnizata motorului) si puterea electrica absorbita din retea, incluzand pierderile in puntea de redresare, filtrul DC si invertor.",
+  "teorie": "Puterea absorbita din retea este $P_{retea} = P_{motor} / \\eta_d$; pierderile in convertizor sunt $\\Delta P_d = P_{motor} \\cdot (1/\\eta_d - 1)$ (W), disipate ca caldura in dulapul de comanda. Valori tipice: $\\eta_d = 0.97...0.99$ la sarcina nominala; scade la sarcini mici si la frecvente de comutatie ridicate. La PIF se verifica ventilarea dulapului astfel incat $\\Delta P_d$ sa fie evacuata fara ca temperatura interna sa depaseasca limita componentelor (tipic 40°C la IEC 61800-2)."
+ },
+ {
+  "mk": "etam",
+  "def": "Randamentul motorului electric, reprezentand raportul dintre puterea mecanica la ax si puterea electrica absorbita, incluzand pierderile Joule in stator si rotor, pierderile in fier si pierderile mecanice (frecare, ventilatie).",
+  "teorie": "Conform IEC 60034-30-1, motoarele asincrone de joasa tensiune sunt clasificate in clase de eficienta IE1...IE4. Randamentul se determina prin incercari conform IEC 60034-2-1. La functionare in sarcina partiala sau la frecventa redusa (cu VFD), randamentul scade. Lantul wire-to-water are randamentul total $\\eta_{total} = \\eta_d \\cdot \\eta_m \\cdot \\eta_p$, iar puterea din retea $P_{retea} = P_{hidraulica} / \\eta_{total}$. La PIF se inregistreaza curentul si tensiunea pentru verificarea randamentului real versus cel din placa motorului."
+ },
+ {
+  "mk": "etap",
+  "def": "Randamentul hidraulic al pompei centrifuge la punctul de functionare considerat, definit ca raportul dintre puterea hidraulica utila transmisa fluidului si puterea mecanica absorbita la arborele pompei.",
+  "teorie": "Definitia: $\\eta_p = \\rho g Q H / P_{arbore}$, unde $P_{arbore} = \\rho g Q H / \\eta_p$ este puterea ceruta motorului prin cuplaj. Curba $\\eta_p(Q)$ are forma de clopot cu maximum la BEP. Puterea la arbore este $P_{arbore} = P_{hidraulica} / \\eta_p$, iar puterea electrica absorbita din retea este $P_{retea} = P_{arbore} / (\\eta_m \\cdot \\eta_d)$. La PIF se masoara $Q$, $H$ (din diferenta de presiune) si $P_{absorbita}$ pentru a verifica $\\eta_p$ real si a detecta uzura sau erori de montaj (curgere inversa, cavitatie)."
+ },
+ {
+  "mk": "etaQ",
+  "def": "Randamentul pompei centrifuge la debitul real de exploatare, citit pe curba $\\eta(Q)$ a producatorului la debitul de lucru efectiv, in general mai mic decat $\\eta_{BEP}$ daca pompa functioneaza in afara punctului optim.",
+  "teorie": "Curba $\\eta(Q)$ are forma de clopot; abaterea de la $Q_{BEP}$ produce cresterea pierderilor hidraulice prin soc pe paletele rotorului (la debit mic) sau prin pierderi de circulatie (la debit mare). Puterea la arbore la debitul real este $P_{arbore} = \\rho g Q H / \\eta_Q > \\rho g Q_{BEP} H_{BEP} / \\eta_{BEP}$ la debit partial, contra intuitiei. La PIF se compara $\\eta_Q$ cu $\\eta_{BEP}$ pentru a justifica VFD-ul sau redesignul instalatiei hidraulice in vederea aducerii punctului de functionare mai aproape de BEP."
+ },
+ {
+  "mk": "Evana",
+  "def": "Energia electrica anuala consumata de ansamblul pompa-motor-retea cand debitul se regleaza prin strangulare cu vana pe conducta de refulare, calculata ca integrare a puterii absorbite pe profilul anual de functionare.",
+  "teorie": "La reglarea prin vana, curba pompei ramane neschimbata (turatia este constanta); vana adauga o pierdere de sarcina suplimentara $\\Delta H_{vana}$, deplasand punctul de functionare pe curba pompei. Puterea absorbita $P_{vana} = \\rho g Q H_{pompa}(Q) / (\\eta_p \\cdot \\eta_m \\cdot \\eta_d)$ ramane mare chiar la debite mici, deoarece $H_{pompa}$ creste pe curba pompei la debit mic. Energia anuala: $E_{vana} = \\sum_i P_{vana,i} \\cdot h_i$ (kWh/an), unde $h_i$ sunt orele din profilul de sarcina la debitul $Q_i$."
+ },
+ {
+  "mk": "Evfd",
+  "def": "Energia electrica anuala consumata de ansamblul pompa-motor-VFD cand debitul se regleaza prin modificarea turatiei cu convertizor de frecventa, calculata ca integrare a puterii absorbite pe profilul anual de functionare.",
+  "teorie": "La reglarea prin VFD, turatia se reduce la $n_i = n_n \\cdot Q_i/Q_n$ conform legii afinitatii; puterea absorbita scade cu cubul: $P_{VFD,i} = P_n \\cdot (Q_i/Q_n)^3 / (\\eta_{VFD} \\cdot \\eta_m)$. Energia anuala: $E_{VFD} = \\sum_i P_{VFD,i} \\cdot h_i$ (kWh/an). Economia este $\\Delta E = E_{vana} - E_{VFD}$ (kWh/an); inmultita cu tariful electric (RON/kWh) da economica financiara anuala si se calculeaza perioada de recuperare a investitiei in VFD. La PIF se valideaza profilul de sarcina cu operatorul si se verifica masurarea consumului la punerea in functiune."
+ },
+ {
+  "mk": "F",
+  "def": "Forta mecanica (liniara, tangentiala sau de tractiune), exprimata in N, actiunand pe elementul liniar al transmisiei (piulita surubului cu bile, banda transportorului, materialul infasurat) si convertita in cuplu la axul motorului prin raza sau pasul transmisiei.",
+  "teorie": "Conversia forta-cuplu depinde de mecanismul de transmisie: pentru tambur sau roata $M = F \\cdot D/2$; pentru surub cu bile $M = F \\cdot p / (2\\pi \\cdot \\eta_{surub})$; pentru curea sau cremaliera $M = F \\cdot r_{pinion}$. Puterea mecanica este $P = F \\cdot v_{liniara}$ (W). La dimensionarea actionarii, forta maxima (varf de sarcina) determina cuplul de varf cerut motorului si curentul maxim al VFD-ului; forta continua (sarcina de regim) determina curentul nominal si incalzirea. La PIF se verifica forta prin masurare de curent si compararea cu calculul."
+ }
+]

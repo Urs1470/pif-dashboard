@@ -1,0 +1,148 @@
+[
+ {
+  "mk": "hp",
+  "key": "hp",
+  "family": "comun",
+  "labels": [
+   "Putere"
+  ],
+  "units": [
+   "HP"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Unitatea de putere cal-putere, intalnita la motoare de import.",
+  "ia": "De pe placuta motoarelor americane sau cataloage vechi.",
+  "practic": "Converteste in kW inainte de comparatie: 1 HP aproximativ 0.736 kW.",
+  "teorie": "1 hp este aproximativ 0,746 kW, adica 746 W putere mecanica."
+ },
+ {
+  "mk": "kgf",
+  "key": "kgf",
+  "family": "comun",
+  "labels": [
+   "Forta"
+  ],
+  "units": [
+   "kgf"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Unitate veche de forta, kilogram-forta, greutatea unui kilogram.",
+  "ia": "Din documentatie veche sau cantare in kgf.",
+  "practic": "Converteste in N: 1 kgf egal 9.81 N inainte de calcul.",
+  "teorie": "1 kgf este aproximativ 9,81 N; forta greutatii unui kilogram in camp gravitational standard."
+ },
+ {
+  "mk": "kgfm",
+  "key": "kgfm",
+  "family": "comun",
+  "labels": [
+   "Cuplu"
+  ],
+  "units": [
+   "kgf·m"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Unitate veche de cuplu, kilogram-forta metru, inca pe fise vechi.",
+  "ia": "Din documentatie veche sau catalog non-SI.",
+  "practic": "Converteste in Nm: 1 kgf m egal 9.81 Nm.",
+  "teorie": "1 kgfm este aproximativ 9,81 Nm; unitate veche de cuplu inlocuita de newton-metru."
+ },
+ {
+  "mk": "kW",
+  "key": "kW",
+  "family": "comun",
+  "labels": [
+   "Putere"
+  ],
+  "units": [
+   "kW"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Unitatea de putere folosita curent, kilowatt, dupa conversie.",
+  "ia": "Din conversia HP sau din P=M*omega: 1 HP egal 0.736 kW.",
+  "practic": "Unitatea de placuta motor in Europa; verifica fata de HP la import.",
+  "teorie": "1 kW = 1000 W; 1 kW este aproximativ 1,341 hp."
+ },
+ {
+  "mk": "N",
+  "key": "N",
+  "family": "comun",
+  "labels": [
+   "Forta",
+   "Forta normala"
+  ],
+  "units": [
+   "N"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf",
+   "Cuplu de frecare & desprindere / Breakaway (stiction) vs cuplu de mers"
+  ],
+  "def": "Unitatea de forta in SI, newtonul, dupa conversie.",
+  "ia": "Din conversia kgf sau alte unitati: 1 kgf egal 9.81 N.",
+  "practic": "Standardul de calcul; nu amesteca kgf cu N in formule.",
+  "teorie": "1 N = 1 kg accelerat cu 1 m/s2; 1 kgf este aproximativ 9,81 N."
+ },
+ {
+  "mk": "Nm",
+  "key": "Nm",
+  "family": "comun",
+  "labels": [
+   "Cuplu"
+  ],
+  "units": [
+   "Nm"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Unitatea de cuplu in SI, newton-metru, dupa conversie.",
+  "ia": "Din conversia altor unitati de cuplu in newton-metru.",
+  "practic": "Unitatea de referinta pentru placute motor si catalog reductor.",
+  "teorie": "1 Nm = 1 N aplicat la 1 m brat; cuplul = forta inmultita cu raza."
+ },
+ {
+  "mk": "rads",
+  "key": "rads",
+  "family": "comun",
+  "labels": [
+   "Viteza unghiulara"
+  ],
+  "units": [
+   "rad/s"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Viteza unghiulara in SI, radiani pe secunda, dupa conversie din turatie.",
+  "ia": "Din turatie: omega=2*pi*n/60.",
+  "practic": "Necesara in formulele de putere si cuplu; turatia in rpm nu intra direct.",
+  "teorie": "Un radian pe secunda inseamna o variatie de un radian de unghi intr-o secunda."
+ },
+ {
+  "mk": "rpm",
+  "key": "rpm",
+  "family": "comun",
+  "labels": [
+   "Turatie"
+  ],
+  "units": [
+   "rpm"
+  ],
+  "modules": [
+   "Conversii de unitati / HP, kgf·m, rad/s, kgf"
+  ],
+  "def": "Turatia exprimata in rotatii pe minut, unitatea uzuala.",
+  "ia": "De pe placuta motor sau setarea VFD.",
+  "practic": "Converteste in rad/s pentru formule de putere si cuplu.",
+  "teorie": "1 rpm = 1/60 rot/s; viteza unghiulara in rad/s = rpm inmultit cu 2pi/60."
+ }
+]

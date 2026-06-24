@@ -1,0 +1,12 @@
+[
+ {
+  "mk": "Str",
+  "def": "Puterea aparenta $S_{tr}$ a transformatorului de alimentare, exprimata in kVA, reprezentand produsul dintre tensiunea si curentul nominal pe secundar, indiferent de factorul de putere al sarcinii; determina dimensionarea fizica si termica a transformatorului pentru alimentarea unui drive sau grup de drivuri.",
+  "teorie": "Puterea aparenta necesara se calculeaza pornind de la puterea activa totala a sarcinilor: $S_{tr} = \\frac{\\sum P_{sarcini}}{\\cos\\varphi \\cdot \\eta} \\cdot k_{rez}$, unde $k_{rez} \\geq 1{,}1 \\ldots 1{,}25$ este factorul de rezerva, $\\cos\\varphi$ factorul de putere echivalent al grupului de drivuri, iar $\\eta$ randamentul transformatorului (tipic $0{,}96 \\ldots 0{,}99$ pentru trafo de putere). La PIF, dimensionarea corecta a $S_{tr}$ este critica deoarece curentul de inrush la energizare poate atinge $(8 \\ldots 12) \\cdot I_n$ al transformatorului, iar suprasolicitarea termica repetata degradeaza izolatia conform IEC 60076-7. Valori tipice in aplicatii industriale cu drivuri: $10 \\ldots 2500$ kVA, cu trepte standardizate conform IEC 60076."
+ },
+ {
+  "mk": "Strafo",
+  "def": "Puterea aparenta nominala $S_{n,tr}$ a transformatorului de retea, in kVA, folosita la calculul curentului de scurtcircuit disponibil la bara de alimentare a tabloului de drivuri; valoarea preluata de pe placuta de timbru a transformatorului conform IEC 60076.",
+  "teorie": "Curentul nominal al transformatorului pe secundar este $I_n = \\frac{S_{n,tr}}{\\sqrt{3} \\cdot U_n}$, iar curentul de scurtcircuit trifazat la bornele secundarului se calculeaza ca $I_{cc} = \\frac{I_n}{u_k / 100}$, unde $u_k$ este tensiunea de scurtcircuit relativa (tipic $4 \\ldots 6\\%$ pentru transformatoare de distributie). La PIF, cunoasterea exacta a $S_{n,tr}$ este necesara pentru selectia corecta a sigurantelor gG/aR conform IEC 60269, dimensionarea barelor colectoare si verificarea selectivitatii protectiilor; un $I_{cc}$ prea mic poate face ca protectiile magnetotermice sa nu declanseze instantaneu, iar unul prea mare solicita echipamentele la capacitatea de rupere."
+ }
+]

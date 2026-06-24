@@ -1,0 +1,152 @@
+[
+ {
+  "mk": "Ffrec",
+  "def": "Forta de frecare este forta tangentiala care se opune miscarii relative dintre banda transportorului (sau sarcina) si suprafata de contact, proportionala cu forta normala si coeficientul de frecare $\\mu$: $F_{frec} = \\mu \\cdot m \\cdot g \\cdot \\cos\\beta$, unde $\\beta$ este unghiul pantei.",
+  "teorie": "Modelul Coulomb descrie frecarea cinetica ca $F_{frec} = \\mu \\cdot F_N$, cu $F_N = m \\cdot g \\cdot \\cos\\beta$ pe plan inclinat. Coeficientul $\\mu$ depinde de materialul benzii si tipul rolelor (tipic $0{,}02$–$0{,}05$ pentru transportoare cu role cu rulmenti). La PIF, subestimarea lui $\\mu$ (uzura, banda umeda) duce la imposibilitatea pornirii sub sarcina; masurarea curentului la mers in gol vs. sarcina permite identificarea coeficientului real si ajustarea cuplului de pornire in parametrii VFD."
+ },
+ {
+  "mk": "fmin",
+  "def": "Frecventa minima $f_{min}$ [Hz] este frecventa de iesire cea mai mica setata in convertizor, corespunzatoare turatiei minime sub care pompa nu mai poate genera debitul minim util sau functionarea devine instabila (cavitatie, incalzire).",
+  "teorie": "In reglajul scalar $U/f$, frecventa este proportionala cu turatia sincronului: $n = 60 \\cdot f / p$, deci $f_{min} = f_N \\cdot n_{min} / n_N$. La pompe cu inaltime statica, $n_{min}$ este pragul sub care $H_{pompa}(n_{min}) < H_{static}$, calculat din legile afinitatii: $n_{min} = n_N \\cdot \\sqrt{H_{static} / H_{shut}}$. La PIF se seteaza $f_{min}$ in parametrul de limita inferioara a VFD (ex. ACS580: par. 20.13) si se verifica ca pompa nu intre in recirculare sau cavitatie la aceasta turatie minima."
+ },
+ {
+  "mk": "Fnet",
+  "def": "Forta neta $F_{net}$ [N] este forta rezultanta la cablul de tractiune al unui ascensor sau macara dupa compensarea efectului contragreutatii: $F_{net} = (m_{cabina} + m_{sarcina} - m_{contragr}) \\cdot g$; semnul indica daca motorul trebuie sa traga sau sa franeze la coborare.",
+  "teorie": "Bilantul de forte pe sistemul cabina–contragreutate se scrie: $F_{net} = F_{cabina+sarcina} - F_{contragr}$. Contragreutatea este dimensionata tipic la masa cabinei plus 40–50% din sarcina nominala, reducand cuplul motor mediu cu 40–60%. La PIF, semnul lui $F_{net}$ determina cadrantele de functionare (motor/generator); un $F_{net}$ negativ la coborare inseamna ca VFD trebuie sa lucreze in regim regenerativ (sau cu rezistenta de franat), deci verificarea capacitatii de franare este esentiala inainte de prima ridicare cu sarcina."
+ },
+ {
+  "mk": "Fpanta",
+  "def": "Forta de panta $F_{panta}$ [N] este componenta greutatii sarcinii si a benzii paralela cu planul inclinat, actionand in josul pantei: $F_{panta} = (m_{sarcina} + m_{banda}) \\cdot g \\cdot \\sin\\beta$, unde $\\beta$ este unghiul de inclinare al transportorului.",
+  "teorie": "Pe un plan inclinat la unghi $\\beta$, greutatea se descompune in componenta normala $m g \\cos\\beta$ (ce genereaza frecarea) si componenta tangentiala $F_{panta} = m g \\sin\\beta$ (ce trage sarcina in jos). La unghiuri mari ($\\beta > 18°$), $F_{panta}$ poate depasi $F_{frec}$, transportorul devenind automotor la oprire si necesitand frana de mentinere. La PIF se verifica regimul la oprire de urgenta conform IEC 61800-5-2: cuplul de retinere al VFD trebuie sa acopere $F_{panta}$ pe toata raza tamburului, altfel sarcina aluneca inainte ca frana mecanica sa se inchida."
+ },
+ {
+  "mk": "freq",
+  "def": "Frecventa ceruta $f_{req}$ [Hz] este frecventa de iesire pe care VFD-ul trebuie sa o furnizeze pentru ca pompa sa atinga exact debitul de lucru cerut in punctul de functionare al sistemului.",
+  "teorie": "Din legile afinitatii, debitul este proportional cu turatia: $Q \\propto n \\propto f$, deci $f_{req} = f_N \\cdot Q_{req} / Q_N$ (aproximatie valabila fara inaltime statica). In prezenta inaltimii statice, $f_{req}$ se determina grafic sau iterativ din intersectia curbei pompei scalate cu curba sistemului. La PIF, $f_{req}$ devine setpointul de viteza al buclei de reglaj (control PID presiune/debit) si se verifica ca acesta sa se incadreze intre $f_{min}$ si $f_{max}$ setate in VFD."
+ },
+ {
+  "mk": "Fset",
+  "def": "Tensiunea de referinta $F_{set}$ [N] este forta de tractiune (tensiunea mecanica in material) prescrisa la inceputul infasurarii pe winder, la diametrul minim al rolei goale, reprezentand valoarea initiala a reglajului de tensiune.",
+  "teorie": "La un winder, cuplul necesar motorului este $M = F_{set} \\cdot D/2$, unde $D$ este diametrul curent al rolei. Deoarece $D$ creste pe masura infasurarii, cuplul creste proportional daca tensiunea $F_{set}$ ramane constanta — de aceea se aplica taper: $F_{taper}(D) = F_{set} \\cdot [1 - k_{taper} \\cdot (D - D_{min})/(D_{max} - D_{min})]$. La PIF, $F_{set}$ se stabileste din cerintele materialului (tensiunea maxima admisa fara alungire plastica sau ruptura) si se verifica experimental prin masurarea curburii si greutatii rolei finite."
+ },
+ {
+  "mk": "fskip",
+  "def": "Frecventa de evitat $f_{skip}$ [Hz] este frecventa centrala a benzii interzise de functionare a VFD, corespunzatoare unei frecvente proprii a structurii mecanice (arbore, fundatie, cuplaj) la care pot aparea vibratii de rezonanta periculoase.",
+  "teorie": "Un sistem mecanic cu masa $m$ si rigiditate $k$ are frecventa proprie $f_0 = \\frac{1}{2\\pi}\\sqrt{k/m}$; functionarea la $f \\approx f_0$ amplifica vibratiile pana la deteriorare mecanica (rulment, arbore). VFD-ul implementeaza o banda de salt (skip band) de latime tipica $\\pm 2$–$5$ Hz in jurul $f_{skip}$, sarind rapid prin zona fara a stationa. La PIF, $f_{skip}$ se determina prin analiza vibratii (accelerometru) sau prin baleerea lenta a frecventei si observarea varfului de vibratii; se seteaza in parametrul de frecventa de salt al VFD (ex. ACS580: par. 28.51–28.52) conform IEC 61800-2."
+ },
+ {
+  "mk": "Ftaper",
+  "def": "Tensiunea cu taper $F_{taper}$ [N] este forta de tractiune (tensiunea mecanica in material) la diametrul curent al rolei de infasurare, redusa progresiv fata de $F_{set}$ pe masura cresterii diametrului, conform legii de taper programate.",
+  "teorie": "Legea lineara de taper se scrie: $F_{taper}(D) = F_{set} \\cdot \\left[1 - T\\% \\cdot \\frac{D - D_{min}}{D_{max} - D_{min}}\\right]$, unde $T\\%$ este procentul de reducere la diametrul maxim (tipic 30–70%). Ratiunea fizica: la diametru mare, straturile interioare ale rolei suporta presiunea cumulativa a straturilor exterioare; reducand tensiunea, se evita zdrobirea si telescoparea. La PIF, taper-ul se ajusteaza empiric pornind de la $T\\% = 50\\%$ si observand calitatea rolei finite (duritate, planeitate); un taper insuficient produce rola tare la interior si moale la exterior."
+ },
+ {
+  "mk": "Ftract",
+  "def": "Forta de tractiune $F_{tract}$ [N] este forta totala pe care tamburul de antrenare trebuie sa o exercite asupra benzii transportorului pentru a deplasa sarcina in regim permanent si in tranzitoriu: $F_{tract} = F_{frec} + F_{panta} + F_{acc}$.",
+  "teorie": "Conform celei de-a doua legi a lui Newton aplicata translatoriu: $F_{tract} = \\mu m g \\cos\\beta + m g \\sin\\beta + m a$, unde $a$ este acceleratia liniara in faza de rampa. Cuplul la tamburul de antrenare este $M_{tambur} = F_{tract} \\cdot r_{tambur}$, care referit la axul motorului prin reductorul cu raportul $i$ si randamentul $\\eta$ da $M_{motor} = F_{tract} \\cdot r / (i \\cdot \\eta)$. La PIF, se verifica ca $M_{motor} < M_{max,VFD}$ atat in regim permanent cat si la accelerare (curent de varf), si ca rampa aleasa nu declanseze supracurentul convertizorului."
+ },
+ {
+  "mk": "GD2",
+  "def": "GD² [kg·m²] este marimea traditionala de inertie rotativa, definita ca produsul dintre greutatea (nu masa) corpului si patratul diametrului de giratie: $GD^2 = G \\cdot D_g^2 = 4 g J$, unde $g = 9{,}81$ m/s² si $J$ este momentul de inertie masic.",
+  "teorie": "Relatia de conversie $J = GD^2 / (4g)$ provine din definitia momentului de giratie; in practica europeana moderna $J$ [kg·m²] a inlocuit $GD^2$ [N·m²], dar cataloagele de volanti si motoare vechi raporteaza inca $GD^2$ (conventie DIN/VDE istorica). Ecuatia de miscare cu GD² este $M - M_r = \\frac{GD^2}{375} \\cdot \\frac{dn}{dt}$ (cu $n$ in rot/min, $M$ in Nm), formula clasica germana. La PIF pe compresoare cu piston, $GD^2$ al volantului se verifica din catalog si se compara cu $GD^2_{req}$ calculat pentru a mentine neuniformitatea $C_s < 1/30$ la grupurile cuplate direct la retea."
+ },
+ {
+  "mk": "h1",
+  "def": "Orele la debit 1 ($h_1$) [h/an] reprezinta numarul de ore pe an in care instalatia functioneaza la primul nivel de debit $Q_1$ din profilul de sarcina, folosit pentru calculul energiei anuale consumate la acel regim.",
+  "teorie": "Energia electrica consumata la nivelul $Q_1$ este $W_1 = P_1 \\cdot h_1$, unde $P_1$ este puterea absorbita la debitul $Q_1$ (cu VFD sau cu vana). Suma $W_{total} = \\sum_{i=1}^{3} P_i \\cdot h_i$ da consumul anual total. Economiile VFD fata de strangulare se calculeaza exact ponderat pe profil: la $Q_1 = 60\\%Q_N$, VFD reduce puterea la $\\approx 22\\%P_N$ (legea cubului) vs. $\\approx 70\\%P_N$ cu vana, dar numai daca $H_{static}$ este neglijabila. La PIF, profilul $h_i, Q_i$ se obtine din sistemul SCADA sau din masuratori pe 12 luni si este esential pentru justificarea investitiei in VFD."
+ },
+ {
+  "mk": "H1",
+  "def": "Inaltimea la turatia (sau diametrul) initiala $H_1$ [m] este inaltimea de pompare la parametrii initiali ($n_1$ sau $D_1$), servind ca baza de calcul pentru determinarea inaltimii dupa modificarea turatiei sau a diametrului rotorului.",
+  "teorie": "Din legile afinitatii (similitudine hidraulica, ISO 9906): $H_2/H_1 = (n_2/n_1)^2 = (D_2/D_1)^2$, deci $H_2 = H_1 \\cdot (n_2/n_1)^2$. Aceasta relatie este exacta doar pentru pompe cu curba sistem pur patratica ($H_{static} = 0$); in prezenta componentei statice, punctul real de functionare se deplaseaza diferit de predictia legii afinitatii. La trimming, reducerea diametrului rotorului cu 5–10% e echivalenta cu o reducere de turatie similara (valabil pana la $D_2/D_1 > 0{,}85$, dupa datele producatorului si ISO 9906)."
+ },
+ {
+  "mk": "h2",
+  "def": "Orele la debit 2 ($h_2$) [h/an] reprezinta numarul de ore pe an in care instalatia functioneaza la al doilea nivel de debit $Q_2$ din profilul de sarcina, folosit pentru calculul partial al energiei anuale la acest regim.",
+  "teorie": "Energia partiala la regimul 2 este $W_2 = P_2 \\cdot h_2$, cu $P_2$ calculata din curba pompei la $Q_2$ si frecventa corespunzatoare. Profilul tripartit ($Q_1, h_1$; $Q_2, h_2$; $Q_3, h_3$) este o aproximare pas-cu-pas a distributiei reale de sarcina (echivalent cu un histograma cu 3 trepte). Acuratetea calculului de economie creste daca cele 3 trepte acopera regimurile dominante; un profil cu $h_1 + h_2 + h_3 < 8760$ h/an implica ore de nefunctionare (pompa oprita) ce trebuie tratate separat in analiza tehnico-economica."
+ },
+ {
+  "mk": "H2",
+  "def": "Inaltimea la turatia (sau diametrul) nou $H_2$ [m] este inaltimea de pompare rezultata dupa modificarea turatiei la $n_2$ sau a diametrului rotorului la $D_2$, calculata din legile afinitatii: $H_2 = H_1 \\cdot (n_2/n_1)^2$.",
+  "teorie": "Conform similitudinii hidrodinamice (ISO 9906), inaltimea variaza cu patratul turatiei: $H_2 = H_1 \\cdot (n_2/n_1)^2$. Conditia critica este $H_2 \\geq H_{static}$; daca nu este satisfacuta, pompa nu mai livreaza debit (functionare la shutoff sau sub el). La PIF, dupa reducerea turatiei cu VFD, se verifica ca punctul de functionare $(Q_2, H_2)$ sa se afle pe curba reala a pompei la turatia $n_2$ si sa nu fie in zona de instabilitate (la stanga minimului de curba)."
+ },
+ {
+  "mk": "h3",
+  "def": "Orele la debit 3 ($h_3$) [h/an] reprezinta numarul de ore pe an in care instalatia functioneaza la al treilea nivel de debit $Q_3$ din profilul de sarcina, completand profilul tripartit de sarcina anuala.",
+  "teorie": "Energia partiala la regimul 3 este $W_3 = P_3 \\cdot h_3$. Suma celor trei energii partiale $W_{total} = P_1 h_1 + P_2 h_2 + P_3 h_3$ reprezinta consumul anual estimat, iar diferenta fata de consumul cu strangulare da economia bruta. Verificarea sumei $h_1 + h_2 + h_3 \\leq 8760$ h/an este o consistenta minima de intrare; in practica, profilul se valideaza cu datele din contorul de energie sau sistemul BMS, pentru a obtine o analiza de ROI credibila la justificarea achizitiei VFD."
+ },
+ {
+  "mk": "Hasp",
+  "def": "Inaltimea de aspiratie $H_{asp}$ [m] este diferenta de nivel geodetica intre suprafata libera a lichidului in rezervorul de aspiratie si axul pompei; pozitiva (inecat) cand rezervorul e deasupra pompei, negativa (aspiratie de jos) cand e dedesubt.",
+  "teorie": "NPSHa (NPSH disponibil) se calculeaza dupa: $NPSH_a = \\frac{p_0 - p_v}{\\rho g} + H_{asp} - H_{frec,asp}$, unde $p_0$ este presiunea pe suprafata lichidului, $p_v$ presiunea de vapori la temperatura de lucru, $H_{frec,asp}$ pierderile pe conducta de aspiratie. Conform ISO 9906, trebuie sa fie $NPSH_a \\geq NPSH_r + 0{,}5$ m (marja minima). La PIF, $H_{asp}$ se masoara topografic si se verifica daca nu se schimba sezonier (nivel rezervor variabil); o aspiratie de jos prea mare ($> 6$ m) la temperaturi ridicate produce cavitatie chiar la debite partiale."
+ },
+ {
+  "mk": "Hfrec",
+  "def": "Pierderile de sarcina pe aspiratie $H_{frec}$ [m] reprezinta suma pierderilor hidraulice distribuite si locale pe conducta de aspiratie la debitul de lucru, ce reduc NPSHa disponibil si cresc riscul de cavitatie.",
+  "teorie": "Pierderile se calculeaza prin Darcy-Weisbach: $H_{frec} = \\lambda \\cdot \\frac{L}{d} \\cdot \\frac{v^2}{2g} + \\sum \\zeta_i \\cdot \\frac{v^2}{2g}$, unde $\\lambda$ este factorul de frecare Darcy, $L$ lungimea, $d$ diametrul, $v$ viteza medie si $\\zeta_i$ coeficientii de rezistenta locala (cot, reductie, vana). Proportionalitatea $H_{frec} \\propto Q^2$ face ca la supradebite (>110% $Q_N$) pierderile creasca brusc. La PIF, reducerea $H_{frec}$ pe aspiratie (conducta cat mai scurta si larga, fara coturi stranse, vana complet deschisa) este prima masura de combatere a cavitatiei inainte de a interveni pe frecventa VFD."
+ },
+ {
+  "mk": "Hnom",
+  "def": "Inaltimea nominala la debit nominal $H_{nom}$ [m] este inaltimea de pompare garantata de producator la debitul nominal $Q_N$, reprezentand punctul de proiectare al pompei pe curba caracteristica $H$–$Q$.",
+  "teorie": "Curba pompei se modeleaza tipic ca $H(Q) = H_{shut} - k_H \\cdot Q^2$ (parabola coboratoare), cu $k_H = (H_{shut} - H_{nom}) / Q_{nom}^2$. Punctul nominal $(Q_N, H_N)$ coincide de regula cu randamentul maxim $\\eta_{max}$ (BEP — Best Efficiency Point, ISO 9906). La PIF, $H_{nom}$ se compara cu $H_{req}$ din curba sistemului: daca $H_{nom} > H_{req}$ la $Q_N$, pompa functioneaza in dreapta BEP si poate aparea instabilitate sau cavitatie; ajustarea se face prin taierea rotorului (trimming) sau prin VFD."
+ },
+ {
+  "mk": "Hreq",
+  "def": "Inaltimea ceruta $H_{req}$ [m] este sarcina hidraulica totala pe care sistemul o opune pompei la debitul de lucru $Q_{req}$, reprezentand suma inaltimii statice si a pierderilor hidraulice dinamice: $H_{req} = H_{static} + k \\cdot Q_{req}^2$.",
+  "teorie": "Curba sistemului este definita de ecuatia $H_{sistem}(Q) = H_{static} + k \\cdot Q^2$, unde $k$ depinde de geometria conductelor, armaturii si sarcinilor locale. Punctul de functionare real este intersectia curbei pompei $H_{pompa}(Q)$ cu curba sistemului $H_{sistem}(Q)$. La PIF, $H_{req}$ se masoara cu manometru diferential la debitul de lucru si se compara cu predictia calculata; diferentele mari indica depuneri, filtru infundat sau pierderi nemodelate. Verificarea stabilitatii punctului (panta curba pompa < panta curba sistem) este obligatorie la functionare paralela a pompelor."
+ },
+ {
+  "mk": "Hshut",
+  "def": "Inaltimea la debit zero (shutoff head) $H_{shut}$ [m] este inaltimea maxima pe care pompa o poate genera la debit nul (vana de refulare inchisa), corespunzatoare virfului curbei $H$–$Q$ la turatia data.",
+  "teorie": "La turatia redusa $n_2$, shutoff head-ul scaleaza dupa legea afinitatii: $H_{shut,2} = H_{shut,1} \\cdot (n_2/n_1)^2$. Turatia minima utila se obtine impunand ca pompa sa depaseasca inaltimea statica: $n_{min} = n_N \\cdot \\sqrt{H_{static} / H_{shut,N}}$. La PIF, $H_{shut}$ se verifica si ca presiune maxima la care rezista instalatia (flanse, vane, schimbatoare) la pornire cu vana inchisa; pompele centrifugale moderne cu $H_{shut}/H_N > 1{,}3$ pot produce presiuni periculoase si necesita siguranta de presiune sau pornire cu vana deschisa."
+ },
+ {
+  "mk": "Hstatic",
+  "def": "Inaltimea statica $H_{static}$ [m] este componenta fixa a curbei sistemului, independenta de debit, reprezentand suma diferentei de nivel geodetica si diferenta de presiune intre bazinul de refulare si cel de aspiratie: $H_{static} = \\Delta z + (p_{ref} - p_{asp})/(\\rho g)$.",
+  "teorie": "Prezenta $H_{static}$ rupe proportionalitatea simpla $P \\propto n^3$ (legea cubului) si impune o turatie minima $n_{min} = n_N \\cdot \\sqrt{H_{static}/H_{shut}}$ sub care pompa nu livreaza debit. Economia reala a VFD fata de legea cubului scade pe masura ce $H_{static}/H_N$ creste: la $H_{static}/H_N = 0{,}6$, economia la $Q = 60\\%$ este de numai $\\sim 15\\%$ vs. $\\sim 78\\%$ pentru sistem pur dinamic. La PIF, $H_{static}$ se masoara la standstill (presiune pe manometre cu pompa oprita si circuitul static inchis) si este parametrul critic al calculului de turatie minima si al analizei de economie."
+ },
+ {
+  "mk": "i",
+  "def": "Raportul de transmisie $i$ este raportul dintre turatia arborelui de intrare (motor) si turatia arborelui de iesire (sarcina) al unui reductor mecanic: $i = n_{intrare} / n_{iesire} = z_2 / z_1$, adimensional, exprimat ca $i$:1.",
+  "teorie": "Reductorul transforma simultan turatia si cuplul: $n_{iesire} = n_{motor}/i$ si $M_{iesire} = M_{motor} \\cdot i \\cdot \\eta_{red}$. Inertia sarcinii reflectata la axul motorului scade cu patratul raportului: $J_{red} = J_{sarcina}/i^2$, ceea ce reduce semnificativ cuplul dinamic necesar. La PIF, raportul de inertie $R_J = J_{sarcina}/(i^2 \\cdot J_{motor})$ trebuie sa fie $< 5$–$10$ pentru o buna reglabilitate a buclei de viteza (stabilitate, suprareglaj redus); valori mari cer reducerea gainului proportional al regulatorului PI de viteza si rampare mai lenta, conform IEC 61800-2."
+ },
+ {
+  "mk": "J",
+  "def": "Momentul de inertie total $J$ [kg·m²] este suma inertiilor tuturor maselor rotitoare si translatante reduse la axul motorului, masura rezistentei sistemului la variatie de viteza unghiulara: $M_{acc} = J_{total} \\cdot d\\omega/dt$.",
+  "teorie": "Ecuatia dinamica a actionarii este $M_{motor} - M_{rezistent} = J_{total} \\cdot \\frac{d\\omega}{dt}$; cu $\\omega = 2\\pi n/60$, timpul de accelerare de la $n_1$ la $n_2$ este $t_{acc} = J_{total} \\cdot (n_2 - n_1) \\cdot 2\\pi / (60 \\cdot M_{acc,net})$. Energia cinetica acumulata este $E_k = \\frac{1}{2} J_{total} \\omega^2$, care la franare trebuie disipata in rezistenta de franat sau recuperata in retea. La PIF (acordare bucle PI, modulul Modulus/Symmetric Optimum), $J_{total}$ este parametrul cheie pentru calculul gainului $K_p$ al regulatorului de viteza: $K_p = J_{total} / (T_i \\cdot k_{motor})$; o valoare gresita de $J$ produce oscilatie (supraestimat) sau raspuns lent (subestimat)."
+ },
+ {
+  "mk": "Jlin",
+  "def": "Inertia liniara echivalenta $J_{lin}$ [kg·m²] este momentul de inertie obtinut prin echivalarea energiei cinetice a unei mase $m$ in miscare liniara cu viteza $v$ cu energia cinetica a unui corp echivalent in rotatie: $J_{lin} = m \\cdot (v/\\omega)^2 = m \\cdot r_{ef}^2$, unde $r_{ef}$ este raza cinematica echivalenta.",
+  "teorie": "Principiul conservarii energiei cinetice: $\\frac{1}{2} m v^2 = \\frac{1}{2} J_{lin} \\omega^2$, de unde $J_{lin} = m (v/\\omega)^2$. Pentru un surub cu bile cu pasul $p$ [m/rot]: $r_{ef} = p/(2\\pi)$, deci $J_{lin} = m \\cdot (p/2\\pi)^2$. Pentru o curea cu raza de rulare $r$: $J_{lin} = m \\cdot r^2$. La PIF, $J_{lin}$ se adauga la $J_{motor}$ si $J_{reductor}$ pentru a obtine $J_{total}$ folosit in calculul rampei si in identificarea parametrilor regulatorului de viteza; ignorarea maselor mari in translatie (ex. sanii grele de CNC) subestimeaza $J_{total}$ si produce suprareglaj la pornire."
+ },
+ {
+  "mk": "Jmot",
+  "def": "Momentul de inertie al motorului $J_{mot}$ [kg·m²] este inertia rotorului motorului electric (si a cuplajului de pe axul sau), data de producator in foaia de catalog, reprezentand numitorul raportului de inertie si componenta de referinta in acordarea buclei de viteza.",
+  "teorie": "In ecuatia dinamica $M - M_r = (J_{mot} + J_{sarcina,red}) \\cdot d\\omega/dt$, $J_{mot}$ contribuie direct si nu poate fi redus. Raportul de inertie $R_J = J_{sarcina,red}/J_{mot}$ este un indicator de reglabilitate: la $R_J < 1$ sistemul este usor de reglat, la $R_J > 10$ bucla de viteza devine dificila si poate necesita filtru de referinta sau control de stare. In sistemele cu 2 inertii cuplate elastic (motor–sarcina prin arbore flexibil), $J_{mot}$ si $J_{sarcina}$ formeaza un oscilator de torsiune cu frecventa $f_{rez} = \\frac{1}{2\\pi}\\sqrt{k_t(1/J_{mot}+1/J_{sarcina})}$, care trebuie atenuata prin filtru notch in VFD."
+ },
+ {
+  "mk": "Jred",
+  "def": "Inertia redusa la axul motorului $J_{red}$ [kg·m²] este suma tuturor inertiilor sistemului (sarcina, reductor, cuplaje, mase liniare) raportate (reflectate) la axul motorului prin impartire la patratul raportului de transmisie corespunzator: $J_{red} = J_{mot} + J_{reductor} + J_{sarcina}/i^2 + J_{lin}$.",
+  "teorie": "Reflectarea inertiei printr-un reductor cu raport $i$ si randament $\\eta$: $J_{sarcina,reflectat} = J_{sarcina}/i^2$; pierderile de randament influenteaza cuplul dar nu inertia reflectata. Valoarea $J_{red}$ determina: (1) cuplul dinamic $M_{din} = J_{red} \\cdot \\alpha$ la accelerare unghiulara $\\alpha$; (2) constanta de timp mecanica $T_m = J_{red} \\cdot \\omega_N / M_N$; (3) gainul regulatorului de viteza in metoda Modulus Optimum: $K_p = J_{red}/(T_i \\cdot k_{curent})$. La PIF, $J_{red}$ se verifica prin testul de rampa libera (fara referinta de curent, masurare timp de rulare libera) sau prin estimatorul de inertie integrat in VFD-urile moderne (ACS580, Sinamics G120)."
+ },
+ {
+  "mk": "Jreq",
+  "def": "Inertia necesara a volantului $J_{req}$ [kg·m²] este momentul de inertie minim pe care trebuie sa il aiba volantul unui compresor cu piston pentru a limita neuniformitatea de turatie (coeficientul de neregularitate $C_s$) la valoarea acceptata de motor si de retea.",
+  "teorie": "Energia fluctuanta pe un ciclu al compresorului este $\\Delta E = M_{max} - M_{med}$ integrata pe unghi; volantul o absoarbe prin variatia energiei cinetice: $\\Delta E = \\frac{1}{2} J_{req} \\cdot (\\omega_{max}^2 - \\omega_{min}^2) \\approx J_{req} \\cdot \\omega^2 \\cdot C_s$. De unde: $J_{req} = \\Delta E / (\\omega^2 \\cdot C_s)$. Coeficientul de neregularitate tipic: $C_s = 1/30$ pentru generatoare cuplate direct, $1/50$–$1/100$ pentru masini de lucru cu exigente ridicate (prese). La PIF, $J_{req}$ se compara cu $J_{volant,catalog}$; daca $J_{volant} < J_{req}$ si motorul e cu VFD, reglajul de viteza al VFD poate compensa partial prin variatia cuplului, dar la retea fixa volantul ramane solutia principala."
+ },
+ {
+  "mk": "Jsarc",
+  "def": "Momentul de inertie al sarcinii $J_{sarc}$ [kg·m²] este inertia maselor cuplate la axul de iesire al motorului (sau al reductorului): tamburi, role, bratele macaralei, rotoare, etc., determinata din datele de catalog sau prin calcul geometric.",
+  "teorie": "Pentru un cilindru masiv: $J = \\frac{1}{2} m r^2$; pentru un inel: $J = \\frac{1}{2} m (r_{ext}^2 + r_{int}^2)$; pentru mase distribuite complex se aplica teorema lui Steiner. Reflectat la axul motorului: $J_{sarc,red} = J_{sarc}/i^2$, deci un reductor cu $i = 5$ reduce inertia sarcinii de 25 de ori. Raportul de inertie $R_J = J_{sarc,red}/J_{mot}$ conditioneaza stabilitatea buclei de viteza: valori $R_J > 10$ necesita tuning atent (gainuri reduse, filtru de acceleratie) si pot aparea in sisteme de ridicare cu tamburi mari sau role de press cu diametre mari. La PIF, $J_{sarc}$ se verifica cu producatorul mecanicii sau se estimeaza din greutate si dimensiuni geometrice."
+ },
+ {
+  "mk": "m",
+  "def": "Masa deplasata sau ridicata $m$ [kg] este masa totala a sarcinii utile plus masele mecanice in miscare (carlig, cupa, sanie, banda) care trebuie accelerate, ridicate sau deplasate de actionarea electrica.",
+  "teorie": "Forta gravitationala necesara la ridicare este $F_g = m \\cdot g = m \\cdot 9{,}81$ N; cuplul la axul motorului este $M = F_g \\cdot r / (i \\cdot \\eta)$ unde $r$ este raza tamburului sau scripetelui. Inertia echivalenta a masei in translatie reflectata la axul motorului este: $J_m = m \\cdot (v / \\omega_{motor})^2 = m \\cdot (r/i)^2$, care se adauga la $J_{motor}$ si $J_{reductor}$. La PIF, masa maxima si masa minima trebuie ambele testate: masa maxima verifica ca motorul nu declanseze suprasarcina la ridicare, iar masa minima (carlig gol) verifica ca frana sa tina si ca reglajul de viteza sa nu oscileze la inertie redusa."
+ },
+ {
+  "mk": "Macc",
+  "def": "Cuplul de accelerare $M_{acc}$ [Nm] este cuplul net disponibil pentru accelerarea inertiilor sistemului, egal cu diferenta dintre cuplul dezvoltat de motor si cuplul rezistent al sarcinii: $M_{acc} = M_{motor} - M_{sarcina}$; din el rezulta acceleratia unghiulara $\\alpha = M_{acc}/J_{total}$.",
+  "teorie": "Din ecuatia dinamica $M_{motor} - M_{rezistent} = J_{total} \\cdot d\\omega/dt$, timpul de accelerare de la 0 la $\\omega_N$ este $t_{acc} = J_{total} \\cdot \\omega_N / M_{acc,mediu}$. La actionari cu VFD in control scalar, $M_{acc}$ este limitat de curentul maxim setat ($I_{max}$) si de caracteristica motor; in control vectorial (FOC), cuplul de accelerare poate fi mentionut la valoarea maxima pe toata rampa. La PIF, $M_{acc}$ trebuie sa fie pozitiv pe toata rampa de accelerare si sa nu duca la declansare pe supracurent; pentru aplicatii cu ciclu rapid (servo, ridicare), se verifica si energia cinetica $E_k = \\frac{1}{2} J \\omega^2$ stocata la viteza nominala, care trebuie disipata sau recuperata la fiecare oprire."
+ }
+]

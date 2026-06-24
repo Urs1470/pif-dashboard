@@ -615,7 +615,7 @@ const rad = (deg) => (deg * Math.PI) / 180
 // Culori grafice (CSS vars se adapteaza light/dark; marker = aqua Everforest fix).
 const COL = { a: 'var(--accent)', b: 'var(--warning)', c: 'var(--danger)', op: '#7fbbb3' }
 // Genereaza puncte {x,y} pentru o functie y=fn(x) pe intervalul [xMin, xMax].
-function curve(xMin, xMax, fn, steps = 48) {
+function curve(xMin, xMax, fn, steps = 160) {
   const pts = []
   for (let i = 0; i <= steps; i++) {
     const x = xMin + ((xMax - xMin) * i) / steps
