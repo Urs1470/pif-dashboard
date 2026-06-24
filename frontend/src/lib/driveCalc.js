@@ -1491,7 +1491,7 @@ export const MODULES = [
         const Rth = v.R1 * (v.Xm / (v.X1 + v.Xm)) ** 2
         const I2 = (n) => { const s = (ns - n) / ns || 1e-4; return Vth / Math.sqrt((Rth + v.R2 / s) ** 2 + (v.X1 + v.X2) ** 2) }
         return {
-          xLabel: 'Turatie n [rpm]', yLabel: 'Curent rotor I2 [A]',
+          xLabel: 'Turatie n [rpm]', yLabel: 'Curent rotor I_2 [A]',
           series: [{ label: 'I2(n)', color: COL.c, points: curve(1, ns, I2) }],
           markers: [{ x: v.n, y: I2(v.n), label: 'functionare', color: COL.op }],
         }
@@ -2127,7 +2127,7 @@ export const MODULES = [
       { key: 'clasa', label: 'Clasa de declansare (10/20/30)', unit: '', default: 10, step: 10, min: 5 },
     ],
     charts: [(v) => ({
-      xLabel: 'I / Ie', yLabel: 'Timp de declansare [s]',
+      xLabel: 'I / I_e', yLabel: 'Timp de declansare [s]',
       series: [10, 20, 30].map((cl, i) => ({ label: 'Clasa ' + cl, color: [COL.a, COL.b, COL.c][i], points: curve(2, 10, (x) => (cl * 50.84) / (x * x - 1)) })),
     })],
     results: [
@@ -2311,7 +2311,7 @@ export const MODULES = [
       { key: 'In', label: 'Curent nominal motor', unit: 'A', default: 28, step: 1, min: 0 },
     ],
     charts: [(v) => ({
-      xLabel: 'fsw [kHz]', yLabel: 'Ripple varf-varf [A]',
+      xLabel: 'f_{sw} [kHz]', yLabel: 'Ripple varf-varf [A]',
       series: [{ label: 'ΔIpp (mediu)', color: COL.a, points: curve(1, 16, (fs) => v.Udc / (8 * v.L * fs)) }],
     })],
     results: [
@@ -2915,8 +2915,8 @@ export const MODULES = [
       }
     }],
     results: [
-      { key: 'Igol', label: 'Curent de gol (estimat ~30%)', unit: 'A', tex: 'I_0 \\approx 0.3\\,I_n',
-        calc: (v) => 0.3 * v.In, dec: 2 },
+      { key: 'Igol', label: 'Curent de magnetizare (≈ I_n·sin φ_n)', unit: 'A', tex: 'I_0 \\approx I_n\\sin\\varphi_n',
+        calc: (v) => v.In * Math.sqrt(Math.max(0, 1 - v.cosphin ** 2)), dec: 2 },
       { key: 'cosphi50', label: 'cos φ la 50% sarcina', unit: '', tex: '\\cos\\varphi = \\dfrac{I_a}{\\sqrt{I_a^2+I_0^2}}',
         calc: (v, r) => { const Ia = 0.5 * v.In * v.cosphin; return Ia / Math.sqrt(Ia ** 2 + r.Igol ** 2) }, dec: 3 },
       { key: 'cosphi25', label: 'cos φ la 25% sarcina', unit: '', tex: '\\cos\\varphi(0.25)',
@@ -3650,6 +3650,51 @@ export function computeModule(mod, rawValues) {
   return r
 }
 
+// Descriere scurta per grafic (ce demonstreaza + la ce sa fii atent). Array per modul, in ordinea graficelor.
+export const CHART_DESC = {
+  'cuplu': [{ ce: 'Caracteristica cuplu-turatie a motorului asincron (pornire Mₚ, maxim Mₘₐₓ, zero la sincronism) peste cuplul rezistent al sarcinii (pompa ~n²).', atentie: 'Motorul accelereaza doar daca M motor > M sarcina pe tot parcursul; punctul de functionare e la intersectie. Atentie la cuplul minim de demaraj la sarcini grele.' }],
+  'asincron-camp-slabit': [
+    { ce: 'Cuplul disponibil: constant pana la turatia de baza, apoi ∝1/n (putere constanta); cuplul de rasturnare scade ∝1/n².', atentie: 'Peste turatia critica ncp cuplul de rasturnare ajunge sub cel cerut → motorul se rastoarna. Nu cere cuplu nominal in slabire.' },
+    { ce: 'Puterea creste pana la turatia de baza, apoi ramane ~constanta in zona de slabire de camp.', atentie: 'Zona de putere constanta e limitata; verifica nmax fata de ncp.' },
+  ],
+  'sarcina-afinitate': [
+    { ce: 'Legea afinitatii: puterea scade cu cubul turatiei (P∝n³) la pompe/ventilatoare.', atentie: 'Economia vine din exponentul 3: −20% turatie ≈ −50% putere. Valabil doar cu inaltime statica mica.' },
+    { ce: 'Locusul punctelor de functionare la turatie variabila urmeaza o parabola H∝Q² prin origine.', atentie: 'Cu inaltime statica (H₀>0) curba reala NU trece prin origine → economia e mai mica decat cubica.' },
+  ],
+  'pornire': [{ ce: 'Curentul absorbit in timpul pornirii pt DOL, softstart si VFD vs turatie.', atentie: 'DOL trage ~6×Iₙ (soc pe retea, cadere de tensiune); VFD limiteaza curentul aproape de nominal. Verifica dip-ul pe bara.' }],
+  'vfd': [{ ce: 'Caracteristica V/f: tensiunea creste liniar cu frecventa pana la fₙ, apoi ramane constanta (slabire de camp).', atentie: 'Peste fₙ tensiunea nu mai creste → fluxul si cuplul maxim scad. Boost-ul la f mic poate satura motorul.' }],
+  'cc-baza': [{ ce: 'Caracteristica mecanica n(M) a motorului c.c. cu excitatie separata: usor descrescatoare (caderea pe Rₐ).', atentie: 'Panta data de Rₐ; la sarcina mare turatia scade. Motor c.c. rigid la flux constant.' }],
+  'cc-reglaj': [
+    { ce: 'Cuplul disponibil: constant pana la turatia de baza, apoi ∝1/n in slabire de camp.', atentie: 'In slabire cuplul scade; nu depasi turatia unde cuplul cerut > cel disponibil.' },
+    { ce: 'Puterea creste pana la baza, apoi ramane constanta in slabire de camp.', atentie: 'Comutatia mecanica limiteaza turatia maxima; verifica si la colector.' },
+  ],
+  'pmsm-model': [{ ce: 'Anvelopa de cuplu a servomotorului PMSM: cuplu de varf (~3×) si continuu, constante pana la turatia de baza, apoi ∝1/n.', atentie: 'Cuplul de varf e disponibil doar scurt (termic). Verifica RMS pe ciclu, nu doar varful.' }],
+  'sincron-putere': [{ ce: 'Puterea sincrona P=U·E·sinδ/Xₛ vs unghiul de sarcina: maxima la δ=90° (cuplu de desprindere).', atentie: 'Functionare stabila doar pe ramura crescatoare (δ<90°). Peste 90° motorul pierde sincronismul.' }],
+  'motor-echivalent': [
+    { ce: 'Caracteristica reala cuplu-turatie din schema echivalenta Thevenin: pornire, rasturnare la sₘₐₓ, zero la sincronism.', atentie: 'Cuplul de pornire si Mₘₐₓ depind de R₂/X₂; rotor cu R₂ mare → pornire buna dar randament slab.' },
+    { ce: 'Curentul rotoric scade de la valoarea de pornire (mare) spre zero la sincronism.', atentie: 'Curentul de pornire mare = solicitare termica; conteaza la porniri dese.' },
+  ],
+  'randament-sarcina': [{ ce: 'Randamentul vs sarcina: maxim acolo unde pierderile variabile (Cu) = pierderile constante (Fe+mecanice), apoi scade.', atentie: 'Sub ~40% sarcina randamentul se prabuseste → motorul supradimensionat e ineficient. Optimul e la xₒₚₜ.' }],
+  'pompa-sistem': [{ ce: 'Curba sistemului (statica + frecare ∝Q²) intersectata cu curba pompei la turatie nominala si la cea ceruta; punctul de functionare e la intersectie.', atentie: 'Cu inaltime statica, scaderea turatiei muta punctul pe curba sistem — nu cobori sub debitul minim al pompei.' }],
+  'trafo-12pulse': [{ ce: 'Spectrul armonic 6 vs 12 pulsuri: la 12 pulsuri armonicile 5,7,17,19 se anuleaza, raman doar 11,13,23,25.', atentie: 'Anularea e perfecta doar cu incarcare echilibrata pe cele doua punti si defazaj exact de 30°.' }],
+  'protectie-motor': [{ ce: 'Curba inversa de declansare a releului termic (timpul scade cu curentul) pt clasele 10/20/30.', atentie: 'Curentul de pornire trebuie sa cada sub curba (timp de declansare > timp de pornire), altfel declanseaza la fiecare pornire. Clasa mai mare = porniri mai lungi.' }],
+  'control-vf': [{ ce: 'Caracteristica V/f liniara (cuplu constant) vs patratica (pompe/ventilatoare); boost-ul ridica tensiunea la f mic.', atentie: 'V/f patratic reduce fluxul si pierderile la sarcini partiale, dar da cuplu mai mic la pornire.' }],
+  'ripple-pwm': [{ ce: 'Ondulatia de curent scade hiperbolic cu frecventa de comutatie (ΔI∝1/f_sw).', atentie: 'f_sw mai mare = ripple mic dar pierderi de comutatie mari. Inductanta de scapari mica → ripple mare; ia in calcul un reactor de motor.' }],
+  'comutatie': [{ ce: 'Pierderile de comutatie cresc liniar cu f_sw, cele de conductie raman constante; totalul e suma lor.', atentie: 'Cresterea f_sw reduce ripple/zgomot dar incalzeste invertorul — exista un optim. Conductia nu depinde de f_sw.' }],
+  'unda-reflectata': [{ ce: 'Varful de tensiune la bornele motorului creste cu lungimea cablului si se satureaza la ~2×U_dc peste lungimea critica.', atentie: 'Peste Lcrit ai supratensiune dubla pe izolatie → imbatranire/strapungere. Sub Lsafe esti sigur; altfel filtru du/dt.' }],
+  'winder': [{ ce: 'La putere constanta, cuplul creste liniar cu diametrul rolei (T=F·d/2) iar turatia scade ∝1/d.', atentie: 'Raportul cuplu/turatie de la gol la plin = raportul diametrelor; verifica sa incapa in plaja motorului/drive-ului.' }],
+  'pmsm-camp-slabit': [{ ce: 'Cuplu constant pana la turatia de baza (limita de tensiune), apoi ∝1/n in slabire de camp prin injectie de I_d.', atentie: 'Turatia de baza scade daca bus-ul DC e mic. Curentul caracteristic Ich=ψm/Lq arata cat de bine slabeste campul.' }],
+  'sincron-poli-aparenti': [{ ce: 'Puterea totala = excitatie (sinδ) + reluctanta (sin2δ); cuplul de reluctanta deplaseaza maximul sub δ=90°.', atentie: 'Componenta de reluctanta devine negativa peste 90°; desprinderea (maximul total) e la δ<90°, mai devreme ca la poli plini.' }],
+  'cc-serie': [{ ce: 'Caracteristica de tractiune a motorului c.c. serie: turatia scade hiperbolic cu curentul (n∝1/Iₐ), cuplu mare la pornire.', atentie: 'La sarcina mica (Iₐ mic) turatia fuge periculos → nu lasa motorul serie fara sarcina.' }],
+  'derating-vfd-motor': [{ ce: 'Curentul admisibil al motorului autoventilat scade la turatii mici (racire slaba); cu ventilatie fortata ramane la nominal.', atentie: 'La turatii joase si cuplu nominal motorul autoventilat se supraincalzeste — derating sau ventilator separat.' }],
+  'cosphi-sarcina': [{ ce: 'Factorul de putere scade puternic la sarcini partiale fiindca curentul de magnetizare (~constant) domina componenta activa.', atentie: 'Motor supradimensionat = cos φ mic = pierderi/penalizari pe retea. La 50% sarcina cos φ poate cadea sub 0,65.' }],
+  'regimuri-s': [{ ce: 'Puterea admisibila creste cand factorul de durata ciclica scade: S3 (repaus deconectat) > S6 (mers in gol) > S1 (continuu).', atentie: 'S6 da uprating mai mic ca S3 (motorul nu se raceste in gol). Aproximatia 1/√CDF e valida cand ciclul nu e mult mai scurt ca constanta termica.' }],
+  'economie-profil': [{ ce: 'Puterea vs debit: VFD (lege cubica) vs strangulare (vana, ~constant) vs by-pass; economia = aria dintre curbe.', atentie: 'Economia reala se calculeaza ponderat pe orele la fiecare debit, nu intr-un punct. Strangularea risipeste cel mai mult.' }],
+  'randament-pompa': [{ ce: 'Randamentul pompei e maxim la debitul BEP si scade parabolic de ambele parti.', atentie: 'Departe de BEP scad randamentul si durata de viata (vibratii, cavitatie). Tine punctul de functionare aproape de BEP.' }],
+  'taper': [{ ce: 'Cu taper, tensiunea de infasurare scade programat spre diametru plin, deci cuplul creste mai lent decat fara taper.', atentie: 'Taper-ul previne strivirea straturilor interioare la rola plina; prea mult taper = infasurare moale.' }],
+  'vcurves': [{ ce: 'Curba in V: curentul de stator e minim la factor de putere unitar si creste la sub/supra-excitatie.', atentie: 'Sub-excitat absorbi reactiv (risc de instabilitate); supra-excitat furnizezi reactiv (curent mare). Minimul = fp unitar.' }],
+}
+
 // Construieste graficele unui modul din valorile date (returneaza [] daca nu are).
 export function computeCharts(mod, rawValues) {
   if (!mod.charts) return []
@@ -3659,13 +3704,19 @@ export function computeCharts(mod, rawValues) {
     v[f.key] = Number.isFinite(num) ? num : 0
   }
   const out = []
+  let ci = 0
   for (const builder of mod.charts) {
     try {
       const c = builder(v)
-      if (c && (c.series || []).some((s) => (s.points || []).length > 1)) out.push(c)
+      if (c && (c.series || []).some((s) => (s.points || []).length > 1)) {
+        const dd = (CHART_DESC[mod.id] || [])[ci]
+        if (dd) c.desc = dd
+        out.push(c)
+      }
     } catch (_) {
       // ignora graficul daca formula esueaza
     }
+    ci++
   }
   return out
 }
