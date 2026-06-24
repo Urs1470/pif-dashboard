@@ -93,8 +93,8 @@ export const MODULE_ORDER = [
   // pompe & ventilatoare
   'pompa-sistem', 'turatie-minima', 'npsh', 'putere-pompa', 'ventilator-densitate', 'turatie-specifica',
   'economie-profil', 'randament-pompa', 'debit-minim', 'trimming-rotor',
-  // c.c.: fundamental -> reglaj -> convertor -> serie -> randament
-  'cc-baza', 'cc-reglaj', 'cc-drive', 'cc-serie', 'cc-randament', 'cc-pornire-trepte',
+  // c.c.: fundamental -> tipuri -> reglaj -> camp -> comutatie -> convertor -> factor forma -> franare -> serie -> randament -> pornire
+  'cc-baza', 'cc-excitatii', 'cc-reglaj', 'cc-camp', 'cc-comutatie', 'cc-drive', 'cc-factor-forma', 'cc-franare', 'cc-serie', 'cc-randament', 'cc-pornire-trepte',
   // servo: model -> ciclu -> feedback -> camp slabit -> control (PI/raspuns/profil)
   'pmsm-model', 'pmsm-ciclu', 'pmsm-feedback', 'pmsm-camp-slabit', 'acordare-pi', 'raspuns-ord2', 'profil-miscare',
   'ipmsm-mtpa', 'suprasarcina-servo',
@@ -193,6 +193,11 @@ export const SOURCES = {
   'synrm': 'Teorie SynRM/IPM — M=(3/2)p(L_d−L_q)i_d i_q, MTPA la 45° (MDPI/IET)',
   'cc-serie': 'Chapman — motor c.c. serie (M∝I_a², n~1/I_a)',
   'cc-randament': 'Chapman cap.8 (diagrama flux putere c.c.) + Hughes cap.3',
+  'cc-excitatii': 'Chapman cap.8-9 (excitatie separat/sunt/serie/compus) + Hughes (serie n~1/√M, ambalare la gol) — recunoastere retrofit',
+  'cc-camp': 'Chapman (circuit de excitatie, raspuns L/R, slabire de camp) + Mohan (alimentare camp prin redresor, fortare) + IEC 60034-1; ABB DCS880 grup 28 / Siemens DCM p50080/p50100/p50105',
+  'cc-comutatie': 'Chapman/Fitzgerald/Say (reactia indusului, poli auxiliari, infasurare de compensare) + Hughes (limita viteza periferica 30-40 m/s, raport slabire camp) + ABB TGB No.8',
+  'cc-factor-forma': 'Mohan (ondulatie curent indus la redresor comandat) + IEC 60034-1 (factor de forma, incalzire) + IEC 60034-19 (incercari masini c.c.); 12 pulsuri ~ injumatatire ondulatie (analiza armonica B6/B12)',
+  'cc-franare': 'Chapman (franare dinamica pe rezistor, M_b=kΦI_b) + Mohan (franare recuperativa, convertor 4 cadrane) + ABB DCS880 / Siemens DCM (2Q/4Q)',
   'motor-termic': 'Hughes — constanta de timp termica (p.45); model I²t protectie motor',
   'clase-ie': 'IEC 60034-30-1 / 30-2 (clase IE1-IE5) — pierderi & economie',
   'derating-vfd-motor': 'WEG — motoare pe PWM (curbe derating autovent./fortat); Hughes cap.7',
@@ -418,6 +423,11 @@ const BOOK_DOCS = {
   'cc-serie': [BOOK.chapDCmotor],
   'cc-randament': [BOOK.chapDCmotor],
   'cc-reglaj': [BOOK.chapDCspeed],
+  'cc-excitatii': [BOOK.chapDCmotor, BOOK.chapDCspeed],
+  'cc-camp': [BOOK.chapDCspeed],
+  'cc-comutatie': [BOOK.chapDCmotor],
+  'cc-factor-forma': [BOOK.mohanRect],
+  'cc-franare': [BOOK.chapDCmotor],
   'vfd': [BOOK.mohanRect],
   'cc-drive': [BOOK.mohanRect],
   'comutatie': [BOOK.mohanSwitch],
@@ -1279,7 +1289,7 @@ export const MODULES = [
     tier: 2,
     title: 'Convertor c.c. (DC drive)',
     subtitle: 'Redresor comandat, constante de timp',
-    note: 'Punte trifazata complet comandata (B6), functionare in 4 cadrane.',
+    note: 'Punte trifazata complet comandata (B6), functionare in 4 cadrane. $U_d = U_{d0}\\cos\\alpha$ este valoarea medie ideala (la gol); sub sarcina tensiunea reala scade cu caderea de comutatie (suprapunere) $\\approx (3X_c/\\pi)I_d$ plus caderea pe tiristoare. $\\alpha>90°$ → regim de invertor (recuperare).',
     params: 'DCS880 / Siemens DCM (redresor cu tiristoare)',
     fields: [
       { key: 'Ulinie', label: 'Tensiune retea', unit: 'V', default: 400, step: 10, min: 0 },
@@ -3403,6 +3413,219 @@ export const MODULES = [
         calc: (v, r) => (r.ratio > 1 && r.Rtot && v.Ra ? Math.ceil(Math.log(r.Rtot / v.Ra) / Math.log(r.ratio)) : null), dec: 0 },
     ],
   },
+  {
+    id: 'cc-excitatii',
+    family: 'cc',
+    tier: 2,
+    title: 'Motor c.c. — tipuri de excitatie (recunoastere retrofit)',
+    subtitle: 'Comparatie n(M): separat / sunt / serie / compus / PMDC',
+    note: 'Card de orientare la retrofit: identifica tipul de excitatie inainte de a alege convertorul. (1) SEPARAT EXCITAT: caracteristica dura, cadere liniara mica ($n = n_0 - kM$, ~3-5%); cuplu de pornire bun, controlabil din $I_a$; mers in gol stabil; reglaj excelent (indus + camp independent); slabire de camp 2:1...4:1 prin reducerea $I_f$; aplicatii laminoare, masini-unelte, infasurare (winder); RETROFIT: tinta ideala pentru DCS880 / SINAMICS DCM in 4 cadrane — convertor indus + convertor de camp separat. (2) SUNT / DERIVATIE ($I_f$ din $U_a$): practic identica cu separat excitat la $U$ fix, cadere putin mai mare (~5-8%); pornire si mers in gol stabile; slabire de camp posibila; aplicatii ventilatoare, pompe, masini-unelte vechi; RETROFIT: se conduce ca separat excitat — campul se MUTA pe iesirea de camp dedicata a drive-ului, altfel slabirea de camp si limitarea $E$ nu functioneaza. (3) SERIE ($I_f = I_a$): caracteristica MOALE, foarte cazatoare $n \\propto 1/\\sqrt{M}$ (in zona nesaturata); cuplu de pornire foarte mare ($M \\propto I_a^2$); PERICOL DE AMBALARE LA GOL ($n \\to \\infty$ cand $M \\to 0$); aplicatii tractiune, demaroare, macarale vechi; RETROFIT: dificil — un drive standard cu camp separat NU reproduce serie; se pastreaza conexiunea serie si se conduce doar pe indus, OBLIGATORIU cu sarcina minima/cuplaj permanent si supraviteza configurata, sau se reproiecteaza ca separat excitat. (4) COMPUS CUMULATIV (serie + sunt, fluxuri in acelasi sens): intre sunt si serie — cuplu de pornire mare DAR fara ambalare la gol (campul sunt limiteaza $n$); cadere moderata (~10-25%); aplicatii prese, foarfece, laminoare cu soc; RETROFIT: campul sunt pe iesirea de camp, infasurarea serie ramane in indus; verifica polaritatea ca sa ramana cumulativ. (5) COMPUS DIFERENTIAL (serie opus sunt): caracteristica aproape orizontala sau URCATOARE cu sarcina, INSTABILA, rar folosita; RETROFIT: se reconfigureaza ca separat/sunt (se elimina sau se inverseaza infasurarea serie). (6) MAGNET PERMANENT (PMDC): flux fix din magneti, fara $I_f$; cadere doar din $R_a$ (~3-6%); reglaj NUMAI prin tensiune de indus; FARA slabire de camp -> turatie max plafonata; aplicatii servo mici; RETROFIT: convertor pe indus FARA convertor de camp; atentie la demagnetizare la curent de varf si la lipsa zonei de putere constanta.',
+    params: 'DCS880: convertor camp / FEX, mod EMF&camp 28.17, turatie baza 99.14, supraviteza 30.16 · SINAMICS DCM: mod camp p50080 (1=intern), EMF p50115, supraviteza p50272 — la retrofit serie/diferential se reconfigureaza obligatoriu pe excitatie separata',
+    charts: [(v) => ({
+      xLabel: 'Cuplu M [× M_n]', yLabel: 'Turatie n [× n_n]',
+      series: [
+        { label: 'Separat excitat', color: COL.a, points: curve(0, 2, (M) => 1.05 - 0.05 * M) },
+        { label: 'Magnet permanent (PMDC)', color: 'var(--info)', dash: true, points: curve(0, 2, (M) => 1.06 - 0.06 * M) },
+        { label: 'Sunt (derivatie)', color: COL.b, points: curve(0, 2, (M) => 1.08 - 0.08 * M) },
+        { label: 'Compus cumulativ', color: 'var(--success)', points: curve(0, 2, (M) => 1.20 - 0.20 * M) },
+        { label: 'Compus diferential (instabil)', color: 'var(--purple)', dash: true, points: curve(0, 2, (M) => 0.95 + 0.07 * M) },
+        { label: 'Serie (ambalare la gol)', color: COL.c, points: curve(0.05, 2, (M) => (M > 0 ? 1 / Math.sqrt(M) : null)) },
+      ],
+    })],
+    fields: [
+      { key: 'xload', label: 'Fractie de sarcina (M/Mₙ)', unit: '×', default: 0.25, step: 0.05, min: 0.01 },
+      { key: 'dropSunt', label: 'Cadere turatie sunt/sep la Mₙ', unit: '%', default: 6, step: 0.5, min: 0 },
+    ],
+    results: [
+      { key: 'nSerie', label: 'Turatie motor serie (× nₙ, nesaturat)', unit: '×', tex: '\\dfrac{n}{n_n} \\approx \\dfrac{1}{\\sqrt{M/M_n}}',
+        calc: (v) => (v.xload > 0 ? 1 / Math.sqrt(v.xload) : null), dec: 2 },
+      { key: 'nSep', label: 'Turatie sep/sunt (× nₙ)', unit: '×', tex: '\\dfrac{n}{n_n} = 1 + \\dfrac{d}{100}\\left(1 - \\dfrac{M}{M_n}\\right)',
+        calc: (v) => 1 + (v.dropSunt / 100) * (1 - v.xload), dec: 3 },
+      { key: 'regSep', label: 'Reglaj de turatie sep/sunt', unit: '%', tex: '\\delta = \\dfrac{n_0 - n_n}{n_n}\\cdot 100 = d',
+        calc: (v) => v.dropSunt, dec: 1 },
+    ],
+  },
+  {
+    id: 'cc-camp',
+    family: 'cc',
+    tier: 3,
+    title: 'Circuit de excitatie (camp) c.c.',
+    subtitle: 'Curent de camp, constanta de timp, fortare si economie',
+    note: 'Excitatie separata: $I_f = U_f/R_f$, $P_f = U_f I_f = U_f^2/R_f$ (la regim stationar campul e pur rezistiv). Constanta de timp a infasurarii de camp $\\tau_f = L_f/R_f$ poate ajunge la ordinul secundelor, deci fluxul se schimba lent. Stabilizare normala in $\\approx 3\\tau_f$. Fortarea aplica tranzitoriu o tensiune marita $U_{forc} = k_{forc}\\,U_f$: curentul tinde catre $k_{forc} I_f$ dar e limitat la $I_f$, deci atinge tinta in $t_{forc} = \\tau_f\\ln\\dfrac{k_{forc}}{k_{forc}-1}$ (de cateva ori mai rapid). La stationare cu motor oprit se reduce $I_f$ (economie de camp, $r_{ec}$) ca sa se limiteze incalzirea: pierderile scad cu $r_{ec}^2$. ATENTIE: nu se slabeste campul sub minimul de magnetizare cat timp masina trebuie sa dezvolte cuplu.',
+    params: 'DCS880 FEX (field exciter): mod camp 28.10, EMF/field control 28.17, fortare camp 28.14, reducere la oprire 28.18 · Siemens DCM: p50080 (mod), p50100 (I_f nominal), curba magnetizare p50105 · Inversare de camp pentru 4Q cand indusul e nereversibil. Retrofit: masoara R_f la cald si verifica L_f din manual ca sa setezi corect bucla de camp.',
+    charts: [(v) => {
+      if (!v.Rf || !v.Lf) return null
+      const If = v.Uf / v.Rf, tau = v.Lf / v.Rf
+      const tmax = Math.max(3.2 * tau, 0.1)
+      const cu = (t) => Math.min(If, v.kforc * If * (1 - Math.exp(-t / tau)))
+      const fara = (t) => If * (1 - Math.exp(-t / tau))
+      const tf = v.kforc > 1 ? tau * Math.log(v.kforc / (v.kforc - 1)) : null
+      return {
+        xLabel: 'Timp t [s]', yLabel: 'Curent de camp I_f [A]',
+        series: [
+          { label: 'cu fortare (' + v.kforc + '×)', color: COL.a, points: curve(0, tmax, cu) },
+          { label: 'fara fortare', color: COL.b, dash: true, points: curve(0, tmax, fara) },
+        ],
+        markers: tf != null && tf <= tmax ? [{ x: tf, y: If, label: 'fortare atinge I_f', color: COL.op }] : [],
+      }
+    }],
+    fields: [
+      { key: 'Uf', label: 'Tensiune de camp', unit: 'V', default: 310, step: 5, min: 0 },
+      { key: 'Rf', label: 'Rezistenta camp', unit: 'Ω', default: 35, step: 1, min: 0.1 },
+      { key: 'Lf', label: 'Inductanta camp', unit: 'H', default: 12, step: 0.5, min: 0.01 },
+      { key: 'kforc', label: 'Factor de fortare (boost)', unit: '×', default: 2, step: 0.1, min: 1.05 },
+      { key: 'rec', label: 'Reducere camp la oprire', unit: '×', default: 0.5, step: 0.05, min: 0.05 },
+    ],
+    results: [
+      { key: 'If', label: 'Curent de camp', unit: 'A', tex: 'I_f = \\dfrac{U_f}{R_f}',
+        calc: (v) => (v.Rf ? v.Uf / v.Rf : null), dec: 2 },
+      { key: 'Pf', label: 'Pierderi de camp', unit: 'W', tex: 'P_f = U_f I_f = \\dfrac{U_f^2}{R_f}',
+        calc: (v) => (v.Rf ? (v.Uf * v.Uf) / v.Rf : null), dec: 0 },
+      { key: 'tauf', label: 'Constanta de timp de camp', unit: 's', tex: '\\tau_f = \\dfrac{L_f}{R_f}',
+        calc: (v) => (v.Rf ? v.Lf / v.Rf : null), dec: 2 },
+      { key: 'tset', label: 'Stabilizare fara fortare (≈3τ)', unit: 's', tex: 't_{stab} \\approx 3\\,\\tau_f',
+        calc: (v) => (v.Rf ? (3 * v.Lf) / v.Rf : null), dec: 2 },
+      { key: 'tforc', label: 'Stabilizare cu fortare', unit: 's', tex: 't_{forc} = \\tau_f\\ln\\dfrac{k_{forc}}{k_{forc}-1}',
+        calc: (v) => (v.Rf && v.kforc > 1 ? (v.Lf / v.Rf) * Math.log(v.kforc / (v.kforc - 1)) : null), dec: 2 },
+      { key: 'Pec', label: 'Pierderi la oprire (economie)', unit: 'W', tex: 'P_{ec} = r_{ec}^2\\,P_f',
+        calc: (v) => (v.Rf ? v.rec * v.rec * (v.Uf * v.Uf) / v.Rf : null), dec: 0 },
+    ],
+  },
+  {
+    id: 'cc-comutatie',
+    family: 'cc',
+    tier: 3,
+    title: 'Motor c.c. — comutatie & reactia indusului',
+    subtitle: 'Viteza periferica colector si limita de slabire de camp',
+    note: 'Viteza periferica a colectorului $v=\\pi D n_{max}/60$ trebuie limitata la $\\approx 30$–$40$ m/s (lamele, perii, scantei). Raportul de slabire de camp $n_{max}/n_{baza}$ este limitat de comutatie: tipic $\\approx 3{:}1$ fara masuri, pana la $4{:}1\\dots6{:}1$ cu infasurare de compensare. Polii auxiliari (de comutatie) genereaza o t.e.m. de comutatie care anuleaza tensiunea de reactanta (t.e.m. de autoinductie a bobinei in scurtcircuit sub perii) si compenseaza reactia indusului in zona neutra; infasurarea de compensare anuleaza distorsiunea fluxului sub talpa polara. Depasirea limitelor → scantei la perii, arc inelar (flashover), uzura colector.',
+    params: 'DCS880: turatie max 30.12, turatie baza 99.14, EMF/field mode 28.17 · Siemens DCM: p50081 (n_max), p50115 (n_baza/field weakening)',
+    charts: [
+      (v) => {
+        const nm = Math.max(v.nmax, v.nbaza * 1.05)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Viteza periferica v [m/s]',
+          series: [
+            { label: 'v = πDn/60', color: COL.a, points: curve(0, nm, (n) => (Math.PI * (v.D / 1000) * n) / 60) },
+            { label: 'limita 40 m/s', color: COL.c, dash: true, points: curve(0, nm, () => 40) },
+            { label: 'limita 30 m/s', color: COL.b, dash: true, points: curve(0, nm, () => 30) },
+          ],
+          markers: [{ x: v.nmax, y: (Math.PI * (v.D / 1000) * v.nmax) / 60, label: 'n max', color: COL.op }],
+        }
+      },
+      (v) => {
+        if (!v.nbaza) return null
+        const nm = Math.max(v.nmax, v.nbaza * 1.05)
+        const M = (n) => (n <= v.nbaza ? 1 : v.nbaza / n)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu relativ M/M_n',
+          series: [{ label: 'M disponibil (∝1/n in slabire)', color: COL.a, points: curve(0, nm, M) }],
+          markers: [{ x: v.nbaza, y: 1, label: 'n baza', color: COL.op }, { x: v.nmax, y: v.nbaza / v.nmax, label: 'n max', color: COL.c }],
+        }
+      },
+    ],
+    fields: [
+      { key: 'D', label: 'Diametru colector', unit: 'mm', default: 250, step: 5, min: 1 },
+      { key: 'nbaza', label: 'Turatie de baza', unit: 'rpm', default: 1500, step: 10, min: 1 },
+      { key: 'nmax', label: 'Turatie maxima', unit: 'rpm', default: 3000, step: 10, min: 1 },
+    ],
+    results: [
+      { key: 'vperif', label: 'Viteza periferica colector', unit: 'm/s', tex: 'v = \\dfrac{\\pi D\\,n_{max}}{60}',
+        calc: (v) => (Math.PI * (v.D / 1000) * v.nmax) / 60, dec: 1 },
+      { key: 'ratio', label: 'Raport slabire de camp', unit: ':1', tex: 'k = \\dfrac{n_{max}}{n_{baza}}',
+        calc: (v) => (v.nbaza ? v.nmax / v.nbaza : null), dec: 2 },
+      { key: 'Dmax', label: 'Diametru colector max (la 40 m/s)', unit: 'mm', tex: 'D_{max} = \\dfrac{60\\cdot 40}{\\pi\\,n_{max}}\\cdot 10^{3}',
+        calc: (v) => (v.nmax ? ((60 * 40) / (Math.PI * v.nmax)) * 1000 : null), dec: 0 },
+    ],
+  },
+  {
+    id: 'cc-factor-forma',
+    family: 'cc',
+    tier: 3,
+    title: 'Factor de forma curent c.c. (ondulatie tiristoare)',
+    subtitle: 'kf = Irms/Imed, incalzire ~ kf², conductie intrerupta',
+    note: 'Motorul c.c. alimentat de la redresor cu tiristoare vede un curent ondulat: factorul de forma $k_f = I_{rms}/I_{med} \\ge 1$ (ideal 1.0 la curent perfect neted). Pierderile in indus cresc cu $k_f^2$, deci curentul mediu admis se derateaza la $I_{med,max} = I_n/k_f$ pentru a pastra incalzirea nominala. Puntea pe 12 pulsuri injumatateste aproximativ ondulatia fata de 6 pulsuri; bobina de netezire (mareste $L_a$) reduce $k_f$. La sarcina mica / turatie joasa apare conductie intrerupta care creste $k_f$ si modifica amplificarea buclei de curent (foloseste $k_f$ real masurat, nu cel de placa). Motorul trebuie ales/deratat pentru alimentare de la convertor (factor de forma — IEC 60034-1), tipic la retrofit cu actionare veche.',
+    params: 'DCS880: bobina de netezire L_a (4Q); Siemens DCM: p50078 (numar pulsuri 6/12), date placuta motor pt curent admis',
+    charts: [(v) => ({
+      xLabel: 'Factor de forma k_f', yLabel: 'Factor pierderi k_f^2',
+      series: [{ label: 'k_f² (incalzire relativa)', color: COL.a, points: curve(1, 1.6, (kf) => kf * kf) }],
+      markers: [{ x: v.kf, y: v.kf * v.kf, label: 'punct lucru', color: COL.op }],
+    })],
+    fields: [
+      { key: 'Imed', label: 'Curent mediu indus', unit: 'A', default: 80, step: 5, min: 0 },
+      { key: 'kf', label: 'Factor de forma', unit: '', default: 1.1, step: 0.01, min: 1 },
+      { key: 'In', label: 'Curent nominal motor', unit: 'A', default: 100, step: 5, min: 1 },
+      { key: 'kf6', label: 'Factor de forma 6 pulsuri', unit: '', default: 1.1, step: 0.01, min: 1 },
+    ],
+    results: [
+      { key: 'Irms', label: 'Curent termic echivalent (rms)', unit: 'A', tex: 'I_{rms} = k_f\\,I_{med}',
+        calc: (v) => v.kf * v.Imed, dec: 1 },
+      { key: 'floss', label: 'Factor pierderi suplimentare indus', unit: '×', tex: 'f = k_f^2',
+        calc: (v) => v.kf * v.kf, dec: 3 },
+      { key: 'ripple', label: 'Factor de ondulatie', unit: '', tex: 'RF = \\sqrt{k_f^2 - 1}',
+        calc: (v) => (v.kf >= 1 ? Math.sqrt(v.kf * v.kf - 1) : null), dec: 3 },
+      { key: 'Imedmax', label: 'Curent mediu admis (deratat)', unit: 'A', tex: 'I_{med,max} = I_n/k_f',
+        calc: (v) => (v.kf > 0 ? v.In / v.kf : null), dec: 1 },
+      { key: 'kf12', label: 'Factor de forma estimat 12 pulsuri', unit: '', tex: 'k_{f,12} \\approx \\sqrt{1 + \\tfrac14(k_{f,6}^2-1)}',
+        calc: (v) => (v.kf6 >= 1 ? Math.sqrt(1 + 0.25 * (v.kf6 * v.kf6 - 1)) : null), dec: 3 },
+    ],
+  },
+  {
+    id: 'cc-franare',
+    family: 'cc',
+    tier: 3,
+    title: 'Motor c.c. — franare (dinamica / recuperativa)',
+    subtitle: 'Franare reostatica pe R_b, recuperare 4 cadrane, plugging',
+    note: 'La franare dinamica indusul se deconecteaza de la convertor si se inchide pe rezistorul $R_b$: masina lucreaza ca generator, $I_b = E/(R_a+R_b)$ se inverseaza fata de regimul de motor, deci $M_b = k\\Phi I_b$ devine cuplu de franare. Alege $R_b \\geq E/I_{max}-R_a$ ca varful de curent la comutare sa nu depaseasca $I_{max}$. Pe masura ce turatia scade, $E \\propto n$ scade, deci $I_b$ si $M_b$ scad liniar cu $n$ si se anuleaza la $n=0$ — franarea dinamica e slaba la turatie mica (eventual frana mecanica de tinere). Convertor 1Q (o punte) NU poate recupera energia in retea, necesita rezistor de franare; convertor 4Q (dubla punte antiparalel sau inversare de camp) recupereaza energia in retea (cadranele II/IV). Plugging (inversarea tensiunii pe indus la turatie nenula) da $I=(U+E)/(R_a+R_b)$, foarte dur — uzual evitat. Retrofit: daca driveul vechi e 1Q, un rezistor de franare ofera doar disipare; recuperarea in retea cere upgrade la 4Q.',
+    params: 'DCS880: tip punte 2Q/4Q, Ra 27.32, limita curent 30.12 · Siemens DCM: 1Q/4Q tip punte, p50110 (Ra), p50100 (I_nom)',
+    charts: [
+      (v) => {
+        const Rt = v.Ra + v.Rb
+        if (!(Rt > 0)) return null
+        const Ibf = (nn) => (v.kPhi * (2 * Math.PI * nn) / 60) / Rt
+        const Mbf = (nn) => v.kPhi * Ibf(nn)
+        const nmax = Math.max(v.n, 1)
+        return {
+          xLabel: 'Turatie n [rpm]', yLabel: 'Cuplu M_b [Nm] / Curent I_b [A]',
+          series: [
+            { label: 'Cuplu franare M_b', color: COL.a, points: curve(0, nmax, Mbf) },
+            { label: 'Curent franare I_b', color: COL.b, dash: true, points: curve(0, nmax, Ibf) },
+          ],
+        }
+      },
+      (v) => {
+        const E = (v.kPhi * (2 * Math.PI * v.n)) / 60
+        const rbmin = v.Imax > 0 ? Math.max(0, E / v.Imax - v.Ra) : 0
+        const rmax = Math.max(rbmin * 3, v.Rb * 2, 1)
+        const Ibf = (rb) => { const dd = v.Ra + rb; return dd > 0 ? E / dd : null }
+        return {
+          xLabel: 'Rezistenta de franare R_b [Ω]', yLabel: 'Curent initial I_b [A]',
+          series: [
+            { label: 'I_b(R_b)', color: COL.a, points: curve(0.01, rmax, Ibf) },
+            { label: 'I_max', color: COL.c, dash: true, points: curve(0.01, rmax, () => v.Imax) },
+          ],
+        }
+      },
+    ],
+    fields: [
+      { key: 'n', label: 'Turatie initiala', unit: 'rpm', default: 1500, step: 10, min: 0 },
+      { key: 'kPhi', label: 'Constanta masinii (k·Φ)', unit: 'V·s/rad', default: 2.6, step: 0.1, min: 0.01 },
+      { key: 'Ra', label: 'Rezistenta indus', unit: 'Ω', default: 0.15, step: 0.01, min: 0 },
+      { key: 'Rb', label: 'Rezistenta de franare', unit: 'Ω', default: 2.5, step: 0.1, min: 0 },
+      { key: 'Imax', label: 'Curent max admis', unit: 'A', default: 160, step: 5, min: 1 },
+    ],
+    results: [
+      { key: 'E', label: 'T.c.e.m. la turatia initiala', unit: 'V', tex: 'E = k\\Phi\\,\\omega = k\\Phi\\dfrac{2\\pi n}{60}',
+        calc: (v) => (v.kPhi * (2 * Math.PI * v.n)) / 60, dec: 1 },
+      { key: 'Ib', label: 'Curent initial de franare', unit: 'A', tex: 'I_b = \\dfrac{E}{R_a + R_b}',
+        calc: (v, r) => ((v.Ra + v.Rb) > 0 ? r.E / (v.Ra + v.Rb) : null), dec: 1 },
+      { key: 'Mb', label: 'Cuplu initial de franare', unit: 'Nm', tex: 'M_b = k\\Phi\\,I_b',
+        calc: (v, r) => (r.Ib == null ? null : v.kPhi * r.Ib), dec: 1 },
+      { key: 'Rbmin', label: 'R_b minim pt. I ≤ I_max', unit: 'Ω', tex: 'R_{b,min} = \\max\\!\\left(0,\\;\\dfrac{E}{I_{max}} - R_a\\right)',
+        calc: (v, r) => (v.Imax > 0 ? Math.max(0, r.E / v.Imax - v.Ra) : null), dec: 3 },
+      { key: 'Pb0', label: 'Putere disipata initial in R_b', unit: 'kW', tex: 'P_{R_b} = I_b^2 R_b',
+        calc: (v, r) => (r.Ib == null ? null : (r.Ib * r.Ib * v.Rb) / 1000), dec: 2 },
+    ],
+  },
 
   // --- sincron ---
   {
@@ -3653,6 +3876,17 @@ export function computeModule(mod, rawValues) {
 // Descriere scurta per grafic (ce demonstreaza + la ce sa fii atent). Array per modul, in ordinea graficelor.
 export const CHART_DESC = {
   'cuplu': [{ ce: 'Caracteristica cuplu-turatie a motorului asincron (pornire Mₚ, maxim Mₘₐₓ, zero la sincronism) peste cuplul rezistent al sarcinii (pompa ~n²).', atentie: 'Motorul accelereaza doar daca M motor > M sarcina pe tot parcursul; punctul de functionare e la intersectie. Atentie la cuplul minim de demaraj la sarcini grele.' }],
+  'cc-excitatii': [{ ce: 'Caracteristicile turatie-cuplu n(M) normalizate (× nominal) pe tip de excitatie; toate trec prin punctul nominal (1,1).', atentie: 'Seria se ambaleaza la gol (M→0 ⇒ n→∞); compusul diferential urca cu sarcina (instabil). Sep/sunt/PMDC sunt dure (cadere mica). Curbele sunt idealizate (nesaturat).' }],
+  'cc-camp': [{ ce: 'Raspunsul la treapta al curentului de camp I_f(t): cu fortare (tensiune marita, limitata la I_f) atinge tinta mult mai rapid decat raspunsul L/R normal.', atentie: 'Campul e lent (τ_f=L_f/R_f, poate fi de ordinul secundelor); fara fortare, slabirea de camp si inversarea intarzie. Markerul = momentul atingerii I_f.' }],
+  'cc-comutatie': [
+    { ce: 'Viteza periferica a colectorului v=πDn/60 vs turatie, cu liniile-limita 30 si 40 m/s.', atentie: 'Peste ~40 m/s apar scantei/uzura/flashover. Markerul = nmax; daca depaseste limita, reduce nmax sau diametrul colectorului.' },
+    { ce: 'Cuplul relativ M/M_n: constant pana la nbaza, apoi ∝1/n in slabire de camp (putere constanta).', atentie: 'Raportul nmax/nbaza e limitat de comutatie (~3:1, pana la ~6:1 cu infasurare de compensare), nu de termica. La nmax cuplul scade la nbaza/nmax.' },
+  ],
+  'cc-factor-forma': [{ ce: 'Factorul de pierderi suplimentare in indus k_f² in functie de factorul de forma k_f, cu punctul de lucru marcat.', atentie: 'Incalzirea creste patratic: k_f=1.2 ⇒ +44% pierderi Joule fata de curent neted. Derateaza curentul mediu admis (I_n/k_f) sau adauga bobina de netezire.' }],
+  'cc-franare': [
+    { ce: 'Cuplul si curentul de franare dinamica vs turatie: scad liniar cu n (E∝n) si se anuleaza la n=0.', atentie: 'Franarea dinamica e slaba la turatie mica → pentru oprire/tinere fina e nevoie de frana mecanica.' },
+    { ce: 'Curentul initial de franare I_b in functie de rezistorul R_b (hiperbolic); linia I_max indica R_b minim acceptabil.', atentie: 'R_b prea mic → varf de curent peste I_max la comutare. Alege R_b ≥ R_b,min. Convertor 1Q: doar disipare; 4Q: recuperare in retea.' },
+  ],
   'asincron-camp-slabit': [
     { ce: 'Cuplul disponibil: constant pana la turatia de baza, apoi ∝1/n (putere constanta); cuplul de rasturnare scade ∝1/n².', atentie: 'Peste turatia critica ncp cuplul de rasturnare ajunge sub cel cerut → motorul se rastoarna. Nu cere cuplu nominal in slabire.' },
     { ce: 'Puterea creste pana la turatia de baza, apoi ramane ~constanta in zona de slabire de camp.', atentie: 'Zona de putere constanta e limitata; verifica nmax fata de ncp.' },
@@ -3733,6 +3967,10 @@ export const CHART_ZONE = {
   'cc-reglaj': [
     (v) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, v.ndorit, 'slabire de camp', _zb)],
     (v) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, v.ndorit, 'slabire de camp', _zb)],
+  ],
+  'cc-comutatie': [
+    null,
+    (v) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, Math.max(v.nmax, v.nbaza * 1.05), 'slabire de camp', _zb)],
   ],
   'pmsm-camp-slabit': [(v, r) => [_z(0, r.nbaza, 'cuplu constant', _zg), _z(r.nbaza, r.nbaza * 3, 'putere constanta', _zb)]],
   'pmsm-model': [(v) => [_z(0, v.n, 'cuplu constant', _zg), _z(v.n, v.n * 3, 'putere constanta', _zb)]],
