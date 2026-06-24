@@ -388,12 +388,13 @@
     instalatie: [
       { label: 'Cablu & tensiune', ids: ['cablu', 'cablu-protectii', 'dip-pornire'] },
       { label: 'Scurtcircuit', ids: ['scurtcircuit'] },
+      { label: 'Protectii', ids: ['protectie-motor', 'pe-defect'] },
       { label: 'Izolatie & EMC', ids: ['izolatie', 'retea-emc'] },
     ],
     termic: [
       { label: 'Model termic motor', ids: ['motor-termic', 'porniri-ora', 'regimuri-s', 'viata-termica-s10'] },
       { label: 'Eficienta', ids: ['clase-ie'] },
-      { label: 'Derating & energie', ids: ['derating-armonici-motor', 'energie-roi', 'termic'] },
+      { label: 'Derating & energie', ids: ['derating-armonici-motor', 'energie-roi', 'lcc', 'termic'] },
     ],
   }
   const rows = $derived.by(() => {
