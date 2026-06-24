@@ -3722,7 +3722,8 @@ export const CHART_MARK = {
   'vcurves': [(v, r) => _mk(r.Eunit, r.Iamin, 'fp=1')],
 }
 // Zone (regimuri) per grafic: (v, r) -> [{x0,x1,label,color}] (benzi verticale hasurate).
-const _zg = '#a7c080', _zb = '#7fbbb3', _zy = '#dbbc7f', _zo = '#e69875'
+// Culori semantice teme-constiente (se adapteaza light/dark via CSS vars).
+const _zg = 'var(--success)', _zb = 'var(--info)', _zy = 'var(--warning)', _zo = 'var(--service-accent)'
 const _z = (x0, x1, label, color) => ({ x0, x1, label, color })
 export const CHART_ZONE = {
   'asincron-camp-slabit': [

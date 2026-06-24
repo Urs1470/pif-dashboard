@@ -114,8 +114,8 @@
     </div>
     <svg bind:this={svgEl} viewBox="0 0 {W} {H}" role="img" aria-label="{d.c.yLabel} in functie de {d.c.xLabel}" onmousemove={onMove} onmouseleave={onLeave}>
       {#each d.c.zones || [] as z}
-        <rect x={d.xp(z.x0)} y={T} width={Math.max(0, d.xp(z.x1) - d.xp(z.x0))} height={H - T - B} fill={z.color || 'var(--accent)'} opacity="0.07" />
-        <text x={(d.xp(z.x0) + d.xp(z.x1)) / 2} y={T + 10} class="zone-lbl" text-anchor="middle" fill={z.color || 'var(--accent)'}>{z.label}</text>
+        <rect class="zone-band" x={d.xp(z.x0)} y={T} width={Math.max(0, d.xp(z.x1) - d.xp(z.x0))} height={H - T - B} fill={z.color || 'var(--accent)'} />
+        <text x={(d.xp(z.x0) + d.xp(z.x1)) / 2} y={T + 11} class="zone-lbl" text-anchor="middle" fill={z.color || 'var(--accent)'}>{z.label}</text>
       {/each}
       {#each d.xminor as gx}
         <line x1={d.xp(gx)} y1={T} x2={d.xp(gx)} y2={H - B} class="grid-minor" />
@@ -175,7 +175,11 @@
   .tick { fill: var(--text-dim); font-size: 10px; font-family: var(--font-mono); }
   .axlbl { fill: var(--text-secondary); font-size: 11px; }
   .ss { font-size: 0.72em; }
-  .zone-lbl { font-size: 9px; font-weight: 600; opacity: 0.85; }
+  /* Banda de zona: opacitate teme-constienta (default = dark = 0.10; light are nevoie de mai mult). */
+  .zone-band { opacity: 0.10; }
+  :global([data-theme='light']) .zone-band { opacity: 0.15; }
+  /* Eticheta cu halou (paint-order:stroke in culoarea fundalului) ca sa ramana lizibila peste curbe/grila. */
+  .zone-lbl { font-size: 10px; font-weight: 700; paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
   .cross { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
   .tip-bg { fill: var(--bg-surface); stroke: var(--border); stroke-width: 1; opacity: 0.96; }
   .tip-x { fill: var(--text); font-size: 9.5px; font-weight: 600; font-family: var(--font-mono); }
