@@ -3695,6 +3695,50 @@ export const CHART_DESC = {
   'vcurves': [{ ce: 'Curba in V: curentul de stator e minim la factor de putere unitar si creste la sub/supra-excitatie.', atentie: 'Sub-excitat absorbi reactiv (risc de instabilitate); supra-excitat furnizezi reactiv (curent mare). Minimul = fp unitar.' }],
 }
 
+// Marker de punct de functionare per grafic: (v, r) -> [{x,y,label,color}] (r = rezultatele cardului).
+const _mk = (x, y, label) => [{ x, y, label: label || 'punct lucru', color: COL.op }]
+export const CHART_MARK = {
+  'asincron-camp-slabit': [(v, r) => _mk(v.nbaza, r.Mn, 'baza'), (v, r) => _mk(v.nbaza, r.Pdisp, 'baza')],
+  'sarcina-afinitate': [(v, r) => _mk(v.n2, r.P2, 'punct'), null],
+  'vfd': [(v, r) => _mk(v.f, r.Uies, 'f lucru')],
+  'cc-baza': [(v, r) => _mk(r.M, r.n, 'nominal')],
+  'cc-reglaj': [(v, r) => _mk(v.ndorit, r.Mdisp, 'n dorit'), (v, r) => _mk(v.ndorit, r.Pconst, 'n dorit')],
+  'sincron-putere': [(v, r) => _mk(v.delta, r.P, 'delta lucru')],
+  'motor-echivalent': [(v, r) => _mk(v.n, r.M, 'punct'), (v, r) => _mk(v.n, r.I2, 'punct')],
+  'pompa-sistem': [(v, r) => _mk(v.Qtarget, r.Hreq, 'punct lucru')],
+  'protectie-motor': [(v, r) => _mk((v.kstart * v.In) / v.Ie, r.ttrip_start, 'pornire')],
+  'control-vf': [(v, r) => _mk(v.fop, r.Uf, 'f lucru')],
+  'ripple-pwm': [(v, r) => _mk(v.fsw, r.dIpp, 'fsw')],
+  'comutatie': [(v, r) => _mk(v.fsw, r.Ptot, 'fsw')],
+  'unda-reflectata': [(v, r) => _mk(v.L, r.Upk, 'cablu')],
+  'winder': [(v, r) => _mk(v.dplin, r.Tplin, 'plin')],
+  'pmsm-camp-slabit': [(v, r) => _mk(r.nbaza, 1.5 * v.ppp * v.psim * v.Imax, 'baza')],
+  'sincron-poli-aparenti': [(v, r) => _mk(v.delta, r.Ptot, 'delta lucru')],
+  'cc-serie': [(v, r) => _mk(v.Ia, r.n, 'nominal')],
+  'derating-vfd-motor': [(v, r) => _mk(v.f, r.Iself, 'f lucru')],
+  'regimuri-s': [(v, r) => _mk(v.DC, r.PS3, 'CDF')],
+  'randament-pompa': [(v, r) => _mk(v.Q, r.etaQ, 'Q lucru')],
+  'taper': [(v, r) => _mk(v.d, r.T, 'd')],
+  'vcurves': [(v, r) => _mk(r.Eunit, r.Iamin, 'fp=1')],
+}
+// Zone (regimuri) per grafic: (v, r) -> [{x0,x1,label,color}] (benzi verticale hasurate).
+const _zg = '#a7c080', _zb = '#7fbbb3', _zy = '#dbbc7f', _zo = '#e69875'
+const _z = (x0, x1, label, color) => ({ x0, x1, label, color })
+export const CHART_ZONE = {
+  'asincron-camp-slabit': [
+    (v, r) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, r.ncp, 'slabire de camp', _zb)],
+    (v, r) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, r.ncp, 'slabire de camp', _zb)],
+  ],
+  'cc-reglaj': [
+    (v) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, v.ndorit, 'slabire de camp', _zb)],
+    (v) => [_z(0, v.nbaza, 'cuplu constant', _zg), _z(v.nbaza, v.ndorit, 'slabire de camp', _zb)],
+  ],
+  'pmsm-camp-slabit': [(v, r) => [_z(0, r.nbaza, 'cuplu constant', _zg), _z(r.nbaza, r.nbaza * 3, 'putere constanta', _zb)]],
+  'pmsm-model': [(v) => [_z(0, v.n, 'cuplu constant', _zg), _z(v.n, v.n * 3, 'putere constanta', _zb)]],
+  'vfd': [(v) => [_z(0, v.fn, 'V/f liniar', _zg), _z(v.fn, v.fn * 2, 'slabire de camp', _zb)]],
+  'unda-reflectata': [(v, r) => [_z(0, r.Lsafe, 'sigur', _zg), _z(r.Lsafe, r.Lcrit, 'atentie', _zy), _z(r.Lcrit, Math.max(v.L, r.Lcrit * 2.5), 'supratensiune', _zo)]],
+}
+
 // Construieste graficele unui modul din valorile date (returneaza [] daca nu are).
 export function computeCharts(mod, rawValues) {
   if (!mod.charts) return []
@@ -3703,6 +3747,7 @@ export function computeCharts(mod, rawValues) {
     const num = Number(rawValues?.[f.key])
     v[f.key] = Number.isFinite(num) ? num : 0
   }
+  const r = computeModule(mod, rawValues)
   const out = []
   let ci = 0
   for (const builder of mod.charts) {
@@ -3711,6 +3756,10 @@ export function computeCharts(mod, rawValues) {
       if (c && (c.series || []).some((s) => (s.points || []).length > 1)) {
         const dd = (CHART_DESC[mod.id] || [])[ci]
         if (dd) c.desc = dd
+        const mkfn = (CHART_MARK[mod.id] || [])[ci]
+        if (mkfn && !(c.markers && c.markers.length)) { try { const mks = mkfn(v, r); if (mks) c.markers = mks.filter((m) => Number.isFinite(m.x) && Number.isFinite(m.y)) } catch (_) {} }
+        const zfn = (CHART_ZONE[mod.id] || [])[ci]
+        if (zfn) { try { const zs = zfn(v, r); if (zs) c.zones = zs.filter((z) => Number.isFinite(z.x0) && Number.isFinite(z.x1) && z.x1 > z.x0) } catch (_) {} }
         out.push(c)
       }
     } catch (_) {
