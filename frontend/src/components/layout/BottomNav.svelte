@@ -1,13 +1,13 @@
 <script>
-  import { Home, FolderKanban, ListTodo, Cpu, Menu } from '@lucide/svelte'
+  import NavIcon from '../ui/NavIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
 
   const tabs = [
-    { path: '/', label: 'Acasa', icon: Home },
-    { path: '/projects', label: 'Proiecte', icon: FolderKanban },
-    { path: '/tasks', label: 'Taskuri', icon: ListTodo },
-    { path: '/params', label: 'Parametri', icon: Cpu },
-    { path: '/more', label: 'Mai mult', icon: Menu },
+    { path: '/', label: 'Acasa', icon: 'home' },
+    { path: '/projects', label: 'Proiecte', icon: 'projects' },
+    { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
+    { path: '/params', label: 'Parametri', icon: 'params' },
+    { path: '/more', label: 'Mai mult', icon: 'menu' },
   ]
 
   function isActive(itemPath) {
@@ -27,7 +27,7 @@
       class="bottom-tab"
       class:active={isActive(tab.path)}
     >
-      <tab.icon size={20} />
+      <NavIcon name={tab.icon} size={20} />
       <span>{tab.label}</span>
     </a>
   {/each}

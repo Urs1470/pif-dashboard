@@ -1,19 +1,17 @@
 <script>
-  import {
-    Home, FolderKanban, ListTodo, Cpu, StickyNote,
-    Settings, PanelLeftClose, PanelLeft, Calculator
-  } from '@lucide/svelte'
+  import { PanelLeftClose, PanelLeft } from '@lucide/svelte'
+  import NavIcon from '../ui/NavIcon.svelte'
   import { router, link, navigate } from '../../lib/router.svelte.js'
   import { ui, toggleSidebar } from '../../stores/ui.svelte.js'
 
   const navItems = [
-    { path: '/', label: 'Acasa', icon: Home },
-    { path: '/projects', label: 'Proiecte', icon: FolderKanban },
-    { path: '/tasks', label: 'Taskuri', icon: ListTodo },
-    { path: '/params', label: 'Parametri', icon: Cpu },
-    { path: '/calculator', label: 'Calculator', icon: Calculator },
-    { path: '/notes', label: 'Notite', icon: StickyNote },
-    { path: '/admin', label: 'Admin', icon: Settings },
+    { path: '/', label: 'Acasa', icon: 'home' },
+    { path: '/projects', label: 'Proiecte', icon: 'projects' },
+    { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
+    { path: '/params', label: 'Parametri', icon: 'params' },
+    { path: '/calculator', label: 'Calculator', icon: 'calculator' },
+    { path: '/notes', label: 'Notite', icon: 'notes' },
+    { path: '/admin', label: 'Admin', icon: 'admin' },
   ]
 
   function isActive(itemPath) {
@@ -44,7 +42,7 @@
         class:active={isActive(item.path)}
         title={ui.sidebarCollapsed ? item.label : undefined}
       >
-        <item.icon size={20} />
+        <NavIcon name={item.icon} size={20} />
         {#if !ui.sidebarCollapsed}
           <span class="nav-label">{item.label}</span>
         {/if}
