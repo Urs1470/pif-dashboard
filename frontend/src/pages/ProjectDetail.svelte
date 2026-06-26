@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ArrowLeft, Clock, Play, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, Pencil, Trash2, FileDown, FileText, StickyNote, ChevronDown, ChevronRight, AlertCircle, Upload, Copy } from '@lucide/svelte'
+  import { ArrowLeft, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
     deleteProject, updateProject,
@@ -758,13 +759,13 @@
         </div>
         <div class="header-actions">
           <Button variant={projectTimerActive ? 'danger' : 'secondary'} size="sm" onclick={handleProjectTimer}>
-            {#if projectTimerActive}<span class="timer-dot"></span> {formatDuration(timer.elapsed)} · Stop{:else}<Play size={14} /> Timer{/if}
+            {#if projectTimerActive}<span class="timer-dot"></span> {formatDuration(timer.elapsed)} · Stop{:else}<SolidIcon name="play" size={14} /> Timer{/if}
           </Button>
-          <Button variant="secondary" size="sm" onclick={() => openManualTime('project', params.id)}><Clock size={14} /> Manual</Button>
-          <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><Pencil size={14} /> Edit</Button>
+          <Button variant="secondary" size="sm" onclick={() => openManualTime('project', params.id)}><SolidIcon name="clock" size={14} /> Manual</Button>
+          <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><SolidIcon name="pencil" size={14} /> Edit</Button>
           <Button variant="secondary" size="sm" onclick={exportPdf}><FileDown size={14} /> PDF</Button>
-          <Button variant="secondary" size="sm" onclick={exportMd}><FileText size={14} /> MD</Button>
-          <Button variant="ghost" size="sm" onclick={() => showDeleteConfirm = true}><Trash2 size={14} /></Button>
+          <Button variant="secondary" size="sm" onclick={exportMd}><SolidIcon name="file" size={14} /> MD</Button>
+          <Button variant="ghost" size="sm" onclick={() => showDeleteConfirm = true}><SolidIcon name="trash" size={14} /></Button>
         </div>
       </div>
       <div class="meta">
@@ -781,9 +782,9 @@
 
       <div class="field-section">
         <div class="field-header">
-          <FileText size={14} />
+          <SolidIcon name="file" size={14} />
           <span class="field-label">Observatii Tehnice</span>
-          <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><Pencil size={13} /></button>
+          <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
         </div>
         {#if project.observatii}
           <div class="field-body">
@@ -799,7 +800,7 @@
           <div class="field-header">
             <AlertCircle size={14} />
             <span class="field-label">Constatari inainte de interventie</span>
-            <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><Pencil size={13} /></button>
+            <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_before}
             <div class="field-body">
@@ -814,7 +815,7 @@
           <div class="field-header">
             <CheckCircle2 size={14} />
             <span class="field-label">Actiuni si rezultat</span>
-            <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><Pencil size={13} /></button>
+            <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_after}
             <div class="field-body">
@@ -869,7 +870,7 @@
                         {#if t.subtask_total}
                           <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                         {/if}
-                        {#if t.descriere}<span class="note-ind" title="Are notiță"><StickyNote size={10} /></span>{/if}
+                        {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
                         {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                         {#if t.deadline}
                           <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
@@ -879,9 +880,9 @@
                   {/if}
                   <div class="task-actions">
                     <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                    <button class="task-edit" onclick={() => startRename(t)} title="Editeaza numele"><Pencil size={13} /></button>
-                    <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><Clock size={14} /></button>
-                    <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
+                    <button class="task-edit" onclick={() => startRename(t)} title="Editeaza numele"><SolidIcon name="pencil" size={13} /></button>
+                    <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><SolidIcon name="clock" size={14} /></button>
+                    <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
                   </div>
                 </div>
                 {#if expandedTask === t.id}
@@ -889,10 +890,10 @@
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
-                        <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /> Editeaza</button>
+                        <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
                       </div>
                     {:else}
-                      <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
+                      <button class="note-add" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={12} /> Adauga notite...</button>
                     {/if}
                     <div class="att-row">
                       {#each (attCache[t.id] || []) as a (a.id)}
@@ -900,7 +901,7 @@
                           <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
                             <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
                           </button>
-                          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><Trash2 size={11} /></button>
+                          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
                         </span>
                       {/each}
                       <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
@@ -913,8 +914,8 @@
                           <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
                           <span class="sub-title">{sub.titlu}</span>
                           {#if sub.timp_secunde}<button class="sub-time" onclick={() => toggleSubSessions(sub.id)} title="Vezi sesiuni">{formatDuration(sub.timp_secunde)}</button>{/if}
-                          <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><Clock size={12} /></button>
-                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><Trash2 size={12} /></button>
+                          <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><SolidIcon name="clock" size={12} /></button>
+                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
                         </div>
                         {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
                           <div class="sub-sess" transition:slide={{ duration: 150 }}>
@@ -922,7 +923,7 @@
                               <div class="sess mini">
                                 <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
                                 <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                                <button class="sess-del" title="Sterge" onclick={() => handleDeleteSubSession(sub.id, s.id)}><Trash2 size={10} /></button>
+                                <button class="sess-del" title="Sterge" onclick={() => handleDeleteSubSession(sub.id, s.id)}><SolidIcon name="trash" size={10} /></button>
                               </div>
                             {/each}
                           </div>
@@ -940,7 +941,7 @@
                           <div class="sess">
                             <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
                             <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                            <button class="sess-del" title="Sterge" onclick={() => handleDeleteTaskSession(t.id, s.id)}><Trash2 size={11} /></button>
+                            <button class="sess-del" title="Sterge" onclick={() => handleDeleteTaskSession(t.id, s.id)}><SolidIcon name="trash" size={11} /></button>
                           </div>
                         {/each}
                       </div>
@@ -990,11 +991,11 @@
                 <div class="jentry-top">
                   <div class="jentry-meta">
                     <div class="jdate">{formatDate(item.data || item.created_at)}</div>
-                    {#if item._duration}<span class="jdur"><Clock size={12} /> {formatDuration(item._duration)}</span>{/if}
+                    {#if item._duration}<span class="jdur"><SolidIcon name="clock" size={12} /> {formatDuration(item._duration)}</span>{/if}
                   </div>
                   <div class="jentry-actions">
-                    <button class="jtime-btn" title="Adauga timp manual" onclick={() => openManualTime('project', params.id, (item.data || item.created_at || '').slice(0, 10))}><Clock size={13} /></button>
-                    <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = item.id; journalDeleteSessionId = item._sessionId || null; showJournalDelete = true }}><Trash2 size={13} /></button>
+                    <button class="jtime-btn" title="Adauga timp manual" onclick={() => openManualTime('project', params.id, (item.data || item.created_at || '').slice(0, 10))}><SolidIcon name="clock" size={13} /></button>
+                    <button class="jdel" title="Sterge" onclick={() => { journalDeleteId = item.id; journalDeleteSessionId = item._sessionId || null; showJournalDelete = true }}><SolidIcon name="trash" size={13} /></button>
                   </div>
                 </div>
                 <div class="jtext">{item.continut || '—'}</div>
@@ -1004,9 +1005,9 @@
                 <div class="jentry-top">
                   <div class="jentry-meta">
                     <div class="jdate">{formatDate(item.data)}</div>
-                    <span class="jdur"><Clock size={12} /> {formatDuration(item.durata)}</span>
+                    <span class="jdur"><SolidIcon name="clock" size={12} /> {formatDuration(item.durata)}</span>
                   </div>
-                  <button class="jdel" title="Sterge sesiunea" onclick={() => handleDeleteSession(item.sessionId)}><Trash2 size={13} /></button>
+                  <button class="jdel" title="Sterge sesiunea" onclick={() => handleDeleteSession(item.sessionId)}><SolidIcon name="trash" size={13} /></button>
                 </div>
                 <div class="jtext jtext-timer">Timer fara nota</div>
               </div>
@@ -1035,8 +1036,8 @@
               <div class="ecard-top">
                 <div class="ename">{e.nume || '—'}{#if e.producator} — {e.producator}{/if}</div>
                 <div class="ecard-actions">
-                  <button class="att-btn" title="Editeaza" onclick={() => editEquip(e)}><Pencil size={14} /></button>
-                  <button class="att-btn danger" title="Sterge" onclick={() => { equipDeleteId = e.id; showEquipDelete = true }}><Trash2 size={14} /></button>
+                  <button class="att-btn" title="Editeaza" onclick={() => editEquip(e)}><SolidIcon name="pencil" size={14} /></button>
+                  <button class="att-btn danger" title="Sterge" onclick={() => { equipDeleteId = e.id; showEquipDelete = true }}><SolidIcon name="trash" size={14} /></button>
                 </div>
               </div>
               <div class="edetails">
@@ -1090,7 +1091,7 @@
                   <div class="sess">
                     <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
                     <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                    <button class="sess-del" title="Sterge sesiunea" onclick={() => handleDeleteSession(s.id)}><Trash2 size={12} /></button>
+                    <button class="sess-del" title="Sterge sesiunea" onclick={() => handleDeleteSession(s.id)}><SolidIcon name="trash" size={12} /></button>
                   </div>
                 {/each}
               </div>
@@ -1111,7 +1112,7 @@
     </label>
     <div class="modal-actions">
       <Button variant="secondary" loading={stoppingWithNote} onclick={stopSimple}>Stop fara nota</Button>
-      <Button loading={stoppingWithNote} disabled={!stopNoteTitle.trim() && !stopNoteText.trim()} onclick={stopWithNote}><StickyNote size={14} /> Stop cu nota</Button>
+      <Button loading={stoppingWithNote} disabled={!stopNoteTitle.trim() && !stopNoteText.trim()} onclick={stopWithNote}><SolidIcon name="notes" size={14} /> Stop cu nota</Button>
     </div>
   </div>
 </Modal>

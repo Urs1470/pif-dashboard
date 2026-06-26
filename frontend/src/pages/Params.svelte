@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft, FileText, BookOpen, ExternalLink } from '@lucide/svelte'
+  import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft, BookOpen, ExternalLink } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -166,7 +167,7 @@
 
 <div class="page">
   <div class="page-header">
-    <Cpu size={22} />
+    <SolidIcon name="cpu" size={22} />
     <h1>Parametri</h1>
     {#if producator}<span class="count">{curTotal}</span>{/if}
   </div>
@@ -186,7 +187,7 @@
       {:else}
         {#each manuals as m}
           <button class="manual-card" onclick={() => window.open(m.url, '_blank')}>
-            <FileText size={28} class="manual-icon" />
+            <SolidIcon name="file" size={28} class="manual-icon" />
             <div class="manual-info">
               <span class="manual-name">{m.name}</span>
               <span class="manual-size">{m.size_kb > 1024 ? (m.size_kb / 1024).toFixed(1) + ' MB' : m.size_kb + ' KB'}</span>

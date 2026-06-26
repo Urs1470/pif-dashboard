@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, Trash2 } from '@lucide/svelte'
+  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -173,7 +174,7 @@
         <option value="finalizat">Finalizat</option>
       </select>
       <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplica</Button>
-      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><Trash2 size={12} /> Sterge</Button>
+      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Sterge</Button>
       <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselecteaza</Button>
     </div>
   {/if}

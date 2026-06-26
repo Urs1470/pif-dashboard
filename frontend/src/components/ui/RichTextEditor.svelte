@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { Eye, Pencil } from '@lucide/svelte'
+  import { Eye } from '@lucide/svelte'
+  import SolidIcon from './SolidIcon.svelte'
   import RichText from './RichText.svelte'
   import { renderStoredText } from '../../lib/storedText.js'
 
@@ -47,7 +48,7 @@
   <div class="rte-toolbar">
     <span class="rte-hint">Lipeste text, tabele si formule LaTeX — <code>$...$</code> sau <code>$$...$$</code></span>
     <button type="button" class="rte-tool" class:active={previewMode} title={previewMode ? 'Inapoi la editare' : 'Previzualizare finala'} onclick={togglePreview}>
-      {#if previewMode}<Pencil size={14} /> Editeaza{:else}<Eye size={14} /> Previzualizare{/if}
+      {#if previewMode}<SolidIcon name="pencil" size={14} /> Editeaza{:else}<Eye size={14} /> Previzualizare{/if}
     </button>
   </div>
 

@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { StickyNote, Search, FileText, Folder, FolderOpen, ChevronRight, ChevronDown, ArrowLeft } from '@lucide/svelte'
+  import { StickyNote, Search, Folder, FolderOpen, ChevronRight, ChevronDown, ArrowLeft } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
   import { toast } from '../stores/ui.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -117,14 +118,14 @@
   {/each}
   {#each node.notes.slice().sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ro')) as note (note.path)}
     <button class="note-item" style="padding-left: {12 + depth * 14}px" class:active={activeNote?.path === note.path} onclick={() => openNote(note)}>
-      <FileText size={14} />
+      <SolidIcon name="file" size={14} />
       <span class="note-title">{note.title}</span>
     </button>
   {/each}
 {/snippet}
 
 <div class="page">
-  <div class="page-header"><StickyNote size={22} /><h1>Notite</h1><span class="count">{notes.length}</span></div>
+  <div class="page-header"><SolidIcon name="notes" size={22} /><h1>Notite</h1><span class="count">{notes.length}</span></div>
 
   {#if loading}
     <div class="panes"><div>{#each Array(6) as _}<div class="skel"><Skeleton width="80%" height="14px" /></div>{/each}</div><Skeleton width="100%" height="300px" /></div>
@@ -149,7 +150,7 @@
           <div class="note-list">
             {#each searchResults as r (r.path)}
               <button class="note-item" class:active={activeNote?.path === r.path} onclick={() => openNote(r)}>
-                <FileText size={14} />
+                <SolidIcon name="file" size={14} />
                 <div class="note-item-main">
                   <span class="note-title">{r.title}</span>
                   {#if r.snippet}<span class="note-snippet">{r.snippet}</span>{/if}

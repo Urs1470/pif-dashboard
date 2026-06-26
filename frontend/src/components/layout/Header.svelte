@@ -1,5 +1,6 @@
 <script>
-  import { Search, Sun, Moon, Square } from '@lucide/svelte'
+  import { Search, Sun, Moon } from '@lucide/svelte'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { ui, toggleTheme } from '../../stores/ui.svelte.js'
   import { timer, stopActiveTimer } from '../../stores/timer.svelte.js'
   import { formatElapsed } from '../../lib/formatters.js'
@@ -27,7 +28,7 @@
         onclick={goToActive} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActive() } }}>
         <span class="tc-dot"></span>
         <span class="tc-time">{formatElapsed(timer.elapsed)}</span>
-        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><Square size={12} /></button>
+        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><SolidIcon name="stop" size={12} /></button>
       </div>
     {/if}
     <button class="header-btn" onclick={toggleTheme} title="Schimba tema">

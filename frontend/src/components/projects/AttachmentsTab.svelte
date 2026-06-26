@@ -1,5 +1,6 @@
 <script>
-  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, Trash2, Upload } from '@lucide/svelte'
+  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, Upload } from '@lucide/svelte'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { loadAttachments, uploadAttachment, deleteAttachment } from '../../stores/projects.svelte.js'
   import { toast } from '../../stores/ui.svelte.js'
   import { formatFileSize } from '../../lib/exportMd.js'
@@ -96,7 +97,7 @@
             </div>
           </button>
           <a class="att-btn" title="Descarca" href={`/api/atasamente/${att.id}/download`} download={att.nume_fisier}><Download size={15} /></a>
-          <button class="att-btn danger" title="Sterge" onclick={() => askDelete(att)}><Trash2 size={15} /></button>
+          <button class="att-btn danger" title="Sterge" onclick={() => askDelete(att)}><SolidIcon name="trash" size={15} /></button>
         </div>
       {/each}
     </div>

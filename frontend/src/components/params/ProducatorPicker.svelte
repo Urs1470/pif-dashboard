@@ -1,5 +1,5 @@
 <script>
-  import { Cpu } from '@lucide/svelte'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { PRODUCATOR_FAMILII } from '../../stores/params.svelte.js'
 
   let { families = [], onpick } = $props()
@@ -23,7 +23,7 @@
 <div class="picker">
   {#each producatori as p (p.nume)}
     <button class="pcard" onclick={() => onpick?.(p.nume)}>
-      <Cpu size={24} />
+      <SolidIcon name="cpu" size={24} />
       <span class="pname">{p.nume}</span>
       <span class="pmeta">{p.familii} {p.familii === 1 ? 'familie' : 'familii'} · {p.count} parametri</span>
     </button>

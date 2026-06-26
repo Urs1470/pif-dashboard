@@ -1,5 +1,6 @@
 <script>
-  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, ExternalLink, Trash2 } from '@lucide/svelte'
+  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, ExternalLink } from '@lucide/svelte'
+  import SolidIcon from './SolidIcon.svelte'
   import Modal from './Modal.svelte'
   import Button from './Button.svelte'
 
@@ -41,7 +42,7 @@
   {#snippet footer()}
     <div class="ap-actions">
       {#if ondelete}
-        <Button variant="ghost" onclick={requestDelete}><Trash2 size={14} /> Sterge</Button>
+        <Button variant="ghost" onclick={requestDelete}><SolidIcon name="trash" size={14} /> Sterge</Button>
       {/if}
       <span class="ap-spacer"></span>
       <a class="ap-link" href={url} target="_blank" rel="noopener"><ExternalLink size={14} /> Deschide in tab nou</a>

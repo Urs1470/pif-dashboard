@@ -1,6 +1,6 @@
 <script>
   import { PanelLeftClose, PanelLeft } from '@lucide/svelte'
-  import NavIcon from '../ui/NavIcon.svelte'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link, navigate } from '../../lib/router.svelte.js'
   import { ui, toggleSidebar } from '../../stores/ui.svelte.js'
 
@@ -42,7 +42,7 @@
         class:active={isActive(item.path)}
         title={ui.sidebarCollapsed ? item.label : undefined}
       >
-        <NavIcon name={item.icon} size={20} />
+        <SolidIcon name={item.icon} size={20} />
         {#if !ui.sidebarCollapsed}
           <span class="nav-label">{item.label}</span>
         {/if}

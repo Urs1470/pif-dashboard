@@ -1,5 +1,5 @@
 <script>
-  import NavIcon from '../ui/NavIcon.svelte'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
 
   const tabs = [
@@ -27,7 +27,7 @@
       class="bottom-tab"
       class:active={isActive(tab.path)}
     >
-      <NavIcon name={tab.icon} size={20} />
+      <SolidIcon name={tab.icon} size={20} />
       <span>{tab.label}</span>
     </a>
   {/each}

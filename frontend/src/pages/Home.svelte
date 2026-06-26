@@ -1,9 +1,10 @@
 <script>
   import { onMount } from 'svelte'
   import {
-    Home as HomeIcon, FolderKanban, AlertTriangle, Clock,
-    CalendarClock, ChevronRight, RotateCcw, Square
+    Home as HomeIcon, FolderKanban, AlertTriangle,
+    CalendarClock, ChevronRight, RotateCcw
   } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
   import { formatDuration, formatDate, formatElapsed } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -69,7 +70,7 @@
           <span class="tc-name">{timer.active.label || '—'}</span>
         </div>
         <span class="tc-elapsed">{formatElapsed(timer.elapsed)}</span>
-        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><Square size={15} /></button>
+        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><SolidIcon name="stop" size={15} /></button>
       </div>
     {/if}
   </div>
@@ -92,7 +93,7 @@
         <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
       </div>
       <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Ore Saptamana</span><Clock size={15} /></div>
+        <div class="kpi-top"><span class="kpi-label">Ore Saptamana</span><SolidIcon name="clock" size={15} /></div>
         <div class="kpi-val success">{s.weekly_hours ?? 0}<span class="unit">h</span></div>
         <div class="kpi-sub">
           {#if (s.weekly_delta || 0) > 0}<span class="up">+{s.weekly_delta}h</span> vs. sapt. trecuta
@@ -161,7 +162,7 @@
 
       {#if dashboard.todays_tasks?.length}
         <Card padding={false}>
-          <div class="card-head success"><Clock size={16} /><span>Task-uri Azi</span><span class="card-count">{dashboard.todays_tasks.length}</span></div>
+          <div class="card-head success"><SolidIcon name="clock" size={16} /><span>Task-uri Azi</span><span class="card-count">{dashboard.todays_tasks.length}</span></div>
           <div class="card-list">
             {#each dashboard.todays_tasks as t}
               <button class="list-row" onclick={() => navigate('/tasks')}>

@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ListTodo, Plus, Clock, CheckCircle2, ChevronDown, ChevronRight, Trash2, Pencil, Repeat, Search, StickyNote, Paperclip } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
@@ -361,10 +362,10 @@
   {#if t.descriere}
     <div class="note-block">
       <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
-      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><Pencil size={12} /> Editeaza</button>
+      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
     </div>
   {:else}
-    <button class="note-add" onclick={() => openNoteModal(t)}><StickyNote size={12} /> Adauga notite...</button>
+    <button class="note-add" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={12} /> Adauga notite...</button>
   {/if}
 {/snippet}
 
@@ -375,7 +376,7 @@
         <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
           <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
         </button>
-        <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><Trash2 size={11} /></button>
+        <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
       </span>
     {/each}
     <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
@@ -438,7 +439,7 @@
                 {#if t.subtask_total}
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                 {/if}
-                {#if t.descriere}<span class="note-ind" title="Are notiță"><StickyNote size={10} /></span>{/if}
+                {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
                 {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                 {#if t.data_scadenta}<span>{formatDate(t.data_scadenta)}</span>{/if}
               </div>
@@ -446,12 +447,12 @@
             <div class="task-actions">
               <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
               <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-              <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><Pencil size={12} /></button>
+              <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><SolidIcon name="pencil" size={12} /></button>
               <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
               <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
-                <Clock size={14} />
+                <SolidIcon name="clock" size={14} />
               </button>
-              <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
+              <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
           </div>
           {#if expandedTask === t.id}
@@ -467,7 +468,7 @@
                       {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
                     </button>
                     <span class="sub-title">{sub.titlu}</span>
-                    <button class="sub-del" onclick={() => removeSubtask(sub)}><Trash2 size={12} /></button>
+                    <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
                   </div>
                 {/each}
                 <div class="sub-add">
@@ -489,7 +490,7 @@
                     <div class="sess">
                       <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
                       <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                      <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><Trash2 size={11} /></button>
+                      <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><SolidIcon name="trash" size={11} /></button>
                     </div>
                   {/each}
                 </div>
@@ -525,9 +526,9 @@
                 <div class="task-actions">
                   <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
                   <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
-                    <Clock size={14} />
+                    <SolidIcon name="clock" size={14} />
                   </button>
-                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><Trash2 size={13} /></button>
+                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
                 </div>
               </div>
               {#if expandedTask === t.id}
@@ -543,7 +544,7 @@
                           {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
                         </button>
                         <span class="sub-title">{sub.titlu}</span>
-                        <button class="sub-del" onclick={() => removeSubtask(sub)}><Trash2 size={12} /></button>
+                        <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
                       </div>
                     {/each}
                   {/if}

@@ -1,6 +1,7 @@
 <script>
   import { tick } from 'svelte'
-  import { Calculator as CalcIcon, Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Clock, Cpu, Link2, Download } from '@lucide/svelte'
+  import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download } from '@lucide/svelte'
+  import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
@@ -540,7 +541,7 @@
 <div class="page">
   <div class="page-head">
     <div class="head-row">
-      <CalcIcon size={26} />
+      <SolidIcon name="calculator" size={26} />
       <h1>Calculator actionari electrice</h1>
       <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
     </div>
@@ -552,7 +553,7 @@
     <div class="equip-head">
       <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu placuta o data — toate cardurile se completeaza">
         <span class="equip-chev" class:open={panelOpen}><ChevronRight size={15} /></span>
-        <Cpu size={16} /> <b>Date echipament</b>
+        <SolidIcon name="cpu" size={16} /> <b>Date echipament</b>
         <span class="equip-sub">placuta + date drive — completeaza automat cardurile</span>
       </button>
       <label class="equip-switch" title="Cardurile folosesc datele de mai jos">
@@ -648,13 +649,13 @@
     <div class="quick-rows">
       {#if favMods.length}
         <div class="quick-row">
-          <span class="quick-h"><Star size={13} /> Favorite</span>
+          <span class="quick-h"><SolidIcon name="star" size={13} /> Favorite</span>
           {#each favMods as m (m.id)}<button class="chip" onclick={() => goTo(m.id)}>{m.title}</button>{/each}
         </div>
       {/if}
       {#if recentMods.length}
         <div class="quick-row">
-          <span class="quick-h"><Clock size={13} /> Recente</span>
+          <span class="quick-h"><SolidIcon name="clock" size={13} /> Recente</span>
           {#each recentMods as m (m.id)}<button class="chip" onclick={() => goTo(m.id)}>{m.title}</button>{/each}
         </div>
       {/if}
@@ -675,7 +676,7 @@
           <span class="acc-chev" class:open><ChevronRight size={16} /></span>
           <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
           <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
-            onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}><Star size={15} /></button>
+            onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}>{#if isFav(m.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
         </div>
 
         {#if open}
