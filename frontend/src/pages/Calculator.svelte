@@ -956,7 +956,7 @@
   .imp-eq span { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
   .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: 600; color: var(--text); }
   .imp-eq-tag { font-style: normal; font-size: var(--font-tiny); font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-subtle); color: var(--accent); }
-  .imp-eq-tag.warn { background: rgba(230, 152, 117, 0.18); color: #e69875; }
+  .imp-eq-tag.warn { background: var(--service-subtle); color: var(--service-accent); }
   .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
   .imp-hint { font-size: var(--font-tiny); color: var(--text-dim); }
   .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }

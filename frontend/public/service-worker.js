@@ -1,4 +1,4 @@
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC_CACHE = 'pif-svelte-static-' + VERSION;
 const API_CACHE = 'pif-svelte-api-' + VERSION;
 
