@@ -26,7 +26,9 @@
   <a href="/" use:link class="sidebar-brand" title="PIF Dashboard">
     <svg class="brand-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <rect width="32" height="32" rx="7" fill="var(--accent)"/>
-      <text x="16" y="23" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="19" font-weight="700" fill="var(--accent-text)">P</text>
+      <path d="M7 24 C13.5 24 15 20 16.5 15 S21 8 25 8 L25 24 Z" fill="var(--accent-text)" opacity="0.3"/>
+      <path d="M7 24 C13.5 24 15 20 16.5 15 S21 8 25 8" fill="none" stroke="var(--accent-text)" stroke-width="2.75" stroke-linecap="round"/>
+      <circle cx="25" cy="8" r="2.5" fill="var(--accent-text)"/>
     </svg>
     {#if !ui.sidebarCollapsed}
       <span class="brand-text">PIF Dashboard</span>
