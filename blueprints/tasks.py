@@ -261,9 +261,12 @@ def update_task(task_id):
 
     # A recurring task just completed -> spawn the next occurrence.
     spawned_id = None
+    next_scad = None
     if (data.get('status') == 'done' and old_status != 'done'
             and (existing['recurenta'] or '').strip()):
-        spawned_id = _spawn_recurring_task(cursor, existing, existing['recurenta'].strip())
+        recurenta = existing['recurenta'].strip()
+        spawned_id = _spawn_recurring_task(cursor, existing, recurenta)
+        next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
 
     conn.commit()
     conn.close()
@@ -271,6 +274,7 @@ def update_task(task_id):
     resp = {'message': 'Task updated'}
     if spawned_id:
         resp['recurring_spawned'] = spawned_id
+        resp['recurring_next'] = next_scad
     return jsonify(resp)
 
 
@@ -554,9 +558,12 @@ def update_global_task(task_id):
 
     # A recurring daily task just completed -> spawn the next occurrence.
     spawned_id = None
+    next_scad = None
     if (data.get('status') == 'done' and old_status != 'done'
             and (existing['recurenta'] or '').strip()):
-        spawned_id = _spawn_recurring_global_task(cursor, existing, existing['recurenta'].strip())
+        recurenta = existing['recurenta'].strip()
+        spawned_id = _spawn_recurring_global_task(cursor, existing, recurenta)
+        next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
 
     conn.commit()
     conn.close()
@@ -564,6 +571,7 @@ def update_global_task(task_id):
     resp = {'message': 'Task updated'}
     if spawned_id:
         resp['recurring_spawned'] = spawned_id
+        resp['recurring_next'] = next_scad
     return jsonify(resp)
 
 

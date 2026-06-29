@@ -75,6 +75,17 @@ export function formatDateShort(iso) {
   return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
 }
 
+// A recurring task's next auto-spawned occurrence is dated in the future. We hide
+// it from active lists until its scadenta arrives, so completing today's instance
+// reads as "done" instead of an identical unchecked copy reappearing.
+export function isFutureRecurrence(t) {
+  if (!t || !t.recurenta || !String(t.recurenta).trim()) return false
+  const d = (t.data_scadenta || '').slice(0, 10)
+  if (!d) return false
+  const today = new Date().toLocaleDateString('en-CA') // local YYYY-MM-DD
+  return d > today
+}
+
 export function formatDuration(seconds) {
   if (!seconds || seconds < 0) return '0h'
   const h = Math.floor(seconds / 3600)

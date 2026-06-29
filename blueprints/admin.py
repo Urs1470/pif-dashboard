@@ -1495,6 +1495,10 @@ def dashboard_home():
     cursor.execute("""
         SELECT id, titlu, status, prioritate, categorie FROM global_tasks
         WHERE status != 'done'
+          AND NOT (
+            recurenta IS NOT NULL AND TRIM(recurenta) <> ''
+            AND data_scadenta IS NOT NULL AND date(data_scadenta) > date('now')
+          )
         ORDER BY
             CASE WHEN data_scadenta IS NOT NULL AND date(data_scadenta) <= date('now') THEN 0 ELSE 1 END,
             CASE LOWER(prioritate) WHEN 'urgent' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END,

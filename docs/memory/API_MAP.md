@@ -114,16 +114,16 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 100 |
 | POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 183 |
 | PUT | `/api/tasks/<task_id>` | `update_task` | 223 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 277 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 298 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 309 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 332 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 347 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 366 |
-| POST | `/api/global-tasks` | `create_global_task` | 463 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 497 |
-| PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 515 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 570 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 281 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 302 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 313 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 336 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 351 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 370 |
+| POST | `/api/global-tasks` | `create_global_task` | 467 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 501 |
+| PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 519 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 578 |
 
 ## blueprints\timer.py (20 rute)
 

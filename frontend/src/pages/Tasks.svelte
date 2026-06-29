@@ -5,7 +5,7 @@
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel } from '../lib/formatters.js'
+  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -88,13 +88,18 @@
       return matchesSearch(t)
     })
   )
-  const activeTasks = $derived(filteredTasks.filter(t => t.status !== 'done'))
+  // Hide a recurring task's next occurrence until its scadenta arrives, so finalizing
+  // today's instance doesn't look like an identical unchecked copy reappearing.
+  const activeTasks = $derived(filteredTasks.filter(t => t.status !== 'done' && !isFutureRecurrence(t)))
   const doneTasks = $derived(filteredTasks.filter(t => t.status === 'done'))
 
   async function toggleStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
-    await updateGlobalTask(task.id, { status: next })
+    const res = await updateGlobalTask(task.id, { status: next })
     await loadGlobalTasks({ arhiva: showArchive })
+    if (res?.recurring_spawned) {
+      toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
+    }
   }
 
   async function toggleTimer(task) {

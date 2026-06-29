@@ -11,7 +11,7 @@
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startProjectTimer, stopProjectTimer, stopProjectTimerWithNote, startTaskTimer, stopTaskTimer, startSubtaskTimer, stopSubtaskTimer, addManualTime, deleteTimerSession, loadActiveTimer, loadTaskTimer, loadSubtaskTimer } from '../stores/timer.svelte.js'
-  import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, formatDuration, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate } from '../lib/router.svelte.js'
@@ -161,7 +161,11 @@
   async function toggleTaskStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
     tasks = tasks.map(t => t.id === task.id ? { ...t, status: next } : t)
-    await updateTask(task.id, { status: next })
+    const res = await updateTask(task.id, { status: next })
+    if (res?.recurring_spawned) {
+      toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
+      await reloadTasks()
+    }
   }
 
   async function handleProjectTimer() {
@@ -705,7 +709,8 @@
   onMount(() => { load(); loadActiveTimer() })
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
-  const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat'))
+  // Hide a recurring task's next occurrence until its scadenta arrives (see Tasks.svelte).
+  const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat' && !isFutureRecurrence(t)))
   const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
   const projectTimerActive = $derived(timer.active?.kind === 'project' && timer.active?.project_id === params.id)
 
