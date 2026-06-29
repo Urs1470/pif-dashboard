@@ -1490,15 +1490,16 @@ def dashboard_home():
     if active_timer:
         active_timer = dict(active_timer)
 
-    # Today's tasks — tasks due today (scadenta = today)
+    # Today's tasks — open tasks (not done), with due-today/overdue surfaced first,
+    # then by priority. Tasks without a scadenta still show (the user rarely sets one).
     cursor.execute("""
         SELECT id, titlu, status, prioritate, categorie FROM global_tasks
-        WHERE data_scadenta IS NOT NULL
-          AND date(data_scadenta) = date('now')
-          AND status != 'done'
+        WHERE status != 'done'
         ORDER BY
+            CASE WHEN data_scadenta IS NOT NULL AND date(data_scadenta) <= date('now') THEN 0 ELSE 1 END,
             CASE LOWER(prioritate) WHEN 'urgent' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END,
-            data_scadenta
+            data_scadenta IS NULL, data_scadenta,
+            created_at DESC
         LIMIT 5
     """)
     todays_tasks = [dict(r) for r in cursor.fetchall()]
