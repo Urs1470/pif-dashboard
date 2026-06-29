@@ -125,21 +125,23 @@
 
     <div class="cards-grid">
       {#if dashboard.urgent_tasks?.length}
-        <Card padding={false}>
-          <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
-          <div class="card-list">
-            {#each dashboard.urgent_tasks.slice(0, 5) as t}
-              <button class="list-row" onclick={() => t.proiect_id ? navigate(`/projects/${t.proiect_id}`) : navigate('/tasks')}>
-                <div class="row-dot urgent"></div>
-                <div class="row-content">
-                  <div class="row-title">{t.titlu}</div>
-                  <div class="row-meta">{t.proiect_nume || 'Task global'}{t.data_scadenta ? ` · ${formatDate(t.data_scadenta)}` : ''}</div>
-                </div>
-                <ChevronRight size={14} />
-              </button>
-            {/each}
-          </div>
-        </Card>
+        <div class="card-full">
+          <Card padding={false}>
+            <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
+            <div class="card-list scroll">
+              {#each dashboard.urgent_tasks as t}
+                <button class="list-row" onclick={() => t.proiect_id ? navigate(`/projects/${t.proiect_id}`) : navigate('/tasks')}>
+                  <div class="row-dot urgent"></div>
+                  <div class="row-content">
+                    <div class="row-title">{t.titlu}</div>
+                    <div class="row-meta">{t.proiect_nume || 'Task global'}{t.data_scadenta ? ` · ${formatDate(t.data_scadenta)}` : ''}</div>
+                  </div>
+                  <ChevronRight size={14} />
+                </button>
+              {/each}
+            </div>
+          </Card>
+        </div>
       {/if}
 
       {#if dashboard.upcoming_deadlines?.length}
@@ -170,22 +172,6 @@
                 <div class="row-content">
                   <div class="row-title" class:line-through={t.status === 'done'}>{t.titlu}</div>
                   <div class="row-meta">{t.categorie || 'General'}</div>
-                </div>
-              </button>
-            {/each}
-          </div>
-        </Card>
-      {/if}
-
-      {#if dashboard.recent_journal?.length}
-        <Card padding={false}>
-          <div class="card-head"><RotateCcw size={16} /><span>Jurnal Recent</span></div>
-          <div class="card-list">
-            {#each dashboard.recent_journal.slice(0, 5) as j}
-              <button class="list-row" onclick={() => navigate(`/projects/${j.proiect_id}`)}>
-                <div class="row-content">
-                  <div class="row-title">{j.continut || j.content || '—'}</div>
-                  <div class="row-meta">{j.proiect_nume || '—'} · {formatDate(j.created_at || j.data)}</div>
                 </div>
               </button>
             {/each}
@@ -240,12 +226,14 @@
   .recent-client { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
+  .card-full { grid-column: 1 / -1; }
   .card-head { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); font-size: var(--font-small); font-weight: 600; color: var(--text); }
   .card-head.danger { color: var(--danger); }
   .card-head.success { color: var(--success); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 
   .card-list { display: flex; flex-direction: column; }
+  .card-list.scroll { max-height: 248px; overflow-y: auto; scrollbar-width: thin; }
   .list-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); text-align: left; cursor: pointer; transition: background var(--dur-fast) var(--ease); color: var(--text-secondary); }
   .list-row:hover { background: var(--bg-hover); }
   .list-row + .list-row { border-top: 1px solid var(--border); }

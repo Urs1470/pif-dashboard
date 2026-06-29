@@ -1459,7 +1459,7 @@ def dashboard_home():
               AND p.status != 'anulat'
         )
         ORDER BY data_scadenta IS NULL, data_scadenta
-        LIMIT 10
+        LIMIT 50
     """)
     urgent_tasks = [dict(r) for r in cursor.fetchall()]
     urgent_count = len(urgent_tasks)
@@ -1490,23 +1490,18 @@ def dashboard_home():
     if active_timer:
         active_timer = dict(active_timer)
 
-    # Today's tasks
+    # Today's tasks — tasks due today (scadenta = today)
     cursor.execute("""
         SELECT id, titlu, status, prioritate, categorie FROM global_tasks
-        WHERE date(created_at) = date('now') OR status = 'to_do'
+        WHERE data_scadenta IS NOT NULL
+          AND date(data_scadenta) = date('now')
+          AND status != 'done'
         ORDER BY
-            CASE prioritate WHEN 'Urgent' THEN 0 WHEN 'Normal' THEN 1 ELSE 2 END,
-            created_at DESC LIMIT 5
+            CASE LOWER(prioritate) WHEN 'urgent' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END,
+            data_scadenta
+        LIMIT 5
     """)
     todays_tasks = [dict(r) for r in cursor.fetchall()]
-
-    # Recent journal
-    cursor.execute("""
-        SELECT j.id, j.proiect_id, j.data, j.continut, j.created_at, p.nume as project_name
-        FROM jurnal j JOIN proiecte p ON j.proiect_id = p.id
-        ORDER BY j.created_at DESC LIMIT 5
-    """)
-    recent_journal = [dict(r) for r in cursor.fetchall()]
 
     conn.close()
 
@@ -1522,7 +1517,6 @@ def dashboard_home():
         'urgent_tasks': urgent_tasks,
         'upcoming_deadlines': upcoming_deadlines,
         'active_timer': active_timer,
-        'todays_tasks': todays_tasks,
-        'recent_journal': recent_journal
+        'todays_tasks': todays_tasks
     })
 
