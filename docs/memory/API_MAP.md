@@ -124,9 +124,9 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/global-tasks/<task_id>` | `get_global_task` | 516 |
 | PUT,POST | `/api/global-tasks/<task_id>` | `update_global_task` | 534 |
 | DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 597 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 680 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 710 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 756 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 689 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 719 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 765 |
 
 ## blueprints\timer.py (20 rute)
 

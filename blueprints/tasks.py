@@ -658,8 +658,11 @@ def _agenda_item(d, tip, today):
 
 
 # Open tasks that belong on today's board: planned today, rolled over (planned in
-# the past, still open) or due today. Future recurrences are hidden (same idiom as
-# the dashboard) so a just-spawned next occurrence doesn't show up early.
+# the past, still open) or due today. The due-today clause is a SUGGESTION that only
+# applies when the task isn't explicitly planned for another day — so "move to
+# tomorrow" (which sets data_planificata ahead) actually removes a due-today task
+# from the board, instead of the deadline pinning it here. Future recurrences are
+# hidden (same idiom as the dashboard) so a just-spawned next occurrence doesn't show.
 _AGENDA_WHERE = '''
         {alias}.status != 'done'
         AND (
@@ -668,7 +671,13 @@ _AGENDA_WHERE = '''
                 {alias}.data_planificata IS NOT NULL AND TRIM({alias}.data_planificata) <> ''
                 AND date({alias}.data_planificata) < date(:today)
             )
-            OR date({alias}.data_scadenta) = date(:today)
+            OR (
+                date({alias}.data_scadenta) = date(:today)
+                AND (
+                    {alias}.data_planificata IS NULL OR TRIM({alias}.data_planificata) = ''
+                    OR date({alias}.data_planificata) = date(:today)
+                )
+            )
         )
         AND NOT (
             {alias}.recurenta IS NOT NULL AND TRIM({alias}.recurenta) <> ''
