@@ -128,23 +128,21 @@
 
     <div class="cards-grid">
       {#if dashboard.urgent_tasks?.length}
-        <div class="card-full">
-          <Card padding={false}>
-            <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
-            <div class="card-list scroll">
-              {#each dashboard.urgent_tasks as t}
-                <button class="list-row" onclick={() => t.proiect_id ? navigate(`/projects/${t.proiect_id}`) : navigate('/tasks')}>
-                  <div class="row-dot urgent"></div>
-                  <div class="row-content">
-                    <div class="row-title">{t.titlu}</div>
-                    <div class="row-meta">{t.proiect_nume || 'Task global'}{t.data_scadenta ? ` · ${formatDate(t.data_scadenta)}` : ''}</div>
-                  </div>
-                  <ChevronRight size={14} />
-                </button>
-              {/each}
-            </div>
-          </Card>
-        </div>
+        <Card padding={false}>
+          <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
+          <div class="card-list scroll">
+            {#each dashboard.urgent_tasks as t}
+              <button class="list-row" onclick={() => t.proiect_id ? navigate(`/projects/${t.proiect_id}`) : navigate('/tasks')}>
+                <div class="row-dot urgent"></div>
+                <div class="row-content">
+                  <div class="row-title">{t.titlu}</div>
+                  <div class="row-meta">{t.proiect_nume || 'Task global'}{t.data_scadenta ? ` · ${formatDate(t.data_scadenta)}` : ''}</div>
+                </div>
+                <ChevronRight size={14} />
+              </button>
+            {/each}
+          </div>
+        </Card>
       {/if}
 
       {#if dashboard.upcoming_deadlines?.length}
@@ -212,11 +210,9 @@
   .recent-name { font-size: var(--font-small); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .recent-client { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
-  .card-full { grid-column: 1 / -1; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-md); align-items: start; }
   .card-head { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); font-size: var(--font-small); font-weight: 600; color: var(--text); }
   .card-head.danger { color: var(--danger); }
-  .card-head.success { color: var(--success); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 
   .card-list { display: flex; flex-direction: column; }
@@ -227,10 +223,8 @@
   .row-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
   .row-dot.urgent { background: var(--danger); }
   .row-dot.due { background: var(--warning); }
-  .row-dot.done { background: var(--success); }
   .row-content { flex: 1; min-width: 0; }
   .row-title { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .row-title.line-through { text-decoration: line-through; color: var(--text-dim); }
   .row-meta { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .error-msg { color: var(--danger); padding: var(--space-md); }
 
