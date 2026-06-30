@@ -1,1 +1,0 @@
-import{f as e,l as t,p as n}from"./Modal-CNBCBM56.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`M12 3v12`}],[`path`,{d:`m17 8-5-5-5 5`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`}]];t(i,n({name:`upload`},()=>o,{get iconNode(){return s}}))}export{i as t};

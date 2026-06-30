@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { slide } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
   import {
     CalendarCheck, Plus, GripVertical, ArrowRight, X,
     ChevronRight, CheckCircle2, Repeat, ArrowUp, ArrowDown, ListPlus
@@ -23,6 +23,10 @@
 
   let dragIndex = $state(null)
   let overIndex = $state(null)
+
+  // Reorder settle animation (FLIP). Honors reduced-motion like the KPI count-up.
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
+  const flipDur = reduceMotion ? 0 : 180
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 
@@ -151,8 +155,9 @@
           role="listitem"
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
+          animate:flip={{ duration: flipDur }}
         >
-          <span class="grip" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
+          <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
 
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
@@ -215,11 +220,16 @@
   .a-error { color: var(--danger); font-size: var(--font-small); padding: var(--space-sm); }
 
   .a-list { display: flex; flex-direction: column; }
-  .arow { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease); }
+  .arow { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .arow:hover { background: var(--bg-elevated); }
   .arow.done { opacity: 0.5; }
-  .arow.dragging { opacity: 0.4; }
-  .arow.dragover { background: var(--accent-subtle); box-shadow: inset 0 2px 0 var(--accent); }
+  /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
+     crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
+  .arow.dragging { opacity: 0.45; cursor: grabbing; }
+  .arow.dragover { box-shadow: inset 0 2px 0 0 var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    .arow { transition: none; }
+  }
 
   .grip { display: flex; align-items: center; color: var(--text-faint); cursor: grab; flex-shrink: 0; padding: 2px; }
   .grip:active { cursor: grabbing; }
