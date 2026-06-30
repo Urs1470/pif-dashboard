@@ -7,6 +7,7 @@
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
+  import { focusOnLand, focusKey } from '../lib/focus.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import Button from '../components/ui/Button.svelte'
@@ -443,7 +444,7 @@
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t (t.id)}
         <div class="trow-wrap">
-          <div class="trow" class:done={t.status === 'done'} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
             <button class="check" onclick={() => toggleStatus(t)}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
             </button>
@@ -529,7 +530,7 @@
           <div class="done-list" transition:slide={{ duration: 150 }}>
           {#each doneTasks as t (t.id)}
             <div class="trow-wrap">
-              <div class="trow done" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                 <button class="check" onclick={() => toggleStatus(t)}>
                   <CheckCircle2 size={18} />
                 </button>

@@ -15,6 +15,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate } from '../lib/router.svelte.js'
+  import { focusOnLand, focusKey } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Card from '../components/ui/Card.svelte'
@@ -882,7 +883,7 @@
           <div class="task-list">
             {#each activeTasks as t (t.id)}
               <div class="trow-wrap">
-                <div class="trow" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
                   </button>
@@ -986,7 +987,7 @@
               </button>
               {#if showDoneTasks}
                 {#each doneTasks as t (t.id)}
-                  <div class="trow done" style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                  <div class="trow done" use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                     <button class="check" onclick={() => toggleTaskStatus(t)}>
                       <CheckCircle2 size={16} />
                     </button>

@@ -8,6 +8,7 @@
   import { apiJson } from '../lib/api.js'
   import { formatDuration, formatDate, formatElapsed } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
+  import { requestFocus, focusKey } from '../lib/focus.js'
   import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -21,6 +22,18 @@
   async function stopActive(e) {
     e.stopPropagation()
     await stopActiveTimer()
+  }
+
+  // Click a task anywhere on Home -> jump to it (its page scrolls it to center +
+  // flashes a highlight via the focusOnLand action on the destination row).
+  function goToTask(t) {
+    if (t.proiect_id) {
+      requestFocus(focusKey('task', t.id))
+      navigate(`/projects/${t.proiect_id}`)
+    } else {
+      requestFocus(focusKey('global', t.id))
+      navigate('/tasks')
+    }
   }
 
   let dashboard = $state(null)
@@ -182,7 +195,7 @@
           <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
           <div class="card-list scroll">
             {#each dashboard.urgent_tasks as t}
-              <button class="list-row" onclick={() => t.proiect_id ? navigate(`/projects/${t.proiect_id}`) : navigate('/tasks')}>
+              <button class="list-row" onclick={() => goToTask(t)}>
                 <div class="row-dot urgent"></div>
                 <div class="row-content">
                   <div class="row-title">{t.titlu}</div>

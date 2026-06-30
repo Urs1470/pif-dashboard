@@ -87,6 +87,19 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+/* ===== Focus-flash: highlight tranzitoriu cand "aterizezi" pe un item (deep-link) =====
+   Folosit de actiunea use:focusOnLand (lib/focus.js): click pe un task din Acasa te
+   duce la el (scroll smooth la centru) si il pulseaza scurt. Tine accentul, apoi se
+   stinge lin — coerent cu restul micro-animatiilor (var(--ease)). */
+@keyframes focusFlash {
+  0%, 45% { background-color: var(--accent-subtle); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  100%    { background-color: transparent; box-shadow: inset 0 0 0 1.5px transparent; }
+}
+.focus-flash { animation: focusFlash 1.5s var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .focus-flash { animation: none; background-color: var(--accent-subtle); }
+}
+
 /* ===== Selectare data: aspect unificat peste tot (caseta + iconita calendar) =====
    Orice <input type="date"> arata identic indiferent de pagina/modal. Folosim
    !important pe proprietatile de layout pentru ca stilurile scoped Svelte
