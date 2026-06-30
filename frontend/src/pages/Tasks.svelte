@@ -360,6 +360,20 @@
     await loadGlobalTasks({ arhiva: showArchive })
   }
 
+  function isOverdue(d) {
+    if (!d) return false
+    return new Date(d) < new Date(new Date().toDateString())
+  }
+  function isToday(d) {
+    if (!d) return false
+    return new Date(d).toDateString() === new Date().toDateString()
+  }
+  function isSoon(d) {
+    if (!d) return false
+    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
+    return diff > 0 && diff <= 7
+  }
+
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
@@ -446,7 +460,7 @@
                 {/if}
                 {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
                 {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
-                {#if t.data_scadenta}<span>{formatDate(t.data_scadenta)}</span>{/if}
+                {#if t.data_scadenta}<span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>{/if}
               </div>
             </button>
             <div class="task-actions">
@@ -793,6 +807,10 @@
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: 500; }
+  .tdeadline { font-size: 10px; }
+  .tdeadline.overdue { color: var(--danger); font-weight: 600; }
+  .tdeadline.today { color: var(--accent); font-weight: 600; }
+  .tdeadline.soon { color: var(--warning); }
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }

@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { ArrowLeft, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy } from '@lucide/svelte'
+  import { ArrowLeft, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectJournal, loadProjectEquipment,
@@ -43,8 +43,14 @@
 
   let newTaskTitle = $state('')
   let creatingTask = $state(false)
-  let editTaskId = $state(null)
-  let editTaskTitle = $state('')
+  let showTaskEditModal = $state(false)
+  let editingTask = $state(null)
+  let taskFormTitle = $state('')
+  let taskFormDesc = $state('')
+  let taskFormPriority = $state('Normal')
+  let taskFormDeadline = $state('')
+  let taskFormRecurenta = $state('')
+  let taskFormSaving = $state(false)
   let showNoteModal = $state(false)
   let noteTask = $state(null)
   let noteDraft = $state('')
@@ -168,13 +174,6 @@
     }
   }
 
-  async function setTaskDeadline(task, val) {
-    const next = val || ''
-    tasks = tasks.map(t => t.id === task.id ? { ...t, data_scadenta: next } : t)
-    await updateTask(task.id, { data_scadenta: next })
-    await reloadTasks()
-  }
-
   async function handleProjectTimer() {
     if (projectTimerActive) {
       showStopNote = true
@@ -228,27 +227,45 @@
     } finally { creatingTask = false }
   }
 
-  function startRename(t) {
-    editTaskId = t.id
-    editTaskTitle = t.titlu || ''
+  function openTaskEditModal(t) {
+    editingTask = t
+    taskFormTitle = t.titlu || ''
+    taskFormDesc = t.descriere || ''
+    taskFormPriority = t.prioritate || 'Normal'
+    taskFormDeadline = (t.data_scadenta || '').slice(0, 10)
+    taskFormRecurenta = t.recurenta || ''
+    showTaskEditModal = true
   }
 
-  function focusSelect(node) {
-    node.focus()
-    node.select()
-  }
-
-  async function saveRename(t) {
-    if (editTaskId !== t.id) return
-    const newTitle = editTaskTitle.trim()
-    editTaskId = null
-    if (!newTitle || newTitle === t.titlu) return
+  async function handleTaskEdit() {
+    if (!editingTask || !taskFormTitle.trim() || taskFormSaving) return
+    taskFormSaving = true
     try {
-      await updateTask(t.id, { titlu: newTitle })
+      await updateTask(editingTask.id, {
+        titlu: taskFormTitle.trim(),
+        descriere: taskFormDesc.trim(),
+        prioritate: taskFormPriority,
+        data_scadenta: taskFormDeadline,
+        recurenta: taskFormRecurenta || null,
+      })
+      showTaskEditModal = false
+      editingTask = null
       await reloadTasks()
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
+    } finally { taskFormSaving = false }
+  }
+
+  const TASK_STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
+  async function cycleTaskStatus(t) {
+    const cur = t.status || 'to_do'
+    const next = TASK_STATUS_CYCLE[(TASK_STATUS_CYCLE.indexOf(cur) + 1) % TASK_STATUS_CYCLE.length]
+    tasks = tasks.map(x => x.id === t.id ? { ...x, status: next } : x)
+    const res = await updateTask(t.id, { status: next })
+    if (res?.recurring_spawned) {
+      toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
     }
+    await reloadTasks()
   }
 
   async function loadAtt(taskId, force = false) {
@@ -868,45 +885,35 @@
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
                   </button>
-                  {#if editTaskId === t.id}
-                    <input class="trename" bind:value={editTaskTitle} use:focusSelect
-                      onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveRename(t) } else if (e.key === 'Escape') { editTaskId = null } }}
-                      onblur={() => saveRename(t)} />
-                  {:else}
-                    <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
-                      <div class="ttitle-row">
-                        <span class="ttitle">{t.titlu}</span>
-                      </div>
-                      <div class="tinfo">
-                        {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
-                        {#if t.subtask_total}
-                          <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
-                        {/if}
-                        {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
-                        {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
-                        {#if t.data_scadenta}
-                          <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>
-                        {/if}
-                      </div>
-                    </button>
-                  {/if}
+                  <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
+                    <div class="ttitle-row">
+                      {#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
+                      <span class="ttitle">{t.titlu}</span>
+                    </div>
+                    <div class="tinfo">
+                      {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                      {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
+                      {#if t.subtask_total}
+                        <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
+                      {/if}
+                      {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
+                      {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
+                      {#if t.data_scadenta}
+                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>
+                      {/if}
+                    </div>
+                  </button>
                   <div class="task-actions">
+                    <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
                     <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                    <button class="task-edit" onclick={() => startRename(t)} title="Editeaza numele"><SolidIcon name="pencil" size={13} /></button>
+                    <button class="task-edit" onclick={() => openTaskEditModal(t)} title="Editeaza task"><SolidIcon name="pencil" size={13} /></button>
+                    <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime('task', t.id)}><Plus size={12} /></button>
                     <button class="timer-btn" class:active={timer.active?.kind === 'task' && timer.active?.task_id === t.id} onclick={() => handleTaskTimer(t.id)}><SolidIcon name="clock" size={14} /></button>
                     <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
                   </div>
                 </div>
                 {#if expandedTask === t.id}
                   <div class="subtask-body" transition:slide={{ duration: 150 }}>
-                    <div class="tdl-row">
-                      <span class="tdl-label">Termen:</span>
-                      <input type="date" class="tdl-input" value={(t.data_scadenta || '').slice(0, 10)}
-                        onchange={(e) => setTaskDeadline(t, e.target.value)} />
-                      {#if t.data_scadenta}
-                        <button class="tdl-clear" title="Sterge termenul" onclick={() => setTaskDeadline(t, '')}>Sterge</button>
-                      {/if}
-                    </div>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
@@ -1248,6 +1255,43 @@
   </div>
 </Modal>
 
+<Modal bind:open={showTaskEditModal} title="Editeaza Task" size="md">
+  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
+    <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
+    <label class="mf-field">
+      <span class="mf-label">Descriere</span>
+      <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (optional)" rows="3"></textarea>
+    </label>
+    <div class="mf-row">
+      <label class="mf-field">
+        <span class="mf-label">Prioritate</span>
+        <select class="mf-input" bind:value={taskFormPriority}>
+          <option value="Normal">Normal</option>
+          <option value="Minor">Minor</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </label>
+      <label class="mf-field">
+        <span class="mf-label">Deadline</span>
+        <input type="date" class="mf-input" bind:value={taskFormDeadline} />
+      </label>
+    </div>
+    <label class="mf-field">
+      <span class="mf-label">Recurenta</span>
+      <select class="mf-input" bind:value={taskFormRecurenta}>
+        <option value="">Fara</option>
+        <option value="zilnic">Zilnic</option>
+        <option value="saptamanal">Saptamanal</option>
+        <option value="lunar">Lunar</option>
+      </select>
+    </label>
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => showTaskEditModal = false}>Anuleaza</Button>
+      <Button loading={taskFormSaving} disabled={!taskFormTitle.trim()} onclick={handleTaskEdit}>Salveaza</Button>
+    </div>
+  </form>
+</Modal>
+
 <Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
   <div class="field-edit-modal">
     {#if showNoteModal}
@@ -1322,7 +1366,11 @@
   .trow.done .check { color: var(--success); }
   .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
-  .trename { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: 500; padding: 5px 8px; background: var(--bg-elevated); border: 1px solid var(--accent); border-radius: var(--radius-sm); color: var(--text); outline: none; box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
+  .status-badge:hover { opacity: .7; }
+  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: 500; }
+  .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
+  .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
   .trow:hover .task-edit { opacity: 1; }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
@@ -1335,11 +1383,6 @@
   .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
-  .tdl-row { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-  .tdl-label { font-size: var(--font-tiny); color: var(--text-secondary); font-weight: 600; }
-  .tdl-input { padding: 5px 9px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
-  .tdl-clear { font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 3px 8px; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
-  .tdl-clear:hover { color: var(--danger); background: var(--danger-subtle, var(--bg-hover)); }
   .tdeadline { font-size: 10px; }
   .tdeadline.overdue { color: var(--danger); font-weight: 600; }
   .tdeadline.today { color: var(--accent); font-weight: 600; }
