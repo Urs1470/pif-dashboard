@@ -1446,6 +1446,17 @@ def dashboard_home():
     prev_weekly_hours = round(cursor.fetchone()[0] / 3600, 1)
     weekly_delta = round(weekly_hours - prev_weekly_hours, 1)
 
+    # Daily hours for the last 7 calendar days (oldest -> newest) for the sparkline
+    cursor.execute("""
+        SELECT CAST(julianday(date('now')) - julianday(date(start_time)) AS INTEGER) AS days_ago,
+               COALESCE(SUM(durata_secunde), 0) AS sec
+        FROM timer_sessions
+        WHERE start_time >= datetime('now', '-7 days')
+        GROUP BY days_ago
+    """)
+    _spark = {r['days_ago']: r['sec'] for r in cursor.fetchall()}
+    weekly_spark = [round(_spark.get(i, 0) / 3600, 2) for i in range(6, -1, -1)]
+
     # Urgent tasks — global + project-level (UNION)
     cursor.execute("""
         SELECT * FROM (
@@ -1520,6 +1531,7 @@ def dashboard_home():
             'total_projects': total_projects,
             'weekly_hours': weekly_hours,
             'weekly_delta': weekly_delta,
+            'weekly_spark': weekly_spark,
             'urgent_count': urgent_count,
             'deadline_count': deadline_count
         },

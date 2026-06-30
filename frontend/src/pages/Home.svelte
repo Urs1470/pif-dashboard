@@ -28,6 +28,53 @@
   let error = $state(null)
   let recents = $state([])
 
+  // Count-up: numbers ease 0 -> value once the data lands (respects reduced-motion)
+  let animVals = $state({ active: 0, urgent: 0, hours: 0, deadline: 0 })
+  let _animStarted = false
+
+  function fmtHours(cur) {
+    const target = dashboard?.stats?.weekly_hours ?? 0
+    return Number.isInteger(target) ? String(Math.round(cur)) : cur.toFixed(1)
+  }
+
+  $effect(() => {
+    if (!dashboard || _animStarted) return
+    _animStarted = true
+    const s = dashboard.stats || {}
+    const targets = {
+      active: s.active_projects || 0,
+      urgent: s.urgent_count || 0,
+      hours: s.weekly_hours || 0,
+      deadline: s.deadline_count || 0,
+    }
+    // No animation when motion is reduced or the tab is hidden (rAF is paused
+    // there, which would otherwise leave the numbers stuck at 0).
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduce || document.hidden) {
+      animVals = targets
+      return
+    }
+    let raf = 0
+    const t0 = performance.now()
+    const dur = 650
+    function frame(now) {
+      const p = Math.min((now - t0) / dur, 1)
+      const e = 1 - Math.pow(1 - p, 3)
+      animVals = {
+        active: targets.active * e,
+        urgent: targets.urgent * e,
+        hours: targets.hours * e,
+        deadline: targets.deadline * e,
+      }
+      if (p < 1) raf = requestAnimationFrame(frame)
+      else animVals = targets
+    }
+    raf = requestAnimationFrame(frame)
+    // Safety net: if rAF gets throttled (tab loses focus mid-run), still settle.
+    const safety = setTimeout(() => { animVals = targets }, dur + 400)
+    return () => { cancelAnimationFrame(raf); clearTimeout(safety) }
+  })
+
   function greeting() {
     const h = new Date().getHours()
     if (h < 12) return 'Buna dimineata'
@@ -82,31 +129,34 @@
     <Card><p class="error-msg">Eroare: {error}</p></Card>
   {:else if dashboard}
     {@const s = dashboard.stats || {}}
+    {@const spark = s.weekly_spark || []}
+    {@const sparkMax = Math.max(...spark, 0.1)}
+    {@const projPct = s.total_projects ? Math.min(100, (animVals.active / s.total_projects) * 100) : 0}
     <div class="kpi-bar">
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Proiecte Active</span><FolderKanban size={15} /></div>
-        <div class="kpi-val accent">{s.active_projects ?? 0}</div>
-        <div class="kpi-sub">din {s.total_projects ?? 0} total</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Urgente</span><AlertTriangle size={15} /></div>
-        <div class="kpi-val warn">{s.urgent_count ?? 0}</div>
+      <button class="kpi" onclick={() => navigate('/projects')} title="Vezi proiectele">
+        <div class="kpi-head"><span class="kpi-chip accent"><FolderKanban size={16} /></span><span class="kpi-label">Proiecte Active</span></div>
+        <div class="kpi-val accent">{Math.round(animVals.active)}<span class="of">/ {s.total_projects ?? 0}</span></div>
+        <div class="kpi-track"><span style="width: {projPct}%"></span></div>
+      </button>
+      <button class="kpi" onclick={() => navigate('/tasks')} title="Vezi taskurile urgente">
+        <div class="kpi-head"><span class="kpi-chip warn"><AlertTriangle size={16} /></span><span class="kpi-label">Urgente</span></div>
+        <div class="kpi-val warn">{#if (s.urgent_count || 0) > 0}<span class="kpi-pulse"></span>{/if}{Math.round(animVals.urgent)}</div>
         <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Ore Saptamana</span><SolidIcon name="clock" size={15} /></div>
-        <div class="kpi-val success">{s.weekly_hours ?? 0}<span class="unit">h</span></div>
-        <div class="kpi-sub">
-          {#if (s.weekly_delta || 0) > 0}<span class="up">+{s.weekly_delta}h</span> vs. sapt. trecuta
-          {:else if (s.weekly_delta || 0) < 0}<span class="down">{s.weekly_delta}h</span> vs. sapt. trecuta
-          {:else}la fel ca sapt. trecuta{/if}
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Deadline-uri</span><CalendarClock size={15} /></div>
-        <div class="kpi-val">{s.deadline_count ?? 0}</div>
+      </button>
+      <button class="kpi" onclick={() => navigate('/admin')} title="Vezi statistici">
+        <div class="kpi-head"><span class="kpi-chip success"><SolidIcon name="clock" size={16} /></span><span class="kpi-label">Ore Saptamana</span></div>
+        <div class="kpi-val success">{fmtHours(animVals.hours)}<span class="unit">h</span>{#if (s.weekly_delta || 0) !== 0}<span class="kpi-delta {(s.weekly_delta || 0) > 0 ? 'up' : 'down'}">{(s.weekly_delta || 0) > 0 ? '+' : ''}{s.weekly_delta}h</span>{/if}</div>
+        {#if spark.length}
+          <div class="kpi-spark">{#each spark as v}<span style="height: {Math.max(8, (v / sparkMax) * 100)}%"></span>{/each}</div>
+        {:else}
+          <div class="kpi-sub">vs. sapt. trecuta</div>
+        {/if}
+      </button>
+      <button class="kpi" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
+        <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Deadline-uri</span></div>
+        <div class="kpi-val">{Math.round(animVals.deadline)}</div>
         <div class="kpi-sub">in urmatoarele 7 zile</div>
-      </div>
+      </button>
     </div>
 
     <TodayBoard />
@@ -185,19 +235,33 @@
   .tc-stop:hover { background: var(--danger); color: white; }
 
   .kpi-skeleton { margin-bottom: var(--space-lg); }
-  .kpi-bar { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: var(--space-lg); }
-  .kpi { padding: 16px 18px; border-right: 1px solid var(--border-subtle); }
-  .kpi:last-child { border-right: none; }
-  .kpi-top { display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); margin-bottom: var(--space-sm); }
-  .kpi-label { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-  .kpi-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1; }
+  .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+  .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .kpi:hover { transform: translateY(-2px); border-color: var(--border); }
+  .kpi-head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+  .kpi-chip { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .kpi-chip.accent { background: var(--accent-subtle); color: var(--accent); }
+  .kpi-chip.warn { background: var(--warning-subtle); color: var(--warning); }
+  .kpi-chip.success { background: var(--success-subtle); color: var(--success); }
+  .kpi-chip.neutral { background: var(--bg-elevated); color: var(--text-secondary); }
+  .kpi-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
+  .kpi-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 6px; }
   .kpi-val.accent { color: var(--accent); }
   .kpi-val.warn { color: var(--warning); }
   .kpi-val.success { color: var(--success); }
-  .unit { font-size: 14px; color: var(--text-dim); }
-  .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-  .kpi-sub .up { color: var(--success); font-weight: 600; }
-  .kpi-sub .down { color: var(--danger); font-weight: 600; }
+  .kpi-val .of { font-size: 14px; color: var(--text-dim); font-weight: 600; }
+  .kpi-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); align-self: center; animation: kpipulse 1.5s ease-in-out infinite; }
+  @keyframes kpipulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: var(--radius-full); align-self: center; }
+  .kpi-delta.up { background: var(--success-subtle); color: var(--success); }
+  .kpi-delta.down { background: var(--danger-subtle); color: var(--danger); }
+  .unit { font-size: 14px; color: var(--text-dim); font-weight: 600; }
+  .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+  .kpi-track { height: 4px; background: var(--bg-hover); border-radius: var(--radius-full); margin-top: 11px; overflow: hidden; }
+  .kpi-track span { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); }
+  .kpi-spark { display: flex; align-items: flex-end; gap: 3px; height: 22px; margin-top: 9px; }
+  .kpi-spark span { flex: 1; background: var(--success); border-radius: 1px; opacity: 0.4; min-height: 2px; }
+  .kpi-spark span:last-child { opacity: 1; }
 
   .section { margin-bottom: var(--space-lg); }
   .section-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: var(--space-sm); }
@@ -230,9 +294,7 @@
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .kpi-bar { grid-template-columns: repeat(2, 1fr); }
-    .kpi:nth-child(2n) { border-right: none; }
-    .kpi:nth-child(n+3) { border-top: 1px solid var(--border-subtle); }
+    .kpi-bar { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
     .cards-grid { grid-template-columns: 1fr; }
     .greeting { font-size: var(--font-h2); white-space: normal; }
     .timer-card { flex: 1; }
