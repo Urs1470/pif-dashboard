@@ -1,4 +1,12 @@
+import { tick } from 'svelte'
+
 export const router = $state({ path: getPath(), query: getQuery(), params: {} })
+
+const reduceMotion = typeof window !== 'undefined'
+  && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
+
+const vtSupported = typeof document !== 'undefined' && typeof document.startViewTransition === 'function'
+export function viewTransitionsOn() { return vtSupported && !reduceMotion }
 
 function getRaw() {
   const hash = window.location.hash
@@ -36,8 +44,34 @@ function matchRoute(pattern, path) {
   return params
 }
 
+function parseQuery(path) {
+  const qi = (path || '').indexOf('?')
+  if (qi === -1) return {}
+  const out = {}
+  new URLSearchParams(path.slice(qi + 1)).forEach((v, k) => { out[k] = v })
+  return out
+}
+
+// Apply a route synchronously (no animation): updates router state immediately and
+// syncs the URL hash. Used inside View-Transition callbacks (so the DOM swap happens
+// inside the transition) and as the no-VT fallback.
+export function applyPath(path) {
+  router.path = (path.split('?')[0]) || '/'
+  router.query = parseQuery(path)
+  const target = '#' + path
+  if (window.location.hash !== target) window.location.hash = target
+}
+
+// VT-aware navigation: cross-fades the whole view on every route change where the
+// browser supports the View Transitions API (progressive enhancement). Falls back
+// to an instant apply otherwise / under reduced-motion.
 export function navigate(path) {
-  window.location.hash = '#' + path
+  if (!viewTransitionsOn()) { applyPath(path); return }
+  try {
+    document.startViewTransition(async () => { applyPath(path); await tick() })
+  } catch (_) {
+    applyPath(path)
+  }
 }
 
 export function link(node) {

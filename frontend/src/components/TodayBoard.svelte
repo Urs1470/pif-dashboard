@@ -11,7 +11,7 @@
   } from '../stores/agenda.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, priorityColor, priorityLabel, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
-  import { focusHref } from '../lib/focus.js'
+  import { morphNavigate } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
@@ -80,9 +80,10 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
-  function openItem(it) {
-    if (it.tip === 'proiect' && it.proiect_id) navigate(focusHref(`/projects/${it.proiect_id}`, 'task', it.id))
-    else navigate(focusHref('/tasks', 'global', it.id))
+  function openItem(e, it) {
+    const src = e?.currentTarget?.closest?.('.arow') || e?.currentTarget
+    if (it.tip === 'proiect' && it.proiect_id) morphNavigate(src, `/projects/${it.proiect_id}`, 'task', it.id)
+    else morphNavigate(src, '/tasks', 'global', it.id)
   }
 
   // --- Reordering (HTML5 drag on desktop, arrow buttons on mobile) ---
@@ -164,7 +165,7 @@
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
           </button>
 
-          <button class="amain" onclick={() => openItem(it)}>
+          <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitle">{it.titlu}</span>
             <span class="ainfo">
               {#if it.tip === 'proiect' && it.proiect_nume}<span class="tag proj">{it.proiect_nume}</span>
@@ -187,7 +188,7 @@
               <DatePicker value={it.data_planificata} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
             </span>
             <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate din azi"><X size={15} /></button>
-            <button class="abtn" onclick={() => openItem(it)} title="Deschide"><ChevronRight size={15} /></button>
+            <button class="abtn" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
           </div>
         </div>
       {/each}

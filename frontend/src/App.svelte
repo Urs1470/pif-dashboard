@@ -6,7 +6,7 @@
   import Toast from './components/ui/Toast.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
   import { ui } from './stores/ui.svelte.js'
-  import { router, resolveRoute } from './lib/router.svelte.js'
+  import { router, resolveRoute, viewTransitionsOn } from './lib/router.svelte.js'
 
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'
@@ -30,6 +30,9 @@
 
   const rawMatch = $derived(resolveRoute(routes))
   const routeKey = $derived(router.path)
+  // When the browser drives the route change via the View Transitions API, let it
+  // own the cross-fade; the Svelte fade only runs as a fallback (no VT support).
+  const fadeDur = viewTransitionsOn() ? 0 : 120
 
   let LoadedComponent = $state(null)
   let loadedParams = $state({})
@@ -71,7 +74,7 @@
     <Header />
     <main class="app-content" id="main-content">
       {#key routeKey}
-        <div class="content-width" in:fade={{ duration: 120 }}>
+        <div class="content-width" in:fade={{ duration: fadeDur }}>
           {#if loadError}
             <div class="not-found"><p>Eroare: {loadError}</p></div>
           {:else if LoadedComponent}
