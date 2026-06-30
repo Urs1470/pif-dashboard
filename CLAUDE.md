@@ -58,7 +58,6 @@ static/
   dist/                   # Svelte SPA build (Vite) — the app, served at /
   service-worker.js       # PWA cache strategy (STATIC_CACHE + API_CACHE); registered by the SPA
   login.css               # login page styling
-  manifest.json           # legacy PWA manifest (SPA uses dist/manifest.json)
 ```
 
 ## Database
@@ -146,7 +145,7 @@ Shared working tree → shared git index, so coordinate before staging/committin
 - **Import session:** `scripts/parse_params/*`
 - Always `git fetch && git pull --rebase` before push. No force push.
 
-> `HERMES.md` and `AGENT_BRIEFING.md` still describe the pre-SPA desktop+mobile multi-file workflow (templates/index.html, static/app.js, mobile.*) removed 2026-06-17 — outdated, pending rewrite/archival.
+> See `HERMES.md` (architecture + design system + git protocol) and `AGENT_BRIEFING.md` (spawn template) for the full multi-agent workflow.
 
 ## Known Limitations
 

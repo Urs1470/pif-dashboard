@@ -1,118 +1,110 @@
-# Briefing pentru agenții Claude spawned
+# Briefing pentru sesiuni Claude spawned
 
-Template scurt de copy-paste pentru orice sesiune Claude nouă care intră să lucreze
-la PIF Dashboard. Ion alege scope-ul, copiază blocul de mai jos, înlocuiește
-`<SCOPE>` și `<TASK>`, îl dă agentului ca prim mesaj.
+Template scurt de copy-paste pentru orice sesiune Claude nouă care intră să lucreze la
+PIF Dashboard. Ion alege scope-ul, copiază blocul de mai jos, înlocuiește `<SCOPE>` și
+`<TASK>`, îl dă agentului ca prim mesaj.
+
+> Context: aplicația e un **SPA Svelte 5** (build Vite în `static/dist/`) + backend Flask.
+> Vechiul app vanilla-JS multi-fișier (desktop `app.js` + mobile `/m`) a fost eliminat
+> 2026-06-17. Detaliile complete sunt în `CLAUDE.md` + `HERMES.md`.
 
 ---
 
 ## Template (copy-paste, înlocuiește slot-urile)
 
 ```
-Lucrezi la PIF Dashboard, repo D:/Projects/pif-dashboard pe Windows-ul lui Ion.
-Tu ești sesiunea "<SCOPE>" (ex: PV, Import-Convertoare, Equipment-Card,
-Audit, etc.). Alte sesiuni Claude lucrează în paralel pe același worktree.
+Lucrezi la PIF Dashboard, repo C:\Users\ion.ursu\pif-dashboard pe Windows-ul lui Ion.
+Tu esti sesiunea "<SCOPE>". Alte sesiuni Claude pot lucra in paralel pe ACELASI worktree
+(deci acelasi .git si acelasi index git).
 
-ÎNAINTE de orice modificare:
-1. Citește integral HERMES.md din root-ul repo-ului. Conține contextul,
-   design system-ul, conventiile Ion, domain map per sesiune și protocolul
-   anti-coliziune. NU sări peste el.
-2. Rulează:
-     cd D:/Projects/pif-dashboard
+INAINTE de orice modificare:
+1. Citeste CLAUDE.md (instructiuni de proiect) + HERMES.md (arhitectura SPA, design system,
+   protocol anti-coliziune). Pentru locatii de cod foloseste docs/memory/CODE_MAP.md si
+   docs/memory/API_MAP.md (nu cauta orbeste in fisiere mari).
+2. Ruleaza:
      git fetch origin master
      git pull --rebase origin master
      git status        # trebuie clean
      git log --oneline -10
-   Dacă ultimul push e foarte recent (<5 minute) de la altă sesiune, așteaptă 30s.
+   Daca alta sesiune a comis foarte recent (<5 min), citeste-i commit-urile intai.
 
-ÎN TIMPUL lucrului:
-- Atinge DOAR fișierele din domain-ul tău (vezi HERMES.md → "Cine atinge ce").
-- Pe shared files (templates/index.html, templates/mobile.html, static/app.js,
-  static/mobile.js) wrappează integrarea ta cu marker BEGIN/END:
-     <!-- BEGIN: <SCOPE> (owned by spawned-<scope> session) -->
-     ... codul tău ...
-     <!-- END: <SCOPE> -->
-  Asta semnalează Claude main + altor sesiuni să NU șteargă blocul.
+IN TIMPUL lucrului:
+- Atinge DOAR fisierele din scope-ul tau.
+- NU folosi `git commit -a` / `git add -A` (indexul e partajat cu alte sesiuni) — stage
+  explicit doar fisierele tale.
+- Daca vezi alta sesiune scriind activ (fisiere modificate la secunda), opreste-te,
+  las-o sa commit-eze, apoi `git pull --rebase`.
 
-ÎNAINTE de fiecare push:
+INAINTE de fiecare push:
      git fetch origin master
      git pull --rebase origin master
-     # rezolvă orice conflict manual, NU forța push
+     # rezolva orice conflict manual, NU forta push
      git push origin master
+   (push-ul declanseaza webhook-ul de auto-deploy pe pif.iupif.org)
 
 Commit messages:
-- Fără diacritice (PowerShell incurcă heredoc).
 - Scope clar: "<SCOPE>: ce ai facut".
-- Identity Urs1470 (default), co-author: Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+- Identity: author Ion (Urs1470, default din git config), co-author Claude.
+
+Frontend (daca atingi UI):
+- SPA Svelte 5 in frontend/src/. Foloseste libraria de componente components/ui/
+  (Button, Select, Modal, DatePicker, SolidIcon, Toast, ...) — NU stiluri ad-hoc.
+- Culori/spacing DOAR din frontend/src/styles/tokens.css (paleta Geist: negru + albastru
+  #0070f3). Iconite: <SolidIcon> pentru nav/feature, Lucide outline pentru afordante mici.
+- Dupa modificari de cod previewabile, ruleaza dev server-ul si verifica in browser.
 
 Comunicare cu Ion:
-- Răspunsuri scurte, directe, în română.
-- Push imediat după fiecare felie funcțională → testează pe live (https://pif.iupif.org/).
-- Înainte de feature UI complexă: propune mockup HTML standalone întâi.
+- Raspunsuri scurte, directe, in romana. Push imediat dupa fiecare felie functionala.
 
 ---
 
-TASK-UL TĂU:
+TASK-UL TAU:
 
 <TASK>
 ```
 
 ---
 
-## Exemple gata-de-trimis pentru sesiunile curente
+## Domain map (cine atinge ce, ca să nu vă ciocniți)
 
-### ~~PV generation~~ (ELIMINAT 2026-06-05)
+| Zonă | Fișiere |
+|---|---|
+| **UI / pagini** | `frontend/src/pages/*`, `frontend/src/components/*` |
+| **Stores / logică client** | `frontend/src/stores/*.svelte.js`, `frontend/src/lib/*` |
+| **Design tokens / CSS global** | `frontend/src/styles/*` (hub — coordonează) |
+| **API backend** | `blueprints/*.py` |
+| **Schemă / migrații** | `database.py` (anunță prin commit message clar) |
+| **Import parametri** | `scripts/parse_params/*.py` |
+| **Memory Ion** (`~/.claude/.../memory/*`) | **NU atinge** — local Ion |
 
-> Generarea de procese verbale (PIF + Service) a fost ștearsă complet din dashboard:
-> `services/pv_generator.py`, `static/pv-modal.js`, `templates/pv/*.docx`, rutele
-> `/api/proiecte/<id>/pv/*` și butoanele din UI nu mai există. Fluxul actual de
-> raportare e prin Cowork debrief → import (`/api/import/debrief`).
+Hub-uri cu risc de coliziune (fii mic + rapid + `pull --rebase`): `App.svelte`,
+`lib/router.svelte.js`, `stores/*`, `styles/tokens.css`/`global.css`, `app.py`, `database.py`.
 
-### Import parametri convertoare
+## Exemple de scope
 
 ```
 <SCOPE> = Import-Convertoare
-<TASK> = Implementează tool-ul de import parametri modificați per echipament,
-cu parser separat pentru Danfoss (text), Lenze (PDF), Siemens (PDF). ABB rămâne
-TBD. Domain: scripts/parse_params/*.py, endpoint /api/echipamente/<id>/import-params
-în app.py. Sample-urile Ion: D:/Downloads/Changed parameters danfoss.txt,
-exemplu lenze.pdf, exemplu starter.pdf. Pe shared files, wrappează butonul
-"Import params" din modal echipament cu BEGIN/END Import.
+<TASK> = Lucreaza la parserele de parametri din scripts/parse_params/ (abb, danfoss,
+lenze, siemens). Endpoint relevant in blueprints/parametri.py. NU atinge frontend/.
 ```
 
-### Sprint UI (Claude main)
-
 ```
-<SCOPE> = Sprint-UI
-<TASK> = Continuă pachetul de fix-uri UI/UX semnalat de Ion (vezi conversația
-principală). Domeniul tău e maximal pe shared files: templates/index.html,
-templates/mobile.html, static/app.js, static/mobile.js, static/service-worker.js,
-templates/login.html. NU atinge fișiere wrappuite cu BEGIN/END de altă sesiune
-fără să discuți cu Ion.
-```
-
-### Audit DB (Hermes-class agent)
-
-```
-<SCOPE> = Audit
-<TASK> = Continuă auditul parametrilor DB față de PDF-urile manualelor. Rulează
---all pentru toate familiile, validează parser-ele per producător, raportează
-mismatch-urile. Domain: scripts/audit_pdf.py, scripts/audit_reports/*. NU atinge
-templates/ sau static/. Pe laptop-server păstrează git worktree clean între
-sesiuni — webhook-ul de deploy crapă 500 când pull-ul nu poate avansa.
+<SCOPE> = UI-Proiecte
+<TASK> = Imbunatateste pagina de proiecte. Domeniu: frontend/src/pages/Projects.svelte,
+ProjectDetail.svelte + components/projects/*. Foloseste components/ui/ existente si
+tokens.css. NU atinge blueprints/ sau database.py.
 ```
 
 ---
 
 ## De ce funcționează
 
-- **HERMES.md** ține contextul stabil (design system, paletă, convenții) —
-  agenții îl citesc o singură dată per sesiune.
+- **CLAUDE.md + HERMES.md** țin contextul stabil (arhitectură, design system, convenții) —
+  agenții le citesc o dată per sesiune; `docs/memory/` dă locațiile exacte.
 - **Domain map** previne două sesiuni să atingă același fișier concomitent.
-- **Marker BEGIN/END** semnalează ownership inline, vizibil în diff.
-- **pull --rebase înainte de push** prinde modificările care au aterizat între
-  read și write — fără asta apar coliziunile tip "lost work" (a se vedea
-  commit `245cf33` din istoric).
+- **Index git partajat**: pe același worktree, `git add -A` al unei sesiuni poate înghiți
+  munca alteia → stage explicit + push des.
+- **`pull --rebase` înainte de push** prinde modificările aterizate între read și write —
+  fără el apar coliziunile „lost work”.
 
-Documentul ăsta și HERMES.md sunt în repo. Update-le când stadiul se schimbă
-semnificativ.
+*Documentul ăsta și HERMES.md sunt în repo. Update-le când stadiul se schimbă semnificativ.*
