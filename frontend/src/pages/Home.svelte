@@ -11,6 +11,7 @@
   import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import TodayBoard from '../components/TodayBoard.svelte'
 
   const kindLabels = { project: 'Proiect', task: 'Task', global_task: 'Task global' }
 
@@ -108,6 +109,8 @@
       </div>
     </div>
 
+    <TodayBoard />
+
     {#if recents.length > 0}
       <section class="section">
         <div class="section-head"><RotateCcw size={14} /><span>Continua</span></div>
@@ -162,22 +165,6 @@
         </Card>
       {/if}
 
-      {#if dashboard.todays_tasks?.length}
-        <Card padding={false}>
-          <div class="card-head success"><SolidIcon name="clock" size={16} /><span>Task-uri Azi</span><span class="card-count">{dashboard.todays_tasks.length}</span></div>
-          <div class="card-list">
-            {#each dashboard.todays_tasks as t}
-              <button class="list-row" onclick={() => navigate('/tasks')}>
-                <div class="row-dot" class:done={t.status === 'done'}></div>
-                <div class="row-content">
-                  <div class="row-title" class:line-through={t.status === 'done'}>{t.titlu}</div>
-                  <div class="row-meta">{t.categorie || 'General'}</div>
-                </div>
-              </button>
-            {/each}
-          </div>
-        </Card>
-      {/if}
     </div>
   {/if}
 </div>

@@ -1,5 +1,6 @@
 import calendar
 import os
+import re
 from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
@@ -57,6 +58,9 @@ def _spawn_recurring_task(cursor, existing, recurenta):
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
     cursor.execute('SELECT MAX(ordine) FROM tasks WHERE proiect_id = ?', (existing['proiect_id'],))
     max_ordine = cursor.fetchone()[0] or 0
+    # data_planificata / ordine_agenda are deliberately NOT copied: the next
+    # occurrence is born unplanned and surfaces on the Astazi board later via its
+    # future data_scadenta, not the moment the current one is completed.
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
@@ -79,6 +83,7 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     new_id = generate_uuid()
     now = datetime.now().isoformat()
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+    # data_planificata / ordine_agenda deliberately not copied (see _spawn_recurring_task).
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta)
@@ -197,8 +202,9 @@ def create_task(project_id):
 
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
-                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
+                           data_planificata, ordine_agenda)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -211,7 +217,9 @@ def create_task(project_id):
         now,
         data.get('descriere', ''),
         data.get('recurenta', ''),
-        now
+        now,
+        data.get('data_planificata', ''),
+        data.get('ordine_agenda', 0)
     ))
 
     conn.commit()
@@ -244,6 +252,8 @@ def update_task(task_id):
             ordine = COALESCE(?, ordine),
             descriere = COALESCE(?, descriere),
             recurenta = COALESCE(?, recurenta),
+            data_planificata = COALESCE(?, data_planificata),
+            ordine_agenda = COALESCE(?, ordine_agenda),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -255,6 +265,8 @@ def update_task(task_id):
         data.get('ordine'),
         data.get('descriere'),
         data.get('recurenta'),
+        data.get('data_planificata'),
+        data.get('ordine_agenda'),
         datetime.now().isoformat(),
         task_id
     ))
@@ -476,8 +488,9 @@ def create_global_task():
 
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
-                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta,
+                                  data_planificata, ordine_agenda)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -489,7 +502,9 @@ def create_global_task():
         data.get('data_finalizare', ''),
         now,
         now,
-        data.get('recurenta', '')
+        data.get('recurenta', ''),
+        data.get('data_planificata', ''),
+        data.get('ordine_agenda', 0)
     ))
 
     conn.commit()
@@ -541,6 +556,8 @@ def update_global_task(task_id):
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
             recurenta = COALESCE(?, recurenta),
+            data_planificata = COALESCE(?, data_planificata),
+            ordine_agenda = COALESCE(?, ordine_agenda),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -552,6 +569,8 @@ def update_global_task(task_id):
         data.get('data_scadenta'),
         data.get('data_finalizare'),
         data.get('recurenta'),
+        data.get('data_planificata'),
+        data.get('ordine_agenda'),
         now,
         task_id
     ))
@@ -593,3 +612,171 @@ def delete_global_task(task_id):
         return jsonify({'message': 'Task deleted'})
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Agenda — "Astazi" daily planner board (Home tab)
+#
+# Planning is a SEPARATE dimension from the deadline: data_planificata ("plan it
+# for this day") never touches data_scadenta ("the deadline"). The board unifies
+# global tasks (tip='global') and project tasks (tip='proiect') for a single day.
+# ---------------------------------------------------------------------------
+
+_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
+def _resolve_today():
+    """Local 'today' from the client (?today=YYYY-MM-DD); SQLite date('now') is
+    UTC and can be off near midnight. Falls back to the server's local date."""
+    t = (request.args.get('today') or '').strip()
+    if _DATE_RE.match(t):
+        return t
+    return datetime.now().strftime('%Y-%m-%d')
+
+
+def _agenda_item(d, tip, today):
+    """Normalize a task row (dict) into the flat shape the board consumes."""
+    plan = (d.get('data_planificata') or '').strip()[:10]
+    scad = (d.get('data_scadenta') or '').strip()[:10]
+    return {
+        'tip': tip,
+        'id': d['id'],
+        'titlu': d.get('titlu') or '',
+        'status': d.get('status') or 'to_do',
+        'prioritate': d.get('prioritate') or '',
+        'data_scadenta': d.get('data_scadenta') or '',
+        'data_planificata': d.get('data_planificata') or '',
+        'ordine_agenda': d.get('ordine_agenda') or 0,
+        'recurenta': d.get('recurenta') or '',
+        'categorie': (d.get('categorie') or '') if tip == 'global' else '',
+        'proiect_id': d.get('proiect_id') if tip == 'proiect' else None,
+        'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
+        'is_planificat_azi': bool(plan) and plan == today,
+        'is_restant': bool(plan) and plan < today,
+        'is_scadent_azi': bool(scad) and scad == today,
+    }
+
+
+# Open tasks that belong on today's board: planned today, rolled over (planned in
+# the past, still open) or due today. Future recurrences are hidden (same idiom as
+# the dashboard) so a just-spawned next occurrence doesn't show up early.
+_AGENDA_WHERE = '''
+        {alias}.status != 'done'
+        AND (
+            date({alias}.data_planificata) = date(:today)
+            OR (
+                {alias}.data_planificata IS NOT NULL AND TRIM({alias}.data_planificata) <> ''
+                AND date({alias}.data_planificata) < date(:today)
+            )
+            OR date({alias}.data_scadenta) = date(:today)
+        )
+        AND NOT (
+            {alias}.recurenta IS NOT NULL AND TRIM({alias}.recurenta) <> ''
+            AND {alias}.data_scadenta IS NOT NULL AND date({alias}.data_scadenta) > date(:today)
+        )
+'''
+
+
+@tasks_bp.route('/api/agenda/today', methods=['GET'])
+@login_required
+def get_agenda_today():
+    today = _resolve_today()
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        'SELECT g.* FROM global_tasks g WHERE ' + _AGENDA_WHERE.format(alias='g'),
+        {'today': today})
+    items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
+
+    cursor.execute(
+        '''SELECT t.*, p.nume AS proiect_nume
+           FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+           WHERE p.status != 'anulat' AND ''' + _AGENDA_WHERE.format(alias='t'),
+        {'today': today})
+    items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
+
+    conn.close()
+
+    # Restante first, then by board order (unordered = 0 sinks to the bottom), then title.
+    items.sort(key=lambda d: (
+        0 if d['is_restant'] else 1,
+        d['ordine_agenda'] if d['ordine_agenda'] else 1_000_000,
+        (d['titlu'] or '').lower(),
+    ))
+    return jsonify({'today': today, 'items': items})
+
+
+@tasks_bp.route('/api/agenda/candidates', methods=['GET'])
+@login_required
+def get_agenda_candidates():
+    """Not-done tasks (global + project) that can be added to today, excluding
+    those already planned for today. Optional ?q= title search."""
+    today = _resolve_today()
+    q = (request.args.get('q') or '').strip()
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # COALESCE(date(col),'') so unplanned (NULL/'') rows are kept; only today's are excluded.
+    gq = '''SELECT g.* FROM global_tasks g
+            WHERE g.status != 'done'
+              AND COALESCE(date(g.data_planificata), '') <> date(:today)
+              AND NOT (
+                g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
+                AND g.data_scadenta IS NOT NULL AND date(g.data_scadenta) > date(:today)
+              )'''
+    gp = {'today': today}
+    if q:
+        gq += ' AND g.titlu LIKE :q'
+        gp['q'] = f'%{q}%'
+    gq += ' ORDER BY g.titlu COLLATE NOCASE LIMIT 100'
+    cursor.execute(gq, gp)
+    items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
+
+    tq = '''SELECT t.*, p.nume AS proiect_nume
+            FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+            WHERE t.status != 'done' AND p.status != 'anulat'
+              AND COALESCE(date(t.data_planificata), '') <> date(:today)
+              AND NOT (
+                t.recurenta IS NOT NULL AND TRIM(t.recurenta) <> ''
+                AND t.data_scadenta IS NOT NULL AND date(t.data_scadenta) > date(:today)
+              )'''
+    tp = {'today': today}
+    if q:
+        tq += ' AND t.titlu LIKE :q'
+        tp['q'] = f'%{q}%'
+    tq += ' ORDER BY t.titlu COLLATE NOCASE LIMIT 100'
+    cursor.execute(tq, tp)
+    items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
+
+    conn.close()
+    return jsonify({'today': today, 'items': items})
+
+
+@tasks_bp.route('/api/agenda/reorder', methods=['POST'])
+@login_required
+def reorder_agenda():
+    """Persist the board order for a mixed list of global + project tasks.
+    Body: {"order": [{"tip": "global"|"proiect", "id": "..."}, ...]}.
+    Writes ordine_agenda = position+1 (1-based, so 0 stays 'unordered')."""
+    data = get_json_or_400()
+    order = data.get('order') or []
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        for i, item in enumerate(order):
+            tip = (item or {}).get('tip')
+            tid = (item or {}).get('id')
+            if not tid:
+                continue
+            if tip == 'global':
+                cursor.execute('UPDATE global_tasks SET ordine_agenda = ? WHERE id = ?', (i + 1, tid))
+            elif tip == 'proiect':
+                cursor.execute('UPDATE tasks SET ordine_agenda = ? WHERE id = ?', (i + 1, tid))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': str(e)}), 500
+    conn.close()
+    return jsonify({'message': 'ok', 'count': len(order)})

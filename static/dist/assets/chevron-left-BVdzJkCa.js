@@ -1,1 +1,0 @@
-import{c as e,d as t,f as n}from"./SolidIcon-fIq14CZm.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`m15 18-6-6 6-6`}]];e(i,n({name:`chevron-left`},()=>o,{get iconNode(){return s}}))}export{i as t};

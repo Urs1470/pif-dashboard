@@ -8,9 +8,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `131:make_session_permanent`, `141:setup_logging`, `170:check_rate_limit`, `208:before_request_func`, `243:after_request_func`, `283:get_hashed_pin`, `292:_git_commit`, `306:healthz`, `312:health_redirect`, `317:whoami`, `324:login_page`, `331:login`, `343:logout`, `349:login_hash`, `369:_serve_frontend`, `377:index`, `385:spa_catchall`, `390:dist_assets`, `396:favicon`, `401:manifest`, `406:calc_public`, `416:protected_docs`, `428:service_worker`, `433:add_sw_header`, `454:get_deploy_secret`, `462:webhook_deploy`, `547:api_deploy`, `603:page_not_found`, `610:internal_error`
 
-## database.py (1210 linii)
+## database.py (1251 linii)
 
-`10:get_db`, `31:close_db`, `61:get_schema_version`, `74:set_schema_version`, `83:migrate_v1_to_v2`, `155:migrate_v2_to_v3`, `182:migrate_v3_to_v4`, `213:migrate_v4_to_v5`, `248:migrate_v5_to_v6`, `270:migrate_v6_to_v7`, `292:migrate_v7_to_v8`, `332:migrate_v8_to_v9`, `347:migrate_v9_to_v10`, `377:migrate_v10_to_v11`, `399:migrate_v11_to_v12`, `445:migrate_v12_to_v13`, `490:migrate_v13_to_v14`, `529:migrate_v14_to_v15`, `552:migrate_v15_to_v16`, `571:migrate_v16_to_v17`, `584:migrate_v17_to_v18`, `625:migrate_v18_to_v19`, `665:migrate_v19_to_v20`, `682:run_migrations`, `845:seed_fault_codes`, `936:init_db`, `1203:row_to_dict`
+`10:get_db`, `31:close_db`, `64:get_schema_version`, `77:set_schema_version`, `86:migrate_v1_to_v2`, `158:migrate_v2_to_v3`, `185:migrate_v3_to_v4`, `216:migrate_v4_to_v5`, `251:migrate_v5_to_v6`, `273:migrate_v6_to_v7`, `295:migrate_v7_to_v8`, `335:migrate_v8_to_v9`, `350:migrate_v9_to_v10`, `380:migrate_v10_to_v11`, `402:migrate_v11_to_v12`, `448:migrate_v12_to_v13`, `493:migrate_v13_to_v14`, `532:migrate_v14_to_v15`, `555:migrate_v15_to_v16`, `574:migrate_v16_to_v17`, `587:migrate_v17_to_v18`, `628:migrate_v18_to_v19`, `668:migrate_v19_to_v20`, `685:migrate_v20_to_v21`, `712:run_migrations`, `886:seed_fault_codes`, `977:init_db`, `1244:row_to_dict`
 
 ## utils.py (90 linii)
 

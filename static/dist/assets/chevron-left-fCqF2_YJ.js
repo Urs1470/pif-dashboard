@@ -1,0 +1,1 @@
+import{f as e,l as t,p as n}from"./Modal-Cn1hyr6p.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`m15 18-6-6 6-6`}]];t(i,n({name:`chevron-left`},()=>o,{get iconNode(){return s}}))}export{i as t};

@@ -976,16 +976,18 @@ def restore_database():
                 p.get('created_at'), p.get('updated_at')
             ))
 
-        # Restore tasks (v8+ columns: descriere, recurenta, updated_at, ordine)
+        # Restore tasks (v8+ columns: descriere, recurenta, updated_at, ordine; v21: data_planificata, ordine_agenda)
         for t in data.get('tasks', []):
             cursor.execute('''
                 INSERT INTO tasks (id, proiect_id, titlu, descriere, status, prioritate,
-                    data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at,
+                    data_planificata, ordine_agenda)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('descriere'),
                   t.get('status'), t.get('prioritate'), t.get('data_scadenta'),
                   t.get('data_finalizare'), t.get('ordine', 0), t.get('recurenta'),
-                  t.get('created_at'), t.get('updated_at')))
+                  t.get('created_at'), t.get('updated_at'),
+                  t.get('data_planificata'), t.get('ordine_agenda', 0)))
 
         # Restore checklist
         for c in data.get('checklist_pif', []):
@@ -1034,16 +1036,18 @@ def restore_database():
             ''', (a.get('id'), a.get('proiect_id'), a.get('nume_fisier'), a.get('tip_fisier'),
                   a.get('dimensiune'), a.get('data'), a.get('cale_locala')))
 
-        # Restore global_tasks (v9+ column: recurenta)
+        # Restore global_tasks (v9+ column: recurenta; v21: data_planificata, ordine_agenda)
         for gt in data.get('global_tasks', []):
             cursor.execute('''
                 INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
-                    data_scadenta, data_finalizare, recurenta, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    data_scadenta, data_finalizare, recurenta, created_at, updated_at,
+                    data_planificata, ordine_agenda)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
                   gt.get('status'), gt.get('categorie'), gt.get('data_scadenta'),
                   gt.get('data_finalizare'), gt.get('recurenta'),
-                  gt.get('created_at'), gt.get('updated_at')))
+                  gt.get('created_at'), gt.get('updated_at'),
+                  gt.get('data_planificata'), gt.get('ordine_agenda', 0)))
 
         # Restore clienti
         for c in data.get('clienti', []):

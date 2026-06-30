@@ -55,8 +55,11 @@ def close_db(exc=None):
 # v11: Added global_task_sessions table (timer for daily/global tasks)
 # v12: Dropped redundant indexes + orphan tables (audit_log, parametri_std),
 #      added prune_budget_audit trigger (cap 5000 rows/user)
+# v20: Dropped Budget Tracker tables (budget_state, budget_audit)
+# v21: Added data_planificata + ordine_agenda to tasks & global_tasks
+#      (Home "Astazi" daily planner board)
 
-SCHEMA_VERSION = 20
+SCHEMA_VERSION = 21
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -679,6 +682,33 @@ def migrate_v19_to_v20():
     logger.info("Migration v19->v20: dropped Budget Tracker tables (budget_state, budget_audit)")
 
 
+def migrate_v20_to_v21():
+    """v20 -> v21: daily planner ("Astazi" board on Home). Adds a planned-date
+    column (data_planificata) INDEPENDENT of the deadline (data_scadenta), plus a
+    board-only ordering column (ordine_agenda), on both project tasks (tasks) and
+    daily/global tasks (global_tasks). Planning never touches data_scadenta.
+    Idempotent — each ALTER is guarded by PRAGMA table_info."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(tasks)")
+    tcols = {row[1] for row in cursor.fetchall()}
+    if 'data_planificata' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN data_planificata TEXT')
+    if 'ordine_agenda' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN ordine_agenda INTEGER DEFAULT 0')
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    gcols = {row[1] for row in cursor.fetchall()}
+    if 'data_planificata' not in gcols:
+        cursor.execute('ALTER TABLE global_tasks ADD COLUMN data_planificata TEXT')
+    if 'ordine_agenda' not in gcols:
+        cursor.execute('ALTER TABLE global_tasks ADD COLUMN ordine_agenda INTEGER DEFAULT 0')
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_tasks_planificata ON tasks(data_planificata) WHERE data_planificata IS NOT NULL AND data_planificata != ''")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_global_tasks_planificata ON global_tasks(data_planificata) WHERE data_planificata IS NOT NULL AND data_planificata != ''")
+    conn.commit()
+    conn.close()
+    logger.info("Migration v20->v21: added data_planificata + ordine_agenda to tasks & global_tasks")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -778,6 +808,11 @@ def run_migrations():
         set_schema_version(20)
         current_version = 20
 
+    if current_version < 21:
+        migrate_v20_to_v21()
+        set_schema_version(21)
+        current_version = 21
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -794,10 +829,13 @@ def run_migrations():
     has_descriere = 'descriere' in tasks_cols
     has_tasks_recurenta = 'recurenta' in tasks_cols
     has_tasks_updated_at = 'updated_at' in tasks_cols
+    has_task_planificata = 'data_planificata' in tasks_cols and 'ordine_agenda' in tasks_cols
     cursor.execute("PRAGMA table_info(timer_sessions)")
     has_timer_task_id = any(row[1] == 'task_id' for row in cursor.fetchall())
     cursor.execute("PRAGMA table_info(global_tasks)")
-    has_gt_recurenta = any(row[1] == 'recurenta' for row in cursor.fetchall())
+    gt_cols = {row[1] for row in cursor.fetchall()}
+    has_gt_recurenta = 'recurenta' in gt_cols
+    has_gt_planificata = 'data_planificata' in gt_cols and 'ordine_agenda' in gt_cols
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
     has_fault_codes = cursor.fetchone() is not None
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='global_task_sessions'")
@@ -829,6 +867,9 @@ def run_migrations():
     if not has_gts:
         logger.warning("Self-heal: re-running v10->v11 (global_task_sessions missing)")
         migrate_v10_to_v11()
+    if not has_task_planificata or not has_gt_planificata:
+        logger.warning("Self-heal: re-running v20->v21 (data_planificata / ordine_agenda missing)")
+        migrate_v20_to_v21()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
