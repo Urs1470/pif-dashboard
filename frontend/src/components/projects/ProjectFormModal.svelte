@@ -3,6 +3,7 @@
   import Input from '../ui/Input.svelte'
   import Select from '../ui/Select.svelte'
   import Button from '../ui/Button.svelte'
+  import DatePicker from '../ui/DatePicker.svelte'
   import { createProject, updateProject, loadClients } from '../../stores/projects.svelte.js'
   import { toast } from '../../stores/ui.svelte.js'
 
@@ -92,8 +93,8 @@
       <Select label="Producator" bind:value={form.producator} options={PRODUCATORI} />
       <Input label="Cod proiect" bind:value={form.cod_proiect} placeholder="Ex: P-042" />
       <Input label="PM" bind:value={form.pm} placeholder="Project manager" />
-      <Input label="Data incepere" type="date" bind:value={form.data_incepere} />
-      <Input label="Deadline" type="date" bind:value={form.deadline} />
+      <DatePicker label="Data incepere" bind:value={form.data_incepere} />
+      <DatePicker label="Deadline" bind:value={form.deadline} />
       <Input label="Nr. comanda" bind:value={form.nr_comanda} />
       <Input label="Nr. contract" bind:value={form.nr_contract} />
       {#if isEdit}

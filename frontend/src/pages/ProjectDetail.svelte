@@ -22,6 +22,7 @@
   import Skeleton from '../components/ui/Skeleton.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import EquipmentFormModal from '../components/projects/EquipmentFormModal.svelte'
@@ -1006,7 +1007,7 @@
         <div class="jform">
           <textarea rows="3" bind:value={journalText} placeholder="Ce ai lucrat azi?"></textarea>
           <div class="jform-row">
-            <input type="date" bind:value={journalDate} class="jdate-input" title="Data (optional, implicit azi)" />
+            <div class="jdate-wrap"><DatePicker bind:value={journalDate} placeholder="Azi" /></div>
             <Button size="sm" loading={addingJournal} disabled={!journalText.trim()} onclick={addJournal}><Plus size={14} /> Adauga</Button>
           </div>
         </div>
@@ -1222,10 +1223,10 @@
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
   <div class="manual-form">
-    <label class="mf-field">
+    <div class="mf-field">
       <span class="mf-label">Data</span>
-      <input type="date" bind:value={manualDate} class="mf-input" />
-    </label>
+      <DatePicker bind:value={manualDate} />
+    </div>
     <div class="mf-row">
       <label class="mf-field">
         <span class="mf-label">Ore</span>
@@ -1271,10 +1272,10 @@
           <option value="Urgent">Urgent</option>
         </select>
       </label>
-      <label class="mf-field">
+      <div class="mf-field">
         <span class="mf-label">Deadline</span>
-        <input type="date" class="mf-input" bind:value={taskFormDeadline} />
-      </label>
+        <DatePicker bind:value={taskFormDeadline} />
+      </div>
     </div>
     <label class="mf-field">
       <span class="mf-label">Recurenta</span>
@@ -1436,7 +1437,7 @@
   .jform { margin-bottom: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); }
   .jform textarea { width: 100%; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
   .jform-row { display: flex; gap: var(--space-sm); justify-content: flex-end; align-items: center; }
-  .jdate-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); min-height: 38px; }
+  .jdate-wrap { width: 160px; flex-shrink: 0; }
   .jlist { display: flex; flex-direction: column; gap: var(--space-sm); }
   .jentry { padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
   .jentry-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }

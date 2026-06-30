@@ -12,6 +12,7 @@
   import Button from '../components/ui/Button.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
@@ -598,10 +599,10 @@
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
       </label>
-      <label class="mf-field">
+      <div class="mf-field">
         <span class="mf-label">Deadline</span>
-        <input type="date" class="mf-input" bind:value={formDeadline} />
-      </label>
+        <DatePicker bind:value={formDeadline} />
+      </div>
     </div>
     <label class="mf-field">
       <span class="mf-label">Recurenta</span>
@@ -639,10 +640,10 @@
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
       </label>
-      <label class="mf-field">
+      <div class="mf-field">
         <span class="mf-label">Deadline</span>
-        <input type="date" class="mf-input" bind:value={formDeadline} />
-      </label>
+        <DatePicker bind:value={formDeadline} />
+      </div>
     </div>
     <label class="mf-field">
       <span class="mf-label">Recurenta</span>
@@ -662,10 +663,10 @@
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
   <div class="manual-form">
-    <label class="mf-field">
+    <div class="mf-field">
       <span class="mf-label">Data</span>
-      <input type="date" bind:value={manualDate} class="mf-input" />
-    </label>
+      <DatePicker bind:value={manualDate} />
+    </div>
     <div class="mf-row">
       <label class="mf-field">
         <span class="mf-label">Ore</span>
