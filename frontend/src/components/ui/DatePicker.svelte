@@ -6,6 +6,7 @@
     label = '',
     placeholder = 'Selecteaza data',
     disabled = false,
+    onchange = undefined,
   } = $props()
 
   const MONTHS = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -93,14 +94,16 @@
 
   function pick(d) {
     value = toISO(viewY, viewM, d)
+    onchange?.(value)
     close()
   }
   function pickToday() {
     const t = today()
     value = toISO(t.y, t.mo, t.d)
+    onchange?.(value)
     close()
   }
-  function clear() { value = ''; close() }
+  function clear() { value = ''; onchange?.(''); close() }
 
   function isSelected(d) {
     const p = parts(value)

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
   import {
-    CalendarCheck, Plus, GripVertical, ArrowRight, CalendarDays, X,
+    CalendarCheck, Plus, GripVertical, ArrowRight, X,
     ChevronRight, CheckCircle2, Repeat, ArrowUp, ArrowDown, ListPlus
   } from '@lucide/svelte'
   import {
@@ -15,7 +15,6 @@
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
-  import Modal from './ui/Modal.svelte'
   import DatePicker from './ui/DatePicker.svelte'
 
   let quickTitle = $state('')
@@ -24,9 +23,6 @@
 
   let dragIndex = $state(null)
   let overIndex = $state(null)
-  let moveOpen = $state(false)
-  let moveTarget = $state(null)
-  let moveDate = $state('')
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 
@@ -70,22 +66,14 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
-  function openMove(it) {
-    moveTarget = it
-    moveDate = ''
-    moveOpen = true
+  // Reschedule via the shared DatePicker (inline, same calendar as global/project
+  // tasks). Picking a day moves the task; clearing ("Sterge") removes it from today.
+  async function onMoveDate(it, v) {
+    try {
+      if (v) { await moveToDate(it.tip, it.id, v); toast(`Mutat pe ${formatDate(v)}`, 'success') }
+      else { await removeFromToday(it.tip, it.id) }
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
-
-  // Auto-apply once the user picks a day in the custom DatePicker, then close.
-  $effect(() => {
-    if (moveOpen && moveDate) {
-      const v = moveDate, t = moveTarget
-      moveOpen = false; moveDate = ''; moveTarget = null
-      moveToDate(t.tip, t.id, v)
-        .then(() => toast(`Mutat pe ${formatDate(v)}`, 'success'))
-        .catch((err) => toast(`Eroare: ${err.message}`, 'error'))
-    }
-  })
 
   function openItem(it) {
     if (it.tip === 'proiect' && it.proiect_id) navigate(`/projects/${it.proiect_id}`)
@@ -189,7 +177,9 @@
 
           <div class="arow-actions">
             <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
-            <button class="abtn" onclick={() => openMove(it)} title="Mută pe altă zi"><CalendarDays size={15} /></button>
+            <span class="row-date" title="Planifică pe altă zi">
+              <DatePicker value={it.data_planificata} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
+            </span>
             <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate din azi"><X size={15} /></button>
             <button class="abtn" onclick={() => openItem(it)} title="Deschide"><ChevronRight size={15} /></button>
           </div>
@@ -201,13 +191,6 @@
 </section>
 
 <TaskPickerModal bind:open={showPicker} />
-
-<Modal bind:open={moveOpen} title="Mută pe altă zi" size="sm">
-  <div class="move-modal">
-    {#if moveTarget}<p class="move-task">{moveTarget.titlu}</p>{/if}
-    <DatePicker bind:value={moveDate} label="Alege ziua" />
-  </div>
-</Modal>
 
 <style>
   .board { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-lg); }
@@ -268,8 +251,10 @@
   .abtn.danger:hover:not(:disabled) { color: var(--danger); background: var(--danger-subtle); }
   .abtn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  .move-modal { display: flex; flex-direction: column; gap: var(--space-md); }
-  .move-task { font-size: var(--font-small); color: var(--text-secondary); font-weight: 500; }
+  /* Inline reschedule control — the shared DatePicker, compacted to row height. */
+  .row-date { width: 116px; flex-shrink: 0; }
+  .row-date :global(.dp-trigger) { min-height: 30px; padding: 4px 8px; font-size: var(--font-tiny); }
+  .row-date :global(.dp-value) { font-size: var(--font-tiny); }
 
   @media (max-width: 768px) {
     .bh-add-txt { display: none; }
