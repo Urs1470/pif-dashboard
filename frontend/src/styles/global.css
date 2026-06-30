@@ -47,6 +47,33 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+/* ===== Selectare data: aspect unificat peste tot (caseta + iconita calendar) =====
+   Orice <input type="date"> arata identic indiferent de pagina/modal. Folosim
+   !important pe proprietatile de layout pentru ca stilurile scoped Svelte
+   (.mf-input.svelte-xxxx / .jdate-input / .field-input) au specificitate mai mare
+   (doua clase) decat un selector global de element+atribut. Popup-ul nativ urmeaza
+   tema prin `color-scheme` setat global in tokens.css. */
+input[type="date"] {
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  font-size: var(--font-body) !important;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+input[type="date"]:hover::-webkit-calendar-picker-indicator,
+input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
 /* ===== Checkbox custom (stil legacy) ===== */
 input[type="checkbox"].cbx {
   appearance: none;
