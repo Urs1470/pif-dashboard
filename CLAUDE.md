@@ -15,7 +15,7 @@ Single-user Flask app with SQLite, deployed via Gunicorn + Cloudflare Tunnel (HT
 To avoid re-exploring the codebase every session, start here instead of scanning large files:
 
 - `docs/memory/MEMORY.md` — curated memory: DB map, feature status, gotchas, recent decisions
-- `docs/memory/CODE_MAP.md` — auto-generated: every JS section + top-level function with line numbers (app.js is ~8k lines — find the section here, then read only that range)
+- `docs/memory/CODE_MAP.md` — auto-generated: top-level functions per Python module with line numbers (e.g. database.py is ~1200 lines — find the function here, then read only that range)
 - `docs/memory/API_MAP.md` — auto-generated: all Flask routes (method, path, handler, line)
 - `SCHEMA_REFERENCE.md` — full SQL schema; `HERMES.md` — multi-agent rules + design system
 
@@ -141,10 +141,12 @@ No pytest/unittest framework. Run with `python scripts/test_suite.py`.
 
 ## Multi-Agent Collision Rules
 
-From `HERMES.md` — when spawning sub-sessions:
-- **Main session:** templates/index.html, static/app.js, templates/mobile.html, static/mobile.js
-- **Import session:** scripts/parse_params/*
+Shared working tree → shared git index, so coordinate before staging/committing. When spawning sub-sessions:
+- **Main app (SPA):** `frontend/src/` (Svelte components/pages) → built into `static/dist/`
+- **Import session:** `scripts/parse_params/*`
 - Always `git fetch && git pull --rebase` before push. No force push.
+
+> `HERMES.md` and `AGENT_BRIEFING.md` still describe the pre-SPA desktop+mobile multi-file workflow (templates/index.html, static/app.js, mobile.*) removed 2026-06-17 — outdated, pending rewrite/archival.
 
 ## Known Limitations
 
