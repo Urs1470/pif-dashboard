@@ -8,7 +8,7 @@
   import { apiJson } from '../lib/api.js'
   import { formatDuration, formatDate, formatElapsed } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
-  import { requestFocus, focusKey } from '../lib/focus.js'
+  import { focusHref } from '../lib/focus.js'
   import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -27,13 +27,8 @@
   // Click a task anywhere on Home -> jump to it (its page scrolls it to center +
   // flashes a highlight via the focusOnLand action on the destination row).
   function goToTask(t) {
-    if (t.proiect_id) {
-      requestFocus(focusKey('task', t.id))
-      navigate(`/projects/${t.proiect_id}`)
-    } else {
-      requestFocus(focusKey('global', t.id))
-      navigate('/tasks')
-    }
+    if (t.proiect_id) navigate(focusHref(`/projects/${t.proiect_id}`, 'task', t.id))
+    else navigate(focusHref('/tasks', 'global', t.id))
   }
 
   let dashboard = $state(null)

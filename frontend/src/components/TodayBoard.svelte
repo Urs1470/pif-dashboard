@@ -11,7 +11,7 @@
   } from '../stores/agenda.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, priorityColor, priorityLabel, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
-  import { requestFocus, focusKey } from '../lib/focus.js'
+  import { focusHref } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
@@ -81,13 +81,8 @@
   }
 
   function openItem(it) {
-    if (it.tip === 'proiect' && it.proiect_id) {
-      requestFocus(focusKey('task', it.id))
-      navigate(`/projects/${it.proiect_id}`)
-    } else {
-      requestFocus(focusKey('global', it.id))
-      navigate('/tasks')
-    }
+    if (it.tip === 'proiect' && it.proiect_id) navigate(focusHref(`/projects/${it.proiect_id}`, 'task', it.id))
+    else navigate(focusHref('/tasks', 'global', it.id))
   }
 
   // --- Reordering (HTML5 drag on desktop, arrow buttons on mobile) ---

@@ -1,8 +1,24 @@
-export const router = $state({ path: getPath(), params: {} })
+export const router = $state({ path: getPath(), query: getQuery(), params: {} })
+
+function getRaw() {
+  const hash = window.location.hash
+  return hash.startsWith('#') ? hash.slice(1) : ''
+}
 
 function getPath() {
-  const hash = window.location.hash
-  return hash.startsWith('#') ? hash.slice(1) || '/' : '/'
+  const raw = getRaw() || '/'
+  return raw.split('?')[0] || '/'
+}
+
+// Query string carried inside the hash (e.g. #/tasks?focus=global:123). Parsed out
+// so route matching still works on the bare path, and exposed as router.query.
+function getQuery() {
+  const raw = getRaw()
+  const qi = raw.indexOf('?')
+  if (qi === -1) return {}
+  const out = {}
+  new URLSearchParams(raw.slice(qi + 1)).forEach((v, k) => { out[k] = v })
+  return out
 }
 
 function matchRoute(pattern, path) {
@@ -47,6 +63,7 @@ export function resolveRoute(routes) {
 if (typeof window !== 'undefined') {
   window.addEventListener('hashchange', () => {
     router.path = getPath()
+    router.query = getQuery()
     const main = document.getElementById('main-content')
     if (main) { main.scrollTop = 0; main.focus({ preventScroll: true }) }
   })
