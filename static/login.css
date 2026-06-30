@@ -1,3 +1,19 @@
+/* Self-hosted Geist (OFL-1.1, fisierele in static/fonts/) — acelasi font ca SPA-ul. */
+@font-face {
+  font-family: 'Geist';
+  src: url('/static/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/static/fonts/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Accent — Geist blue (identitate PIF) */
   --accent: #0070f3;
@@ -22,8 +38,8 @@
   --danger: #ff4d4f;
   --danger-subtle: rgba(255, 77, 79, 0.13);
 
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
 
   --space-xs: 4px;
   --space-sm: 8px;

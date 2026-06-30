@@ -1,6 +1,23 @@
 @import './reset.css';
 @import './tokens.css';
 
+/* Self-hosted Geist (OFL-1.1, fisierele in static/fonts/) — fara dependenta CDN,
+   merge offline (PWA). Variabil: un singur fisier acopera weights 100-900. */
+@font-face {
+  font-family: 'Geist';
+  src: url('/static/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/static/fonts/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: var(--font-body);

@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v43';
+const VERSION = 'v44';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -19,12 +19,9 @@ const APP_SHELL = [
   '/'
 ];
 
-// Cross-origin CDN hosts whose assets we cache-first at runtime (fonts + KaTeX),
-// so the mobile PWA renders correctly offline instead of falling back to system
-// fonts and breaking math rendering.
+// Cross-origin CDN hosts whose assets we cache-first at runtime. Fonts are now
+// self-hosted (static/fonts/), so only the jsDelivr fallback (KaTeX) remains.
 const CDN_HOSTS = [
-  'fonts.googleapis.com',
-  'fonts.gstatic.com',
   'cdn.jsdelivr.net'
 ];
 

@@ -65,8 +65,8 @@
   --radius-full: 9999px;
 
   /* Typography — scala legacy */
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
   --font-h1: 1.75rem;
   --font-h2: 1.35rem;
   --font-h3: 1.15rem;
