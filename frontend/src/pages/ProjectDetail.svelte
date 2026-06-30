@@ -168,6 +168,13 @@
     }
   }
 
+  async function setTaskDeadline(task, val) {
+    const next = val || ''
+    tasks = tasks.map(t => t.id === task.id ? { ...t, data_scadenta: next } : t)
+    await updateTask(task.id, { data_scadenta: next })
+    await reloadTasks()
+  }
+
   async function handleProjectTimer() {
     if (projectTimerActive) {
       showStopNote = true
@@ -877,8 +884,8 @@
                         {/if}
                         {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
                         {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
-                        {#if t.deadline}
-                          <span class="tdeadline" class:overdue={isOverdue(t.deadline)} class:today={isToday(t.deadline)} class:soon={isSoon(t.deadline)}>{formatDate(t.deadline)}</span>
+                        {#if t.data_scadenta}
+                          <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>
                         {/if}
                       </div>
                     </button>
@@ -892,6 +899,14 @@
                 </div>
                 {#if expandedTask === t.id}
                   <div class="subtask-body" transition:slide={{ duration: 150 }}>
+                    <div class="tdl-row">
+                      <span class="tdl-label">Termen:</span>
+                      <input type="date" class="tdl-input" value={(t.data_scadenta || '').slice(0, 10)}
+                        onchange={(e) => setTaskDeadline(t, e.target.value)} />
+                      {#if t.data_scadenta}
+                        <button class="tdl-clear" title="Sterge termenul" onclick={() => setTaskDeadline(t, '')}>Sterge</button>
+                      {/if}
+                    </div>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
@@ -1320,6 +1335,11 @@
   .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
+  .tdl-row { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+  .tdl-label { font-size: var(--font-tiny); color: var(--text-secondary); font-weight: 600; }
+  .tdl-input { padding: 5px 9px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .tdl-clear { font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 3px 8px; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
+  .tdl-clear:hover { color: var(--danger); background: var(--danger-subtle, var(--bg-hover)); }
   .tdeadline { font-size: 10px; }
   .tdeadline.overdue { color: var(--danger); font-weight: 600; }
   .tdeadline.today { color: var(--accent); font-weight: 600; }
