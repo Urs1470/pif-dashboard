@@ -251,10 +251,19 @@
   .abtn.danger:hover:not(:disabled) { color: var(--danger); background: var(--danger-subtle); }
   .abtn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* Inline reschedule control — the shared DatePicker, compacted to row height. */
-  .row-date { width: 116px; flex-shrink: 0; }
-  .row-date :global(.dp-trigger) { min-height: 30px; padding: 4px 8px; font-size: var(--font-tiny); }
-  .row-date :global(.dp-value) { font-size: var(--font-tiny); }
+  /* Inline reschedule = a calendar ICON button (the date is implicit on the
+     "today" board), styled like the other row actions; opens the shared DatePicker.
+     The date text is hidden so rows stay compact. */
+  .row-date { width: 30px; flex-shrink: 0; }
+  .row-date :global(.dp-trigger) {
+    width: 30px; min-height: 30px; padding: 0;
+    justify-content: center;
+    background: transparent; border: none; box-shadow: none;
+    color: var(--text-faint);
+  }
+  .row-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
+  .row-date :global(.dp-trigger svg) { color: inherit; }
+  .row-date :global(.dp-value) { display: none; }
 
   @media (max-width: 768px) {
     .bh-add-txt { display: none; }
