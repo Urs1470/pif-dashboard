@@ -330,7 +330,6 @@
   .status-pill:hover { opacity: .7; transform: scale(1.05); }
 
   .row-skeleton { display: flex; flex-direction: column; gap: 6px; padding: var(--space-sm) var(--space-md); }
-  .error-text { color: var(--danger); padding: var(--space-md); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

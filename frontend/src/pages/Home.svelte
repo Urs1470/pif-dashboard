@@ -308,7 +308,6 @@
   .row-content { flex: 1; min-width: 0; }
   .row-title { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row-meta { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .error-msg { color: var(--danger); padding: var(--space-md); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

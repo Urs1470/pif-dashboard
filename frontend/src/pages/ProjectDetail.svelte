@@ -920,54 +920,72 @@
                   </div>
                 </div>
                 {#if expandedTask === t.id}
+                  {@const subs = subtasksCache[t.id] || []}
+                  {@const atts = attCache[t.id] || []}
+                  {@const doneCount = subs.filter(s => s.done).length}
                   <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
                         <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
                       </div>
-                    {:else}
-                      <button class="note-add" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={12} /> Adauga notite...</button>
                     {/if}
-                    <div class="att-row">
-                      {#each (attCache[t.id] || []) as a (a.id)}
-                        <span class="att-chip">
-                          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
-                            <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
-                          </button>
-                          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
-                        </span>
-                      {/each}
-                      <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
+
+                    {#if atts.length}
+                      <div class="att-row">
+                        {#each atts as a (a.id)}
+                          <span class="att-chip">
+                            <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
+                              <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
+                            </button>
+                            <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
+                          </span>
+                        {/each}
+                      </div>
+                    {/if}
+
+                    <div class="detail-actions">
+                      {#if !t.descriere}
+                        <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
+                      {/if}
+                      <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se incarca…' : 'Fisier'}</button>
                     </div>
-                    {#if subtaskLoading && !subtasksCache[t.id]}
-                      <div class="sub-loading">Se incarca...</div>
-                    {:else}
-                      {#each (subtasksCache[t.id] || []) as sub (sub.id)}
-                        <div class="sub-row" class:sub-done={sub.done}>
-                          <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
-                          <span class="sub-title">{sub.titlu}</span>
-                          {#if sub.timp_secunde}<button class="sub-time" onclick={() => toggleSubSessions(sub.id)} title="Vezi sesiuni">{formatDuration(sub.timp_secunde)}</button>{/if}
-                          <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><SolidIcon name="clock" size={12} /></button>
-                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
-                        </div>
-                        {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
-                          <div class="sub-sess" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-                            {#each subSessionsCache[sub.id].sessions as s (s.id)}
-                              <div class="sess mini">
-                                <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
-                                <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                                <button class="sess-del" title="Sterge" onclick={() => handleDeleteSubSession(sub.id, s.id)}><SolidIcon name="trash" size={10} /></button>
-                              </div>
-                            {/each}
+
+                    <div class="sub-section">
+                      <div class="sub-head">
+                        <span class="sub-cap">Subtaskuri</span>
+                        {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
+                      </div>
+                      {#if subtaskLoading && !subtasksCache[t.id]}
+                        <div class="sub-loading">Se incarca...</div>
+                      {:else}
+                        {#each subs as sub (sub.id)}
+                          <div class="sub-row" class:sub-done={sub.done}>
+                            <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
+                            <span class="sub-title">{sub.titlu}</span>
+                            {#if sub.timp_secunde}<button class="sub-time" onclick={() => toggleSubSessions(sub.id)} title="Vezi sesiuni">{formatDuration(sub.timp_secunde)}</button>{/if}
+                            <button class="sub-timer" class:active={timer.active?.kind === 'subtask' && timer.active?.subtask_id === sub.id} onclick={() => handleSubtaskTimer(sub)} title="Timer subtask"><SolidIcon name="clock" size={12} /></button>
+                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
                           </div>
-                        {/if}
-                      {/each}
-                      <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
-                        <input type="text" placeholder="Adauga subtask..." bind:value={newSubtaskTitle} />
-                        <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
-                      </form>
-                    {/if}
+                          {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
+                            <div class="sub-sess" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+                              {#each subSessionsCache[sub.id].sessions as s (s.id)}
+                                <div class="sess mini">
+                                  <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+                                  <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+                                  <button class="sess-del" title="Sterge" onclick={() => handleDeleteSubSession(sub.id, s.id)}><SolidIcon name="trash" size={10} /></button>
+                                </div>
+                              {/each}
+                            </div>
+                          {/if}
+                        {/each}
+                        <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
+                          <input type="text" placeholder="Adauga subtask..." bind:value={newSubtaskTitle} />
+                          <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
+                        </form>
+                      {/if}
+                    </div>
+
                     {#if taskSessionsCache[t.id]?.sessions?.length > 0}
                       <div class="tsess-section">
                         <span class="tsess-label">Sesiuni ({taskSessionsCache[t.id].sessions.length}) — {formatDuration(taskSessionsCache[t.id].total_secunde)}</span>
@@ -1363,7 +1381,6 @@
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
-  .error-text { color: var(--danger); }
 
   /* Task list */
   .task-list { display: flex; flex-direction: column; }
@@ -1411,13 +1428,21 @@
   .done-sep:hover { color: var(--text-secondary); }
 
   /* Subtask expanded area */
-  .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
-  .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
-  .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
-  .note-block { margin-bottom: var(--space-sm); }
-  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
+  /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
+  .subtask-body { margin-left: 26px; margin-bottom: var(--space-sm); padding: var(--space-12); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 2px solid var(--accent-subtle); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: var(--space-12); }
+  .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .detail-chip:hover:not(:disabled) { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
+  .detail-chip:active:not(:disabled) { transform: scale(0.97); }
+  .detail-chip:disabled { opacity: 0.5; cursor: default; }
+  .note-block { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
-  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+  .sub-section { display: flex; flex-direction: column; gap: 2px; }
+  .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+  .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
   .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
   .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
   .att-open:hover { color: var(--accent); background: var(--bg-hover); }
@@ -1498,7 +1523,7 @@
   .sess:hover .sess-del { opacity: 1; }
   .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
-  .tsess-section { margin-top: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-sm); }
+  .tsess-section { border-top: 1px solid var(--border); padding-top: var(--space-sm); }
   .tsess-label { font-size: var(--font-tiny); color: var(--text-dim); }
   .sub-sess { margin-left: 1.5rem; margin-bottom: var(--space-xs); }
   .sess.mini { font-size: 0.68rem; }
