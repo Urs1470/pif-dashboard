@@ -11,6 +11,7 @@
     {type}
     {placeholder}
     {disabled}
+    aria-invalid={error ? 'true' : undefined}
     bind:value
     {...rest}
   />
@@ -27,25 +28,28 @@
   }
   .field-label {
     font-size: var(--font-tiny);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wide);
   }
   .field-input {
     padding: 10px 12px;
     min-height: 46px;
-    background: var(--bg-elevated);
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text);
     font-size: var(--font-body);
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
+  .field-input:hover:not(:disabled):not(:focus) {
+    border-color: var(--text-dim);
+  }
   .field-input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-subtle);
+    box-shadow: var(--focus-ring);
   }
   .field-input:disabled {
     opacity: 0.5;
@@ -56,6 +60,9 @@
   }
   .has-error .field-input {
     border-color: var(--danger);
+  }
+  .has-error .field-input:focus {
+    box-shadow: 0 0 0 3px var(--danger-subtle);
   }
   .field-error {
     font-size: var(--font-tiny);

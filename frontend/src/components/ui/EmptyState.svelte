@@ -23,12 +23,12 @@
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-2xl) var(--space-lg);
-    color: var(--text-dim);
+    color: var(--text-faint);
     text-align: center;
   }
   h3 {
-    font-size: var(--font-base);
-    font-weight: 600;
+    font-size: var(--font-h3);
+    font-weight: var(--fw-semibold);
     color: var(--text-secondary);
   }
   p {

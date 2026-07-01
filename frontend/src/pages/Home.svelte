@@ -13,6 +13,7 @@
   import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import ErrorState from '../components/ui/ErrorState.svelte'
   import TodayBoard from '../components/TodayBoard.svelte'
   import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
 
@@ -98,10 +99,9 @@
     })
   }
 
-  onMount(async () => {
-    try {
-      recents = JSON.parse(localStorage.getItem('recent_projects') || '[]').slice(0, 5)
-    } catch (_) {}
+  async function loadDashboard() {
+    loading = true
+    error = null
     try {
       dashboard = await apiJson('/api/dashboard/home')
     } catch (e) {
@@ -109,6 +109,13 @@
     } finally {
       loading = false
     }
+  }
+
+  onMount(async () => {
+    try {
+      recents = JSON.parse(localStorage.getItem('recent_projects') || '[]').slice(0, 5)
+    } catch (_) {}
+    await loadDashboard()
     loadActiveTimer()
   })
 </script>
@@ -137,7 +144,7 @@
   {#if loading}
     <div class="kpi-skeleton"><Skeleton height="72px" /></div>
   {:else if error}
-    <Card><p class="error-msg">Eroare: {error}</p></Card>
+    <ErrorState message={error} onretry={loadDashboard} />
   {:else if dashboard}
     {@const s = dashboard.stats || {}}
     {@const spark = s.weekly_spark || []}
@@ -247,7 +254,7 @@
 
   .kpi-skeleton { margin-bottom: var(--space-lg); }
   .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
-  .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--card-pad); cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .kpi:hover { transform: translateY(-2px); border-color: var(--border); }
   .kpi-head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
   .kpi-chip { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -256,7 +263,7 @@
   .kpi-chip.success { background: var(--success-subtle); color: var(--success); }
   .kpi-chip.neutral { background: var(--bg-elevated); color: var(--text-secondary); }
   .kpi-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
-  .kpi-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .kpi-val { font-family: var(--font-mono); font-size: var(--font-display); font-weight: var(--fw-bold); color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
   .kpi-val.accent { color: var(--accent); }
   .kpi-val.warn { color: var(--warning); }
   .kpi-val.success { color: var(--success); }

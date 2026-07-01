@@ -8,6 +8,7 @@
   --accent-subtle: rgba(0, 112, 243, 0.14);
   --accent-ring: rgba(0, 112, 243, 0.30);
   --accent-text: #ffffff;
+  --accent-on-subtle: #3291ff;  /* text pe fundal accent-subtle (clears AA, #0070f3 nu) */
 
   /* Service (amber) + violet secundar */
   --service-accent: #f5a623;
@@ -15,18 +16,25 @@
   --purple: #8e6fff;
   --purple-subtle: rgba(142, 111, 255, 0.14);
 
-  /* Backgrounds — Geist dark (negru pur + gri monocrom) */
-  --bg: #000000;
+  /* Backgrounds — Geist dark (near-black + gri monocrom).
+     --bg e #050505 (nu #000): pe OLED negrul pur face smear la scroll si
+     aplatizeaza scara de elevatie. Scara de suprafete:
+     bg(pagina) < bg-surface(card) < bg-panel(panou in card) < bg-input(control)
+     < bg-overlay(modal/toast/popover). */
+  --bg: #050505;
   --bg-surface: #0a0a0a;
-  --bg-elevated: #161616;
+  --bg-panel: #141414;      /* panou nested intr-un card (un pas peste surface) */
+  --bg-input: #161616;      /* fill pentru inputuri/chips/th */
+  --bg-elevated: #161616;   /* alias legacy = bg-input (nu-l muta) */
+  --bg-overlay: #1c1c1c;    /* suprafata flotanta: modal/toast/palette/popover */
   --bg-hover: #1f1f1f;
   --bg-active: #2a2a2a;
 
-  /* Text */
+  /* Text (contrast AA-safe pe suprafetele dark) */
   --text: #ededed;
   --text-secondary: #a1a1a1;
-  --text-dim: #787878;
-  --text-faint: #545454;
+  --text-dim: #8f8f8f;      /* clears body-AA pe surface/elevated/hover */
+  --text-faint: #7a7a7a;    /* clears 3:1 UI + ~body-AA */
 
   /* Borders */
   --border: #2e2e2e;
@@ -48,13 +56,21 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glow-accent: 0 4px 14px rgba(0, 112, 243, 0.30);
 
-  /* Spacing */
+  /* Spacing (t-shirt + valori-punte 12/20/40 care lipseau) */
+  --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
+  --space-12: 12px;   /* punte sm↔md — cea mai reinventata valoare */
   --space-md: 16px;
+  --space-20: 20px;   /* punte md↔lg */
   --space-lg: 24px;
   --space-xl: 32px;
+  --space-40: 40px;   /* punte xl↔2xl */
   --space-2xl: 48px;
+
+  /* Padding-uri semantice derivate */
+  --card-pad: 16px;
+  --card-pad-compact: 12px;
 
   /* Radius — scala legacy */
   --radius-xs: 6px;
@@ -67,12 +83,38 @@
   /* Typography — scala legacy */
   --font-sans: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 1.875rem;  /* cifre KPI/stat (30px) */
   --font-h1: 1.75rem;
   --font-h2: 1.35rem;
   --font-h3: 1.15rem;
   --font-body: 0.9rem;
   --font-small: 0.8rem;
   --font-tiny: 0.7rem;
+  --font-micro: 0.65rem;     /* podeaua etichetelor uppercase (badge/th/kpi-label) */
+
+  /* Font-weight (Geist/Plus Jakarta sunt variabile) */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Line-height */
+  --lh-tight: 1.15;   /* display/headings */
+  --lh-snug: 1.3;
+  --lh-normal: 1.55;  /* body/rich-content */
+  --lh-relaxed: 1.7;
+
+  /* Letter-spacing (tracking) */
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;    /* default pentru uppercase labels */
+  --tracking-wider: 0.08em;   /* doar table th foarte mici */
+
+  /* Focus ring (reutilizat de inputuri + regula globala focus-visible) */
+  --focus-ring: 0 0 0 3px var(--accent-subtle);
+
+  /* Tinta minima de atingere (touch) */
+  --tap-min: 44px;
 
   /* Z-index */
   --z-dropdown: 100;
@@ -110,6 +152,7 @@
   --accent-subtle: rgba(0, 112, 243, 0.10);
   --accent-ring: rgba(0, 112, 243, 0.25);
   --accent-text: #ffffff;
+  --accent-on-subtle: #0761d1;
 
   --service-accent: #d97706;
   --service-subtle: rgba(217, 119, 6, 0.12);
@@ -118,21 +161,24 @@
 
   --bg: #ffffff;
   --bg-surface: #fafafa;
+  --bg-panel: #f4f4f4;
+  --bg-input: #f4f4f4;
   --bg-elevated: #f4f4f4;
+  --bg-overlay: #ffffff;
   --bg-hover: #efefef;
   --bg-active: #e8e8e8;
 
   --text: #171717;
-  --text-secondary: #666666;
-  --text-dim: #888888;
-  --text-faint: #a1a1a1;
+  --text-secondary: #5f5f5f;
+  --text-dim: #6f6f6f;      /* ~4.7:1 pe #fafafa — clears body-AA */
+  --text-faint: #8a8a8a;    /* ~3.3:1 — UI/large only, mereu cel mai palid */
 
   --border: #eaeaea;
   --border-subtle: #f0f0f0;
 
-  --success: #45a557;
+  --success: #3d9450;
   --success-subtle: rgba(69, 165, 87, 0.12);
-  --warning: #d97706;
+  --warning: #b45309;       /* ~4.6:1 pe alb (era #d97706 = 3.2:1, pica AA) */
   --warning-subtle: rgba(217, 119, 6, 0.12);
   --danger: #e00000;
   --danger-subtle: rgba(224, 0, 0, 0.10);

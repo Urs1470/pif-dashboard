@@ -7,14 +7,16 @@
 
 <button
   class="btn btn-{variant} btn-{size}"
+  class:is-loading={loading}
   disabled={disabled || loading}
+  aria-busy={loading}
   {onclick}
   {...rest}
 >
   {#if loading}
     <span class="spinner" transition:scale={{ start: 0.5, duration: motionDuration(DUR_FAST) }}></span>
   {/if}
-  {@render children()}
+  <span class="btn-label">{@render children()}</span>
 </button>
 
 <style>
@@ -23,9 +25,9 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-xs);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     border-radius: var(--radius-md);
-    transition: all var(--dur-fast) var(--ease);
+    transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
     white-space: nowrap;
     cursor: pointer;
     position: relative;
@@ -34,6 +36,22 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+  /* Loading: pastreaza latimea (label ascuns dar prezent), spinner centrat — zero salt */
+  .btn-label { display: inline-flex; align-items: center; gap: var(--space-xs); }
+  .is-loading .btn-label { visibility: hidden; }
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .btn-sm { padding: 6px 14px; font-size: var(--font-small); min-height: 38px; }
   .btn-md { padding: 10px 20px; font-size: var(--font-body); min-height: 46px; }
@@ -48,6 +66,11 @@
     transform: translateY(-1px);
     box-shadow: var(--shadow-glow-accent);
   }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+    box-shadow: none;
+    transition-duration: 0.05s;
+  }
 
   .btn-secondary {
     background: var(--bg-elevated);
@@ -58,6 +81,11 @@
     background: var(--bg-hover);
     border-color: var(--text-dim);
   }
+  .btn-secondary:active:not(:disabled) {
+    background: var(--bg-active);
+    transform: scale(0.98);
+    transition-duration: 0.05s;
+  }
 
   .btn-ghost {
     background: transparent;
@@ -67,6 +95,11 @@
     background: var(--bg-hover);
     color: var(--text);
   }
+  .btn-ghost:active:not(:disabled) {
+    background: var(--bg-active);
+    transform: scale(0.98);
+    transition-duration: 0.05s;
+  }
 
   .btn-danger {
     background: var(--danger);
@@ -75,14 +108,8 @@
   .btn-danger:hover:not(:disabled) {
     opacity: 0.85;
   }
-
-  .spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+  .btn-danger:active:not(:disabled) {
+    transform: scale(0.98);
+    transition-duration: 0.05s;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
 </style>

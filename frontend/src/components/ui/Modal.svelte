@@ -71,7 +71,7 @@
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
   }
   .modal {
-    background: var(--bg-surface);
+    background: var(--bg-overlay);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     width: 100%;

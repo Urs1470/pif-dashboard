@@ -66,14 +66,17 @@
     gap: 2px;
     padding: var(--space-xs);
     color: var(--text-dim);
-    font-size: 0.65rem;
-    font-weight: 500;
-    transition: color var(--dur-fast) var(--ease);
+    font-size: var(--font-micro);
+    font-weight: var(--fw-medium);
+    transition: color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
     min-width: 56px;
-    min-height: 48px;
+    min-height: var(--tap-min);
     -webkit-tap-highlight-color: transparent;
   }
   .bottom-tab.active {
     color: var(--accent);
+  }
+  .bottom-tab.active :global(svg) {
+    transform: scale(1.08);
   }
 </style>

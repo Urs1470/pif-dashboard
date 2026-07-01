@@ -23,6 +23,7 @@
   import Card from '../components/ui/Card.svelte'
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -781,7 +782,7 @@
   {#if loading}
     <Skeleton width="60%" height="24px" />
   {:else if error}
-    <Card><p class="error-text">Eroare: {error}</p></Card>
+    <ErrorState message={error} onretry={load} />
   {:else if project}
     <div class="project-header">
       <div class="header-top">
@@ -1330,7 +1331,7 @@
   .meta { font-size: var(--font-small); color: var(--text-dim); margin-top: 4px; display: flex; gap: var(--space-xs); }
   .pstats { display: flex; gap: var(--space-lg); margin-top: var(--space-md); padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
   .ps { text-align: center; }
-  .ps-val { display: block; font-size: var(--font-h2); font-weight: 600; color: var(--text); font-feature-settings: "tnum"; }
+  .ps-val { display: block; font-size: var(--font-h2); font-weight: var(--fw-semibold); color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .ps-lbl { font-size: var(--font-tiny); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 
   /* Field sections under header (observatii, service) */
@@ -1369,7 +1370,7 @@
   .trow-wrap { display: flex; flex-direction: column; }
   .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   .done-list { display: flex; flex-direction: column; }
-  .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
+  .trow:hover { background: var(--bg-hover); transform: translateX(2px); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }

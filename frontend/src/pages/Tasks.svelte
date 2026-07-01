@@ -735,16 +735,17 @@
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
   .filter-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
-  .chip:hover { background: var(--bg-hover); }
-  .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
+  .chip:hover { background: var(--bg-hover); color: var(--text); }
+  .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .chip:active { transform: scale(0.97); }
   .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .status-badge:hover { opacity: .7; }
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
   .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
-  .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
+  .trow:hover { background: var(--bg-hover); transform: translateX(2px); }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
@@ -845,6 +846,8 @@
        so a long title no longer squeezes into a tall narrow column. */
     .trow { flex-wrap: wrap; align-items: flex-start; row-gap: 6px; padding: var(--space-sm); }
     .check { padding-top: 1px; }
-    .task-actions { flex-basis: 100%; justify-content: flex-end; }
+    .task-actions { flex-basis: 100%; justify-content: flex-end; gap: var(--space-xs); }
+    /* Tinte de atingere >=44px pe actiunile de rand */
+    .task-actions button, .check { min-width: var(--tap-min); min-height: var(--tap-min); }
   }
 </style>

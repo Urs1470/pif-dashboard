@@ -1,12 +1,12 @@
 <script>
-  let { label = '', value = $bindable(''), options = [], placeholder = '', disabled = false, ...rest } = $props()
+  let { label = '', value = $bindable(''), options = [], placeholder = '', error = '', disabled = false, ...rest } = $props()
 </script>
 
-<label class="field">
+<label class="field" class:has-error={error}>
   {#if label}
     <span class="field-label">{label}</span>
   {/if}
-  <select class="field-select" bind:value {disabled} {...rest}>
+  <select class="field-select" bind:value {disabled} aria-invalid={error ? 'true' : undefined} {...rest}>
     {#if placeholder}
       <option value="">{placeholder}</option>
     {/if}
@@ -24,16 +24,16 @@
   }
   .field-label {
     font-size: var(--font-tiny);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wide);
   }
   .field-select {
     padding: 10px 12px;
     padding-right: 32px;
     min-height: 46px;
-    background: var(--bg-elevated);
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text);
@@ -45,13 +45,22 @@
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
     cursor: pointer;
   }
+  .field-select:hover:not(:disabled):not(:focus) {
+    border-color: var(--text-dim);
+  }
   .field-select:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-subtle);
+    box-shadow: var(--focus-ring);
   }
   .field-select:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+  .has-error .field-select {
+    border-color: var(--danger);
+  }
+  .has-error .field-select:focus {
+    box-shadow: 0 0 0 3px var(--danger-subtle);
   }
 </style>

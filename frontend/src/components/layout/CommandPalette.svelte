@@ -273,7 +273,7 @@
   }
 
   .palette {
-    background: var(--bg-surface);
+    background: var(--bg-overlay);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     width: 100%;

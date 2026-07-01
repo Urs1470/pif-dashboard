@@ -125,13 +125,28 @@ default și `[data-theme="light"]`), ambele definite în tokens — dacă atingi
 păstrează ambele.
 
 **Paletă (dark, valori actuale):**
-- Accent (identitate PIF): `--accent #0070f3`, hover `#3291ff`, `--accent-subtle`, `--accent-ring`
+- Accent (identitate PIF): `--accent #0070f3`, hover `#3291ff`, `--accent-subtle`, `--accent-ring`;
+  text pe fundal subtle → `--accent-on-subtle #3291ff` (nu `--accent`, pică AA)
 - Service: `--service-accent #f5a623`; secundar `--purple #8e6fff`
-- Backgrounds (negru → gri monocrom): `--bg #000000`, `--bg-surface #0a0a0a`,
-  `--bg-elevated #161616`, `--bg-hover #1f1f1f`, `--bg-active #2a2a2a`
-- Text: `--text #ededed`, `--text-secondary #a1a1a1`, `--text-dim`, `--text-faint`
+- **Scară de suprafețe (elevație)** — folosește token-ul potrivit rolului, nu unul la întâmplare:
+  `--bg #050505` (pagină, near-black anti-OLED-smear) < `--bg-surface #0a0a0a` (card) <
+  `--bg-panel #141414` (panou nested în card) < `--bg-input #161616` (input/chip/th) <
+  `--bg-overlay #1c1c1c` (modal/toast/palette/popover). `--bg-hover #1f1f1f`, `--bg-active #2a2a2a`.
+  (`--bg-elevated` = alias legacy pe `--bg-input`.)
+- Text (contrast AA-safe): `--text #ededed`, `--text-secondary #a1a1a1`, `--text-dim #8f8f8f`,
+  `--text-faint #7a7a7a`
 - Borders: `--border #2e2e2e`, `--border-subtle #1f1f1f`
 - Semantic: `--success #45a557`, `--warning #f5a623`, `--danger #ff4d4f`, `--info #0070f3`
+- Elevation → shadow: card `--shadow-sm`, popover `--shadow-md`, modal/toast `--shadow-lg`.
+
+**Scale noi (folosește token, nu valori hardcodate):**
+- Font-weight: `--fw-normal/medium/semibold/bold` (400/500/600/700).
+- Line-height: `--lh-tight 1.15` (display/headings), `--lh-normal 1.55` (body).
+- Tracking: `--tracking-wide 0.04em` (default uppercase), `--tracking-wider 0.08em` (th mici).
+- Font-size: în plus față de h1..tiny — `--font-display 1.875rem` (cifre KPI/stat), `--font-micro 0.65rem` (label-uri uppercase).
+- Spacing: pe lângă t-shirt, punțile `--space-12/20/40`. Card padding: `--card-pad` / `--card-pad-compact`.
+- Focus: `--focus-ring` (reutilizat de inputuri + regula globală `:focus-visible` din global.css). Touch: `--tap-min 44px`.
+- Tabele: `.data-table th` sunt sticky; coloane numerice → clasă `.num` (dreapta + tabular). Pe mobil `.data-table.reflow` devine carduri (label via `data-label`). Densitate mare → `.data-table.zebra`.
 
 **Tipografie:** `--font-sans` = **Plus Jakarta Sans** (body), `--font-mono` = **JetBrains Mono**
 pentru ORICE cifră / cod / valoare numerică / parametru. (Notă: migrarea la fontul *Geist Sans*

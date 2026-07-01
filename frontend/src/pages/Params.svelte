@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST } from '../lib/motion.svelte.js'
-  import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft, BookOpen, ExternalLink } from '@lucide/svelte'
+  import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft, BookOpen, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -123,6 +123,11 @@
     else { faultCodes.filters.page = Math.max(1, Math.min(faultCodes.totalPages, faultCodes.filters.page + delta)); loadFaultCodes() }
   }
 
+  function goToPage(n) {
+    if (activeTab === 'params') { params.filters.page = Math.max(1, Math.min(params.totalPages, n)); loadParams() }
+    else { faultCodes.filters.page = Math.max(1, Math.min(faultCodes.totalPages, n)); loadFaultCodes() }
+  }
+
   function switchTab(t) {
     activeTab = t
     searchInput = ''
@@ -163,6 +168,9 @@
   const curPage = $derived(activeTab === 'params' ? params.filters.page : faultCodes.filters.page)
   const curTotalPages = $derived(activeTab === 'params' ? params.totalPages : faultCodes.totalPages)
   const curTotal = $derived(activeTab === 'params' ? params.total : faultCodes.total)
+  const curLimit = $derived(activeTab === 'params' ? params.filters.limit : faultCodes.filters.limit)
+  const rangeStart = $derived(curTotal === 0 ? 0 : (curPage - 1) * curLimit + 1)
+  const rangeEnd = $derived(Math.min(curPage * curLimit, curTotal))
   const famCount = $derived((fam) => params.families.find(f => f.familie === fam)?.count || 0)
 </script>
 
@@ -228,41 +236,41 @@
     {:else if curItems.length === 0}
       <EmptyState icon={Cpu} title="Niciun rezultat" description="Incearca alta familie sau alt termen." />
     {:else if activeTab === 'params'}
-      <div class="data-table-wrap">
-        <table class="data-table">
+      <div class="data-table-wrap sticky-scroll">
+        <table class="data-table reflow zebra">
           <thead><tr>
-            <th>Param</th><th>Descriere</th><th>Acces</th><th>Tip</th><th>Default</th><th>Min</th><th>Max</th><th>Unitate</th>
+            <th>Param</th><th>Descriere</th><th>Acces</th><th>Tip</th><th class="num">Default</th><th class="num">Min</th><th class="num">Max</th><th>Unitate</th>
           </tr></thead>
           <tbody>
             {#each curItems as item (item.id)}
               <tr class="clickable-row" onclick={() => openDetail(item)}>
-                <td class="mono accent">{item.parametru || '—'}</td>
-                <td class="desc-cell">{item.descriere_scurta || item.descriere || '—'}</td>
-                <td class="dim">{item.acces || '—'}</td>
-                <td class="dim">{item.tip_date || '—'}</td>
-                <td class="mono">{item.valoare_default_str ?? item.valoare_default ?? '—'}</td>
-                <td class="mono dim">{item.min ?? '—'}</td>
-                <td class="mono dim">{item.max ?? '—'}</td>
-                <td class="dim">{item.unitate || '—'}</td>
+                <td class="mono accent" data-label="Param">{item.parametru || '—'}</td>
+                <td class="desc-cell" data-label="Descriere">{item.descriere_scurta || item.descriere || '—'}</td>
+                <td class="dim" data-label="Acces">{item.acces || '—'}</td>
+                <td class="dim" data-label="Tip">{item.tip_date || '—'}</td>
+                <td class="mono num" data-label="Default">{item.valoare_default_str ?? item.valoare_default ?? '—'}</td>
+                <td class="mono num dim" data-label="Min">{item.min ?? '—'}</td>
+                <td class="mono num dim" data-label="Max">{item.max ?? '—'}</td>
+                <td class="dim" data-label="Unitate">{item.unitate || '—'}</td>
               </tr>
             {/each}
           </tbody>
         </table>
       </div>
     {:else}
-      <div class="data-table-wrap">
-        <table class="data-table">
+      <div class="data-table-wrap sticky-scroll">
+        <table class="data-table reflow zebra">
           <thead><tr>
-            <th>Cod</th><th>Cod secundar</th><th>Tip</th><th>Nume</th><th>Pagina</th>
+            <th>Cod</th><th>Cod secundar</th><th>Tip</th><th>Nume</th><th class="num">Pagina</th>
           </tr></thead>
           <tbody>
             {#each curItems as item (item.id)}
               <tr class="clickable-row" onclick={() => openDetail(item)}>
-                <td class="mono accent">{item.cod || '—'}</td>
-                <td class="mono dim">{item.cod_secundar || '—'}</td>
-                <td class="dim">{item.tip || '—'}</td>
-                <td>{item.nume || '—'}</td>
-                <td class="dim">{item.pagina || '—'}</td>
+                <td class="mono accent" data-label="Cod">{item.cod || '—'}</td>
+                <td class="mono dim" data-label="Cod secundar">{item.cod_secundar || '—'}</td>
+                <td class="dim" data-label="Tip">{item.tip || '—'}</td>
+                <td data-label="Nume">{item.nume || '—'}</td>
+                <td class="dim num" data-label="Pagina">{item.pagina || '—'}</td>
               </tr>
             {/each}
           </tbody>
@@ -274,9 +282,14 @@
 
     {#if curTotalPages > 1}
       <div class="pagination">
-        <button class="pg-btn" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
-        <span class="pg-info">{curPage} / {curTotalPages}</span>
-        <button class="pg-btn" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
+        <span class="pg-range">Rând {rangeStart}–{rangeEnd} din {curTotal.toLocaleString('ro-RO')}</span>
+        <div class="pg-nav">
+          <button class="pg-btn" title="Prima pagina" disabled={curPage <= 1} onclick={() => goToPage(1)}><ChevronsLeft size={14} /></button>
+          <button class="pg-btn" title="Pagina anterioara" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
+          <span class="pg-info">{curPage} / {curTotalPages}</span>
+          <button class="pg-btn" title="Pagina urmatoare" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
+          <button class="pg-btn" title="Ultima pagina" disabled={curPage >= curTotalPages} onclick={() => goToPage(curTotalPages)}><ChevronsRight size={14} /></button>
+        </div>
       </div>
     {/if}
   {/if}
@@ -390,16 +403,18 @@
   .chip:hover { background: var(--bg-hover); }
   .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
 
-  .mono { font-family: var(--font-mono); font-size: 12px; }
+  .mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
   .accent { color: var(--accent); font-weight: 500; }
   .dim { color: var(--text-secondary); }
   .desc-cell { max-width: 380px; }
 
-  .pagination { display: flex; align-items: center; justify-content: center; gap: var(--space-sm); padding: var(--space-md) 0; }
-  .pg-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer; }
-  .pg-btn:hover:not(:disabled) { background: var(--bg-hover); }
+  .pagination { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); padding: var(--space-md) 0; flex-wrap: wrap; }
+  .pg-range { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .pg-nav { display: flex; align-items: center; gap: var(--space-xs); margin-left: auto; }
+  .pg-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer; transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .pg-btn:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--text-dim); }
   .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .pg-info { font-size: var(--font-tiny); color: var(--text-dim); }
+  .pg-info { font-size: var(--font-tiny); color: var(--text-secondary); font-variant-numeric: tabular-nums; padding: 0 var(--space-xs); min-width: 54px; text-align: center; }
 
   .row-skel { padding: var(--space-sm); }
 

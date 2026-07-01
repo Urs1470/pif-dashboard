@@ -223,7 +223,7 @@
 
   .a-list { display: flex; flex-direction: column; }
   .arow { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .arow:hover { background: var(--bg-elevated); }
+  .arow:hover { background: var(--bg-hover); }
   .arow.done { opacity: 0.5; }
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */

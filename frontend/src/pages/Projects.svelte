@@ -13,6 +13,7 @@
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
+  import ErrorState from '../components/ui/ErrorState.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
 
@@ -201,12 +202,12 @@
       {/each}
     </div>
   {:else if projects.error}
-    <p class="error-text">Eroare: {projects.error}</p>
+    <ErrorState message={projects.error} onretry={() => loadProjects()} />
   {:else if activeItems.length === 0 && archivedItems.length === 0}
     <EmptyState icon={FolderKanban} title="Niciun proiect" description="Nu exista proiecte cu filtrele selectate." />
   {:else}
     <div class="data-table-wrap">
-      <table class="data-table">
+      <table class="data-table reflow">
         <thead>
           <tr>
             {#if batchMode}
@@ -232,17 +233,17 @@
           {#each activeItems as p (p.id)}
             <tr class="clickable-row" class:batch-selected={batchMode && selected.has(p.id)} animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }}>
               {#if batchMode}
-                <td class="check-col">
+                <td class="check-col" data-label="">
                   <button class="batch-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
                     {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
                   </button>
                 </td>
               {/if}
-              <td class="name-cell">{p.nume || '—'}</td>
-              <td class="dim">{p.client || '—'}</td>
-              <td>{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
-              <td><button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button></td>
-              <td class="dim">{p.deadline ? formatDate(p.deadline) : '—'}</td>
+              <td class="name-cell" data-label="Nume">{p.nume || '—'}</td>
+              <td class="dim" data-label="Client">{p.client || '—'}</td>
+              <td data-label="Tip">{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
+              <td data-label="Status"><button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button></td>
+              <td class="dim" data-label="Deadline">{p.deadline ? formatDate(p.deadline) : '—'}</td>
             </tr>
           {/each}
         </tbody>
@@ -259,15 +260,15 @@
         </button>
         {#if showArchive}
           <div class="data-table-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-            <table class="data-table">
+            <table class="data-table reflow">
               <tbody>
                 {#each archivedItems as p (p.id)}
                   <tr class="clickable-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
-                    <td class="name-cell">{p.nume || '—'}</td>
-                    <td class="dim">{p.client || '—'}</td>
-                    <td>{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
-                    <td><Badge label="Finalizat" color="var(--success)" small /></td>
-                    <td class="dim">{p.deadline ? formatDate(p.deadline) : '—'}</td>
+                    <td class="name-cell" data-label="Nume">{p.nume || '—'}</td>
+                    <td class="dim" data-label="Client">{p.client || '—'}</td>
+                    <td data-label="Tip">{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
+                    <td data-label="Status"><Badge label="Finalizat" color="var(--success)" small /></td>
+                    <td class="dim" data-label="Deadline">{p.deadline ? formatDate(p.deadline) : '—'}</td>
                   </tr>
                 {/each}
               </tbody>
@@ -297,9 +298,10 @@
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
 
   .filters { display: flex; gap: 4px; flex-wrap: wrap; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
+  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
   .chip:hover { background: var(--bg-hover); color: var(--text); }
-  .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .chip:active { transform: scale(0.97); }
 
   .sortable { cursor: pointer; user-select: none; }
   .sortable:hover { color: var(--text); }
