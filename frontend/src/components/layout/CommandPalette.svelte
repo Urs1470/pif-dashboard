@@ -1,6 +1,7 @@
 <script>
-  import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Settings, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare, Calculator } from '@lucide/svelte'
+  import { Search, FolderKanban, Cpu, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
   import { fade, fly } from 'svelte/transition'
+  import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
   import { apiJson } from '../../lib/api.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
@@ -14,13 +15,13 @@
   let searchTimer = null
 
   const commands = [
-    { label: 'Acasa', path: '/', icon: Home, keywords: 'home dashboard' },
-    { label: 'Proiecte', path: '/projects', icon: FolderKanban, keywords: 'projects lista' },
-    { label: 'Taskuri', path: '/tasks', icon: ListTodo, keywords: 'tasks todo' },
-    { label: 'Parametri', path: '/params', icon: Cpu, keywords: 'params drive fault' },
-    { label: 'Calculator', path: '/calculator', icon: Calculator, keywords: 'calculator actionari motor cuplu putere afinitate drive' },
-    { label: 'Notite', path: '/notes', icon: StickyNote, keywords: 'notes obsidian' },
-    { label: 'Admin', path: '/admin', icon: Settings, keywords: 'admin stats export' },
+    { label: 'Acasa', path: '/', solid: 'home', keywords: 'home dashboard' },
+    { label: 'Proiecte', path: '/projects', solid: 'projects', keywords: 'projects lista' },
+    { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
+    { label: 'Parametri', path: '/params', solid: 'params', keywords: 'params drive fault' },
+    { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
+    { label: 'Notite', path: '/notes', solid: 'notes', keywords: 'notes obsidian' },
+    { label: 'Admin', path: '/admin', solid: 'admin', keywords: 'admin stats export' },
   ]
 
   const TYPE_META = {
@@ -215,7 +216,7 @@
               role="option"
               aria-selected={i === selected}
             >
-              <cmd.icon size={16} />
+              <SolidIcon name={cmd.solid} size={16} />
               <span>{cmd.label}</span>
               {#if router.path === cmd.path || (cmd.path !== '/' && router.path.startsWith(cmd.path))}
                 <span class="current">curent</span>
@@ -303,7 +304,7 @@
     font-family: var(--font-mono);
     font-size: var(--font-tiny);
     padding: 2px 6px;
-    background: var(--bg);
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-xs);
     color: var(--text-dim);

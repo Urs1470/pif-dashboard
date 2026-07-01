@@ -377,9 +377,9 @@ input[type="checkbox"].cbx:focus {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  background: var(--bg-elevated);
+  gap: var(--space-12);
+  padding: 10px var(--space-20);
+  background: var(--bg-overlay);
   border: 1px solid var(--accent);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);

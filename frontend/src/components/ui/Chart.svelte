@@ -172,19 +172,19 @@
   .grid-minor { stroke: var(--border); stroke-width: 0.5; opacity: 0.2; }
   .grid-major { stroke: var(--border); stroke-width: 1; opacity: 0.5; }
   .axis { stroke: var(--border); stroke-width: 1.2; }
-  .tick { fill: var(--text-dim); font-size: 10px; font-family: var(--font-mono); }
-  .axlbl { fill: var(--text-secondary); font-size: 11px; }
+  .tick { fill: var(--text-dim); font-size: var(--font-micro); font-family: var(--font-mono); }
+  .axlbl { fill: var(--text-secondary); font-size: var(--font-tiny); }
   .ss { font-size: 0.72em; }
   /* Banda de zona: opacitate teme-constienta (default = dark = 0.10; light are nevoie de mai mult). */
   .zone-band { opacity: 0.10; }
   :global([data-theme='light']) .zone-band { opacity: 0.15; }
   /* Eticheta cu halou (paint-order:stroke in culoarea fundalului) ca sa ramana lizibila peste curbe/grila. */
-  .zone-lbl { font-size: 10px; font-weight: 700; paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
+  .zone-lbl { font-size: var(--font-micro); font-weight: var(--fw-bold); paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
   .cross { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
-  .tip-bg { fill: var(--bg-surface); stroke: var(--border); stroke-width: 1; opacity: 0.96; }
-  .tip-x { fill: var(--text); font-size: 9.5px; font-weight: 600; font-family: var(--font-mono); }
-  .tip-v { fill: var(--text-secondary); font-size: 9.5px; font-family: var(--font-mono); }
+  .tip-bg { fill: var(--bg-overlay); stroke: var(--border); stroke-width: 1; opacity: 0.96; }
+  .tip-x { fill: var(--text); font-size: var(--font-micro); font-weight: var(--fw-semibold); font-family: var(--font-mono); }
+  .tip-v { fill: var(--text-secondary); font-size: var(--font-micro); font-family: var(--font-mono); }
   .chart-desc { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; margin-top: 6px; }
-  .cd-l { font-weight: 700; color: var(--text); }
+  .cd-l { font-weight: var(--fw-bold); color: var(--text); }
   .cd-w { color: var(--service-accent); margin-left: 2px; }
 </style>

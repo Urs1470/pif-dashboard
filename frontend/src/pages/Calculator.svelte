@@ -1060,8 +1060,8 @@
   .search-wrap .search-row { margin-bottom: 0; }
   .ac-list {
     position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0;
-    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); padding: 4px;
+    background: var(--bg-overlay); border: 1px solid var(--border); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg); padding: 4px;
   }
   .ac-item {
     display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
@@ -1174,11 +1174,13 @@
   }
   .res-val {
     font-family: var(--font-mono);
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: var(--font-h3);
+    font-weight: var(--fw-bold);
     color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
   }
-  .res-unit { font-size: var(--font-tiny); color: var(--text-dim); }
+  .res-unit { font-size: var(--font-small); color: var(--text-secondary); }
 
   .mod-note {
     display: flex;

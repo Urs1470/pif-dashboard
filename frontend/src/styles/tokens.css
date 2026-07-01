@@ -185,8 +185,10 @@
   --info: #0070f3;
   --info-subtle: rgba(0, 112, 243, 0.10);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10);
+  /* In light, suprafetele flotante nu pot fi mai albe decat pagina (deja alba),
+     deci elevatia se citeste prin umbra — mai puternica decat in dark. */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.14);
+  --shadow-lg: 0 10px 34px rgba(0, 0, 0, 0.18);
   --shadow-glow-accent: 0 4px 14px rgba(0, 112, 243, 0.20);
 }

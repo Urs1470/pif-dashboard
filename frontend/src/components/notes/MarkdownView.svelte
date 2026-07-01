@@ -1,9 +1,17 @@
 <script>
   import { renderMarkdown } from '../../lib/markdown.js'
+  import { renderMath } from '../../lib/math.js'
 
   let { content = '', onwikilink } = $props()
 
   const html = $derived(renderMarkdown(content))
+  let el = $state(null)
+
+  // Typeset $…$ / $$…$$ dupa fiecare randare — altfel formulele Obsidian apar ca text brut.
+  $effect(() => {
+    html // track
+    if (el) renderMath(el)
+  })
 
   function onClick(e) {
     const link = e.target.closest('.md-wikilink')
@@ -15,12 +23,14 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="md-rendered" onclick={onClick}>
+<div class="md-rendered" bind:this={el} onclick={onClick}>
   {@html html}
 </div>
 
 <style>
-  .md-rendered { font-size: 0.92rem; line-height: 1.65; color: var(--text); }
+  /* Masura de citire ~72ch ca randurile sa nu ajunga la 140 caractere pe desktop */
+  .md-rendered { font-size: 0.92rem; line-height: var(--lh-normal); color: var(--text); max-width: 72ch; }
+  .md-rendered :global(.katex-display) { text-align: left; overflow-x: auto; overflow-y: hidden; }
   .md-rendered :global(h1), .md-rendered :global(h2), .md-rendered :global(h3) {
     margin: 1em 0 0.4em; font-weight: 700; color: var(--text); letter-spacing: -0.015em;
   }
