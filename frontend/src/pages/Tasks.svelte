@@ -391,29 +391,81 @@
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
-{#snippet taskNotes(t)}
+{#snippet taskDetail(t)}
+  {@const subs = subtasksCache[t.id] || []}
+  {@const atts = attCache[t.id] || []}
+  {@const doneCount = subs.filter(s => s.done).length}
+
   {#if t.descriere}
     <div class="note-block">
       <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
       <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
     </div>
-  {:else}
-    <button class="note-add" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={12} /> Adauga notite...</button>
   {/if}
-{/snippet}
 
-{#snippet taskAttachments(t)}
-  <div class="att-row">
-    {#each (attCache[t.id] || []) as a (a.id)}
-      <span class="att-chip">
-        <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
-          <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
-        </button>
-        <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
-      </span>
-    {/each}
-    <button class="note-add" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={12} /> {attUploading ? 'Se incarca...' : 'Ataseaza fisier...'}</button>
+  {#if atts.length}
+    <div class="att-row">
+      {#each atts as a (a.id)}
+        <span class="att-chip">
+          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
+            <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
+          </button>
+          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
+        </span>
+      {/each}
+    </div>
+  {/if}
+
+  <div class="detail-actions">
+    {#if !t.descriere}
+      <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
+    {/if}
+    <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se incarca…' : 'Fisier'}</button>
   </div>
+
+  <div class="sub-section">
+    <div class="sub-head">
+      <span class="sub-cap">Subtaskuri</span>
+      {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
+    </div>
+    {#if subtaskLoading && !subtasksCache[t.id]}
+      <div class="sub-loading">Se incarca...</div>
+    {:else}
+      {#each subs as sub (sub.id)}
+        <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
+          <button class="check" onclick={() => toggleSubtaskDone(sub)}>
+            {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
+          </button>
+          <span class="sub-title">{sub.titlu}</span>
+          <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
+        </div>
+      {/each}
+      <div class="sub-add">
+        <input
+          type="text"
+          placeholder="Adauga subtask..."
+          bind:value={newSubtaskTitle}
+          onkeydown={(e) => { if (e.key === 'Enter') addSubtask(t.id) }}
+        />
+        <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
+          <Plus size={14} />
+        </button>
+      </div>
+    {/if}
+  </div>
+
+  {#if taskSessions[t.id]?.sessions?.length > 0}
+    <div class="sess-section">
+      <span class="sess-label">Sesiuni ({taskSessions[t.id].sessions.length}) — {formatDuration(taskSessions[t.id].total_secunde)}</span>
+      {#each taskSessions[t.id].sessions as s (s.id)}
+        <div class="sess">
+          <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
+          <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
+          <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><SolidIcon name="trash" size={11} /></button>
+        </div>
+      {/each}
+    </div>
+  {/if}
 {/snippet}
 
 <div class="page">
@@ -490,44 +542,7 @@
           </div>
           {#if expandedTask === t.id}
             <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-              {@render taskNotes(t)}
-              {@render taskAttachments(t)}
-              {#if subtaskLoading && !subtasksCache[t.id]}
-                <div class="sub-loading">Se incarca...</div>
-              {:else}
-                {#each (subtasksCache[t.id] || []) as sub (sub.id)}
-                  <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
-                    <button class="check" onclick={() => toggleSubtaskDone(sub)}>
-                      {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
-                    </button>
-                    <span class="sub-title">{sub.titlu}</span>
-                    <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
-                  </div>
-                {/each}
-                <div class="sub-add">
-                  <input
-                    type="text"
-                    placeholder="Adauga subtask..."
-                    bind:value={newSubtaskTitle}
-                    onkeydown={(e) => { if (e.key === 'Enter') addSubtask(t.id) }}
-                  />
-                  <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
-                    <Plus size={14} />
-                  </button>
-                </div>
-              {/if}
-              {#if taskSessions[t.id]?.sessions?.length > 0}
-                <div class="sess-section">
-                  <span class="sess-label">Sesiuni ({taskSessions[t.id].sessions.length}) — {formatDuration(taskSessions[t.id].total_secunde)}</span>
-                  {#each taskSessions[t.id].sessions as s (s.id)}
-                    <div class="sess">
-                      <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
-                      <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-                      <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><SolidIcon name="trash" size={11} /></button>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
+              {@render taskDetail(t)}
             </div>
           {/if}
         </div>
@@ -566,21 +581,7 @@
               </div>
               {#if expandedTask === t.id}
                 <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-                  {@render taskNotes(t)}
-                  {@render taskAttachments(t)}
-                  {#if subtaskLoading && !subtasksCache[t.id]}
-                    <div class="sub-loading">Se incarca...</div>
-                  {:else}
-                    {#each (subtasksCache[t.id] || []) as sub (sub.id)}
-                      <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
-                        <button class="check" onclick={() => toggleSubtaskDone(sub)}>
-                          {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
-                        </button>
-                        <span class="sub-title">{sub.titlu}</span>
-                        <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
-                      </div>
-                    {/each}
-                  {/if}
+                  {@render taskDetail(t)}
                 </div>
               {/if}
             </div>
@@ -774,14 +775,27 @@
   .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
   .done-sep:hover { color: var(--text-secondary); }
 
-  .subtask-body { margin-left: 26px; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md); border-left: 2px solid var(--accent-subtle); margin-bottom: var(--space-sm); }
-  .note-add { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; padding: 4px 6px; margin-bottom: var(--space-xs); border-radius: var(--radius-xs); font-style: italic; transition: all var(--dur-fast) var(--ease); }
-  .note-add:hover { color: var(--accent); background: var(--accent-subtle); }
-  .note-block { margin-bottom: var(--space-sm); }
+  /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
+  .subtask-body { margin-left: 26px; margin-bottom: var(--space-sm); padding: var(--space-12); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 2px solid var(--accent-subtle); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: var(--space-12); }
+
+  /* Actiuni discrete: chip-uri "+ Descriere / + Fisier" in loc de link-uri italic plutinde */
+  .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .detail-chip:hover:not(:disabled) { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
+  .detail-chip:active:not(:disabled) { transform: scale(0.97); }
+  .detail-chip:disabled { opacity: 0.5; cursor: default; }
+
+  .note-block { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+  /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
+  .sub-section { display: flex; flex-direction: column; gap: 2px; }
+  .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+  .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
   .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
   .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
   .att-open:hover { color: var(--accent); background: var(--bg-hover); }
@@ -805,7 +819,7 @@
   .timer-btn.manual { width: 28px; height: 28px; color: var(--text-faint); }
   .timer-btn.manual:hover { color: var(--accent); }
 
-  .sess-section { margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); }
+  .sess-section { padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); }
   .sess-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-dim); margin-bottom: 4px; display: block; }
   .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
   .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
