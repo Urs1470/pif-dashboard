@@ -625,11 +625,13 @@
         <option value="lunar">Lunar</option>
       </select>
     </label>
+  </form>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showNewModal = false}>Anuleaza</Button>
       <Button loading={creating} disabled={!formTitle.trim()} onclick={handleCreate}>Creeaza</Button>
     </div>
-  </form>
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showEditModal} title="Editeaza Task" size="md">
@@ -663,11 +665,13 @@
         <option value="lunar">Lunar</option>
       </select>
     </label>
+  </form>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showEditModal = false}>Anuleaza</Button>
       <Button loading={creating} disabled={!formTitle.trim()} onclick={handleEdit}>Salveaza</Button>
     </div>
-  </form>
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
@@ -686,11 +690,13 @@
         <input type="number" min="0" max="59" step="5" bind:value={manualMinutes} class="mf-input" />
       </label>
     </div>
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showManualTime = false}>Anuleaza</Button>
       <Button loading={manualSaving} onclick={saveManualTime}>Adauga</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
@@ -703,11 +709,13 @@
     {#if showNoteModal}
       <RichTextEditor bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." />
     {/if}
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showNoteModal = false}>Anuleaza</Button>
       <Button loading={noteSaving} onclick={saveNote}>Salveaza</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <style>
@@ -840,7 +848,6 @@
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
-  .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

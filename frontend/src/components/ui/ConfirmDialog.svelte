@@ -16,13 +16,14 @@
 
 <Modal bind:open {title} size="sm">
   <p class="msg">{message}</p>
-  <div class="actions">
-    <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
-    <Button variant={danger ? 'danger' : 'primary'} loading={busy} onclick={confirm}>{confirmLabel}</Button>
-  </div>
+  {#snippet footer()}
+    <div class="modal-actions">
+      <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
+      <Button variant={danger ? 'danger' : 'primary'} loading={busy} onclick={confirm}>{confirmLabel}</Button>
+    </div>
+  {/snippet}
 </Modal>
 
 <style>
-  .msg { font-size: var(--font-body); color: var(--text-secondary); line-height: 1.55; }
-  .actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
+  .msg { font-size: var(--font-body); color: var(--text-secondary); line-height: var(--lh-normal); }
 </style>

@@ -110,11 +110,13 @@
     <datalist id="clients-list">
       {#each clients as c}<option value={c.nume}></option>{/each}
     </datalist>
-    <div class="actions">
+  </form>
+  {#snippet footer()}
+    <div class="modal-actions">
       <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
       <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salveaza' : 'Creeaza'}</Button>
     </div>
-  </form>
+  {/snippet}
 </Modal>
 
 <style>
@@ -129,7 +131,6 @@
   .ta-field { display: flex; flex-direction: column; gap: 4px; }
   .ta-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   textarea { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
-  .actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 </style>

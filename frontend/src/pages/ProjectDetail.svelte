@@ -1166,11 +1166,13 @@
       <span class="ta-label">Nota jurnal (optional)</span>
       <textarea rows="3" bind:value={stopNoteText} placeholder="Ce ai lucrat in aceasta sesiune?"></textarea>
     </label>
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" loading={stoppingWithNote} onclick={stopSimple}>Stop fara nota</Button>
       <Button loading={stoppingWithNote} disabled={!stopNoteTitle.trim() && !stopNoteText.trim()} onclick={stopWithNote}><SolidIcon name="notes" size={14} /> Stop cu nota</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <ProjectFormModal bind:open={showEditModal} {project} onsaved={() => load()} />
@@ -1196,13 +1198,17 @@
         </div>
       {/each}
     </div>
-    <div class="modal-actions">
-      <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anuleaza</Button>
-      <Button loading={importBusy} disabled={importSelected.size === 0} onclick={commitImport}>
-        <Upload size={14} /> Importa {importSelected.size} echipamente
-      </Button>
-    </div>
   {/if}
+  {#snippet footer()}
+    {#if importPreview}
+      <div class="modal-actions">
+        <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anuleaza</Button>
+        <Button loading={importBusy} disabled={importSelected.size === 0} onclick={commitImport}>
+          <Upload size={14} /> Importa {importSelected.size} echipamente
+        </Button>
+      </div>
+    {/if}
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showCopyModal} title="Copiaza echipamente din alt proiect" size="lg">
@@ -1233,13 +1239,15 @@
     {:else if copyProjectId}
       <p class="empty">Niciun echipament in proiectul selectat.</p>
     {/if}
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showCopyModal = false}>Anuleaza</Button>
       <Button loading={copyBusy} disabled={copySelected.size === 0} onclick={commitCopy}>
         <Copy size={14} /> Copiaza {copySelected.size} echipamente
       </Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 <ConfirmDialog bind:open={showDeleteConfirm} title="Sterge proiect" message={`Stergi proiectul "${project?.nume}"? Toate datele (taskuri, jurnal, atasamente, echipamente) vor fi sterse definitiv.`} confirmLabel="Sterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showJournalDelete} title="Sterge intrare" message="Stergi aceasta intrare din jurnal?" confirmLabel="Sterge" onconfirm={doDeleteJournal} />
@@ -1265,11 +1273,13 @@
         <input type="number" min="0" max="59" step="5" bind:value={manualMinutes} class="mf-input" />
       </label>
     </div>
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showManualTime = false}>Anuleaza</Button>
       <Button loading={manualSaving} onclick={saveManualTime}>Adauga</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showFieldEdit} title={editLabel} size="wide">
@@ -1277,11 +1287,13 @@
     {#if showFieldEdit}
       <RichTextEditor bind:value={editValue} placeholder="Scrie aici..." />
     {/if}
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showFieldEdit = false}>Anuleaza</Button>
       <Button loading={editSaving} onclick={saveFieldEdit}>Salveaza</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showTaskEditModal} title="Editeaza Task" size="md">
@@ -1314,11 +1326,13 @@
         <option value="lunar">Lunar</option>
       </select>
     </label>
+  </form>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showTaskEditModal = false}>Anuleaza</Button>
       <Button loading={taskFormSaving} disabled={!taskFormTitle.trim()} onclick={handleTaskEdit}>Salveaza</Button>
     </div>
-  </form>
+  {/snippet}
 </Modal>
 
 <Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
@@ -1326,11 +1340,13 @@
     {#if showNoteModal}
       <RichTextEditor bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." />
     {/if}
+  </div>
+  {#snippet footer()}
     <div class="modal-actions">
       <Button variant="secondary" onclick={() => showNoteModal = false}>Anuleaza</Button>
       <Button loading={noteSaving} onclick={saveNote}>Salveaza</Button>
     </div>
-  </div>
+  {/snippet}
 </Modal>
 
 <style>
@@ -1539,7 +1555,6 @@
   .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
-  .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 
   /* Equipment import/copy */
   .equip-btns { display: flex; gap: var(--space-xs); flex-wrap: wrap; }

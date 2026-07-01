@@ -67,19 +67,20 @@
       <span class="ta-label">Parametri modificati (PARAM = VALOARE, unul pe linie)</span>
       <textarea rows="6" bind:value={form.params_text} placeholder="99.04 = Vector&#10;20.01 = 1500 rpm"></textarea>
     </label>
-    <div class="actions">
+  </form>
+  {#snippet footer()}
+    <div class="modal-actions">
       <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
       <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salveaza' : 'Adauga'}</Button>
     </div>
-  </form>
+  {/snippet}
 </Modal>
 
 <style>
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md); }
   .ta-field { display: flex; flex-direction: column; gap: 4px; }
   .ta-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  textarea { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); font-family: var(--font-mono); resize: vertical; }
-  .actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
+  textarea { padding: 10px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); font-family: var(--font-mono); resize: vertical; }
 
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 </style>

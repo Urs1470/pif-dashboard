@@ -128,6 +128,16 @@
     border-top: 1px solid var(--border);
     flex-shrink: 0;
   }
+  /* Randul de actiuni din footer — o singura reteta partajata (global, ca sa fie
+     folosita din snippet-urile footer ale tuturor modalelor). :global fiindca e
+     randat in slot-ul de footer al altui component. */
+  :global(.modal-footer .modal-actions) {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
   @media (max-width: 768px) {
     .modal {
