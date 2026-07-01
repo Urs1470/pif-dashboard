@@ -1379,11 +1379,6 @@
   .field-empty:hover { color: var(--accent); }
   .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 
-  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { display: flex; align-items: center; gap: 4px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; min-height: 44px; -webkit-tap-highlight-color: transparent; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .tab-count { font-size: var(--font-micro); padding: 0 5px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .tab-content { min-height: 200px; }

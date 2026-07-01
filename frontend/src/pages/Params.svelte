@@ -381,10 +381,6 @@
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
-  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
-  .tab { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; min-height: 44px; }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
   .back { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); cursor: pointer; min-height: 36px; }
   .back:hover { color: var(--accent); }

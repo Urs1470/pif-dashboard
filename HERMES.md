@@ -161,9 +161,14 @@ există doar în branch-ul nemergeat `theme-wip` — în `master` body-ul e înc
 
 **Componente — folosește librăria `components/ui/`, nu reinventa:**
 - Dropdown: `<Select>` (NU `<select>` native stilizat ad-hoc, NU vechiul `enhanceSelect`/`cs-enhance`).
+- Text: `<Input>` / `<Textarea>` (au hover + focus-ring + error/aria-invalid; NU `<input>`/`<textarea>` brut).
 - Date: `<DatePicker>` (NU `<input type="date">` native, NU flatpickr).
-- Dialoguri: `<Modal>` / `<ConfirmDialog>`; feedback: `<Toast>`; goluri: `<EmptyState>`/`<Skeleton>`.
+- Dialoguri: `<Modal>` / `<ConfirmDialog>`; feedback: `<Toast>`; goluri: `<EmptyState>`; erori: `<ErrorState>` (cu retry); încărcare: `<Skeleton>`.
 - Formule: `<Formula>` / `<MathText>` randează LaTeX cu KaTeX.
+- **Butoanele de acțiune ale unui Modal** merg în `{#snippet footer()}` cu `<div class="modal-actions">`
+  (rămân fixate sub scroll, cu separator) — NU în corpul modalului.
+- **Tab-uri underline**: clasele partajate `.tabs`/`.tab`/`.tab.active` din `global.css` (ProjectDetail, Params).
+  Categoriile din Calculator (`.fam-tab` pill) sunt un pattern distinct, intenționat.
 
 **Service worker / cache-busting:** SPA înregistrează `/service-worker.js`
 (`static/service-worker.js`, servit de `app.py`). La livrare de assets noi, bump versiunile
