@@ -204,10 +204,10 @@
 
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .bh-left { display: flex; align-items: center; gap: var(--space-xs); color: var(--text); min-width: 0; }
-  .bh-left h2 { font-size: var(--font-h3); font-weight: 700; }
+  .bh-left h2 { font-size: var(--font-h3); font-weight: var(--fw-bold); }
   .bh-count { font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
-  .bh-restante { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: var(--danger-subtle); color: var(--danger); }
-  .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: 500; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
+  .bh-restante { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: var(--danger-subtle); color: var(--danger); }
+  .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
   .bh-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
 
   .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
@@ -243,17 +243,17 @@
   .check:hover .check-empty { border-color: var(--accent); }
 
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
-  .atitle { font-size: var(--font-small); color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .atitle { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-tiny); color: var(--text-dim); }
   .tag { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .tag.proj { color: var(--accent); background: var(--accent-subtle); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); }
-  .badge { font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: var(--radius-full); white-space: nowrap; }
+  .badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 1px 7px; border-radius: var(--radius-full); white-space: nowrap; }
   .badge.restant { background: var(--danger-subtle); color: var(--danger); }
   .badge.scadent { background: var(--accent-subtle); color: var(--accent); }
-  .deadline { font-size: 10px; color: var(--text-dim); }
-  .deadline.overdue { color: var(--danger); font-weight: 600; }
+  .deadline { font-size: var(--font-micro); color: var(--text-dim); }
+  .deadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .deadline.soon { color: var(--warning); }
 
   .arow-arrows { display: none; align-items: center; gap: 2px; flex-shrink: 0; }

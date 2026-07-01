@@ -378,11 +378,11 @@
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
-  .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
+  .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
-  .tab { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; min-height: 44px; }
+  .tab { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; min-height: 44px; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
@@ -390,7 +390,7 @@
   .back:hover { color: var(--accent); }
 
   .prod-head { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); flex-wrap: wrap; }
-  .prod-name { font-size: var(--font-h3); font-weight: 700; color: var(--text); }
+  .prod-name { font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--text); }
 
   .toolbar { margin-bottom: var(--space-sm); }
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); max-width: 400px; }
@@ -399,12 +399,12 @@
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
 
   .families { display: flex; gap: 4px; flex-wrap: wrap; }
-  .chip { display: flex; align-items: center; gap: 4px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: 500; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; min-height: 30px; }
+  .chip { display: flex; align-items: center; gap: 4px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; min-height: 30px; }
   .chip:hover { background: var(--bg-hover); }
   .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
 
   .mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
-  .accent { color: var(--accent); font-weight: 500; }
+  .accent { color: var(--accent); font-weight: var(--fw-medium); }
   .dim { color: var(--text-secondary); }
   .desc-cell { max-width: 380px; }
 
@@ -422,10 +422,10 @@
   .dmeta { background: var(--bg-elevated); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--border); }
   .drow { display: flex; justify-content: space-between; font-size: var(--font-small); gap: var(--space-md); padding: 3px 0; }
   .dlabel { color: var(--text-dim); flex-shrink: 0; }
-  .dval { font-weight: 500; color: var(--text); text-align: right; }
+  .dval { font-weight: var(--fw-medium); color: var(--text); text-align: right; }
   .dsection { padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--border); }
   .dsection.accent { background: var(--accent-subtle); border-color: var(--accent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
-  .dsec-title { font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px 0; }
+  .dsec-title { font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin: 0 0 6px 0; }
   .dsection p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; margin: 0; }
   .dsection.accent p { color: var(--text); }
   .extra-list { margin: 0; padding-left: var(--space-lg); font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; }
@@ -442,12 +442,12 @@
   .manual-card:hover { border-color: var(--accent); background: var(--accent-subtle); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
   :global(.manual-icon) { color: var(--accent); flex-shrink: 0; }
   .manual-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .manual-name { font-size: var(--font-small); font-weight: 500; color: var(--text); }
+  .manual-name { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text); }
   .manual-size { font-size: var(--font-tiny); color: var(--text-dim); }
   :global(.manual-ext) { color: var(--text-faint); flex-shrink: 0; }
   .manual-card.skel { pointer-events: none; }
 
-  .open-manual-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); cursor: pointer; transition: all var(--dur-fast); }
+  .open-manual-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); cursor: pointer; transition: all var(--dur-fast); }
   .open-manual-btn:hover { background: var(--accent); color: var(--bg); }
 
   @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } .manuals-grid { grid-template-columns: 1fr; } }

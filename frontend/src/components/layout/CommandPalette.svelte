@@ -346,10 +346,10 @@
     align-items: center;
     gap: 6px;
     font-size: var(--font-tiny);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: var(--tracking-wide);
     padding: var(--space-sm) var(--space-md) 2px;
     margin-top: var(--space-xs);
   }

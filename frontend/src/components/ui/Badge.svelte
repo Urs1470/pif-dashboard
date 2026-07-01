@@ -14,10 +14,10 @@
     gap: 5px;
     padding: 2px 9px;
     border-radius: var(--radius-full);
-    font-size: 10.5px;
-    font-weight: 600;
+    font-size: var(--font-micro);
+    font-weight: var(--fw-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-wide);
     color: var(--badge-color);
     background: color-mix(in srgb, var(--badge-color) 12%, transparent);
     white-space: nowrap;
@@ -25,7 +25,7 @@
   }
   .badge.small {
     padding: 2px 8px;
-    font-size: 10px;
+    font-size: var(--font-micro);
     gap: 4px;
   }
   .dot {

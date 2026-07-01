@@ -294,13 +294,13 @@
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-lg); }
-  .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
-  .sec-title { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-body); font-weight: 600; color: var(--text); margin-top: var(--space-xl); margin-bottom: var(--space-sm); }
+  .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
+  .sec-title { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); margin-top: var(--space-xl); margin-bottom: var(--space-sm); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 4px; }
-  .stat-value { font-size: 28px; font-weight: 600; color: var(--text); font-feature-settings: "tnum"; }
-  .card-title { font-size: var(--font-small); font-weight: 600; color: var(--text); margin-bottom: var(--space-sm); }
+  .stat-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-secondary); margin-bottom: 4px; }
+  .stat-value { font-size: var(--font-display); font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: var(--fw-semibold); color: var(--text); font-feature-settings: "tnum"; }
+  .card-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); margin-bottom: var(--space-sm); }
   .actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
   .hint { display: flex; align-items: center; gap: 4px; font-size: var(--font-tiny); color: var(--text-dim); margin-top: var(--space-sm); }
   .hint-sub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
@@ -310,7 +310,7 @@
   .issue { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-small); }
   .issue-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .issue-label { flex: 1; color: var(--text-secondary); }
-  .issue-count { font-weight: 600; color: var(--text); font-feature-settings: "tnum"; }
+  .issue-count { font-weight: var(--fw-semibold); color: var(--text); font-feature-settings: "tnum"; }
   .obs-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .obs-status { font-size: var(--font-tiny); color: var(--danger); }
   .obs-status.ok { color: var(--success); }

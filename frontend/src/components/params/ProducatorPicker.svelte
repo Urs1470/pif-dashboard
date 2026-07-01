@@ -39,6 +39,6 @@
     transition: all var(--dur-fast) var(--ease);
   }
   .pcard:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-  .pname { font-size: var(--font-h3); font-weight: 700; color: var(--text); }
+  .pname { font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--text); }
   .pmeta { font-size: var(--font-tiny); color: var(--text-dim); }
 </style>

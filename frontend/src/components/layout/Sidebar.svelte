@@ -91,9 +91,9 @@
   }
   .brand-text {
     font-size: var(--font-small);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--text);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--tracking-wide);
     white-space: nowrap;
     overflow: hidden;
     max-width: 160px;
@@ -136,7 +136,7 @@
 
   .nav-label {
     font-size: var(--font-small);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     max-width: 160px;
     opacity: 1;
     overflow: hidden;

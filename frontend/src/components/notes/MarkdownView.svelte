@@ -32,7 +32,7 @@
   .md-rendered { font-size: 0.92rem; line-height: var(--lh-normal); color: var(--text); max-width: 72ch; }
   .md-rendered :global(.katex-display) { text-align: left; overflow-x: auto; overflow-y: hidden; }
   .md-rendered :global(h1), .md-rendered :global(h2), .md-rendered :global(h3) {
-    margin: 1em 0 0.4em; font-weight: 700; color: var(--text); letter-spacing: -0.015em;
+    margin: 1em 0 0.4em; font-weight: var(--fw-bold); color: var(--text); letter-spacing: -0.015em;
   }
   .md-rendered :global(h1) { font-size: 1.3rem; }
   .md-rendered :global(h2) { font-size: 1.12rem; }
@@ -60,7 +60,7 @@
   .md-rendered :global(th), .md-rendered :global(td) {
     border: 1px solid var(--border); padding: 6px 10px; font-size: 0.85rem; text-align: left;
   }
-  .md-rendered :global(th) { background: var(--bg-elevated); font-weight: 600; }
+  .md-rendered :global(th) { background: var(--bg-elevated); font-weight: var(--fw-semibold); }
   .md-rendered :global(img) { max-width: 100%; border-radius: var(--radius-xs); }
   .md-rendered :global(mark) { background: var(--warning-subtle); color: var(--warning); border-radius: 2px; padding: 0 2px; }
   .md-rendered :global(input[type="checkbox"]) { margin-right: 4px; accent-color: var(--accent); }
@@ -79,7 +79,7 @@
     border-left: 3px solid var(--accent); background: var(--accent-subtle);
     border-radius: var(--radius-xs); padding: 10px 14px; margin: 0.7em 0;
   }
-  .md-rendered :global(.md-callout-title) { font-weight: 700; font-size: 0.9rem; color: var(--accent); }
+  .md-rendered :global(.md-callout-title) { font-weight: var(--fw-bold); font-size: 0.9rem; color: var(--accent); }
   .md-rendered :global(.md-callout-body) { margin-top: 4px; }
   .md-rendered :global(.md-callout-body > *:first-child) { margin-top: 0; }
   .md-rendered :global(.md-callout-body > *:last-child) { margin-bottom: 0; }

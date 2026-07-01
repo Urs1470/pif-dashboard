@@ -132,7 +132,7 @@
   }
   .not-found h2 {
     font-size: 3rem;
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--text-secondary);
   }
 
@@ -154,7 +154,7 @@
     border-radius: var(--radius-sm);
     z-index: var(--z-tooltip);
     font-size: var(--font-small);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     transition: top var(--dur-fast) var(--ease);
   }
   .skip-link:focus {

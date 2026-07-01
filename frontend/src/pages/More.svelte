@@ -34,7 +34,7 @@
     margin-bottom: var(--space-lg);
     color: var(--text);
   }
-  .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
+  .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
 
   .more-grid {
     display: grid;
@@ -61,6 +61,6 @@
   }
   .more-card span {
     font-size: var(--font-small);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
   }
 </style>

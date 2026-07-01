@@ -97,7 +97,7 @@
   }
   .modal-title {
     font-size: var(--font-h3);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: var(--text);
   }
   .modal-close {

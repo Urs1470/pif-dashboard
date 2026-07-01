@@ -719,7 +719,7 @@
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
-  .page-title-row h1 { font-size: var(--font-h1); font-weight: 700; }
+  .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
@@ -740,7 +740,7 @@
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
-  .status-badge { font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
+  .status-badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .status-badge:hover { opacity: .7; }
 
   .task-list { display: flex; flex-direction: column; }
@@ -756,23 +756,23 @@
   .check:hover .check-empty { border-color: var(--accent); }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
-  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
   .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }
-  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: 600; font-size: 10px; }
+  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
   .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
   .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
-  .prio-badge { font-size: var(--font-tiny); font-weight: 600; padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
+  .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
-  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .done-sep:hover { color: var(--text-secondary); }
 
   /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
@@ -820,7 +820,7 @@
   .timer-btn.manual:hover { color: var(--accent); }
 
   .sess-section { padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); }
-  .sess-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-dim); margin-bottom: 4px; display: block; }
+  .sess-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); margin-bottom: 4px; display: block; }
   .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
   .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
   .sess-del { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
@@ -830,15 +830,15 @@
   .manual-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .mf-row { display: flex; gap: var(--space-md); }
   .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .mf-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
 
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
-  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: 500; }
-  .tdeadline { font-size: 10px; }
-  .tdeadline.overdue { color: var(--danger); font-weight: 600; }
-  .tdeadline.today { color: var(--accent); font-weight: 600; }
+  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
+  .tdeadline { font-size: var(--font-micro); }
+  .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
+  .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }

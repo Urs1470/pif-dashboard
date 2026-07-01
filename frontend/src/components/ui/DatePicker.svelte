@@ -166,7 +166,7 @@
 
 <style>
   .dp { position: relative; display: inline-flex; flex-direction: column; gap: 4px; width: 100%; }
-  .dp-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .dp-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
 
   .dp-trigger {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -189,7 +189,7 @@
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
   }
   .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .dp-title { font-size: var(--font-small); font-weight: 600; color: var(--text); }
+  .dp-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
   .dp-nav {
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
     border-radius: var(--radius-full); color: var(--text-secondary); cursor: pointer;
@@ -199,7 +199,7 @@
 
   .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
   .dp-wd { margin-bottom: 4px; }
-  .dp-wdname { text-align: center; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; padding: 2px 0; }
+  .dp-wdname { text-align: center; font-size: var(--font-micro); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; padding: 2px 0; }
   .dp-empty { aspect-ratio: 1; }
   .dp-day {
     aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
@@ -207,14 +207,14 @@
     cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
   .dp-day:hover { background: var(--bg-hover); color: var(--text); }
-  .dp-day.today { color: var(--accent); font-weight: 700; }
-  .dp-day.selected { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .dp-day.today { color: var(--accent); font-weight: var(--fw-bold); }
+  .dp-day.selected { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   .dp-day.selected:hover { background: var(--accent); color: var(--accent-text); }
 
   .dp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-subtle); }
   .dp-foot-btn {
     display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px;
-    border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: 600;
+    border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-semibold);
     color: var(--accent); background: var(--accent-subtle); cursor: pointer;
     transition: opacity var(--dur-fast) var(--ease);
   }

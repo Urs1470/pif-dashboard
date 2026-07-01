@@ -199,7 +199,7 @@
 <style>
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
-  .page-header h1 { font-size: var(--font-h1); font-weight: 700; }
+  .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .panes { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-md); align-items: start; }
@@ -212,9 +212,9 @@
   .list-meta { font-size: var(--font-tiny); color: var(--text-dim); padding: 0 var(--space-xs) var(--space-xs); }
 
   .note-list { overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
-  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: 600; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); text-align: left; }
+  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); text-align: left; }
   .folder-row:hover { background: var(--bg-hover); color: var(--text); }
-  .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: 400; }
+  .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: var(--fw-normal); }
 
   .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); border-left: 2px solid transparent; text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .note-item:hover { background: var(--bg-hover); color: var(--text); }
@@ -225,7 +225,7 @@
 
   .content { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); min-height: 400px; }
   .note-head { padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
-  .note-head h2 { font-size: var(--font-h2); font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+  .note-head h2 { font-size: var(--font-h2); font-weight: var(--fw-bold); color: var(--text); letter-spacing: -0.02em; }
   .note-path { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); }
   .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm); min-height: 300px; color: var(--text-dim); font-size: var(--font-small); }
 

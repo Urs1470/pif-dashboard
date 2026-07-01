@@ -25,6 +25,6 @@
   .bar-label { font-size: var(--font-tiny); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bar-track { height: 8px; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden; }
   .bar-fill { height: 100%; border-radius: var(--radius-full); transition: width var(--dur-slow) var(--ease); }
-  .bar-count { font-size: var(--font-tiny); color: var(--text); font-weight: 600; text-align: right; font-feature-settings: "tnum"; }
+  .bar-count { font-size: var(--font-tiny); color: var(--text); font-weight: var(--fw-semibold); text-align: right; font-feature-settings: "tnum"; }
   .bars-empty { font-size: var(--font-tiny); color: var(--text-dim); }
 </style>

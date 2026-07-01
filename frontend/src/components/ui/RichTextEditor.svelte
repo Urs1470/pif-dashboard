@@ -140,8 +140,8 @@
     line-height: 1.6;
   }
   .rte-preview-empty { color: var(--text-faint); font-style: italic; }
-  .rte-preview :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: 700; }
-  .rte-preview :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: 600; }
+  .rte-preview :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: var(--fw-bold); }
+  .rte-preview :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-preview :global(p) { margin: 6px 0; }
   .rte-preview :global(ul), .rte-preview :global(ol) { padding-left: 26px; margin: 6px 0; }
   .rte-preview :global(li) { margin: 3px 0; }
@@ -171,8 +171,8 @@
     pointer-events: none;
   }
 
-  .rte-editor :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: 700; }
-  .rte-editor :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: 600; }
+  .rte-editor :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: var(--fw-bold); }
+  .rte-editor :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-editor :global(p) { margin: 6px 0; }
   .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: 6px 0; }
   .rte-editor :global(li) { margin: 3px 0; }
@@ -181,7 +181,7 @@
   .rte-editor :global(blockquote) { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
   .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; border: 1px solid var(--border); }
   .rte-editor :global(th), .rte-editor :global(td) { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
-  .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; }
+  .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }
 
   .rte-footer {
     display: flex;

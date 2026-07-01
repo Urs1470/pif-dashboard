@@ -875,7 +875,7 @@
     gap: var(--space-sm);
     color: var(--text);
   }
-  .head-row h1 { font-size: var(--font-h1); font-weight: 700; }
+  .head-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .sub {
     font-size: var(--font-small);
     color: var(--text-dim);
@@ -885,14 +885,14 @@
   .surse-btn {
     margin-left: auto;
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
   .surse-btn:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .surse { display: flex; flex-direction: column; gap: var(--space-md); }
   .surse-intro { font-size: var(--font-small); color: var(--text-dim); line-height: 1.5; }
-  .surse-sec h3 { font-size: var(--font-small); font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .surse-sec h3 { font-size: var(--font-small); font-weight: var(--fw-bold); color: var(--accent); margin-bottom: 4px; }
   .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
   .surse-sec li { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; padding-left: 12px; position: relative; }
   .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
@@ -901,7 +901,7 @@
   .equip-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
   .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
   .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
-  .equip-sub { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
+  .equip-sub { font-size: var(--font-tiny); font-weight: var(--fw-normal); color: var(--text-dim); }
   .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
   .equip-chev.open { transform: rotate(90deg); color: var(--accent); }
   .equip-switch { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; }
@@ -910,7 +910,7 @@
   .equip-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 11px; border-top: 1px solid var(--border); }
   .equip-foot-grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .equip-foot button {
-    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 6px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
     transition: all var(--dur-fast) var(--ease);
@@ -925,7 +925,7 @@
   /* min-height = 2 randuri -> etichetele scurte si cele care se rup pe 2 randuri rezerva aceeasi zona,
      deci inputurile se aliniaza uniform (impreuna cu align-items:end pe grid) */
   .equip-field label { font-size: var(--font-tiny); color: var(--text-dim); line-height: 1.2; min-height: 2.4em; display: flex; align-items: flex-start; }
-  .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: 600; }
+  .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .equip-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
   .equip-field input:disabled { opacity: 0.45; }
   .equip-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
@@ -942,32 +942,32 @@
   .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
   .equip-group { margin-top: 12px; }
-  .equip-group-h { display: block; font-size: var(--font-tiny); font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
-  .equip-sec-h { display: block; font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary); margin: 9px 0 0; }
+  .equip-group-h { display: block; font-size: var(--font-tiny); font-weight: var(--fw-bold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin-bottom: 6px; }
+  .equip-sec-h { display: block; font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary); margin: 9px 0 0; }
   .equip-sec-h:first-of-type { margin-top: 2px; }
 
   /* sub-antet de sectiune in accordion */
-  .acc-section-head { font-size: var(--font-tiny); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); padding: 12px 2px 3px; }
+  .acc-section-head { font-size: var(--font-tiny); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 12px 2px 3px; }
 
   /* modal import */
   .imp { display: flex; flex-direction: column; gap: var(--space-sm); }
   .imp-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  .imp-tabs button { font-size: var(--font-small); font-weight: 600; color: var(--text-secondary); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
+  .imp-tabs button { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
   .imp-tabs button.active { background: var(--accent-subtle); color: var(--accent); }
   .imp-row { display: flex; align-items: center; gap: 8px; }
   .imp-row label { font-size: var(--font-small); color: var(--text-dim); }
   .imp-row select { flex: 1; padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); }
   .imp-equip { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
-  .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: 600; cursor: pointer; }
+  .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }
-  .imp-eq span { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); }
-  .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: 600; color: var(--text); }
-  .imp-eq-tag { font-style: normal; font-size: var(--font-tiny); font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-subtle); color: var(--accent); }
+  .imp-eq span { font-size: var(--font-tiny); font-weight: var(--fw-normal); color: var(--text-dim); }
+  .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
+  .imp-eq-tag { font-style: normal; font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 7px; border-radius: 999px; background: var(--accent-subtle); color: var(--accent); }
   .imp-eq-tag.warn { background: var(--service-subtle); color: var(--service-accent); }
   .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
   .imp-hint { font-size: var(--font-tiny); color: var(--text-dim); }
   .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }
-  .imp-msg { font-size: var(--font-small); color: var(--accent); font-weight: 600; }
+  .imp-msg { font-size: var(--font-small); color: var(--accent); font-weight: var(--fw-semibold); }
   .imp-note { font-size: var(--font-tiny); color: var(--text-dim); border-top: 1px dashed var(--border); padding-top: 8px; }
 
   .fam-tabs {
@@ -982,7 +982,7 @@
     padding: 6px 14px;
     border-radius: var(--radius-sm);
     font-size: var(--font-small);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     color: var(--text-secondary);
     transition: all var(--dur-fast) var(--ease);
     cursor: pointer;
@@ -993,7 +993,7 @@
   /* sub-taburi pentru Motoare (pe tip) */
   .subfam-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: calc(-1 * var(--space-md)) 0 var(--space-lg); }
   .subfam-tab {
-    padding: 4px 13px; border-radius: 999px; font-size: var(--font-tiny); font-weight: 600;
+    padding: 4px 13px; border-radius: 999px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
     color: var(--text-dim); border: 1px solid var(--border); background: var(--bg-surface);
     cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
@@ -1033,9 +1033,9 @@
   .acc-chev.open { transform: rotate(90deg); color: var(--accent); }
   .acc-title {
     flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;
-    font-size: var(--font-body); font-weight: 700; color: var(--text);
+    font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text);
   }
-  .acc-sub { font-size: var(--font-tiny); font-weight: 400; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acc-sub { font-size: var(--font-tiny); font-weight: var(--fw-normal); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .star-btn { display: flex; flex-shrink: 0; padding: 4px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .star-btn:hover { background: var(--bg-hover); color: var(--text); }
   .star-btn.on { color: var(--warning); }
@@ -1047,7 +1047,7 @@
   .acc-body-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
   .acc-nav { display: flex; justify-content: space-between; gap: var(--space-sm); border-top: 1px dashed var(--border); padding-top: var(--space-sm); }
   .nav-btn {
-    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
@@ -1076,9 +1076,9 @@
   /* === Favorite / Recente === */
   .quick-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-md); }
   .quick-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .quick-h { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-tiny); font-weight: 700; color: var(--text-dim); margin-right: 2px; }
+  .quick-h { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-tiny); font-weight: var(--fw-bold); color: var(--text-dim); margin-right: 2px; }
   .chip {
-    font-size: var(--font-tiny); font-weight: 600; color: var(--text-secondary);
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 3px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-surface);
     cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
@@ -1102,7 +1102,7 @@
   .inp { display: flex; flex-direction: column; gap: 4px; }
   .inp-label {
     font-size: var(--font-tiny);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     color: var(--text-secondary);
     line-height: 1.2;
     min-height: 2.2em;
@@ -1238,7 +1238,7 @@
   .doc-link:hover { background: var(--bg-surface); border-color: var(--accent); }
   .fig-link {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: var(--font-small); font-weight: 600;
+    font-size: var(--font-small); font-weight: var(--fw-semibold);
     padding: 7px 12px; border-radius: var(--radius-md);
     background: var(--accent-subtle); border: 1px solid var(--accent);
     color: var(--accent); text-decoration: none; width: fit-content;
@@ -1278,9 +1278,9 @@
   .term-sec { display: flex; flex-direction: column; gap: 4px; }
   .term-h {
     font-size: var(--font-tiny);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wide);
     color: var(--accent);
   }
   .term-sec p { font-size: var(--font-body); color: var(--text); line-height: 1.5; }

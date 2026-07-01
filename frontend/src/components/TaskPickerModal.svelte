@@ -110,7 +110,7 @@
   .pk-hint { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-lg); text-align: center; }
   .pk-list { display: flex; flex-direction: column; gap: var(--space-md); max-height: 52dvh; overflow-y: auto; scrollbar-width: thin; }
   .pk-group { display: flex; flex-direction: column; }
-  .pk-group-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); padding: 4px 2px; }
+  .pk-group-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 4px 2px; }
   .pk-group-count { margin-left: auto; padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); }
 
   .pk-row { display: flex; align-items: center; gap: var(--space-sm); padding: 8px 10px; border-radius: var(--radius-sm); text-align: left; cursor: pointer; transition: background var(--dur-fast) var(--ease); }
@@ -118,7 +118,7 @@
   .pk-row:disabled { opacity: 0.5; cursor: default; }
   .pk-prio { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .pk-title { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pk-scad { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+  .pk-scad { font-size: var(--font-micro); color: var(--text-dim); white-space: nowrap; }
   .pk-add { display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint); flex-shrink: 0; }
   .pk-row:hover .pk-add { color: var(--accent); }
 </style>

@@ -57,13 +57,13 @@
   .ap-img { max-width: 100%; max-height: 64vh; object-fit: contain; border-radius: var(--radius-xs); }
   .ap-pdf { width: 100%; height: 68vh; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
   .ap-none { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); padding: var(--space-xl) var(--space-md); color: var(--text-dim); text-align: center; }
-  .ap-name { font-size: var(--font-body); font-weight: 600; color: var(--text); word-break: break-all; }
+  .ap-name { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); word-break: break-all; }
   .ap-hint { font-size: var(--font-small); color: var(--text-dim); max-width: 420px; }
   .ap-actions { display: flex; align-items: center; gap: var(--space-sm); }
   .ap-spacer { flex: 1; }
   .ap-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); font-size: var(--font-small); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .ap-link:hover { background: var(--bg-hover); color: var(--text); border-color: var(--text-dim); }
-  .ap-link.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-surface); font-weight: 600; }
+  .ap-link.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-surface); font-weight: var(--fw-semibold); }
   .ap-link.primary:hover { opacity: 0.9; color: var(--bg-surface); }
   @media (max-width: 768px) {
     .ap-actions { flex-wrap: wrap; }

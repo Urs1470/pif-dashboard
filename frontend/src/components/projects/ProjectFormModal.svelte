@@ -121,13 +121,13 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
   .full { grid-column: 1 / -1; }
   .tip-row { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; }
-  .tip-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tip-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .tip-toggle { display: flex; gap: var(--space-xs); }
-  .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: var(--fw-semibold); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .tip-btn.active-pif { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
   .tip-btn.active-service { background: var(--service-subtle); border-color: var(--service-accent); color: var(--service-accent); }
   .ta-field { display: flex; flex-direction: column; gap: 4px; }
-  .ta-label { font-size: var(--font-tiny); font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .ta-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   textarea { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
   .actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
 

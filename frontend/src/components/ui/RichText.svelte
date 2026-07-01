@@ -58,6 +58,6 @@
   .rt-clip { position: relative; }
   .rt-clamped { overflow: hidden; }
   .rt-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; background: linear-gradient(transparent, var(--rt-fade, var(--bg))); pointer-events: none; }
-  .rt-toggle { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: var(--font-tiny); font-weight: 600; color: var(--accent); cursor: pointer; padding: 3px 8px; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
+  .rt-toggle { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--accent); cursor: pointer; padding: 3px 8px; border-radius: var(--radius-xs); transition: background var(--dur-fast) var(--ease); }
   .rt-toggle:hover { background: var(--accent-subtle); }
 </style>

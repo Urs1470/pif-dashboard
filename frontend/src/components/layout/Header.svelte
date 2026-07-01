@@ -121,9 +121,9 @@
   .tc-time {
     font-family: var(--font-mono);
     font-size: var(--font-tiny);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     color: var(--accent);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wide);
   }
   .tc-stop {
     width: 22px;

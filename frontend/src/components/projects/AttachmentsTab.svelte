@@ -116,7 +116,7 @@
   .att-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-sm); text-align: left; cursor: pointer; color: var(--text-dim); border-radius: var(--radius-xs); transition: color var(--dur-fast) var(--ease); }
   .att-main:hover { color: var(--accent); }
   .att-text { flex: 1; min-width: 0; }
-  .att-name { font-size: var(--font-small); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .att-name { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .att-meta { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
   .att-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; text-decoration: none; transition: all var(--dur-fast) var(--ease); }
   .att-btn:hover { background: var(--bg-hover); color: var(--text); }
