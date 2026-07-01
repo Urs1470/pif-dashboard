@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIF Dashboard — Schițe de design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  min-height:100vh; background:#0f0e0c; color:#efeae2;
+  font-family:'Inter', system-ui, sans-serif; display:grid; place-items:center; padding:40px 20px;
+}
+.box { max-width: 860px; width:100%; }
+h1 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.03em; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.sub { color:#9a917f; margin: 10px 0 34px; font-size:.95rem; line-height:1.6; }
+.cards { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+@media (max-width:680px){ .cards { grid-template-columns:1fr; } }
+a.card {
+  display:block; text-decoration:none; color:inherit; border-radius:20px; padding:26px;
+  border:1px solid #2c2820; background:#181510;
+  transition: transform .2s cubic-bezier(.32,.72,.28,1), border-color .2s, box-shadow .2s;
+}
+a.card:hover { transform: translateY(-4px); border-color:#4a4232; box-shadow: 0 20px 44px -20px rgba(0,0,0,.8); }
+a.card.brut { border-radius:0; background:#f2efe9; color:#16140f; border:2.5px solid #16140f; box-shadow: 5px 5px 0 #000; font-family:'JetBrains Mono', monospace; }
+a.card.brut:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 #000; border-color:#16140f; }
+.tag { font-size:.66rem; text-transform:uppercase; letter-spacing:.16em; font-weight:700; }
+.card h2 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-size:1.5rem; letter-spacing:-.02em; margin:10px 0 8px; }
+.card.brut h2 { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; text-transform:uppercase; }
+.card p { font-size:.83rem; line-height:1.6; color:#9a917f; }
+.card.brut p { color:#55503f; }
+.card .go { display:inline-block; margin-top:16px; font-size:.8rem; font-weight:600; color:#ffb454; }
+.card.brut .go { color:#ff4d00; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.1em; }
+.tag.amber { color:#ffb454; }
+.tag.sig { color:#ff4d00; }
+.note { margin-top:30px; font-size:.75rem; color:#6d6555; line-height:1.7; }
+.note code { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; background:#1c1914; padding:1px 6px; border-radius:5px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Schițe de design — PIF Dashboard</h1>
+  <p class="sub">Două direcții bazate pe trendurile 2026 (bento grids, motion funcțional &lt;300ms,
+  "intentional incompleteness"), cu date demo din domeniul comisionării. Fiecare schiță are două
+  ecrane: <b>Dashboard</b> și <b>Detaliu proiect</b> — comutabile din navigația paginii.</p>
+
+  <div class="cards">
+    <a class="card" href="bento.html">
+      <span class="tag amber">Direcția 01</span>
+      <h2>Bento grid modern</h2>
+      <p>Dark warm + amber, grilă bento asimetrică, KPI-uri cu tipografie masivă și count-up,
+      sparkline care se desenează, inel de progres PIF, dock plutitor în loc de sidebar,
+      micro-interacțiuni la hover.</p>
+      <span class="go">Deschide schița →</span>
+    </a>
+    <a class="card brut" href="brutalist.html">
+      <span class="tag sig">Direcția 02</span>
+      <h2>Neo-brutalist</h2>
+      <p>Fișă tehnică pe hârtie + signal orange. Grilă schematică vizibilă, borduri groase,
+      umbre dure, monospace peste tot, ticker de status, bare hașurate animate, hover cu
+      inversare bruscă. Estetică de panou SCADA.</p>
+      <span class="go">Deschide schița →</span>
+    </a>
+  </div>
+
+  <p class="note">Fișiere autonome (HTML + CSS + JS inline, fonturi Google Fonts) — se deschid direct în browser.
+  Datele sunt hardcodate cu structură similară API-ului real (<code>/api/proiecte</code>), ca migrarea
+  în Svelte să fie directă. Ambele respectă <code>prefers-reduced-motion</code>.</p>
+</div>
+</body>
+</html>

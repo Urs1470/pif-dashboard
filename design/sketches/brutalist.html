@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ro" data-view="home">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIF Dashboard — Schiță Neo-brutalist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SCHIȚĂ 2 — NEO-BRUTALIST / SCHEMATIC
+   Hârtie tehnică + cerneală + signal orange. Fișă de comandă SCADA.
+   ============================================================ */
+:root {
+  --paper: #f2efe9;
+  --paper-2: #e9e4da;
+  --ink: #16140f;
+  --ink-2: #55503f;
+  --ink-3: #8d8674;
+  --sig: #ff4d00;            /* signal orange */
+  --sig-soft: #ffd9c7;
+  --ok: #0d7a3f;
+  --grid-line: rgba(22,20,15,.08);
+  --bw: 2.5px;               /* border width */
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --snap: .1s steps(2, end); /* tranziții dure */
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  background: var(--paper);
+  /* grilă schematică vizibilă */
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--sig); color: var(--paper); }
+
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 22px 80px; }
+
+/* ---------- stamp-in la încărcare ---------- */
+.stamp { opacity:0; animation: stampIn .22s steps(3, end) forwards; }
+@keyframes stampIn { 0% { opacity:0; transform: scale(1.06); } 100% { opacity:1; transform:none; } }
+.d1{animation-delay:.05s} .d2{animation-delay:.12s} .d3{animation-delay:.19s}
+.d4{animation-delay:.26s} .d5{animation-delay:.33s} .d6{animation-delay:.4s} .d7{animation-delay:.47s}
+
+/* ---------- ticker ---------- */
+.ticker {
+  background: var(--ink); color: var(--paper); overflow:hidden; white-space:nowrap;
+  font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+  border-bottom: var(--bw) solid var(--ink);
+}
+.ticker-inner { display:inline-block; padding: 7px 0; animation: tick 28s linear infinite; }
+.ticker b { color: var(--sig); font-weight:700; }
+.ticker .sep { margin: 0 22px; color: var(--ink-3); }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ---------- masthead ---------- */
+.mast {
+  display:flex; align-items:stretch; border: var(--bw) solid var(--ink);
+  border-top:none; background: var(--paper); margin-bottom: 26px;
+}
+.mast-title { flex:1; padding: 18px 20px 14px; border-right: var(--bw) solid var(--ink); }
+.mast h1 { font-family:'Archivo Black','Arial Black',sans-serif; font-size: clamp(1.5rem, 4vw, 2.4rem); letter-spacing:-.01em; text-transform:uppercase; line-height:.95; }
+.mast h1 .o { color: var(--sig); }
+.mast-sub { font-size:.7rem; text-transform:uppercase; letter-spacing:.18em; color:var(--ink-2); margin-top:6px; }
+.mast-meta { display:flex; flex-direction:column; min-width: 210px; }
+.mast-meta > div { flex:1; padding: 8px 16px; display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:.72rem; }
+.mast-meta > div + div { border-top: 1.5px solid var(--ink); }
+.mast-meta .k { color:var(--ink-3); text-transform:uppercase; letter-spacing:.1em; font-size:.62rem; }
+.mast-meta .v { font-weight:700; }
+.doc-stamp {
+  align-self:center; margin: 0 18px; padding: 8px 14px; border: var(--bw) solid var(--sig); color: var(--sig);
+  font-weight:800; text-transform:uppercase; font-size:.8rem; letter-spacing:.12em;
+  transform: rotate(-4deg); flex-shrink:0;
+}
+
+/* ---------- nav tabs ---------- */
+.tabs { display:flex; gap:0; margin-bottom: 26px; flex-wrap:wrap; }
+.tab {
+  font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em;
+  background: var(--paper); color: var(--ink); border: var(--bw) solid var(--ink); border-right-width:0;
+  padding: 10px 20px; cursor:pointer; transition: background var(--snap), color var(--snap);
+}
+.tab:last-child { border-right-width: var(--bw); }
+.tab:hover { background: var(--ink); color: var(--paper); }
+.tab.on { background: var(--sig); color: var(--paper); }
+.tab .n { color: inherit; opacity:.55; margin-right:8px; }
+
+/* ---------- view switching ---------- */
+.view { display:none; }
+[data-view="home"]    #view-home    { display:block; }
+[data-view="project"] #view-project { display:block; }
+
+/* ---------- section frame ---------- */
+.sec {
+  border: var(--bw) solid var(--ink); background: var(--paper);
+  box-shadow: var(--shadow); margin-bottom: 22px; position:relative;
+}
+.sec-head {
+  display:flex; align-items:center; gap:14px; padding: 10px 16px;
+  border-bottom: var(--bw) solid var(--ink); background: var(--paper-2);
+  font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.16em;
+}
+.sec-head .no { color: var(--sig); font-weight:800; }
+.sec-head .tail { margin-left:auto; color: var(--ink-3); font-weight:400; letter-spacing:.06em; text-transform:none; font-size:.66rem; }
+.sec-body { padding: 16px; }
+
+/* ---------- KPI row ---------- */
+.kpi-row { display:grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
+.kpi {
+  border: var(--bw) solid var(--ink); background: var(--paper); box-shadow: var(--shadow-sm);
+  padding: 14px 16px; cursor:pointer; transition: background var(--snap), color var(--snap), box-shadow var(--snap), transform var(--snap);
+}
+.kpi:hover { background: var(--ink); color: var(--paper); }
+.kpi:hover .kpi-k { color: var(--paper); opacity:.6; }
+.kpi:hover .kpi-note { color: var(--paper); opacity:.6; }
+.kpi:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.kpi-k { font-size:.62rem; text-transform:uppercase; letter-spacing:.16em; color:var(--ink-2); display:flex; justify-content:space-between; }
+.kpi-v { font-family:'Archivo Black','Arial Black',sans-serif; font-size: clamp(2.2rem, 4.5vw, 3.2rem); line-height:1.1; margin-top:6px; font-variant-numeric: tabular-nums; }
+.kpi-v .u { font-size:1rem; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:400; }
+.kpi-v.sig { color: var(--sig); }
+.kpi:hover .kpi-v.sig { color: var(--sig); }
+.kpi-note { font-size:.66rem; color:var(--ink-2); margin-top:4px; }
+.kpi-alert { display:inline-block; background:var(--sig); color:var(--paper); font-size:.58rem; font-weight:700; padding:2px 7px; letter-spacing:.1em; animation: blinkbg 1.2s steps(2, end) infinite; }
+@keyframes blinkbg { 50% { background: var(--ink); } }
+
+/* ---------- tables ---------- */
+table { width:100%; border-collapse: collapse; font-size:.8rem; }
+th {
+  text-align:left; font-size:.62rem; text-transform:uppercase; letter-spacing:.14em;
+  border-bottom: var(--bw) solid var(--ink); padding: 8px 10px; color: var(--ink-2); font-weight:700;
+}
+td { padding: 10px; border-bottom: 1.5px solid rgba(22,20,15,.18); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr { cursor:pointer; transition: background var(--snap), color var(--snap); }
+tbody tr:hover { background: var(--ink); color: var(--paper); }
+tbody tr:hover .dim, tbody tr:hover .stat { color: var(--paper); opacity:.75; }
+tbody tr:hover .bar-track { border-color: var(--paper); }
+.dim { color: var(--ink-3); font-size:.72rem; }
+.idx { color: var(--sig); font-weight:800; font-size:.72rem; }
+
+/* status blocks */
+.stat { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; padding:3px 8px; border:1.5px solid currentColor; display:inline-block; }
+.stat-work { color: var(--sig); }
+.stat-done { color: var(--ok); }
+.stat-wait { color: var(--ink-3); }
+
+/* ---------- striped progress bars ---------- */
+.bar-track { border: 1.5px solid var(--ink); height: 16px; background: var(--paper); position:relative; min-width: 90px; }
+.bar-fill {
+  height:100%; background: repeating-linear-gradient(-45deg, var(--ink) 0 6px, transparent 6px 12px);
+  background-size: 200% 100%; animation: crawl 1.2s linear infinite;
+}
+.bar-fill.sig { background: repeating-linear-gradient(-45deg, var(--sig) 0 6px, transparent 6px 12px); background-size: 200% 100%; }
+@keyframes crawl { from { background-position: 0 0; } to { background-position: 17px 0; } }
+.bar-lab { font-size:.66rem; font-weight:700; margin-left:10px; }
+
+/* ---------- two-col layout ---------- */
+.cols { display:grid; grid-template-columns: 1.4fr 1fr; gap: 22px; align-items:start; }
+
+/* ---------- task list (square checkboxes) ---------- */
+.tlist { list-style:none; }
+.tlist li {
+  display:flex; align-items:center; gap:12px; padding: 10px 6px;
+  border-bottom: 1.5px dashed rgba(22,20,15,.28); cursor:pointer; font-size:.8rem;
+  transition: background var(--snap);
+}
+.tlist li:last-child { border-bottom:none; }
+.tlist li:hover { background: var(--sig-soft); }
+.sq { width:17px; height:17px; border: var(--bw) solid var(--ink); flex-shrink:0; display:grid; place-items:center; font-size:.72rem; font-weight:800; line-height:1; background:var(--paper); }
+li.done .sq { background: var(--ink); color: var(--paper); }
+li.done .tx { text-decoration: line-through; color: var(--ink-3); }
+.tlist .tag { margin-left:auto; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:2px 7px; text-transform:uppercase; border:1.5px solid var(--ink); flex-shrink:0; }
+.tag.hot { background: var(--sig); border-color: var(--sig); color: var(--paper); }
+
+/* ---------- weekly bars (schematic chart) ---------- */
+.wchart { display:flex; align-items:flex-end; gap:10px; height: 130px; padding: 6px 4px 0; }
+.wcol { flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end; }
+.wbar { width:100%; border: var(--bw) solid var(--ink); background: repeating-linear-gradient(-45deg, var(--ink) 0 5px, transparent 5px 10px); transform-origin: bottom; animation: rise .5s steps(6, end) both; transition: background var(--snap); }
+.wcol:hover .wbar { background: var(--sig); }
+.wbar.today { background: var(--sig); }
+@keyframes rise { from { transform: scaleY(0); } }
+.wlab { font-size:.6rem; text-transform:uppercase; color:var(--ink-2); font-weight:700; }
+.wval { font-size:.62rem; font-weight:700; }
+
+/* ---------- blinking cursor ---------- */
+.cursor { display:inline-block; width:.55em; height:1em; background: var(--sig); vertical-align: -2px; animation: blink 1s steps(2, end) infinite; }
+@keyframes blink { 50% { opacity:0; } }
+
+/* ---------- big timer display ---------- */
+.bigtime {
+  font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:800; font-variant-numeric: tabular-nums;
+  font-size: clamp(2.6rem, 6vw, 4rem); letter-spacing: .04em; line-height:1;
+  background: var(--ink); color: var(--paper); padding: 18px 22px; display:block; text-align:center;
+  border: var(--bw) solid var(--ink);
+}
+.bigtime .o { color: var(--sig); }
+.time-foot { display:flex; justify-content:space-between; font-size:.64rem; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-2); margin-top:10px; }
+
+/* ---------- buttons ---------- */
+.bbtn {
+  font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.12em;
+  border: var(--bw) solid var(--ink); background: var(--paper); color: var(--ink);
+  padding: 9px 16px; cursor:pointer; box-shadow: var(--shadow-sm);
+  transition: background var(--snap), color var(--snap), box-shadow var(--snap), transform var(--snap);
+}
+.bbtn:hover { background: var(--ink); color: var(--paper); }
+.bbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.bbtn.sig { background: var(--sig); color: var(--paper); border-color: var(--ink); }
+.bbtn.sig:hover { background: var(--ink); }
+.btn-row { display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
+
+/* ---------- checklist numbered ---------- */
+.chk { list-style:none; counter-reset: chk; column-count: 2; column-gap: 28px; }
+.chk li { counter-increment: chk; display:flex; gap:12px; align-items:flex-start; padding: 7px 4px; font-size:.76rem; break-inside: avoid; border-bottom: 1.5px dashed rgba(22,20,15,.22); cursor:pointer; }
+.chk li:hover { background: var(--sig-soft); }
+.chk li::before { content: counter(chk, decimal-leading-zero); font-weight:800; color: var(--ink-3); font-size:.66rem; padding-top:2px; }
+.chk li.done::before { color: var(--ok); }
+.chk li.done .tx { text-decoration: line-through; color: var(--ink-3); }
+.chk .sq { margin-top:1px; }
+
+/* ---------- footer ---------- */
+.foot { display:flex; justify-content:space-between; font-size:.62rem; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-3); padding-top:8px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .cols { grid-template-columns: 1fr; }
+  .chk { column-count: 1; }
+  .doc-stamp { display:none; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 12px 60px; }
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mast { flex-direction: column; }
+  .mast-title { border-right: none; border-bottom: var(--bw) solid var(--ink); }
+  .tab { flex:1; text-align:center; padding: 10px 8px; border-right-width: var(--bw); border-top-width: 0; }
+  .tabs .tab:first-child { border-top-width: var(--bw); }
+  .tabs { flex-direction: column; }
+  th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { display:none; }
+  .stat { font-size:.56rem; padding:3px 5px; letter-spacing:.04em; }
+  td, th { padding: 8px 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .stamp { opacity:1; }
+  .ticker-inner { animation: none; }
+  .cursor { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER STATUS -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <span>■ Sistem operațional</span><span class="sep">///</span>
+    <span>Timer activ: <b>PIF Stație pompare Cluj — 01:42:17</b></span><span class="sep">///</span>
+    <span>Deadline critic: <b>Raport PIF Cluj — 2 zile</b></span><span class="sep">///</span>
+    <span>4 proiecte în lucru</span><span class="sep">///</span>
+    <span>3 taskuri urgente</span><span class="sep">///</span>
+    <span>■ Sistem operațional</span><span class="sep">///</span>
+    <span>Timer activ: <b>PIF Stație pompare Cluj — 01:42:17</b></span><span class="sep">///</span>
+    <span>Deadline critic: <b>Raport PIF Cluj — 2 zile</b></span><span class="sep">///</span>
+    <span>4 proiecte în lucru</span><span class="sep">///</span>
+    <span>3 taskuri urgente</span><span class="sep">///</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="mast stamp d1">
+    <div class="mast-title">
+      <h1>PIF<span class="o">/</span>Dashboard</h1>
+      <div class="mast-sub">Fișă de comandă — comisionare & management proiecte</div>
+    </div>
+    <div class="doc-stamp">În lucru</div>
+    <div class="mast-meta">
+      <div><span class="k">Operator</span><span class="v">ION URSU</span></div>
+      <div><span class="k">Data</span><span class="v">01.07.2026</span></div>
+      <div><span class="k">Doc</span><span class="v">PIF-DB-<span style="color:var(--sig)">0347</span></span></div>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="tabs stamp d2">
+    <button class="tab on" id="tab-home" onclick="go('home')"><span class="n">01</span>Dashboard</button>
+    <button class="tab" id="tab-proj" onclick="go('project')"><span class="n">02</span>Proiect activ</button>
+    <button class="tab"><span class="n">03</span>Taskuri</button>
+    <button class="tab"><span class="n">04</span>Parametri</button>
+    <button class="tab"><span class="n">05</span>Jurnal</button>
+  </nav>
+
+  <!-- ================= HOME ================= -->
+  <main class="view" id="view-home">
+
+    <!-- KPI -->
+    <div class="kpi-row">
+      <div class="kpi stamp d3" onclick="go('project')">
+        <div class="kpi-k">Proiecte active <span>[A]</span></div>
+        <div class="kpi-v" data-count="4">0</div>
+        <div class="kpi-note">+1 față de luna trecută</div>
+      </div>
+      <div class="kpi stamp d3">
+        <div class="kpi-k">Taskuri urgente <span>[B]</span></div>
+        <div class="kpi-v sig" data-count="3">0</div>
+        <div class="kpi-note"><span class="kpi-alert">2 × termen azi</span></div>
+      </div>
+      <div class="kpi stamp d4">
+        <div class="kpi-k">Ore / săptămână <span>[C]</span></div>
+        <div class="kpi-v"><span data-count="32" data-dec="32.5">0</span><span class="u">h</span></div>
+        <div class="kpi-note">▲ 12% vs. săpt. trecută</div>
+      </div>
+      <div class="kpi stamp d4">
+        <div class="kpi-k">Deadline 7 zile <span>[D]</span></div>
+        <div class="kpi-v" data-count="2">0</div>
+        <div class="kpi-note">cel mai apropiat: 2 zile</div>
+      </div>
+    </div>
+
+    <!-- 01 PROIECTE -->
+    <section class="sec stamp d5">
+      <div class="sec-head"><span class="no">01/</span> Proiecte active <span class="tail">sortare: deadline asc</span></div>
+      <div class="sec-body" style="padding:0">
+        <table>
+          <thead><tr><th style="width:44px">#</th><th>Proiect</th><th>Client</th><th>Progres PIF</th><th>Deadline</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr onclick="go('project')">
+              <td class="idx">01</td>
+              <td><b>PIF Stație pompare Cluj</b><br><span class="dim">3× drives ABB ACS880 · 315 kW</span></td>
+              <td>Hidroconstrucția SA</td>
+              <td><div style="display:flex;align-items:center"><div class="bar-track" style="flex:1"><div class="bar-fill sig" style="width:68%"></div></div><span class="bar-lab">68%</span></div></td>
+              <td><b style="color:var(--sig)">03.07</b> <span class="dim">— 2 zile</span></td>
+              <td><span class="stat stat-work">În lucru</span></td>
+            </tr>
+            <tr>
+              <td class="idx">02</td>
+              <td><b>Retrofit ACS880 Fieni</b><br><span class="dim">înlocuire ACS800 → ACS880</span></td>
+              <td>Ciment Fieni</td>
+              <td><div style="display:flex;align-items:center"><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:35%"></div></div><span class="bar-lab">35%</span></div></td>
+              <td><b>05.07</b> <span class="dim">— 4 zile</span></td>
+              <td><span class="stat stat-work">În lucru</span></td>
+            </tr>
+            <tr>
+              <td class="idx">03</td>
+              <td><b>PIF Linie ambalare Brașov</b><br><span class="dim">12× Siemens G120C</span></td>
+              <td>Kronospan</td>
+              <td><div style="display:flex;align-items:center"><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:12%"></div></div><span class="bar-lab">12%</span></div></td>
+              <td><b>21.07</b> <span class="dim">— 20 zile</span></td>
+              <td><span class="stat stat-wait">Planificat</span></td>
+            </tr>
+            <tr>
+              <td class="idx">04</td>
+              <td><b>Service G120 — CET Vest</b><br><span class="dim">diagnoză F30005 recurent</span></td>
+              <td>Electrocentrale</td>
+              <td><div style="display:flex;align-items:center"><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:90%"></div></div><span class="bar-lab">90%</span></div></td>
+              <td><b>07.07</b> <span class="dim">— 6 zile</span></td>
+              <td><span class="stat stat-done">Verificare</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="cols">
+      <!-- 02 TASKURI URGENTE -->
+      <section class="sec stamp d6">
+        <div class="sec-head"><span class="no">02/</span> Taskuri urgente <span class="tail">click = bifează</span></div>
+        <div class="sec-body">
+          <ul class="tlist">
+            <li onclick="tg(this)"><span class="sq"></span><span class="tx">Autotuning motor P2 (315 kW) — Cluj</span><span class="tag hot">azi</span></li>
+            <li onclick="tg(this)"><span class="sq"></span><span class="tx">Test interblocări nivel minim bazin — Cluj</span><span class="tag hot">azi</span></li>
+            <li onclick="tg(this)"><span class="sq"></span><span class="tx">Comandă piese schimb FC302 — CET Vest</span><span class="tag">mâine</span></li>
+            <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Upload parametri ACS880 pompa P1</span><span class="tag">făcut</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 03 ORE SĂPTĂMÂNA -->
+      <section class="sec stamp d6">
+        <div class="sec-head"><span class="no">03/</span> Ore lucrate <span class="tail">total: 32.5h</span></div>
+        <div class="sec-body">
+          <div class="wchart">
+            <div class="wcol"><span class="wval">6.5</span><div class="wbar" style="height:65%; animation-delay:.5s"></div><span class="wlab">Lu</span></div>
+            <div class="wcol"><span class="wval">8.0</span><div class="wbar" style="height:80%; animation-delay:.56s"></div><span class="wlab">Ma</span></div>
+            <div class="wcol"><span class="wval">4.5</span><div class="wbar" style="height:45%; animation-delay:.62s"></div><span class="wlab">Mi</span></div>
+            <div class="wcol"><span class="wval">7.5</span><div class="wbar" style="height:75%; animation-delay:.68s"></div><span class="wlab">Jo</span></div>
+            <div class="wcol"><span class="wval">6.0</span><div class="wbar" style="height:60%; animation-delay:.74s"></div><span class="wlab">Vi</span></div>
+            <div class="wcol"><span class="wval">—</span><div class="wbar today" style="height:18%; animation-delay:.8s"></div><span class="wlab">Sâ</span></div>
+          </div>
+          <div class="foot" style="margin-top:12px"><span>Timer activ: <b style="color:var(--sig)" id="mini-clock">01:42:17</b><span class="cursor"></span></span><span>medie 6.5h/zi</span></div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ================= PROJECT DETAIL ================= -->
+  <main class="view" id="view-project">
+
+    <!-- fișă proiect -->
+    <section class="sec stamp d3">
+      <div class="sec-head"><span class="no">P-01/</span> Fișă proiect <span class="tail">creat 12.05.2026</span></div>
+      <div class="sec-body">
+        <div style="display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap">
+          <div style="flex:1; min-width:260px">
+            <h2 style="font-family:'Archivo Black','Arial Black',sans-serif; font-size:clamp(1.4rem,3.4vw,2.1rem); text-transform:uppercase; line-height:1">PIF Stație pompare Cluj</h2>
+            <div class="dim" style="margin-top:8px; font-size:.76rem; line-height:1.7">
+              CLIENT&ensp;·&ensp;<b style="color:var(--ink)">Hidroconstrucția SA</b><br>
+              LOCAȚIE&ensp;·&ensp;<b style="color:var(--ink)">Cluj-Napoca, stația SP-2 Someș</b><br>
+              CONTRACT&ensp;·&ensp;<b style="color:var(--ink)">HC-2026-0114</b>&ensp;·&ensp;DEADLINE&ensp;·&ensp;<b style="color:var(--sig)">03.07.2026</b>
+            </div>
+            <div class="btn-row">
+              <button class="bbtn sig">▶ Pornește timer</button>
+              <button class="bbtn">+ Task nou</button>
+              <button class="bbtn">✎ Jurnal</button>
+              <button class="bbtn" onclick="go('home')">← Dashboard</button>
+            </div>
+          </div>
+          <div style="min-width:230px">
+            <span class="bigtime"><span id="pd-clock">01:42:<span class="o">17</span></span></span>
+            <div class="time-foot"><span>Sesiune activă</span><span>total: 47.2h</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cols">
+      <div>
+        <!-- taskuri tabel -->
+        <section class="sec stamp d4">
+          <div class="sec-head"><span class="no">P-02/</span> Taskuri <span class="tail">4 deschise / 2 închise</span></div>
+          <div class="sec-body">
+            <ul class="tlist">
+              <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Verificare cablare forță dulap DT-01</span><span class="tag">făcut</span></li>
+              <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Upload parametri ACS880 — pompa P1</span><span class="tag">făcut</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Autotuning motor P2 (315 kW)</span><span class="tag hot">high</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Test interblocări nivel minim bazin</span><span class="tag hot">high</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Setare rampă + limite cuplu P3</span><span class="tag">med</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Redactare raport PIF final</span><span class="tag">med</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- echipamente -->
+        <section class="sec stamp d5">
+          <div class="sec-head"><span class="no">P-03/</span> Echipamente / drives</div>
+          <div class="sec-body" style="padding:0">
+            <table>
+              <thead><tr><th>Poz.</th><th>Echipament</th><th>Convertizor</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="idx">P1</td><td>Pompă verticală 200 kW</td><td class="dim">ABB ACS880-01-145A-3</td><td><span class="stat stat-done">PIF OK</span></td></tr>
+                <tr><td class="idx">P2</td><td>Pompă verticală 315 kW</td><td class="dim">ABB ACS880-01-206A-3</td><td><span class="stat stat-work">Parametrizare</span></td></tr>
+                <tr><td class="idx">P3</td><td>Pompă rezervă 90 kW</td><td class="dim">Danfoss FC302 P90K</td><td><span class="stat stat-wait">Neînceput</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <!-- progres PIF -->
+        <section class="sec stamp d4">
+          <div class="sec-head"><span class="no">P-04/</span> Progres PIF <span class="tail">17/25</span></div>
+          <div class="sec-body">
+            <div style="display:flex; align-items:baseline; gap:14px">
+              <span style="font-family:'Archivo Black','Arial Black',sans-serif; font-size:3rem; line-height:1" data-count="68">0</span>
+              <span style="font-family:'Archivo Black','Arial Black',sans-serif; font-size:1.4rem">%</span>
+              <div class="bar-track" style="flex:1; height:22px"><div class="bar-fill sig" style="width:68%"></div></div>
+            </div>
+            <ul class="chk" style="margin-top:16px; column-count:1">
+              <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Verificare împământare + megohmmetru</span></li>
+              <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Control sens rotație P1–P3</span></li>
+              <li class="done" onclick="tg(this)"><span class="sq">×</span><span class="tx">Verificare secvență pornire P2</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Test suprasarcină 110% — 30 min</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Probe funcționare automată 72h</span></li>
+              <li onclick="tg(this)"><span class="sq"></span><span class="tx">Semnare proces-verbal recepție</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- jurnal -->
+        <section class="sec stamp d6">
+          <div class="sec-head"><span class="no">P-05/</span> Jurnal șantier</div>
+          <div class="sec-body">
+            <ul class="tlist">
+              <li style="cursor:default"><span class="idx" style="min-width:82px">30.06 16:40</span><span class="tx">P2 — vibrații la 42 Hz, ocolit prin skip freq. 40–44 Hz.</span></li>
+              <li style="cursor:default"><span class="idx" style="min-width:82px">30.06 11:15</span><span class="tx">F0002 supratensiune DC la oprire — rampă 15s → 30s.</span></li>
+              <li style="cursor:default"><span class="idx" style="min-width:82px">29.06 14:02</span><span class="tx">Client cere raport intermediar. Termen 3 iulie.</span></li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="foot stamp d7">
+    <span>PIF-DASHBOARD // schiță neo-brutalist v0.1</span>
+    <span>pif.iupif.org<span class="cursor"></span></span>
+  </footer>
+</div>
+
+<script>
+/* ---------- view switching ---------- */
+function go(view) {
+  document.documentElement.dataset.view = view;
+  document.getElementById('tab-home').classList.toggle('on', view === 'home');
+  document.getElementById('tab-proj').classList.toggle('on', view === 'project');
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- count-up (steps, brutalist — sare, nu alunecă) ---------- */
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll('[data-count]').forEach(el => {
+  const target = parseFloat(el.dataset.dec || el.dataset.count);
+  const isDec = !!el.dataset.dec;
+  if (reduced) { el.textContent = isDec ? target.toFixed(1) : target; return; }
+  let step = 0; const steps = 6;
+  const iv = setInterval(() => {
+    step++;
+    const v = target * step / steps;
+    el.textContent = isDec ? v.toFixed(1) : Math.round(v);
+    if (step >= steps) clearInterval(iv);
+  }, 90);
+});
+
+/* ---------- task/checklist toggle ---------- */
+function tg(el) {
+  el.classList.toggle('done');
+  el.querySelector('.sq').textContent = el.classList.contains('done') ? '×' : '';
+}
+
+/* ---------- live timer ---------- */
+let secs = 1 * 3600 + 42 * 60 + 17;
+setInterval(() => {
+  secs++;
+  const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+  const m = String(Math.floor(secs % 3600 / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  const mini = document.getElementById('mini-clock');
+  if (mini) mini.textContent = `${h}:${m}:${s}`;
+  const pd = document.getElementById('pd-clock');
+  if (pd) pd.innerHTML = `${h}:${m}:<span class="o">${s}</span>`;
+}, 1000);
+</script>
+</body>
+</html>
