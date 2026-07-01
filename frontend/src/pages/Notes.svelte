@@ -221,7 +221,7 @@
   .note-item.active { background: var(--accent-subtle); color: var(--accent); border-left-color: var(--accent); }
   .note-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .note-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .note-snippet { font-size: var(--font-tiny); color: var(--text-dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
+  .note-snippet { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
 
   .content { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); min-height: 400px; }
   .note-head { padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }

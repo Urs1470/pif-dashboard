@@ -16,6 +16,7 @@
   import Button from '../components/ui/Button.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import Textarea from '../components/ui/Textarea.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
@@ -596,10 +597,7 @@
 <Modal bind:open={showNewModal} title="Task Nou" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de facut?" />
-    <label class="mf-field">
-      <span class="mf-label">Descriere</span>
-      <textarea class="mf-textarea" bind:value={formDesc} placeholder="Detalii (optional)" rows="3"></textarea>
-    </label>
+    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (optional)" rows={3} />
     <div class="form-row-3">
       <label class="mf-field">
         <span class="mf-label">Prioritate</span>
@@ -637,10 +635,7 @@
 <Modal bind:open={showEditModal} title="Editeaza Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
-    <label class="mf-field">
-      <span class="mf-label">Descriere</span>
-      <textarea class="mf-textarea" bind:value={formDesc} placeholder="Detalii (optional)" rows="3"></textarea>
-    </label>
+    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (optional)" rows={3} />
     <div class="form-row-3">
       <label class="mf-field">
         <span class="mf-label">Prioritate</span>
@@ -843,7 +838,6 @@
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
-  .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
   .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
