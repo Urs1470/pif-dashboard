@@ -1,5 +1,7 @@
 <script>
   import { tick } from 'svelte'
+  import { fade, fly } from 'svelte/transition'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 
   let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
   let backdropEl = $state(null)
@@ -37,8 +39,8 @@
 </script>
 
 {#if open}
-  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1">
-    <div class="modal modal-{size}">
+  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
+    <div class="modal modal-{size}" transition:fly={{ y: 12, duration: motionDuration(DUR_BASE) }}>
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onclick={() => open = false} aria-label="Inchide">&times;</button>
@@ -67,7 +69,6 @@
     justify-content: center;
     z-index: var(--z-modal);
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
-    animation: fadeIn var(--dur-fast) var(--ease);
   }
   .modal {
     background: var(--bg-surface);
@@ -78,7 +79,6 @@
     display: flex;
     flex-direction: column;
     box-shadow: var(--shadow-lg);
-    animation: slideUp var(--dur-base) var(--ease);
   }
   .modal-sm { max-width: 400px; }
   .modal-md { max-width: 560px; }
@@ -128,9 +128,6 @@
     border-top: 1px solid var(--border);
     flex-shrink: 0;
   }
-
-  @keyframes fadeIn { from { opacity: 0; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } }
 
   @media (max-width: 768px) {
     .modal {

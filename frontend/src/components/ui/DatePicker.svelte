@@ -1,5 +1,7 @@
 <script>
   import { Calendar, ChevronLeft, ChevronRight, X } from '@lucide/svelte'
+  import { scale, fly } from 'svelte/transition'
+  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   let {
     value = $bindable(''),
@@ -16,6 +18,7 @@
   let open = $state(false)
   let viewY = $state(0)
   let viewM = $state(0) // 0-indexed
+  let direction = $state(1) // for the month-grid slide: +1 next, -1 prev
   let triggerEl = $state(null)
   let popupEl = $state(null)
   let popupStyle = $state('')
@@ -89,8 +92,8 @@
 
   function close() { open = false }
 
-  function prevMonth() { if (viewM === 0) { viewM = 11; viewY-- } else viewM-- }
-  function nextMonth() { if (viewM === 11) { viewM = 0; viewY++ } else viewM++ }
+  function prevMonth() { direction = -1; if (viewM === 0) { viewM = 11; viewY-- } else viewM-- }
+  function nextMonth() { direction = 1; if (viewM === 11) { viewM = 0; viewY++ } else viewM++ }
 
   function pick(d) {
     value = toISO(viewY, viewM, d)
@@ -133,7 +136,7 @@
   </button>
 
   {#if open}
-    <div class="dp-pop" bind:this={popupEl} style={popupStyle}>
+    <div class="dp-pop" bind:this={popupEl} style={popupStyle} transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
       <div class="dp-head">
         <button type="button" class="dp-nav" onclick={prevMonth} aria-label="Luna anterioara"><ChevronLeft size={16} /></button>
         <span class="dp-title">{MONTHS[viewM]} {viewY}</span>
@@ -142,15 +145,17 @@
       <div class="dp-grid dp-wd">
         {#each WEEKDAYS as w}<span class="dp-wdname">{w}</span>{/each}
       </div>
-      <div class="dp-grid">
-        {#each days as d}
-          {#if d === null}
-            <span class="dp-empty"></span>
-          {:else}
-            <button type="button" class="dp-day" class:selected={isSelected(d)} class:today={isToday(d)} onclick={() => pick(d)}>{d}</button>
-          {/if}
-        {/each}
-      </div>
+      {#key `${viewY}-${viewM}`}
+        <div class="dp-grid" in:fly={{ x: direction * 12, duration: motionDuration(DUR_FAST) }}>
+          {#each days as d}
+            {#if d === null}
+              <span class="dp-empty"></span>
+            {:else}
+              <button type="button" class="dp-day" class:selected={isSelected(d)} class:today={isToday(d)} onclick={() => pick(d)}>{d}</button>
+            {/if}
+          {/each}
+        </div>
+      {/key}
       <div class="dp-foot">
         <button type="button" class="dp-foot-btn" onclick={pickToday}>Azi</button>
         {#if display}<button type="button" class="dp-foot-btn clear" onclick={clear}><X size={12} /> Sterge</button>{/if}

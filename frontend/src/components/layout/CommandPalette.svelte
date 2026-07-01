@@ -1,7 +1,9 @@
 <script>
   import { Search, Home, FolderKanban, ListTodo, Cpu, StickyNote, Settings, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare, Calculator } from '@lucide/svelte'
+  import { fade, fly } from 'svelte/transition'
   import { navigate, router } from '../../lib/router.svelte.js'
   import { apiJson } from '../../lib/api.js'
+  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   let open = $state(false)
   let query = $state('')
@@ -188,8 +190,8 @@
 </script>
 
 {#if open}
-  <div class="palette-backdrop" onclick={close} role="presentation">
-    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1">
+  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
+    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:fly={{ y: -8, duration: motionDuration(DUR_FAST) }}>
       <div class="palette-search">
         <Search size={16} />
         <input
@@ -228,7 +230,7 @@
         {:else if flatResults.length === 0}
           <div class="palette-empty">Niciun rezultat pentru „{query.trim()}"</div>
         {:else}
-          {#each flatResults as item, i}
+          {#each flatResults as item, i (item._group ? 'g:' + item.type : item.type + ':' + item.id)}
             {#if item._group}
               {@const Icon = TYPE_META[item.type]?.icon || Search}
               <div class="group-label">
@@ -268,7 +270,6 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 15vh;
-    animation: fadeIn var(--dur-fast) var(--ease);
   }
 
   .palette {
@@ -279,7 +280,6 @@
     max-width: 560px;
     box-shadow: var(--shadow-lg);
     overflow: hidden;
-    animation: slideUp var(--dur-fast) var(--ease);
   }
 
   .palette-search {
@@ -399,9 +399,6 @@
     color: var(--text-dim);
     font-size: var(--font-small);
   }
-
-  @keyframes fadeIn { from { opacity: 0; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 768px) {
     .palette-backdrop { padding-top: calc(var(--space-lg) + var(--safe-top)); padding-left: calc(var(--space-md) + var(--safe-left)); padding-right: calc(var(--space-md) + var(--safe-right)); }

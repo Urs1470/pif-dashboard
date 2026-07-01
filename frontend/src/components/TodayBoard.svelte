@@ -17,6 +17,7 @@
   import EmptyState from './ui/EmptyState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
+  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
 
   let quickTitle = $state('')
   let quickAdding = $state(false)
@@ -25,9 +26,8 @@
   let dragIndex = $state(null)
   let overIndex = $state(null)
 
-  // Reorder settle animation (FLIP). Honors reduced-motion like the KPI count-up.
-  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
-  const flipDur = reduceMotion ? 0 : 180
+  // Reorder settle animation (FLIP). Honors reduced-motion live (matchMedia change listener).
+  const flipDur = $derived(motionDuration(DUR_BASE))
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 

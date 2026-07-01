@@ -1,12 +1,15 @@
 <script>
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
+  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
+  import { router } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -94,6 +97,15 @@
   // today's instance doesn't look like an identical unchecked copy reappearing.
   const activeTasks = $derived(filteredTasks.filter(t => t.status !== 'done' && !isFutureRecurrence(t)))
   const doneTasks = $derived(filteredTasks.filter(t => t.status === 'done'))
+
+  // Deep-link to a finalized task: auto-open the (collapsed-by-default) done section
+  // so its row mounts and focusOnLand can scroll/flash it instead of silently no-op'ing.
+  $effect(() => {
+    const f = router.query.focus
+    if (!f || !f.startsWith('global:')) return
+    const id = f.slice('global:'.length)
+    if (doneTasks.some(t => String(t.id) === id)) showDoneTasks = true
+  })
 
   async function toggleStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
@@ -443,7 +455,7 @@
   {:else}
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t (t.id)}
-        <div class="trow-wrap">
+        <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
             <button class="check" onclick={() => toggleStatus(t)}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
@@ -477,14 +489,14 @@
             </div>
           </div>
           {#if expandedTask === t.id}
-            <div class="subtask-body" transition:slide={{ duration: 150 }}>
+            <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
               {@render taskNotes(t)}
               {@render taskAttachments(t)}
               {#if subtaskLoading && !subtasksCache[t.id]}
                 <div class="sub-loading">Se incarca...</div>
               {:else}
                 {#each (subtasksCache[t.id] || []) as sub (sub.id)}
-                  <div class="sub-row" class:sub-done={sub.done}>
+                  <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
                     <button class="check" onclick={() => toggleSubtaskDone(sub)}>
                       {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
                     </button>
@@ -527,9 +539,9 @@
           {doneTasks.length} finalizate
         </button>
         {#if showDoneTasks}
-          <div class="done-list" transition:slide={{ duration: 150 }}>
+          <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
           {#each doneTasks as t (t.id)}
-            <div class="trow-wrap">
+            <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
               <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                 <button class="check" onclick={() => toggleStatus(t)}>
                   <CheckCircle2 size={18} />
@@ -553,14 +565,14 @@
                 </div>
               </div>
               {#if expandedTask === t.id}
-                <div class="subtask-body" transition:slide={{ duration: 150 }}>
+                <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                   {@render taskNotes(t)}
                   {@render taskAttachments(t)}
                   {#if subtaskLoading && !subtasksCache[t.id]}
                     <div class="sub-loading">Se incarca...</div>
                   {:else}
                     {#each (subtasksCache[t.id] || []) as sub (sub.id)}
-                      <div class="sub-row" class:sub-done={sub.done}>
+                      <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
                         <button class="check" onclick={() => toggleSubtaskDone(sub)}>
                           {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
                         </button>
@@ -731,7 +743,7 @@
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
-  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }

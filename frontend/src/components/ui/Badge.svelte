@@ -21,6 +21,7 @@
     color: var(--badge-color);
     background: color-mix(in srgb, var(--badge-color) 12%, transparent);
     white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
   .badge.small {
     padding: 2px 8px;
@@ -34,6 +35,7 @@
     background: var(--badge-color);
     opacity: 0.9;
     flex-shrink: 0;
+    transition: background-color var(--dur-fast) var(--ease);
   }
   .small .dot {
     width: 4px;

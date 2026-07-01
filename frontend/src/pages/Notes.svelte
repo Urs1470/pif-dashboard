@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { fade, slide } from 'svelte/transition'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { StickyNote, Search, Folder, FolderOpen, ChevronRight, ChevronDown, ArrowLeft } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
@@ -113,7 +115,9 @@
       <span class="folder-count">{countTreeNotes(child)}</span>
     </button>
     {#if !isCollapsed}
-      {@render treeNode(child, depth + 1, fullPath)}
+      <div transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
+        {@render treeNode(child, depth + 1, fullPath)}
+      </div>
     {/if}
   {/each}
   {#each node.notes.slice().sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ro')) as note (note.path)}
@@ -166,6 +170,8 @@
       </aside>
 
       <section class="content">
+        {#key activeNote?.path}
+        <div class="note-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
         {#if activeNote}
           <button class="back-mobile" onclick={() => mobileShowContent = false}><ArrowLeft size={14} /> Lista</button>
           <div class="note-head">
@@ -183,6 +189,8 @@
             <p>Selecteaza o notita din lista.</p>
           </div>
         {/if}
+        </div>
+        {/key}
       </section>
     </div>
   {/if}
@@ -208,7 +216,7 @@
   .folder-row:hover { background: var(--bg-hover); color: var(--text); }
   .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: 400; }
 
-  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); border-left: 2px solid transparent; text-align: left; width: 100%; }
+  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); border-left: 2px solid transparent; text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .note-item:hover { background: var(--bg-hover); color: var(--text); }
   .note-item.active { background: var(--accent-subtle); color: var(--accent); border-left-color: var(--accent); }
   .note-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

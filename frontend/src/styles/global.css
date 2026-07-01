@@ -100,6 +100,17 @@ input:focus, select:focus, textarea:focus {
   .focus-flash { animation: none; background-color: var(--accent-subtle); }
 }
 
+/* Safety net: orice tranzitie/animatie CSS noua respecta automat reduced-motion,
+   chiar daca componenta nu verifica explicit lib/motion.svelte.js din JS. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* View Transitions: morph-ul card->rand (shared-element) reglat la feeling-ul
    aplicatiei. Browserele fara View Transitions ignora aceste reguli. */
 ::view-transition-group(focus-morph) {

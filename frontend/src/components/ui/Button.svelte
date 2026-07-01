@@ -1,4 +1,7 @@
 <script>
+  import { scale } from 'svelte/transition'
+  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
+
   let { variant = 'primary', size = 'md', disabled = false, loading = false, onclick, children, ...rest } = $props()
 </script>
 
@@ -9,7 +12,7 @@
   {...rest}
 >
   {#if loading}
-    <span class="spinner"></span>
+    <span class="spinner" transition:scale={{ start: 0.5, duration: motionDuration(DUR_FAST) }}></span>
   {/if}
   {@render children()}
 </button>

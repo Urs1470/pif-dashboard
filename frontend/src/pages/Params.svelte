@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
+  import { motionDuration, DUR_FAST } from '../lib/motion.svelte.js'
   import { Cpu, Search, ChevronLeft, ChevronRight, ArrowLeft, BookOpen, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
@@ -178,6 +179,8 @@
     <button class="tab" class:active={activeTab === 'manuals'} onclick={() => { activeTab = 'manuals'; loadManuals() }}><BookOpen size={14} /> Manuale</button>
   </div>
 
+  {#key activeTab + '|' + producator}
+  <div class="params-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
   {#if activeTab === 'manuals'}
     <div class="manuals-grid">
       {#if manualsLoading}
@@ -218,6 +221,8 @@
       </div>
     </div>
 
+    {#key curFilter + '|' + curPage}
+    <div in:fade={{ duration: motionDuration(DUR_FAST) }}>
     {#if curLoading}
       {#each Array(8) as _}<div class="row-skel"><Skeleton width="40%" height="14px" /></div>{/each}
     {:else if curItems.length === 0}
@@ -264,6 +269,8 @@
         </table>
       </div>
     {/if}
+    </div>
+    {/key}
 
     {#if curTotalPages > 1}
       <div class="pagination">
@@ -273,6 +280,8 @@
       </div>
     {/if}
   {/if}
+  </div>
+  {/key}
 </div>
 
 <Modal bind:open={showDetail} title={detail?.parametru || detail?.cod || 'Detalii'} size="md">

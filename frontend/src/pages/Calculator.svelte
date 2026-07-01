@@ -1,5 +1,7 @@
 <script>
   import { tick } from 'svelte'
+  import { slide, fade } from 'svelte/transition'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG } from '../lib/driveCalc.js'
@@ -561,6 +563,7 @@
       </label>
     </div>
     {#if panelOpen}
+      <div class="equip-collapse" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
       <div class="equip-body">
         {#each panelGroups as g (g)}
           <div class="equip-group">
@@ -598,7 +601,8 @@
           {/each}
         </div>
       {/if}
-      {#if exportMsg}<p class="equip-msg">{exportMsg}</p>{/if}
+      {#if exportMsg}<p class="equip-msg" transition:fade|local={{ duration: motionDuration(DUR_FAST) }}>{exportMsg}</p>{/if}
+      </div>
     {/if}
   </div>
   {/if}
@@ -612,7 +616,7 @@
       {#if query}<button class="search-clear" title="Sterge cautarea" onclick={() => { query = ''; acIndex = -1 }}><X size={15} /></button>{/if}
     </div>
     {#if acResults.length}
-      <ul class="ac-list" role="listbox">
+      <ul class="ac-list" role="listbox" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
         {#each acResults as m, i (m.id)}
           <li>
             <button class="ac-item" class:active={i === acIndex} role="option" aria-selected={i === acIndex}
@@ -683,7 +687,7 @@
           {@const ev = effVals(m)}
           {@const r = computeModule(m, ev)}
           {@const charts = computeCharts(m, ev)}
-          <div class="acc-body">
+          <div class="acc-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
             <div class="acc-body-head">
               <span class="cat-badge">{catLabel(catOf(m))}</span>
               <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
@@ -835,6 +839,7 @@
         <p class="imp-hint">Incarca un backup de drive: ABB <code>.dcparamsbak</code> (poti selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge si fara login.</p>
         <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
         {#if importDrives.length}
+          <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
           <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
           <div class="imp-equip">
             {#each importDrives as dr, i (i)}
@@ -846,9 +851,10 @@
               </button>
             {/each}
           </div>
+          </div>
         {/if}
       {/if}
-      {#if importMsg}<p class="imp-msg">{importMsg}</p>{/if}
+      {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST) }}>{importMsg}</p>{/if}
       <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b>: placuta (P/U/I/n/cosφ/η/poli) + date drive cand exista (turatie max, rampa decelerare, frecventa comutatie, R stator, inertie). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importa pe tabul asincron.</p>
     </div>
   </Modal>

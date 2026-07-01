@@ -1,12 +1,10 @@
 import { tick } from 'svelte'
+import { motion } from './motion.svelte.js'
 
 export const router = $state({ path: getPath(), query: getQuery(), params: {} })
 
-const reduceMotion = typeof window !== 'undefined'
-  && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
-
 const vtSupported = typeof document !== 'undefined' && typeof document.startViewTransition === 'function'
-export function viewTransitionsOn() { return vtSupported && !reduceMotion }
+export function viewTransitionsOn() { return vtSupported && !motion.reduced }
 
 function getRaw() {
   const hash = window.location.hash

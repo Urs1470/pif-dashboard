@@ -1,10 +1,12 @@
 <script>
   import { Search, Sun, Moon } from '@lucide/svelte'
+  import { fly } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { ui, toggleTheme } from '../../stores/ui.svelte.js'
   import { timer, stopActiveTimer } from '../../stores/timer.svelte.js'
   import { formatElapsed } from '../../lib/formatters.js'
   import { navigate } from '../../lib/router.svelte.js'
+  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   function goToActive() {
     if (timer.active?.project_id) navigate(`/projects/${timer.active.project_id}`)
@@ -25,6 +27,7 @@
   <div class="header-actions">
     {#if timer.active}
       <div class="timer-chip" role="button" tabindex="0" title={timer.active.label || 'Cronometru activ'}
+        transition:fly={{ x: 12, duration: motionDuration(DUR_FAST) }}
         onclick={goToActive} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActive() } }}>
         <span class="tc-dot"></span>
         <span class="tc-time">{formatElapsed(timer.elapsed)}</span>

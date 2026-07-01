@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
+  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
   import { Settings, Download, Upload, Database, BarChart3, FileJson, Stethoscope, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
   import { apiJson, apiFetch } from '../lib/api.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
@@ -165,7 +167,7 @@
   {:else}
     <h2 class="sec-title"><BarChart3 size={16} /> Statistici</h2>
     {#if stats}
-      <div class="grid">
+      <div class="grid" in:fade={{ duration: motionDuration(DUR_BASE) }}>
         {#each Object.entries(stats) as [key, val]}
           <Card>
             <div class="stat-label">{STAT_LABELS[key] || key.replace(/_/g, ' ')}</div>
@@ -182,7 +184,7 @@
     {/if}
 
     {#if extended}
-      <div class="two-col">
+      <div class="two-col" in:fade={{ duration: motionDuration(DUR_BASE) }}>
         <Card>
           <h3 class="card-title">Dupa status</h3>
           <BreakdownBars items={(extended.by_status || []).map(s => ({ label: s.status, count: s.count }))} labelMap={PROJECT_STATUS_LABELS} color="var(--accent)" />
@@ -224,7 +226,7 @@
     <div class="actions" style="margin-top: var(--space-sm)">
       <Button size="sm" loading={debriefBusy} disabled={!debriefText.trim()} onclick={importDebrief}><Upload size={14} /> Importa</Button>
       {#if debriefResult?.id || debriefResult?.proiect_id}
-        <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}">Vezi proiectul creat →</a>
+        <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}" transition:fade={{ duration: motionDuration(DUR_BASE) }}>Vezi proiectul creat →</a>
       {/if}
     </div>
   </Card>
@@ -233,7 +235,7 @@
   {#if auditLoading}
     <Skeleton height="100px" />
   {:else if audit}
-    <div class="two-col">
+    <div class="two-col" in:fade={{ duration: motionDuration(DUR_BASE) }}>
       <Card>
         <div class="stat-label">Health Score</div>
         <div class="stat-value" style="color: {audit.health_pct >= 90 ? 'var(--success)' : audit.health_pct >= 70 ? 'var(--warning)' : 'var(--danger)'}">{audit.health_pct}%</div>

@@ -28,9 +28,7 @@
       <path d="M7 24 C13.5 24 15 20 16.5 15 S21 8 25 8" fill="none" stroke="var(--accent-text)" stroke-width="2.75" stroke-linecap="round"/>
       <circle cx="25" cy="8" r="2.5" fill="var(--accent-text)"/>
     </svg>
-    {#if !ui.sidebarCollapsed}
-      <span class="brand-text">PIF Dashboard</span>
-    {/if}
+    <span class="brand-text">PIF Dashboard</span>
   </a>
 
   <nav class="sidebar-nav" aria-label="Navigatie principala">
@@ -43,9 +41,7 @@
         title={ui.sidebarCollapsed ? item.label : undefined}
       >
         <SolidIcon name={item.icon} size={20} />
-        {#if !ui.sidebarCollapsed}
-          <span class="nav-label">{item.label}</span>
-        {/if}
+        <span class="nav-label">{item.label}</span>
       </a>
     {/each}
   </nav>
@@ -100,6 +96,13 @@
     letter-spacing: 0.02em;
     white-space: nowrap;
     overflow: hidden;
+    max-width: 160px;
+    opacity: 1;
+    transition: opacity var(--dur-fast) var(--ease), max-width var(--dur-base) var(--ease);
+  }
+  .sidebar.collapsed .brand-text {
+    max-width: 0;
+    opacity: 0;
   }
 
   .sidebar-nav {
@@ -134,6 +137,14 @@
   .nav-label {
     font-size: var(--font-small);
     font-weight: 500;
+    max-width: 160px;
+    opacity: 1;
+    overflow: hidden;
+    transition: opacity var(--dur-fast) var(--ease), max-width var(--dur-base) var(--ease);
+  }
+  .sidebar.collapsed .nav-label {
+    max-width: 0;
+    opacity: 0;
   }
 
   .sidebar-toggle {

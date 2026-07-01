@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { slide } from 'svelte/transition'
+  import { slide, fade } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
   import { ArrowLeft, Square, Plus, CheckCircle2, Wrench, BookOpen, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -15,6 +16,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate } from '../lib/router.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
@@ -870,6 +872,8 @@
     </div>
 
     <div class="tab-content">
+      {#key activeTab}
+      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
       {#if activeTab === 'tasks'}
         <div class="tab-header">
           <span class="tab-sub">{tasksDone}/{tasks.length} finalizate</span>
@@ -882,7 +886,7 @@
         {:else}
           <div class="task-list">
             {#each activeTasks as t (t.id)}
-              <div class="trow-wrap">
+              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
                 <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
@@ -915,7 +919,7 @@
                   </div>
                 </div>
                 {#if expandedTask === t.id}
-                  <div class="subtask-body" transition:slide={{ duration: 150 }}>
+                  <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
@@ -947,7 +951,7 @@
                           <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
                         </div>
                         {#if expandedSubSess === sub.id && subSessionsCache[sub.id]?.sessions?.length > 0}
-                          <div class="sub-sess" transition:slide={{ duration: 150 }}>
+                          <div class="sub-sess" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                             {#each subSessionsCache[sub.id].sessions as s (s.id)}
                               <div class="sess mini">
                                 <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
@@ -986,8 +990,9 @@
                 <span>Finalizate ({doneTasks.length})</span>
               </button>
               {#if showDoneTasks}
+                <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                 {#each doneTasks as t (t.id)}
-                  <div class="trow done" use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                  <div class="trow done" animate:flip={{ duration: motionDuration(DUR_BASE) }} use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
                     <button class="check" onclick={() => toggleTaskStatus(t)}>
                       <CheckCircle2 size={16} />
                     </button>
@@ -999,6 +1004,7 @@
                     </div>
                   </div>
                 {/each}
+                </div>
               {/if}
             {/if}
           </div>
@@ -1016,7 +1022,7 @@
         {:else}
           <div class="jlist">{#each mergedTimeline as item (item.id)}
             {#if item.kind === 'journal'}
-              <div class="jentry">
+              <div class="jentry" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
                 <div class="jentry-top">
                   <div class="jentry-meta">
                     <div class="jdate">{formatDate(item.data || item.created_at)}</div>
@@ -1030,7 +1036,7 @@
                 <div class="jtext">{item.continut || '—'}</div>
               </div>
             {:else}
-              <div class="jentry jentry-timer">
+              <div class="jentry jentry-timer" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
                 <div class="jentry-top">
                   <div class="jentry-meta">
                     <div class="jdate">{formatDate(item.data)}</div>
@@ -1080,7 +1086,7 @@
                   {#if isExpanded}<ChevronDown size={12} /> Ascunde parametri{:else}<ChevronRight size={12} /> {eparams.length} parametri{/if}
                 </button>
                 {#if isExpanded}
-                  <div class="eparams-wrap" transition:slide={{ duration: 150 }}>
+                  <div class="eparams-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                     {#if eparams.length > 5}
                       <input type="text" class="eparam-search" placeholder="Filtreaza parametri..." value={equipParamSearch[e.id] || ''} oninput={(ev) => { equipParamSearch = { ...equipParamSearch, [e.id]: ev.target.value } }} />
                     {/if}
@@ -1128,6 +1134,8 @@
           {/if}
         </div>
       {/if}
+      </div>
+      {/key}
     </div>
   {/if}
 </div>
@@ -1338,7 +1346,7 @@
 
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
-  .tab { display: flex; align-items: center; gap: 4px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; min-height: 44px; -webkit-tap-highlight-color: transparent; }
+  .tab { display: flex; align-items: center; gap: 4px; padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; min-height: 44px; -webkit-tap-highlight-color: transparent; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .tab-count { font-size: 10px; padding: 0 5px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
@@ -1359,7 +1367,8 @@
   /* Task list */
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
-  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  .done-list { display: flex; flex-direction: column; }
   .trow:hover { background: var(--bg-surface); transform: translateX(2px); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .trow.done { opacity: 0.5; }

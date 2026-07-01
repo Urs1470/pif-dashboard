@@ -1,10 +1,13 @@
 <script>
   import { onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
   import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Button from '../components/ui/Button.svelte'
@@ -164,7 +167,7 @@
   </div>
 
   {#if batchMode && selected.size > 0}
-    <div class="batch-bar">
+    <div class="batch-bar" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
       <span class="batch-count">{selected.size} selectate</span>
       <select class="batch-select" bind:value={batchStatus}>
         <option value="">Schimba status...</option>
@@ -227,7 +230,7 @@
         </thead>
         <tbody>
           {#each activeItems as p (p.id)}
-            <tr class="clickable-row" class:batch-selected={batchMode && selected.has(p.id)} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }}>
+            <tr class="clickable-row" class:batch-selected={batchMode && selected.has(p.id)} animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }}>
               {#if batchMode}
                 <td class="check-col">
                   <button class="batch-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
@@ -255,11 +258,11 @@
           {#if showArchive}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
         </button>
         {#if showArchive}
-          <div class="data-table-wrap">
+          <div class="data-table-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
             <table class="data-table">
               <tbody>
                 {#each archivedItems as p (p.id)}
-                  <tr class="clickable-row archived" onclick={() => openProject(p)}>
+                  <tr class="clickable-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
                     <td class="name-cell">{p.nume || '—'}</td>
                     <td class="dim">{p.client || '—'}</td>
                     <td>{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>

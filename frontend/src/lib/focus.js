@@ -9,9 +9,7 @@
 
 import { tick } from 'svelte'
 import { router, applyPath, navigate, viewTransitionsOn } from './router.svelte.js'
-
-const reduceMotion = typeof window !== 'undefined'
-  && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
+import { motion } from './motion.svelte.js'
 
 const VT_NAME = 'focus-morph'
 let morphPending = null // { key, resolve } while a morph is in flight
@@ -86,7 +84,7 @@ export function focusOnLand(node, key) {
         setTimeout(() => { try { node.style.viewTransitionName = '' } catch (_) {} }, 800)
         releaseMorph?.()
       } else if (needsScroll) {
-        try { node.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
+        try { node.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 
       node.classList.add('focus-flash')

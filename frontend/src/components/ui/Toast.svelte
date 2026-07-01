@@ -1,12 +1,15 @@
 <script>
   import { X } from '@lucide/svelte'
+  import { fly } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
   import { ui, dismissToast } from '../../stores/ui.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 </script>
 
 {#if ui.toasts.length > 0}
   <div class="toast-container">
     {#each ui.toasts as t (t.id)}
-      <div class="toast toast-{t.type}">
+      <div class="toast toast-{t.type}" transition:fly={{ x: 20, duration: motionDuration(DUR_BASE) }} animate:flip={{ duration: motionDuration(DUR_FAST) }}>
         <span>{t.message}</span>
         <button class="toast-close" onclick={() => dismissToast(t.id)}>
           <X size={14} />
@@ -40,7 +43,6 @@
     color: var(--text);
     min-width: 240px;
     max-width: 400px;
-    animation: slide-in var(--dur-base) var(--ease);
   }
 
   .toast-info { border-left: 3px solid var(--info); }
@@ -61,11 +63,6 @@
   .toast-close:hover {
     background: var(--bg-hover);
     color: var(--text);
-  }
-
-  @keyframes slide-in {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
   }
 
   @media (max-width: 768px) {

@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { fly } from 'svelte/transition'
   import {
     Home as HomeIcon, FolderKanban, AlertTriangle,
     CalendarClock, ChevronRight, RotateCcw
@@ -13,6 +14,7 @@
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import TodayBoard from '../components/TodayBoard.svelte'
+  import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
 
   const kindLabels = { project: 'Proiect', task: 'Task', global_task: 'Task global' }
 
@@ -58,8 +60,7 @@
     }
     // No animation when motion is reduced or the tab is hidden (rAF is paused
     // there, which would otherwise leave the numbers stuck at 0).
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduce || document.hidden) {
+    if (motion.reduced || document.hidden) {
       animVals = targets
       return
     }
@@ -120,6 +121,7 @@
     </div>
     {#if timer.active}
       <div class="timer-card" role="button" tabindex="0"
+        transition:fly={{ y: -8, duration: motionDuration(DUR_BASE) }}
         onclick={goToActiveTimer} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActiveTimer() } }}>
         <span class="tc-dot"></span>
         <div class="tc-main">
