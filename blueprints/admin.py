@@ -1240,26 +1240,52 @@ def global_search():
         results.append({'type': 'client', 'id': r['id'], 'title': r['nume'],
                         'subtitle': 'Client', 'snippet': r['telefon'] or ''})
 
-    cur.execute('SELECT id, familie, parametru, descriere FROM parametri_master '
-                'WHERE parametru LIKE ? OR descriere LIKE ? ORDER BY familie, parametru LIMIT 12',
-                (like, like))
-    for r in cur.fetchall():
-        results.append({'type': 'parametru', 'id': r['id'], 'title': f"{r['parametru']} — {r['familie']}",
-                        'subtitle': 'Parametru', 'snippet': _search_snippet(r['descriere'], q),
-                        'familie': r['familie'], 'cod': r['parametru']})
+    # Parametri — potrivirea pe COD bate potrivirea pe descriere:
+    # exact > prefix > contine-in-cod > doar-in-descriere.
+    prefix = f'{q}%'
+    try:
+        cur.execute('SELECT id, familie, parametru, descriere FROM parametri_master '
+                    'WHERE parametru LIKE ? OR descriere LIKE ? '
+                    'ORDER BY CASE '
+                    '  WHEN LOWER(parametru) = LOWER(?) THEN 0 '
+                    '  WHEN parametru LIKE ? THEN 1 '
+                    '  WHEN parametru LIKE ? THEN 2 '
+                    '  ELSE 3 END, familie, parametru LIMIT 12',
+                    (like, like, q, prefix, like))
+        for r in cur.fetchall():
+            results.append({'type': 'parametru', 'id': r['id'], 'title': f"{r['parametru']} — {r['familie']}",
+                            'subtitle': 'Parametru', 'snippet': _search_snippet(r['descriere'], q),
+                            'familie': r['familie'], 'cod': r['parametru']})
+    except sqlite3.OperationalError:
+        pass  # parametri_master e populat de scripturi externe — poate lipsi
 
-    cur.execute('SELECT id, producator, familie, cod, tip, nume, cauza FROM fault_codes '
-                'WHERE cod LIKE ? OR cod_secundar LIKE ? OR nume LIKE ? OR cauza LIKE ? '
-                'ORDER BY producator, cod LIMIT 12', (like, like, like, like))
-    for r in cur.fetchall():
-        tip = r['tip'] or 'eroare'
-        results.append({'type': 'fault_code', 'id': r['id'],
-                        'title': f"{r['cod']} — {r['nume'] or ''}".strip(' —'),
-                        'subtitle': f"Cod {tip} · {r['familie']}",
-                        'snippet': _search_snippet(r['cauza'], q),
-                        'familie': r['familie'], 'producator': r['producator'], 'cod': r['cod']})
+    try:
+        cur.execute('SELECT id, producator, familie, cod, tip, nume, cauza FROM fault_codes '
+                    'WHERE cod LIKE ? OR cod_secundar LIKE ? OR nume LIKE ? OR cauza LIKE ? '
+                    'ORDER BY CASE '
+                    '  WHEN LOWER(cod) = LOWER(?) OR LOWER(COALESCE(cod_secundar, \'\')) = LOWER(?) THEN 0 '
+                    '  WHEN cod LIKE ? OR cod_secundar LIKE ? THEN 1 '
+                    '  WHEN cod LIKE ? OR cod_secundar LIKE ? THEN 2 '
+                    '  ELSE 3 END, producator, cod LIMIT 12',
+                    (like, like, like, like, q, q, prefix, prefix, like, like))
+        for r in cur.fetchall():
+            tip = r['tip'] or 'eroare'
+            results.append({'type': 'fault_code', 'id': r['id'],
+                            'title': f"{r['cod']} — {r['nume'] or ''}".strip(' —'),
+                            'subtitle': f"Cod {tip} · {r['familie']}",
+                            'snippet': _search_snippet(r['cauza'], q),
+                            'familie': r['familie'], 'producator': r['producator'], 'cod': r['cod']})
+    except sqlite3.OperationalError:
+        pass
 
     conn.close()
+
+    # Query care arata ca un cod de parametru/fault (1.01, 99-10, p0304, F30001):
+    # grupurile Parametri + Coduri eroare urca primele in lista.
+    if re.match(r'^[A-Za-z]{0,2}\d+([.\-_]\d+)?$', q):
+        code_hits = [r for r in results if r['type'] in ('parametru', 'fault_code')]
+        rest = [r for r in results if r['type'] not in ('parametru', 'fault_code')]
+        results = code_hits + rest
 
     from blueprints.obsidian import _obsidian_vault, _obsidian_index
 

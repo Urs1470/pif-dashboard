@@ -108,7 +108,10 @@
       if (navFiltered[selected]) go(navFiltered[selected])
       return
     }
-    const item = flatResults[selected]
+    let item = flatResults[selected]
+    // selectia initiala (0) cade pe header-ul de grup — Enter activeaza
+    // primul rezultat real de sub el
+    if (item?._group) item = flatResults[selected + 1]
     if (!item || item._group) return
     activateResult(item)
   }
@@ -124,13 +127,14 @@
         else if (r.id) navigate(`/projects/${r.id}`)
         break
       case 'global_task':
-        navigate('/tasks')
+        navigate(`/tasks${r.id ? `?focus=global:${r.id}` : ''}`)
         break
       case 'parametru':
-        navigate('/params')
+        // deschide direct modalul de detaliu pe pagina Parametri
+        navigate(`/params?open=${encodeURIComponent(r.id)}`)
         break
       case 'fault_code':
-        navigate('/params')
+        navigate(`/params?tab=faults&open=${encodeURIComponent(r.id)}`)
         break
       case 'obsidian':
         navigate('/notes')

@@ -200,7 +200,7 @@
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   .panes { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-md); align-items: start; }
 
