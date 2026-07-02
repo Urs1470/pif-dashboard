@@ -1140,7 +1140,18 @@
   .nav-equip:hover { border-color: var(--accent); background: var(--accent-subtle); }
   .nav-equip-h { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-bold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .nav-equip-sum { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); overflow-wrap: anywhere; }
-  .nav-sec { font-size: var(--font-tiny); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 10px 10px 4px; }
+  /* aceeasi reteta de grup ca nav-ul din Parametri: separator dashed + punct amber */
+  .nav-sec {
+    font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text-faint); padding: 14px 10px 6px;
+    margin-top: 10px; border-top: 1px dashed var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-sec::before {
+    content: ''; width: 7px; height: 7px; border-radius: 3px;
+    background: var(--accent-subtle); border: 1px solid var(--accent-ring); flex-shrink: 0;
+  }
+  .nav-sec:first-of-type { padding-top: 4px; margin-top: 4px; }
   .nav-item { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-md); transition: background var(--dur-fast) var(--ease); }
   .nav-item:hover { background: var(--bg-hover); }
   .nav-item.on { background: var(--accent-subtle); }

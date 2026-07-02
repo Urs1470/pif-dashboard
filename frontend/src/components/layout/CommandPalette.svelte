@@ -297,11 +297,21 @@
   }
   .palette-search input {
     flex: 1;
-    background: transparent;
-    border: none;
+    min-height: 38px;
+    padding: 6px 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
     outline: none;
     color: var(--text);
     font-size: var(--font-body);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .palette-search input:focus,
+  .palette-search input:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
   }
   .palette-search input::placeholder { color: var(--text-dim); }
   .palette-search kbd {
