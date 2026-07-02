@@ -26,6 +26,7 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import Select from '../components/ui/Select.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
@@ -1168,7 +1169,7 @@
     </div>
 
     <aside class="rail">
-      <section class="rcell">
+      <section class="rcell cell-in">
         <div class="cell-label">
           <span class="ico ico-green"><SolidIcon name="play" size={12} /></span>Cronometru
           {#if projectTimerActive}<span class="tail"><span class="timer-dot"></span></span>{/if}
@@ -1185,7 +1186,7 @@
         </div>
       </section>
 
-      <section class="rcell">
+      <section class="rcell cell-in">
         <div class="cell-label"><span class="ico ico-amber"><ListTodo size={12} /></span>Progres taskuri</div>
         <div class="rprog">
           <span class="rprog-num">{tasksDone}/{tasks.length}</span>
@@ -1194,7 +1195,7 @@
         <div class="rsub">{taskPct}% finalizate</div>
       </section>
 
-      <section class="rcell">
+      <section class="rcell cell-in">
         <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Deadline</div>
         {#if project.deadline}
           <div class="rdate" class:urgent={deadlineDays !== null && deadlineDays <= 2}>{formatDate(project.deadline)}</div>
@@ -1204,7 +1205,7 @@
         {/if}
       </section>
 
-      <section class="rcell">
+      <section class="rcell cell-in">
         <div class="cell-label"><span class="ico ico-amber"><Wrench size={12} /></span>Echipamente<span class="tail">{equipment.length}</span></div>
         {#if equipment.length === 0}
           <div class="rsub rsub-empty">Niciun echipament</div>
@@ -1276,15 +1277,7 @@
 
 <Modal bind:open={showCopyModal} title="Copiaza echipamente din alt proiect" size="lg">
   <div class="copy-form">
-    <label class="mf-field">
-      <span class="mf-label">Proiect sursa</span>
-      <select class="mf-input" bind:value={copyProjectId} onchange={loadCopyEquipment}>
-        <option value="">Selecteaza proiect...</option>
-        {#each copyProjects as p}
-          <option value={p.id}>{p.nume}{p.client ? ` — ${p.client}` : ''}</option>
-        {/each}
-      </select>
-    </label>
+    <Select label="Proiect sursa" bind:value={copyProjectId} onchange={loadCopyEquipment} placeholder="Selecteaza proiect..." options={copyProjects.map((p) => ({ value: p.id, label: `${p.nume}${p.client ? ` — ${p.client}` : ''}` }))} />
     {#if copyEquipment.length > 0}
       <div class="import-drives">
         {#each copyEquipment as eq, i}
@@ -1367,28 +1360,15 @@
       <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (optional)" rows="3"></textarea>
     </label>
     <div class="mf-row">
-      <label class="mf-field">
-        <span class="mf-label">Prioritate</span>
-        <select class="mf-input" bind:value={taskFormPriority}>
-          <option value="Normal">Normal</option>
-          <option value="Minor">Minor</option>
-          <option value="Urgent">Urgent</option>
-        </select>
-      </label>
+      <div class="mf-field">
+        <Select label="Prioritate" bind:value={taskFormPriority} options={['Normal', 'Minor', 'Urgent']} />
+      </div>
       <div class="mf-field">
         <span class="mf-label">Deadline</span>
         <DatePicker bind:value={taskFormDeadline} />
       </div>
     </div>
-    <label class="mf-field">
-      <span class="mf-label">Recurenta</span>
-      <select class="mf-input" bind:value={taskFormRecurenta}>
-        <option value="">Fara</option>
-        <option value="zilnic">Zilnic</option>
-        <option value="saptamanal">Saptamanal</option>
-        <option value="lunar">Lunar</option>
-      </select>
-    </label>
+    <Select label="Recurenta" bind:value={taskFormRecurenta} options={[{ value: '', label: 'Fara' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Saptamanal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
     <div class="modal-actions">
@@ -1450,7 +1430,7 @@
   .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
   .field-header { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); color: var(--text-secondary); }
   .field-label { flex: 1; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
-  .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
+  .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
   .field-empty { padding: var(--space-xs) var(--space-md) var(--space-sm); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
@@ -1464,7 +1444,7 @@
   .tab-sub { font-size: var(--font-tiny); color: var(--text-dim); }
   .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
-  .quick-add input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); outline: none; }
+  .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
   .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
@@ -1484,8 +1464,9 @@
   .trow.done .check { color: var(--success); }
   .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
-  .status-badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
+  .status-badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
   .status-badge:hover { opacity: .7; }
+  .status-badge:active { transform: scale(0.92); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
@@ -1498,8 +1479,9 @@
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
-  .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); display: inline-block; min-width: 62px; text-align: center; }
+  .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
+  .prio-badge:active { transform: scale(0.92); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .tdeadline { font-size: var(--font-micro); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
@@ -1548,11 +1530,12 @@
   .sub-timer.active { opacity: 1; color: var(--accent); background: var(--accent-subtle); }
   .sub-row:hover .sub-timer { opacity: 1; }
   .sub-timer:hover { color: var(--accent); background: var(--accent-subtle); }
-  .sub-del { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
+  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
   .sub-add input { flex: 1; padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .sub-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .sub-add-btn { width: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -1567,7 +1550,7 @@
   .jentry { padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
   .jentry-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
   .jdate { font-size: var(--font-tiny); color: var(--text-dim); }
-  .jdel { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .jdel { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .jdel:hover { background: var(--danger-subtle); color: var(--danger); }
   .jentry-actions { display: flex; align-items: center; gap: 2px; }
   .jtime-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); opacity: 0; }
@@ -1608,7 +1591,7 @@
   .sess-list { display: flex; flex-direction: column; gap: 2px; }
   .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
   .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
-  .sess-del { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
+  .sess-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
   .sess:hover .sess-del { opacity: 1; }
   .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
@@ -1626,7 +1609,8 @@
   .mf-row { display: flex; gap: var(--space-md); }
   .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 38px; }
+  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 40px; transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .mf-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
 
   /* Equipment import/copy */

@@ -263,7 +263,7 @@
   .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
   .kpi:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
   .kpi-head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
-  .kpi-chip { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .kpi-chip { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .kpi-chip.accent { background: var(--accent-subtle); color: var(--accent); }
   .kpi-chip.warn { background: var(--warning-subtle); color: var(--warning); }
   .kpi-chip.success { background: var(--success-subtle); color: var(--success); }

@@ -3,7 +3,7 @@
 // single reactive prefers-reduced-motion source, so every component gets a live update
 // if the OS-level preference changes mid-session instead of reading matchMedia() once.
 export const DUR_FAST = 120
-export const DUR_BASE = 200
+export const DUR_BASE = 240
 export const DUR_SLOW = 320
 
 function readReducedMotion() {

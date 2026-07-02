@@ -1,5 +1,5 @@
 <script>
-  import { Search, Sun, Moon } from '@lucide/svelte'
+  import { Sun, Moon } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { ui, toggleTheme } from '../../stores/ui.svelte.js'
@@ -23,11 +23,7 @@
     <span class="brand-name">PIF<span class="brand-sep">·</span>Dashboard</span>
   </a>
 
-  <button class="header-search" onclick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
-    <Search size={16} />
-    <span class="search-hint">Cauta...</span>
-    <kbd>Ctrl+K</kbd>
-  </button>
+  <span class="h-spacer"></span>
 
   <div class="header-actions">
     {#if timer.active}
@@ -86,39 +82,7 @@
   }
   .brand-sep { color: var(--text-faint); }
 
-  .header-search {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: 7px var(--space-md);
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-    min-width: 240px;
-    margin: 0 auto;
-  }
-  .header-search:hover {
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-
-  .search-hint {
-    flex: 1;
-    font-size: var(--font-small);
-  }
-
-  kbd {
-    font-family: var(--font-mono);
-    font-size: var(--font-tiny);
-    padding: 2px 6px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xs);
-    color: var(--text-dim);
-  }
+  .h-spacer { flex: 1; }
 
   .header-actions {
     display: flex;
@@ -155,12 +119,12 @@
     letter-spacing: var(--tracking-wide);
   }
   .tc-stop {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-xs);
+    border-radius: var(--radius-sm);
     color: var(--danger);
     cursor: pointer;
     transition: all var(--dur-fast) var(--ease);
@@ -195,11 +159,6 @@
       padding-left: calc(var(--space-md) + var(--safe-left));
       padding-right: calc(var(--space-md) + var(--safe-right));
     }
-    .header-search {
-      min-width: 0;
-      flex: 1;
-    }
-    kbd { display: none; }
-    .brand-name { display: none; }
+
   }
 </style>

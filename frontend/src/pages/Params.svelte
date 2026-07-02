@@ -205,7 +205,7 @@
     </div>
   {:else}
     <div class="side-grid">
-      <nav class="fam-nav">
+      <nav class="fam-nav cell-in">
         {#each Object.entries(PRODUCATOR_FAMILII) as [p, fams] (p)}
           <div class="nav-group">{p}</div>
           {#each fams as f (f)}
@@ -217,7 +217,7 @@
         {/each}
       </nav>
 
-      <div class="table-col">
+      <div class="table-col cell-in">
         <div class="toolbar">
           <div class="search-box">
             <Search size={14} />
@@ -401,7 +401,7 @@
   .nav-group:first-child { padding-top: 2px; margin-top: 0; border-top: none; }
   .nav-item {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
-    width: 100%; padding: 9px 12px; border-radius: 11px; text-align: left;
+    width: 100%; padding: 9px 12px; border-radius: var(--radius-sm); text-align: left;
     font-size: var(--font-small); color: var(--text-secondary);
     background: transparent; border: none; cursor: pointer;
     transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
@@ -415,10 +415,10 @@
   .table-col { min-width: 0; }
 
   .toolbar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); }
-  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 8px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 400px; }
+  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 8px 14px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 400px; }
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
   .search-box input:focus { box-shadow: none; }
-  .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
   .toolbar-count { margin-left: auto; font-size: var(--font-tiny); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-dim); white-space: nowrap; }
 
   .mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }

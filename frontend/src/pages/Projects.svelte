@@ -11,6 +11,7 @@
   import { toast } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Button from '../components/ui/Button.svelte'
+  import Select from '../components/ui/Select.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
@@ -26,11 +27,18 @@
   ]
 
   const sortOptions = [
-    { key: 'nume', label: 'Nume' },
-    { key: 'client', label: 'Client' },
-    { key: 'tip', label: 'Tip' },
-    { key: 'status', label: 'Status' },
-    { key: 'deadline', label: 'Deadline' },
+    { value: 'nume', label: 'Nume' },
+    { value: 'client', label: 'Client' },
+    { value: 'tip', label: 'Tip' },
+    { value: 'status', label: 'Status' },
+    { value: 'deadline', label: 'Deadline' },
+  ]
+
+  const batchStatusOptions = [
+    { value: 'in_lucru', label: 'In Lucru' },
+    { value: 'in_asteptare', label: 'In Asteptare' },
+    { value: 'blocat', label: 'Blocat' },
+    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   function daysUntil(deadline) {
@@ -195,13 +203,7 @@
   {#if batchMode && selected.size > 0}
     <div class="batch-bar" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
       <span class="batch-count">{selected.size} selectate</span>
-      <select class="batch-select" bind:value={batchStatus}>
-        <option value="">Schimba status...</option>
-        <option value="in_lucru">In Lucru</option>
-        <option value="in_asteptare">In Asteptare</option>
-        <option value="blocat">Blocat</option>
-        <option value="finalizat">Finalizat</option>
-      </select>
+      <Select size="sm" bind:value={batchStatus} placeholder="Schimba status..." options={batchStatusOptions} aria-label="Schimba status" />
       <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplica</Button>
       <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Sterge</Button>
       <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselecteaza</Button>
@@ -220,11 +222,7 @@
     </div>
     <div class="sort-box">
       <span class="sort-label">Sortare</span>
-      <select class="sort-select" value={sort.key} onchange={setSortKey}>
-        {#each sortOptions as opt}
-          <option value={opt.key}>{opt.label}</option>
-        {/each}
-      </select>
+      <Select size="sm" value={sort.key} options={sortOptions} onchange={setSortKey} aria-label="Sortare" />
       <button class="sort-dir" onclick={() => sort.dir = -sort.dir} title="Inverseaza ordinea">
         {#if sort.dir === 1}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
       </button>
@@ -318,11 +316,11 @@
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
-  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); flex: 1; max-width: 320px; }
+  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 320px; }
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
   .search-box input:focus { box-shadow: none; border: none; }
   .search-box input::placeholder { color: var(--text-dim); }
-  .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
 
   .filters { display: flex; gap: 4px; flex-wrap: wrap; }
   .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
@@ -332,7 +330,6 @@
 
   .sort-box { display: flex; align-items: center; gap: var(--space-xs); }
   .sort-label { font-size: var(--font-tiny); color: var(--text-dim); }
-  .sort-select { padding: 4px 10px; font-size: var(--font-small); background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; }
   .sort-dir { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .sort-dir:hover { color: var(--text); border-color: var(--border-strong); }
   .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
@@ -382,11 +379,11 @@
   .header-btns { display: flex; gap: var(--space-xs); }
   .batch-bar { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .batch-count { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); }
-  .batch-select { padding: 4px 10px; font-size: var(--font-small); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); }
   .batch-check { display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; background: transparent; border: none; padding: 0; }
   .batch-check:hover { color: var(--accent); }
-  .status-pill { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
+  .status-pill { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease); }
   .status-pill:hover { opacity: .7; transform: scale(1.05); }
+  .status-pill:active { transform: scale(0.92); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

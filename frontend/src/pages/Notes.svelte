@@ -143,7 +143,7 @@
     <EmptyState icon={StickyNote} title="Nicio notita" description="Vault-ul Obsidian e gol." />
   {:else}
     <div class="panes" class:show-content={mobileShowContent}>
-      <aside class="sidebar">
+      <aside class="sidebar cell-in">
         <div class="search-box">
           <Search size={14} />
           <input type="text" placeholder="Cauta in continut..." value={search} oninput={onSearch} />
@@ -169,7 +169,7 @@
         {/if}
       </aside>
 
-      <section class="content">
+      <section class="content cell-in">
         {#key activeNote?.path}
         <div class="note-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
         {#if activeNote}
@@ -208,15 +208,15 @@
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); margin-bottom: var(--space-sm); }
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; min-width: 0; }
   .search-box input:focus { box-shadow: none; }
-  .search-box:focus-within { border-color: var(--accent); }
+  .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
   .list-meta { font-size: var(--font-tiny); color: var(--text-dim); padding: 0 var(--space-xs) var(--space-xs); }
 
   .note-list { overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
-  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; border-radius: 10px; text-align: left; }
+  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); text-align: left; }
   .folder-row:hover { background: var(--bg-panel); color: var(--text); }
   .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: var(--fw-normal); }
 
-  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: 10px; text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
   .note-item:hover { background: var(--bg-panel); color: var(--text); }
   .note-item.active { background: var(--accent-subtle); color: var(--accent); }
   .note-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

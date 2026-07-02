@@ -186,7 +186,7 @@
     position: fixed; z-index: var(--z-tooltip);
     width: 268px; padding: 12px;
     background: var(--bg-overlay); border: 1px solid var(--border);
-    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
   }
   .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .dp-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
