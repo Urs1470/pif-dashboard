@@ -614,10 +614,10 @@
 <AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
-<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
+<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="doc">
   <div class="note-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notite pentru acest task..." />
     {/if}
   </div>
   {#snippet footer()}
