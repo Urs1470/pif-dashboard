@@ -67,22 +67,10 @@ export async function loadProjectTasks(id) {
   return apiJson(`/api/proiecte/${id}/tasks`)
 }
 
-export async function loadProjectJournal(id) {
-  return apiJson(`/api/proiecte/${id}/jurnal`)
-}
-
 export async function loadProjectEquipment(id) {
   return apiJson(`/api/proiecte/${id}/echipamente`)
 }
 
-
-export async function createJournalEntry(projectId, data) {
-  return apiJson(`/api/proiecte/${projectId}/jurnal`, { method: 'POST', body: data })
-}
-
-export async function deleteJournalEntry(entryId) {
-  return apiJson(`/api/jurnal/${entryId}`, { method: 'DELETE' })
-}
 
 export async function createEquipment(projectId, data) {
   return apiJson(`/api/proiecte/${projectId}/echipamente`, { method: 'POST', body: data })
@@ -108,10 +96,6 @@ export async function uploadAttachment(projectId, file) {
 
 export async function deleteAttachment(attId) {
   return apiJson(`/api/atasamente/${attId}`, { method: 'DELETE' })
-}
-
-export async function loadProjectTimerSessions(id) {
-  return apiJson(`/api/proiecte/${id}/timer`)
 }
 
 export async function loadClients(search = '') {

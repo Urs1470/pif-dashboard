@@ -4,13 +4,13 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## app.py (622 linii)
+## app.py (620 linii)
 
-`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `131:make_session_permanent`, `141:setup_logging`, `170:check_rate_limit`, `208:before_request_func`, `243:after_request_func`, `283:get_hashed_pin`, `292:_git_commit`, `306:healthz`, `312:health_redirect`, `317:whoami`, `324:login_page`, `331:login`, `343:logout`, `349:login_hash`, `369:_serve_frontend`, `377:index`, `385:spa_catchall`, `390:dist_assets`, `396:favicon`, `401:manifest`, `406:calc_public`, `416:protected_docs`, `428:service_worker`, `433:add_sw_header`, `454:get_deploy_secret`, `462:webhook_deploy`, `547:api_deploy`, `603:page_not_found`, `610:internal_error`
+`47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `129:make_session_permanent`, `139:setup_logging`, `168:check_rate_limit`, `206:before_request_func`, `241:after_request_func`, `281:get_hashed_pin`, `290:_git_commit`, `304:healthz`, `310:health_redirect`, `315:whoami`, `322:login_page`, `329:login`, `341:logout`, `347:login_hash`, `367:_serve_frontend`, `375:index`, `383:spa_catchall`, `388:dist_assets`, `394:favicon`, `399:manifest`, `404:calc_public`, `414:protected_docs`, `426:service_worker`, `431:add_sw_header`, `452:get_deploy_secret`, `460:webhook_deploy`, `545:api_deploy`, `601:page_not_found`, `608:internal_error`
 
-## database.py (1251 linii)
+## database.py (1240 linii)
 
-`10:get_db`, `31:close_db`, `64:get_schema_version`, `77:set_schema_version`, `86:migrate_v1_to_v2`, `158:migrate_v2_to_v3`, `185:migrate_v3_to_v4`, `216:migrate_v4_to_v5`, `251:migrate_v5_to_v6`, `273:migrate_v6_to_v7`, `295:migrate_v7_to_v8`, `335:migrate_v8_to_v9`, `350:migrate_v9_to_v10`, `380:migrate_v10_to_v11`, `402:migrate_v11_to_v12`, `448:migrate_v12_to_v13`, `493:migrate_v13_to_v14`, `532:migrate_v14_to_v15`, `555:migrate_v15_to_v16`, `574:migrate_v16_to_v17`, `587:migrate_v17_to_v18`, `628:migrate_v18_to_v19`, `668:migrate_v19_to_v20`, `685:migrate_v20_to_v21`, `712:run_migrations`, `886:seed_fault_codes`, `977:init_db`, `1244:row_to_dict`
+`10:get_db`, `31:close_db`, `66:get_schema_version`, `79:set_schema_version`, `88:migrate_v1_to_v2`, `165:migrate_v2_to_v3`, `192:migrate_v3_to_v4`, `223:migrate_v4_to_v5`, `258:migrate_v5_to_v6`, `280:migrate_v6_to_v7`, `302:migrate_v7_to_v8`, `345:migrate_v8_to_v9`, `360:migrate_v9_to_v10`, `390:migrate_v10_to_v11`, `412:migrate_v11_to_v12`, `458:migrate_v12_to_v13`, `503:migrate_v13_to_v14`, `542:migrate_v14_to_v15`, `565:migrate_v15_to_v16`, `584:migrate_v16_to_v17`, `600:migrate_v17_to_v18`, `641:migrate_v18_to_v19`, `681:migrate_v19_to_v20`, `698:migrate_v20_to_v21`, `725:migrate_v21_to_v22`, `744:run_migrations`, `916:seed_fault_codes`, `1007:init_db`, `1233:row_to_dict`
 
 ## utils.py (90 linii)
 

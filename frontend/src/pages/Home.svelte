@@ -1,31 +1,19 @@
 <script>
   import { onMount } from 'svelte'
-  import { fly } from 'svelte/transition'
   import {
-    Home as HomeIcon, FolderKanban, AlertTriangle,
+    FolderKanban, AlertTriangle,
     CalendarClock, ChevronRight, RotateCcw
   } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
-  import { formatDuration, formatDate, formatElapsed } from '../lib/formatters.js'
+  import { formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
-  import { timer, loadActiveTimer, stopActiveTimer } from '../stores/timer.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import TodayBoard from '../components/TodayBoard.svelte'
-  import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
-
-  const kindLabels = { project: 'Proiect', task: 'Task', global_task: 'Task global' }
-
-  function goToActiveTimer() {
-    if (timer.active?.project_id) navigate(`/projects/${timer.active.project_id}`)
-  }
-  async function stopActive(e) {
-    e.stopPropagation()
-    await stopActiveTimer()
-  }
+  import { motion } from '../lib/motion.svelte.js'
 
   // Click a task anywhere on Home -> jump to it (its page scrolls it to center +
   // flashes a highlight via the focusOnLand action on the destination row).
@@ -41,13 +29,8 @@
   let recents = $state([])
 
   // Count-up: numbers ease 0 -> value once the data lands (respects reduced-motion)
-  let animVals = $state({ active: 0, urgent: 0, hours: 0, deadline: 0 })
+  let animVals = $state({ active: 0, urgent: 0, done: 0, deadline: 0 })
   let _animStarted = false
-
-  function fmtHours(cur) {
-    const target = dashboard?.stats?.weekly_hours ?? 0
-    return Number.isInteger(target) ? String(Math.round(cur)) : cur.toFixed(1)
-  }
 
   $effect(() => {
     if (!dashboard || _animStarted) return
@@ -56,7 +39,7 @@
     const targets = {
       active: s.active_projects || 0,
       urgent: s.urgent_count || 0,
-      hours: s.weekly_hours || 0,
+      done: s.weekly_done || 0,
       deadline: s.deadline_count || 0,
     }
     // No animation when motion is reduced or the tab is hidden (rAF is paused
@@ -74,7 +57,7 @@
       animVals = {
         active: targets.active * e,
         urgent: targets.urgent * e,
-        hours: targets.hours * e,
+        done: targets.done * e,
         deadline: targets.deadline * e,
       }
       if (p < 1) raf = requestAnimationFrame(frame)
@@ -121,7 +104,6 @@
       recents = JSON.parse(localStorage.getItem('recent_projects') || '[]').slice(0, 5)
     } catch (_) {}
     await loadDashboard()
-    loadActiveTimer()
   })
 </script>
 
@@ -131,19 +113,6 @@
       <h1 class="greeting">{greeting()}, Ion</h1>
       <p class="today">{todayRO()}</p>
     </div>
-    {#if timer.active}
-      <div class="timer-card" role="button" tabindex="0"
-        transition:fly={{ y: -8, duration: motionDuration(DUR_BASE) }}
-        onclick={goToActiveTimer} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToActiveTimer() } }}>
-        <span class="tc-dot"></span>
-        <div class="tc-main">
-          <span class="tc-eyebrow">Cronometru activ · {kindLabels[timer.active.kind] || 'Timer'}</span>
-          <span class="tc-name">{timer.active.label || '—'}</span>
-        </div>
-        <span class="tc-elapsed">{formatElapsed(timer.elapsed)}</span>
-        <button class="tc-stop" title="Opreste cronometrul" onclick={stopActive}><SolidIcon name="stop" size={15} /></button>
-      </div>
-    {/if}
   </div>
 
   {#if loading}
@@ -166,13 +135,13 @@
         <div class="kpi-val warn">{#if (s.urgent_count || 0) > 0}<span class="kpi-pulse"></span>{/if}{Math.round(animVals.urgent)}</div>
         <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
       </button>
-      <button class="kpi cell-in" onclick={() => navigate('/admin')} title="Vezi statistici">
-        <div class="kpi-head"><span class="kpi-chip success"><SolidIcon name="clock" size={16} /></span><span class="kpi-label">Ore Saptamana</span></div>
-        <div class="kpi-val success">{fmtHours(animVals.hours)}<span class="unit">h</span>{#if (s.weekly_delta || 0) !== 0}<span class="kpi-delta {(s.weekly_delta || 0) > 0 ? 'up' : 'down'}">{(s.weekly_delta || 0) > 0 ? '+' : ''}{s.weekly_delta}h</span>{/if}</div>
-        {#if spark.length}
+      <button class="kpi cell-in" onclick={() => navigate('/tasks')} title="Vezi taskurile">
+        <div class="kpi-head"><span class="kpi-chip success"><SolidIcon name="check" size={16} /></span><span class="kpi-label">Finalizate — 7 zile</span></div>
+        <div class="kpi-val success">{Math.round(animVals.done)}{#if (s.weekly_done_delta || 0) !== 0}<span class="kpi-delta {(s.weekly_done_delta || 0) > 0 ? 'up' : 'down'}">{(s.weekly_done_delta || 0) > 0 ? '+' : ''}{s.weekly_done_delta}</span>{/if}</div>
+        {#if spark.some(v => v > 0)}
           <div class="kpi-spark">{#each spark as v}<span style="height: {Math.max(8, (v / sparkMax) * 100)}%"></span>{/each}</div>
         {:else}
-          <div class="kpi-sub">vs. sapt. trecuta</div>
+          <div class="kpi-sub">taskuri bifate</div>
         {/if}
       </button>
       <button class="kpi cell-in" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
@@ -247,17 +216,6 @@
   .greeting { font-family: var(--font-heading); font-size: var(--font-h1); font-weight: var(--fw-bold); letter-spacing: -0.03em; color: var(--text); white-space: nowrap; }
   .today { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; text-transform: capitalize; }
 
-  .timer-card { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-radius: var(--radius-md); background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 9%, var(--bg-surface)) 0%, var(--bg-surface) 60%); border: 1px solid var(--accent-ring); cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
-  .timer-card:hover { border-color: var(--accent); }
-  .tc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: tcpulse 1.5s ease-in-out infinite; flex-shrink: 0; }
-  @keyframes tcpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .tc-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .tc-eyebrow { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--accent); }
-  .tc-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
-  .tc-elapsed { font-family: var(--font-mono); font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--accent); letter-spacing: var(--tracking-wide); }
-  .tc-stop { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--danger); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
-  .tc-stop:hover { background: var(--danger); color: white; }
-
   .kpi-skeleton { margin-bottom: var(--space-lg); }
   .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
   .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
@@ -279,7 +237,6 @@
   .kpi-delta { font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 7px; border-radius: var(--radius-full); align-self: center; }
   .kpi-delta.up { background: var(--success-subtle); color: var(--success); }
   .kpi-delta.down { background: var(--danger-subtle); color: var(--danger); }
-  .unit { font-size: var(--font-small); color: var(--text-dim); font-weight: var(--fw-semibold); }
   .kpi-sub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 6px; }
   .kpi-track { height: 4px; background: var(--bg-hover); border-radius: var(--radius-full); margin-top: 11px; overflow: hidden; }
   .kpi-track span { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); }
@@ -325,6 +282,5 @@
     .kpi-bar { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
     .cards-grid { grid-template-columns: 1fr; }
     .greeting { font-size: var(--font-h2); white-space: normal; }
-    .timer-card { flex: 1; }
   }
 </style>

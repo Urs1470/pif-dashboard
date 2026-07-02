@@ -1,5 +1,5 @@
 <script>
-  import { Search, FolderKanban, Cpu, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
+  import { Search, FolderKanban, Cpu, FileText, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
@@ -29,7 +29,6 @@
     observatie:  { label: 'Observatii', icon: FileText },
     task:        { label: 'Taskuri', icon: CheckSquare },
     global_task: { label: 'Taskuri zilnice', icon: CalendarCheck },
-    jurnal:      { label: 'Jurnal', icon: NotebookPen },
     echipament:  { label: 'Echipamente', icon: Cpu },
     client:      { label: 'Clienti', icon: Users },
     parametru:   { label: 'Parametri', icon: Cpu },
@@ -120,7 +119,6 @@
       case 'proiect':
       case 'task':
       case 'observatie':
-      case 'jurnal':
       case 'echipament':
         if (r.proiect_id) navigate(`/projects/${r.proiect_id}`)
         else if (r.id) navigate(`/projects/${r.id}`)

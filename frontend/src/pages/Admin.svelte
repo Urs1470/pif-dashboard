@@ -186,12 +186,6 @@
               <div class="stat-value">{typeof val === 'number' ? val.toLocaleString('ro-RO') : val}</div>
             </Card>
           {/each}
-          {#if extended?.total_billable_hours != null}
-            <Card>
-              <div class="stat-label">Ore facturabile</div>
-              <div class="stat-value">{Math.round(extended.total_billable_hours)}h</div>
-            </Card>
-          {/if}
         </div>
       {/if}
 
@@ -247,7 +241,6 @@
       <div class="actions">
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=projects', '_blank')}><Download size={14} /> Excel Proiecte</Button>
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=tasks', '_blank')}><Download size={14} /> Excel Taskuri</Button>
-        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=hours', '_blank')}><Download size={14} /> Excel Ore</Button>
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/pdf/all', '_blank')}><Download size={14} /> PDF Sumar</Button>
       </div>
     </Card>

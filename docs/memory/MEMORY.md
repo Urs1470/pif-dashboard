@@ -8,24 +8,23 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 Other authoritative docs (do not duplicate here):
 - `CLAUDE.md` — stack, env vars, deploy, key patterns
 - `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
-- `SCHEMA_REFERENCE.md` — full SQL schema (all 17 tables, columns, FKs, indexes)
+- `SCHEMA_REFERENCE.md` — full SQL schema (all 14 tables, columns, FKs, indexes)
 
 ## Database map by domain
 
 | Domain | Tables |
 |---|---|
-| Projects core | `proiecte`, `checklist_pif`, `checklist_categorii`, `jurnal`, `atasamente`, `echipamente`, `clienti`, `project_templates` |
-| Tasks & timers | `tasks`, `task_subtasks`, `timer_sessions`, `global_tasks`, `global_task_sessions` |
+| Projects core | `proiecte`, `checklist_pif`, `checklist_categorii`, `atasamente`, `echipamente`, `clienti`, `project_templates` |
+| Tasks | `tasks`, `task_subtasks`, `global_tasks` |
 | Drive knowledge | `parametri_master` (~15.3k params, 7 families), `fault_codes` (8 families, seeded from `data/fault_codes/*.json`) |
 | System | `assistant_memory`, `app_settings` (KV), `schema_version` |
 
-Migrations: in-code in `database.py` (`run_migrations()`), currently **v20**, idempotent, auto-run via `before_request`.
+Migrations: in-code in `database.py` (`run_migrations()`), currently **v22**, idempotent, auto-run via `before_request`.
 
 ## Feature status (last verified 2026-06-11)
 
 - Parameter LLM enrichment (`explicatie`/`influenteaza`/`categorie`): ABB + Siemens 100%; Danfoss FC302 + Lenze pending. Rules in `LLM_ENRICH_BRIEF.md` (Romanian, no diacritics, LaTeX `$...$`).
 - Fault codes browser: all 8 families seeded and browsable (desktop + param/fault detail modals).
-- Journal: merged journal + timer entries view; manual time on entries with same-day dedup.
 - PDF manuals browser wired into param/fault detail.
 - Cowork API: Bearer `PIF_API_TOKEN`, endpoints `/api/proiecte`, `/api/proiecte/<id>/snapshot`, `/api/import/debrief`.
 
@@ -88,3 +87,4 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v20**, id
 - 2026-06-12: Inline quick-add for tasks (global + project): form under toolbar on Tasks (hidden in Arhiva view), ProjectDetail single-field "Task Nou" modal replaced by inline form. Backend untouched (endpoint defaults cover prioritate/categorie/status).
 - 2026-06-11: Added versioned pre-commit hook (`.githooks/pre-commit`) that auto-regenerates CODE_MAP/API_MAP when relevant code is committed; activation per clone via `git config core.hooksPath .githooks`.
 - 2026-06-11: Created persistent memory system (`scripts/gen_memory.py` → `docs/memory/`); CLAUDE.md updated to point here; fixed stale migration count (v14 → v17).
+- 2026-07-02: **Removed timer & jurnal features entirely** (Ion: orele se ponteaza in e100, softul intern; jurnalul se scrie in observatiile proiectului). Deleted `blueprints/timer.py` + registration, jurnal routes in projects.py, `stores/timer.svelte.js`, timer/jurnal UI in Header/Home/ProjectDetail/Tasks, jurnal in CommandPalette search + /api/search, ore/jurnal in snapshot + exportMd + PDF/Excel exports + backup/restore. Debrief import now folds `jurnal[]` into observatii/service_after and IGNORES `ore[]`. **Migration v21→v22** drops `jurnal`, `timer_sessions`, `global_task_sessions` (SCHEMA_VERSION 22); v2/v8/v17 migrations gated on table existence for fresh DBs; NEVER re-add these tables to `init_db`. Home KPI "Ore Saptamana" → "Finalizate — 7 zile" (`weekly_done`/`weekly_done_delta`/`weekly_spark` = COUNT of tasks+global_tasks cu data_finalizare in fereastra, per zi). Observatii scos din ProjectFormModal (se editeaza doar in Detaliu proiect, rich text); update foloseste COALESCE deci lipsa cheii pastreaza valoarea.

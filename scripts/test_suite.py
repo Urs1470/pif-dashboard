@@ -223,7 +223,6 @@ def data_integrity():
         ('task_subtasks', 'tasks', 'task_id', 'subtasks'),
         ('checklist_pif', 'proiecte', 'proiect_id', 'checklist items'),
         ('atasamente', 'proiecte', 'proiect_id', 'attachments'),
-        ('jurnal', 'proiecte', 'proiect_id', 'journal entries'),
     ]
     
     for child, parent, fk, label in checks:

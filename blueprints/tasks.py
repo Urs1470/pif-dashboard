@@ -135,30 +135,7 @@ def get_tasks(project_id):
         subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
                                       'subtask_done': r['subtask_done']}
 
-    # 3) Batch-fetch timer totals and running state (one query for all tasks).
-    #    Joins task_subtasks to also capture time logged against subtasks.
-    cursor.execute(f'''
-        SELECT t_id,
-               COALESCE(SUM(CASE WHEN ts.durata_secunde IS NOT NULL THEN ts.durata_secunde ELSE 0 END), 0) AS timp_secunde,
-               MAX(CASE WHEN ts.stop_time IS NULL THEN 1 ELSE 0 END) AS timer_running
-        FROM (
-            SELECT ts.durata_secunde, ts.stop_time, ts.task_id AS t_id
-            FROM timer_sessions ts
-            WHERE ts.task_id IN ({placeholders})
-            UNION ALL
-            SELECT ts.durata_secunde, ts.stop_time, st.task_id AS t_id
-            FROM timer_sessions ts
-            JOIN task_subtasks st ON ts.subtask_id = st.id
-            WHERE st.task_id IN ({placeholders})
-        ) ts
-        GROUP BY t_id
-    ''', task_ids + task_ids)
-    timer_map = {}
-    for r in cursor.fetchall():
-        timer_map[r['t_id']] = {'timp_secunde': r['timp_secunde'],
-                                 'timer_running': r['timer_running']}
-
-    # 4) Batch-fetch attachment counts (one query for all tasks).
+    # 3) Batch-fetch attachment counts (one query for all tasks).
     cursor.execute(f'''
         SELECT task_id, COUNT(*) AS atasamente_count
         FROM atasamente
@@ -169,16 +146,13 @@ def get_tasks(project_id):
 
     conn.close()
 
-    # 5) Merge results in Python.
+    # 4) Merge results in Python.
     result = []
     for row in rows:
         d = row_to_dict(row)
         sc = subtask_map.get(d['id'], {})
         d['subtask_total'] = sc.get('subtask_total', 0)
         d['subtask_done'] = sc.get('subtask_done', 0)
-        tm = timer_map.get(d['id'], {})
-        d['timp_secunde'] = tm.get('timp_secunde', 0)
-        d['timer_running'] = tm.get('timer_running', 0)
         d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
@@ -434,21 +408,7 @@ def get_global_tasks():
         subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
                                       'subtask_done': r['subtask_done']}
 
-    # 3) Batch-fetch timer totals and running state (one query for all tasks).
-    cursor.execute(f'''
-        SELECT global_task_id,
-               COALESCE(SUM(CASE WHEN durata_secunde IS NOT NULL THEN durata_secunde ELSE 0 END), 0) AS timp_secunde,
-               MAX(CASE WHEN stop_time IS NULL THEN 1 ELSE 0 END) AS timer_running
-        FROM global_task_sessions
-        WHERE global_task_id IN ({placeholders})
-        GROUP BY global_task_id
-    ''', task_ids)
-    timer_map = {}
-    for r in cursor.fetchall():
-        timer_map[r['global_task_id']] = {'timp_secunde': r['timp_secunde'],
-                                          'timer_running': r['timer_running']}
-
-    # 4) Batch-fetch attachment counts (one query for all tasks).
+    # 3) Batch-fetch attachment counts (one query for all tasks).
     cursor.execute(f'''
         SELECT global_task_id, COUNT(*) AS atasamente_count
         FROM atasamente
@@ -459,7 +419,7 @@ def get_global_tasks():
 
     conn.close()
 
-    # 5) Merge results in Python — response shape identical to the old
+    # 4) Merge results in Python — response shape identical to the old
     #    correlated-subquery version (same keys, same 0 defaults).
     result = []
     for row in rows:
@@ -467,9 +427,6 @@ def get_global_tasks():
         sc = subtask_map.get(d['id'], {})
         d['subtask_total'] = sc.get('subtask_total', 0)
         d['subtask_done'] = sc.get('subtask_done', 0)
-        tm = timer_map.get(d['id'], {})
-        d['timp_secunde'] = tm.get('timp_secunde', 0)
-        d['timer_running'] = tm.get('timer_running', 0)
         d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
@@ -518,10 +475,7 @@ def create_global_task():
 def get_global_task(task_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''SELECT g.*,
-        (SELECT COALESCE(SUM(durata_secunde), 0) FROM global_task_sessions gs
-         WHERE gs.global_task_id = g.id) AS timp_secunde
-        FROM global_tasks g WHERE g.id = ?''', (task_id,))
+    cursor.execute('SELECT * FROM global_tasks WHERE id = ?', (task_id,))
     row = cursor.fetchone()
     conn.close()
 

@@ -16,9 +16,9 @@ def get_json_or_400():
 
 
 VALID_TABLES = {
-    'proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'jurnal',
-    'timer_sessions', 'atasamente', 'echipamente', 'clienti',
-    'global_tasks', 'global_task_sessions', 'checklist_categorii',
+    'proiecte', 'tasks', 'task_subtasks', 'checklist_pif',
+    'atasamente', 'echipamente', 'clienti',
+    'global_tasks', 'checklist_categorii',
     'fault_codes', 'project_templates',
     'parametri_master',
 }

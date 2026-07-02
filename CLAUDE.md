@@ -37,7 +37,7 @@ Append important decisions/gotchas to the "Recent decisions" section of `docs/me
 
 ```
 app.py                    # Flask entry, auth, CSP headers, rate limiter
-database.py               # Schema (17 tables), migrations v1-v20, WAL config
+database.py               # Schema (14 tables), migrations v1-v22, WAL config
 utils.py                  # login_required decorator, UUID, app_settings KV
 csrf.py                   # Double-submit CSRF (cookie + X-CSRF-Token header)
 labels.py                 # Centralized status labels (project + task states)
@@ -45,7 +45,6 @@ labels.py                 # Centralized status labels (project + task states)
 blueprints/
   projects.py             # /api/proiecte/* — CRUD, filters, Excel/PDF export, templates
   tasks.py                # /api/proiecte/<id>/tasks/* — CRUD, subtasks, recurring
-  timer.py                # /api/.../timer/* — per-project, per-task, global timers
   parametri.py            # /api/parametri/* — drive params (ABB, Siemens, Danfoss, Lenze)
   obsidian.py             # /api/obsidian/* — read-only vault integration
   assistant.py            # /api/assistant/* — Hermes AI (MiniMax gateway)
@@ -62,13 +61,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 17 tables, 20 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 14 tables, 22 migrations (idempotent).
 
-**Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), checklist_pif, checklist_categorii, jurnal, timer_sessions, global_tasks, global_task_sessions, atasamente, echipamente, clienti, project_templates
+**Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), checklist_pif, checklist_categorii, global_tasks, atasamente, echipamente, clienti, project_templates
 
 **Specialized:** fault_codes (8 drive families, auto-seeded from data/fault_codes/*.json), assistant_memory, app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v20. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped the removed Budget Tracker tables.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v22. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii.)
 
 ## Key Patterns
 
@@ -134,7 +133,6 @@ Or via webhook: push triggers POST `/webhook/deploy` (validates X-Hub-Signature-
 
 Ad-hoc test scripts in `scripts/`:
 - `test_suite.py` — main test harness
-- `test_timer_all.py` — timer logic
 
 No pytest/unittest framework. Run with `python scripts/test_suite.py`.
 

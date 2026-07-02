@@ -6,8 +6,7 @@
   import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
-  import { timer, startGlobalTaskTimer, stopGlobalTaskTimer, loadActiveTimer, addManualTime, deleteGlobalTimerSession, loadGlobalTaskTimer } from '../stores/timer.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDuration, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
+  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
@@ -73,15 +72,6 @@
     { value: 'in_lucru', label: 'In Lucru' },
   ]
 
-  let showManualTime = $state(false)
-  let manualId = $state(null)
-  let manualDate = $state('')
-  let manualHours = $state(1)
-  let manualMinutes = $state(0)
-  let manualSaving = $state(false)
-
-  let taskSessions = $state({})
-
   function matchesSearch(t) {
     if (!taskSearch) return true
     const q = taskSearch.toLowerCase()
@@ -116,20 +106,6 @@
     await loadGlobalTasks({ arhiva: showArchive })
     if (res?.recurring_spawned) {
       toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
-    }
-  }
-
-  async function toggleTimer(task) {
-    const wasActive = timer.active?.global_task_id === task.id
-    if (wasActive) {
-      await stopGlobalTaskTimer(task.id)
-    } else {
-      await startGlobalTaskTimer(task.id)
-    }
-    await loadActiveTimer()
-    if (wasActive) {
-      await loadGlobalTasks({ arhiva: showArchive })
-      taskSessions = { ...taskSessions, [task.id]: await loadGlobalTaskTimer(task.id).catch(() => taskSessions[task.id] || { sessions: [], total_secunde: 0 }) }
     }
   }
 
@@ -276,7 +252,6 @@
       return
     }
     expandedTask = taskId
-    loadTaskSessions(taskId)
     loadAtt(taskId)
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
@@ -313,45 +288,6 @@
       [sub.task_id]: (subtasksCache[sub.task_id] || []).filter(s => s.id !== sub.id)
     }
     await loadGlobalTasks({ arhiva: showArchive })
-  }
-
-  function openManualTime(taskId) {
-    manualId = taskId
-    manualDate = new Date().toISOString().slice(0, 10)
-    manualHours = 1
-    manualMinutes = 0
-    showManualTime = true
-  }
-
-  async function saveManualTime() {
-    const sec = manualHours * 3600 + manualMinutes * 60
-    if (sec <= 0) { toast('Durata trebuie sa fie > 0', 'error'); return }
-    manualSaving = true
-    try {
-      await addManualTime('global_task', manualId, sec, manualDate || undefined)
-      showManualTime = false
-      toast('Timp adaugat', 'success')
-      await loadGlobalTasks({ arhiva: showArchive })
-      if (taskSessions[manualId]) {
-        taskSessions = { ...taskSessions, [manualId]: await loadGlobalTaskTimer(manualId).catch(() => taskSessions[manualId]) }
-      }
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { manualSaving = false }
-  }
-
-  async function handleDeleteSession(taskId, sessionId) {
-    try {
-      await deleteGlobalTimerSession(sessionId)
-      toast('Sesiune stearsa', 'success')
-      await loadGlobalTasks({ arhiva: showArchive })
-      taskSessions = { ...taskSessions, [taskId]: await loadGlobalTaskTimer(taskId).catch(() => taskSessions[taskId]) }
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-  }
-
-  async function loadTaskSessions(taskId) {
-    if (!taskSessions[taskId]) {
-      taskSessions = { ...taskSessions, [taskId]: await loadGlobalTaskTimer(taskId).catch(() => ({ sessions: [], total_secunde: 0 })) }
-    }
   }
 
   async function doDeleteTask() {
@@ -414,7 +350,7 @@
     return 'var(--border)'
   }
 
-  onMount(() => { loadGlobalTasks(); loadActiveTimer() })
+  onMount(() => { loadGlobalTasks() })
 </script>
 
 {#snippet taskDetail(t)}
@@ -479,19 +415,6 @@
       </div>
     {/if}
   </div>
-
-  {#if taskSessions[t.id]?.sessions?.length > 0}
-    <div class="sess-section">
-      <span class="sess-label">Sesiuni ({taskSessions[t.id].sessions.length}) — {formatDuration(taskSessions[t.id].total_secunde)}</span>
-      {#each taskSessions[t.id].sessions as s (s.id)}
-        <div class="sess">
-          <span>{s.start_time ? formatDate(s.start_time) : '—'}</span>
-          <span class="sess-dur">{formatDuration(s.durata_secunde)}</span>
-          <button class="sess-del" title="Sterge" onclick={() => handleDeleteSession(t.id, s.id)}><SolidIcon name="trash" size={11} /></button>
-        </div>
-      {/each}
-    </div>
-  {/if}
 {/snippet}
 
 <div class="page">
@@ -531,9 +454,6 @@
             {#if t.subtask_total}<span class="ucard-dot">·</span><span>{t.subtask_done || 0}/{t.subtask_total} subtaskuri</span>{/if}
           </div>
           <div class="ucard-actions">
-            <button class="ucard-btn accent" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
-              {timer.active?.global_task_id === t.id ? '■ Opreste' : '▶ Porneste'}
-            </button>
             <button class="ucard-btn" onclick={() => toggleStatus(t)}>✓ Bifeaza</button>
           </div>
         </section>
@@ -571,7 +491,6 @@
               <div class="tinfo">
                 {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
                 {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
-                {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
                 {#if t.subtask_total}
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                 {/if}
@@ -584,10 +503,6 @@
               <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
               <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><SolidIcon name="pencil" size={12} /></button>
-              <button class="timer-btn manual" title="Adauga timp manual" onclick={() => openManualTime(t.id)}><Plus size={12} /></button>
-              <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
-                <SolidIcon name="clock" size={14} />
-              </button>
               <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
           </div>
@@ -619,14 +534,10 @@
                   </div>
                   <div class="tinfo">
                     {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
-                    {#if t.timp_secunde}<span class="tmono">{formatDuration(t.timp_secunde)}</span>{/if}
                   </div>
                 </button>
                 <div class="task-actions">
                   <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                  <button class="timer-btn" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
-                    <SolidIcon name="clock" size={14} />
-                  </button>
                   <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
                 </div>
               </div>
@@ -698,32 +609,7 @@
   {/snippet}
 </Modal>
 
-<Modal bind:open={showManualTime} title="Adauga timp manual" size="sm">
-  <div class="manual-form">
-    <div class="mf-field">
-      <span class="mf-label">Data</span>
-      <DatePicker bind:value={manualDate} />
-    </div>
-    <div class="mf-row">
-      <label class="mf-field">
-        <span class="mf-label">Ore</span>
-        <input type="number" min="0" max="24" bind:value={manualHours} class="mf-input" />
-      </label>
-      <label class="mf-field">
-        <span class="mf-label">Minute</span>
-        <input type="number" min="0" max="59" step="5" bind:value={manualMinutes} class="mf-input" />
-      </label>
-    </div>
-  </div>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showManualTime = false}>Anuleaza</Button>
-      <Button loading={manualSaving} onclick={saveManualTime}>Adauga</Button>
-    </div>
-  {/snippet}
-</Modal>
-
-<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile si sesiunile timer asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
 <ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
 <AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
@@ -788,13 +674,9 @@
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .tmono { font-family: var(--font-mono); }
   .task-cat { padding: 1px 8px; background: var(--purple-subtle); color: var(--purple); border-radius: var(--radius-full); font-weight: var(--fw-semibold); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
-  .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
-  .timer-btn:hover { background: var(--bg-hover); color: var(--text); }
-  .timer-btn.active { color: var(--accent); background: var(--accent-subtle); }
   .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
   .prio-badge:hover { opacity: .8; }
   .prio-badge:active { transform: scale(0.92); }
@@ -845,19 +727,6 @@
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
-  .timer-btn.manual { width: 28px; height: 28px; color: var(--text-faint); }
-  .timer-btn.manual:hover { color: var(--accent); }
-
-  .sess-section { padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); }
-  .sess-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); margin-bottom: 4px; display: block; }
-  .sess { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); padding: 2px 0; }
-  .sess-dur { font-family: var(--font-mono); color: var(--accent); margin-left: auto; }
-  .sess-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
-  .sess:hover .sess-del { opacity: 1; }
-  .sess-del:hover { color: var(--danger); background: var(--danger-subtle); }
-
-  .manual-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .mf-row { display: flex; gap: var(--space-md); }
   .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 40px; }
@@ -901,8 +770,6 @@
   }
   .ucard-btn:hover { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
   .ucard-btn:active { transform: scale(0.97); }
-  .ucard-btn.accent { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
-  .ucard-btn.accent.active { border-color: var(--danger); color: var(--danger); background: var(--danger-subtle); }
 
   /* ===== V3: grid lista + agenda 7 zile ===== */
   .v3grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
@@ -923,7 +790,7 @@
     .search-box { max-width: none; }
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
-    .sess-del, .task-del, .task-edit, .note-edit-btn { opacity: 1; }
+    .task-del, .task-edit, .note-edit-btn { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
     /* Title gets the full width; the action bar wraps to its own line below
        so a long title no longer squeezes into a tall narrow column. */

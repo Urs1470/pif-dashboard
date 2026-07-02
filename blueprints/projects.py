@@ -209,8 +209,8 @@ def delete_proiect(project_id):
             'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
             (project_id,)
         )
-        tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
-                  'timer_sessions', 'atasamente', 'echipamente']
+        tables = ['tasks', 'checklist_pif', 'checklist_categorii',
+                  'atasamente', 'echipamente']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (project_id,))
         cursor.execute('DELETE FROM proiecte WHERE id = ?', (project_id,))
@@ -270,8 +270,8 @@ def batch_proiecte():
                     'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
                     (pid,)
                 )
-                tables = ['tasks', 'checklist_pif', 'checklist_categorii', 'jurnal',
-                          'timer_sessions', 'atasamente', 'echipamente']
+                tables = ['tasks', 'checklist_pif', 'checklist_categorii',
+                          'atasamente', 'echipamente']
                 for table in tables:
                     cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
@@ -470,102 +470,6 @@ def delete_checklist_categorie(cat_id):
         return jsonify({'ok': True, 'moved': move})
     finally:
         conn.close()
-
-# ============ JURNAL ============
-
-@projects_bp.route('/api/proiecte/<project_id>/jurnal', methods=['GET'])
-@login_required
-def get_jurnal(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM jurnal WHERE proiect_id = ? ORDER BY data DESC', (project_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-@projects_bp.route('/api/proiecte/<project_id>/jurnal', methods=['POST'])
-@login_required
-def create_jurnal_entry(project_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-
-    now = datetime.now().isoformat()
-    entry_id = data.get('id') or generate_uuid()
-
-    cursor.execute('''
-        INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (
-        entry_id,
-        project_id,
-        data.get('data', now[:10]),
-        data.get('continut', ''),
-        now
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({'id': entry_id}), 201
-
-@projects_bp.route('/api/jurnal/<entry_id>', methods=['DELETE'])
-@login_required
-def delete_jurnal_entry(entry_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-
-        # If this jurnal entry was created by stop-with-note, there is a paired
-        # timer_session row with stop_time within ~2 min of jurnal.created_at.
-        # Cascade-delete it so the user doesn't need two clicks (delete the note,
-        # then delete the leftover "Timer fara nota" that pops up afterward).
-        cursor.execute(
-            'SELECT proiect_id, created_at FROM jurnal WHERE id = ?',
-            (entry_id,)
-        )
-        row = cursor.fetchone()
-        if row:
-            try:
-                j_time = datetime.fromisoformat(row['created_at'])
-                cursor.execute('''
-                    SELECT id, stop_time FROM timer_sessions
-                    WHERE proiect_id = ? AND stop_time IS NOT NULL
-                ''', (row['proiect_id'],))
-                for s in cursor.fetchall():
-                    s_stop = datetime.fromisoformat(s['stop_time'])
-                    if abs((s_stop - j_time).total_seconds()) < 120:
-                        cursor.execute('DELETE FROM timer_sessions WHERE id = ?', (s['id'],))
-                        break
-            except (ValueError, TypeError):
-                pass
-
-        cursor.execute('DELETE FROM jurnal WHERE id = ?', (entry_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-        if deleted == 0:
-            return jsonify({'error': 'Jurnal entry not found'}), 404
-        return jsonify({'message': 'Jurnal entry deleted'})
-    finally:
-        conn.close()
-
-@projects_bp.route('/api/jurnal/all', methods=['GET'])
-@login_required
-def get_all_jurnal():
-    """Returneaza toate intrarile de jurnal cu numele proiectului."""
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT j.id, j.proiect_id, j.data, j.continut, j.created_at, p.nume as project_name
-        FROM jurnal j
-        JOIN proiecte p ON j.proiect_id = p.id
-        ORDER BY j.data DESC
-        LIMIT 200
-    ''')
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
-    return jsonify(rows)
-
 
 # ============ ATTACHMENTS ============
 
@@ -1050,7 +954,7 @@ def get_project_snapshot(project_id):
 
     Returns the same schema shape as the debrief import, so Cowork can
     read what it wrote + everything the user added on site (real params,
-    timer hours, checked items, observations).
+    checked items, observations).
     """
     conn = get_db()
     cursor = conn.cursor()
@@ -1095,15 +999,6 @@ def get_project_snapshot(project_id):
         item['categorie'] = cat_match['nume'] if cat_match else None
         checklist_items.append(item)
 
-    # Jurnal
-    cursor.execute('SELECT * FROM jurnal WHERE proiect_id = ? ORDER BY data, created_at', (project_id,))
-    jurnal = [row_to_dict(r) for r in cursor.fetchall()]
-
-    # Timer sessions
-    cursor.execute('SELECT * FROM timer_sessions WHERE proiect_id = ? ORDER BY start_time', (project_id,))
-    sessions = [row_to_dict(r) for r in cursor.fetchall()]
-    total_secunde = sum(s.get('durata_secunde', 0) or 0 for s in sessions)
-
     # Tasks + subtasks
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY created_at', (project_id,))
     tasks = []
@@ -1114,15 +1009,6 @@ def get_project_snapshot(project_id):
         tasks.append(t)
 
     conn.close()
-
-    # Build ore[] summary: group timer sessions by date
-    ore_by_date = {}
-    for s in sessions:
-        d = (s.get('start_time') or '')[:10]
-        if d:
-            ore_by_date.setdefault(d, 0)
-            ore_by_date[d] += s.get('durata_secunde', 0) or 0
-    ore = [{'data': d, 'durata_secunde': sec} for d, sec in sorted(ore_by_date.items())]
 
     snapshot = {
         'meta': {
@@ -1169,13 +1055,6 @@ def get_project_snapshot(project_id):
             'completed': bool(it.get('completed')),
             'ordine': it.get('ordine', 0),
         } for it in checklist_items],
-        'jurnal': [{
-            'data': j.get('data', ''),
-            'continut': j.get('continut', ''),
-            'created_at': j.get('created_at', ''),
-        } for j in jurnal],
-        'ore': ore,
-        'ore_total_secunde': total_secunde,
         'tasks': [{
             'titlu': t.get('titlu', ''),
             'descriere': t.get('descriere', ''),
@@ -1184,11 +1063,6 @@ def get_project_snapshot(project_id):
             'data_scadenta': t.get('data_scadenta', ''),
             'subtasks': [{'titlu': s.get('titlu', ''), 'done': bool(s.get('done'))} for s in t.get('subtasks', [])],
         } for t in tasks],
-        'timer_sessions': [{
-            'start_time': s.get('start_time', ''),
-            'stop_time': s.get('stop_time', ''),
-            'durata_secunde': s.get('durata_secunde', 0),
-        } for s in sessions],
     }
 
     return jsonify(snapshot)
@@ -1797,19 +1671,6 @@ def init_default_templates():
 
 # ============ STRUCTURED IMPORT (Cowork AI debrief) ============
 
-def _manual_session_times_local(data_str, durata_secunde):
-    """Duplicate of timer._manual_session_times — avoids cross-blueprint import.
-    Anchors a manual time entry at noon on the given date."""
-    from datetime import timedelta
-    try:
-        d = datetime.fromisoformat((data_str or '')[:10])
-    except (ValueError, TypeError):
-        d = datetime.now()
-    start = d.replace(hour=12, minute=0, second=0, microsecond=0)
-    stop = start + timedelta(seconds=int(durata_secunde))
-    return start.isoformat(), stop.isoformat()
-
-
 @projects_bp.route('/api/import/debrief', methods=['POST'])
 @login_required
 def import_debrief():
@@ -1818,11 +1679,11 @@ def import_debrief():
     Receives a single JSON payload describing a project debrief and
     creates/updates entities in the correct dependency order:
       1. Client (upsert by name)
-      2. Proiect (upsert by name+client)
+      2. Proiect (upsert by name+client) — jurnal[] narrative folds into
+         observatii (PIF) / service_after (Service); ore[] is ignored since
+         v22 (orele se ponteaza in e100, nu in dashboard)
       3. Echipamente
       4. Checklist categorii + items
-      5. Jurnal entries
-      6. Ore (timer_sessions via manual-time helper)
 
     Returns the project ID and a summary of what was created.
     """
@@ -1837,8 +1698,7 @@ def import_debrief():
     # ── Idempotency guard ──────────────────────────────────────────────
     # meta.debrief_id uniquely identifies a Cowork debrief. If we've imported
     # it before, return the existing project instead of inserting duplicate
-    # equipment / checklist / journal / hours (re-import would otherwise
-    # double the logged time — a billing footgun).
+    # equipment / checklist rows.
     #
     # BUT: only treat it as a duplicate if that project STILL EXISTS. If the
     # user deleted the imported project and wants to re-import, the stale
@@ -1864,7 +1724,7 @@ def import_debrief():
                     'proiect_id': prev_pid,
                     'proiect_url': f'/proiecte/{prev_pid}',
                     'creat': False,
-                    'sumar': {'echipamente': 0, 'jurnal_entries': 0, 'ore_total_secunde': 0, 'checklist_items': 0},
+                    'sumar': {'echipamente': 0, 'checklist_items': 0},
                 }), 200
             logger.info(f"Import debrief: prior project {prev_pid} for debrief_id={debrief_id} was deleted — allowing re-import")
 
@@ -1873,8 +1733,6 @@ def import_debrief():
     now = datetime.now().isoformat()
     sumar = {
         'echipamente': 0,
-        'jurnal_entries': 0,
-        'ore_total_secunde': 0,
         'checklist_items': 0,
     }
 
@@ -1914,8 +1772,8 @@ def import_debrief():
         proiect_client = client_name or proiect_data.get('client', '')
 
         # Detailed narrative (from jurnal[]) -> goes to observatii (PIF) or
-        # service_after (Service). The journal ROWS themselves are kept SHORT,
-        # built from ore[] further below. Each block: "YYYY-MM-DD: text".
+        # service_after (Service). Since v22 there is no jurnal table anymore —
+        # this fold-in IS the journal. Each block: "YYYY-MM-DD: text".
         _detail_blocks = []
         for _e in (data.get('jurnal') or []):
             _t = (_e.get('continut') or _e.get('text') or '').strip()
@@ -2043,69 +1901,8 @@ def import_debrief():
             ))
             sumar['checklist_items'] += 1
 
-        # ── 6 + 7. Timer-with-note per day ─────────────────────────
-        # Each ore[] entry becomes a TIMER SESSION paired with a short NOTE
-        # (activity label from ore[].descriere). The frontend pairs a jurnal entry
-        # to a timer when jurnal.created_at is within ~2 min of timer.stop_time
-        # (see loadJurnal in app.js), then shows ONE "timer cu notă" row — duration
-        # badge + note — instead of a bare "Timer fără notă" plus a separate entry.
-        # So we set the note's created_at == the session stop_time. The detailed
-        # narrative already went to observatii / service_after (section 2).
-
-        # date -> detailed jurnal text, used as the label fallback when a given
-        # ore[] entry has no descriere.
-        jurnal_text_by_date = {}
-        for _e in (data.get('jurnal') or []):
-            _t = (_e.get('continut') or _e.get('text') or '').strip()
-            _d = (_e.get('data') or '')[:10]
-            if _t and _d and _d not in jurnal_text_by_date:
-                jurnal_text_by_date[_d] = _t
-
-        ore_list = data.get('ore') or []
-        if ore_list:
-            for ore_entry in ore_list:
-                try:
-                    dur = int(ore_entry.get('durata_secunde') or 0)
-                except (ValueError, TypeError):
-                    dur = 0
-                edate = ore_entry.get('data') or now[:10]
-                # Short activity label: descriere -> fallback to a slice of the
-                # day's detailed jurnal text -> generic "Lucru". No "— Xh" suffix:
-                # the duration shows as the timer badge on the paired row.
-                label = (ore_entry.get('descriere') or '').strip()
-                if not label:
-                    fb = jurnal_text_by_date.get(edate[:10], '')
-                    label = (fb[:60].rstrip() + '…') if len(fb) > 60 else (fb or 'Lucru')
-                if dur > 0:
-                    # Timer session first, then the paired note (created_at = stop).
-                    start, stop = _manual_session_times_local(edate, dur)
-                    cursor.execute(
-                        'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
-                        'VALUES (?, ?, ?, ?, ?)',
-                        (generate_uuid(), project_id, start, stop, dur)
-                    )
-                    sumar['ore_total_secunde'] += dur
-                    note_created = stop
-                else:
-                    note_created = now
-                cursor.execute('''
-                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (generate_uuid(), project_id, edate, label, note_created))
-                sumar['jurnal_entries'] += 1
-        else:
-            # No ore[] — keep a short journal row per jurnal[] entry so the day
-            # log isn't lost (no hours available for these).
-            for _e in (data.get('jurnal') or []):
-                _t = (_e.get('continut') or _e.get('text') or '').strip()
-                if not _t:
-                    continue
-                short = (_t[:80].rstrip() + '…') if len(_t) > 80 else _t
-                cursor.execute('''
-                    INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (generate_uuid(), project_id, (_e.get('data') or now[:10]), short, now))
-                sumar['jurnal_entries'] += 1
+        # jurnal[] s-a pliat deja in observatii/service_after (sectiunea 2);
+        # ore[] se ignora — orele se ponteaza in e100, nu in dashboard (v22).
 
         conn.commit()
 
