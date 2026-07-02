@@ -77,9 +77,9 @@ DOMENIUL
   SINAMICS_G130_G150 / SINAMICS_S120_S150, Danfoss VLT FC302, Lenze i550 / i950.
 
 MODELUL APLICAȚIEI
-- Proiecte (tip PIF sau Service), fiecare cu: taskuri, checklist, jurnal de
-  activitate, cronometru, echipamente. Status proiect: in_lucru, in_asteptare,
-  blocat, finalizat.
+- Proiecte (tip PIF sau Service), fiecare cu: taskuri, checklist, observații,
+  echipamente. Status proiect: in_lucru, in_asteptare, blocat, finalizat.
+  (Orele se pontează în e100, nu aici; jurnalul de lucru se scrie în observații.)
 - Taskuri: status to_do/in_lucru/done, prioritate normal/urgent/minor, scadență,
   descriere, subtaskuri, recurență (zilnic/saptamanal/lunar).
 - Taskuri zilnice (globale) — independente de proiect.
@@ -93,7 +93,7 @@ REGULI DE LUCRU
 - Pentru parametri: search_parametri / get_parametru.
 - Pentru notițele lui Ion: search_obsidian / read_obsidian_note.
 - Ai acces complet: poți crea, modifica și șterge proiecte, taskuri, taskuri
-  zilnice, subtaskuri, checklist, jurnal, echipamente, clienți.
+  zilnice, subtaskuri, checklist, echipamente, clienți.
 
 MEMORIA TA
 - Ai o memorie persistentă, vizibilă mai jos. Conține preferințele lui Ion,
@@ -163,7 +163,7 @@ ASSISTANT_TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "get_proiect",
-        "description": "Detaliul unui proiect după nume (parțial) sau id: date proiect, taskuri, checklist, jurnal.",
+        "description": "Detaliul unui proiect după nume (parțial) sau id: date proiect, taskuri, checklist, echipamente.",
         "parameters": {"type": "object", "properties": {
             "nume": {"type": "string", "description": "nume parțial sau id de proiect"}
         }, "required": ["nume"]}
@@ -200,14 +200,6 @@ ASSISTANT_TOOLS = [
         }, "required": ["proiect", "titlu"]}
     }},
     {"type": "function", "function": {
-        "name": "add_jurnal",
-        "description": "Adaugă o intrare în jurnalul unui proiect.",
-        "parameters": {"type": "object", "properties": {
-            "proiect": {"type": "string"},
-            "continut": {"type": "string"}
-        }, "required": ["proiect", "continut"]}
-    }},
-    {"type": "function", "function": {
         "name": "update_task",
         "description": "Modifică un task dintr-un proiect (găsit după titlu parțial). Trimite doar câmpurile de schimbat.",
         "parameters": {"type": "object", "properties": {
@@ -234,7 +226,7 @@ ASSISTANT_TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "update_proiect",
-        "description": "Modifică orice câmp al unui proiect. Trimite doar câmpurile pe care le schimbi. Orice modificare (inclusiv redenumirea prin nume_nou) pastreaza tot continutul proiectului: taskuri, jurnal, checklist, timer, echipamente.",
+        "description": "Modifică orice câmp al unui proiect. Trimite doar câmpurile pe care le schimbi. Orice modificare (inclusiv redenumirea prin nume_nou) pastreaza tot continutul proiectului: taskuri, checklist, echipamente.",
         "parameters": {"type": "object", "properties": {
             "nume": {"type": "string", "description": "nume parțial sau id al proiectului de modificat (cheie de cautare)"},
             "nume_nou": {"type": "string", "description": "noul nume al proiectului — pentru redenumire"},
@@ -507,13 +499,11 @@ def _tool_get_proiect(args):
     tasks = [dict(r) for r in cur.fetchall()]
     cur.execute('SELECT titlu, completed FROM checklist_pif WHERE proiect_id = ?', (pid,))
     checklist = [dict(r) for r in cur.fetchall()]
-    cur.execute('SELECT data, continut FROM jurnal WHERE proiect_id = ? ORDER BY created_at DESC LIMIT 10', (pid,))
-    jurnal = [dict(r) for r in cur.fetchall()]
     cur.execute('SELECT nume, producator, model, serial_number FROM echipamente WHERE proiect_id = ?', (pid,))
     echipamente = [dict(r) for r in cur.fetchall()]
     conn.close()
     return {'proiect': dict(proj), 'taskuri': tasks, 'checklist': checklist,
-            'jurnal': jurnal, 'echipamente': echipamente}
+            'echipamente': echipamente}
 
 
 @assistant_tool('create_proiect')
@@ -567,21 +557,6 @@ def _tool_add_checklist_item(args):
     ''', (cid, proj['id'], args.get('titlu', '')))
     conn.commit(); conn.close()
     return {'ok': True, 'id': cid, 'mesaj': f"Checklist item adăugat: {args.get('titlu')}"}
-
-
-@assistant_tool('add_jurnal')
-def _tool_add_jurnal(args):
-    conn = get_db(); cur = conn.cursor()
-    proj = _assistant_find_project(cur, args.get('proiect'))
-    if not proj:
-        conn.close()
-        return {'error': 'Proiectul nu a fost găsit'}
-    now = datetime.now().isoformat()
-    jid = generate_uuid()
-    cur.execute('INSERT INTO jurnal (id, proiect_id, data, continut, created_at) VALUES (?, ?, ?, ?, ?)',
-                (jid, proj['id'], now[:10], args.get('continut', ''), now))
-    conn.commit(); conn.close()
-    return {'ok': True, 'id': jid, 'mesaj': 'Intrare adăugată în jurnal'}
 
 
 @assistant_tool('update_task')

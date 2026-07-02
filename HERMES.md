@@ -59,7 +59,7 @@ frontend/src/
     router.svelte.js   # hash router (rune); rutele SPA
     api.js             # fetch wrapper + CSRF + cache (înlocuiește vechiul apiGet/apiPost)
     math.js, markdown.js, formatters.js, driveCalc.js, driveGlossary.js, ...
-  stores/              # Svelte 5 rune stores (.svelte.js): ui, projects, tasks, timer, params, agenda
+  stores/              # Svelte 5 rune stores (.svelte.js): ui, projects, tasks, params, agenda
   pages/               # Home, Tasks, Projects, ProjectDetail, Params, Notes, Admin, Calculator
   components/
     ui/                # librăria de componente: Button, Card, Badge, Input, Select, Modal,
@@ -73,7 +73,7 @@ frontend/src/
 ```
 
 **Backend — Flask (vezi `CLAUDE.md` → Architecture pentru harta completă):**
-`app.py` (entry, auth, CSP, rate-limit, webhook) + `blueprints/` (projects, tasks, timer,
+`app.py` (entry, auth, CSP, rate-limit, webhook) + `blueprints/` (projects, tasks,
 parametri, obsidian, assistant, admin) + `database.py` (schemă + migrații) + `utils.py`,
 `csrf.py`, `labels.py`. Singurul template server-rendered rămas: `templates/login.html`.
 
@@ -178,7 +178,7 @@ păstrează ambele.
   `.big-num`, `.rowlist/.row`, `.cell-in` (stagger de intrare, cu fallback reduced-motion).
 
 **Layouturi per pagină (redesign 2026-07):** Home = bandă KPI + „Astăzi" + liste; Proiecte =
-grid de carduri; Detaliu proiect = taburi + rail sticky dreapta (timer/progres/deadline/echipamente);
+grid de carduri; Detaliu proiect = taburi + rail sticky dreapta (progres/deadline/echipamente);
 Taskuri = bandă urgente + listă + agendă 7 zile; Parametri = sidebar producători/familii + tabel;
 Calculator = navigator module + modul activ (accordion sub 940px); Admin = 4 taburi.
 Navigația globală: **Dock** plutitor jos (7 rute + căutare), pe desktop și mobil.

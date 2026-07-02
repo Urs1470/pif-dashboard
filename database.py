@@ -58,8 +58,10 @@ def close_db(exc=None):
 # v20: Dropped Budget Tracker tables (budget_state, budget_audit)
 # v21: Added data_planificata + ordine_agenda to tasks & global_tasks
 #      (Home "Astazi" daily planner board)
+# v22: Dropped timer & jurnal features (jurnal, timer_sessions,
+#      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 21
+SCHEMA_VERSION = 22
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -145,8 +147,13 @@ def migrate_v1_to_v2():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_proiect ON jurnal(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_proiect ON timer_sessions(proiect_id)')
+    # jurnal / timer_sessions nu mai exista pe DB-uri noi (v22) — indexam doar daca tabelele exista
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jurnal', 'timer_sessions')")
+    legacy = {row[0] for row in cursor.fetchall()}
+    if 'jurnal' in legacy:
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_proiect ON jurnal(proiect_id)')
+    if 'timer_sessions' in legacy:
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_proiect ON timer_sessions(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
@@ -310,10 +317,13 @@ def migrate_v7_to_v8():
     if 'updated_at' not in tcols:
         cursor.execute('ALTER TABLE tasks ADD COLUMN updated_at TEXT')
 
-    cursor.execute("PRAGMA table_info(timer_sessions)")
-    scols = {row[1] for row in cursor.fetchall()}
-    if 'task_id' not in scols:
-        cursor.execute('ALTER TABLE timer_sessions ADD COLUMN task_id TEXT')
+    # timer_sessions e istoric (drop in v22) — altereaza doar daca mai exista
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timer_sessions'")
+    if cursor.fetchone():
+        cursor.execute("PRAGMA table_info(timer_sessions)")
+        scols = {row[1] for row in cursor.fetchall()}
+        if 'task_id' not in scols:
+            cursor.execute('ALTER TABLE timer_sessions ADD COLUMN task_id TEXT')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS task_subtasks (
@@ -577,8 +587,11 @@ def migrate_v16_to_v17():
     subtask timer lookups. Idempotent (CREATE INDEX IF NOT EXISTS)."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_task_id ON timer_sessions(task_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_subtask_id ON timer_sessions(subtask_id)')
+    # timer_sessions e istoric (drop in v22) — indexeaza doar daca mai exista
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timer_sessions'")
+    if cursor.fetchone():
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_task_id ON timer_sessions(task_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_sessions_subtask_id ON timer_sessions(subtask_id)')
     conn.commit()
     conn.close()
     logger.info("Migration v16->v17: added timer_sessions indexes on task_id, subtask_id")
@@ -709,6 +722,25 @@ def migrate_v20_to_v21():
     logger.info("Migration v20->v21: added data_planificata + ordine_agenda to tasks & global_tasks")
 
 
+def migrate_v21_to_v22():
+    """v21 -> v22: permanently remove the timer & jurnal features. Orele se
+    ponteaza in e100 (softul intern de pontaj), iar intrarile de jurnal se scriu
+    in observatiile proiectului. Drops jurnal, timer_sessions,
+    global_task_sessions and their indexes. Idempotent — DROP ... IF EXISTS."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    for idx in ('idx_jurnal_proiect', 'idx_timer_proiect', 'idx_timer_task',
+                'idx_timer_subtask', 'idx_timer_sessions_task_id',
+                'idx_timer_sessions_subtask_id', 'idx_gts_task'):
+        cursor.execute(f'DROP INDEX IF EXISTS {idx}')
+    cursor.execute('DROP TABLE IF EXISTS jurnal')
+    cursor.execute('DROP TABLE IF EXISTS timer_sessions')
+    cursor.execute('DROP TABLE IF EXISTS global_task_sessions')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v21->v22: dropped timer & jurnal tables (jurnal, timer_sessions, global_task_sessions)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -813,6 +845,11 @@ def run_migrations():
         set_schema_version(21)
         current_version = 21
 
+    if current_version < 22:
+        migrate_v21_to_v22()
+        set_schema_version(22)
+        current_version = 22
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -830,16 +867,12 @@ def run_migrations():
     has_tasks_recurenta = 'recurenta' in tasks_cols
     has_tasks_updated_at = 'updated_at' in tasks_cols
     has_task_planificata = 'data_planificata' in tasks_cols and 'ordine_agenda' in tasks_cols
-    cursor.execute("PRAGMA table_info(timer_sessions)")
-    has_timer_task_id = any(row[1] == 'task_id' for row in cursor.fetchall())
     cursor.execute("PRAGMA table_info(global_tasks)")
     gt_cols = {row[1] for row in cursor.fetchall()}
     has_gt_recurenta = 'recurenta' in gt_cols
     has_gt_planificata = 'data_planificata' in gt_cols and 'ordine_agenda' in gt_cols
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
     has_fault_codes = cursor.fetchone() is not None
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='global_task_sessions'")
-    has_gts = cursor.fetchone() is not None
     # parametri_master may not exist on fresh DBs — gate v7 self-heal on it.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     existing_tables = {row[0] for row in cursor.fetchall()}
@@ -855,8 +888,8 @@ def run_migrations():
         logger.warning("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
         migrate_v6_to_v7()
     if (not has_subtask_table or not has_descriere or not has_tasks_recurenta
-            or not has_tasks_updated_at or not has_timer_task_id):
-        logger.warning("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at / timer_sessions.task_id missing)")
+            or not has_tasks_updated_at):
+        logger.warning("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at missing)")
         migrate_v7_to_v8()
     if not has_gt_recurenta:
         logger.warning("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
@@ -864,9 +897,6 @@ def run_migrations():
     if not has_fault_codes:
         logger.warning("Self-heal: re-running v9->v10 (fault_codes missing)")
         migrate_v9_to_v10()
-    if not has_gts:
-        logger.warning("Self-heal: re-running v10->v11 (global_task_sessions missing)")
-        migrate_v10_to_v11()
     if not has_task_planificata or not has_gt_planificata:
         logger.warning("Self-heal: re-running v20->v21 (data_planificata / ordine_agenda missing)")
         migrate_v20_to_v21()
@@ -1043,30 +1073,6 @@ def init_db():
     ''')
     
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS jurnal (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
-            data TEXT NOT NULL,
-            continut TEXT NOT NULL,
-            created_at TEXT,
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS timer_sessions (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
-            task_id TEXT,
-            subtask_id TEXT,
-            start_time TEXT NOT NULL,
-            stop_time TEXT,
-            durata_secunde INTEGER,
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-        )
-    ''')
-    
-    cursor.execute('''
         CREATE TABLE IF NOT EXISTS atasamente (
             id TEXT PRIMARY KEY,
             proiect_id TEXT,
@@ -1200,18 +1206,6 @@ def init_db():
         )
     ''')
 
-    # Time-tracking sessions for daily (global) tasks.
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS global_task_sessions (
-            id TEXT PRIMARY KEY,
-            global_task_id TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            stop_time TEXT,
-            durata_secunde INTEGER,
-            FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
-        )
-    ''')
-
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
@@ -1220,16 +1214,11 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_proiect ON jurnal(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_proiect ON timer_sessions(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_task ON timer_sessions(task_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_subtask ON timer_sessions(subtask_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_gts_task ON global_task_sessions(global_task_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
 
     conn.commit()

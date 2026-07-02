@@ -100,42 +100,12 @@ def get_extended_stats():
     """)
     by_month = [{'month': row['month'], 'count': row['count']} for row in cursor.fetchall()]
 
-    # Billable hours per project
-    cursor.execute("""
-        SELECT
-            p.id,
-            p.nume,
-            COALESCE(SUM(t.durata_secunde), 0) as total_seconds
-        FROM proiecte p
-        LEFT JOIN timer_sessions t ON p.id = t.proiect_id AND t.durata_secunde IS NOT NULL
-        GROUP BY p.id
-        HAVING total_seconds > 0
-        ORDER BY total_seconds DESC
-        LIMIT 20
-    """)
-    hours_per_project = [{
-        'id': row['id'],
-        'nume': row['nume'],
-        'hours': round(row['total_seconds'] / 3600, 2)
-    } for row in cursor.fetchall()]
-
-    # Total billable hours
-    cursor.execute("""
-        SELECT COALESCE(SUM(durata_secunde), 0) as total
-        FROM timer_sessions
-        WHERE durata_secunde IS NOT NULL
-    """)
-    total_hours_row = cursor.fetchone()
-    total_hours = round(total_hours_row['total'] / 3600, 2) if total_hours_row else 0
-
     conn.close()
 
     return jsonify({
         'by_status': by_status,
         'by_manufacturer': by_manufacturer,
         'by_month': by_month,
-        'hours_per_project': hours_per_project,
-        'total_billable_hours': total_hours
     })
 
 # ---------------------------------------------------------------------------
@@ -228,27 +198,6 @@ def export_excel():
 
         auto_width(ws)
 
-    elif export_type == 'hours':
-        ws = wb.active
-        ws.title = 'Ore'
-
-        headers = ['Proiect', 'Start', 'Stop', 'Durată (ore)']
-        ws.append(headers)
-        style_header(ws)
-
-        cursor.execute('''
-            SELECT p.nume, t.start_time, t.stop_time,
-                   ROUND(CAST(t.durata_secunde AS FLOAT) / 3600, 2) as hours
-            FROM timer_sessions t
-            JOIN proiecte p ON t.proiect_id = p.id
-            WHERE t.durata_secunde IS NOT NULL
-            ORDER BY t.start_time DESC
-        ''')
-        for row in cursor.fetchall():
-            ws.append([_excel_safe(v) for v in row])
-
-        auto_width(ws)
-
     conn.close()
 
     # Save to BytesIO
@@ -337,7 +286,7 @@ def _pdf_section_header(elements, project_dict, is_pif, styles):
     elements.append(Paragraph(' · '.join(meta_bits), styles['subtitle']))
 
 
-def _pdf_section_admin(elements, project_dict, total_hours_label, styles):
+def _pdf_section_admin(elements, project_dict, styles):
     """1. Detalii administrative -- fixed two-column info table."""
     elements.append(Paragraph("1. Detalii administrative", styles['heading']))
     project_info = [
@@ -352,7 +301,6 @@ def _pdf_section_admin(elements, project_dict, total_hours_label, styles):
         ['Nr. comandă', project_dict.get('nr_comanda') or '-'],
         ['Nr. contract', project_dict.get('nr_contract') or '-'],
         ['Cod proiect', project_dict.get('cod_proiect') or '-'],
-        ['Total ore lucrate', total_hours_label],
     ]
     info_table = Table(project_info, colWidths=[4.5*cm, 11*cm])
     info_table.setStyle(TableStyle([
@@ -484,46 +432,6 @@ def _pdf_section_equipment(elements, echipamente, section_n, styles):
     elements.append(Spacer(1, 10))
 
 
-def _pdf_section_journal(elements, jurnal, timer_sessions, section_n, styles):
-    """N. Jurnal de lucru -- entries with +/-2 min timer-session dedupe."""
-    elements.append(Paragraph(f"{section_n}. Jurnal de lucru", styles['heading']))
-    # Match each jurnal entry to a session with matching stop_time within 2 min.
-    sessions = list(timer_sessions)
-    matched = set()
-    for j in jurnal:
-        jt_raw = j.get('created_at') or j.get('data')
-        try: jt = datetime.fromisoformat(jt_raw).timestamp() if jt_raw else 0
-        except (ValueError, TypeError): jt = 0
-        if jt:
-            for s in sessions:
-                if s['id'] in matched: continue
-                et_raw = s.get('stop_time')
-                if not et_raw: continue
-                try: et = datetime.fromisoformat(et_raw).timestamp()
-                except (ValueError, TypeError): continue
-                if abs(jt - et) < 120:
-                    matched.add(s['id'])
-                    j['_dur'] = s.get('durata_secunde') or 0
-                    break
-    for entry in sorted(jurnal, key=lambda e: e.get('data') or '', reverse=False)[-30:]:
-        dur = entry.get('_dur')
-        dur_suffix = ''
-        if dur:
-            dh = int(dur // 3600); dm = int((dur % 3600) // 60)
-            dur_suffix = f" · <font color='#58d1c9'>{dh}h {dm}m</font>" if dh > 0 else f" · <font color='#58d1c9'>{dm}m</font>"
-        elements.append(Paragraph(f"<b>{entry.get('data', '-')}</b>{dur_suffix}", styles['subheading']))
-        elements.append(Paragraph(_pdf_safe_text(entry.get('continut') or ''), styles['normal']))
-        elements.append(Spacer(1, 4))
-    # Timer fără notă
-    unmatched = [s for s in sessions if s['id'] not in matched and s.get('stop_time')]
-    if unmatched:
-        elements.append(Paragraph("Sesiuni timer fără notă", styles['subheading']))
-        for s in unmatched[:20]:
-            dur = s.get('durata_secunde') or 0
-            dh = int(dur // 3600); dm = int((dur % 3600) // 60)
-            date = (s.get('start_time') or '')[:10]
-            elements.append(Paragraph(f"{date} · {dh}h {dm}m" if dh > 0 else f"{date} · {dm}m", styles['small']))
-
 # ---------------------------------------------------------------------------
 # PDF export routes
 # ---------------------------------------------------------------------------
@@ -550,12 +458,8 @@ def export_pdf():
     tasks = [row_to_dict(row) for row in cursor.fetchall()]
     cursor.execute('SELECT * FROM checklist_pif WHERE proiect_id = ? ORDER BY ordine ASC', (project_id,))
     checklist = [row_to_dict(row) for row in cursor.fetchall()]
-    cursor.execute('SELECT * FROM jurnal WHERE proiect_id = ? ORDER BY data DESC', (project_id,))
-    jurnal = [row_to_dict(row) for row in cursor.fetchall()]
     cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ?', (project_id,))
     echipamente = [row_to_dict(row) for row in cursor.fetchall()]
-    cursor.execute('SELECT * FROM timer_sessions WHERE proiect_id = ?', (project_id,))
-    timer_sessions = [row_to_dict(row) for row in cursor.fetchall()]
 
     try:
         cursor.execute('SELECT id, nume, ordine FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine, id', (project_id,))
@@ -564,11 +468,6 @@ def export_pdf():
         checklist_cat = []  # Pre-v5 schema fallback
 
     conn.close()
-
-    total_seconds = sum(ts['durata_secunde'] or 0 for ts in timer_sessions)
-    total_h = int(total_seconds / 3600)
-    total_m = int((total_seconds % 3600) / 60)
-    total_hours_label = f"{total_h}h {total_m}m" if total_h > 0 else f"{total_m}m"
 
     is_pif = (project_dict.get('tip') == 'PIF')
 
@@ -584,7 +483,7 @@ def export_pdf():
     elements = []
 
     _pdf_section_header(elements, project_dict, is_pif, styles)
-    _pdf_section_admin(elements, project_dict, total_hours_label, styles)
+    _pdf_section_admin(elements, project_dict, styles)
     _pdf_section_tech(elements, project_dict, is_pif, styles)
 
     # Section numbering preserves the original quirk: when section 2 (tech) is
@@ -596,14 +495,11 @@ def export_pdf():
 
     n_tasks = 4 if checklist_present else 3
     n_equip = 5 if checklist_present else 4
-    n_jurnal = 6 if checklist_present else 5
 
     if tasks:
         _pdf_section_tasks(elements, tasks, n_tasks, styles)
     if echipamente:
         _pdf_section_equipment(elements, echipamente, n_equip, styles)
-    if jurnal or timer_sessions:
-        _pdf_section_journal(elements, jurnal, timer_sessions, n_jurnal, styles)
 
     # Footer
     elements.append(Spacer(1, 16))
@@ -700,7 +596,7 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
     for table in tables:
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
@@ -954,7 +850,7 @@ def restore_database():
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'jurnal', 'timer_sessions', 'global_task_sessions', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)}')
 
@@ -997,20 +893,7 @@ def restore_database():
             ''', (c.get('id'), c.get('proiect_id'), c.get('titlu'), c.get('completed'),
                   c.get('note'), c.get('ordine', 0)))
 
-        # Restore jurnal
-        for j in data.get('jurnal', []):
-            cursor.execute('''
-                INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (j.get('id'), j.get('proiect_id'), j.get('data'), j.get('continut'), j.get('created_at')))
-
-        # Restore timer_sessions (v8+ column: task_id)
-        for ts in data.get('timer_sessions', []):
-            cursor.execute('''
-                INSERT INTO timer_sessions (id, proiect_id, task_id, start_time, stop_time, durata_secunde)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (ts.get('id'), ts.get('proiect_id'), ts.get('task_id'),
-                  ts.get('start_time'), ts.get('stop_time'), ts.get('durata_secunde')))
+        # jurnal / timer_sessions din backup-uri vechi se ignora (v22 a scos featureul)
 
         # Restore atasamente -- but only paths that resolve INSIDE UPLOAD_FOLDER.
         # A backup payload from an untrusted source could otherwise register
@@ -1081,14 +964,6 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
                   s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
-
-        # Restore global_task_sessions
-        for gts in data.get('global_task_sessions', []):
-            cursor.execute('''
-                INSERT INTO global_task_sessions (id, global_task_id, start_time, stop_time, durata_secunde)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (gts.get('id'), gts.get('global_task_id'), gts.get('start_time'),
-                  gts.get('stop_time'), gts.get('durata_secunde')))
 
         # Restore checklist_categorii
         for cat in data.get('checklist_categorii', []):
@@ -1350,13 +1225,6 @@ def global_search():
         results.append({'type': 'checklist', 'id': r['id'], 'title': r['titlu'],
                         'subtitle': f"Checklist · {r['pnume']}", 'snippet': '', 'proiect_id': r['proiect_id']})
 
-    cur.execute('SELECT j.id, j.continut, j.proiect_id, p.nume AS pnume FROM jurnal j '
-                'JOIN proiecte p ON j.proiect_id = p.id WHERE j.continut LIKE ? LIMIT 10', (like,))
-    for r in cur.fetchall():
-        results.append({'type': 'jurnal', 'id': r['id'], 'title': _search_snippet(r['continut'], q, 50),
-                        'subtitle': f"Jurnal · {r['pnume']}", 'snippet': _search_snippet(r['continut'], q),
-                        'proiect_id': r['proiect_id']})
-
     cur.execute('SELECT e.id, e.nume, e.model, e.proiect_id, p.nume AS pnume FROM echipamente e '
                 'JOIN proiecte p ON e.proiect_id = p.id '
                 'WHERE e.nume LIKE ? OR e.model LIKE ? OR e.serial_number LIKE ? LIMIT 8',
@@ -1429,33 +1297,48 @@ def dashboard_home():
     cursor.execute("SELECT COUNT(*) FROM proiecte")
     total_projects = cursor.fetchone()[0]
 
-    # Weekly hours (last 7 days)
-    cursor.execute("""
-        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions
-        WHERE start_time >= datetime('now', '-7 days')
+    # Tasks completed in the last 7 days (project tasks + global tasks).
+    # data_finalizare is set on completion; the timer-based weekly hours card
+    # was removed in v22 (orele se ponteaza in e100).
+    _done_where = """
+        data_finalizare IS NOT NULL AND TRIM(data_finalizare) <> ''
+    """
+    cursor.execute(f"""
+        SELECT COUNT(*) FROM (
+            SELECT data_finalizare FROM tasks WHERE {_done_where}
+            UNION ALL
+            SELECT data_finalizare FROM global_tasks WHERE {_done_where}
+        )
+        WHERE date(data_finalizare) >= date('now', '-6 days')
     """)
-    weekly_seconds = cursor.fetchone()[0]
-    weekly_hours = round(weekly_seconds / 3600, 1)
+    weekly_done = cursor.fetchone()[0]
 
-    # Hours previous 7-day window for delta
-    cursor.execute("""
-        SELECT COALESCE(SUM(durata_secunde), 0) FROM timer_sessions
-        WHERE start_time >= datetime('now', '-14 days')
-          AND start_time < datetime('now', '-7 days')
+    # Previous 7-day window for delta
+    cursor.execute(f"""
+        SELECT COUNT(*) FROM (
+            SELECT data_finalizare FROM tasks WHERE {_done_where}
+            UNION ALL
+            SELECT data_finalizare FROM global_tasks WHERE {_done_where}
+        )
+        WHERE date(data_finalizare) >= date('now', '-13 days')
+          AND date(data_finalizare) < date('now', '-6 days')
     """)
-    prev_weekly_hours = round(cursor.fetchone()[0] / 3600, 1)
-    weekly_delta = round(weekly_hours - prev_weekly_hours, 1)
+    weekly_done_delta = weekly_done - cursor.fetchone()[0]
 
-    # Daily hours for the last 7 calendar days (oldest -> newest) for the sparkline
-    cursor.execute("""
-        SELECT CAST(julianday(date('now')) - julianday(date(start_time)) AS INTEGER) AS days_ago,
-               COALESCE(SUM(durata_secunde), 0) AS sec
-        FROM timer_sessions
-        WHERE start_time >= datetime('now', '-7 days')
+    # Completed count per day, last 7 calendar days (oldest -> newest)
+    cursor.execute(f"""
+        SELECT CAST(julianday(date('now')) - julianday(date(data_finalizare)) AS INTEGER) AS days_ago,
+               COUNT(*) AS cnt
+        FROM (
+            SELECT data_finalizare FROM tasks WHERE {_done_where}
+            UNION ALL
+            SELECT data_finalizare FROM global_tasks WHERE {_done_where}
+        )
+        WHERE date(data_finalizare) >= date('now', '-6 days')
         GROUP BY days_ago
     """)
-    _spark = {r['days_ago']: r['sec'] for r in cursor.fetchall()}
-    weekly_spark = [round(_spark.get(i, 0) / 3600, 2) for i in range(6, -1, -1)]
+    _spark = {r['days_ago']: r['cnt'] for r in cursor.fetchall()}
+    weekly_spark = [_spark.get(i, 0) for i in range(6, -1, -1)]
 
     # Urgent tasks — global + project-level (UNION)
     cursor.execute("""
@@ -1492,19 +1375,6 @@ def dashboard_home():
     upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
     deadline_count = len(upcoming_deadlines)
 
-    # Active timer -- only the standalone project timer, not per-task sessions
-    # (per-task rows also have proiect_id set; without this filter the banner
-    # could mis-attribute a per-task timer to the project as a whole).
-    cursor.execute("""
-        SELECT ts.id, ts.proiect_id as project_id, ts.start_time, p.nume as project_name
-        FROM timer_sessions ts JOIN proiecte p ON ts.proiect_id = p.id
-        WHERE ts.stop_time IS NULL AND ts.task_id IS NULL
-        ORDER BY ts.start_time DESC LIMIT 1
-    """)
-    active_timer = cursor.fetchone()
-    if active_timer:
-        active_timer = dict(active_timer)
-
     # Today's tasks — open tasks (not done), with due-today/overdue surfaced first,
     # then by priority. Tasks without a scadenta still show (the user rarely sets one).
     cursor.execute("""
@@ -1529,15 +1399,14 @@ def dashboard_home():
         'stats': {
             'active_projects': active_projects,
             'total_projects': total_projects,
-            'weekly_hours': weekly_hours,
-            'weekly_delta': weekly_delta,
+            'weekly_done': weekly_done,
+            'weekly_done_delta': weekly_done_delta,
             'weekly_spark': weekly_spark,
             'urgent_count': urgent_count,
             'deadline_count': deadline_count
         },
         'urgent_tasks': urgent_tasks,
         'upcoming_deadlines': upcoming_deadlines,
-        'active_timer': active_timer,
         'todays_tasks': todays_tasks
     })
 

@@ -1,12 +1,5 @@
 import { apiJson } from './api.js'
 
-function fmtHours(s) {
-  if (!s) return '0h'
-  const h = Math.floor(s / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  return h > 0 ? `${h}h ${m}m` : `${m}m`
-}
-
 function escMd(txt) {
   return (txt || '').replace(/\|/g, '\\|')
 }
@@ -19,12 +12,10 @@ export function formatFileSize(bytes) {
 }
 
 export async function exportMarkdown(projectId) {
-  const [project, tasks, jurnal, attachments, timer, echipamente] = await Promise.all([
+  const [project, tasks, attachments, echipamente] = await Promise.all([
     apiJson(`/api/proiecte/${projectId}`),
     apiJson(`/api/proiecte/${projectId}/tasks`).catch(() => []),
-    apiJson(`/api/proiecte/${projectId}/jurnal`).catch(() => []),
     apiJson(`/api/proiecte/${projectId}/atasamente`).catch(() => []),
-    apiJson(`/api/proiecte/${projectId}/timer`).catch(() => ({ sessions: [], total_secunde: 0 })),
     apiJson(`/api/proiecte/${projectId}/echipamente`).catch(() => []),
   ])
 
@@ -52,7 +43,6 @@ export async function exportMarkdown(projectId) {
   if (isService) md += `data_crearii: ${project.data_crearii || today}\n`
   md += `status: ${project.status || 'activ'}\n`
   if (project.cod_proiect) md += `cod_proiect: ${project.cod_proiect}\n`
-  md += `total_ore_lucrate: ${fmtHours(timer.total_secunde)}\n`
   md += `---\n\n`
 
   md += isPIF ? `# PIF — ${project.nume}\n\n` : `# Service — ${project.nume}\n\n`
@@ -72,7 +62,6 @@ export async function exportMarkdown(projectId) {
   if (project.cod_proiect) md += `| Cod proiect | ${escMd(project.cod_proiect)} |\n`
   if (project.folder_server) md += `| Folder server | ${escMd(project.folder_server)} |\n`
   md += `| Status | ${escMd(project.status) || 'activ'} |\n`
-  md += `| Total ore lucrate | ${fmtHours(timer.total_secunde)} |\n`
   md += `\n`
 
   // 2. Continut tehnic
@@ -142,37 +131,7 @@ export async function exportMarkdown(projectId) {
     })
   }
 
-  // 6. Jurnal de lucru + sesiuni timer
-  if (jurnal.length > 0 || (timer.sessions && timer.sessions.length > 0)) {
-    md += `## ${section++}. Jurnal de lucru\n\n`
-    const sessions = (timer.sessions || []).slice()
-    const matched = new Set()
-    for (const j of jurnal) {
-      const jt = new Date(j.created_at || j.data || 0).getTime()
-      if (!jt) continue
-      const found = sessions.find(s => {
-        const stopIso = s.stop_time || s.end_time
-        if (matched.has(s.id) || !stopIso) return false
-        return Math.abs(jt - new Date(stopIso).getTime()) < 2 * 60 * 1000
-      })
-      if (found) { matched.add(found.id); j._duration_secunde = found.durata_secunde }
-    }
-    ;[...jurnal].reverse().forEach(entry => {
-      const durSuffix = entry._duration_secunde ? ` · ${fmtHours(entry._duration_secunde)}` : ''
-      md += `### ${entry.data || ''}${durSuffix}\n\n${entry.continut || ''}\n\n`
-    })
-    const unmatched = sessions.filter(s => !matched.has(s.id) && (s.stop_time || s.end_time))
-    if (unmatched.length > 0) {
-      md += `### Sesiuni timer fără notă\n\n`
-      unmatched.forEach(s => {
-        const date = s.start_time ? s.start_time.substring(0, 10) : ''
-        md += `- ${date} · ${fmtHours(s.durata_secunde)}\n`
-      })
-      md += `\n`
-    }
-  }
-
-  // 7. Atasamente
+  // 6. Atasamente
   if (attachments.length > 0) {
     md += `## ${section++}. Atașamente\n\n`
     md += `| Fișier | Tip | Mărime | Adăugat |\n|---|---|---|---|\n`

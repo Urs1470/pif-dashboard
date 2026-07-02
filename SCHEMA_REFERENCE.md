@@ -102,34 +102,6 @@ CREATE TABLE IF NOT EXISTS checklist_categorii (
 **Structura**: tabel separat cu rânduri per-item, fiecare opțional legat de o categorie.
 Items fără `categorie_id` apar într-un bucket virtual "Fără categorie" pe frontend.
 
-### JURNAL
-```sql
-CREATE TABLE IF NOT EXISTS jurnal (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    proiect_id TEXT NOT NULL,                   -- FK -> proiecte.id ON DELETE CASCADE
-    data TEXT NOT NULL,                          -- ISO date 'YYYY-MM-DD'
-    continut TEXT NOT NULL,                      -- text liber / markdown
-    created_at TEXT,                             -- ISO datetime (auto-generat)
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-);
-```
-
-### TIMER SESSIONS (ore lucrate pe proiect/task/subtask)
-```sql
-CREATE TABLE IF NOT EXISTS timer_sessions (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    proiect_id TEXT NOT NULL,                   -- FK -> proiecte.id ON DELETE CASCADE
-    task_id TEXT,                               -- nullable: NULL = project-level, non-null = per-task
-    subtask_id TEXT,                            -- nullable: per-subtask timer
-    start_time TEXT NOT NULL,                   -- ISO datetime
-    stop_time TEXT,                             -- NULL = timer rulează acum
-    durata_secunde INTEGER,                     -- calculat la stop; NULL dacă încă rulează
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-);
-```
-
-**Reguli**: Nu există validare server-side care să blocheze adăugarea de ore pe un proiect finalizat. Se pot adăuga ore retroactiv pe orice proiect.
-
 ### TASKS (per proiect)
 ```sql
 CREATE TABLE IF NOT EXISTS tasks (
@@ -253,72 +225,7 @@ def create_proiect():
 
 ---
 
-## 3. Cum se adaugă ore — cod real
-
-**Fișier**: `blueprints/timer.py`, linia 190
-
-```python
-@timer_bp.route('/api/proiecte/<project_id>/timer/manual', methods=['POST'])
-@login_required
-def add_manual_timer(project_id):
-    data = request.json or {}
-    dur = int(data.get('durata_secunde') or 0)
-    if dur <= 0:
-        return jsonify({'error': 'Durata invalidă'}), 400
-    start, stop = _manual_session_times(data.get('data'), dur)
-    conn = get_db()
-    cursor = conn.cursor()
-    sid = generate_uuid()
-    cursor.execute(
-        'INSERT INTO timer_sessions (id, proiect_id, start_time, stop_time, durata_secunde) '
-        'VALUES (?, ?, ?, ?, ?)',
-        (sid, project_id, start, stop, dur)
-    )
-    conn.commit()
-    conn.close()
-    return jsonify({'id': sid, 'durata_secunde': dur})
-```
-
-**Helper** (`_manual_session_times`): ancorează sesiunea la ora 12:00 pe ziua dată, astfel încât timezone math nu o mută pe altă zi.
-
-**Input JSON**: `{"durata_secunde": 2700, "data": "2025-06-04"}` (`data` opțional, default = azi).
-
----
-
-## 4. Cum se adaugă o intrare în jurnal — cod real
-
-**Fișier**: `blueprints/projects.py`, linia 477
-
-```python
-@projects_bp.route('/api/proiecte/<project_id>/jurnal', methods=['POST'])
-@login_required
-def create_jurnal_entry(project_id):
-    data = request.json
-    conn = get_db()
-    cursor = conn.cursor()
-    now = datetime.now().isoformat()
-    entry_id = data.get('id') or generate_uuid()
-
-    cursor.execute('''
-        INSERT INTO jurnal (id, proiect_id, data, continut, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (
-        entry_id,
-        project_id,
-        data.get('data', now[:10]),
-        data.get('continut', ''),
-        now
-    ))
-    conn.commit()
-    conn.close()
-    return jsonify({'id': entry_id}), 201
-```
-
-**Input JSON**: `{"continut": "Setat parametrii PID grup 20", "data": "2025-06-04"}`
-
----
-
-## 5. Endpointuri existente de import/bulk/batch
+## 3. Endpointuri existente de import/bulk/batch
 
 | Endpoint | Verb | Ce face | Import? |
 |---|---|---|---|
@@ -330,7 +237,7 @@ def create_jurnal_entry(project_id):
 
 ---
 
-## 6. Enumuri și valori fixe
+## 4. Enumuri și valori fixe
 
 ### Tipul proiectului
 ```
@@ -390,7 +297,7 @@ PRODUCATOR_FAMILII = {
 
 ---
 
-## 7. Structura checklist PIF
+## 5. Structura checklist PIF
 
 **Tabel separat** (NU JSON într-o coloană). Fiecare item e un rând cu FK la proiect.
 
@@ -417,7 +324,7 @@ PRODUCATOR_FAMILII = {
 
 ---
 
-## 8. Sistem de identificare
+## 6. Sistem de identificare
 
 | Entitate | Tip ID | Generat cum |
 |---|---|---|
@@ -427,8 +334,6 @@ PRODUCATOR_FAMILII = {
 | tasks | UUID v4 text | idem |
 | task_subtasks | UUID v4 text | idem |
 | global_tasks | UUID v4 text | idem |
-| jurnal | UUID v4 text | idem |
-| timer_sessions | UUID v4 text | idem |
 | checklist_pif | UUID v4 text | idem |
 | checklist_categorii | **INTEGER autoincrement** | SQLite autoincrement |
 | atasamente | UUID v4 text | idem |
@@ -437,7 +342,7 @@ Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl fol
 
 ---
 
-## 9. Echipamente — nr. serie și familie drive
+## 7. Echipamente — nr. serie și familie drive
 
 **Da**, tabela `echipamente` are:
 - `serial_number TEXT` — numărul de serie fizic al echipamentului
@@ -447,7 +352,7 @@ Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl fol
 
 ---
 
-## 10. Validări și logică de business
+## 8. Validări și logică de business
 
 ### Un proiect poate exista fără client?
 **Da.** `client` e `TEXT` nullable, nu FK. Un proiect cu `client = ""` e valid.
@@ -455,15 +360,12 @@ Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl fol
 ### Un echipament poate exista fără proiect?
 **Nu.** `proiect_id TEXT NOT NULL` + `FOREIGN KEY ... ON DELETE CASCADE`. Dacă proiectul se șterge, echipamentele dispar.
 
-### Se pot adăuga ore pe un proiect finalizat?
-**Da.** Nu există nicio verificare server-side pe statusul proiectului la INSERT în `timer_sessions`. Se pot adăuga ore retroactiv pe orice proiect, indiferent de status.
-
 ### Se pot adăuga checklist items fără categorie?
 **Da.** `categorie_id` e nullable. Items fără categorie apar într-un bucket virtual "Fără categorie" pe frontend.
 
 ### Cascade deletes
 Când un proiect se șterge (via batch delete):
-1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), `tasks`, `checklist_pif`, `checklist_categorii`, `jurnal`, `timer_sessions`, `atasamente`, `echipamente`
+1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), `tasks`, `checklist_pif`, `checklist_categorii`, `atasamente`, `echipamente`
 2. FK CASCADE ar face o parte din treabă, dar codul face și explicit pentru siguranță
 3. Fișierele fizice ale atașamentelor se șterg de pe disk (`shutil.rmtree`)
 
@@ -477,7 +379,7 @@ Toate endpoint-urile POST/PUT/DELETE necesită header `X-CSRF-Token` (double-sub
 
 ---
 
-## 11. Indexuri existenți
+## 9. Indexuri existenți
 
 ```sql
 idx_proiecte_status          ON proiecte(status)
@@ -489,10 +391,6 @@ idx_global_tasks_status      ON global_tasks(status)
 idx_checklist_proiect        ON checklist_pif(proiect_id)
 idx_checklist_pif_categorie  ON checklist_pif(categorie_id)
 idx_checklist_categorii_proiect ON checklist_categorii(proiect_id, ordine)
-idx_jurnal_proiect           ON jurnal(proiect_id)
-idx_timer_proiect            ON timer_sessions(proiect_id)
-idx_timer_task               ON timer_sessions(task_id)
-idx_timer_subtask            ON timer_sessions(subtask_id)
 idx_atasamente_proiect       ON atasamente(proiect_id)
 idx_echipamente_proiect      ON echipamente(proiect_id)
 idx_clienti_nume             ON clienti(nume)

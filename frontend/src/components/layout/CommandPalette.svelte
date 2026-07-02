@@ -1,6 +1,6 @@
 <script>
-  import { Search, FolderKanban, Cpu, FileText, NotebookPen, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
-  import { fade, fly } from 'svelte/transition'
+  import { Search, FolderKanban, Cpu, FileText, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
+  import { fade, scale } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
   import { apiJson } from '../../lib/api.js'
@@ -29,7 +29,6 @@
     observatie:  { label: 'Observatii', icon: FileText },
     task:        { label: 'Taskuri', icon: CheckSquare },
     global_task: { label: 'Taskuri zilnice', icon: CalendarCheck },
-    jurnal:      { label: 'Jurnal', icon: NotebookPen },
     echipament:  { label: 'Echipamente', icon: Cpu },
     client:      { label: 'Clienti', icon: Users },
     parametru:   { label: 'Parametri', icon: Cpu },
@@ -120,7 +119,6 @@
       case 'proiect':
       case 'task':
       case 'observatie':
-      case 'jurnal':
       case 'echipament':
         if (r.proiect_id) navigate(`/projects/${r.proiect_id}`)
         else if (r.id) navigate(`/projects/${r.id}`)
@@ -192,7 +190,7 @@
 
 {#if open}
   <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
-    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:fly={{ y: -8, duration: motionDuration(DUR_FAST) }}>
+    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
       <div class="palette-search">
         <Search size={16} />
         <input
@@ -271,6 +269,8 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 15vh;
+      backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
   }
 
   .palette {

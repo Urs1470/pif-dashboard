@@ -25,7 +25,7 @@
     return {
       tip: 'PIF', nume: '', client: '', locatie: '', echipament_principal: '',
       producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '', deadline: '',
-      status: 'in_lucru', observatii: '', nr_comanda: '', nr_contract: '',
+      status: 'in_lucru', nr_comanda: '', nr_contract: '',
     }
   }
 
@@ -46,7 +46,6 @@
           data_incepere: project.data_incepere || '',
           deadline: project.deadline || '',
           status: project.status || 'in_lucru',
-          observatii: project.observatii || '',
           nr_comanda: project.nr_comanda || '',
           nr_contract: project.nr_contract || '',
         }
@@ -100,12 +99,6 @@
       {#if isEdit}
         <Select label="Status" bind:value={form.status} options={STATUSES} />
       {/if}
-      <div class="full">
-        <label class="ta-field">
-          <span class="ta-label">Observatii</span>
-          <textarea rows="3" bind:value={form.observatii} placeholder="Observatii tehnice..."></textarea>
-        </label>
-      </div>
     </div>
     <datalist id="clients-list">
       {#each clients as c}<option value={c.nume}></option>{/each}
@@ -128,9 +121,6 @@
   .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: var(--fw-semibold); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .tip-btn.active-pif { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
   .tip-btn.active-service { background: var(--service-subtle); border-color: var(--service-accent); color: var(--service-accent); }
-  .ta-field { display: flex; flex-direction: column; gap: 4px; }
-  .ta-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  textarea { padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; }
 
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 </style>

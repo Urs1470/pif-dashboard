@@ -9,6 +9,7 @@
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
+  import Select from '../components/ui/Select.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
@@ -766,7 +767,7 @@
   {#if isDesktop}
     <!-- V2 desktop: navigator de module in stanga (sticky) + modulul activ in dreapta -->
     <div class="calc-grid">
-      <aside class="calc-nav">
+      <aside class="calc-nav cell-in">
         <button class="nav-equip" onclick={openEquipPanel} title="Date echipament — click pentru panoul complet">
           <span class="nav-equip-h"><SolidIcon name="cpu" size={13} /> Date echipament</span>
           <span class="nav-equip-sum">{equipSummary}</span>
@@ -786,7 +787,7 @@
       </aside>
 
       {#if activeMod}
-        <section class="mod-cell" id={'acc-' + activeMod.id}>
+        <section class="mod-cell cell-in" id={'acc-' + activeMod.id}>
           <div class="mod-cell-head">
             <span class="acc-title">{activeMod.title}{#if activeMod.subtitle}<span class="acc-sub"><MathText text={activeMod.subtitle} /></span>{/if}</span>
             <button class="star-btn" class:on={isFav(activeMod.id)} title="Adauga la favorite" aria-label="Favorit"
@@ -885,11 +886,8 @@
           <p class="imp-hint">„Din proiect" e disponibil doar logat in dashboard. Pentru colegi: foloseste „Incarca backup" si incarca direct fisierul de backup al drive-ului.</p>
         {:else}
           <div class="imp-row">
-            <label for="imp-proj">Proiect</label>
-            <select id="imp-proj" bind:value={selProj} onchange={onSelProj}>
-              <option value="">— alege proiect —</option>
-              {#each projList as p (p.id)}<option value={p.id}>{p.nume || p.titlu || p.id}</option>{/each}
-            </select>
+            <Select size="sm" bind:value={selProj} onchange={onSelProj} placeholder="— alege proiect —" aria-label="Proiect"
+              options={projList.map((p) => ({ value: p.id, label: p.nume || p.titlu || p.id }))} />
           </div>
           {#if equipList.length}
             <div class="imp-equip">
@@ -1018,9 +1016,8 @@
   .imp-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
   .imp-tabs button { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
   .imp-tabs button.active { background: var(--accent-subtle); color: var(--accent); }
-  .imp-row { display: flex; align-items: center; gap: 8px; }
-  .imp-row label { font-size: var(--font-small); color: var(--text-dim); }
-  .imp-row select { flex: 1; padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); }
+  .imp-row { display: flex; flex-direction: column; gap: 8px; }
+  .imp-row :global(.field) { flex: 1; }
   .imp-equip { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
   .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }
@@ -1042,36 +1039,42 @@
     border-bottom: 1px solid var(--border);
     padding-bottom: var(--space-sm);
   }
+  /* aceeasi reteta .chip ca filtrele din Proiecte/Taskuri */
   .fam-tab {
-    padding: 6px 14px;
-    border-radius: var(--radius-sm);
+    padding: 4px 14px; min-height: 30px;
+    border-radius: var(--radius-full);
     font-size: var(--font-small);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-medium);
     color: var(--text-secondary);
+    background: var(--bg-input);
+    border: 1px solid transparent;
     transition: all var(--dur-fast) var(--ease);
     cursor: pointer;
   }
   .fam-tab:hover { background: var(--bg-hover); color: var(--text); }
-  .fam-tab.active { background: var(--accent-subtle); color: var(--accent); }
+  .fam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .fam-tab:active { transform: scale(0.97); }
 
   /* sub-taburi pentru Motoare (pe tip) */
   .subfam-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: calc(-1 * var(--space-md)) 0 var(--space-lg); }
   .subfam-tab {
-    padding: 4px 13px; border-radius: 999px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
-    color: var(--text-dim); border: 1px solid var(--border); background: var(--bg-surface);
+    padding: 3px 13px; min-height: 26px; border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
+    color: var(--text-secondary); border: 1px solid transparent; background: var(--bg-input);
     cursor: pointer; transition: all var(--dur-fast) var(--ease);
   }
-  .subfam-tab:hover { color: var(--text); border-color: var(--text-dim); }
-  .subfam-tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .subfam-tab:hover { background: var(--bg-hover); color: var(--text); }
+  .subfam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .subfam-tab:active { transform: scale(0.97); }
 
   /* caseta de cautare */
   .search-row { position: relative; display: flex; align-items: center; margin-bottom: var(--space-md); }
   .search-ic { position: absolute; left: 12px; display: flex; color: var(--text-dim); pointer-events: none; }
   .search-inp {
-    width: 100%; padding: 9px 38px; border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--bg-elevated); color: var(--text); font-size: var(--font-body);
+    width: 100%; padding: 9px 38px; border: 1px solid var(--border); border-radius: var(--radius-full);
+    background: var(--bg-panel); color: var(--text); font-size: var(--font-body);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
-  .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
   .search-clear { position: absolute; right: 8px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .search-clear:hover { background: var(--bg-hover); color: var(--text); }
   .cat-badge { display: inline-block; margin-top: 4px; width: fit-content; font-size: var(--font-tiny); color: var(--text-dim); background: var(--bg-hover); border-radius: 999px; padding: 1px 9px; }
@@ -1231,7 +1234,7 @@
   .inp-field:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-subtle);
+    box-shadow: var(--focus-ring);
   }
 
   .results {

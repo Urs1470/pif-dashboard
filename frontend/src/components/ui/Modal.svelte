@@ -1,6 +1,6 @@
 <script>
   import { tick } from 'svelte'
-  import { fade, fly } from 'svelte/transition'
+  import { fade, scale } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 
   let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
@@ -40,7 +40,7 @@
 
 {#if open}
   <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
-    <div class="modal modal-{size}" transition:fly={{ y: 12, duration: motionDuration(DUR_BASE) }}>
+    <div class="modal modal-{size}" transition:scale={{ start: 0.96, duration: motionDuration(DUR_BASE) }}>
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onclick={() => open = false} aria-label="Inchide">&times;</button>
