@@ -1,11 +1,9 @@
 <script>
   import { fade } from 'svelte/transition'
-  import Sidebar from './components/layout/Sidebar.svelte'
   import Header from './components/layout/Header.svelte'
-  import BottomNav from './components/layout/BottomNav.svelte'
+  import Dock from './components/layout/Dock.svelte'
   import Toast from './components/ui/Toast.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
-  import { ui } from './stores/ui.svelte.js'
   import { router, resolveRoute, viewTransitionsOn } from './lib/router.svelte.js'
   import { motionDuration, DUR_FAST } from './lib/motion.svelte.js'
 
@@ -26,7 +24,6 @@
     '/calculator': lazy(() => import('./pages/Calculator.svelte')),
     '/notes': lazy(() => import('./pages/Notes.svelte')),
     '/admin': lazy(() => import('./pages/Admin.svelte')),
-    '/more': lazy(() => import('./pages/More.svelte')),
   }
 
   const rawMatch = $derived(resolveRoute(routes))
@@ -69,9 +66,7 @@
 
 <a class="skip-link" href="#main-content">Sari la continut</a>
 
-<div class="app-layout" class:sidebar-collapsed={ui.sidebarCollapsed}>
-  <Sidebar />
-
+<div class="app-layout">
   <div class="app-main">
     <Header />
     <main class="app-content" id="main-content">
@@ -94,20 +89,14 @@
     </main>
   </div>
 
-  <BottomNav />
+  <Dock />
   <CommandPalette />
   <Toast />
 </div>
 
 <style>
   .app-layout {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
     min-height: 100dvh;
-    transition: grid-template-columns var(--dur-base) var(--ease);
-  }
-  .app-layout.sidebar-collapsed {
-    grid-template-columns: var(--sidebar-collapsed) 1fr;
   }
 
   .app-main {
@@ -120,6 +109,8 @@
   .app-content {
     flex: 1;
     overflow-y: auto;
+    /* Dock-ul pluteste peste continut la toate latimile — lasa loc dedesubt. */
+    padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
   }
 
   .not-found {
@@ -150,7 +141,7 @@
     left: var(--space-md);
     padding: var(--space-sm) var(--space-md);
     background: var(--accent);
-    color: var(--bg);
+    color: var(--accent-text);
     border-radius: var(--radius-sm);
     z-index: var(--z-tooltip);
     font-size: var(--font-small);
@@ -161,15 +152,4 @@
     top: var(--space-md);
   }
 
-  @media (max-width: 768px) {
-    .app-layout,
-    .app-layout.sidebar-collapsed {
-      grid-template-columns: 1fr;
-    }
-    /* Lasa loc pentru bottom-nav + home-indicator, ca ultimul rand de continut
-       sa nu fie ascuns sub bara de navigatie. */
-    .app-content {
-      padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-sm));
-    }
-  }
 </style>

@@ -151,17 +151,17 @@
     {@const sparkMax = Math.max(...spark, 0.1)}
     {@const projPct = s.total_projects ? Math.min(100, (animVals.active / s.total_projects) * 100) : 0}
     <div class="kpi-bar">
-      <button class="kpi" onclick={() => navigate('/projects')} title="Vezi proiectele">
+      <button class="kpi cell-in" onclick={() => navigate('/projects')} title="Vezi proiectele">
         <div class="kpi-head"><span class="kpi-chip accent"><FolderKanban size={16} /></span><span class="kpi-label">Proiecte Active</span></div>
         <div class="kpi-val accent">{Math.round(animVals.active)}<span class="of">/ {s.total_projects ?? 0}</span></div>
         <div class="kpi-track"><span style="width: {projPct}%"></span></div>
       </button>
-      <button class="kpi" onclick={() => navigate('/tasks')} title="Vezi taskurile urgente">
+      <button class="kpi cell-in" onclick={() => navigate('/tasks')} title="Vezi taskurile urgente">
         <div class="kpi-head"><span class="kpi-chip warn"><AlertTriangle size={16} /></span><span class="kpi-label">Urgente</span></div>
         <div class="kpi-val warn">{#if (s.urgent_count || 0) > 0}<span class="kpi-pulse"></span>{/if}{Math.round(animVals.urgent)}</div>
         <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
       </button>
-      <button class="kpi" onclick={() => navigate('/admin')} title="Vezi statistici">
+      <button class="kpi cell-in" onclick={() => navigate('/admin')} title="Vezi statistici">
         <div class="kpi-head"><span class="kpi-chip success"><SolidIcon name="clock" size={16} /></span><span class="kpi-label">Ore Saptamana</span></div>
         <div class="kpi-val success">{fmtHours(animVals.hours)}<span class="unit">h</span>{#if (s.weekly_delta || 0) !== 0}<span class="kpi-delta {(s.weekly_delta || 0) > 0 ? 'up' : 'down'}">{(s.weekly_delta || 0) > 0 ? '+' : ''}{s.weekly_delta}h</span>{/if}</div>
         {#if spark.length}
@@ -170,7 +170,7 @@
           <div class="kpi-sub">vs. sapt. trecuta</div>
         {/if}
       </button>
-      <button class="kpi" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
+      <button class="kpi cell-in" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
         <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Deadline-uri</span></div>
         <div class="kpi-val">{Math.round(animVals.deadline)}</div>
         <div class="kpi-sub">in urmatoarele 7 zile</div>
@@ -238,10 +238,10 @@
 <style>
   .page { padding: var(--space-lg); }
   .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap: wrap; }
-  .greeting { font-size: var(--font-h1); font-weight: var(--fw-bold); color: var(--text); white-space: nowrap; }
+  .greeting { font-family: var(--font-heading); font-size: var(--font-h1); font-weight: var(--fw-bold); letter-spacing: -0.03em; color: var(--text); white-space: nowrap; }
   .today { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; text-transform: capitalize; }
 
-  .timer-card { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--accent-ring); cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
+  .timer-card { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-radius: var(--radius-md); background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 9%, var(--bg-surface)) 0%, var(--bg-surface) 60%); border: 1px solid var(--accent-ring); cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
   .timer-card:hover { border-color: var(--accent); }
   .tc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: tcpulse 1.5s ease-in-out infinite; flex-shrink: 0; }
   @keyframes tcpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -250,12 +250,12 @@
   .tc-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
   .tc-elapsed { font-family: var(--font-mono); font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--accent); letter-spacing: var(--tracking-wide); }
   .tc-stop { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--danger); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
-  .tc-stop:hover { background: var(--danger); color: white; }
+  .tc-stop:hover { background: var(--danger); color: var(--bg); }
 
   .kpi-skeleton { margin-bottom: var(--space-lg); }
   .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
-  .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--card-pad); cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .kpi:hover { transform: translateY(-2px); border-color: var(--border); }
+  .kpi { text-align: left; font-family: inherit; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; display: flex; flex-direction: column; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
+  .kpi:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
   .kpi-head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
   .kpi-chip { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .kpi-chip.accent { background: var(--accent-subtle); color: var(--accent); }
@@ -263,7 +263,7 @@
   .kpi-chip.success { background: var(--success-subtle); color: var(--success); }
   .kpi-chip.neutral { background: var(--bg-elevated); color: var(--text-secondary); }
   .kpi-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); }
-  .kpi-val { font-family: var(--font-mono); font-size: var(--font-display); font-weight: var(--fw-bold); color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+  .kpi-val { font-family: var(--font-heading); font-size: 2.3rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
   .kpi-val.accent { color: var(--accent); }
   .kpi-val.warn { color: var(--warning); }
   .kpi-val.success { color: var(--success); }
@@ -278,8 +278,8 @@
   .kpi-track { height: 4px; background: var(--bg-hover); border-radius: var(--radius-full); margin-top: 11px; overflow: hidden; }
   .kpi-track span { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); }
   .kpi-spark { display: flex; align-items: flex-end; gap: 3px; height: 22px; margin-top: 9px; }
-  .kpi-spark span { flex: 1; background: var(--success); border-radius: 1px; opacity: 0.4; min-height: 2px; }
-  .kpi-spark span:last-child { opacity: 1; }
+  .kpi-spark span { flex: 1; background: var(--success); border-radius: 3px 3px 0 0; opacity: 0.35; min-height: 2px; }
+  .kpi-spark span:nth-last-child(-n+3) { opacity: 1; }
 
   .section { margin-bottom: var(--space-lg); }
   .section-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); margin-bottom: var(--space-sm); }
@@ -301,7 +301,7 @@
   .card-list.scroll { max-height: 248px; overflow-y: auto; scrollbar-width: thin; }
   .list-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); text-align: left; cursor: pointer; transition: background var(--dur-fast) var(--ease); color: var(--text-secondary); }
   .list-row:hover { background: var(--bg-hover); }
-  .list-row + .list-row { border-top: 1px solid var(--border); }
+  .list-row + .list-row { border-top: 1px dashed var(--border); }
   .row-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
   .row-dot.urgent { background: var(--danger); }
   .row-dot.due { background: var(--warning); }

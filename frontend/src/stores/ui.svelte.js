@@ -1,15 +1,9 @@
 export const ui = $state({
-  sidebarCollapsed: localStorage.getItem('sidebar-collapsed') === 'true',
   theme: localStorage.getItem('theme') || 'dark',
   toasts: [],
 })
 
 let toastId = 0
-
-export function toggleSidebar() {
-  ui.sidebarCollapsed = !ui.sidebarCollapsed
-  localStorage.setItem('sidebar-collapsed', ui.sidebarCollapsed)
-}
 
 export function setTheme(theme) {
   ui.theme = theme

@@ -3425,10 +3425,10 @@ export const MODULES = [
       xLabel: 'Cuplu M [× M_n]', yLabel: 'Turatie n [× n_n]',
       series: [
         { label: 'Separat excitat', color: COL.a, points: curve(0, 2, (M) => 1.05 - 0.05 * M) },
-        { label: 'Magnet permanent (PMDC)', color: 'var(--info)', dash: true, points: curve(0, 2, (M) => 1.06 - 0.06 * M) },
+        { label: 'Magnet permanent (PMDC)', color: 'var(--chart-1)', dash: true, points: curve(0, 2, (M) => 1.06 - 0.06 * M) },
         { label: 'Sunt (derivatie)', color: COL.b, points: curve(0, 2, (M) => 1.08 - 0.08 * M) },
-        { label: 'Compus cumulativ', color: 'var(--success)', points: curve(0, 2, (M) => 1.20 - 0.20 * M) },
-        { label: 'Compus diferential (instabil)', color: 'var(--purple)', dash: true, points: curve(0, 2, (M) => 0.95 + 0.07 * M) },
+        { label: 'Compus cumulativ', color: 'var(--chart-2)', points: curve(0, 2, (M) => 1.20 - 0.20 * M) },
+        { label: 'Compus diferential (instabil)', color: 'var(--chart-3)', dash: true, points: curve(0, 2, (M) => 0.95 + 0.07 * M) },
         { label: 'Serie (ambalare la gol)', color: COL.c, points: curve(0.05, 2, (M) => (M > 0 ? 1 / Math.sqrt(M) : null)) },
       ],
     })],

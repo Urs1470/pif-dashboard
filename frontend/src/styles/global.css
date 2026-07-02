@@ -1,21 +1,55 @@
 @import './reset.css';
 @import './tokens.css';
 
-/* Self-hosted Geist (OFL-1.1, fisierele in static/fonts/) — fara dependenta CDN,
-   merge offline (PWA). Variabil: un singur fisier acopera weights 100-900. */
+/* Self-hosted (OFL-1.1, fisierele in static/fonts/) — fara dependenta CDN,
+   merge offline (PWA). Variabile: un fisier per familie acopera toate weights. */
 @font-face {
-  font-family: 'Geist';
-  src: url('/static/fonts/Geist-Variable.woff2') format('woff2');
+  font-family: 'Inter';
+  src: url('/static/fonts/Inter-Variable-ext.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('/static/fonts/GeistMono-Variable.woff2') format('woff2');
+  font-family: 'Inter';
+  src: url('/static/fonts/Inter-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/static/fonts/SpaceGrotesk-Variable-ext.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/static/fonts/SpaceGrotesk-Variable.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/static/fonts/JetBrainsMono-Variable-ext.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/static/fonts/JetBrainsMono-Variable.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 body {
@@ -24,7 +58,17 @@ body {
   font-weight: var(--fw-normal);
   color: var(--text);
   background: var(--bg);
+  /* Glow-uri bento discrete: amber sus-dreapta, verde jos-stanga. */
+  background-image:
+    radial-gradient(1200px 500px at 80% -10%, rgba(255, 180, 84, 0.06), transparent 60%),
+    radial-gradient(900px 420px at -10% 110%, rgba(126, 226, 168, 0.045), transparent 55%);
+  background-attachment: fixed;
   line-height: var(--lh-normal);
+}
+[data-theme="light"] body {
+  background-image:
+    radial-gradient(1200px 500px at 80% -10%, rgba(200, 130, 20, 0.05), transparent 60%),
+    radial-gradient(900px 420px at -10% 110%, rgba(29, 127, 77, 0.04), transparent 55%);
 }
 
 ::selection {
@@ -220,7 +264,7 @@ input[type="checkbox"].cbx:focus {
 }
 .data-table td {
   padding: 8px 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px dashed var(--border);
   font-size: 13px;
   color: var(--text);
   max-width: 280px;
@@ -338,9 +382,10 @@ input[type="checkbox"].cbx:focus {
 /* ===== Stat cards (stil legacy) ===== */
 .stat-value {
   font-size: var(--font-display);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   color: var(--text);
-  font-family: var(--font-mono);
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   line-height: var(--lh-tight);
 }
@@ -406,7 +451,7 @@ input[type="checkbox"].cbx:focus {
 
 .sw-update-bar {
   position: fixed;
-  bottom: calc(80px + var(--safe-bottom));
+  bottom: calc(var(--dock-h) + 28px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -431,3 +476,98 @@ input[type="checkbox"].cbx:focus {
   cursor: pointer;
   white-space: nowrap;
 }
+
+
+/* ===== Utilitare Bento (redesign 2026) — partajate intre pagini ===== */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.c-2x2 { grid-column: span 2; grid-row: span 2; }
+.c-2x1 { grid-column: span 2; }
+.c-1x2 { grid-row: span 2; }
+.c-3x1 { grid-column: span 3; }
+.c-4x1 { grid-column: span 4; }
+@media (max-width: 940px) {
+  .bento { grid-template-columns: repeat(2, 1fr); }
+  .c-2x2, .c-3x1, .c-4x1 { grid-column: span 2; }
+}
+@media (max-width: 560px) {
+  .bento { grid-template-columns: 1fr; }
+  .c-2x2, .c-2x1, .c-1x2, .c-3x1, .c-4x1 { grid-column: auto; grid-row: auto; }
+}
+
+/* Intrare esalonata pentru celule (stagger). Sub reduced-motion plasa globala
+   scurteaza animatia la ~0, dar fortam si opacity ca celulele sa nu ramana invizibile. */
+@keyframes cellIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.cell-in { opacity: 0; animation: cellIn 0.5s var(--ease) forwards; }
+.cell-in:nth-child(1) { animation-delay: 0.02s; }
+.cell-in:nth-child(2) { animation-delay: 0.07s; }
+.cell-in:nth-child(3) { animation-delay: 0.12s; }
+.cell-in:nth-child(4) { animation-delay: 0.17s; }
+.cell-in:nth-child(5) { animation-delay: 0.22s; }
+.cell-in:nth-child(6) { animation-delay: 0.27s; }
+.cell-in:nth-child(7) { animation-delay: 0.32s; }
+.cell-in:nth-child(8) { animation-delay: 0.37s; }
+@media (prefers-reduced-motion: reduce) {
+  .cell-in { opacity: 1; animation: none; }
+}
+
+/* Eticheta de celula: icon patrat colorat + text uppercase mic */
+.cell-label {
+  font-size: var(--font-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  font-weight: var(--fw-semibold);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cell-label .ico {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+.cell-label .tail {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: var(--fw-medium);
+  font-size: var(--font-tiny);
+}
+.ico-amber { background: var(--accent-subtle); color: var(--accent); }
+.ico-green { background: var(--success-subtle); color: var(--success); }
+.ico-red   { background: var(--danger-subtle); color: var(--danger); }
+.ico-vio   { background: var(--purple-subtle); color: var(--purple); }
+
+/* Numerale mari de afisaj */
+.big-num {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Randuri de lista cu separator dashed */
+.rowlist { display: flex; flex-direction: column; }
+.rowlist .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 10px;
+  border-bottom: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease);
+}
+.rowlist .row:last-child { border-bottom: none; }
+.rowlist .row:hover { background: var(--bg-panel); }

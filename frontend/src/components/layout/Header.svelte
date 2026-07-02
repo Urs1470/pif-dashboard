@@ -18,6 +18,11 @@
 </script>
 
 <header class="header">
+  <a href="/" class="brand" title="PIF Dashboard">
+    <span class="brand-dot"></span>
+    <span class="brand-name">PIF<span class="brand-sep">·</span>Dashboard</span>
+  </a>
+
   <button class="header-search" onclick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
     <Search size={16} />
     <span class="search-hint">Cauta...</span>
@@ -47,8 +52,10 @@
 <style>
   .header {
     height: var(--header-height);
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -58,22 +65,44 @@
     z-index: var(--z-sticky);
   }
 
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent-ring);
+    flex-shrink: 0;
+  }
+  .brand-sep { color: var(--text-faint); }
+
   .header-search {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-md);
-    background: var(--bg-elevated);
+    padding: 7px var(--space-md);
+    background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-full);
     color: var(--text-dim);
     cursor: pointer;
-    transition: border-color var(--dur-fast) var(--ease);
+    transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
     min-width: 240px;
     margin: 0 auto;
   }
   .header-search:hover {
-    border-color: var(--text-dim);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
   }
 
   .search-hint {
@@ -101,19 +130,19 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 6px 4px 10px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    border: 1px solid var(--accent-ring);
+    padding: 5px 6px 5px 12px;
+    border-radius: var(--radius-full);
+    background: var(--success-subtle);
+    border: 1px solid transparent;
     cursor: pointer;
     transition: border-color var(--dur-fast) var(--ease);
   }
-  .timer-chip:hover { border-color: var(--accent); }
+  .timer-chip:hover { border-color: var(--success); }
   .tc-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--success);
     animation: tcpulse 1.5s ease-in-out infinite;
     flex-shrink: 0;
   }
@@ -121,8 +150,8 @@
   .tc-time {
     font-family: var(--font-mono);
     font-size: var(--font-tiny);
-    font-weight: var(--fw-semibold);
-    color: var(--accent);
+    font-weight: var(--fw-bold);
+    color: var(--success);
     letter-spacing: var(--tracking-wide);
   }
   .tc-stop {
@@ -137,7 +166,7 @@
     transition: all var(--dur-fast) var(--ease);
     flex-shrink: 0;
   }
-  .tc-stop:hover { background: var(--danger); color: white; }
+  .tc-stop:hover { background: var(--danger); color: var(--bg); }
 
   .header-btn {
     width: 36px;
@@ -171,5 +200,6 @@
       flex: 1;
     }
     kbd { display: none; }
+    .brand-name { display: none; }
   }
 </style>
