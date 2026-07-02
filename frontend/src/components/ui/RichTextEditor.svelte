@@ -1,27 +1,127 @@
 <script>
+  // Editor WYSIWYG unic (fara moduri edit/preview) pentru observatii si notite:
+  // toolbar ca la Word + formule LaTeX randate LIVE in text (KaTeX).
+  //
+  // Formulele traiesc in editor ca "chip"-uri necontenteditable (.mchip) cu
+  // sursa in data-tex; la serializare devin la loc text `$...$` / `$$...$$`,
+  // deci formatul stocat ramane HTML + delimitatori KaTeX — 100% compatibil cu
+  // continutul existent, cu RichText (afisare) si cu exporturile.
   import { onMount } from 'svelte'
-  import { Eye } from '@lucide/svelte'
-  import SolidIcon from './SolidIcon.svelte'
-  import RichText from './RichText.svelte'
-  import { renderStoredText } from '../../lib/storedText.js'
+  import { slide } from 'svelte/transition'
+  import {
+    Undo2, Redo2, Bold, Italic, Underline, Strikethrough,
+    List, ListOrdered, TextQuote, Minus, RemoveFormatting, Sigma, X
+  } from '@lucide/svelte'
+  import katex from 'katex'
+  import 'katex/dist/katex.min.css'
+  import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
+  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   let { value = $bindable(''), placeholder = 'Scrie aici...' } = $props()
 
   let editorEl = $state(null)
   let charCount = $state(0)
-  let previewMode = $state(false)
 
-  function togglePreview() {
-    // sync the latest HTML out of the contenteditable before previewing
-    if (!previewMode && editorEl) value = (editorEl.innerHTML || '').trim()
-    previewMode = !previewMode
+  // Starea butoanelor din toolbar (sincronizata cu selectia)
+  let fmt = $state({ bold: false, italic: false, underline: false, strike: false, ul: false, ol: false, block: 'p' })
+
+  // Bara de formule (insert / editare chip existent)
+  let mathOpen = $state(false)
+  let mathTex = $state('')
+  let mathDisplay = $state(false)
+  let mathInputEl = $state(null)
+  let editingChip = null
+  let savedRange = null
+
+  const mathPreview = $derived.by(() => {
+    if (!mathTex.trim()) return ''
+    try { return katex.renderToString(mathTex, { throwOnError: false, displayMode: mathDisplay }) }
+    catch (_) { return '' }
+  })
+
+  // ---- chips ----
+  function chipEl(tex, display) {
+    const span = document.createElement('span')
+    span.className = 'mchip'
+    span.setAttribute('contenteditable', 'false')
+    span.dataset.tex = tex
+    span.dataset.display = display ? '1' : '0'
+    try { span.innerHTML = katex.renderToString(tex, { throwOnError: false, displayMode: display }) }
+    catch (_) { span.textContent = tex }
+    return span
   }
 
+  const MATH_RE = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g
+
+  // Inlocuieste perechile $...$ / $$...$$ din nodurile text cu chip-uri.
+  // `withCaret`: repozitioneaza cursorul dupa chip-ul creat (tastare live).
+  function convertTextMath(root, withCaret = false) {
+    const sel = window.getSelection()
+    const caretNode = withCaret && sel && sel.rangeCount ? sel.getRangeAt(0).startContainer : null
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        if (n.parentElement && n.parentElement.closest('.mchip')) return NodeFilter.FILTER_REJECT
+        MATH_RE.lastIndex = 0 // regex global — reseteaza inainte de test
+        return MATH_RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+      }
+    })
+    const nodes = []
+    while (walker.nextNode()) nodes.push(walker.currentNode)
+    let converted = false
+    for (const tn of nodes) {
+      const text = tn.nodeValue
+      MATH_RE.lastIndex = 0
+      let m, last = 0, lastChip = null
+      const frag = document.createDocumentFragment()
+      while ((m = MATH_RE.exec(text))) {
+        const display = m[1] != null
+        const tex = (display ? m[1] : m[2]).trim()
+        // anti-"22$ costa 10$": inline doar fara spatii la margini si cu continut
+        if (!display && (/^\s|\s$/.test(display ? m[1] : m[2]) || !tex)) continue
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)))
+        lastChip = chipEl(tex, display)
+        frag.appendChild(lastChip)
+        last = m.index + m[0].length
+      }
+      if (!lastChip) continue
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)))
+      const hadCaret = caretNode === tn
+      tn.replaceWith(frag)
+      converted = true
+      if (hadCaret && sel) {
+        const r = document.createRange()
+        r.setStartAfter(lastChip)
+        r.collapse(true)
+        sel.removeAllRanges()
+        sel.addRange(r)
+      }
+    }
+    return converted
+  }
+
+  function serialize() {
+    if (!editorEl) return value
+    const clone = editorEl.cloneNode(true)
+    clone.querySelectorAll('.mchip').forEach((ch) => {
+      const tex = ch.dataset.tex || ''
+      const disp = ch.dataset.display === '1'
+      ch.replaceWith(document.createTextNode(disp ? `$$${tex}$$` : `$${tex}$`))
+    })
+    return sanitizeHtml(clone.innerHTML).trim()
+  }
+
+  export function getHtml() { return serialize() }
+
+  // ---- lifecycle ----
   onMount(() => {
     if (editorEl) {
       editorEl.innerHTML = renderStoredText(value)
+      convertTextMath(editorEl)
       updateCount()
     }
+    const onSel = () => syncToolbar()
+    document.addEventListener('selectionchange', onSel)
+    return () => document.removeEventListener('selectionchange', onSel)
   })
 
   function updateCount() {
@@ -29,52 +129,195 @@
   }
 
   function onInput() {
+    convertTextMath(editorEl, true)
     updateCount()
-    if (editorEl) value = (editorEl.innerHTML || '').trim()
+    value = serialize()
   }
 
   function onKeydown(e) {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) e.preventDefault()
+  }
+
+  // ---- toolbar ----
+  function selectionInEditor() {
+    const sel = window.getSelection()
+    if (!sel || !sel.rangeCount || !editorEl) return false
+    return editorEl.contains(sel.getRangeAt(0).startContainer)
+  }
+
+  function syncToolbar() {
+    if (!selectionInEditor()) return
+    try {
+      const blockRaw = (document.queryCommandValue('formatBlock') || 'p').toLowerCase().replace(/[<>]/g, '')
+      fmt = {
+        bold: document.queryCommandState('bold'),
+        italic: document.queryCommandState('italic'),
+        underline: document.queryCommandState('underline'),
+        strike: document.queryCommandState('strikeThrough'),
+        ul: document.queryCommandState('insertUnorderedList'),
+        ol: document.queryCommandState('insertOrderedList'),
+        block: ['h1', 'h2', 'h3', 'blockquote'].includes(blockRaw) ? blockRaw : 'p',
+      }
+    } catch (_) { /* queryCommand* poate arunca pe selectii exotice */ }
+  }
+
+  function cmd(name, arg = null) {
+    editorEl?.focus()
+    try { document.execCommand(name, false, arg) } catch (_) {}
+    onInput()
+    syncToolbar()
+  }
+
+  function setBlock(tag) { cmd('formatBlock', `<${tag.toUpperCase()}>`) }
+
+  function clearFmt() {
+    cmd('removeFormat')
+    cmd('formatBlock', '<P>')
+  }
+
+  // ---- bara de formule ----
+  function openMathBar(chip = null) {
+    // pastreaza selectia curenta ca sa stim unde inseram
+    const sel = window.getSelection()
+    savedRange = sel && sel.rangeCount && selectionInEditor() ? sel.getRangeAt(0).cloneRange() : null
+    editingChip = chip
+    mathTex = chip ? (chip.dataset.tex || '') : ''
+    mathDisplay = chip ? chip.dataset.display === '1' : false
+    mathOpen = true
+    queueMicrotask(() => mathInputEl?.focus())
+  }
+
+  function closeMathBar() {
+    mathOpen = false
+    editingChip = null
+    savedRange = null
+  }
+
+  function saveMath() {
+    const tex = mathTex.trim()
+    if (!tex) { removeMath(); return }
+    if (editingChip) {
+      const fresh = chipEl(tex, mathDisplay)
+      editingChip.replaceWith(fresh)
+    } else {
+      editorEl?.focus()
+      const sel = window.getSelection()
+      if (savedRange && sel) { sel.removeAllRanges(); sel.addRange(savedRange) }
+      const chip = chipEl(tex, mathDisplay)
+      try {
+        document.execCommand('insertHTML', false, chip.outerHTML + '&nbsp;')
+      } catch (_) {
+        editorEl?.appendChild(chip)
+      }
+    }
+    updateCount()
+    value = serialize()
+    closeMathBar()
+  }
+
+  function removeMath() {
+    if (editingChip) {
+      editingChip.remove()
+      updateCount()
+      value = serialize()
+    }
+    closeMathBar()
+  }
+
+  function onEditorClick(e) {
+    const chip = e.target?.closest?.('.mchip')
+    if (chip && editorEl?.contains(chip)) {
       e.preventDefault()
+      openMathBar(chip)
     }
   }
 
-  export function getHtml() {
-    return editorEl ? (editorEl.innerHTML || '').trim() : value
+  function onMathKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveMath() }
+    else if (e.key === 'Escape') { e.preventDefault(); closeMathBar() }
   }
+
+  // butoanele nu fura selectia din editor
+  function keepSel(e) { e.preventDefault() }
 </script>
 
 <div class="rte">
-  <div class="rte-toolbar">
-    <span class="rte-hint">Lipeste text, tabele si formule LaTeX — <code>$...$</code> sau <code>$$...$$</code></span>
-    <button type="button" class="rte-tool" class:active={previewMode} title={previewMode ? 'Inapoi la editare' : 'Previzualizare finala'} onclick={togglePreview}>
-      {#if previewMode}<SolidIcon name="pencil" size={14} /> Editeaza{:else}<Eye size={14} /> Previzualizare{/if}
-    </button>
+  <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
+    <button type="button" class="tbtn" title="Anuleaza (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
+    <button type="button" class="tbtn" title="Refa (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
+
+    <span class="tsep" aria-hidden="true"></span>
+
+    <select class="tstyle" title="Stil paragraf" value={fmt.block}
+      onmousedown={(e) => e.stopPropagation()}
+      onchange={(e) => { setBlock(e.target.value === 'p' ? 'p' : e.target.value); e.target.blur() }}>
+      <option value="p">Paragraf</option>
+      <option value="h1">Titlu 1</option>
+      <option value="h2">Titlu 2</option>
+      <option value="h3">Titlu 3</option>
+      <option value="blockquote">Citat</option>
+    </select>
+
+    <span class="tsep" aria-hidden="true"></span>
+
+    <button type="button" class="tbtn" class:on={fmt.bold} title="Bold (Ctrl+B)" onmousedown={keepSel} onclick={() => cmd('bold')}><Bold size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.italic} title="Italic (Ctrl+I)" onmousedown={keepSel} onclick={() => cmd('italic')}><Italic size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.underline} title="Subliniat (Ctrl+U)" onmousedown={keepSel} onclick={() => cmd('underline')}><Underline size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.strike} title="Taiat" onmousedown={keepSel} onclick={() => cmd('strikeThrough')}><Strikethrough size={15} /></button>
+
+    <span class="tsep" aria-hidden="true"></span>
+
+    <button type="button" class="tbtn" class:on={fmt.ul} title="Lista cu puncte" onmousedown={keepSel} onclick={() => cmd('insertUnorderedList')}><List size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.ol} title="Lista numerotata" onmousedown={keepSel} onclick={() => cmd('insertOrderedList')}><ListOrdered size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.block === 'blockquote'} title="Citat" onmousedown={keepSel} onclick={() => setBlock(fmt.block === 'blockquote' ? 'p' : 'blockquote')}><TextQuote size={15} /></button>
+    <button type="button" class="tbtn" title="Linie orizontala" onmousedown={keepSel} onclick={() => cmd('insertHorizontalRule')}><Minus size={15} /></button>
+
+    <span class="tsep" aria-hidden="true"></span>
+
+    <button type="button" class="tbtn tmath" class:on={mathOpen} title="Formula LaTeX" onmousedown={keepSel} onclick={() => (mathOpen ? closeMathBar() : openMathBar())}><Sigma size={15} /></button>
+    <button type="button" class="tbtn" title="Curata formatarea" onmousedown={keepSel} onclick={clearFmt}><RemoveFormatting size={15} /></button>
   </div>
+
+  {#if mathOpen}
+    <div class="math-bar" transition:slide={{ duration: motionDuration(DUR_FAST) }}>
+      <div class="math-row">
+        <input
+          class="math-inp"
+          type="text"
+          placeholder={'LaTeX — ex: P = \\sqrt{3} \\cdot U \\cdot I \\cdot \\cos\\varphi'}
+          bind:value={mathTex}
+          bind:this={mathInputEl}
+          onkeydown={onMathKeydown}
+        />
+        <label class="math-disp" title="Formula pe rand separat, centrata">
+          <input type="checkbox" bind:checked={mathDisplay} /> Bloc
+        </label>
+        <button type="button" class="math-btn primary" onclick={saveMath}>{editingChip ? 'Salveaza' : 'Insereaza'}</button>
+        {#if editingChip}
+          <button type="button" class="math-btn danger" onclick={removeMath}>Sterge</button>
+        {/if}
+        <button type="button" class="math-btn" title="Inchide" onclick={closeMathBar}><X size={14} /></button>
+      </div>
+      {#if mathPreview}
+        <div class="math-prev">{@html mathPreview}</div>
+      {/if}
+    </div>
+  {/if}
 
   <div
     class="rte-editor"
-    class:rte-hidden={previewMode}
     contenteditable="true"
     spellcheck="true"
     data-placeholder={placeholder}
     bind:this={editorEl}
     oninput={onInput}
     onkeydown={onKeydown}
+    onclick={onEditorClick}
   ></div>
 
-  {#if previewMode}
-    <div class="rte-preview">
-      {#if value && value.trim()}
-        <RichText value={value} />
-      {:else}
-        <p class="rte-preview-empty">Nimic de previzualizat.</p>
-      {/if}
-    </div>
-  {/if}
-
   <div class="rte-footer">
-    <span class="rte-counter">{previewMode ? 'Previzualizare' : charCount + ' caractere'}</span>
+    <span class="rte-counter">{charCount} caractere</span>
+    <span class="rte-hint"><code>$...$</code> devine formula automat</span>
   </div>
 </div>
 
@@ -88,67 +331,115 @@
     background: var(--bg-elevated);
   }
 
+  /* ===== toolbar (headbar ca la Word) ===== */
   .rte-toolbar {
     display: flex;
-    gap: var(--space-sm);
+    align-items: center;
+    gap: 2px;
+    padding: 6px var(--space-sm);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .tbtn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .tbtn:hover { background: var(--bg-hover); color: var(--text); }
+  .tbtn.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .tbtn.tmath { font-weight: var(--fw-bold); }
+
+  .tsep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+
+  .tstyle {
+    height: 30px;
+    padding: 0 26px 0 10px;
+    font-size: var(--font-tiny);
+    font-weight: var(--fw-medium);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+    flex-shrink: 0;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23948a7d' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+  .tstyle:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+
+  /* ===== bara de formule ===== */
+  .math-bar {
     padding: var(--space-xs) var(--space-sm);
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
   }
-
-  .rte-hint { font-size: var(--font-tiny); color: var(--text-dim); }
-  .rte-toolbar code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
-
-  .rte-tool {
+  .math-row { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
+  .math-inp {
+    flex: 1;
+    min-width: 160px;
+    min-height: 34px;
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: var(--font-small);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .math-inp:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .math-disp {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    height: 30px;
-    padding: 0 10px;
     font-size: var(--font-tiny);
-    border-radius: var(--radius-xs);
     color: var(--text-secondary);
     cursor: pointer;
-    background: transparent;
-    border: 1px solid var(--border);
-    transition: all var(--dur-fast) var(--ease);
+    white-space: nowrap;
     flex-shrink: 0;
   }
-  .rte-tool:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-subtle);
+  .math-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 0 12px;
+    font-size: var(--font-tiny);
+    font-weight: var(--fw-semibold);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--dur-fast) var(--ease);
   }
-  .rte-tool.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-subtle);
-  }
-
-  .rte-hidden { display: none; }
-
-  .rte-preview {
-    min-height: 280px;
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: var(--space-md);
-    font-size: var(--font-body);
+  .math-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .math-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .math-btn.primary:hover { background: var(--accent-hover); }
+  .math-btn.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-subtle); }
+  .math-prev {
+    padding: 4px 10px;
     color: var(--text);
-    line-height: 1.6;
+    overflow-x: auto;
   }
-  .rte-preview-empty { color: var(--text-faint); font-style: italic; }
-  .rte-preview :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: var(--fw-bold); }
-  .rte-preview :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: var(--fw-semibold); }
-  .rte-preview :global(p) { margin: 6px 0; }
-  .rte-preview :global(ul), .rte-preview :global(ol) { padding-left: 26px; margin: 6px 0; }
-  .rte-preview :global(li) { margin: 3px 0; }
-  .rte-preview :global(a) { color: var(--accent); text-decoration: underline; }
-  .rte-preview :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
-  .rte-preview :global(blockquote) { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
 
+  /* ===== editor ===== */
   .rte-editor {
     flex: 1;
     min-height: 280px;
@@ -161,9 +452,7 @@
     outline: none;
     cursor: text;
   }
-  .rte-editor:focus {
-    box-shadow: inset 0 0 0 2px var(--accent-ring);
-  }
+  .rte-editor:focus { box-shadow: inset 0 0 0 2px var(--accent-ring); }
   .rte-editor:empty::before {
     content: attr(data-placeholder);
     color: var(--text-faint);
@@ -171,6 +460,7 @@
     pointer-events: none;
   }
 
+  .rte-editor :global(h1) { color: var(--text); font-family: var(--font-heading); font-size: 1.45rem; margin: 16px 0 8px; font-weight: var(--fw-bold); letter-spacing: -0.02em; }
   .rte-editor :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: var(--fw-bold); }
   .rte-editor :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-editor :global(p) { margin: 6px 0; }
@@ -183,17 +473,37 @@
   .rte-editor :global(th), .rte-editor :global(td) { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
   .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }
 
+  /* chip formula — click pentru editare */
+  .rte-editor :global(.mchip) {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .rte-editor :global(.mchip:hover) { background: var(--accent-subtle); box-shadow: 0 0 0 1px var(--accent-ring); }
+  .rte-editor :global(.mchip[data-display="1"]) {
+    display: block;
+    text-align: center;
+    margin: 10px 0;
+    padding: 6px 8px;
+  }
+
   .rte-footer {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
     border-top: 1px solid var(--border);
     background: var(--bg-surface);
   }
+  .rte-counter, .rte-hint { font-size: var(--font-tiny); color: var(--text-dim); }
+  .rte-hint code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
 
-  .rte-counter {
-    font-size: var(--font-tiny);
-    color: var(--text-dim);
+  @media (max-width: 768px) {
+    .tbtn { width: 34px; height: 34px; }
+    .rte-editor { min-height: 220px; max-height: 52vh; }
+    .rte-hint { display: none; }
   }
 </style>
