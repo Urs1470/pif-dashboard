@@ -622,8 +622,9 @@ const SQRT3 = Math.sqrt(3)
 const omega = (n) => (2 * Math.PI * n) / 60 // rpm -> rad/s
 const rad = (deg) => (deg * Math.PI) / 180
 
-// Culori grafice (CSS vars se adapteaza light/dark; marker = info/albastru Geist).
-const COL = { a: 'var(--accent)', b: 'var(--warning)', c: 'var(--danger)', op: 'var(--info)' }
+// Culori grafice (CSS vars se adapteaza light/dark). Patru serii distincte:
+// a=amber accent, b=verde (chart-2, validat CVD), c=rosu danger, op=violet info.
+const COL = { a: 'var(--accent)', b: 'var(--chart-2)', c: 'var(--danger)', op: 'var(--info)' }
 // Genereaza puncte {x,y} pentru o functie y=fn(x) pe intervalul [xMin, xMax].
 function curve(xMin, xMax, fn, steps = 160) {
   const pts = []
@@ -3957,7 +3958,7 @@ export const CHART_MARK = {
 }
 // Zone (regimuri) per grafic: (v, r) -> [{x0,x1,label,color}] (benzi verticale hasurate).
 // Culori semantice teme-constiente (se adapteaza light/dark via CSS vars).
-const _zg = 'var(--success)', _zb = 'var(--info)', _zy = 'var(--warning)', _zo = 'var(--service-accent)'
+const _zg = 'var(--success)', _zb = 'var(--info)', _zy = 'var(--warning)', _zo = 'var(--danger)'
 const _z = (x0, x1, label, color) => ({ x0, x1, label, color })
 export const CHART_ZONE = {
   'asincron-camp-slabit': [

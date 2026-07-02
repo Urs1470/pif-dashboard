@@ -166,7 +166,7 @@
     transition: all var(--dur-fast) var(--ease);
     flex-shrink: 0;
   }
-  .tc-stop:hover { background: var(--danger); color: var(--bg); }
+  .tc-stop:hover { background: var(--danger); color: white; }
 
   .header-btn {
     width: 36px;

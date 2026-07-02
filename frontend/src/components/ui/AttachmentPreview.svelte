@@ -63,8 +63,8 @@
   .ap-spacer { flex: 1; }
   .ap-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); font-size: var(--font-small); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .ap-link:hover { background: var(--bg-hover); color: var(--text); border-color: var(--text-dim); }
-  .ap-link.primary { background: var(--accent); border-color: var(--accent); color: var(--bg-surface); font-weight: var(--fw-semibold); }
-  .ap-link.primary:hover { opacity: 0.9; color: var(--bg-surface); }
+  .ap-link.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
+  .ap-link.primary:hover { opacity: 0.9; color: var(--accent-text); }
   @media (max-width: 768px) {
     .ap-actions { flex-wrap: wrap; }
     .ap-pdf { height: 60vh; }

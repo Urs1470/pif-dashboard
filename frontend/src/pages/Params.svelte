@@ -460,7 +460,7 @@
   .manual-card.skel { pointer-events: none; }
 
   .open-manual-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); cursor: pointer; transition: all var(--dur-fast); }
-  .open-manual-btn:hover { background: var(--accent); color: var(--bg); }
+  .open-manual-btn:hover { background: var(--accent); color: var(--accent-text); }
 
   /* Sub 940px: coloanele se suprapun — nav-ul devine bloc normal deasupra tabelului */
   @media (max-width: 940px) { .side-grid { grid-template-columns: 1fr; } }

@@ -250,7 +250,7 @@
   .tc-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
   .tc-elapsed { font-family: var(--font-mono); font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--accent); letter-spacing: var(--tracking-wide); }
   .tc-stop { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--danger); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
-  .tc-stop:hover { background: var(--danger); color: var(--bg); }
+  .tc-stop:hover { background: var(--danger); color: white; }
 
   .kpi-skeleton { margin-bottom: var(--space-lg); }
   .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
