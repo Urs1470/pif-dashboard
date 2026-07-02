@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Taskuri (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Taskuri — */
+.rowlist .row { border-left:3px solid var(--line-strong); border-radius:6px 12px 12px 6px; margin-bottom:4px; }
+.rowlist .row.bl-hot { border-left-color:var(--red); }
+.rowlist .row.bl-warm { border-left-color:var(--accent); }
+.qadd { display:flex; gap:10px; margin-bottom:14px; }
+.qadd input { flex:1; background:var(--bg-cell); border:1px solid var(--line); border-radius:999px; padding:11px 18px; color:var(--text); font-size:.84rem; font-family:'Inter',system-ui,sans-serif; outline:none; }
+.qadd input:focus { border-color:var(--accent); }
+.qadd input::placeholder { color:var(--text-3); }
+.meta-ico { color:var(--text-3); font-size:.7rem; display:inline-flex; align-items:center; gap:3px; margin-right:8px; }
+.cat { font-size:.64rem; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--violet-dim); color:var(--violet); }
+.rec { font-size:.64rem; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--green-dim); color:var(--green); }
+.due-hot { color:var(--red); font-weight:700; }
+.due-soon { color:var(--accent); font-weight:600; }
+.due { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.7rem; color:var(--text-3); white-space:nowrap; }
+
+/* V2 — board */
+.board { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; align-items:start; }
+.bcol { background:var(--bg-inset); border:1px dashed var(--line); border-radius:var(--radius); padding:12px; }
+.bcol-head { display:flex; align-items:center; gap:8px; padding:4px 8px 12px; font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-3); font-weight:600; }
+.bcol-head .n { margin-left:auto; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; }
+.bcard { min-height:0; padding:14px 16px; margin-bottom:10px; cursor:grab; }
+.bcard .tt { font-size:.84rem; font-weight:500; }
+.bcard .meta { display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+@media (max-width:940px){ .board { grid-template-columns:1fr; } }
+
+/* V3 — urgent hero + agendă */
+.v3grid { display:grid; grid-template-columns: 1fr 300px; gap:14px; align-items:start; }
+.urgent-band { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.ucard { border-color: rgba(255,122,107,.35); background: linear-gradient(150deg, #241713 0%, var(--bg-cell) 60%); min-height:150px; }
+.ucard .tt { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.05rem; letter-spacing:-.02em; margin-top:8px; }
+.agenda .day { padding:10px 0 4px; font-size:.66rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-3); font-weight:700; border-bottom:1px solid var(--line); }
+.agenda .day.today { color:var(--accent); }
+.agenda .it { display:flex; gap:10px; padding:9px 4px; font-size:.78rem; border-bottom:1px dashed var(--line); align-items:center; }
+.agenda .it:last-child { border-bottom:none; }
+.agenda .it .h { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.66rem; color:var(--text-3); min-width:40px; }
+@media (max-width:940px){ .v3grid { grid-template-columns:1fr; } .urgent-band { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Taskuri</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Taskuri</h1><span class="cnt">7 active</span>
+    <div class="acts"><button class="btn btn-ghost btn-sm">Arhivă</button><button class="btn btn-accent btn-sm">＋ Task nou</button></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută task…</span></div>
+    <div class="chips"><span class="chip on">Toate</span><span class="chip">To Do</span><span class="chip">In Lucru</span><span style="width:1px;background:var(--line-strong);margin:4px 4px"></span><span class="chip on">Active</span><span class="chip">Arhivă</span></div>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — listă unică + quick add ============ -->
+  <section class="variant" id="v1">
+    <div class="qadd"><input placeholder="＋ Task rapid — scrie și apasă Enter…"><button class="btn btn-accent btn-sm">Adaugă</button></div>
+    <div class="cell" style="padding:10px 14px">
+      <div class="rowlist">
+        <div class="row bl-hot" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Autotuning motor P2 (315 kW)<small><span class="cat">Șantier</span> · Stație pompare Cluj · <span class="meta-ico">☑ 1/2</span><span class="meta-ico">📎 1</span>2.1h</small></span>
+          <span class="due due-hot">azi</span><span class="pill pill-tip" style="font-family:'JetBrains Mono',monospace;font-size:.6rem">To Do</span><span class="pr pr-high">Urgent</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+        <div class="row bl-hot" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Test interblocări nivel minim bazin<small><span class="cat">Șantier</span> · Stație pompare Cluj</small></span>
+          <span class="due due-hot">azi</span><span class="pill pill-tip" style="font-family:'JetBrains Mono',monospace;font-size:.6rem">To Do</span><span class="pr pr-high">Urgent</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+        <div class="row" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Comandă piese schimb FC302<small><span class="cat">Birou</span> · CET Vest</small></span>
+          <span class="due due-soon">mâine</span><span class="pr pr-med">Normal</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+        <div class="row" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Backup săptămânal parametri drives<small><span class="cat">Birou</span> · <span class="rec">↻ săptămânal</span></small></span>
+          <span class="due">vineri</span><span class="pr pr-low">Low</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+        <div class="row" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Redactare raport PIF final<small><span class="cat">Birou</span> · Stație pompare Cluj · <span class="meta-ico">✎ note</span></small></span>
+          <span class="due due-soon">03.07</span><span class="pr pr-med">Normal</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+        <div class="row" onclick="tgDone(this)">
+          <span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span>
+          <span class="tt">Ofertă service CET Vest<small><span class="cat">Birou</span></small></span>
+          <span class="due">07.07</span><span class="pr pr-med">Normal</span><button class="btn btn-ghost btn-sm">▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="cell" style="margin-top:14px; padding:10px 14px">
+      <div class="cell-label" style="padding:6px"><span class="ico ico-green">✓</span>Finalizate azi<span class="tail">2</span></div>
+      <div class="rowlist">
+        <div class="row done"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Upload parametri ACS880 — P1</span><span class="due">09:40</span></div>
+        <div class="row done"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Sunat furnizorul de contactoare</span><span class="due">08:15</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — board pe status ============ -->
+  <section class="variant" id="v2">
+    <div class="board">
+      <div class="bcol">
+        <div class="bcol-head"><span style="color:var(--text-2)">●</span> To Do <span class="n">3</span></div>
+        <section class="cell bcard hoverable">
+          <div class="tt">Comandă piese schimb FC302</div>
+          <div class="meta"><span class="cat">Birou</span><span class="due due-soon">mâine</span><span class="pr pr-med">Normal</span></div>
+        </section>
+        <section class="cell bcard hoverable">
+          <div class="tt">Backup săptămânal parametri drives</div>
+          <div class="meta"><span class="rec">↻ săptămânal</span><span class="due">vineri</span><span class="pr pr-low">Low</span></div>
+        </section>
+        <section class="cell bcard hoverable">
+          <div class="tt">Ofertă service CET Vest</div>
+          <div class="meta"><span class="cat">Birou</span><span class="due">07.07</span><span class="pr pr-med">Normal</span></div>
+        </section>
+      </div>
+      <div class="bcol">
+        <div class="bcol-head"><span style="color:var(--accent)">●</span> In Lucru <span class="n">3</span></div>
+        <section class="cell bcard hoverable" style="border-color:rgba(255,180,84,.35)">
+          <div class="tt">Autotuning motor P2 (315 kW)</div>
+          <div class="meta"><span class="cat">Șantier</span><span class="due due-hot">azi</span><span class="pill pill-tip" style="font-family:'JetBrains Mono',monospace;font-size:.6rem">To Do</span><span class="pr pr-high">Urgent</span><span class="meta-ico" style="color:var(--green)">▶ 2.1h</span></div>
+        </section>
+        <section class="cell bcard hoverable">
+          <div class="tt">Test interblocări nivel minim bazin</div>
+          <div class="meta"><span class="cat">Șantier</span><span class="due due-hot">azi</span><span class="pill pill-tip" style="font-family:'JetBrains Mono',monospace;font-size:.6rem">To Do</span><span class="pr pr-high">Urgent</span></div>
+        </section>
+        <section class="cell bcard hoverable">
+          <div class="tt">Redactare raport PIF final</div>
+          <div class="meta"><span class="cat">Birou</span><span class="due due-soon">03.07</span><span class="pr pr-med">Normal</span></div>
+        </section>
+      </div>
+      <div class="bcol">
+        <div class="bcol-head"><span style="color:var(--green)">●</span> Finalizate <span class="n">2</span></div>
+        <section class="cell bcard hoverable done">
+          <div class="tt" style="text-decoration:line-through; color:var(--text-3)">Upload parametri ACS880 — P1</div>
+          <div class="meta"><span class="due">bifat 09:40</span></div>
+        </section>
+        <section class="cell bcard hoverable done">
+          <div class="tt" style="text-decoration:line-through; color:var(--text-3)">Sunat furnizorul de contactoare</div>
+          <div class="meta"><span class="due">bifat 08:15</span></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V3 — urgent hero + agendă ============ -->
+  <section class="variant" id="v3">
+    <div class="v3grid">
+      <div>
+        <div class="urgent-band">
+          <section class="cell ucard hoverable">
+            <div class="cell-label"><span class="ico ico-red">!</span>Urgent · azi</div>
+            <div class="tt">Autotuning motor P2 (315 kW)</div>
+            <div class="kpi-sub">Stație pompare Cluj · 1/2 subtaskuri</div>
+            <div style="display:flex; gap:8px; margin-top:auto; padding-top:12px"><button class="btn btn-accent btn-sm">▶ Pornește</button><button class="btn btn-ghost btn-sm">✓ Bifează</button></div>
+          </section>
+          <section class="cell ucard hoverable">
+            <div class="cell-label"><span class="ico ico-red">!</span>Urgent · azi</div>
+            <div class="tt">Test interblocări nivel minim bazin</div>
+            <div class="kpi-sub">Stație pompare Cluj</div>
+            <div style="display:flex; gap:8px; margin-top:auto; padding-top:12px"><button class="btn btn-accent btn-sm">▶ Pornește</button><button class="btn btn-ghost btn-sm">✓ Bifează</button></div>
+          </section>
+        </div>
+        <div class="cell" style="padding:10px 14px">
+          <div class="cell-label" style="padding:6px"><span class="ico ico-amber">≔</span>Restul taskurilor<span class="tail">5</span></div>
+          <div class="rowlist">
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Comandă piese schimb FC302<small>CET Vest</small></span><span class="due due-soon">mâine</span><span class="pr pr-med">Normal</span></div>
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final<small>Stație pompare Cluj</small></span><span class="due due-soon">03.07</span><span class="pr pr-med">Normal</span></div>
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Backup săptămânal parametri<small><span class="rec">↻ săptămânal</span></small></span><span class="due">vineri</span><span class="pr pr-low">Low</span></div>
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Ofertă service CET Vest</span><span class="due">07.07</span><span class="pr pr-med">Normal</span></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="cell agenda" style="position:sticky; top:16px">
+        <div class="cell-label"><span class="ico ico-vio">◔</span>Agendă — 7 zile</div>
+        <div class="day today">Azi · marți 1.07</div>
+        <div class="it"><span class="h">—</span>Autotuning P2 <span class="pr pr-high" style="margin-left:auto">high</span></div>
+        <div class="it"><span class="h">—</span>Interblocări bazin <span class="pr pr-high" style="margin-left:auto">high</span></div>
+        <div class="day">Mie · 2.07</div>
+        <div class="it"><span class="h">—</span>Piese FC302 <span class="pr pr-med" style="margin-left:auto">med</span></div>
+        <div class="day">Joi · 3.07</div>
+        <div class="it"><span class="h">⚑</span><b style="color:var(--red)">Deadline: raport PIF Cluj</b></div>
+        <div class="day">Vin · 4.07</div>
+        <div class="it"><span class="h">↻</span>Backup parametri</div>
+        <div class="day">Lun · 7.07</div>
+        <div class="it"><span class="h">⚑</span>Ofertă CET Vest</div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Listă unică + quick-add (ca app-ul actual)', 2:'V2 · Board pe 3 coloane după status', 3:'V3 · Urgente-hero + agendă pe 7 zile'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

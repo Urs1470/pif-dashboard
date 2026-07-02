@@ -2,13 +2,12 @@
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST } from '../lib/motion.svelte.js'
-  import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft, BookOpen, ExternalLink } from '@lucide/svelte'
+  import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BookOpen, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import Modal from '../components/ui/Modal.svelte'
-  import ProducatorPicker from '../components/params/ProducatorPicker.svelte'
 
   import { apiJson } from '../lib/api.js'
 
@@ -69,44 +68,30 @@
     detail && (MANUAL_MAP[detail.familie] || detail.sursa)
   )
 
-  function pickProducator(p) {
+  function producerOf(fam) {
+    return Object.keys(PRODUCATOR_FAMILII).find(p => PRODUCATOR_FAMILII[p].includes(fam)) || ''
+  }
+
+  // Selectia din nav-ul lateral scrie exact aceleasi filtre pe care le scriau
+  // vechiul picker de producatori + chips-urile de familie.
+  function selectNav(p, f) {
     producator = p
-    searchInput = ''
-    const firstFam = PRODUCATOR_FAMILII[p]?.[0] || ''
     if (activeTab === 'params') {
       params.filters.producator = p
-      params.filters.familie = firstFam
-      params.filters.search = ''
-      params.filters.page = 1
-      loadParams()
-    } else {
-      faultCodes.filters.producator = p
-      faultCodes.filters.familie = firstFam
-      faultCodes.filters.search = ''
-      faultCodes.filters.page = 1
-      loadFaultCodes()
-    }
-  }
-
-  function backToPicker() {
-    producator = ''
-    searchInput = ''
-    params.filters.producator = ''
-    params.filters.familie = ''
-    faultCodes.filters.producator = ''
-    faultCodes.filters.familie = ''
-  }
-
-  function selectFamily(f) {
-    if (activeTab === 'params') {
       params.filters.familie = f
       params.filters.page = 1
       loadParams()
     } else {
+      faultCodes.filters.producator = p
       faultCodes.filters.familie = f
       faultCodes.filters.page = 1
       loadFaultCodes()
     }
+  }
+
+  function pickProducator(p) {
+    const firstFam = PRODUCATOR_FAMILII[p]?.[0] || ''
+    selectNav(p, firstFam)
   }
 
   function onSearch(e) {
@@ -131,16 +116,16 @@
   function switchTab(t) {
     activeTab = t
     searchInput = ''
-    if (producator) {
+    const store = t === 'params' ? params : faultCodes
+    if (!store.filters.familie) {
       const firstFam = PRODUCATOR_FAMILII[producator]?.[0] || ''
-      if (t === 'params') {
-        if (!params.filters.familie) { params.filters.producator = producator; params.filters.familie = firstFam }
-        loadParams()
-      } else {
-        if (!faultCodes.filters.familie) { faultCodes.filters.producator = producator; faultCodes.filters.familie = firstFam }
-        loadFaultCodes()
-      }
+      store.filters.producator = producator
+      store.filters.familie = firstFam
+    } else {
+      producator = producerOf(store.filters.familie) || producator
     }
+    if (t === 'params') loadParams()
+    else loadFaultCodes()
   }
 
   async function openDetail(item) {
@@ -159,9 +144,18 @@
     try { detail = await loadParamDetail(id) } catch (_) {} finally { jumping = false }
   }
 
-  onMount(() => { loadFamilies(); loadFaultFamilies() })
+  onMount(() => {
+    loadFamilies()
+    loadFaultFamilies()
+    // Nav-ul e persistent: selectam fie familia deja retinuta in store, fie prima familie.
+    if (params.filters.familie) {
+      producator = params.filters.producator || producerOf(params.filters.familie)
+      loadParams()
+    } else {
+      pickProducator(Object.keys(PRODUCATOR_FAMILII)[0])
+    }
+  })
 
-  const curFamilies = $derived(producator ? (PRODUCATOR_FAMILII[producator] || []) : [])
   const curFilter = $derived(activeTab === 'params' ? params.filters.familie : faultCodes.filters.familie)
   const curItems = $derived(activeTab === 'params' ? params.items : faultCodes.items)
   const curLoading = $derived(activeTab === 'params' ? params.loading : faultCodes.loading)
@@ -171,14 +165,15 @@
   const curLimit = $derived(activeTab === 'params' ? params.filters.limit : faultCodes.filters.limit)
   const rangeStart = $derived(curTotal === 0 ? 0 : (curPage - 1) * curLimit + 1)
   const rangeEnd = $derived(Math.min(curPage * curLimit, curTotal))
-  const famCount = $derived((fam) => params.families.find(f => f.familie === fam)?.count || 0)
+  const curFamiliesData = $derived(activeTab === 'params' ? params.families : faultCodes.families)
+  const famCount = $derived((fam) => curFamiliesData.find(f => f.familie === fam)?.count || 0)
 </script>
 
 <div class="page">
   <div class="page-header">
     <SolidIcon name="cpu" size={22} />
     <h1>Parametri</h1>
-    {#if producator}<span class="count">{curTotal}</span>{/if}
+    {#if producator && activeTab !== 'manuals'}<span class="count">{curTotal}</span>{/if}
   </div>
 
   <div class="tabs">
@@ -187,7 +182,7 @@
     <button class="tab" class:active={activeTab === 'manuals'} onclick={() => { activeTab = 'manuals'; loadManuals() }}><BookOpen size={14} /> Manuale</button>
   </div>
 
-  {#key activeTab + '|' + producator}
+  {#key activeTab}
   <div class="params-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
   {#if activeTab === 'manuals'}
     <div class="manuals-grid">
@@ -208,90 +203,94 @@
         {/each}
       {/if}
     </div>
-  {:else if !producator}
-    <ProducatorPicker families={activeTab === 'params' ? params.families : faultCodes.families} onpick={pickProducator} />
   {:else}
-    <button class="back" onclick={backToPicker}><ArrowLeft size={14} /> Producatori</button>
-
-    <div class="prod-head">
-      <span class="prod-name">{producator}</span>
-      <div class="families">
-        {#each curFamilies as f}
-          <button class="chip" class:active={curFilter === f} onclick={() => selectFamily(f)}>{familieLabel(f)}</button>
+    <div class="side-grid">
+      <nav class="fam-nav">
+        {#each Object.entries(PRODUCATOR_FAMILII) as [p, fams] (p)}
+          <div class="nav-group">{p}</div>
+          {#each fams as f (f)}
+            <button class="nav-item" class:active={curFilter === f} onclick={() => selectNav(p, f)}>
+              <span class="nav-label">{familieLabel(f)}</span>
+              {#if famCount(f) > 0}<span class="nav-count">{famCount(f).toLocaleString('ro-RO')}</span>{/if}
+            </button>
+          {/each}
         {/each}
-      </div>
-    </div>
+      </nav>
 
-    <div class="toolbar">
-      <div class="search-box">
-        <Search size={14} />
-        <input type="text" placeholder="Cauta in {familieLabel(curFilter)}..." value={searchInput} oninput={onSearch} />
-      </div>
-    </div>
-
-    {#key curFilter + '|' + curPage}
-    <div in:fade={{ duration: motionDuration(DUR_FAST) }}>
-    {#if curLoading}
-      {#each Array(8) as _}<div class="row-skel"><Skeleton width="40%" height="14px" /></div>{/each}
-    {:else if curItems.length === 0}
-      <EmptyState icon={Cpu} title="Niciun rezultat" description="Incearca alta familie sau alt termen." />
-    {:else if activeTab === 'params'}
-      <div class="data-table-wrap sticky-scroll">
-        <table class="data-table reflow zebra">
-          <thead><tr>
-            <th>Param</th><th>Descriere</th><th>Acces</th><th>Tip</th><th class="num">Default</th><th class="num">Min</th><th class="num">Max</th><th>Unitate</th>
-          </tr></thead>
-          <tbody>
-            {#each curItems as item (item.id)}
-              <tr class="clickable-row" onclick={() => openDetail(item)}>
-                <td class="mono accent" data-label="Param">{item.parametru || '—'}</td>
-                <td class="desc-cell" data-label="Descriere">{item.descriere_scurta || item.descriere || '—'}</td>
-                <td class="dim" data-label="Acces">{item.acces || '—'}</td>
-                <td class="dim" data-label="Tip">{item.tip_date || '—'}</td>
-                <td class="mono num" data-label="Default">{item.valoare_default_str ?? item.valoare_default ?? '—'}</td>
-                <td class="mono num dim" data-label="Min">{item.min ?? '—'}</td>
-                <td class="mono num dim" data-label="Max">{item.max ?? '—'}</td>
-                <td class="dim" data-label="Unitate">{item.unitate || '—'}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {:else}
-      <div class="data-table-wrap sticky-scroll">
-        <table class="data-table reflow zebra">
-          <thead><tr>
-            <th>Cod</th><th>Cod secundar</th><th>Tip</th><th>Nume</th><th class="num">Pagina</th>
-          </tr></thead>
-          <tbody>
-            {#each curItems as item (item.id)}
-              <tr class="clickable-row" onclick={() => openDetail(item)}>
-                <td class="mono accent" data-label="Cod">{item.cod || '—'}</td>
-                <td class="mono dim" data-label="Cod secundar">{item.cod_secundar || '—'}</td>
-                <td class="dim" data-label="Tip">{item.tip || '—'}</td>
-                <td data-label="Nume">{item.nume || '—'}</td>
-                <td class="dim num" data-label="Pagina">{item.pagina || '—'}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-    </div>
-    {/key}
-
-    {#if curTotalPages > 1}
-      <div class="pagination">
-        <span class="pg-range">Rând {rangeStart}–{rangeEnd} din {curTotal.toLocaleString('ro-RO')}</span>
-        <div class="pg-nav">
-          <button class="pg-btn" title="Prima pagina" disabled={curPage <= 1} onclick={() => goToPage(1)}><ChevronsLeft size={14} /></button>
-          <button class="pg-btn" title="Pagina anterioara" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
-          <span class="pg-info">{curPage} / {curTotalPages}</span>
-          <button class="pg-btn" title="Pagina urmatoare" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
-          <button class="pg-btn" title="Ultima pagina" disabled={curPage >= curTotalPages} onclick={() => goToPage(curTotalPages)}><ChevronsRight size={14} /></button>
+      <div class="table-col">
+        <div class="toolbar">
+          <div class="search-box">
+            <Search size={14} />
+            <input type="text" placeholder="Cauta in {familieLabel(curFilter)}..." value={searchInput} oninput={onSearch} />
+          </div>
+          <span class="toolbar-count">{curTotal.toLocaleString('ro-RO')} {activeTab === 'params' ? 'parametri' : 'coduri'}</span>
         </div>
+
+        {#key curFilter + '|' + curPage}
+        <div in:fade={{ duration: motionDuration(DUR_FAST) }}>
+        {#if curLoading || !curFilter}
+          {#each Array(8) as _}<div class="row-skel"><Skeleton width="40%" height="14px" /></div>{/each}
+        {:else if curItems.length === 0}
+          <EmptyState icon={Cpu} title="Niciun rezultat" description="Incearca alta familie sau alt termen." />
+        {:else if activeTab === 'params'}
+          <div class="data-table-wrap sticky-scroll">
+            <table class="data-table reflow zebra">
+              <thead><tr>
+                <th>Param</th><th>Descriere</th><th>Acces</th><th>Tip</th><th class="num">Default</th><th class="num">Min</th><th class="num">Max</th><th>Unitate</th>
+              </tr></thead>
+              <tbody>
+                {#each curItems as item (item.id)}
+                  <tr class="clickable-row" onclick={() => openDetail(item)}>
+                    <td class="mono accent" data-label="Param">{item.parametru || '—'}</td>
+                    <td class="desc-cell" data-label="Descriere">{item.descriere_scurta || item.descriere || '—'}</td>
+                    <td class="dim" data-label="Acces">{item.acces || '—'}</td>
+                    <td class="dim" data-label="Tip">{item.tip_date || '—'}</td>
+                    <td class="mono num" data-label="Default">{item.valoare_default_str ?? item.valoare_default ?? '—'}</td>
+                    <td class="mono num dim" data-label="Min">{item.min ?? '—'}</td>
+                    <td class="mono num dim" data-label="Max">{item.max ?? '—'}</td>
+                    <td class="dim" data-label="Unitate">{item.unitate || '—'}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {:else}
+          <div class="data-table-wrap sticky-scroll">
+            <table class="data-table reflow zebra">
+              <thead><tr>
+                <th>Cod</th><th>Cod secundar</th><th>Tip</th><th>Nume</th><th class="num">Pagina</th>
+              </tr></thead>
+              <tbody>
+                {#each curItems as item (item.id)}
+                  <tr class="clickable-row" onclick={() => openDetail(item)}>
+                    <td class="mono accent" data-label="Cod">{item.cod || '—'}</td>
+                    <td class="mono dim" data-label="Cod secundar">{item.cod_secundar || '—'}</td>
+                    <td class="dim" data-label="Tip">{item.tip || '—'}</td>
+                    <td data-label="Nume">{item.nume || '—'}</td>
+                    <td class="dim num" data-label="Pagina">{item.pagina || '—'}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {/if}
+        </div>
+        {/key}
+
+        {#if curTotalPages > 1}
+          <div class="pagination">
+            <span class="pg-range">Rând {rangeStart}–{rangeEnd} din {curTotal.toLocaleString('ro-RO')}</span>
+            <div class="pg-nav">
+              <button class="pg-btn" title="Prima pagina" disabled={curPage <= 1} onclick={() => goToPage(1)}><ChevronsLeft size={14} /></button>
+              <button class="pg-btn" title="Pagina anterioara" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
+              <span class="pg-info">{curPage} / {curTotalPages}</span>
+              <button class="pg-btn" title="Pagina urmatoare" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
+              <button class="pg-btn" title="Ultima pagina" disabled={curPage >= curTotalPages} onclick={() => goToPage(curTotalPages)}><ChevronsRight size={14} /></button>
+            </div>
+          </div>
+        {/if}
       </div>
-    {/if}
+    </div>
   {/if}
   </div>
   {/key}
@@ -381,23 +380,40 @@
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
 
+  /* ===== V2 bento: sidebar familii + tabel, totul pe un ecran ===== */
+  .side-grid { display: grid; grid-template-columns: 250px 1fr; gap: 14px; align-items: start; }
 
-  .back { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); cursor: pointer; min-height: 36px; }
-  .back:hover { color: var(--accent); }
+  .fam-nav {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 12px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .nav-group {
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 10px 12px 4px;
+  }
+  .nav-group:first-child { padding-top: 2px; }
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+    width: 100%; padding: 9px 12px; border-radius: 11px; text-align: left;
+    font-size: var(--font-small); color: var(--text-secondary);
+    background: transparent; border: none; cursor: pointer;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .nav-item:hover { background: var(--bg-panel); color: var(--text); }
+  .nav-item.active { background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); }
+  .nav-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-count { font-family: var(--font-mono); font-size: var(--font-tiny); font-variant-numeric: tabular-nums; color: var(--text-dim); flex-shrink: 0; }
+  .nav-item.active .nav-count { color: var(--accent); }
 
-  .prod-head { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); flex-wrap: wrap; }
-  .prod-name { font-size: var(--font-h3); font-weight: var(--fw-bold); color: var(--text); }
+  .table-col { min-width: 0; }
 
-  .toolbar { margin-bottom: var(--space-sm); }
-  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); max-width: 400px; }
+  .toolbar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); }
+  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 8px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 400px; }
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
   .search-box input:focus { box-shadow: none; }
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
-
-  .families { display: flex; gap: 4px; flex-wrap: wrap; }
-  .chip { display: flex; align-items: center; gap: 4px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; min-height: 30px; }
-  .chip:hover { background: var(--bg-hover); }
-  .chip.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .toolbar-count { margin-left: auto; font-size: var(--font-tiny); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-dim); white-space: nowrap; }
 
   .mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
   .accent { color: var(--accent); font-weight: var(--fw-medium); }
@@ -434,7 +450,7 @@
   .detail.dim { opacity: 0.45; pointer-events: none; }
 
   .manuals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-md); }
-  .manual-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease); text-align: left; }
+  .manual-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease); text-align: left; }
   .manual-card:hover { border-color: var(--accent); background: var(--accent-subtle); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
   :global(.manual-icon) { color: var(--accent); flex-shrink: 0; }
   .manual-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -446,5 +462,7 @@
   .open-manual-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); cursor: pointer; transition: all var(--dur-fast); }
   .open-manual-btn:hover { background: var(--accent); color: var(--bg); }
 
+  /* Sub 940px: coloanele se suprapun — nav-ul devine bloc normal deasupra tabelului */
+  @media (max-width: 940px) { .side-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) { .page { padding: var(--space-md); } .search-box { max-width: none; } .manuals-grid { grid-template-columns: 1fr; } }
 </style>

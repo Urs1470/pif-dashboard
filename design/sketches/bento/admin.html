@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Admin (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Admin — */
+.sec-card { margin-bottom:14px; }
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+.stat-grid > div { background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; }
+.stat-grid .v { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-.02em; }
+.stat-grid .k { font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); margin-top:4px; }
+@media (max-width:940px){ .stat-grid { grid-template-columns:repeat(2,1fr); } }
+.act-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.danger { color:var(--red) !important; border-color:rgba(255,122,107,.4) !important; }
+.hlth { display:flex; align-items:center; gap:14px; margin-top:auto; }
+.hlth .big-num { font-size:2.4rem; color:var(--green); }
+.obs-path { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.72rem; color:var(--text-2); background:var(--bg-inset); border:1px solid var(--line); border-radius:9px; padding:8px 12px; margin-top:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Admin</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Admin</h1><span class="cnt">statistici · export · backup</span>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — secțiuni stivuite (ca acum) ============ -->
+  <section class="variant" id="v1">
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-amber">▦</span>Statistici</div>
+      <div class="stat-grid">
+        <div><div class="v" data-count="4">0</div><div class="k">Active</div></div>
+        <div><div class="v" data-count="12">0</div><div class="k">Finalizate</div></div>
+        <div><div class="v" data-count="16">0</div><div class="k">Total proiecte</div></div>
+        <div><div class="v"><span data-count="284" data-dec="284.5">0</span>h</div><div class="k">Ore facturabile</div></div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:18px">
+        <div>
+          <div class="cell-label" style="margin-bottom:8px">După status</div>
+          <div class="bd-row"><span class="lab">În lucru</span><div class="track"><div class="fill" style="width:60%"></div></div><span class="val">4</span></div>
+          <div class="bd-row"><span class="lab">Așteptare</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Blocat</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Finalizat</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">12</span></div>
+        </div>
+        <div>
+          <div class="cell-label" style="margin-bottom:8px">După producător (echipamente)</div>
+          <div class="bd-row"><span class="lab">ABB</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">21</span></div>
+          <div class="bd-row"><span class="lab">Siemens</span><div class="track"><div class="fill" style="width:71%"></div></div><span class="val">15</span></div>
+          <div class="bd-row"><span class="lab">Danfoss</span><div class="track"><div class="fill" style="width:33%"></div></div><span class="val">7</span></div>
+          <div class="bd-row"><span class="lab">Lenze</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-green">⇩</span>Export</div>
+      <div class="act-row">
+        <button class="btn btn-ghost btn-sm">⇩ Excel Proiecte</button>
+        <button class="btn btn-ghost btn-sm">⇩ Excel Taskuri</button>
+        <button class="btn btn-ghost btn-sm">⇩ Excel Ore</button>
+        <button class="btn btn-ghost btn-sm">⇩ PDF Sumar</button>
+      </div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-vio">⛁</span>Backup & Restore</div>
+      <div class="act-row">
+        <button class="btn btn-accent btn-sm">⇩ Backup JSON</button>
+        <button class="btn btn-ghost btn-sm danger">⇧ Restaurează JSON</button>
+        <button class="btn btn-ghost btn-sm">⇩ Descarcă DB</button>
+        <button class="btn btn-ghost btn-sm danger">⇧ Încarcă DB</button>
+      </div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-green">⇪</span>Import Debrief<span class="tail">Cowork → Dashboard</span></div>
+      <div style="margin-top:12px; background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.74rem; color:var(--text-3); min-height:64px">{"proiect": {...}, "tasks": [...], ...}</div>
+      <div class="act-row"><button class="btn btn-accent btn-sm">⇪ Importă</button></div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-red">✚</span>Audit DB parametri</div>
+      <div class="hlth" style="margin-top:12px">
+        <div class="big-num" data-count="98">0</div><span style="font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; color:var(--green)">%</span>
+        <span class="kpi-sub" style="margin:0">6.447 parametri · 2 familii cu diacritice lipsă · 0 duplicate</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto">Rulează audit</button>
+      </div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-amber">⧉</span>Integrare Obsidian</div>
+      <div class="obs-path">Cale vault: /home/ion-ursu/Obsidian/Vault · Foldere: 10 Notes, 30 Projects</div>
+      <div class="act-row"><button class="btn btn-accent btn-sm">Salvează</button></div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — bento grid ============ -->
+  <section class="variant" id="v2">
+    <div class="bento rows-auto" style="grid-auto-rows:130px">
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-amber">▦</span>Proiecte</div>
+        <div class="big-num" style="font-size:2.4rem" data-count="16">0</div><div class="kpi-sub">4 active · 12 finalizate</div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-green">◷</span>Ore facturabile</div>
+        <div class="big-num" style="font-size:2.4rem"><span data-count="284" data-dec="284.5">0</span><small style="font-size:1rem;color:var(--text-3)">h</small></div><div class="kpi-sub">anul curent</div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-green">✚</span>Sănătate DB</div>
+        <div class="big-num" style="font-size:2.4rem;color:var(--green)"><span data-count="98">0</span><small style="font-size:1rem;color:var(--text-3)">%</small></div><div class="kpi-sub">6.447 parametri</div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-vio">⛁</span>Ultimul backup</div>
+        <div class="big-num" style="font-size:1.7rem; margin-top:auto">azi 03:00</div><div class="kpi-sub">30 backupuri păstrate</div></section>
+
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-amber">▤</span>Proiecte după status</div>
+        <div style="margin-top:12px">
+          <div class="bd-row"><span class="lab">În lucru</span><div class="track"><div class="fill" style="width:60%"></div></div><span class="val">4</span></div>
+          <div class="bd-row"><span class="lab">Așteptare</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Blocat</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Finalizat</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">12</span></div>
+        </div>
+      </section>
+
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-green">▤</span>Echipamente după producător</div>
+        <div style="margin-top:12px">
+          <div class="bd-row"><span class="lab">ABB</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">21</span></div>
+          <div class="bd-row"><span class="lab">Siemens</span><div class="track"><div class="fill" style="width:71%"></div></div><span class="val">15</span></div>
+          <div class="bd-row"><span class="lab">Danfoss</span><div class="track"><div class="fill" style="width:33%"></div></div><span class="val">7</span></div>
+          <div class="bd-row"><span class="lab">Lenze</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">2</span></div>
+        </div>
+      </section>
+
+      <section class="cell">
+        <div class="cell-label"><span class="ico ico-green">⇩</span>Export</div>
+        <div class="act-row" style="margin-top:auto"><button class="btn btn-ghost btn-sm">Excel</button><button class="btn btn-ghost btn-sm">PDF</button></div>
+      </section>
+      <section class="cell">
+        <div class="cell-label"><span class="ico ico-vio">⛁</span>Backup</div>
+        <div class="act-row" style="margin-top:auto"><button class="btn btn-accent btn-sm">JSON</button><button class="btn btn-ghost btn-sm danger">Restore</button></div>
+      </section>
+      <section class="cell">
+        <div class="cell-label"><span class="ico ico-red">⟳</span>Cache & Service Worker</div>
+        <div class="act-row" style="margin-top:auto"><button class="btn btn-ghost btn-sm">Curăță cache</button><button class="btn btn-ghost btn-sm">Update SW</button></div>
+      </section>
+      <section class="cell">
+        <div class="cell-label"><span class="ico ico-amber">⧉</span>Obsidian</div>
+        <div class="kpi-sub" style="margin-top:auto">vault configurat ✓<br>foldere: Notes, Projects</div>
+      </section>
+      <section class="cell c-2x1">
+        <div class="cell-label"><span class="ico ico-green">⇪</span>Import Debrief<span class="tail">JSON din Cowork</span></div>
+        <div class="act-row" style="margin-top:auto"><span class="kpi-sub" style="align-self:center; margin:0">{"proiect": {...}, "tasks": [...]}</span><button class="btn btn-accent btn-sm" style="margin-left:auto">⇪ Importă</button></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ V3 — tab-uri ============ -->
+  <section class="variant" id="v3">
+    <div class="ptabs">
+      <button class="ptab on">Statistici</button>
+      <button class="ptab">Export & Backup</button>
+      <button class="ptab">Import Debrief</button>
+      <button class="ptab">Integrare & Sistem</button>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="stat-grid" style="margin-top:4px">
+        <div><div class="v" data-count="16">0</div><div class="k">Proiecte totale</div></div>
+        <div><div class="v" data-count="4">0</div><div class="k">Active</div></div>
+        <div><div class="v" data-count="12">0</div><div class="k">Finalizate</div></div>
+        <div><div class="v"><span data-count="284" data-dec="284.5">0</span>h</div><div class="k">Ore facturabile</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+      <div class="cell">
+        <div class="cell-label"><span class="ico ico-amber">▤</span>După status</div>
+        <div style="margin-top:12px">
+          <div class="bd-row"><span class="lab">În lucru</span><div class="track"><div class="fill" style="width:60%"></div></div><span class="val">4</span></div>
+          <div class="bd-row"><span class="lab">Așteptare</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Blocat</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">1</span></div>
+          <div class="bd-row"><span class="lab">Finalizat</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">12</span></div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-label"><span class="ico ico-green">▤</span>După producător</div>
+        <div style="margin-top:12px">
+          <div class="bd-row"><span class="lab">ABB</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">21</span></div>
+          <div class="bd-row"><span class="lab">Siemens</span><div class="track"><div class="fill" style="width:71%"></div></div><span class="val">15</span></div>
+          <div class="bd-row"><span class="lab">Danfoss</span><div class="track"><div class="fill" style="width:33%"></div></div><span class="val">7</span></div>
+          <div class="bd-row"><span class="lab">Lenze</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell" style="margin-top:14px">
+      <div class="cell-label"><span class="ico ico-green">✚</span>Audit DB parametri</div>
+      <div class="hlth" style="margin-top:10px">
+        <div class="big-num" data-count="98">0</div><span style="font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; color:var(--green)">%</span>
+        <span class="kpi-sub" style="margin:0">6.447 parametri · 0 duplicate</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto">Rulează audit</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Secțiuni stivuite (ca acum)', 2:'V2 · Bento grid: KPI + breakdown + acțiuni', 3:'V3 · Pe tab-uri: Statistici / Export & Backup / Integrare'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

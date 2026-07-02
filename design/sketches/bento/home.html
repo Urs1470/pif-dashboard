@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Acasa (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Acasa (elementele reale: KPI, Astăzi, Urgente, Deadline-uri, timer) — */
+.greet-row { display:flex; align-items:flex-start; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+.greet-row h1 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.03em; font-size:1.8rem; }
+.greet-row .date { color:var(--text-3); font-size:.85rem; margin-top:4px; }
+.timer-card {
+  margin-left:auto; display:flex; align-items:center; gap:16px;
+  background: linear-gradient(150deg, #221c12 0%, var(--bg-cell) 60%);
+  border:1px solid rgba(255,180,84,.35); border-radius:var(--radius-sm); padding:12px 18px;
+}
+.timer-card .cap { font-size:.6rem; text-transform:uppercase; letter-spacing:.14em; color:var(--accent); font-weight:700; }
+.timer-card .pj { font-size:.8rem; color:var(--text-2); margin-top:2px; }
+.timer-card .clk { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:1.4rem; color:var(--text); }
+.timer-card .stop { width:34px; height:34px; border-radius:10px; border:none; background:var(--red-dim); color:var(--red); cursor:pointer; font-size:.8rem; transition:all .16s var(--ease); }
+.timer-card .stop:hover { background:var(--red); color:#fff; }
+
+.kpi .track { height:5px; border-radius:999px; background:var(--bg-inset); margin-top:10px; overflow:hidden; }
+.kpi .track i { display:block; height:100%; border-radius:999px; background:var(--accent); }
+.wbars { display:flex; align-items:flex-end; gap:5px; height:34px; margin-top:10px; }
+.wbars i { flex:1; border-radius:3px 3px 0 0; background:var(--green-dim); }
+.wbars i.hi { background:var(--green); }
+
+.today-head { display:flex; align-items:center; gap:10px; }
+.today-head .btn { margin-left:auto; }
+.jinput { display:flex; gap:10px; margin-top:12px; }
+.jinput input { flex:1; background:var(--bg-inset); border:1px solid var(--line); border-radius:999px; padding:11px 16px; color:var(--text); font-size:.84rem; font-family:'Inter',system-ui,sans-serif; outline:none; }
+.jinput input:focus { border-color:var(--accent); }
+.jinput input::placeholder { color:var(--text-3); }
+.empty { text-align:center; color:var(--text-3); font-size:.82rem; padding:22px 10px; }
+.empty .big { font-size:1.6rem; margin-bottom:6px; }
+
+.li-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.arrow { margin-left:auto; color:var(--text-3); }
+.dl-date { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.7rem; color:var(--text-3); white-space:nowrap; }
+
+/* hero timer (V2) */
+.hero { justify-content:space-between; background: linear-gradient(150deg, #221c12 0%, var(--bg-cell) 55%); }
+.hero-clock { font-size: clamp(2.6rem, 6vw, 4rem); }
+.hero-clock .sec { color: var(--accent); }
+.live { display:inline-flex; align-items:center; gap:7px; background:var(--green-dim); color:var(--green); font-size:.66rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 11px; border-radius:999px; }
+.live i { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.6s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Acasa</span></div>
+    <div class="spacer"></div>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — aranjamentul REAL de azi, re-stilizat bento ============ -->
+  <section class="variant" id="v1">
+    <div class="greet-row">
+      <div><h1>Bună dimineața, Ion</h1><div class="date">joi, 2 iulie 2026</div></div>
+      <div class="timer-card">
+        <div><div class="cap">● Cronometru activ · proiect</div><div class="pj">PIF Stație pompare Cluj</div></div>
+        <div class="clk js-clock">01:42:17</div>
+        <button class="stop">■</button>
+      </div>
+    </div>
+
+    <div class="bento" style="grid-auto-rows:132px">
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-amber">◳</span>Proiecte active</div>
+        <div class="big-num" style="font-size:2.6rem"><span data-count="4">0</span><small style="font-size:1.2rem;color:var(--text-3)"> / 4</small></div>
+        <div class="track"><i style="width:100%"></i></div></section>
+
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-red">!</span>Urgente</div>
+        <div class="big-num" style="font-size:2.6rem;color:var(--accent)" data-count="3">0</div>
+        <div class="kpi-sub">scadență apropiată</div></section>
+
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-green">◷</span>Ore săptămâna</div>
+        <div class="big-num" style="font-size:2.6rem"><span data-count="26">0</span><small style="font-size:1.1rem;color:var(--text-3)">h</small> <span class="pill pill-done" style="font-size:.6rem;vertical-align:6px">+26h</span></div>
+        <div class="wbars"><i style="height:15%"></i><i style="height:35%"></i><i class="hi" style="height:70%"></i><i class="hi" style="height:100%"></i><i class="hi" style="height:80%"></i><i style="height:12%"></i><i style="height:8%"></i></div></section>
+
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-vio">◔</span>Deadline-uri</div>
+        <div class="big-num" style="font-size:2.6rem" data-count="3">0</div>
+        <div class="kpi-sub">în următoarele 7 zile</div></section>
+
+      <!-- Astăzi (board-ul real) -->
+      <section class="cell c-4x1" style="grid-row:span 2">
+        <div class="today-head">
+          <div class="cell-label"><span class="ico ico-amber">☀</span>Astăzi<span style="color:var(--text-3);font-weight:400">&nbsp;· 2</span></div>
+          <button class="btn btn-ghost btn-sm">≔ Adaugă task existent</button>
+        </div>
+        <div class="jinput"><input placeholder="Task rapid pentru azi… Enter pentru a adăuga"><button class="btn btn-accent btn-sm">＋</button></div>
+        <div class="rowlist" style="margin-top:8px">
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)<small>PIF Stație pompare Cluj</small></span><span class="pr pr-high">urgent</span></div>
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin<small>PIF Stație pompare Cluj</small></span><span class="pr pr-high">urgent</span></div>
+        </div>
+      </section>
+
+      <!-- Task-uri urgente -->
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-red">⚠</span>Task-uri urgente<span class="tail">3</span></div>
+        <div class="rowlist" style="margin-top:8px">
+          <div class="row"><span class="li-dot" style="background:var(--red)"></span><span class="tt">Comandă piese schimb FC302 — CET Vest<small>Task global</small></span><span class="arrow">›</span></div>
+          <div class="row"><span class="li-dot" style="background:var(--red)"></span><span class="tt">Autotuning motor P2 (315 kW)<small>PIF Stație pompare Cluj</small></span><span class="arrow">›</span></div>
+          <div class="row"><span class="li-dot" style="background:var(--red)"></span><span class="tt">Test interblocări nivel minim bazin<small>PIF Stație pompare Cluj</small></span><span class="arrow">›</span></div>
+        </div>
+      </section>
+
+      <!-- Deadline-uri -->
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-vio">◔</span>Deadline-uri<span class="tail">3</span></div>
+        <div class="rowlist" style="margin-top:8px">
+          <div class="row" onclick="location.href='project.html'"><span class="li-dot" style="background:var(--accent)"></span><span class="tt">PIF Stație pompare Cluj<small>Hidroconstrucția SA</small></span><span class="dl-date" style="color:var(--red)">03.07.2026</span><span class="arrow">›</span></div>
+          <div class="row"><span class="li-dot" style="background:var(--accent)"></span><span class="tt">Retrofit ACS880 Fieni<small>Ciment Fieni</small></span><span class="dl-date">05.07.2026</span><span class="arrow">›</span></div>
+          <div class="row"><span class="li-dot" style="background:var(--accent)"></span><span class="tt">Service G120 — CET Vest<small>Electrocentrale</small></span><span class="dl-date">07.07.2026</span><span class="arrow">›</span></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ V2 — timer-hero + aceleași elemente reale ============ -->
+  <section class="variant" id="v2">
+    <div class="bento" style="grid-auto-rows:140px">
+      <section class="cell c-2x2 hero">
+        <div style="display:flex; justify-content:space-between"><div class="cell-label"><span class="ico ico-green">▶</span>Cronometru activ · proiect</div><span class="live"><i></i>Live</span></div>
+        <div>
+          <div class="big-num hero-clock js-clock-rich">01:42:<span class="sec">17</span></div>
+          <div style="color:var(--text-2); font-size:.9rem; margin-top:6px">PIF Stație pompare Cluj</div>
+        </div>
+        <div style="display:flex; gap:10px"><button class="btn btn-accent">■ Stop</button><button class="btn btn-ghost" onclick="location.href='project.html'">Proiect →</button></div>
+      </section>
+
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-amber">◳</span>Proiecte active</div>
+        <div class="big-num" data-count="4">0</div><div class="track"><i style="width:100%"></i></div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-red">!</span>Urgente</div>
+        <div class="big-num" style="color:var(--accent)" data-count="3">0</div><div class="kpi-sub">scadență apropiată</div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-green">◷</span>Ore săptămâna</div>
+        <div class="big-num"><span data-count="26">0</span><small style="font-size:1.1rem;color:var(--text-3)">h</small></div>
+        <div class="wbars"><i style="height:15%"></i><i style="height:35%"></i><i class="hi" style="height:70%"></i><i class="hi" style="height:100%"></i><i class="hi" style="height:80%"></i><i style="height:12%"></i><i style="height:8%"></i></div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-vio">◔</span>Deadline-uri</div>
+        <div class="big-num" data-count="3">0</div><div class="kpi-sub">în 7 zile</div></section>
+
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="today-head"><div class="cell-label"><span class="ico ico-amber">☀</span>Astăzi<span style="color:var(--text-3);font-weight:400">&nbsp;· 2</span></div></div>
+        <div class="jinput"><input placeholder="Task rapid pentru azi…"><button class="btn btn-accent btn-sm">＋</button></div>
+        <div class="rowlist" style="margin-top:6px">
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)</span><span class="pr pr-high">urgent</span></div>
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="pr pr-high">urgent</span></div>
+        </div>
+      </section>
+
+      <section class="cell c-2x1">
+        <div class="cell-label"><span class="ico ico-red">⚠</span>Task-uri urgente<span class="tail">3</span></div>
+        <div class="rowlist" style="margin-top:6px">
+          <div class="row" style="padding:8px 10px"><span class="li-dot" style="background:var(--red)"></span><span class="tt">Comandă piese schimb FC302 — CET Vest</span><span class="arrow">›</span></div>
+          <div class="row" style="padding:8px 10px"><span class="li-dot" style="background:var(--red)"></span><span class="tt">Autotuning motor P2 (315 kW)</span><span class="arrow">›</span></div>
+        </div>
+      </section>
+
+      <section class="cell c-2x1">
+        <div class="cell-label"><span class="ico ico-vio">◔</span>Deadline-uri<span class="tail">3</span></div>
+        <div class="rowlist" style="margin-top:6px">
+          <div class="row" style="padding:8px 10px"><span class="li-dot" style="background:var(--accent)"></span><span class="tt">PIF Stație pompare Cluj</span><span class="dl-date" style="color:var(--red)">03.07</span></div>
+          <div class="row" style="padding:8px 10px"><span class="li-dot" style="background:var(--accent)"></span><span class="tt">Retrofit ACS880 Fieni</span><span class="dl-date">05.07</span></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ V3 — focus „Astăzi" pe toată lățimea ============ -->
+  <section class="variant" id="v3">
+    <div class="bento" style="grid-auto-rows:132px">
+      <section class="cell c-2x1" style="grid-row:span 3">
+        <div class="today-head">
+          <div class="cell-label"><span class="ico ico-amber">☀</span>Astăzi — joi, 2 iulie<span class="tail">2 taskuri · 1 deadline</span></div>
+        </div>
+        <div class="jinput"><input placeholder="Task rapid pentru azi…"><button class="btn btn-accent btn-sm">＋</button></div>
+        <div class="rowlist" style="margin-top:8px">
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)<small>PIF Stație pompare Cluj</small></span><span class="pr pr-high">urgent</span></div>
+          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin<small>PIF Stație pompare Cluj</small></span><span class="pr pr-high">urgent</span></div>
+          <div class="row done"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Upload parametri ACS880 — P1<small>bifat 09:40</small></span></div>
+        </div>
+        <div class="cell-label" style="margin-top:14px"><span class="ico ico-vio">◔</span>Deadline apropiat</div>
+        <div class="rowlist"><div class="row" onclick="location.href='project.html'"><span class="li-dot" style="background:var(--red)"></span><span class="tt">PIF Stație pompare Cluj — raport PIF</span><span class="dl-date" style="color:var(--red)">03.07 · 1 zi</span></div></div>
+      </section>
+
+      <section class="cell c-2x1 hero" style="flex-direction:row; align-items:center; gap:18px">
+        <div>
+          <div class="cell-label"><span class="ico ico-green">▶</span>Cronometru</div>
+          <div class="big-num hero-clock js-clock-rich" style="font-size:2.2rem; margin-top:8px">01:42:<span class="sec">17</span></div>
+          <div style="color:var(--text-2); font-size:.76rem; margin-top:4px">PIF Stație pompare Cluj</div>
+        </div>
+        <button class="btn btn-accent btn-sm" style="margin-left:auto">■ Stop</button>
+      </section>
+
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-amber">◳</span>Proiecte</div>
+        <div class="big-num" style="font-size:2.4rem" data-count="4">0</div><div class="track"><i style="width:100%"></i></div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-red">!</span>Urgente</div>
+        <div class="big-num" style="font-size:2.4rem;color:var(--accent)" data-count="3">0</div><div class="kpi-sub">scadență apropiată</div></section>
+
+      <section class="cell c-2x1">
+        <div class="cell-label"><span class="ico ico-green">◷</span>Ore săptămâna<span class="tail"><b style="color:var(--text-2)">26h</b> · +26h</span></div>
+        <div class="wbars" style="height:52px; margin-top:auto"><i style="height:15%"></i><i style="height:35%"></i><i class="hi" style="height:70%"></i><i class="hi" style="height:100%"></i><i class="hi" style="height:80%"></i><i style="height:12%"></i><i style="height:8%"></i></div>
+      </section>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Aranjamentul actual, re-stilizat bento (KPI + Astăzi + liste)', 2:'V2 · Timer-hero stânga, aceleași elemente', 3:'V3 · „Astăzi" pe coloană mare + restul compact'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

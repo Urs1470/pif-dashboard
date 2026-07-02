@@ -1,0 +1,2 @@
+Fonturile Inter (rsms/Google), Space Grotesk (Florian Karsten) si JetBrains Mono (JetBrains)
+sunt licentiate OFL-1.1. Fisierele woff2 provin din Google Fonts (subseturi latin + latin-ext).

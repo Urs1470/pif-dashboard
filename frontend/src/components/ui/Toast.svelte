@@ -67,7 +67,7 @@
 
   @media (max-width: 768px) {
     .toast-container {
-      bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-md));
+      bottom: calc(var(--dock-h) + 14px + var(--safe-bottom) + var(--space-md));
       left: var(--space-md);
       right: var(--space-md);
     }

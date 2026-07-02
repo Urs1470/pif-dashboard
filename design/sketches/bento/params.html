@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Parametri (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Parametri — */
+.mkcards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px; }
+.mk { min-height:130px; cursor:pointer; align-items:flex-start; }
+.mk .nm { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:-.02em; margin-top:auto; }
+.mk .fam { font-size:.72rem; color:var(--text-3); margin-top:3px; }
+.mk.sel { border-color: var(--accent); background: var(--bg-cell-hover); }
+.mk .logo { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:.7rem; }
+@media (max-width:940px){ .mkcards { grid-template-columns:repeat(2,1fr); } }
+
+.fam-chips { margin: 2px 0 14px; }
+.pgn { display:flex; align-items:center; gap:8px; justify-content:flex-end; padding:12px 6px 4px; color:var(--text-3); font-size:.74rem; }
+.pgn button { background:var(--bg-inset); border:1px solid var(--line); color:var(--text-2); border-radius:8px; width:28px; height:28px; cursor:pointer; }
+.pgn button:hover { border-color:var(--accent); color:var(--accent); }
+.acc { font-size:.64rem; font-weight:700; padding:2px 8px; border-radius:999px; }
+.acc-rw { background:var(--green-dim); color:var(--green); }
+.acc-ro { background:var(--bg-inset); color:var(--text-3); border:1px solid var(--line); }
+
+/* V2 — sidebar */
+.side-grid { display:grid; grid-template-columns:250px 1fr; gap:14px; align-items:start; }
+.snav { padding:12px; }
+.snav .grp { font-size:.64rem; text-transform:uppercase; letter-spacing:.14em; color:var(--text-3); font-weight:700; padding:12px 10px 6px; }
+.snav .it { display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:11px; font-size:.82rem; color:var(--text-2); cursor:pointer; transition:all .14s var(--ease); }
+.snav .it:hover { background:var(--bg-inset); color:var(--text); }
+.snav .it.on { background:var(--amber-dim); color:var(--accent); font-weight:600; }
+.snav .it .n { margin-left:auto; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.66rem; color:var(--text-3); }
+@media (max-width:940px){ .side-grid { grid-template-columns:1fr; } }
+
+/* V3 — search-first */
+.shero { text-align:center; padding: 30px 20px 26px; }
+.shero h2 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.03em; font-size:1.5rem; }
+.shero .sbox { max-width:560px; margin: 18px auto 0; display:flex; align-items:center; gap:12px; background:var(--bg-inset); border:1px solid var(--line-strong); border-radius:999px; padding:14px 22px; }
+.shero .sbox:focus-within { border-color:var(--accent); }
+.shero input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:1rem; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; }
+.shero input::placeholder { color:var(--text-3); font-family:'Inter',system-ui,sans-serif; }
+.res-tag { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; padding:3px 8px; border-radius:6px; flex-shrink:0; }
+.res-p { background:var(--amber-dim); color:var(--accent); }
+.res-f { background:var(--red-dim); color:var(--red); }
+.res-m { background:var(--violet-dim); color:var(--violet); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Parametri</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Parametri drives</h1><span class="cnt">4 producători · 8 familii</span>
+  </div>
+
+  <div class="ptabs">
+    <button class="ptab on">Parametri</button>
+    <button class="ptab">Fault codes</button>
+    <button class="ptab">Manuale<span class="n">14</span></button>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — picker producători → tabel ============ -->
+  <section class="variant" id="v1">
+    <div class="mkcards">
+      <section class="cell mk hoverable sel">
+        <div class="logo" style="background:var(--red-dim); color:var(--red)">ABB</div>
+        <div class="nm">ABB</div><div class="fam">2 familii · ACS580 · ACS880</div>
+      </section>
+      <section class="cell mk hoverable">
+        <div class="logo" style="background:var(--green-dim); color:var(--green)">SIE</div>
+        <div class="nm">Siemens</div><div class="fam">3 familii · G120 · G130/150 · S120/150</div>
+      </section>
+      <section class="cell mk hoverable">
+        <div class="logo" style="background:var(--amber-dim); color:var(--accent)">DAN</div>
+        <div class="nm">Danfoss</div><div class="fam">1 familie · VLT FC302</div>
+      </section>
+      <section class="cell mk hoverable">
+        <div class="logo" style="background:var(--violet-dim); color:var(--violet)">LNZ</div>
+        <div class="nm">Lenze</div><div class="fam">2 familii · i550 · i950</div>
+      </section>
+    </div>
+
+    <div class="toolbar" style="margin-bottom:12px">
+      <span style="color:var(--text-3); font-size:.78rem; cursor:pointer">← Producători</span>
+      <b style="font-size:1rem">ABB</b>
+      <div class="chips fam-chips" style="margin:0">
+        <span class="chip">ACS580</span><span class="chip on">ACS880</span>
+      </div>
+      <div class="search" style="flex:1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută parametru (ex. 99.04, rampă)…</span></div>
+    </div>
+
+    <div class="cell" style="padding:6px 4px 4px">
+      <table class="tbl">
+        <thead><tr><th>Param</th><th>Descriere</th><th>Acces</th><th>Default</th><th>Min–Max</th><th>Unitate</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">99.04</td><td>Motor control mode</td><td><span class="acc acc-rw">RW</span></td><td class="mono">DTC</td><td class="mono dim">—</td><td class="mono dim">—</td></tr>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">23.12</td><td>Acceleration time 1</td><td><span class="acc acc-rw">RW</span></td><td class="mono">20.0</td><td class="mono dim">0.0–1800.0</td><td class="mono dim">s</td></tr>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">23.13</td><td>Deceleration time 1</td><td><span class="acc acc-rw">RW</span></td><td class="mono">20.0</td><td class="mono dim">0.0–1800.0</td><td class="mono dim">s</td></tr>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">30.11</td><td>Minimum frequency</td><td><span class="acc acc-rw">RW</span></td><td class="mono">0.0</td><td class="mono dim">-500.0–500.0</td><td class="mono dim">Hz</td></tr>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">30.12</td><td>Maximum frequency</td><td><span class="acc acc-rw">RW</span></td><td class="mono">50.0</td><td class="mono dim">-500.0–500.0</td><td class="mono dim">Hz</td></tr>
+          <tr><td class="mono" style="color:var(--accent);font-weight:700">01.07</td><td>Motor current</td><td><span class="acc acc-ro">RO</span></td><td class="mono dim">—</td><td class="mono dim">—</td><td class="mono dim">A</td></tr>
+        </tbody>
+      </table>
+      <div class="pgn"><span>1–6 din 248</span><button>«</button><button>‹</button><button>›</button><button>»</button></div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — sidebar + tabel ============ -->
+  <section class="variant" id="v2">
+    <div class="side-grid">
+      <aside class="cell snav">
+        <div class="grp">ABB</div>
+        <div class="it on">ACS880 <span class="n">248</span></div>
+        <div class="it">ACS580 <span class="n">248</span></div>
+        <div class="grp">Siemens</div>
+        <div class="it">SINAMICS G120 <span class="n">855</span></div>
+        <div class="it">G130 / G150 <span class="n">855</span></div>
+        <div class="it">S120 / S150 <span class="n">856</span></div>
+        <div class="grp">Danfoss</div>
+        <div class="it">VLT FC302 <span class="n">113</span></div>
+        <div class="grp">Lenze</div>
+        <div class="it">i550 <span class="n">338</span></div>
+        <div class="it">i950 <span class="n">338</span></div>
+      </aside>
+
+      <div>
+        <div class="toolbar" style="margin-bottom:12px">
+          <div class="search" style="flex:1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută în ACS880…</span></div>
+          <span class="cnt">248 parametri</span>
+        </div>
+        <div class="cell" style="padding:6px 4px 4px">
+          <table class="tbl">
+            <thead><tr><th>Param</th><th>Descriere</th><th>Acces</th><th>Default</th><th>Unitate</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">99.04</td><td>Motor control mode</td><td><span class="acc acc-rw">RW</span></td><td class="mono">DTC</td><td class="mono dim">—</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">23.12</td><td>Acceleration time 1</td><td><span class="acc acc-rw">RW</span></td><td class="mono">20.0</td><td class="mono dim">s</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">23.13</td><td>Deceleration time 1</td><td><span class="acc acc-rw">RW</span></td><td class="mono">20.0</td><td class="mono dim">s</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">30.11</td><td>Minimum frequency</td><td><span class="acc acc-rw">RW</span></td><td class="mono">0.0</td><td class="mono dim">Hz</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">30.12</td><td>Maximum frequency</td><td><span class="acc acc-rw">RW</span></td><td class="mono">50.0</td><td class="mono dim">Hz</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">01.07</td><td>Motor current</td><td><span class="acc acc-ro">RO</span></td><td class="mono dim">—</td><td class="mono dim">A</td></tr>
+              <tr><td class="mono" style="color:var(--accent);font-weight:700">20.01</td><td>Ext1 commands</td><td><span class="acc acc-rw">RW</span></td><td class="mono">In1 Start</td><td class="mono dim">—</td></tr>
+            </tbody>
+          </table>
+          <div class="pgn"><span>1–7 din 248</span><button>«</button><button>‹</button><button>›</button><button>»</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V3 — search-first ============ -->
+  <section class="variant" id="v3">
+    <div class="cell shero">
+      <h2>Caută în 3.851 parametri și 4.051 fault codes</h2>
+      <div class="sbox">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-3)"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input value="ramp" placeholder="Parametru, fault code, funcție…">
+        <button class="btn btn-accent btn-sm">Caută</button>
+      </div>
+      <div class="chips" style="justify-content:center; margin-top:14px">
+        <span class="chip on">Toate</span><span class="chip">ACS880</span><span class="chip">G120</span><span class="chip">FC302</span><span class="chip">i550</span>
+      </div>
+    </div>
+
+    <div class="cell" style="margin-top:14px; padding:10px 14px">
+      <div class="cell-label" style="padding:6px"><span class="ico ico-amber">⌕</span>Rezultate pentru „ramp"<span class="tail">14 potriviri</span></div>
+      <div class="rowlist">
+        <div class="row"><span class="res-tag res-p">Param</span><span class="tt"><span class="mono" style="color:var(--accent)">23.12</span> Acceleration time 1<small>ABB ACS880 · default 20.0s · 0–1800s</small></span><span class="dim mono">RW</span></div>
+        <div class="row"><span class="res-tag res-p">Param</span><span class="tt"><span class="mono" style="color:var(--accent)">23.13</span> Deceleration time 1<small>ABB ACS880 · default 20.0s</small></span><span class="dim mono">RW</span></div>
+        <div class="row"><span class="res-tag res-p">Param</span><span class="tt"><span class="mono" style="color:var(--accent)">P1120</span> Ramp-up time<small>Siemens G120 · default 10.0s</small></span><span class="dim mono">RW</span></div>
+        <div class="row"><span class="res-tag res-f">Fault</span><span class="tt"><span class="mono" style="color:var(--red)">F0002</span> DC overvoltage<small>ABB ACS880 · cauză tipică: rampă de decelerare prea scurtă</small></span></div>
+        <div class="row"><span class="res-tag res-m">Manual</span><span class="tt">ACS880 FW manual — cap. „Ramp times"<small>pag. 214 · deschide PDF la pagină</small></span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Picker producători → familie → tabel', 2:'V2 · Sidebar familii + tabel (totul pe un ecran)', 3:'V3 · Search-first: rezultate mixte parametri + faults + manuale'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

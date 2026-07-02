@@ -34,6 +34,8 @@
   let obsConfig = $state({ vault_path: '', folders: '', valid: false, note_count: 0, configured: false })
   let obsSaving = $state(false)
 
+  let activeTab = $state('stats')
+
   const STAT_LABELS = { total: 'Total proiecte', active: 'Active', finished: 'Finalizate' }
 
   onMount(async () => {
@@ -162,130 +164,145 @@
 <div class="page">
   <div class="page-header"><Settings size={22} /><h1>Admin</h1></div>
 
-  {#if loading}
-    <div class="grid">{#each Array(3) as _}<Skeleton height="80px" />{/each}</div>
-  {:else}
-    <h2 class="sec-title"><BarChart3 size={16} /> Statistici</h2>
-    {#if stats}
-      <div class="grid" in:fade={{ duration: motionDuration(DUR_BASE) }}>
-        {#each Object.entries(stats) as [key, val]}
+  <div class="tabs">
+    <button class="tab" class:active={activeTab === 'stats'} onclick={() => activeTab = 'stats'}><BarChart3 size={14} /> Statistici</button>
+    <button class="tab" class:active={activeTab === 'export'} onclick={() => activeTab = 'export'}><Database size={14} /> Export &amp; Backup</button>
+    <button class="tab" class:active={activeTab === 'import'} onclick={() => activeTab = 'import'}><FileJson size={14} /> Import Debrief</button>
+    <button class="tab" class:active={activeTab === 'integrare'} onclick={() => activeTab = 'integrare'}><BookOpen size={14} /> Integrare</button>
+  </div>
+
+  {#if activeTab === 'stats'}
+    {#if loading}
+      <div class="grid">{#each Array(3) as _}<Skeleton height="80px" />{/each}</div>
+    {:else}
+      <h2 class="sec-title"><BarChart3 size={16} /> Statistici</h2>
+      {#if stats}
+        <div class="grid" in:fade={{ duration: motionDuration(DUR_BASE) }}>
+          {#each Object.entries(stats) as [key, val]}
+            <Card>
+              <div class="stat-label">{STAT_LABELS[key] || key.replace(/_/g, ' ')}</div>
+              <div class="stat-value">{typeof val === 'number' ? val.toLocaleString('ro-RO') : val}</div>
+            </Card>
+          {/each}
+          {#if extended?.total_billable_hours != null}
+            <Card>
+              <div class="stat-label">Ore facturabile</div>
+              <div class="stat-value">{Math.round(extended.total_billable_hours)}h</div>
+            </Card>
+          {/if}
+        </div>
+      {/if}
+
+      {#if extended}
+        <div class="two-col" in:fade={{ duration: motionDuration(DUR_BASE) }}>
           <Card>
-            <div class="stat-label">{STAT_LABELS[key] || key.replace(/_/g, ' ')}</div>
-            <div class="stat-value">{typeof val === 'number' ? val.toLocaleString('ro-RO') : val}</div>
+            <h3 class="card-title">Dupa status</h3>
+            <BreakdownBars items={(extended.by_status || []).map(s => ({ label: s.status, count: s.count }))} labelMap={PROJECT_STATUS_LABELS} color="var(--accent)" />
           </Card>
-        {/each}
-        {#if extended?.total_billable_hours != null}
           <Card>
-            <div class="stat-label">Ore facturabile</div>
-            <div class="stat-value">{Math.round(extended.total_billable_hours)}h</div>
+            <h3 class="card-title">Dupa producator</h3>
+            <BreakdownBars items={(extended.by_manufacturer || []).map(m => ({ label: m.producator, count: m.count }))} color="var(--info)" />
           </Card>
-        {/if}
-      </div>
+        </div>
+      {/if}
     {/if}
 
-    {#if extended}
+    <h2 class="sec-title"><Stethoscope size={16} /> Audit DB Parametri</h2>
+    {#if auditLoading}
+      <Skeleton height="100px" />
+    {:else if audit}
       <div class="two-col" in:fade={{ duration: motionDuration(DUR_BASE) }}>
         <Card>
-          <h3 class="card-title">Dupa status</h3>
-          <BreakdownBars items={(extended.by_status || []).map(s => ({ label: s.status, count: s.count }))} labelMap={PROJECT_STATUS_LABELS} color="var(--accent)" />
+          <div class="stat-label">Health Score</div>
+          <div class="stat-value" style="color: {audit.health_pct >= 90 ? 'var(--success)' : audit.health_pct >= 70 ? 'var(--warning)' : 'var(--danger)'}">{audit.health_pct}%</div>
+          <div class="hint-sub">{audit.total?.toLocaleString('ro-RO')} parametri total</div>
         </Card>
         <Card>
-          <h3 class="card-title">Dupa producator</h3>
-          <BreakdownBars items={(extended.by_manufacturer || []).map(m => ({ label: m.producator, count: m.count }))} color="var(--info)" />
+          <h3 class="card-title">Per familie</h3>
+          <BreakdownBars items={(audit.per_familie || []).map(f => ({ label: (f.familie || '').replace(/_/g, ' '), count: f.count ?? f.total ?? 0 }))} color="var(--purple)" />
         </Card>
       </div>
-    {/if}
-  {/if}
-
-  <h2 class="sec-title"><Download size={16} /> Export</h2>
-  <Card>
-    <div class="actions">
-      <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=projects', '_blank')}><Download size={14} /> Excel Proiecte</Button>
-      <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=tasks', '_blank')}><Download size={14} /> Excel Taskuri</Button>
-      <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=hours', '_blank')}><Download size={14} /> Excel Ore</Button>
-      <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/pdf/all', '_blank')}><Download size={14} /> PDF Sumar</Button>
-    </div>
-  </Card>
-
-  <h2 class="sec-title"><Database size={16} /> Backup &amp; Restore</h2>
-  <Card>
-    <div class="actions">
-      <Button variant="secondary" size="sm" onclick={downloadBackup}><Download size={14} /> Backup JSON</Button>
-      <Button variant="secondary" size="sm" onclick={() => restoreInput?.click()}><Upload size={14} /> Restaureaza JSON</Button>
-      <Button variant="secondary" size="sm" onclick={() => window.open('/api/admin/db-dump', '_blank')}><Download size={14} /> Descarca DB</Button>
-      <Button variant="secondary" size="sm" onclick={() => dbInput?.click()}><Upload size={14} /> Incarca DB</Button>
-    </div>
-    <p class="hint"><AlertTriangle size={12} /> Restaurarea suprascrie datele curente. Serverul face si backup-uri automate.</p>
-    <input type="file" accept=".json,application/json" hidden bind:this={restoreInput} onchange={onRestoreFile} />
-    <input type="file" accept=".db" hidden bind:this={dbInput} onchange={onDbFile} />
-  </Card>
-
-  <h2 class="sec-title"><FileJson size={16} /> Import Debrief</h2>
-  <Card>
-    <textarea rows="5" bind:value={debriefText} placeholder={'{"proiect": {...}, "tasks": [...], ...}'}></textarea>
-    <div class="actions" style="margin-top: var(--space-sm)">
-      <Button size="sm" loading={debriefBusy} disabled={!debriefText.trim()} onclick={importDebrief}><Upload size={14} /> Importa</Button>
-      {#if debriefResult?.id || debriefResult?.proiect_id}
-        <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}" transition:fade={{ duration: motionDuration(DUR_BASE) }}>Vezi proiectul creat →</a>
+      {#if audit.issues && Object.keys(audit.issues).length > 0}
+        <Card>
+          <h3 class="card-title">Probleme detectate</h3>
+          <div class="issues">
+            {#each Object.entries(audit.issues) as [key, issue]}
+              <div class="issue">
+                <span class="issue-dot" style="background: {severityColor(issue.severity)}"></span>
+                <span class="issue-label">{issue.label || key}</span>
+                <span class="issue-count">{issue.count}</span>
+              </div>
+            {/each}
+          </div>
+        </Card>
       {/if}
-    </div>
-  </Card>
-
-  <h2 class="sec-title"><Stethoscope size={16} /> Audit DB Parametri</h2>
-  {#if auditLoading}
-    <Skeleton height="100px" />
-  {:else if audit}
-    <div class="two-col" in:fade={{ duration: motionDuration(DUR_BASE) }}>
-      <Card>
-        <div class="stat-label">Health Score</div>
-        <div class="stat-value" style="color: {audit.health_pct >= 90 ? 'var(--success)' : audit.health_pct >= 70 ? 'var(--warning)' : 'var(--danger)'}">{audit.health_pct}%</div>
-        <div class="hint-sub">{audit.total?.toLocaleString('ro-RO')} parametri total</div>
-      </Card>
-      <Card>
-        <h3 class="card-title">Per familie</h3>
-        <BreakdownBars items={(audit.per_familie || []).map(f => ({ label: (f.familie || '').replace(/_/g, ' '), count: f.count ?? f.total ?? 0 }))} color="var(--purple)" />
-      </Card>
-    </div>
-    {#if audit.issues && Object.keys(audit.issues).length > 0}
-      <Card>
-        <h3 class="card-title">Probleme detectate</h3>
-        <div class="issues">
-          {#each Object.entries(audit.issues) as [key, issue]}
-            <div class="issue">
-              <span class="issue-dot" style="background: {severityColor(issue.severity)}"></span>
-              <span class="issue-label">{issue.label || key}</span>
-              <span class="issue-count">{issue.count}</span>
-            </div>
-          {/each}
-        </div>
-      </Card>
     {/if}
   {/if}
 
-  <h2 class="sec-title"><HardDriveDownload size={16} /> Cache &amp; Service Worker</h2>
-  <Card>
-    <div class="actions">
-      <Button variant="secondary" size="sm" onclick={clearLocalCache}><HardDriveDownload size={14} /> Curata Cache Local</Button>
-      <Button variant="secondary" size="sm" onclick={forceSWUpdate}><RefreshCw size={14} /> Actualizeaza Service Worker</Button>
-    </div>
-    <p class="hint"><AlertTriangle size={12} /> Curatarea cache-ului sterge localStorage, IndexedDB (pif*) si SW cache. Necesita reincarcarea paginii.</p>
-  </Card>
-
-  <h2 class="sec-title"><BookOpen size={16} /> Integrare Obsidian</h2>
-  <Card>
-    <div class="obs-form">
-      <Input label="Cale vault" bind:value={obsConfig.vault_path} placeholder="/home/ion-ursu/Obsidian/Vault" />
-      <Input label="Foldere (separate prin virgula)" bind:value={obsConfig.folders} placeholder="10 Notes, 30 Projects" />
+  {#if activeTab === 'export'}
+    <h2 class="sec-title"><Download size={16} /> Export</h2>
+    <Card>
       <div class="actions">
-        <Button size="sm" loading={obsSaving} onclick={saveObsidian}><Save size={14} /> Salveaza</Button>
-        {#if obsConfig.configured}
-          <span class="obs-status" class:ok={obsConfig.valid}>
-            {obsConfig.valid ? `Valid · ${obsConfig.note_count} notite` : 'Cale invalida'}
-          </span>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=projects', '_blank')}><Download size={14} /> Excel Proiecte</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=tasks', '_blank')}><Download size={14} /> Excel Taskuri</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=hours', '_blank')}><Download size={14} /> Excel Ore</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/pdf/all', '_blank')}><Download size={14} /> PDF Sumar</Button>
+      </div>
+    </Card>
+
+    <h2 class="sec-title"><Database size={16} /> Backup &amp; Restore</h2>
+    <Card>
+      <div class="actions">
+        <Button variant="secondary" size="sm" onclick={downloadBackup}><Download size={14} /> Backup JSON</Button>
+        <Button variant="secondary" size="sm" onclick={() => restoreInput?.click()}><Upload size={14} /> Restaureaza JSON</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/admin/db-dump', '_blank')}><Download size={14} /> Descarca DB</Button>
+        <Button variant="secondary" size="sm" onclick={() => dbInput?.click()}><Upload size={14} /> Incarca DB</Button>
+      </div>
+      <p class="hint"><AlertTriangle size={12} /> Restaurarea suprascrie datele curente. Serverul face si backup-uri automate.</p>
+      <input type="file" accept=".json,application/json" hidden bind:this={restoreInput} onchange={onRestoreFile} />
+      <input type="file" accept=".db" hidden bind:this={dbInput} onchange={onDbFile} />
+    </Card>
+  {/if}
+
+  {#if activeTab === 'import'}
+    <h2 class="sec-title"><FileJson size={16} /> Import Debrief</h2>
+    <Card>
+      <textarea rows="5" bind:value={debriefText} placeholder={'{"proiect": {...}, "tasks": [...], ...}'}></textarea>
+      <div class="actions" style="margin-top: var(--space-sm)">
+        <Button size="sm" loading={debriefBusy} disabled={!debriefText.trim()} onclick={importDebrief}><Upload size={14} /> Importa</Button>
+        {#if debriefResult?.id || debriefResult?.proiect_id}
+          <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}" transition:fade={{ duration: motionDuration(DUR_BASE) }}>Vezi proiectul creat →</a>
         {/if}
       </div>
-    </div>
-  </Card>
+    </Card>
+  {/if}
+
+  {#if activeTab === 'integrare'}
+    <h2 class="sec-title"><BookOpen size={16} /> Integrare Obsidian</h2>
+    <Card>
+      <div class="obs-form">
+        <Input label="Cale vault" bind:value={obsConfig.vault_path} placeholder="/home/ion-ursu/Obsidian/Vault" />
+        <Input label="Foldere (separate prin virgula)" bind:value={obsConfig.folders} placeholder="10 Notes, 30 Projects" />
+        <div class="actions">
+          <Button size="sm" loading={obsSaving} onclick={saveObsidian}><Save size={14} /> Salveaza</Button>
+          {#if obsConfig.configured}
+            <span class="obs-status" class:ok={obsConfig.valid}>
+              {obsConfig.valid ? `Valid · ${obsConfig.note_count} notite` : 'Cale invalida'}
+            </span>
+          {/if}
+        </div>
+      </div>
+    </Card>
+
+    <h2 class="sec-title"><HardDriveDownload size={16} /> Cache &amp; Service Worker</h2>
+    <Card>
+      <div class="actions">
+        <Button variant="secondary" size="sm" onclick={clearLocalCache}><HardDriveDownload size={14} /> Curata Cache Local</Button>
+        <Button variant="secondary" size="sm" onclick={forceSWUpdate}><RefreshCw size={14} /> Actualizeaza Service Worker</Button>
+      </div>
+      <p class="hint"><AlertTriangle size={12} /> Curatarea cache-ului sterge localStorage, IndexedDB (pif*) si SW cache. Necesita reincarcarea paginii.</p>
+    </Card>
+  {/if}
 </div>
 
 <ConfirmDialog bind:open={showRestoreConfirm} title="Restaureaza backup" message="Restaurarea SUPRASCRIE toate datele curente cu cele din fisierul JSON. Continui?" confirmLabel="Restaureaza" onconfirm={doRestore} />
@@ -296,6 +313,7 @@
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .sec-title { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); margin-top: var(--space-xl); margin-bottom: var(--space-sm); }
+  .tabs + .sec-title { margin-top: 0; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-sm); }
   .stat-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-secondary); margin-bottom: 4px; }

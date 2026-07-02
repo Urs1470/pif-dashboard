@@ -100,15 +100,21 @@
     termOpen = true
   }
 
-  // ---- Acordeon: ce module sunt deschise (pe mobil doar unul) ----
+  // ---- Acordeon (viewport ingust) + navigator V2 (desktop >=940px) ----
   let expanded = $state(new Set())
   let isMobile = $state(false)
+  // eager, altfel primul paint pe desktop ar arata o clipa acordeonul
+  let isDesktop = $state(typeof window !== 'undefined' && window.matchMedia('(min-width: 940px)').matches)
   $effect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
-    const upd = () => (isMobile = mq.matches)
-    upd(); mq.addEventListener('change', upd)
-    return () => mq.removeEventListener('change', upd)
+    const md = window.matchMedia('(min-width: 940px)')
+    const upd = () => { isMobile = mq.matches; isDesktop = md.matches }
+    upd(); mq.addEventListener('change', upd); md.addEventListener('change', upd)
+    return () => { mq.removeEventListener('change', upd); md.removeEventListener('change', upd) }
   })
+  // Desktop: un singur modul ACTIV, ales din navigatorul din stanga; fallback = primul din categorie.
+  let activeId = $state(null)
+  const activeMod = $derived.by(() => shown.find((x) => x.id === activeId) ?? shown[0] ?? null)
   function isOpen(id) { return expanded.has(id) }
   function toggle(id) {
     const open = expanded.has(id)
@@ -119,6 +125,7 @@
     expanded = next
   }
   function openModule(id) {
+    activeId = id
     expanded = isMobile ? new Set([id]) : new Set(expanded).add(id)
     pushRecent(id)
   }
@@ -147,11 +154,17 @@
     const m = byId(id); if (!m) return
     locate(m); openModule(id)
     await tick()
-    document.getElementById('acc-' + id)?.scrollIntoView({ block: 'start' })
+    if (isDesktop) document.getElementById('nav-' + id)?.scrollIntoView({ block: 'nearest' })
+    else document.getElementById('acc-' + id)?.scrollIntoView({ block: 'start' })
   }
   function step(m, dir) {
     const i = shown.findIndex((x) => x.id === m.id)
     const t = shown[i + dir]; if (!t) return
+    if (isDesktop) {
+      openModule(t.id)
+      tick().then(() => document.getElementById('nav-' + t.id)?.scrollIntoView({ block: 'nearest' }))
+      return
+    }
     const next = new Set(isMobile ? [] : expanded)
     next.delete(m.id); next.add(t.id)
     expanded = next; pushRecent(t.id)
@@ -307,6 +320,17 @@
   // grupul activ pt PANOU (condus de navigare); pe sistem/aplicatii = asincron (motorul condus)
   const activeGroup = $derived(activeCat === 'motoare' ? activeMotorFam : activeCat === 'utilitare' ? null : 'asincron')
   const panelGroups = $derived(activeGroup ? ['retea', activeGroup] : ['retea'])
+
+  // rezumat compact pt navigatorul V2 (primele 3 marimi ale grupului activ, ex. "15 kW · 28 A · 1450 rpm")
+  const equipSummary = $derived.by(() => {
+    const g = activeGroup || 'asincron'
+    return EQUIP_GROUPS[g].slice(0, 3).map((c) => `${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`).join(' · ')
+  })
+  // panoul "Date echipament" exista doar pe tabul Motoare -> de pe alt tab, click = du-te acolo si deschide-l
+  function openEquipPanel() {
+    if (activeCat === 'motoare') panelOpen = !panelOpen
+    else { selectCat('motoare'); panelOpen = true }
+  }
 
   // conceptul partajat pt un camp: grupul masinii intai (cheie + UNITATE), apoi retea
   function conceptFor(m, f) {
@@ -666,102 +690,142 @@
     </div>
   {/if}
 
-  <div class="acc-list">
-    {#each rows as row (row.kind === 'head' ? row.key : row.m.id)}
-      {#if row.kind === 'head'}
-        <div class="acc-section-head">{row.label}</div>
-      {:else}
-      {@const m = row.m}
-      {@const open = isOpen(m.id)}
-      <div class="acc-item" id={'acc-' + m.id} class:open>
-        <div class="acc-head" role="button" tabindex="0"
-          onclick={() => toggle(m.id)}
-          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.id) } }}>
-          <span class="acc-chev" class:open><ChevronRight size={16} /></span>
-          <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
-          <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
-            onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}>{#if isFav(m.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
-        </div>
+  {#snippet modBody(m)}
+    {@const ev = effVals(m)}
+    {@const r = computeModule(m, ev)}
+    {@const charts = computeCharts(m, ev)}
+    <div class="acc-body-head">
+      <span class="cat-badge">{catLabel(catOf(m))}</span>
+      <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
+    </div>
 
-        {#if open}
-          {@const ev = effVals(m)}
-          {@const r = computeModule(m, ev)}
-          {@const charts = computeCharts(m, ev)}
-          <div class="acc-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-            <div class="acc-body-head">
-              <span class="cat-badge">{catLabel(catOf(m))}</span>
-              <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
-            </div>
-
-            {#if m.fields.length}
-              <div class="inputs">
-                {#each m.fields as f (f.key)}
-                  {@const linked = isLinked(m, f)}
-                  <div class="inp">
-                    <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
-                    <div class="inp-row">
-                      <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
-                        value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
-                      {#if conceptFor(m, f)}
-                        <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului — click pentru valoare locala' : 'Valoare locala — click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
-                      {/if}
-                    </div>
-                  </div>
-                {/each}
-              </div>
+    {#if m.fields.length}
+    <div class="inputs">
+      {#each m.fields as f (f.key)}
+        {@const linked = isLinked(m, f)}
+        <div class="inp">
+          <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
+          <div class="inp-row">
+            <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
+              value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
+            {#if conceptFor(m, f)}
+              <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului — click pentru valoare locala' : 'Valoare locala — click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
             {/if}
-
-            {#if m.results.length}
-              <div class="results">
-                {#each m.results as res (res.key)}
-                  <div class="res-row">
-                    <div class="res-head">
-                      <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
-                      <span class="res-right">
-                        <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
-                        {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
-                      </span>
-                    </div>
-                    <Formula tex={res.tex} />
-                  </div>
-                {/each}
-              </div>
-            {/if}
-
-            {#if charts.length}
-              <div class="charts">
-                {#each charts as chart, ci}
-                  <div class="chart-zoom" role="button" tabindex="0" title="Click pentru marire"
-                    onclick={() => openZoom(m, ci)}
-                    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}>
-                    <Chart {chart} />
-                    <span class="zoom-hint"><Maximize2 size={14} /></span>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-
-            {#if m.note}<p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>{/if}
-            {#if m.params}<p class="mod-params"><MathText text={m.params} /></p>{/if}
-            {#if SOURCES[m.id]}<p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>{/if}
-            {#if docsFor(m).length}
-              <div class="mod-docs">
-                <span class="docs-h">Documentatie:</span>
-                {#each docsFor(m) as d}<a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>{/each}
-              </div>
-            {/if}
-
-            <div class="acc-nav">
-              <button class="nav-btn" disabled={shown[0]?.id === m.id} onclick={() => step(m, -1)}>‹ Anterior</button>
-              <button class="nav-btn" disabled={shown[shown.length - 1]?.id === m.id} onclick={() => step(m, 1)}>Urmator ›</button>
-            </div>
           </div>
-        {/if}
-      </div>
+        </div>
+      {/each}
+    </div>
+    {/if}
+
+    {#if m.results.length}
+    <div class="results">
+      {#each m.results as res (res.key)}
+        <div class="res-row">
+          <div class="res-head">
+            <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
+            <span class="res-right">
+              <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
+              {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
+            </span>
+          </div>
+          <Formula tex={res.tex} />
+        </div>
+      {/each}
+    </div>
+    {/if}
+
+    {#if charts.length}
+    <div class="charts">
+      {#each charts as chart, ci}
+        <div class="chart-zoom" role="button" tabindex="0" title="Click pentru marire"
+          onclick={() => openZoom(m, ci)}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(m, ci) } }}>
+          <Chart {chart} />
+          <span class="zoom-hint"><Maximize2 size={14} /></span>
+        </div>
+      {/each}
+    </div>
+    {/if}
+
+    {#if m.note}<p class="mod-note"><Info size={13} /><span class="note-body"><MathText text={m.note} /></span></p>{/if}
+    {#if m.params}<p class="mod-params"><MathText text={m.params} /></p>{/if}
+    {#if SOURCES[m.id]}<p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>{/if}
+    {#if docsFor(m).length}
+    <div class="mod-docs">
+      <span class="docs-h">Documentatie:</span>
+      {#each docsFor(m) as d}<a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>{/each}
+    </div>
+    {/if}
+
+    <div class="acc-nav">
+      <button class="nav-btn" disabled={shown[0]?.id === m.id} onclick={() => step(m, -1)}>‹ Anterior</button>
+      <button class="nav-btn" disabled={shown[shown.length - 1]?.id === m.id} onclick={() => step(m, 1)}>Urmator ›</button>
+    </div>
+  {/snippet}
+
+  {#if isDesktop}
+    <!-- V2 desktop: navigator de module in stanga (sticky) + modulul activ in dreapta -->
+    <div class="calc-grid">
+      <aside class="calc-nav">
+        <button class="nav-equip" onclick={openEquipPanel} title="Date echipament — click pentru panoul complet">
+          <span class="nav-equip-h"><SolidIcon name="cpu" size={13} /> Date echipament</span>
+          <span class="nav-equip-sum">{equipSummary}</span>
+        </button>
+        {#each rows as row (row.kind === 'head' ? row.key : row.m.id)}
+          {#if row.kind === 'head'}
+            <div class="nav-sec">{row.label}</div>
+          {:else}
+            <div class="nav-item" class:on={activeMod?.id === row.m.id} id={'nav-' + row.m.id}>
+              <button class="nav-item-btn" onclick={() => openModule(row.m.id)}>{row.m.title}</button>
+              <button class="star-btn nav-star" class:on={isFav(row.m.id)} title="Adauga la favorite" aria-label="Favorit"
+                onclick={() => toggleFav(row.m.id)}>{#if isFav(row.m.id)}<SolidIcon name="star" size={13} />{:else}<Star size={13} />{/if}</button>
+            </div>
+          {/if}
+        {/each}
+        <p class="nav-count">{shown.length} {shown.length === 1 ? 'modul' : 'module'}</p>
+      </aside>
+
+      {#if activeMod}
+        <section class="mod-cell" id={'acc-' + activeMod.id}>
+          <div class="mod-cell-head">
+            <span class="acc-title">{activeMod.title}{#if activeMod.subtitle}<span class="acc-sub"><MathText text={activeMod.subtitle} /></span>{/if}</span>
+            <button class="star-btn" class:on={isFav(activeMod.id)} title="Adauga la favorite" aria-label="Favorit"
+              onclick={() => toggleFav(activeMod.id)}>{#if isFav(activeMod.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
+          </div>
+          <div class="acc-body">{@render modBody(activeMod)}</div>
+        </section>
+      {:else}
+        <section class="mod-cell mod-cell-empty"><p class="acc-status">Niciun modul in aceasta categorie.</p></section>
       {/if}
-    {/each}
-    <p class="acc-status">{shown.length} {shown.length === 1 ? 'modul' : 'module'} • {[...expanded].filter((id) => shown.some((m) => m.id === id)).length} deschise</p>
-  </div>
+    </div>
+  {:else}
+    <!-- Viewport ingust: acordeonul existent, neschimbat -->
+    <div class="acc-list">
+      {#each rows as row (row.kind === 'head' ? row.key : row.m.id)}
+        {#if row.kind === 'head'}
+          <div class="acc-section-head">{row.label}</div>
+        {:else}
+        {@const m = row.m}
+        {@const open = isOpen(m.id)}
+        <div class="acc-item" id={'acc-' + m.id} class:open>
+          <div class="acc-head" role="button" tabindex="0"
+            onclick={() => toggle(m.id)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.id) } }}>
+            <span class="acc-chev" class:open><ChevronRight size={16} /></span>
+            <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
+            <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
+              onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}>{#if isFav(m.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
+          </div>
+
+          {#if open}
+            <div class="acc-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>{@render modBody(m)}</div>
+          {/if}
+        </div>
+        {/if}
+      {/each}
+      <p class="acc-status">{shown.length} {shown.length === 1 ? 'modul' : 'module'} • {[...expanded].filter((id) => shown.some((m) => m.id === id)).length} deschise</p>
+    </div>
+  {/if}
 
   <Modal bind:open={zoomOpen} title={zoomRef ? zoomRef.mod.title : ''} size="zoom">
     {#if zoomChart}
@@ -1055,6 +1119,41 @@
   .nav-btn:disabled { opacity: 0.4; cursor: default; }
   .acc-status { text-align: center; font-size: var(--font-tiny); color: var(--text-dim); padding-top: var(--space-sm); }
 
+  /* === V2 (desktop >=940px): navigator sticky + modulul activ === */
+  .calc-grid { display: grid; grid-template-columns: 270px 1fr; gap: 14px; align-items: start; }
+  .calc-nav {
+    position: sticky; top: calc(var(--header-height) + 16px);
+    max-height: calc(100dvh - var(--header-height) - var(--dock-h) - 48px);
+    overflow-y: auto;
+    background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 12px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .nav-equip {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%;
+    padding: 8px 10px; margin-bottom: 6px; text-align: left;
+    border: 1px dashed var(--border); border-radius: var(--radius-md);
+    background: var(--bg-elevated); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+  }
+  .nav-equip:hover { border-color: var(--accent); background: var(--accent-subtle); }
+  .nav-equip-h { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-bold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+  .nav-equip-sum { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); overflow-wrap: anywhere; }
+  .nav-sec { font-size: var(--font-tiny); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 10px 10px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-md); transition: background var(--dur-fast) var(--ease); }
+  .nav-item:hover { background: var(--bg-hover); }
+  .nav-item.on { background: var(--accent-subtle); }
+  .nav-item.on .nav-item-btn { color: var(--accent); font-weight: var(--fw-semibold); }
+  .nav-item-btn {
+    flex: 1; min-width: 0; text-align: left; font-size: var(--font-small); color: var(--text-secondary);
+    padding: 7px 4px 7px 10px; border-radius: var(--radius-md); cursor: pointer; overflow-wrap: anywhere;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .nav-star { opacity: 0; margin-right: 4px; }
+  .nav-item:hover .nav-star, .nav-star.on { opacity: 1; }
+  .nav-count { font-size: var(--font-tiny); color: var(--text-dim); text-align: center; padding-top: 8px; }
+  .mod-cell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; min-width: 0; }
+  .mod-cell-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .mod-cell-empty { padding: var(--space-lg); }
+
   /* === Autocomplete cautare === */
   .search-wrap { position: relative; margin-bottom: var(--space-md); }
   .search-wrap .search-row { margin-bottom: 0; }
@@ -1138,14 +1237,14 @@
   .results {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   }
   .res-row {
     display: flex;
     flex-direction: column;
     gap: 3px;
     padding: var(--space-sm) 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   }
   .res-row:last-child { border-bottom: none; }
   .res-head {
