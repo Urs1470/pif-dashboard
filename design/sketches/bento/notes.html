@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Notițe (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Notițe (Obsidian) — */
+.two-pane { display:grid; grid-template-columns:300px 1fr; gap:14px; align-items:start; }
+.three-pane { display:grid; grid-template-columns:220px 280px 1fr; gap:14px; align-items:start; }
+@media (max-width:940px){ .two-pane, .three-pane { grid-template-columns:1fr; } }
+
+.tree { padding:12px; }
+.tree .sr { margin-bottom:10px; }
+.tree .sr .search { width:100%; }
+.tnode { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:10px; font-size:.8rem; color:var(--text-2); cursor:pointer; transition:all .14s var(--ease); }
+.tnode:hover { background:var(--bg-inset); color:var(--text); }
+.tnode.on { background:var(--amber-dim); color:var(--accent); font-weight:600; }
+.tnode .car { color:var(--text-3); font-size:.66rem; width:10px; }
+.tnode .n { margin-left:auto; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.64rem; color:var(--text-3); }
+.tnode.lvl2 { padding-left:28px; }
+.tnode.note::before { content:'▪'; color:var(--text-3); font-size:.6rem; }
+
+.note-view h2 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.02em; font-size:1.4rem; }
+.note-view .path { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.68rem; color:var(--text-3); margin-top:4px; }
+.note-view .md { font-size:.86rem; color:var(--text-2); line-height:1.7; margin-top:14px; }
+.note-view .md h4 { color:var(--text); margin:14px 0 6px; font-size:.94rem; }
+.note-view .md code { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.76rem; background:var(--bg-inset); border:1px solid var(--line); border-radius:6px; padding:1px 6px; }
+.note-view .md a.wl { color:var(--accent); text-decoration:none; border-bottom:1px dashed rgba(255,180,84,.4); }
+.note-view .md ul { padding-left:20px; margin:8px 0; }
+
+/* V2 — foldere bento */
+.fold-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.fcard { min-height:120px; cursor:pointer; }
+.fcard .nm { font-weight:600; font-size:.95rem; margin-top:auto; }
+.fcard .n { font-size:.72rem; color:var(--text-3); margin-top:2px; }
+.shero-sm { display:flex; align-items:center; gap:12px; background:var(--bg-cell); border:1px solid var(--line-strong); border-radius:999px; padding:13px 20px; margin-bottom:16px; }
+.shero-sm:focus-within { border-color:var(--accent); }
+.shero-sm input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:.9rem; font-family:'Inter',system-ui,sans-serif; }
+.shero-sm input::placeholder { color:var(--text-3); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Notițe</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Notițe</h1><span class="cnt">128 note · vault Obsidian</span>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — two-pane (ca acum) ============ -->
+  <section class="variant" id="v1">
+    <div class="two-pane">
+      <aside class="cell tree">
+        <div class="sr"><div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută în note…</span></div></div>
+        <div class="tnode"><span class="car">▾</span>📁 Comisionare <span class="n">42</span></div>
+        <div class="tnode lvl2 note on">ACS880 — pornire rapidă</div>
+        <div class="tnode lvl2 note">G120 — parametrizare BOP</div>
+        <div class="tnode lvl2 note">Interblocări pompe</div>
+        <div class="tnode"><span class="car">▸</span>📁 Fault-uri rezolvate <span class="n">31</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Clienți <span class="n">18</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Proceduri <span class="n">24</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Diverse <span class="n">13</span></div>
+      </aside>
+
+      <div class="cell note-view">
+        <h2>ACS880 — pornire rapidă</h2>
+        <div class="path">Comisionare/ACS880 — pornire rapidă.md · modificat 28.06.2026</div>
+        <div class="md">
+          <h4>Secvență minimă</h4>
+          <ul>
+            <li>Setare <code>99.04</code> = DTC, date motor din plăcuță (<code>99.06–99.12</code>)</li>
+            <li>ID run: <code>99.13</code> = Standstill dacă sarcina nu se poate decupla</li>
+            <li>Limite: <code>30.11/30.12</code> frecvență, <code>30.17</code> curent maxim</li>
+          </ul>
+          <h4>Legături</h4>
+          <p>Vezi și <a class="wl" href="#">[[F0002 — supratensiune DC]]</a> și <a class="wl" href="#">[[Interblocări pompe]]</a> pentru cazul stațiilor de pompare.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — foldere bento, search-first ============ -->
+  <section class="variant" id="v2">
+    <div class="shero-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-3)"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Caută în 128 de note — conținut, titlu, wikilink…">
+      <kbd style="font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.66rem; background:var(--bg-inset); border:1px solid var(--line); border-radius:6px; padding:2px 6px; color:var(--text-3)">Ctrl K</kbd>
+    </div>
+
+    <div class="fold-cards">
+      <section class="cell fcard hoverable">
+        <div class="cell-label"><span class="ico ico-amber">📁</span>Folder</div>
+        <div class="nm">Comisionare</div><div class="n">42 note · ultima: ACS880 pornire rapidă</div>
+      </section>
+      <section class="cell fcard hoverable">
+        <div class="cell-label"><span class="ico ico-red">📁</span>Folder</div>
+        <div class="nm">Fault-uri rezolvate</div><div class="n">31 note · ultima: F30005 CET Vest</div>
+      </section>
+      <section class="cell fcard hoverable">
+        <div class="cell-label"><span class="ico ico-green">📁</span>Folder</div>
+        <div class="nm">Proceduri</div><div class="n">24 note</div>
+      </section>
+      <section class="cell fcard hoverable">
+        <div class="cell-label"><span class="ico ico-vio">📁</span>Folder</div>
+        <div class="nm">Clienți</div><div class="n">18 note</div>
+      </section>
+    </div>
+
+    <div class="cell" style="margin-top:14px; padding:10px 14px">
+      <div class="cell-label" style="padding:6px"><span class="ico ico-amber">◷</span>Deschise recent</div>
+      <div class="rowlist">
+        <div class="row"><span class="tt">ACS880 — pornire rapidă<small>Comisionare · 28.06</small></span></div>
+        <div class="row"><span class="tt">F0002 — supratensiune DC<small>Fault-uri rezolvate · 30.06</small></span></div>
+        <div class="row"><span class="tt">Interblocări pompe<small>Comisionare · 27.06</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V3 — trei coloane ============ -->
+  <section class="variant" id="v3">
+    <div class="three-pane">
+      <aside class="cell tree">
+        <div class="tnode on"><span class="car">▾</span>📁 Comisionare <span class="n">42</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Fault-uri <span class="n">31</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Clienți <span class="n">18</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Proceduri <span class="n">24</span></div>
+        <div class="tnode"><span class="car">▸</span>📁 Diverse <span class="n">13</span></div>
+      </aside>
+
+      <div class="cell" style="padding:12px">
+        <div class="cell-label" style="padding:4px 6px 10px"><span class="ico ico-amber">📁</span>Comisionare<span class="tail">42</span></div>
+        <div class="rowlist">
+          <div class="row" style="background:var(--amber-dim)"><span class="tt">ACS880 — pornire rapidă<small>28.06 · #abb #dtc</small></span></div>
+          <div class="row"><span class="tt">G120 — parametrizare BOP<small>25.06 · #siemens</small></span></div>
+          <div class="row"><span class="tt">Interblocări pompe<small>27.06 · #proces</small></span></div>
+          <div class="row"><span class="tt">Măsurători izolație motoare<small>21.06</small></span></div>
+          <div class="row"><span class="tt">Skip frequency — vibrații<small>30.06 · #acs880</small></span></div>
+        </div>
+      </div>
+
+      <div class="cell note-view">
+        <h2>ACS880 — pornire rapidă</h2>
+        <div class="path">Comisionare/… · modificat 28.06.2026</div>
+        <div class="md">
+          <h4>Secvență minimă</h4>
+          <ul>
+            <li><code>99.04</code> = DTC, date motor <code>99.06–99.12</code></li>
+            <li>ID run: <code>99.13</code> = Standstill dacă sarcina rămâne cuplată</li>
+            <li>Limite: <code>30.11/30.12</code>, curent <code>30.17</code></li>
+          </ul>
+          <p>Vezi <a class="wl" href="#">[[F0002 — supratensiune DC]]</a>, <a class="wl" href="#">[[Interblocări pompe]]</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Două panouri: arbore + notă (ca acum)', 2:'V2 · Search-first + foldere bento + recente', 3:'V3 · Trei coloane: arbore / listă / notă'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

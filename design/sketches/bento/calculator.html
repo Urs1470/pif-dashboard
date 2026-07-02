@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Calculator (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Calculator — */
+.cell-label .ico { width:auto; min-width:22px; padding:0 7px; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; }
+.acc-item { margin-bottom:12px; overflow:visible; }
+.acc-head { display:flex; align-items:center; gap:12px; cursor:pointer; }
+.acc-head .sym { width:36px; height:36px; border-radius:11px; display:grid; place-items:center; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:.78rem; flex-shrink:0; }
+.acc-head .nm { font-weight:600; font-size:.92rem; }
+.acc-head .nm small { display:block; color:var(--text-3); font-size:.72rem; font-weight:400; margin-top:1px; }
+.acc-head .car { margin-left:auto; color:var(--text-3); transition: transform .2s var(--ease); }
+.acc-item.open .car { transform:rotate(90deg); }
+.acc-body { display:none; margin-top:16px; }
+.acc-item.open .acc-body { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:940px){ .acc-item.open .acc-body { grid-template-columns:1fr; } }
+
+.fld { margin-bottom:10px; }
+.fld label { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-3); margin-bottom:5px; }
+.fld label .sym { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; color:var(--text-2); }
+.fld .inp { display:flex; align-items:center; gap:8px; background:var(--bg-inset); border:1px solid var(--line); border-radius:11px; padding:9px 13px; }
+.fld .inp:focus-within { border-color:var(--accent); }
+.fld input { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.86rem; width:60px; }
+.fld .un { font-size:.7rem; color:var(--text-3); }
+
+.res { background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px; display:flex; align-items:baseline; justify-content:space-between; }
+.res .k { font-size:.74rem; color:var(--text-2); }
+.res .v { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:1.05rem; }
+.res .v small { color:var(--text-3); font-weight:400; font-size:.7rem; margin-left:3px; }
+.res.hl { border-color:rgba(255,180,84,.4); }
+.res.hl .v { color:var(--accent); }
+
+/* grafic (dataviz: linii 2px, grid discret, legendă + etichete directe) */
+.chart-wrap { margin-top:6px; }
+.chart-leg { display:flex; gap:16px; font-size:.7rem; color:var(--text-2); margin-bottom:6px; }
+.chart-leg i { display:inline-block; width:14px; height:2px; vertical-align:3px; margin-right:6px; border-radius:2px; }
+.chart-svg text { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:8.5px; fill:var(--text-3); }
+.chart-svg .lab { font-size:9px; fill:var(--text-2); }
+.chart-svg .grid { stroke:var(--line); stroke-width:.6; }
+.chart-svg .ax { stroke:var(--line-strong); stroke-width:1; }
+
+/* V1 header */
+.eqp { margin-bottom:14px; }
+.eqp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+@media (max-width:940px){ .eqp-grid { grid-template-columns:repeat(2,1fr); } }
+
+/* V2 nav */
+.calc-grid { display:grid; grid-template-columns:270px 1fr; gap:14px; align-items:start; }
+.cnav { padding:12px; position:sticky; top:16px; }
+.cnav .grp { font-size:.64rem; text-transform:uppercase; letter-spacing:.14em; color:var(--text-3); font-weight:700; padding:12px 10px 6px; }
+.cnav .it { display:flex; align-items:center; gap:9px; padding:8px 12px; border-radius:11px; font-size:.8rem; color:var(--text-2); cursor:pointer; transition:all .14s var(--ease); }
+.cnav .it:hover { background:var(--bg-inset); color:var(--text); }
+.cnav .it.on { background:var(--amber-dim); color:var(--accent); font-weight:600; }
+.cnav .it .fav { margin-left:auto; color:var(--accent); font-size:.7rem; }
+@media (max-width:940px){ .calc-grid { grid-template-columns:1fr; } .cnav { position:static; } }
+
+/* V3 module cards */
+.mods { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+.modc { min-height:150px; cursor:pointer; }
+.modc .kv { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:1.7rem; margin-top:auto; letter-spacing:-.02em; }
+.modc .kv small { color:var(--text-3); font-weight:400; font-size:.8rem; }
+.modc .kk { font-size:.7rem; color:var(--text-3); margin-top:3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Calculator</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută modul…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Calculator</h1><span class="cnt">18 module</span>
+    <div class="acts"><button class="btn btn-ghost btn-sm">Import backup drive</button><button class="btn btn-ghost btn-sm">Surse & standarde</button></div>
+  </div>
+
+  <div class="chips" style="margin-bottom:16px">
+    <span class="chip on">Motoare</span><span class="chip">Cabluri</span><span class="chip">Termic</span><span class="chip">Frânare</span><span class="chip">Rețea</span><span class="chip">★ Favorite</span>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — accordion (ca app-ul actual) ============ -->
+  <section class="variant" id="v1">
+    <div class="cell eqp">
+      <div class="cell-label"><span class="ico ico-amber">⚙</span>Date echipament — partajate între module<span class="tail">Pompa P2 · salvat</span></div>
+      <div class="eqp-grid">
+        <div class="fld"><label>Putere <span class="sym">P<sub>n</sub></span></label><div class="inp"><input value="315"><span class="un">kW</span></div></div>
+        <div class="fld"><label>Tensiune <span class="sym">U<sub>n</sub></span></label><div class="inp"><input value="400"><span class="un">V</span></div></div>
+        <div class="fld"><label>Curent <span class="sym">I<sub>n</sub></span></label><div class="inp"><input value="565"><span class="un">A</span></div></div>
+        <div class="fld"><label>Turație <span class="sym">n<sub>n</sub></span></label><div class="inp"><input value="1488"><span class="un">rpm</span></div></div>
+      </div>
+    </div>
+
+    <div class="cell acc-item open" onclick="this.classList.toggle('open')">
+      <div class="acc-head">
+        <span class="sym" style="background:var(--amber-dim);color:var(--accent)">M·n</span>
+        <span class="nm">Cuplu motor din putere și turație<small>M = 9550 · P / n</small></span>
+        <span class="car">▸</span>
+      </div>
+      <div class="acc-body" onclick="event.stopPropagation()">
+        <div>
+          <div class="fld"><label>Putere <span class="sym">P = 315 kW</span></label><div class="inp"><input value="315"><span class="un">kW</span></div></div>
+          <div class="fld"><label>Turație <span class="sym">n = 1488 rpm</span></label><div class="inp"><input value="1488"><span class="un">rpm</span></div></div>
+          <div class="res hl"><span class="k">Cuplu nominal M<sub>n</sub></span><span class="v">2.021<small>Nm</small></span></div>
+          <div class="res"><span class="k">Cuplu la 110% suprasarcină</span><span class="v">2.223<small>Nm</small></span></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-leg"><span><i style="background:var(--s1)"></i>Cuplu disponibil</span><span><i style="background:var(--s2)"></i>Cuplu sarcină (pompă)</span></div>
+          <svg class="chart-svg" viewBox="0 0 320 170" width="100%">
+            <line class="grid" x1="34" y1="20" x2="310" y2="20"/><line class="grid" x1="34" y1="60" x2="310" y2="60"/><line class="grid" x1="34" y1="100" x2="310" y2="100"/>
+            <line class="ax" x1="34" y1="140" x2="310" y2="140"/><line class="ax" x1="34" y1="14" x2="34" y2="140"/>
+            <text x="4" y="23">2.5k</text><text x="4" y="63">1.7k</text><text x="4" y="103">0.8k</text><text x="26" y="152" text-anchor="end">0</text>
+            <text x="100" y="152">500</text><text x="180" y="152">1000</text><text x="262" y="152">1500 rpm</text>
+            <path d="M34,38 L200,38 L245,52 L310,86" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M34,139 C120,136 220,110 300,44" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="262" cy="60" r="4" fill="var(--s1)" stroke="var(--bg-cell)" stroke-width="2"/>
+            <text class="lab" x="240" y="30">M disponibil</text>
+            <text class="lab" x="228" y="90">M pompă ~n²</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell acc-item" onclick="this.classList.toggle('open')">
+      <div class="acc-head"><span class="sym" style="background:var(--green-dim);color:var(--green)">I·c</span>
+        <span class="nm">Dimensionare cablu după curent<small>secțiune, cădere de tensiune, Iz</small></span><span class="car">▸</span></div>
+    </div>
+    <div class="cell acc-item" onclick="this.classList.toggle('open')">
+      <div class="acc-head"><span class="sym" style="background:var(--red-dim);color:var(--red)">R·f</span>
+        <span class="nm">Rezistență de frânare<small>P frânare, R minim, energie</small></span><span class="car">▸</span></div>
+    </div>
+    <div class="cell acc-item" onclick="this.classList.toggle('open')">
+      <div class="acc-head"><span class="sym" style="background:var(--violet-dim);color:var(--violet)">U/f</span>
+        <span class="nm">Caracteristică U/f și slăbire de câmp<small>puncte U/f, f de bază</small></span><span class="car">▸</span></div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — navigator + modul activ ============ -->
+  <section class="variant" id="v2">
+    <div class="calc-grid">
+      <aside class="cell cnav">
+        <div class="grp">Date echipament</div>
+        <div style="padding:0 10px 8px; font-size:.76rem; color:var(--text-2)" class="mono">P2 · 315 kW · 400 V · 565 A</div>
+        <div class="grp">Motoare</div>
+        <div class="it on">Cuplu din P și n <span class="fav">★</span></div>
+        <div class="it">Curent din putere</div>
+        <div class="it">Alunecare & poli</div>
+        <div class="grp">Cabluri</div>
+        <div class="it">Secțiune după curent <span class="fav">★</span></div>
+        <div class="it">Cădere de tensiune</div>
+        <div class="grp">Frânare</div>
+        <div class="it">Rezistență de frânare</div>
+        <div class="grp">Rețea</div>
+        <div class="it">Curent de scurtcircuit</div>
+      </aside>
+
+      <div class="cell">
+        <div class="cell-label"><span class="ico ico-amber">M·n</span>Cuplu motor din putere și turație<span class="tail">M = 9550 · P / n · ★ favorit</span></div>
+        <div style="display:grid; grid-template-columns:280px 1fr; gap:22px; margin-top:14px">
+          <div>
+            <div class="fld"><label>Putere <span class="sym">P</span></label><div class="inp"><input value="315"><span class="un">kW</span></div></div>
+            <div class="fld"><label>Turație <span class="sym">n</span></label><div class="inp"><input value="1488"><span class="un">rpm</span></div></div>
+            <div class="res hl"><span class="k">M<sub>n</sub></span><span class="v">2.021<small>Nm</small></span></div>
+            <div class="res"><span class="k">M la 110%</span><span class="v">2.223<small>Nm</small></span></div>
+            <div class="res"><span class="k">M la 150% (60s)</span><span class="v">3.032<small>Nm</small></span></div>
+            <div style="display:flex; gap:8px; margin-top:8px"><button class="btn btn-ghost btn-sm">Reset</button><button class="btn btn-ghost btn-sm">Export</button></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-leg"><span><i style="background:var(--s1)"></i>Cuplu disponibil</span><span><i style="background:var(--s2)"></i>Cuplu sarcină</span></div>
+            <svg class="chart-svg" viewBox="0 0 420 230" width="100%">
+              <line class="grid" x1="40" y1="26" x2="408" y2="26"/><line class="grid" x1="40" y1="80" x2="408" y2="80"/><line class="grid" x1="40" y1="134" x2="408" y2="134"/>
+              <line class="ax" x1="40" y1="190" x2="408" y2="190"/><line class="ax" x1="40" y1="18" x2="40" y2="190"/>
+              <text x="6" y="29">2.5k</text><text x="6" y="83">1.7k</text><text x="6" y="137">0.8k</text><text x="32" y="203" text-anchor="end">0</text>
+              <text x="130" y="203">500</text><text x="240" y="203">1000</text><text x="348" y="203">1500 rpm</text>
+              <path d="M40,50 L262,50 L318,70 L408,116" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/>
+              <path d="M40,188 C160,184 300,148 400,58" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="348" cy="82" r="4.5" fill="var(--s1)" stroke="var(--bg-cell)" stroke-width="2"/>
+              <text class="lab" x="316" y="42">M disponibil</text>
+              <text class="lab" x="300" y="130">M pompă ~n²</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V3 — bento de module ============ -->
+  <section class="variant" id="v3">
+    <div class="mods">
+      <section class="cell modc hoverable" style="border-color:rgba(255,180,84,.4)">
+        <div class="cell-label"><span class="ico ico-amber">M·n</span>Cuplu din P și n<span class="tail">★</span></div>
+        <div class="kv">2.021 <small>Nm</small></div>
+        <div class="kk">P=315 kW · n=1488 rpm</div>
+      </section>
+      <section class="cell modc hoverable">
+        <div class="cell-label"><span class="ico ico-green">I·c</span>Secțiune cablu<span class="tail">★</span></div>
+        <div class="kv">2× 240 <small>mm²</small></div>
+        <div class="kk">565 A · 45 m · ΔU 2.1%</div>
+      </section>
+      <section class="cell modc hoverable">
+        <div class="cell-label"><span class="ico ico-red">R·f</span>Rezistență frânare</div>
+        <div class="kv">≥ 2.6 <small>Ω</small></div>
+        <div class="kk">P br. 90 kW · ED 10%</div>
+      </section>
+      <section class="cell modc hoverable">
+        <div class="cell-label"><span class="ico ico-vio">U/f</span>Caracteristică U/f</div>
+        <div class="kv">50 <small>Hz bază</small></div>
+        <div class="kk">slăbire câmp de la 50 Hz</div>
+      </section>
+      <section class="cell modc hoverable">
+        <div class="cell-label"><span class="ico ico-amber">I·P</span>Curent din putere</div>
+        <div class="kv">565 <small>A</small></div>
+        <div class="kk">315 kW · cosφ 0.86 · η 96%</div>
+      </section>
+      <section class="cell modc hoverable">
+        <div class="cell-label"><span class="ico ico-green">s·p</span>Alunecare & poli</div>
+        <div class="kv">0.8 <small>%</small></div>
+        <div class="kk">4 poli · 1488/1500 rpm</div>
+      </section>
+      <section class="cell modc hoverable" style="border-style:dashed; align-items:center; justify-content:center; color:var(--text-3)">
+        <div style="text-align:center"><div style="font-size:1.5rem">⌕</div><div style="font-size:.8rem; font-weight:600; margin-top:6px">Toate cele 18 module…</div></div>
+      </section>
+    </div>
+    <p style="color:var(--text-3); font-size:.76rem; margin-top:14px">Fiecare card arată rezultatul-cheie cu datele echipamentului curent (P2 · 315 kW). Click pe card → modulul se deschide cu inputuri + grafice.</p>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Accordion cu module + date echipament sus (ca acum)', 2:'V2 · Navigator module + modul activ cu grafic mare', 3:'V3 · Bento de module cu rezultatele-cheie la vedere'};</script>
+<script src="bento.js"></script>
+</body>
+</html>

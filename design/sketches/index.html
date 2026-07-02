@@ -16,7 +16,7 @@ body {
 .box { max-width: 860px; width:100%; }
 h1 { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.03em; font-size: clamp(1.8rem, 4vw, 2.6rem); }
 .sub { color:#9a917f; margin: 10px 0 34px; font-size:.95rem; line-height:1.6; }
-.cards { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px; }
+.cards { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
 @media (max-width:900px){ .cards { grid-template-columns:1fr; } }
 a.card.hyb { border-radius:14px; border:1.5px solid #3c362e; position:relative; }
 a.card.hyb:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; border-color:#ff4d00; }
@@ -52,6 +52,15 @@ a.card.brut:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 #000;
   ecrane: <b>Dashboard</b> și <b>Detaliu proiect</b> — comutabile din navigația paginii.</p>
 
   <div class="cards">
+    <a class="card" href="bento/index.html" style="border-color:#ffb454; position:relative">
+      <span class="badge-new">Nou</span>
+      <span class="tag amber">Direcția aleasă — set complet</span>
+      <h2>Bento — toate taburile</h2>
+      <p>8 ecrane (Acasa, Proiecte, Detaliu proiect, Taskuri, Parametri, Calculator, Notițe, Admin),
+      fiecare cu 3 variante de așezare a elementelor, comutabile din pagină. Dock-ul navighează
+      între ecrane ca în aplicație.</p>
+      <span class="go">Deschide setul →</span>
+    </a>
     <a class="card" href="bento.html">
       <span class="tag amber">Direcția 01</span>
       <h2>Bento grid modern</h2>
@@ -61,7 +70,6 @@ a.card.brut:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 #000;
       <span class="go">Deschide schița →</span>
     </a>
     <a class="card hyb" href="hybrid.html">
-      <span class="badge-new">Nou</span>
       <span class="tag sig" style="color:#ff6a26">Direcția 03</span>
       <h2>Hibrid</h2>
       <p>Grila și motion-ul din Bento pe dark, cu ADN brutalist: signal orange, monospace pe

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — toate taburile (3 variante / ecran)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+.hub { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.hub a.cell { text-decoration:none; color:inherit; min-height:130px; cursor:pointer; }
+.hub .nm { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.1rem; letter-spacing:-.02em; margin-top:auto; }
+.hub .ds { font-size:.74rem; color:var(--text-3); margin-top:4px; line-height:1.5; }
+.lead { color:var(--text-2); font-size:.9rem; line-height:1.65; max-width:720px; margin-bottom:22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Schițe Bento</span></div>
+    <div class="spacer"></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead"><h1>Toate taburile — câte 3 variante de layout</h1></div>
+  <p class="lead">Fiecare ecran are un comutator <b>V1 / V2 / V3</b> sus — aceleași elemente și funcționalități
+  (preluate din aplicația reală), aranjate diferit. Dock-ul de jos navighează între ecrane, ca în aplicație.
+  Alege pentru fiecare tab varianta care ți se potrivește.</p>
+
+  <div class="hub">
+    <a class="cell" href="home.html"><div class="cell-label"><span class="ico ico-amber">⌂</span>01</div><div class="nm">Acasa</div><div class="ds">timer-hero · bandă KPI · focus „azi"</div></a>
+    <a class="cell" href="projects.html"><div class="cell-label"><span class="ico ico-amber">◳</span>02</div><div class="nm">Proiecte</div><div class="ds">tabel · carduri · master-detail</div></a>
+    <a class="cell" href="project.html"><div class="cell-label"><span class="ico ico-amber">▣</span>03</div><div class="nm">Detaliu proiect</div><div class="ds">bento · tab-uri · rail persistent</div></a>
+    <a class="cell" href="tasks.html"><div class="cell-label"><span class="ico ico-amber">≔</span>04</div><div class="nm">Taskuri</div><div class="ds">listă · board pe status · urgente + agendă</div></a>
+    <a class="cell" href="params.html"><div class="cell-label"><span class="ico ico-amber">⌗</span>05</div><div class="nm">Parametri</div><div class="ds">picker · sidebar · search-first</div></a>
+    <a class="cell" href="calculator.html"><div class="cell-label"><span class="ico ico-amber">∑</span>06</div><div class="nm">Calculator</div><div class="ds">accordion · navigator · bento de module</div></a>
+    <a class="cell" href="notes.html"><div class="cell-label"><span class="ico ico-amber">✎</span>07</div><div class="nm">Notițe</div><div class="ds">două panouri · foldere bento · trei coloane</div></a>
+    <a class="cell" href="admin.html"><div class="cell-label"><span class="ico ico-amber">⚙</span>08</div><div class="nm">Admin</div><div class="ds">secțiuni · bento grid · tab-uri</div></a>
+  </div>
+</div>
+<script src="bento.js"></script>
+</body>
+</html>

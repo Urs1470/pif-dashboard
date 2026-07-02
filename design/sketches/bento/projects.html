@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bento — Proiecte (3 variante)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bento.css">
+<style>
+/* — specific Proiecte — */
+.tbl-cell { padding: 6px 4px 10px; }
+.arch { margin-top:16px; }
+.arch-head { display:flex; align-items:center; gap:10px; padding:14px 20px; cursor:pointer; color:var(--text-3); font-size:.8rem; font-weight:600; }
+.arch-head:hover { color:var(--text-2); }
+.arch-head .car { transition: transform .2s var(--ease); }
+.arch.open .car { transform: rotate(90deg); }
+.arch-body { display:none; padding: 0 6px 8px; }
+.arch.open .arch-body { display:block; }
+
+/* V2 — carduri */
+.pcards { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:14px; }
+.pcard { min-height: 190px; cursor:pointer; }
+.pcard .nm { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.05rem; letter-spacing:-.02em; margin-top:10px; }
+.pcard .cl { font-size:.76rem; color:var(--text-3); margin-top:2px; }
+.pcard .foot { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:12px; }
+.pcard .dl { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.7rem; color:var(--text-3); }
+.pcard .dl b { color:var(--red); }
+.pcard .pbar { margin-top:14px; }
+
+/* V3 — master-detail */
+.md { display:grid; grid-template-columns: 340px 1fr; gap:14px; align-items:start; }
+.md-list .row { align-items:flex-start; }
+.md-list .row.sel { background: var(--amber-dim); }
+.md-list .row.sel:hover { background: var(--amber-dim); }
+.mstat { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.mstat > div { background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; }
+.mstat .v { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.4rem; letter-spacing:-.02em; }
+.mstat .k { font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); margin-top:3px; }
+@media (max-width: 940px) { .md { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Proiecte</span></div>
+    <div class="spacer"></div>
+    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
+    <div class="avatar">IU</div>
+  </header>
+
+  <div class="phead">
+    <h1>Proiecte</h1><span class="cnt">4 active</span>
+    <div class="acts"><button class="btn btn-ghost btn-sm">Selectează</button><button class="btn btn-accent btn-sm">＋ Proiect nou</button></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută proiect sau client…</span></div>
+    <div class="chips">
+      <span class="chip on">Toate</span><span class="chip">În lucru</span><span class="chip">Așteptare</span><span class="chip">Blocat</span><span class="chip">Finalizate</span>
+    </div>
+  </div>
+
+  <div class="vswitch">
+    <span class="cap">Layout</span>
+    <button id="vb1" class="vbtn" onclick="setv(1)">V1</button>
+    <button id="vb2" class="vbtn" onclick="setv(2)">V2</button>
+    <button id="vb3" class="vbtn" onclick="setv(3)">V3</button>
+    <span class="vname"></span>
+  </div>
+
+  <!-- ============ V1 — tabel clasic ============ -->
+  <section class="variant" id="v1">
+    <div class="cell tbl-cell" style="grid-column:span 4">
+      <table class="tbl">
+        <thead><tr><th>Nume ↑</th><th>Client</th><th>Tip</th><th>Progres PIF</th><th>Deadline</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr onclick="location.href='project.html'">
+            <td><b>PIF Stație pompare Cluj</b><div class="dim">3× ABB ACS880 · 315 kW</div></td>
+            <td>Hidroconstrucția SA</td><td><span class="pill pill-tip">PIF</span></td>
+            <td><div class="pbar"><div class="track"><div class="fill" style="width:68%"></div></div><span class="val">68%</span></div></td>
+            <td class="mono" style="color:var(--red);font-weight:700">03.07 <span class="dim">— 2 zile</span></td>
+            <td><span class="pill pill-work"><i></i>În lucru</span></td>
+          </tr>
+          <tr>
+            <td><b>Retrofit ACS880 Fieni</b><div class="dim">înlocuire ACS800 → ACS880</div></td>
+            <td>Ciment Fieni</td><td><span class="pill pill-tip">Service</span></td>
+            <td><div class="pbar"><div class="track"><div class="fill" style="width:35%"></div></div><span class="val">35%</span></div></td>
+            <td class="mono">05.07 <span class="dim">— 4 zile</span></td>
+            <td><span class="pill pill-work"><i></i>În lucru</span></td>
+          </tr>
+          <tr>
+            <td><b>PIF Linie ambalare Brașov</b><div class="dim">12× Siemens G120C</div></td>
+            <td>Kronospan</td><td><span class="pill pill-tip">PIF</span></td>
+            <td><div class="pbar"><div class="track"><div class="fill" style="width:12%"></div></div><span class="val">12%</span></div></td>
+            <td class="mono">21.07 <span class="dim">— 20 zile</span></td>
+            <td><span class="pill pill-wait"><i></i>Așteptare</span></td>
+          </tr>
+          <tr>
+            <td><b>Service G120 — CET Vest</b><div class="dim">diagnoză F30005 recurent</div></td>
+            <td>Electrocentrale</td><td><span class="pill pill-tip">Service</span></td>
+            <td><div class="pbar"><div class="track"><div class="fill" style="width:90%"></div></div><span class="val">90%</span></div></td>
+            <td class="mono">07.07 <span class="dim">— 6 zile</span></td>
+            <td><span class="pill pill-block"><i></i>Blocat</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cell arch" style="grid-column:span 4; padding:0" onclick="this.classList.toggle('open')">
+      <div class="arch-head"><span class="car">▸</span>Arhivă — Finalizate <span class="cnt" style="margin-left:4px">12</span></div>
+      <div class="arch-body">
+        <table class="tbl">
+          <tbody>
+            <tr><td><b>PIF SP-1 Turda</b></td><td>Hidroconstrucția SA</td><td><span class="pill pill-tip">PIF</span></td><td class="mono dim">finalizat 18.04.2026</td><td><span class="pill pill-done"><i></i>Finalizat</span></td></tr>
+            <tr><td><b>Service FC302 — Lactate Dej</b></td><td>DeLact</td><td><span class="pill pill-tip">Service</span></td><td class="mono dim">finalizat 02.03.2026</td><td><span class="pill pill-done"><i></i>Finalizat</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ V2 — grid de carduri ============ -->
+  <section class="variant" id="v2">
+    <div class="pcards">
+      <section class="cell pcard hoverable" onclick="location.href='project.html'">
+        <div class="cell-label"><span class="ico ico-amber">◳</span>PIF<span class="tail"><span class="pill pill-work"><i></i>În lucru</span></span></div>
+        <div class="nm">Stație pompare Cluj</div><div class="cl">Hidroconstrucția SA · 3× ACS880</div>
+        <div class="pbar"><div class="track"><div class="fill" style="width:68%"></div></div><span class="val">68%</span></div>
+        <div class="foot"><span class="dl">deadline <b>03.07 — 2 zile</b></span><span class="dl">47.2h</span></div>
+      </section>
+      <section class="cell pcard hoverable">
+        <div class="cell-label"><span class="ico ico-green">⟳</span>Service<span class="tail"><span class="pill pill-work"><i></i>În lucru</span></span></div>
+        <div class="nm">Retrofit ACS880 Fieni</div><div class="cl">Ciment Fieni · ACS800 → ACS880</div>
+        <div class="pbar"><div class="track"><div class="fill" style="width:35%"></div></div><span class="val">35%</span></div>
+        <div class="foot"><span class="dl">deadline 05.07 — 4 zile</span><span class="dl">18.5h</span></div>
+      </section>
+      <section class="cell pcard hoverable">
+        <div class="cell-label"><span class="ico ico-vio">◳</span>PIF<span class="tail"><span class="pill pill-wait"><i></i>Așteptare</span></span></div>
+        <div class="nm">Linie ambalare Brașov</div><div class="cl">Kronospan · 12× G120C</div>
+        <div class="pbar"><div class="track"><div class="fill" style="width:12%"></div></div><span class="val">12%</span></div>
+        <div class="foot"><span class="dl">deadline 21.07 — 20 zile</span><span class="dl">4.0h</span></div>
+      </section>
+      <section class="cell pcard hoverable">
+        <div class="cell-label"><span class="ico ico-red">⟳</span>Service<span class="tail"><span class="pill pill-block"><i></i>Blocat</span></span></div>
+        <div class="nm">Service G120 — CET Vest</div><div class="cl">Electrocentrale · F30005 recurent</div>
+        <div class="pbar"><div class="track"><div class="fill" style="width:90%"></div></div><span class="val">90%</span></div>
+        <div class="foot"><span class="dl">deadline 07.07 — 6 zile</span><span class="dl">31.0h</span></div>
+      </section>
+      <section class="cell pcard hoverable" style="border-style:dashed; align-items:center; justify-content:center; color:var(--text-3)">
+        <div style="text-align:center"><div style="font-size:1.6rem">＋</div><div style="font-size:.8rem; font-weight:600; margin-top:6px">Proiect nou</div></div>
+      </section>
+    </div>
+    <div class="cell arch" style="margin-top:14px; padding:0" onclick="this.classList.toggle('open')">
+      <div class="arch-head"><span class="car">▸</span>Arhivă — Finalizate <span class="cnt" style="margin-left:4px">12</span></div>
+      <div class="arch-body" style="padding:0 20px 16px; color:var(--text-3); font-size:.8rem">PIF SP-1 Turda · Service FC302 Dej · …</div>
+    </div>
+  </section>
+
+  <!-- ============ V3 — master-detail ============ -->
+  <section class="variant" id="v3">
+    <div class="md">
+      <div class="cell md-list" style="padding:10px">
+        <div class="rowlist">
+          <div class="row sel"><span class="tt"><b>PIF Stație pompare Cluj</b><small>Hidroconstrucția SA · 68% · 2 zile</small></span><span class="pill pill-work"><i></i></span></div>
+          <div class="row"><span class="tt"><b>Retrofit ACS880 Fieni</b><small>Ciment Fieni · 35% · 4 zile</small></span><span class="pill pill-work"><i></i></span></div>
+          <div class="row"><span class="tt"><b>PIF Linie ambalare Brașov</b><small>Kronospan · 12% · 20 zile</small></span><span class="pill pill-wait"><i></i></span></div>
+          <div class="row"><span class="tt"><b>Service G120 — CET Vest</b><small>Electrocentrale · 90% · 6 zile</small></span><span class="pill pill-block"><i></i></span></div>
+          <div class="row" style="color:var(--text-3)"><span class="tt">▸ Arhivă (12 finalizate)</span></div>
+        </div>
+      </div>
+
+      <div class="cell" style="min-height:420px">
+        <div class="cell-label"><span class="ico ico-amber">◳</span>Previzualizare<span class="tail"><span class="pill pill-work"><i></i>În lucru</span></span></div>
+        <h2 style="font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.03em; font-size:1.6rem; margin-top:12px">PIF Stație pompare Cluj</h2>
+        <div style="color:var(--text-3); font-size:.8rem; margin-top:4px">Hidroconstrucția SA · contract HC-2026-0114 · start 12.05 · deadline <b style="color:var(--red)">03.07</b></div>
+        <div class="mstat">
+          <div><div class="v">68%</div><div class="k">Checklist PIF</div></div>
+          <div><div class="v">4/6</div><div class="k">Taskuri deschise</div></div>
+          <div><div class="v">47.2h</div><div class="k">Ore lucrate</div></div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="cell-label" style="margin-bottom:6px"><span class="ico ico-red">!</span>Următoarele taskuri</div>
+          <div class="rowlist">
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)</span><span class="pr pr-high">high</span></div>
+            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="pr pr-high">high</span></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:auto; padding-top:16px">
+          <button class="btn btn-accent btn-sm" onclick="location.href='project.html'">Deschide proiectul →</button>
+          <button class="btn btn-ghost btn-sm">▶ Timer</button>
+          <button class="btn btn-ghost btn-sm">Export PDF</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>window.VARIANT_NAMES = {1:'V1 · Tabel clasic + arhivă pliabilă', 2:'V2 · Grid de carduri bento', 3:'V3 · Master-detail: listă + previzualizare'};</script>
+<script src="bento.js"></script>
+</body>
+</html>
