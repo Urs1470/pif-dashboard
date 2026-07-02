@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import {
     FolderKanban, AlertTriangle,
-    CalendarClock, ChevronRight, RotateCcw
+    CalendarClock, ChevronRight
   } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
@@ -26,7 +26,6 @@
   let dashboard = $state(null)
   let loading = $state(true)
   let error = $state(null)
-  let recents = $state([])
 
   // Count-up: numbers ease 0 -> value once the data lands (respects reduced-motion)
   let animVals = $state({ active: 0, urgent: 0, done: 0, deadline: 0 })
@@ -99,12 +98,7 @@
     }
   }
 
-  onMount(async () => {
-    try {
-      recents = JSON.parse(localStorage.getItem('recent_projects') || '[]').slice(0, 5)
-    } catch (_) {}
-    await loadDashboard()
-  })
+  onMount(loadDashboard)
 </script>
 
 <div class="page">
@@ -152,21 +146,6 @@
     </div>
 
     <TodayBoard />
-
-    {#if recents.length > 0}
-      <section class="section">
-        <div class="section-head"><RotateCcw size={14} /><span>Continua</span></div>
-        <div class="recent-strip">
-          {#each recents as p}
-            <button class="recent-card" onclick={() => navigate(`/projects/${p.id}`)}>
-              {#if p.tip}<span class="recent-tip" class:pif={p.tip === 'PIF'}>{p.tip}</span>{/if}
-              <div class="recent-name">{p.nume || '—'}</div>
-              <div class="recent-client">{p.client || '—'}</div>
-            </button>
-          {/each}
-        </div>
-      </section>
-    {/if}
 
     <div class="cards-grid">
       {#if dashboard.urgent_tasks?.length}
@@ -243,17 +222,6 @@
   .kpi-spark { display: flex; align-items: flex-end; gap: 5px; height: 30px; margin-top: 10px; }
   .kpi-spark span { flex: 1; background: var(--success); border-radius: 3px 3px 0 0; opacity: 0.35; min-height: 2px; }
   .kpi-spark span:nth-last-child(-n+3) { opacity: 1; }
-
-  .section { margin-bottom: var(--space-lg); }
-  .section-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); margin-bottom: var(--space-sm); }
-
-  .recent-strip { display: flex; gap: var(--space-sm); overflow-x: auto; padding-bottom: 4px; }
-  .recent-card { flex: 0 0 160px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); text-align: left; cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
-  .recent-card:hover { border-color: var(--accent); }
-  .recent-tip { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--accent); display: block; margin-bottom: 4px; }
-  .recent-tip.pif { color: var(--accent); }
-  .recent-name { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .recent-client { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-md); align-items: start; }
   .card-head { display: flex; align-items: center; gap: 9px; padding: 12px var(--space-md); border-bottom: 1px solid var(--border); }

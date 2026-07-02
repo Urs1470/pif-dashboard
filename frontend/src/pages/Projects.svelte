@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { slide } from 'svelte/transition'
+  import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square } from '@lucide/svelte'
+  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, ArrowUpDown } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
@@ -23,7 +23,6 @@
     { value: 'in_lucru', label: 'În Lucru' },
     { value: 'in_asteptare', label: 'În Așteptare' },
     { value: 'blocat', label: 'Blocat' },
-    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   const sortOptions = [
@@ -38,7 +37,6 @@
     { value: 'in_lucru', label: 'In Lucru' },
     { value: 'in_asteptare', label: 'In Asteptare' },
     { value: 'blocat', label: 'Blocat' },
-    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   function daysUntil(deadline) {
@@ -142,8 +140,17 @@
     loadProjects()
   }
 
-  function setSortKey(e) {
-    if (sort.key !== e.target.value) sort = { key: e.target.value, dir: 1 }
+  let sortOpen = $state(false)
+  let sortEl = $state(null)
+  const sortLabel = $derived(sortOptions.find((o) => o.value === sort.key)?.label || 'Nume')
+
+  function pickSort(v) {
+    if (sort.key === v) sort = { key: v, dir: -sort.dir } // aceeasi optiune = inverseaza
+    else sort = { key: v, dir: 1 }
+    sortOpen = false
+  }
+  function onDocClick(e) {
+    if (sortOpen && sortEl && !sortEl.contains(e.target)) sortOpen = false
   }
 
   function cardKeydown(e, p) {
@@ -187,6 +194,8 @@
   )
 </script>
 
+<svelte:document onclick={onDocClick} />
+
 <div class="page">
   <div class="page-header">
     <div class="page-title-row">
@@ -220,12 +229,22 @@
         <button class="chip" class:active={projects.filters.status === opt.value} onclick={() => setStatus(opt.value)}>{opt.label}</button>
       {/each}
     </div>
-    <div class="sort-box">
-      <span class="sort-label">Sortare</span>
-      <Select size="sm" value={sort.key} options={sortOptions} onchange={setSortKey} aria-label="Sortare" />
-      <button class="sort-dir" onclick={() => sort.dir = -sort.dir} title="Inverseaza ordinea">
-        {#if sort.dir === 1}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
+    <div class="sort-box" bind:this={sortEl}>
+      <button class="sort-trigger" class:on={sortOpen} onclick={() => sortOpen = !sortOpen} title="Sortare" aria-haspopup="listbox" aria-expanded={sortOpen}>
+        <ArrowUpDown size={13} />
+        <span>{sortLabel}</span>
+        <span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>
       </button>
+      {#if sortOpen}
+        <div class="sort-menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
+          {#each sortOptions as opt (opt.value)}
+            <button class="sort-opt" class:sel={sort.key === opt.value} role="option" aria-selected={sort.key === opt.value} onclick={() => pickSort(opt.value)}>
+              <span>{opt.label}</span>
+              {#if sort.key === opt.value}<span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>{/if}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
     {#if batchMode}
       <button class="select-all" onclick={toggleSelectAll}>
@@ -313,7 +332,7 @@
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 320px; }
@@ -328,10 +347,17 @@
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
 
-  .sort-box { display: flex; align-items: center; gap: var(--space-xs); }
-  .sort-label { font-size: var(--font-tiny); color: var(--text-dim); }
-  .sort-dir { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
-  .sort-dir:hover { color: var(--text); border-color: var(--border-strong); }
+  /* Sortare — control ghost discret + meniu custom; click pe optiunea
+     activa inverseaza directia (sageata arata directia curenta). */
+  .sort-box { position: relative; }
+  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .sort-trigger:hover { color: var(--text); background: var(--bg-hover); }
+  .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); border-color: var(--accent); }
+  .sort-dir-ind { font-family: var(--font-mono); font-size: var(--font-tiny); opacity: .8; }
+  .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown, 50); min-width: 150px; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
+  .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
+  .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
+  .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
   .select-all:hover { color: var(--text); border-color: var(--border-strong); }
 

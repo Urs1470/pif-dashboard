@@ -46,7 +46,6 @@
 
   let showDoneTasks = $state(false)
   let taskSearch = $state('')
-  let statusFilter = $state('')
   let quickTitle = $state('')
   let quickAdding = $state(false)
   let showNoteModal = $state(false)
@@ -66,11 +65,6 @@
   let attPreviewTaskId = null
 
   const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
-  const STATUS_FILTER_OPTIONS = [
-    { value: '', label: 'Toate' },
-    { value: 'to_do', label: 'To Do' },
-    { value: 'in_lucru', label: 'In Lucru' },
-  ]
 
   function matchesSearch(t) {
     if (!taskSearch) return true
@@ -81,10 +75,7 @@
   }
 
   const filteredTasks = $derived(
-    globalTasks.items.filter(t => {
-      if (statusFilter && t.status !== statusFilter) return false
-      return matchesSearch(t)
-    })
+    globalTasks.items.filter(t => matchesSearch(t))
   )
   // Hide a recurring task's next occurrence until its scadenta arrives, so finalizing
   // today's instance doesn't look like an identical unchecked copy reappearing.
@@ -298,7 +289,7 @@
     toast('Task sters', 'success')
   }
 
-  const PRIO_CYCLE = ['normal', 'minor', 'urgent']
+  const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
   async function cycleTaskPriority(t) {
     const cur = (t.prioritate || 'normal').toLowerCase()
     const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
@@ -433,10 +424,6 @@
       <input type="text" placeholder="Cauta taskuri..." bind:value={taskSearch} />
     </div>
     <div class="filters">
-      {#each STATUS_FILTER_OPTIONS as opt}
-        <button class="chip" class:active={statusFilter === opt.value} onclick={() => statusFilter = opt.value}>{opt.label}</button>
-      {/each}
-      <span class="filter-sep"></span>
       <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false; loadGlobalTasks() }}>Active</button>
       <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhiva</button>
     </div>
@@ -633,7 +620,7 @@
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 280px; }
@@ -648,7 +635,6 @@
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .filter-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
   .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }

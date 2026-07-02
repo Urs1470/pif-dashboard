@@ -6,7 +6,9 @@
   import { renderStoredText } from '../../lib/storedText.js'
   import { renderMath } from '../../lib/math.js'
 
-  let { value = '', class: cls = '', collapsible = false, maxHeight = 220 } = $props()
+  // noToggle: doar clamp + fade, fara butonul "Arata tot" (parintele decide ce
+  // se intampla la click — ex. campul de observatii deschide editorul).
+  let { value = '', class: cls = '', collapsible = false, maxHeight = 220, noToggle = false } = $props()
 
   let inner = $state(null)
   let expanded = $state(false)
@@ -43,7 +45,7 @@
       <div bind:this={inner} class="rich-content {cls}"></div>
       {#if clamped}<div class="rt-fade"></div>{/if}
     </div>
-    {#if overflowing}
+    {#if overflowing && !noToggle}
       <button class="rt-toggle" onclick={() => expanded = !expanded}>
         {#if expanded}<ChevronUp size={13} /> Restrange{:else}<ChevronDown size={13} /> Arata tot{/if}
       </button>

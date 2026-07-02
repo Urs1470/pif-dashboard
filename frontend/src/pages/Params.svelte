@@ -310,7 +310,7 @@
         </div>
         {#if detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Descriere</h4><p>{detail.descriere_scurta}</p></div>{/if}
         {#if detail.descriere && detail.descriere !== detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Detalii</h4><p>{detail.descriere}</p></div>{/if}
-        {#if detail.explicatie}<div class="dsection accent"><h4 class="dsec-title">Explicatie</h4><p>{detail.explicatie}</p></div>{/if}
+        {#if detail.explicatie}<div class="dsection"><h4 class="dsec-title">Explicatie</h4><p>{detail.explicatie}</p></div>{/if}
         {#if detail.influenteaza}
           <div class="dsection">
             <h4 class="dsec-title">Influenteaza</h4>
@@ -347,7 +347,7 @@
         </div>
         {#if detail.nume}<div class="dsection"><h4 class="dsec-title">Nume</h4><p>{detail.nume}</p></div>{/if}
         {#if detail.cauza}<div class="dsection"><h4 class="dsec-title">Cauza</h4><p>{detail.cauza}</p></div>{/if}
-        {#if detail.remediu || detail.solutie}<div class="dsection accent"><h4 class="dsec-title">Solutie / Remediu</h4><p>{detail.remediu || detail.solutie}</p></div>{/if}
+        {#if detail.remediu || detail.solutie}<div class="dsection"><h4 class="dsec-title">Solutie / Remediu</h4><p>{detail.remediu || detail.solutie}</p></div>{/if}
         {#if detail.reactie}<div class="dsection"><h4 class="dsec-title">Reactie drive</h4><p>{detail.reactie}</p></div>{/if}
         {#if detail.confirmare}<div class="dsection"><h4 class="dsec-title">Confirmare / Reset</h4><p>{detail.confirmare}</p></div>{/if}
         {#if detail.extra && Object.keys(detail.extra).length > 0}
@@ -378,7 +378,7 @@
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { font-size: var(--font-tiny); padding: 2px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   /* ===== V2 bento: sidebar familii + tabel, totul pe un ecran ===== */
   .side-grid { display: grid; grid-template-columns: 250px 1fr; gap: 14px; align-items: start; }
@@ -437,15 +437,15 @@
   .row-skel { padding: var(--space-sm); }
 
   .detail { display: flex; flex-direction: column; gap: var(--space-md); }
-  .dmeta { background: var(--bg-elevated); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--border); }
+  /* Toate campurile pe aceeasi reteta ca "Explicatie" (accent-subtle + chenar
+     accent) — omogen, cerinta Ion. */
+  .dmeta { background: var(--accent-subtle); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); display: flex; flex-direction: column; gap: 2px; border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
   .drow { display: flex; justify-content: space-between; font-size: var(--font-small); gap: var(--space-md); padding: 3px 0; }
   .dlabel { color: var(--text-dim); flex-shrink: 0; }
   .dval { font-weight: var(--fw-medium); color: var(--text); text-align: right; }
-  .dsection { padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--border); }
-  .dsection.accent { background: var(--accent-subtle); border-color: var(--accent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
-  .dsec-title { font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin: 0 0 6px 0; }
-  .dsection p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; margin: 0; }
-  .dsection.accent p { color: var(--text); }
+  .dsection { padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+  .dsec-title { font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--accent-on-subtle); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin: 0 0 6px 0; }
+  .dsection p { font-size: var(--font-small); color: var(--text); line-height: 1.55; white-space: pre-wrap; margin: 0; }
   .extra-list { margin: 0; padding-left: var(--space-lg); font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; }
   .extra-obj { margin: 0; font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-secondary); white-space: pre-wrap; }
   .dlinks { display: flex; gap: 6px; flex-wrap: wrap; }

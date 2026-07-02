@@ -275,7 +275,7 @@
     toast('Task sters', 'success')
   }
 
-  const PRIO_CYCLE = ['normal', 'minor', 'urgent']
+  const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
   async function cycleTaskPriority(t) {
     const cur = (t.prioritate || 'normal').toLowerCase()
     const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
@@ -589,52 +589,55 @@
     <div class="rail-grid">
     <div class="rail-main">
 
-      <div class="field-section">
+      <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
+        onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('observatii', 'Observatii Tehnice') } }}>
         <div class="field-header">
           <span class="f-ico"><SolidIcon name="file" size={13} /></span>
           <span class="field-label">Observatii Tehnice</span>
           {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
-          <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
         </div>
         {#if project.observatii}
           <div class="field-body">
-            <RichText value={project.observatii} collapsible maxHeight={240} />
+            <RichText value={project.observatii} collapsible noToggle maxHeight={240} />
           </div>
         {:else}
-          <button class="field-empty" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}>Click pentru a adauga...</button>
+          <div class="field-empty">Click pentru a adauga...</div>
         {/if}
       </div>
 
       {#if project.tip === 'Service'}
-        <div class="field-section">
+        <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
+          onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_before', 'Constatari inainte de interventie') } }}>
           <div class="field-header">
             <span class="f-ico f-red"><AlertCircle size={13} /></span>
             <span class="field-label">Constatari inainte de interventie</span>
             {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
-            <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_before}
             <div class="field-body">
-              <RichText value={project.service_before} collapsible maxHeight={240} />
+              <RichText value={project.service_before} collapsible noToggle maxHeight={240} />
             </div>
           {:else}
-            <button class="field-empty" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}>Click pentru a adauga...</button>
+            <div class="field-empty">Click pentru a adauga...</div>
           {/if}
         </div>
 
-        <div class="field-section">
+        <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
+          onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_after', 'Actiuni si rezultat') } }}>
           <div class="field-header">
             <span class="f-ico f-green"><CheckCircle2 size={13} /></span>
             <span class="field-label">Actiuni si rezultat</span>
             {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
-            <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_after}
             <div class="field-body">
-              <RichText value={project.service_after} collapsible maxHeight={240} />
+              <RichText value={project.service_after} collapsible noToggle maxHeight={240} />
             </div>
           {:else}
-            <button class="field-empty" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}>Click pentru a adauga...</button>
+            <div class="field-empty">Click pentru a adauga...</div>
           {/if}
         </div>
       {/if}
@@ -1046,24 +1049,21 @@
 
   /* Field sections in coloana stanga (observatii, service) */
   /* "Coala de document" (V1): gradient cald, umbra, antet cu chip + meta */
-  .field-section { margin-bottom: var(--space-sm); background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 5%, var(--bg-surface)) 0%, var(--bg-surface) 55%); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); transition: border-color var(--dur-fast) var(--ease); }
-  .field-section:hover { border-color: var(--border-strong); }
+  .field-section { margin-bottom: var(--space-sm); background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 5%, var(--bg-surface)) 0%, var(--bg-surface) 55%); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); transition: border-color var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
+  .field-section:hover { border-color: var(--accent-ring); }
+  .field-section:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field-header { display: flex; align-items: center; gap: var(--space-sm); padding: 11px var(--space-md); font-size: var(--font-small); color: var(--text-secondary); border-bottom: 1px dashed var(--border); }
   .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
   .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
   .f-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
   .field-label { flex: 1; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
-  .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
-  .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.65; padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
-  /* butonul "Arata tot" al RichText — centrat, ca la un document */
-  .field-body :global(.rt-toggle) { display: flex; width: max-content; margin: 8px auto 2px; }
   .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
   .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 
-  .tab-count { font-size: var(--font-micro); padding: 0 5px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
+  .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 21px; height: 21px; padding: 0 6px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   .tab-content { min-height: 200px; }
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
