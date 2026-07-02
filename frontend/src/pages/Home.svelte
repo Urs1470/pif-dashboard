@@ -80,6 +80,22 @@
     return Math.ceil((new Date(d) - new Date().setHours(0, 0, 0, 0)) / 86400000)
   }
 
+  // Severitate pentru insulele din liste: hot = depasit, warm = azi/maine, cool = restul
+  function sev(d) {
+    const n = daysUntil(d)
+    if (n < 0) return 'var(--danger)'
+    if (n <= 1) return 'var(--accent-hover)'
+    return 'var(--border-strong)'
+  }
+  function dueChip(d) {
+    if (!d) return ''
+    const n = daysUntil(d)
+    if (n < 0) return `depasit \u00b7 ${formatDate(d)}`
+    if (n === 0) return 'azi'
+    if (n === 1) return 'maine'
+    return formatDate(d)
+  }
+
   function todayRO() {
     return new Date().toLocaleDateString('ro-RO', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -152,13 +168,14 @@
         <Card padding={false}>
           <div class="card-head"><span class="ch-ico ico-red"><AlertTriangle size={13} /></span><span class="ch-label">Task-uri urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
           <div class="card-list scroll">
-            {#each dashboard.urgent_tasks as t}
-              <button class="list-row" onclick={(e) => goToTask(e, t)}>
-                <div class="row-dot urgent"></div>
+            {#each dashboard.urgent_tasks as t, i}
+              <button class="isl" style="--sev: {t.data_scadenta ? sev(t.data_scadenta) : 'var(--danger)'}" onclick={(e) => goToTask(e, t)}>
+                <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                 <div class="row-content">
                   <div class="row-title">{t.titlu}</div>
-                  <div class="row-meta">{t.proiect_nume || 'Task global'}{t.data_scadenta ? ` · ${formatDate(t.data_scadenta)}` : ''}</div>
+                  <div class="row-meta">{t.proiect_nume || 'Task global'}</div>
                 </div>
+                {#if t.data_scadenta}<span class="due-chip" class:hot={daysUntil(t.data_scadenta) < 0} class:warm={daysUntil(t.data_scadenta) >= 0 && daysUntil(t.data_scadenta) <= 1}>{dueChip(t.data_scadenta)}</span>{/if}
                 <ChevronRight size={14} />
               </button>
             {/each}
@@ -170,14 +187,14 @@
         <Card padding={false}>
           <div class="card-head"><span class="ch-ico ico-vio"><CalendarClock size={13} /></span><span class="ch-label">Deadline-uri</span><span class="card-count">{dashboard.upcoming_deadlines.length}</span></div>
           <div class="card-list">
-            {#each dashboard.upcoming_deadlines.slice(0, 5) as p}
-              <button class="list-row" onclick={() => navigate(`/projects/${p.id}`)}>
-                <div class="row-dot due"></div>
+            {#each dashboard.upcoming_deadlines.slice(0, 5) as p, i}
+              <button class="isl" style="--sev: {sev(p.deadline)}" onclick={() => navigate(`/projects/${p.id}`)}>
+                <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                 <div class="row-content">
                   <div class="row-title">{p.nume}</div>
                   <div class="row-meta">{p.client || '—'}</div>
                 </div>
-                <span class="row-date" class:hot={daysUntil(p.deadline) <= 2}>{formatDate(p.deadline)}</span>
+                <span class="due-chip" class:hot={daysUntil(p.deadline) < 0} class:warm={daysUntil(p.deadline) >= 0 && daysUntil(p.deadline) <= 1}>{dueChip(p.deadline)}</span>
                 <ChevronRight size={14} />
               </button>
             {/each}
@@ -231,19 +248,20 @@
   .ch-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 
-  .card-list { display: flex; flex-direction: column; }
-  .card-list.scroll { max-height: 248px; overflow-y: auto; scrollbar-width: thin; }
-  .list-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); text-align: left; cursor: pointer; transition: background var(--dur-fast) var(--ease); color: var(--text-secondary); }
-  .list-row:hover { background: var(--bg-hover); }
-  .list-row + .list-row { border-top: 1px dashed var(--border); }
-  .row-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
-  .row-dot.urgent { background: var(--danger); }
-  .row-dot.due { background: var(--warning); }
+  .card-list { display: flex; flex-direction: column; gap: 6px; padding: var(--space-sm); }
+  .card-list.scroll { max-height: 268px; overflow-y: auto; scrollbar-width: thin; }
+  /* Insula (V3+V2): rand plutitor cu index mono ghost si underline de
+     severitate pe muchia de jos (—sev vine inline pe rand). */
+  .isl { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 9px 12px 11px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); text-align: left; cursor: pointer; color: var(--text-secondary); overflow: hidden; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .isl::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  .isl:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  .tix { font-family: var(--font-mono); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 75%, transparent); min-width: 30px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .row-content { flex: 1; min-width: 0; }
   .row-title { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row-meta { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .row-date { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
-  .row-date.hot { color: var(--danger); font-weight: var(--fw-semibold); }
+  .due-chip { font-family: var(--font-mono); font-size: var(--font-micro); padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+  .due-chip.hot { background: var(--danger-subtle); color: var(--danger); }
+  .due-chip.warm { background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

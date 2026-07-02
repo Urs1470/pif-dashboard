@@ -666,9 +666,10 @@
         {#if tasks.length === 0}<p class="empty">Niciun task.</p>
         {:else}
           <div class="task-list">
-            {#each activeTasks as t (t.id)}
+            {#each activeTasks as t, i (t.id)}
               <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border-strong)'}">
+                  <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
                   </button>
@@ -761,8 +762,9 @@
               </button>
               {#if showDoneTasks}
                 <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-                {#each doneTasks as t (t.id)}
-                  <div class="trow done" animate:flip={{ duration: motionDuration(DUR_BASE) }} use:focusOnLand={focusKey('task', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+                {#each doneTasks as t, i (t.id)}
+                  <div class="trow done" animate:flip={{ duration: motionDuration(DUR_BASE) }} use:focusOnLand={focusKey('task', t.id)} style="--sev: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border-strong)'}">
+                    <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                     <button class="check" onclick={() => toggleTaskStatus(t)}>
                       <CheckCircle2 size={16} />
                     </button>
@@ -1080,9 +1082,12 @@
   /* Task list */
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
-  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  /* Insula (V3+V2): fara bara pe stanga — underline de severitate jos + index mono ghost */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  .trow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .done-list { display: flex; flex-direction: column; }
-  .trow:hover { background: var(--bg-hover); transform: translateX(2px); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
