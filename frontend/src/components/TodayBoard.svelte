@@ -284,5 +284,13 @@
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
     .abtn { width: 34px; height: 34px; }
+
+    /* Randul se sparge pe doua linii: titlul ia toata latimea (cu wrap pe
+       max 2 randuri), iar cele 6 butoane coboara dedesubt, la dreapta —
+       altfel titlul era strivit la ~100px ("De s..."). */
+    .arow { flex-wrap: wrap; row-gap: 0; }
+    .amain { flex: 1 1 calc(100% - 40px); }
+    .atitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .arow-arrows { margin-left: auto; }
   }
 </style>
