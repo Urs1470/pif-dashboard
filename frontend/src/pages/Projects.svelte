@@ -25,13 +25,31 @@
     { value: 'finalizat', label: 'Finalizat' },
   ]
 
-  const columns = [
+  const sortOptions = [
     { key: 'nume', label: 'Nume' },
     { key: 'client', label: 'Client' },
     { key: 'tip', label: 'Tip' },
     { key: 'status', label: 'Status' },
     { key: 'deadline', label: 'Deadline' },
   ]
+
+  function daysUntil(deadline) {
+    if (!deadline) return null
+    const d = new Date(deadline)
+    if (isNaN(d)) return null
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    d.setHours(0, 0, 0, 0)
+    return Math.round((d - today) / 86400000)
+  }
+
+  function deadlineText(deadline) {
+    const days = daysUntil(deadline)
+    if (days === null) return formatDate(deadline)
+    if (days < 0) return `${formatDate(deadline)} — depasit`
+    if (days === 0) return `${formatDate(deadline)} — azi`
+    return `${formatDate(deadline)} — ${days} ${days === 1 ? 'zi' : 'zile'}`
+  }
 
   const STATUS_CYCLE = ['in_lucru', 'in_asteptare', 'blocat', 'finalizat']
 
@@ -116,9 +134,16 @@
     loadProjects()
   }
 
-  function toggleSort(key) {
-    if (sort.key === key) sort.dir = -sort.dir
-    else sort = { key, dir: 1 }
+  function setSortKey(e) {
+    if (sort.key !== e.target.value) sort = { key: e.target.value, dir: 1 }
+  }
+
+  function cardKeydown(e, p) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (batchMode) toggleSelect(p.id)
+      else openProject(p)
+    }
   }
 
   function sortItems(items) {
@@ -193,12 +218,29 @@
         <button class="chip" class:active={projects.filters.status === opt.value} onclick={() => setStatus(opt.value)}>{opt.label}</button>
       {/each}
     </div>
+    <div class="sort-box">
+      <span class="sort-label">Sortare</span>
+      <select class="sort-select" value={sort.key} onchange={setSortKey}>
+        {#each sortOptions as opt}
+          <option value={opt.key}>{opt.label}</option>
+        {/each}
+      </select>
+      <button class="sort-dir" onclick={() => sort.dir = -sort.dir} title="Inverseaza ordinea">
+        {#if sort.dir === 1}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
+      </button>
+    </div>
+    {#if batchMode}
+      <button class="select-all" onclick={toggleSelectAll}>
+        {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={14} />{:else}<Square size={14} />{/if}
+        Selecteaza toate
+      </button>
+    {/if}
   </div>
 
   {#if projects.loading}
-    <div class="list">
+    <div class="cards-grid">
       {#each Array(6) as _}
-        <div class="row-skeleton"><Skeleton width="60%" height="16px" /><Skeleton width="30%" height="14px" /></div>
+        <div class="pcard skeleton-card"><Skeleton width="40%" height="14px" /><Skeleton width="70%" height="18px" /><Skeleton width="50%" height="12px" /></div>
       {/each}
     </div>
   {:else if projects.error}
@@ -206,48 +248,29 @@
   {:else if activeItems.length === 0 && archivedItems.length === 0}
     <EmptyState icon={FolderKanban} title="Niciun proiect" description="Nu exista proiecte cu filtrele selectate." />
   {:else}
-    <div class="data-table-wrap">
-      <table class="data-table reflow">
-        <thead>
-          <tr>
+    <div class="cards-grid">
+      {#each activeItems as p (p.id)}
+        <div class="pcard cell-in" class:batch-selected={batchMode && selected.has(p.id)} role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }} onkeydown={(e) => cardKeydown(e, p)}>
+          <div class="card-top">
             {#if batchMode}
-              <th class="check-col">
-                <button class="batch-check" onclick={toggleSelectAll}>
-                  {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
-                </button>
-              </th>
+              <button class="batch-check card-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
+                {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
+              </button>
             {/if}
-            {#each columns as col}
-              <th onclick={() => toggleSort(col.key)} class="sortable">
-                <span class="th-inner">
-                  {col.label}
-                  {#if sort.key === col.key}
-                    {#if sort.dir === 1}<ChevronUp size={12} />{:else}<ChevronDown size={12} />{/if}
-                  {/if}
-                </span>
-              </th>
-            {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each activeItems as p (p.id)}
-            <tr class="clickable-row" class:batch-selected={batchMode && selected.has(p.id)} animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }}>
-              {#if batchMode}
-                <td class="check-col" data-label="">
-                  <button class="batch-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
-                    {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
-                  </button>
-                </td>
-              {/if}
-              <td class="name-cell" data-label="Nume">{p.nume || '—'}</td>
-              <td class="dim" data-label="Client">{p.client || '—'}</td>
-              <td data-label="Tip">{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
-              <td data-label="Status"><button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button></td>
-              <td class="dim" data-label="Deadline">{p.deadline ? formatDate(p.deadline) : '—'}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+            {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="ptip">—</span>{/if}
+            <button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button>
+          </div>
+          <div class="card-name">{p.nume || '—'}</div>
+          <div class="card-client">{p.client || '—'}</div>
+          <div class="card-foot">
+            {#if p.deadline}
+              <span class="deadline" class:urgent={daysUntil(p.deadline) !== null && daysUntil(p.deadline) <= 2}>deadline {deadlineText(p.deadline)}</span>
+            {:else}
+              <span class="deadline">fara deadline</span>
+            {/if}
+          </div>
+        </div>
+      {/each}
     </div>
 
     {#if archivedItems.length > 0}
@@ -259,20 +282,18 @@
           {#if showArchive}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
         </button>
         {#if showArchive}
-          <div class="data-table-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-            <table class="data-table reflow">
-              <tbody>
-                {#each archivedItems as p (p.id)}
-                  <tr class="clickable-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
-                    <td class="name-cell" data-label="Nume">{p.nume || '—'}</td>
-                    <td class="dim" data-label="Client">{p.client || '—'}</td>
-                    <td data-label="Tip">{#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="dim">—</span>{/if}</td>
-                    <td data-label="Status"><Badge label="Finalizat" color="var(--success)" small /></td>
-                    <td class="dim" data-label="Deadline">{p.deadline ? formatDate(p.deadline) : '—'}</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
+          <div class="arch-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+            {#each archivedItems as p (p.id)}
+              <button class="arch-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
+                <span class="arch-name">{p.nume || '—'}</span>
+                <span class="dim arch-client">{p.client || '—'}</span>
+                {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
+                <span class="arch-tail">
+                  <Badge label="Finalizat" color="var(--success)" small />
+                  <span class="dim arch-deadline">{p.deadline ? formatDate(p.deadline) : '—'}</span>
+                </span>
+              </button>
+            {/each}
           </div>
         {/if}
       </div>
@@ -303,11 +324,28 @@
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
 
-  .sortable { cursor: pointer; user-select: none; }
-  .sortable:hover { color: var(--text); }
-  .th-inner { display: inline-flex; align-items: center; gap: 4px; }
+  .sort-box { display: flex; align-items: center; gap: var(--space-xs); }
+  .sort-label { font-size: var(--font-tiny); color: var(--text-dim); }
+  .sort-select { padding: 4px 10px; font-size: var(--font-small); background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; }
+  .sort-dir { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-dim); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .sort-dir:hover { color: var(--text); border-color: var(--border-strong); }
+  .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
+  .select-all:hover { color: var(--text); border-color: var(--border-strong); }
 
-  .name-cell { font-weight: var(--fw-medium); }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; text-align: left; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
+  .pcard:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
+  .card-top { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 10px; }
+  .card-top .status-pill { margin-left: auto; }
+  .card-check { width: auto; height: auto; }
+  .card-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
+  .card-client { font-size: var(--font-tiny); color: var(--text-faint); margin-top: 2px; }
+  .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
+  .deadline.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
+  .skeleton-card { gap: 8px; cursor: default; }
+
   .dim { color: var(--text-secondary); }
   .ptip { display: inline-block; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .ptip.pif { background: var(--accent-subtle); color: var(--accent); }
@@ -317,24 +355,33 @@
   .archive-toggle { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; padding: var(--space-sm) 0; margin-bottom: var(--space-sm); min-height: 44px; }
   .archive-toggle:hover { color: var(--text); }
   .archived { opacity: 0.7; }
+  .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .arch-row { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: 10px 16px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) var(--ease); }
+  .arch-row:last-child { border-bottom: none; }
+  .arch-row:hover { background: var(--bg-hover); opacity: 1; }
+  .arch-name { font-weight: var(--fw-medium); }
+  .arch-client { font-size: var(--font-tiny); }
+  .arch-tail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-sm); }
+  .arch-deadline { font-size: var(--font-tiny); font-family: var(--font-mono); }
 
   .header-btns { display: flex; gap: var(--space-xs); }
   .batch-bar { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .batch-count { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); }
   .batch-select { padding: 4px 10px; font-size: var(--font-small); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); }
-  .check-col { width: 36px; text-align: center; padding: 0 !important; }
-  .batch-check { display: flex; align-items: center; justify-content: center; width: 36px; height: 100%; color: var(--text-dim); cursor: pointer; }
+  .batch-check { display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; background: transparent; border: none; padding: 0; }
   .batch-check:hover { color: var(--accent); }
-  .batch-selected { background: var(--accent-subtle) !important; }
   .status-pill { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast); }
   .status-pill:hover { opacity: .7; transform: scale(1.05); }
-
-  .row-skeleton { display: flex; flex-direction: column; gap: 6px; padding: var(--space-sm) var(--space-md); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
     .toolbar { flex-direction: column; align-items: stretch; }
     .search-box { max-width: none; }
+    .sort-box { justify-content: flex-start; }
     .batch-bar { flex-direction: column; align-items: stretch; }
+  }
+
+  @media (max-width: 560px) {
+    .cards-grid { grid-template-columns: 1fr; }
   }
 </style>

@@ -205,27 +205,27 @@
   .panes { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-md); align-items: start; }
 
   .sidebar { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm); position: sticky; top: var(--space-md); max-height: calc(100dvh - 140px); display: flex; flex-direction: column; }
-  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-dim); margin-bottom: var(--space-sm); }
+  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); margin-bottom: var(--space-sm); }
   .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; min-width: 0; }
   .search-box input:focus { box-shadow: none; }
   .search-box:focus-within { border-color: var(--accent); }
   .list-meta { font-size: var(--font-tiny); color: var(--text-dim); padding: 0 var(--space-xs) var(--space-xs); }
 
   .note-list { overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
-  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); text-align: left; }
-  .folder-row:hover { background: var(--bg-hover); color: var(--text); }
+  .folder-row { display: flex; align-items: center; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; border-radius: 10px; text-align: left; }
+  .folder-row:hover { background: var(--bg-panel); color: var(--text); }
   .folder-count { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-weight: var(--fw-normal); }
 
-  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-xs); border-left: 2px solid transparent; text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .note-item:hover { background: var(--bg-hover); color: var(--text); }
-  .note-item.active { background: var(--accent-subtle); color: var(--accent); border-left-color: var(--accent); }
+  .note-item { display: flex; align-items: flex-start; gap: var(--space-xs); padding: 6px var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; border-radius: 10px; text-align: left; width: 100%; transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+  .note-item:hover { background: var(--bg-panel); color: var(--text); }
+  .note-item.active { background: var(--accent-subtle); color: var(--accent); }
   .note-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .note-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .note-snippet { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
 
   .content { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); min-height: 400px; }
   .note-head { padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
-  .note-head h2 { font-size: var(--font-h2); font-weight: var(--fw-bold); color: var(--text); letter-spacing: -0.02em; }
+  .note-head h2 { font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-bold); color: var(--text); letter-spacing: -0.02em; }
   .note-path { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); }
   .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm); min-height: 300px; color: var(--text-dim); font-size: var(--font-small); }
 

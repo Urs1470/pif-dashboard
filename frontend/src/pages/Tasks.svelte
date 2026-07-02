@@ -22,6 +22,7 @@
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
   import RichText from '../components/ui/RichText.svelte'
+  import AgendaColumn from '../components/tasks/AgendaColumn.svelte'
 
   let showArchive = $state(false)
   let taskDeleteId = $state(null)
@@ -389,6 +390,29 @@
     return diff > 0 && diff <= 7
   }
 
+  // Banda hero V3: taskuri urgente si/sau scadente azi / intarziate (max 4), din itemele deja incarcate.
+  const urgentHero = $derived(
+    activeTasks
+      .filter(t => (t.prioritate || '').toLowerCase() === 'urgent' || isOverdue(t.data_scadenta) || isToday(t.data_scadenta))
+      .slice(0, 4)
+  )
+
+  function heroLabel(t) {
+    const urgent = (t.prioritate || '').toLowerCase() === 'urgent'
+    if (isOverdue(t.data_scadenta)) return urgent ? 'Urgent · intarziat' : 'Intarziat'
+    if (isToday(t.data_scadenta)) return urgent ? 'Urgent · azi' : 'Scadent azi'
+    return 'Urgent'
+  }
+
+  // Bordura stanga a randului, dupa prioritate (danger=urgent, accent=normal, discret=minor).
+  function rowBorderColor(p) {
+    const key = (p || '').toLowerCase()
+    if (key === 'urgent') return 'var(--danger)'
+    if (key === 'normal') return 'var(--accent)'
+    if (key === 'minor') return 'var(--border-strong)'
+    return 'var(--border)'
+  }
+
   onMount(() => { loadGlobalTasks(); loadActiveTimer() })
 </script>
 
@@ -494,6 +518,31 @@
     </div>
   </div>
 
+  {#if !showArchive && !globalTasks.loading && urgentHero.length > 0}
+    <div class="urgent-band">
+      {#each urgentHero as t (t.id)}
+        <section class="ucard cell-in">
+          <div class="cell-label"><span class="ico ico-red">!</span>{heroLabel(t)}</div>
+          <button class="ucard-title" onclick={() => toggleTaskExpand(t.id)} title="Deschide detalii">{t.titlu}</button>
+          <div class="ucard-sub">
+            <span>{t.categorie || 'General'}</span>
+            {#if t.data_scadenta}<span class="ucard-dot">·</span><span>{formatDate(t.data_scadenta)}</span>{/if}
+            {#if t.subtask_total}<span class="ucard-dot">·</span><span>{t.subtask_done || 0}/{t.subtask_total} subtaskuri</span>{/if}
+          </div>
+          <div class="ucard-actions">
+            <button class="ucard-btn accent" class:active={timer.active?.global_task_id === t.id} onclick={() => toggleTimer(t)}>
+              {timer.active?.global_task_id === t.id ? '■ Opreste' : '▶ Porneste'}
+            </button>
+            <button class="ucard-btn" onclick={() => toggleStatus(t)}>✓ Bifeaza</button>
+          </div>
+        </section>
+      {/each}
+    </div>
+  {/if}
+
+  <div class="v3grid">
+  <div class="list-cell cell-in">
+  <div class="cell-label list-label"><span class="ico ico-amber">≔</span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
   {#if !showArchive}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
       <input type="text" placeholder="Task rapid... Enter pentru a adauga" bind:value={quickTitle} disabled={quickAdding} />
@@ -509,7 +558,7 @@
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t (t.id)}
         <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {rowBorderColor(t.prioritate)}">
             <button class="check" onclick={() => toggleStatus(t)}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
             </button>
@@ -558,7 +607,7 @@
           <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
           {#each doneTasks as t (t.id)}
             <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border)'}">
+              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="border-left-color: {rowBorderColor(t.prioritate)}">
                 <button class="check" onclick={() => toggleStatus(t)}>
                   <CheckCircle2 size={18} />
                 </button>
@@ -592,6 +641,10 @@
       {/if}
     </div>
   {/if}
+  </div>
+
+  <AgendaColumn tasks={showArchive ? globalTasks.items : activeTasks} onopen={(t) => toggleTaskExpand(t.id)} />
+  </div>
 </div>
 
 <Modal bind:open={showNewModal} title="Task Nou" size="md">
@@ -748,7 +801,7 @@
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
-  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 2px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  .trow { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-left: 3px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 2px; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   .trow:hover { background: var(--bg-hover); transform: translateX(2px); }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
@@ -848,6 +901,47 @@
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
+
+  /* ===== V3: banda hero urgente ===== */
+  .urgent-band { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 14px; }
+  .ucard {
+    display: flex; flex-direction: column; gap: 6px; min-width: 0;
+    padding: var(--space-md);
+    background: linear-gradient(150deg, color-mix(in srgb, var(--danger) 7%, var(--bg-surface)) 0%, var(--bg-surface) 60%);
+    border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--border));
+    border-radius: var(--radius-lg);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .ucard:hover { border-color: color-mix(in srgb, var(--danger) 45%, var(--border-strong)); box-shadow: var(--shadow-lg); }
+  .ucard-title { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-bold); line-height: 1.25; color: var(--text); text-align: left; cursor: pointer; padding: 0; }
+  .ucard-title:hover { color: var(--accent); }
+  .ucard-sub { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); color: var(--text-dim); flex-wrap: wrap; }
+  .ucard-dot { color: var(--text-faint); }
+  .ucard-actions { display: flex; gap: var(--space-sm); margin-top: auto; padding-top: var(--space-sm); }
+  .ucard-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; min-height: 30px;
+    font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full);
+    color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+    transition: all var(--dur-fast) var(--ease);
+  }
+  .ucard-btn:hover { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
+  .ucard-btn:active { transform: scale(0.97); }
+  .ucard-btn.accent { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
+  .ucard-btn.accent.active { border-color: var(--danger); color: var(--danger); background: var(--danger-subtle); }
+
+  /* ===== V3: grid lista + agenda 7 zile ===== */
+  .v3grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
+  .list-cell { min-width: 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
+  .list-label { margin-bottom: var(--space-12); }
+
+  @media (max-width: 940px) {
+    /* Agenda coboara sub lista (o singura coloana) */
+    .v3grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .urgent-band { grid-template-columns: 1fr; }
+  }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

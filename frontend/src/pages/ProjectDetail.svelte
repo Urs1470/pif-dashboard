@@ -743,6 +743,20 @@
   const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
   const projectTimerActive = $derived(timer.active?.kind === 'project' && timer.active?.project_id === params.id)
 
+  // Rail: progres taskuri + zile pana la deadline
+  const taskPct = $derived(tasks.length ? Math.round((tasksDone / tasks.length) * 100) : 0)
+  const deadlineDays = $derived.by(() => {
+    if (!project?.deadline) return null
+    return Math.round((new Date(String(project.deadline).slice(0, 10)) - new Date(new Date().toDateString())) / 86400000)
+  })
+  function deadlineLabel(d) {
+    if (d === null) return ''
+    if (d < 0) return `depasit cu ${-d} ${d === -1 ? 'zi' : 'zile'}`
+    if (d === 0) return 'scadent astazi'
+    if (d === 1) return '1 zi ramasa'
+    return `${d} zile ramase`
+  }
+
   const mergedTimeline = $derived.by(() => {
     const sessions = timerSessions.sessions || []
     const matched = new Set()
@@ -792,10 +806,6 @@
           <Badge label={PROJECT_STATUS_LABELS[project.status] || project.status || '—'} color={STATUS_COLORS[project.status] || 'var(--text-dim)'} />
         </div>
         <div class="header-actions">
-          <Button variant={projectTimerActive ? 'danger' : 'secondary'} size="sm" onclick={handleProjectTimer}>
-            {#if projectTimerActive}<span class="timer-dot"></span> {formatDuration(timer.elapsed)} · Stop{:else}<SolidIcon name="play" size={14} /> Timer{/if}
-          </Button>
-          <Button variant="secondary" size="sm" onclick={() => openManualTime('project', params.id)}><SolidIcon name="clock" size={14} /> Manual</Button>
           <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><SolidIcon name="pencil" size={14} /> Edit</Button>
           <Button variant="secondary" size="sm" onclick={exportPdf}><FileDown size={14} /> PDF</Button>
           <Button variant="secondary" size="sm" onclick={exportMd}><SolidIcon name="file" size={14} /> MD</Button>
@@ -807,12 +817,11 @@
         {#if project.echipament_principal}<span>· {project.echipament_principal}</span>{/if}
         {#if project.cod_proiect}<span>· {project.cod_proiect}</span>{/if}
       </div>
-      <div class="pstats">
-        <div class="ps"><span class="ps-val">{tasks.length}</span><span class="ps-lbl">taskuri</span></div>
-        <div class="ps"><span class="ps-val">{tasksDone}</span><span class="ps-lbl">finalizate</span></div>
-        <div class="ps"><span class="ps-val">{formatDuration(timerSessions.total_secunde)}</span><span class="ps-lbl">ore lucrate</span></div>
-        {#if project.deadline}<div class="ps"><span class="ps-val">{formatDate(project.deadline)}</span><span class="ps-lbl">deadline</span></div>{/if}
-      </div>
+    </div>
+
+    <!-- Layout V3: continut principal + rail persistent -->
+    <div class="rail-grid">
+    <div class="rail-main">
 
       <div class="field-section">
         <div class="field-header">
@@ -860,7 +869,6 @@
           {/if}
         </div>
       {/if}
-    </div>
 
     <div class="tabs">
       {#each tabs as tab}
@@ -1156,6 +1164,61 @@
       </div>
       {/key}
     </div>
+
+    </div>
+
+    <aside class="rail">
+      <section class="rcell">
+        <div class="cell-label">
+          <span class="ico ico-green"><SolidIcon name="play" size={12} /></span>Cronometru
+          {#if projectTimerActive}<span class="tail"><span class="timer-dot"></span></span>{/if}
+        </div>
+        <div class="rtimer" class:live={projectTimerActive}>{formatDuration(projectTimerActive ? timer.elapsed : timerSessions.total_secunde)}</div>
+        <div class="rsub">{projectTimerActive ? 'sesiune activa' : 'total lucrat'}</div>
+        <div class="rbtns">
+          {#if projectTimerActive}
+            <Button variant="danger" size="sm" onclick={handleProjectTimer}><Square size={14} /> Stop</Button>
+          {:else}
+            <Button variant="secondary" size="sm" onclick={handleProjectTimer}><SolidIcon name="play" size={14} /> Start</Button>
+          {/if}
+          <Button variant="ghost" size="sm" onclick={() => openManualTime('project', params.id)}><SolidIcon name="clock" size={14} /> Manual</Button>
+        </div>
+      </section>
+
+      <section class="rcell">
+        <div class="cell-label"><span class="ico ico-amber"><ListTodo size={12} /></span>Progres taskuri</div>
+        <div class="rprog">
+          <span class="rprog-num">{tasksDone}/{tasks.length}</span>
+          <div class="rbar"><i style="width: {taskPct}%"></i></div>
+        </div>
+        <div class="rsub">{taskPct}% finalizate</div>
+      </section>
+
+      <section class="rcell">
+        <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Deadline</div>
+        {#if project.deadline}
+          <div class="rdate" class:urgent={deadlineDays !== null && deadlineDays <= 2}>{formatDate(project.deadline)}</div>
+          <div class="rsub">{deadlineLabel(deadlineDays)}</div>
+        {:else}
+          <div class="rsub rsub-empty">Fara termen</div>
+        {/if}
+      </section>
+
+      <section class="rcell">
+        <div class="cell-label"><span class="ico ico-amber"><Wrench size={12} /></span>Echipamente<span class="tail">{equipment.length}</span></div>
+        {#if equipment.length === 0}
+          <div class="rsub rsub-empty">Niciun echipament</div>
+        {:else}
+          <div class="req-list">
+            {#each equipment.slice(0, 3) as e (e.id)}
+              <div class="req-name" title={e.nume || e.model || ''}>{e.nume || e.model || '—'}</div>
+            {/each}
+            {#if equipment.length > 3}<div class="req-more">+{equipment.length - 3} altele</div>{/if}
+          </div>
+        {/if}
+      </section>
+    </aside>
+    </div>
   {/if}
 </div>
 
@@ -1363,13 +1426,28 @@
   .tip.pif { background: var(--accent-subtle); color: var(--accent); }
   .tip.service { background: var(--service-subtle); color: var(--service-accent); }
   .meta { font-size: var(--font-small); color: var(--text-dim); margin-top: 4px; display: flex; gap: var(--space-xs); }
-  .pstats { display: flex; gap: var(--space-lg); margin-top: var(--space-md); padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-  .ps { text-align: center; }
-  .ps-val { display: block; font-size: var(--font-h2); font-weight: var(--fw-semibold); color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .ps-lbl { font-size: var(--font-tiny); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+  /* Layout V3: continut principal + rail persistent */
+  .rail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
+  .rail-main { min-width: 0; }
+  .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); }
+  .rcell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+  .rtimer { font-family: var(--font-mono); font-size: 1.7rem; font-weight: var(--fw-bold); color: var(--text); line-height: 1; margin-top: 10px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .rtimer.live { color: var(--accent); }
+  .rbtns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .rprog { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
+  .rprog-num { font-family: var(--font-mono); font-size: 1.4rem; font-weight: var(--fw-bold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-panel); overflow: hidden; }
+  .rbar i { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width var(--dur-base) var(--ease); }
+  .rdate { font-family: var(--font-mono); font-size: 1.15rem; font-weight: var(--fw-bold); color: var(--text); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .rdate.urgent { color: var(--danger); }
+  .rsub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 6px; }
+  .rsub-empty { font-style: italic; margin-top: 10px; }
+  .req-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .req-name { font-size: var(--font-small); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .req-more { font-size: var(--font-tiny); color: var(--text-faint); }
 
-  /* Field sections under header (observatii, service) */
-  .field-section { margin-top: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  /* Field sections in coloana stanga (observatii, service) */
+  .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
   .field-header { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); color: var(--text-secondary); }
   .field-label { flex: 1; font-weight: var(--fw-semibold); }
   .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
@@ -1563,9 +1641,13 @@
   .import-drive-info strong { font-size: var(--font-small); color: var(--text); }
   .copy-form { display: flex; flex-direction: column; gap: var(--space-md); }
 
+  @media (max-width: 940px) {
+    .rail-grid { grid-template-columns: 1fr; }
+    .rail { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; order: -1; margin-bottom: var(--space-sm); }
+  }
+
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .pstats { gap: var(--space-md); flex-wrap: wrap; }
     .header-top { flex-direction: column; }
     .edetails { flex-wrap: wrap; gap: var(--space-sm); }
     .trow { padding: var(--space-sm); flex-wrap: wrap; align-items: flex-start; row-gap: 6px; }
