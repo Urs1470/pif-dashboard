@@ -50,9 +50,9 @@
     <div class="cell sec-card">
       <div class="cell-label"><span class="ico ico-amber">▦</span>Statistici</div>
       <div class="stat-grid">
-        <div><div class="v" data-count="16">0</div><div class="k">Proiecte totale</div></div>
         <div><div class="v" data-count="4">0</div><div class="k">Active</div></div>
         <div><div class="v" data-count="12">0</div><div class="k">Finalizate</div></div>
+        <div><div class="v" data-count="16">0</div><div class="k">Total proiecte</div></div>
         <div><div class="v"><span data-count="284" data-dec="284.5">0</span>h</div><div class="k">Ore facturabile</div></div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:18px">
@@ -76,21 +76,27 @@
     <div class="cell sec-card">
       <div class="cell-label"><span class="ico ico-green">⇩</span>Export</div>
       <div class="act-row">
-        <button class="btn btn-ghost btn-sm">Excel — proiecte</button>
-        <button class="btn btn-ghost btn-sm">Excel — taskuri</button>
-        <button class="btn btn-ghost btn-sm">Excel — ore</button>
-        <button class="btn btn-ghost btn-sm">PDF — sumar</button>
+        <button class="btn btn-ghost btn-sm">⇩ Excel Proiecte</button>
+        <button class="btn btn-ghost btn-sm">⇩ Excel Taskuri</button>
+        <button class="btn btn-ghost btn-sm">⇩ Excel Ore</button>
+        <button class="btn btn-ghost btn-sm">⇩ PDF Sumar</button>
       </div>
     </div>
 
     <div class="cell sec-card">
-      <div class="cell-label"><span class="ico ico-vio">⛁</span>Backup & restore</div>
+      <div class="cell-label"><span class="ico ico-vio">⛁</span>Backup & Restore</div>
       <div class="act-row">
-        <button class="btn btn-accent btn-sm">Backup JSON</button>
-        <button class="btn btn-ghost btn-sm">Dump DB</button>
-        <button class="btn btn-ghost btn-sm danger">Restore…</button>
-        <span class="kpi-sub" style="align-self:center">ultimul backup: azi 03:00 · 30 păstrate</span>
+        <button class="btn btn-accent btn-sm">⇩ Backup JSON</button>
+        <button class="btn btn-ghost btn-sm danger">⇧ Restaurează JSON</button>
+        <button class="btn btn-ghost btn-sm">⇩ Descarcă DB</button>
+        <button class="btn btn-ghost btn-sm danger">⇧ Încarcă DB</button>
       </div>
+    </div>
+
+    <div class="cell sec-card">
+      <div class="cell-label"><span class="ico ico-green">⇪</span>Import Debrief<span class="tail">Cowork → Dashboard</span></div>
+      <div style="margin-top:12px; background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.74rem; color:var(--text-3); min-height:64px">{"proiect": {...}, "tasks": [...], ...}</div>
+      <div class="act-row"><button class="btn btn-accent btn-sm">⇪ Importă</button></div>
     </div>
 
     <div class="cell sec-card">
@@ -104,8 +110,8 @@
 
     <div class="cell sec-card">
       <div class="cell-label"><span class="ico ico-amber">⧉</span>Integrare Obsidian</div>
-      <div class="obs-path">/home/ion-ursu/Vaults/pif-notes · foldere: Comisionare, Fault-uri, Proceduri</div>
-      <div class="act-row"><button class="btn btn-ghost btn-sm">Salvează</button><button class="btn btn-ghost btn-sm">Test conexiune</button></div>
+      <div class="obs-path">Cale vault: /home/ion-ursu/Obsidian/Vault · Foldere: 10 Notes, 30 Projects</div>
+      <div class="act-row"><button class="btn btn-accent btn-sm">Salvează</button></div>
     </div>
   </section>
 
@@ -150,12 +156,16 @@
         <div class="act-row" style="margin-top:auto"><button class="btn btn-accent btn-sm">JSON</button><button class="btn btn-ghost btn-sm danger">Restore</button></div>
       </section>
       <section class="cell">
-        <div class="cell-label"><span class="ico ico-red">⟳</span>Cache & SW</div>
-        <div class="act-row" style="margin-top:auto"><button class="btn btn-ghost btn-sm">Golește</button><button class="btn btn-ghost btn-sm">Update</button></div>
+        <div class="cell-label"><span class="ico ico-red">⟳</span>Cache & Service Worker</div>
+        <div class="act-row" style="margin-top:auto"><button class="btn btn-ghost btn-sm">Curăță cache</button><button class="btn btn-ghost btn-sm">Update SW</button></div>
       </section>
       <section class="cell">
         <div class="cell-label"><span class="ico ico-amber">⧉</span>Obsidian</div>
-        <div class="kpi-sub" style="margin-top:auto">vault conectat ✓<br>128 note indexate</div>
+        <div class="kpi-sub" style="margin-top:auto">vault configurat ✓<br>foldere: Notes, Projects</div>
+      </section>
+      <section class="cell c-2x1">
+        <div class="cell-label"><span class="ico ico-green">⇪</span>Import Debrief<span class="tail">JSON din Cowork</span></div>
+        <div class="act-row" style="margin-top:auto"><span class="kpi-sub" style="align-self:center; margin:0">{"proiect": {...}, "tasks": [...]}</span><button class="btn btn-accent btn-sm" style="margin-left:auto">⇪ Importă</button></div>
       </section>
     </div>
   </section>
@@ -165,6 +175,7 @@
     <div class="ptabs">
       <button class="ptab on">Statistici</button>
       <button class="ptab">Export & Backup</button>
+      <button class="ptab">Import Debrief</button>
       <button class="ptab">Integrare & Sistem</button>
     </div>
 

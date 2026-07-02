@@ -9,46 +9,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="bento.css">
 <style>
-/* — specific Detaliu proiect — */
+/* — specific Detaliu proiect (elemente reale: stats row, Observații, taburi) — */
 .crumb { font-size:.76rem; color:var(--text-3); cursor:pointer; width:max-content; transition: color .16s; }
 .crumb:hover { color: var(--accent); }
-.pd-title { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.035em; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height:1.05; margin-top:8px; }
-.pd-meta { display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
-.pd-meta .mono { font-size:.72rem; color:var(--text-3); }
-.pd-head { margin-bottom:18px; }
-.pd-acts { display:flex; gap:10px; margin-left:auto; align-self:flex-end; flex-wrap:wrap; }
+.pd-title { font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; letter-spacing:-.035em; font-size: clamp(1.6rem, 3.8vw, 2.3rem); line-height:1.05; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.pd-client { color:var(--text-3); font-size:.85rem; margin-top:6px; }
+.pd-head { margin-bottom:16px; }
 .pd-top { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.pd-acts { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+.btn-stop { background:var(--red); color:#fff; }
+.btn-stop:hover { background:#ff5f50; transform:translateY(-2px); }
 
-.jurnal { margin-top:10px; display:flex; flex-direction:column; overflow-y:auto; }
-.jrow { display:flex; gap:12px; padding:9px 4px; border-bottom:1px dashed var(--line); font-size:.8rem; }
-.jrow:last-child { border-bottom:none; }
-.jrow .jd { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.66rem; color:var(--text-3); white-space:nowrap; padding-top:2px; }
-.jrow .jt { color:var(--text-2); line-height:1.45; }
-.jrow.sess .jd { color:var(--green); }
+/* stats row — ca în app-ul real */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0 12px; }
+.stats-row > div { background:var(--bg-cell); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 16px; text-align:center; }
+.stats-row .v { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-weight:700; font-size:1.5rem; }
+.stats-row .k { font-size:.62rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-3); margin-top:4px; }
+@media (max-width:700px){ .stats-row { grid-template-columns:repeat(2,1fr); } }
 
-.big-ring-cell { align-items:center; justify-content:center; text-align:center; }
-.big-ring-wrap { position:relative; display:grid; place-items:center; margin-top:6px; }
-.big-ring-txt { position:absolute; display:flex; flex-direction:column; align-items:center; }
-.big-ring-txt .big-num { font-size:2.3rem; }
-.big-ring-txt small { color:var(--text-3); font-size:.7rem; margin-top:2px; }
+.obs { background:var(--bg-cell); border:1px solid var(--line); border-radius:var(--radius-sm); padding:14px 18px; margin-bottom:16px; cursor:text; }
+.obs .cap { font-size:.78rem; font-weight:600; display:flex; align-items:center; gap:8px; }
+.obs .ph { color:var(--text-3); font-size:.82rem; font-style:italic; margin-top:6px; }
 
-.st { display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:600; }
-.st i { width:7px; height:7px; border-radius:50%; }
-.st-ok { color:var(--green); } .st-ok i { background:var(--green); }
-.st-wip { color:var(--accent); } .st-wip i { background:var(--accent); animation:pulse 1.6s infinite; }
-.st-off { color:var(--text-3); } .st-off i { background:var(--text-3); }
-
-/* V2 — single column cu tab-bar */
-.v2col { max-width: 920px; }
-.qadd { display:flex; gap:10px; margin-bottom:8px; }
-.qadd input { flex:1; background:var(--bg-cell); border:1px solid var(--line); border-radius:999px; padding:11px 18px; color:var(--text); font-size:.84rem; font-family:'Inter',system-ui,sans-serif; outline:none; }
+.qadd { display:flex; gap:10px; margin:12px 0 6px; }
+.qadd input { flex:1; background:var(--bg-inset); border:1px solid var(--line); border-radius:999px; padding:10px 16px; color:var(--text); font-size:.83rem; font-family:'Inter',system-ui,sans-serif; outline:none; }
 .qadd input:focus { border-color:var(--accent); }
 .qadd input::placeholder { color:var(--text-3); }
 
-/* V3 — conținut + rail */
+/* rânduri task cu bordură colorată stânga — ca în app */
+.trow { border-left:3px solid var(--line-strong); border-radius:6px 12px 12px 6px; margin-bottom:4px; }
+.trow.hot { border-left-color:var(--red); }
+.trow.warm { border-left-color:var(--accent); }
+.stat-pill { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.62rem; font-weight:700; padding:3px 10px; border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); white-space:nowrap; }
+.stat-pill.prog { color:var(--accent); border-color:rgba(255,180,84,.4); }
+
+.jurnal { display:flex; flex-direction:column; overflow-y:auto; }
+.jrow { padding:10px 4px; border-bottom:1px dashed var(--line); font-size:.8rem; }
+.jrow:last-child { border-bottom:none; }
+.jrow .jh { display:flex; align-items:center; gap:10px; }
+.jrow .jd { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.66rem; color:var(--text-3); }
+.jrow .jt { color:var(--text-2); line-height:1.5; margin-top:4px; }
+.tbadge { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.6rem; font-weight:700; color:var(--green); background:var(--green-dim); border-radius:999px; padding:2px 8px; }
+
+.eq-card { background:var(--bg-inset); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:8px; }
+.eq-card .nm { font-weight:600; font-size:.85rem; }
+.eq-card .meta { font-family:'JetBrains Mono',ui-monospace,Consolas,monospace; font-size:.68rem; color:var(--text-3); margin-top:4px; }
+.eq-card .pl { color:var(--accent); font-size:.72rem; margin-top:6px; cursor:pointer; }
+
 .rail-grid { display:grid; grid-template-columns: 1fr 300px; gap:14px; align-items:start; }
-.rail { display:flex; flex-direction:column; gap:14px; position:sticky; top:16px; }
-.rail .cell { min-height:0; }
+.rail { display:flex; flex-direction:column; gap:12px; position:sticky; top:16px; }
 @media (max-width: 940px) { .rail-grid { grid-template-columns:1fr; } .rail { position:static; } }
 </style>
 </head>
@@ -57,28 +66,23 @@
   <header class="topbar">
     <div class="brand"><span class="dot"></span>PIF·Dashboard <span class="pg">/ Proiecte / Detaliu</span></div>
     <div class="spacer"></div>
-    <span class="timer-chip"><i></i><span class="lbl">Cluj ·&nbsp;</span><span class="js-clock">01:42:17</span></span>
     <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Caută…</span><kbd>Ctrl K</kbd></div>
     <div class="avatar">IU</div>
   </header>
 
   <div class="pd-head">
-    <div class="crumb" onclick="location.href='projects.html'">← Înapoi la proiecte</div>
-    <div class="pd-top">
+    <div class="crumb" onclick="location.href='projects.html'">← Proiecte</div>
+    <div class="pd-top" style="margin-top:8px">
       <div>
-        <h1 class="pd-title">PIF Stație pompare Cluj</h1>
-        <div class="pd-meta">
-          <span class="pill pill-work"><i></i>În lucru</span>
-          <span class="pill pill-tip">PIF</span>
-          <span class="pill pill-tip">Hidroconstrucția SA</span>
-          <span class="mono">start 12.05.2026 · deadline <b style="color:var(--red)">03.07.2026</b> · HC-2026-0114</span>
-        </div>
+        <h1 class="pd-title"><span class="pill pill-tip">PIF</span>PIF Stație pompare Cluj <span class="pill pill-work"><i></i>În lucru</span></h1>
+        <div class="pd-client">Hidroconstrucția SA</div>
       </div>
       <div class="pd-acts">
-        <button class="btn btn-accent btn-sm">⏸ Pauză timer</button>
-        <button class="btn btn-ghost btn-sm">✎ Editează</button>
-        <button class="btn btn-ghost btn-sm">Export PDF</button>
-        <button class="btn btn-ghost btn-sm">⋯</button>
+        <button class="btn btn-stop btn-sm">● <span class="js-clock">01:42:17</span> · Stop</button>
+        <button class="btn btn-ghost btn-sm">◷ Manual</button>
+        <button class="btn btn-ghost btn-sm">✎ Edit</button>
+        <button class="btn btn-ghost btn-sm">PDF</button>
+        <button class="btn btn-ghost btn-sm">MD</button>
       </div>
     </div>
   </div>
@@ -91,97 +95,87 @@
     <span class="vname"></span>
   </div>
 
-  <!-- ============ V1 — totul în bento ============ -->
+  <!-- ============ V1 — aranjamentul REAL (stats + observații + taburi + listă) ============ -->
   <section class="variant" id="v1">
-    <div class="bento">
-      <section class="cell c-1x2 big-ring-cell">
-        <div class="cell-label" style="align-self:flex-start"><span class="ico ico-green">✓</span>Progres PIF</div>
-        <div class="big-ring-wrap">
-          <svg class="ring" width="140" height="140" viewBox="0 0 150 150">
-            <circle class="track" cx="75" cy="75" r="64" fill="none" stroke-width="11"/>
-            <circle class="val" cx="75" cy="75" r="64" fill="none" stroke-width="11" stroke-dasharray="402.1" stroke-dashoffset="402.1" data-pct="68" data-circ="402.1"/>
-          </svg>
-          <div class="big-ring-txt"><span class="big-num">68%</span><small>17 / 25 puncte</small></div>
-        </div>
-        <div class="kpi-sub" style="margin-top:12px">Ultimul bifat:<br><b style="color:var(--text-2)">Secvență pornire P2</b></div>
-      </section>
+    <div class="stats-row">
+      <div><div class="v" data-count="6">0</div><div class="k">Taskuri</div></div>
+      <div><div class="v" data-count="2">0</div><div class="k">Finalizate</div></div>
+      <div><div class="v"><span data-count="22">0</span>h</div><div class="k">Ore lucrate</div></div>
+      <div><div class="v" style="color:var(--red)">03.07.2026</div><div class="k">Deadline</div></div>
+    </div>
 
-      <section class="cell c-2x2">
-        <div class="cell-label"><span class="ico ico-amber">≔</span>Taskuri<span class="tail">4 deschise / 2 închise</span></div>
-        <div class="rowlist" style="margin-top:8px; overflow-y:auto">
-          <div class="row done" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Verificare cablare forță dulap DT-01</span><span class="pr pr-low">low</span></div>
-          <div class="row done" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Upload parametri ACS880 — pompa P1</span><span class="pr pr-med">med</span></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)<small>2 subtaskuri · 1 atașament</small></span><span class="pr pr-high">high</span></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="pr pr-high">high</span></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Setare rampă + limite cuplu P3</span><span class="pr pr-med">med</span></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final</span><span class="pr pr-med">med</span></div>
-        </div>
-      </section>
+    <div class="obs">
+      <div class="cap">▤ Observații tehnice <span style="margin-left:auto;color:var(--text-3)">✎</span></div>
+      <div class="ph">Click pentru a adăuga…</div>
+    </div>
 
-      <section class="cell kpi">
-        <div class="cell-label"><span class="ico ico-green">◷</span>Timp proiect</div>
-        <div class="big-num" style="font-size:2.4rem"><span data-count="47" data-dec="47.2">0</span><small style="font-size:1.1rem;color:var(--text-3);font-weight:500">h</small></div>
-        <div class="kpi-sub">sesiune: <b style="color:var(--green)" class="js-clock">01:42:17</b></div>
-      </section>
+    <div class="ptabs">
+      <button class="ptab on">Taskuri<span class="n">6</span></button>
+      <button class="ptab">Jurnal</button>
+      <button class="ptab">Echipamente<span class="n">3</span></button>
+      <button class="ptab">Atașamente</button>
+      <button class="ptab">Info</button>
+    </div>
 
-      <section class="cell kpi">
-        <div class="cell-label"><span class="ico ico-red">◔</span>Deadline</div>
-        <div class="big-num" style="font-size:2.4rem;color:var(--red)">2<small style="font-size:1.1rem;color:var(--text-3);font-weight:500"> zile</small></div>
-        <div class="kpi-sub">03.07.2026 · raport PIF</div>
-      </section>
+    <div style="color:var(--text-3); font-size:.76rem; margin-bottom:4px">2/6 finalizate</div>
+    <div class="qadd"><input placeholder="Task rapid… Enter pentru a adăuga"><button class="btn btn-accent btn-sm">＋</button></div>
 
-      <section class="cell c-2x1" style="grid-row:span 2">
-        <div class="cell-label"><span class="ico ico-vio">✎</span>Jurnal recent</div>
-        <div class="jurnal">
-          <div class="jrow"><span class="jd">30.06 16:40</span><span class="jt">P2 — vibrații la 42 Hz, ocolire prin skip frequency 40–44 Hz.</span></div>
-          <div class="jrow sess"><span class="jd">30.06 14:10</span><span class="jt">Sesiune timer — 3h 20m (parametrizare P2)</span></div>
-          <div class="jrow"><span class="jd">30.06 11:15</span><span class="jt">F0002 supratensiune DC la oprire — rampă 15s → 30s.</span></div>
-          <div class="jrow"><span class="jd">29.06 14:02</span><span class="jt">Client cere raport intermediar. Termen 3 iulie.</span></div>
-        </div>
-      </section>
-
-      <section class="cell c-2x1" style="grid-row:span 2">
-        <div class="cell-label"><span class="ico ico-amber">⚙</span>Echipamente / drives</div>
-        <table class="tbl" style="margin-top:8px">
-          <thead><tr><th>Poz.</th><th>Echipament</th><th>Convertizor</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td class="mono" style="color:var(--accent);font-weight:700">P1</td><td>Pompă 200 kW</td><td class="mono">ACS880-01-145A-3</td><td><span class="st st-ok"><i></i>PIF OK</span></td></tr>
-            <tr><td class="mono" style="color:var(--accent);font-weight:700">P2</td><td>Pompă 315 kW</td><td class="mono">ACS880-01-206A-3</td><td><span class="st st-wip"><i></i>Parametrizare</span></td></tr>
-            <tr><td class="mono" style="color:var(--accent);font-weight:700">P3</td><td>Pompă 90 kW</td><td class="mono">FC302 P90K</td><td><span class="st st-off"><i></i>Neînceput</span></td></tr>
-          </tbody>
-        </table>
-      </section>
+    <div class="cell" style="padding:10px 14px">
+      <div class="rowlist">
+        <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">› Autotuning motor P2 (315 kW)</span><span class="stat-pill prog">in_progress</span><span class="pr pr-high">Urgent</span><button class="btn btn-ghost btn-sm">◷</button></div>
+        <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">› Test interblocări nivel minim bazin</span><span class="stat-pill">To Do</span><span class="pr pr-high">Urgent</span><button class="btn btn-ghost btn-sm">◷</button></div>
+        <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">› Setare rampă + limite cuplu P3</span><span class="stat-pill">To Do</span><span class="pr pr-med">Normal</span><button class="btn btn-ghost btn-sm">◷</button></div>
+        <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">› Redactare raport PIF final</span><span class="stat-pill">To Do</span><span class="pr pr-med">Normal</span><button class="btn btn-ghost btn-sm">◷</button></div>
+      </div>
+      <div style="color:var(--text-3); font-size:.76rem; font-weight:600; padding:12px 10px 6px; cursor:pointer">› FINALIZATE (2)</div>
     </div>
   </section>
 
-  <!-- ============ V2 — tab-bar + single column (ca app-ul real) ============ -->
+  <!-- ============ V2 — aceleași elemente, în grilă bento ============ -->
   <section class="variant" id="v2">
-    <div class="v2col">
-      <div class="ptabs">
-        <button class="ptab on">Taskuri<span class="n">6</span></button>
-        <button class="ptab">Jurnal<span class="n">14</span></button>
-        <button class="ptab">Echipamente<span class="n">3</span></button>
-        <button class="ptab">Atașamente<span class="n">5</span></button>
-        <button class="ptab">Info</button>
-      </div>
+    <div class="bento" style="grid-auto-rows:136px">
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-amber">≔</span>Taskuri</div>
+        <div class="big-num" style="font-size:2.4rem"><span data-count="6">0</span><small style="font-size:1.1rem;color:var(--text-3)"> · 2 finalizate</small></div>
+        <div class="kpi-sub">2/6 — <b style="color:var(--accent)">33%</b></div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-green">◷</span>Ore lucrate</div>
+        <div class="big-num" style="font-size:2.4rem"><span data-count="22">0</span><small style="font-size:1.1rem;color:var(--text-3)">h</small></div>
+        <div class="kpi-sub">sesiune activă: <b style="color:var(--green)" class="js-clock">01:42:17</b></div></section>
+      <section class="cell kpi"><div class="cell-label"><span class="ico ico-red">◔</span>Deadline</div>
+        <div class="big-num" style="font-size:2.4rem;color:var(--red)">1<small style="font-size:1.1rem;color:var(--text-3)"> zi</small></div>
+        <div class="kpi-sub">03.07.2026</div></section>
+      <section class="cell">
+        <div class="cell-label"><span class="ico ico-vio">▤</span>Observații tehnice</div>
+        <div style="color:var(--text-3); font-size:.8rem; font-style:italic; margin-top:auto">Click pentru a adăuga…</div>
+      </section>
 
-      <div class="qadd"><input placeholder="＋ Task nou — scrie și apasă Enter…"><button class="btn btn-accent btn-sm">Adaugă</button></div>
-
-      <div class="cell" style="padding:10px 14px">
-        <div class="rowlist">
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)<small>2 subtaskuri · 1 atașament · 2.1h</small></span><span class="pr pr-high">high</span><button class="btn btn-ghost btn-sm">▶</button></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin<small>termen azi</small></span><span class="pr pr-high">high</span><button class="btn btn-ghost btn-sm">▶</button></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Setare rampă + limite cuplu P3</span><span class="pr pr-med">med</span><button class="btn btn-ghost btn-sm">▶</button></div>
-          <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final<small>termen 03.07</small></span><span class="pr pr-med">med</span><button class="btn btn-ghost btn-sm">▶</button></div>
-          <div class="row done" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Upload parametri ACS880 — pompa P1</span><span class="pr pr-med">med</span></div>
-          <div class="row done" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Verificare cablare forță dulap DT-01</span><span class="pr pr-low">low</span></div>
+      <section class="cell c-2x2">
+        <div class="cell-label"><span class="ico ico-amber">≔</span>Taskuri<span class="tail">2/6 finalizate</span></div>
+        <div class="qadd" style="margin:10px 0 4px"><input placeholder="Task rapid…"><button class="btn btn-accent btn-sm">＋</button></div>
+        <div class="rowlist" style="overflow-y:auto">
+          <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)</span><span class="pr pr-high">Urgent</span></div>
+          <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="pr pr-high">Urgent</span></div>
+          <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Setare rampă + limite cuplu P3</span><span class="pr pr-med">Normal</span></div>
+          <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final</span><span class="pr pr-med">Normal</span></div>
         </div>
-      </div>
+      </section>
 
-      <div class="cell" style="margin-top:14px">
-        <div class="cell-label"><span class="ico ico-amber">☰</span>Observații tehnice<span class="tail">editabil</span></div>
-        <p style="font-size:.84rem; color:var(--text-2); line-height:1.6; margin-top:10px">Alimentare 3×400V din TD-2. Atenție la interblocarea cu vana de refulare — semnalul vine din PLC-ul stației (DI 4.2). Skip frequency setat 40–44 Hz pe P2 din cauza vibrațiilor.</p>
-      </div>
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-vio">✎</span>Jurnal<span class="tail">note + sesiuni timer</span></div>
+        <div class="jurnal" style="margin-top:6px">
+          <div class="jrow"><div class="jh"><span class="jd">30.06.2026</span><span class="tbadge">◷ 7h 30m</span></div><div class="jt">Fault F0002 (supratensiune DC) la oprire rapidă — mărit rampa 15s → 30s.</div></div>
+          <div class="jrow"><div class="jh"><span class="jd">30.06.2026</span></div><div class="jt">P2 — vibrații la 42 Hz, ocolire prin skip frequency 40–44 Hz.</div></div>
+          <div class="jrow"><div class="jh"><span class="jd">29.06.2026</span><span class="tbadge">◷ 8h</span></div><div class="jt">Client a cerut raport intermediar înainte de recepție.</div></div>
+        </div>
+      </section>
+
+      <section class="cell c-2x1" style="grid-row:span 2">
+        <div class="cell-label"><span class="ico ico-amber">⚙</span>Echipamente<span class="tail">Import STARTER · Import ABB · ＋</span></div>
+        <div style="margin-top:8px; overflow-y:auto">
+          <div class="eq-card"><div class="nm">Pompa P1 — 200 kW — ABB</div><div class="meta">Model: ACS880-01-145A-3 · Serie: 1082400123</div><div class="pl">› 3 parametri</div></div>
+          <div class="eq-card"><div class="nm">Pompa P2 — 315 kW — ABB</div><div class="meta">Model: ACS880-01-206A-3 · Serie: 1082400124</div><div class="pl">› 3 parametri</div></div>
+          <div class="eq-card"><div class="nm">Pompa P3 — 90 kW (rezervă) — Danfoss</div><div class="meta">Model: FC302 P90K · Serie: 011230001</div></div>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -191,58 +185,52 @@
       <div>
         <div class="ptabs">
           <button class="ptab on">Taskuri<span class="n">6</span></button>
-          <button class="ptab">Jurnal<span class="n">14</span></button>
+          <button class="ptab">Jurnal</button>
           <button class="ptab">Echipamente<span class="n">3</span></button>
-          <button class="ptab">Atașamente<span class="n">5</span></button>
+          <button class="ptab">Atașamente</button>
           <button class="ptab">Info</button>
         </div>
+        <div class="qadd"><input placeholder="Task rapid… Enter pentru a adăuga"><button class="btn btn-accent btn-sm">＋</button></div>
         <div class="cell" style="padding:10px 14px">
           <div class="rowlist">
-            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)<small>2 subtaskuri · 1 atașament</small></span><span class="pr pr-high">high</span></div>
-            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="pr pr-high">high</span></div>
-            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Setare rampă + limite cuplu P3</span><span class="pr pr-med">med</span></div>
-            <div class="row" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final</span><span class="pr pr-med">med</span></div>
-            <div class="row done" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Upload parametri ACS880 — P1</span><span class="pr pr-med">med</span></div>
+            <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Autotuning motor P2 (315 kW)</span><span class="stat-pill prog">in_progress</span><span class="pr pr-high">Urgent</span></div>
+            <div class="row trow hot" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Test interblocări nivel minim bazin</span><span class="stat-pill">To Do</span><span class="pr pr-high">Urgent</span></div>
+            <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Setare rampă + limite cuplu P3</span><span class="stat-pill">To Do</span><span class="pr pr-med">Normal</span></div>
+            <div class="row trow warm" onclick="tgDone(this)"><span class="cb"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></span><span class="tt">Redactare raport PIF final</span><span class="stat-pill">To Do</span><span class="pr pr-med">Normal</span></div>
           </div>
+          <div style="color:var(--text-3); font-size:.76rem; font-weight:600; padding:12px 10px 6px; cursor:pointer">› FINALIZATE (2)</div>
         </div>
-        <div class="cell" style="margin-top:14px">
-          <div class="cell-label"><span class="ico ico-vio">✎</span>Jurnal recent</div>
-          <div class="jurnal">
-            <div class="jrow"><span class="jd">30.06 16:40</span><span class="jt">P2 — vibrații la 42 Hz, skip frequency 40–44 Hz.</span></div>
-            <div class="jrow sess"><span class="jd">30.06 14:10</span><span class="jt">Sesiune timer — 3h 20m</span></div>
-            <div class="jrow"><span class="jd">30.06 11:15</span><span class="jt">F0002 la oprire — rampă 15s → 30s.</span></div>
-          </div>
+        <div class="cell" style="margin-top:12px">
+          <div class="cell-label"><span class="ico ico-vio">▤</span>Observații tehnice</div>
+          <div style="color:var(--text-3); font-size:.8rem; font-style:italic; margin-top:8px">Click pentru a adăuga…</div>
         </div>
       </div>
 
       <aside class="rail">
         <section class="cell" style="background:linear-gradient(150deg,#221c12 0%,var(--bg-cell) 55%)">
-          <div class="cell-label"><span class="ico ico-green">▶</span>Timer</div>
-          <div class="big-num js-clock" style="font-size:1.9rem; margin-top:10px">01:42:17</div>
-          <div class="kpi-sub">Parametrizare ACS880</div>
-          <div style="display:flex; gap:8px; margin-top:12px"><button class="btn btn-accent btn-sm">⏸</button><button class="btn btn-ghost btn-sm">■ Stop</button></div>
+          <div class="cell-label"><span class="ico ico-green">▶</span>Cronometru</div>
+          <div class="big-num js-clock" style="font-size:1.8rem; margin-top:8px; font-family:'JetBrains Mono',ui-monospace,Consolas,monospace">01:42:17</div>
+          <div style="display:flex; gap:8px; margin-top:10px"><button class="btn btn-stop btn-sm">■ Stop</button><button class="btn btn-ghost btn-sm">◷ Manual</button></div>
         </section>
         <section class="cell">
-          <div class="cell-label"><span class="ico ico-green">✓</span>Progres PIF</div>
-          <div class="ring-wrap" style="display:flex; align-items:center; gap:14px; margin-top:10px">
-            <svg class="ring" width="62" height="62" viewBox="0 0 72 72">
-              <circle class="track" cx="36" cy="36" r="30" fill="none" stroke-width="8"/>
-              <circle class="val" cx="36" cy="36" r="30" fill="none" stroke-width="8" stroke-dasharray="188.5" stroke-dashoffset="188.5" data-pct="68" data-circ="188.5"/>
-            </svg>
-            <div><div style="font-family:'Space Grotesk','Inter',system-ui,sans-serif; font-weight:700; font-size:1.3rem">68%</div><div class="kpi-sub" style="margin:0">17/25 puncte</div></div>
+          <div class="cell-label"><span class="ico ico-amber">≔</span>Progres taskuri</div>
+          <div style="display:flex; align-items:baseline; gap:10px; margin-top:10px">
+            <span class="big-num" style="font-size:1.6rem">2/6</span>
+            <div style="flex:1; height:6px; border-radius:999px; background:var(--bg-inset); overflow:hidden"><i style="display:block; width:33%; height:100%; background:var(--accent)"></i></div>
           </div>
+          <div class="kpi-sub" style="margin-top:8px">22h lucrate în total</div>
         </section>
         <section class="cell">
           <div class="cell-label"><span class="ico ico-red">◔</span>Deadline</div>
-          <div class="big-num" style="font-size:1.9rem; margin-top:10px; color:var(--red)">2 <small style="font-size:.9rem;color:var(--text-3);font-weight:500">zile</small></div>
-          <div class="kpi-sub">03.07 · raport PIF</div>
+          <div class="big-num" style="font-size:1.7rem; margin-top:8px; color:var(--red)">03.07.2026</div>
+          <div class="kpi-sub">1 zi rămasă</div>
         </section>
         <section class="cell">
           <div class="cell-label"><span class="ico ico-amber">⚙</span>Echipamente</div>
-          <div class="rowlist" style="margin-top:6px">
-            <div class="row" style="padding:8px 6px"><span class="tt">P1 · ACS880-145A</span><span class="st st-ok"><i></i></span></div>
-            <div class="row" style="padding:8px 6px"><span class="tt">P2 · ACS880-206A</span><span class="st st-wip"><i></i></span></div>
-            <div class="row" style="padding:8px 6px"><span class="tt">P3 · FC302 P90K</span><span class="st st-off"><i></i></span></div>
+          <div class="rowlist" style="margin-top:4px">
+            <div class="row" style="padding:8px 6px"><span class="tt">P1 · ACS880-145A<small>3 parametri</small></span></div>
+            <div class="row" style="padding:8px 6px"><span class="tt">P2 · ACS880-206A<small>3 parametri</small></span></div>
+            <div class="row" style="padding:8px 6px"><span class="tt">P3 · FC302 P90K</span></div>
           </div>
         </section>
       </aside>
@@ -250,7 +238,7 @@
   </section>
 </div>
 
-<script>window.VARIANT_NAMES = {1:'V1 · Totul în grilă bento', 2:'V2 · Tab-uri + coloană unică (ca app-ul actual)', 3:'V3 · Conținut + rail persistent (timer/progres/deadline)'};</script>
+<script>window.VARIANT_NAMES = {1:'V1 · Aranjamentul actual, re-stilizat (stats + observații + taburi)', 2:'V2 · Aceleași elemente în grilă bento', 3:'V3 · Taburi + rail persistent (timer/progres/deadline)'};</script>
 <script src="bento.js"></script>
 </body>
 </html>
