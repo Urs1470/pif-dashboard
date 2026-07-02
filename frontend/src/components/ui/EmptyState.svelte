@@ -27,6 +27,8 @@
     text-align: center;
   }
   h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
     font-size: var(--font-h3);
     font-weight: var(--fw-semibold);
     color: var(--text-secondary);

@@ -49,8 +49,9 @@ Commit messages:
 Frontend (daca atingi UI):
 - SPA Svelte 5 in frontend/src/. Foloseste libraria de componente components/ui/
   (Button, Select, Modal, DatePicker, SolidIcon, Toast, ...) — NU stiluri ad-hoc.
-- Culori/spacing DOAR din frontend/src/styles/tokens.css (paleta Geist: negru + albastru
-  #0070f3). Iconite: <SolidIcon> pentru nav/feature, Lucide outline pentru afordante mici.
+- Culori/spacing DOAR din frontend/src/styles/tokens.css (paleta Bento: dark warm #12100d +
+  amber #ffb454; text pe fill amber = ink --accent-text #1a1206). Iconite: <SolidIcon> pentru
+  nav/feature, Lucide outline pentru afordante mici.
 - Dupa modificari de cod previewabile, ruleaza dev server-ul si verifica in browser.
 
 Comunicare cu Ion:

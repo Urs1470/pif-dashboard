@@ -817,7 +817,7 @@
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tmono { font-family: var(--font-mono); }
-  .task-cat { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); }
+  .task-cat { padding: 1px 8px; background: var(--purple-subtle); color: var(--purple); border-radius: var(--radius-full); font-weight: var(--fw-semibold); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .timer-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); -webkit-tap-highlight-color: transparent; flex-shrink: 0; }

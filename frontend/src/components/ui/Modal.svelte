@@ -96,6 +96,8 @@
     flex-shrink: 0;
   }
   .modal-title {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
     font-size: var(--font-h3);
     font-weight: var(--fw-bold);
     color: var(--text);

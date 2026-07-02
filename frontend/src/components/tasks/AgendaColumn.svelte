@@ -53,7 +53,7 @@
 <style>
   .agenda {
     position: sticky;
-    top: 16px;
+    top: calc(var(--header-height) + 16px);
     display: flex;
     flex-direction: column;
     padding: var(--space-md);

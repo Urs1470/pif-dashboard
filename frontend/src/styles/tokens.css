@@ -16,8 +16,8 @@
   --purple: #b9a5ff;
   --purple-subtle: rgba(185, 165, 255, 0.13);
 
-  /* Backgrounds — Geist dark (near-black + gri monocrom).
-     --bg e #050505 (nu #000): pe OLED negrul pur face smear la scroll si
+  /* Backgrounds — Bento dark (negru cald + gri warm).
+     --bg e #12100d (nu #000): pe OLED negrul pur face smear la scroll si
      aplatizeaza scara de elevatie. Scara de suprafete:
      bg(pagina) < bg-surface(card) < bg-panel(panou in card) < bg-input(control)
      < bg-overlay(modal/toast/popover). */
@@ -48,8 +48,8 @@
   --warning-subtle: rgba(255, 180, 84, 0.13);
   --danger: #ff7a6b;
   --danger-subtle: rgba(255, 122, 107, 0.13);
-  --info: #ffb454;
-  --info-subtle: rgba(255, 180, 84, 0.13);
+  --info: #b9a5ff;
+  --info-subtle: rgba(185, 165, 255, 0.13);
 
   /* Serii de grafic (validate CVD/contrast pe ambele teme) */
   --chart-1: #bd7420;
@@ -99,7 +99,7 @@
   --font-tiny: 0.7rem;
   --font-micro: 0.65rem;     /* podeaua etichetelor uppercase (badge/th/kpi-label) */
 
-  /* Font-weight (Geist/Plus Jakarta sunt variabile) */
+  /* Font-weight (Inter/Space Grotesk/JetBrains Mono sunt variabile) */
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
@@ -188,8 +188,8 @@
   --warning-subtle: rgba(200, 130, 20, 0.14);
   --danger: #d6473a;
   --danger-subtle: rgba(214, 71, 58, 0.10);
-  --info: #8a5300;
-  --info-subtle: rgba(200, 130, 20, 0.14);
+  --info: #6d4fd0;
+  --info-subtle: rgba(122, 95, 216, 0.12);
 
   --chart-1: #bd7420;
   --chart-2: #0f9257;

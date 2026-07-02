@@ -1,45 +1,53 @@
-/* Self-hosted Geist (OFL-1.1, fisierele in static/fonts/) — acelasi font ca SPA-ul. */
+/* Self-hosted (OFL-1.1, fisierele in static/fonts/) — aceleasi fonturi ca SPA-ul. */
 @font-face {
-  font-family: 'Geist';
-  src: url('/static/fonts/Geist-Variable.woff2') format('woff2');
+  font-family: 'Inter';
+  src: url('/static/fonts/Inter-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('/static/fonts/GeistMono-Variable.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'Space Grotesk';
+  src: url('/static/fonts/SpaceGrotesk-Variable.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/static/fonts/JetBrainsMono-Variable.woff2') format('woff2');
+  font-weight: 100 800;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  /* Accent — Geist blue (identitate PIF) */
-  --accent: #0070f3;
-  --accent-hover: #3291ff;
-  --accent-subtle: rgba(0, 112, 243, 0.14);
-  --accent-ring: rgba(0, 112, 243, 0.30);
-  --accent-text: #ffffff;
+  /* Accent — Bento amber (identitate PIF, redesign 2026) */
+  --accent: #ffb454;
+  --accent-hover: #ff8a3d;
+  --accent-subtle: rgba(255, 180, 84, 0.13);
+  --accent-ring: rgba(255, 180, 84, 0.30);
+  --accent-text: #1a1206;
 
-  /* Backgrounds — Geist dark (negru pur + gri monocrom) */
-  --bg: #000000;
-  --bg-surface: #0a0a0a;
-  --bg-elevated: #161616;
-  --bg-hover: #1f1f1f;
+  /* Backgrounds — Bento dark (negru cald) */
+  --bg: #12100d;
+  --bg-surface: #1b1814;
+  --bg-elevated: #14110e;
+  --bg-hover: #221e18;
 
-  --text: #ededed;
-  --text-secondary: #a1a1a1;
-  --text-dim: #787878;
+  --text: #f0ebe3;
+  --text-secondary: #a89f92;
+  --text-dim: #948a7d;
 
-  --border: #2e2e2e;
-  --border-subtle: #1f1f1f;
+  --border: #2b261f;
+  --border-subtle: #221e18;
 
-  --danger: #ff4d4f;
-  --danger-subtle: rgba(255, 77, 79, 0.13);
+  --danger: #ff7a6b;
+  --danger-subtle: rgba(255, 122, 107, 0.13);
 
-  --font-sans: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
+  --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -50,37 +58,37 @@
   --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
-  --radius-lg: 16px;
+  --radius-lg: 22px;
 
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
 
   --dur-fast: 0.12s;
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease: cubic-bezier(0.32, 0.72, 0.28, 1);
 }
 
 [data-theme="light"] {
-  --accent: #0070f3;
-  --accent-hover: #0761d1;
-  --accent-subtle: rgba(0, 112, 243, 0.10);
-  --accent-ring: rgba(0, 112, 243, 0.25);
-  --accent-text: #ffffff;
+  --accent: #ffb454;
+  --accent-hover: #f59d33;
+  --accent-subtle: rgba(255, 180, 84, 0.16);
+  --accent-ring: rgba(200, 130, 20, 0.30);
+  --accent-text: #1a1206;
 
-  --bg: #ffffff;
-  --bg-surface: #fafafa;
-  --bg-elevated: #f4f4f4;
-  --bg-hover: #efefef;
+  --bg: #f6f1e7;
+  --bg-surface: #fffdf8;
+  --bg-elevated: #efe8da;
+  --bg-hover: #ece4d3;
 
-  --text: #171717;
-  --text-secondary: #666666;
-  --text-dim: #888888;
+  --text: #1f1a12;
+  --text-secondary: #6b6254;
+  --text-dim: #756c5d;
 
-  --border: #eaeaea;
-  --border-subtle: #f0f0f0;
+  --border: #e3dbcb;
+  --border-subtle: #ede6d7;
 
-  --danger: #e00000;
-  --danger-subtle: rgba(224, 0, 0, 0.10);
+  --danger: #d6473a;
+  --danger-subtle: rgba(214, 71, 58, 0.10);
 
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 10px 34px rgba(0, 0, 0, 0.12);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -160,7 +168,7 @@ body {
 }
 
 .brand-wordmark {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.01em;

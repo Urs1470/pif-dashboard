@@ -1449,7 +1449,7 @@
   /* Field sections in coloana stanga (observatii, service) */
   .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
   .field-header { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); color: var(--text-secondary); }
-  .field-label { flex: 1; font-weight: var(--fw-semibold); }
+  .field-label { flex: 1; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }

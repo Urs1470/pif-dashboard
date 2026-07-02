@@ -60,12 +60,12 @@ frontend/src/
     api.js             # fetch wrapper + CSRF + cache (înlocuiește vechiul apiGet/apiPost)
     math.js, markdown.js, formatters.js, driveCalc.js, driveGlossary.js, ...
   stores/              # Svelte 5 rune stores (.svelte.js): ui, projects, tasks, timer, params, agenda
-  pages/               # Home, Tasks, Projects, ProjectDetail, Params, Notes, Admin, More, Calculator
+  pages/               # Home, Tasks, Projects, ProjectDetail, Params, Notes, Admin, Calculator
   components/
     ui/                # librăria de componente: Button, Card, Badge, Input, Select, Modal,
                        #   ConfirmDialog, Toast, DatePicker, SolidIcon, Chart, RichTextEditor,
                        #   Formula, MathText (KaTeX), Skeleton, EmptyState, AttachmentPreview
-    layout/            # Header, Sidebar, BottomNav, CommandPalette
+    layout/            # Header, Dock (navigatie plutitoare), CommandPalette
     projects/, params/, notes/, admin/   # componente per-domeniu
   styles/
     tokens.css         # SINGURA sursă de adevăr pentru paletă/spacing/typography (vezi §5)
@@ -120,23 +120,27 @@ fișiere separate). Hub-urile unde două sesiuni se pot ciocni: `App.svelte`,
 ## 5. Design system (respectă-l — NU stiluri ad-hoc)
 
 **Sursa unică de adevăr: `frontend/src/styles/tokens.css`.** Citește-l înainte să atingi CSS.
-Estetica e **Geist** (Vercel-like): negru pur + albastru. Două teme (`[data-theme="dark"]`
-default și `[data-theme="light"]`), ambele definite în tokens — dacă atingi culori,
+Estetica e **Bento** (redesign 2026-07): dark warm + amber, celule rotunjite 22px, dock
+plutitor jos în locul sidebar-ului/bottom-nav-ului. Două teme (`[data-theme="dark"]` default
+și `[data-theme="light"]` warm-paper), ambele definite în tokens — dacă atingi culori,
 păstrează ambele.
 
 **Paletă (dark, valori actuale):**
-- Accent (identitate PIF): `--accent #0070f3`, hover `#3291ff`, `--accent-subtle`, `--accent-ring`;
-  text pe fundal subtle → `--accent-on-subtle #3291ff` (nu `--accent`, pică AA)
-- Service: `--service-accent #f5a623`; secundar `--purple #8e6fff`
+- Accent (identitate PIF): `--accent #ffb454` (amber), hover `#ff8a3d`, `--accent-subtle`, `--accent-ring`;
+  **textul pe fill amber e ink închis `--accent-text #1a1206`** (amber e deschis); pe light, rolurile
+  de TEXT accent folosesc `--accent-on-subtle #8a5300` (amber pe deschis pică AA)
+- Service: `--service-accent #ffb454`; secundar `--purple #b9a5ff`
 - **Scară de suprafețe (elevație)** — folosește token-ul potrivit rolului, nu unul la întâmplare:
-  `--bg #050505` (pagină, near-black anti-OLED-smear) < `--bg-surface #0a0a0a` (card) <
-  `--bg-panel #141414` (panou nested în card) < `--bg-input #161616` (input/chip/th) <
-  `--bg-overlay #1c1c1c` (modal/toast/palette/popover). `--bg-hover #1f1f1f`, `--bg-active #2a2a2a`.
+  `--bg #12100d` (pagină, negru cald anti-OLED-smear) < `--bg-surface #1b1814` (card/celulă) —
+  `--bg-panel/--bg-input #14110e` sunt INSET (adâncituri în celulă) <
+  `--bg-overlay #262019` (modal/toast/palette/popover). `--bg-hover #221e18`, `--bg-active #2b261f`.
   (`--bg-elevated` = alias legacy pe `--bg-input`.)
-- Text (contrast AA-safe): `--text #ededed`, `--text-secondary #a1a1a1`, `--text-dim #8f8f8f`,
-  `--text-faint #7a7a7a`
-- Borders: `--border #2e2e2e`, `--border-subtle #1f1f1f`
-- Semantic: `--success #45a557`, `--warning #f5a623`, `--danger #ff4d4f`, `--info #0070f3`
+- Text (contrast AA-safe): `--text #f0ebe3`, `--text-secondary #a89f92`, `--text-dim #948a7d`,
+  `--text-faint #6f675c` (doar etichete/large)
+- Borders: `--border #2b261f`, `--border-subtle #221e18`, `--border-strong #3a332a` (dock, contururi)
+- Semantic: `--success #7ee2a8`, `--warning #ffb454` (≡ accent, intenționat), `--danger #ff7a6b`,
+  `--info #b9a5ff` (violet — DISTINCT de warning/accent). Statusul `in_asteptare` → `--purple`.
+- Serii de grafic: `--chart-1 #bd7420`, `--chart-2 #0f9257`, `--chart-3 #7a5fd8` (validate CVD/contrast)
 - Elevation → shadow: card `--shadow-sm`, popover `--shadow-md`, modal/toast `--shadow-lg`.
 
 **Scale noi (folosește token, nu valori hardcodate):**
@@ -148,9 +152,10 @@ păstrează ambele.
 - Focus: `--focus-ring` (reutilizat de inputuri + regula globală `:focus-visible` din global.css). Touch: `--tap-min 44px`.
 - Tabele: `.data-table th` sunt sticky; coloane numerice → clasă `.num` (dreapta + tabular). Pe mobil `.data-table.reflow` devine carduri (label via `data-label`). Densitate mare → `.data-table.zebra`.
 
-**Tipografie:** `--font-sans` = **Plus Jakarta Sans** (body), `--font-mono` = **JetBrains Mono**
-pentru ORICE cifră / cod / valoare numerică / parametru. (Notă: migrarea la fontul *Geist Sans*
-există doar în branch-ul nemergeat `theme-wip` — în `master` body-ul e încă Plus Jakarta.)
+**Tipografie:** `--font-sans` = **Inter** (body), `--font-heading` = **Space Grotesk**
+(h1/titluri/numerale mari `.big-num`/`.stat-value`, tracking negativ), `--font-mono` =
+**JetBrains Mono** pentru ORICE cifră / cod / valoare numerică / parametru. Toate self-hosted
+în `static/fonts/` (variabile, subseturi latin + latin-ext pentru diacritice).
 
 **Iconițe — hibrid (vezi `components/ui/SolidIcon.svelte`):**
 - `<SolidIcon name="..." />` — set custom **solid/filled** pentru navigație + iconițe de
@@ -167,8 +172,16 @@ există doar în branch-ul nemergeat `theme-wip` — în `master` body-ul e înc
 - Formule: `<Formula>` / `<MathText>` randează LaTeX cu KaTeX.
 - **Butoanele de acțiune ale unui Modal** merg în `{#snippet footer()}` cu `<div class="modal-actions">`
   (rămân fixate sub scroll, cu separator) — NU în corpul modalului.
-- **Tab-uri underline**: clasele partajate `.tabs`/`.tab`/`.tab.active` din `global.css` (ProjectDetail, Params).
+- **Tab-uri underline**: clasele partajate `.tabs`/`.tab`/`.tab.active` din `global.css` (ProjectDetail, Params, Admin).
   Categoriile din Calculator (`.fam-tab` pill) sunt un pattern distinct, intenționat.
+- **Utilitare bento** (global.css): `.bento` + span-uri `.c-2x2/.c-2x1/...`, `.cell-label` + `.ico-*`,
+  `.big-num`, `.rowlist/.row`, `.cell-in` (stagger de intrare, cu fallback reduced-motion).
+
+**Layouturi per pagină (redesign 2026-07):** Home = bandă KPI + „Astăzi" + liste; Proiecte =
+grid de carduri; Detaliu proiect = taburi + rail sticky dreapta (timer/progres/deadline/echipamente);
+Taskuri = bandă urgente + listă + agendă 7 zile; Parametri = sidebar producători/familii + tabel;
+Calculator = navigator module + modul activ (accordion sub 940px); Admin = 4 taburi.
+Navigația globală: **Dock** plutitor jos (7 rute + căutare), pe desktop și mobil.
 
 **Service worker / cache-busting:** SPA înregistrează `/service-worker.js`
 (`static/service-worker.js`, servit de `app.py`). La livrare de assets noi, bump versiunile

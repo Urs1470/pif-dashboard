@@ -18,7 +18,7 @@ export const TASK_STATUS_LABELS = {
 
 export const STATUS_COLORS = {
   in_lucru: 'var(--accent-on-subtle)',
-  in_asteptare: 'var(--warning)',
+  in_asteptare: 'var(--purple)',
   'in_așteptare': 'var(--warning)',
   blocat: 'var(--danger)',
   finalizat: 'var(--success)',
