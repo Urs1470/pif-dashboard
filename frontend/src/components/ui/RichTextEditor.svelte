@@ -10,8 +10,10 @@
   import { slide } from 'svelte/transition'
   import {
     Undo2, Redo2, Bold, Italic, Underline, Strikethrough,
-    List, ListOrdered, TextQuote, Minus, RemoveFormatting, Sigma, X
+    List, ListOrdered, TextQuote, Minus, RemoveFormatting, Sigma, X,
+    ChevronDown, Check
   } from '@lucide/svelte'
+  import { fly } from 'svelte/transition'
   import katex from 'katex'
   import 'katex/dist/katex.min.css'
   import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
@@ -27,6 +29,26 @@
 
   // Starea butoanelor din toolbar (sincronizata cu selectia)
   let fmt = $state({ bold: false, italic: false, underline: false, strike: false, ul: false, ol: false, block: 'p' })
+
+  // Dropdown-ul de stil (meniu custom, pe tema — nu popup-ul nativ de <select>)
+  const BLOCK_STYLES = [
+    { value: 'p', label: 'Paragraf' },
+    { value: 'h1', label: 'Titlu 1' },
+    { value: 'h2', label: 'Titlu 2' },
+    { value: 'h3', label: 'Titlu 3' },
+    { value: 'blockquote', label: 'Citat' },
+  ]
+  let styleOpen = $state(false)
+  let styleEl = $state(null)
+  const blockLabel = $derived(BLOCK_STYLES.find((s) => s.value === fmt.block)?.label || 'Paragraf')
+
+  function pickStyle(v) {
+    styleOpen = false
+    setBlock(v === 'p' ? 'p' : v)
+  }
+  function onDocClick(e) {
+    if (styleOpen && styleEl && !styleEl.contains(e.target)) styleOpen = false
+  }
 
   // Bara de formule (insert / editare chip existent)
   let mathOpen = $state(false)
@@ -244,6 +266,8 @@
   function keepSel(e) { e.preventDefault() }
 </script>
 
+<svelte:document onclick={onDocClick} />
+
 <div class="rte" class:doc={variant === 'doc'}>
   <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
     <button type="button" class="tbtn" title="Anuleaza (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
@@ -251,15 +275,23 @@
 
     <span class="tsep" aria-hidden="true"></span>
 
-    <select class="tstyle" title="Stil paragraf" value={fmt.block}
-      onmousedown={(e) => e.stopPropagation()}
-      onchange={(e) => { setBlock(e.target.value === 'p' ? 'p' : e.target.value); e.target.blur() }}>
-      <option value="p">Paragraf</option>
-      <option value="h1">Titlu 1</option>
-      <option value="h2">Titlu 2</option>
-      <option value="h3">Titlu 3</option>
-      <option value="blockquote">Citat</option>
-    </select>
+    <span class="tstyle-wrap" bind:this={styleEl}>
+      <button type="button" class="tstyle" class:on={styleOpen} title="Stil paragraf"
+        onmousedown={keepSel} onclick={() => (styleOpen = !styleOpen)}>
+        {blockLabel} <ChevronDown size={12} />
+      </button>
+      {#if styleOpen}
+        <div class="tstyle-menu" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
+          {#each BLOCK_STYLES as s (s.value)}
+            <button type="button" class="topt" class:sel={fmt.block === s.value}
+              onmousedown={keepSel} onclick={() => pickStyle(s.value)}>
+              <span class="topt-label t-{s.value}">{s.label}</span>
+              {#if fmt.block === s.value}<Check size={13} />{/if}
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </span>
 
     <span class="tsep" aria-hidden="true"></span>
 
@@ -310,6 +342,9 @@
   <div
     class="rte-editor"
     contenteditable="true"
+    role="textbox"
+    aria-multiline="true"
+    aria-label="Continut"
     spellcheck="true"
     data-placeholder={placeholder}
     bind:this={editorEl}
@@ -340,12 +375,13 @@
   .rte-toolbar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap; /* pe ecrane inguste trece pe doua randuri (nu scroll —
+                        meniul de stil e pozitionat absolut si ar fi taiat) */
     gap: 2px;
+    row-gap: 4px;
     padding: 6px var(--space-sm);
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: thin;
   }
 
   .tbtn {
@@ -366,23 +402,57 @@
 
   .tsep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
 
+  .tstyle-wrap { position: relative; flex-shrink: 0; }
   .tstyle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     height: 30px;
-    padding: 0 26px 0 10px;
+    padding: 0 10px;
     font-size: var(--font-tiny);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-semibold);
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text);
     cursor: pointer;
-    flex-shrink: 0;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23948a7d' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
+    transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
   }
-  .tstyle:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .tstyle:hover { border-color: var(--text-dim); }
+  .tstyle.on { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .tstyle-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 6;
+    min-width: 150px;
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 4px;
+  }
+  .topt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .topt:hover { background: var(--bg-hover); color: var(--text); }
+  .topt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .topt-label { font-size: var(--font-small); }
+  .topt-label.t-h1 { font-family: var(--font-heading); font-weight: var(--fw-bold); font-size: 1.05rem; }
+  .topt-label.t-h2 { font-weight: var(--fw-bold); color: var(--accent); }
+  .topt-label.t-h3 { font-weight: var(--fw-semibold); }
+  .topt-label.t-blockquote { font-style: italic; }
 
   /* ===== bara de formule ===== */
   .math-bar {
