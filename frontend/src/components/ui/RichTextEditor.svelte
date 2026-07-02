@@ -17,7 +17,10 @@
   import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
-  let { value = $bindable(''), placeholder = 'Scrie aici...' } = $props()
+  // variant: 'box' = caseta clasica cu chenar; 'doc' = pagina de document
+  // (folosit in modalul fullscreen de observatii/notite — toolbar pill plutitor,
+  // coloana de text centrata pe latime de citit, scroll pe toata pagina).
+  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box' } = $props()
 
   let editorEl = $state(null)
   let charCount = $state(0)
@@ -241,7 +244,7 @@
   function keepSel(e) { e.preventDefault() }
 </script>
 
-<div class="rte">
+<div class="rte" class:doc={variant === 'doc'}>
   <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
     <button type="button" class="tbtn" title="Anuleaza (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
     <button type="button" class="tbtn" title="Refa (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
@@ -315,10 +318,12 @@
     onclick={onEditorClick}
   ></div>
 
-  <div class="rte-footer">
-    <span class="rte-counter">{charCount} caractere</span>
-    <span class="rte-hint"><code>$...$</code> devine formula automat</span>
-  </div>
+  {#if variant !== 'doc'}
+    <div class="rte-footer">
+      <span class="rte-counter">{charCount} caractere</span>
+      <span class="rte-hint"><code>$...$</code> devine formula automat</span>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -505,5 +510,63 @@
     .tbtn { width: 34px; height: 34px; }
     .rte-editor { min-height: 220px; max-height: 52vh; }
     .rte-hint { display: none; }
+  }
+
+  /* ===== varianta "doc" — pagina de document (V1) ===== */
+  .rte.doc {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto; /* un singur scroller: pilula ramane sticky sus */
+  }
+  .rte.doc .rte-toolbar {
+    position: sticky;
+    top: 10px;
+    z-index: 3;
+    align-self: center;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    margin: 10px auto 0;
+    padding: 5px 8px;
+    border: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--bg-overlay) 88%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-lg);
+  }
+  .rte.doc .tbtn { border-radius: var(--radius-full); }
+  .rte.doc .tstyle { border-radius: var(--radius-full); }
+  .rte.doc .math-bar {
+    position: sticky;
+    top: 58px;
+    z-index: 3;
+    width: min(680px, calc(100% - 24px));
+    margin: 8px auto 0;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--bg-overlay) 92%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-md);
+  }
+  .rte.doc .rte-editor {
+    max-height: none;
+    min-height: calc(100% - 62px);
+    max-width: 74ch;
+    margin: 0 auto;
+    padding: 22px 28px 90px;
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+  .rte.doc .rte-editor:focus { box-shadow: none; }
+
+  @media (max-width: 768px) {
+    .rte.doc .rte-toolbar { top: 6px; max-width: calc(100% - 12px); }
+    .rte.doc .math-bar { top: 56px; width: calc(100% - 12px); }
+    .rte.doc .rte-editor { padding: 16px 16px 80px; min-height: calc(100% - 58px); }
   }
 </style>

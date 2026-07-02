@@ -591,8 +591,9 @@
 
       <div class="field-section">
         <div class="field-header">
-          <SolidIcon name="file" size={14} />
+          <span class="f-ico"><SolidIcon name="file" size={13} /></span>
           <span class="field-label">Observatii Tehnice</span>
+          {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
           <button class="field-edit" onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
         </div>
         {#if project.observatii}
@@ -607,8 +608,9 @@
       {#if project.tip === 'Service'}
         <div class="field-section">
           <div class="field-header">
-            <AlertCircle size={14} />
+            <span class="f-ico f-red"><AlertCircle size={13} /></span>
             <span class="field-label">Constatari inainte de interventie</span>
+            {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
             <button class="field-edit" onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_before}
@@ -622,8 +624,9 @@
 
         <div class="field-section">
           <div class="field-header">
-            <CheckCircle2 size={14} />
+            <span class="f-ico f-green"><CheckCircle2 size={13} /></span>
             <span class="field-label">Actiuni si rezultat</span>
+            {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
             <button class="field-edit" onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')} title="Editeaza"><SolidIcon name="pencil" size={13} /></button>
           </div>
           {#if project.service_after}
@@ -956,10 +959,10 @@
 <AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
-<Modal bind:open={showFieldEdit} title={editLabel} size="wide">
+<Modal bind:open={showFieldEdit} title={editLabel} size="doc">
   <div class="field-edit-modal">
     {#if showFieldEdit}
-      <RichTextEditor bind:value={editValue} placeholder="Scrie aici..." />
+      <RichTextEditor bind:value={editValue} variant="doc" placeholder="Scrie aici..." />
     {/if}
   </div>
   {#snippet footer()}
@@ -996,10 +999,10 @@
   {/snippet}
 </Modal>
 
-<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="wide">
+<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="doc">
   <div class="field-edit-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} placeholder="Scrie notite pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notite pentru acest task..." />
     {/if}
   </div>
   {#snippet footer()}
@@ -1042,13 +1045,21 @@
   .req-more { font-size: var(--font-tiny); color: var(--text-faint); }
 
   /* Field sections in coloana stanga (observatii, service) */
-  .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-  .field-header { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); font-size: var(--font-small); color: var(--text-secondary); }
+  /* "Coala de document" (V1): gradient cald, umbra, antet cu chip + meta */
+  .field-section { margin-bottom: var(--space-sm); background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 5%, var(--bg-surface)) 0%, var(--bg-surface) 55%); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); transition: border-color var(--dur-fast) var(--ease); }
+  .field-section:hover { border-color: var(--border-strong); }
+  .field-header { display: flex; align-items: center; gap: var(--space-sm); padding: 11px var(--space-md); font-size: var(--font-small); color: var(--text-secondary); border-bottom: 1px dashed var(--border); }
+  .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
+  .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
+  .f-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
   .field-label { flex: 1; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .field-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .field-edit:hover { color: var(--accent); background: var(--accent-subtle); }
-  .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.6; padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
-  .field-empty { padding: var(--space-xs) var(--space-md) var(--space-sm); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
+  .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.65; padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
+  /* butonul "Arata tot" al RichText — centrat, ca la un document */
+  .field-body :global(.rt-toggle) { display: flex; width: max-content; margin: 8px auto 2px; }
+  .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
   .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 

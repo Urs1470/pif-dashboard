@@ -87,6 +87,13 @@
   .modal-wide { max-width: 80%; }
   .modal-zoom { max-width: 70%; }
 
+  /* "doc" — document aproape fullscreen (editor observatii/notite).
+     Body-ul nu deruleaza si nu are padding: pagina interioara (RichTextEditor
+     variant="doc") isi gestioneaza singura scroll-ul si coloana de text. */
+  .modal-doc { max-width: 900px; height: 92dvh; max-height: 92dvh; }
+  .modal-doc .modal-body { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .modal-doc .modal-body > :global(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
   .modal-header {
     display: flex;
     align-items: center;
@@ -146,5 +153,10 @@
       max-width: 100%;
       max-height: 90dvh;
     }
+    /* doc = sheet pe tot ecranul pe mobil */
+    .backdrop:has(.modal-doc) { padding: 0; }
+    .modal-doc { height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; }
+    .modal-doc .modal-header { padding-top: calc(var(--space-md) + var(--safe-top)); }
+    .modal-doc .modal-footer { padding-bottom: calc(var(--space-md) + var(--safe-bottom)); }
   }
 </style>
