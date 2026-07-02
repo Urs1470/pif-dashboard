@@ -257,7 +257,7 @@
                 {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
               </button>
             {/if}
-            {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{:else}<span class="ptip">—</span>{/if}
+            {#if p.tip}<span class="tip-chip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip === 'PIF' ? '◳' : '⟳'}</span><span class="tip-label">{p.tip}</span>{:else}<span class="tip-label">—</span>{/if}
             <button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button>
           </div>
           <div class="card-name">{p.nume || '—'}</div>
@@ -271,6 +271,12 @@
           </div>
         </div>
       {/each}
+      {#if !batchMode}
+        <button class="pcard new-card cell-in" onclick={() => showNewModal = true}>
+          <span class="new-plus">+</span>
+          <span class="new-label">Proiect nou</span>
+        </button>
+      {/if}
     </div>
 
     {#if archivedItems.length > 0}
@@ -337,7 +343,12 @@
   .pcard:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
+  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-faint); background: transparent; }
+  .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
+  .new-plus { font-size: 1.5rem; line-height: 1; }
+  .new-label { font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .card-top { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 10px; }
+  .card-top { display: flex; align-items: center; }
   .card-top .status-pill { margin-left: auto; }
   .card-check { width: auto; height: auto; }
   .card-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
@@ -350,6 +361,10 @@
   .ptip { display: inline-block; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .ptip.pif { background: var(--accent-subtle); color: var(--accent); }
   .ptip.service { background: var(--service-subtle); color: var(--service-accent); }
+  .tip-chip { width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
+  .tip-chip.pif { background: var(--accent-subtle); color: var(--accent); }
+  .tip-chip.service { background: var(--success-subtle); color: var(--success); }
+  .tip-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-left: 8px; }
 
   .archive { margin-top: var(--space-lg); }
   .archive-toggle { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; padding: var(--space-sm) 0; margin-bottom: var(--space-sm); min-height: 44px; }

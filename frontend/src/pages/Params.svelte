@@ -389,10 +389,16 @@
     display: flex; flex-direction: column; gap: 2px;
   }
   .nav-group {
-    font-size: var(--font-tiny); font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); color: var(--text-dim); padding: 10px 12px 4px;
+    font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text-faint); padding: 14px 12px 6px;
+    margin-top: 10px; border-top: 1px dashed var(--border);
+    display: flex; align-items: center; gap: 8px;
   }
-  .nav-group:first-child { padding-top: 2px; }
+  .nav-group::before {
+    content: ''; width: 7px; height: 7px; border-radius: 3px;
+    background: var(--accent-subtle); border: 1px solid var(--accent-ring); flex-shrink: 0;
+  }
+  .nav-group:first-child { padding-top: 2px; margin-top: 0; border-top: none; }
   .nav-item {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
     width: 100%; padding: 9px 12px; border-radius: 11px; text-align: left;

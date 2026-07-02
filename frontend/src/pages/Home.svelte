@@ -93,6 +93,11 @@
     return 'Buna seara'
   }
 
+  function daysUntil(d) {
+    if (!d) return 99
+    return Math.ceil((new Date(d) - new Date().setHours(0, 0, 0, 0)) / 86400000)
+  }
+
   function todayRO() {
     return new Date().toLocaleDateString('ro-RO', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -197,7 +202,7 @@
     <div class="cards-grid">
       {#if dashboard.urgent_tasks?.length}
         <Card padding={false}>
-          <div class="card-head danger"><AlertTriangle size={16} /><span>Task-uri Urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
+          <div class="card-head"><span class="ch-ico ico-red"><AlertTriangle size={13} /></span><span class="ch-label">Task-uri urgente</span><span class="card-count">{dashboard.urgent_tasks.length}</span></div>
           <div class="card-list scroll">
             {#each dashboard.urgent_tasks as t}
               <button class="list-row" onclick={(e) => goToTask(e, t)}>
@@ -215,15 +220,16 @@
 
       {#if dashboard.upcoming_deadlines?.length}
         <Card padding={false}>
-          <div class="card-head"><CalendarClock size={16} /><span>Deadline-uri</span><span class="card-count">{dashboard.upcoming_deadlines.length}</span></div>
+          <div class="card-head"><span class="ch-ico ico-vio"><CalendarClock size={13} /></span><span class="ch-label">Deadline-uri</span><span class="card-count">{dashboard.upcoming_deadlines.length}</span></div>
           <div class="card-list">
             {#each dashboard.upcoming_deadlines.slice(0, 5) as p}
               <button class="list-row" onclick={() => navigate(`/projects/${p.id}`)}>
                 <div class="row-dot due"></div>
                 <div class="row-content">
                   <div class="row-title">{p.nume}</div>
-                  <div class="row-meta">{p.client || '—'} · {formatDate(p.deadline)}</div>
+                  <div class="row-meta">{p.client || '—'}</div>
                 </div>
+                <span class="row-date" class:hot={daysUntil(p.deadline) <= 2}>{formatDate(p.deadline)}</span>
                 <ChevronRight size={14} />
               </button>
             {/each}
@@ -277,7 +283,7 @@
   .kpi-sub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 6px; }
   .kpi-track { height: 4px; background: var(--bg-hover); border-radius: var(--radius-full); margin-top: 11px; overflow: hidden; }
   .kpi-track span { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); }
-  .kpi-spark { display: flex; align-items: flex-end; gap: 3px; height: 22px; margin-top: 9px; }
+  .kpi-spark { display: flex; align-items: flex-end; gap: 5px; height: 30px; margin-top: 10px; }
   .kpi-spark span { flex: 1; background: var(--success); border-radius: 3px 3px 0 0; opacity: 0.35; min-height: 2px; }
   .kpi-spark span:nth-last-child(-n+3) { opacity: 1; }
 
@@ -293,8 +299,11 @@
   .recent-client { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-md); align-items: start; }
-  .card-head { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
-  .card-head.danger { color: var(--danger); }
+  .card-head { display: flex; align-items: center; gap: 9px; padding: 12px var(--space-md); border-bottom: 1px solid var(--border); }
+  .ch-ico { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ch-ico.ico-red { background: var(--danger-subtle); color: var(--danger); }
+  .ch-ico.ico-vio { background: var(--purple-subtle); color: var(--purple); }
+  .ch-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 
   .card-list { display: flex; flex-direction: column; }
@@ -308,6 +317,8 @@
   .row-content { flex: 1; min-width: 0; }
   .row-title { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row-meta { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-date { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+  .row-date.hot { color: var(--danger); font-weight: var(--fw-semibold); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
