@@ -5,6 +5,7 @@
   import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BookOpen, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
+  import { router, applyPath } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import Modal from '../components/ui/Modal.svelte'
@@ -154,6 +155,34 @@
     } else {
       pickProducator(Object.keys(PRODUCATOR_FAMILII)[0])
     }
+  })
+
+  // Deep-link din cautarea globala (Ctrl+K): /params?open=<id>[&tab=faults]
+  // deschide direct modalul de detaliu si aliniaza nav-ul pe familia gasita.
+  async function openFromQuery(id, isFault) {
+    activeTab = isFault ? 'faults' : 'params'
+    showDetail = true
+    detailLoading = true
+    try {
+      detail = isFault ? await loadFaultDetail(id) : await loadParamDetail(id)
+      if (detail?.familie) {
+        producator = producerOf(detail.familie) || producator
+        const store = isFault ? faultCodes : params
+        store.filters.producator = producator
+        store.filters.familie = detail.familie
+        store.filters.page = 1
+        if (isFault) loadFaultCodes(); else loadParams()
+      }
+    } catch (_) {} finally { detailLoading = false }
+  }
+
+  $effect(() => {
+    const id = router.query.open
+    if (!id) return
+    const isFault = router.query.tab === 'faults'
+    // curata query-ul intai, ca refresh/back sa nu redeschida modalul
+    applyPath('/params')
+    openFromQuery(id, isFault)
   })
 
   const curFilter = $derived(activeTab === 'params' ? params.filters.familie : faultCodes.filters.familie)
@@ -378,7 +407,7 @@
   .page { padding: var(--space-lg); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   /* ===== V2 bento: sidebar familii + tabel, totul pe un ecran ===== */
   .side-grid { display: grid; grid-template-columns: 250px 1fr; gap: 14px; align-items: start; }
