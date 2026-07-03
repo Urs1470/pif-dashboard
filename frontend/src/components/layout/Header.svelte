@@ -11,9 +11,8 @@
 
   {#if ui.pageHeader.title}
     <div class="header-context">
-      <span class="hc-div" aria-hidden="true"></span>
       <h1 class="hc-title">{ui.pageHeader.title}</h1>
-      {#if ui.pageHeader.subtitle}<span class="hc-sub">{ui.pageHeader.subtitle}</span>{/if}
+      {#if ui.pageHeader.subtitle}<span class="hc-sep" aria-hidden="true">·</span><span class="hc-sub">{ui.pageHeader.subtitle}</span>{/if}
     </div>
   {/if}
 
@@ -67,35 +66,32 @@
   }
   .brand-sep { color: var(--text-faint); }
 
-  /* Context de pagina (ex. salutul de pe Home) — langa brand */
+  /* Context de pagina (ex. salutul de pe Home) — CENTRAT in bara, separat de
+     brand si actiuni prin spatiu. pointer-events:none ca sa nu blocheze clickuri. */
   .header-context {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    min-width: 0;
-    overflow: hidden;
-  }
-  .hc-div {
-    align-self: center;
-    width: 1px;
-    height: 18px;
-    background: var(--border-strong);
-    flex-shrink: 0;
+    gap: 8px;
+    max-width: 56%;
+    pointer-events: none;
+    white-space: nowrap;
   }
   .hc-title {
     font-family: var(--font-heading);
-    font-weight: var(--fw-bold);
-    font-size: 1.02rem;
+    font-weight: var(--fw-semibold);
+    font-size: 1rem;
     letter-spacing: -0.02em;
     color: var(--text);
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .hc-sep { color: var(--text-faint); align-self: center; }
   .hc-sub {
     font-size: var(--font-small);
     color: var(--text-dim);
-    white-space: nowrap;
     text-transform: capitalize;
     flex-shrink: 0;
   }
