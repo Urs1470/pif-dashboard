@@ -575,6 +575,9 @@ input[type="checkbox"].cbx:focus {
 /* Print (Planificator PDF export): hide app chrome + let the page own the sheet.
    Gated on body.plan-printing so only the Planificator export triggers it. */
 @media print {
+  /* Landscape must live in a NON-scoped stylesheet — inside a Svelte component
+     <style> the @page rule doesn't take effect (the export came out portrait). */
+  @page { size: A4 landscape; margin: 8mm; }
   body.plan-printing .header,
   body.plan-printing .dock { display: none !important; }
   body.plan-printing .app-content { padding: 0 !important; overflow: visible !important; }

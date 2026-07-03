@@ -773,11 +773,12 @@
   /* ===== print (browser print-to-PDF) ===== */
   .print-title { display: none; }
   @media print {
-    @page { size: A4 landscape; margin: 10mm; }
     .page { padding: 0 !important; }
     .page-header, .controls, .hint, .mlist, .backlog, .drag-label, .pop, .pop-backdrop { display: none !important; }
     .print-title { display: block; font-family: var(--font-heading); font-size: 1.1rem; font-weight: var(--fw-bold); color: #1a1206; margin-bottom: 8px; }
-    .chart { border: none !important; box-shadow: none !important; background: #fff !important; }
+    /* Force the swimlane on: A4 portrait (~794px) is under the 820px mobile
+       breakpoint, which would otherwise hide .chart and blank the page. */
+    .chart { display: block !important; overflow: visible !important; border: none !important; box-shadow: none !important; background: #fff !important; }
     .chart-scroll { overflow: visible !important; }
     .inner { min-width: 0 !important; width: 100% !important; }
     .lane.print-hide { display: none !important; }
