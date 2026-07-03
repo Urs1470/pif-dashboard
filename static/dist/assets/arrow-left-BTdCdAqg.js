@@ -1,0 +1,1 @@
+import{b as e,d as t,y as n}from"./Modal-DKQQhLq5.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`m12 19-7-7 7-7`}],[`path`,{d:`M19 12H5`}]];t(i,e({name:`arrow-left`},()=>o,{get iconNode(){return s}}))}export{i as t};

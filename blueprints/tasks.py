@@ -3,8 +3,9 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta
+from io import BytesIO
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 
 from database import get_db, row_to_dict
 from utils import generate_uuid, login_required, get_json_or_400
@@ -320,14 +321,22 @@ def get_project_gantt(project_id):
     """Everything the per-project Gantt needs: project meta, its tasks with the
     effective schedule (start/end/progress/milestone + subtask counts) and the
     dependency links between them."""
+    data = _collect_gantt(project_id)
+    if data is None:
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    return jsonify(data)
+
+
+def _collect_gantt(project_id):
+    """Assemble the Gantt payload (proiect, tasks[], dependencies[]) or None if the
+    project doesn't exist. Shared by the JSON endpoint and the PDF/Excel exports."""
     conn = get_db()
     cursor = conn.cursor()
-
     cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
     proj = cursor.fetchone()
     if proj is None:
         conn.close()
-        return jsonify({'error': 'Proiect inexistent'}), 404
+        return None
     proj = row_to_dict(proj)
 
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC, created_at ASC', (project_id,))
@@ -347,7 +356,6 @@ def get_project_gantt(project_id):
         tot, done = sub_map.get(r['id'], (0, 0))
         start = (r.get('data_start') or r.get('data_planificata') or '').strip()[:10]
         end = (r.get('data_scadenta') or '').strip()[:10]
-        # A task with only one date is a point; a milestone is always a point.
         if not start and end:
             start = end
         if not end and start:
@@ -370,14 +378,14 @@ def get_project_gantt(project_id):
              'tip': d['tip'] or 'FS', 'lag': d['lag'] or 0} for d in [row_to_dict(x) for x in cursor.fetchall()]]
 
     conn.close()
-    return jsonify({
+    return {
         'proiect': {'id': proj['id'], 'nume': proj.get('nume'), 'client': proj.get('client'),
                     'tip': proj.get('tip'), 'cod_proiect': proj.get('cod_proiect'),
                     'data_incepere': proj.get('data_incepere'), 'deadline': proj.get('deadline'),
                     'status': proj.get('status'), 'locatie': proj.get('locatie'),
                     'pm': proj.get('pm')},
         'tasks': tasks, 'dependencies': deps,
-    })
+    }
 
 
 def _would_cycle(cursor, project_id, pred, succ):
@@ -453,6 +461,325 @@ def delete_dependency(dep_id):
     if deleted == 0:
         return jsonify({'error': 'Dependenta inexistenta'}), 404
     return jsonify({'message': 'ok'})
+
+
+# ---------------------------------------------------------------------------
+# Gantt export — client-ready PDF (reportlab) + Excel (openpyxl), server-side
+# so the output is consistent and branded, independent of the browser.
+# ---------------------------------------------------------------------------
+
+_STATUS_RO = {'done': 'Finalizat', 'finalizat': 'Finalizat', 'in_progress': 'In lucru',
+              'in_lucru': 'In lucru', 'to_do': 'De facut', 'in_asteptare': 'In asteptare',
+              'blocat': 'Blocat'}
+# Colors chosen to read on white paper / Excel (client-facing).
+_STATUS_HEX = {'done': '4FA874', 'finalizat': '4FA874', 'in_progress': 'E0912E',
+               'in_lucru': 'E0912E', 'to_do': 'B9B2A6', 'blocat': 'D65A4A', 'in_asteptare': '8B7FC0'}
+
+
+def _pdate(s):
+    try:
+        return datetime.strptime((s or '')[:10], '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _gantt_window(data):
+    """Padded [start, end] date window covering all tasks + project dates."""
+    ds = []
+    for t in data['tasks']:
+        for k in ('data_start', 'data_scadenta'):
+            d = _pdate(t.get(k))
+            if d:
+                ds.append(d)
+    for k in ('data_incepere', 'deadline'):
+        d = _pdate(data['proiect'].get(k))
+        if d:
+            ds.append(d)
+    if not ds:
+        today = datetime.now().date()
+        return today, today + timedelta(days=14)
+    lo, hi = min(ds), max(ds)
+    return lo - timedelta(days=2), hi + timedelta(days=2)
+
+
+def _fmt_ro(d):
+    return d.strftime('%d.%m.%Y') if d else '—'
+
+
+def _pred_titles(data):
+    """{successor_id: [predecessor titlu, ...]} for the 'Depinde de' column."""
+    by_id = {t['id']: t['titlu'] for t in data['tasks']}
+    out = {}
+    for dep in data['dependencies']:
+        out.setdefault(dep['successor_id'], []).append(by_id.get(dep['predecessor_id'], '?'))
+    return out
+
+
+@tasks_bp.route('/api/proiecte/<project_id>/gantt.pdf', methods=['GET'])
+@login_required
+def export_gantt_pdf(project_id):
+    data = _collect_gantt(project_id)
+    if data is None:
+        return jsonify({'error': 'Proiect inexistent'}), 404
+
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import cm
+    from reportlab.lib import colors
+
+    proj = data['proiect']
+    tasks = data['tasks']
+    win_start, win_end = _gantt_window(data)
+    total = max((win_end - win_start).days, 1)
+    today = datetime.now().date()
+
+    buf = BytesIO()
+    W, H = landscape(A4)
+    c = canvas.Canvas(buf, pagesize=(W, H))
+    m = 1.3 * cm
+    lbl_w = 5.6 * cm
+    x0 = m + lbl_w            # timeline left
+    x1 = W - m               # timeline right
+    tw = x1 - x0
+
+    def xfor(d):
+        if not d:
+            return x0
+        frac = max(0.0, min(1.0, (d - win_start).days / total))
+        return x0 + frac * tw
+
+    # --- title block ---
+    y = H - m
+    c.setFillColor(colors.HexColor('#1a1206'))
+    c.setFont('Helvetica-Bold', 15)
+    c.drawString(m, y - 4, f"{proj.get('nume') or 'Proiect'}")
+    c.setFont('Helvetica', 9)
+    c.setFillColor(colors.HexColor('#555555'))
+    meta = []
+    if proj.get('client'):
+        meta.append(f"Client: {proj['client']}")
+    if proj.get('cod_proiect'):
+        meta.append(f"Cod: {proj['cod_proiect']}")
+    if proj.get('tip'):
+        meta.append(proj['tip'])
+    meta.append(f"Perioada: {_fmt_ro(win_start)} – {_fmt_ro(win_end)}")
+    c.drawString(m, y - 20, "   ·   ".join(meta))
+    c.setFont('Helvetica', 7.5)
+    c.drawRightString(x1, y - 4, f"Generat: {_fmt_ro(today)}")
+    top = y - 34          # chart top
+
+    # --- chart geometry ---
+    header_h = 16
+    avail = top - m - 26           # leave room for legend at bottom
+    n = max(len(tasks), 1)
+    row_h = min(20, max(11, (avail - header_h) / n))
+    chart_h = header_h + row_h * len(tasks)
+
+    # week gridlines + labels
+    c.setFont('Helvetica', 6.5)
+    d = win_start
+    # advance to Monday
+    d = d - timedelta(days=(d.weekday()))
+    while d <= win_end:
+        gx = xfor(d)
+        c.setStrokeColor(colors.HexColor('#E2E0DA'))
+        c.setLineWidth(0.5)
+        c.line(gx, top - header_h, gx, top - chart_h)
+        c.setFillColor(colors.HexColor('#888888'))
+        if gx < x1 - 12:
+            c.drawString(gx + 2, top - 11, d.strftime('%d.%m'))
+        d += timedelta(days=7)
+    # frame + header separator
+    c.setStrokeColor(colors.HexColor('#CFCabf'))
+    c.setLineWidth(0.8)
+    c.rect(x0, top - chart_h, tw, chart_h, stroke=1, fill=0)
+    c.line(m, top - header_h, x1, top - header_h)
+    c.line(x0, top - header_h, x0, top - chart_h)  # label/timeline divider
+
+    # today line
+    if win_start <= today <= win_end:
+        tx = xfor(today)
+        c.setStrokeColor(colors.HexColor('#D64A3A'))
+        c.setLineWidth(1)
+        c.line(tx, top - header_h, tx, top - chart_h)
+
+    # rows
+    for i, t in enumerate(tasks):
+        ry = top - header_h - (i + 1) * row_h
+        cy = ry + row_h / 2
+        # zebra
+        if i % 2 == 1:
+            c.setFillColor(colors.HexColor('#FAF7F1'))
+            c.rect(m, ry, x1 - m, row_h, stroke=0, fill=1)
+        # label
+        c.setFillColor(colors.HexColor('#222222'))
+        c.setFont('Helvetica', 8)
+        label = t['titlu'][:46]
+        c.drawString(m + 4, cy - 3, ('◆ ' if t['is_milestone'] else '') + label)
+        # bar / milestone
+        s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
+        hexc = _STATUS_HEX.get(t['status'], 'B9B2A6')
+        if t['is_milestone'] and s:
+            mx, my, r = xfor(s), cy, 4
+            c.setFillColor(colors.HexColor('#B45309'))
+            p = c.beginPath(); p.moveTo(mx, my + r); p.lineTo(mx + r, my); p.lineTo(mx, my - r); p.lineTo(mx - r, my); p.close()
+            c.drawPath(p, fill=1, stroke=0)
+        elif s and e:
+            bx, bw = xfor(s), max(xfor(e) - xfor(s), 2)
+            bh = row_h * 0.5
+            by = cy - bh / 2
+            # base bar (light)
+            c.setFillColor(colors.HexColor('#' + hexc))
+            c.setFillAlpha(0.28)
+            c.roundRect(bx, by, bw, bh, 2, stroke=0, fill=1)
+            # progress fill
+            c.setFillAlpha(1)
+            pw = bw * (t['progres'] / 100.0)
+            if pw > 0:
+                c.roundRect(bx, by, max(pw, 1.5), bh, 2, stroke=0, fill=1)
+            c.setFillAlpha(1)
+            c.setFillColor(colors.HexColor('#333333'))
+            c.setFont('Helvetica', 6)
+            c.drawString(bx + bw + 3, cy - 2, f"{t['progres']}%")
+
+    # dependency lines (thin)
+    pos = {t['id']: i for i, t in enumerate(tasks)}
+    c.setStrokeColor(colors.HexColor('#9A9488'))
+    c.setLineWidth(0.6)
+    for dep in data['dependencies']:
+        pi, si = pos.get(dep['predecessor_id']), pos.get(dep['successor_id'])
+        if pi is None or si is None:
+            continue
+        p, s = tasks[pi], tasks[si]
+        pe = _pdate(p['data_scadenta']); ss = _pdate(s['data_start'])
+        if not pe or not ss:
+            continue
+        y1 = top - header_h - (pi + 1) * row_h + row_h / 2
+        y2 = top - header_h - (si + 1) * row_h + row_h / 2
+        xa, xb = xfor(pe), xfor(ss)
+        c.line(xa, y1, xa + 6, y1); c.line(xa + 6, y1, xa + 6, y2); c.line(xa + 6, y2, xb, y2)
+        c.setFillColor(colors.HexColor('#9A9488'))
+        ah = c.beginPath(); ah.moveTo(xb, y2); ah.lineTo(xb - 4, y2 + 2.5); ah.lineTo(xb - 4, y2 - 2.5); ah.close()
+        c.drawPath(ah, fill=1, stroke=0)
+
+    # legend
+    ly = m + 6
+    lx = m
+    c.setFont('Helvetica', 7)
+    for key, lab in (('done', 'Finalizat'), ('in_progress', 'In lucru'), ('to_do', 'De facut')):
+        c.setFillColor(colors.HexColor('#' + _STATUS_HEX[key])); c.roundRect(lx, ly, 14, 7, 1, stroke=0, fill=1)
+        c.setFillColor(colors.HexColor('#555555')); c.drawString(lx + 18, ly + 1, lab)
+        lx += 70
+    c.setFillColor(colors.HexColor('#B45309'))
+    p = c.beginPath(); p.moveTo(lx + 4, ly + 7); p.lineTo(lx + 8, ly + 3.5); p.lineTo(lx + 4, ly); p.lineTo(lx, ly + 3.5); p.close()
+    c.drawPath(p, fill=1, stroke=0)
+    c.setFillColor(colors.HexColor('#555555')); c.drawString(lx + 14, ly + 1, 'Milestone')
+
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    safe = (proj.get('nume') or 'proiect').replace('/', '-').replace(' ', '_')[:40]
+    return send_file(buf, mimetype='application/pdf', as_attachment=True,
+                     download_name=f'Gantt_{safe}.pdf')
+
+
+@tasks_bp.route('/api/proiecte/<project_id>/gantt.xlsx', methods=['GET'])
+@login_required
+def export_gantt_xlsx(project_id):
+    data = _collect_gantt(project_id)
+    if data is None:
+        return jsonify({'error': 'Proiect inexistent'}), 404
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    proj = data['proiect']
+    tasks = data['tasks']
+    preds = _pred_titles(data)
+    win_start, win_end = _gantt_window(data)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Gantt'
+
+    thin = Side(style='thin', color='D9D4CC')
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    hdr_fill = PatternFill('solid', fgColor='1A1206')
+    hdr_font = Font(bold=True, color='FFFFFF')
+
+    # title block
+    ws['A1'] = proj.get('nume') or 'Proiect'
+    ws['A1'].font = Font(bold=True, size=14)
+    info = []
+    if proj.get('client'):
+        info.append(f"Client: {proj['client']}")
+    if proj.get('cod_proiect'):
+        info.append(f"Cod: {proj['cod_proiect']}")
+    info.append(f"Perioada: {_fmt_ro(win_start)} – {_fmt_ro(win_end)}")
+    info.append(f"Generat: {_fmt_ro(datetime.now().date())}")
+    ws['A2'] = "   ·   ".join(info)
+    ws['A2'].font = Font(size=9, color='666666')
+
+    # table header (row 4)
+    cols = ['#', 'Task', 'Start', 'Sfarsit', 'Zile', '%', 'Status', 'Milestone', 'Depinde de']
+    hrow = 4
+    # weekly grid header columns after the table
+    weeks = []
+    d = win_start - timedelta(days=win_start.weekday())
+    while d <= win_end:
+        weeks.append(d)
+        d += timedelta(days=7)
+    grid_start_col = len(cols) + 1
+    full_header = cols + [w.strftime('%d.%m') for w in weeks]
+    ws.append([])  # row1 placeholder already set A1
+    for ci, val in enumerate(full_header, start=1):
+        cell = ws.cell(row=hrow, column=ci, value=val)
+        cell.fill = hdr_fill
+        cell.font = hdr_font
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    for i, t in enumerate(tasks):
+        r = hrow + 1 + i
+        s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
+        zile = ((e - s).days + 1) if (s and e) else ''
+        vals = [i + 1, t['titlu'], _fmt_ro(s), _fmt_ro(e),
+                '◆' if t['is_milestone'] else zile, t['progres'],
+                _STATUS_RO.get(t['status'], t['status']),
+                'Da' if t['is_milestone'] else '', ', '.join(preds.get(t['id'], []))]
+        for ci, val in enumerate(vals, start=1):
+            cell = ws.cell(row=r, column=ci, value=val)
+            cell.border = border
+            if ci in (1, 5, 6):
+                cell.alignment = Alignment(horizontal='center')
+        # weekly grid fill
+        hexc = _STATUS_HEX.get(t['status'], 'B9B2A6')
+        for wi, wk in enumerate(weeks):
+            wk_end = wk + timedelta(days=6)
+            col = grid_start_col + wi
+            cell = ws.cell(row=r, column=col)
+            cell.border = border
+            if t['is_milestone'] and s and wk <= s <= wk_end:
+                cell.value = '◆'
+                cell.alignment = Alignment(horizontal='center')
+                cell.font = Font(color='B45309', bold=True)
+            elif s and e and not (wk_end < s or wk > e):
+                cell.fill = PatternFill('solid', fgColor=hexc)
+
+    # widths
+    widths = {1: 4, 2: 34, 3: 11, 4: 11, 5: 6, 6: 6, 7: 12, 8: 9, 9: 24}
+    for col, w in widths.items():
+        ws.column_dimensions[ws.cell(row=hrow, column=col).column_letter].width = w
+    for wi in range(len(weeks)):
+        ws.column_dimensions[ws.cell(row=hrow, column=grid_start_col + wi).column_letter].width = 5
+    ws.freeze_panes = ws.cell(row=hrow + 1, column=3)
+
+    out = BytesIO()
+    wb.save(out)
+    out.seek(0)
+    safe = (proj.get('nume') or 'proiect').replace('/', '-').replace(' ', '_')[:40]
+    return send_file(out, as_attachment=True, download_name=f'Gantt_{safe}.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 # ---------------------------------------------------------------------------

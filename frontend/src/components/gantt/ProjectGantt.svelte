@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { Plus, Diamond, Trash2, Flag, Milestone } from '@lucide/svelte'
+  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday } from '../../lib/planDates.js'
@@ -98,6 +98,52 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
+  // --- dependencies (arrows) ---
+  const ROW_H = 34 // keep in sync with --row-h
+  let bodyW = $state(0)
+  let linkFrom = $state(null)
+  const idxMap = $derived(new Map(data.tasks.map((t, i) => [t.id, i])))
+
+  function edgesFor(t) {
+    const i = idxMap.get(t.id)
+    if (i == null || !bodyW) return null
+    const y = i * ROW_H + ROW_H / 2
+    if (t.is_milestone) {
+      const p = msPct(t)
+      if (p == null) return null
+      const x = (p / 100) * bodyW
+      return { s: x, e: x, y }
+    }
+    const r = rectFor(t)
+    if (!r) return null
+    return { s: (r.left / 100) * bodyW, e: ((r.left + r.width) / 100) * bodyW, y }
+  }
+  function arrowPath(dep) {
+    const p = data.tasks.find(x => x.id === dep.predecessor_id)
+    const s = data.tasks.find(x => x.id === dep.successor_id)
+    if (!p || !s) return null
+    const pe = edgesFor(p), se = edgesFor(s)
+    if (!pe || !se) return null
+    const x1 = pe.e, y1 = pe.y, x2 = se.s, y2 = se.y
+    const g = 10
+    if (x2 >= x1 + g) return `M ${x1} ${y1} H ${x1 + g} V ${y2} H ${x2 - 2}`
+    const ym = (y1 + y2) / 2
+    return `M ${x1} ${y1} H ${x1 + g} V ${ym} H ${x2 - g} V ${y2} H ${x2 - 2}`
+  }
+  async function createDep(pred, succ) {
+    try { await apiJson(`/api/proiecte/${projectId}/dependencies`, { method: 'POST', body: { predecessor_id: pred, successor_id: succ } }); await load() }
+    catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+  async function deleteDep(id) {
+    try { await apiJson(`/api/dependencies/${id}`, { method: 'DELETE' }); await load() }
+    catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+  function onLinkClick(t) {
+    if (!linkFrom) { linkFrom = t.id; toast('Alege succesorul — task-ul care depinde de acesta', 'success') }
+    else if (linkFrom === t.id) { linkFrom = null }
+    else { const p = linkFrom; linkFrom = null; createDep(p, t.id) }
+  }
+
   // rename inline
   let editId = $state(null)
   let editVal = $state('')
@@ -120,8 +166,18 @@
     <button class="add-btn" onclick={addTask}><Plus size={15} /> Adaugă task</button>
   </EmptyState>
 {:else}
+  {#if linkFrom}
+    <div class="link-bar">
+      <Link2 size={14} /> Legare dependență: apasă <Link2 size={12} /> pe task-ul care <b>depinde</b> de „{data.tasks.find(t => t.id === linkFrom)?.titlu}".
+      <button class="link-cancel" onclick={() => linkFrom = null}><X size={13} /> Anulează</button>
+    </div>
+  {/if}
   <div class="g-toolbar">
-    <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
+    <div class="g-tl">
+      <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
+      <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.pdf`} target="_blank" rel="noopener" title="Export PDF (client)"><FileDown size={14} /> PDF</a>
+      <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
+    </div>
     <span class="g-legend">
       <span class="lg"><span class="sw done"></span>finalizat</span>
       <span class="lg"><span class="sw prog"></span>în lucru</span>
@@ -165,6 +221,7 @@
             {/if}
           </span>
           <span class="c-act">
+            <button class="ic" class:on={linkFrom === t.id} onclick={() => onLinkClick(t)} title={linkFrom ? 'Leagă aici (succesor)' : 'Leagă dependență'}><Link2 size={13} /></button>
             <button class="ic" class:on={t.is_milestone} onclick={() => toggleMilestone(t)} title="Comută milestone"><Flag size={13} /></button>
             <button class="ic danger" onclick={() => removeTask(t)} title="Șterge"><Trash2 size={13} /></button>
           </span>
@@ -182,7 +239,20 @@
             </div>
           {/each}
         </div>
-        <div class="g-body">
+        <div class="g-body" bind:clientWidth={bodyW}>
+          {#if data.dependencies.length && bodyW}
+            <svg class="dep-svg" width={bodyW} height={data.tasks.length * ROW_H} viewBox="0 0 {bodyW} {data.tasks.length * ROW_H}">
+              <defs>
+                <marker id="gdep-arw" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
+                  <path d="M0 0 L6 3 L0 6 z" fill="currentColor" />
+                </marker>
+              </defs>
+              {#each data.dependencies as dep (dep.id)}
+                {@const d = arrowPath(dep)}
+                {#if d}<path {d} class="dep-path" fill="none" marker-end="url(#gdep-arw)" onclick={() => deleteDep(dep.id)}><title>Șterge dependența</title></path>{/if}
+              {/each}
+            </svg>
+          {/if}
           <div class="overlay">
             {#each columns.cols as c (c.key)}
               <div class="col-line" style="left:{c.leftPct}%"></div>
@@ -215,9 +285,15 @@
   .gk { display: flex; flex-direction: column; gap: 6px; }
   .g-err { color: var(--danger); padding: var(--space-md); }
 
+  .link-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: var(--space-sm); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: var(--radius-md); font-size: var(--font-small); color: var(--text); }
+  .link-cancel { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-sm); background: none; border: 1px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; font-size: var(--font-tiny); }
+  .link-cancel:hover { color: var(--text); border-color: var(--text-dim); }
   .g-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); flex-wrap: wrap; }
   .add-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .g-tl { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+  .exp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer; text-decoration: none; }
+  .exp-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .g-legend { display: flex; gap: 12px; flex-wrap: wrap; }
   .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); color: var(--text-dim); font-family: var(--font-mono); }
   .sw { width: 18px; height: 10px; border-radius: 3px; }
@@ -263,6 +339,9 @@
   .col-h.today .ch-main, .col-h.today .ch-sub { color: var(--accent); }
 
   .g-body { position: relative; }
+  .dep-svg { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; overflow: visible; color: var(--text-dim); }
+  .dep-path { stroke: currentColor; stroke-width: 1.5; pointer-events: stroke; cursor: pointer; transition: stroke var(--dur-fast) var(--ease); }
+  .dep-path:hover { color: var(--danger); stroke-width: 2.2; }
   .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
