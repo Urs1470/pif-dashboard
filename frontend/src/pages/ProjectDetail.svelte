@@ -2,7 +2,8 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
+  import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import { manualUrlForEquip, familieForEquip } from '../lib/manuals.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -100,6 +101,7 @@
 
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
+    { key: 'gantt', label: 'Gantt', icon: CalendarRange },
     { key: 'equipment', label: 'Echipamente', icon: Wrench },
     { key: 'attachments', label: 'Atașamente', icon: Paperclip },
     { key: 'info', label: 'Info', icon: Settings2 },
@@ -825,6 +827,9 @@
             {/if}
           </div>
         {/if}
+
+      {:else if activeTab === 'gantt'}
+        <ProjectGantt projectId={params.id} />
 
       {:else if activeTab === 'equipment'}
         <div class="tab-header">
