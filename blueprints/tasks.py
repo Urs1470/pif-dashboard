@@ -180,8 +180,8 @@ def create_task(project_id):
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
-                           data_planificata, ordine_agenda, data_start, progres, is_milestone)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           data_planificata, ordine_agenda, data_start, progres, is_milestone, faza)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -199,7 +199,8 @@ def create_task(project_id):
         data.get('ordine_agenda', 0),
         data.get('data_start', ''),
         data.get('progres', 0),
-        1 if data.get('is_milestone') else 0
+        1 if data.get('is_milestone') else 0,
+        data.get('faza', '')
     ))
 
     conn.commit()
@@ -244,6 +245,7 @@ def update_task(task_id):
             data_start = COALESCE(?, data_start),
             progres = COALESCE(?, progres),
             is_milestone = COALESCE(?, is_milestone),
+            faza = COALESCE(?, faza),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -260,6 +262,7 @@ def update_task(task_id):
         data.get('data_start'),
         data.get('progres'),
         (1 if data.get('is_milestone') else 0) if data.get('is_milestone') is not None else None,
+        data.get('faza'),
         datetime.now().isoformat(),
         task_id
     ))
@@ -366,6 +369,7 @@ def _collect_gantt(project_id):
             'data_start': start, 'data_scadenta': end,
             'data_planificata': r.get('data_planificata') or '',
             'is_milestone': bool(r.get('is_milestone')),
+            'faza': (r.get('faza') or '').strip(),
             'progres': _effective_progress(r, tot, done),
             'progres_manual': int(r.get('progres') or 0),
             'subtask_total': tot or 0, 'subtask_done': done or 0,
@@ -632,10 +636,33 @@ def export_gantt_pdf(project_id):
     from reportlab.lib import colors
 
     proj = data['proiect']
-    tasks = data['tasks']
     win_start, win_end = _gantt_window(data)
     total = max((win_end - win_start).days, 1)
     today = datetime.now().date()
+
+    # Group tasks by phase (WBS): a bold phase header + a summary bar before each
+    # group's tasks. render_rows interleaves ('phase', label) and ('task', t).
+    _porder = {}
+    for _t in data['tasks']:
+        _f = _t.get('faza') or ''
+        if _f not in _porder:
+            _porder[_f] = len(_porder)
+    stasks = sorted(data['tasks'], key=lambda t: (_porder.get(t.get('faza') or '', 10 ** 6) if (t.get('faza') or '') else 10 ** 7))
+    phase_span = {}
+    for t in stasks:
+        f = (t.get('faza') or '').strip()
+        s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
+        if not f or not s or not e:
+            continue
+        cur = phase_span.get(f)
+        phase_span[f] = (min(cur[0], s) if cur else s, max(cur[1], e) if cur else e)
+    render_rows, last = [], None
+    for t in stasks:
+        f = (t.get('faza') or '').strip()
+        if f and f != last:
+            render_rows.append(('phase', f))
+        last = f
+        render_rows.append(('task', t))
 
     buf = BytesIO()
     W, H = landscape(A4)
@@ -682,9 +709,9 @@ def export_gantt_pdf(project_id):
     # --- chart geometry ---
     header_h = 16
     avail = top - m - 26           # leave room for legend at bottom
-    n = max(len(tasks), 1)
-    row_h = min(20, max(11, (avail - header_h) / n))
-    chart_h = header_h + row_h * len(tasks)
+    n = max(len(render_rows), 1)
+    row_h = min(20, max(10, (avail - header_h) / n))
+    chart_h = header_h + row_h * len(render_rows)
 
     # week gridlines + labels
     c.setFont('Helvetica', 6.5)
@@ -714,19 +741,35 @@ def export_gantt_pdf(project_id):
         c.setLineWidth(1)
         c.line(tx, top - header_h, tx, top - chart_h)
 
-    # rows
-    for i, t in enumerate(tasks):
+    # rows (phase headers + tasks)
+    pos = {}
+    for i, (kind, val) in enumerate(render_rows):
         ry = top - header_h - (i + 1) * row_h
         cy = ry + row_h / 2
+        if kind == 'phase':
+            c.setFillColor(colors.HexColor('#ECE6DB'))
+            c.rect(m, ry, x1 - m, row_h, stroke=0, fill=1)
+            c.setFillColor(colors.HexColor('#1a1206'))
+            c.setFont('Helvetica-Bold', 8)
+            c.drawString(m + 4, cy - 3, val[:44])
+            span = phase_span.get(val)
+            if span:
+                sx, ex = xfor(span[0]), xfor(span[1])
+                c.setFillColor(colors.HexColor('#8C857A'))
+                c.rect(sx, cy - 2.5, max(ex - sx, 2), 5, stroke=0, fill=1)
+            continue
+        t = val
+        pos[t['id']] = i
         # zebra
         if i % 2 == 1:
             c.setFillColor(colors.HexColor('#FAF7F1'))
             c.rect(m, ry, x1 - m, row_h, stroke=0, fill=1)
-        # label
+        # label (indent when it belongs to a phase)
+        indent = 10 if (t.get('faza') or '').strip() else 0
         c.setFillColor(colors.HexColor('#222222'))
         c.setFont('Helvetica', 8)
-        label = t['titlu'][:46]
-        c.drawString(m + 4, cy - 3, ('◆ ' if t['is_milestone'] else '') + label)
+        label = t['titlu'][:44]
+        c.drawString(m + 4 + indent, cy - 3, ('◆ ' if t['is_milestone'] else '') + label)
         # bar / milestone
         s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
         hexc = _STATUS_HEX.get(t['status'], 'B9B2A6')
@@ -754,14 +797,14 @@ def export_gantt_pdf(project_id):
             c.drawString(bx + bw + 3, cy - 2, f"{t['progres']}%")
 
     # dependency lines (thin)
-    pos = {t['id']: i for i, t in enumerate(tasks)}
+    by_id = {t['id']: t for t in stasks}
     c.setStrokeColor(colors.HexColor('#9A9488'))
     c.setLineWidth(0.6)
     for dep in data['dependencies']:
         pi, si = pos.get(dep['predecessor_id']), pos.get(dep['successor_id'])
         if pi is None or si is None:
             continue
-        p, s = tasks[pi], tasks[si]
+        p, s = by_id[dep['predecessor_id']], by_id[dep['successor_id']]
         pe = _pdate(p['data_scadenta']); ss = _pdate(s['data_start'])
         if not pe or not ss:
             continue
@@ -819,7 +862,13 @@ def export_gantt_xlsx(project_id):
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
     proj = data['proiect']
-    tasks = data['tasks']
+    # Group by phase (first-appearance order; unphased last) so rows read as WBS.
+    _porder = {}
+    for _t in data['tasks']:
+        _f = _t.get('faza') or ''
+        if _f not in _porder:
+            _porder[_f] = len(_porder)
+    tasks = sorted(data['tasks'], key=lambda t: (_porder.get(t.get('faza') or '', 10 ** 6) if (t.get('faza') or '') else 10 ** 7))
     win_start, win_end = _gantt_window(data)
 
     # Day columns when the span is short enough; weekly for long projects (else
@@ -872,7 +921,7 @@ def export_gantt_xlsx(project_id):
     ws['A2'] = "   ·   ".join(info)
     ws['A2'].font = Font(size=9, color='666666')
 
-    INFO = ['#', 'Task', 'Start', 'Sfarsit', 'Zile', '%']
+    INFO = ['#', 'Task', 'Faza', 'Start', 'Sfarsit', 'Zile', '%']
     ncol_info = len(INFO)
     grid0 = ncol_info + 1
     HR_MONTH, HR_DAY, FIRST = 4, 5, 6
@@ -915,11 +964,11 @@ def export_gantt_xlsx(project_id):
         r = FIRST + i
         s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
         zile = ((e - s).days + 1) if (s and e) else ''
-        info_vals = [i + 1, t['titlu'], _fmt_ro(s), _fmt_ro(e), '◆' if t['is_milestone'] else zile, t['progres']]
+        info_vals = [i + 1, t['titlu'], t.get('faza', ''), _fmt_ro(s), _fmt_ro(e), '◆' if t['is_milestone'] else zile, t['progres']]
         for ci, val in enumerate(info_vals, start=1):
             c = ws.cell(r, ci, val)
             c.border = border
-            if ci != 2:
+            if ci not in (2, 3):
                 c.alignment = center
         # grid cells (light borders everywhere for the chart look)
         for k in range(len(units)):
@@ -939,7 +988,7 @@ def export_gantt_xlsx(project_id):
             ws.cell(r, grid0 + k).fill = PatternFill('solid', fgColor=done_hex if filled else rem_hex)
 
     # widths + freeze
-    for col, w in {1: 4, 2: 32, 3: 11, 4: 11, 5: 6, 6: 6}.items():
+    for col, w in {1: 4, 2: 30, 3: 15, 4: 11, 5: 11, 6: 6, 7: 6}.items():
         ws.column_dimensions[ws.cell(HR_DAY, col).column_letter].width = w
     gw = 3.0 if daily else 6.0
     for k in range(len(units)):

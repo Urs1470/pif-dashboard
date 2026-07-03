@@ -90,27 +90,27 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 |---|---|---|---|
 | GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 108 |
 | POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 165 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 211 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 285 |
-| GET | `/api/proiecte/<project_id>/gantt` | `get_project_gantt` | 318 |
-| POST | `/api/proiecte/<project_id>/dependencies` | `create_dependency` | 408 |
-| DELETE | `/api/dependencies/<dep_id>` | `delete_dependency` | 452 |
-| POST | `/api/proiecte/<project_id>/reschedule` | `reschedule_project` | 531 |
-| GET | `/api/proiecte/<project_id>/gantt.pdf` | `export_gantt_pdf` | 622 |
-| GET | `/api/proiecte/<project_id>/gantt.xlsx` | `export_gantt_xlsx` | 811 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 961 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 972 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 995 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 1010 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 1029 |
-| POST | `/api/global-tasks` | `create_global_task` | 1109 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 1146 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1161 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1229 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 1322 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1352 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 1398 |
-| GET | `/api/plan` | `get_plan` | 1439 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 212 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 288 |
+| GET | `/api/proiecte/<project_id>/gantt` | `get_project_gantt` | 321 |
+| POST | `/api/proiecte/<project_id>/dependencies` | `create_dependency` | 412 |
+| DELETE | `/api/dependencies/<dep_id>` | `delete_dependency` | 456 |
+| POST | `/api/proiecte/<project_id>/reschedule` | `reschedule_project` | 535 |
+| GET | `/api/proiecte/<project_id>/gantt.pdf` | `export_gantt_pdf` | 626 |
+| GET | `/api/proiecte/<project_id>/gantt.xlsx` | `export_gantt_xlsx` | 854 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 1010 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 1021 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 1044 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 1059 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 1078 |
+| POST | `/api/global-tasks` | `create_global_task` | 1158 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 1195 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1210 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1278 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 1371 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1401 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 1447 |
+| GET | `/api/plan` | `get_plan` | 1488 |
 
 ## app.py (19 rute)
 

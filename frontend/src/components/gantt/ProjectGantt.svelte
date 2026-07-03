@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2 } from '@lucide/svelte'
+  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2, ChevronRight } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday, clampNum } from '../../lib/planDates.js'
@@ -147,6 +147,7 @@
     patch(t.id, { progres: v })
   }
   function toggleMilestone(t) { patch(t.id, { is_milestone: t.is_milestone ? 0 : 1 }) }
+  function setFaza(t, e) { const v = e.target.value.trim(); if (v !== (t.faza || '')) patch(t.id, { faza: v }) }
 
   async function addTask() {
     if (adding) return
@@ -167,7 +168,42 @@
   const ROW_H = 34 // keep in sync with --row-h
   let bodyW = $state(0)
   let linkFrom = $state(null)
-  const idxMap = $derived(new Map(data.tasks.map((t, i) => [t.id, i])))
+  // --- phases (Plane-style cycles): group tasks under collapsible summary bars ---
+  let collapsed = $state(new Set())
+  function togglePhase(p) { const s = new Set(collapsed); if (s.has(p)) s.delete(p); else s.add(p); collapsed = s }
+
+  const displayRows = $derived.by(() => {
+    const byPhase = new Map(), noPhase = []
+    for (const t of data.tasks) {
+      const f = (t.faza || '').trim()
+      if (f) { if (!byPhase.has(f)) byPhase.set(f, []); byPhase.get(f).push(t) }
+      else noPhase.push(t)
+    }
+    const rows = []; let n = 0
+    const pushTask = (t) => rows.push({ kind: 'task', t, no: ++n })
+    for (const [phase, ts] of byPhase) {
+      rows.push({ kind: 'phase', phase, tasks: ts })
+      if (!collapsed.has(phase)) ts.forEach(pushTask)
+    }
+    noPhase.forEach(pushTask)
+    return rows
+  })
+  const hasPhases = $derived(data.tasks.some(t => (t.faza || '').trim()))
+
+  function phaseSpanRect(ts) {
+    const ds = ts.flatMap(t => [t.data_start, t.data_scadenta].filter(Boolean).map(x => x.slice(0, 10)))
+    if (!ds.length) return null
+    const lo = ds.reduce((a, b) => a < b ? a : b), hi = ds.reduce((a, b) => a > b ? a : b)
+    return spanRect(lo, hi, win.start, win.days)
+  }
+  function phaseProgress(ts) {
+    let w = 0, p = 0
+    for (const t of ts) { const d = Math.max((dayDiff(t.data_start, t.data_scadenta) || 0) + 1, 1); w += d; p += d * t.progres }
+    return w ? Math.round(p / w) : 0
+  }
+
+  const idxMap = $derived.by(() => { const m = new Map(); displayRows.forEach((r, i) => { if (r.kind === 'task') m.set(r.t.id, i) }); return m })
+  const nRows = $derived(displayRows.length)
 
   function edgesFor(t) {
     const i = idxMap.get(t.id)
@@ -324,40 +360,51 @@
       <div class="gh-row">
         <span class="c-idx">#</span>
         <span class="c-name">Task</span>
+        <span class="c-faza">Fază</span>
         <span class="c-date">Start</span>
         <span class="c-date">Sfârșit</span>
         <span class="c-dur">Zile</span>
         <span class="c-prog">%</span>
         <span class="c-act"></span>
       </div>
-      {#each data.tasks as t, i (t.id)}
-        <div class="gt-row" class:done={statusClass(t) === 'done'}>
-          <span class="c-idx">{i + 1}</span>
-          <span class="c-name">
-            {#if editId === t.id}
-              <input class="rename" bind:value={editVal} onblur={commitRename} onkeydown={(e) => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') editId = null }} autofocus />
-            {:else}
-              <button class="name-btn" onclick={() => startRename(t)} title={t.titlu}>
-                {#if t.is_milestone}<Diamond size={11} class="mini-ms" />{/if}{t.titlu}
-              </button>
-            {/if}
-          </span>
-          <span class="c-date"><DatePicker value={t.data_start} placeholder="—" onchange={(v) => setStart(t, v)} /></span>
-          <span class="c-date"><DatePicker value={t.data_scadenta} placeholder="—" onchange={(v) => setEnd(t, v)} /></span>
-          <span class="c-dur">{t.is_milestone ? '◆' : duration(t)}</span>
-          <span class="c-prog">
-            {#if t.subtask_total > 0}
-              <span class="prog-auto" title="Din subtaskuri: {t.subtask_done}/{t.subtask_total}">{t.progres}%</span>
-            {:else}
-              <input class="prog-in" type="number" min="0" max="100" value={t.progres} onchange={(e) => setProgress(t, e)} onkeydown={(e) => { if (e.key === 'Enter') e.target.blur() }} />
-            {/if}
-          </span>
-          <span class="c-act">
-            <button class="ic" class:on={linkFrom === t.id} onclick={() => onLinkClick(t)} title={linkFrom ? 'Leagă aici (succesor)' : 'Leagă dependență'}><Link2 size={13} /></button>
-            <button class="ic" class:on={t.is_milestone} onclick={() => toggleMilestone(t)} title="Comută milestone"><Flag size={13} /></button>
-            <button class="ic danger" onclick={() => removeTask(t)} title="Șterge"><Trash2 size={13} /></button>
-          </span>
-        </div>
+      {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.t.id)}
+        {#if row.kind === 'phase'}
+          <div class="ph-row" onclick={() => togglePhase(row.phase)} role="button" tabindex="0">
+            <ChevronRight size={14} class="ph-chev {collapsed.has(row.phase) ? '' : 'open'}" />
+            <span class="ph-name">{row.phase}</span>
+            <span class="ph-meta">{row.tasks.length} · {phaseProgress(row.tasks)}%</span>
+          </div>
+        {:else}
+          {@const t = row.t}
+          <div class="gt-row" class:done={statusClass(t) === 'done'} class:child={(t.faza || '').trim()}>
+            <span class="c-idx">{row.no}</span>
+            <span class="c-name">
+              {#if editId === t.id}
+                <input class="rename" bind:value={editVal} onblur={commitRename} onkeydown={(e) => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') editId = null }} autofocus />
+              {:else}
+                <button class="name-btn" onclick={() => startRename(t)} title={t.titlu}>
+                  {#if t.is_milestone}<Diamond size={11} class="mini-ms" />{/if}{t.titlu}
+                </button>
+              {/if}
+            </span>
+            <span class="c-faza"><input class="faza-in" value={t.faza || ''} placeholder="—" onchange={(e) => setFaza(t, e)} onkeydown={(e) => { if (e.key === 'Enter') e.target.blur() }} /></span>
+            <span class="c-date"><DatePicker value={t.data_start} placeholder="—" onchange={(v) => setStart(t, v)} /></span>
+            <span class="c-date"><DatePicker value={t.data_scadenta} placeholder="—" onchange={(v) => setEnd(t, v)} /></span>
+            <span class="c-dur">{t.is_milestone ? '◆' : duration(t)}</span>
+            <span class="c-prog">
+              {#if t.subtask_total > 0}
+                <span class="prog-auto" title="Din subtaskuri: {t.subtask_done}/{t.subtask_total}">{t.progres}%</span>
+              {:else}
+                <input class="prog-in" type="number" min="0" max="100" value={t.progres} onchange={(e) => setProgress(t, e)} onkeydown={(e) => { if (e.key === 'Enter') e.target.blur() }} />
+              {/if}
+            </span>
+            <span class="c-act">
+              <button class="ic" class:on={linkFrom === t.id} onclick={() => onLinkClick(t)} title={linkFrom ? 'Leagă aici (succesor)' : 'Leagă dependență'}><Link2 size={13} /></button>
+              <button class="ic" class:on={t.is_milestone} onclick={() => toggleMilestone(t)} title="Comută milestone"><Flag size={13} /></button>
+              <button class="ic danger" onclick={() => removeTask(t)} title="Șterge"><Trash2 size={13} /></button>
+            </span>
+          </div>
+        {/if}
       {/each}
     </div>
 
@@ -373,7 +420,7 @@
         </div>
         <div class="g-body" bind:clientWidth={bodyW}>
           {#if data.dependencies.length && bodyW}
-            <svg class="dep-svg" width={bodyW} height={data.tasks.length * ROW_H} viewBox="0 0 {bodyW} {data.tasks.length * ROW_H}">
+            <svg class="dep-svg" width={bodyW} height={nRows * ROW_H} viewBox="0 0 {bodyW} {nRows * ROW_H}">
               <defs>
                 <marker id="gdep-arw" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
                   <path d="M0 0 L6 3 L0 6 z" fill="currentColor" />
@@ -394,20 +441,32 @@
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
           </div>
-          {#each data.tasks as t (t.id)}
-            {@const r = rectFor(t)}
-            <div class="gb-row">
-              {#if t.is_milestone}
-                {#if msPct(t) != null}<div class="ms" class:crit={showCritical && criticalSet.has(t.id)} style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1"></div>{/if}
-              {:else if r}
-                <div class="bar {statusClass(t)}" class:crit={showCritical && criticalSet.has(t.id)} style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1">
-                  <span class="rz rz-l" onpointerdown={(e) => startBarDrag(e, t, 'resizeL')} aria-hidden="true"></span>
-                  <div class="fill" style="width:{t.progres}%"></div>
-                  <span class="bl">{t.progres}%</span>
-                  <span class="rz rz-r" onpointerdown={(e) => startBarDrag(e, t, 'resizeR')} aria-hidden="true"></span>
-                </div>
-              {/if}
-            </div>
+          {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.t.id)}
+            {#if row.kind === 'phase'}
+              {@const pr = phaseSpanRect(row.tasks)}
+              <div class="gb-row ph-track">
+                {#if pr}
+                  <div class="phase-bar" style="left:{pr.left}%; width:{pr.width}%" title="{row.phase} · {phaseProgress(row.tasks)}%">
+                    <div class="pfill" style="width:{phaseProgress(row.tasks)}%"></div>
+                  </div>
+                {/if}
+              </div>
+            {:else}
+              {@const t = row.t}
+              {@const r = rectFor(t)}
+              <div class="gb-row">
+                {#if t.is_milestone}
+                  {#if msPct(t) != null}<div class="ms" class:crit={showCritical && criticalSet.has(t.id)} style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1"></div>{/if}
+                {:else if r}
+                  <div class="bar {statusClass(t)}" class:crit={showCritical && criticalSet.has(t.id)} style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1">
+                    <span class="rz rz-l" onpointerdown={(e) => startBarDrag(e, t, 'resizeL')} aria-hidden="true"></span>
+                    <div class="fill" style="width:{t.progres}%"></div>
+                    <span class="bl">{t.progres}%</span>
+                    <span class="rz rz-r" onpointerdown={(e) => startBarDrag(e, t, 'resizeR')} aria-hidden="true"></span>
+                  </div>
+                {/if}
+              </div>
+            {/if}
           {/each}
         </div>
       </div>
@@ -443,7 +502,20 @@
   /* ===== two-pane gantt ===== */
   .gantt2 { --row-h: 34px; --head-h: 38px; display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel); }
 
-  .g-table { flex: none; width: 460px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
+  .g-table { flex: none; width: 560px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
+  .c-faza { width: 84px; flex: none; }
+  .faza-in { width: 78px; font-size: var(--font-tiny); background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-xs); color: var(--text-secondary); padding: 2px 5px; }
+  .faza-in:focus { border-color: var(--accent); outline: none; color: var(--text); }
+  .gt-row.child .c-name { padding-left: 12px; }
+  .ph-row { height: var(--row-h); display: flex; align-items: center; gap: 6px; padding: 0 10px; background: var(--bg-overlay); border-bottom: 1px solid var(--border); cursor: pointer; }
+  .ph-row:hover { background: var(--bg-hover); }
+  .ph-row :global(.ph-chev) { color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); flex: none; }
+  .ph-row :global(.ph-chev.open) { transform: rotate(90deg); }
+  .ph-name { flex: 1; min-width: 0; color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ph-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); flex: none; }
+  .ph-track { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  .phase-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 11px; border-radius: 3px; background: color-mix(in oklab, var(--text-dim) 34%, var(--bg-panel)); overflow: hidden; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-dim) 40%, transparent); }
+  .phase-bar .pfill { height: 100%; background: var(--text-dim); }
   .gh-row { height: var(--head-h); display: flex; align-items: center; background: var(--bg-overlay); border-bottom: 1px solid var(--border-strong); font-family: var(--font-mono); font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); }
   .gt-row { height: var(--row-h); display: flex; align-items: center; border-bottom: 1px solid var(--border); }
   .gt-row:last-child { border-bottom: 0; }

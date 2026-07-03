@@ -61,7 +61,7 @@ def close_db(exc=None):
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 24
+SCHEMA_VERSION = 25
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -803,6 +803,21 @@ def migrate_v23_to_v24():
     logger.info("Migration v23->v24: tasks.data_start/progres/is_milestone + task_dependencies")
 
 
+def migrate_v24_to_v25():
+    """v24 -> v25: Gantt phases (Plane-style cycles). Adds an optional phase label
+    on project tasks so the Gantt can group them under collapsible summary bars.
+    Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(tasks)")
+    tcols = {row[1] for row in cursor.fetchall()}
+    if 'faza' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN faza TEXT')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v24->v25: added tasks.faza")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -922,6 +937,11 @@ def run_migrations():
         set_schema_version(24)
         current_version = 24
 
+    if current_version < 25:
+        migrate_v24_to_v25()
+        set_schema_version(25)
+        current_version = 25
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -970,6 +990,9 @@ def run_migrations():
     if not has_gantt_cols or not has_deps_table:
         logger.warning("Self-heal: re-running v23->v24 (tasks.data_start/progres/is_milestone or task_dependencies missing)")
         migrate_v23_to_v24()
+    if 'faza' not in tasks_cols:
+        logger.warning("Self-heal: re-running v24->v25 (tasks.faza missing)")
+        migrate_v24_to_v25()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
