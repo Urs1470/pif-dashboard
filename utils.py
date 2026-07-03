@@ -16,11 +16,11 @@ def get_json_or_400():
 
 
 VALID_TABLES = {
-    'proiecte', 'tasks', 'task_subtasks', 'checklist_pif',
+    'proiecte', 'tasks', 'task_subtasks',
     'atasamente', 'echipamente', 'clienti',
-    'global_tasks', 'checklist_categorii',
-    'fault_codes', 'project_templates',
-    'parametri_master', 'assistant_memory', 'app_settings',
+    'global_tasks',
+    'fault_codes',
+    'parametri_master', 'app_settings',
 }
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')

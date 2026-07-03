@@ -61,7 +61,7 @@ def close_db(exc=None):
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 22
+SCHEMA_VERSION = 23
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -146,7 +146,6 @@ def migrate_v1_to_v2():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect ON tasks(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
     # jurnal / timer_sessions nu mai exista pe DB-uri noi (v22) — indexam doar daca tabelele exista
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jurnal', 'timer_sessions')")
     legacy = {row[0] for row in cursor.fetchall()}
@@ -230,6 +229,13 @@ def migrate_v4_to_v5():
     """
     conn = get_db()
     cursor = conn.cursor()
+
+    # checklist_pif a fost sters (v23) — pe un DB nou tabela nu mai exista,
+    # deci nu e nimic de migrat. v23 oricum face DROP dupa lantul de migratii.
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checklist_pif'")
+    if cursor.fetchone() is None:
+        conn.close()
+        return
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS checklist_categorii (
@@ -741,6 +747,25 @@ def migrate_v21_to_v22():
     logger.info("Migration v21->v22: dropped timer & jurnal tables (jurnal, timer_sessions, global_task_sessions)")
 
 
+def migrate_v22_to_v23():
+    """v22 -> v23: sterge complet features moarte (fara UI): Checklist PIF,
+    Template-uri proiect si Hermes (asistentul AI). Drops checklist_pif,
+    checklist_categorii, project_templates, assistant_memory + indexurile lor.
+    Idempotent — DROP ... IF EXISTS."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    for idx in ('idx_checklist_proiect', 'idx_checklist_categorii_proiect',
+                'idx_checklist_pif_categorie'):
+        cursor.execute(f'DROP INDEX IF EXISTS {idx}')
+    cursor.execute('DROP TABLE IF EXISTS checklist_pif')
+    cursor.execute('DROP TABLE IF EXISTS checklist_categorii')
+    cursor.execute('DROP TABLE IF EXISTS project_templates')
+    cursor.execute('DROP TABLE IF EXISTS assistant_memory')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v22->v23: dropped checklist_pif, checklist_categorii, project_templates, assistant_memory")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -850,15 +875,16 @@ def run_migrations():
         set_schema_version(22)
         current_version = 22
 
+    if current_version < 23:
+        migrate_v22_to_v23()
+        set_schema_version(23)
+        current_version = 23
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checklist_categorii'")
-    has_cat_table = cursor.fetchone() is not None
-    cursor.execute("PRAGMA table_info(checklist_pif)")
-    has_cat_col = any(row[1] == 'categorie_id' for row in cursor.fetchall())
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='task_subtasks'")
     has_subtask_table = cursor.fetchone() is not None
     cursor.execute("PRAGMA table_info(tasks)")
@@ -881,9 +907,6 @@ def run_migrations():
         cursor.execute("PRAGMA table_info(parametri_master)")
         has_pdf_extra = any(row[1] == 'pdf_extra' for row in cursor.fetchall())
     conn.close()
-    if not has_cat_table or not has_cat_col:
-        logger.warning("Self-heal: re-running v4->v5 (checklist_categorii / categorie_id missing)")
-        migrate_v4_to_v5()
     if 'parametri_master' in existing_tables and not has_pdf_extra:
         logger.warning("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
         migrate_v6_to_v7()
@@ -1007,7 +1030,7 @@ def seed_fault_codes():
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
-    
+
     # Create schema_version table first
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS schema_version (
@@ -1056,18 +1079,6 @@ def init_db():
             data_finalizare TEXT,
             ordine INTEGER DEFAULT 0,
             created_at TEXT,
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS checklist_pif (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
-            titlu TEXT NOT NULL,
-            completed INTEGER DEFAULT 0,
-            note TEXT,
-            ordine INTEGER DEFAULT 0,
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')
@@ -1133,27 +1144,6 @@ def init_db():
         )
     ''')
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS project_templates (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            tip TEXT DEFAULT 'PIF',
-            default_checklist_json TEXT,
-            default_tasks_json TEXT,
-            created_at TEXT
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS checklist_categorii (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            proiect_id TEXT NOT NULL,
-            nume TEXT NOT NULL,
-            ordine INTEGER DEFAULT 0,
-            created_at TEXT
-        )
-    ''')
-
     # Generic key/value app settings (Obsidian vault path, future config).
     # Created with IF NOT EXISTS so it always exists without a dedicated migration.
     cursor.execute('''
@@ -1174,15 +1164,6 @@ def init_db():
             ordine INTEGER DEFAULT 0,
             created_at TEXT,
             FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
-        )
-    ''')
-
-    # Persistent memory for the in-app AI assistant (Hermes).
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS assistant_memory (
-            id TEXT PRIMARY KEY,
-            continut TEXT NOT NULL,
-            created_at TEXT
         )
     ''')
 
@@ -1213,7 +1194,6 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect_id ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     # pe DB nou, migratia v18 (care le crea) se sare — fara ele, listele de
     # taskuri fac full-scan pe atasamente la batch-count

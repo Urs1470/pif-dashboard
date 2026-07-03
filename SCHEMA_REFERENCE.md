@@ -75,32 +75,10 @@ CREATE TABLE IF NOT EXISTS echipamente (
 **Un echipament NU poate exista fără proiect** (proiect_id NOT NULL + FK CASCADE).
 **Da, are `serial_number`** și **`model`** = familia de drive (ex: ACS880, SINAMICS_G120).
 
-### CHECKLIST PIF
-```sql
--- Itemi individuali (tabel separat, NU JSON într-o coloana!)
-CREATE TABLE IF NOT EXISTS checklist_pif (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    proiect_id TEXT NOT NULL,                   -- FK -> proiecte.id ON DELETE CASCADE
-    titlu TEXT NOT NULL,
-    completed INTEGER DEFAULT 0,                -- 0/1 boolean
-    note TEXT,
-    ordine INTEGER DEFAULT 0,
-    categorie_id INTEGER,                       -- FK -> checklist_categorii.id (nullable)
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-);
-
--- Categorii per-proiect (grupuri de itemi)
-CREATE TABLE IF NOT EXISTS checklist_categorii (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,       -- autoincrement INT (nu UUID!)
-    proiect_id TEXT NOT NULL,
-    nume TEXT NOT NULL,                          -- ex: "Verificari electrice", "Probe functionale"
-    ordine INTEGER DEFAULT 0,
-    created_at TEXT
-);
-```
-
-**Structura**: tabel separat cu rânduri per-item, fiecare opțional legat de o categorie.
-Items fără `categorie_id` apar într-un bucket virtual "Fără categorie" pe frontend.
+> **Checklist PIF a fost șters (v23).** Tabelele `checklist_pif` +
+> `checklist_categorii`, `project_templates` și `assistant_memory` (Hermes AI)
+> erau cod mort — backend complet fără niciun UI în SPA. Migrația v22→v23 le
+> face `DROP TABLE IF EXISTS`.
 
 ### TASKS (per proiect)
 ```sql
@@ -297,30 +275,12 @@ PRODUCATOR_FAMILII = {
 
 ---
 
-## 5. Structura checklist PIF
+## 5. ~~Structura checklist PIF~~ (ȘTERS v23)
 
-**Tabel separat** (NU JSON într-o coloană). Fiecare item e un rând cu FK la proiect.
-
-### Schema:
-- `checklist_pif` — itemi individuali (checkbox + notă + ordine)
-- `checklist_categorii` — grupuri per proiect ("Verificări electrice", "Probe funcționale")
-- Un item poate avea `categorie_id = NULL` → apare în bucket "Fără categorie"
-
-### Exemplu de date:
-```json
-// GET /api/proiecte/{id}/checklist
-[
-  {"id": "abc-123", "proiect_id": "proj-1", "titlu": "Verificare izolatie cabluri", "completed": 1, "note": "OK - 500MOhm", "ordine": 0, "categorie_id": 5},
-  {"id": "abc-124", "proiect_id": "proj-1", "titlu": "Test rampa accelerare", "completed": 0, "note": "", "ordine": 1, "categorie_id": 5},
-  {"id": "abc-125", "proiect_id": "proj-1", "titlu": "Semnat PV client", "completed": 0, "note": "", "ordine": 0, "categorie_id": null}
-]
-
-// GET /api/proiecte/{id}/checklist-categorii
-[
-  {"id": 5, "proiect_id": "proj-1", "nume": "Verificări electrice", "ordine": 0},
-  {"id": 6, "proiect_id": "proj-1", "nume": "Probe funcționale", "ordine": 1}
-]
-```
+Feature-ul Checklist PIF (tabelele `checklist_pif` + `checklist_categorii`,
+rutele `/api/proiecte/<id>/checklist*`, secțiunea din export PDF) a fost șters
+în v23 — era cod mort fără niciun UI în SPA. La fel `project_templates`
+(`/api/templates`) și `assistant_memory` (Hermes AI). Migrația v22→v23 face DROP.
 
 ---
 
@@ -334,8 +294,6 @@ PRODUCATOR_FAMILII = {
 | tasks | UUID v4 text | idem |
 | task_subtasks | UUID v4 text | idem |
 | global_tasks | UUID v4 text | idem |
-| checklist_pif | UUID v4 text | idem |
-| checklist_categorii | **INTEGER autoincrement** | SQLite autoincrement |
 | atasamente | UUID v4 text | idem |
 
 Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl folosesc; altfel generează UUID nou.
@@ -360,12 +318,9 @@ Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl fol
 ### Un echipament poate exista fără proiect?
 **Nu.** `proiect_id TEXT NOT NULL` + `FOREIGN KEY ... ON DELETE CASCADE`. Dacă proiectul se șterge, echipamentele dispar.
 
-### Se pot adăuga checklist items fără categorie?
-**Da.** `categorie_id` e nullable. Items fără categorie apar într-un bucket virtual "Fără categorie" pe frontend.
-
 ### Cascade deletes
 Când un proiect se șterge (via batch delete):
-1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), `tasks`, `checklist_pif`, `checklist_categorii`, `atasamente`, `echipamente`
+1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), `tasks`, `atasamente`, `echipamente`
 2. FK CASCADE ar face o parte din treabă, dar codul face și explicit pentru siguranță
 3. Fișierele fizice ale atașamentelor se șterg de pe disk (`shutil.rmtree`)
 
@@ -388,10 +343,9 @@ idx_proiecte_tip             ON proiecte(tip)
 idx_tasks_proiect_id         ON tasks(proiect_id)
 idx_tasks_status             ON tasks(status)
 idx_global_tasks_status      ON global_tasks(status)
-idx_checklist_proiect        ON checklist_pif(proiect_id)
-idx_checklist_pif_categorie  ON checklist_pif(categorie_id)
-idx_checklist_categorii_proiect ON checklist_categorii(proiect_id, ordine)
 idx_atasamente_proiect       ON atasamente(proiect_id)
+idx_atasamente_task          ON atasamente(task_id)
+idx_atasamente_global_task   ON atasamente(global_task_id)
 idx_echipamente_proiect      ON echipamente(proiect_id)
 idx_clienti_nume             ON clienti(nume)
 idx_gts_task                 ON global_task_sessions(global_task_id)
