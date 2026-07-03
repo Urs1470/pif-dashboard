@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet } from '@lucide/svelte'
+  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2 } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday, clampNum } from '../../lib/planDates.js'
@@ -69,9 +69,27 @@
     return ((di + 0.5) / win.days) * 100
   }
 
+  let autoReschedule = $state((() => { try { return localStorage.getItem('pif-gantt-auto') === '1' } catch { return false } })())
+  function toggleAuto() {
+    autoReschedule = !autoReschedule
+    try { localStorage.setItem('pif-gantt-auto', autoReschedule ? '1' : '0') } catch {}
+  }
   async function patch(id, body) {
-    try { await updateTask(id, body); await load() }
-    catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    try {
+      await updateTask(id, body)
+      if (autoReschedule) {
+        const res = await apiJson(`/api/proiecte/${projectId}/reschedule`, { method: 'POST' })
+        if (res?.changed) toast(`Reprogramat ${res.changed} task${res.changed > 1 ? '-uri' : ''} dependent${res.changed > 1 ? 'e' : ''}`, 'success')
+      }
+      await load()
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+  async function rescheduleNow() {
+    try {
+      const res = await apiJson(`/api/proiecte/${projectId}/reschedule`, { method: 'POST' })
+      toast(res?.changed ? `Reprogramat ${res.changed} task-uri` : 'Nimic de reprogramat', 'success')
+      await load()
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
   function setStart(t, v) { if (v) patch(t.id, { data_start: v }) }
   function setEnd(t, v) { if (v) patch(t.id, { data_scadenta: v }) }
@@ -239,6 +257,8 @@
   <div class="g-toolbar">
     <div class="g-tl">
       <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
+      <button class="exp-btn" onclick={rescheduleNow} title="Împinge succesorii ca să respecte dependențele"><Wand2 size={14} /> Reprogramează</button>
+      <button class="exp-btn" class:on-tg={autoReschedule} onclick={toggleAuto} title="Reprogramare automată a succesorilor la fiecare mutare">Auto {autoReschedule ? '●' : '○'}</button>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.pdf`} target="_blank" rel="noopener" title="Export PDF (client)"><FileDown size={14} /> PDF</a>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
     </div>
@@ -364,6 +384,7 @@
   .g-tl { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
   .exp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer; text-decoration: none; }
   .exp-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+  .exp-btn.on-tg { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-subtle); }
   .g-legend { display: flex; gap: 12px; flex-wrap: wrap; }
   .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); color: var(--text-dim); font-family: var(--font-mono); }
   .sw { width: 18px; height: 10px; border-radius: 3px; }

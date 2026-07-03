@@ -463,6 +463,86 @@ def delete_dependency(dep_id):
     return jsonify({'message': 'ok'})
 
 
+def _reschedule_project(cursor, project_id):
+    """Forward-pass (as-soon-as-possible) scheduler: push each successor so it
+    respects its dependencies (FS/SS/FF/SF + lag), preserving durations. Only
+    moves tasks LATER (never earlier). Returns how many tasks were shifted."""
+    from collections import deque
+    cursor.execute('SELECT id, data_start, data_scadenta, is_milestone FROM tasks WHERE proiect_id = ?', (project_id,))
+    tasks = {}
+    for r in [row_to_dict(x) for x in cursor.fetchall()]:
+        tasks[r['id']] = {'start': _pdate(r['data_start']), 'end': _pdate(r['data_scadenta'])}
+    cursor.execute('SELECT predecessor_id, successor_id, tip, lag FROM task_dependencies WHERE proiect_id = ?', (project_id,))
+    deps = [row_to_dict(x) for x in cursor.fetchall()]
+
+    succ_of, indeg, preds_of = {}, {t: 0 for t in tasks}, {t: [] for t in tasks}
+    for d in deps:
+        p, s = d['predecessor_id'], d['successor_id']
+        if p not in tasks or s not in tasks:
+            continue
+        succ_of.setdefault(p, []).append(s)
+        preds_of[s].append(d)
+        indeg[s] += 1
+
+    q = deque([t for t in tasks if indeg[t] == 0])
+    order = []
+    while q:
+        n = q.popleft()
+        order.append(n)
+        for s in succ_of.get(n, []):
+            indeg[s] -= 1
+            if indeg[s] == 0:
+                q.append(s)
+
+    now = datetime.now().isoformat()
+    changed = 0
+    for tid in order:
+        t = tasks[tid]
+        if not t['start'] or not t['end']:
+            continue
+        dur = (t['end'] - t['start']).days
+        req = t['start']
+        for d in preds_of[tid]:
+            p = tasks.get(d['predecessor_id'])
+            if not p or not p['start'] or not p['end']:
+                continue
+            lag = int(d['lag'] or 0)
+            tip = (d['tip'] or 'FS').upper()
+            if tip == 'SS':
+                cand = p['start'] + timedelta(days=lag)
+            elif tip == 'FF':
+                cand = p['end'] + timedelta(days=lag) - timedelta(days=dur)
+            elif tip == 'SF':
+                cand = p['start'] + timedelta(days=lag) - timedelta(days=dur)
+            else:  # FS (default): successor starts the day after predecessor finishes
+                cand = p['end'] + timedelta(days=1 + lag)
+            if cand > req:
+                req = cand
+        if req > t['start']:
+            delta = (req - t['start']).days
+            t['start'] = req
+            t['end'] = t['end'] + timedelta(days=delta)
+            cursor.execute('UPDATE tasks SET data_start = ?, data_scadenta = ?, updated_at = ? WHERE id = ?',
+                           (t['start'].isoformat(), t['end'].isoformat(), now, tid))
+            changed += 1
+    return changed
+
+
+@tasks_bp.route('/api/proiecte/<project_id>/reschedule', methods=['POST'])
+@login_required
+def reschedule_project(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    changed = _reschedule_project(cursor, project_id)
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'ok', 'changed': changed})
+
+
 # ---------------------------------------------------------------------------
 # Gantt export — client-ready PDF (reportlab) + Excel (openpyxl), server-side
 # so the output is consistent and branded, independent of the browser.
