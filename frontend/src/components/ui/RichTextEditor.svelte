@@ -22,7 +22,7 @@
   // variant: 'box' = caseta clasica cu chenar; 'doc' = pagina de document
   // (folosit in modalul fullscreen de observatii/notite — toolbar pill plutitor,
   // coloana de text centrata pe latime de citit, scroll pe toata pagina).
-  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box' } = $props()
+  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box', onsave = undefined } = $props()
 
   let editorEl = $state(null)
   let charCount = $state(0)
@@ -160,7 +160,12 @@
   }
 
   function onKeydown(e) {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) e.preventDefault()
+    const mod = e.ctrlKey || e.metaKey
+    // Ctrl+S (reflexul de salvare) si Ctrl+Enter -> salveaza, daca parintele a dat onsave.
+    if (mod && (e.key === 's' || e.key === 'S' || e.key === 'Enter')) {
+      e.preventDefault()
+      if (onsave) { value = serialize(); onsave() }
+    }
   }
 
   // ---- toolbar ----
