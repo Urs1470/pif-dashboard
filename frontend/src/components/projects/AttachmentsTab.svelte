@@ -40,7 +40,7 @@
       for (const file of files) {
         await uploadAttachment(projectId, file)
       }
-      toast(files.length > 1 ? `${files.length} fisiere incarcate` : 'Fisier incarcat', 'success')
+      toast(files.length > 1 ? `${files.length} fișiere încărcate` : 'Fișier încărcat', 'success')
       await load()
     } catch (err) {
       toast(`Eroare la upload: ${err.message}`, 'error')
@@ -63,7 +63,7 @@
   async function doDelete() {
     if (!toDelete) return
     await deleteAttachment(toDelete.id)
-    toast('Atasament sters', 'success')
+    toast('Atașament șters', 'success')
     toDelete = null
     await load()
   }
@@ -73,38 +73,38 @@
 
 <div class="attachments">
   <div class="att-header">
-    <span class="att-count">{attachments.length} fisiere</span>
+    <span class="att-count">{attachments.length} fișiere</span>
     <Button size="sm" variant="secondary" loading={uploading} onclick={() => fileInput?.click()}>
-      <Upload size={14} /> Incarca
+      <Upload size={14} /> Încarcă
     </Button>
     <input type="file" multiple hidden bind:this={fileInput} onchange={onFileChange} />
   </div>
 
   {#if loading}
-    <p class="empty">Se incarca...</p>
+    <p class="empty">Se încarcă...</p>
   {:else if attachments.length === 0}
-    <p class="empty">Niciun atasament. Incarca fisiere cu butonul de mai sus.</p>
+    <p class="empty">Niciun atașament. Încarcă fișiere cu butonul de mai sus.</p>
   {:else}
     <div class="att-list">
       {#each attachments as att (att.id)}
         {@const TypeIcon = TYPE_ICONS[att.tip_fisier] || File}
         <div class="att-row">
-          <button class="att-main" title="Previzualizeaza" onclick={() => openPreview(att)}>
+          <button class="att-main" title="Previzualizează" onclick={() => openPreview(att)}>
             <TypeIcon size={18} />
             <div class="att-text">
               <div class="att-name">{att.nume_fisier}</div>
               <div class="att-meta">{att.tip_fisier} · {formatFileSize(att.dimensiune)} · {formatDate(att.data)}</div>
             </div>
           </button>
-          <a class="att-btn" title="Descarca" href={`/api/atasamente/${att.id}/download`} download={att.nume_fisier}><Download size={15} /></a>
-          <button class="att-btn danger" title="Sterge" onclick={() => askDelete(att)}><SolidIcon name="trash" size={15} /></button>
+          <a class="att-btn" title="Descarcă" href={`/api/atasamente/${att.id}/download`} download={att.nume_fisier}><Download size={15} /></a>
+          <button class="att-btn danger" title="Șterge" onclick={() => askDelete(att)}><SolidIcon name="trash" size={15} /></button>
         </div>
       {/each}
     </div>
   {/if}
 </div>
 
-<ConfirmDialog bind:open={confirmOpen} title="Sterge atasament" message={`Stergi "${toDelete?.nume_fisier}"? Fisierul va fi sters definitiv.`} confirmLabel="Sterge" onconfirm={doDelete} />
+<ConfirmDialog bind:open={confirmOpen} title="Șterge atașament" message={`Ștergi "${toDelete?.nume_fisier}"? Fișierul va fi șters definitiv.`} confirmLabel="Șterge" onconfirm={doDelete} />
 <AttachmentPreview bind:open={previewOpen} attachment={previewAtt} ondelete={askDelete} />
 
 <style>

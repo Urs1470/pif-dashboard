@@ -24,7 +24,7 @@
   }
 </script>
 
-<Modal bind:open title={attachment?.nume_fisier || 'Atasament'} size="wide">
+<Modal bind:open title={attachment?.nume_fisier || 'Atașament'} size="wide">
   <div class="ap">
     {#if isImage}
       <div class="ap-stage"><img class="ap-img" src={url} alt={attachment.nume_fisier} /></div>
@@ -34,7 +34,7 @@
       <div class="ap-none">
         <Icon size={48} />
         <p class="ap-name">{attachment?.nume_fisier}</p>
-        <p class="ap-hint">Acest tip de fisier nu poate fi previzualizat in browser. Descarca-l pentru a-l deschide.</p>
+        <p class="ap-hint">Acest tip de fișier nu poate fi previzualizat în browser. Descarcă-l pentru a-l deschide.</p>
       </div>
     {/if}
   </div>
@@ -42,11 +42,11 @@
   {#snippet footer()}
     <div class="ap-actions">
       {#if ondelete}
-        <Button variant="ghost" onclick={requestDelete}><SolidIcon name="trash" size={14} /> Sterge</Button>
+        <Button variant="ghost" onclick={requestDelete}><SolidIcon name="trash" size={14} /> Șterge</Button>
       {/if}
       <span class="ap-spacer"></span>
-      <a class="ap-link" href={url} target="_blank" rel="noopener"><ExternalLink size={14} /> Deschide in tab nou</a>
-      <a class="ap-link primary" href={url} download={attachment?.nume_fisier}><Download size={14} /> Descarca</a>
+      <a class="ap-link" href={url} target="_blank" rel="noopener"><ExternalLink size={14} /> Deschide în tab nou</a>
+      <a class="ap-link primary" href={url} download={attachment?.nume_fisier}><Download size={14} /> Descarcă</a>
     </div>
   {/snippet}
 </Modal>

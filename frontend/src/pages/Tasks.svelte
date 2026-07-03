@@ -179,7 +179,7 @@
     attUploading = true
     try {
       for (const f of files) await uploadTaskAttachment(taskId, f, true)
-      toast(files.length === 1 ? 'Fisier atasat' : `${files.length} fisiere atasate`, 'success')
+      toast(files.length === 1 ? 'Fișier atașat' : `${files.length} fișiere atașate`, 'success')
       await Promise.all([loadAtt(taskId, true), loadGlobalTasks({ arhiva: showArchive })])
     } catch (err) {
       toast(`Eroare: ${err.message}`, 'error')
@@ -190,7 +190,7 @@
     if (!attDeleteId) return
     try {
       await deleteTaskAttachment(attDeleteId)
-      toast('Atasament sters', 'success')
+      toast('Atașament șters', 'success')
       const taskId = attDeleteTaskId
       attDeleteId = null
       attDeleteTaskId = null
@@ -286,7 +286,7 @@
     await deleteGlobalTask(taskDeleteId)
     taskDeleteId = null
     await loadGlobalTasks({ arhiva: showArchive })
-    toast('Task sters', 'success')
+    toast('Task șters', 'success')
   }
 
   const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
@@ -327,7 +327,7 @@
 
   function heroLabel(t) {
     const urgent = (t.prioritate || '').toLowerCase() === 'urgent'
-    if (isOverdue(t.data_scadenta)) return urgent ? 'Urgent · intarziat' : 'Intarziat'
+    if (isOverdue(t.data_scadenta)) return urgent ? 'Urgent · întârziat' : 'Întârziat'
     if (isToday(t.data_scadenta)) return urgent ? 'Urgent · azi' : 'Scadent azi'
     return 'Urgent'
   }
@@ -352,7 +352,7 @@
   {#if t.descriere}
     <div class="note-block">
       <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
-      <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
+      <button class="note-edit-btn" title="Editează notițe" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editează</button>
     </div>
   {/if}
 
@@ -363,7 +363,7 @@
           <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
             <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
           </button>
-          <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
+          <button class="att-del" title="Șterge atașament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
         </span>
       {/each}
     </div>
@@ -373,7 +373,7 @@
     {#if !t.descriere}
       <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
     {/if}
-    <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se incarca…' : 'Fisier'}</button>
+    <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se încarcă…' : 'Fișier'}</button>
   </div>
 
   <div class="sub-section">
@@ -382,7 +382,7 @@
       {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
     </div>
     {#if subtaskLoading && !subtasksCache[t.id]}
-      <div class="sub-loading">Se incarca...</div>
+      <div class="sub-loading">Se încarcă...</div>
     {:else}
       {#each subs as sub (sub.id)}
         <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
@@ -396,7 +396,7 @@
       <div class="sub-add">
         <input
           type="text"
-          placeholder="Adauga subtask..."
+          placeholder="Adaugă subtask..."
           bind:value={newSubtaskTitle}
           onkeydown={(e) => { if (e.key === 'Enter') addSubtask(t.id) }}
         />
@@ -421,11 +421,11 @@
   <div class="toolbar">
     <div class="search-box">
       <Search size={14} />
-      <input type="text" placeholder="Cauta taskuri..." bind:value={taskSearch} />
+      <input type="text" placeholder="Caută taskuri..." bind:value={taskSearch} />
     </div>
     <div class="filters">
       <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false; loadGlobalTasks() }}>Active</button>
-      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhiva</button>
+      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhivă</button>
     </div>
   </div>
 
@@ -441,7 +441,7 @@
             {#if t.subtask_total}<span class="ucard-dot">·</span><span>{t.subtask_done || 0}/{t.subtask_total} subtaskuri</span>{/if}
           </div>
           <div class="ucard-actions">
-            <button class="ucard-btn" onclick={() => toggleStatus(t)}>✓ Bifeaza</button>
+            <button class="ucard-btn" onclick={() => toggleStatus(t)}>✓ Bifează</button>
           </div>
         </section>
       {/each}
@@ -453,15 +453,15 @@
   <div class="cell-label list-label"><span class="ico ico-amber">≔</span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
   {#if !showArchive}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
-      <input type="text" placeholder="Task rapid... Enter pentru a adauga" bind:value={quickTitle} disabled={quickAdding} />
-      <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adauga task"><Plus size={16} /></button>
+      <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={quickTitle} disabled={quickAdding} />
+      <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
     </form>
   {/if}
 
   {#if globalTasks.loading}
     <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
   {:else if globalTasks.items.length === 0}
-    <EmptyState icon={ListTodo} title="Niciun task" description={showArchive ? 'Arhiva e goala.' : 'Adauga un task nou.'} />
+    <EmptyState icon={ListTodo} title="Niciun task" description={showArchive ? 'Arhiva e goală.' : 'Adaugă un task nou.'} />
   {:else}
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t, i (t.id)}
@@ -490,8 +490,8 @@
             <div class="task-actions">
               <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
               <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-              <button class="task-edit" onclick={() => openEditModal(t)} title="Editeaza task"><SolidIcon name="pencil" size={12} /></button>
-              <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
+              <button class="task-edit" onclick={() => openEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={12} /></button>
+              <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
           </div>
           {#if expandedTask === t.id}
@@ -527,7 +527,7 @@
                 </button>
                 <div class="task-actions">
                   <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
+                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
                 </div>
               </div>
               {#if expandedTask === t.id}
@@ -550,8 +550,8 @@
 
 <Modal bind:open={showNewModal} title="Task Nou" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
-    <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de facut?" />
-    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (optional)" rows={3} />
+    <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
+    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-3">
       <Select label="Prioritate" size="sm" bind:value={formPriority} options={['Normal', 'Minor', 'Urgent']} />
       <label class="mf-field">
@@ -563,20 +563,20 @@
         <DatePicker bind:value={formDeadline} />
       </div>
     </div>
-    <Select label="Recurenta" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fara' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Saptamanal' }, { value: 'lunar', label: 'Lunar' }]} />
+    <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showNewModal = false}>Anuleaza</Button>
-      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleCreate}>Creeaza</Button>
+      <Button variant="secondary" onclick={() => showNewModal = false}>Anulează</Button>
+      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleCreate}>Creează</Button>
     </div>
   {/snippet}
 </Modal>
 
-<Modal bind:open={showEditModal} title="Editeaza Task" size="md">
+<Modal bind:open={showEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
-    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (optional)" rows={3} />
+    <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-3">
       <Select label="Prioritate" size="sm" bind:value={formPriority} options={['Normal', 'Minor', 'Urgent']} />
       <label class="mf-field">
@@ -588,31 +588,31 @@
         <DatePicker bind:value={formDeadline} />
       </div>
     </div>
-    <Select label="Recurenta" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fara' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Saptamanal' }, { value: 'lunar', label: 'Lunar' }]} />
+    <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showEditModal = false}>Anuleaza</Button>
-      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleEdit}>Salveaza</Button>
+      <Button variant="secondary" onclick={() => showEditModal = false}>Anulează</Button>
+      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleEdit}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>
 
-<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
-<ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
+<ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showAttDelete} title="Șterge atașament" message="Ștergi acest fișier atașat?" confirmLabel="Șterge" onconfirm={doDeleteAtt} />
 <AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
-<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="doc">
+<Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
   <div class="note-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notite pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." />
     {/if}
   </div>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showNoteModal = false}>Anuleaza</Button>
-      <Button loading={noteSaving} onclick={saveNote}>Salveaza</Button>
+      <Button variant="secondary" onclick={() => showNoteModal = false}>Anulează</Button>
+      <Button loading={noteSaving} onclick={saveNote}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>

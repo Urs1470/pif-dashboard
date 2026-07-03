@@ -47,7 +47,7 @@
     </div>
     {#if overflowing && !noToggle}
       <button class="rt-toggle" onclick={() => expanded = !expanded}>
-        {#if expanded}<ChevronUp size={13} /> Restrange{:else}<ChevronDown size={13} /> Arata tot{/if}
+        {#if expanded}<ChevronUp size={13} /> Restrânge{:else}<ChevronDown size={13} /> Arată tot{/if}
       </button>
     {/if}
   </div>

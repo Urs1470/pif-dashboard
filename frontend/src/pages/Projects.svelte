@@ -34,8 +34,8 @@
   ]
 
   const batchStatusOptions = [
-    { value: 'in_lucru', label: 'In Lucru' },
-    { value: 'in_asteptare', label: 'In Asteptare' },
+    { value: 'in_lucru', label: 'În Lucru' },
+    { value: 'in_asteptare', label: 'În Așteptare' },
     { value: 'blocat', label: 'Blocat' },
   ]
 
@@ -52,7 +52,7 @@
   function deadlineText(deadline) {
     const days = daysUntil(deadline)
     if (days === null) return formatDate(deadline)
-    if (days < 0) return `${formatDate(deadline)} — depasit`
+    if (days < 0) return `${formatDate(deadline)} — depășit`
     if (days === 0) return `${formatDate(deadline)} — azi`
     return `${formatDate(deadline)} — ${days} ${days === 1 ? 'zi' : 'zile'}`
   }
@@ -118,7 +118,7 @@
     batchBusy = true
     try {
       for (const id of selected) await deleteProject(id)
-      toast(`${selected.size} proiecte sterse`, 'success')
+      toast(`${selected.size} proiecte șterse`, 'success')
       selected = new Set()
       showBatchDelete = false
       await loadProjects()
@@ -204,7 +204,7 @@
       <span class="count">{projects.items.length}</span>
     </div>
     <div class="header-btns">
-      <Button size="sm" variant={batchMode ? 'secondary' : 'ghost'} onclick={toggleBatch}><CheckSquare size={14} /> Selecteaza</Button>
+      <Button size="sm" variant={batchMode ? 'secondary' : 'ghost'} onclick={toggleBatch}><CheckSquare size={14} /> Selectează</Button>
       <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> Proiect Nou</Button>
     </div>
   </div>
@@ -212,17 +212,17 @@
   {#if batchMode && selected.size > 0}
     <div class="batch-bar" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
       <span class="batch-count">{selected.size} selectate</span>
-      <Select size="sm" bind:value={batchStatus} placeholder="Schimba status..." options={batchStatusOptions} aria-label="Schimba status" />
-      <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplica</Button>
-      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Sterge</Button>
-      <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselecteaza</Button>
+      <Select size="sm" bind:value={batchStatus} placeholder="Schimbă status..." options={batchStatusOptions} aria-label="Schimbă status" />
+      <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplică</Button>
+      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Șterge</Button>
+      <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselectează</Button>
     </div>
   {/if}
 
   <div class="toolbar">
     <div class="search-box">
       <Search size={14} />
-      <input type="text" placeholder="Cauta proiecte..." value={searchInput} oninput={onSearch} />
+      <input type="text" placeholder="Caută proiecte..." value={searchInput} oninput={onSearch} />
     </div>
     <div class="filters">
       {#each statusOptions as opt}
@@ -249,7 +249,7 @@
     {#if batchMode}
       <button class="select-all" onclick={toggleSelectAll}>
         {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={14} />{:else}<Square size={14} />{/if}
-        Selecteaza toate
+        Selectează toate
       </button>
     {/if}
   </div>
@@ -263,7 +263,7 @@
   {:else if projects.error}
     <ErrorState message={projects.error} onretry={() => loadProjects()} />
   {:else if activeItems.length === 0 && archivedItems.length === 0}
-    <EmptyState icon={FolderKanban} title="Niciun proiect" description="Nu exista proiecte cu filtrele selectate." />
+    <EmptyState icon={FolderKanban} title="Niciun proiect" description="Nu există proiecte cu filtrele selectate." />
   {:else}
     <div class="cards-grid">
       {#each activeItems as p (p.id)}
@@ -283,7 +283,7 @@
             {#if p.deadline}
               <span class="deadline" class:urgent={daysUntil(p.deadline) !== null && daysUntil(p.deadline) <= 2}>deadline {deadlineText(p.deadline)}</span>
             {:else}
-              <span class="deadline">fara deadline</span>
+              <span class="deadline">fără deadline</span>
             {/if}
           </div>
         </div>
@@ -300,7 +300,7 @@
       <div class="archive">
         <button class="archive-toggle" onclick={() => showArchive = !showArchive}>
           <Archive size={14} />
-          Arhiva (Finalizate)
+          Arhivă (Finalizate)
           <span class="count">{archivedItems.length}</span>
           {#if showArchive}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
         </button>
@@ -325,7 +325,7 @@
 </div>
 
 <ProjectFormModal bind:open={showNewModal} onsaved={() => loadProjects()} />
-<ConfirmDialog bind:open={showBatchDelete} title="Sterge proiecte" message={`Stergi ${selected.size} proiecte selectate? Aceasta actiune este ireversibila.`} confirmLabel="Sterge" onconfirm={batchDeleteSelected} />
+<ConfirmDialog bind:open={showBatchDelete} title="Șterge proiecte" message={`Ștergi ${selected.size} proiecte selectate? Această acțiune este ireversibilă.`} confirmLabel="Șterge" onconfirm={batchDeleteSelected} />
 
 <style>
   .page { padding: var(--space-lg); }

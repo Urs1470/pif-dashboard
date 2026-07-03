@@ -15,25 +15,25 @@
   let searchTimer = null
 
   const commands = [
-    { label: 'Acasa', path: '/', solid: 'home', keywords: 'home dashboard' },
+    { label: 'Acasă', path: '/', solid: 'home', keywords: 'home dashboard acasa' },
     { label: 'Proiecte', path: '/projects', solid: 'projects', keywords: 'projects lista' },
     { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
     { label: 'Parametri', path: '/params', solid: 'params', keywords: 'params drive fault' },
     { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
-    { label: 'Notite', path: '/notes', solid: 'notes', keywords: 'notes obsidian' },
+    { label: 'Notițe', path: '/notes', solid: 'notes', keywords: 'notes obsidian notite' },
     { label: 'Admin', path: '/admin', solid: 'admin', keywords: 'admin stats export' },
   ]
 
   const TYPE_META = {
     proiect:     { label: 'Proiecte', icon: FolderKanban },
-    observatie:  { label: 'Observatii', icon: FileText },
+    observatie:  { label: 'Observații', icon: FileText },
     task:        { label: 'Taskuri', icon: CheckSquare },
     global_task: { label: 'Taskuri zilnice', icon: CalendarCheck },
     echipament:  { label: 'Echipamente', icon: Cpu },
-    client:      { label: 'Clienti', icon: Users },
+    client:      { label: 'Clienți', icon: Users },
     parametru:   { label: 'Parametri', icon: Cpu },
     fault_code:  { label: 'Coduri eroare', icon: AlertTriangle },
-    obsidian:    { label: 'Notite', icon: BookOpen },
+    obsidian:    { label: 'Notițe', icon: BookOpen },
   }
 
   const isSearchMode = $derived(query.trim().length >= 2)
@@ -201,7 +201,7 @@
           bind:this={inputEl}
           type="text"
           bind:value={query}
-          placeholder="Cauta in tot dashboardul..."
+          placeholder="Caută în tot dashboardul..."
           autocomplete="off"
           spellcheck="false"
         />
@@ -229,7 +229,7 @@
             <div class="palette-empty">Niciun rezultat</div>
           {/if}
         {:else if searching}
-          <div class="palette-empty">Se cauta...</div>
+          <div class="palette-empty">Se caută...</div>
         {:else if flatResults.length === 0}
           <div class="palette-empty">Niciun rezultat pentru „{query.trim()}"</div>
         {:else}

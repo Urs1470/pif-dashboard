@@ -105,12 +105,12 @@
   })
 
   const items = [
-    { path: '/', label: 'Acasa', icon: 'home' },
+    { path: '/', label: 'Acasă', icon: 'home' },
     { path: '/projects', label: 'Proiecte', icon: 'projects' },
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
     { path: '/params', label: 'Parametri', icon: 'params' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
-    { path: '/notes', label: 'Notite', icon: 'notes' },
+    { path: '/notes', label: 'Notițe', icon: 'notes' },
     { path: '/admin', label: 'Admin', icon: 'admin' },
   ]
 
@@ -124,7 +124,7 @@
   }
 </script>
 
-<nav class="dock" class:hidden aria-label="Navigatie principala">
+<nav class="dock" class:hidden aria-label="Navigație principală">
   {#each items as item (item.path)}
     <a
       href={item.path}
@@ -139,7 +139,7 @@
     </a>
   {/each}
   <span class="sep" aria-hidden="true"></span>
-  <button class="dock-item" onclick={openSearch} aria-label="Cauta (Ctrl+K)" title="Cauta (Ctrl+K)">
+  <button class="dock-item" onclick={openSearch} aria-label="Caută (Ctrl+K)" title="Caută (Ctrl+K)">
     <Search size={20} />
   </button>
 </nav>
@@ -148,8 +148,8 @@
   <button
     class="dock-peek"
     transition:fade={{ duration: motionDuration(DUR_FAST) }}
-    aria-label="Arata navigatia"
-    title="Arata navigatia"
+    aria-label="Arată navigația"
+    title="Arată navigația"
     onclick={() => (hidden = false)}
   ><span></span></button>
 {/if}

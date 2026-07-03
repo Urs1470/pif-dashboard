@@ -2,7 +2,7 @@
   import Modal from './Modal.svelte'
   import Button from './Button.svelte'
 
-  let { open = $bindable(false), title = 'Confirmare', message = 'Esti sigur?', confirmLabel = 'Confirma', danger = true, onconfirm } = $props()
+  let { open = $bindable(false), title = 'Confirmare', message = 'Ești sigur?', confirmLabel = 'Confirmă', danger = true, onconfirm } = $props()
   let busy = $state(false)
 
   async function confirm() {
@@ -18,7 +18,7 @@
   <p class="msg">{message}</p>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
+      <Button variant="secondary" onclick={() => open = false}>Anulează</Button>
       <Button variant={danger ? 'danger' : 'primary'} loading={busy} onclick={confirm}>{confirmLabel}</Button>
     </div>
   {/snippet}

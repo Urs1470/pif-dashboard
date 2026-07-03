@@ -196,6 +196,29 @@ def check_rate_limit():
     return True
 
 
+# Limita dedicata, stricta, pe login: 5 incercari / 5 minute per IP.
+# Limita generala (60/min, in-memory per worker, golita la fiecare autodeploy)
+# permitea brute-force pe un PIN scurt.
+LOGIN_LIMIT = 5
+LOGIN_WINDOW = 300
+_login_attempts = {}
+
+
+def check_login_rate_limit():
+    client_ip = _client_ip()
+    now = time.time()
+    attempts = [ts for ts in _login_attempts.get(client_ip, []) if now - ts < LOGIN_WINDOW]
+    if len(attempts) >= LOGIN_LIMIT:
+        _login_attempts[client_ip] = attempts
+        return False
+    attempts.append(now)
+    _login_attempts[client_ip] = attempts
+    if len(_login_attempts) > 5000:
+        for ip in [ip for ip, a in _login_attempts.items() if all(now - ts >= LOGIN_WINDOW for ts in a)]:
+            del _login_attempts[ip]
+    return True
+
+
 # ============ STARTUP + BEFORE/AFTER REQUEST ============
 
 _startup_initialized = False
@@ -226,9 +249,12 @@ def before_request_func():
 
     _rl_api = request.path.startswith('/api/') and request.path not in ('/api/login', '/api/healthz')
     _rl_login = request.path in ('/login', '/login-hash') and request.method == 'POST'
+    if _rl_login and not check_login_rate_limit():
+        logger.warning(f"Login rate limit exceeded for IP: {_client_ip()}")
+        return jsonify({'error': 'Prea multe incercari de login. Reincearca in cateva minute.'}), 429, {'Retry-After': str(LOGIN_WINDOW)}
     if _rl_api or _rl_login:
         if not check_rate_limit():
-            logger.warning(f"Rate limit exceeded for IP: {request.remote_addr} on {request.path}")
+            logger.warning(f"Rate limit exceeded for IP: {_client_ip()} on {request.path}")
             return jsonify({'error': 'Rate limit exceeded. Maximum 60 requests per minute.'}), 429, {'Retry-After': str(RATE_WINDOW)}
 
     request._csp_nonce = secrets.token_urlsafe(16)

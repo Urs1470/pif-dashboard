@@ -33,6 +33,12 @@ export function sanitizeHtml(html) {
             if (keep && keep.has(a.name.toLowerCase())) continue
             child.removeAttribute(a.name)
           }
+          // href pastrat doar cu scheme sigure — javascript:/data: etc. ar fi
+          // XSS stocat la click (poate veni din paste sau dintr-un backup)
+          if (child.tagName === 'A' && child.hasAttribute('href')) {
+            const href = (child.getAttribute('href') || '').trim()
+            if (!/^(https?:|mailto:|tel:|\/|#)/i.test(href)) child.removeAttribute('href')
+          }
           walk(child)
         }
       }

@@ -1,0 +1,1 @@
+import{d as e,v as t,y as n}from"./Modal-DXOJiX55.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`m18 15-6-6-6 6`}]];e(i,n({name:`chevron-up`},()=>o,{get iconNode(){return s}}))}export{i as t};

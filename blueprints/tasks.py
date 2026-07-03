@@ -1,4 +1,5 @@
 import calendar
+import logging
 import os
 import re
 from datetime import datetime, timedelta
@@ -9,6 +10,7 @@ from database import get_db, row_to_dict
 from utils import generate_uuid, login_required, get_json_or_400
 
 tasks_bp = Blueprint('tasks', __name__)
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helper functions
@@ -216,6 +218,13 @@ def update_task(task_id):
         return jsonify({'error': 'Task not found'}), 404
     old_status = existing['status']
 
+    # Tranzitia la 'done' e atomica (WHERE status != 'done'): doua PUT-uri
+    # concurente (dublu-click / 2 workere) nu mai spawneaza doua recurente.
+    transitioned_to_done = False
+    if data.get('status') == 'done' and old_status != 'done':
+        cursor.execute("UPDATE tasks SET status = 'done' WHERE id = ? AND status != 'done'", (task_id,))
+        transitioned_to_done = cursor.rowcount == 1
+
     cursor.execute('''
         UPDATE tasks SET
             titlu = COALESCE(?, titlu),
@@ -248,8 +257,7 @@ def update_task(task_id):
     # A recurring task just completed -> spawn the next occurrence.
     spawned_id = None
     next_scad = None
-    if (data.get('status') == 'done' and old_status != 'done'
-            and (existing['recurenta'] or '').strip()):
+    if transitioned_to_done and (existing['recurenta'] or '').strip():
         recurenta = existing['recurenta'].strip()
         spawned_id = _spawn_recurring_task(cursor, existing, recurenta)
         next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
@@ -485,7 +493,7 @@ def get_global_task(task_id):
     return jsonify(row_to_dict(row))
 
 
-@tasks_bp.route('/api/global-tasks/<task_id>', methods=['PUT', 'POST'])
+@tasks_bp.route('/api/global-tasks/<task_id>', methods=['PUT'])
 @login_required
 def update_global_task(task_id):
     data = get_json_or_400()
@@ -499,6 +507,12 @@ def update_global_task(task_id):
         return jsonify({'error': 'Task not found'}), 404
     old_status = existing['status']
     now = datetime.now().isoformat()
+
+    # Tranzitie atomica la 'done' — vezi update_task (guard anti-dublu-spawn).
+    transitioned_to_done = False
+    if data.get('status') == 'done' and old_status != 'done':
+        cursor.execute("UPDATE global_tasks SET status = 'done' WHERE id = ? AND status != 'done'", (task_id,))
+        transitioned_to_done = cursor.rowcount == 1
 
     cursor.execute('''
         UPDATE global_tasks SET
@@ -532,8 +546,7 @@ def update_global_task(task_id):
     # A recurring daily task just completed -> spawn the next occurrence.
     spawned_id = None
     next_scad = None
-    if (data.get('status') == 'done' and old_status != 'done'
-            and (existing['recurenta'] or '').strip()):
+    if transitioned_to_done and (existing['recurenta'] or '').strip():
         recurenta = existing['recurenta'].strip()
         spawned_id = _spawn_recurring_global_task(cursor, existing, recurenta)
         next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
@@ -740,6 +753,7 @@ def reorder_agenda():
     except Exception as e:
         conn.rollback()
         conn.close()
-        return jsonify({'error': str(e)}), 500
+        logger.exception("reorder_agenda a esuat: %s", e)
+        return jsonify({'error': 'Reordonarea a esuat.'}), 500
     conn.close()
     return jsonify({'message': 'ok', 'count': len(order)})

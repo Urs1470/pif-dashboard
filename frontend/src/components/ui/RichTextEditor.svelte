@@ -270,8 +270,8 @@
 
 <div class="rte" class:doc={variant === 'doc'}>
   <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
-    <button type="button" class="tbtn" title="Anuleaza (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
-    <button type="button" class="tbtn" title="Refa (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
+    <button type="button" class="tbtn" title="Anulează (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
+    <button type="button" class="tbtn" title="Refă (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
 
     <span class="tsep" aria-hidden="true"></span>
 
@@ -298,19 +298,19 @@
     <button type="button" class="tbtn" class:on={fmt.bold} title="Bold (Ctrl+B)" onmousedown={keepSel} onclick={() => cmd('bold')}><Bold size={15} /></button>
     <button type="button" class="tbtn" class:on={fmt.italic} title="Italic (Ctrl+I)" onmousedown={keepSel} onclick={() => cmd('italic')}><Italic size={15} /></button>
     <button type="button" class="tbtn" class:on={fmt.underline} title="Subliniat (Ctrl+U)" onmousedown={keepSel} onclick={() => cmd('underline')}><Underline size={15} /></button>
-    <button type="button" class="tbtn" class:on={fmt.strike} title="Taiat" onmousedown={keepSel} onclick={() => cmd('strikeThrough')}><Strikethrough size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.strike} title="Tăiat" onmousedown={keepSel} onclick={() => cmd('strikeThrough')}><Strikethrough size={15} /></button>
 
     <span class="tsep" aria-hidden="true"></span>
 
-    <button type="button" class="tbtn" class:on={fmt.ul} title="Lista cu puncte" onmousedown={keepSel} onclick={() => cmd('insertUnorderedList')}><List size={15} /></button>
-    <button type="button" class="tbtn" class:on={fmt.ol} title="Lista numerotata" onmousedown={keepSel} onclick={() => cmd('insertOrderedList')}><ListOrdered size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.ul} title="Listă cu puncte" onmousedown={keepSel} onclick={() => cmd('insertUnorderedList')}><List size={15} /></button>
+    <button type="button" class="tbtn" class:on={fmt.ol} title="Listă numerotată" onmousedown={keepSel} onclick={() => cmd('insertOrderedList')}><ListOrdered size={15} /></button>
     <button type="button" class="tbtn" class:on={fmt.block === 'blockquote'} title="Citat" onmousedown={keepSel} onclick={() => setBlock(fmt.block === 'blockquote' ? 'p' : 'blockquote')}><TextQuote size={15} /></button>
-    <button type="button" class="tbtn" title="Linie orizontala" onmousedown={keepSel} onclick={() => cmd('insertHorizontalRule')}><Minus size={15} /></button>
+    <button type="button" class="tbtn" title="Linie orizontală" onmousedown={keepSel} onclick={() => cmd('insertHorizontalRule')}><Minus size={15} /></button>
 
     <span class="tsep" aria-hidden="true"></span>
 
-    <button type="button" class="tbtn tmath" class:on={mathOpen} title="Formula LaTeX" onmousedown={keepSel} onclick={() => (mathOpen ? closeMathBar() : openMathBar())}><Sigma size={15} /></button>
-    <button type="button" class="tbtn" title="Curata formatarea" onmousedown={keepSel} onclick={clearFmt}><RemoveFormatting size={15} /></button>
+    <button type="button" class="tbtn tmath" class:on={mathOpen} title="Formulă LaTeX" onmousedown={keepSel} onclick={() => (mathOpen ? closeMathBar() : openMathBar())}><Sigma size={15} /></button>
+    <button type="button" class="tbtn" title="Curăță formatarea" onmousedown={keepSel} onclick={clearFmt}><RemoveFormatting size={15} /></button>
   </div>
 
   {#if mathOpen}
@@ -324,14 +324,14 @@
           bind:this={mathInputEl}
           onkeydown={onMathKeydown}
         />
-        <label class="math-disp" title="Formula pe rand separat, centrata">
+        <label class="math-disp" title="Formulă pe rând separat, centrată">
           <input type="checkbox" bind:checked={mathDisplay} /> Bloc
         </label>
-        <button type="button" class="math-btn primary" onclick={saveMath}>{editingChip ? 'Salveaza' : 'Insereaza'}</button>
+        <button type="button" class="math-btn primary" onclick={saveMath}>{editingChip ? 'Salvează' : 'Inserează'}</button>
         {#if editingChip}
-          <button type="button" class="math-btn danger" onclick={removeMath}>Sterge</button>
+          <button type="button" class="math-btn danger" onclick={removeMath}>Șterge</button>
         {/if}
-        <button type="button" class="math-btn" title="Inchide" onclick={closeMathBar}><X size={14} /></button>
+        <button type="button" class="math-btn" title="Închide" onclick={closeMathBar}><X size={14} /></button>
       </div>
       {#if mathPreview}
         <div class="math-prev">{@html mathPreview}</div>
@@ -344,7 +344,7 @@
     contenteditable="true"
     role="textbox"
     aria-multiline="true"
-    aria-label="Continut"
+    aria-label="Conținut"
     spellcheck="true"
     data-placeholder={placeholder}
     bind:this={editorEl}
@@ -356,7 +356,7 @@
   {#if variant !== 'doc'}
     <div class="rte-footer">
       <span class="rte-counter">{charCount} caractere</span>
-      <span class="rte-hint"><code>$...$</code> devine formula automat</span>
+      <span class="rte-hint"><code>$...$</code> devine formulă automat</span>
     </div>
   {/if}
 </div>

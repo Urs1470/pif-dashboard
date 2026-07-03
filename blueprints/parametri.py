@@ -1,7 +1,7 @@
 import os
 import json
-import math
 import re
+import sqlite3
 
 from flask import Blueprint, request, jsonify, send_file
 
@@ -14,13 +14,6 @@ parametri_bp = Blueprint('parametri', __name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-PRODUCATOR_FAMILII = {
-    'ABB': ['ACS580', 'ACS880'],
-    'Danfoss': ['Danfoss_VLT_FC302'],
-    'Lenze': ['Lenze_i550', 'Lenze_i950'],
-    'Siemens': ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'],
-}
-
 MANUALS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'manuals')
 
 # ---------------------------------------------------------------------------
@@ -32,9 +25,14 @@ MANUALS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 def get_parametri_familii():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT familie, COUNT(*) as count FROM parametri_master GROUP BY familie ORDER BY familie")
-    families = [{'familie': row['familie'], 'count': row['count']} for row in cursor.fetchall()]
-    conn.close()
+    try:
+        cursor.execute("SELECT familie, COUNT(*) as count FROM parametri_master GROUP BY familie ORDER BY familie")
+        families = [{'familie': row['familie'], 'count': row['count']} for row in cursor.fetchall()]
+    except sqlite3.OperationalError:
+        # DB fara seed de parametri (tabela parametri_master lipseste) — lista goala, nu 500
+        families = []
+    finally:
+        conn.close()
     return jsonify({'families': families})
 
 
@@ -68,17 +66,22 @@ def get_parametri():
         query += clause
         params.append(familie)
 
-    # Get total count
-    cursor.execute(count_query, params)
-    total = cursor.fetchone()[0]
+    try:
+        # Get total count
+        cursor.execute(count_query, params)
+        total = cursor.fetchone()[0]
 
-    # Get paginated results
-    query += " ORDER BY familie, parametru LIMIT ? OFFSET ?"
-    params.extend([limit, offset])
+        # Get paginated results
+        query += " ORDER BY familie, parametru LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
 
-    cursor.execute(query, params)
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
+        cursor.execute(query, params)
+        rows = [dict(r) for r in cursor.fetchall()]
+    except sqlite3.OperationalError:
+        # DB fara seed de parametri — envelope gol, nu 500
+        total, rows = 0, []
+    finally:
+        conn.close()
 
     return jsonify({
         'params': rows,
@@ -87,150 +90,6 @@ def get_parametri():
         'limit': limit,
         'totalPages': max(1, (total + limit - 1) // limit)
     })
-
-
-@parametri_bp.route('/api/parametri/search', methods=['GET'])
-@login_required
-def search_parametri():
-    """Search parametri by text query - used by mobile app.
-    Mobile app calls /api/parametri/search?q=query"""
-    conn = get_db()
-    cursor = conn.cursor()
-
-    q = request.args.get('q', '')
-    familie = request.args.get('familie', '')
-    limit = min(max(request.args.get('limit', 50, type=int), 1), 500)
-
-    query = "SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date, valoare_default, valoare_default_str, min, max, unitate, pagina, creat_la, conditie_vizibilitate FROM parametri_master WHERE 1=1"
-    count_query = "SELECT COUNT(*) FROM parametri_master WHERE 1=1"
-    params = []
-
-    if q:
-        clause = " AND (parametru LIKE ? OR descriere LIKE ?)"
-        count_query += clause
-        query += clause
-        params.extend([f'%{q}%', f'%{q}%'])
-
-    if familie:
-        clause = " AND familie = ?"
-        count_query += clause
-        query += clause
-        params.append(familie)
-
-    cursor.execute(count_query, params)
-    total = cursor.fetchone()[0]
-
-    query += " ORDER BY familie, parametru LIMIT ?"
-    params.append(limit)
-
-    cursor.execute(query, params)
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
-
-    return jsonify({
-        'params': rows,
-        'total': total,
-        'limit': limit
-    })
-
-
-# ============ BULK PARAMS (lightweight, for mobile cache) ============
-
-@parametri_bp.route('/api/parametri/bulk', methods=['GET'])
-@login_required
-def get_parametri_bulk():
-    """Returnează parametrii FĂRĂ explicatie/influenteaza (lightweight).
-
-    Backward compatible: without `limit` query param returns the full list
-    (legacy shape). With `limit` set, returns a paginated envelope.
-    """
-    has_limit = request.args.get('limit') is not None
-    limit = min(int(request.args.get('limit', 1000)), 5000)
-    offset = max(int(request.args.get('offset', 0)), 0)
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    if has_limit:
-        cursor.execute("SELECT COUNT(*) FROM parametri_master")
-        total = cursor.fetchone()[0]
-        cursor.execute('''
-            SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
-                   valoare_default, valoare_default_str, min, max, unitate,
-                   pagina, creat_la
-            FROM parametri_master
-            ORDER BY familie, parametru
-            LIMIT ? OFFSET ?
-        ''', (limit, offset))
-    else:
-        cursor.execute('''
-            SELECT id, familie, parametru, descriere_scurta, descriere, acces, tip_date,
-                   valoare_default, valoare_default_str, min, max, unitate,
-                   pagina, creat_la
-            FROM parametri_master
-            ORDER BY familie, parametru
-        ''')
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
-
-    # Sanitize: JSON nu suportă Infinity/NaN — înlocuiește cu null
-    for row in rows:
-        for key in ('min', 'max'):
-            if row.get(key) is not None:
-                try:
-                    v = float(row[key])
-                    if math.isinf(v) or math.isnan(v):
-                        row[key] = None
-                except (ValueError, TypeError):
-                    pass
-
-    if has_limit:
-        return jsonify({
-            'data': rows,
-            'total': total,
-            'limit': limit,
-            'offset': offset,
-        })
-    return jsonify(rows)
-
-
-# ---------------------------------------------------------------------------
-# Parametri by producator
-# ---------------------------------------------------------------------------
-
-@parametri_bp.route('/api/parametri/by-producator/<producator>', methods=['GET'])
-@login_required
-def get_parametri_by_producator(producator):
-    """Returnează parametrii pentru toate familiile unui producător.
-
-    Cu `?q=` activeaza modul typeahead (LIMIT 50, filtrare LIKE pe
-    parametru + descriere_scurta). Fara `q` returneaza pana la 1000
-    randuri (safety cap — Siemens are 7000+ in DB).
-    """
-    familii = PRODUCATOR_FAMILII.get(producator, [])
-    if not familii:
-        return jsonify([])
-    q = (request.args.get('q') or '').strip()
-    conn = get_db()
-    cursor = conn.cursor()
-    placeholders = ','.join('?' * len(familii))
-    if q:
-        like = f'%{q}%'
-        cursor.execute(
-            f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master '
-            f'WHERE familie IN ({placeholders}) AND (parametru LIKE ? OR descriere_scurta LIKE ?) '
-            f'LIMIT 50',
-            list(familii) + [like, like]
-        )
-    else:
-        cursor.execute(
-            f'SELECT id, parametru, descriere_scurta, familie FROM parametri_master '
-            f'WHERE familie IN ({placeholders})',
-            familii
-        )
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([dict(r) for r in rows])
 
 
 # ============ FAULT CODES API ============
@@ -317,33 +176,6 @@ def get_fault_codes():
     })
 
 
-@parametri_bp.route('/api/fault-codes/lookup', methods=['GET'])
-@login_required
-def lookup_fault_code():
-    """Quick lookup by code. Query: cod (required), producator/familie (optional).
-    Matches cod or cod_secundar, case-insensitive."""
-    cod = request.args.get('cod', '').strip()
-    if not cod:
-        return jsonify({'error': 'cod lipsa'}), 400
-    producator = request.args.get('producator', '').strip()
-    familie = request.args.get('familie', '').strip()
-
-    conn = get_db()
-    cursor = conn.cursor()
-    where = ' WHERE (cod = ? COLLATE NOCASE OR cod_secundar = ? COLLATE NOCASE)'
-    params = [cod, cod]
-    if producator:
-        where += ' AND producator = ?'
-        params.append(producator)
-    if familie:
-        where += ' AND familie = ?'
-        params.append(familie)
-    cursor.execute(f'SELECT * FROM {safe_table("fault_codes")}{where} ORDER BY producator, familie', params)
-    matches = [_fault_row(r) for r in cursor.fetchall()]
-    conn.close()
-    return jsonify({'matches': matches, 'count': len(matches)})
-
-
 @parametri_bp.route('/api/fault-codes/<int:code_id>', methods=['GET'])
 @login_required
 def get_fault_code(code_id):
@@ -372,6 +204,19 @@ def parametri_audit():
     familie_filter = request.args.get('familie', '').strip()
     conn = get_db()
     cursor = conn.cursor()
+
+    # Guard: DB fara seed de parametri (tabela lipseste) — envelope gol, nu 500
+    try:
+        cursor.execute(f'SELECT 1 FROM {safe_table("parametri_master")} LIMIT 1')
+    except sqlite3.OperationalError:
+        conn.close()
+        return jsonify({
+            'total': 0,
+            'familie_filter': familie_filter or None,
+            'health_pct': 0,
+            'per_familie': [],
+            'issues': {},
+        })
 
     # Build WHERE for optional familie scope
     where = ''

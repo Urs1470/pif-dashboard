@@ -16,7 +16,6 @@ from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES,
     get_app_setting, set_app_setting, get_json_or_400,
 )
-from scripts.parse_params import parse_for_producator
 from scripts.parse_params.siemens_starter import parse_archive
 from scripts.parse_params.abb import parse as parse_abb, read_drive_info as abb_drive_info
 
@@ -1096,70 +1095,6 @@ def _familie_from_echipament(producator: str, model: str) -> str:
     return ''
 
 
-@projects_bp.route('/api/import-params/preview', methods=['POST'])
-@login_required
-def preview_import_params():
-    """Parseaza un export de parametri modificati (producator software) si returneaza preview.
-
-    Form fields:
-      file: fisierul exportat (text Danfoss .txt, in viitor PDF Lenze/Siemens)
-      producator: numele producatorului (Danfoss, Lenze, Siemens, ABB)
-      model: optional, pentru determinarea familiei (ACS580 vs ACS880 etc)
-
-    Preview-ul nu modifica DB. Persistarea se face prin PUT /api/echipamente/<id>
-    cu params_json deja merge-uit pe client.
-    """
-    if 'file' not in request.files:
-        return jsonify({'error': 'Fisier lipsa (field "file")'}), 400
-    upload = request.files['file']
-    if not upload.filename:
-        return jsonify({'error': 'Fisier gol'}), 400
-
-    producator = (request.form.get('producator') or '').strip()
-    model = (request.form.get('model') or '').strip()
-    if not producator:
-        return jsonify({'error': 'producator lipsa'}), 400
-
-    try:
-        raw = upload.read()
-    except Exception as e:
-        logger.exception("Eroare citire fisier import params")
-        return jsonify({'error': f'Eroare citire fisier: {e}'}), 400
-
-    detected, parsed = parse_for_producator(producator, raw, upload.filename or '')
-    if detected is None or parsed is None:
-        return jsonify({
-            'error': f'Producator "{producator}" nu este inca suportat pentru import. Suportate: Danfoss, Lenze, Siemens, ABB.'
-        }), 400
-
-    # Imbogateste cu descriere_scurta din parametri_master
-    familie = _familie_from_echipament(producator, model)
-    if familie and parsed:
-        conn = get_db()
-        cursor = conn.cursor()
-        codes = [p['db_id'] for p in parsed]
-        placeholders = ','.join('?' * len(codes))
-        cursor.execute(
-            f'SELECT parametru, descriere_scurta FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
-            [familie] + codes
-        )
-        desc_map = {r['parametru']: r['descriere_scurta'] for r in cursor.fetchall()}
-        conn.close()
-        for p in parsed:
-            ds = desc_map.get(p['db_id'])
-            if ds:
-                p['descriere_db'] = ds
-
-    return jsonify({
-        'producator_detected': detected,
-        'familie': familie,
-        'filename': upload.filename,
-        'count': len(parsed),
-        'conflicts': sum(1 for p in parsed if p.get('conflict')),
-        'params': parsed,
-    })
-
-
 # ============ IMPORT MULTI-FILE ABB (.dcparamsbak) ============
 
 @projects_bp.route('/api/import-abb-multi/preview', methods=['POST'])
@@ -1909,7 +1844,7 @@ def import_debrief():
     except Exception as e:
         conn.rollback()
         logger.exception(f"Import debrief failed: {e}")
-        return jsonify({'error': f'Import failed: {e}'}), 500
+        return jsonify({'error': 'Importul a esuat — verifica formatul JSON (detalii in logurile serverului).'}), 500
     finally:
         conn.close()
 

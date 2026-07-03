@@ -6,7 +6,7 @@
   let {
     value = $bindable(''),
     label = '',
-    placeholder = 'Selecteaza data',
+    placeholder = 'Selectează data',
     disabled = false,
     onchange = undefined,
   } = $props()
@@ -123,6 +123,16 @@
     close()
   }
   function onKey(e) { if (e.key === 'Escape') close() }
+
+  // Ridica pop-up-ul la <body> ca sa scape din orice stacking-context al unui
+  // stramos (transform-ul tranzitiei de pagina, backdrop-filter-ul cardurilor,
+  // .arow:hover) — altfel un card-frate ulterior in DOM il acopera desi are
+  // z-index mare. position:fixed + getBoundingClientRect => coordonatele raman
+  // corecte in spatiul viewport-ului.
+  function portal(node) {
+    document.body.appendChild(node)
+    return { destroy() { node.remove() } }
+  }
 </script>
 
 <svelte:window onclick={onWindowClick} onkeydown={onKey} onresize={() => open && positionPopup()} />
@@ -136,11 +146,11 @@
   </button>
 
   {#if open}
-    <div class="dp-pop" bind:this={popupEl} style={popupStyle} transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
+    <div class="dp-pop" use:portal bind:this={popupEl} style={popupStyle} transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
       <div class="dp-head">
-        <button type="button" class="dp-nav" onclick={prevMonth} aria-label="Luna anterioara"><ChevronLeft size={16} /></button>
+        <button type="button" class="dp-nav" onclick={prevMonth} aria-label="Luna anterioară"><ChevronLeft size={16} /></button>
         <span class="dp-title">{MONTHS[viewM]} {viewY}</span>
-        <button type="button" class="dp-nav" onclick={nextMonth} aria-label="Luna urmatoare"><ChevronRight size={16} /></button>
+        <button type="button" class="dp-nav" onclick={nextMonth} aria-label="Luna următoare"><ChevronRight size={16} /></button>
       </div>
       <div class="dp-grid dp-wd">
         {#each WEEKDAYS as w}<span class="dp-wdname">{w}</span>{/each}
@@ -158,7 +168,7 @@
       {/key}
       <div class="dp-foot">
         <button type="button" class="dp-foot-btn" onclick={pickToday}>Azi</button>
-        {#if display}<button type="button" class="dp-foot-btn clear" onclick={clear}><X size={12} /> Sterge</button>{/if}
+        {#if display}<button type="button" class="dp-foot-btn clear" onclick={clear}><X size={12} /> Șterge</button>{/if}
       </div>
     </div>
   {/if}

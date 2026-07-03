@@ -12,7 +12,7 @@
   <span class="h-spacer"></span>
 
   <div class="header-actions">
-    <button class="header-btn" onclick={toggleTheme} title="Schimba tema">
+    <button class="header-btn" onclick={toggleTheme} title="Schimbă tema">
       {#if ui.theme === 'dark'}
         <Sun size={18} />
       {:else}
