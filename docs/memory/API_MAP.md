@@ -97,19 +97,19 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | DELETE | `/api/dependencies/<dep_id>` | `delete_dependency` | 452 |
 | GET | `/api/proiecte/<project_id>/gantt.pdf` | `export_gantt_pdf` | 518 |
 | GET | `/api/proiecte/<project_id>/gantt.xlsx` | `export_gantt_xlsx` | 686 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 789 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 800 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 823 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 838 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 857 |
-| POST | `/api/global-tasks` | `create_global_task` | 937 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 974 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 989 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1057 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 1150 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1180 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 1226 |
-| GET | `/api/plan` | `get_plan` | 1267 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 836 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 847 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 870 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 885 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 904 |
+| POST | `/api/global-tasks` | `create_global_task` | 984 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 1021 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1036 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1104 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 1197 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1227 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 1273 |
+| GET | `/api/plan` | `get_plan` | 1314 |
 
 ## app.py (19 rute)
 

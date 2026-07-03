@@ -695,17 +695,44 @@ def export_gantt_xlsx(project_id):
 
     proj = data['proiect']
     tasks = data['tasks']
-    preds = _pred_titles(data)
     win_start, win_end = _gantt_window(data)
+
+    # Day columns when the span is short enough; weekly for long projects (else
+    # a 6-month plan would blow out to 180 columns).
+    total_days = (win_end - win_start).days + 1
+    daily = total_days <= 92
+    if daily:
+        units = [win_start + timedelta(days=i) for i in range(total_days)]
+    else:
+        u0 = win_start - timedelta(days=win_start.weekday())
+        units, dd = [], u0
+        while dd <= win_end:
+            units.append(dd)
+            dd += timedelta(days=7)
+
+    def unit_index(d):
+        if d < units[0]:
+            return 0
+        if daily:
+            return min((d - win_start).days, len(units) - 1)
+        return min((d - units[0]).days // 7, len(units) - 1)
+
+    # bar shades: (done-portion, remaining-portion) per status
+    SHADES = {
+        'done': ('4FA874', '4FA874'), 'finalizat': ('4FA874', '4FA874'),
+        'in_progress': ('D9822B', 'F3D9AE'), 'in_lucru': ('D9822B', 'F3D9AE'),
+        'to_do': ('B9B2A6', 'DED9D0'), 'blocat': ('D65A4A', 'ECC4BE'),
+        'in_asteptare': ('8B7FC0', 'D9D3EE'),
+    }
+    today = datetime.now().date()
 
     wb = Workbook()
     ws = wb.active
     ws.title = 'Gantt'
 
-    thin = Side(style='thin', color='D9D4CC')
+    thin = Side(style='thin', color='E2DED6')
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
-    hdr_fill = PatternFill('solid', fgColor='1A1206')
-    hdr_font = Font(bold=True, color='FFFFFF')
+    center = Alignment(horizontal='center', vertical='center')
 
     # title block
     ws['A1'] = proj.get('nume') or 'Proiect'
@@ -716,63 +743,83 @@ def export_gantt_xlsx(project_id):
     if proj.get('cod_proiect'):
         info.append(f"Cod: {proj['cod_proiect']}")
     info.append(f"Perioada: {_fmt_ro(win_start)} – {_fmt_ro(win_end)}")
-    info.append(f"Generat: {_fmt_ro(datetime.now().date())}")
+    info.append(f"Generat: {_fmt_ro(today)}")
     ws['A2'] = "   ·   ".join(info)
     ws['A2'].font = Font(size=9, color='666666')
 
-    # table header (row 4)
-    cols = ['#', 'Task', 'Start', 'Sfarsit', 'Zile', '%', 'Status', 'Milestone', 'Depinde de']
-    hrow = 4
-    # weekly grid header columns after the table
-    weeks = []
-    d = win_start - timedelta(days=win_start.weekday())
-    while d <= win_end:
-        weeks.append(d)
-        d += timedelta(days=7)
-    grid_start_col = len(cols) + 1
-    full_header = cols + [w.strftime('%d.%m') for w in weeks]
-    ws.append([])  # row1 placeholder already set A1
-    for ci, val in enumerate(full_header, start=1):
-        cell = ws.cell(row=hrow, column=ci, value=val)
-        cell.fill = hdr_fill
-        cell.font = hdr_font
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        cell.border = border
+    INFO = ['#', 'Task', 'Start', 'Sfarsit', 'Zile', '%']
+    ncol_info = len(INFO)
+    grid0 = ncol_info + 1
+    HR_MONTH, HR_DAY, FIRST = 4, 5, 6
 
+    hdr_fill = PatternFill('solid', fgColor='1A1206')
+    hdr_font = Font(bold=True, color='FFFFFF')
+    # info headers on the day-header row
+    for ci, val in enumerate(INFO, start=1):
+        c = ws.cell(HR_DAY, ci, val)
+        c.fill = hdr_fill; c.font = hdr_font; c.alignment = center; c.border = border
+
+    # month band (merged) + day/week header
+    month_start = 0
+    def flush_month(a, b):
+        if b < a:
+            return
+        ca, cb = grid0 + a, grid0 + b
+        if cb > ca:
+            ws.merge_cells(start_row=HR_MONTH, start_column=ca, end_row=HR_MONTH, end_column=cb)
+        _romon = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Noi', 'Dec']
+        mc = ws.cell(HR_MONTH, ca, f"{_romon[units[a].month - 1]} {units[a].year}")
+        mc.alignment = center; mc.font = Font(size=8, bold=True, color='555555')
+    for k, u in enumerate(units):
+        col = grid0 + k
+        is_we = daily and u.weekday() >= 5
+        is_today = daily and u == today
+        dc = ws.cell(HR_DAY, col, u.day if daily else u.strftime('%d.%m'))
+        dc.alignment = center; dc.border = border
+        dc.font = Font(size=7, color='C0392B' if is_today else ('999999' if is_we else '333333'), bold=is_today)
+        if is_today:
+            dc.fill = PatternFill('solid', fgColor='FCE9C8')
+        elif is_we:
+            dc.fill = PatternFill('solid', fgColor='F1EEE8')
+        if k > 0 and (units[k].month != units[month_start].month):
+            flush_month(month_start, k - 1); month_start = k
+    flush_month(month_start, len(units) - 1)
+
+    # task rows
     for i, t in enumerate(tasks):
-        r = hrow + 1 + i
+        r = FIRST + i
         s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
         zile = ((e - s).days + 1) if (s and e) else ''
-        vals = [i + 1, t['titlu'], _fmt_ro(s), _fmt_ro(e),
-                '◆' if t['is_milestone'] else zile, t['progres'],
-                _STATUS_RO.get(t['status'], t['status']),
-                'Da' if t['is_milestone'] else '', ', '.join(preds.get(t['id'], []))]
-        for ci, val in enumerate(vals, start=1):
-            cell = ws.cell(row=r, column=ci, value=val)
-            cell.border = border
-            if ci in (1, 5, 6):
-                cell.alignment = Alignment(horizontal='center')
-        # weekly grid fill
-        hexc = _STATUS_HEX.get(t['status'], 'B9B2A6')
-        for wi, wk in enumerate(weeks):
-            wk_end = wk + timedelta(days=6)
-            col = grid_start_col + wi
-            cell = ws.cell(row=r, column=col)
-            cell.border = border
-            if t['is_milestone'] and s and wk <= s <= wk_end:
-                cell.value = '◆'
-                cell.alignment = Alignment(horizontal='center')
-                cell.font = Font(color='B45309', bold=True)
-            elif s and e and not (wk_end < s or wk > e):
-                cell.fill = PatternFill('solid', fgColor=hexc)
+        info_vals = [i + 1, t['titlu'], _fmt_ro(s), _fmt_ro(e), '◆' if t['is_milestone'] else zile, t['progres']]
+        for ci, val in enumerate(info_vals, start=1):
+            c = ws.cell(r, ci, val)
+            c.border = border
+            if ci != 2:
+                c.alignment = center
+        # grid cells (light borders everywhere for the chart look)
+        for k in range(len(units)):
+            ws.cell(r, grid0 + k).border = border
+        if not s or not e:
+            continue
+        si, ei = unit_index(s), unit_index(e)
+        done_hex, rem_hex = SHADES.get(t['status'], ('B9B2A6', 'DED9D0'))
+        if t['is_milestone']:
+            mc = ws.cell(r, grid0 + si, '◆')
+            mc.alignment = center; mc.font = Font(color='B45309', bold=True)
+            continue
+        barlen = ei - si + 1
+        done_cells = round(barlen * (t['progres'] / 100.0))
+        for k in range(si, ei + 1):
+            filled = (k - si) < done_cells
+            ws.cell(r, grid0 + k).fill = PatternFill('solid', fgColor=done_hex if filled else rem_hex)
 
-    # widths
-    widths = {1: 4, 2: 34, 3: 11, 4: 11, 5: 6, 6: 6, 7: 12, 8: 9, 9: 24}
-    for col, w in widths.items():
-        ws.column_dimensions[ws.cell(row=hrow, column=col).column_letter].width = w
-    for wi in range(len(weeks)):
-        ws.column_dimensions[ws.cell(row=hrow, column=grid_start_col + wi).column_letter].width = 5
-    ws.freeze_panes = ws.cell(row=hrow + 1, column=3)
+    # widths + freeze
+    for col, w in {1: 4, 2: 32, 3: 11, 4: 11, 5: 6, 6: 6}.items():
+        ws.column_dimensions[ws.cell(HR_DAY, col).column_letter].width = w
+    gw = 3.0 if daily else 6.0
+    for k in range(len(units)):
+        ws.column_dimensions[ws.cell(HR_DAY, grid0 + k).column_letter].width = gw
+    ws.freeze_panes = ws.cell(FIRST, grid0)
 
     out = BytesIO()
     wb.save(out)
