@@ -29,19 +29,25 @@
 
   onMount(() => {
     let inZone = false
-    const REVEAL = 130  // cursor mai aproape de jos de atat (px) -> apare
-    const LEAVE = 160   // cursor mai departe -> se ascunde
+    // Nu se ridica la orice atingere: trebuie sa IMPINGI cursorul pana la
+    // marginea de jos (un mic "push"). Histereza: odata aparut, ramane cat
+    // esti in zona lui si se ascunde doar cand pleci sus peste HIDE_ZONE.
+    const REVEAL_EDGE = 6   // px de la marginea de jos -> apare (push pe margine)
+    const HIDE_ZONE = 110   // px: odata aparut, se ascunde cand treci peste atat
 
     const apply = () => { hidden = kbLocked ? true : !inZone }
 
     let mmTick = 0
     function onMove(e) {
       const now = performance.now()
-      if (now - mmTick < 30) return
+      if (now - mmTick < 16) return
       mmTick = now
       const fromBottom = window.innerHeight - e.clientY
-      if (fromBottom <= REVEAL) inZone = true
-      else if (fromBottom > LEAVE) inZone = false
+      if (inZone) {
+        if (fromBottom > HIDE_ZONE) inZone = false
+      } else if (fromBottom <= REVEAL_EDGE) {
+        inZone = true
+      }
       apply()
     }
 
