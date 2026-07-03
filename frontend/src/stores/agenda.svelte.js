@@ -56,14 +56,21 @@ export async function scheduleForToday(tip, id) {
   await loadAgendaToday()
 }
 
-export async function moveToDate(tip, id, date) {
+export async function moveToDate(tip, id, date, opts = {}) {
   if (!date) return
-  await patch(tip, id, { data_planificata: date })
+  const body = { data_planificata: date }
+  // Daca taskul e scadent (deadline azi sau deja depasit), amanarea muta si
+  // deadline-ul pe noua zi — altfel ramane vesnic restant, cu termenul in trecut.
+  // Deadline-urile din VIITOR nu se ating: planning-ul ramane separat de termen
+  // pentru taskurile pe care doar le lucrezi inainte de scadenta.
+  const scad = (opts.data_scadenta || '').slice(0, 10)
+  if (scad && scad <= localToday()) body.data_scadenta = date
+  await patch(tip, id, body)
   await loadAgendaToday()
 }
 
-export function moveToTomorrow(tip, id) {
-  return moveToDate(tip, id, tomorrowISO())
+export function moveToTomorrow(tip, id, opts = {}) {
+  return moveToDate(tip, id, tomorrowISO(), opts)
 }
 
 export async function removeFromToday(tip, id) {

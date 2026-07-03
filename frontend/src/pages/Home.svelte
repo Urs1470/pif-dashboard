@@ -34,8 +34,7 @@
   let _animStarted = false
 
   $effect(() => {
-    if (!dashboard || _animStarted) return
-    _animStarted = true
+    if (!dashboard) return
     const s = dashboard.stats || {}
     const targets = {
       active: s.active_projects || 0,
@@ -43,6 +42,10 @@
       done: s.weekly_done || 0,
       deadline: s.deadline_count || 0,
     }
+    // Reincarcari ulterioare (silent, dupa o actiune din TodayBoard): actualizam
+    // cifrele instant, fara sa reanimam de la 0.
+    if (_animStarted) { animVals = targets; return }
+    _animStarted = true
     // No animation when motion is reduced or the tab is hidden (rAF is paused
     // there, which would otherwise leave the numbers stuck at 0).
     if (motion.reduced || document.hidden) {
@@ -104,15 +107,16 @@
     })
   }
 
-  async function loadDashboard() {
-    loading = true
-    error = null
+  async function loadDashboard(silent = false) {
+    // silent = reincarcare in fundal (dupa o actiune din TodayBoard) fara sa
+    // reafisam skeletonul pe toata pagina.
+    if (!silent) { loading = true; error = null }
     try {
       dashboard = await apiJson('/api/dashboard/home')
     } catch (e) {
-      error = e.message
+      if (!silent) error = e.message
     } finally {
-      loading = false
+      if (!silent) loading = false
     }
   }
 
@@ -161,7 +165,7 @@
       </button>
     </div>
 
-    <TodayBoard />
+    <TodayBoard onchange={() => loadDashboard(true)} />
 
     <div class="cards-grid">
       {#if dashboard.urgent_tasks?.length}

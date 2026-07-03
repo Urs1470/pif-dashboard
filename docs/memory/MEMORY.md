@@ -47,6 +47,21 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v23**, id
 
 ## Recent decisions
 
+- **2026-07-03 — 2 bug-uri agenda „Astăzi" (raportate de Ion)** (SW v74): (1) **Deadline nu se muta
+  la amânare** — un task cu `data_scadenta`=azi apare în agendă (clauza due-today din `_AGENDA_WHERE`).
+  Amânarea din agendă seta doar `data_planificata`, lăsând deadline-ul în trecut → task veșnic restant.
+  Fix în `stores/agenda.svelte.js`: `moveToDate`/`moveToTomorrow` acceptă `opts.data_scadenta`; dacă
+  deadline-ul e ≤ azi (scadent/depășit), amânarea mută ȘI `data_scadenta` pe noua zi. Deadline-urile din
+  VIITOR nu se ating (planning rămâne separat de termen pt taskuri lucrate înainte de scadență).
+  TodayBoard paseaza `{data_scadenta: it.data_scadenta}` la onTomorrow/onMoveDate. Verificat E2E: task
+  due-azi → amânat +9z → `data_scadenta` mutat, iese din azi, pe ziua-țintă e scadent nu restant.
+  (2) **Bifarea în „Astăzi" nu updata cardul „urgente"** până la refresh/schimbare tab — TodayBoard
+  (store `agenda`) și cardul urgente (`dashboard.urgent_tasks` din `/api/dashboard/home`) sunt surse
+  separate. Fix: TodayBoard primeste prop `onchange`; Home îl leagă la `loadDashboard(true)` (reload
+  **silent** — fără skeleton pe toată pagina). Efectul de animație KPI acum face *snap* la reload-urile
+  ulterioare (nu reanimă de la 0, dar actualizează cifra). `onchange()` apelat după toggle/tomorrow/
+  remove/moveDate/quickAdd. Verificat Playwright: bifez task urgent în agendă → dispare din card fără refresh.
+
 - **2026-07-03 — P5 consistență design (parțial, vizibil)** (SW v73): unificat iconografia mixtă —
   înlocuit glifele Unicode cu Lucide/SVG: `≔`→`ListTodo`, `!`→`AlertTriangle` (Tasks), `◔`→`CalendarDays`
   (AgendaColumn), `◳`/`⟳`→`Zap`/`Wrench` (tip-chip PIF/Service în Projects), `&times;`→`<X>` (Modal close).
