@@ -100,7 +100,7 @@
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'equipment', label: 'Echipamente', icon: Wrench },
-    { key: 'attachments', label: 'Atasamente', icon: Paperclip },
+    { key: 'attachments', label: 'Atașamente', icon: Paperclip },
     { key: 'info', label: 'Info', icon: Settings2 },
   ]
 
@@ -221,7 +221,7 @@
     attUploading = true
     try {
       for (const f of files) await uploadTaskAttachment(taskId, f)
-      toast(files.length === 1 ? 'Fisier atasat' : `${files.length} fisiere atasate`, 'success')
+      toast(files.length === 1 ? 'Fișier atașat' : `${files.length} fișiere atașate`, 'success')
       await Promise.all([loadAtt(taskId, true), reloadTasks()])
     } catch (err) {
       toast(`Eroare: ${err.message}`, 'error')
@@ -232,7 +232,7 @@
     if (!attDeleteId) return
     try {
       await deleteTaskAttachment(attDeleteId)
-      toast('Atasament sters', 'success')
+      toast('Atașament șters', 'success')
       const taskId = attDeleteTaskId
       attDeleteId = null
       attDeleteTaskId = null
@@ -263,7 +263,7 @@
 
   async function handleDeleteProject() {
     await deleteProject(params.id)
-    toast('Proiect sters', 'success')
+    toast('Proiect șters', 'success')
     navigate('/projects')
   }
 
@@ -272,7 +272,7 @@
     await deleteTask(taskDeleteId)
     taskDeleteId = null
     await reloadTasks()
-    toast('Task sters', 'success')
+    toast('Task șters', 'success')
   }
 
   const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
@@ -298,7 +298,7 @@
     await deleteEquipment(equipDeleteId)
     equipDeleteId = null
     await reloadEquipment()
-    toast('Echipament sters', 'success')
+    toast('Echipament șters', 'success')
   }
 
   // Equipment import state
@@ -495,7 +495,7 @@
   async function exportMd() {
     try {
       await exportMarkdown(params.id)
-      toast('Export Markdown descarcat', 'success')
+      toast('Export Markdown descărcat', 'success')
     } catch (e) {
       toast(`Eroare la export: ${e.message}`, 'error')
     }
@@ -549,10 +549,10 @@
   })
   function deadlineLabel(d) {
     if (d === null) return ''
-    if (d < 0) return `depasit cu ${-d} ${d === -1 ? 'zi' : 'zile'}`
-    if (d === 0) return 'scadent astazi'
-    if (d === 1) return '1 zi ramasa'
-    return `${d} zile ramase`
+    if (d < 0) return `depășit cu ${-d} ${d === -1 ? 'zi' : 'zile'}`
+    if (d === 0) return 'scadent astăzi'
+    if (d === 1) return '1 zi rămasă'
+    return `${d} zile rămase`
   }
 </script>
 
@@ -590,11 +590,11 @@
     <div class="rail-main">
 
       <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
-        onclick={() => openFieldEdit('observatii', 'Observatii Tehnice')}
-        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('observatii', 'Observatii Tehnice') } }}>
+        onclick={() => openFieldEdit('observatii', 'Observații Tehnice')}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('observatii', 'Observații Tehnice') } }}>
         <div class="field-header">
           <span class="f-ico"><SolidIcon name="file" size={13} /></span>
-          <span class="field-label">Observatii Tehnice</span>
+          <span class="field-label">Observații Tehnice</span>
           {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
         </div>
         {#if project.observatii}
@@ -602,17 +602,17 @@
             <RichText value={project.observatii} collapsible noToggle maxHeight={240} />
           </div>
         {:else}
-          <div class="field-empty">Click pentru a adauga...</div>
+          <div class="field-empty">Click pentru a adăuga...</div>
         {/if}
       </div>
 
       {#if project.tip === 'Service'}
         <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
-          onclick={() => openFieldEdit('service_before', 'Constatari inainte de interventie')}
-          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_before', 'Constatari inainte de interventie') } }}>
+          onclick={() => openFieldEdit('service_before', 'Constatări înainte de intervenție')}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_before', 'Constatări înainte de intervenție') } }}>
           <div class="field-header">
             <span class="f-ico f-red"><AlertCircle size={13} /></span>
-            <span class="field-label">Constatari inainte de interventie</span>
+            <span class="field-label">Constatări înainte de intervenție</span>
             {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
           </div>
           {#if project.service_before}
@@ -620,16 +620,16 @@
               <RichText value={project.service_before} collapsible noToggle maxHeight={240} />
             </div>
           {:else}
-            <div class="field-empty">Click pentru a adauga...</div>
+            <div class="field-empty">Click pentru a adăuga...</div>
           {/if}
         </div>
 
         <div class="field-section" role="button" tabindex="0" title="Click pentru a edita"
-          onclick={() => openFieldEdit('service_after', 'Actiuni si rezultat')}
-          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_after', 'Actiuni si rezultat') } }}>
+          onclick={() => openFieldEdit('service_after', 'Acțiuni și rezultat')}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFieldEdit('service_after', 'Acțiuni și rezultat') } }}>
           <div class="field-header">
             <span class="f-ico f-green"><CheckCircle2 size={13} /></span>
-            <span class="field-label">Actiuni si rezultat</span>
+            <span class="field-label">Acțiuni și rezultat</span>
             {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
           </div>
           {#if project.service_after}
@@ -637,7 +637,7 @@
               <RichText value={project.service_after} collapsible noToggle maxHeight={240} />
             </div>
           {:else}
-            <div class="field-empty">Click pentru a adauga...</div>
+            <div class="field-empty">Click pentru a adăuga...</div>
           {/if}
         </div>
       {/if}
@@ -660,8 +660,8 @@
           <span class="tab-sub">{tasksDone}/{tasks.length} finalizate</span>
         </div>
         <form class="quick-add" onsubmit={(e) => { e.preventDefault(); handleCreateTask() }}>
-          <input type="text" placeholder="Task rapid... Enter pentru a adauga" bind:value={newTaskTitle} disabled={creatingTask} />
-          <button type="submit" class="quick-add-btn" disabled={!newTaskTitle.trim() || creatingTask} title="Adauga task"><Plus size={16} /></button>
+          <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={newTaskTitle} disabled={creatingTask} />
+          <button type="submit" class="quick-add-btn" disabled={!newTaskTitle.trim() || creatingTask} title="Adaugă task"><Plus size={16} /></button>
         </form>
         {#if tasks.length === 0}<p class="empty">Niciun task.</p>
         {:else}
@@ -693,8 +693,8 @@
                   <div class="task-actions">
                     <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
                     <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                    <button class="task-edit" onclick={() => openTaskEditModal(t)} title="Editeaza task"><SolidIcon name="pencil" size={13} /></button>
-                    <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Sterge task"><SolidIcon name="trash" size={13} /></button>
+                    <button class="task-edit" onclick={() => openTaskEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={13} /></button>
+                    <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
                   </div>
                 </div>
                 {#if expandedTask === t.id}
@@ -705,7 +705,7 @@
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
-                        <button class="note-edit-btn" title="Editeaza notite" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editeaza</button>
+                        <button class="note-edit-btn" title="Editează notițe" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editează</button>
                       </div>
                     {/if}
 
@@ -716,7 +716,7 @@
                             <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
                               <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
                             </button>
-                            <button class="att-del" title="Sterge atasament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
+                            <button class="att-del" title="Șterge atașament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
                           </span>
                         {/each}
                       </div>
@@ -726,7 +726,7 @@
                       {#if !t.descriere}
                         <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
                       {/if}
-                      <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se incarca…' : 'Fisier'}</button>
+                      <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se încarcă…' : 'Fișier'}</button>
                     </div>
 
                     <div class="sub-section">
@@ -735,7 +735,7 @@
                         {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
                       </div>
                       {#if subtaskLoading && !subtasksCache[t.id]}
-                        <div class="sub-loading">Se incarca...</div>
+                        <div class="sub-loading">Se încarcă...</div>
                       {:else}
                         {#each subs as sub (sub.id)}
                           <div class="sub-row" class:sub-done={sub.done}>
@@ -745,7 +745,7 @@
                           </div>
                         {/each}
                         <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
-                          <input type="text" placeholder="Adauga subtask..." bind:value={newSubtaskTitle} />
+                          <input type="text" placeholder="Adaugă subtask..." bind:value={newSubtaskTitle} />
                           <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
                         </form>
                       {/if}
@@ -785,7 +785,7 @@
           <div class="equip-btns">
             <Button size="sm" variant="ghost" onclick={triggerImportStarter} disabled={importBusy}><Upload size={14} /> Import STARTER</Button>
             <Button size="sm" variant="ghost" onclick={triggerImportAbb} disabled={importBusy}><Upload size={14} /> Import ABB</Button>
-            <Button size="sm" variant="ghost" onclick={openCopyModal}><Copy size={14} /> Copiaza</Button>
+            <Button size="sm" variant="ghost" onclick={openCopyModal}><Copy size={14} /> Copiază</Button>
             <Button size="sm" variant="secondary" onclick={newEquip}><Plus size={14} /> Echipament</Button>
           </div>
         </div>
@@ -800,8 +800,8 @@
               <div class="ecard-top">
                 <div class="ename">{e.nume || '—'}{#if e.producator} — {e.producator}{/if}</div>
                 <div class="ecard-actions">
-                  <button class="att-btn" title="Editeaza" onclick={() => editEquip(e)}><SolidIcon name="pencil" size={14} /></button>
-                  <button class="att-btn danger" title="Sterge" onclick={() => { equipDeleteId = e.id; showEquipDelete = true }}><SolidIcon name="trash" size={14} /></button>
+                  <button class="att-btn" title="Editează" onclick={() => editEquip(e)}><SolidIcon name="pencil" size={14} /></button>
+                  <button class="att-btn danger" title="Șterge" onclick={() => { equipDeleteId = e.id; showEquipDelete = true }}><SolidIcon name="trash" size={14} /></button>
                 </div>
               </div>
               <div class="edetails">
@@ -817,7 +817,7 @@
                 {#if isExpanded}
                   <div class="eparams-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                     {#if eparams.length > 5}
-                      <input type="text" class="eparam-search" placeholder="Filtreaza parametri..." value={equipParamSearch[e.id] || ''} oninput={(ev) => { equipParamSearch = { ...equipParamSearch, [e.id]: ev.target.value } }} />
+                      <input type="text" class="eparam-search" placeholder="Filtrează parametri..." value={equipParamSearch[e.id] || ''} oninput={(ev) => { equipParamSearch = { ...equipParamSearch, [e.id]: ev.target.value } }} />
                     {/if}
                     <div class="eparams">
                       {#each filteredParams as [k, v]}
@@ -827,7 +827,7 @@
                         </div>
                       {/each}
                       {#if pq && filteredParams.length === 0}
-                        <div class="eparam-empty">Niciun parametru gasit</div>
+                        <div class="eparam-empty">Niciun parametru găsit</div>
                       {/if}
                     </div>
                   </div>
@@ -842,7 +842,7 @@
 
       {:else if activeTab === 'info'}
         <div class="igrid">
-          {#each [['Client', project.client], ['Locatie', project.locatie], ['Echipament', project.echipament_principal], ['Producator', project.producator], ['Cod proiect', project.cod_proiect], ['PM', project.pm], ['Nr. comanda', project.nr_comanda], ['Nr. contract', project.nr_contract], ['Data incepere', formatDate(project.data_incepere)], ['Deadline', formatDate(project.deadline)]] as [label, val]}
+          {#each [['Client', project.client], ['Locație', project.locatie], ['Echipament', project.echipament_principal], ['Producător', project.producator], ['Cod proiect', project.cod_proiect], ['PM', project.pm], ['Nr. comandă', project.nr_comanda], ['Nr. contract', project.nr_contract], ['Data începere', formatDate(project.data_incepere)], ['Deadline', formatDate(project.deadline)]] as [label, val]}
             <div class="irow"><span class="ilabel">{label}</span><span>{val || '—'}</span></div>
           {/each}
         </div>
@@ -869,7 +869,7 @@
           <div class="rdate" class:urgent={deadlineDays !== null && deadlineDays <= 2}>{formatDate(project.deadline)}</div>
           <div class="rsub">{deadlineLabel(deadlineDays)}</div>
         {:else}
-          <div class="rsub rsub-empty">Fara termen</div>
+          <div class="rsub rsub-empty">Fără termen</div>
         {/if}
       </section>
 
@@ -898,7 +898,7 @@
   {#if importPreview}
     <div class="import-info">
       <span>{importPreview.drives?.length || 0} drive-uri detectate</span>
-      {#if importPreview.skipped_default}<span class="dim">({importPreview.skipped_default} parametri la valoare default omisi)</span>{/if}
+      {#if importPreview.skipped_default}<span class="dim">({importPreview.skipped_default} parametri la valoare default omiși)</span>{/if}
     </div>
     <div class="import-drives">
       {#each (importPreview.drives || []) as drv, i}
@@ -908,7 +908,7 @@
             <div class="import-drive-info">
               <strong>{drv.nume || `Drive ${i + 1}`}</strong>
               <span class="dim">{drv.producator} {drv.model}{drv.firmware ? ` (FW ${drv.firmware})` : ''}</span>
-              <span class="dim">{Object.keys(drv.params || {}).length} parametri modificati</span>
+              <span class="dim">{Object.keys(drv.params || {}).length} parametri modificați</span>
             </div>
           </label>
         </div>
@@ -918,18 +918,18 @@
   {#snippet footer()}
     {#if importPreview}
       <div class="modal-actions">
-        <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anuleaza</Button>
+        <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anulează</Button>
         <Button loading={importBusy} disabled={importSelected.size === 0} onclick={commitImport}>
-          <Upload size={14} /> Importa {importSelected.size} echipamente
+          <Upload size={14} /> Importă {importSelected.size} echipamente
         </Button>
       </div>
     {/if}
   {/snippet}
 </Modal>
 
-<Modal bind:open={showCopyModal} title="Copiaza echipamente din alt proiect" size="lg">
+<Modal bind:open={showCopyModal} title="Copiază echipamente din alt proiect" size="lg">
   <div class="copy-form">
-    <Select label="Proiect sursa" bind:value={copyProjectId} onchange={loadCopyEquipment} placeholder="Selecteaza proiect..." options={copyProjects.map((p) => ({ value: p.id, label: `${p.nume}${p.client ? ` — ${p.client}` : ''}` }))} />
+    <Select label="Proiect sursă" bind:value={copyProjectId} onchange={loadCopyEquipment} placeholder="Selectează proiect..." options={copyProjects.map((p) => ({ value: p.id, label: `${p.nume}${p.client ? ` — ${p.client}` : ''}` }))} />
     {#if copyEquipment.length > 0}
       <div class="import-drives">
         {#each copyEquipment as eq, i}
@@ -945,22 +945,22 @@
         {/each}
       </div>
     {:else if copyProjectId}
-      <p class="empty">Niciun echipament in proiectul selectat.</p>
+      <p class="empty">Niciun echipament în proiectul selectat.</p>
     {/if}
   </div>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showCopyModal = false}>Anuleaza</Button>
+      <Button variant="secondary" onclick={() => showCopyModal = false}>Anulează</Button>
       <Button loading={copyBusy} disabled={copySelected.size === 0} onclick={commitCopy}>
-        <Copy size={14} /> Copiaza {copySelected.size} echipamente
+        <Copy size={14} /> Copiază {copySelected.size} echipamente
       </Button>
     </div>
   {/snippet}
 </Modal>
-<ConfirmDialog bind:open={showDeleteConfirm} title="Sterge proiect" message={`Stergi proiectul "${project?.nume}"? Toate datele (taskuri, atasamente, echipamente) vor fi sterse definitiv.`} confirmLabel="Sterge definitiv" onconfirm={handleDeleteProject} />
-<ConfirmDialog bind:open={showEquipDelete} title="Sterge echipament" message="Stergi acest echipament?" confirmLabel="Sterge" onconfirm={doDeleteEquip} />
-<ConfirmDialog bind:open={showTaskDelete} title="Sterge task" message="Stergi acest task? Toate subtaskurile asociate vor fi sterse." confirmLabel="Sterge" onconfirm={doDeleteTask} />
-<ConfirmDialog bind:open={showAttDelete} title="Sterge atasament" message="Stergi acest fisier atasat?" confirmLabel="Sterge" onconfirm={doDeleteAtt} />
+<ConfirmDialog bind:open={showDeleteConfirm} title="Șterge proiect" message={`Ștergi proiectul "${project?.nume}"? Toate datele (taskuri, atașamente, echipamente) vor fi șterse definitiv.`} confirmLabel="Șterge definitiv" onconfirm={handleDeleteProject} />
+<ConfirmDialog bind:open={showEquipDelete} title="Șterge echipament" message="Ștergi acest echipament?" confirmLabel="Șterge" onconfirm={doDeleteEquip} />
+<ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showAttDelete} title="Șterge atașament" message="Ștergi acest fișier atașat?" confirmLabel="Șterge" onconfirm={doDeleteAtt} />
 <AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
 <input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
@@ -972,18 +972,18 @@
   </div>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showFieldEdit = false}>Anuleaza</Button>
-      <Button loading={editSaving} onclick={saveFieldEdit}>Salveaza</Button>
+      <Button variant="secondary" onclick={() => showFieldEdit = false}>Anulează</Button>
+      <Button loading={editSaving} onclick={saveFieldEdit}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>
 
-<Modal bind:open={showTaskEditModal} title="Editeaza Task" size="md">
+<Modal bind:open={showTaskEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
     <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
     <label class="mf-field">
       <span class="mf-label">Descriere</span>
-      <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (optional)" rows="3"></textarea>
+      <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (opțional)" rows="3"></textarea>
     </label>
     <div class="mf-row">
       <div class="mf-field">
@@ -994,26 +994,26 @@
         <DatePicker bind:value={taskFormDeadline} />
       </div>
     </div>
-    <Select label="Recurenta" bind:value={taskFormRecurenta} options={[{ value: '', label: 'Fara' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Saptamanal' }, { value: 'lunar', label: 'Lunar' }]} />
+    <Select label="Recurență" bind:value={taskFormRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showTaskEditModal = false}>Anuleaza</Button>
-      <Button loading={taskFormSaving} disabled={!taskFormTitle.trim()} onclick={handleTaskEdit}>Salveaza</Button>
+      <Button variant="secondary" onclick={() => showTaskEditModal = false}>Anulează</Button>
+      <Button loading={taskFormSaving} disabled={!taskFormTitle.trim()} onclick={handleTaskEdit}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>
 
-<Modal bind:open={showNoteModal} title={noteTask ? `Notite — ${noteTask.titlu}` : 'Notite task'} size="doc">
+<Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
   <div class="field-edit-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notite pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." />
     {/if}
   </div>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showNoteModal = false}>Anuleaza</Button>
-      <Button loading={noteSaving} onclick={saveNote}>Salveaza</Button>
+      <Button variant="secondary" onclick={() => showNoteModal = false}>Anulează</Button>
+      <Button loading={noteSaving} onclick={saveNote}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>

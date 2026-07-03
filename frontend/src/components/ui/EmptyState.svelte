@@ -1,6 +1,6 @@
 <script>
   import { Inbox } from '@lucide/svelte'
-  let { icon: Icon = Inbox, title = 'Nimic de afisat', description = '', children } = $props()
+  let { icon: Icon = Inbox, title = 'Nimic de afișat', description = '', children } = $props()
 </script>
 
 <div class="empty">

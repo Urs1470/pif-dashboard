@@ -75,7 +75,7 @@
   }
 </script>
 
-<Modal bind:open title={isEdit ? 'Editeaza Proiect' : 'Proiect Nou'} size="lg">
+<Modal bind:open title={isEdit ? 'Editează Proiect' : 'Proiect Nou'} size="lg">
   <form onsubmit={(e) => { e.preventDefault(); save() }}>
     <div class="grid">
       <div class="tip-row">
@@ -87,14 +87,14 @@
       </div>
       <div class="full"><Input label="Nume *" bind:value={form.nume} placeholder="Numele proiectului" /></div>
       <Input label="Client" bind:value={form.client} placeholder="Client" list="clients-list" />
-      <Input label="Locatie" bind:value={form.locatie} placeholder="Locatie" />
+      <Input label="Locație" bind:value={form.locatie} placeholder="Locație" />
       <Input label="Echipament principal" bind:value={form.echipament_principal} placeholder="Ex: ACS880" />
-      <Select label="Producator" bind:value={form.producator} options={PRODUCATORI} />
+      <Select label="Producător" bind:value={form.producator} options={PRODUCATORI} />
       <Input label="Cod proiect" bind:value={form.cod_proiect} placeholder="Ex: P-042" />
       <Input label="PM" bind:value={form.pm} placeholder="Project manager" />
-      <DatePicker label="Data incepere" bind:value={form.data_incepere} />
+      <DatePicker label="Data începere" bind:value={form.data_incepere} />
       <DatePicker label="Deadline" bind:value={form.deadline} />
-      <Input label="Nr. comanda" bind:value={form.nr_comanda} />
+      <Input label="Nr. comandă" bind:value={form.nr_comanda} />
       <Input label="Nr. contract" bind:value={form.nr_contract} />
       {#if isEdit}
         <Select label="Status" bind:value={form.status} options={STATUSES} />
@@ -106,8 +106,8 @@
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
-      <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salveaza' : 'Creeaza'}</Button>
+      <Button variant="secondary" onclick={() => open = false}>Anulează</Button>
+      <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salvează' : 'Creează'}</Button>
     </div>
   {/snippet}
 </Modal>

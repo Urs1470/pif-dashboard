@@ -1215,6 +1215,10 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_checklist_proiect ON checklist_pif(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
+    # pe DB nou, migratia v18 (care le crea) se sare — fara ele, listele de
+    # taskuri fac full-scan pe atasamente la batch-count
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_task ON atasamente(task_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_global_task ON atasamente(global_task_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')

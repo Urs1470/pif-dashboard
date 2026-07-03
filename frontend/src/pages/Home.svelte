@@ -70,9 +70,9 @@
 
   function greeting() {
     const h = new Date().getHours()
-    if (h < 12) return 'Buna dimineata'
-    if (h < 18) return 'Buna ziua'
-    return 'Buna seara'
+    if (h < 12) return 'Bună dimineața'
+    if (h < 18) return 'Bună ziua'
+    return 'Bună seara'
   }
 
   function daysUntil(d) {
@@ -90,9 +90,9 @@
   function dueChip(d) {
     if (!d) return ''
     const n = daysUntil(d)
-    if (n < 0) return `depasit \u00b7 ${formatDate(d)}`
+    if (n < 0) return `depășit \u00b7 ${formatDate(d)}`
     if (n === 0) return 'azi'
-    if (n === 1) return 'maine'
+    if (n === 1) return 'mâine'
     return formatDate(d)
   }
 
@@ -143,7 +143,7 @@
       <button class="kpi cell-in" onclick={() => navigate('/tasks')} title="Vezi taskurile urgente">
         <div class="kpi-head"><span class="kpi-chip warn"><AlertTriangle size={16} /></span><span class="kpi-label">Urgente</span></div>
         <div class="kpi-val warn">{#if (s.urgent_count || 0) > 0}<span class="kpi-pulse"></span>{/if}{Math.round(animVals.urgent)}</div>
-        <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadenta apropiata' : 'fara urgente'}</div>
+        <div class="kpi-sub">{(s.urgent_count || 0) > 0 ? 'scadență apropiată' : 'fără urgente'}</div>
       </button>
       <button class="kpi cell-in" onclick={() => navigate('/tasks')} title="Vezi taskurile">
         <div class="kpi-head"><span class="kpi-chip success"><SolidIcon name="check" size={16} /></span><span class="kpi-label">Finalizate — 7 zile</span></div>
@@ -157,7 +157,7 @@
       <button class="kpi cell-in" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
         <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Deadline-uri</span></div>
         <div class="kpi-val">{Math.round(animVals.deadline)}</div>
-        <div class="kpi-sub">in urmatoarele 7 zile</div>
+        <div class="kpi-sub">în următoarele 7 zile</div>
       </button>
     </div>
 

@@ -112,7 +112,7 @@
         <span class="lg"><span class="dot" style="--c:{m.color}"></span>{m.label}</span>
       {/each}
     </div>
-    <svg bind:this={svgEl} viewBox="0 0 {W} {H}" role="img" aria-label="{d.c.yLabel} in functie de {d.c.xLabel}" onmousemove={onMove} onmouseleave={onLeave}>
+    <svg bind:this={svgEl} viewBox="0 0 {W} {H}" role="img" aria-label="{d.c.yLabel} în funcție de {d.c.xLabel}" onmousemove={onMove} onmouseleave={onLeave}>
       {#each d.c.zones || [] as z}
         <rect class="zone-band" x={d.xp(z.x0)} y={T} width={Math.max(0, d.xp(z.x1) - d.xp(z.x0))} height={H - T - B} fill={z.color || 'var(--accent)'} />
         <text x={(d.xp(z.x0) + d.xp(z.x1)) / 2} y={T + 11} class="zone-lbl" text-anchor="middle" fill={z.color || 'var(--accent)'}>{z.label}</text>
@@ -156,7 +156,7 @@
       <text x="11" y={(T + H - B) / 2} class="axlbl" text-anchor="middle" transform="rotate(-90 11 {(T + H - B) / 2})">{#each d.ylbl as g}{#if g.kind === 'sub'}<tspan class="ss" baseline-shift="sub">{g.t}</tspan>{:else if g.kind === 'sup'}<tspan class="ss" baseline-shift="super">{g.t}</tspan>{:else}<tspan>{g.t}</tspan>{/if}{/each}</text>
     </svg>
     {#if d.c.desc}
-      <p class="chart-desc"><span class="cd-l">Ce arata:</span> {d.c.desc.ce} <span class="cd-l cd-w">Atentie:</span> {d.c.desc.atentie}</p>
+      <p class="chart-desc"><span class="cd-l">Ce arată:</span> {d.c.desc.ce} <span class="cd-l cd-w">Atenție:</span> {d.c.desc.atentie}</p>
     {/if}
   </div>
 {/if}

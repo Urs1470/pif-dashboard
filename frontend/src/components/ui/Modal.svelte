@@ -43,7 +43,7 @@
     <div class="modal modal-{size}" transition:scale={{ start: 0.96, duration: motionDuration(DUR_BASE) }}>
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
-        <button class="modal-close" onclick={() => open = false} aria-label="Inchide">&times;</button>
+        <button class="modal-close" onclick={() => open = false} aria-label="Închide">&times;</button>
       </div>
       <div class="modal-body">
         {@render children()}

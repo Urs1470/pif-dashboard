@@ -15,7 +15,7 @@
     </div>
   {/each}
   {#if items.length === 0}
-    <p class="bars-empty">Fara date.</p>
+    <p class="bars-empty">Fără date.</p>
   {/if}
 </div>
 

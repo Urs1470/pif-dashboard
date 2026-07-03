@@ -20,7 +20,7 @@ VALID_TABLES = {
     'atasamente', 'echipamente', 'clienti',
     'global_tasks', 'checklist_categorii',
     'fault_codes', 'project_templates',
-    'parametri_master',
+    'parametri_master', 'assistant_memory', 'app_settings',
 }
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')

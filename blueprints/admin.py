@@ -596,7 +596,7 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master', 'assistant_memory', 'app_settings']
     for table in tables:
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
@@ -850,7 +850,7 @@ def restore_database():
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master']
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master', 'assistant_memory', 'app_settings']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)}')
 
@@ -885,19 +885,32 @@ def restore_database():
                   t.get('created_at'), t.get('updated_at'),
                   t.get('data_planificata'), t.get('ordine_agenda', 0)))
 
-        # Restore checklist
+        # Restore checklist (+ categorie_id — altfel punctele isi pierd categoria)
         for c in data.get('checklist_pif', []):
             cursor.execute('''
-                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (c.get('id'), c.get('proiect_id'), c.get('titlu'), c.get('completed'),
-                  c.get('note'), c.get('ordine', 0)))
+                  c.get('note'), c.get('ordine', 0), c.get('categorie_id')))
 
         # jurnal / timer_sessions din backup-uri vechi se ignora (v22 a scos featureul)
 
-        # Restore atasamente -- but only paths that resolve INSIDE UPLOAD_FOLDER.
-        # A backup payload from an untrusted source could otherwise register
-        # /etc/passwd or .assistant_config as an "attachment" and then read it
+        # Restore global_tasks (v9+ column: recurenta; v21: data_planificata, ordine_agenda)
+        for gt in data.get('global_tasks', []):
+            cursor.execute('''
+                INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+                    data_scadenta, data_finalizare, recurenta, created_at, updated_at,
+                    data_planificata, ordine_agenda)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
+                  gt.get('status'), gt.get('categorie'), gt.get('data_scadenta'),
+                  gt.get('data_finalizare'), gt.get('recurenta'),
+                  gt.get('created_at'), gt.get('updated_at'),
+                  gt.get('data_planificata'), gt.get('ordine_agenda', 0)))
+
+        # Restore atasamente (dupa tasks + global_tasks — FK) -- only paths that
+        # resolve INSIDE UPLOAD_FOLDER. A backup payload from an untrusted source
+        # could otherwise register /etc/passwd as an "attachment" and read it
         # back through the download endpoint (path-traversal hardening).
         upload_root_real = os.path.realpath(UPLOAD_FOLDER)
         for a in data.get('atasamente', []):
@@ -914,23 +927,12 @@ def restore_database():
             if not os.path.exists(cale_real):
                 continue
             cursor.execute('''
-                INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (a.get('id'), a.get('proiect_id'), a.get('nume_fisier'), a.get('tip_fisier'),
-                  a.get('dimensiune'), a.get('data'), a.get('cale_locala')))
-
-        # Restore global_tasks (v9+ column: recurenta; v21: data_planificata, ordine_agenda)
-        for gt in data.get('global_tasks', []):
-            cursor.execute('''
-                INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
-                    data_scadenta, data_finalizare, recurenta, created_at, updated_at,
-                    data_planificata, ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
-                  gt.get('status'), gt.get('categorie'), gt.get('data_scadenta'),
-                  gt.get('data_finalizare'), gt.get('recurenta'),
-                  gt.get('created_at'), gt.get('updated_at'),
-                  gt.get('data_planificata'), gt.get('ordine_agenda', 0)))
+                INSERT INTO atasamente (id, proiect_id, task_id, global_task_id, nume_fisier,
+                    tip_fisier, dimensiune, data, cale_locala, tip_atasament)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (a.get('id'), a.get('proiect_id'), a.get('task_id'), a.get('global_task_id'),
+                  a.get('nume_fisier'), a.get('tip_fisier'), a.get('dimensiune'), a.get('data'),
+                  a.get('cale_locala'), a.get('tip_atasament', 'fisier')))
 
         # Restore clienti
         for c in data.get('clienti', []):
@@ -943,11 +945,12 @@ def restore_database():
         # Restore echipamente
         for e in data.get('echipamente', []):
             cursor.execute('''
-                INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number,
+                    params_json, descrieri_json, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (e.get('id'), e.get('proiect_id'), e.get('nume'), e.get('producator'),
                   e.get('model'), e.get('serial_number'), e.get('params_json'),
-                  e.get('created_at'), e.get('updated_at')))
+                  e.get('descrieri_json'), e.get('created_at'), e.get('updated_at')))
 
         # Restore project_templates
         for t in data.get('project_templates', []):
@@ -983,6 +986,15 @@ def restore_database():
                   fc.get('cod_secundar'), fc.get('tip'), fc.get('nume'), fc.get('cauza'),
                   fc.get('remediu'), fc.get('reactie'), fc.get('confirmare'),
                   fc.get('extra_json'), fc.get('pagina'), fc.get('sursa')))
+
+        # Restore assistant_memory + app_settings (memoria Hermes, vault Obsidian,
+        # cheile de idempotenta debrief — inainte se pierdeau la restore)
+        for m in data.get('assistant_memory', []):
+            cursor.execute('INSERT INTO assistant_memory (id, continut, created_at) VALUES (?, ?, ?)',
+                           (m.get('id'), m.get('continut'), m.get('created_at')))
+        for s in data.get('app_settings', []):
+            cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
+                           (s.get('key'), s.get('value'), s.get('updated_at')))
 
         conn.commit()
         conn.close()

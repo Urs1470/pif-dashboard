@@ -45,7 +45,7 @@
         toast('Echipament actualizat', 'success')
       } else {
         await createEquipment(projectId, form)
-        toast('Echipament adaugat', 'success')
+        toast('Echipament adăugat', 'success')
       }
       open = false
       onsaved?.()
@@ -55,23 +55,23 @@
   }
 </script>
 
-<Modal bind:open title={isEdit ? 'Editeaza Echipament' : 'Echipament Nou'} size="md">
+<Modal bind:open title={isEdit ? 'Editează Echipament' : 'Echipament Nou'} size="md">
   <form onsubmit={(e) => { e.preventDefault(); save() }}>
     <div class="grid">
       <Input label="Nume *" bind:value={form.nume} placeholder="Ex: ACS880-01" />
-      <Select label="Producator" bind:value={form.producator} options={PRODUCATORI} />
+      <Select label="Producător" bind:value={form.producator} options={PRODUCATORI} />
       <Input label="Model" bind:value={form.model} placeholder="Model" />
       <Input label="Serial number" bind:value={form.serial_number} placeholder="S/N" />
     </div>
     <label class="ta-field">
-      <span class="ta-label">Parametri modificati (PARAM = VALOARE, unul pe linie)</span>
+      <span class="ta-label">Parametri modificați (PARAM = VALOARE, unul pe linie)</span>
       <textarea rows="6" bind:value={form.params_text} placeholder="99.04 = Vector&#10;20.01 = 1500 rpm"></textarea>
     </label>
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => open = false}>Anuleaza</Button>
-      <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salveaza' : 'Adauga'}</Button>
+      <Button variant="secondary" onclick={() => open = false}>Anulează</Button>
+      <Button loading={saving} disabled={!form.nume.trim()} onclick={save}>{isEdit ? 'Salvează' : 'Adaugă'}</Button>
     </div>
   {/snippet}
 </Modal>

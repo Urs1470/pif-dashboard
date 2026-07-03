@@ -13,7 +13,7 @@
   {#if onretry || children}
     <div class="err-actions">
       {#if onretry}
-        <Button size="sm" variant="secondary" onclick={onretry}><RotateCcw size={14} /> Reincearca</Button>
+        <Button size="sm" variant="secondary" onclick={onretry}><RotateCcw size={14} /> Reîncearcă</Button>
       {/if}
       {#if children}{@render children()}{/if}
     </div>

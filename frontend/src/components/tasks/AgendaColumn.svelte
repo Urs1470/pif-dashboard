@@ -3,7 +3,7 @@
 
   let { tasks = [], onopen = () => {} } = $props()
 
-  const DAY_SHORT = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sam']
+  const DAY_SHORT = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm']
 
   function sameDay(a, b) {
     return a.toDateString() === b.toDateString()
@@ -34,7 +34,7 @@
 <aside class="agenda cell-in">
   <div class="cell-label agenda-label"><span class="ico ico-vio">◔</span>Agenda — 7 zile</div>
   {#if days.length === 0}
-    <div class="agenda-empty">Nicio scadenta in urmatoarele 7 zile.</div>
+    <div class="agenda-empty">Nicio scadență în următoarele 7 zile.</div>
   {:else}
     {#each days as day (day.key)}
       <div class="day" class:today={day.isToday}>{day.label}</div>

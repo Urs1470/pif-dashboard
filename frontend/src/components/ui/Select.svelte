@@ -18,7 +18,7 @@
 
   const items = $derived(options.map((o) => ({ value: o?.value ?? o, label: o?.label ?? o })))
   const selected = $derived(items.find((i) => String(i.value) === String(value)))
-  const display = $derived(selected ? selected.label : (placeholder || 'Selecteaza...'))
+  const display = $derived(selected ? selected.label : (placeholder || 'Selectează...'))
 
   function toggle() {
     if (disabled) return

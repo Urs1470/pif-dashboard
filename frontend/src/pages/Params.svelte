@@ -218,7 +218,7 @@
       {#if manualsLoading}
         {#each Array(4) as _}<div class="manual-card skel"><Skeleton width="100%" height="60px" /></div>{/each}
       {:else if manuals.length === 0}
-        <EmptyState icon={BookOpen} title="Niciun manual" description="Nu s-au gasit manuale PDF pe server." />
+        <EmptyState icon={BookOpen} title="Niciun manual" description="Nu s-au găsit manuale PDF pe server." />
       {:else}
         {#each manuals as m}
           <button class="manual-card" onclick={() => window.open(m.url, '_blank')}>
@@ -250,7 +250,7 @@
         <div class="toolbar">
           <div class="search-box">
             <Search size={14} />
-            <input type="text" placeholder="Cauta in {familieLabel(curFilter)}..." value={searchInput} oninput={onSearch} />
+            <input type="text" placeholder="Caută în {familieLabel(curFilter)}..." value={searchInput} oninput={onSearch} />
           </div>
           <span class="toolbar-count">{curTotal.toLocaleString('ro-RO')} {activeTab === 'params' ? 'parametri' : 'coduri'}</span>
         </div>
@@ -260,7 +260,7 @@
         {#if curLoading || !curFilter}
           {#each Array(8) as _}<div class="row-skel"><Skeleton width="40%" height="14px" /></div>{/each}
         {:else if curItems.length === 0}
-          <EmptyState icon={Cpu} title="Niciun rezultat" description="Incearca alta familie sau alt termen." />
+          <EmptyState icon={Cpu} title="Niciun rezultat" description="Încearcă altă familie sau alt termen." />
         {:else if activeTab === 'params'}
           <div class="data-table-wrap sticky-scroll">
             <table class="data-table reflow zebra">
@@ -296,7 +296,7 @@
                     <td class="mono dim" data-label="Cod secundar">{item.cod_secundar || '—'}</td>
                     <td class="dim" data-label="Tip">{item.tip || '—'}</td>
                     <td data-label="Nume">{item.nume || '—'}</td>
-                    <td class="dim num" data-label="Pagina">{item.pagina || '—'}</td>
+                    <td class="dim num" data-label="Pagină">{item.pagina || '—'}</td>
                   </tr>
                 {/each}
               </tbody>
@@ -310,11 +310,11 @@
           <div class="pagination">
             <span class="pg-range">Rând {rangeStart}–{rangeEnd} din {curTotal.toLocaleString('ro-RO')}</span>
             <div class="pg-nav">
-              <button class="pg-btn" title="Prima pagina" disabled={curPage <= 1} onclick={() => goToPage(1)}><ChevronsLeft size={14} /></button>
-              <button class="pg-btn" title="Pagina anterioara" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
+              <button class="pg-btn" title="Prima pagină" disabled={curPage <= 1} onclick={() => goToPage(1)}><ChevronsLeft size={14} /></button>
+              <button class="pg-btn" title="Pagina anterioară" disabled={curPage <= 1} onclick={() => goPage(-1)}><ChevronLeft size={14} /></button>
               <span class="pg-info">{curPage} / {curTotalPages}</span>
-              <button class="pg-btn" title="Pagina urmatoare" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
-              <button class="pg-btn" title="Ultima pagina" disabled={curPage >= curTotalPages} onclick={() => goToPage(curTotalPages)}><ChevronsRight size={14} /></button>
+              <button class="pg-btn" title="Pagina următoare" disabled={curPage >= curTotalPages} onclick={() => goPage(1)}><ChevronRight size={14} /></button>
+              <button class="pg-btn" title="Ultima pagină" disabled={curPage >= curTotalPages} onclick={() => goToPage(curTotalPages)}><ChevronsRight size={14} /></button>
             </div>
           </div>
         {/if}
@@ -333,13 +333,13 @@
     <div class="detail" class:dim={jumping} in:fade={{ duration: 120 }}>
       {#if activeTab === 'params'}
         <div class="dmeta">
-          {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagina manual', detail.pagina]] as [label, val]}
+          {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagină manual', detail.pagina]] as [label, val]}
             {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span class="dval">{val}</span></div>{/if}
           {/each}
         </div>
         {#if detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Descriere</h4><p>{detail.descriere_scurta}</p></div>{/if}
         {#if detail.descriere && detail.descriere !== detail.descriere_scurta}<div class="dsection"><h4 class="dsec-title">Detalii</h4><p>{detail.descriere}</p></div>{/if}
-        {#if detail.explicatie}<div class="dsection"><h4 class="dsec-title">Explicatie</h4><p>{detail.explicatie}</p></div>{/if}
+        {#if detail.explicatie}<div class="dsection"><h4 class="dsec-title">Explicație</h4><p>{detail.explicatie}</p></div>{/if}
         {#if detail.influenteaza}
           <div class="dsection">
             <h4 class="dsec-title">Influenteaza</h4>
@@ -370,7 +370,7 @@
         {/if}
       {:else}
         <div class="dmeta">
-          {#each [['Familie', familieLabel(detail.familie)], ['Cod', detail.cod], ['Cod secundar', detail.cod_secundar], ['Tip', detail.tip], ['Pagina manual', detail.pagina]] as [label, val]}
+          {#each [['Familie', familieLabel(detail.familie)], ['Cod', detail.cod], ['Cod secundar', detail.cod_secundar], ['Tip', detail.tip], ['Pagină manual', detail.pagina]] as [label, val]}
             {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span class="dval">{val}</span></div>{/if}
           {/each}
         </div>

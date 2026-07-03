@@ -1,7 +1,7 @@
 {
   "name": "PIF Dashboard",
   "short_name": "PIF",
-  "description": "Dashboard pentru management proiecte si task-uri",
+  "description": "Dashboard pentru management proiecte și task-uri",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
