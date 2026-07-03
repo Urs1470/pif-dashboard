@@ -35,6 +35,69 @@ export function dayDiff(a, b) {
 
 const WD = ['Du', 'Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ']
 const MO = ['ian', 'feb', 'mar', 'apr', 'mai', 'iun', 'iul', 'aug', 'sep', 'oct', 'nov', 'dec']
+const MO_FULL = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Noi', 'Dec']
+
+// ISO-8601 week number (Monday-based).
+export function isoWeek(d) {
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const dow = (t.getDay() + 6) % 7
+  t.setDate(t.getDate() - dow + 3) // nearest Thursday
+  const firstThu = new Date(t.getFullYear(), 0, 4)
+  const fdow = (firstThu.getDay() + 6) % 7
+  firstThu.setDate(firstThu.getDate() - fdow + 3)
+  return 1 + Math.round((t - firstThu) / (7 * 86400000))
+}
+
+// Header columns adapt to the window length so a 6-month view isn't 180 day-cells:
+//   <=31 days -> one column per DAY (weekend flag)
+//   <=92 days -> one column per ISO WEEK
+//   else      -> one column per calendar MONTH
+// Bars still position by exact day-fraction (spanRect), so granularity is purely
+// a header/gridline concern. Columns carry pct geometry (partial at the edges).
+export function buildColumns(start, days) {
+  const s = parseISO(start)
+  if (!s) return { unit: 'day', cols: [] }
+  const unit = days <= 31 ? 'day' : days <= 92 ? 'week' : 'month'
+  const winStart = s
+  const winEnd = new Date(s.getFullYear(), s.getMonth(), s.getDate() + days) // exclusive
+  const pct = (dt) => clampNum((dt - winStart) / 86400000 / days, 0, 1) * 100
+  const cols = []
+
+  if (unit === 'day') {
+    for (let i = 0; i < days; i++) {
+      const d = new Date(s.getFullYear(), s.getMonth(), s.getDate() + i)
+      const dow = d.getDay()
+      cols.push({
+        key: 'd' + i, leftPct: (i / days) * 100, widthPct: (1 / days) * 100,
+        main: String(d.getDate()), sub: WD[dow], iso: isoDate(d),
+        isWeekend: dow === 0 || dow === 6,
+        isMonthStart: d.getDate() === 1 || i === 0, month: MO[d.getMonth()],
+      })
+    }
+  } else if (unit === 'week') {
+    let cur = new Date(winStart)
+    cur.setDate(cur.getDate() - ((cur.getDay() + 6) % 7)) // back to Monday
+    while (cur < winEnd) {
+      const next = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 7)
+      const l = pct(cur < winStart ? winStart : cur)
+      const r = pct(next > winEnd ? winEnd : next)
+      cols.push({ key: 'w' + cur.getTime(), leftPct: l, widthPct: r - l,
+        main: `${cur.getDate()} ${MO[cur.getMonth()]}`, sub: 'S' + isoWeek(cur), iso: '' })
+      cur = next
+    }
+  } else {
+    let cur = new Date(winStart.getFullYear(), winStart.getMonth(), 1)
+    while (cur < winEnd) {
+      const next = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
+      const l = pct(cur < winStart ? winStart : cur)
+      const r = pct(next > winEnd ? winEnd : next)
+      cols.push({ key: 'm' + cur.getTime(), leftPct: l, widthPct: r - l,
+        main: MO_FULL[cur.getMonth()], sub: String(cur.getFullYear()), iso: '' })
+      cur = next
+    }
+  }
+  return { unit, cols }
+}
 
 // The day columns for the window [start, start+days).
 export function buildDays(start, days) {

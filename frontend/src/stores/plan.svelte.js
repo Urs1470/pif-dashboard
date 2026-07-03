@@ -5,15 +5,26 @@ import { localToday, tomorrowISO } from '../lib/planDates.js'
 // "Planificator" — 14-day operational swimlane. Lanes = projects (each carrying
 // its overall interval) with their tasks, plus a "Globale" lane. Read-model comes
 // from GET /api/plan; mutations reuse the task stores + the agenda planning rule.
+const LS_WEEKENDS = 'pif-plan-weekends'
+function readWeekends() {
+  try { return localStorage.getItem(LS_WEEKENDS) !== '0' } catch { return true }
+}
+
 export const plan = $state({
   lanes: [],
   start: '',
   days: 14,
   today: '',
   showDone: false,
+  showWeekends: readWeekends(), // evidentiaza weekendurile (doar in modul pe zile)
   loading: false,
   error: null,
 })
+
+export function toggleWeekends() {
+  plan.showWeekends = !plan.showWeekends
+  try { localStorage.setItem(LS_WEEKENDS, plan.showWeekends ? '1' : '0') } catch {}
+}
 
 export async function loadPlan() {
   plan.loading = true

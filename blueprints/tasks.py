@@ -787,7 +787,7 @@ def get_plan():
         days = int(request.args.get('days') or 14)
     except (TypeError, ValueError):
         days = 14
-    days = max(1, min(days, 60))
+    days = max(1, min(days, 370))  # up to ~1 an; UI merge pana la 6 luni (180)
     show_done = (request.args.get('done') or '').lower() in ('1', 'true', 'yes')
     start_d = datetime.strptime(start, '%Y-%m-%d').date()
     start_s = start_d.isoformat()

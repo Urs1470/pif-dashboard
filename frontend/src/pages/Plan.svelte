@@ -3,9 +3,9 @@
   import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
-    setTaskDates, setHorizon, toggleShowDone,
+    setTaskDates, setHorizon, toggleShowDone, toggleWeekends,
   } from '../stores/plan.svelte.js'
-  import { buildDays, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
+  import { buildColumns, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
@@ -18,7 +18,7 @@
   // the app accent/active state, so lanes deliberately avoid it.
   const LANE_PALETTE = ['#3f9dc4', '#3fae74', '#8b6fe0', '#d1697f', '#b9a5ff', '#5f8fd0', '#c9a13a']
   const GLOBAL_COLOR = '#948a7d'
-  const HORIZONS = [7, 14, 30]
+  const HORIZONS = [{ d: 7, l: '7z' }, { d: 14, l: '14z' }, { d: 30, l: '30z' }, { d: 90, l: '3L' }, { d: 180, l: '6L' }]
 
   function laneColor(id) {
     if (id === '__global__') return GLOBAL_COLOR
@@ -27,10 +27,15 @@
     return LANE_PALETTE[h % LANE_PALETTE.length]
   }
 
-  const days = $derived(buildDays(plan.start, plan.days))
+  const columns = $derived(buildColumns(plan.start, plan.days))
+  const unit = $derived(columns.unit)
   const todayIdx = $derived(plan.start && plan.today ? dayDiff(plan.start, plan.today) : null)
-  const dayMin = $derived(plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 30)
-  const compact = $derived(plan.days > 18)
+  const todayPct = $derived(todayIdx != null ? (todayIdx / plan.days) * 100 : null)
+  // Per-column min width by granularity, so a 6-month (monthly) view doesn't force
+  // a 180-cell scroll. Daily view stays readable down to ~34px/day.
+  const colMin = $derived(unit === 'day' ? (plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 34) : unit === 'week' ? 66 : 104)
+  const contentMin = $derived(200 + colMin * columns.cols.length) // lane-w(200) + cols
+  const dayCompact = $derived(unit === 'day' && plan.days > 24)
 
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
   function isDone(s) { return s === 'done' || s === 'finalizat' }
@@ -242,9 +247,12 @@
     <div class="controls">
       <div class="seg" role="group" aria-label="Orizont">
         {#each HORIZONS as h}
-          <button class="seg-btn" class:active={plan.days === h} onclick={() => setHorizon(h)}>{h}z</button>
+          <button class="seg-btn" class:active={plan.days === h.d} onclick={() => setHorizon(h.d)}>{h.l}</button>
         {/each}
       </div>
+      <button class="toggle" class:on={plan.showWeekends} disabled={unit !== 'day'} onclick={toggleWeekends} title={unit === 'day' ? 'Evidențiază weekendurile' : 'Weekendurile apar doar în vederea pe zile'}>
+        <span class="tk-box">{#if plan.showWeekends}<Check size={12} />{/if}</span> Weekend
+      </button>
       <button class="toggle" class:on={plan.showDone} onclick={toggleShowDone} title="Arată taskurile finalizate">
         <span class="tk-box">{#if plan.showDone}<Check size={12} />{/if}</span> Finalizate
       </button>
@@ -259,17 +267,17 @@
     <EmptyState icon={CalendarRange} title="Nimic în această fereastră" description="Planifică taskuri (din Astăzi sau din proiecte) ca să apară aici pe zile." />
   {:else}
     <!-- ===== Desktop swimlane ===== -->
-    <div class="chart" style="--day-min:{dayMin}px">
+    <div class="chart">
       <div class="chart-scroll">
-        <div class="inner" style="min-width: calc(var(--lane-w) + var(--day-min) * {plan.days})">
+        <div class="inner" style="min-width: {contentMin}px">
           <div class="p-head">
             <div class="lane-label head">Proiect</div>
             <div class="days">
-              {#each days as d}
-                <div class="day" class:we={d.isWeekend} class:today={d.iso === plan.today} class:compact>
-                  {#if !compact}<span class="d-wd">{d.wd}</span>{/if}
-                  <span class="d-num">{d.dayNum}</span>
-                  {#if d.isMonthStart && !compact}<span class="d-mo">{d.month}</span>{/if}
+              {#each columns.cols as c (c.key)}
+                <div class="col-head" class:we={unit === 'day' && plan.showWeekends && c.isWeekend} class:today={c.iso && c.iso === plan.today} class:compact={dayCompact}
+                     style="left:{c.leftPct}%; width:{c.widthPct}%">
+                  {#if !(dayCompact && unit === 'day')}<span class="ch-sub">{c.sub}</span>{/if}
+                  <span class="ch-main">{c.main}</span>
                 </div>
               {/each}
             </div>
@@ -277,13 +285,13 @@
 
           <div class="p-body">
             <div class="overlay">
-              {#each days as d}
-                <div class="col-line" style="left:{(d.i / plan.days) * 100}%"></div>
-                {#if d.isWeekend}<div class="col-we" style="left:{(d.i / plan.days) * 100}%; width:{100 / plan.days}%"></div>{/if}
-                {#if d.iso === plan.today}<div class="col-today" style="left:{(d.i / plan.days) * 100}%; width:{100 / plan.days}%"></div>{/if}
+              {#each columns.cols as c (c.key)}
+                <div class="col-line" style="left:{c.leftPct}%"></div>
+                {#if unit === 'day' && plan.showWeekends && c.isWeekend}<div class="col-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
+                {#if c.iso && c.iso === plan.today}<div class="col-today" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
               {/each}
-              {#if todayIdx != null && todayIdx >= 0 && todayIdx < plan.days}
-                <div class="today-line" style="left:{(todayIdx / plan.days) * 100}%"></div>
+              {#if todayPct != null && todayPct >= 0 && todayPct < 100}
+                <div class="today-line" style="left:{todayPct}%"></div>
               {/if}
             </div>
 
@@ -419,6 +427,7 @@
   .toggle { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .toggle:hover { border-color: var(--border-strong); color: var(--text); }
   .toggle.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .toggle:disabled { opacity: 0.4; cursor: not-allowed; }
   .tk-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .toggle.on .tk-box { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -432,17 +441,16 @@
   .p-head { display: flex; border-bottom: 1px solid var(--border-strong); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
   .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
-  .days { flex: 1; display: flex; min-width: 0; }
-  .day { flex: 1; min-width: var(--day-min); padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; gap: 1px; border-left: 1px solid var(--border); position: relative; }
-  .day.compact { padding: 5px 1px; }
-  .day.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
-  .day.today { background: var(--accent-subtle); }
-  .d-wd { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; }
-  .day.today .d-wd { color: var(--accent); }
-  .d-num { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-  .day.compact .d-num { font-size: var(--font-tiny); }
-  .day.today .d-num { color: var(--accent); }
-  .d-mo { position: absolute; top: -1px; left: 3px; font-size: 0.55rem; font-family: var(--font-mono); color: var(--text-faint); text-transform: uppercase; }
+  .days { flex: 1; position: relative; min-width: 0; height: 42px; }
+  .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
+  .col-head.compact { padding: 5px 1px; }
+  .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
+  .col-head.today { background: var(--accent-subtle); }
+  .ch-sub { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  .col-head.today .ch-sub { color: var(--accent); }
+  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .col-head.compact .ch-main { font-size: var(--font-tiny); }
+  .col-head.today .ch-main { color: var(--accent); }
 
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: var(--lane-w); right: 0; pointer-events: none; z-index: 0; }
