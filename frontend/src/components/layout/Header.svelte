@@ -120,8 +120,9 @@
   }
 
   @media (max-width: 768px) {
-    .hc-sub { display: none; }
-    .hc-title { font-size: 0.95rem; }
+    /* Pe telefon salutul centrat se suprapunea peste brand (nu incape la 390px).
+       Il ascundem complet — brandul + titlul propriu al paginii sunt de ajuns. */
+    .header-context { display: none; }
     .header {
       flex-wrap: wrap;
       height: auto;

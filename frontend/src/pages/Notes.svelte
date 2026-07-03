@@ -129,24 +129,24 @@
 {/snippet}
 
 <div class="page">
-  <div class="page-header"><SolidIcon name="notes" size={22} /><h1>Notite</h1><span class="count">{notes.length}</span></div>
+  <div class="page-header"><SolidIcon name="notes" size={22} /><h1>Notițe</h1><span class="count">{notes.length}</span></div>
 
   {#if loading}
     <div class="panes"><div>{#each Array(6) as _}<div class="skel"><Skeleton width="80%" height="14px" /></div>{/each}</div><Skeleton width="100%" height="300px" /></div>
   {:else if unconfigured}
-    <EmptyState icon={StickyNote} title="Vault neconfigurat" description="Configureaza calea catre vault-ul Obsidian in pagina Admin.">
+    <EmptyState icon={StickyNote} title="Vault neconfigurat" description="Configurează calea către vault-ul Obsidian în pagina Admin.">
       <Button size="sm" variant="secondary" onclick={() => navigate('/admin')}>Mergi la Admin</Button>
     </EmptyState>
   {:else if error}
     <p class="error-text">Eroare: {error}</p>
   {:else if notes.length === 0}
-    <EmptyState icon={StickyNote} title="Nicio notita" description="Vault-ul Obsidian e gol." />
+    <EmptyState icon={StickyNote} title="Nicio notiță" description="Vault-ul Obsidian e gol." />
   {:else}
     <div class="panes" class:show-content={mobileShowContent}>
       <aside class="sidebar cell-in">
         <div class="search-box">
           <Search size={14} />
-          <input type="text" placeholder="Cauta in continut..." value={search} oninput={onSearch} />
+          <input type="text" placeholder="Caută în conținut..." value={search} oninput={onSearch} />
         </div>
 
         {#if searchResults}
@@ -186,7 +186,7 @@
         {:else}
           <div class="placeholder">
             <ChevronRight size={28} />
-            <p>Selecteaza o notita din lista.</p>
+            <p>Selectează o notiță din listă.</p>
           </div>
         {/if}
         </div>
