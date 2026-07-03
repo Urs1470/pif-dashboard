@@ -1,10 +1,8 @@
 <script>
   import { onMount } from 'svelte'
-  import { fade } from 'svelte/transition'
   import { Search } from '@lucide/svelte'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   // Autohide v4 (cerinta Ion): dock-ul e ASCUNS by default tot timpul; apare
   // DOAR cat timp cursorul e in zona de jos (unde sta dock-ul) si se ascunde
@@ -96,6 +94,7 @@
 </script>
 
 <nav class="dock" class:hidden aria-label="Navigație principală">
+  <button class="dock-grip" aria-label="Arată navigația" title="Navigație" onclick={revealFromPeek}></button>
   {#each items as item (item.path)}
     <a
       href={item.path}
@@ -116,16 +115,6 @@
   </button>
 </nav>
 
-{#if hidden && !kbLocked}
-  <button
-    class="dock-peek"
-    transition:fade={{ duration: motionDuration(DUR_FAST) }}
-    aria-label="Arată navigația"
-    title="Arată navigația"
-    onclick={revealFromPeek}
-  ><span></span></button>
-{/if}
-
 <style>
   .dock {
     position: fixed;
@@ -135,7 +124,7 @@
     transition: transform 0.28s var(--ease);
     display: flex;
     gap: 4px;
-    padding: 8px;
+    padding: 12px 8px 8px;
     border-radius: var(--radius-xl);
     z-index: var(--z-sticky);
     background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
@@ -170,8 +159,10 @@
     transform: none;
   }
 
+  /* Ascuns: dock-ul coboara pana ramane vizibil doar manerul-linie de sus.
+     Manerul e copil al dock-ului, deci urca/coboara IMPREUNA cu el. */
   .dock.hidden {
-    --dock-shift: calc(100% + 22px + var(--safe-bottom));
+    --dock-shift: calc(100% + 6px);
   }
 
   .sep {
@@ -180,40 +171,41 @@
     margin: 10px 6px;
   }
 
-  /* Manerul "peek" — ramane cand dock-ul e ascuns; tap/click il readuce */
-  .dock-peek {
-    position: fixed;
+  /* Manerul-linie (prezenta dock-ului). Absolut pe dock -> se misca cu dock-ul. */
+  .dock-grip {
+    position: absolute;
+    top: 3px;
     left: 50%;
     transform: translateX(-50%);
-    bottom: calc(4px + var(--safe-bottom));
-    width: 64px;
-    height: 22px;
+    width: 48px;
+    height: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    padding: 0;
+    background: none;
     border: none;
     cursor: pointer;
-    z-index: var(--z-sticky);
   }
-  .dock-peek span {
-    width: 36px;
-    height: 5px;
+  .dock-grip::before {
+    content: '';
+    width: 30px;
+    height: 3px;
     border-radius: var(--radius-full);
     background: var(--border-strong);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
     transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
   }
-  .dock-peek:hover span,
-  .dock-peek:focus-visible span {
+  .dock-grip:hover::before,
+  .dock-grip:focus-visible::before {
     background: var(--accent);
-    width: 46px;
+    width: 38px;
   }
 
   @media (max-width: 560px) {
     .dock {
       gap: 2px;
-      padding: 6px;
+      padding: 11px 6px 6px;
       max-width: calc(100vw - 16px);
     }
     .dock-item {
