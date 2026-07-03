@@ -3,7 +3,7 @@
   import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
-  import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday } from '../../lib/planDates.js'
+  import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday, clampNum } from '../../lib/planDates.js'
   import { formatDateShort } from '../../lib/formatters.js'
   import { toast } from '../../stores/ui.svelte.js'
   import DatePicker from '../ui/DatePicker.svelte'
@@ -144,6 +144,70 @@
     else { const p = linkFrom; linkFrom = null; createDep(p, t.id) }
   }
 
+  // --- drag / resize bars directly on the timeline ---
+  let drag = null
+  let dragLabel = $state(null)
+
+  function startBarDrag(e, t, mode) {
+    if (e.button != null && e.button !== 0) return
+    const barEl = e.currentTarget.closest('.bar, .ms')
+    if (!barEl || !bodyW) return
+    drag = {
+      t, mode, barEl, startX: e.clientX,
+      dayW: bodyW / win.days,
+      unit: 100 / win.days,
+      isMs: barEl.classList.contains('ms'),
+      origLeft: parseFloat(barEl.style.left) || 0,
+      origWidth: parseFloat(barEl.style.width) || 0,
+      effDelta: 0, moved: false,
+    }
+    document.body.classList.add('plan-dragging')
+    window.addEventListener('pointermove', onBarMove)
+    window.addEventListener('pointerup', onBarUp)
+    e.preventDefault(); e.stopPropagation()
+  }
+  function onBarMove(e) {
+    if (!drag) return
+    const dx = e.clientX - drag.startX
+    if (Math.abs(dx) > 3) drag.moved = true
+    const dd = Math.round(dx / drag.dayW)
+    const u = drag.unit, el = drag.barEl
+    if (drag.mode === 'move') {
+      const maxL = drag.isMs ? 100 : 100 - drag.origWidth
+      const want = clampNum(drag.origLeft + dd * u, 0, maxL)
+      el.style.left = want + '%'
+      drag.effDelta = Math.round((want - drag.origLeft) / u)
+    } else if (drag.mode === 'resizeL') {
+      const want = clampNum(drag.origLeft + dd * u, 0, drag.origLeft + drag.origWidth - u)
+      el.style.left = want + '%'
+      el.style.width = (drag.origLeft + drag.origWidth - want) + '%'
+      drag.effDelta = Math.round((want - drag.origLeft) / u)
+    } else {
+      const want = clampNum(drag.origWidth + dd * u, u, 100 - drag.origLeft)
+      el.style.width = want + '%'
+      drag.effDelta = Math.round((want - drag.origWidth) / u)
+    }
+    const t = drag.t, k = drag.effDelta
+    if (drag.mode === 'move') dragLabel = { x: e.clientX, y: e.clientY, text: `${formatDateShort(addDays(t.data_start, k))} → ${formatDateShort(addDays(t.data_scadenta, k))}` }
+    else if (drag.mode === 'resizeL') dragLabel = { x: e.clientX, y: e.clientY, text: `start ${formatDateShort(addDays(t.data_start, k))}` }
+    else dragLabel = { x: e.clientX, y: e.clientY, text: `sfârșit ${formatDateShort(addDays(t.data_scadenta, k))}` }
+  }
+  async function onBarUp() {
+    window.removeEventListener('pointermove', onBarMove)
+    window.removeEventListener('pointerup', onBarUp)
+    document.body.classList.remove('plan-dragging')
+    const d = drag; drag = null; dragLabel = null
+    if (!d || !d.moved || d.effDelta === 0) {
+      if (d) { d.barEl.style.left = d.origLeft + '%'; if (!d.isMs) d.barEl.style.width = d.origWidth + '%' }
+      return
+    }
+    const t = d.t, k = d.effDelta, body = {}
+    if (d.mode === 'move') { body.data_start = addDays(t.data_start, k); body.data_scadenta = addDays(t.data_scadenta, k) }
+    else if (d.mode === 'resizeL') body.data_start = addDays(t.data_start, k)
+    else body.data_scadenta = addDays(t.data_scadenta, k)
+    await patch(t.id, body)
+  }
+
   // rename inline
   let editId = $state(null)
   let editVal = $state('')
@@ -266,11 +330,13 @@
             {@const r = rectFor(t)}
             <div class="gb-row">
               {#if t.is_milestone}
-                {#if msPct(t) != null}<div class="ms" style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}"></div>{/if}
+                {#if msPct(t) != null}<div class="ms" style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1"></div>{/if}
               {:else if r}
-                <div class="bar {statusClass(t)}" style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%">
+                <div class="bar {statusClass(t)}" style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1">
+                  <span class="rz rz-l" onpointerdown={(e) => startBarDrag(e, t, 'resizeL')} aria-hidden="true"></span>
                   <div class="fill" style="width:{t.progres}%"></div>
                   <span class="bl">{t.progres}%</span>
+                  <span class="rz rz-r" onpointerdown={(e) => startBarDrag(e, t, 'resizeR')} aria-hidden="true"></span>
                 </div>
               {/if}
             </div>
@@ -279,6 +345,10 @@
       </div>
     </div>
   </div>
+{/if}
+
+{#if dragLabel}
+  <div class="drag-label" style="left:{dragLabel.x + 14}px; top:{dragLabel.y - 34}px">{dragLabel.text}</div>
 {/if}
 
 <style>
@@ -349,7 +419,13 @@
 
   .gb-row { position: relative; height: var(--row-h); border-bottom: 1px solid var(--border); }
   .gb-row:last-child { border-bottom: 0; }
-  .bar { position: absolute; top: 50%; transform: translateY(-50%); height: 20px; border-radius: 6px; display: flex; align-items: center; overflow: hidden; z-index: 1; }
+  .bar { position: absolute; top: 50%; transform: translateY(-50%); height: 20px; border-radius: 6px; display: flex; align-items: center; overflow: hidden; z-index: 1; cursor: grab; touch-action: none; }
+  .bar:active { cursor: grabbing; }
+  .rz { position: absolute; top: 0; bottom: 0; width: 7px; cursor: ew-resize; z-index: 4; }
+  .rz-l { left: 0; } .rz-r { right: 0; }
+  .ms { cursor: grab; touch-action: none; }
+  .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px 8px; font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text); box-shadow: var(--shadow-md); white-space: nowrap; }
+  :global(body.plan-dragging) { user-select: none; cursor: grabbing; }
   .bar .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px 0 0 6px; opacity: 0.9; }
   .bar .bl { position: relative; z-index: 2; font-size: 0.6rem; font-weight: var(--fw-bold); font-family: var(--font-mono); padding: 0 6px; }
   .bar.done { background: color-mix(in oklab, var(--success) 22%, var(--bg-panel)); }
