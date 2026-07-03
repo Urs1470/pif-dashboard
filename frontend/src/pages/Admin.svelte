@@ -242,6 +242,7 @@
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=projects', '_blank')}><Download size={14} /> Excel Proiecte</Button>
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=tasks', '_blank')}><Download size={14} /> Excel Taskuri</Button>
         <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/pdf/all', '_blank')}><Download size={14} /> PDF Sumar</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/ics', '_blank')} title="Deadline-uri proiecte + scadențe taskuri, abonabil din Google/Apple Calendar"><Download size={14} /> Calendar (.ics)</Button>
       </div>
     </Card>
 

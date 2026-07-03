@@ -1,5 +1,5 @@
 <script>
-  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, Upload } from '@lucide/svelte'
+  import { FileText, Image, Mail, FileSpreadsheet, FileArchive, File, Download, Upload, Camera } from '@lucide/svelte'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { loadAttachments, uploadAttachment, deleteAttachment } from '../../stores/projects.svelte.js'
   import { toast } from '../../stores/ui.svelte.js'
@@ -15,6 +15,7 @@
   let loading = $state(true)
   let uploading = $state(false)
   let fileInput = $state(null)
+  let cameraInput = $state(null)
   let confirmOpen = $state(false)
   let toDelete = $state(null)
   let previewOpen = $state(false)
@@ -74,10 +75,16 @@
 <div class="attachments">
   <div class="att-header">
     <span class="att-count">{attachments.length} fișiere</span>
-    <Button size="sm" variant="secondary" loading={uploading} onclick={() => fileInput?.click()}>
-      <Upload size={14} /> Încarcă
-    </Button>
+    <div class="att-actions">
+      <Button size="sm" variant="secondary" loading={uploading} onclick={() => cameraInput?.click()} title="Fă o poză cu camera">
+        <Camera size={14} /> Cameră
+      </Button>
+      <Button size="sm" variant="secondary" loading={uploading} onclick={() => fileInput?.click()}>
+        <Upload size={14} /> Încarcă
+      </Button>
+    </div>
     <input type="file" multiple hidden bind:this={fileInput} onchange={onFileChange} />
+    <input type="file" accept="image/*" capture="environment" hidden bind:this={cameraInput} onchange={onFileChange} />
   </div>
 
   {#if loading}
@@ -108,7 +115,8 @@
 <AttachmentPreview bind:open={previewOpen} attachment={previewAtt} ondelete={askDelete} />
 
 <style>
-  .att-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
+  .att-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+  .att-actions { display: flex; align-items: center; gap: var(--space-xs); }
   .att-count { font-size: var(--font-tiny); color: var(--text-dim); }
   .att-list { display: flex; flex-direction: column; gap: var(--space-xs); }
   .att-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-dim); transition: border-color var(--dur-fast) var(--ease); }

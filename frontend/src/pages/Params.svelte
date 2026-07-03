@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST } from '../lib/motion.svelte.js'
-  import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BookOpen, ExternalLink } from '@lucide/svelte'
+  import { Cpu, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BookOpen, ExternalLink, Star, Clock } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { params, loadParams, loadFamilies, loadParamDetail, faultCodes, loadFaultCodes, loadFaultFamilies, loadFaultDetail, PRODUCATOR_FAMILII, familieLabel } from '../stores/params.svelte.js'
   import { router, applyPath } from '../lib/router.svelte.js'
@@ -11,28 +11,7 @@
   import Modal from '../components/ui/Modal.svelte'
 
   import { apiJson } from '../lib/api.js'
-
-  const MANUAL_MAP = {
-    'ACS880': 'ACS880_Primary_Firmware_Manual.pdf',
-    'ACS580': 'ACS580_Firmware_Manual.pdf',
-    'ACS380': 'ACS580_Firmware_Manual.pdf',
-    'ACS180': 'ACS580_Firmware_Manual.pdf',
-    'SINAMICS_G120': 'SINAMICS_G120_List_Manual.pdf',
-    'SINAMICS_G120C': 'SINAMICS_G120_List_Manual.pdf',
-    'SINAMICS_S120': 'SINAMICS_S120_S150_List_Manual.pdf',
-    'SINAMICS_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
-    'SINAMICS_S120_S150': 'SINAMICS_S120_S150_List_Manual.pdf',
-    'SINAMICS_G130_G150': 'SINAMICS_G120_List_Manual.pdf',
-    'Danfoss_VLT_FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
-    'FC302': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
-    'FC301': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
-    'FC202': 'Danfoss_VLT_FC302_Programming_Guide.pdf',
-    'Lenze_i550': 'Lenze_i550_Manual.pdf',
-    'i550': 'Lenze_i550_Manual.pdf',
-    'Lenze_i950': 'Lenze_i950_Manual.pdf',
-    'i650': 'Lenze_i950_Manual.pdf',
-    'i950': 'Lenze_i950_Manual.pdf',
-  }
+  import { MANUAL_MAP } from '../lib/manuals.js'
 
   let activeTab = $state('params')
   let producator = $state('')
@@ -45,6 +24,29 @@
 
   let manuals = $state([])
   let manualsLoading = $state(false)
+
+  // B4: favorite + recente parametri (localStorage). Stocam {id, cod, familie}.
+  function loadFavLS(k) { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : [] } catch { return [] } }
+  let favParams = $state(loadFavLS('pif-params-fav'))
+  let recentParams = $state(loadFavLS('pif-params-recent'))
+  $effect(() => { try { localStorage.setItem('pif-params-fav', JSON.stringify(favParams)) } catch {} })
+  $effect(() => { try { localStorage.setItem('pif-params-recent', JSON.stringify(recentParams)) } catch {} })
+  const isFav = (id) => favParams.some((x) => x.id === id)
+  const favEntry = (p) => ({ id: p.id, cod: p.parametru || p.cod, familie: p.familie })
+  function toggleFav(p) {
+    if (!p?.id) return
+    favParams = isFav(p.id) ? favParams.filter((x) => x.id !== p.id) : [favEntry(p), ...favParams].slice(0, 40)
+  }
+  function pushRecent(p) {
+    if (!p?.id) return
+    recentParams = [favEntry(p), ...recentParams.filter((x) => x.id !== p.id)].slice(0, 8)
+  }
+  async function openFav(item) {
+    activeTab = 'params'
+    showDetail = true
+    detailLoading = true
+    try { detail = await loadParamDetail(item.id); pushRecent(detail) } catch (_) {} finally { detailLoading = false }
+  }
 
   async function loadManuals() {
     manualsLoading = true
@@ -135,6 +137,7 @@
     detail = item
     try {
       detail = activeTab === 'params' ? await loadParamDetail(item.id) : await loadFaultDetail(item.id)
+      if (activeTab === 'params') pushRecent(detail)
     } catch (_) {} finally { detailLoading = false }
   }
 
@@ -165,6 +168,7 @@
     detailLoading = true
     try {
       detail = isFault ? await loadFaultDetail(id) : await loadParamDetail(id)
+      if (!isFault) pushRecent(detail)
       if (detail?.familie) {
         producator = producerOf(detail.familie) || producator
         const store = isFault ? faultCodes : params
@@ -176,13 +180,27 @@
     } catch (_) {} finally { detailLoading = false }
   }
 
+  // B3: /params?tab=faults&familie=<X> — deschide tabul si familia (din cardul echipamentului)
+  function openFamilie(fam, isFault) {
+    if (!fam) return
+    activeTab = isFault ? 'faults' : 'params'
+    const store = isFault ? faultCodes : params
+    producator = producerOf(fam) || producator
+    store.filters.producator = producator
+    store.filters.familie = fam
+    store.filters.page = 1
+    if (isFault) loadFaultCodes(); else loadParams()
+  }
+
   $effect(() => {
     const id = router.query.open
-    if (!id) return
+    const fam = router.query.familie
+    if (!id && !fam) return
     const isFault = router.query.tab === 'faults'
     // curata query-ul intai, ca refresh/back sa nu redeschida modalul
     applyPath('/params')
-    openFromQuery(id, isFault)
+    if (id) openFromQuery(id, isFault)
+    else openFamilie(fam, isFault)
   })
 
   const curFilter = $derived(activeTab === 'params' ? params.filters.familie : faultCodes.filters.familie)
@@ -247,6 +265,16 @@
       </nav>
 
       <div class="table-col cell-in">
+        {#if activeTab === 'params' && (favParams.length || recentParams.length)}
+          <div class="fav-strip">
+            {#if favParams.length}
+              <div class="fav-grp"><Star size={12} /><div class="fav-chips">{#each favParams as f (f.id)}<button class="fav-chip" onclick={() => openFav(f)} title={familieLabel(f.familie)}>{f.cod}</button>{/each}</div></div>
+            {/if}
+            {#if recentParams.length}
+              <div class="fav-grp"><Clock size={12} /><div class="fav-chips">{#each recentParams as r (r.id)}<button class="fav-chip recent" onclick={() => openFav(r)} title={familieLabel(r.familie)}>{r.cod}</button>{/each}</div></div>
+            {/if}
+          </div>
+        {/if}
         <div class="toolbar">
           <div class="search-box">
             <Search size={14} />
@@ -332,6 +360,9 @@
     {#key detail.id}
     <div class="detail" class:dim={jumping} in:fade={{ duration: 120 }}>
       {#if activeTab === 'params'}
+        <button class="fav-toggle" class:on={isFav(detail.id)} onclick={() => toggleFav(detail)}>
+          <Star size={14} fill={isFav(detail.id) ? 'currentColor' : 'none'} /> {isFav(detail.id) ? 'Favorit' : 'Adaugă la favorite'}
+        </button>
         <div class="dmeta">
           {#each [['Familie', familieLabel(detail.familie)], ['Acces', detail.acces], ['Tip date', detail.tip_date], ['Default', detail.valoare_default_str ?? detail.valoare_default], ['Min', detail.min], ['Max', detail.max], ['Unitate', detail.unitate], ['Pagină manual', detail.pagina]] as [label, val]}
             {#if val != null && val !== ''}<div class="drow"><span class="dlabel">{label}</span><span class="dval">{val}</span></div>{/if}
@@ -405,6 +436,19 @@
 
 <style>
   .page { padding: var(--space-lg); }
+
+  /* B4: favorite + recente */
+  .fav-strip { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-sm); }
+  .fav-grp { display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
+  .fav-grp :global(svg) { flex-shrink: 0; color: var(--accent); }
+  .fav-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .fav-chip { font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-radius: var(--radius-full); padding: 3px 10px; cursor: pointer; transition: background var(--dur-fast) var(--ease); }
+  .fav-chip:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  .fav-chip.recent { color: var(--text-secondary); background: var(--bg-surface); border-color: var(--border); }
+  .fav-chip.recent:hover { border-color: var(--text-dim); color: var(--text); }
+  .fav-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 5px 12px; margin-bottom: var(--space-md); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .fav-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .fav-toggle.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); background: var(--accent-subtle); }
   .page-header { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); margin-bottom: var(--space-md); }
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
