@@ -101,10 +101,10 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/global-tasks/<task_id>` | `get_global_task` | 481 |
 | PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 496 |
 | DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 564 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 656 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 686 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 732 |
-| GET | `/api/plan` | `get_plan` | 773 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 657 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 687 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 733 |
+| GET | `/api/plan` | `get_plan` | 774 |
 
 ## app.py (19 rute)
 

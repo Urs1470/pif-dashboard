@@ -1,8 +1,11 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink } from '@lucide/svelte'
-  import { plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone } from '../stores/plan.svelte.js'
-  import { buildDays, spanRect, dayDiff } from '../lib/planDates.js'
+  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check } from '@lucide/svelte'
+  import {
+    plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
+    setTaskDates, setHorizon, toggleShowDone,
+  } from '../stores/plan.svelte.js'
+  import { buildDays, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
@@ -15,6 +18,7 @@
   // the app accent/active state, so lanes deliberately avoid it.
   const LANE_PALETTE = ['#3f9dc4', '#3fae74', '#8b6fe0', '#d1697f', '#b9a5ff', '#5f8fd0', '#c9a13a']
   const GLOBAL_COLOR = '#948a7d'
+  const HORIZONS = [7, 14, 30]
 
   function laneColor(id) {
     if (id === '__global__') return GLOBAL_COLOR
@@ -25,11 +29,28 @@
 
   const days = $derived(buildDays(plan.start, plan.days))
   const todayIdx = $derived(plan.start && plan.today ? dayDiff(plan.start, plan.today) : null)
+  const dayMin = $derived(plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 30)
+  const compact = $derived(plan.days > 18)
 
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
+  function isDone(s) { return s === 'done' || s === 'finalizat' }
+  function effDue(t) { return t.data_scadenta || (isDone(t.status) ? t.data_finalizare : '') }
 
-  // Build the render model per lane: color, project band, deadline marker, and
-  // each task's clamped rectangle.
+  // Greedy interval packing: non-overlapping bars share a row (sorted by start).
+  function packRows(tasks) {
+    const withRect = tasks.filter(t => t.rect).sort((a, b) => a.rect.left - b.rect.left || a.rect.width - b.rect.width)
+    const rows = []
+    for (const t of withRect) {
+      let placed = false
+      for (const row of rows) {
+        const last = row[row.length - 1]
+        if (t.rect.left >= last.rect.left + last.rect.width - 0.001) { row.push(t); placed = true; break }
+      }
+      if (!placed) rows.push([t])
+    }
+    return rows
+  }
+
   const views = $derived(plan.lanes.map((lane) => {
     const color = laneColor(lane.id)
     const taskDates = lane.tasks.flatMap(t => [
@@ -46,9 +67,9 @@
     }
     const tasks = lane.tasks.map(t => ({
       ...t,
-      rect: spanRect(t.data_planificata, t.data_scadenta, plan.start, plan.days),
+      rect: spanRect(t.data_planificata, effDue(t), plan.start, plan.days),
     }))
-    return { ...lane, color, band, deadlinePct, tasks }
+    return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks) }
   }))
 
   // --- action popover (desktop) ---
@@ -57,11 +78,11 @@
   let popX = $state(0)
   let popY = $state(0)
 
-  function openBar(e, task, laneNume) {
-    anchorEl = e.currentTarget
-    const r = anchorEl.getBoundingClientRect()
+  function openPopover(barEl, task, laneNume) {
+    anchorEl = barEl
+    const r = barEl.getBoundingClientRect()
     popX = Math.max(8, Math.min(r.left, window.innerWidth - 268))
-    popY = Math.min(r.bottom + 6, window.innerHeight - 220)
+    popY = Math.min(r.bottom + 6, window.innerHeight - 230)
     sel = { ...task, laneNume }
   }
   function closePop() { sel = null; anchorEl = null }
@@ -92,12 +113,118 @@
     try {
       const res = await toggleTaskDone(t.tip, t.id, t.status)
       if (res?.recurring_spawned) toast(`Finalizat ✓ — următoarea: ${formatDate(res.recurring_next)}`, 'success')
-      else toast('Finalizat ✓', 'success')
+      else toast(isDone(t.status) ? 'Redeschis' : 'Finalizat ✓', 'success')
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     closePop()
   }
 
   function onKey(e) { if (e.key === 'Escape') closePop() }
+
+  // --- drag / resize (desktop swimlane) ---
+  let drag = null
+  let dragLabel = $state(null)
+
+  function startDrag(e, t, mode, laneNume) {
+    if (e.button != null && e.button !== 0) return
+    if (isDone(t.status)) return // finished tasks are read-only on the timeline
+    const barEl = e.currentTarget.closest('.bar')
+    const trackEl = barEl?.closest('.lane-track')
+    if (!barEl || !trackEl) return
+    const w = trackEl.getBoundingClientRect().width
+    drag = {
+      t, mode, barEl, laneNume,
+      startX: e.clientX,
+      dayW: w / plan.days,
+      unit: 100 / plan.days,
+      origLeft: parseFloat(barEl.style.left) || 0,
+      origWidth: parseFloat(barEl.style.width) || 0,
+      effDelta: 0, moved: false,
+    }
+    barEl.setPointerCapture?.(e.pointerId)
+    document.body.classList.add('plan-dragging')
+    window.addEventListener('pointermove', onDragMove)
+    window.addEventListener('pointerup', onDragUp)
+    e.preventDefault(); e.stopPropagation()
+  }
+
+  function previewText(d) {
+    const t = d.t, k = d.effDelta
+    if (d.mode === 'move') {
+      const s = t.data_planificata ? addDays(t.data_planificata.slice(0, 10), k) : ''
+      const e = t.data_scadenta ? addDays(t.data_scadenta.slice(0, 10), k) : ''
+      if (s && e) return `${formatDateShort(s)} → ${formatDateShort(e)}`
+      return formatDateShort(s || e)
+    }
+    if (d.mode === 'resizeL') {
+      const base = (t.data_planificata || t.data_scadenta || '').slice(0, 10)
+      return `start ${formatDateShort(addDays(base, k))}`
+    }
+    const base = (t.data_scadenta || t.data_planificata || '').slice(0, 10)
+    return `termen ${formatDateShort(addDays(base, k))}`
+  }
+
+  function onDragMove(e) {
+    if (!drag) return
+    const dx = e.clientX - drag.startX
+    if (Math.abs(dx) > 3) drag.moved = true
+    const dd = Math.round(dx / drag.dayW)
+    const u = drag.unit
+    const el = drag.barEl
+    if (drag.mode === 'move') {
+      const want = clampNum(drag.origLeft + dd * u, 0, 100 - drag.origWidth)
+      el.style.left = want + '%'
+      drag.effDelta = Math.round((want - drag.origLeft) / u)
+    } else if (drag.mode === 'resizeL') {
+      const maxLeft = drag.origLeft + drag.origWidth - u
+      const want = clampNum(drag.origLeft + dd * u, 0, maxLeft)
+      el.style.left = want + '%'
+      el.style.width = (drag.origLeft + drag.origWidth - want) + '%'
+      drag.effDelta = Math.round((want - drag.origLeft) / u)
+    } else {
+      const want = clampNum(drag.origWidth + dd * u, u, 100 - drag.origLeft)
+      el.style.width = want + '%'
+      drag.effDelta = Math.round((want - drag.origWidth) / u)
+    }
+    dragLabel = { x: e.clientX, y: e.clientY, text: previewText(drag) }
+  }
+
+  function commitBody(d) {
+    const t = d.t, k = d.effDelta, body = {}
+    if (d.mode === 'move') {
+      if (t.data_planificata) body.data_planificata = addDays(t.data_planificata.slice(0, 10), k)
+      if (t.data_scadenta) body.data_scadenta = addDays(t.data_scadenta.slice(0, 10), k)
+    } else if (d.mode === 'resizeL') {
+      const base = (t.data_planificata || t.data_scadenta || '').slice(0, 10)
+      body.data_planificata = addDays(base, k)
+    } else {
+      const base = (t.data_scadenta || t.data_planificata || '').slice(0, 10)
+      body.data_scadenta = addDays(base, k)
+    }
+    return body
+  }
+
+  async function onDragUp() {
+    window.removeEventListener('pointermove', onDragMove)
+    window.removeEventListener('pointerup', onDragUp)
+    document.body.classList.remove('plan-dragging')
+    const d = drag
+    drag = null
+    dragLabel = null
+    if (!d) return
+    if (!d.moved || d.effDelta === 0) {
+      d.barEl.style.left = d.origLeft + '%'
+      d.barEl.style.width = d.origWidth + '%'
+      openPopover(d.barEl, d.t, d.laneNume)
+      return
+    }
+    try {
+      await setTaskDates(d.t.tip, d.t.id, commitBody(d))
+      toast('Reprogramat', 'success')
+    } catch (err) {
+      toast(`Eroare: ${err.message}`, 'error')
+      await loadPlan()
+    }
+  }
 
   onMount(() => {
     loadPlan()
@@ -111,7 +238,16 @@
     <div class="page-title-row">
       <CalendarRange size={22} />
       <h1>Planificator</h1>
-      <span class="count">14 zile</span>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Orizont">
+        {#each HORIZONS as h}
+          <button class="seg-btn" class:active={plan.days === h} onclick={() => setHorizon(h)}>{h}z</button>
+        {/each}
+      </div>
+      <button class="toggle" class:on={plan.showDone} onclick={toggleShowDone} title="Arată taskurile finalizate">
+        <span class="tk-box">{#if plan.showDone}<Check size={12} />{/if}</span> Finalizate
+      </button>
     </div>
   </div>
 
@@ -120,27 +256,25 @@
   {:else if plan.error}
     <ErrorState message={plan.error} onretry={loadPlan} />
   {:else if views.length === 0}
-    <EmptyState icon={CalendarRange} title="Nimic în următoarele 2 săptămâni" description="Planifică taskuri (din Astăzi sau din proiecte) ca să apară aici pe zile." />
+    <EmptyState icon={CalendarRange} title="Nimic în această fereastră" description="Planifică taskuri (din Astăzi sau din proiecte) ca să apară aici pe zile." />
   {:else}
     <!-- ===== Desktop swimlane ===== -->
-    <div class="chart" style="--days:{plan.days}">
+    <div class="chart" style="--day-min:{dayMin}px">
       <div class="chart-scroll">
         <div class="inner" style="min-width: calc(var(--lane-w) + var(--day-min) * {plan.days})">
-          <!-- header -->
           <div class="p-head">
             <div class="lane-label head">Proiect</div>
             <div class="days">
               {#each days as d}
-                <div class="day" class:we={d.isWeekend} class:today={d.iso === plan.today}>
-                  <span class="d-wd">{d.wd}</span>
+                <div class="day" class:we={d.isWeekend} class:today={d.iso === plan.today} class:compact>
+                  {#if !compact}<span class="d-wd">{d.wd}</span>{/if}
                   <span class="d-num">{d.dayNum}</span>
-                  {#if d.isMonthStart}<span class="d-mo">{d.month}</span>{/if}
+                  {#if d.isMonthStart && !compact}<span class="d-mo">{d.month}</span>{/if}
                 </div>
               {/each}
             </div>
           </div>
 
-          <!-- body -->
           <div class="p-body">
             <div class="overlay">
               {#each days as d}
@@ -175,23 +309,34 @@
                     <div class="band-ms" style="left:{lane.deadlinePct}%" title="Deadline proiect: {formatDate(lane.deadline)}"></div>
                   {/if}
                   <div class="rows">
-                    {#each lane.tasks as t (t.tip + ':' + t.id)}
+                    {#each lane.packed as row, ri (ri)}
                       <div class="t-row">
-                        {#if t.rect}
-                          <button
+                        {#each row as t (t.tip + ':' + t.id)}
+                          <div
                             class="bar"
                             class:active={isActive(t.status)}
-                            class:todo={!isActive(t.status)}
+                            class:todo={!isActive(t.status) && !isDone(t.status)}
+                            class:done={isDone(t.status)}
                             class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}
                             class:single={t.rect.single}
+                            class:draggable={!isDone(t.status)}
                             style="left:{t.rect.left}%; width:{t.rect.width}%"
-                            onclick={(e) => openBar(e, t, lane.nume)}
-                            title="{t.titlu} · {t.data_planificata ? 'plan ' + formatDateShort(t.data_planificata) : ''}{t.data_scadenta ? ' → termen ' + formatDateShort(t.data_scadenta) : ''}"
+                            role="button"
+                            tabindex="0"
+                            onpointerdown={(e) => startDrag(e, t, 'move', lane.nume)}
+                            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, t, lane.nume) } }}
+                            title="{t.titlu}{t.data_planificata ? ' · plan ' + formatDateShort(t.data_planificata) : ''}{t.data_scadenta ? ' → termen ' + formatDateShort(t.data_scadenta) : ''}"
                           >
+                            {#if !isDone(t.status) && !t.rect.single}
+                              <span class="rz rz-l" onpointerdown={(e) => startDrag(e, t, 'resizeL', lane.nume)} aria-hidden="true"></span>
+                            {/if}
                             <span class="bar-txt">{t.titlu}</span>
                             {#if t.recurenta}<Repeat size={11} />{/if}
-                          </button>
-                        {/if}
+                            {#if !isDone(t.status) && !t.rect.single}
+                              <span class="rz rz-r" onpointerdown={(e) => startDrag(e, t, 'resizeR', lane.nume)} aria-hidden="true"></span>
+                            {/if}
+                          </div>
+                        {/each}
                       </div>
                     {/each}
                   </div>
@@ -201,6 +346,7 @@
           </div>
         </div>
       </div>
+      <p class="hint">Trage o bară ca s-o muți · trage marginile ca să întinzi intervalul · click pentru acțiuni</p>
     </div>
 
     <!-- ===== Mobile grouped list ===== -->
@@ -214,7 +360,7 @@
             <span class="mg-count">{lane.tasks.length}</span>
           </header>
           {#each lane.tasks as t (t.tip + ':' + t.id)}
-            <div class="mrow" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}>
+            <div class="mrow" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'} class:done={isDone(t.status)}>
               <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
                 <span class="mrow-title">{t.titlu}</span>
                 <span class="mrow-meta">
@@ -236,6 +382,10 @@
   {/if}
 </div>
 
+{#if dragLabel}
+  <div class="drag-label" style="left:{dragLabel.x + 14}px; top:{dragLabel.y - 34}px">{dragLabel.text}</div>
+{/if}
+
 {#if sel}
   <div class="pop-backdrop" onclick={closePop} role="presentation"></div>
   <div class="pop" style="left:{popX}px; top:{popY}px" role="dialog" aria-label="Acțiuni task">
@@ -251,21 +401,30 @@
       <DatePicker value={sel.data_planificata} placeholder="alege" onchange={(v) => onMove(sel, v)} />
     </div>
     <button class="pop-act" onclick={() => onTomorrow(sel)}><ArrowRight size={15} /> Mută pe mâine</button>
-    <button class="pop-act" onclick={() => onDone(sel)}><CheckCircle2 size={15} /> Bifează</button>
+    <button class="pop-act" onclick={() => onDone(sel)}><CheckCircle2 size={15} /> {isDone(sel.status) ? 'Redeschide' : 'Bifează'}</button>
     <button class="pop-close" onclick={closePop} aria-label="Închide"><X size={14} /></button>
   </div>
 {/if}
 
 <style>
   .page { padding-bottom: 96px; }
-  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
+  .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); font-family: var(--font-heading); letter-spacing: -0.02em; }
-  .count { font-size: var(--font-tiny); padding: 2px 10px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-family: var(--font-mono); }
+  .controls { display: flex; align-items: center; gap: var(--space-sm); }
+  .seg { display: inline-flex; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2px; }
+  .seg-btn { padding: 5px 11px; border-radius: var(--radius-sm); font-size: var(--font-small); font-family: var(--font-mono); font-weight: var(--fw-medium); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  .seg-btn:hover { color: var(--text); }
+  .seg-btn.active { background: var(--accent); color: var(--accent-text); }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
+  .toggle:hover { border-color: var(--border-strong); color: var(--text); }
+  .toggle.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .tk-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .toggle.on .tk-box { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* ===== chart shell ===== */
-  .chart { --lane-w: 200px; --day-min: 48px; --row-h: 30px;
+  .chart { --lane-w: 200px; --day-min: 48px; --row-h: 28px;
     background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .chart-scroll { overflow-x: auto; }
   .inner { position: relative; }
@@ -275,11 +434,13 @@
   .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
   .days { flex: 1; display: flex; min-width: 0; }
   .day { flex: 1; min-width: var(--day-min); padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; gap: 1px; border-left: 1px solid var(--border); position: relative; }
+  .day.compact { padding: 5px 1px; }
   .day.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
   .day.today { background: var(--accent-subtle); }
   .d-wd { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; }
   .day.today .d-wd { color: var(--accent); }
   .d-num { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .day.compact .d-num { font-size: var(--font-tiny); }
   .day.today .d-num { color: var(--accent); }
   .d-mo { position: absolute; top: -1px; left: 3px; font-size: 0.55rem; font-family: var(--font-mono); color: var(--text-faint); text-transform: uppercase; }
 
@@ -315,22 +476,38 @@
   .t-row { position: relative; height: var(--row-h); }
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
     padding: 0 8px; border-radius: 7px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
-    white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left;
-    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left; touch-action: none;
+    transition: box-shadow var(--dur-fast) var(--ease);
     animation: barIn 0.4s var(--ease) both; }
   @keyframes barIn { from { opacity: 0; transform: scaleX(0.4); transform-origin: left; } }
-  .bar:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); z-index: 5; }
+  .bar.draggable { cursor: grab; }
+  .bar:hover { box-shadow: var(--shadow-md); z-index: 5; }
   .bar.active { background: var(--lane); color: #14100a; }
   .bar.todo { background: color-mix(in oklab, var(--lane) 20%, var(--bg-panel));
     border: 1px solid color-mix(in oklab, var(--lane) 45%, var(--bg-panel));
     color: color-mix(in oklab, var(--lane) 70%, var(--text)); }
+  .bar.done { background: color-mix(in oklab, var(--lane) 14%, var(--bg-panel));
+    border: 1px dashed color-mix(in oklab, var(--lane) 40%, var(--bg-panel));
+    color: var(--text-dim); opacity: 0.72; cursor: default; }
+  .bar.done .bar-txt { text-decoration: line-through; }
   .bar.single { justify-content: center; padding: 0 4px; }
   .bar.single .bar-txt { display: none; }
   .bar.single::after { content: '◆'; font-size: 0.7rem; }
-  .bar.urgent::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--danger); border-radius: 7px 0 0 7px; }
-  .bar-txt { overflow: hidden; text-overflow: ellipsis; }
+  .bar.urgent { box-shadow: inset 3px 0 0 0 var(--danger); }
+  .bar-txt { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+
+  .rz { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 6; }
+  .rz-l { left: 0; } .rz-r { right: 0; }
+  .bar:hover .rz::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 2px; height: 12px; border-radius: 2px; background: color-mix(in srgb, currentColor 60%, transparent); }
+  .rz-l::after { left: 2px; } .rz-r::after { right: 2px; }
 
   @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+
+  .hint { text-align: center; font-size: var(--font-micro); color: var(--text-faint); padding: 8px; border-top: 1px solid var(--border-subtle); }
+
+  .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px 8px;
+    font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text); box-shadow: var(--shadow-md); white-space: nowrap; }
 
   /* ===== mobile grouped list ===== */
   .mlist { display: none; flex-direction: column; gap: var(--space-md); }
@@ -340,6 +517,8 @@
   .mg-count { margin-left: auto; font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--text-dim); background: var(--bg-elevated); padding: 1px 8px; border-radius: var(--radius-full); }
   .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--lane); border-radius: var(--radius-md); margin-bottom: 6px; }
   .mrow.urgent { border-left-color: var(--danger); }
+  .mrow.done { opacity: 0.6; }
+  .mrow.done .mrow-title { text-decoration: line-through; }
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
   .mrow-title { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -375,4 +554,7 @@
     .chart { display: none; }
     .mlist { display: flex; }
   }
+
+  :global(body.plan-dragging) { user-select: none; cursor: grabbing; }
+  :global(body.plan-dragging) .bar { cursor: grabbing; }
 </style>

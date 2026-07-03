@@ -10,6 +10,7 @@ export const plan = $state({
   start: '',
   days: 14,
   today: '',
+  showDone: false,
   loading: false,
   error: null,
 })
@@ -19,7 +20,8 @@ export async function loadPlan() {
   plan.error = null
   try {
     const t = localToday()
-    const data = await apiJson(`/api/plan?start=${t}&days=${plan.days}&today=${t}`)
+    const done = plan.showDone ? '&done=1' : ''
+    const data = await apiJson(`/api/plan?start=${t}&days=${plan.days}&today=${t}${done}`)
     plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
     plan.start = data.start || t
     plan.days = data.days || plan.days
@@ -29,6 +31,17 @@ export async function loadPlan() {
   } finally {
     plan.loading = false
   }
+}
+
+export function setHorizon(days) {
+  if (plan.days === days) return
+  plan.days = days
+  return loadPlan()
+}
+
+export function toggleShowDone() {
+  plan.showDone = !plan.showDone
+  return loadPlan()
 }
 
 function patch(tip, id, body) {
@@ -49,6 +62,15 @@ export async function moveTaskDate(tip, id, date, opts = {}) {
 
 export function moveTaskTomorrow(tip, id, opts = {}) {
   return moveTaskDate(tip, id, tomorrowISO(), opts)
+}
+
+// Explicit-date setter for drag/resize on the swimlane. `body` carries exactly the
+// fields to change (data_planificata and/or data_scadenta); unlike moveTaskDate it
+// does NOT auto-couple the two — a span drag preserves the span, a resize moves one
+// edge. Empty string clears, an omitted key keeps the stored value (PUT COALESCE).
+export async function setTaskDates(tip, id, body) {
+  await patch(tip, id, body)
+  await loadPlan()
 }
 
 export async function toggleTaskDone(tip, id, currentStatus) {

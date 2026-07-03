@@ -58,6 +58,17 @@ export function buildDays(start, days) {
   return out
 }
 
+// Add n whole days to a 'YYYY-MM-DD' (local), returning 'YYYY-MM-DD'.
+export function addDays(iso, n) {
+  const d = parseISO(iso)
+  if (!d) return iso
+  return isoDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n))
+}
+
+export function clampNum(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v))
+}
+
 // A bar rectangle (percent of the track) from a span [startDate, dueDate] clamped
 // to the window. Either date may be empty; a single present date => a 1-day bar.
 // Returns null when the span falls entirely outside the window.

@@ -29,9 +29,11 @@
 
   onMount(() => {
     let inZone = false
-    // Desktop: trebuie sa IMPINGI cursorul pana la marginea de jos (mic "push").
-    const REVEAL_EDGE = 6   // px de la marginea de jos -> apare
-    const HIDE_ZONE = 110   // px: odata aparut, se ascunde cand treci peste atat
+    // Desktop: cursorul in banda de jos -> apare. Prag ridicat de la 6px la 48px
+    // (cerut de Ion): la 6px trebuia sa ajungi in taskbar-ul Windows si dadeai peste
+    // el din inertie; la 48px dock-ul apare inainte sa atingi marginea sistemului.
+    const REVEAL_EDGE = 48  // px de la marginea de jos -> apare
+    const HIDE_ZONE = 150   // px: odata aparut, se ascunde cand treci peste atat
 
     const mq = window.matchMedia('(pointer: coarse)')
     const computeMobile = () => { isMobile = mq.matches || window.innerWidth <= 768 }

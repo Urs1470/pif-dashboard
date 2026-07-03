@@ -613,6 +613,7 @@ def _agenda_item(d, tip, today):
         'prioritate': d.get('prioritate') or '',
         'data_scadenta': d.get('data_scadenta') or '',
         'data_planificata': d.get('data_planificata') or '',
+        'data_finalizare': d.get('data_finalizare') or '',
         'ordine_agenda': d.get('ordine_agenda') or 0,
         'recurenta': d.get('recurenta') or '',
         'categorie': (d.get('categorie') or '') if tip == 'global' else '',
@@ -787,12 +788,23 @@ def get_plan():
     except (TypeError, ValueError):
         days = 14
     days = max(1, min(days, 60))
+    show_done = (request.args.get('done') or '').lower() in ('1', 'true', 'yes')
     start_d = datetime.strptime(start, '%Y-%m-%d').date()
     start_s = start_d.isoformat()
     end_s = (start_d + timedelta(days=days)).isoformat()  # exclusive
 
+    # A task belongs in the window if its plan->due span intersects it; a finished
+    # task with no plan/due can still qualify via its completion date.
+    def _in_window(item):
+        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+            return True
+        fin = (item.get('data_finalizare') or '')[:10]
+        return bool(fin) and start_s <= fin < end_s
+
     conn = get_db()
     cursor = conn.cursor()
+
+    status_clause = '' if show_done else "{alias}.status != 'done' AND "
 
     # Candidate project lanes (skip cancelled / finished).
     cursor.execute(
@@ -800,10 +812,10 @@ def get_plan():
         "WHERE status NOT IN ('anulat', 'finalizat')")
     projects = [row_to_dict(r) for r in cursor.fetchall()]
 
-    # Open project tasks (exclude future recurrences, same idiom as the agenda).
+    # Project tasks (exclude future recurrences, same idiom as the agenda).
     cursor.execute(
         '''SELECT t.* FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-           WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
+           WHERE ''' + status_clause.format(alias='t') + '''p.status NOT IN ('anulat', 'finalizat')
              AND NOT (
                t.recurenta IS NOT NULL AND TRIM(t.recurenta) <> ''
                AND t.data_scadenta IS NOT NULL AND date(t.data_scadenta) > date(:today)
@@ -812,7 +824,7 @@ def get_plan():
     tasks_by_project = {}
     for r in cursor.fetchall():
         item = _agenda_item(row_to_dict(r), 'proiect', today)
-        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+        if _in_window(item):
             tasks_by_project.setdefault(item['proiect_id'], []).append(item)
 
     def _task_sort_key(t):
@@ -842,8 +854,7 @@ def get_plan():
     # Global tasks lane.
     cursor.execute(
         '''SELECT g.* FROM global_tasks g
-           WHERE g.status != 'done'
-             AND NOT (
+           WHERE ''' + status_clause.format(alias='g') + '''NOT (
                g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
                AND g.data_scadenta IS NOT NULL AND date(g.data_scadenta) > date(:today)
              )''',
@@ -851,7 +862,7 @@ def get_plan():
     gtasks = []
     for r in cursor.fetchall():
         item = _agenda_item(row_to_dict(r), 'global', today)
-        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+        if _in_window(item):
             gtasks.append(item)
     if gtasks:
         lanes.append({
