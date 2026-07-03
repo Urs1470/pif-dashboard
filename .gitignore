@@ -60,3 +60,5 @@ AUDIT_*.md
 .env
 .deploy_secret
 .assistant_config
+
+.venv-sandbox/
