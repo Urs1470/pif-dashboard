@@ -432,6 +432,37 @@
     expandedEquip = next
   }
 
+  // B1: cod de parametru din echipament -> deschide detaliul din baza de parametri.
+  // Rezolva codul -> id prin cautarea globala (ranking exact-pe-cod) si foloseste
+  // deep-link-ul /params?open=<id>.
+  let paramJumping = $state(false)
+  async function openParamDetail(code) {
+    const c = String(code || '').trim()
+    if (!c || paramJumping) return
+    paramJumping = true
+    try {
+      const r = await apiJson('/api/search?q=' + encodeURIComponent(c))
+      const hits = (r.results || []).filter((x) => x.type === 'parametru')
+      const hit = hits.find((x) => String(x.cod).toLowerCase() === c.toLowerCase()) || hits[0]
+      if (hit) navigate('/params?open=' + hit.id)
+      else toast(`Parametrul „${c}" nu e in baza de parametri`, 'error')
+    } catch (_) {
+      toast('Nu am putut deschide parametrul', 'error')
+    } finally {
+      paramJumping = false
+    }
+  }
+
+  // B7: copiaza rapid "cod = valoare"
+  function copyParam(k, v) {
+    const text = `${k} = ${v}`
+    if (!navigator.clipboard) { toast('Copierea nu e disponibila', 'error'); return }
+    navigator.clipboard.writeText(text).then(
+      () => toast(`Copiat: ${text}`, 'success'),
+      () => toast('Nu am putut copia', 'error'),
+    )
+  }
+
   // Subtask functions
   async function toggleTaskExpand(taskId) {
     if (expandedTask === taskId) {
@@ -822,8 +853,11 @@
                     <div class="eparams">
                       {#each filteredParams as [k, v]}
                         <div class="eparam">
-                          <span class="eparam-key">{k}</span>
-                          <span class="eparam-val">{v}</span>
+                          <button class="eparam-key eparam-link" onclick={() => openParamDetail(k)} title="Deschide detaliul parametrului {k}">{k}</button>
+                          <span class="eparam-right">
+                            <span class="eparam-val">{v}</span>
+                            <button class="eparam-copy" onclick={() => copyParam(k, v)} title="Copiază „{k} = {v}”" aria-label="Copiază parametrul"><Copy size={12} /></button>
+                          </span>
                         </div>
                       {/each}
                       {#if pq && filteredParams.length === 0}
@@ -1175,9 +1209,16 @@
   .eparam-search:focus { border-color: var(--accent); outline: none; }
   .eparam-empty { padding: var(--space-sm); text-align: center; color: var(--text-dim); font-size: var(--font-tiny); grid-column: 1 / -1; background: var(--bg); }
   .eparams { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); background: var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }
-  .eparam { display: flex; justify-content: space-between; gap: var(--space-sm); padding: 6px var(--space-sm); background: var(--bg); font-size: var(--font-small); }
+  .eparam { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: 6px var(--space-sm); background: var(--bg); font-size: var(--font-small); }
   .eparam-key { color: var(--accent); font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-medium); flex-shrink: 0; }
+  .eparam-link { background: none; border: none; padding: 0; cursor: pointer; text-align: left; border-bottom: 1px dashed transparent; transition: border-color var(--dur-fast) var(--ease); }
+  .eparam-link:hover { border-bottom-color: var(--accent); }
+  .eparam-right { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
   .eparam-val { color: var(--text); font-weight: var(--fw-medium); text-align: right; }
+  .eparam-copy { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: var(--radius-xs); color: var(--text-dim); background: transparent; border: none; cursor: pointer; opacity: 0; transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); flex-shrink: 0; }
+  .eparam:hover .eparam-copy { opacity: 1; }
+  .eparam-copy:hover { color: var(--accent); background: var(--accent-subtle); }
+  @media (pointer: coarse) { .eparam-copy { opacity: 0.6; } }
   .att-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
   .att-btn:hover { background: var(--bg-hover); color: var(--text); }
   .att-btn.danger:hover { background: var(--danger-subtle); color: var(--danger); }

@@ -22,6 +22,11 @@
       "purpose": "any maskable"
     }
   ],
+  "shortcuts": [
+    { "name": "Astăzi", "short_name": "Astăzi", "url": "/", "description": "Taskurile de azi" },
+    { "name": "Taskuri", "short_name": "Taskuri", "url": "/#/tasks", "description": "Toate taskurile" },
+    { "name": "Calculator", "short_name": "Calc", "url": "/#/calculator", "description": "Calculator acționări electrice" }
+  ],
   "categories": ["business", "productivity"],
   "lang": "ro",
   "dir": "ltr",
