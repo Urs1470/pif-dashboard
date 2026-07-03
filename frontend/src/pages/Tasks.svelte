@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip, AlertTriangle } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
@@ -434,7 +434,7 @@
     <div class="urgent-band">
       {#each urgentHero as t (t.id)}
         <section class="ucard cell-in">
-          <div class="cell-label"><span class="ico ico-red">!</span>{heroLabel(t)}</div>
+          <div class="cell-label"><span class="ico ico-red"><AlertTriangle size={13} /></span>{heroLabel(t)}</div>
           <button class="ucard-title" onclick={() => toggleTaskExpand(t.id)} title="Deschide detalii">{t.titlu}</button>
           <div class="ucard-sub">
             <span>{t.categorie || 'General'}</span>
@@ -451,7 +451,7 @@
 
   <div class="v3grid">
   <div class="list-cell cell-in">
-  <div class="cell-label list-label"><span class="ico ico-amber">≔</span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
+  <div class="cell-label list-label"><span class="ico ico-amber"><ListTodo size={13} /></span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
   {#if !showArchive}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
       <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={quickTitle} disabled={quickAdding} />

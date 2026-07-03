@@ -1,4 +1,5 @@
 <script>
+  import { CalendarDays } from '@lucide/svelte'
   import { priorityColor, priorityLabel } from '../../lib/formatters.js'
 
   let { tasks = [], onopen = () => {} } = $props()
@@ -32,7 +33,7 @@
 </script>
 
 <aside class="agenda cell-in">
-  <div class="cell-label agenda-label"><span class="ico ico-vio">◔</span>Agenda — 7 zile</div>
+  <div class="cell-label agenda-label"><span class="ico ico-vio"><CalendarDays size={13} /></span>Agenda — 7 zile</div>
   {#if days.length === 0}
     <div class="agenda-empty">Nicio scadență în următoarele 7 zile.</div>
   {:else}
