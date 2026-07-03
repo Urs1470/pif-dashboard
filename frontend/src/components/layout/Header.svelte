@@ -9,6 +9,14 @@
     <span class="brand-name">PIF<span class="brand-sep">·</span>Dashboard</span>
   </a>
 
+  {#if ui.pageHeader.title}
+    <div class="header-context">
+      <span class="hc-div" aria-hidden="true"></span>
+      <h1 class="hc-title">{ui.pageHeader.title}</h1>
+      {#if ui.pageHeader.subtitle}<span class="hc-sub">{ui.pageHeader.subtitle}</span>{/if}
+    </div>
+  {/if}
+
   <span class="h-spacer"></span>
 
   <div class="header-actions">
@@ -59,6 +67,39 @@
   }
   .brand-sep { color: var(--text-faint); }
 
+  /* Context de pagina (ex. salutul de pe Home) — langa brand */
+  .header-context {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .hc-div {
+    align-self: center;
+    width: 1px;
+    height: 18px;
+    background: var(--border-strong);
+    flex-shrink: 0;
+  }
+  .hc-title {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hc-sub {
+    font-size: var(--font-small);
+    color: var(--text-dim);
+    white-space: nowrap;
+    text-transform: capitalize;
+    flex-shrink: 0;
+  }
+
   .h-spacer { flex: 1; }
 
   .header-actions {
@@ -83,6 +124,8 @@
   }
 
   @media (max-width: 768px) {
+    .hc-sub { display: none; }
+    .hc-title { font-size: 0.95rem; }
     .header {
       flex-wrap: wrap;
       height: auto;
