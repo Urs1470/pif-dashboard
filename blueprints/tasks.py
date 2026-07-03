@@ -515,6 +515,30 @@ def _pred_titles(data):
     return out
 
 
+def _draw_logo(c, x, y, s):
+    """Draw the PIF 'ramp area-chart' mark (amber tile + white accelerating curve
+    + operating-point dot) in an s×s box with bottom-left at (x, y)."""
+    from reportlab.lib.colors import HexColor, white
+    c.setFillColor(HexColor('#ffb454'))
+    c.roundRect(x, y, s, s, s * 0.22, fill=1, stroke=0)
+
+    def P(gx, gy):  # 64-grid SVG coords (y-down) -> reportlab (y-up)
+        return (x + gx / 64.0 * s, y + s - gy / 64.0 * s)
+
+    c.setStrokeColor(white)
+    c.setLineWidth(max(1.2, s * 0.085))
+    c.setLineCap(1)
+    c.setLineJoin(1)
+    p = c.beginPath()
+    p.moveTo(*P(14, 48))
+    p.curveTo(*P(27, 48), *P(30, 40), *P(33, 30))
+    p.curveTo(*P(36, 20), *P(42, 16), *P(50, 16))
+    c.drawPath(p, stroke=1, fill=0)
+    dx, dy = P(50, 16)
+    c.setFillColor(white)
+    c.circle(dx, dy, max(1.4, s * 0.06), fill=1, stroke=0)
+
+
 @tasks_bp.route('/api/proiecte/<project_id>/gantt.pdf', methods=['GET'])
 @login_required
 def export_gantt_pdf(project_id):
@@ -548,11 +572,14 @@ def export_gantt_pdf(project_id):
         frac = max(0.0, min(1.0, (d - win_start).days / total))
         return x0 + frac * tw
 
-    # --- title block ---
+    # --- title block (logo + project + meta) ---
     y = H - m
+    logo_sz = 24
+    _draw_logo(c, m, y - logo_sz + 2, logo_sz)
+    tx = m + logo_sz + 9
     c.setFillColor(colors.HexColor('#1a1206'))
     c.setFont('Helvetica-Bold', 15)
-    c.drawString(m, y - 4, f"{proj.get('nume') or 'Proiect'}")
+    c.drawString(tx, y - 4, f"{proj.get('nume') or 'Proiect'}")
     c.setFont('Helvetica', 9)
     c.setFillColor(colors.HexColor('#555555'))
     meta = []
@@ -563,9 +590,13 @@ def export_gantt_pdf(project_id):
     if proj.get('tip'):
         meta.append(proj['tip'])
     meta.append(f"Perioada: {_fmt_ro(win_start)} – {_fmt_ro(win_end)}")
-    c.drawString(m, y - 20, "   ·   ".join(meta))
+    c.drawString(tx, y - 20, "   ·   ".join(meta))
+    c.setFont('Helvetica-Bold', 7.5)
+    c.setFillColor(colors.HexColor('#8a5300'))
+    c.drawRightString(x1, y - 3, "PIF DASHBOARD")
     c.setFont('Helvetica', 7.5)
-    c.drawRightString(x1, y - 4, f"Generat: {_fmt_ro(today)}")
+    c.setFillColor(colors.HexColor('#777777'))
+    c.drawRightString(x1, y - 14, f"Generat: {_fmt_ro(today)}")
     top = y - 34          # chart top
 
     # --- chart geometry ---
@@ -674,6 +705,20 @@ def export_gantt_pdf(project_id):
     p = c.beginPath(); p.moveTo(lx + 4, ly + 7); p.lineTo(lx + 8, ly + 3.5); p.lineTo(lx + 4, ly); p.lineTo(lx, ly + 3.5); p.close()
     c.drawPath(p, fill=1, stroke=0)
     c.setFillColor(colors.HexColor('#555555')); c.drawString(lx + 14, ly + 1, 'Milestone')
+
+    # signature block (bottom-right) — for client sign-off
+    c.setStrokeColor(colors.HexColor('#AAAAAA'))
+    c.setLineWidth(0.6)
+    c.setFont('Helvetica', 8)
+    sy = m + 8
+    sig_w = 150
+    c2x = x1 - sig_w
+    c1x = c2x - sig_w - 40
+    for label, cx in (('Intocmit', c1x), ('Aprobat client', c2x)):
+        c.line(cx, sy + 16, cx + sig_w, sy + 16)
+        c.setFillColor(colors.HexColor('#777777'))
+        c.drawString(cx, sy + 5, label)
+        c.drawRightString(cx + sig_w, sy + 5, 'Data: __________')
 
     c.showPage()
     c.save()
