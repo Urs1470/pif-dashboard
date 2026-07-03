@@ -4,22 +4,24 @@
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
 
-  // Autohide v4 (cerinta Ion): dock-ul e ASCUNS by default tot timpul; apare
-  // DOAR cat timp cursorul e in zona de jos (unde sta dock-ul) si se ascunde
-  // imediat ce iesi cu cursorul. Nu depinde de scroll deloc. Pe mobil (fara
-  // cursor) manerul "peek" il aduce temporar (tap -> apare ~4s).
-  // Cat timp tastatura mobila e deschisa (focus pe camp) dock + peek stau ascunse.
+  // Vizibilitate dock:
+  //  - DESKTOP (autohide v4): ascuns by default; apare DOAR cat timp cursorul e
+  //    impins in marginea de jos (unde sta dock-ul) si se ascunde cand iesi.
+  //    Manerul "peek" ramane vizibil ca linie de prezenta.
+  //  - MOBIL (cerinta Ion): dock FIX, mereu vizibil, FARA autohide. Se ascunde
+  //    doar cat timp tastatura e deschisa (focus pe camp), ca sa nu pluteasca
+  //    peste ea.
   let hidden = $state(true)
   let kbLocked = $state(false)
+  let isMobile = $state(false)
   let peekTimer = 0
 
-  // Nota: NU ascundem la schimbarea rutei. Cand navighezi clickand pe un tab,
-  // cursorul ramane jos (in zona dock-ului), deci un hide pe ruta ar produce un
-  // flicker (se inchide si reapare imediat). Vizibilitatea o decide doar cursorul.
+  // Nota (desktop): NU ascundem la schimbarea rutei — cursorul ramane jos dupa
+  // click pe un tab, deci un hide pe ruta ar produce flicker.
 
-  // mobil: tap pe maner -> apare temporar, apoi se ascunde singur
+  // mobil: dock-ul e deja fix; pe desktop, tap pe maner -> apare temporar ~4s
   function revealFromPeek() {
-    if (kbLocked) return
+    if (kbLocked || isMobile) return
     hidden = false
     clearTimeout(peekTimer)
     peekTimer = setTimeout(() => { hidden = true }, 4000)
@@ -27,16 +29,23 @@
 
   onMount(() => {
     let inZone = false
-    // Nu se ridica la orice atingere: trebuie sa IMPINGI cursorul pana la
-    // marginea de jos (un mic "push"). Histereza: odata aparut, ramane cat
-    // esti in zona lui si se ascunde doar cand pleci sus peste HIDE_ZONE.
-    const REVEAL_EDGE = 6   // px de la marginea de jos -> apare (push pe margine)
+    // Desktop: trebuie sa IMPINGI cursorul pana la marginea de jos (mic "push").
+    const REVEAL_EDGE = 6   // px de la marginea de jos -> apare
     const HIDE_ZONE = 110   // px: odata aparut, se ascunde cand treci peste atat
 
-    const apply = () => { hidden = kbLocked ? true : !inZone }
+    const mq = window.matchMedia('(pointer: coarse)')
+    const computeMobile = () => { isMobile = mq.matches || window.innerWidth <= 768 }
+    computeMobile()
+
+    const apply = () => {
+      // Mobil: fix (vizibil), ascuns doar cu tastatura deschisa.
+      // Desktop: cursor-driven.
+      hidden = isMobile ? kbLocked : (kbLocked ? true : !inZone)
+    }
 
     let mmTick = 0
     function onMove(e) {
+      if (isMobile) return
       const now = performance.now()
       if (now - mmTick < 16) return
       mmTick = now
@@ -49,28 +58,35 @@
       apply()
     }
 
+    function onResize() { computeMobile(); apply() }
+
     // tastatura mobila: focus pe camp editabil -> dock blocat ascuns
-    const isMobileLike = () => window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768
     const isEditable = (el) => !!el && (el.matches?.('input, textarea, select') || el.closest?.('[contenteditable="true"]'))
     function onFocusIn(e) {
-      if (!isMobileLike() || !isEditable(e.target)) return
+      if (!isMobile || !isEditable(e.target)) return
       kbLocked = true
-      inZone = false
-      hidden = true
+      apply()
     }
     function onFocusOut() {
       if (!kbLocked) return
       setTimeout(() => {
         if (isEditable(document.activeElement)) return
         kbLocked = false
+        apply()
       }, 120)
     }
 
+    apply()  // stare initiala (pe mobil -> vizibil)
+
+    mq.addEventListener?.('change', onResize)
+    window.addEventListener('resize', onResize, { passive: true })
     window.addEventListener('mousemove', onMove, { passive: true })
     document.addEventListener('focusin', onFocusIn)
     document.addEventListener('focusout', onFocusOut)
     return () => {
       clearTimeout(peekTimer)
+      mq.removeEventListener?.('change', onResize)
+      window.removeEventListener('resize', onResize)
       window.removeEventListener('mousemove', onMove)
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('focusout', onFocusOut)
@@ -204,6 +220,12 @@
   .dock-grip:focus-visible::before {
     background: var(--accent);
     width: 38px;
+  }
+
+  /* Pe touch dock-ul e fix (mereu vizibil) -> manerul de "peek" nu mai are rost. */
+  @media (pointer: coarse) {
+    .dock-grip { display: none; }
+    .dock { padding-top: 8px; }
   }
 
   @media (max-width: 560px) {
