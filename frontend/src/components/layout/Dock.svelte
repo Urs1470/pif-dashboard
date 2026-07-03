@@ -13,11 +13,9 @@
   let kbLocked = $state(false)
   let peekTimer = 0
 
-  // ruta noua -> revine la "ascuns" (cursorul il re-arata daca e jos)
-  $effect(() => {
-    router.path
-    if (!kbLocked) hidden = true
-  })
+  // Nota: NU ascundem la schimbarea rutei. Cand navighezi clickand pe un tab,
+  // cursorul ramane jos (in zona dock-ului), deci un hide pe ruta ar produce un
+  // flicker (se inchide si reapare imediat). Vizibilitatea o decide doar cursorul.
 
   // mobil: tap pe maner -> apare temporar, apoi se ascunde singur
   function revealFromPeek() {
