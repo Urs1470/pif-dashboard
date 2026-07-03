@@ -74,6 +74,53 @@
     autoReschedule = !autoReschedule
     try { localStorage.setItem('pif-gantt-auto', autoReschedule ? '1' : '0') } catch {}
   }
+  // --- critical path (CPM on durations + dependency DAG) ---
+  let showCritical = $state((() => { try { return localStorage.getItem('pif-gantt-crit') === '1' } catch { return false } })())
+  function toggleCritical() {
+    showCritical = !showCritical
+    try { localStorage.setItem('pif-gantt-crit', showCritical ? '1' : '0') } catch {}
+  }
+  const criticalSet = $derived.by(() => {
+    const T = data.tasks
+    if (!T.length) return new Set()
+    const id2 = new Map(T.map(t => [t.id, t]))
+    const dur = (t) => t.is_milestone ? 0 : Math.max((dayDiff(t.data_start, t.data_scadenta) || 0) + 1, 1)
+    const preds = new Map(T.map(t => [t.id, []]))
+    const succs = new Map(T.map(t => [t.id, []]))
+    for (const d of data.dependencies) {
+      if (id2.has(d.predecessor_id) && id2.has(d.successor_id)) {
+        preds.get(d.successor_id).push(d.predecessor_id)
+        succs.get(d.predecessor_id).push(d.successor_id)
+      }
+    }
+    const indeg = new Map(T.map(t => [t.id, preds.get(t.id).length]))
+    const q = T.filter(t => indeg.get(t.id) === 0).map(t => t.id)
+    const order = []
+    while (q.length) {
+      const n = q.shift(); order.push(n)
+      for (const s of succs.get(n)) { indeg.set(s, indeg.get(s) - 1); if (indeg.get(s) === 0) q.push(s) }
+    }
+    if (order.length < T.length) return new Set() // cycle guard
+    const EF = new Map(), ES = new Map()
+    for (const id of order) {
+      const d = dur(id2.get(id))
+      let es = 0
+      for (const p of preds.get(id)) es = Math.max(es, EF.get(p))
+      ES.set(id, es); EF.set(id, es + d)
+    }
+    const projEnd = Math.max(...EF.values())
+    const LS = new Map()
+    for (let i = order.length - 1; i >= 0; i--) {
+      const id = order[i]; const d = dur(id2.get(id))
+      let lf = projEnd
+      if (succs.get(id).length) lf = Math.min(...succs.get(id).map(s => LS.get(s)))
+      LS.set(id, lf - d)
+    }
+    const crit = new Set()
+    for (const id of order) if (Math.abs(LS.get(id) - ES.get(id)) < 0.5) crit.add(id)
+    return crit
+  })
+
   async function patch(id, body) {
     try {
       await updateTask(id, body)
@@ -259,6 +306,7 @@
       <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
       <button class="exp-btn" onclick={rescheduleNow} title="Împinge succesorii ca să respecte dependențele"><Wand2 size={14} /> Reprogramează</button>
       <button class="exp-btn" class:on-tg={autoReschedule} onclick={toggleAuto} title="Reprogramare automată a succesorilor la fiecare mutare">Auto {autoReschedule ? '●' : '○'}</button>
+      <button class="exp-btn" class:on-tg={showCritical} onclick={toggleCritical} title="Evidențiază drumul critic">Drum critic {showCritical ? '●' : '○'}</button>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.pdf`} target="_blank" rel="noopener" title="Export PDF (client)"><FileDown size={14} /> PDF</a>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
     </div>
@@ -333,7 +381,7 @@
               </defs>
               {#each data.dependencies as dep (dep.id)}
                 {@const d = arrowPath(dep)}
-                {#if d}<path {d} class="dep-path" fill="none" marker-end="url(#gdep-arw)" onclick={() => deleteDep(dep.id)}><title>Șterge dependența</title></path>{/if}
+                {#if d}<path {d} class="dep-path" class:crit={showCritical && criticalSet.has(dep.predecessor_id) && criticalSet.has(dep.successor_id)} fill="none" marker-end="url(#gdep-arw)" onclick={() => deleteDep(dep.id)}><title>Șterge dependența</title></path>{/if}
               {/each}
             </svg>
           {/if}
@@ -350,9 +398,9 @@
             {@const r = rectFor(t)}
             <div class="gb-row">
               {#if t.is_milestone}
-                {#if msPct(t) != null}<div class="ms" style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1"></div>{/if}
+                {#if msPct(t) != null}<div class="ms" class:crit={showCritical && criticalSet.has(t.id)} style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1"></div>{/if}
               {:else if r}
-                <div class="bar {statusClass(t)}" style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1">
+                <div class="bar {statusClass(t)}" class:crit={showCritical && criticalSet.has(t.id)} style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)} · {t.progres}%" onpointerdown={(e) => startBarDrag(e, t, 'move')} role="button" tabindex="-1">
                   <span class="rz rz-l" onpointerdown={(e) => startBarDrag(e, t, 'resizeL')} aria-hidden="true"></span>
                   <div class="fill" style="width:{t.progres}%"></div>
                   <span class="bl">{t.progres}%</span>
@@ -433,6 +481,9 @@
   .dep-svg { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; overflow: visible; color: var(--text-dim); }
   .dep-path { stroke: currentColor; stroke-width: 1.5; pointer-events: stroke; cursor: pointer; transition: stroke var(--dur-fast) var(--ease); }
   .dep-path:hover { color: var(--danger); stroke-width: 2.2; }
+  .dep-path.crit { color: #e0433a; stroke-width: 2; }
+  .bar.crit { outline: 2px solid #e0433a; outline-offset: 1px; }
+  .ms.crit { box-shadow: 0 0 0 2px #e0433a; }
   .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
