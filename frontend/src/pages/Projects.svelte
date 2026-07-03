@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, ArrowUpDown } from '@lucide/svelte'
+  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
@@ -274,7 +274,7 @@
                 {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
               </button>
             {/if}
-            {#if p.tip}<span class="tip-chip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip === 'PIF' ? '◳' : '⟳'}</span><span class="tip-label">{p.tip}</span>{:else}<span class="tip-label">—</span>{/if}
+            {#if p.tip}<span class="tip-chip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{#if p.tip === 'PIF'}<Zap size={13} />{:else}<Wrench size={13} />{/if}</span><span class="tip-label">{p.tip}</span>{:else}<span class="tip-label">—</span>{/if}
             <button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button>
           </div>
           <div class="card-name">{p.nume || '—'}</div>
@@ -384,7 +384,7 @@
   .ptip { display: inline-block; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .ptip.pif { background: var(--accent-subtle); color: var(--accent); }
   .ptip.service { background: var(--service-subtle); color: var(--service-accent); }
-  .tip-chip { width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
+  .tip-chip { width: 22px; height: 22px; border-radius: var(--radius-chip); display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
   .tip-chip.pif { background: var(--accent-subtle); color: var(--accent); }
   .tip-chip.service { background: var(--success-subtle); color: var(--success); }
   .tip-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-left: 8px; }

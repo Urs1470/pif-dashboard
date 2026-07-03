@@ -1,5 +1,6 @@
 <script>
   import { tick } from 'svelte'
+  import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 
@@ -43,7 +44,7 @@
     <div class="modal modal-{size}" transition:scale={{ start: 0.96, duration: motionDuration(DUR_BASE) }}>
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
-        <button class="modal-close" onclick={() => open = false} aria-label="Închide">&times;</button>
+        <button class="modal-close" onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
       </div>
       <div class="modal-body">
         {@render children()}

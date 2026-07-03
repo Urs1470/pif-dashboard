@@ -85,6 +85,7 @@
   --radius-lg: 22px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+  --radius-chip: 7px;   /* chips patrate mici (.ico, tip-chip) — consolideaza 7/8px ad-hoc */
 
   /* Typography — scala legacy */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
