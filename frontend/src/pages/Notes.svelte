@@ -98,7 +98,7 @@
       || notes.find(n => (n.path || '').toLowerCase().endsWith(t + '.md'))
       || notes.find(n => (n.title || '').toLowerCase().includes(t))
     if (found) openNote(found)
-    else toast(`Notita "${target}" nu a fost gasita`, 'error')
+    else toast(`Notița "${target}" nu a fost găsită`, 'error')
   }
 
   onMount(loadNotes)

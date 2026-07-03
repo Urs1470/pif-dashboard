@@ -81,7 +81,7 @@
           {:else}
             <div class="not-found">
               <h2>404</h2>
-              <p>Pagina nu a fost gasita.</p>
+              <p>Pagina nu a fost găsită.</p>
             </div>
           {/if}
         </div>

@@ -16,7 +16,7 @@
   <div class="sa-main">
     <Calculator standalone={true} />
   </div>
-  <footer class="sa-foot">Valori orientative — verifica intotdeauna catalogul / manualul. · Electroglobal PIF</footer>
+  <footer class="sa-foot">Valori orientative — verifică întotdeauna catalogul / manualul. · Electroglobal PIF</footer>
 </div>
 
 <style>
