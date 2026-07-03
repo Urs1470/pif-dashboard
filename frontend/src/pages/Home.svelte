@@ -14,6 +14,8 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import TodayBoard from '../components/TodayBoard.svelte'
   import { motion } from '../lib/motion.svelte.js'
+  import { onDestroy } from 'svelte'
+  import { ui } from '../stores/ui.svelte.js'
 
   // Click a task anywhere on Home -> jump to it (its page scrolls it to center +
   // flashes a highlight via the focusOnLand action on the destination row).
@@ -114,17 +116,15 @@
     }
   }
 
-  onMount(loadDashboard)
+  onMount(() => {
+    // Salutul se muta in bara de sus (header) -> nu mai avem banda separata.
+    ui.pageHeader = { title: `${greeting()}, Ion`, subtitle: todayRO() }
+    loadDashboard()
+  })
+  onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
 </script>
 
 <div class="page">
-  <div class="page-head">
-    <div class="greet-left">
-      <h1 class="greeting">{greeting()}, Ion</h1>
-      <p class="today">{todayRO()}</p>
-    </div>
-  </div>
-
   {#if loading}
     <div class="kpi-skeleton"><Skeleton height="72px" /></div>
   {:else if error}
@@ -208,9 +208,6 @@
 
 <style>
   .page { padding: var(--space-lg); }
-  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap: wrap; }
-  .greeting { font-family: var(--font-heading); font-size: var(--font-h1); font-weight: var(--fw-bold); letter-spacing: -0.03em; color: var(--text); white-space: nowrap; }
-  .today { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; text-transform: capitalize; }
 
   .kpi-skeleton { margin-bottom: var(--space-lg); }
   .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
@@ -267,6 +264,5 @@
     .page { padding: var(--space-md); }
     .kpi-bar { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
     .cards-grid { grid-template-columns: 1fr; }
-    .greeting { font-size: var(--font-h2); white-space: normal; }
   }
 </style>

@@ -1,6 +1,9 @@
 export const ui = $state({
   theme: localStorage.getItem('theme') || 'dark',
   toasts: [],
+  // Context de pagina afisat in bara de sus (ex. salutul de pe Home). Paginile
+  // il seteaza pe mount si il curata pe destroy; gol => header doar cu brand.
+  pageHeader: { title: '', subtitle: '' },
 })
 
 let toastId = 0
