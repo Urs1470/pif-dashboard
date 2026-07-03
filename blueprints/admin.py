@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from io import BytesIO
 
 from flask import (
-    Blueprint, request, jsonify, send_file, render_template,
+    Blueprint, request, jsonify, send_file, render_template, Response,
 )
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -523,6 +523,59 @@ def export_pdf():
         as_attachment=True,
         download_name=filename
     )
+
+@admin_bp.route('/api/export/ics', methods=['GET'])
+@login_required
+def export_ics():
+    """Export deadline-uri proiecte + scadente taskuri ca fisier .ics (calendar).
+    Abonabil din Google/Apple Calendar."""
+    conn = get_db()
+    cur = conn.cursor()
+    now = datetime.now().strftime('%Y%m%dT%H%M%SZ')
+    lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PIF Dashboard//RO',
+             'CALSCALE:GREGORIAN', 'X-WR-CALNAME:PIF Dashboard']
+
+    def esc(s):
+        return (str(s or '')).replace('\\', '\\\\').replace(';', '\\;').replace(',', '\\,').replace('\n', '\\n')
+
+    def date_only(iso):
+        m = re.match(r'(\d{4})-(\d{2})-(\d{2})', str(iso or ''))
+        return (m.group(1) + m.group(2) + m.group(3)) if m else None
+
+    def add_event(uid, dt, summary, desc=''):
+        d = date_only(dt)
+        if not d:
+            return
+        lines.extend(['BEGIN:VEVENT', f'UID:{uid}@pif.iupif.org', f'DTSTAMP:{now}',
+                      f'DTSTART;VALUE=DATE:{d}', f'SUMMARY:{esc(summary)}'])
+        if desc:
+            lines.append(f'DESCRIPTION:{esc(desc)}')
+        lines.append('END:VEVENT')
+
+    try:
+        cur.execute("SELECT id, nume, deadline FROM proiecte WHERE deadline IS NOT NULL "
+                    "AND TRIM(deadline) <> '' AND status != 'finalizat'")
+        for r in cur.fetchall():
+            add_event(f"proj-{r['id']}", r['deadline'], f"Deadline: {r['nume']}", 'Deadline proiect PIF')
+
+        cur.execute("SELECT t.id, t.titlu, t.data_scadenta, p.nume AS pnume FROM tasks t "
+                    "JOIN proiecte p ON t.proiect_id = p.id WHERE t.data_scadenta IS NOT NULL "
+                    "AND TRIM(t.data_scadenta) <> '' AND (t.data_finalizare IS NULL OR TRIM(t.data_finalizare) = '')")
+        for r in cur.fetchall():
+            add_event(f"task-{r['id']}", r['data_scadenta'], f"Scadenta: {r['titlu']}", f"Proiect: {r['pnume']}")
+
+        cur.execute("SELECT id, titlu, data_scadenta FROM global_tasks WHERE data_scadenta IS NOT NULL "
+                    "AND TRIM(data_scadenta) <> '' AND (data_finalizare IS NULL OR TRIM(data_finalizare) = '')")
+        for r in cur.fetchall():
+            add_event(f"gtask-{r['id']}", r['data_scadenta'], f"Scadenta: {r['titlu']}", 'Task global')
+    finally:
+        conn.close()
+
+    lines.append('END:VCALENDAR')
+    ics = '\r\n'.join(lines) + '\r\n'
+    return Response(ics, mimetype='text/calendar',
+                    headers={'Content-Disposition': 'attachment; filename="pif-calendar.ics"'})
+
 
 @admin_bp.route('/api/export/pdf/all', methods=['GET'])
 @login_required

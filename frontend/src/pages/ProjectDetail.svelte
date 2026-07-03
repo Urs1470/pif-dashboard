@@ -2,7 +2,8 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen } from '@lucide/svelte'
+  import { manualUrlForEquip, familieForEquip } from '../lib/manuals.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
     loadProjectDetail, loadProjectTasks, loadProjectEquipment,
@@ -839,6 +840,14 @@
                 {#if e.model}<span>Model: {e.model}</span>{/if}
                 {#if e.serial_number}<span>Serie: {e.serial_number}</span>{/if}
               </div>
+              {@const eManual = manualUrlForEquip(e.producator, e.model)}
+              {@const eFam = familieForEquip(e.producator, e.model)}
+              {#if eManual || eFam}
+                <div class="ecard-links">
+                  {#if eManual}<a class="ecard-link" href={eManual} target="_blank" rel="noopener"><BookOpen size={13} /> Manual</a>{/if}
+                  {#if eFam}<button class="ecard-link" onclick={() => navigate(`/params?tab=faults&familie=${encodeURIComponent(eFam)}`)}><AlertCircle size={13} /> Coduri erori</button>{/if}
+                </div>
+              {/if}
               {#if eparams.length > 0}
                 {@const pq = (equipParamSearch[e.id] || '').toLowerCase()}
                 {@const filteredParams = pq ? eparams.filter(([k, v]) => k.toLowerCase().includes(pq) || v.toLowerCase().includes(pq)) : eparams}
@@ -1202,6 +1211,9 @@
   .ecard-actions { display: flex; gap: 2px; }
   .ename { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
   .edetails { display: flex; gap: var(--space-md); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
+  .ecard-links { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-sm); }
+  .ecard-link { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: var(--radius-full); padding: 4px 11px; cursor: pointer; text-decoration: none; transition: background var(--dur-fast) var(--ease); }
+  .ecard-link:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
   .eparam-toggle { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-tiny); color: var(--accent); cursor: pointer; margin-top: var(--space-sm); padding: 4px 0; font-weight: var(--fw-medium); }
   .eparam-toggle:hover { text-decoration: underline; }
   .eparams-wrap { margin-top: var(--space-xs); }
