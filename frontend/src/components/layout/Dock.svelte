@@ -6,11 +6,13 @@
   import { router, link } from '../../lib/router.svelte.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
-  // Autohide v2: dispare doar la scroll RAPID in jos; revine la scroll in sus,
-  // la top, la capatul paginii, dupa ~1s fara scroll (idle), la schimbarea
-  // rutei, la pointer langa marginea de jos sau la tap pe manerul "peek".
-  // Cat timp tastatura mobila e deschisa (focus pe un camp), dock + peek stau
-  // ascunse ca sa nu pluteasca peste tastatura.
+  // Autohide v3: cand ai derulat pagina, dock-ul se ascunde si revine DOAR cand
+  // duci cursorul in zona de jos (unde sta dock-ul) — reveal la hover pe margine.
+  // Ramane vizibil cat esti in varful paginii sau la capatul ei si cat timp
+  // cursorul e in zona de jos; iese cursorul din zona -> se ascunde la loc.
+  // Scrollerul real e #main-content (.app-main are overflow:hidden), NU window.
+  // Pe mobil (fara cursor) ramane manerul "peek": tap -> revine.
+  // Cat timp tastatura mobila e deschisa (focus pe camp) dock + peek stau ascunse.
   let hidden = $state(false)
   let kbLocked = $state(false)
 
@@ -21,47 +23,41 @@
   })
 
   onMount(() => {
-    // Scrollerul real e documentul: .app-content are min-height si creste
-    // liber, deci overflow-ul ajunge pe <html>, nu pe #main-content.
-    let lastY = window.scrollY
-    let lastT = performance.now()
-    let acc = 0
-    let idleTimer = 0
+    // Scrollerul e fereastra (documentul creste liber; .app-content nu ajunge
+    // sa deruleze intern). Citim din document.scrollingElement (== window.scrollY).
+    const se = document.scrollingElement || document.documentElement
+    const mc = document.getElementById('main-content')
+    let inBottomZone = false
     let dragging = false
+    const REVEAL = 120  // cursor mai aproape de jos de atat -> reveal
+    const LEAVE = 180   // cursor mai departe de atat -> permite ascunderea
 
-    const show = () => { if (!kbLocked) hidden = false }
+    // Foloseste #main-content DOAR daca chiar deruleaza intern; altfel fereastra.
+    const mcScrolls = () => mc && mc.scrollHeight > mc.clientHeight + 5
+    const scrollTop = () => (mcScrolls() ? mc.scrollTop : (window.scrollY || se.scrollTop || 0))
+    const scrollBottomGap = () => mcScrolls()
+      ? mc.scrollHeight - mc.scrollTop - mc.clientHeight
+      : se.scrollHeight - (window.scrollY || se.scrollTop || 0) - window.innerHeight
+    const atTop = () => scrollTop() < 80
+    const atBottom = () => scrollBottomGap() <= 40
 
-    function onScroll() {
-      const now = performance.now()
-      const y = window.scrollY
-      const delta = y - lastY
-      const dt = Math.max(1, now - lastT)
-      lastY = y
-      lastT = now
-
-      // idle: sta ascuns doar CAT derulezi — dupa 1s fara scroll revine
-      clearTimeout(idleTimer)
-      idleTimer = setTimeout(show, 1000)
-
-      // la top sau la capatul de jos (nu mai ai unde derula) — vizibil
-      const atBottom = y + window.innerHeight >= document.documentElement.scrollHeight - 40
-      if (y < 80 || atBottom) { show(); acc = 0; return }
-      if (dragging) return
-
-      // acumuleaza directia ca sa nu tremure la scroll fin
-      acc = Math.sign(delta) === Math.sign(acc) ? acc + delta : delta
-      // se ascunde doar la scroll intentionat (viteza > ~0.5px/ms), nu la citit
-      const speed = Math.abs(delta) / dt
-      if (acc > 24 && speed > 0.5 && !kbLocked) hidden = true
-      else if (acc < -24) show()
+    function recompute() {
+      if (kbLocked) { hidden = true; return }
+      if (dragging) { hidden = false; return }
+      hidden = !(atTop() || atBottom() || inBottomZone)
     }
+
+    function onScroll() { recompute() }
 
     let mmTick = 0
     function onMove(e) {
       const now = performance.now()
-      if (now - mmTick < 120) return
+      if (now - mmTick < 50) return
       mmTick = now
-      if (window.innerHeight - e.clientY < 90) show()
+      const fromBottom = window.innerHeight - e.clientY
+      if (fromBottom < REVEAL) inBottomZone = true
+      else if (fromBottom > LEAVE) inBottomZone = false
+      recompute()
     }
 
     // tastatura mobila: focus pe camp editabil -> dock blocat ascuns
@@ -77,24 +73,26 @@
       setTimeout(() => {
         if (isEditable(document.activeElement)) return
         kbLocked = false
-        hidden = false
+        recompute()
       }, 120)
     }
 
     // in timpul drag&drop (reordonare Astazi) nu ascundem nimic
-    const onDragStart = () => { dragging = true }
-    const onDragEnd = () => { dragging = false }
+    const onDragStart = () => { dragging = true; recompute() }
+    const onDragEnd = () => { dragging = false; recompute() }
 
     window.addEventListener('scroll', onScroll, { passive: true })
+    mc?.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('dragstart', onDragStart)
     window.addEventListener('dragend', onDragEnd)
     window.addEventListener('drop', onDragEnd)
     document.addEventListener('focusin', onFocusIn)
     document.addEventListener('focusout', onFocusOut)
+    recompute()
     return () => {
-      clearTimeout(idleTimer)
       window.removeEventListener('scroll', onScroll)
+      mc?.removeEventListener('scroll', onScroll)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('dragstart', onDragStart)
       window.removeEventListener('dragend', onDragEnd)
