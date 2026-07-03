@@ -32,12 +32,17 @@
   const ord = (id) => { const i = MODULE_ORDER.indexOf(id); return i === -1 ? 999 : i }
   const catLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label ?? id
 
-  // Cautare in titlu / subtitlu / etichete & chei (campuri si rezultate).
+  // Normalizare insensibila la diacritice (1:1 pe caracter => pastreaza lungimea/indicii,
+  // ca sa nu strice evidentierea din highlightParts). Foloseste-o pe AMBELE parti ale cautarii.
+  const _DIAC = { 'ă':'a','â':'a','î':'i','ș':'s','ț':'t','Ă':'a','Â':'a','Î':'i','Ș':'s','Ț':'t','ş':'s','ţ':'t','Ş':'s','Ţ':'t' }
+  const fold = (s) => (s || '').replace(/[ăâîșțĂÂÎȘȚşţŞŢ]/g, (c) => _DIAC[c] || c).toLowerCase()
+
+  // Cautare in titlu / subtitlu / etichete & chei (campuri si rezultate) — insensibila la diacritice.
   function matchQ(m, q) {
-    if (m.title.toLowerCase().includes(q)) return true
-    if (m.subtitle && m.subtitle.toLowerCase().includes(q)) return true
-    for (const f of m.fields) if (f.label.toLowerCase().includes(q) || f.key.toLowerCase().includes(q)) return true
-    for (const r of m.results) if (r.label.toLowerCase().includes(q) || r.key.toLowerCase().includes(q)) return true
+    if (fold(m.title).includes(q)) return true
+    if (m.subtitle && fold(m.subtitle).includes(q)) return true
+    for (const f of m.fields) if (fold(f.label).includes(q) || fold(f.key).includes(q)) return true
+    for (const r of m.results) if (fold(r.label).includes(q) || fold(r.key).includes(q)) return true
     return false
   }
   // Lista din tab-ul curent (cautarea NU mai inlocuieste lista — vezi autocomplete-ul acResults).
@@ -48,7 +53,7 @@
   })
   // Autocomplete cautare: max 8 potriviri, doar de la 2 caractere.
   const acResults = $derived.by(() => {
-    const q = query.trim().toLowerCase()
+    const q = fold(query.trim())
     if (q.length < 2) return []
     return MODULES.filter((m) => matchQ(m, q)).sort((a, b) => ord(a.id) - ord(b.id)).slice(0, 8)
   })
@@ -57,7 +62,7 @@
   function highlightParts(text, q) {
     const needle = (q || '').trim()
     if (!needle) return [{ text, hit: false }]
-    const parts = []; const low = text.toLowerCase(); const nl = needle.toLowerCase()
+    const parts = []; const low = fold(text); const nl = fold(needle)
     let i = 0
     while (i < text.length) {
       const j = low.indexOf(nl, i)
@@ -379,7 +384,7 @@
   function exportResults() {
     const work = shown.filter((m) => expanded.has(m.id))
     const list = work.length ? work : shown
-    const L = ['# Rezultate calculator actionari electrice', '', '## Date echipament']
+    const L = ['# Rezultate calculator acționări electrice', '', '## Date echipament']
     for (const g of ['retea', ...MACHINE_GROUPS]) {
       L.push(`### ${groupLabel(g)}`)
       for (const c of EQUIP_GROUPS[g]) L.push(`- ${c.label}: ${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`)
@@ -527,8 +532,8 @@
     overrides = new Set()
     const jImported = !!(map.J && _num((params || {})[map.J]) > 0)
     importMsg = n
-      ? `Importat ${n} valori in Asincron + Retea.${jImported ? ' Inertia importata e a motorului — adauga sarcina.' : ''} Verifica poli/cosphi.`
-      : 'Nu am gasit date de placuta in acest backup.'
+      ? `Importat ${n} valori în Asincron + Rețea.${jImported ? ' Inerția importată e a motorului — adaugă sarcina.' : ''} Verifică poli/cosphi.`
+      : 'Nu am găsit date de plăcuță în acest backup.'
     if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1500) }
   }
   async function openImport() {
@@ -548,7 +553,7 @@
   }
   async function onBackupFile(e) {
     const files = e.target.files; if (!files || !files.length) return
-    importBusy = true; importMsg = 'Se incarca...'; importDrives = []
+    importBusy = true; importMsg = 'Se încarcă...'; importDrives = []
     const isZip = /\.zip$/i.test(files[0].name)
     const fd = new FormData()
     if (isZip) fd.append('file', files[0]); else for (const f of files) fd.append('files', f)
@@ -557,7 +562,7 @@
       const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: csrfHeader(), body: fd })
       if (!r.ok) { importMsg = r.status === 413 ? 'Fisier prea mare (max 30 MB).' : 'Eroare ' + r.status + ' la citirea backup-ului.'; importBusy = false; e.target.value = ''; return }
       const d = await r.json(); const drives = d.drives || []
-      if (!drives.length) importMsg = 'Backup fara date de placuta.'
+      if (!drives.length) importMsg = 'Backup fără date de plăcuță.'
       else if (drives.length === 1) applyImport(drives[0].producator, drives[0].params || {}, drives[0].model || '')
       else importDrives = drives
     } catch { importMsg = 'Nu am putut citi backup-ul.' }
@@ -569,22 +574,22 @@
   <div class="page-head">
     <div class="head-row">
       <SolidIcon name="calculator" size={26} />
-      <h1>Calculator actionari electrice</h1>
+      <h1>Calculator acționări electrice</h1>
       <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
     </div>
-    <p class="sub">Marimi inginerești pentru motoare si convertizoare — valori orientative, verifica intotdeauna catalogul/manualul.</p>
+    <p class="sub">Mărimi inginerești pentru motoare și convertizoare — valori orientative, verifică întotdeauna catalogul/manualul.</p>
   </div>
 
   {#if activeCat === 'motoare'}
   <div class="equip-panel">
     <div class="equip-head">
-      <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu placuta o data — toate cardurile se completeaza">
+      <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu plăcuța o dată — toate cardurile se completează">
         <span class="equip-chev" class:open={panelOpen}><ChevronRight size={15} /></span>
         <SolidIcon name="cpu" size={16} /> <b>Date echipament</b>
-        <span class="equip-sub">placuta + date drive — completeaza automat cardurile</span>
+        <span class="equip-sub">plăcuța + date drive — completează automat cardurile</span>
       </button>
       <label class="equip-switch" title="Cardurile folosesc datele de mai jos">
-        <input type="checkbox" bind:checked={sharedOn} /> aplica la carduri
+        <input type="checkbox" bind:checked={sharedOn} /> aplică la carduri
       </label>
     </div>
     {#if panelOpen}
@@ -611,7 +616,7 @@
         <div class="equip-foot-grp">
           <button class="ef-import" onclick={openImport} title={standalone ? 'Import din backup-uri drive (ABB/Siemens)' : 'Import din backup-uri drive (ABB/Siemens) sau din proiect'}>Import backup</button>
           <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
-          <button onclick={saveEquip}>Salveaza</button>
+          <button onclick={saveEquip}>Salvează</button>
         </div>
         <div class="equip-foot-grp">
           <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
@@ -636,7 +641,7 @@
     <div class="search-row">
       <span class="search-ic"><Search size={16} /></span>
       <input class="search-inp" type="search" autocomplete="off"
-        placeholder="Cauta un calcul — titlu, simbol sau marime (ex. NPSH, cuplu, U_dc)..."
+        placeholder="Caută un calcul — titlu, simbol sau mărime (ex. NPSH, cuplu, U_dc)..."
         bind:value={query} onkeydown={onSearchKey} />
       {#if query}<button class="search-clear" title="Sterge cautarea" onclick={() => { query = ''; acIndex = -1 }}><X size={15} /></button>{/if}
     </div>
@@ -705,7 +710,7 @@
       {#each m.fields as f (f.key)}
         {@const linked = isLinked(m, f)}
         <div class="inp">
-          <button type="button" class="inp-label" title="Definitie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
+          <button type="button" class="inp-label" title="Definiție / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
           <div class="inp-row">
             <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
               value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
@@ -723,7 +728,7 @@
       {#each m.results as res (res.key)}
         <div class="res-row">
           <div class="res-head">
-            <button type="button" class="res-label" title="Definitie / cum se calculeaza" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
+            <button type="button" class="res-label" title="Definiție / cum se calculează" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
             <span class="res-right">
               <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
               {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
@@ -753,7 +758,7 @@
     {#if SOURCES[m.id]}<p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>{/if}
     {#if docsFor(m).length}
     <div class="mod-docs">
-      <span class="docs-h">Documentatie:</span>
+      <span class="docs-h">Documentație:</span>
       {#each docsFor(m) as d}<a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>{/each}
     </div>
     {/if}
@@ -839,16 +844,16 @@
       <div class="term">
         {#if term.unit}<div class="term-unit">Unitate: <b>{term.unit}</b></div>{/if}
         {#if term.tex}
-          <div class="term-sec"><span class="term-h">Cum se calculeaza</span><Formula tex={term.tex} display /></div>
+          <div class="term-sec"><span class="term-h">Cum se calculează</span><Formula tex={term.tex} display /></div>
         {/if}
-        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definitie</span><p><MathText text={term.g.def} /></p></div>{/if}
+        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definiție</span><p><MathText text={term.g.def} /></p></div>{/if}
         {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p><MathText text={term.g.ia} /></p></div>{/if}
-        {#if term.g?.practic}<div class="term-sec"><span class="term-h">In practica</span><p><MathText text={term.g.practic} /></p></div>{/if}
+        {#if term.g?.practic}<div class="term-sec"><span class="term-h">În practică</span><p><MathText text={term.g.practic} /></p></div>{/if}
         {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p><MathText text={term.g.teorie} /></p></div>{/if}
-        {#if term.figLink}<div class="term-sec"><span class="term-h">Diagrama</span><a class="fig-link" href={term.figLink.href} target="_blank" rel="noopener"><BookOpen size={14} /> {term.figLink.label}</a></div>{/if}
-        {#if term.source}<div class="term-sec"><span class="term-h">Sursa</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
+        {#if term.figLink}<div class="term-sec"><span class="term-h">Diagramă</span><a class="fig-link" href={term.figLink.href} target="_blank" rel="noopener"><BookOpen size={14} /> {term.figLink.label}</a></div>{/if}
+        {#if term.source}<div class="term-sec"><span class="term-h">Sursă</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
         {#if term.docs?.length}
-          <div class="term-sec"><span class="term-h">Documentatie</span>
+          <div class="term-sec"><span class="term-h">Documentație</span>
             <div class="term-docs">
               {#each term.docs as d}
                 <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
@@ -856,14 +861,14 @@
             </div>
           </div>
         {/if}
-        {#if !term.g && !term.tex}<p class="term-empty">Marime fara definitie detaliata inca. Vezi sursa modulului si formulele asociate.</p>{/if}
+        {#if !term.g && !term.tex}<p class="term-empty">Mărime fără definiție detaliată încă. Vezi sursa modulului și formulele asociate.</p>{/if}
       </div>
     {/if}
   </Modal>
 
   <Modal bind:open={surseOpen} title="Surse & standarde" size="lg">
     <div class="surse">
-      <p class="surse-intro">Notatie & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card isi afiseaza sursa proprie. Standardele sunt documente cu plata — citate ca text, nu gazduite. Cartile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
+      <p class="surse-intro">Notație & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card își afișează sursa proprie. Standardele sunt documente cu plată — citate ca text, nu găzduite. Cărțile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
       {#each SURSE as g}
         <div class="surse-sec">
           <h3>{g.h}</h3>
@@ -877,13 +882,13 @@
     <div class="imp">
       {#if !standalone}
         <div class="imp-tabs">
-          <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Incarca backup</button>
+          <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Încarcă backup</button>
           <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
         </div>
       {/if}
       {#if !standalone && importTab === 'proiect'}
         {#if !authed}
-          <p class="imp-hint">„Din proiect" e disponibil doar logat in dashboard. Pentru colegi: foloseste „Incarca backup" si incarca direct fisierul de backup al drive-ului.</p>
+          <p class="imp-hint">„Din proiect" e disponibil doar logat în dashboard. Pentru colegi: folosește „Încarcă backup" și încarcă direct fișierul de backup al drive-ului.</p>
         {:else}
           <div class="imp-row">
             <Select size="sm" bind:value={selProj} onchange={onSelProj} placeholder="— alege proiect —" aria-label="Proiect"
@@ -898,7 +903,7 @@
           {:else if selProj}<p class="imp-hint">Niciun echipament cu parametri in acest proiect.</p>{/if}
         {/if}
       {:else}
-        <p class="imp-hint">Incarca un backup de drive: ABB <code>.dcparamsbak</code> (poti selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge si fara login.</p>
+        <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
         <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
         {#if importDrives.length}
           <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
@@ -917,7 +922,7 @@
         {/if}
       {/if}
       {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST) }}>{importMsg}</p>{/if}
-      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Retea</b>: placuta (P/U/I/n/cosφ/η/poli) + date drive cand exista (turatie max, rampa decelerare, frecventa comutatie, R stator, inertie). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importa pe tabul asincron.</p>
+      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Rețea</b>: plăcuța (P/U/I/n/cosφ/η/poli) + date drive când există (turație max, rampă decelerare, frecvență comutație, R stator, inerție). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importă pe tabul asincron.</p>
     </div>
   </Modal>
 </div>
