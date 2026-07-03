@@ -757,3 +757,122 @@ def reorder_agenda():
         return jsonify({'error': 'Reordonarea a esuat.'}), 500
     conn.close()
     return jsonify({'message': 'ok', 'count': len(order)})
+
+
+def _span_intersects(d1, d2, start_s, end_s):
+    """True if the day-span [min(d1,d2), max(d1,d2)] intersects the window
+    [start_s, end_s) (all 'YYYY-MM-DD'; end exclusive). Empty dates ignored;
+    a single present date is treated as a 1-day span."""
+    ds = [x for x in ((d1 or '')[:10], (d2 or '')[:10]) if x]
+    if not ds:
+        return False
+    lo, hi = min(ds), max(ds)
+    return lo < end_s and hi >= start_s
+
+
+@tasks_bp.route('/api/plan', methods=['GET'])
+@login_required
+def get_plan():
+    """Operational 14-day planner ("Planificator"): project lanes (each with its
+    overall interval data_incepere->deadline) containing their tasks, plus a
+    "Globale" lane. A task appears where its span data_planificata->data_scadenta
+    intersects the window; tasks with only a deadline show as a single-day marker.
+    No schema change — reuses the existing agenda planning semantics."""
+    today = _resolve_today()
+    start = (request.args.get('start') or '').strip()
+    if not _DATE_RE.match(start):
+        start = today
+    try:
+        days = int(request.args.get('days') or 14)
+    except (TypeError, ValueError):
+        days = 14
+    days = max(1, min(days, 60))
+    start_d = datetime.strptime(start, '%Y-%m-%d').date()
+    start_s = start_d.isoformat()
+    end_s = (start_d + timedelta(days=days)).isoformat()  # exclusive
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Candidate project lanes (skip cancelled / finished).
+    cursor.execute(
+        "SELECT id, nume, tip, status, data_incepere, deadline FROM proiecte "
+        "WHERE status NOT IN ('anulat', 'finalizat')")
+    projects = [row_to_dict(r) for r in cursor.fetchall()]
+
+    # Open project tasks (exclude future recurrences, same idiom as the agenda).
+    cursor.execute(
+        '''SELECT t.* FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+           WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
+             AND NOT (
+               t.recurenta IS NOT NULL AND TRIM(t.recurenta) <> ''
+               AND t.data_scadenta IS NOT NULL AND date(t.data_scadenta) > date(:today)
+             )''',
+        {'today': today})
+    tasks_by_project = {}
+    for r in cursor.fetchall():
+        item = _agenda_item(row_to_dict(r), 'proiect', today)
+        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+            tasks_by_project.setdefault(item['proiect_id'], []).append(item)
+
+    def _task_sort_key(t):
+        cand = [x for x in ((t['data_planificata'] or '')[:10], (t['data_scadenta'] or '')[:10]) if x]
+        return (min(cand) if cand else '9999-99-99', (t['titlu'] or '').lower())
+
+    lanes = []
+    for proj in projects:
+        pid = proj['id']
+        ptasks = sorted(tasks_by_project.get(pid, []), key=_task_sort_key)
+        inc = (proj.get('data_incepere') or '')[:10]
+        ddl = (proj.get('deadline') or '')[:10]
+        band = _span_intersects(inc, ddl, start_s, end_s)
+        if not ptasks and not band:
+            continue
+        lanes.append({
+            'tip': 'proiect',
+            'id': pid,
+            'nume': proj.get('nume') or '',
+            'tip_proiect': proj.get('tip') or '',
+            'status': proj.get('status') or '',
+            'data_incepere': inc,
+            'deadline': ddl,
+            'tasks': ptasks,
+        })
+
+    # Global tasks lane.
+    cursor.execute(
+        '''SELECT g.* FROM global_tasks g
+           WHERE g.status != 'done'
+             AND NOT (
+               g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
+               AND g.data_scadenta IS NOT NULL AND date(g.data_scadenta) > date(:today)
+             )''',
+        {'today': today})
+    gtasks = []
+    for r in cursor.fetchall():
+        item = _agenda_item(row_to_dict(r), 'global', today)
+        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+            gtasks.append(item)
+    if gtasks:
+        lanes.append({
+            'tip': 'global', 'id': '__global__', 'nume': 'Globale',
+            'tip_proiect': '', 'status': '', 'data_incepere': '', 'deadline': '',
+            'tasks': sorted(gtasks, key=_task_sort_key),
+        })
+
+    conn.close()
+
+    # Lane order: projects by earliest in-window activity, Globale last.
+    def _lane_key(l):
+        dates = []
+        for t in l['tasks']:
+            for k in ('data_planificata', 'data_scadenta'):
+                v = (t.get(k) or '')[:10]
+                if v:
+                    dates.append(v)
+        if l['data_incepere']:
+            dates.append(l['data_incepere'])
+        return (1 if l['tip'] == 'global' else 0, min(dates) if dates else '9999-99-99')
+
+    lanes.sort(key=_lane_key)
+    return jsonify({'start': start_s, 'days': days, 'today': today, 'lanes': lanes})
