@@ -61,7 +61,7 @@ def close_db(exc=None):
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 23
+SCHEMA_VERSION = 24
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -766,6 +766,43 @@ def migrate_v22_to_v23():
     logger.info("Migration v22->v23: dropped checklist_pif, checklist_categorii, project_templates, assistant_memory")
 
 
+def migrate_v23_to_v24():
+    """v23 -> v24: Gantt de proiect. Adauga pe taskurile de proiect coloane de
+    planificare explicita (data_start, progres 0-100, is_milestone) si un tabel de
+    dependente task_dependencies (predecesor -> succesor, tip FS/SS/FF/SF, lag in
+    zile). Dependentele sunt STRICT intre taskuri de proiect. Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(tasks)")
+    tcols = {row[1] for row in cursor.fetchall()}
+    if 'data_start' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN data_start TEXT')
+    if 'progres' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN progres INTEGER DEFAULT 0')
+    if 'is_milestone' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN is_milestone INTEGER DEFAULT 0')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS task_dependencies (
+            id TEXT PRIMARY KEY,
+            proiect_id TEXT NOT NULL,
+            predecessor_id TEXT NOT NULL,
+            successor_id TEXT NOT NULL,
+            tip TEXT DEFAULT 'FS',
+            lag INTEGER DEFAULT 0,
+            created_at TEXT,
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
+            FOREIGN KEY (predecessor_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (successor_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_deps_proiect ON task_dependencies(proiect_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_deps_succ ON task_dependencies(successor_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_deps_pred ON task_dependencies(predecessor_id)')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v23->v24: tasks.data_start/progres/is_milestone + task_dependencies")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -880,6 +917,11 @@ def run_migrations():
         set_schema_version(23)
         current_version = 23
 
+    if current_version < 24:
+        migrate_v23_to_v24()
+        set_schema_version(24)
+        current_version = 24
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -923,6 +965,11 @@ def run_migrations():
     if not has_task_planificata or not has_gt_planificata:
         logger.warning("Self-heal: re-running v20->v21 (data_planificata / ordine_agenda missing)")
         migrate_v20_to_v21()
+    has_gantt_cols = {'data_start', 'progres', 'is_milestone'}.issubset(tasks_cols)
+    has_deps_table = 'task_dependencies' in existing_tables
+    if not has_gantt_cols or not has_deps_table:
+        logger.warning("Self-heal: re-running v23->v24 (tasks.data_start/progres/is_milestone or task_dependencies missing)")
+        migrate_v23_to_v24()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -1082,7 +1129,24 @@ def init_db():
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')
-    
+
+    # Gantt de proiect: dependente intre taskuri (predecesor -> succesor).
+    # Coloanele Gantt (data_start/progres/is_milestone) se adauga prin migratia v24.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS task_dependencies (
+            id TEXT PRIMARY KEY,
+            proiect_id TEXT NOT NULL,
+            predecessor_id TEXT NOT NULL,
+            successor_id TEXT NOT NULL,
+            tip TEXT DEFAULT 'FS',
+            lag INTEGER DEFAULT 0,
+            created_at TEXT,
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
+            FOREIGN KEY (predecessor_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (successor_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+    ''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS atasamente (
             id TEXT PRIMARY KEY,

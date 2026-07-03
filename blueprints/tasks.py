@@ -179,8 +179,8 @@ def create_task(project_id):
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
-                           data_planificata, ordine_agenda)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           data_planificata, ordine_agenda, data_start, progres, is_milestone)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -195,7 +195,10 @@ def create_task(project_id):
         data.get('recurenta', ''),
         now,
         data.get('data_planificata', ''),
-        data.get('ordine_agenda', 0)
+        data.get('ordine_agenda', 0),
+        data.get('data_start', ''),
+        data.get('progres', 0),
+        1 if data.get('is_milestone') else 0
     ))
 
     conn.commit()
@@ -237,6 +240,9 @@ def update_task(task_id):
             recurenta = COALESCE(?, recurenta),
             data_planificata = COALESCE(?, data_planificata),
             ordine_agenda = COALESCE(?, ordine_agenda),
+            data_start = COALESCE(?, data_start),
+            progres = COALESCE(?, progres),
+            is_milestone = COALESCE(?, is_milestone),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -250,6 +256,9 @@ def update_task(task_id):
         data.get('recurenta'),
         data.get('data_planificata'),
         data.get('ordine_agenda'),
+        data.get('data_start'),
+        data.get('progres'),
+        (1 if data.get('is_milestone') else 0) if data.get('is_milestone') is not None else None,
         datetime.now().isoformat(),
         task_id
     ))
@@ -279,6 +288,7 @@ def delete_task(task_id):
     try:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
+        cursor.execute('DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?', (task_id, task_id))
         _delete_task_attachments(cursor, 'task_id', task_id)
         cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
@@ -288,6 +298,162 @@ def delete_task(task_id):
         return jsonify({'message': 'Task deleted'})
     finally:
         conn.close()
+
+# ---------------------------------------------------------------------------
+# Project Gantt: schedule (start/end/progress/milestone) + dependencies
+# ---------------------------------------------------------------------------
+
+def _effective_progress(task_row, sub_total, sub_done):
+    """Display % for a task: subtasks ratio when it has them, else the manual
+    `progres` column, else status (done => 100). Keeps the bar honest."""
+    status = task_row.get('status') or 'to_do'
+    if status in ('done', 'finalizat'):
+        return 100
+    if sub_total and sub_total > 0:
+        return int(round(100 * (sub_done or 0) / sub_total))
+    return int(task_row.get('progres') or 0)
+
+
+@tasks_bp.route('/api/proiecte/<project_id>/gantt', methods=['GET'])
+@login_required
+def get_project_gantt(project_id):
+    """Everything the per-project Gantt needs: project meta, its tasks with the
+    effective schedule (start/end/progress/milestone + subtask counts) and the
+    dependency links between them."""
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    proj = cursor.fetchone()
+    if proj is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    proj = row_to_dict(proj)
+
+    cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC, created_at ASC', (project_id,))
+    rows = [row_to_dict(r) for r in cursor.fetchall()]
+
+    sub_map = {}
+    if rows:
+        ids = [r['id'] for r in rows]
+        ph = ','.join('?' * len(ids))
+        cursor.execute(f'''SELECT task_id, COUNT(*) AS tot, SUM(CASE WHEN done=1 THEN 1 ELSE 0 END) AS done
+                           FROM task_subtasks WHERE task_id IN ({ph}) GROUP BY task_id''', ids)
+        for r in cursor.fetchall():
+            sub_map[r['task_id']] = (r['tot'], r['done'])
+
+    tasks = []
+    for r in rows:
+        tot, done = sub_map.get(r['id'], (0, 0))
+        start = (r.get('data_start') or r.get('data_planificata') or '').strip()[:10]
+        end = (r.get('data_scadenta') or '').strip()[:10]
+        # A task with only one date is a point; a milestone is always a point.
+        if not start and end:
+            start = end
+        if not end and start:
+            end = start
+        tasks.append({
+            'id': r['id'], 'titlu': r.get('titlu') or '', 'status': r.get('status') or 'to_do',
+            'prioritate': r.get('prioritate') or 'normal',
+            'data_start': start, 'data_scadenta': end,
+            'data_planificata': r.get('data_planificata') or '',
+            'is_milestone': bool(r.get('is_milestone')),
+            'progres': _effective_progress(r, tot, done),
+            'progres_manual': int(r.get('progres') or 0),
+            'subtask_total': tot or 0, 'subtask_done': done or 0,
+            'ordine': r.get('ordine') or 0,
+            'recurenta': r.get('recurenta') or '',
+        })
+
+    cursor.execute('SELECT * FROM task_dependencies WHERE proiect_id = ?', (project_id,))
+    deps = [{'id': d['id'], 'predecessor_id': d['predecessor_id'], 'successor_id': d['successor_id'],
+             'tip': d['tip'] or 'FS', 'lag': d['lag'] or 0} for d in [row_to_dict(x) for x in cursor.fetchall()]]
+
+    conn.close()
+    return jsonify({
+        'proiect': {'id': proj['id'], 'nume': proj.get('nume'), 'client': proj.get('client'),
+                    'tip': proj.get('tip'), 'cod_proiect': proj.get('cod_proiect'),
+                    'data_incepere': proj.get('data_incepere'), 'deadline': proj.get('deadline'),
+                    'status': proj.get('status'), 'locatie': proj.get('locatie'),
+                    'pm': proj.get('pm')},
+        'tasks': tasks, 'dependencies': deps,
+    })
+
+
+def _would_cycle(cursor, project_id, pred, succ):
+    """True if adding pred->succ creates a cycle (succ already reaches pred)."""
+    # Walk successors of `succ`; if we reach `pred`, it's a cycle.
+    seen = set()
+    stack = [succ]
+    while stack:
+        cur = stack.pop()
+        if cur == pred:
+            return True
+        if cur in seen:
+            continue
+        seen.add(cur)
+        cursor.execute('SELECT successor_id FROM task_dependencies WHERE predecessor_id = ?', (cur,))
+        stack.extend(row['successor_id'] for row in cursor.fetchall())
+    return False
+
+
+@tasks_bp.route('/api/proiecte/<project_id>/dependencies', methods=['POST'])
+@login_required
+def create_dependency(project_id):
+    data = get_json_or_400()
+    pred = (data.get('predecessor_id') or '').strip()
+    succ = (data.get('successor_id') or '').strip()
+    tip = (data.get('tip') or 'FS').strip().upper()
+    if tip not in ('FS', 'SS', 'FF', 'SF'):
+        tip = 'FS'
+    try:
+        lag = int(data.get('lag') or 0)
+    except (TypeError, ValueError):
+        lag = 0
+    if not pred or not succ or pred == succ:
+        return jsonify({'error': 'Dependenta invalida (predecesor = succesor).'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    # Both tasks must belong to this project.
+    cursor.execute('SELECT id FROM tasks WHERE id IN (?, ?) AND proiect_id = ?', (pred, succ, project_id))
+    if len({row['id'] for row in cursor.fetchall()}) != 2:
+        conn.close()
+        return jsonify({'error': 'Ambele taskuri trebuie sa fie din acest proiect.'}), 400
+    # No duplicates (either direction of the same pair is redundant).
+    cursor.execute('''SELECT id FROM task_dependencies
+                      WHERE proiect_id = ? AND ((predecessor_id = ? AND successor_id = ?)
+                                             OR (predecessor_id = ? AND successor_id = ?))''',
+                   (project_id, pred, succ, succ, pred))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'Dependenta exista deja.'}), 409
+    if _would_cycle(cursor, project_id, pred, succ):
+        conn.close()
+        return jsonify({'error': 'Dependenta ar crea un ciclu.'}), 400
+
+    dep_id = generate_uuid()
+    cursor.execute('''INSERT INTO task_dependencies (id, proiect_id, predecessor_id, successor_id, tip, lag, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                   (dep_id, project_id, pred, succ, tip, lag, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': dep_id, 'predecessor_id': pred, 'successor_id': succ, 'tip': tip, 'lag': lag}), 201
+
+
+@tasks_bp.route('/api/dependencies/<dep_id>', methods=['DELETE'])
+@login_required
+def delete_dependency(dep_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM task_dependencies WHERE id = ?', (dep_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Dependenta inexistenta'}), 404
+    return jsonify({'message': 'ok'})
+
 
 # ---------------------------------------------------------------------------
 # Task subtasks (lightweight checklist under a task)
