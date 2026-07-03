@@ -6,58 +6,45 @@
   import { router, link } from '../../lib/router.svelte.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
-  // Autohide v3: cand ai derulat pagina, dock-ul se ascunde si revine DOAR cand
-  // duci cursorul in zona de jos (unde sta dock-ul) — reveal la hover pe margine.
-  // Ramane vizibil cat esti in varful paginii sau la capatul ei si cat timp
-  // cursorul e in zona de jos; iese cursorul din zona -> se ascunde la loc.
-  // Scrollerul real e #main-content (.app-main are overflow:hidden), NU window.
-  // Pe mobil (fara cursor) ramane manerul "peek": tap -> revine.
+  // Autohide v4 (cerinta Ion): dock-ul e ASCUNS by default tot timpul; apare
+  // DOAR cat timp cursorul e in zona de jos (unde sta dock-ul) si se ascunde
+  // imediat ce iesi cu cursorul. Nu depinde de scroll deloc. Pe mobil (fara
+  // cursor) manerul "peek" il aduce temporar (tap -> apare ~4s).
   // Cat timp tastatura mobila e deschisa (focus pe camp) dock + peek stau ascunse.
-  let hidden = $state(false)
+  let hidden = $state(true)
   let kbLocked = $state(false)
+  let peekTimer = 0
 
-  // ruta noua -> dock vizibil
+  // ruta noua -> revine la "ascuns" (cursorul il re-arata daca e jos)
   $effect(() => {
     router.path
-    if (!kbLocked) hidden = false
+    if (!kbLocked) hidden = true
   })
 
+  // mobil: tap pe maner -> apare temporar, apoi se ascunde singur
+  function revealFromPeek() {
+    if (kbLocked) return
+    hidden = false
+    clearTimeout(peekTimer)
+    peekTimer = setTimeout(() => { hidden = true }, 4000)
+  }
+
   onMount(() => {
-    // Scrollerul e fereastra (documentul creste liber; .app-content nu ajunge
-    // sa deruleze intern). Citim din document.scrollingElement (== window.scrollY).
-    const se = document.scrollingElement || document.documentElement
-    const mc = document.getElementById('main-content')
-    let inBottomZone = false
-    let dragging = false
-    const REVEAL = 120  // cursor mai aproape de jos de atat -> reveal
-    const LEAVE = 180   // cursor mai departe de atat -> permite ascunderea
+    let inZone = false
+    const REVEAL = 130  // cursor mai aproape de jos de atat (px) -> apare
+    const LEAVE = 160   // cursor mai departe -> se ascunde
 
-    // Foloseste #main-content DOAR daca chiar deruleaza intern; altfel fereastra.
-    const mcScrolls = () => mc && mc.scrollHeight > mc.clientHeight + 5
-    const scrollTop = () => (mcScrolls() ? mc.scrollTop : (window.scrollY || se.scrollTop || 0))
-    const scrollBottomGap = () => mcScrolls()
-      ? mc.scrollHeight - mc.scrollTop - mc.clientHeight
-      : se.scrollHeight - (window.scrollY || se.scrollTop || 0) - window.innerHeight
-    const atTop = () => scrollTop() < 80
-    const atBottom = () => scrollBottomGap() <= 40
-
-    function recompute() {
-      if (kbLocked) { hidden = true; return }
-      if (dragging) { hidden = false; return }
-      hidden = !(atTop() || atBottom() || inBottomZone)
-    }
-
-    function onScroll() { recompute() }
+    const apply = () => { hidden = kbLocked ? true : !inZone }
 
     let mmTick = 0
     function onMove(e) {
       const now = performance.now()
-      if (now - mmTick < 50) return
+      if (now - mmTick < 30) return
       mmTick = now
       const fromBottom = window.innerHeight - e.clientY
-      if (fromBottom < REVEAL) inBottomZone = true
-      else if (fromBottom > LEAVE) inBottomZone = false
-      recompute()
+      if (fromBottom <= REVEAL) inZone = true
+      else if (fromBottom > LEAVE) inZone = false
+      apply()
     }
 
     // tastatura mobila: focus pe camp editabil -> dock blocat ascuns
@@ -66,6 +53,7 @@
     function onFocusIn(e) {
       if (!isMobileLike() || !isEditable(e.target)) return
       kbLocked = true
+      inZone = false
       hidden = true
     }
     function onFocusOut() {
@@ -73,30 +61,15 @@
       setTimeout(() => {
         if (isEditable(document.activeElement)) return
         kbLocked = false
-        recompute()
       }, 120)
     }
 
-    // in timpul drag&drop (reordonare Astazi) nu ascundem nimic
-    const onDragStart = () => { dragging = true; recompute() }
-    const onDragEnd = () => { dragging = false; recompute() }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    mc?.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('mousemove', onMove, { passive: true })
-    window.addEventListener('dragstart', onDragStart)
-    window.addEventListener('dragend', onDragEnd)
-    window.addEventListener('drop', onDragEnd)
     document.addEventListener('focusin', onFocusIn)
     document.addEventListener('focusout', onFocusOut)
-    recompute()
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      mc?.removeEventListener('scroll', onScroll)
+      clearTimeout(peekTimer)
       window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('dragstart', onDragStart)
-      window.removeEventListener('dragend', onDragEnd)
-      window.removeEventListener('drop', onDragEnd)
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('focusout', onFocusOut)
     }
@@ -149,7 +122,7 @@
     transition:fade={{ duration: motionDuration(DUR_FAST) }}
     aria-label="Arată navigația"
     title="Arată navigația"
-    onclick={() => (hidden = false)}
+    onclick={revealFromPeek}
   ><span></span></button>
 {/if}
 
