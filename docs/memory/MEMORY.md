@@ -8,18 +8,18 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 Other authoritative docs (do not duplicate here):
 - `CLAUDE.md` — stack, env vars, deploy, key patterns
 - `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
-- `SCHEMA_REFERENCE.md` — full SQL schema (all 14 tables, columns, FKs, indexes)
+- `SCHEMA_REFERENCE.md` — full SQL schema (all 10 tables, columns, FKs, indexes)
 
 ## Database map by domain
 
 | Domain | Tables |
 |---|---|
-| Projects core | `proiecte`, `checklist_pif`, `checklist_categorii`, `atasamente`, `echipamente`, `clienti`, `project_templates` |
+| Projects core | `proiecte`, `atasamente`, `echipamente`, `clienti` |
 | Tasks | `tasks`, `task_subtasks`, `global_tasks` |
 | Drive knowledge | `parametri_master` (~15.3k params, 7 families), `fault_codes` (8 families, seeded from `data/fault_codes/*.json`) |
-| System | `assistant_memory`, `app_settings` (KV), `schema_version` |
+| System | `app_settings` (KV), `schema_version` |
 
-Migrations: in-code in `database.py` (`run_migrations()`), currently **v22**, idempotent, auto-run via `before_request`.
+Migrations: in-code in `database.py` (`run_migrations()`), currently **v23**, idempotent, auto-run via `before_request`.
 
 ## Feature status (last verified 2026-06-11)
 
@@ -46,6 +46,22 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v22**, id
 3. Made a non-obvious decision, found a new gotcha, or changed feature status? Append one dated line to **Recent decisions** below (newest first, keep ≤ 30 entries, prune oldest).
 
 ## Recent decisions
+
+- **2026-07-03 — Șters complet backend Checklist PIF + Template-uri + Hermes AI** (SW v71):
+  cod mort — backend complet fără niciun UI în SPA (confirmat zero referințe în frontend). Ion a
+  ales ștergerea (peste #168, care le păstra „pentru Hermes viitor" — Hermes însuși e acum șters).
+  **Șters:** `blueprints/assistant.py` (838L, tot Hermes + tools + memorie); rutele checklist
+  (`/api/proiecte/<id>/checklist*` + `checklist-categorii`) și `/api/templates` +
+  `init_default_templates()` din projects.py; `_pdf_section_checklist` + secțiunea checklist din
+  export PDF (admin.py); ramura checklist din global_search; cele 4 tabele din backup/restore + din
+  `VALID_TABLES` (utils.py). **Migration v22→v23** face `DROP TABLE IF EXISTS` pe `checklist_pif`,
+  `checklist_categorii`, `project_templates`, `assistant_memory` + indexurile lor (SCHEMA_VERSION 23).
+  `migrate_v4_to_v5` gardat pe existența `checklist_pif` (skip pe DB nou — altfel `ALTER TABLE
+  checklist_pif` pica). Migrațiile istorice v1→v2 (creează `project_templates`) rămân — pe DB nou
+  rulează apoi v23 le dă drop; NU re-adăuga aceste tabele în `init_db`. Restore ignoră silențios
+  checklist/template/assistant din backup-uri vechi. Schema: 14→10 tabele. Snapshot/debrief nu mai
+  au chei checklist. `app_settings` + `task_subtasks` PĂSTRATE (alte features). `scripts/llm_enrich*`
+  (MiniMax pt enrich parametri) fără legătură cu Hermes — păstrat.
 
 - **2026-07-03 — Faza 2 quick-wins (batch 2) — B3/B4/B5/B6** (SW v70): **B3** buton „Manual" +
   „Coduri erori" pe cardul echipamentului (ProjectDetail) → deschid PDF-ul drive-ului / fault-codes

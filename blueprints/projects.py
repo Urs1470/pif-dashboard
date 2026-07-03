@@ -208,8 +208,7 @@ def delete_proiect(project_id):
             'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
             (project_id,)
         )
-        tables = ['tasks', 'checklist_pif', 'checklist_categorii',
-                  'atasamente', 'echipamente']
+        tables = ['tasks', 'atasamente', 'echipamente']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (project_id,))
         cursor.execute('DELETE FROM proiecte WHERE id = ?', (project_id,))
@@ -269,8 +268,7 @@ def batch_proiecte():
                     'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
                     (pid,)
                 )
-                tables = ['tasks', 'checklist_pif', 'checklist_categorii',
-                          'atasamente', 'echipamente']
+                tables = ['tasks', 'atasamente', 'echipamente']
                 for table in tables:
                     cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
@@ -289,186 +287,6 @@ def batch_proiecte():
         logger.error(f"Batch operation error: {e}")
         return jsonify({'error': 'Batch operation failed'}), 500
 
-
-# ============ CHECKLIST PIF ============
-
-@projects_bp.route('/api/proiecte/<project_id>/checklist', methods=['GET'])
-@login_required
-def get_checklist(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM checklist_pif WHERE proiect_id = ? ORDER BY ordine', (project_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-@projects_bp.route('/api/proiecte/<project_id>/checklist', methods=['POST'])
-@login_required
-def create_checklist_item(project_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-
-    item_id = data.get('id') or generate_uuid()
-    cat_id = data.get('categorie_id')
-    # Accept '' / 'null' / 0 as "no category" -> NULL
-    if cat_id in ('', 'null', 0, '0'):
-        cat_id = None
-
-    cursor.execute('''
-        INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        item_id,
-        project_id,
-        data.get('titlu', ''),
-        data.get('completed', 0),
-        data.get('note', ''),
-        data.get('ordine', 0),
-        cat_id
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({'id': item_id}), 201
-
-@projects_bp.route('/api/checklist/<item_id>', methods=['PUT'])
-@login_required
-def update_checklist_item(item_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-
-    # categorie_id needs an explicit "no value" sentinel so 'UNSET' means "do not touch"
-    # while None / 0 means "clear category".
-    cat_present = 'categorie_id' in data
-    cat_id = data.get('categorie_id')
-    if cat_id in ('', 'null', 0, '0'):
-        cat_id = None
-
-    if cat_present:
-        cursor.execute('''
-            UPDATE checklist_pif SET
-                titlu = COALESCE(?, titlu),
-                completed = COALESCE(?, completed),
-                note = COALESCE(?, note),
-                ordine = COALESCE(?, ordine),
-                categorie_id = ?
-            WHERE id = ?
-        ''', (
-            data.get('titlu'),
-            data.get('completed'),
-            data.get('note'),
-            data.get('ordine'),
-            cat_id,
-            item_id
-        ))
-    else:
-        cursor.execute('''
-            UPDATE checklist_pif SET
-                titlu = COALESCE(?, titlu),
-                completed = COALESCE(?, completed),
-                note = COALESCE(?, note),
-                ordine = COALESCE(?, ordine)
-            WHERE id = ?
-        ''', (
-            data.get('titlu'),
-            data.get('completed'),
-            data.get('note'),
-            data.get('ordine'),
-            item_id
-        ))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({'message': 'Checklist item updated'})
-
-@projects_bp.route('/api/checklist/<item_id>', methods=['DELETE'])
-@login_required
-def delete_checklist_item(item_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM checklist_pif WHERE id = ?', (item_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-        if deleted == 0:
-            return jsonify({'error': 'Checklist item not found'}), 404
-        return jsonify({'message': 'Checklist item deleted'})
-    finally:
-        conn.close()
-
-# ============ CHECKLIST CATEGORII (per-project dynamic) ============
-
-@projects_bp.route('/api/proiecte/<project_id>/checklist-categorii', methods=['GET'])
-@login_required
-def list_checklist_categorii(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, proiect_id, nume, ordine, created_at FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine, id', (project_id,))
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
-    return jsonify(rows)
-
-@projects_bp.route('/api/proiecte/<project_id>/checklist-categorii', methods=['POST'])
-@login_required
-def create_checklist_categorie(project_id):
-    data = get_json_or_400()
-    nume = (data.get('nume') or '').strip()
-    if not nume:
-        return jsonify({'error': 'Nume required'}), 400
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM checklist_categorii WHERE proiect_id = ?', (project_id,))
-    next_ordine = cursor.fetchone()[0]
-    cursor.execute(
-        'INSERT INTO checklist_categorii(proiect_id, nume, ordine, created_at) VALUES (?, ?, ?, ?)',
-        (project_id, nume, next_ordine, datetime.now().isoformat())
-    )
-    new_id = cursor.lastrowid
-    conn.commit()
-    cursor.execute('SELECT id, proiect_id, nume, ordine, created_at FROM checklist_categorii WHERE id = ?', (new_id,))
-    row = dict(cursor.fetchone())
-    conn.close()
-    return jsonify(row), 201
-
-@projects_bp.route('/api/checklist-categorii/<int:cat_id>', methods=['PUT'])
-@login_required
-def update_checklist_categorie(cat_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-    if 'nume' in data:
-        nume = (data.get('nume') or '').strip()
-        if not nume:
-            return jsonify({'error': 'Nume required'}), 400
-        cursor.execute('UPDATE checklist_categorii SET nume = ? WHERE id = ?', (nume, cat_id))
-    if 'ordine' in data:
-        cursor.execute('UPDATE checklist_categorii SET ordine = ? WHERE id = ?', (int(data['ordine']), cat_id))
-    conn.commit()
-    conn.close()
-    return jsonify({'ok': True})
-
-@projects_bp.route('/api/checklist-categorii/<int:cat_id>', methods=['DELETE'])
-@login_required
-def delete_checklist_categorie(cat_id):
-    # ?move=1 (default) -> orphan the items into "Fara categorie".
-    # ?move=0           -> hard delete the items together with the category.
-    move = request.args.get('move', '1') == '1'
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        if move:
-            cursor.execute('UPDATE checklist_pif SET categorie_id = NULL WHERE categorie_id = ?', (cat_id,))
-        else:
-            cursor.execute('DELETE FROM checklist_pif WHERE categorie_id = ?', (cat_id,))
-        cursor.execute('DELETE FROM checklist_categorii WHERE id = ?', (cat_id,))
-        conn.commit()
-        return jsonify({'ok': True, 'moved': move})
-    finally:
-        conn.close()
 
 # ============ ATTACHMENTS ============
 
@@ -986,18 +804,6 @@ def get_project_snapshot(project_id):
             eq['params_json'] = {}
         echipamente.append(eq)
 
-    # Checklist categorii + items
-    cursor.execute('SELECT * FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine', (project_id,))
-    categorii = [row_to_dict(r) for r in cursor.fetchall()]
-    cursor.execute('SELECT * FROM checklist_pif WHERE proiect_id = ? ORDER BY ordine', (project_id,))
-    checklist_items = []
-    for r in cursor.fetchall():
-        item = row_to_dict(r)
-        # Find category name
-        cat_match = next((c for c in categorii if str(c['id']) == str(item.get('categorie_id'))), None)
-        item['categorie'] = cat_match['nume'] if cat_match else None
-        checklist_items.append(item)
-
     # Tasks + subtasks
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY created_at', (project_id,))
     tasks = []
@@ -1047,13 +853,6 @@ def get_project_snapshot(project_id):
             'serial_number': eq.get('serial_number', ''),
             'params_json': eq.get('params_json', {}),
         } for eq in echipamente],
-        'checklist_categorii': [{'nume': c['nume'], 'ordine': c.get('ordine', 0)} for c in categorii],
-        'checklist_items': [{
-            'categorie': it.get('categorie'),
-            'titlu': it.get('titlu', ''),
-            'completed': bool(it.get('completed')),
-            'ordine': it.get('ordine', 0),
-        } for it in checklist_items],
         'tasks': [{
             'titlu': t.get('titlu', ''),
             'descriere': t.get('descriere', ''),
@@ -1543,67 +1342,6 @@ def import_archive_echipamente(project_id):
     }), 201
 
 
-# ============ PROJECT TEMPLATES CRUD ============
-
-@projects_bp.route('/api/templates', methods=['GET'])
-@login_required
-def get_templates():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM project_templates ORDER BY name')
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-# ============ DEFAULT TEMPLATES INIT ============
-
-def init_default_templates():
-    """Create default PIF Standard template if none exists"""
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT COUNT(*) as count FROM project_templates')
-    count = cursor.fetchone()['count']
-
-    if count == 0:
-        now = datetime.now().isoformat()
-        template_id = generate_uuid()
-
-        default_checklist = [
-            'Verificare documentație',
-            'Verificare conexiuni electrice',
-            'Verificare parametri',
-            'Test funcțional',
-            'Probe de sarcină',
-            'Întocmire raport PIF'
-        ]
-
-        default_tasks = [
-            {'titlu': 'Revizuire documentație tehnică', 'prioritate': 'Normal'},
-            {'titlu': 'Verificare hardware și conexiuni', 'prioritate': 'Urgent'},
-            {'titlu': 'Configurare parametri sistem', 'prioritate': 'Normal'},
-            {'titlu': 'Testare funcțională', 'prioritate': 'Normal'},
-            {'titlu': 'Elaborare raport PIF', 'prioritate': 'Normal'}
-        ]
-
-        cursor.execute('''
-            INSERT INTO project_templates (id, name, tip, default_checklist_json, default_tasks_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (
-            template_id,
-            'PIF Standard',
-            'PIF',
-            json.dumps(default_checklist),
-            json.dumps(default_tasks),
-            now
-        ))
-
-        conn.commit()
-        logger.info("Created default 'PIF Standard' template")
-
-    conn.close()
-
-
 # ============ STRUCTURED IMPORT (Cowork AI debrief) ============
 
 @projects_bp.route('/api/import/debrief', methods=['POST'])
@@ -1633,7 +1371,7 @@ def import_debrief():
     # ── Idempotency guard ──────────────────────────────────────────────
     # meta.debrief_id uniquely identifies a Cowork debrief. If we've imported
     # it before, return the existing project instead of inserting duplicate
-    # equipment / checklist rows.
+    # equipment / task rows.
     #
     # BUT: only treat it as a duplicate if that project STILL EXISTS. If the
     # user deleted the imported project and wants to re-import, the stale
@@ -1659,7 +1397,7 @@ def import_debrief():
                     'proiect_id': prev_pid,
                     'proiect_url': f'/proiecte/{prev_pid}',
                     'creat': False,
-                    'sumar': {'echipamente': 0, 'checklist_items': 0},
+                    'sumar': {'echipamente': 0},
                 }), 200
             logger.info(f"Import debrief: prior project {prev_pid} for debrief_id={debrief_id} was deleted — allowing re-import")
 
@@ -1668,7 +1406,6 @@ def import_debrief():
     now = datetime.now().isoformat()
     sumar = {
         'echipamente': 0,
-        'checklist_items': 0,
     }
 
     try:
@@ -1800,41 +1537,6 @@ def import_debrief():
                 now, now,
             ))
             sumar['echipamente'] += 1
-
-        # ── 4. Checklist categorii ─────────────────────────────────
-        cat_name_to_id = {}
-        for cat in (data.get('checklist_categorii') or []):
-            cat_name = (cat.get('nume') or '').strip()
-            if not cat_name:
-                continue
-            cursor.execute(
-                'INSERT INTO checklist_categorii (proiect_id, nume, ordine, created_at) VALUES (?, ?, ?, ?)',
-                (project_id, cat_name, cat.get('ordine', 0), now)
-            )
-            cat_name_to_id[cat_name.lower()] = cursor.lastrowid
-
-        # ── 5. Checklist items ─────────────────────────────────────
-        for item in (data.get('checklist_items') or []):
-            item_id = item.get('id') or generate_uuid()
-            cat_ref = (item.get('categorie') or '').strip().lower()
-            cat_id = cat_name_to_id.get(cat_ref)  # None if not found or empty
-            # Accept both schema variants:
-            #   titlu/completed (prompt v1.1)  and  text/bifat (skill v1.2+)
-            titlu = item.get('titlu') or item.get('text') or ''
-            done_raw = item.get('completed', item.get('bifat', 0))
-            completed = 1 if done_raw in (1, True, '1', 'true', 'True', 'da', 'yes') else 0
-            cursor.execute('''
-                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                item_id, project_id,
-                titlu,
-                completed,
-                item.get('note', ''),
-                item.get('ordine', 0),
-                cat_id,
-            ))
-            sumar['checklist_items'] += 1
 
         # jurnal[] s-a pliat deja in observatii/service_after (sectiunea 2);
         # ore[] se ignora — orele se ponteaza in e100, nu in dashboard (v22).

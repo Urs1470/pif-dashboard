@@ -336,47 +336,6 @@ def _pdf_section_tech(elements, project_dict, is_pif, styles):
             elements.append(Spacer(1, 4))
 
 
-def _pdf_section_checklist(elements, checklist, checklist_cat, styles):
-    """3. Checklist PIF -- items grouped by category, with an uncategorized bucket."""
-    elements.append(Paragraph("3. Checklist PIF", styles['heading']))
-    by_cat = {}
-    for it in checklist:
-        key = str(it.get('categorie_id')) if it.get('categorie_id') is not None else '0'
-        by_cat.setdefault(key, []).append(it)
-    ordered = sorted(checklist_cat, key=lambda c: (c.get('ordine') or 0))
-
-    def _render_cat_block(cat_name, items):
-        done = sum(1 for i in items if i.get('completed'))
-        elements.append(Paragraph(f"{cat_name} ({done}/{len(items)})", styles['subheading']))
-        rows = [['', 'Item']]
-        for it in items:
-            mark = '✓' if it.get('completed') else '○'
-            rows.append([mark, it.get('titlu', '-')])
-        t = Table(rows, colWidths=[0.7*cm, 14*cm])
-        t.setStyle(TableStyle([
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('TEXTCOLOR', (0, 0), (-1, 0), _PIF_TEXT_DIM),
-            ('LINEBELOW', (0, 0), (-1, 0), 0.5, _PIF_ACCENT),
-            ('LINEBELOW', (0, 1), (-1, -1), 0.25, _PIF_LINE),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('TEXTCOLOR', (0, 1), (0, -1), _PIF_SUCCESS),
-            ('FONTSIZE', (0, 1), (0, -1), 12),
-        ]))
-        elements.append(t)
-        elements.append(Spacer(1, 6))
-
-    for cat in ordered:
-        its = by_cat.get(str(cat['id']), [])
-        if its:
-            _render_cat_block(cat.get('nume', '?'), its)
-    uncategorized = by_cat.get('0', [])
-    if uncategorized:
-        _render_cat_block('Fără categorie', uncategorized)
-
-
 def _pdf_section_tasks(elements, tasks, section_n, styles):
     """N. Listă taskuri -- table of project tasks."""
     elements.append(Paragraph(f"{section_n}. Listă taskuri", styles['heading']))
@@ -456,16 +415,8 @@ def export_pdf():
 
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC', (project_id,))
     tasks = [row_to_dict(row) for row in cursor.fetchall()]
-    cursor.execute('SELECT * FROM checklist_pif WHERE proiect_id = ? ORDER BY ordine ASC', (project_id,))
-    checklist = [row_to_dict(row) for row in cursor.fetchall()]
     cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ?', (project_id,))
     echipamente = [row_to_dict(row) for row in cursor.fetchall()]
-
-    try:
-        cursor.execute('SELECT id, nume, ordine FROM checklist_categorii WHERE proiect_id = ? ORDER BY ordine, id', (project_id,))
-        checklist_cat = [row_to_dict(row) for row in cursor.fetchall()]
-    except sqlite3.OperationalError:
-        checklist_cat = []  # Pre-v5 schema fallback
 
     conn.close()
 
@@ -486,15 +437,8 @@ def export_pdf():
     _pdf_section_admin(elements, project_dict, styles)
     _pdf_section_tech(elements, project_dict, is_pif, styles)
 
-    # Section numbering preserves the original quirk: when section 2 (tech) is
-    # absent, later sections do NOT renumber; only the optional checklist
-    # (section 3, PIF-only) shifts subsequent numbers.
-    checklist_present = is_pif and bool(checklist)
-    if checklist_present:
-        _pdf_section_checklist(elements, checklist, checklist_cat, styles)
-
-    n_tasks = 4 if checklist_present else 3
-    n_equip = 5 if checklist_present else 4
+    n_tasks = 3
+    n_equip = 4
 
     if tasks:
         _pdf_section_tasks(elements, tasks, n_tasks, styles)
@@ -649,8 +593,15 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master', 'assistant_memory', 'app_settings']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'fault_codes', 'parametri_master', 'app_settings']
+    # parametri_master lipseste pe un deploy fara seed — sarim tabelele absente
+    # ca sa nu pice backup-ul cu 500.
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    existing = {row[0] for row in cursor.fetchall()}
     for table in tables:
+        if table not in existing:
+            backup[table] = []
+            continue
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = cursor.fetchall()
         backup[table] = [row_to_dict(row) for row in rows]
@@ -902,10 +853,14 @@ def restore_database():
         # Run the whole clear + restore inside ONE transaction, so a bad payload
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
-        # Clear existing data
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'checklist_pif', 'checklist_categorii', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'project_templates', 'fault_codes', 'parametri_master', 'assistant_memory', 'app_settings']
+        # Clear existing data (skip tables absent on this deploy, e.g.
+        # parametri_master fara seed — altfel DELETE pica cu 500)
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'fault_codes', 'parametri_master', 'app_settings']
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        existing = {row[0] for row in cursor.fetchall()}
         for table in tables:
-            cursor.execute(f'DELETE FROM {safe_table(table)}')
+            if table in existing:
+                cursor.execute(f'DELETE FROM {safe_table(table)}')
 
         # Restore proiecte
         for p in data.get('proiecte', []):
@@ -938,15 +893,9 @@ def restore_database():
                   t.get('created_at'), t.get('updated_at'),
                   t.get('data_planificata'), t.get('ordine_agenda', 0)))
 
-        # Restore checklist (+ categorie_id — altfel punctele isi pierd categoria)
-        for c in data.get('checklist_pif', []):
-            cursor.execute('''
-                INSERT INTO checklist_pif (id, proiect_id, titlu, completed, note, ordine, categorie_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (c.get('id'), c.get('proiect_id'), c.get('titlu'), c.get('completed'),
-                  c.get('note'), c.get('ordine', 0), c.get('categorie_id')))
-
         # jurnal / timer_sessions din backup-uri vechi se ignora (v22 a scos featureul)
+        # checklist_pif / checklist_categorii / project_templates din backup-uri vechi
+        # se ignora (v23 a sters featureurile Checklist + Template)
 
         # Restore global_tasks (v9+ column: recurenta; v21: data_planificata, ordine_agenda)
         for gt in data.get('global_tasks', []):
@@ -1005,14 +954,6 @@ def restore_database():
                   e.get('model'), e.get('serial_number'), e.get('params_json'),
                   e.get('descrieri_json'), e.get('created_at'), e.get('updated_at')))
 
-        # Restore project_templates
-        for t in data.get('project_templates', []):
-            cursor.execute('''
-                INSERT INTO project_templates (id, name, tip, default_checklist_json, default_tasks_json, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (t.get('id'), t.get('name'), t.get('tip'), t.get('default_checklist_json'),
-                  t.get('default_tasks_json'), t.get('created_at')))
-
         # Restore task_subtasks (schema: id, task_id, titlu, done, ordine, created_at)
         for s in data.get('task_subtasks', []):
             cursor.execute('''
@@ -1020,14 +961,6 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
                   s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
-
-        # Restore checklist_categorii
-        for cat in data.get('checklist_categorii', []):
-            cursor.execute('''
-                INSERT INTO checklist_categorii (id, proiect_id, nume, ordine, created_at)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (cat.get('id'), cat.get('proiect_id'), cat.get('nume'),
-                  cat.get('ordine', 0), cat.get('created_at')))
 
         # Restore fault_codes (actual schema from database.py)
         for fc in data.get('fault_codes', []):
@@ -1040,11 +973,8 @@ def restore_database():
                   fc.get('remediu'), fc.get('reactie'), fc.get('confirmare'),
                   fc.get('extra_json'), fc.get('pagina'), fc.get('sursa')))
 
-        # Restore assistant_memory + app_settings (memoria Hermes, vault Obsidian,
-        # cheile de idempotenta debrief — inainte se pierdeau la restore)
-        for m in data.get('assistant_memory', []):
-            cursor.execute('INSERT INTO assistant_memory (id, continut, created_at) VALUES (?, ?, ?)',
-                           (m.get('id'), m.get('continut'), m.get('created_at')))
+        # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
+        # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
         for s in data.get('app_settings', []):
             cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
                            (s.get('key'), s.get('value'), s.get('updated_at')))
@@ -1283,12 +1213,6 @@ def global_search():
     for r in cur.fetchall():
         results.append({'type': 'global_task', 'id': r['id'], 'title': r['titlu'],
                         'subtitle': r['categorie'] or 'Task zilnic', 'snippet': _search_snippet(r['descriere'], q)})
-
-    cur.execute('SELECT c.id, c.titlu, c.proiect_id, p.nume AS pnume FROM checklist_pif c '
-                'JOIN proiecte p ON c.proiect_id = p.id WHERE c.titlu LIKE ? LIMIT 10', (like,))
-    for r in cur.fetchall():
-        results.append({'type': 'checklist', 'id': r['id'], 'title': r['titlu'],
-                        'subtitle': f"Checklist · {r['pnume']}", 'snippet': '', 'proiect_id': r['proiect_id']})
 
     cur.execute('SELECT e.id, e.nume, e.model, e.proiect_id, p.nume AS pnume FROM echipamente e '
                 'JOIN proiecte p ON e.proiect_id = p.id '

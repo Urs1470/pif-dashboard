@@ -25,14 +25,12 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 # ============ BLUEPRINTS ============
 
-from blueprints.assistant import assistant_bp
 from blueprints.projects import projects_bp
 from blueprints.tasks import tasks_bp
 from blueprints.parametri import parametri_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 
-app.register_blueprint(assistant_bp)
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(parametri_bp)
@@ -234,11 +232,6 @@ def before_request_func():
             if not _startup_initialized:
                 with app.app_context():
                     init_db()
-                    try:
-                        from blueprints.projects import init_default_templates
-                        init_default_templates()
-                    except Exception as e:
-                        logger.warning(f"init_default_templates failed: {e}")
                 if not os.environ.get('PIF_DASHBOARD_PIN'):
                     if app.debug:
                         logger.warning("PIF_DASHBOARD_PIN nu este setat — mod DEBUG, se foloseste fallback.")
@@ -640,7 +633,5 @@ def internal_error(e):
 
 if __name__ == '__main__':
     init_db()
-    from blueprints.projects import init_default_templates
-    init_default_templates()
     logger.info("PIF Dashboard starting...")
     app.run(host='0.0.0.0', port=5000, debug=False)

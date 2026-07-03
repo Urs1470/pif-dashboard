@@ -221,7 +221,6 @@ def data_integrity():
     checks = [
         ('tasks', 'proiecte', 'proiect_id', 'tasks'),
         ('task_subtasks', 'tasks', 'task_id', 'subtasks'),
-        ('checklist_pif', 'proiecte', 'proiect_id', 'checklist items'),
         ('atasamente', 'proiecte', 'proiect_id', 'attachments'),
     ]
     
