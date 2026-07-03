@@ -1,47 +1,47 @@
 {
- "Ie": { "def": "Curentul de reglaj al releului termic de suprasarcina. Se reglează la curentul nominal al motorului În (sau la curentul de serviciu).", "ia": "IEC 60947-4-1. Curba de declanșare se raportează la I/Ie." },
- "clasa": { "def": "Clasa de declanșare a releului termic: timpul MAXIM de declanșare la 7,2·Ie din stare calda. Clasa 10 → 4-10 s, 20 → 6-20 s, 30 → 9-30 s.", "ia": "Clasa mai mare = tolerează porniri mai lungi. Pt porniri grele se alege clasa 20/30." },
- "ttrip_start": { "def": "Timpul estimat de declanșare a releului termic la curentul de pornire al motorului (model I²t orientativ).", "ia": "Trebuie sa depaseasca timpul de pornire, altfel releul declanșează intempestiv." },
- "U0": { "def": "Tensiunea nominală faza-pamant a retelei (230 V în JT trifazat 400 V).", "ia": "Referință pt condiția de deconectare automată Zs·Ia ≤ U0." },
+ "Ie": { "def": "Curentul de reglaj al releului termic de suprasarcină. Se reglează la curentul nominal al motorului În (sau la curentul de serviciu).", "ia": "IEC 60947-4-1. Curba de declanșare se raportează la I/Ie." },
+ "clasa": { "def": "Clasa de declanșare a releului termic: timpul MAXIM de declanșare la 7,2·Ie din stare caldă. Clasa 10 → 4-10 s, 20 → 6-20 s, 30 → 9-30 s.", "ia": "Clasa mai mare = tolerează porniri mai lungi. Pt porniri grele se alege clasa 20/30." },
+ "ttrip_start": { "def": "Timpul estimat de declanșare a releului termic la curentul de pornire al motorului (model I²t orientativ).", "ia": "Trebuie să depaseasca timpul de pornire, altfel releul declanșează intempestiv." },
+ "U0": { "def": "Tensiunea nominală faza-pământ a retelei (230 V în JT trifazat 400 V).", "ia": "Referință pt condiția de deconectare automată Zs·Ia ≤ U0." },
  "Zs": { "def": "Impedanță buclei de defect (faza-PE): suma impedantelor sursei, conductorului de fază și conductorului de protecție până la punctul de defect.", "ia": "IEC 60364-4-41. Curent de defect = U0/Zs." },
- "Idefect": { "def": "Curentul de defect prezumat la un scurtcircuit faza-pamant: U0/Zs (modul de impedanță).", "ia": "Trebuie sa fie suficient ca protecția sa declanseze în timpul cerut (0,4/5 s)." },
- "Zsmax": { "def": "Impedanță maximă admisa a buclei de defect pentru ca protecția sa deconecteze în timpul cerut: U0/Ia.", "ia": "Condiția de verificat: Zs ≤ Zsmax (echiv. Zs·Ia ≤ U0)." },
- "SPE": { "def": "Secțiunea minimă a conductorului de protecție (PE), din acelasi material ca faza: S≤16 → S; 16<S≤35 → 16; S>35 → S/2.", "ia": "IEC 60364-5-54 (metoda tabelara adiabatica)." },
+ "Idefect": { "def": "Curentul de defect prezumat la un scurtcircuit faza-pământ: U0/Zs (modul de impedanță).", "ia": "Trebuie să fie suficient ca protecția să declanseze în timpul cerut (0,4/5 s)." },
+ "Zsmax": { "def": "Impedanță maximă admisa a buclei de defect pentru ca protecția să deconecteze în timpul cerut: U0/Ia.", "ia": "Condiția de verificat: Zs ≤ Zsmax (echiv. Zs·Ia ≤ U0)." },
+ "SPE": { "def": "Secțiunea minimă a conductorului de protecție (PE), din acelasi material ca faza: S≤16 → S; 16<S≤35 → 16; S>35 → S/2.", "ia": "IEC 60364-5-54 (metoda tabelară adiabatică)." },
  "Sfaza": { "def": "Secțiunea conductorului de fază al circuitului, baza pentru dimensionarea conductorului PE.", "ia": "mm² cupru/aluminiu." },
- "LCCA": { "def": "Costul pe ciclu de viața al solutiei A (referință): capital initial + costul energiei actualizat pe durata de analiza.", "ia": "LCC = CAPEX + cost_anual·factor de anuitate." },
- "LCCB": { "def": "Costul pe ciclu de viața al solutiei B (alternativa, ex IE3/IE4 sau VFD).", "ia": "Se compara cu LCCA; B se justifica daca LCCB < LCCA." },
- "economie": { "def": "Economia totală pe ciclul de viața a solutiei B față de A (LCCA − LCCB).", "ia": "Pozitiv = B mai ieftina pe durata de viața, în ciuda capitalului mai mare." },
- "payback": { "def": "Perioada de recuperare simpla (neactualizată): diferenta de capital impartita la economia anuala de operare.", "ia": "(CAPEX_B − CAPEX_A)/(cost_A − cost_B). Nedefinit daca B nu economisește." },
+ "LCCA": { "def": "Costul pe ciclu de viața al soluției A (referință): capital inițial + costul energiei actualizat pe durata de analiza.", "ia": "LCC = CAPEX + cost_anual·factor de anuitate." },
+ "LCCB": { "def": "Costul pe ciclu de viața al soluției B (alternativă, ex IE3/IE4 sau VFD).", "ia": "Se compara cu LCCA; B se justifica daca LCCB < LCCA." },
+ "economie": { "def": "Economia totală pe ciclul de viața a soluției B față de A (LCCA − LCCB).", "ia": "Pozitiv = B mai ieftina pe durata de viața, în ciuda capitalului mai mare." },
+ "payback": { "def": "Perioada de recuperare simpla (neactualizată): diferența de capital împărțită la economia anuală de operare.", "ia": "(CAPEX_B − CAPEX_A)/(cost_A − cost_B). Nedefinit daca B nu economisește." },
  "Mdim": { "def": "Cuplul de dimensionare al cuplajului: cuplul nominal înmulțit cu factorul de serviciu.", "ia": "Alege cuplaj cu cuplu nominal Tn ≥ Mdim." },
  "Mvarf": { "def": "Cuplul de varf (tranzitoriu) la pornire/soc, ca multiplu al cuplului nominal.", "ia": "Alege cuplaj cu cuplu maxim Tmax ≥ Mvarf. SF și k_varf nu se cumulează." },
  "SF": { "def": "Factor de serviciu pentru dimensionarea cuplajului/transmisiei în funcție de tipul de sarcină și regimul de funcționare.", "ia": "Uniform 1,0-1,25; soc moderat 1,5-1,75; soc greu ≥2,0." },
- "fop": { "def": "Frecvență de lucru (de iesire) a convertizorului — frecvență la care e alimentat motorul în acest punct de funcționare. Distinct de frecvență nominală fn.", "ia": "Variabilă independenta în caracteristica V/f; între 0 și fn (sau peste, în slabire de câmp)." },
- "boost": { "def": "Boost de tensiune (IR compensation): tensiunea suplimentara adaugată la frecvențe joase în V/f scalar, ca procent din Un, ca sa compenseze caderea pe rezistență statorica și sa asigure cuplu de pornire.", "ia": "Tipic 2-8% din Un. Prea mare → supraexcitare/saturație la f mic." },
+ "fop": { "def": "Frecvență de lucru (de ieșire) a convertizorului — frecvență la care e alimentat motorul în acest punct de funcționare. Distinct de frecvență nominală fn.", "ia": "Variabilă independenta în caracteristica V/f; între 0 și fn (sau peste, în slăbire de câmp)." },
+ "boost": { "def": "Boost de tensiune (IR compensation): tensiunea suplimentară adăugată la frecvențe joase în V/f scalar, ca procent din Un, ca să compenseze căderea pe rezistență statorică și să asigure cuplu de pornire.", "ia": "Tipic 2-8% din Un. Prea mare → supraexcitare/saturație la f mic." },
  "Uf": { "def": "Tensiunea aplicată motorului la frecvență de lucru în control scalar V/f.", "ia": "U(f) = Ub + (Un-Ub)(f/fn)^p; la f=fn devine Un." },
  "VfRatio": { "def": "Raportul tensiune/frecvență U/f [V/Hz] — proporțional cu fluxul magnetic. Constant în zona de cuplu constant.", "ia": "Nominal = Un/fn (ex. 400/50 = 8 V/Hz)." },
- "dfslip": { "def": "Compensarea de alunecare: incrementul de frecvență adaugat la referință pentru a mentine turația rotorului constantă sub sarcină (V/f scalar).", "ia": "Δf = s_n·f_n·(M/Mn); crește cu cuplul de sarcină." },
- "Uretea": { "def": "Tensiunea de linie a retelei de alimentare a convertizorului (intrarea redresorului).", "ia": "Determina tensiunea bus-ului DC: Udc ≈ 1,35·Uretea (redresor diode 6 pulsuri)." },
+ "dfslip": { "def": "Compensarea de alunecare: incrementul de frecvență adăugat la referință pentru a menține turația rotorului constantă sub sarcină (V/f scalar).", "ia": "Δf = s_n·f_n·(M/Mn); crește cu cuplul de sarcină." },
+ "Uretea": { "def": "Tensiunea de linie a retelei de alimentare a convertizorului (intrarea redresorului).", "ia": "Determină tensiunea bus-ului DC: Udc ≈ 1,35·Uretea (redresor diode 6 pulsuri)." },
  "kdc": { "def": "Factorul de conversie redresor: raportul între tensiunea bus DC și tensiunea de retea. 1,35 pentru redresor cu diode 6 pulsuri; ~1,41-1,50 pentru front-end activ (AFE).", "ia": "Udc = kdc·Uretea." },
- "Uoutmax": { "def": "Tensiunea maximă de iesire (linie-linie RMS) pe care o poate produce invertorul din bus-ul DC, în regiunea liniară de modulație.", "ia": "Cu SVPWM: Uoutmax = Udc/√2 ≈ 0,707·Udc (cu PWM sinusoidal pur doar 0,612·Udc)." },
- "rezerva": { "def": "Rezerva (sau deficitul) de tensiune: cât la suta peste tensiunea nominală a motorului poate da invertorul. Negativ = deficit (motorul nu atinge Un la frecvență nominală).", "ia": "(Uout,max - Un)/Un·100. Deficit tipic ~-4% pe 400V cu redresor diode." },
- "ffw": { "def": "Frecvență de debut a slabirii de câmp: peste ea tensiunea disponibila nu mai poate crește, fluxul scade ~1/f și cuplul maxim scade.", "ia": "ffw = fn·Uout,max/Un. Daca Uout,max<Un, slabirea începe deja sub fn." },
- "dIpp": { "def": "Ondulația (varf-varf) de curent introdusa de comutația PWM, pe inductanță de scapari a motorului (aproximare medie la duty 50%).", "ia": "ΔIpp ≈ Udc/(8·Lσ·fsw). Scade cu fsw și Lσ." },
- "dImax": { "def": "Ondulația de curent de varf în cazul cel mai defavorabil (unipolar) introdusa de PWM.", "ia": "ΔImax ≈ Udc/(4·Lσ·fsw) — dublul aproximarii medii." },
+ "Uoutmax": { "def": "Tensiunea maximă de ieșire (linie-linie RMS) pe care o poate produce invertorul din bus-ul DC, în regiunea liniară de modulație.", "ia": "Cu SVPWM: Uoutmax = Udc/√2 ≈ 0,707·Udc (cu PWM sinusoidal pur doar 0,612·Udc)." },
+ "rezerva": { "def": "Rezerva (sau deficitul) de tensiune: cât la sută peste tensiunea nominală a motorului poate da invertorul. Negativ = deficit (motorul nu atinge Un la frecvență nominală).", "ia": "(Uout,max - Un)/Un·100. Deficit tipic ~-4% pe 400V cu redresor diode." },
+ "ffw": { "def": "Frecvență de debut a slăbirii de câmp: peste ea tensiunea disponibilă nu mai poate crește, fluxul scade ~1/f și cuplul maxim scade.", "ia": "ffw = fn·Uout,max/Un. Daca Uout,max<Un, slăbirea începe deja sub fn." },
+ "dIpp": { "def": "Ondulația (varf-varf) de curent introdusa de comutația PWM, pe inductanță de scăpări a motorului (aproximare medie la duty 50%).", "ia": "ΔIpp ≈ Udc/(8·Lσ·fsw). Scade cu fsw și Lσ." },
+ "dImax": { "def": "Ondulația de curent de varf în cazul cel mai defavorabil (unipolar) introdusa de PWM.", "ia": "ΔImax ≈ Udc/(4·Lσ·fsw) — dublul aproximării medii." },
  "Pech": {
   "def": "Putere echivalenta termic pe un ciclu de serviciu: sarcină constantă care produce aceeasi încălzire ca ciclul real. Motorul e OK termic daca Pech <= Pn (S1).",
   "ia": "Metoda RMS termic (IEC 60034-1, regimuri S6/S8). Pauza ponderată cu factorul de răcire kp; la kp=1 revine la Pload*sqrt(CDF)."
  },
  "marja": {
   "def": "Rezerva termică = Pn(S1) / Pech: cât de încărcat termic e motorul pe ciclu. >=1 = acceptabil, recomandat >=1.05...1.10.",
-  "ia": "Pentru regimuri cu porniri/franare (S4/S5/S7) folosește marja din cardul Porniri pe ora (căldură de comutație domina)."
+  "ia": "Pentru regimuri cu porniri/frânăre (S4/S5/S7) folosește marja din cardul Porniri pe ora (căldură de comutație domina)."
  },
  "k0": {
-  "def": "Raport pierderi mers-în-gol / pierderi nominale, (P0/Pn)^2. Tipic 0,1...0,3. Determina cât de puțin se răcește motorul la S6 (mers în gol între sarcini).",
+  "def": "Raport pierderi mers-în-gol / pierderi nominale, (P0/Pn)^2. Tipic 0,1...0,3. Determină cât de puțin se răcește motorul la S6 (mers în gol între sarcini).",
   "ia": "IEC 60034-1 S6. k0=0 -> ca S3 (repaus rece); k0=1 -> fără uprating (PS6=Pn)."
  },
  "CDFcalc": {
   "def": "Factorul de durata ciclică calculat din durate: CDF = tload/(tload+tpauza). Fracția din ciclu în care motorul e sub sarcină.",
-  "ia": "IEC 60034-1: S3/S6 -> numarator = durata la sarcină; S4 adauga timpul de pornire; S5/S7 adauga și franarea."
+  "ia": "IEC 60034-1: S3/S6 -> numarator = durata la sarcină; S4 adaugă timpul de pornire; S5/S7 adaugă și frânărea."
  },
  "tload": {
   "def": "Durata fazei de lucru (la sarcină) dintr-un ciclu de serviciu.",
@@ -56,11 +56,11 @@
   "ia": "IEC 60034-1, regimuri intermitente. Intra în numitorul puterii echivalente termic."
  },
  "tP": {
-  "def": "Durata de funcționare la sarcină constantă în regim S2 (scurt-durata), mai mica decât timpul până la echilibru termic.",
+  "def": "Durata de funcționare la sarcină constantă în regim S2 (scurt-durata), mai mică decât timpul până la echilibru termic.",
   "ia": "IEC 60034-1 S2 (ex. 'S2 60 min' — desemnare prin timp). PS2 = Pn/sqrt(1-e^(-tP/tau))."
  },
  "TL": {
-  "def": "Durata de viața termică relativa a izolației (față de regimul continuu S1 = 1). TL>=1 = viața cel puțin egala cu referință; TL<1 = viața scurtată.",
+  "def": "Durata de viața termică relativă a izolației (față de regimul continuu S1 = 1). TL>=1 = viața cel puțin egala cu referință; TL<1 = viața scurtată.",
   "ia": "IEC 60034-1 S10 + Annex A. TL = 1/AR. Exemplu IEC: TL~0,6."
  },
  "AR": {
@@ -68,71 +68,71 @@
   "ia": "IEC 60034-1 S10 / regula Montsinger (10K). AR>1 = imbatranire mai rapida ca la S1."
  },
  "dTref": {
-  "def": "Cresterea de temperatura a înfășurării la sarcină de referință (S1), în K. Aproximativ limita clasei termice: B~80, F~105, H~125 K.",
+  "def": "Creșterea de temperatura a înfășurării la sarcină de referință (S1), în K. Aproximativ limita clasei termice: B~80, F~105, H~125 K.",
   "ia": "Baza pentru excesul de temperatura (p^2-1)*dTref în calculul duratei de viața termice (S10)."
  },
  "H": {
-  "def": "Intervalul de injumatatire a duratei de viața a izolației: cresterea de temperatura care injumatatește viața termică. Regula Montsinger ~10 K.",
+  "def": "Intervalul de injumatatire a duratei de viața a izolației: creșterea de temperatura care injumatatește viața termică. Regula Montsinger ~10 K.",
   "ia": "IEC 60085 (clase termice) / IEC 60034-1 S10. Factor de imbatranire = 2^(dTheta/H)."
  },
- "p1": { "def": "Sarcină relativa (față de Pref din S1) a treptei 1 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
- "p2": { "def": "Sarcină relativa (față de Pref din S1) a treptei 2 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
- "p3": { "def": "Sarcină relativa (față de Pref din S1) a treptei 3 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
- "p4": { "def": "Sarcină relativa (față de Pref din S1) a treptei 4 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
- "f1": { "def": "Fracția de timp (% din ciclu) petrecuta la sarcină treptei 1 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
- "f2": { "def": "Fracția de timp (% din ciclu) petrecuta la sarcină treptei 2 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
- "f3": { "def": "Fracția de timp (% din ciclu) petrecuta la sarcină treptei 3 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
- "f4": { "def": "Fracția de timp (% din ciclu) petrecuta la sarcină treptei 4 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui sa fie 100%." },
+ "p1": { "def": "Sarcină relativă (față de Pref din S1) a treptei 1 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
+ "p2": { "def": "Sarcină relativă (față de Pref din S1) a treptei 2 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
+ "p3": { "def": "Sarcină relativă (față de Pref din S1) a treptei 3 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
+ "p4": { "def": "Sarcină relativă (față de Pref din S1) a treptei 4 dintr-un regim S10 cu sarcini discrete.", "ia": "p=0 înseamnă repaus ('r' în notația IEC)." },
+ "f1": { "def": "Fracția de timp (% din ciclu) petrecută la sarcină treptei 1 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui să fie 100%." },
+ "f2": { "def": "Fracția de timp (% din ciclu) petrecută la sarcină treptei 2 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui să fie 100%." },
+ "f3": { "def": "Fracția de timp (% din ciclu) petrecută la sarcină treptei 3 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui să fie 100%." },
+ "f4": { "def": "Fracția de timp (% din ciclu) petrecută la sarcină treptei 4 în regim S10.", "ia": "Suma fractiilor pe trepte ar trebui să fie 100%." },
  "tha": {
-  "def": "Temperatura aerului din jurul transformatorului (mediul de răcire), referință pentru cresterile de temperatura și pentru încărcarea admisa.",
-  "ia": "Măsurată la față locului; IEC 60076-7 considera tipic 20°C medie anuala / 40°C maxim (ulei).",
-  "practic": "Cu cât $\\theta_a$ e mai mare, cu atât suprasarcina admisa scade (hot-spot-ul se apropie de limita).",
+  "def": "Temperatura aerului din jurul transformatorului (mediul de răcire), referință pentru creșterile de temperatura și pentru încărcarea admisa.",
+  "ia": "Măsurată la față locului; IEC 60076-7 considera tipic 20°C medie anuală / 40°C maxim (ulei).",
+  "practic": "Cu cât $\\theta_a$ e mai mare, cu atât suprasarcină admisa scade (hot-spot-ul se apropie de limita).",
   "teorie": "Temperatura hot-spot $\\theta_h = \\theta_a + \\Delta\\theta_o + \\Delta\\theta_h$; ambianță ridica direct intregul profil termic."
  },
  "tor": {
-  "def": "Cresterea de temperatura a uleiului din partea de sus față de aer, la sarcină nominală (de pe plăcuța / testul de încălzire).",
+  "def": "Creșterea de temperatura a uleiului din partea de sus față de aer, la sarcină nominală (de pe plăcuța / testul de încălzire).",
   "ia": "Plăcuța trafo sau testul de încălzire (IEC 60076-2); tipic ~55-60 K la ONAN.",
-  "practic": "Reper pentru recalcularea cresterii uleiului la alte sarcini.",
+  "practic": "Reper pentru recalcularea creșterii uleiului la alte sarcini.",
   "teorie": "La sarcină $K$: $\\Delta\\theta_o = \\Delta\\theta_{o,r}\\,((1+RK^2)/(1+R))^{0.8}$, unde $R$ = raport pierderi sc/gol."
  },
  "gr": {
-  "def": "Gradientul hot-spot la nominal: diferenta de temperatura între punctul cel mai cald al înfășurării și uleiul de sus, la sarcină nominală.",
+  "def": "Gradientul hot-spot la nominal: diferența de temperatura între punctul cel mai cald al înfășurării și uleiul de sus, la sarcină nominală.",
   "ia": "Date producator / test; tipic ~15-25 K.",
   "practic": "La sarcini mari crește mult ($\\propto K^{1.6}$) și dictează imbatranirea izolației.",
   "teorie": "$\\Delta\\theta_h = g_r\\,K^{1.6}$ (exponent înfășurare ONAN)."
  },
  "dto": {
-  "def": "Cresterea de temperatura a uleiului de sus la factorul de încărcare curent.",
+  "def": "Creșterea de temperatura a uleiului de sus la factorul de încărcare curent.",
   "ia": "$\\Delta\\theta_o = \\Delta\\theta_{o,r}\\,((1+RK^2)/(1+R))^{0.8}$.",
-  "practic": "Componenta principala a temperaturii uleiului; baza pentru hot-spot.",
+  "practic": "Componenta principală a temperaturii uleiului; baza pentru hot-spot.",
   "teorie": "Pierderile cresc cu $K^2$; uleiul se încălzește cu exponentul 0,8 (regim ONAN)."
  },
  "dth": {
-  "def": "Gradientul hot-spot la sarcină curenta: cresterea punctului cald față de uleiul de sus.",
+  "def": "Gradientul hot-spot la sarcină curenta: creșterea punctului cald față de uleiul de sus.",
   "ia": "$\\Delta\\theta_h = g_r\\,K^{1.6}$.",
   "practic": "Crește rapid cu sarcină; împreună cu uleiul da temperatura hot-spot.",
-  "teorie": "Pierderile suplimentare în înfășurare la suprasarcina ridica gradientul cu exponentul 1,6."
+  "teorie": "Pierderile suplimentare în înfășurare la suprasarcină ridica gradientul cu exponentul 1,6."
  },
  "thh": {
   "def": "Temperatura punctului cald (hot-spot) al înfășurării — cel mai fierbinte loc, care determina imbatranirea izolației.",
   "ia": "$\\theta_h = \\theta_a + \\Delta\\theta_o + \\Delta\\theta_h$.",
-  "practic": "Limite: 98°C durata normala, 120°C sarcină ciclică, 140°C avarie (IEC 60076-7).",
-  "teorie": "Imbatranirea hartiei depinde exponential de $\\theta_h$ (legea Montsinger); 98°C = viața normala pt hartie obisnuita."
+  "practic": "Limite: 98°C durata normală, 120°C sarcină ciclică, 140°C avarie (IEC 60076-7).",
+  "teorie": "Imbatranirea hartiei depinde exponential de $\\theta_h$ (legea Montsinger); 98°C = viața normală pt hartie obișnuită."
  },
  "V": {
-  "def": "Rata de imbatranire relativa a izolației transformatorului față de regimul normal (la 98°C hot-spot).",
-  "ia": "$V = 2^{(\\theta_h - 98)/6}$ (hartie normala).",
+  "def": "Rata de imbatranire relativă a izolației transformatorului față de regimul normal (la 98°C hot-spot).",
+  "ia": "$V = 2^{(\\theta_h - 98)/6}$ (hartie normală).",
   "practic": "$V=1$ la 98°C; $V=2$ la 104°C (imbatranire dubla). Integrala lui $V$ pe zi da pierderea de viața.",
-  "teorie": "Legea Montsinger: viteza degradarii izolației se dublează la fiecare ~6°C peste referință."
+  "teorie": "Legea Montsinger: viteza degradării izolației se dublează la fiecare ~6°C peste referință."
  },
  "pas": {
   "def": "Pasul de reglaj al unui plot (tap), în procente din tensiunea nominală.",
   "ia": "Plăcuța trafo; uzual 2,5% (uneori 1,25% sau 2%).",
-  "practic": "Determina tensiunea castigată/pierduta la trecerea de la un plot la altul.",
+  "practic": "Determină tensiunea castigată/pierdută la trecerea de la un plot la altul.",
   "teorie": "Plotul modifica numărul de spire din IT, deci raportul de transformare cu $pas$% per poziție."
  },
  "ntr": {
-  "def": "Numărul de plots (poziții de reglaj) de o parte a pozitiei nominale.",
+  "def": "Numărul de plots (poziții de reglaj) de o parte a poziției nominale.",
   "ia": "Plăcuța trafo; uzual 2 (deci $\\pm2\\times pas$).",
   "practic": "Cu pasul, da domeniul total de reglaj al tensiunii.",
   "teorie": "Domeniu $= \\pm n\\cdot pas$; mai multe plots = reglaj mai fin pe acelasi domeniu sau domeniu mai larg."
@@ -140,17 +140,17 @@
  "Umax": {
   "def": "Tensiunea la plotul maxim (cea mai mare poziție de reglaj).",
   "ia": "$U_{max} = U_n(1 + n\\cdot pas)$.",
-  "practic": "Folosita când tensiunea retelei e scazuta (compensezi crescand raportul).",
-  "teorie": "Plotul maxim adauga spire pe IT, ridicand tensiunea secundara la aceeasi tensiune de retea."
+  "practic": "Folosita când tensiunea retelei e scăzută (compensezi crescând raportul).",
+  "teorie": "Plotul maxim adaugă spire pe IT, ridicând tensiunea secundara la aceeasi tensiune de retea."
  },
  "Umin": {
-  "def": "Tensiunea la plotul minim (cea mai mica poziție de reglaj).",
+  "def": "Tensiunea la plotul minim (cea mai mică poziție de reglaj).",
   "ia": "$U_{min} = U_n(1 - n\\cdot pas)$.",
   "practic": "Folosita când tensiunea retelei e ridicată.",
-  "teorie": "Plotul minim scoate spire, coborand tensiunea secundara."
+  "teorie": "Plotul minim scoate spire, coborând tensiunea secundara."
  },
  "Upas": {
-  "def": "Tensiunea castigată sau pierduta la trecerea cu un plot.",
+  "def": "Tensiunea castigată sau pierdută la trecerea cu un plot.",
   "ia": "$U_{pas} = U_n\\cdot pas$.",
   "practic": "Cât de fin poti regla; sub un plot nu poti corecta.",
   "teorie": "Rezoluția reglajului de tensiune e data de un pas de plot."
@@ -158,7 +158,7 @@
  "dom": {
   "def": "Domeniul total de reglaj al tensiunii, în procente (de la plotul minim la maxim, simetric față de nominal).",
   "ia": "$\\pm n\\cdot pas$.",
-  "practic": "Trebuie sa acopere variația tensiunii retelei la punctul de racord.",
+  "practic": "Trebuie să acopere variația tensiunii retelei la punctul de racord.",
   "teorie": "Domeniul mai larg permite compensarea unor abateri mari de tensiune, dar crește complexitatea comutatorului."
  },
  "PFHd": {
@@ -168,105 +168,105 @@
   "teorie": "Cu cât $PFH$ e mai mic, cu atât integritatea e mai mare: $10^{-7}..10^{-6}$ = SIL2 / PLd."
  },
  "SIL": {
-  "def": "Nivelul de integritate a siguranței (Safety Integrity Level, 1-3 la masini) atins de o funcție de siguranță.",
+  "def": "Nivelul de integritate a siguranței (Safety Integrity Level, 1-3 la mașini) atins de o funcție de siguranță.",
   "ia": "Din $PFH$ (IEC 62061/61508): SIL1 $10^{-6}..10^{-5}$, SIL2 $10^{-7}..10^{-6}$, SIL3 $10^{-8}..10^{-7}$.",
-  "practic": "STO la drive este uzual SIL2; trebuie sa fie $\\ge$ cerință din evaluarea de risc.",
+  "practic": "STO la drive este uzual SIL2; trebuie să fie $\\ge$ cerință din evaluarea de risc.",
   "teorie": "SIL cuantifica reducerea de risc realizată de funcția de siguranță prin probabilitatea de defect periculos."
  },
  "PLidx": {
   "def": "Nivelul de performanță (Performance Level, a-e) al unei functii de siguranță conform ISO 13849-1 (aici codat numeric a=1 .. e=5).",
   "ia": "Din $PFH$ + Categorie + MTTFd + DC: PLd $10^{-7}..10^{-6}$, PLe $10^{-8}..10^{-7}$.",
   "practic": "STO la drive este uzual PLd; PL atins trebuie $\\ge$ PLr (cerință din evaluarea de risc).",
-  "teorie": "PL combina arhitectura (Categoria B/1/2/3/4), fiabilitatea (MTTFd) și acoperirea diagnostica (DC) într-un nivel de la a la e."
+  "teorie": "PL combina arhitectura (Categoria B/1/2/3/4), fiabilitatea (MTTFd) și acoperirea diagnostică (DC) într-un nivel de la a la e."
  },
  "vmas": {
-  "def": "Viteza eficace (RMS) a vibratiei masurate pe lagar/carcasa, indicatorul de severitate.",
+  "def": "Viteza eficace (RMS) a vibratiei măsurate pe lagar/carcasa, indicatorul de severitate.",
   "ia": "Măsurată cu vibrometru la turație nominală, în 3 directii.",
-  "practic": "Se compara cu limita de grad A/B; depasirea indica dezechilibru, aliniere gresita sau lagar uzat.",
-  "teorie": "Viteza vibratiei (mm/s RMS) e proportionala cu energia vibratiei pe domeniul 10-1000 Hz (IEC 60034-14)."
+  "practic": "Se compara cu limita de grad A/B; depășirea indica dezechilibru, aliniere greșită sau lagar uzat.",
+  "teorie": "Viteza vibratiei (mm/s RMS) e proporțională cu energia vibratiei pe domeniul 10-1000 Hz (IEC 60034-14)."
  },
  "limA": {
   "def": "Limita de severitate a vibratiei pentru gradul A (standard), funcție de înălțimea de ax.",
   "ia": "IEC 60034-14: H 56-132 → 1,6; 132-280 → 2,2; >280 → 3,5 mm/s (suspensie libera).",
   "practic": "Majoritatea motoarelor industriale se încadrează în grad A.",
-  "teorie": "Limitele cresc cu gabaritul fiindca masinile mari tolerează viteze de vibrație mai mari la aceeasi solicitare."
+  "teorie": "Limitele cresc cu gabaritul fiindca mașinile mari tolerează viteze de vibrație mai mari la aceeasi solicitare."
  },
  "limB": {
   "def": "Limita de severitate a vibratiei pentru gradul B (special), mai stricta decât A.",
   "ia": "IEC 60034-14: H 56-132 → 0,7; 132-280 → 1,1; >280 → 1,8 mm/s.",
-  "practic": "Pentru aplicații cu cerințe ridicate (masini-unelte, cuplaje de precizie).",
+  "practic": "Pentru aplicații cu cerințe ridicate (mașini-unelte, cuplaje de precizie).",
   "teorie": "Gradul B (~jumatate din A) reduce solicitarea pe lagare și transmisia vibratiei spre sarcină."
  },
  "marjaA": {
-  "def": "Marja dintre limita de grad A și viteza măsurată (pozitiva = sub limita, conform).",
+  "def": "Marja dintre limita de grad A și viteza măsurată (pozitivă = sub limita, conform).",
   "ia": "$lim_A - v_{mas}$.",
   "practic": "Negativa = vibrație peste limita -> investigație (echilibrare, aliniere, fundație, lagare).",
-  "teorie": "O marja mica indica apropierea de limita; tendință în timp (trend) prevede defectul de lagar."
+  "teorie": "O marja mică indica apropierea de limita; tendință în timp (trend) prevede defectul de lagar."
  },
  "transformator:k": {
-  "def": "Factorul de compensare: puterea reactivă capacitiva (kvar) necesară pe unitate de putere activă (kW) pentru a ridica factorul de putere de la valoarea inițială la cea țintă.",
+  "def": "Factorul de compensare: puterea reactivă capacitivă (kvar) necesară pe unitate de putere activă (kW) pentru a ridica factorul de putere de la valoarea inițială la cea țintă.",
   "ia": "Calculat: $k = \\tan\\varphi_1 - \\tan\\varphi_2$.",
   "practic": "Puterea bateriei $Q_c = k\\,P$. Valori tipice 0,3-0,7 pentru ridicare de la 0,75-0,8 la 0,95.",
   "teorie": "Compensarea reduce tangenta unghiului de defazaj de la $\\tan\\varphi_1$ la $\\tan\\varphi_2$; condensatoarele furnizează reactivul $Q_c = k\\,P$."
  },
  "ku": {
-  "def": "Factorul de simultaneitate: fractiunea din puterea instalată care funcționează în acelasi timp, folosita la dimensionarea transformatorului.",
+  "def": "Factorul de simultaneitate: fracțiunea din puterea instalată care funcționează în acelasi timp, folosita la dimensionarea transformatorului.",
   "ia": "Estimat din regimul de exploatare (tipic 0,7-0,9 la mai multe motoare).",
   "practic": "$S_{sarc} = P\\,k_u/\\cos\\varphi$; evita supradimensionarea trafo când nu toate sarcinile merg deodată.",
   "teorie": "Rar toate consumatoarele cer putere maximă simultan; $k_u < 1$ reflecta cererea reală de varf."
  },
  "Pmot1": {
-  "def": "Puterea celui mai mare motor din instalație, determinanță pentru caderea de tensiune la pornire.",
+  "def": "Puterea celui mai mare motor din instalație, determinanță pentru căderea de tensiune la pornire.",
   "ia": "Din lista de echipamente (cel mai mare consumator pornit direct).",
-  "practic": "Pornirea celui mai mare motor da cel mai mare dip; dimensionează trafo ca $\\Delta U$ sa ramana sub limita.",
+  "practic": "Pornirea celui mai mare motor da cel mai mare dip; dimensionează trafo ca $\\Delta U$ să ramana sub limita.",
   "teorie": "Dip-ul depinde de $S_{pornire}/S_{cc}$; cel mai mare motor cu pornirea cea mai dura fixează mărimea minimă a trafo."
  },
  "kpor": {
   "def": "Factorul de pornire: de câte ori puterea aparentă absorbita la pornire depasește puterea nominală a motorului.",
   "ia": "Din metoda de pornire: DOL ~6, stea-triunghi ~2-3, softstarter ~3, VFD ~1.",
-  "practic": "Intra direct în mărimea trafo ceruta de pornire și în caderea de tensiune.",
+  "practic": "Intra direct în mărimea trafo cerută de pornire și în căderea de tensiune.",
   "teorie": "Curentul de pornire DOL ~6 $I_n$ -> putere aparentă de pornire ~6 $S_n$; reducerea pornirii scade $k_{por}$."
  },
  "dUmax": {
-  "def": "Caderea de tensiune maximă admisa pe bara la pornirea unui motor.",
+  "def": "Căderea de tensiune maximă admisa pe bara la pornirea unui motor.",
   "ia": "Limita de proiectare; uzual 10-15% (practica de instalație / specificații interne; IEEE 141 echiv. US).",
   "practic": "Sub limita eviti declansarea contactoarelor și pornirea grea a celorlalte sarcini.",
   "teorie": "$\\Delta U \\approx S_{pornire}/(S_{pornire}+S_{cc})$; un trafo mai mare ($S_{cc}$ mai mare) scade dip-ul."
  },
  "Ssarc": {
-  "def": "Puterea aparentă totală ceruta de sarcină, baza pentru dimensionarea transformatorului.",
+  "def": "Puterea aparentă totală cerută de sarcină, baza pentru dimensionarea transformatorului.",
   "ia": "$S_{sarc} = P\\,k_u/\\cos\\varphi$.",
   "practic": "Se înmulțește cu factorul de rezerva și se alege trafo standard imediat superior.",
   "teorie": "Transformatorul se dimensionează în kVA (putere aparentă), nu în kW, fiindca include și reactivul."
  },
  "Strec": {
-  "def": "Puterea de transformator ceruta de sarcină, incluzand factorul de rezerva.",
+  "def": "Puterea de transformator cerută de sarcină, incluzând factorul de rezerva.",
   "ia": "$S_{tr,sarc} = S_{sarc}\\,k_{rez}$.",
   "practic": "Una din cele doua condiții de dimensionare; se compara cu cea de pornire.",
-  "teorie": "Rezerva acopera cresterea sarcinii, pierderile și imbatranirea; tipic $k_{rez} = 1,1$-$1,3$."
+  "teorie": "Rezerva acopera creșterea sarcinii, pierderile și imbatranirea; tipic $k_{rez} = 1,1$-$1,3$."
  },
  "Spor": {
-  "def": "Puterea de transformator minimă ceruta de condiția de pornire, ca sa tii caderea de tensiune sub limita.",
+  "def": "Puterea de transformator minimă cerută de condiția de pornire, ca să tii căderea de tensiune sub limita.",
   "ia": "$S_{tr,por} = k_{por}\\,S_{motor}\\,u_k/\\Delta U_{max}$.",
-  "practic": "La pornirea DOL a unui motor mare poate depasi condiția de sarcină -> dictează mărimea trafo.",
+  "practic": "La pornirea DOL a unui motor mare poate depăși condiția de sarcină -> dictează mărimea trafo.",
   "teorie": "Din $\\Delta U \\approx S_{pornire}\\,u_k/S_{tr}$ rezulta $S_{tr}$ minim pentru $\\Delta U$ admis."
  },
  "ratioTM": {
   "def": "Raportul dintre puterea transformatorului și puterea sarcinii (kVA/kW), indicator al rezervei.",
   "ia": "$S_{tr}/P$.",
   "practic": "Orientativ 1,2-1,5 la sarcină cu VFD; mult mai mare daca domina pornirea DOL a unui motor mare.",
-  "teorie": "Cu cât pornirea e mai dura, cu atât raportul trebuie mai mare ca sa limiteze caderea de tensiune."
+  "teorie": "Cu cât pornirea e mai dura, cu atât raportul trebuie mai mare ca să limiteze căderea de tensiune."
  },
  "clock": {
   "def": "Indicele orar al grupei de conexiuni: defazajul dintre tensiunile primar și secundar, în multipli de 30° (ca acele de ceas).",
   "ia": "Din plăcuța trafo (ex. Dyn11 -> ora 11).",
-  "practic": "Trafo în paralel trebuie sa aiba acelasi indice orar; contează la sistemele de 12 pulsuri.",
+  "practic": "Trafo în paralel trebuie să aiba acelasi indice orar; contează la sistemele de 12 pulsuri.",
   "teorie": "Conexiunea (D/Y) a fiecarei înfășurări introduce defazaje de 30°; indicele orar le insumează."
  },
  "defazaj": {
   "def": "Defazajul (intarzierea) tensiunii secundare față de cea primara, dat de grupa de conexiuni.",
   "ia": "$\\Delta\\varphi = \\text{ora}\\times 30°$.",
-  "practic": "Dyn11 = 330° (echivalent avans 30°); doua secundare la 30° diferenta dau 12 pulsuri.",
+  "practic": "Dyn11 = 330° (echivalent avans 30°); doua secundare la 30° diferența dau 12 pulsuri.",
   "teorie": "Conexiunile în stea/triunghi rotesc fazorii cu multipli de 30°; defazajul controlează anularea armonicilor la 12 pulsuri."
  },
  "canc": {
@@ -276,13 +276,13 @@
   "teorie": "Defazajul de 30° între cele doua punti inversează fazele armonicilor 5/7, care se aduna în antifază și se anulează partial."
  },
  "THD6": {
-  "def": "Distorsiunea armonica totală de curent a unei punti de 6 pulsuri (redresor cu diode), de referință.",
+  "def": "Distorsiunea armonică totală de curent a unei punti de 6 pulsuri (redresor cu diode), de referință.",
   "ia": "Din spectrul caracteristic (h=6k±1, amplitudine ~1/h): ~29-30%.",
-  "practic": "Valoarea tipica a unui drive standard fără masuri; se compara cu varianță de 12 pulsuri.",
+  "practic": "Valoarea tipică a unui drive standard fără masuri; se compara cu varianță de 12 pulsuri.",
   "teorie": "$THD = \\sqrt{\\sum (I_h/I_1)^2}$; armonicile 5 și 7 domina la 6 pulsuri."
  },
  "THD12": {
-  "def": "Distorsiunea armonica totală de curent a unui sistem de 12 pulsuri (doua punti pe secundare defazate 30°).",
+  "def": "Distorsiunea armonică totală de curent a unui sistem de 12 pulsuri (doua punti pe secundare defazate 30°).",
   "ia": "Calculat din spectrul ramas după anularea 5/7: ~13-14% (model teoretic 1/h; în practica puțin mai mic).",
   "practic": "Reducere substantiala față de 6 pulsuri; poate evita filtre suplimentare.",
   "teorie": "Raman doar armonicile $h = 12k\\pm1$ (11,13,23,25...); 5,7,17,19 se anulează după gradul de anulare."
@@ -296,162 +296,162 @@
  "kappa": {
   "def": "Factorul de varf κ: raportul dintre curentul de soc (primul varf) și valoarea de regim a curentului de scurtcircuit.",
   "ia": "Din raportul R/X al buclei de defect; tipic ~1,8 la JT (IEC 60909).",
-  "practic": "Determina solicitarea mecanică (electrodinamica) a barelor și a aparatajului.",
-  "teorie": "$i_p = \\kappa\\sqrt{2}\\,I_{cc}$; κ crește spre 2 când reteaua e puternic inductiva (R/X mic)."
+  "practic": "Determină solicitarea mecanică (electrodinamică) a barelor și a aparatajului.",
+  "teorie": "$i_p = \\kappa\\sqrt{2}\\,I_{cc}$; κ crește spre 2 când reteaua e puternic inductivă (R/X mic)."
  },
  "tk": {
-  "def": "Durata scurtcircuitului până la deconectare, folosita la verificarea solicitarii termice.",
+  "def": "Durata scurtcircuitului până la deconectare, folosita la verificarea solicitării termice.",
   "ia": "Din timpul de declanșare al protecției (tipic 0,1-1 s).",
-  "practic": "Intra în energia $I^2t$ care încălzește conductoarele; trebuie sub tinuta termică a cablului/barei.",
-  "teorie": "Încălzirea adiabatica depinde de $I_{cc}^2\\,t_k$; protecția rapida reduce solicitarea."
+  "practic": "Intra în energia $I^2t$ care încălzește conductoarele; trebuie sub ținută termică a cablului/barei.",
+  "teorie": "Încălzirea adiabatică depinde de $I_{cc}^2\\,t_k$; protecția rapida reduce solicitarea."
  },
  "ipk": {
   "def": "Curentul de varf (de soc) la scurtcircuit: primul maxim instantaneu al curentului.",
   "ia": "$i_p = \\kappa\\sqrt{2}\\,I_{cc}$.",
-  "practic": "Aparatajul trebuie sa suporte $i_p$ (tinuta electrodinamica, $I_{cm}$).",
-  "teorie": "Componenta aperiodica suprapusa peste cea periodica da un varf initial mai mare decât $\\sqrt{2}\\,I_{cc}$."
+  "practic": "Aparatajul trebuie să suporte $i_p$ (ținută electrodinamică, $I_{cm}$).",
+  "teorie": "Componenta aperiodică suprapusa peste cea periodică da un varf inițial mai mare decât $\\sqrt{2}\\,I_{cc}$."
  },
  "I2t": {
   "def": "Integrala $I^2t$ a curentului de scurtcircuit: energia specifică ce solicita termic conductoarele.",
   "ia": "$I^2t = I_{cc}^2\\,t_k$.",
-  "practic": "Se compara cu tinuta termică a cablului ($k^2 S^2$) și a aparatajului.",
-  "teorie": "Încălzirea adiabatica a unui conductor e proportionala cu $I^2t$; baza criteriului de scurtcircuit (IEC 60364-5-54)."
+  "practic": "Se compara cu ținută termică a cablului ($k^2 S^2$) și a aparatajului.",
+  "teorie": "Încălzirea adiabatică a unui conductor e proporțională cu $I^2t$; baza criteriului de scurtcircuit (IEC 60364-5-54)."
  },
  "nmax": {
-  "def": "Turația maximă de funcționare dorita pentru acționare, peste turația de bază; în zona de slabire de câmp cuplul disponibil scade $\\propto 1/n$, iar peste $n_2$ scade și puterea.",
+  "def": "Turația maximă de funcționare dorită pentru acționare, peste turația de bază; în zona de slăbire de câmp cuplul disponibil scade $\\propto 1/n$, iar peste $n_2$ scade și puterea.",
   "ia": "Cerință de proces / aplicație; limitată mecanic de rotor și setată în drive (ABB 30.12 f_max, Siemens p1082).",
   "practic": "La PIF verifici ca la $n_{max}$ motorul inca furnizează cuplul cerut de sarcină și ca turația respecta limita mecanică a rotorului.",
-  "teorie": "Raportul $n_{max}/n_{baza}$ fixează adancimea slabirii de câmp: fluxul scade $\\propto n_{baza}/n_{max}$, iar cuplul de rasturnare $\\propto (n_{baza}/n_{max})^2$. Daca $n_{max} > n_2 = k_m n_{baza}$ se intra în zona limitată de rasturnare unde $P \\propto 1/n$."
+  "teorie": "Raportul $n_{max}/n_{baza}$ fixează adancimea slăbirii de câmp: fluxul scade $\\propto n_{baza}/n_{max}$, iar cuplul de rasturnare $\\propto (n_{baza}/n_{max})^2$. Daca $n_{max} > n_2 = k_m n_{baza}$ se intra în zona limitată de rasturnare unde $P \\propto 1/n$."
  },
  "ncp": {
-  "def": "Turația la care se incheie zona de putere constantă (zona II) și începe zona limitată de cuplul de rasturnare (zona III), la motorul asincron în slabire de câmp.",
+  "def": "Turația la care se incheie zona de putere constantă (zona II) și începe zona limitată de cuplul de rasturnare (zona III), la motorul asincron în slăbire de câmp.",
   "ia": "Calculată: $n_2 = k_m\\,n_{baza}$, unde $k_m = M_{max}/M_n$ este factorul de cuplu maxim de pe plăcuța/catalog.",
-  "practic": "Peste $n_2$ motorul nu mai poate mentine puterea nominală; la PIF eviti sa ceri putere plina peste aceasta turație.",
+  "practic": "Peste $n_2$ motorul nu mai poate menține puterea nominală; la PIF eviti să ceri putere plina peste aceasta turație.",
   "teorie": "În zona II cuplul disponibil ($\\propto 1/n$) ramane sub cuplul de rasturnare ($\\propto 1/n^2$). Cele doua curbe se intalnesc la $n_2 = k_m n_{baza}$ (din $M_n n_{baza}/n = k_m M_n (n_{baza}/n)^2$). Peste $n_2$ functionarea e limitată de rasturnare, deci $P \\propto 1/n$."
  },
  "Pdisp": {
-  "def": "Puterea mecanică la arbore disponibila la turația maximă ceruta, tinand cont de zona de slabire de câmp în care se afla motorul.",
+  "def": "Puterea mecanică la arbore disponibilă la turația maximă cerută, ținând cont de zona de slăbire de câmp în care se afla motorul.",
   "ia": "Calculată: $P_{disp} = M_{disp}\\,n_{max}/9550$, cu $M_{disp}$ cuplul disponibil la $n_{max}$.",
-  "practic": "Se compara cu puterea ceruta de sarcină la turația maximă; daca $P_{disp}$ este sub necesar, motorul e subdimensionat pentru acel punct de funcționare.",
+  "practic": "Se compara cu puterea cerută de sarcină la turația maximă; daca $P_{disp}$ este sub necesar, motorul e subdimensionat pentru acel punct de funcționare.",
   "teorie": "În zona de cuplu constant $P$ crește liniar cu $n$; în zona de putere constantă (II) $P = P_n$; în zona de rasturnare (III) $P \\propto 1/n$ deoarece $M \\propto 1/n^2$. $P_{disp}$ reflecta zona în care cade $n_{max}$."
  },
  "asincron:I2": {
-  "def": "Curentul prin înfășurarea rotorica la turația de regim n, în schema echivalenta.",
+  "def": "Curentul prin înfășurarea rotorică la turația de regim n, în schema echivalenta.",
   "ia": "Calculat din schema echivalenta: Vth împărțit la impedanță ramurii rotorice la alunecarea s.",
-  "practic": "Verifica încărcarea rotorului și compara cu curentul nominal pentru a confirma functionarea corecta.",
-  "teorie": "Curentul rotoric scade cu alunecarea; la s mic crește impedanță R2/s, limitand curentul și cuplul."
+  "practic": "Verifică încărcarea rotorului și compara cu curentul nominal pentru a confirma functionarea corecta.",
+  "teorie": "Curentul rotoric scade cu alunecarea; la s mic crește impedanță R2/s, limitând curentul și cuplul."
  },
  "Vth": {
-  "def": "Tensiunea echivalenta Thevenin vazuta dinspre rotor, după reducerea retelei stator-magnetizare.",
+  "def": "Tensiunea echivalenta Thevenin văzută dinspre rotor, după reducerea retelei stator-magnetizare.",
   "ia": "Calculat: Uf înmulțit cu Xm împărțit la impedanță serie stator plus Xm.",
   "practic": "Permite estimarea rapida a cuplului maxim și a curentului rotoric fără schema completa.",
-  "teorie": "Teorema Thevenin reduce statorul la o sursa echivalenta, simplificand calculul cuplului și alunecarii critice."
+  "teorie": "Teorema Thevenin reduce statorul la o sursa echivalenta, simplificând calculul cuplului și alunecării critice."
  },
  "smax": {
-  "def": "Alunecarea la care motorul dezvolta cuplul maxim (alunecare critica).",
-  "ia": "Calculat: R2 împărțit la radical din Rth patrat plus suma reactantelor Xth plus X2.",
+  "def": "Alunecarea la care motorul dezvolta cuplul maxim (alunecare critică).",
+  "ia": "Calculat: R2 împărțit la radicăl din Rth patrat plus suma reactantelor Xth plus X2.",
   "practic": "Arată marja până la rasturnare; sub aceasta valoare functionarea este stabila.",
   "teorie": "La smax derivată cuplului față de alunecare se anulează; depinde de R2 și reactante, nu de tensiune."
  },
  "X1": {
   "def": "Reactanță de dispersie a înfășurării statorice în schema echivalenta.",
   "ia": "Din testul de rotor blocat, impartind reactanță totală între stator și rotor după clasa motorului.",
-  "practic": "Influențează curentul de pornire și caderea de tensiune interna la sarcină.",
+  "practic": "Influențează curentul de pornire și căderea de tensiune interna la sarcină.",
   "teorie": "Reprezință fluxul de dispersie statoric ce nu se inlantuie cu rotorul; limitează curentul tranzitoriu."
  },
  "X2": {
   "def": "Reactanță de dispersie a înfășurării rotorice raportată la stator.",
-  "ia": "Din testul de rotor blocat, repartizand reactanță totală după clasa NEMA a motorului.",
-  "practic": "Afectează cuplul de pornire și alunecarea critica a motorului.",
+  "ia": "Din testul de rotor blocat, repartizând reactanță totală după clasa NEMA a motorului.",
+  "practic": "Afectează cuplul de pornire și alunecarea critică a motorului.",
   "teorie": "Modelează fluxul de dispersie rotoric; împreună cu R2 determina forma caracteristicii cuplu-alunecare."
  },
  "Xm": {
   "def": "Reactanță de magnetizare ce reprezință curentul necesar producerii fluxului din întrefier.",
-  "ia": "Din testul de mers în gol, scazand reactanță statorica din reactanță măsurată la gol.",
+  "ia": "Din testul de mers în gol, scăzând reactanță statorică din reactanță măsurată la gol.",
   "practic": "Indica nivelul curentului de magnetizare și starea circuitului magnetic.",
   "teorie": "Curentul de magnetizare creează fluxul rotitor; valoare mare înseamnă întrefier mic și magnetizare eficienta."
  },
  "R2": {
   "def": "Rezistență înfășurării rotorice raportată la stator în schema echivalenta.",
-  "ia": "Din testul de rotor blocat: rezistență echivalenta minus rezistență statorica R1.",
-  "practic": "Determina cuplul de pornire și pierderile în rotor la sarcină.",
+  "ia": "Din testul de rotor blocat: rezistență echivalenta minus rezistență statorică R1.",
+  "practic": "Determină cuplul de pornire și pierderile în rotor la sarcină.",
   "teorie": "R2/s reprezință puterea transferată rotorului; R2 mare crește cuplul de pornire dar și alunecarea."
  },
  "Idc": {
   "def": "Curentul continuu injectat în înfășurare pentru determinarea rezistenței statorice.",
   "ia": "Măsurat cu sursa de c.c. aplicată pe doua faze ale înfășurării statorice.",
   "practic": "Permite calculul R1 fără efectul reactanței sau al curentilor alternativi.",
-  "teorie": "În c.c. reactanță este nula, deci raportul tensiune-curent da pur rezistență ohmica a înfășurării."
+  "teorie": "În c.c. reactanță este nula, deci raportul tensiune-curent da pur rezistență ohmică a înfășurării."
  },
  "Vdc": {
-  "def": "Tensiunea continua aplicată înfășurării statorice în testul de curent continuu.",
-  "ia": "Măsurat la bornele înfășurării în timpul injectarii curentului continuu.",
-  "practic": "Împreună cu Idc da rezistență statorica necesară bilantului de pierderi.",
-  "teorie": "Raportul Vdc/Idc da rezistență între doua faze; R1 pe faza se obtine după configurația stea sau triunghi."
+  "def": "Tensiunea continuă aplicată înfășurării statorice în testul de curent continuu.",
+  "ia": "Măsurat la bornele înfășurării în timpul injectării curentului continuu.",
+  "practic": "Împreună cu Idc da rezistență statorică necesară bilantului de pierderi.",
+  "teorie": "Raportul Vdc/Idc da rezistență între doua faze; R1 pe faza se obține după configurația stea sau triunghi."
  },
  "Inl": {
   "def": "Curentul absorbit de motor în funcționare la gol, fără sarcină mecanică.",
   "ia": "Măsurat cu motorul rotind liber la tensiune nominală, fără cuplu rezistent.",
   "practic": "Indica curentul de magnetizare și verifica pierderile mecanice și în fier.",
-  "teorie": "La gol alunecarea e foarte mica, curentul fiind dominat de magnetizare prin reactanță Xm."
+  "teorie": "La gol alunecarea e foarte mică, curentul fiind dominat de magnetizare prin reactanță Xm."
  },
  "Vnl": {
   "def": "Tensiunea de linie aplicată în timpul testului de mers în gol.",
   "ia": "Măsurat la bornele motorului la functionarea în gol, de regula tensiune nominală.",
   "practic": "Referință pentru separarea pierderilor în fier de cele mecanice.",
-  "teorie": "Pierderile în fier variază cu patratul tensiunii, permitand separarea lor prin teste la tensiuni diferite."
+  "teorie": "Pierderile în fier variază cu patratul tensiunii, permițând separarea lor prin teste la tensiuni diferite."
  },
  "Ilr": {
-  "def": "Curentul absorbit cu rotorul blocat la tensiune redusă, simuland pornirea.",
+  "def": "Curentul absorbit cu rotorul blocat la tensiune redusă, simulând pornirea.",
   "ia": "Măsurat cu rotorul imobilizat mecanic și tensiune redusă până la curent nominal.",
-  "practic": "Determina reactantele de dispersie și estimează curentul de pornire.",
-  "teorie": "Cu rotorul blocat s=1, ramura de magnetizare e neglijabila, curentul curgand prin dispersii și rezistente."
+  "practic": "Determină reactantele de dispersie și estimează curentul de pornire.",
+  "teorie": "Cu rotorul blocat s=1, ramura de magnetizare e neglijabila, curentul curgând prin dispersii și rezistente."
  },
  "Vlr": {
   "def": "Tensiunea redusă de linie aplicată în testul cu rotorul blocat.",
-  "ia": "Măsurat la borne, ajustată astfel încât curentul sa atinga valoarea nominală.",
+  "ia": "Măsurat la borne, ajustată astfel încât curentul să atinga valoarea nominală.",
   "practic": "Împreună cu Ilr și Plr da impedanță de scurtcircuit a motorului.",
-  "teorie": "Tensiune redusă evita supracurenti periculosi la s=1, pastrand circuitul magnetic nesaturat."
+  "teorie": "Tensiune redusă evita supracurenti periculosi la s=1, păstrând circuitul magnetic nesaturat."
  },
  "Plr": {
   "def": "Puterea activă absorbita în testul cu rotorul blocat.",
   "ia": "Măsurat cu wattmetrul la bornele motorului în timpul testului de rotor blocat.",
   "practic": "Da rezistență echivalenta de scurtcircuit pentru separarea R1 și R2.",
-  "teorie": "La rotor blocat puterea acopera pierderile în cupru stator și rotor, fluxul fiind redus de tensiunea mica."
+  "teorie": "La rotor blocat puterea acopera pierderile în cupru stator și rotor, fluxul fiind redus de tensiunea mică."
  },
  "Pin": {
   "def": "Puterea activă totală absorbita de motor de la retea.",
-  "ia": "Măsurat cu wattmetru sau calculat: radical din 3 înmulțit cu U, I și factorul de putere.",
+  "ia": "Măsurat cu wattmetru sau calculat: radicăl din 3 înmulțit cu U, I și factorul de putere.",
   "practic": "Punctul de plecare al bilantului de putere și calculul randamentului.",
   "teorie": "Pin se distribuie în pierderi stator, întrefier, rotor și mecanice până la puterea utilă la arbore."
  },
  "Pscl": {
-  "def": "Pierderile prin efect Joule în înfășurarea statorica.",
-  "ia": "Calculat: 3 înmulțit cu I1 patrat înmulțit cu rezistență statorica R1.",
+  "def": "Pierderile prin efect Joule în înfășurarea statorică.",
+  "ia": "Calculat: 3 înmulțit cu I1 patrat înmulțit cu rezistență statorică R1.",
   "practic": "Componenta de pierderi necesară la bilantul de putere și randament.",
   "teorie": "Pierderi proportionale cu patratul curentului; cresc la sarcină și dezechilibru de tensiune."
  },
  "Pag": {
-  "def": "Puterea electromagnetica transferată prin întrefier de la stator la rotor.",
+  "def": "Puterea electromagnetică transferată prin întrefier de la stator la rotor.",
   "ia": "Calculat: puterea de intrare minus pierderile în cupru stator și în fier.",
   "practic": "Sta la baza calculului cuplului electromagnetic și al randamentului.",
   "teorie": "Pag se împarte în pierderi rotorice R2 și putere mecanică; cuplul este Pag împărțit la viteza sincrona."
  },
  "Prcl": {
-  "def": "Pierderile prin efect Joule în înfășurarea sau bara rotorica.",
+  "def": "Pierderile prin efect Joule în înfășurarea sau bara rotorică.",
   "ia": "Calculat: alunecarea s inmultita cu puterea de întrefier Pag.",
-  "practic": "Cuantifica încălzirea rotorului și influenta alunecarii asupra randamentului.",
+  "practic": "Cuantifica încălzirea rotorului și influenta alunecării asupra randamentului.",
   "teorie": "Prcl egal cu s înmulțit cu Pag; alunecarea mare crește direct pierderile și căldură din rotor."
  },
  "Pout": {
-  "def": "Puterea mecanică utilă disponibila la arborele motorului.",
+  "def": "Puterea mecanică utilă disponibilă la arborele motorului.",
   "ia": "Calculat: puterea de întrefier minus pierderi rotorice, mecanice și suplimentare.",
   "practic": "Confirma puterea nominală și randamentul față de plăcuța motorului.",
   "teorie": "Pout egal cu cuplul util înmulțit cu viteza unghiulară; definește randamentul ca Pout împărțit la Pin."
  },
  "Pcore": {
   "def": "Pierderile în miezul magnetic prin histerezis și curenti turbionari.",
-  "ia": "Din testul de gol, scazand pierderile mecanice și cele în cupru stator.",
+  "ia": "Din testul de gol, scăzând pierderile mecanice și cele în cupru stator.",
   "practic": "Componenta de pierderi pentru bilant și estimarea randamentului la sarcină parțială.",
   "teorie": "Pierderile în fier cresc cu patratul tensiunii și frecvenței; relevante la funcționare cu convertizor."
  },
@@ -463,39 +463,39 @@
  },
  "Pstray": {
   "def": "Pierderile suplimentare datorate fluxurilor de dispersie și armonicilor.",
-  "ia": "Estimat conventional ca procent din puterea de iesire, conform standardului IEC.",
+  "ia": "Estimat conventional ca procent din puterea de ieșire, conform standardului IEC.",
   "practic": "Completează bilantul de pierderi pentru un randament realist.",
   "teorie": "Provin din fluxuri parazite și curenti indusi în piese; cresc cu sarcină și alimentarea pe convertizor."
  },
  "Pax": {
   "def": "Puterea estimată la arborele motorului, exprimată în kilowati.",
   "ia": "Calculat din bilantul de putere: Pout convertit din watti în kilowati.",
-  "practic": "Comparație directa cu puterea nominală de pe plăcuța pentru dimensionare.",
+  "practic": "Comparăție directă cu puterea nominală de pe plăcuța pentru dimensionare.",
   "teorie": ""
  },
  "Umed": {
-  "def": "Media aritmetica a celor trei tensiuni de linie ale retelei.",
-  "ia": "Calculat: suma tensiunilor Uab, Ubc și Uca impartita la trei.",
+  "def": "Media aritmetică a celor trei tensiuni de linie ale retelei.",
+  "ia": "Calculat: suma tensiunilor Uab, Ubc și Uca împărțită la trei.",
   "practic": "Referință pentru calculul dezechilibrului de tensiune și verificarea nivelului retelei.",
   "teorie": ""
  },
  "UV": {
   "def": "Dezechilibrul de tensiune între faze, exprimat procentual.",
-  "ia": "Calculat: abaterea maximă față de media tensiunilor impartita la medie, în procente.",
+  "ia": "Calculat: abaterea maximă față de media tensiunilor împărțită la medie, în procente.",
   "practic": "Peste 1-2% impune derating; protejează motorul de supraincalzire și vibrații.",
-  "teorie": "Dezechilibrul creează o componenta de secventa inversa ce produce curenti mari și încălzire suplimentara."
+  "teorie": "Dezechilibrul creează o componenta de secvență inversă ce produce curenti mari și încălzire suplimentară."
  },
  "dT": {
-  "def": "Cresterea suplimentara de temperatura a înfășurării cauzată de dezechilibrul de tensiune.",
+  "def": "Creșterea suplimentară de temperatura a înfășurării cauzată de dezechilibrul de tensiune.",
   "ia": "Estimat: aproximativ de doua ori patratul procentului de dezechilibru de tensiune.",
   "practic": "Anticipează riscul de supraincalzire și necesitatea de derating la dezechilibru.",
-  "teorie": "Componenta inversa, cu reactanță mica, produce curenti mari ce incalzesc puternic înfășurarea."
+  "teorie": "Componenta inversă, cu reactanță mică, produce curenti mari ce incalzesc puternic înfășurarea."
  },
  "Iunb": {
   "def": "Dezechilibrul curentilor de fază absorbiti de motor, exprimat procentual.",
   "ia": "Calculat: abaterea maximă a curentilor de fază față de medie, în procente.",
   "practic": "Indica dezechilibru de tensiune sau defect de înfășurare; amplifica încălzirea.",
-  "teorie": "Un mic dezechilibru de tensiune produce un dezechilibru de curent de cateva ori mai mare, datorita secventei inverse."
+  "teorie": "Un mic dezechilibru de tensiune produce un dezechilibru de curent de cateva ori mai mare, datorită secventei inverse."
  },
  "Uab": {
   "def": "Tensiunea de linie măsurată între fazele A și B la bornele motorului.",
@@ -517,30 +517,30 @@
  },
  "thetaf": {
   "def": "Temperatura finală stabilizată a înfășurării în regim de sarcină dat, exprimată relativ la limita nominală",
-  "ia": "Calculată din model termic: încărcare la patrat ori suprasarcina, raportată la rezistență termică și pierderi",
-  "practic": "Arată daca motorul rezista termic la sarcină ceruta sau cere derating ori clasa izolație superioara",
-  "teorie": "Echilibru termic: căldură generată de pierderi egalează căldură disipată; temperatura urca exponential spre asimptota"
+  "ia": "Calculată din model termic: încărcare la patrat ori suprasarcină, raportată la rezistență termică și pierderi",
+  "practic": "Arată daca motorul rezista termic la sarcină cerută sau cere derating ori clasa izolație superioara",
+  "teorie": "Echilibru termic: căldură generată de pierderi egalează căldură disipată; temperatura urcă exponential spre asimptota"
  },
  "tlim": {
-  "def": "Timpul până când înfășurarea atinge limita termică admisibila la suprasarcina constantă",
+  "def": "Timpul până când înfășurarea atinge limita termică admisibila la suprasarcină constantă",
   "ia": "Din constantă de timp termică și nivelul suprasarcinii, pe curba exponentiala de încălzire",
-  "practic": "Definește cât poate functiona motorul în suprasarcina înainte de declanșare termică sau avarie",
-  "teorie": "Curba de încălzire exponentiala: cu cât suprasarcina e mai mare, cu atât limita se atinge mai repede"
+  "practic": "Definește cât poate functiona motorul în suprasarcină înainte de declanșare termică sau avarie",
+  "teorie": "Curba de încălzire exponentiala: cu cât suprasarcină e mai mare, cu atât limita se atinge mai repede"
  },
  "tracire": {
-  "def": "Timpul de răcire necesar pentru ca temperatura sa scada la 50% din valoarea atinsa",
+  "def": "Timpul de răcire necesar pentru ca temperatura să scada la 50% din valoarea atinsa",
   "ia": "Din constantă de timp termică de răcire, de regula mai mare la oprire fără ventilație",
-  "practic": "Stabilește pauza minimă între cicluri sau reporniri ca sa nu se cumuleze căldură",
-  "teorie": "Răcirea urmează exponentiala inversa; fără autoventilație constantă termică crește mult"
+  "practic": "Stabilește pauza minimă între cicluri sau reporniri ca să nu se cumuleze căldură",
+  "teorie": "Răcirea urmează exponentiala inversă; fără autoventilație constantă termică crește mult"
  },
  "tS2": {
   "def": "Durata regimului de scurtă durata S2 în care motorul lucrează apoi se răcește complet",
-  "ia": "Din specificația aplicatiei sau plăcuța motorului (ex. S2 30 min, S2 60 min)",
+  "ia": "Din specificația aplicației sau plăcuța motorului (ex. S2 30 min, S2 60 min)",
   "practic": "Permite supradimensionare termică: la durata scurtă motorul livrează putere peste nominal",
   "teorie": "În S2 motorul nu atinge echilibrul termic, deci suporta sarcină mai mare timp limitat"
  },
  "PS2": {
-  "def": "Puterea admisibila în regim S2 pentru durata data, peste puterea nominală continua",
+  "def": "Puterea admisibila în regim S2 pentru durata data, peste puterea nominală continuă",
   "ia": "Din puterea nominală corectată cu factorul termic specific duratei S2 alese",
   "practic": "Permite alegerea unui motor mai mic pentru aplicații cu funcționare scurtă intermitenta",
   "teorie": "Cu cât durata S2 e mai scurtă, cu atât puterea admisibila crește față de regim continuu S1"
@@ -548,25 +548,25 @@
  "PS3": {
   "def": "Puterea admisibila în regim intermitent periodic S3 fără influenta pornirii",
   "ia": "Din puterea nominală și factorul de durata de acționare (cdf), fără contribuție de pornire",
-  "practic": "Dimensionează motorul pentru cicluri repetate cu pauze, evitand supradimensionarea",
+  "practic": "Dimensionează motorul pentru cicluri repetate cu pauze, evitând supradimensionarea",
   "teorie": "În S3 alternanță sarcină-pauza limitează temperatura medie; cdf mai mic permite putere mai mare"
  },
  "PS6": {
-  "def": "Puterea admisibila în regim de funcționare continua cu sarcină intermitenta S6",
-  "ia": "Din puterea nominală și factorul de durata de acționare, motorul ramanand alimentat în pauze",
-  "practic": "Util la aplicații cu mers în gol între incarcari (laminoare, masini-unelte)",
-  "teorie": "În S6 nu exista oprire, doar mers în gol; răcirea continua permite suprasarcina periodica"
+  "def": "Puterea admisibila în regim de funcționare continuă cu sarcină intermitenta S6",
+  "ia": "Din puterea nominală și factorul de durata de acționare, motorul rămânând alimentat în pauze",
+  "practic": "Util la aplicații cu mers în gol între incarcari (laminoare, mașini-unelte)",
+  "teorie": "În S6 nu exista oprire, doar mers în gol; răcirea continuă permite suprasarcină periodică"
  },
  "Wecon": {
-  "def": "Economia anuala de energie la trecerea de la o clasa de randament inferioara la una superioara",
-  "ia": "Din diferenta de pierderi între clase, inmultita cu orele de funcționare anuale",
-  "practic": "Argument cheie de ofertare pentru motoare IE3/IE4 față de IE2, justifica diferenta de preț",
+  "def": "Economia anuală de energie la trecerea de la o clasa de randament inferioara la una superioara",
+  "ia": "Din diferența de pierderi între clase, inmultita cu orele de funcționare anuale",
+  "practic": "Argument cheie de ofertare pentru motoare IE3/IE4 față de IE2, justifica diferența de preț",
   "teorie": "Energia economisita provine din reducerea pierderilor; mai mare la ore multe de funcționare"
  },
  "Cecon": {
-  "def": "Economia anuala exprimată în bani din reducerea consumului la clasa de randament superioara",
+  "def": "Economia anuală exprimată în bani din reducerea consumului la clasa de randament superioara",
   "ia": "Din energia economisita inmultita cu tariful energiei electrice",
-  "practic": "Transforma economia tehnica în argument financiar direct pentru client la ofertare",
+  "practic": "Transforma economia tehnică în argument financiar direct pentru client la ofertare",
   "teorie": ""
  },
  "losslow": {
@@ -583,21 +583,21 @@
  },
  "HVF": {
   "def": "Factorul armonic de tensiune ce cuantifica efectul termic global al armonicilor de retea",
-  "ia": "Calculat din amplitudinile relative ale armonicilor impartite la ordinul lor, sub radical",
+  "ia": "Calculat din amplitudinile relative ale armonicilor impartite la ordinul lor, sub radicăl",
   "practic": "Indica nivelul de derating al motorului alimentat din retea poluată armonic",
   "teorie": "Armonicile produc pierderi suplimentare în fier și cupru; efectul scade cu ordinul armonicii"
  },
  "V5": {
   "def": "Amplitudinea armonicii a 5-a de tensiune, raportată procentual la fundamentala",
   "ia": "Din măsurătoare analizor de retea sau date furnizor; tipic dominanță la sarcini neliniare",
-  "practic": "Intra în calculul HVF și al deratingului; armonica 5 e cea mai frecvență și penalizanță",
-  "teorie": "Armonica 5 e de secventa inversa, produce cuplu de franare și încălzire suplimentara"
+  "practic": "Intra în calculul HVF și al deratingului; armonică 5 e cea mai frecvență și penalizanță",
+  "teorie": "Armonica 5 e de secvență inversă, produce cuplu de frânăre și încălzire suplimentară"
  },
  "V7": {
   "def": "Amplitudinea armonicii a 7-a de tensiune, raportată procentual la fundamentala",
   "ia": "Din măsurătoare cu analizor de calitate a energiei la punctul de racord",
   "practic": "Contribuie la HVF și la deratingul termic al motorului alimentat din retea distorsionată",
-  "teorie": "Armonica 7 e de secventa directa; cu armonica 5 da pulsații de cuplu la frecvență a 6-a"
+  "teorie": "Armonica 7 e de secvență directă; cu armonică 5 da pulsații de cuplu la frecvență a 6-a"
  },
  "V11": {
   "def": "Amplitudinea armonicii a 11-a de tensiune, raportată procentual la fundamentala",
@@ -608,8 +608,8 @@
  "V13": {
   "def": "Amplitudinea armonicii a 13-a de tensiune, raportată procentual la fundamentala",
   "ia": "Din măsurătoare cu analizor de calitate a energiei electrice",
-  "practic": "Completează calculul HVF; semnificativa în retele cu multe convertizoare",
-  "teorie": "Ordin mare, deci contribuție termică mica per unitate, dar se cumulează cu celelalte"
+  "practic": "Completează calculul HVF; semnificativă în retele cu multe convertizoare",
+  "teorie": "Ordin mare, deci contribuție termică mică per unitate, dar se cumulează cu celelalte"
  },
  "df": {
   "def": "Factorul de derating cu care se reduce puterea admisibila din cauza armonicilor sau conditiilor",
@@ -619,24 +619,24 @@
  },
  "Estart": {
   "def": "Energia disipată în motor la o pornire, în principal în rotor și înfășurări",
-  "ia": "Din curentul de pornire, rezistente și timpul de pornire, integrată pe durata accelerarii",
+  "ia": "Din curentul de pornire, rezistente și timpul de pornire, integrată pe durata accelerării",
   "practic": "Limitează numărul de porniri pe ora și dimensionarea termică la aplicații cu cicluri dese",
   "teorie": "La pornire alunecarea mare disipa energie ca în reostat; căldură se concentrează în rotor"
  },
  "tstart": {
   "def": "Timpul de accelerare de la repaus la turația nominală sub sarcină data",
-  "ia": "Din momentul de inerție total, cuplul motor net și cuplul rezistent, prin ecuația miscarii",
-  "practic": "Verifica daca pornirea nu suprasolicita termic motorul și daca releul termic e corect setat",
+  "ia": "Din momentul de inerție total, cuplul motor net și cuplul rezistent, prin ecuația mișcarii",
+  "practic": "Verifică daca pornirea nu suprasolicita termic motorul și daca releul termic e corect setat",
   "teorie": "Timpul de pornire crește cu inerția și scade cu cuplul net disponibil de accelerare"
  },
  "nrh": {
   "def": "Numărul maxim de porniri pe ora admisibil termic pentru motor",
   "ia": "Din bugetul termic de pornire împărțit la energia disipată per pornire",
   "practic": "Critic la pompe, compresoare și benzi cu reporniri dese; evita arderea rotorului",
-  "teorie": "Fiecare pornire injectează căldură; răcirea între porniri trebuie sa evacueze surplusul"
+  "teorie": "Fiecare pornire injectează căldură; răcirea între porniri trebuie să evacueze surplusul"
  },
  "Ebudget": {
-  "def": "Bugetul termic orar disponibil pentru porniri, căldură admisa fără depasire termică",
+  "def": "Bugetul termic orar disponibil pentru porniri, căldură admisa fără depășire termică",
   "ia": "Din datele motorului sau estimat din masa termică și capacitatea de răcire pe ora",
   "practic": "Sta la baza calculului numărului de porniri admisibile la dimensionare",
   "teorie": "Reprezință căldură ce poate fi evacuată într-o ora peste regimul de sarcină normal"
@@ -648,32 +648,32 @@
   "teorie": "Cuplul scade cu patratul tensiunii; reducerea tensiunii limitează curentul dar și cuplul"
  },
  "kDOL": {
-  "def": "Factorul de curent la pornire directa, raportul curent de pornire la curent nominal",
+  "def": "Factorul de curent la pornire directă, raportul curent de pornire la curent nominal",
   "ia": "Din plăcuța sau catalog motor; tipic 5 până la 8 ori curentul nominal",
-  "practic": "Dimensionează protecții, cabluri și verifica caderea de tensiune la pornire directa",
-  "teorie": "La pornire directa rotorul blocat se comporta ca un transformator în scurt, curent mare"
+  "practic": "Dimensionează protecții, cabluri și verifica căderea de tensiune la pornire directă",
+  "teorie": "La pornire directă rotorul blocat se comporta ca un transformator în scurt, curent mare"
  },
  "climit": {
   "def": "Factorul de limitare a curentului de pornire la alimentare prin convertizor de frecvență",
   "ia": "Setat în convertizor ca limita de curent, tipic 1.1 până la 1.5 ori curentul nominal",
-  "practic": "Arată avantajul VFD: pornire cu curent mic, fără socuri în retea și fără cadere de tensiune",
+  "practic": "Arată avantajul VFD: pornire cu curent mic, fără socuri în retea și fără cădere de tensiune",
   "teorie": "VFD pornește la frecvență joasă cu flux nominal, deci cuplu mare la curent redus"
  },
  "IpDOL": {
-  "def": "Curentul absolut de pornire la pornire directa de la retea",
-  "ia": "Din curentul nominal înmulțit cu factorul kDOL de pornire directa",
-  "practic": "Verifica capacitatea retelei, setarea sigurantelor și caderea de tensiune admisibila",
+  "def": "Curentul absolut de pornire la pornire directă de la retea",
+  "ia": "Din curentul nominal înmulțit cu factorul kDOL de pornire directă",
+  "practic": "Verifică capacitatea retelei, setarea sigurantelor și căderea de tensiune admisibila",
   "teorie": "Curent maxim dintre metode; solicita puternic reteaua și contactoarele la demaraj"
  },
  "IpY": {
   "def": "Curentul de pornire în conexiune stea la pornirea stea-triunghi",
-  "ia": "Din curentul de pornire directa redus la o treime în conexiune stea",
-  "practic": "Reduce socul de curent și cuplul la o treime; util la pornire în gol sau sarcină mica",
-  "teorie": "În stea tensiunea pe faza scade de radical din 3, deci curentul și cuplul scad la o treime"
+  "ia": "Din curentul de pornire directă redus la o treime în conexiune stea",
+  "practic": "Reduce socul de curent și cuplul la o treime; util la pornire în gol sau sarcină mică",
+  "teorie": "În stea tensiunea pe faza scade de radicăl din 3, deci curentul și cuplul scad la o treime"
  },
  "IpSoft": {
   "def": "Curentul de pornire limitat de softstarter prin reducerea tensiunii",
-  "ia": "Din curentul de pornire directa scalat cu tensiunea de start aplicată de softstarter",
+  "ia": "Din curentul de pornire directă scalat cu tensiunea de start aplicată de softstarter",
   "practic": "Permite pornire lina cu curent controlat, între DOL și VFD ca performanță",
   "teorie": "Curentul scade proporțional cu tensiunea aplicată, iar cuplul cu patratul tensiunii"
  },
@@ -681,49 +681,49 @@
   "def": "Curentul de pornire la alimentare prin convertizor de frecvență",
   "ia": "Din curentul nominal înmulțit cu factorul climit setat în convertizor",
   "practic": "Cel mai mic curent de pornire; elimina socurile și permite porniri foarte dese",
-  "teorie": "Controlul vectorial mentine flux și cuplu la frecvență joasă fără curent de magnetizare excesiv"
+  "teorie": "Controlul vectorial menține flux și cuplu la frecvență joasă fără curent de magnetizare excesiv"
  },
  "MSoft": {
   "def": "Cuplul de pornire disponibil cu softstarter, procent din cuplul nominal",
-  "ia": "Din cuplul de pornire directa scalat cu patratul tensiunii de start a softstarterului",
-  "practic": "Verifica daca cuplul redus de softstart e suficient pentru cuplul rezistent la demaraj",
+  "ia": "Din cuplul de pornire directă scalat cu patratul tensiunii de start a softstarterului",
+  "practic": "Verifică daca cuplul redus de softstart e suficient pentru cuplul rezistent la demaraj",
   "teorie": "Cuplul variază cu patratul tensiunii; de aceea softstart nu se pretează la sarcini cu cuplu mare la pornire"
  },
  "kself": {
   "def": "Factorul de reducere a curentului admisibil la turație redusă pentru motor autoventilat",
   "ia": "Din curba de încărcare admisa funcție de turație, ventilatorul fiind pe ax",
-  "practic": "Esential la VFD: la turație mica răcirea scade, deci motorul nu suporta curent nominal",
+  "practic": "Esential la VFD: la turație mică răcirea scade, deci motorul nu suporta curent nominal",
   "teorie": "Ventilatorul propriu scade debitul cu turația; la frecvență joasă răcirea e insuficienta"
  },
  "Iself": {
   "def": "Curentul admisibil al motorului autoventilat la turația de funcționare data",
-  "ia": "Din curentul nominal înmulțit cu factorul de autoventilație kself la turația respectiva",
+  "ia": "Din curentul nominal înmulțit cu factorul de autoventilație kself la turația respectivă",
   "practic": "Indica deratingul necesar la funcționare prelungita la turație joasă fără ventilație externa",
   "teorie": "Răcirea proprie depinde de turație; la viteze mici scade capacitatea de încărcare termică"
  },
  "Iforced": {
   "def": "Curentul admisibil cu ventilație fortată independenta de turația motorului",
   "ia": "Din curentul nominal, răcirea fiind asigurată de ventilator separat la debit constant",
-  "practic": "Justifica ventilație fortată la aplicații cu turație mica și cuplu constant prelungit",
-  "teorie": "Ventilatorul separat mentine răcirea la orice turație, deci motorul pastrează cuplul nominal"
+  "practic": "Justifica ventilație fortată la aplicații cu turație mică și cuplu constant prelungit",
+  "teorie": "Ventilatorul separat menține răcirea la orice turație, deci motorul pastrează cuplul nominal"
  },
  "cosphi25": {
   "def": "Factorul de putere al motorului la 25% din sarcină nominală",
   "ia": "Din curbele de catalog ale motorului sau estimat; scade mult la sarcini mici",
-  "practic": "Semnalează factor de putere slab la mers în gol, cerand compensare sau redimensionare",
-  "teorie": "La sarcină mica curentul de magnetizare domina, deci cos fi scade puternic"
+  "practic": "Semnalează factor de putere slab la mers în gol, cerând compensare sau redimensionare",
+  "teorie": "La sarcină mică curentul de magnetizare domina, deci cos fi scade puternic"
  },
  "cosphi50": {
   "def": "Factorul de putere al motorului la 50% din sarcină nominală",
   "ia": "Din curbele de catalog ale motorului sau interpolat între punctele cunoscute",
-  "practic": "Ajuta la dimensionarea compensarii reactive și la evaluarea încărcării reale",
+  "practic": "Ajuta la dimensionarea compensării reactive și la evaluarea încărcării reale",
   "teorie": "Cos fi crește cu sarcină până aproape de nominal, apoi se stabilizează"
  },
  "eta25": {
   "def": "Randamentul motorului la 25% din sarcină nominală",
   "ia": "Din curbele de randament din catalog sau date IE; scade la sarcini foarte mici",
   "practic": "Avertizează ca motor supradimensionat lucrează ineficient la sarcină redusă",
-  "teorie": "La sarcină mica pierderile fixe (fier, mecanice) domina, scazand randamentul"
+  "teorie": "La sarcină mică pierderile fixe (fier, mecanice) domina, scăzând randamentul"
  },
  "eta50": {
   "def": "Randamentul motorului la 50% din sarcină nominală",
@@ -733,8 +733,8 @@
  },
  "xopt": {
   "def": "Gradul de încărcare la care motorul atinge randamentul maxim",
-  "ia": "Din raportul pierderi fixe la pierderi variabile, ca radical din raportul lor",
-  "practic": "Ghidează dimensionarea: motorul ales sa lucreze în jurul acestui punct optim",
+  "ia": "Din raportul pierderi fixe la pierderi variabile, ca radicăl din raportul lor",
+  "practic": "Ghidează dimensionarea: motorul ales să lucreze în jurul acestui punct optim",
   "teorie": "Randament maxim când pierderile constante egalează cele dependente de patratul sarcinii"
  },
  "Pvar": {
@@ -752,7 +752,7 @@
  "incI": {
   "def": "Gradul de încărcare al motorului estimat din curentul măsurat față de cel nominal",
   "ia": "Din curentul măsurat raportat la curentul nominal de plăcuța",
-  "practic": "Estimare rapida pe teren a încărcării, dar inexacta la sarcini mici din cauza magnetizarii",
+  "practic": "Estimare rapida pe teren a încărcării, dar inexacta la sarcini mici din cauza magnetizării",
   "teorie": "Curentul nu scade liniar cu sarcină: la gol ramane curentul de magnetizare semnificativ"
  },
  "incP": {
@@ -763,19 +763,19 @@
  },
  "Im": {
   "def": "Curentul de linie măsurat efectiv la bornele motorului în funcționare",
-  "ia": "Măsurat cu cleste ampermetric sau analizor pe faza, în regim stabilizat",
+  "ia": "Măsurat cu clește ampermetric sau analizor pe faza, în regim stabilizat",
   "practic": "Baza pentru estimarea încărcării și verificarea față de curentul nominal de plăcuța",
   "teorie": ""
  },
  "D1": {
   "def": "Diametrul exterior al rotorului înainte de taiere, conform fisei pompei.",
-  "ia": "Fisa tehnica pompa sau eticheta rotor; măsurare directa.",
+  "ia": "Fisa tehnică pompa sau eticheta rotor; măsurare directă.",
   "practic": "Punct de plecare pentru calculul afinitații la taiere rotor.",
   "teorie": "Legi afinitate la taiere: H scade cu patratul raportului D2 pe D1."
  },
  "D2": {
   "def": "Diametrul rotorului după taiere mecanică pentru reducerea înălțimii.",
-  "ia": "Calcul din înălțimea ceruta sau valoare aleasa de proiectant.",
+  "ia": "Calcul din înălțimea cerută sau valoare aleasă de proiectant.",
   "practic": "Alternativa permanenta la VFD când turația ramane fixa.",
   "teorie": "H2 egal H1 înmulțit cu D2 pe D1 la patrat; Q proporțional cu D2 pe D1."
  },
@@ -786,19 +786,19 @@
   "teorie": "Hsistem egal Hstatic plus k înmulțit cu Q la patrat."
  },
  "NPSHa": {
-  "def": "Sarcină neta pozitiva la aspirație disponibila în instalație la intrarea pompei.",
-  "ia": "Calcul din presiune atmosferica, vapori, înălțime aspirație și pierderi.",
-  "practic": "Trebuie sa depaseasca NPSHr cu marja pentru evitarea cavitatiei.",
+  "def": "Sarcină netă pozitivă la aspirație disponibilă în instalație la intrarea pompei.",
+  "ia": "Calcul din presiune atmosferică, vapori, înălțime aspirație și pierderi.",
+  "practic": "Trebuie să depaseasca NPSHr cu marja pentru evitarea cavitatiei.",
   "teorie": "NPSHa egal patm minus pvap împărțit la rho g plus minus Hasp minus Hfrec."
  },
  "NPSHr": {
-  "def": "Sarcină neta pozitiva la aspirație ceruta de pompa pentru a evita cavitația.",
+  "def": "Sarcină netă pozitivă la aspirație cerută de pompa pentru a evita cavitația.",
   "ia": "Curba NPSHr a producatorului, corectată la turația de lucru.",
-  "practic": "Crește cu debitul; la turație redusă scade favorabil exploatarii.",
+  "practic": "Crește cu debitul; la turație redusă scade favorabil exploatării.",
   "teorie": "NPSHr variază aproximativ cu patratul turației prin legile afinitații."
  },
  "Hasp": {
-  "def": "Înălțimea geodezica dintre nivelul lichidului și axul pompei la aspirație.",
+  "def": "Înălțimea geodezică dintre nivelul lichidului și axul pompei la aspirație.",
   "ia": "Măsurare pe instalație; pozitiv la inecat, negativ la aspirație de jos.",
   "practic": "Aspirația inecată crește NPSHa și reduce riscul de cavitație.",
   "teorie": "Intra direct în bilantul NPSHa cu semn după poziția rezervorului."
@@ -806,20 +806,20 @@
  "Hfrec": {
   "def": "Pierderile de sarcină pe conducta de aspirație la debitul de lucru.",
   "ia": "Calcul hidraulic conducta aspirație sau estimare din lungime și fitinguri.",
-  "practic": "Conducta scurtă și larga la aspirație pentru protejarea NPSHa.",
+  "practic": "Conducta scurtă și largă la aspirație pentru protejarea NPSHa.",
   "teorie": "Pierderi proportionale cu debitul la patrat pe traseul de aspirație."
  },
  "patm": {
-  "def": "Presiunea atmosferica locala folosita în bilantul NPSH disponibil.",
+  "def": "Presiunea atmosferică locală folosita în bilantul NPSH disponibil.",
   "ia": "Tabel funcție de altitudine; circa 1.013 bar la nivelul marii.",
-  "practic": "Scade cu altitudinea, reducand NPSHa la instalații montane.",
-  "teorie": "Componenta pozitiva dominanță în formula NPSHa."
+  "practic": "Scade cu altitudinea, reducând NPSHa la instalații montane.",
+  "teorie": "Componenta pozitivă dominanță în formula NPSHa."
  },
  "pvap": {
   "def": "Presiunea de vapori a lichidului la temperatura de lucru.",
   "ia": "Tabele termodinamice funcție de lichid și temperatura.",
   "practic": "Crește cu temperatura; apa fierbinte reduce NPSHa drastic.",
-  "teorie": "Termen scazut din presiunea atmosferica în bilantul NPSHa."
+  "teorie": "Termen scazut din presiunea atmosferică în bilantul NPSHa."
  },
  "nratio": {
   "def": "Turația de lucru exprimată ca procent din turația nominală a pompei.",
@@ -836,11 +836,11 @@
  "Parb": {
   "def": "Puterea mecanică la arborele pompei, mai mare decât cea hidraulică.",
   "ia": "Phid împărțit la randamentul pompei la debitul de lucru.",
-  "practic": "Determina cuplul cerut și solicitarea arborelui.",
+  "practic": "Determină cuplul cerut și solicitarea arborelui.",
   "teorie": "Parb egal Phid împărțit la etaQ."
  },
  "Pmot": {
-  "def": "Puterea ceruta la arborele motorului electric, cu marja de proiectare.",
+  "def": "Puterea cerută la arborele motorului electric, cu marja de proiectare.",
   "ia": "Parb împărțit la randamentul transmisiei, plus marja de siguranță.",
   "practic": "Se alege motor standardizat imediat superior valorii calculate.",
   "teorie": "Include pierderile cuplaj și rezerva pentru variații de regim."
@@ -852,14 +852,14 @@
   "teorie": "Preț egal Parb împărțit la produsul randamentelor lant."
  },
  "Preal": {
-  "def": "Puterea reală ceruta după corecția pentru densitatea efectiva a fluidului.",
+  "def": "Puterea reală cerută după corecția pentru densitatea efectivă a fluidului.",
   "ia": "Pref scalată cu raportul densitații reale față de referință.",
   "practic": "Esential la ventilatoare cu aer cald sau gaz de alta densitate.",
   "teorie": "Preal egal Pref înmulțit cu rho real împărțit la rho0."
  },
  "Pref": {
   "def": "Puterea de catalog măsurată la densitatea de referință a aerului.",
-  "ia": "Fisa tehnica ventilator la condiții standard de densitate.",
+  "ia": "Fisa tehnică ventilator la condiții standard de densitate.",
   "practic": "Trebuie corectată la densitatea reală de exploatare.",
   "teorie": "Punct de plecare în corecția de densitate a puterii."
  },
@@ -871,56 +871,56 @@
  },
  "alt": {
   "def": "Altitudinea locului de montaj, ce influențează presiunea și densitatea.",
-  "ia": "Date geografice ale amplasamentului instalatiei.",
-  "practic": "Reduce patm și densitatea aerului, afectand NPSH și puterea.",
+  "ia": "Date geografice ale amplasamentului instalației.",
+  "practic": "Reduce patm și densitatea aerului, afectând NPSH și puterea.",
   "teorie": "Presiunea scade aproximativ exponential cu altitudinea."
  },
  "etaBEP": {
   "def": "Randamentul pompei în punctul de eficienta maximă al curbei.",
-  "ia": "Curba de randament din fisa tehnica a pompei.",
+  "ia": "Curba de randament din fisa tehnică a pompei.",
   "practic": "Functionarea aproape de BEP minimizează consumul și uzura.",
   "teorie": "Valoarea maximă a curbei eta în funcție de debit."
  },
  "etaQ": {
   "def": "Randamentul pompei la debitul real de lucru, sub valoarea BEP.",
   "ia": "Citire pe curba de randament la debitul de exploatare.",
-  "practic": "Scade departe de BEP, crescand puterea la arbore.",
+  "practic": "Scade departe de BEP, crescând puterea la arbore.",
   "teorie": "Curba eta scade de o parte și de alta a BEP."
  },
  "Evana": {
-  "def": "Energia anuala consumată când debitul se reglează prin strangulare cu vana.",
+  "def": "Energia anuală consumată când debitul se reglează prin strangulare cu vana.",
   "ia": "Integrare putere pe profilul de funcționare cu reglaj prin vana.",
   "practic": "Referință înaltă față de care se evidențiază economia VFD.",
   "teorie": "Vana muta punctul pe curba pompei fără reducerea turației."
  },
  "Evfd": {
-  "def": "Energia anuala consumată când debitul se reglează prin convertizor de frecvență.",
-  "ia": "Integrare putere pe profil cu putere proportionala cu turația la cub.",
+  "def": "Energia anuală consumată când debitul se reglează prin convertizor de frecvență.",
+  "ia": "Integrare putere pe profil cu putere proporțională cu turația la cub.",
   "practic": "Net inferioara reglajului prin vana la debite parțiale.",
   "teorie": "P scade cu n la cub, deci economie mare la debit redus."
  },
  "Csav": {
-  "def": "Economia financiara anuala obtinuta prin trecerea de la vana la VFD.",
+  "def": "Economia financiara anuală obținută prin trecerea de la vana la VFD.",
   "ia": "Energia economisita inmultita cu tariful energiei electrice.",
   "practic": "Argument cheie pentru justificarea investitiei în convertizor.",
   "teorie": "Csav egal Wsav înmulțit cu prețul pe kWh."
  },
  "Wsav": {
-  "def": "Energia anuala economisita prin reglaj cu VFD față de strangulare.",
-  "ia": "Diferenta dintre energia cu vana și energia cu VFD.",
+  "def": "Energia anuală economisita prin reglaj cu VFD față de strangulare.",
+  "ia": "Diferența dintre energia cu vana și energia cu VFD.",
   "practic": "Baza calculului perioadei de recuperare a investitiei.",
   "teorie": "Wsav egal Evana minus Evfd."
  },
  "marja": {
   "def": "Rezerva de siguranță între NPSH disponibil și cel cerut sau pe debit.",
-  "ia": "Diferenta NPSHa minus NPSHr sau distanță față de debitul minim.",
+  "ia": "Diferența NPSHa minus NPSHr sau distanță față de debitul minim.",
   "practic": "Marja recomandată circa 0.5 până la 1 m pentru evitarea cavitatiei.",
   "teorie": "Cavitație evitată când NPSHa depasește NPSHr plus marja."
  },
  "Qmin10": {
   "def": "Debitul minim continuu estimat la 10 procente din debitul BEP.",
   "ia": "Procent aplicat debitului din punctul de eficienta maximă.",
-  "practic": "Limita inferioara orientativa pentru pompe robuste.",
+  "practic": "Limita inferioara orientativă pentru pompe robuste.",
   "teorie": "Sub debitul minim apar recirculari și vibrații daunatoare."
  },
  "Qmin25": {
@@ -933,7 +933,7 @@
   "def": "Debitul minim de lucru cerut de proces în exploatare.",
   "ia": "Cerință procesului tehnologic deservit de pompa.",
   "practic": "Se compara cu debitul minim admis al pompei.",
-  "teorie": "Trebuie sa depaseasca debitul minim continuu al pompei."
+  "teorie": "Trebuie să depaseasca debitul minim continuu al pompei."
  },
  "q1": {
   "def": "Primul nivel de debit din profilul de funcționare, procent din nominal.",
@@ -951,7 +951,7 @@
   "def": "Al treilea nivel de debit din profilul de funcționare, procent din nominal.",
   "ia": "Profil de exploatare estimat sau măsurat pe instalație.",
   "practic": "De obicei debitul maxim al profilului de regim.",
-  "teorie": "Aproape de nominal economia VFD față de vana este mica."
+  "teorie": "Aproape de nominal economia VFD față de vana este mică."
  },
  "h1": {
   "def": "Numărul de ore pe an la primul nivel de debit din profil.",
@@ -968,7 +968,7 @@
  "h3": {
   "def": "Numărul de ore pe an la al treilea nivel de debit din profil.",
   "ia": "Estimare program de funcționare la debitul q3.",
-  "practic": "Suma orelor pe profil trebuie sa acopere regimul anual.",
+  "practic": "Suma orelor pe profil trebuie să acopere regimul anual.",
   "teorie": "Energia parțială egal putere la q3 inmultita cu h3."
  },
  "nnom": {
@@ -984,19 +984,19 @@
   "teorie": "H proporțional cu n la patrat; necesita H minim egal Hstatic."
  },
  "fmin": {
-  "def": "Frecvență minimă a convertizorului corespunzatoare turației minime.",
-  "ia": "Turație minimă impartita la nominală înmulțit cu 50 Hz.",
+  "def": "Frecvență minimă a convertizorului corespunzătoare turației minime.",
+  "ia": "Turație minimă împărțită la nominală înmulțit cu 50 Hz.",
   "practic": "Limita inferioara de setat în VFD pentru proces.",
-  "teorie": "f proportionala cu turația în regim turație peste frecvență constant."
+  "teorie": "f proporțională cu turația în regim turație peste frecvență constant."
  },
  "freq": {
-  "def": "Frecvență de lucru ceruta convertizorului pentru atingerea debitului.",
-  "ia": "Din turația ceruta scalată la frecvență nominală.",
+  "def": "Frecvență de lucru cerută convertizorului pentru atingerea debitului.",
+  "ia": "Din turația cerută scalată la frecvență nominală.",
   "practic": "Setarea de referință a VFD pentru punctul de funcționare.",
   "teorie": "freq egal nreq împărțit la nnom înmulțit cu 50 Hz."
  },
  "nreq": {
-  "def": "Turația ceruta pompei pentru a satisface debitul și înălțimea ceruta.",
+  "def": "Turația cerută pompei pentru a satisface debitul și înălțimea cerută.",
   "ia": "Din legile afinitații aplicate punctului de funcționare dorit.",
   "practic": "Determina frecvență de setat pe convertizor.",
   "teorie": "Q proporțional cu n; H cu n la patrat față de punctul nominal."
@@ -1004,12 +1004,12 @@
  "Udcpk": {
   "def": "Tensiunea de varf pe bara DC în gol, fără sarcină.",
   "ia": "Calculată din tensiunea de retea: aprox 1.41 x Uretea x (1+toleranță).",
-  "practic": "Verifica izolația condensatoarelor și pragul de overvoltage la retea înaltă.",
-  "teorie": "Redresor cu diode: Udc = radical(2) x Ulinie la mers în gol."
+  "practic": "Verifică izolația condensatoarelor și pragul de overvoltage la retea înaltă.",
+  "teorie": "Redresor cu diode: Udc = radicăl(2) x Ulinie la mers în gol."
  },
  "Uies": {
-  "def": "Tensiunea fundamentala de iesire la o frecvență data pe caracteristica V/f.",
-  "ia": "Din curba V/f: Uies = Unom x (f/fnom) până la punctul de slabire câmp.",
+  "def": "Tensiunea fundamentala de ieșire la o frecvență data pe caracteristica V/f.",
+  "ia": "Din curba V/f: Uies = Unom x (f/fnom) până la punctul de slăbire câmp.",
   "practic": "Sub-tensiune la frecvențe joase reduce cuplul; verifica boost și punctul de field weakening.",
   "teorie": "Flux constant cere U/f constant până la frecvență nominală."
  },
@@ -1017,18 +1017,18 @@
   "def": "Reducerea procentuala a curentului admisibil la temperatura ambianță ridicată.",
   "ia": "Din tabelul de derating al producatorului funcție de temperatura mediu.",
   "practic": "Peste 40 grade aplica deratingul la dimensionare; verifica ventilația dulapului.",
-  "teorie": "Capacitatea de evacuare a căldurii scade cu cresterea temperaturii ambiante."
+  "teorie": "Capacitatea de evacuare a căldurii scade cu creșterea temperaturii ambiante."
  },
  "Ppierd": {
   "def": "Pierderile totale de putere disipate de convertizor în funcționare.",
   "ia": "Suma pierderilor de comutație și conductie, sau din randamentul de catalog.",
   "practic": "Dimensionează răcirea și climatizarea dulapului după aceste pierderi.",
-  "teorie": "Ppierd = Pintrare - Piesire; tipic 2-3% din puterea nominală."
+  "teorie": "Ppierd = Pintrare - Pieșire; tipic 2-3% din puterea nominală."
  },
  "Esw": {
   "def": "Energia disipată într-un singur eveniment de comutație al tranzistorului.",
   "ia": "Din fisa de catalog IGBT/SiC: Eon+Eoff la tensiunea și curentul de test.",
-  "practic": "Sta la baza calculului pierderilor de comutație la frecvență aleasa.",
+  "practic": "Sta la baza calculului pierderilor de comutație la frecvență aleasă.",
   "teorie": "Energia se scalează aproximativ liniar cu tensiunea și curentul comutat."
  },
  "Psw": {
@@ -1038,7 +1038,7 @@
   "teorie": "Pierderi proportionale cu frecvență de comutație și energia pe eveniment."
  },
  "Pcond": {
-  "def": "Pierderile de putere prin caderea de tensiune la conductie în tranzistoare.",
+  "def": "Pierderile de putere prin căderea de tensiune la conductie în tranzistoare.",
   "ia": "Pcond = Uce0 x Imed + Ron x Iefectiv la patrat.",
   "practic": "Domina la curenti mari și frecvențe joase de comutație.",
   "teorie": "Pierderi de conductie funcție de caracteristica Uce-Ic a semiconductorului."
@@ -1046,48 +1046,48 @@
  "comun:Ptot": {
   "def": "Pierderile totale de putere ale convertizorului.",
   "ia": "Ptot = Psw + Pcond plus pierderi auxiliare.",
-  "practic": "Baza pentru bilantul termic și dimensionarea climatizarii dulapului.",
+  "practic": "Baza pentru bilantul termic și dimensionarea climatizării dulapului.",
   "teorie": "Suma pierderilor de comutație și conductie pe toate dispozitivele."
  },
  "Lcrit": {
   "def": "Lungimea de cablu de la care apar supratensiuni de unda reflectată la motor.",
-  "ia": "Lcrit = vw x tr / 2 din timpul de crestere și viteza undei.",
-  "practic": "Peste aceasta lungime montează filtru dU/dt sau sinus la iesire.",
-  "teorie": "Reflexia se dublează când timpul dus-intors depasește timpul de crestere."
+  "ia": "Lcrit = vw x tr / 2 din timpul de creștere și viteza undei.",
+  "practic": "Peste aceasta lungime montează filtru dU/dt sau sinus la ieșire.",
+  "teorie": "Reflexia se dublează când timpul dus-intors depasește timpul de creștere."
  },
  "Lsafe": {
   "def": "Lungimea de cablu sub care supratensiunea ramane neglijabila.",
   "ia": "Lsafe = Lcrit / 10 (regula lambda pe zece).",
-  "practic": "Sub aceasta lungime nu este necesar filtru de iesire.",
-  "teorie": "Sub o zecime din lungimea critica reflexia nu se acumulează semnificativ."
+  "practic": "Sub aceasta lungime nu este necesar filtru de ieșire.",
+  "teorie": "Sub o zecime din lungimea critică reflexia nu se acumulează semnificativ."
  },
  "Upk": {
   "def": "Tensiunea de varf aplicată la bornele motorului prin unda reflectată.",
   "ia": "Upk = Udc x factor de reflexie (până la 2x la cablu lung).",
-  "practic": "Compara cu rezerva de izolație a motorului (clasa, norma standard).",
+  "practic": "Compară cu rezerva de izolație a motorului (clasa, norma standard).",
   "teorie": "Suprapunerea undei incidente și reflectate poate dubla tensiunea."
  },
  "tr": {
-  "def": "Timpul de crestere a frontului de tensiune la iesirea convertizorului.",
+  "def": "Timpul de creștere a frontului de tensiune la ieșirea convertizorului.",
   "ia": "Din fisa convertizorului sau măsurat la borne (10-90%).",
   "practic": "Fronturi rapide (IGBT/SiC) agravează unda reflectată și curentii de rulment.",
-  "teorie": "dU/dt mare scurtează lungimea critica de cablu."
+  "teorie": "dU/dt mare scurtează lungimea critică de cablu."
  },
  "vw": {
   "def": "Viteza de propagare a undei electromagnetice pe cablul de motor.",
   "ia": "Tipic 150-200 m/us funcție de tipul și izolația cablului.",
-  "practic": "Folosește valoarea producatorului de cablu pentru lungimea critica.",
-  "teorie": "vw = 1/radical(L x C) per unitate de lungime a cablului."
+  "practic": "Folosește valoarea producatorului de cablu pentru lungimea critică.",
+  "teorie": "vw = 1/radicăl(L x C) per unitate de lungime a cablului."
  },
  "Cdc": {
   "def": "Capacitatea totală a condensatoarelor de pe bara DC.",
-  "ia": "Din fisa tehnica a convertizorului sau suma condensatoarelor.",
+  "ia": "Din fisa tehnică a convertizorului sau suma condensatoarelor.",
   "practic": "Determina energia tampon pentru ride-through la caderi de tensiune.",
   "teorie": "Energia stocată E = 0.5 x C x U la patrat."
  },
  "Udc1": {
-  "def": "Tensiunea pe bara DC în momentul initial al caderii de retea.",
-  "ia": "Tensiune DC nominală în funcționare normala înainte de dip.",
+  "def": "Tensiunea pe bara DC în momentul inițial al caderii de retea.",
+  "ia": "Tensiune DC nominală în funcționare normală înainte de dip.",
   "practic": "Punct de pornire pentru calculul timpului de ride-through.",
   "teorie": "Energia utilă este între tensiunea inițială și pragul de undervoltage."
  },
@@ -1095,17 +1095,17 @@
   "def": "Pragul de tensiune DC la care convertizorul declanșează undervoltage.",
   "ia": "Din parametrii de protecție sub-tensiune ai convertizorului.",
   "practic": "Sub acest prag drive-ul se oprește; limita inferioara a energiei utile.",
-  "teorie": "Energia disponibila scade cu patratul tensiunii minime admise."
+  "teorie": "Energia disponibilă scade cu patratul tensiunii minime admise."
  },
  "Edisp": {
-  "def": "Energia utilă stocată pe bara DC disponibila la o cadere de retea.",
+  "def": "Energia utilă stocată pe bara DC disponibilă la o cădere de retea.",
   "ia": "Edisp = 0.5 x Cdc x (Udc1 patrat - Udc2 patrat).",
   "practic": "Împarte la putere pentru a estima timpul de susținere fără retea.",
-  "teorie": "Diferenta energiilor stocate între tensiunea inițială și prag."
+  "teorie": "Diferența energiilor stocate între tensiunea inițială și prag."
  },
  "Psarc": {
   "def": "Puterea absorbita de sarcină în momentul caderii de retea.",
-  "ia": "Din punctul de funcționare al aplicatiei la momentul dip-ului.",
+  "ia": "Din punctul de funcționare al aplicației la momentul dip-ului.",
   "practic": "Cu cât sarcină e mai mare, cu atât ride-through-ul e mai scurt.",
   "teorie": "tbuf = Edisp / Psarc la putere constantă."
  },
@@ -1116,13 +1116,13 @@
   "teorie": "Cuplaj capacitiv stator-rotor determina raportul tensiunii pe ax."
  },
  "Uce0": {
-  "def": "Caderea de tensiune la conductie în prag a tranzistorului/diodei.",
+  "def": "Căderea de tensiune la conductie în prag a tranzistorului/diodei.",
   "ia": "Din fisa de catalog IGBT, segment liniarizat al caracteristicii.",
   "practic": "Parametru pentru calculul pierderilor de conductie.",
   "teorie": "Model liniar: Uce = Uce0 + Ron x Ic."
  },
  "Ucm": {
-  "def": "Tensiunea de mod comun generată de comutația PWM față de pamant.",
+  "def": "Tensiunea de mod comun generată de comutația PWM față de pământ.",
   "ia": "Calculată din schema PWM; tipic o treime din Udc în salturi.",
   "practic": "Sursa curentilor de rulment și a perturbatiilor; reduce cu filtru CM.",
   "teorie": "Suma celor trei tensiuni de fază nu este nula în PWM trifazat."
@@ -1153,49 +1153,49 @@
  },
  "IB": {
   "def": "Curentul de utilizare absorbit efectiv de sarcină în regim normal.",
-  "ia": "Din puterea și tensiunea aplicatiei; la convertizor curentul de intrare.",
+  "ia": "Din puterea și tensiunea aplicației; la convertizor curentul de intrare.",
   "practic": "Punct de plecare pentru dimensionarea cablului și a protecției.",
   "teorie": "IB <= În <= Iz: regula de coordonare sarcină-protecție-cablu."
  },
  "Smin": {
-  "def": "Secțiunea minimă de cablu care satisface curentul și caderea de tensiune.",
+  "def": "Secțiunea minimă de cablu care satisface curentul și căderea de tensiune.",
   "ia": "Din IB corectat și verificarea caderii de tensiune admise.",
   "practic": "Alege secțiunea standard imediat superioara celei calculate.",
-  "teorie": "Limitată de încălzire, cadere de tensiune și scurtcircuit."
+  "teorie": "Limitată de încălzire, cădere de tensiune și scurtcircuit."
  },
  "Iz": {
   "def": "Curentul admisibil al cablului corectat cu factorii de mediu.",
   "ia": "Iz = It x Ca x Cg.",
-  "practic": "Trebuie sa fie cel puțin egal cu curentul protecției În.",
-  "teorie": "Curent maxim continuu fără depasirea temperaturii izolației."
+  "practic": "Trebuie să fie cel puțin egal cu curentul protecției În.",
+  "teorie": "Curent maxim continuu fără depășirea temperaturii izolației."
  },
  "rezerva": {
-  "def": "Marja de curent între admisibilul cablului și sarcină efectiva.",
+  "def": "Marja de curent între admisibilul cablului și sarcină efectivă.",
   "ia": "rezerva = Iz - IB.",
-  "practic": "Rezerva pozitiva confirma dimensionarea; ofera margine de extindere.",
+  "practic": "Rezerva pozitivă confirma dimensionarea; ofera margine de extindere.",
   "teorie": "Rezerva asigura funcționare sub limita termică a cablului."
  },
  "dU": {
-  "def": "Caderea de tensiune absoluta pe cablu la curentul de sarcină.",
-  "ia": "dU = radical(3) x IB x L x (R cos fi + X sin fi) la trifazat.",
-  "practic": "Verifica la capatul liniei mai ales la cabluri lungi spre motor.",
-  "teorie": "Cadere ohmica și inductiva proportionala cu lungimea și curentul."
+  "def": "Căderea de tensiune absolută pe cablu la curentul de sarcină.",
+  "ia": "dU = radicăl(3) x IB x L x (R cos fi + X sin fi) la trifazat.",
+  "practic": "Verifică la capătul liniei mai ales la cabluri lungi spre motor.",
+  "teorie": "Cădere ohmică și inductivă proporțională cu lungimea și curentul."
  },
  "dUproc": {
-  "def": "Caderea de tensiune exprimată procentual din tensiunea nominală.",
+  "def": "Căderea de tensiune exprimată procentual din tensiunea nominală.",
   "ia": "dUproc = dU / Unom x 100.",
   "practic": "Recomandat sub 3% forță, sub 5% total până la consumator.",
-  "teorie": "Caderea procentuala crește cu lungimea și scade cu secțiunea."
+  "teorie": "Căderea procentuala crește cu lungimea și scade cu secțiunea."
  },
  "dUr": {
-  "def": "Caderea de tensiune pe reactorul de linie la curent nominal.",
+  "def": "Căderea de tensiune pe reactorul de linie la curent nominal.",
   "ia": "dUr = 2 x pi x f x Lr x I (procentual din tensiune).",
   "practic": "Tipic 2-4%; prea mare reduce tensiunea la convertizor.",
-  "teorie": "Cadere inductiva proportionala cu reactanță și curentul."
+  "teorie": "Cădere inductivă proporțională cu reactanță și curentul."
  },
  "Lr": {
   "def": "Inductanță reactorului de linie la intrarea convertizorului.",
-  "ia": "Calculată din procentul de cadere dorit (uzual 2-4%).",
+  "ia": "Calculată din procentul de cădere dorit (uzual 2-4%).",
   "practic": "Reduce armonicile de curent și protejează la varfuri de retea.",
   "teorie": "Lr = uk x Ufaza / (2 x pi x f x I)."
  },
@@ -1206,27 +1206,27 @@
   "teorie": "Netezește curentul de redresare și limitează armonicile de joasă ordine."
  },
  "Lf": {
-  "def": "Inductanță filtrului de iesire (sinus/dU dt) către motor.",
-  "ia": "Din fisa filtrului ales sau proiectată pentru fc dorita.",
+  "def": "Inductanță filtrului de ieșire (sinus/dU dt) către motor.",
+  "ia": "Din fisa filtrului ales sau proiectată pentru fc dorită.",
   "practic": "Cu Cf formează filtrul care netezește tensiunea spre motor.",
-  "teorie": "Filtru LC trece-jos: fc = 1/(2 pi radical(Lf Cf))."
+  "teorie": "Filtru LC trece-jos: fc = 1/(2 pi radicăl(Lf Cf))."
  },
  "Cf": {
-  "def": "Capacitatea filtrului de iesire spre motor.",
+  "def": "Capacitatea filtrului de ieșire spre motor.",
   "ia": "Din fisa filtrului sau dimensionată pentru frecvență de taiere.",
-  "practic": "Componenta capacitiva a filtrului LC de iesire.",
+  "practic": "Componenta capacitivă a filtrului LC de ieșire.",
   "teorie": "Împreună cu Lf stabilește frecvență de taiere a filtrului."
  },
  "foutmax": {
-  "def": "Frecvență fundamentala maximă de iesire ceruta de aplicație.",
+  "def": "Frecvență fundamentala maximă de ieșire cerută de aplicație.",
   "ia": "Din turația maximă a motorului și numărul de poli.",
-  "practic": "Filtrul de iesire trebuie sa o lase nealterată (fc mult peste).",
+  "practic": "Filtrul de ieșire trebuie să o lase nealterată (fc mult peste).",
   "teorie": "fout = p x n / 120; limita superioara a benzii utile."
  },
  "fc": {
-  "def": "Frecvență de taiere a filtrului LC de iesire.",
-  "ia": "fc = 1 / (2 x pi x radical(Lf x Cf)).",
-  "practic": "Aseaza-o între frecvență de iesire și cea de comutație.",
+  "def": "Frecvență de taiere a filtrului LC de ieșire.",
+  "ia": "fc = 1 / (2 x pi x radicăl(Lf x Cf)).",
+  "practic": "Asează-o între frecvență de ieșire și cea de comutație.",
   "teorie": "Filtru trece-jos: peste fc atenuează componentele de comutație."
  },
  "rapfsw": {
@@ -1236,9 +1236,9 @@
   "teorie": "Raport mare asigura filtrarea eficienta a armonicilor de comutație."
  },
  "rapfout": {
-  "def": "Raportul între frecvență de taiere și frecvență de iesire.",
+  "def": "Raportul între frecvență de taiere și frecvență de ieșire.",
   "ia": "rapfout = fc / foutmax.",
-  "practic": "Recomandat peste 5 ca filtrul sa nu distorsioneze fundamentala.",
+  "practic": "Recomandat peste 5 ca filtrul să nu distorsioneze fundamentala.",
   "teorie": "Raport suficient evita atenuarea și defazajul fundamentalei."
  },
  "Str": {
@@ -1249,33 +1249,33 @@
  },
  "Intr": {
   "def": "Curentul nominal pe partea joasă a transformatorului.",
-  "ia": "Într = Str / (radical(3) x Usecundar).",
+  "ia": "Într = Str / (radicăl(3) x Usecundar).",
   "practic": "Baza pentru protecția generala și dimensionarea barei JT.",
   "teorie": "Curent nominal trifazat la puterea aparentă data."
  },
  "Iccsec": {
   "def": "Curentul de scurtcircuit la bornele secundare ale transformatorului.",
   "ia": "Iccsec = Într / uk (tensiunea de scurtcircuit procentuala).",
-  "practic": "Determina capacitatea de rupere necesară a aparatajului JT.",
+  "practic": "Determină capacitatea de rupere necesară a aparatajului JT.",
   "teorie": "Limitat de impedanță interna (uk) a transformatorului."
  },
  "Iinrush": {
   "def": "Curentul de varf de magnetizare la conectarea transformatorului.",
   "ia": "Tipic 8-12 x curentul nominal, scade în cateva perioade.",
-  "practic": "Reglează protecția magnetică sa nu declanseze la pornire.",
+  "practic": "Reglează protecția magnetică să nu declanseze la pornire.",
   "teorie": "Saturația miezului la conectare produce varf de curent tranzitoriu."
  },
  "krez": {
   "def": "Factorul de rezerva aplicat la dimensionarea puterii.",
   "ia": "Ales de proiectant, tipic 1.1-1.25 pentru extindere.",
-  "practic": "Evita supradimensionarea excesiva dar lasa margine de crestere.",
+  "practic": "Evita supradimensionarea excesivă dar lasa margine de creștere.",
   "teorie": "Coeficient de siguranță peste sarcină calculată."
  },
  "Icctr": {
   "def": "Contribuția transformatorului la curentul de scurtcircuit pe bara.",
   "ia": "Calculată din puterea și uk transformatorului.",
-  "practic": "Componenta principala a Icc total la bara JT.",
-  "teorie": "Invers proportionala cu impedanță de scurtcircuit a sursei."
+  "practic": "Componenta principală a Icc total la bara JT.",
+  "teorie": "Invers proporțională cu impedanță de scurtcircuit a sursei."
  },
  "Imot": {
   "def": "Contribuția motoarelor în functiune la curentul de scurtcircuit.",
@@ -1286,37 +1286,37 @@
  "Icctot": {
   "def": "Curentul total de scurtcircuit pe bara, suma surselor.",
   "ia": "Icctot = Icctr + Imot.",
-  "practic": "Compara cu capacitatea de rupere (Icu/Ics) a aparatajului.",
-  "teorie": "Suma contributiilor retelei și masinilor rotative."
+  "practic": "Compară cu capacitatea de rupere (Icu/Ics) a aparatajului.",
+  "teorie": "Suma contributiilor retelei și mașinilor rotative."
  },
  "Sporn": {
-  "def": "Puterea aparentă absorbita la pornirea directa a motorului.",
-  "ia": "Sporn = radical(3) x Upornire x Iporn (6-8 x În).",
-  "practic": "Verifica daca sursa susține pornirea fără cadere de tensiune.",
+  "def": "Puterea aparentă absorbita la pornirea directă a motorului.",
+  "ia": "Sporn = radicăl(3) x Upornire x Iporn (6-8 x În).",
+  "practic": "Verifică daca sursa susține pornirea fără cădere de tensiune.",
   "teorie": "Curentul de pornire ridicat cere putere aparentă mare tranzitoriu."
  },
  "TDD": {
   "def": "Limita admisa de distorsiune totală a curentului raportat la sarcină maximă (IEEE 519).",
   "ia": "Din tabelul IEEE 519 funcție de raportul Iscurtcircuit/Isarcina.",
-  "practic": "Compara THD-ul măsurat/estimat cu aceasta limita la PCC.",
+  "practic": "Compară THD-ul măsurat/estimat cu aceasta limita la PCC.",
   "teorie": "TDD se raportează la curentul de sarcină maxim, nu la fundamental instantaneu."
  },
  "THDest": {
-  "def": "Distorsiunea armonica de curent estimată generată de convertizor.",
+  "def": "Distorsiunea armonică de curent estimată generată de convertizor.",
   "ia": "Din tipul redresorului: 6-puls ~30%, 12-puls ~10%, AFE <5%.",
-  "practic": "Compara cu limita TDD pentru a decide masuri de atenuare.",
+  "practic": "Compară cu limita TDD pentru a decide masuri de atenuare.",
   "teorie": "Topologia redresorului determina spectrul armonic injectat."
  },
- "depasire": {
-  "def": "Diferenta între THD-ul estimat și limita TDD admisa.",
-  "ia": "depasire = THDest - TDD.",
-  "practic": "Valoare pozitiva impune filtru, reactor sau topologie cu armonici reduse.",
+ "depășire": {
+  "def": "Diferența între THD-ul estimat și limita TDD admisa.",
+  "ia": "depășire = THDest - TDD.",
+  "practic": "Valoare pozitivă impune filtru, reactor sau topologie cu armonici reduse.",
   "teorie": "Depasirea limitei la PCC obliga la masuri de conformitate."
  },
  "m6": {
   "def": "Marja față de limita TDD pentru un redresor 6-puls.",
   "ia": "m6 = TDD - THD tipic 6-puls.",
-  "practic": "Marja negativa indica nevoia de reactor sau filtru de armonici.",
+  "practic": "Marja negativă indica nevoia de reactor sau filtru de armonici.",
   "teorie": "Redresorul 6-puls injectează armonici 5, 7, 11, 13."
  },
  "m12": {
@@ -1332,13 +1332,13 @@
   "teorie": "AFE controlează curentul de intrare sinusoidal, THD sub 5%."
  },
  "PF": {
-  "def": "Factorul de putere total incluzand armonici și defazaj.",
-  "ia": "PF = DPF / radical(1 + THDi la patrat).",
+  "def": "Factorul de putere total incluzând armonici și defazaj.",
+  "ia": "PF = DPF / radicăl(1 + THDi la patrat).",
   "practic": "La convertizoare difera mult de cos fi din cauza armonicilor.",
   "teorie": "PF total = factor deplasare x factor de distorsiune."
  },
  "PF1": {
-  "def": "Factorul de putere initial al instalatiei înainte de compensare.",
+  "def": "Factorul de putere inițial al instalației înainte de compensare.",
   "ia": "Măsurat sau din factura de energie (tg fi / cos fi).",
   "practic": "Punct de plecare pentru calculul puterii reactive de compensat.",
   "teorie": "Raport între putere activă și aparentă înainte de corecție."
@@ -1346,8 +1346,8 @@
  "PF2": {
   "def": "Factorul de putere țintă dorit după compensare.",
   "ia": "Ales tipic 0.95-0.98 pentru a evita penalizari.",
-  "practic": "Determina puterea bateriei de condensatoare necesară.",
-  "teorie": "Țintă uzuala peste 0.92 ceruta de furnizorul de energie."
+  "practic": "Determină puterea bateriei de condensatoare necesară.",
+  "teorie": "Țintă uzuala peste 0.92 cerută de furnizorul de energie."
  },
  "DPF": {
   "def": "Factorul de deplasare, cosinusul defazajului fundamentalei.",
@@ -1357,15 +1357,15 @@
  },
  "IsI1": {
   "def": "Raportul între curentul total efectiv și componenta fundamentala.",
-  "ia": "IsI1 = radical(1 + THDi la patrat).",
-  "practic": "Cuantifica suprasarcina de curent data de armonici.",
+  "ia": "IsI1 = radicăl(1 + THDi la patrat).",
+  "practic": "Cuantifica suprasarcină de curent data de armonici.",
   "teorie": "Curentul efectiv crește peste fundamental în prezenta armonicilor."
  },
  "Cd": {
   "def": "Capacitatea unui condensator de compensare în conexiune triunghi.",
   "ia": "Cd = Qc / (3 x 2 x pi x f x Ufaza patrat) la triunghi.",
-  "practic": "Determina condensatorul fizic pentru puterea reactivă ceruta.",
-  "teorie": "În triunghi capacitatea necesară e de trei ori mai mica decât în stea."
+  "practic": "Determină condensatorul fizic pentru puterea reactivă cerută.",
+  "teorie": "În triunghi capacitatea necesară e de trei ori mai mică decât în stea."
  },
  "Qc": {
   "def": "Puterea reactivă necesară pentru a atinge factorul de putere țintă.",
@@ -1375,61 +1375,61 @@
  },
  "Ic": {
   "def": "Curentul absorbit de bateria de condensatoare de compensare.",
-  "ia": "Ic = Qc / (radical(3) x U).",
+  "ia": "Ic = Qc / (radicăl(3) x U).",
   "practic": "Dimensionează cablul, contactorul și siguranță bateriei.",
   "teorie": "Curent capacitiv proporțional cu puterea reactivă și tensiunea."
  },
  "comun:k": {
   "def": "Factorul de compensare, reactiv necesar pe unitate de putere activă.",
-  "ia": "k = tg fi1 - tg fi2 din factorii de putere initial și țintă.",
+  "ia": "k = tg fi1 - tg fi2 din factorii de putere inițial și țintă.",
   "practic": "Înmulțit cu puterea activă da puterea reactivă de compensat.",
-  "teorie": "k = Qc / P; tabelat în funcție de cos fi initial și țintă."
+  "teorie": "k = Qc / P; tabelat în funcție de cos fi inițial și țintă."
  },
  "facord": {
   "def": "Frecvență de acord a reactorului de detunare al bateriei.",
-  "ia": "Sub prima armonica importanță, tipic 134, 189 sau 210 Hz.",
-  "practic": "Alege treapta (5.67/7/14%) sub armonica dominanță din retea.",
-  "teorie": "Reactorul deplasează rezonanță sub armonica pentru a o evita."
+  "ia": "Sub prima armonică importanță, tipic 134, 189 sau 210 Hz.",
+  "practic": "Alege treapta (5.67/7/14%) sub armonică dominanță din retea.",
+  "teorie": "Reactorul deplasează rezonanță sub armonică pentru a o evita."
  },
  "UC": {
-  "def": "Tensiunea efectiva pe condensatoarele bateriei cu reactor de detunare.",
+  "def": "Tensiunea efectivă pe condensatoarele bateriei cu reactor de detunare.",
   "ia": "Mai mare decât tensiunea retelei din cauza reactorului serie.",
   "practic": "Alege condensatoare cu tensiune nominală majorată (ex. 440-525 V).",
   "teorie": "Reactorul serie ridica tensiunea pe condensator peste cea de retea."
  },
  "hrez": {
   "def": "Ordinul armonic la care apare rezonanță între retea și compensare.",
-  "ia": "hrez = radical(Sscurtcircuit / Qc).",
-  "practic": "Daca pica pe o armonica generată (5,7,11) impune reactor de detunare.",
+  "ia": "hrez = radicăl(Sscurtcircuit / Qc).",
+  "practic": "Daca pica pe o armonică generată (5,7,11) impune reactor de detunare.",
   "teorie": "Rezonanță paralela între inductanță retelei și capacitatea bateriei."
  },
  "frez": {
   "def": "Frecvență de rezonanță a circuitului retea-baterie de condensatoare.",
   "ia": "frez = hrez x 50 Hz (frecvență fundamentala).",
-  "practic": "Evita sa coincida cu armonicile convertizorului prin detunare.",
+  "practic": "Evita să coincida cu armonicile convertizorului prin detunare.",
   "teorie": "Frecvență la care impedanță paralela LC devine maximă."
  },
  "Ekin": {
-  "def": "Energia cinetica disponibila în masele rotative pentru susținere.",
+  "def": "Energia cinetică disponibilă în masele rotative pentru susținere.",
   "ia": "Ekin = 0.5 x J x omega la patrat din inerția sistemului.",
-  "practic": "Folosește pentru ride-through prin franare regenerativa controlată.",
-  "teorie": "Inerția permite mentinerea barei DC scazand turația (kinetic buffering)."
+  "practic": "Folosește pentru ride-through prin frânăre regenerativă controlată.",
+  "teorie": "Inerția permite menținerea barei DC scăzând turația (kinetic buffering)."
  },
  "tbuf": {
-  "def": "Timpul de susținere a sarcinii folosind energia disponibila la cadere de retea.",
-  "ia": "tbuf = Edisp / Psarc sau din energia cinetica disponibila.",
-  "practic": "Compara cu durata tipica a dip-urilor de retea (sutimi de secunda).",
-  "teorie": "Timp = energie disponibila impartita la puterea consumată."
+  "def": "Timpul de susținere a sarcinii folosind energia disponibilă la cădere de retea.",
+  "ia": "tbuf = Edisp / Psarc sau din energia cinetică disponibilă.",
+  "practic": "Compară cu durata tipică a dip-urilor de retea (sutimi de secunda).",
+  "teorie": "Timp = energie disponibilă împărțită la puterea consumată."
  },
  "drop": {
-  "def": "Scaderea de turație permisa în timpul sustinerii cinetice.",
-  "ia": "Aleasa de aplicație, tipic 10-30% fără afectarea procesului.",
-  "practic": "Mai multa scadere permite mai multa energie cinetica extrasa.",
+  "def": "Scăderea de turație permisa în timpul sustinerii cinetice.",
+  "ia": "Aleasă de aplicație, tipic 10-30% fără afectarea procesului.",
+  "practic": "Mai multa scădere permite mai multa energie cinetică extrasa.",
   "teorie": "Energia extrasa crește cu patratul scaderii relative de turație."
  },
  "Pload": {
   "def": "Puterea de sarcină folosita la calculul timpului de susținere.",
-  "ia": "Din punctul de funcționare al aplicatiei la momentul caderii.",
+  "ia": "Din punctul de funcționare al aplicației la momentul caderii.",
   "practic": "Sarcină mare scurtează timpul de ride-through disponibil.",
   "teorie": "tbuf invers proporțional cu puterea de sarcină."
  },
@@ -1437,19 +1437,19 @@
   "def": "Curentul celui de-al doilea segment al ciclului termic de sarcină.",
   "ia": "Din profilul de sarcină (regimul de lucru intermitent S3-S6).",
   "practic": "Folosește la curentul efectiv termic pentru dimensionarea drive-ului.",
-  "teorie": "Curent efectiv = radical(suma I la patrat x timpi / timp total)."
+  "teorie": "Curent efectiv = radicăl(suma I la patrat x timpi / timp total)."
  },
  "Ffrec": {
-  "def": "Forță ce se opune miscarii la contactul dintre suprafete, proportionala cu sarcină normala.",
+  "def": "Forță ce se opune mișcarii la contactul dintre suprafete, proporțională cu sarcină normală.",
   "ia": "Se calculează din masa, gravitație și coeficient: F=mu*m*g*cos(beta).",
   "practic": "Domina la transport orizontal; o subestimezi și motorul nu pornește sub sarcină.",
-  "teorie": "Frecare Coulomb: forță tangentiala maximă egala cu mu înmulțit cu reactiunea normala."
+  "teorie": "Frecare Coulomb: forță tangentiala maximă egala cu mu înmulțit cu reacțiunea normală."
  },
  "Fpanta": {
-  "def": "Componenta greutații paralela cu planul inclinat, care trage sarcină în jos pe panta.",
+  "def": "Componenta greutații paralela cu planul înclinat, care trage sarcină în jos pe panta.",
   "ia": "Din masa și unghi: F=m*g*sin(beta).",
-  "practic": "Pe transportoare inclinate crește mult cuplul cerut; contează la dimensionare și frana.",
-  "teorie": "Descompunerea greutații pe plan inclinat în componenta normala și componenta tangentiala."
+  "practic": "Pe transportoare înclinate crește mult cuplul cerut; contează la dimensionare și frână.",
+  "teorie": "Descompunerea greutații pe plan înclinat în componenta normală și componenta tangentiala."
  },
  "Ftract": {
   "def": "Forță totală la banda necesară pentru deplasarea sarcinii, suma frecare plus panta plus accelerare.",
@@ -1458,33 +1458,33 @@
   "teorie": "Echilibrul fortelor pe sarcină după legea a doua a lui Newton."
  },
  "Min": {
-  "def": "Cuplul cerut la arborele de intrare al reductorului, adica la motor.",
-  "ia": "Din cuplul de iesire împărțit la raport și randament: Min=Mout/(i*eta).",
-  "practic": "Compara-l cu cuplul nominal al motorului plus rezerva; aici se alege motorul.",
+  "def": "Cuplul cerut la arborele de intrare al reductorului, adică la motor.",
+  "ia": "Din cuplul de ieșire împărțit la raport și randament: Min=Mout/(i*eta).",
+  "practic": "Compară-l cu cuplul nominal al motorului plus rezerva; aici se alege motorul.",
   "teorie": "Conservarea puterii prin reductor minus pierderile date de randament."
  },
  "Mout": {
-  "def": "Cuplul disponibil la arborele de iesire al reductorului, către sarcină.",
+  "def": "Cuplul disponibil la arborele de ieșire al reductorului, către sarcină.",
   "ia": "Din cuplul la motor înmulțit cu raport și randament, sau din cerință sarcinii.",
-  "practic": "Verifica sa nu depaseasca cuplul admis al reductorului (rating termic și mecanic).",
+  "practic": "Verifică să nu depaseasca cuplul admis al reductorului (rating termic și mecanic).",
   "teorie": "Multiplicarea cuplului prin raportul de transmitere, redusă de randament."
  },
  "Jred": {
-  "def": "Inerția intregului sistem raportată la axul motorului, pentru calculul accelerarii.",
+  "def": "Inerția intregului sistem raportată la axul motorului, pentru calculul accelerării.",
   "ia": "Inertiile sarcinii se impart la patratul raportului și se aduna cu inerția motorului.",
   "practic": "Decide cuplul dinamic și timpul de rampa; raport inerții mare cere reglaj atent.",
   "teorie": "Reflectarea inerției printr-un reductor scade cu patratul raportului de transmitere."
  },
  "Jlin": {
-  "def": "Inerția echivalenta a maselor în miscare liniară, redusă la axul de rotație.",
+  "def": "Inerția echivalenta a maselor în mișcare liniară, redusă la axul de rotație.",
   "ia": "Din masa și viteza liniară față de turație: J=m*(v/omega)^2.",
-  "practic": "Contează la benzi și sanii grele; adauga la inerția totală pentru rampe.",
-  "teorie": "Echivalenta energiei cinetice între miscarea liniară și cea de rotație."
+  "practic": "Contează la benzi și să nii grele; adaugă la inerția totală pentru rampe.",
+  "teorie": "Echivalenta energiei cinetice între mișcarea liniară și cea de rotație."
  },
  "vlin": {
   "def": "Viteza la periferia tamburului, egala cu viteza benzii sau a sarcinii.",
   "ia": "Din turație și diametru tambur: v=pi*D*n/60.",
-  "practic": "Trebuie sa coincida cu viteza ceruta de proces; ajustezi din diametru sau raport.",
+  "practic": "Trebuie să coincida cu viteza cerută de proces; ajustezi din diametru sau raport.",
   "teorie": "Relația dintre viteza unghiulară și viteza tangentiala la raza tamburului."
  },
  "Ttamb": {
@@ -1500,67 +1500,67 @@
   "teorie": "Bilantul cuplurilor static și dinamic redus la arborele motor."
  },
  "Tback": {
-  "def": "Cuplul transmis inapoi spre motor când sarcină antrenează sistemul la coborare.",
+  "def": "Cuplul transmis înapoi spre motor când sarcină antrenează sistemul la coborare.",
   "ia": "Din cuplul sarcinii înmulțit cu randamentul reductorului la coborare.",
-  "practic": "Decide daca e nevoie de frana sau de regim regenerativ pe drive.",
+  "practic": "Decide daca e nevoie de frână sau de regim regenerativ pe drive.",
   "teorie": "Back-drive: fluxul de putere se inversează, randamentul acționează invers."
  },
  "Prid": {
   "def": "Puterea mecanică necesară pentru ridicarea sarcinii cu viteza data.",
-  "ia": "Din forță de ridicare și viteza: P=F*v, impartita la randament.",
+  "ia": "Din forță de ridicare și viteza: P=F*v, împărțită la randament.",
   "practic": "Dimensionează motorul la regim continuu de ridicare; atentie la ciclul de lucru.",
-  "teorie": "Puterea ca produs între forță și viteza pe direcția miscarii."
+  "teorie": "Puterea ca produs între forță și viteza pe direcția mișcarii."
  },
  "Trid": {
-  "def": "Cuplul cerut la ridicarea sarcinii, invingand greutatea și frecarile.",
+  "def": "Cuplul cerut la ridicarea sarcinii, învingând greutatea și frecările.",
   "ia": "Din forță de ridicare și raza tamburului, corectată cu randamentul.",
-  "practic": "Cea mai grea cerință de cuplu la macara; baza alegerii motor și frana.",
+  "practic": "Cea mai grea cerință de cuplu la macara; baza alegerii motor și frână.",
   "teorie": "Cuplu motor egal cu cuplul rezistent gravitational plus pierderi."
  },
  "Tcob": {
   "def": "Cuplul la coborarea sarcinii, redus de frecari față de ridicare.",
   "ia": "Din forță sarcinii și raza, cu randamentul aplicat în sens de coborare.",
-  "practic": "Adesea mai mic decât la ridicare; verifica frana și energia regenerată.",
-  "teorie": "La coborare frecarile ajuta, deci sarcină antrenează partial sistemul."
+  "practic": "Adesea mai mic decât la ridicare; verifica frână și energia regenerată.",
+  "teorie": "La coborare frecările ajuta, deci sarcină antrenează partial sistemul."
  },
  "Tment": {
-  "def": "Cuplul necesar pentru a ține sarcină suspendată, fără miscare.",
+  "def": "Cuplul necesar pentru a ține sarcină suspendată, fără mișcare.",
   "ia": "Din greutatea sarcinii și raza tamburului, în regim static.",
-  "practic": "Definește frana de mentinere și cuplul de stationare al actionarii.",
+  "practic": "Definește frână de menținere și cuplul de stationare al acționării.",
   "teorie": "Echilibru static: cuplul aplicat egalează cuplul gravitational."
  },
  "Fnet": {
-  "def": "Forță utilă ramasa după scaderea efectului contragreutații din sarcină.",
-  "ia": "Din diferenta dintre greutatea cabinei cu sarcină și greutatea contragreutații.",
+  "def": "Forță utilă ramasa după scăderea efectului contragreutații din sarcină.",
+  "ia": "Din diferența dintre greutatea cabinei cu sarcină și greutatea contragreutații.",
   "practic": "Reduce mult cuplul motor la ascensoare; semnul indica sensul efortului.",
   "teorie": "Bilant de forțe între cele doua ramuri ale cablului peste roată."
  },
  "comp": {
-  "def": "Cât la suta din sarcină este echilibrată de contragreutate.",
-  "ia": "Din raportul masei contragreutații la masa cabinei plus o fractiune din sarcină.",
-  "practic": "Tipic 40-50 la suta la lifturi; optimizează consumul și dimensiunea motorului.",
-  "teorie": "Echilibrarea statică reduce forță neta medie pe ciclul de lucru."
+  "def": "Cât la sută din sarcină este echilibrată de contragreutate.",
+  "ia": "Din raportul masei contragreutații la masa cabinei plus o fracțiune din sarcină.",
+  "practic": "Tipic 40-50 la sută la lifturi; optimizează consumul și dimensiunea motorului.",
+  "teorie": "Echilibrarea statică reduce forță netă medie pe ciclul de lucru."
  },
  "mcabina": {
   "def": "Masa proprie a cabinei sau a structurii mobile, fără sarcină utilă.",
-  "ia": "Din fisa tehnica a echipamentului sau cantarire.",
+  "ia": "Din fisa tehnică a echipamentului sau cantarire.",
   "practic": "Intra în bilantul de forțe; nu o uita la calculul contragreutații.",
   "teorie": ""
  },
  "msarcina": {
   "def": "Masa utilă transportată, variabilă între gol și plin.",
   "ia": "Din specificația de proces sau sarcină nominală admisa.",
-  "practic": "Calculezi cazul cel mai greu și cel mai usor pentru frana și motor.",
+  "practic": "Calculezi cazul cel mai greu și cel mai ușor pentru frână și motor.",
   "teorie": ""
  },
  "mcg": {
   "def": "Masa contragreutații folosita pentru echilibrarea cabinei și a sarcinii.",
   "ia": "Din proiectul mecanic sau cantarire a blocului de contragreutate.",
-  "practic": "Aleasa pentru gradul de compensare dorit; afectează forță neta.",
+  "practic": "Aleasă pentru gradul de compensare dorit; afectează forță netă.",
   "teorie": ""
  },
  "Ftaper": {
-  "def": "Tensiunea în material redusă progresiv pe măsura cresterii diametrului de înfășurare.",
+  "def": "Tensiunea în material redusă progresiv pe măsura creșterii diametrului de înfășurare.",
   "ia": "Din tensiunea de referință și procentul de taper la diametrul curent.",
   "practic": "Previne telescoparea și zdrobirea straturilor interioare la rola plina.",
   "teorie": "Taper tension: tensiunea scade controlat cu diametrul pentru o rola stabila."
@@ -1580,53 +1580,53 @@
  "ngol": {
   "def": "Turația winderului la diametru gol, cea mai mare din ciclu.",
   "ia": "Din viteza liniară a benzii și diametrul gol: n=v/(pi*d).",
-  "practic": "Verifica turația maximă față de limita motor și VFD la miez.",
+  "practic": "Verifică turația maximă față de limita motor și VFD la miez.",
   "teorie": "La diametru mic, aceeasi viteza liniară cere turație mare."
  },
  "nplin": {
-  "def": "Turația winderului la diametru plin, cea mai mica din ciclu.",
+  "def": "Turația winderului la diametru plin, cea mai mică din ciclu.",
   "ia": "Din viteza liniară a benzii și diametrul plin: n=v/(pi*d).",
   "practic": "Definește raportul de reglaj turație între gol și plin (CPR).",
-  "teorie": "La diametru mare, aceeasi viteza liniară cere turație mica."
+  "teorie": "La diametru mare, aceeasi viteza liniară cere turație mică."
  },
  "Tbreak": {
-  "def": "Cuplul necesar pentru a învinge frecarea statică și a porni miscarea.",
+  "def": "Cuplul necesar pentru a învinge frecarea statică și a porni mișcarea.",
   "ia": "Din frecarea de repaus, mai mare decât cea de mers.",
   "practic": "Cere rezerva de pornire la motor; daca lipsește, sistemul ramane blocat.",
-  "teorie": "Frecarea statică depasește pe cea cinetica; varful de breakaway la demaraj."
+  "teorie": "Frecarea statică depasește pe cea cinetică; varful de breakaway la demaraj."
  },
  "Trun": {
-  "def": "Cuplul de regim necesar pentru a mentine miscarea invingand frecarea dinamică.",
-  "ia": "Din frecarea cinetica și raza, în regim stabilizat.",
-  "practic": "Sarcină continua a motorului; baza pentru regimul termic.",
-  "teorie": "Frecarea cinetica e relativ constantă cu viteza la prima aproximație."
+  "def": "Cuplul de regim necesar pentru a menține mișcarea învingând frecarea dinamică.",
+  "ia": "Din frecarea cinetică și raza, în regim stabilizat.",
+  "practic": "Sarcină continuă a motorului; baza pentru regimul termic.",
+  "teorie": "Frecarea cinetică e relativ constantă cu viteza la prima aproximație."
  },
  "mtot": {
-  "def": "Masa totală în miscare: banda transportoare plus sarcină utilă.",
+  "def": "Masa totală în mișcare: banda transportoare plus sarcină utilă.",
   "ia": "Din suma masei benzii, a partilor mobile și a sarcinii.",
   "practic": "Intra în frecare, panta și inerție; nu omite masa benzii.",
   "teorie": ""
  },
  "mu": {
-  "def": "Raport adimensional între forță de frecare și sarcină normala.",
+  "def": "Raport adimensional între forță de frecare și sarcină normală.",
   "ia": "Din tabele material-material sau măsurători; tipic 0.1-0.6.",
   "practic": "Alege valoarea acoperitoare; condiții umede sau murdare o schimba mult.",
   "teorie": "Coeficient de frecare în modelul Coulomb, static sau dinamic."
  },
  "mud": {
-  "def": "Coeficientul de frecare în miscare, de regula mai mic decât cel static.",
+  "def": "Coeficientul de frecare în mișcare, de regula mai mic decât cel static.",
   "ia": "Din tabele sau incercari la viteza de lucru.",
   "practic": "Folosește-l pentru cuplul de mers; cel static pentru pornire.",
-  "teorie": "Frecarea cinetica este mai mica decât frecarea statică."
+  "teorie": "Frecarea cinetică este mai mică decât frecarea statică."
  },
  "beta": {
-  "def": "Unghiul față de orizontala al planului pe care se misca sarcină.",
-  "ia": "Din geometria instalatiei sau măsurare.",
-  "practic": "Determina partajul între componenta de panta și cea normala.",
-  "teorie": "Descompunerea trigonometrica a greutații după unghiul planului."
+  "def": "Unghiul față de orizontală al planului pe care se misca sarcină.",
+  "ia": "Din geometria instalației sau măsurare.",
+  "practic": "Determină partajul între componenta de panta și cea normală.",
+  "teorie": "Descompunerea trigonometrică a greutații după unghiul planului."
  },
  "dgol": {
-  "def": "Diametrul miezului gol al rolei la inceputul înfășurării.",
+  "def": "Diametrul miezului gol al rolei la începutul înfășurării.",
   "ia": "Din dimensiunea tubului sau mandrinei de înfășurare.",
   "practic": "Definește turația maximă și cuplul minim la winder.",
   "teorie": ""
@@ -1639,54 +1639,54 @@
  },
  "d": {
   "def": "Diametrul curent de înfășurare la momentul considerat, între gol și plin.",
-  "ia": "Din măsurare sau estimare pe baza lungimii infasurate.",
+  "ia": "Din măsurare sau estimare pe baza lungimii înfășurate.",
   "practic": "Variabilă ce schimba continuu cuplul și turația în timpul ciclului.",
   "teorie": ""
  },
  "Fset": {
-  "def": "Tensiunea de referință ceruta în material la înfășurare.",
+  "def": "Tensiunea de referință cerută în material la înfășurare.",
   "ia": "Din cerință de proces a materialului și calitatea rolei.",
-  "practic": "Punctul de pornire; taperul o reduce pe măsura cresterii diametrului.",
+  "practic": "Punctul de pornire; taperul o reduce pe măsura creșterii diametrului.",
   "teorie": ""
  },
  "taper": {
   "def": "Procentul cu care scade tensiunea de la miez la diametrul plin.",
   "ia": "Din retete de proces sau experienta cu materialul.",
-  "practic": "Tipic 10-40 la suta; prea mic strange miezul, prea mare slăbește rola.",
+  "practic": "Tipic 10-40 la sută; prea mic strange miezul, prea mare slăbește rola.",
   "teorie": ""
  },
  "Pmotor": {
   "def": "Puterea nominală a motorului care acționează sistemul.",
   "ia": "De pe plăcuța motorului sau din alegerea de proiect.",
-  "practic": "Compara cu puterea ceruta plus rezerva și cu regimul termic.",
+  "practic": "Compară cu puterea cerută plus rezerva și cu regimul termic.",
   "teorie": ""
  },
  "nin": {
-  "def": "Turația la arborele de intrare al reductorului, adica turația motorului.",
+  "def": "Turația la arborele de intrare al reductorului, adică turația motorului.",
   "ia": "De pe plăcuța motorului sau setarea de viteza la VFD.",
-  "practic": "Împreună cu raportul da turația de iesire și viteza liniară.",
+  "practic": "Împreună cu raportul da turația de ieșire și viteza liniară.",
   "teorie": ""
  },
  "nout": {
-  "def": "Turația la arborele de iesire al reductorului, spre sarcină.",
-  "ia": "Din turația de intrare impartita la raportul reductorului.",
-  "practic": "Verifica sa dea viteza de proces ceruta la tambur sau rola.",
+  "def": "Turația la arborele de ieșire al reductorului, spre sarcină.",
+  "ia": "Din turația de intrare împărțită la raportul reductorului.",
+  "practic": "Verifică să dea viteza de proces cerută la tambur sau rola.",
   "teorie": "Reductorul scade turația cu raportul și crește cuplul corespunzator."
  },
  "dE": {
   "def": "Energia care fluctuează într-un ciclu, sursa neuniformitații vitezei la compresor.",
-  "ia": "Din suprafată diagramei cuplu-unghi pe ciclul masinii.",
-  "practic": "Baza dimensionarii volantului; mai mare cere volant mai greu.",
+  "ia": "Din suprafată diagramei cuplu-unghi pe ciclul mașinii.",
+  "practic": "Baza dimensionării volantului; mai mare cere volant mai greu.",
   "teorie": "Surplusul și deficitul de energie pe ciclu se acumulează în volant."
  },
  "Cs": {
   "def": "Măsura adimensionala a variatiei admise a vitezei unghiulare pe ciclu.",
   "ia": "Din cerință procesului; tipic 0.002-0.05 după aplicație.",
-  "practic": "Valoare mica cere volant mare; alegi compromisul cost-stabilitate.",
+  "practic": "Valoare mică cere volant mare; alegi compromisul cost-stabilitate.",
   "teorie": "Cs egal cu variația de viteza raportată la viteza medie."
  },
  "Jreq": {
-  "def": "Inerția minimă a volantului ca sa tina neuniformitatea sub limita ceruta.",
+  "def": "Inerția minimă a volantului ca să tina neuniformitatea sub limita cerută.",
   "ia": "Din energia fluctuanță, coeficientul Cs și viteza: J=dE/(Cs*omega^2).",
   "practic": "Definește masa și diametrul volantului de comandat sau verificat.",
   "teorie": "Energia fluctuanță absorbita prin variația energiei cinetice a volantului."
@@ -1706,8 +1706,8 @@
  "comun:T": {
   "def": "Cuplul la ax necesar pentru forță tangentiala la curea sau cremaliera.",
   "ia": "Din forță inmultita cu raza rotii sau pinionului: T=F*r.",
-  "practic": "Punct de legatura între forță liniară ceruta și cuplul motor.",
-  "teorie": "Cuplu egal cu forță tangentiala inmultita cu raza de actiune."
+  "practic": "Punct de legătură între forță liniară cerută și cuplul motor.",
+  "teorie": "Cuplu egal cu forță tangentiala inmultita cu raza de acțiune."
  },
  "Nm": {
   "def": "Unitatea de cuplu în Și, newton-metru, după conversie.",
@@ -1766,85 +1766,85 @@
  "bsus": {
   "def": "Limita superioara a benzii de frecvențe evitate (skip) la VFD.",
   "ia": "Din frecvență de evitat plus jumatatea latimii benzii skip.",
-  "practic": "Peste aceasta drive-ul revine la turație normala; nu stationează în banda.",
+  "practic": "Peste aceasta drive-ul revine la turație normală; nu stationează în banda.",
   "teorie": "Drive-ul traversează rapid banda interzisa, nu se oprește în ea."
  },
  "fskip": {
-  "def": "Frecvență centrala de evitat, corespunzatoare unei rezonante mecanice.",
-  "ia": "Din analiza vibrații sau turația critica identificată în PIF.",
-  "practic": "Setezi banda skip în jurul ei ca sa nu intri în rezonanță.",
+  "def": "Frecvență centrala de evitat, corespunzătoare unei rezonante mecanice.",
+  "ia": "Din analiza vibrații sau turația critică identificată în PIF.",
+  "practic": "Setezi banda skip în jurul ei ca să nu intri în rezonanță.",
   "teorie": "Functionarea la frecvență proprie a sistemului amplifica vibratiile."
  },
  "ncrit": {
-  "def": "Turația la care arborele intra în rezonanță de incovoiere (turație critica).",
+  "def": "Turația la care arborele intra în rezonanță de incovoiere (turație critică).",
   "ia": "Din rigiditatea și masa rotorului sau din catalog producator.",
   "practic": "Evita stationarea aproape de ea; o traversezi rapid la accelerare.",
-  "teorie": "La turația critica frecvență de excitație egalează frecvență proprie a arborelui."
+  "teorie": "La turația critică frecvență de excitație egalează frecvență proprie a arborelui."
  },
  "dw": {
   "def": "Variația vitezei unghiulare pe ciclu, măsura a neuniformitații la compresor.",
   "ia": "Din viteza medie inmultita cu coeficientul de neuniformitate: dw=Cs*omega.",
-  "practic": "Indicator al netezimii miscarii; o reduci marind inerția volantului.",
+  "practic": "Indicator al netezimii mișcarii; o reduci marind inerția volantului.",
   "teorie": "Fluctuația vitezei în jurul mediei datorată variatiei cuplului pe ciclu."
  },
  "dP": {
-  "def": "Economia de putere obtinuta prin reglaj de turație cu VFD față de strangulare.",
-  "ia": "Din diferenta dintre puterea fără VFD și puterea cu VFD la sarcină parțială.",
+  "def": "Economia de putere obținută prin reglaj de turație cu VFD față de strangulare.",
+  "ia": "Din diferența dintre puterea fără VFD și puterea cu VFD la sarcină parțială.",
   "practic": "Argument de economie la pompe și ventilatoare; mare la sarcini reduse.",
   "teorie": "Legea afinitații: puterea scade cu cubul turației la pompe și ventilatoare."
  },
  "Pvfd": {
-  "def": "Puterea consumată când turația e reglată cu VFD la sarcină ceruta.",
+  "def": "Puterea consumată când turația e reglată cu VFD la sarcină cerută.",
   "ia": "Din legea afinitații aplicată turației reduse față de puterea nominală.",
-  "practic": "Compara cu varianță fără VFD ca sa cuantifici economia reală.",
+  "practic": "Compară cu varianță fără VFD ca să cuantifici economia reală.",
   "teorie": "La pompe centrifuge puterea variază cu cubul turației relative."
  },
  "R": {
-  "def": "Rezistență ohmica a unei faze a înfășurării statorice",
+  "def": "Rezistență ohmică a unei faze a înfășurării statorice",
   "ia": "Măsurată cu punte/multimetru între faze sau din plăcuța motor",
   "practic": "Folosește la acordarea buclei de curent și estimarea pierderilor Joule",
-  "teorie": "Determina constantă de timp electrică taue=L/R și caderea de tensiune RI"
+  "teorie": "Determină constantă de timp electrică taue=L/R și căderea de tensiune RI"
  },
  "Id": {
-  "def": "Componenta de curent pe axa d, negativa la slabire câmp",
-  "ia": "Impusa de regulator pentru control flux sau MTPA",
+  "def": "Componenta de curent pe axa d, negativă la slăbire câmp",
+  "ia": "Impusă de regulator pentru control flux sau MTPA",
   "practic": "Negativa pentru a slabi câmpul peste turația de bază",
   "teorie": "Pe IPMSM aduce și cuplu de reluctanță prin MTPA"
  },
  "Ich": {
-  "def": "Curent caracteristic al masinii, raport flux magneti pe inductanță",
+  "def": "Curent caracteristic al mașinii, raport flux magneti pe inductanță",
   "ia": "Calculat din PsiPM/Ld",
-  "practic": "Indica daca slabirea de câmp e fezabila și până unde",
+  "practic": "Indica daca slăbirea de câmp e fezabila și până unde",
   "teorie": "Ich egal cu curentul nominal da câmp slabit ideal până la infinit"
  },
  "Vmax": {
-  "def": "Tensiune maximă de fază disponibila la iesirea invertorului",
+  "def": "Tensiune maximă de fază disponibilă la ieșirea invertorului",
   "ia": "Din tensiunea circuit intermediar și modulație",
-  "practic": "Limitează turația maximă și pragul de slabire câmp",
-  "teorie": "Vmax aprox Udc pe radical din 3 la modulație spatiala vectoriala"
+  "practic": "Limitează turația maximă și pragul de slăbire câmp",
+  "teorie": "Vmax aprox Udc pe radicăl din 3 la modulație spatiala vectoriala"
  },
  "fe": {
   "def": "Frecvență electrică a marimilor statorice",
   "ia": "Calculată din turație și număr perechi de poli",
-  "practic": "Verifica frecvență de iesire față de limita invertorului",
+  "practic": "Verifică frecvență de ieșire față de limita invertorului",
   "teorie": "fe egal cu p înmulțit cu n pe 60"
  },
  "Mpm": {
-  "def": "Cuplul produs de magnetii permanenti, componenta principala",
+  "def": "Cuplul produs de magnetii permanenti, componenta principală",
   "ia": "Calculat din flux magneti și curent axa q",
   "practic": "Cuplul de bază pe care se acordează limitele de curent",
   "teorie": "Mpm egal cu 3 pe 2 înmulțit cu p, PsiPM, Iq"
  },
  "Mrel": {
-  "def": "Cuplu de reluctanță din diferenta de inductante Ld și Lq",
+  "def": "Cuplu de reluctanță din diferența de inductante Ld și Lq",
   "ia": "Calculat din Ld minus Lq și curentii Id, Iq",
   "practic": "Important pe IPMSM și SynRM, exploatat prin MTPA",
   "teorie": "Mrel egal cu 3 pe 2 înmulțit cu p în paranteza Ld minus Lq înmulțit cu Id Iq"
  },
  "Kpi": {
   "def": "Castig proporțional al regulatorului PI de curent",
-  "ia": "Calculat din inductanță și banda dorita a buclei",
-  "practic": "Se acordează pentru raspuns rapid fără depasire de curent",
+  "ia": "Calculat din inductanță și banda dorită a buclei",
+  "practic": "Se acordează pentru raspuns rapid fără depășire de curent",
   "teorie": "Kpi egal cu wci înmulțit cu L pentru anularea polului"
  },
  "Kii": {
@@ -1861,24 +1861,24 @@
  },
  "Tn": {
   "def": "Constantă de timp de integrare a buclei de turație",
-  "ia": "Aleasa față de Tsum prin criteriul de optim simetric",
+  "ia": "Aleasă față de Tsum prin criteriul de optim simetric",
   "practic": "Acordează compromisul stabilitate raspuns la perturbații",
   "teorie": "Optim simetric Tn egal cu 4 înmulțit cu Tsum"
  },
  "wci": {
   "def": "Latimea de banda a buclei inchise de curent",
-  "ia": "Aleasa de proiectant, fractie din pulsația de comutație",
+  "ia": "Aleasă de proiectant, fractie din pulsația de comutație",
   "practic": "Tipic cateva sute până la mii rad pe s pe servo",
   "teorie": "Limitată de intarzierea PWM și esantionare"
  },
  "wcn": {
   "def": "Latimea de banda a buclei inchise de turație",
-  "ia": "Aleasa sub banda buclei de curent",
-  "practic": "De regula de 5 până la 10 ori mai mica decât wci",
+  "ia": "Aleasă sub banda buclei de curent",
+  "practic": "De regula de 5 până la 10 ori mai mică decât wci",
   "teorie": "Separarea benzilor asigura decuplarea buclelor în cascada"
  },
  "Tsum": {
-  "def": "Constantă de timp mica echivalenta intarzierilor PWM și filtru",
+  "def": "Constantă de timp mică echivalenta intarzierilor PWM și filtru",
   "ia": "Suma intarzierilor de comutație, esantionare și filtrare",
   "practic": "Baza pentru acordarea buclelor prin criterii de optim",
   "teorie": "Aproximează intarzierile mici într-un singur pol echivalent"
@@ -1886,12 +1886,12 @@
  "zeta": {
   "def": "Factor de amortizare al sistemului de ordin doi",
   "ia": "Impus de cerintele de raspuns ale buclei",
-  "practic": "Tipic 0.7 pentru compromis viteza și depasire",
+  "practic": "Tipic 0.7 pentru compromis viteza și depășire",
   "teorie": "zeta sub 1 oscilant, egal 1 critic, peste 1 supraamortizat"
  },
  "wn": {
   "def": "Pulsația naturală a sistemului de ordin doi",
-  "ia": "Impusa odată cu banda dorita",
+  "ia": "Impusă odată cu banda dorită",
   "practic": "Mai mare înseamnă raspuns mai rapid",
   "teorie": "Frecvență de oscilație a sistemului neamortizat"
  },
@@ -1905,7 +1905,7 @@
   "def": "Timpul până la prima valoare de varf a raspunsului",
   "ia": "Calculat din wn și zeta",
   "practic": "Util pentru evaluarea rapiditații raspunsului la treapta",
-  "teorie": "tp egal cu pi pe wn înmulțit cu radical din 1 minus zeta patrat"
+  "teorie": "tp egal cu pi pe wn înmulțit cu radicăl din 1 minus zeta patrat"
  },
  "wBW": {
   "def": "Latimea de banda de frecvență a sistemului închis",
@@ -1916,8 +1916,8 @@
  "ascurve": {
   "def": "Accelerația de varf într-un profil S-curve",
   "ia": "Calculată din profil, viteza și jerk",
-  "practic": "Mai mica decât trapezoidal la acelasi timp dar mai lina",
-  "teorie": "Profilul S limitează jerkul reducand socurile mecanice"
+  "practic": "Mai mică decât trapezoidal la acelasi timp dar mai lina",
+  "teorie": "Profilul S limitează jerkul reducând socurile mecanice"
  },
  "atrap": {
   "def": "Accelerația constantă într-un profil trapezoidal",
@@ -1929,24 +1929,24 @@
   "def": "Variația în timp a acceleratiei",
   "ia": "Calculat sau impus pe profilul S-curve",
   "practic": "Limitarea lui reduce vibratiile și uzura mecanică",
-  "teorie": "Derivată acceleratiei, a treia derivată a pozitiei"
+  "teorie": "Derivată acceleratiei, a treia derivată a poziției"
  },
  "frac": {
-  "def": "Fracția din timpul de ciclu alocată accelerarii",
-  "ia": "Impusa de proiectant la definirea profilului",
+  "def": "Fracția din timpul de ciclu alocată accelerării",
+  "ia": "Impusă de proiectant la definirea profilului",
   "practic": "Controlează forma profilului și solicitarea de cuplu",
-  "teorie": "Determina raportul faze accelerare față de mers constant"
+  "teorie": "Determină raportul faze accelerare față de mers constant"
  },
  "vmax": {
-  "def": "Viteza maximă atinsa în profilul de miscare",
+  "def": "Viteza maximă atinsa în profilul de mișcare",
   "ia": "Calculată din distanță, accelerație și timp",
-  "practic": "Verifica incadrarea în turația maximă a motorului",
+  "practic": "Verifică încadrarea în turația maximă a motorului",
   "teorie": "Limitată de aria sub curba de viteza egala cu distanță"
  },
  "tciclu": {
-  "def": "Durata totală a unui ciclu de miscare",
+  "def": "Durata totală a unui ciclu de mișcare",
   "ia": "Suma fazelor de accelerare, mers, decelerare și pauza",
-  "practic": "Determina productivitatea și solicitarea termică",
+  "practic": "Determină productivitatea și solicitarea termică",
   "teorie": "Baza pentru calculul cuplului termic efectiv RMS"
  },
  "Mconst": {
@@ -1957,24 +1957,24 @@
  },
  "Mdec": {
   "def": "Cuplul necesar în faza de decelerare",
-  "ia": "Din inerție și decelerația ceruta",
-  "practic": "Adesea negativ, impune capacitate de franare/disipare",
+  "ia": "Din inerție și decelerația cerută",
+  "practic": "Adesea negativ, impune capacitate de frânăre/disipare",
   "teorie": "Inerția inmultita cu decelerația minus cuplul rezistent"
  },
  "tconst": {
   "def": "Durata fazei de viteza constantă",
-  "ia": "Impusa de profil sau de distanță de parcurs",
-  "practic": "Contribuie la încărcarea termică continua",
+  "ia": "Impusă de profil sau de distanță de parcurs",
+  "practic": "Contribuie la încărcarea termică continuă",
   "teorie": "Intra în media pătratică a cuplului pe ciclu"
  },
  "tdec": {
   "def": "Durata fazei de decelerare",
-  "ia": "Impusa de profil sau de decelerația admisa",
-  "practic": "Influențează energia de franare disipată",
-  "teorie": "Cu cât e mai scurt cu atât cuplul de franare e mai mare"
+  "ia": "Impusă de profil sau de decelerația admisa",
+  "practic": "Influențează energia de frânăre disipată",
+  "teorie": "Cu cât e mai scurt cu atât cuplul de frânăre e mai mare"
  },
  "tdwell": {
-  "def": "Timpul de pauza între miscari, motor oprit",
+  "def": "Timpul de pauza între mișcari, motor oprit",
   "ia": "Impus de proces",
   "practic": "Contribuie la răcire dar mărește timpul de ciclu",
   "teorie": "Reduce cuplul termic efectiv RMS pe ciclu"
@@ -1982,7 +1982,7 @@
  "nimp": {
   "def": "Turația calculată din rata de impulsuri encoder",
   "ia": "Din frecvență impulsurilor și rezoluția encoderului",
-  "practic": "Verifica corespondenta feedback turație cu cea reală",
+  "practic": "Verifică corespondenta feedback turație cu cea reală",
   "teorie": "n egal cu frecvență impulsuri pe rezoluție înmulțit cu 60"
  },
  "taue": {
@@ -1992,7 +1992,7 @@
   "teorie": "taue egal cu L pe R"
  },
  "taum": {
-  "def": "Constantă de timp mecanică a actionarii",
+  "def": "Constantă de timp mecanică a acționării",
   "ia": "Calculată din inerție, rezistență și constante motor",
   "practic": "Indica cât de repede raspunde turația la cuplu",
   "teorie": "taum egal cu J înmulțit cu R pe Ke înmulțit cu Kt"
@@ -2000,31 +2000,31 @@
  "servo:pas": {
   "def": "Rezoluția unghiulară minimă data de encoder",
   "ia": "Calculată din 360 pe numărul de impulsuri pe rotație",
-  "practic": "Determina precizia de pozitionare și linistea la viteza mica",
+  "practic": "Determină precizia de pozitionare și linistea la viteza mică",
   "teorie": "Rezoluție unghiulară egala cu 360 pe număr pasi"
  },
  "x": {
   "def": "Raportul între curentul de varf și cel continuu",
   "ia": "Din plăcuța sau datasheet drive și motor",
-  "practic": "Indica suprasarcina disponibila pentru accelerari scurte",
+  "practic": "Indica suprasarcină disponibilă pentru accelerari scurte",
   "teorie": "Limitat termic, valabil doar pe durata admisibila"
  },
  "tOL": {
   "def": "Durata admisibila de funcționare la curent de varf",
-  "ia": "Din curba de suprasarcina a drive și motor",
-  "practic": "Nu depasi pentru a evita declansari termice sau avarii",
+  "ia": "Din curba de suprasarcină a drive și motor",
+  "practic": "Nu depăși pentru a evita declansari termice sau avarii",
   "teorie": "Determinat de constantă termică și limita I patrat t"
  },
  "nbaza": {
   "def": "Turația de bază, limita la flux nominal complet",
   "ia": "Din plăcuța sau punctul unde tensiunea atinge maximul",
-  "practic": "Peste ea se intra în slabire de câmp cu cuplu redus",
+  "practic": "Peste ea se intra în slăbire de câmp cu cuplu redus",
   "teorie": "Punct de tranziție cuplu constant către putere constantă"
  },
  "Ud": {
   "def": "Tensiunea medie redresată aplicată indusului",
   "ia": "Calculată din Ud0 și unghiul de aprindere",
-  "practic": "Reglează turația masinii de curent continuu",
+  "practic": "Reglează turația mașinii de curent continuu",
   "teorie": "Ud egal cu Ud0 înmulțit cu cosinus alpha la redresor comandat"
  },
  "Ud0": {
@@ -2040,7 +2040,7 @@
   "teorie": "taua egal cu La pe Ra"
  },
  "Mdisp": {
-  "def": "Cuplul disponibil în regim de slabire de câmp",
+  "def": "Cuplul disponibil în regim de slăbire de câmp",
   "ia": "Calculat din cuplul nominal și raportul de flux",
   "practic": "Scade cu turația peste turația de bază",
   "teorie": "Cuplul scade proporțional cu fluxul la putere constantă"
@@ -2048,19 +2048,19 @@
  "rcamp": {
   "def": "Raportul fluxului față de fluxul nominal",
   "ia": "Din curentul de excitație față de cel nominal",
-  "practic": "Sub 100 procente înseamnă slabire de câmp",
+  "practic": "Sub 100 procente înseamnă slăbire de câmp",
   "teorie": "Pe portiunea liniară fluxul urmează curentul de excitație"
  },
  "Mnom": {
-  "def": "Cuplul nominal de durata al masinii",
+  "def": "Cuplul nominal de durata al mașinii",
   "ia": "Din plăcuța sau putere și turație nominală",
-  "practic": "Reper pentru sarcină continua admisibila",
+  "practic": "Reper pentru sarcină continuă admisibila",
   "teorie": "Mnom egal cu 9550 înmulțit cu Pkw pe nrpm"
  },
  "If": {
   "def": "Curentul prin înfășurarea de excitație",
   "ia": "Măsurat sau din plăcuța de excitație",
-  "practic": "Reglează fluxul și implicit slabirea de câmp",
+  "practic": "Reglează fluxul și implicit slăbirea de câmp",
   "teorie": "Produce fluxul de excitație pe portiunea neliniara saturat"
  },
  "Uf": {
@@ -2076,7 +2076,7 @@
   "teorie": "Cresc cu turația, includ pierderi mecanice și în fier"
  },
  "Pem": {
-  "def": "Puterea electromagnetica transferată la întrefier",
+  "def": "Puterea electromagnetică transferată la întrefier",
   "ia": "Calculată din tem și curent sau cuplu și viteza",
   "practic": "Din ea se scad pierderile pentru puterea la arbore",
   "teorie": "Pem egal cu E înmulțit cu Ia, egal cu cuplu electromagnetic înmulțit cu omega"
@@ -2090,7 +2090,7 @@
  "Rtot": {
   "def": "Rezistență totală de pornire inseriată cu indusul",
   "ia": "Calculată din tensiune și curentul maxim de pornire admis",
-  "practic": "Limitează socul de curent la pornirea directa",
+  "practic": "Limitează socul de curent la pornirea directă",
   "teorie": "Rtot egal cu U pe curentul de pornire admis"
  },
  "nsteps": {
@@ -2102,14 +2102,14 @@
  "Imin": {
   "def": "Curentul la care se trece pe treapta urmatoare de pornire",
   "ia": "Ales peste curentul de sarcină, sub Imax",
-  "practic": "Stabilește momentul scurtcircuitarii unei trepte",
+  "practic": "Stabilește momentul scurtcircuitării unei trepte",
   "teorie": "Raportul Imax pe Imin definește ratia treptelor"
  },
  "ndorit": {
-  "def": "Turația de regim impusa de proces",
-  "ia": "Din cerință aplicatiei",
-  "practic": "Determina tensiunea de indus sau slabirea de câmp necesară",
-  "teorie": "Sub turația de bază prin tensiune, peste prin slabire câmp"
+  "def": "Turația de regim impusă de proces",
+  "ia": "Din cerință aplicației",
+  "practic": "Determină tensiunea de indus sau slăbirea de câmp necesară",
+  "teorie": "Sub turația de bază prin tensiune, peste prin slăbire câmp"
  },
  "Eunit": {
   "def": "Tensiunea electromotoare la factor de putere unitar",
@@ -2126,19 +2126,19 @@
  "ws": {
   "def": "Viteza unghiulară de sincronism a câmpul",
   "ia": "Calculată din frecvență și numărul de perechi de poli",
-  "practic": "Masina sincrona mentine exact aceasta viteza la arbore",
+  "practic": "Masina sincrona menține exact aceasta viteza la arbore",
   "teorie": "ws egal cu 2 pi f pe p"
  },
  "Pex": {
   "def": "Puterea data de componenta de excitație a cuplului",
   "ia": "Calculată din Eunit, tensiune și reactanță axa d",
-  "practic": "Componenta principala la masina sincrona cu excitație",
+  "practic": "Componenta principală la mașina sincrona cu excitație",
   "teorie": "Pex proporțional cu sinus unghi de sarcină"
  },
  "Prel": {
   "def": "Puterea data de componenta de reluctanță",
-  "ia": "Calculată din diferenta reactantelor Xd și Xq",
-  "practic": "Contribuie la cuplu pe masini cu poli aparenti și SynRM",
+  "ia": "Calculată din diferența reactantelor Xd și Xq",
+  "practic": "Contribuie la cuplu pe mașini cu poli aparenti și SynRM",
   "teorie": "Prel proporțional cu sinus de 2 înmulțit cu unghi de sarcină"
  },
  "sincron:Ptot": {
@@ -2151,12 +2151,12 @@
   "def": "Reactanță sincrona pe axa d, în lungul polilor",
   "ia": "Din probe sau date producator",
   "practic": "Folosește la calculul tem și al puterii de excitație",
-  "teorie": "Mai mare decât Xq pe masini cu poli aparenti"
+  "teorie": "Mai mare decât Xq pe mașini cu poli aparenti"
  },
  "Xq": {
   "def": "Reactanță sincrona pe axa q, între poli",
   "ia": "Din probe sau date producator",
-  "practic": "Diferenta față de Xd da cuplul de reluctanță",
+  "practic": "Diferența față de Xd da cuplul de reluctanță",
   "teorie": "Pe SynRM se cauta raport Xd pe Xq cât mai mare"
  },
  "phi": {
@@ -2166,16 +2166,16 @@
   "teorie": "Cos phi definește puterea reactivă schimbată cu reteaua"
  },
  "Xlr": {
-  "def": "Reactanță de scapari totală X1 plus X2 din test",
+  "def": "Reactanță de scăpări totală X1 plus X2 din test",
   "ia": "Din proba de rotor blocat sau de scurtcircuit",
   "practic": "Folosește la estimarea curentului de pornire și scurtcircuit",
-  "teorie": "Suma reactantelor de scapari stator și rotor raportat"
+  "teorie": "Suma reactantelor de scăpări stator și rotor raportat"
  },
  "salient": {
   "def": "Raportul de salienta între inductantele Ld și Lq",
   "ia": "Calculat din Ld pe Lq sau Xd pe Xq",
   "practic": "Mai mare da cuplu de reluctanță mai mare pe SynRM",
-  "teorie": "Salienta egala cu 1 înseamnă masina cu întrefier uniform"
+  "teorie": "Salienta egala cu 1 înseamnă mașina cu întrefier uniform"
  },
  "comun:Riso1": {
   "def": "Rezistență de izolație măsurată la 1 minut.",
@@ -2211,61 +2211,61 @@
   "def": "Indicele de polarizare = R(10 min)/R(1 min).",
   "ia": "Doua citiri cu megohmmetrul.",
   "practic": "PI>=2 bun, 1-2 suspect, <1 necesita uscare.",
-  "teorie": "Măsoară absorbția dielectrică; valori mici = umezeala/contaminare."
+  "teorie": "Măsoară absorbția dielectrică; valori mici = umezeală/contaminare."
  },
  "comun:DAR": {
   "def": "Raport de absorbtie dielectrică = R(60s)/R(30s).",
   "ia": "Doua citiri scurte.",
-  "practic": ">1.4 bun; alternativa rapida la PI.",
+  "practic": ">1.4 bun; alternativă rapida la PI.",
   "teorie": "Aceeasi idee ca PI, pe interval scurt."
  },
  "comun:tstall": {
   "def": "Timpul termic admis cu rotorul blocat.",
   "ia": "Plăcuța/catalog motor (la cald și la rece).",
-  "practic": "Pornirea trebuie sa fie mai scurtă decât el.",
+  "practic": "Pornirea trebuie să fie mai scurtă decât el.",
   "teorie": "IEC 60034-1: peste t_stall înfășurarea depasește limita termică."
  },
  "comun:tstart": {
   "def": "Timpul de accelerare de la 0 la turația nominală.",
   "ia": "t = J·omega/M_acc.",
   "practic": "Se compara cu timpul la rotor blocat.",
-  "teorie": "Din ecuația de miscare J·domega/dt = M_acc."
+  "teorie": "Din ecuația de mișcare J·domega/dt = M_acc."
  },
  "comun:marjat": {
   "def": "Marja dintre timpul la rotor blocat și timpul de pornire.",
   "ia": "t_stall - t_start.",
-  "practic": "Pozitiva = pornire sigura; negativa = ajustează rampa/cuplu.",
+  "practic": "Pozitiva = pornire sigura; negativă = ajustează rampa/cuplu.",
   "teorie": "Rezerva termică la demaraj."
  },
  "comun:Uchop": {
-  "def": "Pragul de tensiune DC la care intra choperul de franare.",
+  "def": "Pragul de tensiune DC la care intra choperul de frânăre.",
   "ia": "Manual drive (~780 V la retea 400 V).",
-  "practic": "Determina rezistență maximă de franare.",
-  "teorie": "Peste prag, energia regenerată se disipa în rezistență în loc sa urce bus-ul."
+  "practic": "Determină rezistență maximă de frânăre.",
+  "teorie": "Peste prag, energia regenerată se disipa în rezistență în loc să urce bus-ul."
  },
  "comun:Ebr": {
-  "def": "Energia ce trebuie disipată la franare.",
+  "def": "Energia ce trebuie disipată la frânăre.",
   "ia": "E = ½J(omega1²-omega2²).",
   "practic": "Baza alegerii rezistenței.",
-  "teorie": "Energia cinetica a maselor revine în bus-ul DC la decelerare."
+  "teorie": "Energia cinetică a maselor revine în bus-ul DC la decelerare."
  },
  "comun:Ppk": {
-  "def": "Puterea de varf de franare.",
+  "def": "Puterea de varf de frânăre.",
   "ia": "E / timp de decelerare.",
-  "practic": "Determina rezistență maximă și varful rezistenței.",
+  "practic": "Determină rezistență maximă și varful rezistenței.",
   "teorie": "Puterea maximă în timpul rampei de oprire."
  },
  "comun:Rmax": {
-  "def": "Rezistență de franare maximă admisa.",
+  "def": "Rezistență de frânăre maximă admisa.",
   "ia": "U_chop² / P_peak.",
   "practic": "Alege R între R_min al drive-ului și R_max.",
-  "teorie": "R prea mare nu disipa destul; bus-ul tot urca la trip."
+  "teorie": "R prea mare nu disipa destul; bus-ul tot urcă la trip."
  },
  "comun:Pmed": {
   "def": "Puterea medie disipată în rezistență.",
   "ia": "P_peak × durata de conectare.",
   "practic": "Dimensionează puterea termică a rezistenței.",
-  "teorie": "Media pe ciclu la franari intermitente."
+  "teorie": "Media pe ciclu la frânări intermitente."
  },
  "servo:dthmec": {
   "def": "Eroarea de aliniere a senzorului, în grade mecanice.",
@@ -2276,7 +2276,7 @@
  "servo:dthel": {
   "def": "Eroarea de aliniere în grade electrice.",
   "ia": "p × eroarea mecanică.",
-  "practic": "Determina pierderea de cuplu.",
+  "practic": "Determină pierderea de cuplu.",
   "teorie": "Unghiul electric = p × unghiul mecanic."
  },
  "servo:Mprod": {
@@ -2286,31 +2286,31 @@
   "teorie": "În FOC cuplul maxim e cu I_q pe axa q; eroarea reduce proiecția."
  },
  "servo:pierdcup": {
-  "def": "Pierderea de cuplu din alinierea gresita.",
+  "def": "Pierderea de cuplu din alinierea greșită.",
   "ia": "(1-cos(eroare))·100.",
   "practic": "Sub ~5 grade electrice e neglijabila.",
   "teorie": "1-cos crește pătratic la unghiuri mici."
  },
  "servo:Ktor": {
   "def": "Rigiditatea torsionala a cuplajului.",
-  "ia": "Fisa tehnica a cuplajului [Nm/rad].",
+  "ia": "Fisa tehnică a cuplajului [Nm/rad].",
   "practic": "Fixează frecvență de rezonanță mecanică.",
   "teorie": "Arc torsional între motor și sarcină (sistem 2 inerții)."
  },
  "servo:fanti": {
   "def": "Frecvență de antirezonanță a sistemului.",
   "ia": "(1/2pi)√(K_tor/J_sarcină).",
-  "practic": "Apare ca o cadere în raspuns, sub rezonanță.",
+  "practic": "Apare ca o cădere în raspuns, sub rezonanță.",
   "teorie": "Sarcină oscilează în antifază la antirezonanță."
  },
  "comun:Nrot": {
   "def": "Numărul de rotații ale motorului până la oprire pe rampa SS1.",
   "ia": "½·(n/60)·timp rampa.",
-  "practic": "Verifica oprirea în zona sigura.",
+  "practic": "Verifică oprirea în zona sigura.",
   "teorie": "Aria de sub rampa de viteza = număr de rotații."
  },
  "comun:unghiopr": {
-  "def": "Unghiul la iesirea reductorului până la oprire.",
+  "def": "Unghiul la ieșirea reductorului până la oprire.",
   "ia": "360·N/i.",
   "practic": "Pentru axe rotative cu poziție de siguranță.",
   "teorie": "Rotatiile motorului impartite la raportul de transmisie."
@@ -2318,19 +2318,19 @@
  "comun:distopr": {
   "def": "Distanță liniară parcursa până la oprire (SS1).",
   "ia": "N·pas/i.",
-  "practic": "Verifica oprirea înainte de capat/zona periculoasa.",
+  "practic": "Verifică oprirea înainte de capat/zona periculoasă.",
   "teorie": "Rotații × avansul liniar pe rotație."
  },
  "pompe:L": {
   "def": "Lungimea conductei de refulare.",
   "ia": "Plan instalație.",
   "practic": "Intra în timpul critic 2L/a.",
-  "teorie": "Unda de presiune parcurge L și se intoarce în 2L/a."
+  "teorie": "Unda de presiune parcurge L și se întoarce în 2L/a."
  },
  "pompe:dvf": {
   "def": "Variația de viteza a fluidului la oprire.",
   "ia": "Debit / secțiune conducta.",
-  "practic": "Direct proportionala cu socul de presiune.",
+  "practic": "Direct proporțională cu socul de presiune.",
   "teorie": "Joukowsky: Δp = ρ·a·Δv."
  },
  "pompe:aund": {
@@ -2355,22 +2355,22 @@
   "def": "Socul de presiune la inchidere brusca.",
   "ia": "ρ·a·Δv (Joukowsky).",
   "practic": "Cazul cel mai defavorabil.",
-  "teorie": "Energia cinetica se convertește în presiune instantaneu."
+  "teorie": "Energia cinetică se convertește în presiune instantaneu."
  },
  "pompe:dPreal": {
   "def": "Socul de presiune la timpul real de oprire.",
   "ia": "ρ·L·Δv/t (daca t>Tcrit), altfel ρ·a·Δv.",
-  "practic": "Setează rampa ca dP sa fie acceptabil.",
+  "practic": "Setează rampa ca dP să fie acceptabil.",
   "teorie": "Inchidere lenta (Michaud): Δp scade cu 1/t."
  },
  "pompe:Ku": {
-  "def": "Castigul critic la care bucla oscilează sustinut.",
+  "def": "Castigul critic la care bucla oscilează susținut.",
   "ia": "Crești Kp până la oscilație constantă.",
   "practic": "Baza valorilor Ziegler-Nichols.",
   "teorie": "La Ku sistemul e la limita de stabilitate."
  },
  "pompe:Tu": {
-  "def": "Perioada oscilatiei sustinute la Ku.",
+  "def": "Perioada oscilatiei susținute la Ku.",
   "ia": "Măsoară perioada oscilatiei.",
   "practic": "Fixează Ti și Td.",
   "teorie": "Perioada la limita de stabilitate (Ziegler-Nichols)."
