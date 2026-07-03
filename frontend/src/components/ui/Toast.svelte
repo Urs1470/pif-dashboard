@@ -2,16 +2,19 @@
   import { X } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ui, dismissToast } from '../../stores/ui.svelte.js'
+  import { ui, closeToast, runToastAction } from '../../stores/ui.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 </script>
 
 {#if ui.toasts.length > 0}
-  <div class="toast-container">
+  <div class="toast-container" aria-live="polite">
     {#each ui.toasts as t (t.id)}
       <div class="toast toast-{t.type}" transition:fly={{ x: 20, duration: motionDuration(DUR_BASE) }} animate:flip={{ duration: motionDuration(DUR_FAST) }}>
         <span>{t.message}</span>
-        <button class="toast-close" onclick={() => dismissToast(t.id)}>
+        {#if t.actionLabel}
+          <button class="toast-action" onclick={() => runToastAction(t.id)}>{t.actionLabel}</button>
+        {/if}
+        <button class="toast-close" onclick={() => closeToast(t.id)}>
           <X size={14} />
         </button>
       </div>
@@ -49,6 +52,19 @@
   .toast-success { border-left: 3px solid var(--success); }
   .toast-warning { border-left: 3px solid var(--warning); }
   .toast-error { border-left: 3px solid var(--danger); }
+
+  .toast-action {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: var(--radius-xs);
+    font-size: var(--font-small);
+    font-weight: var(--fw-semibold);
+    color: var(--accent);
+    background: var(--bg-hover);
+    white-space: nowrap;
+  }
+  .toast-action:hover { background: var(--accent); color: var(--bg); }
 
   .toast-close {
     flex-shrink: 0;

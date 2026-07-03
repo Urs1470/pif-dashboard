@@ -8,6 +8,7 @@
   import { router, applyPath } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
+  import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
 
   import { apiJson } from '../lib/api.js'
@@ -206,6 +207,7 @@
   const curFilter = $derived(activeTab === 'params' ? params.filters.familie : faultCodes.filters.familie)
   const curItems = $derived(activeTab === 'params' ? params.items : faultCodes.items)
   const curLoading = $derived(activeTab === 'params' ? params.loading : faultCodes.loading)
+  const curError = $derived(activeTab === 'params' ? params.error : faultCodes.error)
   const curPage = $derived(activeTab === 'params' ? params.filters.page : faultCodes.filters.page)
   const curTotalPages = $derived(activeTab === 'params' ? params.totalPages : faultCodes.totalPages)
   const curTotal = $derived(activeTab === 'params' ? params.total : faultCodes.total)
@@ -287,6 +289,8 @@
         <div in:fade={{ duration: motionDuration(DUR_FAST) }}>
         {#if curLoading || !curFilter}
           {#each Array(8) as _}<div class="row-skel"><Skeleton width="40%" height="14px" /></div>{/each}
+        {:else if curError}
+          <ErrorState message={curError} onretry={() => activeTab === 'params' ? loadParams() : loadFaultCodes()} />
         {:else if curItems.length === 0}
           <EmptyState icon={Cpu} title="Niciun rezultat" description="Încearcă altă familie sau alt termen." />
         {:else if activeTab === 'params'}

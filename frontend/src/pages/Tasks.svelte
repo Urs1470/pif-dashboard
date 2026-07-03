@@ -12,6 +12,7 @@
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
+  import ErrorState from '../components/ui/ErrorState.svelte'
   import Button from '../components/ui/Button.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
@@ -460,6 +461,8 @@
 
   {#if globalTasks.loading}
     <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
+  {:else if globalTasks.error}
+    <ErrorState message={globalTasks.error} onretry={() => loadGlobalTasks({ arhiva: showArchive })} />
   {:else if globalTasks.items.length === 0}
     <EmptyState icon={ListTodo} title="Niciun task" description={showArchive ? 'Arhiva e goală.' : 'Adaugă un task nou.'} />
   {:else}
@@ -606,7 +609,7 @@
 <Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
   <div class="note-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." onsave={saveNote} />
     {/if}
   </div>
   {#snippet footer()}

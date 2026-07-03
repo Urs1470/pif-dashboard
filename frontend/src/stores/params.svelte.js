@@ -61,6 +61,7 @@ export const faultCodes = $state({
   items: [],
   families: [],
   loading: false,
+  error: null,
   filters: { search: '', familie: '', producator: '', page: 1, limit: 50 },
   total: 0,
   totalPages: 1,
@@ -77,6 +78,7 @@ export async function loadFaultFamilies() {
 
 export async function loadFaultCodes() {
   faultCodes.loading = true
+  faultCodes.error = null
   try {
     const p = new URLSearchParams()
     if (faultCodes.filters.search) p.set('search', faultCodes.filters.search)
@@ -90,6 +92,7 @@ export async function loadFaultCodes() {
     faultCodes.totalPages = data.totalPages || 1
   } catch (e) {
     faultCodes.items = []
+    faultCodes.error = e.message
   } finally {
     faultCodes.loading = false
   }

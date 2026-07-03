@@ -17,7 +17,7 @@
   import { navigate } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
-  import { toast } from '../stores/ui.svelte.js'
+  import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Card from '../components/ui/Card.svelte'
   import Button from '../components/ui/Button.svelte'
@@ -508,16 +508,31 @@
     }
   }
 
-  async function removeSubtask(subId, taskId) {
-    subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].filter(s => s.id !== subId) }
-    try {
-      await deleteSubtask(subId)
-      await reloadTasks()
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-      const subs = await loadSubtasks(taskId)
-      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-    }
+  function removeSubtask(subId, taskId) {
+    // Stergere reversibila: scoatem optimist din UI + toast „Anulează" ~6s.
+    // Stergerea reala pe server abia la expirare/inchidere (onCommit); undo o repune.
+    const list = subtasksCache[taskId] || []
+    const idx = list.findIndex(s => s.id === subId)
+    if (idx === -1) return
+    const removed = list[idx]
+    subtasksCache = { ...subtasksCache, [taskId]: list.filter(s => s.id !== subId) }
+    toastUndo('Subtask șters', {
+      onUndo: () => {
+        const cur = [...(subtasksCache[taskId] || [])]
+        cur.splice(Math.min(idx, cur.length), 0, removed)
+        subtasksCache = { ...subtasksCache, [taskId]: cur }
+      },
+      onCommit: async () => {
+        try {
+          await deleteSubtask(subId)
+          await reloadTasks()
+        } catch (e) {
+          toast(`Eroare: ${e.message}`, 'error')
+          const subs = await loadSubtasks(taskId)
+          subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+        }
+      },
+    })
   }
 
   function exportPdf() {
@@ -1010,7 +1025,7 @@
 <Modal bind:open={showFieldEdit} title={editLabel} size="doc">
   <div class="field-edit-modal">
     {#if showFieldEdit}
-      <RichTextEditor bind:value={editValue} variant="doc" placeholder="Scrie aici..." />
+      <RichTextEditor bind:value={editValue} variant="doc" placeholder="Scrie aici..." onsave={saveFieldEdit} />
     {/if}
   </div>
   {#snippet footer()}
@@ -1050,7 +1065,7 @@
 <Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
   <div class="field-edit-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." />
+      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." onsave={saveNote} />
     {/if}
   </div>
   {#snippet footer()}
