@@ -127,6 +127,7 @@
     <a
       href={item.path}
       use:link
+      onclick={(e) => e.currentTarget.blur()}
       class="dock-item"
       class:active={isActive(item.path)}
       aria-current={isActive(item.path) ? 'page' : undefined}
@@ -198,9 +199,6 @@
 
   .dock.hidden {
     --dock-shift: calc(100% + 22px + var(--safe-bottom));
-  }
-  .dock.hidden:focus-within {
-    --dock-shift: 0px;
   }
 
   .sep {
