@@ -871,6 +871,31 @@ def get_plan():
             'tasks': sorted(gtasks, key=_task_sort_key),
         })
 
+    # Backlog: open tasks with NO plan and NO deadline — nowhere to place on the
+    # timeline, so they surface in a side rail from which they can be scheduled.
+    def _backlog_item(d, tip):
+        return {
+            'tip': tip, 'id': d['id'], 'titlu': d.get('titlu') or '',
+            'prioritate': d.get('prioritate') or '',
+            'categorie': (d.get('categorie') or '') if tip == 'global' else '',
+            'proiect_id': d.get('proiect_id') if tip == 'proiect' else None,
+            'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
+        }
+
+    undated = '''(({a}.data_planificata IS NULL OR TRIM({a}.data_planificata) = '')
+                 AND ({a}.data_scadenta IS NULL OR TRIM({a}.data_scadenta) = ''))'''
+    cursor.execute(
+        '''SELECT t.*, p.nume AS proiect_nume FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
+           WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
+             AND ''' + undated.format(a='t') + '''
+           ORDER BY t.titlu COLLATE NOCASE LIMIT 300''')
+    backlog = [_backlog_item(row_to_dict(r), 'proiect') for r in cursor.fetchall()]
+    cursor.execute(
+        '''SELECT g.* FROM global_tasks g WHERE g.status != 'done'
+             AND ''' + undated.format(a='g') + '''
+           ORDER BY g.titlu COLLATE NOCASE LIMIT 300''')
+    backlog += [_backlog_item(row_to_dict(r), 'global') for r in cursor.fetchall()]
+
     conn.close()
 
     # Lane order: projects by earliest in-window activity, Globale last.
@@ -886,4 +911,4 @@ def get_plan():
         return (1 if l['tip'] == 'global' else 0, min(dates) if dates else '9999-99-99')
 
     lanes.sort(key=_lane_key)
-    return jsonify({'start': start_s, 'days': days, 'today': today, 'lanes': lanes})
+    return jsonify({'start': start_s, 'days': days, 'today': today, 'lanes': lanes, 'backlog': backlog})

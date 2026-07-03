@@ -571,3 +571,14 @@ input[type="checkbox"].cbx:focus {
 }
 .rowlist .row:last-child { border-bottom: none; }
 .rowlist .row:hover { background: var(--bg-panel); }
+
+/* Print (Planificator PDF export): hide app chrome + let the page own the sheet.
+   Gated on body.plan-printing so only the Planificator export triggers it. */
+@media print {
+  body.plan-printing .header,
+  body.plan-printing .dock { display: none !important; }
+  body.plan-printing .app-content { padding: 0 !important; overflow: visible !important; }
+  body.plan-printing .app-layout,
+  body.plan-printing .app-main,
+  body.plan-printing .content-width { display: block !important; height: auto !important; overflow: visible !important; }
+}

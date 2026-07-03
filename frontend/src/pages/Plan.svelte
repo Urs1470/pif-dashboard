@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check } from '@lucide/svelte'
+  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
-    setTaskDates, setHorizon, toggleShowDone, toggleWeekends,
+    setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
   } from '../stores/plan.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort } from '../lib/formatters.js'
@@ -13,6 +13,7 @@
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
+  import Modal from '../components/ui/Modal.svelte'
 
   // Distinct, CVD-legible lane hues on the warm-dark ground. Amber is reserved for
   // the app accent/active state, so lanes deliberately avoid it.
@@ -231,10 +232,102 @@
     }
   }
 
+  // --- backlog rail + drag-to-schedule (HTML5 DnD onto the timeline) ---
+  let backlogOpen = $state(true)
+  let dragTask = null
+  let dropDay = $state(null) // {idx, pct, iso} live indicator while dragging
+
+  function backlogDragStart(e, t) {
+    dragTask = t
+    e.dataTransfer.effectAllowed = 'move'
+    try { e.dataTransfer.setData('text/plain', t.id) } catch (_) {}
+  }
+  function backlogDragEnd() { dragTask = null; dropDay = null }
+
+  function dayFromEvent(e) {
+    const body = e.currentTarget
+    const rect = body.getBoundingClientRect()
+    const laneW = parseFloat(getComputedStyle(body).getPropertyValue('--lane-w')) || 200
+    const trackW = rect.width - laneW
+    if (trackW <= 0) return null
+    const x = e.clientX - rect.left - laneW
+    const frac = clampNum(x / trackW, 0, 0.9999)
+    const idx = Math.floor(frac * plan.days)
+    return { idx, pct: (idx / plan.days) * 100, iso: addDays(plan.start, idx) }
+  }
+  function onBodyDragOver(e) {
+    if (!dragTask) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    dropDay = dayFromEvent(e)
+  }
+  async function onBodyDrop(e) {
+    if (!dragTask) return
+    e.preventDefault()
+    const d = dayFromEvent(e)
+    const t = dragTask
+    dragTask = null; dropDay = null
+    if (!d) return
+    try { await scheduleBacklog(t.tip, t.id, d.iso); toast(`Planificat pe ${formatDate(d.iso)}`, 'success') }
+    catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+  }
+  async function scheduleFromPicker(t, v) {
+    if (!v) return
+    try { await scheduleBacklog(t.tip, t.id, v); toast(`Planificat pe ${formatDate(v)}`, 'success') }
+    catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+  }
+
+  // --- PDF export via the browser's print-to-PDF ---
+  let showExport = $state(false)
+  let exportSel = $state(new Set()) // lane ids to include
+  let exportPageBreak = $state(false)
+  let savedTheme = null
+
+  const projectLanes = $derived(plan.lanes)
+
+  function openExport() {
+    exportSel = new Set(plan.lanes.map(l => l.id)) // default: all
+    showExport = true
+  }
+  function toggleExportLane(id) {
+    const next = new Set(exportSel)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    exportSel = next
+  }
+  function toggleExportAll() {
+    exportSel = exportSel.size === plan.lanes.length ? new Set() : new Set(plan.lanes.map(l => l.id))
+  }
+
+  function runExport() {
+    showExport = false
+    const root = document.documentElement
+    savedTheme = root.getAttribute('data-theme')
+    root.setAttribute('data-theme', 'light') // print on paper-light regardless of app theme
+    document.body.classList.add('plan-printing')
+    if (exportPageBreak) document.body.classList.add('plan-pagebreak')
+    // let the DOM settle (theme + hide classes) before opening the dialog
+    setTimeout(() => window.print(), 80)
+  }
+  function afterPrint() {
+    document.body.classList.remove('plan-printing', 'plan-pagebreak')
+    const root = document.documentElement
+    if (savedTheme) root.setAttribute('data-theme', savedTheme)
+    else root.removeAttribute('data-theme')
+    savedTheme = null
+  }
+
+  const exportRange = $derived(
+    plan.start ? `${formatDate(plan.start)} – ${formatDate(addDays(plan.start, plan.days - 1))}` : ''
+  )
+
   onMount(() => {
     loadPlan()
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('afterprint', afterPrint)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('afterprint', afterPrint)
+    }
   })
 </script>
 
@@ -256,6 +349,9 @@
       <button class="toggle" class:on={plan.showDone} onclick={toggleShowDone} title="Arată taskurile finalizate">
         <span class="tk-box">{#if plan.showDone}<Check size={12} />{/if}</span> Finalizate
       </button>
+      <button class="toggle export" onclick={openExport} disabled={plan.lanes.length === 0} title="Exportă ca PDF (print)">
+        <FileDown size={14} /> Export PDF
+      </button>
     </div>
   </div>
 
@@ -267,6 +363,7 @@
     <EmptyState icon={CalendarRange} title="Nimic în această fereastră" description="Planifică taskuri (din Astăzi sau din proiecte) ca să apară aici pe zile." />
   {:else}
     <!-- ===== Desktop swimlane ===== -->
+    <div class="print-title">Planificator · {exportRange}</div>
     <div class="chart">
       <div class="chart-scroll">
         <div class="inner" style="min-width: {contentMin}px">
@@ -283,7 +380,7 @@
             </div>
           </div>
 
-          <div class="p-body">
+          <div class="p-body" class:drop-active={!!dragTask} ondragover={onBodyDragOver} ondrop={onBodyDrop} role="presentation">
             <div class="overlay">
               {#each columns.cols as c (c.key)}
                 <div class="col-line" style="left:{c.leftPct}%"></div>
@@ -293,10 +390,14 @@
               {#if todayPct != null && todayPct >= 0 && todayPct < 100}
                 <div class="today-line" style="left:{todayPct}%"></div>
               {/if}
+              {#if dropDay}
+                <div class="drop-line" style="left:{dropDay.pct}%"></div>
+                <div class="drop-tag" style="left:{dropDay.pct}%">{formatDateShort(dropDay.iso)}</div>
+              {/if}
             </div>
 
             {#each views as lane (lane.tip + ':' + lane.id)}
-              <div class="lane" style="--lane:{lane.color}">
+              <div class="lane" style="--lane:{lane.color}" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
                 <div class="lane-label">
                   {#if lane.tip === 'proiect'}
                     <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.nume}>
@@ -357,6 +458,33 @@
       <p class="hint">Trage o bară ca s-o muți · trage marginile ca să întinzi intervalul · click pentru acțiuni</p>
     </div>
 
+    <!-- ===== Backlog (taskuri fără termen) ===== -->
+    {#if plan.backlog.length > 0}
+      <section class="backlog" class:open={backlogOpen}>
+        <button class="bl-head" onclick={() => backlogOpen = !backlogOpen} aria-expanded={backlogOpen}>
+          <Inbox size={16} />
+          <h2>Fără termen</h2>
+          <span class="bl-count">{plan.backlog.length}</span>
+          <span class="bl-hint">trage pe o zi ca să planifici</span>
+          <ChevronRight size={16} class="bl-chev" />
+        </button>
+        {#if backlogOpen}
+          <div class="bl-items">
+            {#each plan.backlog as t (t.tip + ':' + t.id)}
+              <div class="bl-chip" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}
+                   draggable="true" ondragstart={(e) => backlogDragStart(e, t)} ondragend={backlogDragEnd}
+                   title={t.titlu}>
+                <GripVertical size={13} class="bl-grip" />
+                <span class="bl-txt">{t.titlu}</span>
+                {#if t.proiect_nume}<span class="bl-proj">{t.proiect_nume}</span>{:else if t.categorie}<span class="bl-proj glob">{t.categorie}</span>{/if}
+                <span class="bl-date"><DatePicker value="" placeholder="Planifică" onchange={(v) => scheduleFromPicker(t, v)} /></span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </section>
+    {/if}
+
     <!-- ===== Mobile grouped list ===== -->
     <div class="mlist">
       {#each views as lane (lane.tip + ':' + lane.id)}
@@ -413,6 +541,37 @@
     <button class="pop-close" onclick={closePop} aria-label="Închide"><X size={14} /></button>
   </div>
 {/if}
+
+<Modal bind:open={showExport} title="Export PDF" size="sm">
+  <div class="exp">
+    <p class="exp-note">Se deschide dialogul de printare al browserului — alege <b>„Salvează ca PDF"</b>. Fereastra exportată: <b>{exportRange}</b>.</p>
+    <div class="exp-scope">
+      <div class="exp-scope-head">
+        <span>Proiecte</span>
+        <button class="exp-all" onclick={toggleExportAll}>{exportSel.size === plan.lanes.length ? 'Deselectează' : 'Toate'}</button>
+      </div>
+      <div class="exp-list">
+        {#each plan.lanes as l (l.tip + ':' + l.id)}
+          <label class="exp-row">
+            <input type="checkbox" checked={exportSel.has(l.id)} onchange={() => toggleExportLane(l.id)} />
+            <span class="exp-dot" style="background:{laneColor(l.id)}"></span>
+            <span class="exp-name">{l.nume}</span>
+          </label>
+        {/each}
+      </div>
+    </div>
+    <label class="exp-opt">
+      <input type="checkbox" bind:checked={exportPageBreak} />
+      <span>Câte un proiect pe pagină</span>
+    </label>
+  </div>
+  {#snippet footer()}
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick={() => showExport = false}>Anulează</button>
+      <button class="btn-primary" onclick={runExport} disabled={exportSel.size === 0}><FileDown size={14} /> Exportă</button>
+    </div>
+  {/snippet}
+</Modal>
 
 <style>
   .page { padding-bottom: 96px; }
@@ -565,4 +724,66 @@
 
   :global(body.plan-dragging) { user-select: none; cursor: grabbing; }
   :global(body.plan-dragging) .bar { cursor: grabbing; }
+
+  /* ===== drop indicator (backlog -> timeline) ===== */
+  .p-body.drop-active { outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: -2px; border-radius: var(--radius-sm); }
+  .drop-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 6; }
+  .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-family: var(--font-mono); font-size: var(--font-micro); padding: 1px 6px; border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
+
+  /* ===== backlog rail ===== */
+  .backlog { margin-top: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 12px 16px; background: none; border: none; cursor: pointer; color: var(--text); }
+  .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
+  .bl-count { font-size: var(--font-tiny); font-family: var(--font-mono); background: var(--accent-subtle); color: var(--accent); padding: 1px 8px; border-radius: var(--radius-full); }
+  .bl-hint { font-size: var(--font-micro); color: var(--text-faint); margin-left: 4px; }
+  .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease); }
+  .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
+  .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }
+  .bl-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 4px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--text-faint); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
+  .bl-chip:hover { border-color: var(--border-strong); }
+  .bl-chip:active { cursor: grabbing; }
+  .bl-chip.urgent { border-left-color: var(--danger); }
+  .bl-chip :global(.bl-grip) { color: var(--text-faint); flex-shrink: 0; }
+  .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .bl-proj { font-size: var(--font-micro); font-family: var(--font-mono); color: var(--accent); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
+  .bl-date { width: 30px; flex-shrink: 0; }
+  .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-faint); }
+  .bl-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--accent); }
+  .bl-date :global(.dp-value) { display: none; }
+
+  /* ===== export modal ===== */
+  .exp { display: flex; flex-direction: column; gap: 14px; }
+  .exp-note { font-size: var(--font-small); color: var(--text-secondary); margin: 0; }
+  .exp-note b { color: var(--text); }
+  .exp-scope-head { display: flex; align-items: center; justify-content: space-between; font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 6px; }
+  .exp-all { background: none; border: none; color: var(--accent); font-size: var(--font-tiny); cursor: pointer; font-family: var(--font-mono); }
+  .exp-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
+  .exp-row { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius-sm); cursor: pointer; }
+  .exp-row:hover { background: var(--bg-hover); }
+  .exp-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .exp-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .exp-opt { display: flex; align-items: center; gap: 9px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; padding-top: 6px; border-top: 1px solid var(--border); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); }
+  .btn-ghost { padding: 8px 16px; border-radius: var(--radius-md); background: none; border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); }
+  .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ===== print (browser print-to-PDF) ===== */
+  .print-title { display: none; }
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    .page { padding: 0 !important; }
+    .page-header, .controls, .hint, .mlist, .backlog, .drag-label, .pop, .pop-backdrop { display: none !important; }
+    .print-title { display: block; font-family: var(--font-heading); font-size: 1.1rem; font-weight: var(--fw-bold); color: #1a1206; margin-bottom: 8px; }
+    .chart { border: none !important; box-shadow: none !important; background: #fff !important; }
+    .chart-scroll { overflow: visible !important; }
+    .inner { min-width: 0 !important; width: 100% !important; }
+    .lane.print-hide { display: none !important; }
+    .bar { animation: none !important; box-shadow: none !important; }
+    .rz { display: none !important; }
+  }
+  :global(body.plan-pagebreak) .lane { break-after: page; }
+  :global(body.plan-pagebreak) .lane:last-of-type { break-after: auto; }
 </style>

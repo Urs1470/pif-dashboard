@@ -12,6 +12,7 @@ function readWeekends() {
 
 export const plan = $state({
   lanes: [],
+  backlog: [],
   start: '',
   days: 14,
   today: '',
@@ -34,6 +35,7 @@ export async function loadPlan() {
     const done = plan.showDone ? '&done=1' : ''
     const data = await apiJson(`/api/plan?start=${t}&days=${plan.days}&today=${t}${done}`)
     plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
+    plan.backlog = Array.isArray(data.backlog) ? data.backlog : []
     plan.start = data.start || t
     plan.days = data.days || plan.days
     plan.today = data.today || t
@@ -81,6 +83,14 @@ export function moveTaskTomorrow(tip, id, opts = {}) {
 // edge. Empty string clears, an omitted key keeps the stored value (PUT COALESCE).
 export async function setTaskDates(tip, id, body) {
   await patch(tip, id, body)
+  await loadPlan()
+}
+
+// Schedule a backlog (undated) task onto a specific day. Only sets data_planificata
+// — the task had no deadline, so we don't invent one (a plan is not a termen).
+export async function scheduleBacklog(tip, id, date) {
+  if (!date) return
+  await patch(tip, id, { data_planificata: date })
   await loadPlan()
 }
 
