@@ -19,6 +19,11 @@
   import DatePicker from './ui/DatePicker.svelte'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
 
+  // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
+  // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
+  // pana la refresh sau schimbare de tab).
+  let { onchange = () => {} } = $props()
+
   let quickTitle = $state('')
   let quickAdding = $state(false)
   let showPicker = $state(false)
@@ -43,6 +48,7 @@
     try {
       await quickAddToday(t)
       quickTitle = ''
+      onchange()
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
     } finally {
@@ -56,18 +62,19 @@
       if (res?.recurring_spawned) {
         toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
       }
+      onchange()
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
     }
   }
 
   async function onTomorrow(it) {
-    try { await moveToTomorrow(it.tip, it.id); toast('Mutat pe mâine', 'success') }
+    try { await moveToTomorrow(it.tip, it.id, { data_scadenta: it.data_scadenta }); toast('Mutat pe mâine', 'success'); onchange() }
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
   async function onRemove(it) {
-    try { await removeFromToday(it.tip, it.id) }
+    try { await removeFromToday(it.tip, it.id); onchange() }
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
@@ -75,8 +82,9 @@
   // tasks). Picking a day moves the task; clearing ("Sterge") removes it from today.
   async function onMoveDate(it, v) {
     try {
-      if (v) { await moveToDate(it.tip, it.id, v); toast(`Mutat pe ${formatDate(v)}`, 'success') }
+      if (v) { await moveToDate(it.tip, it.id, v, { data_scadenta: it.data_scadenta }); toast(`Mutat pe ${formatDate(v)}`, 'success') }
       else { await removeFromToday(it.tip, it.id) }
+      onchange()
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
