@@ -16,7 +16,7 @@
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
-  import { navigate } from '../lib/router.svelte.js'
+  import { navigate, router } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -45,6 +45,12 @@
   let loading = $state(true)
   let error = $state(null)
   let activeTab = $state('tasks')
+
+  // Jump from the read-only Gantt to a task in the Tasks tab (scroll + flash).
+  function openTaskFromGantt(taskId) {
+    router.query = { ...router.query, focus: focusKey('task', taskId) }
+    activeTab = 'tasks'
+  }
 
   let newTaskTitle = $state('')
   let creatingTask = $state(false)
@@ -830,7 +836,7 @@
         {/if}
 
       {:else if activeTab === 'gantt'}
-        <ProjectGantt projectId={params.id} />
+        <ProjectGantt projectId={params.id} onOpenTask={openTaskFromGantt} />
 
       {:else if activeTab === 'equipment'}
         <div class="tab-header">
