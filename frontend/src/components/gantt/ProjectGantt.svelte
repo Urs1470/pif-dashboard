@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2, ChevronRight } from '@lucide/svelte'
+  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2, ChevronRight, MapPin, Building2 } from '@lucide/svelte'
+  import ImplPeriodModal from '../projects/ImplPeriodModal.svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, isoDate, parseISO, localToday, clampNum } from '../../lib/planDates.js'
@@ -36,6 +37,10 @@
     }
     if (data.proiect?.data_incepere) ds.push(data.proiect.data_incepere.slice(0, 10))
     if (data.proiect?.deadline) ds.push(data.proiect.deadline.slice(0, 10))
+    for (const im of (data.implementari || [])) {
+      if (im.data_start) ds.push(im.data_start.slice(0, 10))
+      if (im.data_sfarsit) ds.push(im.data_sfarsit.slice(0, 10))
+    }
     ds.push(today)
     const lo = ds.reduce((a, b) => a < b ? a : b)
     const hi = ds.reduce((a, b) => a > b ? a : b)
@@ -180,6 +185,7 @@
       else noPhase.push(t)
     }
     const rows = []; let n = 0
+    for (const im of (data.implementari || [])) rows.push({ kind: 'impl', im })
     const pushTask = (t) => rows.push({ kind: 'task', t, no: ++n })
     for (const [phase, ts] of byPhase) {
       rows.push({ kind: 'phase', phase, tasks: ts })
@@ -188,6 +194,14 @@
     noPhase.forEach(pushTask)
     return rows
   })
+  function implRect(im) { return spanRect(im.data_start, im.data_sfarsit, win.start, win.days) }
+  function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
+
+  // implementation-period editor
+  let implOpen = $state(false)
+  let implEditing = $state(null)
+  function newImpl() { implEditing = null; implOpen = true }
+  function editImpl(im) { implEditing = im; implOpen = true }
   const hasPhases = $derived(data.tasks.some(t => (t.faza || '').trim()))
 
   function phaseSpanRect(ts) {
@@ -340,6 +354,7 @@
   <div class="g-toolbar">
     <div class="g-tl">
       <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
+      <button class="exp-btn" onclick={newImpl} title="Adaugă perioadă de implementare (Site / Sediu EGB)"><MapPin size={14} /> Perioadă</button>
       <button class="exp-btn" onclick={rescheduleNow} title="Împinge succesorii ca să respecte dependențele"><Wand2 size={14} /> Reprogramează</button>
       <button class="exp-btn" class:on-tg={autoReschedule} onclick={toggleAuto} title="Reprogramare automată a succesorilor la fiecare mutare">Auto {autoReschedule ? '●' : '○'}</button>
       <button class="exp-btn" class:on-tg={showCritical} onclick={toggleCritical} title="Evidențiază drumul critic">Drum critic {showCritical ? '●' : '○'}</button>
@@ -367,8 +382,13 @@
         <span class="c-prog">%</span>
         <span class="c-act"></span>
       </div>
-      {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.t.id)}
-        {#if row.kind === 'phase'}
+      {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
+        {#if row.kind === 'impl'}
+          <button class="impl-lrow loc-{row.im.locatie}" onclick={() => editImpl(row.im)} title="Editează perioada">
+            {#if row.im.locatie === 'sediu'}<Building2 size={13} />{:else}<MapPin size={13} />{/if}
+            <span class="impl-lname">{locLabel(row.im.locatie)}{row.im.eticheta ? ' · ' + row.im.eticheta : ''}</span>
+          </button>
+        {:else if row.kind === 'phase'}
           <div class="ph-row" onclick={() => togglePhase(row.phase)} role="button" tabindex="0">
             <ChevronRight size={14} class="ph-chev {collapsed.has(row.phase) ? '' : 'open'}" />
             <span class="ph-name">{row.phase}</span>
@@ -441,8 +461,17 @@
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
           </div>
-          {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.t.id)}
-            {#if row.kind === 'phase'}
+          {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
+            {#if row.kind === 'impl'}
+              {@const ir = implRect(row.im)}
+              <div class="gb-row impl-track">
+                {#if ir}
+                  <button class="impl-band loc-{row.im.locatie}" style="left:{ir.left}%; width:{ir.width}%" onclick={() => editImpl(row.im)} title="{locLabel(row.im.locatie)} · {formatDateShort(row.im.data_start)} → {formatDateShort(row.im.data_sfarsit)}">
+                    <span class="ib-txt">{locLabel(row.im.locatie)}{row.im.eticheta ? ' · ' + row.im.eticheta : ''}</span>
+                  </button>
+                {/if}
+              </div>
+            {:else if row.kind === 'phase'}
               {@const pr = phaseSpanRect(row.tasks)}
               <div class="gb-row ph-track">
                 {#if pr}
@@ -477,6 +506,8 @@
 {#if dragLabel}
   <div class="drag-label" style="left:{dragLabel.x + 14}px; top:{dragLabel.y - 34}px">{dragLabel.text}</div>
 {/if}
+
+<ImplPeriodModal bind:open={implOpen} projectId={projectId} period={implEditing} onsaved={load} />
 
 <style>
   .gk { display: flex; flex-direction: column; gap: 6px; }
@@ -513,6 +544,15 @@
   .ph-row :global(.ph-chev.open) { transform: rotate(90deg); }
   .ph-name { flex: 1; min-width: 0; color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ph-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); flex: none; }
+  /* implementation periods (Site / Sediu EGB) — distinct from tasks */
+  .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 10px; border: none; border-bottom: 1px solid var(--border); border-left: 3px solid var(--il); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
+  .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
+  .impl-lname { font-size: var(--font-small); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .loc-site { --il: #3f9dc4; } .loc-sediu { --il: #b98a2e; }
+  .impl-track { background: color-mix(in srgb, var(--il-track, transparent) 0%, transparent); }
+  .impl-band { position: absolute; top: 50%; transform: translateY(-50%); height: 16px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; border: none; cursor: pointer; overflow: hidden; background: var(--il); color: #10130f; }
+  .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
+  .ib-txt { font-size: 0.62rem; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ph-track { background: color-mix(in srgb, var(--accent) 4%, transparent); }
   .phase-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 11px; border-radius: 3px; background: color-mix(in oklab, var(--text-dim) 34%, var(--bg-panel)); overflow: hidden; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-dim) 40%, transparent); }
   .phase-bar .pfill { height: 100%; background: var(--text-dim); }

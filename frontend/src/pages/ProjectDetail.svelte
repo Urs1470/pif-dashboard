@@ -4,6 +4,7 @@
   import { flip } from 'svelte/animate'
   import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
+  import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import { manualUrlForEquip, familieForEquip } from '../lib/manuals.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -909,6 +910,7 @@
             <div class="irow"><span class="ilabel">{label}</span><span>{val || '—'}</span></div>
           {/each}
         </div>
+        <div style="margin-top: var(--space-md)"><ImplPeriods projectId={params.id} /></div>
       {/if}
       </div>
       {/key}

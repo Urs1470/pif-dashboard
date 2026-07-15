@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v87';
+const VERSION = 'v88';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 

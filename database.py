@@ -61,7 +61,7 @@ def close_db(exc=None):
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 25
+SCHEMA_VERSION = 26
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -818,6 +818,30 @@ def migrate_v24_to_v25():
     logger.info("Migration v24->v25: added tasks.faza")
 
 
+def migrate_v25_to_v26():
+    """v25 -> v26: implementation periods per project (separate from tasks). Each
+    has a start/end + a location (site = santier / sediu = birou EGB). Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS implementari (
+            id TEXT PRIMARY KEY,
+            proiect_id TEXT NOT NULL,
+            data_start TEXT,
+            data_sfarsit TEXT,
+            locatie TEXT DEFAULT 'site',
+            eticheta TEXT,
+            ordine INTEGER DEFAULT 0,
+            created_at TEXT,
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_implementari_proiect ON implementari(proiect_id)')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v25->v26: added implementari table")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -942,6 +966,11 @@ def run_migrations():
         set_schema_version(25)
         current_version = 25
 
+    if current_version < 26:
+        migrate_v25_to_v26()
+        set_schema_version(26)
+        current_version = 26
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -993,6 +1022,9 @@ def run_migrations():
     if 'faza' not in tasks_cols:
         logger.warning("Self-heal: re-running v24->v25 (tasks.faza missing)")
         migrate_v24_to_v25()
+    if 'implementari' not in existing_tables:
+        logger.warning("Self-heal: re-running v25->v26 (implementari table missing)")
+        migrate_v25_to_v26()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -1167,6 +1199,21 @@ def init_db():
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
             FOREIGN KEY (predecessor_id) REFERENCES tasks(id) ON DELETE CASCADE,
             FOREIGN KEY (successor_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # Perioade de implementare per proiect (separate de taskuri): Site / Sediu EGB.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS implementari (
+            id TEXT PRIMARY KEY,
+            proiect_id TEXT NOT NULL,
+            data_start TEXT,
+            data_sfarsit TEXT,
+            locatie TEXT DEFAULT 'site',
+            eticheta TEXT,
+            ordine INTEGER DEFAULT 0,
+            created_at TEXT,
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')
 

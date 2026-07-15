@@ -381,6 +381,12 @@ def _collect_gantt(project_id):
     deps = [{'id': d['id'], 'predecessor_id': d['predecessor_id'], 'successor_id': d['successor_id'],
              'tip': d['tip'] or 'FS', 'lag': d['lag'] or 0} for d in [row_to_dict(x) for x in cursor.fetchall()]]
 
+    cursor.execute('SELECT * FROM implementari WHERE proiect_id = ? ORDER BY data_start ASC, ordine ASC', (project_id,))
+    implementari = [{'id': d['id'], 'data_start': (d.get('data_start') or '')[:10],
+                     'data_sfarsit': (d.get('data_sfarsit') or '')[:10],
+                     'locatie': d.get('locatie') or 'site', 'eticheta': d.get('eticheta') or ''}
+                    for d in [row_to_dict(x) for x in cursor.fetchall()]]
+
     conn.close()
     return {
         'proiect': {'id': proj['id'], 'nume': proj.get('nume'), 'client': proj.get('client'),
@@ -388,7 +394,7 @@ def _collect_gantt(project_id):
                     'data_incepere': proj.get('data_incepere'), 'deadline': proj.get('deadline'),
                     'status': proj.get('status'), 'locatie': proj.get('locatie'),
                     'pm': proj.get('pm')},
-        'tasks': tasks, 'dependencies': deps,
+        'tasks': tasks, 'dependencies': deps, 'implementari': implementari,
     }
 
 
@@ -663,6 +669,9 @@ def export_gantt_pdf(project_id):
             render_rows.append(('phase', f))
         last = f
         render_rows.append(('task', t))
+    # Implementation periods (Site / Sediu EGB) as distinct bands at the top.
+    impl_rows = [('impl', im) for im in data.get('implementari', [])]
+    render_rows = impl_rows + render_rows
 
     buf = BytesIO()
     W, H = landscape(A4)
@@ -743,9 +752,26 @@ def export_gantt_pdf(project_id):
 
     # rows (phase headers + tasks)
     pos = {}
+    _IMPL_HEX = {'site': '3F9DC4', 'sediu': 'C99A3A'}
     for i, (kind, val) in enumerate(render_rows):
         ry = top - header_h - (i + 1) * row_h
         cy = ry + row_h / 2
+        if kind == 'impl':
+            s, e = _pdate(val.get('data_start')), _pdate(val.get('data_sfarsit'))
+            loc = val.get('locatie') or 'site'
+            lab = ('Sediu EGB' if loc == 'sediu' else 'Site') + (f" · {val['eticheta']}" if val.get('eticheta') else '')
+            c.setFillColor(colors.HexColor('#222222'))
+            c.setFont('Helvetica-Bold', 7.5)
+            c.drawString(m + 4, cy - 3, lab[:44])
+            if s and e:
+                bx, bw = xfor(s), max(xfor(e) - xfor(s), 2)
+                c.setFillColor(colors.HexColor('#' + _IMPL_HEX.get(loc, '3F9DC4')))
+                c.roundRect(bx, cy - 5, bw, 10, 2, stroke=0, fill=1)
+                c.setFillColor(colors.HexColor('#10130f'))
+                c.setFont('Helvetica-Bold', 6)
+                if bw > 40:
+                    c.drawString(bx + 4, cy - 2, lab[:26])
+            continue
         if kind == 'phase':
             c.setFillColor(colors.HexColor('#ECE6DB'))
             c.rect(m, ry, x1 - m, row_h, stroke=0, fill=1)
@@ -959,9 +985,29 @@ def export_gantt_xlsx(project_id):
             flush_month(month_start, k - 1); month_start = k
     flush_month(month_start, len(units) - 1)
 
+    # implementation-period rows (Site / Sediu EGB) at the top
+    impl = data.get('implementari', [])
+    _IMPL_HEX = {'site': '3F9DC4', 'sediu': 'C99A3A'}
+    for j, im in enumerate(impl):
+        r = FIRST + j
+        s, e = _pdate(im.get('data_start')), _pdate(im.get('data_sfarsit'))
+        loc = im.get('locatie') or 'site'
+        lab = ('Sediu EGB' if loc == 'sediu' else 'Site (santier)') + (f" · {im['eticheta']}" if im.get('eticheta') else '')
+        cell = ws.cell(r, 2, lab)
+        cell.font = Font(bold=True, color=_IMPL_HEX.get(loc, '3F9DC4'))
+        for ci in range(1, ncol_info + 1):
+            ws.cell(r, ci).border = border
+        for k in range(len(units)):
+            ws.cell(r, grid0 + k).border = border
+        if s and e:
+            si, ei = unit_index(s), unit_index(e)
+            for k in range(si, ei + 1):
+                ws.cell(r, grid0 + k).fill = PatternFill('solid', fgColor=_IMPL_HEX.get(loc, '3F9DC4'))
+    task_first = FIRST + len(impl)
+
     # task rows
     for i, t in enumerate(tasks):
-        r = FIRST + i
+        r = task_first + i
         s, e = _pdate(t['data_start']), _pdate(t['data_scadenta'])
         zile = ((e - s).days + 1) if (s and e) else ''
         info_vals = [i + 1, t['titlu'], t.get('faza', ''), _fmt_ro(s), _fmt_ro(e), '◆' if t['is_milestone'] else zile, t['progres']]

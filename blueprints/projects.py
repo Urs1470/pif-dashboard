@@ -1567,3 +1567,99 @@ def import_debrief():
         'creat': proiect_creat,
         'sumar': sumar,
     }), 201
+
+
+# ---------------------------------------------------------------------------
+# Perioade de implementare (separate de taskuri): Site (santier) / Sediu EGB
+# ---------------------------------------------------------------------------
+
+_IMPL_LOC = ('site', 'sediu')
+
+
+def _impl_row(r):
+    d = row_to_dict(r)
+    return {
+        'id': d['id'],
+        'proiect_id': d['proiect_id'],
+        'data_start': d.get('data_start') or '',
+        'data_sfarsit': d.get('data_sfarsit') or '',
+        'locatie': d.get('locatie') or 'site',
+        'eticheta': d.get('eticheta') or '',
+        'ordine': d.get('ordine') or 0,
+    }
+
+
+@projects_bp.route('/api/proiecte/<project_id>/implementari', methods=['GET'])
+@login_required
+def get_implementari(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM implementari WHERE proiect_id = ? ORDER BY data_start ASC, ordine ASC', (project_id,))
+    rows = [_impl_row(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@projects_bp.route('/api/proiecte/<project_id>/implementari', methods=['POST'])
+@login_required
+def create_implementare(project_id):
+    data = get_json_or_400()
+    loc = (data.get('locatie') or 'site').strip().lower()
+    if loc not in _IMPL_LOC:
+        loc = 'site'
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    impl_id = data.get('id') or generate_uuid()
+    cursor.execute('''INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, locatie, eticheta, ordine, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                   (impl_id, project_id, (data.get('data_start') or ''), (data.get('data_sfarsit') or ''),
+                    loc, (data.get('eticheta') or ''), data.get('ordine', 0), datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': impl_id}), 201
+
+
+@projects_bp.route('/api/implementari/<impl_id>', methods=['PUT'])
+@login_required
+def update_implementare(impl_id):
+    data = get_json_or_400()
+    loc = data.get('locatie')
+    if loc is not None:
+        loc = loc.strip().lower()
+        if loc not in _IMPL_LOC:
+            loc = None  # keep existing on invalid
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''UPDATE implementari SET
+                        data_start = COALESCE(?, data_start),
+                        data_sfarsit = COALESCE(?, data_sfarsit),
+                        locatie = COALESCE(?, locatie),
+                        eticheta = COALESCE(?, eticheta),
+                        ordine = COALESCE(?, ordine)
+                      WHERE id = ?''',
+                   (data.get('data_start'), data.get('data_sfarsit'), loc,
+                    data.get('eticheta'), data.get('ordine'), impl_id))
+    updated = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if updated == 0:
+        return jsonify({'error': 'Perioada inexistenta'}), 404
+    return jsonify({'message': 'ok'})
+
+
+@projects_bp.route('/api/implementari/<impl_id>', methods=['DELETE'])
+@login_required
+def delete_implementare(impl_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM implementari WHERE id = ?', (impl_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Perioada inexistenta'}), 404
+    return jsonify({'message': 'ok'})
