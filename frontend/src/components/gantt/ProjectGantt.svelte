@@ -340,9 +340,12 @@
   <div class="gk">{#each Array(5) as _}<Skeleton height="34px" />{/each}</div>
 {:else if error}
   <p class="g-err">Eroare: {error}</p>
-{:else if data.tasks.length === 0}
-  <EmptyState icon={Milestone} title="Niciun task în Gantt" description="Adaugă taskuri cu date de start și termen ca să apară pe diagramă.">
-    <button class="add-btn" onclick={addTask}><Plus size={15} /> Adaugă task</button>
+{:else if data.tasks.length === 0 && (data.implementari || []).length === 0}
+  <EmptyState icon={Milestone} title="Niciun task în Gantt" description="Adaugă taskuri (cu start și termen) sau o perioadă de implementare ca să apară pe diagramă.">
+    <div class="es-actions">
+      <button class="add-btn" onclick={addTask}><Plus size={15} /> Adaugă task</button>
+      <button class="exp-btn" onclick={newImpl}><MapPin size={15} /> Perioadă</button>
+    </div>
   </EmptyState>
 {:else}
   {#if linkFrom}
@@ -512,6 +515,7 @@
 <style>
   .gk { display: flex; flex-direction: column; gap: 6px; }
   .g-err { color: var(--danger); padding: var(--space-md); }
+  .es-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
 
   .link-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: var(--space-sm); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: var(--radius-md); font-size: var(--font-small); color: var(--text); }
   .link-cancel { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-sm); background: none; border: 1px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; font-size: var(--font-tiny); }
