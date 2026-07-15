@@ -59,13 +59,11 @@
 
   const views = $derived(plan.lanes.map((lane) => {
     const color = laneColor(lane.id)
-    const taskDates = lane.tasks.flatMap(t => [
-      (t.data_planificata || '').slice(0, 10),
-      (t.data_scadenta || '').slice(0, 10),
-    ].filter(Boolean))
-    const bandStart = lane.data_incepere || (taskDates.length ? taskDates.reduce((a, b) => a < b ? a : b) : '')
-    const bandEnd = lane.deadline || (taskDates.length ? taskDates.reduce((a, b) => a > b ? a : b) : '')
-    const band = lane.tip === 'proiect' ? spanRect(bandStart, bandEnd, plan.start, plan.days) : null
+    // Project timeframe band = data_incepere -> deadline, STRICT. Drawn only when
+    // the project actually has both dates, so it never extends past the deadline
+    // via a task-date fallback (that was confusing).
+    const band = (lane.tip === 'proiect' && lane.data_incepere && lane.deadline)
+      ? spanRect(lane.data_incepere, lane.deadline, plan.start, plan.days) : null
     let deadlinePct = null
     if (lane.deadline) {
       const di = dayDiff(plan.start, lane.deadline)
@@ -659,10 +657,11 @@
 
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; }
   .t-row { position: relative; height: var(--row-h); }
-  /* implementation period bands (Site / Sediu EGB) — distinct from task bars */
-  .impl-band { position: absolute; top: 50%; transform: translateY(-50%); height: 15px; border-radius: 4px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; z-index: 2; color: #10130f; }
+  /* implementation period bands (Site / Sediu EGB) — same shape as task bars,
+     distinguished only by color (teal = site, gold = sediu). */
+  .impl-band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 8px; border-radius: 7px; overflow: hidden; z-index: 2; color: #10130f; }
   .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
-  .ib-txt { font-size: 0.6rem; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ib-txt { font-size: var(--font-tiny); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
   .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--mil); }
