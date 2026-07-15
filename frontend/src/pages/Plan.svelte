@@ -438,6 +438,7 @@
                             class:done={isDone(t.status)}
                             class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}
                             class:single={t.rect.single}
+                            class:flip={t.rect.single && t.rect.left > 62}
                             class:draggable={!isDone(t.status)}
                             style="left:{t.rect.left}%; width:{t.rect.width}%"
                             role="button"
@@ -449,6 +450,7 @@
                             {#if !isDone(t.status) && !t.rect.single}
                               <span class="rz rz-l" onpointerdown={(e) => startDrag(e, t, 'resizeL', lane.nume)} aria-hidden="true"></span>
                             {/if}
+                            {#if t.rect.single}<span class="pin-dot"></span>{/if}
                             <span class="bar-txt">{t.titlu}</span>
                             {#if t.recurenta}<Repeat size={11} />{/if}
                             {#if !isDone(t.status) && !t.rect.single}
@@ -682,10 +684,21 @@
     border: 1px dashed color-mix(in oklab, var(--lane) 40%, var(--bg-panel));
     color: var(--text-dim); opacity: 0.72; cursor: default; }
   .bar.done .bar-txt { text-decoration: line-through; }
-  .bar.single { justify-content: center; padding: 0 4px; }
-  .bar.single .bar-txt { display: none; }
-  .bar.single::after { content: '◆'; font-size: 0.7rem; }
+  /* single-day task: a diamond marker + the title label beside it (label spills
+     outside the 1-day-wide box), so it's readable without hovering. */
+  .bar.single { overflow: visible; background: none; border: none; box-shadow: none;
+    padding: 0; justify-content: flex-start; gap: 6px; }
+  .bar.single.flip { flex-direction: row-reverse; }
+  .bar.single .pin-dot { flex: none; width: 12px; height: 12px; transform: rotate(45deg);
+    background: var(--lane); border: 1.5px solid var(--bg-surface);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--lane) 22%, transparent); }
+  .bar.single.todo .pin-dot { background: color-mix(in oklab, var(--lane) 55%, var(--bg-panel)); }
+  .bar.single.done .pin-dot { background: color-mix(in oklab, var(--lane) 30%, var(--bg-panel)); box-shadow: none; }
+  .bar.single .bar-txt { display: inline; max-width: 220px; color: var(--text-secondary); }
+  .bar.single.done .bar-txt { color: var(--text-dim); text-decoration: line-through; }
   .bar.urgent { box-shadow: inset 3px 0 0 0 var(--danger); }
+  .bar.single.urgent { box-shadow: none; }
+  .bar.single.urgent .pin-dot { box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 40%, transparent); }
   .bar-txt { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 
   .rz { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 6; }
