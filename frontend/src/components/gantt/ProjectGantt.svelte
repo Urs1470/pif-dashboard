@@ -60,12 +60,25 @@
     return 'todo'
   }
   const isDone = (t) => statusClass(t) === 'done'
-  function rectFor(t) { return spanRect(t.data_start, t.data_scadenta, win.start, win.days) }
-  function msPct(t) {
-    const di = dayDiff(win.start, t.data_start || t.data_scadenta)
+  function pctFor(iso) {
+    const di = dayDiff(win.start, (iso || '').slice(0, 10))
     if (di == null) return null
     return ((di + 0.5) / win.days) * 100
   }
+  function msPct(t) { return pctFor(t.data_start || t.data_scadenta) }
+  // A task is a point marker at its due date. If it has a real multi-day span,
+  // a thin connector line runs start→due behind the dot. Single-day tasks (Ion's
+  // usual case) show as a visible dot instead of an invisible 3px sliver.
+  function taskMark(t) {
+    const due = (t.data_scadenta || t.data_start || '').slice(0, 10)
+    const end = pctFor(due)
+    if (end == null) return null
+    const start = (t.data_start || '').slice(0, 10)
+    let s = null
+    if (start && start < due) { const sp = pctFor(start); if (sp != null) s = sp }
+    return { end, start: s }
+  }
+  const deadlinePct = $derived(data.proiect?.deadline ? pctFor(data.proiect.deadline) : null)
   function implRect(im) { return spanRect(im.data_start, im.data_sfarsit, win.start, win.days) }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
@@ -157,9 +170,9 @@
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
     </div>
     <span class="g-legend">
-      <span class="lg"><span class="sw done"></span>finalizat</span>
-      <span class="lg"><span class="sw prog"></span>în lucru</span>
-      <span class="lg"><span class="sw todo"></span>de făcut</span>
+      <span class="lg"><span class="dot done leg"></span>finalizat</span>
+      <span class="lg"><span class="dot prog leg"></span>în lucru</span>
+      <span class="lg"><span class="dot todo leg"></span>de făcut</span>
       <span class="lg"><span class="sw-ms"></span>milestone</span>
       <span class="lg"><span class="sw" style="background:#3f9dc4"></span>site</span>
       <span class="lg"><span class="sw" style="background:#c99a3a"></span>sediu</span>
@@ -219,6 +232,9 @@
             {#if todayIdx != null && todayIdx >= 0 && todayIdx < win.days}
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
+            {#if deadlinePct != null && deadlinePct >= 0 && deadlinePct <= 100}
+              <div class="deadline-line" style="left:{deadlinePct}%" title="Deadline · {formatDateShort(data.proiect.deadline)}"></div>
+            {/if}
           </div>
           {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
             {#if row.kind === 'impl'}
@@ -237,12 +253,17 @@
               </div>
             {:else}
               {@const t = row.t}
-              {@const r = rectFor(t)}
+              {@const mk = taskMark(t)}
+              {@const mp = t.is_milestone ? msPct(t) : (mk ? mk.end : null)}
               <div class="gb-row">
-                {#if t.is_milestone}
-                  {#if msPct(t) != null}<div class="ms" style="left:{msPct(t)}%" title="{t.titlu} · {formatDateShort(t.data_start)}"></div>{/if}
-                {:else if r}
-                  <div class="bar {statusClass(t)}" style="left:{r.left}%; width:{r.width}%" title="{t.titlu} · {formatDateShort(t.data_start)} → {formatDateShort(t.data_scadenta)}"></div>
+                {#if mp != null}
+                  {#if !t.is_milestone && mk.start != null}<div class="tk-line {statusClass(t)}" style="left:{mk.start}%; width:{mk.end - mk.start}%"></div>{/if}
+                  {#if t.is_milestone}
+                    <div class="ms" style="left:{mp}%" title="{t.titlu} · {formatDateShort(t.data_start)}"></div>
+                  {:else}
+                    <div class="dot {statusClass(t)}" style="left:{mp}%" title="{t.titlu} · {formatDateShort(t.data_scadenta || t.data_start)}"></div>
+                  {/if}
+                  <span class="mk-label {statusClass(t)}" class:flip={mp > 58} style="left:{mp}%">{t.titlu}</span>
                 {/if}
               </div>
             {/if}
@@ -330,14 +351,25 @@
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
   .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.7; z-index: 1; }
+  .deadline-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed color-mix(in srgb, var(--danger) 70%, var(--accent)); opacity: 0.8; z-index: 1; }
 
   .gb-row { position: relative; height: var(--row-h); border-bottom: 1px solid var(--border); }
   .gb-row:last-child { border-bottom: 0; }
-  .bar { position: absolute; top: 50%; transform: translateY(-50%); height: 20px; border-radius: 6px; z-index: 1; }
-  .bar.done { background: color-mix(in oklab, var(--success) 55%, var(--bg-panel)); }
-  .bar.prog { background: color-mix(in oklab, var(--accent) 55%, var(--bg-panel)); }
-  .bar.todo { background: var(--bg-elevated); border: 1px solid var(--border-strong); }
+  /* tasks are point markers (repere) at their due date, not bars */
+  .dot { position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 2; box-shadow: 0 0 0 3px color-mix(in srgb, var(--bg-panel) 70%, transparent); }
+  .dot.done { background: var(--success); }
+  .dot.prog { background: var(--accent); }
+  .dot.todo { background: var(--bg-panel); border: 2px solid var(--border-strong); box-shadow: none; }
+  .dot.leg { position: static; transform: none; width: 11px; height: 11px; box-shadow: none; }
+  .tk-line { position: absolute; top: 50%; height: 4px; border-radius: 2px; transform: translateY(-50%); z-index: 1; opacity: 0.55; }
+  .tk-line.done { background: var(--success); }
+  .tk-line.prog { background: var(--accent); }
+  .tk-line.todo { background: var(--border-strong); }
   .ms { position: absolute; top: 50%; width: 15px; height: 15px; background: var(--accent); border: 2px solid var(--bg-panel); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 3px var(--accent-subtle); z-index: 2; }
+  /* label next to the marker so a task is readable without hovering */
+  .mk-label { position: absolute; top: 50%; transform: translateY(-50%); margin-left: 13px; max-width: 260px; font-size: var(--font-tiny); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; z-index: 2; }
+  .mk-label.flip { margin-left: 0; margin-right: 13px; transform: translate(-100%, -50%); }
+  .mk-label.done { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--text-faint); }
 
   @media (max-width: 720px) {
     .g-table { width: 210px; }
