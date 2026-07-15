@@ -1591,6 +1591,18 @@ def get_plan():
         cand = [x for x in ((t['data_planificata'] or '')[:10], (t['data_scadenta'] or '')[:10]) if x]
         return (min(cand) if cand else '9999-99-99', (t['titlu'] or '').lower())
 
+    # Implementation periods (Site / Sediu EGB) per project, for lane bands.
+    impl_by_project = {}
+    proj_ids = [p['id'] for p in projects]
+    if proj_ids:
+        ph = ','.join('?' * len(proj_ids))
+        cursor.execute(f'SELECT * FROM implementari WHERE proiect_id IN ({ph})', proj_ids)
+        for r in [row_to_dict(x) for x in cursor.fetchall()]:
+            impl_by_project.setdefault(r['proiect_id'], []).append({
+                'id': r['id'], 'data_start': (r.get('data_start') or '')[:10],
+                'data_sfarsit': (r.get('data_sfarsit') or '')[:10],
+                'locatie': r.get('locatie') or 'site', 'eticheta': r.get('eticheta') or ''})
+
     lanes = []
     for proj in projects:
         pid = proj['id']
@@ -1598,7 +1610,9 @@ def get_plan():
         inc = (proj.get('data_incepere') or '')[:10]
         ddl = (proj.get('deadline') or '')[:10]
         band = _span_intersects(inc, ddl, start_s, end_s)
-        if not ptasks and not band:
+        pimpl = [im for im in impl_by_project.get(pid, [])
+                 if _span_intersects(im['data_start'], im['data_sfarsit'], start_s, end_s)]
+        if not ptasks and not band and not pimpl:
             continue
         lanes.append({
             'tip': 'proiect',
@@ -1609,6 +1623,7 @@ def get_plan():
             'data_incepere': inc,
             'deadline': ddl,
             'tasks': ptasks,
+            'implementari': pimpl,
         })
 
     # Global tasks lane.
@@ -1628,7 +1643,7 @@ def get_plan():
         lanes.append({
             'tip': 'global', 'id': '__global__', 'nume': 'Globale',
             'tip_proiect': '', 'status': '', 'data_incepere': '', 'deadline': '',
-            'tasks': sorted(gtasks, key=_task_sort_key),
+            'tasks': sorted(gtasks, key=_task_sort_key), 'implementari': [],
         })
 
     # Backlog: open tasks with NO plan and NO deadline — nowhere to place on the

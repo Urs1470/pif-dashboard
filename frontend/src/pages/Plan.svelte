@@ -75,8 +75,12 @@
       ...t,
       rect: spanRect(t.data_planificata, effDue(t), plan.start, plan.days),
     }))
-    return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks) }
+    const impl = (lane.implementari || [])
+      .map(im => ({ ...im, rect: spanRect(im.data_start, im.data_sfarsit, plan.start, plan.days) }))
+      .filter(im => im.rect)
+    return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks), impl }
   }))
+  function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
   // --- action popover (desktop) ---
   let sel = $state(null)
@@ -418,6 +422,14 @@
                     <div class="band-ms" style="left:{lane.deadlinePct}%" title="Deadline proiect: {formatDate(lane.deadline)}"></div>
                   {/if}
                   <div class="rows">
+                    {#each lane.impl as im (im.id)}
+                      <div class="t-row">
+                        <div class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)}">
+                          <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                        </div>
+                      </div>
+                    {/each}
                     {#each lane.packed as row, ri (ri)}
                       <div class="t-row">
                         {#each row as t (t.tip + ':' + t.id)}
@@ -495,6 +507,12 @@
             {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
             <span class="mg-count">{lane.tasks.length}</span>
           </header>
+          {#each lane.impl as im (im.id)}
+            <div class="mimpl loc-{im.locatie}">
+              <span class="mimpl-loc">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+              <span class="mimpl-range">{formatDateShort(im.data_start)} – {formatDateShort(im.data_sfarsit)}</span>
+            </div>
+          {/each}
           {#each lane.tasks as t (t.tip + ':' + t.id)}
             <div class="mrow" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'} class:done={isDone(t.status)}>
               <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
@@ -641,6 +659,14 @@
 
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; }
   .t-row { position: relative; height: var(--row-h); }
+  /* implementation period bands (Site / Sediu EGB) — distinct from task bars */
+  .impl-band { position: absolute; top: 50%; transform: translateY(-50%); height: 15px; border-radius: 4px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; z-index: 2; color: #10130f; }
+  .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
+  .ib-txt { font-size: 0.6rem; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
+  .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
+  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--mil); }
+  .mimpl-range { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
     padding: 0 8px; border-radius: 7px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
     white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left; touch-action: none;
