@@ -47,6 +47,14 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v23**, id
 
 ## Recent decisions
 
+- **2026-07-15 — Gantt per-proiect simplificat (calm by default)** (SW v92): Ion găsea ganttul din
+  proiect prea complicat față de Planificator. `ProjectGantt.svelte`: toggle nou `Avansat` (persistat
+  localStorage `pif-gantt-adv`, off implicit) ascunde uneltele PM avansate — dependențe+săgeți, `Auto`
+  reschedule, `Drum critic`. Implicit vizibile doar `Task nou / Perioadă / PDF / Excel / Avansat`. Tabel
+  redus la `Task | Fază | Start | Sfârșit | %` (scoase coloanele `#` și `Zile`; durata rămâne în tooltip-ul
+  barei). Rânduri: 2 iconițe implicit (milestone + șterge), a 3-a (`Link2`) doar sub Avansat. Zero
+  modificări backend — dependențele rămân în DB, doar săgețile se ascund. `.g-table` 560→440px.
+
 - **2026-07-03 — Perioade de implementare pe Planificator (/plan) + fix Gantt empty-state** (SW v90):
   (1) Fix: `ProjectGantt` ascundea tot timeline-ul cand `data.tasks.length===0` → o perioada pe un
   proiect fara taskuri nu se vedea. Acum arata Gantt-ul daca exista taskuri SAU perioade (EmptyState doar
