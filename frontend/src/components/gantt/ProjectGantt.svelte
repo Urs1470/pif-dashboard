@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2, ChevronRight, MapPin, Building2 } from '@lucide/svelte'
+  import { Plus, Diamond, Trash2, Flag, Milestone, Link2, X, FileDown, Sheet, Wand2, ChevronRight, MapPin, Building2, SlidersHorizontal } from '@lucide/svelte'
   import ImplPeriodModal from '../projects/ImplPeriodModal.svelte'
   import { apiJson } from '../../lib/api.js'
   import { createTask, updateTask, deleteTask } from '../../stores/tasks.svelte.js'
@@ -72,6 +72,14 @@
     const di = dayDiff(win.start, t.data_start || t.data_scadenta)
     if (di == null) return null
     return ((di + 0.5) / win.days) * 100
+  }
+
+  // Master toggle: hide advanced PM tools (dependencies+arrows, auto-reschedule,
+  // critical path) behind an "Avansat" button. Off by default for a calm default view.
+  let advanced = $state((() => { try { return localStorage.getItem('pif-gantt-adv') === '1' } catch { return false } })())
+  function toggleAdvanced() {
+    advanced = !advanced
+    try { localStorage.setItem('pif-gantt-adv', advanced ? '1' : '0') } catch {}
   }
 
   let autoReschedule = $state((() => { try { return localStorage.getItem('pif-gantt-auto') === '1' } catch { return false } })())
@@ -358,11 +366,14 @@
     <div class="g-tl">
       <button class="add-btn" onclick={addTask} disabled={adding}><Plus size={15} /> Task nou</button>
       <button class="exp-btn" onclick={newImpl} title="Adaugă perioadă de implementare (Site / Sediu EGB)"><MapPin size={14} /> Perioadă</button>
-      <button class="exp-btn" onclick={rescheduleNow} title="Împinge succesorii ca să respecte dependențele"><Wand2 size={14} /> Reprogramează</button>
-      <button class="exp-btn" class:on-tg={autoReschedule} onclick={toggleAuto} title="Reprogramare automată a succesorilor la fiecare mutare">Auto {autoReschedule ? '●' : '○'}</button>
-      <button class="exp-btn" class:on-tg={showCritical} onclick={toggleCritical} title="Evidențiază drumul critic">Drum critic {showCritical ? '●' : '○'}</button>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.pdf`} target="_blank" rel="noopener" title="Export PDF (client)"><FileDown size={14} /> PDF</a>
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
+      <button class="exp-btn" class:on-tg={advanced} onclick={toggleAdvanced} title="Arată uneltele avansate: dependențe, reprogramare, drum critic"><SlidersHorizontal size={14} /> Avansat</button>
+      {#if advanced}
+        <button class="exp-btn" onclick={rescheduleNow} title="Împinge succesorii ca să respecte dependențele"><Wand2 size={14} /> Reprogramează</button>
+        <button class="exp-btn" class:on-tg={autoReschedule} onclick={toggleAuto} title="Reprogramare automată a succesorilor la fiecare mutare">Auto {autoReschedule ? '●' : '○'}</button>
+        <button class="exp-btn" class:on-tg={showCritical} onclick={toggleCritical} title="Evidențiază drumul critic">Drum critic {showCritical ? '●' : '○'}</button>
+      {/if}
     </div>
     <span class="g-legend">
       <span class="lg"><span class="sw done"></span>finalizat</span>
@@ -376,14 +387,12 @@
     <!-- left: task table -->
     <div class="g-table">
       <div class="gh-row">
-        <span class="c-idx">#</span>
         <span class="c-name">Task</span>
         <span class="c-faza">Fază</span>
         <span class="c-date">Start</span>
         <span class="c-date">Sfârșit</span>
-        <span class="c-dur">Zile</span>
         <span class="c-prog">%</span>
-        <span class="c-act"></span>
+        <span class="c-act" class:adv={advanced}></span>
       </div>
       {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
         {#if row.kind === 'impl'}
@@ -400,7 +409,6 @@
         {:else}
           {@const t = row.t}
           <div class="gt-row" class:done={statusClass(t) === 'done'} class:child={(t.faza || '').trim()}>
-            <span class="c-idx">{row.no}</span>
             <span class="c-name">
               {#if editId === t.id}
                 <input class="rename" bind:value={editVal} onblur={commitRename} onkeydown={(e) => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') editId = null }} autofocus />
@@ -413,7 +421,6 @@
             <span class="c-faza"><input class="faza-in" value={t.faza || ''} placeholder="—" onchange={(e) => setFaza(t, e)} onkeydown={(e) => { if (e.key === 'Enter') e.target.blur() }} /></span>
             <span class="c-date"><DatePicker value={t.data_start} placeholder="—" onchange={(v) => setStart(t, v)} /></span>
             <span class="c-date"><DatePicker value={t.data_scadenta} placeholder="—" onchange={(v) => setEnd(t, v)} /></span>
-            <span class="c-dur">{t.is_milestone ? '◆' : duration(t)}</span>
             <span class="c-prog">
               {#if t.subtask_total > 0}
                 <span class="prog-auto" title="Din subtaskuri: {t.subtask_done}/{t.subtask_total}">{t.progres}%</span>
@@ -421,8 +428,10 @@
                 <input class="prog-in" type="number" min="0" max="100" value={t.progres} onchange={(e) => setProgress(t, e)} onkeydown={(e) => { if (e.key === 'Enter') e.target.blur() }} />
               {/if}
             </span>
-            <span class="c-act">
-              <button class="ic" class:on={linkFrom === t.id} onclick={() => onLinkClick(t)} title={linkFrom ? 'Leagă aici (succesor)' : 'Leagă dependență'}><Link2 size={13} /></button>
+            <span class="c-act" class:adv={advanced}>
+              {#if advanced}
+                <button class="ic" class:on={linkFrom === t.id} onclick={() => onLinkClick(t)} title={linkFrom ? 'Leagă aici (succesor)' : 'Leagă dependență'}><Link2 size={13} /></button>
+              {/if}
               <button class="ic" class:on={t.is_milestone} onclick={() => toggleMilestone(t)} title="Comută milestone"><Flag size={13} /></button>
               <button class="ic danger" onclick={() => removeTask(t)} title="Șterge"><Trash2 size={13} /></button>
             </span>
@@ -442,7 +451,7 @@
           {/each}
         </div>
         <div class="g-body" bind:clientWidth={bodyW}>
-          {#if data.dependencies.length && bodyW}
+          {#if advanced && data.dependencies.length && bodyW}
             <svg class="dep-svg" width={bodyW} height={nRows * ROW_H} viewBox="0 0 {bodyW} {nRows * ROW_H}">
               <defs>
                 <marker id="gdep-arw" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
@@ -537,7 +546,7 @@
   /* ===== two-pane gantt ===== */
   .gantt2 { --row-h: 34px; --head-h: 38px; display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel); }
 
-  .g-table { flex: none; width: 560px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
+  .g-table { flex: none; width: 440px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
   .c-faza { width: 84px; flex: none; }
   .faza-in { width: 78px; font-size: var(--font-tiny); background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-xs); color: var(--text-secondary); padding: 2px 5px; }
   .faza-in:focus { border-color: var(--accent); outline: none; color: var(--text); }
@@ -564,8 +573,7 @@
   .gt-row { height: var(--row-h); display: flex; align-items: center; border-bottom: 1px solid var(--border); }
   .gt-row:last-child { border-bottom: 0; }
   .gt-row.done .c-name { color: var(--text-dim); }
-  .c-idx { width: 30px; text-align: center; flex: none; font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); }
-  .c-name { flex: 1; min-width: 0; padding-right: 4px; }
+  .c-name { flex: 1; min-width: 0; padding-right: 4px; padding-left: 10px; }
   .name-btn { width: 100%; text-align: left; background: none; border: none; color: var(--text); font-size: var(--font-small); cursor: text; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-flex; align-items: center; gap: 5px; }
   .name-btn:hover { color: var(--accent); }
   .name-btn :global(.mini-ms) { color: var(--accent); flex: none; }
@@ -573,11 +581,11 @@
   .c-date { width: 92px; flex: none; }
   .c-date :global(.dp-trigger) { min-height: 28px; padding: 2px 6px; background: transparent; border: none; box-shadow: none; font-size: var(--font-micro); color: var(--text-secondary); }
   .c-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
-  .c-dur { width: 40px; flex: none; text-align: center; font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); }
   .c-prog { width: 50px; flex: none; text-align: center; }
   .prog-auto { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--accent); }
   .prog-in { width: 44px; font-size: var(--font-tiny); font-family: var(--font-mono); text-align: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-xs); color: var(--text); padding: 2px; }
-  .c-act { width: 56px; flex: none; display: flex; gap: 2px; justify-content: center; }
+  .c-act { width: 40px; flex: none; display: flex; gap: 2px; justify-content: center; }
+  .c-act.adv { width: 58px; }
   .ic { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); background: none; border: none; cursor: pointer; }
   .ic:hover { background: var(--bg-hover); color: var(--text); }
   .ic.on { color: var(--accent); }
@@ -626,6 +634,6 @@
 
   @media (max-width: 720px) {
     .g-table { width: 240px; }
-    .c-date { width: 70px; } .c-dur { display: none; }
+    .c-date { width: 70px; } .c-faza { display: none; }
   }
 </style>
