@@ -10,6 +10,13 @@ Single-user Flask app with SQLite, deployed via Gunicorn + Cloudflare Tunnel (HT
 - **Auth:** PIN-based (env `PIF_DASHBOARD_PIN`), session cookie (30d), CSRF double-submit
 - **Deploy:** systemd service on Ubuntu laptop-server, Cloudflare Tunnel, webhook auto-deploy
 
+## Pull FIRST — before any task
+
+Before reading or editing anything for a task, run `git pull --rebase origin master`. This repo
+is modified from other machines and sessions (on 2026-07-16 a local clone was 93 commits behind
+and the code didn't match the live API). Exception: if the working tree is dirty, report it
+first — never pull over uncommitted changes.
+
 ## Persistent Memory — READ FIRST
 
 To avoid re-exploring the codebase every session, start here instead of scanning large files:
