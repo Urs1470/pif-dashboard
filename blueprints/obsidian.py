@@ -203,6 +203,77 @@ def obsidian_note_get():
     })
 
 
+def _obsidian_safe_dir(vault, rel):
+    """Resolve a vault-relative FOLDER path safely (path-traversal safe).
+    Returns an absolute dir path only if it stays inside the vault."""
+    if not vault or not rel:
+        return None
+    rel = str(rel).replace('\\', '/').strip('/')
+    candidate = os.path.realpath(os.path.join(vault, rel))
+    vault_real = os.path.realpath(vault)
+    inside = candidate == vault_real or candidate.startswith(vault_real + os.sep)
+    if not inside or not os.path.isdir(candidate):
+        return None
+    return candidate
+
+
+@obsidian_bp.route('/api/proiecte/<project_id>/wiki', methods=['GET'])
+@login_required
+def project_wiki_notes(project_id):
+    """List the .md notes in the project's linked vault folder (proiecte.vault_folder,
+    e.g. 'wiki/job/projects/imsat-biochem-podari'). Content is fetched per-note via
+    the existing GET /api/obsidian/note?path=<rel>. Bypasses the top-level folder
+    filter (that filter is for the study-notes browser, not for project wikis)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT vault_folder FROM proiecte WHERE id = ?', (project_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row is None:
+        return jsonify({'error': 'Project not found'}), 404
+
+    folder = (row['vault_folder'] or '').strip().replace('\\', '/').strip('/')
+    vault = _obsidian_vault()
+    result = {
+        'configured': vault is not None,
+        'folder': folder or None,
+        'valid': False,
+        'notes': [],
+    }
+    if not folder or not vault:
+        return jsonify(result)
+
+    absdir = _obsidian_safe_dir(vault, folder)
+    if not absdir:
+        return jsonify(result)  # folder set but missing on this vault copy
+
+    vault_real = os.path.realpath(vault)
+    notes = []
+    for root, dirs, files in os.walk(absdir):
+        dirs[:] = [d for d in dirs if d not in _OBSIDIAN_SKIP_DIRS and not d.startswith('.')]
+        for fname in files:
+            if not fname.lower().endswith('.md'):
+                continue
+            abspath = os.path.join(root, fname)
+            try:
+                st = os.stat(abspath)
+            except OSError:
+                continue
+            rel = os.path.relpath(abspath, vault_real).replace('\\', '/')
+            notes.append({
+                'path': rel,
+                'title': fname[:-3],
+                'folder': os.path.dirname(rel),
+                'mtime': st.st_mtime,
+                'size': st.st_size,
+            })
+    # README first, then shallow-before-deep, then alphabetical.
+    notes.sort(key=lambda n: (n['title'].lower() != 'readme',
+                              n['path'].count('/'), n['path'].lower()))
+    result.update({'valid': True, 'notes': notes})
+    return jsonify(result)
+
+
 @obsidian_bp.route('/api/obsidian/search', methods=['GET'])
 @login_required
 def obsidian_search():

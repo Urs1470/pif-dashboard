@@ -61,7 +61,7 @@ def close_db(exc=None):
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
 
-SCHEMA_VERSION = 26
+SCHEMA_VERSION = 27
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -842,6 +842,23 @@ def migrate_v25_to_v26():
     logger.info("Migration v25->v26: added implementari table")
 
 
+def migrate_v26_to_v27():
+    """v26 -> v27: link a project to its Obsidian vault folder (wiki notes).
+    vault_folder holds a vault-relative folder path, e.g.
+    'wiki/job/projects/imsat-biochem-podari'. The column was added manually on
+    the production DB before this migration existed, so it may already be
+    present. Idempotent."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(proiecte)")
+    pcols = {row[1] for row in cursor.fetchall()}
+    if 'vault_folder' not in pcols:
+        cursor.execute('ALTER TABLE proiecte ADD COLUMN vault_folder TEXT')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v26->v27: added proiecte.vault_folder")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -971,6 +988,11 @@ def run_migrations():
         set_schema_version(26)
         current_version = 26
 
+    if current_version < 27:
+        migrate_v26_to_v27()
+        set_schema_version(27)
+        current_version = 27
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1025,6 +1047,13 @@ def run_migrations():
     if 'implementari' not in existing_tables:
         logger.warning("Self-heal: re-running v25->v26 (implementari table missing)")
         migrate_v25_to_v26()
+    cursor2 = get_db().cursor()
+    cursor2.execute("PRAGMA table_info(proiecte)")
+    proiecte_cols = {row[1] for row in cursor2.fetchall()}
+    cursor2.connection.close()
+    if 'vault_folder' not in proiecte_cols:
+        logger.warning("Self-heal: re-running v26->v27 (proiecte.vault_folder missing)")
+        migrate_v26_to_v27()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -1166,7 +1195,8 @@ def init_db():
             created_at TEXT,
             updated_at TEXT,
             notify_on_complete INTEGER DEFAULT 1,
-            notify_on_deadline INTEGER DEFAULT 1
+            notify_on_deadline INTEGER DEFAULT 1,
+            vault_folder TEXT
         )
     ''')
     

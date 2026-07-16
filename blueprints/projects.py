@@ -80,8 +80,8 @@ def create_proiect():
             id, tip, nume, client, locatie, echipament_principal, producator,
             cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
             status, observatii, nr_comanda, nr_contract, service_before, service_after,
-            confirmat_client, client_nume_confirmare, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            confirmat_client, client_nume_confirmare, created_at, updated_at, vault_folder
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         project_id,
         data.get('tip', 'PIF'),
@@ -105,7 +105,8 @@ def create_proiect():
         data.get('confirmat_client', 0),
         data.get('client_nume_confirmare', ''),
         now,
-        now
+        now,
+        data.get('vault_folder', '')
     ))
 
     conn.commit()
@@ -164,6 +165,7 @@ def update_proiect(project_id):
             service_after = COALESCE(?, service_after),
             confirmat_client = COALESCE(?, confirmat_client),
             client_nume_confirmare = COALESCE(?, client_nume_confirmare),
+            vault_folder = COALESCE(?, vault_folder),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -186,6 +188,7 @@ def update_proiect(project_id):
         data.get('service_after'),
         data.get('confirmat_client'),
         data.get('client_nume_confirmare'),
+        data.get('vault_folder'),
         now,
         project_id
     ))

@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS proiecte (
     created_at TEXT,                            -- ISO datetime
     updated_at TEXT,                            -- ISO datetime
     notify_on_complete INTEGER DEFAULT 1,
-    notify_on_deadline INTEGER DEFAULT 1
+    notify_on_deadline INTEGER DEFAULT 1,
+    vault_folder TEXT                           -- folder în vault-ul Obsidian, ex. 'wiki/job/projects/<slug>' (v27)
 );
 ```
 

@@ -25,7 +25,7 @@
     return {
       tip: 'PIF', nume: '', client: '', locatie: '', echipament_principal: '',
       producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '', deadline: '',
-      status: 'in_lucru', nr_comanda: '', nr_contract: '',
+      status: 'in_lucru', nr_comanda: '', nr_contract: '', vault_folder: '',
     }
   }
 
@@ -48,6 +48,7 @@
           status: project.status || 'in_lucru',
           nr_comanda: project.nr_comanda || '',
           nr_contract: project.nr_contract || '',
+          vault_folder: project.vault_folder || '',
         }
       } else {
         form = emptyForm()
@@ -96,6 +97,7 @@
       <DatePicker label="Deadline" bind:value={form.deadline} />
       <Input label="Nr. comandă" bind:value={form.nr_comanda} />
       <Input label="Nr. contract" bind:value={form.nr_contract} />
+      <div class="full"><Input label="Folder wiki (vault)" bind:value={form.vault_folder} placeholder="wiki/job/projects/<slug>" /></div>
       {#if isEdit}
         <Select label="Status" bind:value={form.status} options={STATUSES} />
       {/if}

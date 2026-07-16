@@ -33,6 +33,7 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import EquipmentFormModal from '../components/projects/EquipmentFormModal.svelte'
   import AttachmentsTab from '../components/projects/AttachmentsTab.svelte'
+  import MarkdownView from '../components/notes/MarkdownView.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
 
@@ -110,9 +111,53 @@
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'gantt', label: 'Gantt', icon: CalendarRange },
     { key: 'equipment', label: 'Echipamente', icon: Wrench },
+    { key: 'wiki', label: 'Wiki', icon: BookOpen },
     { key: 'attachments', label: 'Atașamente', icon: Paperclip },
     { key: 'info', label: 'Info', icon: Settings2 },
   ]
+
+  // Wiki tab — notele proiectului din vault-ul Obsidian (read-only, lazy load)
+  let wikiInfo = $state(null)
+  let wikiNote = $state(null)
+  let wikiContent = $state('')
+  let wikiListLoading = $state(false)
+  let wikiNoteLoading = $state(false)
+
+  async function loadWiki() {
+    wikiListLoading = true
+    try {
+      wikiInfo = await apiJson(`/api/proiecte/${params.id}/wiki`)
+      if (wikiInfo.notes?.length && !wikiNote) openWikiNote(wikiInfo.notes[0])
+    } catch (e) {
+      wikiInfo = { error: e.message, notes: [] }
+    } finally { wikiListLoading = false }
+  }
+
+  async function openWikiNote(note) {
+    wikiNote = note
+    wikiNoteLoading = true
+    try {
+      const data = await apiJson(`/api/obsidian/note?path=${encodeURIComponent(note.path)}`)
+      wikiContent = data.content || ''
+    } catch (e) {
+      wikiContent = ''
+      toast(`Eroare la încărcarea notei: ${e.message}`, 'error')
+    } finally { wikiNoteLoading = false }
+  }
+
+  function handleProjectWikilink(target) {
+    const t = target.toLowerCase()
+    const list = wikiInfo?.notes || []
+    const found = list.find(n => (n.title || '').toLowerCase() === t)
+      || list.find(n => (n.path || '').toLowerCase().endsWith(t + '.md'))
+      || list.find(n => (n.title || '').toLowerCase().includes(t))
+    if (found) openWikiNote(found)
+    else toast(`Nota "${target}" nu e în folderul proiectului`, 'error')
+  }
+
+  $effect(() => {
+    if (activeTab === 'wiki' && !wikiInfo && !wikiListLoading) loadWiki()
+  })
 
   async function load() {
     loading = true
@@ -907,6 +952,43 @@
           {/each}</div>
         {/if}
 
+      {:else if activeTab === 'wiki'}
+        {#if wikiListLoading}
+          <Skeleton height="120px" />
+        {:else if !wikiInfo?.folder}
+          <div class="wiki-empty">
+            <BookOpen size={20} />
+            <p>Proiectul nu e legat de un folder din vault.</p>
+            <p class="wiki-hint">Setează câmpul <code>vault_folder</code> (ex. <code>wiki/job/projects/&lt;slug&gt;</code>) prin editare proiect sau API.</p>
+          </div>
+        {:else if !wikiInfo.configured}
+          <div class="wiki-empty">
+            <BookOpen size={20} />
+            <p>Vault-ul Obsidian nu e configurat pe server.</p>
+            <p class="wiki-hint">Administrativ → Obsidian → calea vault-ului.</p>
+          </div>
+        {:else if !wikiInfo.valid || !wikiInfo.notes.length}
+          <div class="wiki-empty">
+            <BookOpen size={20} />
+            <p>Folderul <code>{wikiInfo.folder}</code> nu există (sau e gol) în copia vault de pe server.</p>
+          </div>
+        {:else}
+          <div class="wiki-chips">
+            {#each wikiInfo.notes as note (note.path)}
+              <button class="wiki-chip" class:active={wikiNote?.path === note.path} onclick={() => openWikiNote(note)}>
+                {note.path.slice((wikiInfo.folder + '/').length, -3)}
+              </button>
+            {/each}
+          </div>
+          {#if wikiNoteLoading}
+            <Skeleton height="240px" />
+          {:else}
+            <div class="wiki-body">
+              <MarkdownView content={wikiContent} onwikilink={handleProjectWikilink} />
+            </div>
+          {/if}
+        {/if}
+
       {:else if activeTab === 'attachments'}
         <AttachmentsTab projectId={params.id} />
 
@@ -1139,6 +1221,17 @@
   .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding: 0 4px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
   .tab-content { min-height: 200px; }
+
+  /* Wiki tab */
+  .wiki-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; color: var(--text-secondary); text-align: center; }
+  .wiki-empty p { margin: 0; }
+  .wiki-hint { font-size: var(--font-small, 0.82rem); color: var(--text-tertiary, var(--text-secondary)); }
+  .wiki-empty code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-elevated); padding: 1px 5px; border-radius: var(--radius-sm); }
+  .wiki-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .wiki-chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
+  .wiki-chip:hover { background: var(--bg-hover); color: var(--text); }
+  .wiki-chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent-ring); }
+  .wiki-body { padding: 4px 2px; }
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
   .tab-sub { font-size: var(--font-tiny); color: var(--text-dim); }
   .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
