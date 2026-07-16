@@ -195,6 +195,16 @@ def update_proiect(project_id):
 
     conn.commit()
 
+    # Dashboard -> wiki: oglindește status/deadline în frontmatter-ul README-ului
+    # de proiect din vault (commit + push, în fundal, best-effort).
+    if data.get('status') or data.get('deadline'):
+        cursor.execute('SELECT vault_folder, status, deadline FROM proiecte WHERE id = ?', (project_id,))
+        fresh = cursor.fetchone()
+        if fresh and fresh['vault_folder']:
+            from blueprints.obsidian import sync_project_frontmatter
+            sync_project_frontmatter(fresh['vault_folder'],
+                                     {'status': fresh['status'], 'deadline': fresh['deadline']})
+
     conn.close()
 
     logger.info(f"Project updated: {project_id}")

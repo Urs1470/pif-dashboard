@@ -37,8 +37,8 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 303 |
 | POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 328 |
 | GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 400 |
-| PUT | `/api/obsidian/note` | `obsidian_note_put` | 462 |
-| GET | `/api/obsidian/search` | `obsidian_search` | 526 |
+| PUT | `/api/obsidian/note` | `obsidian_note_put` | 532 |
+| GET | `/api/obsidian/search` | `obsidian_search` | 596 |
 
 ## blueprints\parametri.py (9 rute)
 
@@ -62,35 +62,35 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/proiecte` | `create_proiect` | 68 |
 | GET | `/api/proiecte/<project_id>` | `get_proiect` | 118 |
 | PUT | `/api/proiecte/<project_id>` | `update_proiect` | 132 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 203 |
-| POST | `/api/proiecte/batch` | `batch_proiecte` | 236 |
-| POST | `/api/proiecte/<project_id>/atasamente` | `upload_atasament` | 340 |
-| GET | `/api/tasks/<task_id>/atasamente` | `get_task_atasamente` | 361 |
-| POST | `/api/tasks/<task_id>/atasamente` | `upload_task_atasament` | 372 |
-| GET | `/api/global-tasks/<task_id>/atasamente` | `get_global_task_atasamente` | 399 |
-| POST | `/api/global-tasks/<task_id>/atasamente` | `upload_global_task_atasament` | 410 |
-| GET | `/api/proiecte/<project_id>/atasamente` | `get_atasamente` | 434 |
-| GET | `/api/atasamente/<attachment_id>/download` | `download_atasament` | 444 |
-| DELETE | `/api/atasamente/<attachment_id>` | `delete_atasament` | 475 |
-| GET | `/api/clienti` | `get_clienti` | 502 |
-| POST | `/api/clienti` | `create_client` | 533 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 563 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 577 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 611 |
-| GET | `/api/proiecte/<project_id>/echipamente` | `get_echipamente` | 630 |
-| POST | `/api/proiecte/<project_id>/echipamente` | `create_echipament` | 640 |
-| GET | `/api/echipamente/<echipament_id>` | `get_echipament` | 681 |
-| PUT | `/api/echipamente/<echipament_id>` | `update_echipament` | 695 |
-| DELETE | `/api/echipamente/<echipament_id>` | `delete_echipament` | 751 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 770 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 902 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 1229 |
-| POST | `/api/proiecte/<project_id>/echipamente/import-archive` | `import_archive_echipamente` | 1275 |
-| POST | `/api/import/debrief` | `import_debrief` | 1350 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1595 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1606 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1629 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1657 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 213 |
+| POST | `/api/proiecte/batch` | `batch_proiecte` | 246 |
+| POST | `/api/proiecte/<project_id>/atasamente` | `upload_atasament` | 350 |
+| GET | `/api/tasks/<task_id>/atasamente` | `get_task_atasamente` | 371 |
+| POST | `/api/tasks/<task_id>/atasamente` | `upload_task_atasament` | 382 |
+| GET | `/api/global-tasks/<task_id>/atasamente` | `get_global_task_atasamente` | 409 |
+| POST | `/api/global-tasks/<task_id>/atasamente` | `upload_global_task_atasament` | 420 |
+| GET | `/api/proiecte/<project_id>/atasamente` | `get_atasamente` | 444 |
+| GET | `/api/atasamente/<attachment_id>/download` | `download_atasament` | 454 |
+| DELETE | `/api/atasamente/<attachment_id>` | `delete_atasament` | 485 |
+| GET | `/api/clienti` | `get_clienti` | 512 |
+| POST | `/api/clienti` | `create_client` | 543 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 573 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 587 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 621 |
+| GET | `/api/proiecte/<project_id>/echipamente` | `get_echipamente` | 640 |
+| POST | `/api/proiecte/<project_id>/echipamente` | `create_echipament` | 650 |
+| GET | `/api/echipamente/<echipament_id>` | `get_echipament` | 691 |
+| PUT | `/api/echipamente/<echipament_id>` | `update_echipament` | 705 |
+| DELETE | `/api/echipamente/<echipament_id>` | `delete_echipament` | 761 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 780 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 912 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 1239 |
+| POST | `/api/proiecte/<project_id>/echipamente/import-archive` | `import_archive_echipamente` | 1285 |
+| POST | `/api/import/debrief` | `import_debrief` | 1360 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1605 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1616 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1639 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1667 |
 
 ## blueprints\tasks.py (23 rute)
 

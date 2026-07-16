@@ -459,6 +459,76 @@ VAULT_COMMIT_AUTHOR = ['-c', 'user.name=PIF Dashboard',
                        '-c', 'user.email=101929685+Urs1470@users.noreply.github.com']
 
 
+def sync_project_frontmatter(vault_folder, fields):
+    """Dashboard -> wiki: mirror project fields (status, deadline) into the
+    frontmatter of the project's README in the vault, then commit + push.
+    Fire-and-forget (daemon thread) and best-effort: a failure never breaks the
+    API call that triggered it — the next sync attempt self-corrects. This is
+    what keeps the wiki from going stale when the project is updated from the
+    app (e.g. on-site, from the phone)."""
+    folder = (vault_folder or '').strip().replace('\\', '/').strip('/')
+    updates = {k: str(v).strip() for k, v in (fields or {}).items() if v is not None and str(v).strip()}
+    if not folder or not updates:
+        return
+
+    def _work():
+        try:
+            vault = _obsidian_vault()
+            if not vault:
+                return
+            is_git = os.path.isdir(os.path.join(vault, '.git'))
+            if is_git:
+                rc, _o, _e = _git(['fetch', '--depth', '1', 'origin', DEFAULT_VAULT_BRANCH], cwd=vault)
+                if rc == 0:
+                    _git(['reset', '--hard', f'origin/{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+            absdir = _obsidian_safe_dir(vault, folder)
+            if not absdir:
+                return
+            readme = os.path.join(absdir, 'README.md')
+            if not os.path.isfile(readme):
+                return
+            with open(readme, 'r', encoding='utf-8') as fh:
+                content = fh.read()
+            if not content.startswith('---\n'):
+                return  # fără frontmatter — nu inventăm unul din fundal
+            end = content.find('\n---\n', 4)
+            if end == -1:
+                return
+            fm_lines = content[4:end].split('\n')
+            changed = False
+            for key, val in updates.items():
+                line = f'{key}: {val}'
+                for i, existing in enumerate(fm_lines):
+                    if existing.startswith(key + ':'):
+                        if existing != line:
+                            fm_lines[i] = line
+                            changed = True
+                        break
+                else:
+                    fm_lines.append(line)
+                    changed = True
+            if not changed:
+                return
+            new_content = '---\n' + '\n'.join(fm_lines) + content[end:]
+            with open(readme, 'w', encoding='utf-8', newline='\n') as fh:
+                fh.write(new_content)
+            if is_git:
+                rel = f'{folder}/README.md'
+                rc, _o, _e = _git(['add', '--', rel], cwd=vault)
+                if rc == 0:
+                    rc, out, err = _git(VAULT_COMMIT_AUTHOR + ['commit', '-m',
+                                        f'dashboard: sync frontmatter {folder.rsplit("/", 1)[-1]}'], cwd=vault)
+                    if rc == 0:
+                        rc, out, err = _git(['push', 'origin', f'HEAD:{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+                if rc != 0:
+                    _git(['reset', '--hard', f'origin/{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+            _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})
+        except Exception:
+            pass  # best-effort — următorul update reîncearcă
+
+    threading.Thread(target=_work, daemon=True).start()
+
+
 @obsidian_bp.route('/api/obsidian/note', methods=['PUT'])
 @login_required
 def obsidian_note_put():
