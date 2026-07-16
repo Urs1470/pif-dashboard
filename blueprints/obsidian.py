@@ -6,6 +6,7 @@
 
 import os
 import re
+import subprocess
 
 from flask import Blueprint, jsonify, request
 
@@ -201,6 +202,90 @@ def obsidian_note_get():
         'title': os.path.basename(rel_norm)[:-3],
         'content': content,
     })
+
+
+# ---------------------------------------------------------------------------
+# Vault repo sync (clone/pull the Knowledge git repo on this server)
+# ---------------------------------------------------------------------------
+
+DEFAULT_VAULT_REPO = 'https://github.com/Urs1470/Knowledge.git'
+DEFAULT_VAULT_DEST = os.path.expanduser('~/Projects/Knowledge')
+DEFAULT_VAULT_BRANCH = 'main'
+
+
+def _scrub_secrets(text):
+    """Strip embedded https credentials (user:token@) from git output."""
+    return re.sub(r'https://[^@/\s]+@', 'https://', text or '')
+
+
+def _git(args, cwd=None, timeout=90):
+    r = subprocess.run(['git'] + args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    return r.returncode, _scrub_secrets(r.stdout.strip()), _scrub_secrets(r.stderr.strip())
+
+
+def _dashboard_git_credentials():
+    """If this repo's own origin URL embeds https credentials (how the deploy
+    webhook authenticates), reuse them for the vault repo. Returns 'user:token'
+    or None. The value never leaves the server (_scrub_secrets on all output)."""
+    repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        r = subprocess.run(['git', 'config', 'remote.origin.url'], cwd=repo_dir,
+                           capture_output=True, text=True, timeout=10)
+        m = re.match(r'https://([^@/]+)@', r.stdout.strip())
+        return m.group(1) if m else None
+    except Exception:
+        return None
+
+
+@obsidian_bp.route('/api/obsidian/vault-sync', methods=['POST'])
+@login_required
+def obsidian_vault_sync():
+    """Clone (first run) or update (fetch + reset --hard) the vault git repo on
+    this server, then point obsidian_vault_path at it if unset/invalid. The
+    server copy is a read-only mirror — reset --hard is always safe here.
+    Body (all optional): {repo_url, dest, branch}."""
+    data = request.get_json(silent=True) or {}
+    repo = (data.get('repo_url') or DEFAULT_VAULT_REPO).strip()
+    dest = os.path.expanduser((data.get('dest') or DEFAULT_VAULT_DEST).strip())
+    branch = (data.get('branch') or DEFAULT_VAULT_BRANCH).strip()
+    steps = []
+
+    try:
+        if os.path.isdir(os.path.join(dest, '.git')):
+            action = 'pull'
+            rc, out, err = _git(['fetch', '--depth', '1', 'origin', branch], cwd=dest)
+            steps.append(f'fetch: rc={rc} {err or out}')
+            if rc == 0:
+                rc, out, err = _git(['reset', '--hard', f'origin/{branch}'], cwd=dest)
+                steps.append(f'reset: rc={rc} {err or out}')
+        else:
+            action = 'clone'
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, repo, dest])
+            steps.append(f'clone: rc={rc} {err or out}')
+            if rc != 0:  # probabil auth pe repo privat — reîncearcă cu credențialele repo-ului dashboard
+                creds = _dashboard_git_credentials()
+                if creds:
+                    auth_repo = repo.replace('https://', f'https://{creds}@', 1)
+                    rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, auth_repo, dest])
+                    steps.append(f'clone(cu credentialele repo-ului dashboard): rc={rc} {err or out}')
+    except subprocess.TimeoutExpired:
+        return jsonify({'ok': False, 'error': 'git a depășit timeout-ul', 'steps': steps}), 500
+    except Exception as e:
+        return jsonify({'ok': False, 'error': _scrub_secrets(str(e)), 'steps': steps}), 500
+
+    if rc != 0:
+        return jsonify({'ok': False, 'action': action, 'steps': steps}), 500
+
+    # Point the vault at the fresh clone if the current setting is unset/broken.
+    current = (get_app_setting(OBSIDIAN_SETTING_KEY) or '').strip()
+    if not current or not os.path.isdir(current):
+        set_app_setting(OBSIDIAN_SETTING_KEY, dest)
+        steps.append(f'obsidian_vault_path -> {dest}')
+    _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})
+
+    return jsonify({'ok': True, 'action': action, 'dest': dest, 'steps': steps,
+                    'vault': _obsidian_config_dict()})
 
 
 def _obsidian_safe_dir(vault, rel):
