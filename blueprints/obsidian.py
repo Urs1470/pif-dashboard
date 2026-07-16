@@ -448,6 +448,74 @@ def project_wiki_notes(project_id):
     return jsonify(result)
 
 
+VAULT_COMMIT_AUTHOR = ['-c', 'user.name=PIF Dashboard',
+                       '-c', 'user.email=101929685+Urs1470@users.noreply.github.com']
+
+
+@obsidian_bp.route('/api/obsidian/note', methods=['PUT'])
+@login_required
+def obsidian_note_put():
+    """Edit a vault note from the dashboard. The git repo stays the single
+    source of truth: refresh the mirror, write the file, commit and push.
+    Edit-only (the note must already exist). Requires a WRITE deploy key;
+    on a non-git vault (local dev) it just writes the file."""
+    data = request.get_json(silent=True) or {}
+    rel = data.get('path', '')
+    content = data.get('content')
+    if content is None:
+        return jsonify({'error': 'Lipsește content'}), 400
+    vault = _obsidian_vault()
+    if not vault:
+        return jsonify({'error': 'Vault Obsidian neconfigurat'}), 400
+    abspath = _obsidian_safe_path(vault, rel)
+    if not abspath or not os.path.isfile(abspath):
+        return jsonify({'error': 'Nota nu a fost găsită'}), 404
+
+    rel_norm = str(rel).replace('\\', '/').lstrip('/')
+    is_git = os.path.isdir(os.path.join(vault, '.git'))
+    steps = []
+    try:
+        if is_git:
+            # Fresh base, so the commit sits on top of origin (mirror is clean).
+            rc, out, err = _git(['fetch', '--depth', '1', 'origin', DEFAULT_VAULT_BRANCH], cwd=vault)
+            if rc == 0:
+                _git(['reset', '--hard', f'origin/{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+            steps.append(f'refresh: rc={rc}')
+
+        with open(abspath, 'w', encoding='utf-8', newline='\n') as fh:
+            fh.write(content)
+        steps.append('write: ok')
+
+        pushed = False
+        if is_git:
+            rc, out, err = _git(['add', '--', rel_norm], cwd=vault)
+            if rc == 0:
+                rc, out, err = _git(VAULT_COMMIT_AUTHOR + ['commit', '-m', f'dashboard: edit {rel_norm}'], cwd=vault)
+            if rc == 0 or 'nothing to commit' in (out + err):
+                if 'nothing to commit' in (out + err):
+                    steps.append('commit: fără modificări')
+                    pushed = True
+                else:
+                    rc, out, err = _git(['push', 'origin', f'HEAD:{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+                    steps.append(f'push: rc={rc} {err or out}')
+                    pushed = rc == 0
+            else:
+                steps.append(f'commit: rc={rc} {err or out}')
+            if not pushed:
+                # Nu lăsa mirror-ul divergent: aruncă commit-ul local eșuat.
+                _git(['reset', '--hard', f'origin/{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+                return jsonify({'error': 'Push eșuat — deploy key-ul are drept de scriere?',
+                                'steps': steps}), 502
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'git a depășit timeout-ul', 'steps': steps}), 500
+    except OSError as e:
+        return jsonify({'error': f'Eroare la scriere: {e}'}), 500
+
+    _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})
+    return jsonify({'path': rel_norm, 'saved': True, 'pushed': pushed if is_git else None,
+                    'steps': steps})
+
+
 @obsidian_bp.route('/api/obsidian/search', methods=['GET'])
 @login_required
 def obsidian_search():

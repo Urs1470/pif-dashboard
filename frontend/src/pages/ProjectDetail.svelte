@@ -133,7 +133,29 @@
     } finally { wikiListLoading = false }
   }
 
+  let wikiEditing = $state(false)
+  let wikiDraft = $state('')
+  let wikiSaving = $state(false)
+
+  function startWikiEdit() {
+    wikiDraft = wikiContent
+    wikiEditing = true
+  }
+
+  async function saveWikiEdit() {
+    wikiSaving = true
+    try {
+      await apiJson('/api/obsidian/note', { method: 'PUT', body: { path: wikiNote.path, content: wikiDraft } })
+      wikiContent = wikiDraft
+      wikiEditing = false
+      toast('Notă salvată și împinsă în repo (git push)', 'success')
+    } catch (e) {
+      toast(`Eroare la salvare: ${e.message}`, 'error')
+    } finally { wikiSaving = false }
+  }
+
   async function openWikiNote(note) {
+    wikiEditing = false
     wikiNote = note
     wikiNoteLoading = true
     try {
@@ -982,9 +1004,18 @@
           </div>
           {#if wikiNoteLoading}
             <Skeleton height="240px" />
+          {:else if wikiEditing}
+            <textarea class="wiki-editor" bind:value={wikiDraft} spellcheck="false"></textarea>
+            <div class="wiki-edit-actions">
+              <Button variant="secondary" onclick={() => wikiEditing = false}>Anulează</Button>
+              <Button loading={wikiSaving} onclick={saveWikiEdit}>Salvează + push</Button>
+            </div>
           {:else}
             <div class="wiki-body">
               <MarkdownView content={wikiContent} onwikilink={handleProjectWikilink} />
+            </div>
+            <div class="wiki-edit-actions">
+              <Button variant="secondary" onclick={startWikiEdit}>Editează</Button>
             </div>
           {/if}
         {/if}
@@ -1232,6 +1263,9 @@
   .wiki-chip:hover { background: var(--bg-hover); color: var(--text); }
   .wiki-chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent-ring); }
   .wiki-body { padding: 4px 2px; }
+  .wiki-editor { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: 0.83rem; line-height: 1.5; color: var(--text); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .wiki-editor:focus { outline: none; border-color: var(--accent-ring); }
+  .wiki-edit-actions { display: flex; gap: 8px; margin-top: 10px; }
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
   .tab-sub { font-size: var(--font-tiny); color: var(--text-dim); }
   .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
