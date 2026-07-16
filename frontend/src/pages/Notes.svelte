@@ -30,8 +30,14 @@
     try { return JSON.parse(localStorage.getItem('notes_collapsed') || '{}') } catch (_) { return {} }
   }
 
+  // Folderele sunt COMPACTATE by default: un folder fără intrare salvată e închis.
+  // localStorage ține doar excepțiile (ce a deschis/închis userul explicit).
+  function folderCollapsed(folderPath) {
+    return collapsedFolders[folderPath] ?? true
+  }
+
   function toggleFolder(folderPath) {
-    collapsedFolders[folderPath] = !collapsedFolders[folderPath]
+    collapsedFolders[folderPath] = !folderCollapsed(folderPath)
     try { localStorage.setItem('notes_collapsed', JSON.stringify(collapsedFolders)) } catch (_) {}
   }
 
@@ -108,7 +114,7 @@
   {#each Object.keys(node.folders).sort((a, b) => a.localeCompare(b, 'ro')) as fname}
     {@const fullPath = prefix ? prefix + '/' + fname : fname}
     {@const child = node.folders[fname]}
-    {@const isCollapsed = collapsedFolders[fullPath]}
+    {@const isCollapsed = folderCollapsed(fullPath)}
     <button class="folder-row" style="padding-left: {12 + depth * 14}px" onclick={() => toggleFolder(fullPath)}>
       {#if isCollapsed}<Folder size={14} />{:else}<FolderOpen size={14} />{/if}
       <span>{fname}</span>
