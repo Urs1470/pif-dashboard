@@ -7,6 +7,8 @@
 import os
 import re
 import subprocess
+import threading
+import time
 
 from flask import Blueprint, jsonify, request
 
@@ -173,6 +175,7 @@ def obsidian_notes_list():
     vault = _obsidian_vault()
     if not vault:
         return jsonify({'error': 'Vault Obsidian neconfigurat', 'notes': []}), 200
+    _maybe_refresh_vault(vault)
     notes = [
         {'path': n['path'], 'title': n['title'], 'folder': n['folder'],
          'mtime': n['mtime'], 'size': n['size']}
@@ -208,9 +211,14 @@ def obsidian_note_get():
 # Vault repo sync (clone/pull the Knowledge git repo on this server)
 # ---------------------------------------------------------------------------
 
-DEFAULT_VAULT_REPO = 'https://github.com/Urs1470/Knowledge.git'
+DEFAULT_VAULT_REPO_HTTPS = 'https://github.com/Urs1470/Knowledge.git'
+DEFAULT_VAULT_REPO_SSH = 'git@github.com:Urs1470/Knowledge.git'
 DEFAULT_VAULT_DEST = os.path.expanduser('~/Projects/Knowledge')
 DEFAULT_VAULT_BRANCH = 'main'
+VAULT_DEPLOY_KEY = os.path.expanduser('~/.ssh/vault_deploy_key')
+VAULT_REFRESH_SECONDS = 600  # mirror-ul se împrospătează la accesare, max o dată la 10 min
+_vault_refresh_lock = threading.Lock()
+_vault_refreshing = False
 
 
 def _scrub_secrets(text):
@@ -218,9 +226,64 @@ def _scrub_secrets(text):
     return re.sub(r'https://[^@/\s]+@', 'https://', text or '')
 
 
+def _git_env():
+    """Use the vault deploy key for ssh remotes, if it exists."""
+    env = dict(os.environ)
+    if os.path.isfile(VAULT_DEPLOY_KEY):
+        env['GIT_SSH_COMMAND'] = (
+            f'ssh -i {VAULT_DEPLOY_KEY} -o IdentitiesOnly=yes '
+            f'-o StrictHostKeyChecking=accept-new'
+        )
+    return env
+
+
 def _git(args, cwd=None, timeout=90):
-    r = subprocess.run(['git'] + args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    r = subprocess.run(['git'] + args, cwd=cwd, capture_output=True, text=True,
+                       timeout=timeout, env=_git_env())
     return r.returncode, _scrub_secrets(r.stdout.strip()), _scrub_secrets(r.stderr.strip())
+
+
+def _default_vault_repo():
+    """SSH cu deploy key dacă există, altfel https (merge doar pe repo public)."""
+    return DEFAULT_VAULT_REPO_SSH if os.path.isfile(VAULT_DEPLOY_KEY) else DEFAULT_VAULT_REPO_HTTPS
+
+
+def _maybe_refresh_vault(vault):
+    """Fire-and-forget: if the vault is a git clone and its last fetch is older
+    than VAULT_REFRESH_SECONDS, refresh it in a background thread (fetch +
+    reset --hard). Callers keep serving the current copy — the next request
+    sees the fresh one. No cron needed."""
+    global _vault_refreshing
+    if not vault:
+        return
+    git_dir = os.path.join(vault, '.git')
+    if not os.path.isdir(git_dir):
+        return
+    marker = os.path.join(git_dir, 'FETCH_HEAD')
+    try:
+        last = os.path.getmtime(marker) if os.path.isfile(marker) else 0
+    except OSError:
+        last = 0
+    if time.time() - last < VAULT_REFRESH_SECONDS:
+        return
+    with _vault_refresh_lock:
+        if _vault_refreshing:
+            return
+        _vault_refreshing = True
+
+    def _refresh():
+        global _vault_refreshing
+        try:
+            rc, _o, _e = _git(['fetch', '--depth', '1', 'origin', DEFAULT_VAULT_BRANCH], cwd=vault)
+            if rc == 0:
+                _git(['reset', '--hard', f'origin/{DEFAULT_VAULT_BRANCH}'], cwd=vault)
+                _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})
+        except Exception:
+            pass
+        finally:
+            _vault_refreshing = False
+
+    threading.Thread(target=_refresh, daemon=True).start()
 
 
 def _dashboard_git_credentials():
@@ -237,6 +300,31 @@ def _dashboard_git_credentials():
         return None
 
 
+@obsidian_bp.route('/api/obsidian/vault-key', methods=['POST'])
+@login_required
+def obsidian_vault_key():
+    """Generate (once) an ed25519 deploy key for the vault repo and return the
+    PUBLIC half. Register it on GitHub: repo Knowledge -> Settings -> Deploy
+    keys -> Add (read-only). The private key never leaves the server."""
+    pub_path = VAULT_DEPLOY_KEY + '.pub'
+    if not os.path.isfile(VAULT_DEPLOY_KEY):
+        os.makedirs(os.path.dirname(VAULT_DEPLOY_KEY), exist_ok=True)
+        r = subprocess.run(
+            ['ssh-keygen', '-t', 'ed25519', '-N', '', '-C', 'pif-dashboard-vault',
+             '-f', VAULT_DEPLOY_KEY],
+            capture_output=True, text=True, timeout=30
+        )
+        if r.returncode != 0:
+            return jsonify({'ok': False, 'error': r.stderr.strip()}), 500
+    try:
+        with open(pub_path, 'r', encoding='utf-8') as f:
+            pubkey = f.read().strip()
+    except OSError as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+    return jsonify({'ok': True, 'public_key': pubkey,
+                    'hint': 'GitHub -> Urs1470/Knowledge -> Settings -> Deploy keys -> Add deploy key (read-only)'})
+
+
 @obsidian_bp.route('/api/obsidian/vault-sync', methods=['POST'])
 @login_required
 def obsidian_vault_sync():
@@ -245,7 +333,7 @@ def obsidian_vault_sync():
     server copy is a read-only mirror — reset --hard is always safe here.
     Body (all optional): {repo_url, dest, branch}."""
     data = request.get_json(silent=True) or {}
-    repo = (data.get('repo_url') or DEFAULT_VAULT_REPO).strip()
+    repo = (data.get('repo_url') or _default_vault_repo()).strip()
     dest = os.path.expanduser((data.get('dest') or DEFAULT_VAULT_DEST).strip())
     branch = (data.get('branch') or DEFAULT_VAULT_BRANCH).strip()
     steps = []
@@ -328,6 +416,7 @@ def project_wiki_notes(project_id):
     if not folder or not vault:
         return jsonify(result)
 
+    _maybe_refresh_vault(vault)
     absdir = _obsidian_safe_dir(vault, folder)
     if not absdir:
         return jsonify(result)  # folder set but missing on this vault copy
