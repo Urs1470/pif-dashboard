@@ -211,8 +211,8 @@ def obsidian_note_get():
 # Vault repo sync (clone/pull the Knowledge git repo on this server)
 # ---------------------------------------------------------------------------
 
-DEFAULT_VAULT_REPO_HTTPS = 'https://github.com/Urs1470/Knowledge.git'
-DEFAULT_VAULT_REPO_SSH = 'git@github.com:Urs1470/Knowledge.git'
+DEFAULT_VAULT_REPO_HTTPS = 'https://github.com/Urs1470/knowledge.git'
+DEFAULT_VAULT_REPO_SSH = 'git@github.com:Urs1470/knowledge.git'
 DEFAULT_VAULT_DEST = os.path.expanduser('~/Projects/Knowledge')
 DEFAULT_VAULT_BRANCH = 'main'
 VAULT_DEPLOY_KEY = os.path.expanduser('~/.ssh/vault_deploy_key')
@@ -322,7 +322,7 @@ def obsidian_vault_key():
     except OSError as e:
         return jsonify({'ok': False, 'error': str(e)}), 500
     return jsonify({'ok': True, 'public_key': pubkey,
-                    'hint': 'GitHub -> Urs1470/Knowledge -> Settings -> Deploy keys -> Add deploy key (read-only)'})
+                    'hint': 'GitHub -> Urs1470/knowledge -> Settings -> Deploy keys -> Add deploy key'})
 
 
 @obsidian_bp.route('/api/obsidian/vault-sync', methods=['POST'])
@@ -341,6 +341,13 @@ def obsidian_vault_sync():
     try:
         if os.path.isdir(os.path.join(dest, '.git')):
             action = 'pull'
+            # Self-heal: aliniază remote-ul la URL-ul curent (repo-ul a fost
+            # redenumit Knowledge -> knowledge; redirectul GitHub merge, dar
+            # URL-ul vechi rămâne în .git/config la clonele existente).
+            rc0, cur, _e = _git(['config', 'remote.origin.url'], cwd=dest)
+            if rc0 == 0 and cur != repo:
+                _git(['remote', 'set-url', 'origin', repo], cwd=dest)
+                steps.append(f'remote set-url: {cur} -> {repo}')
             rc, out, err = _git(['fetch', '--depth', '1', 'origin', branch], cwd=dest)
             steps.append(f'fetch: rc={rc} {err or out}')
             if rc == 0:

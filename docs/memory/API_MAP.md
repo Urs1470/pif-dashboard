@@ -36,9 +36,9 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/obsidian/note` | `obsidian_note_get` | 187 |
 | POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 303 |
 | POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 328 |
-| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 393 |
-| PUT | `/api/obsidian/note` | `obsidian_note_put` | 455 |
-| GET | `/api/obsidian/search` | `obsidian_search` | 519 |
+| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 400 |
+| PUT | `/api/obsidian/note` | `obsidian_note_put` | 462 |
+| GET | `/api/obsidian/search` | `obsidian_search` | 526 |
 
 ## blueprints\parametri.py (9 rute)
 
