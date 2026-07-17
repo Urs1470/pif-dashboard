@@ -79,8 +79,16 @@ body {
 /* ===== Scrollbar subtil, hover-reveal (la nivel de dashboard) =====
    Thumb invizibil in repaus; apare discret doar cat timp pointerul e peste o
    zona scrollabila (sau aceasta are focus) si se inchide putin cand il apuci.
-   Gutterul ramane mereu de 8px, deci nu exista salt de layout la aparitie.
    WebKit + Firefox. */
+
+/* Latimea de mai jos rezerva gutterul doar cat timp exista efectiv un scrollbar:
+   cand pagina nu depaseste viewportul nu e niciun gutter, iar in momentul in care
+   creste (ex. deschiderea detaliilor unui task) apare si impinge continutul centrat
+   cu jumatate din latimea lui. `stable` il rezerva permanent, deci layoutul nu mai sare. */
+html {
+  scrollbar-gutter: stable;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
