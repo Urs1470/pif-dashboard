@@ -14,6 +14,7 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import Modal from '../components/ui/Modal.svelte'
+  import ImplPeriodModal from '../components/projects/ImplPeriodModal.svelte'
 
   // Distinct, CVD-legible lane hues on the warm-dark ground. Amber is reserved for
   // the app accent/active state, so lanes deliberately avoid it.
@@ -79,6 +80,12 @@
     return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks), impl }
   }))
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
+
+  // --- implementation-period editor (opened by clicking an impl band) ---
+  let implOpen = $state(false)
+  let implEditing = $state(null)
+  let implProjectId = $state(null)
+  function editImpl(im, projectId) { implEditing = im; implProjectId = projectId; implOpen = true }
 
   // --- action popover (desktop) ---
   let sel = $state(null)
@@ -204,9 +211,13 @@
     } else if (d.mode === 'resizeL') {
       const base = (t.data_planificata || t.data_scadenta || '').slice(0, 10)
       body.data_planificata = addDays(base, k)
+      // Task de o singură zi: fixăm capătul opus la ziua curentă ca să devină
+      // interval, altfel spanRect l-ar reduce iar la un punct (doar mutat).
+      if (!t.data_scadenta) body.data_scadenta = base
     } else {
       const base = (t.data_scadenta || t.data_planificata || '').slice(0, 10)
       body.data_scadenta = addDays(base, k)
+      if (!t.data_planificata) body.data_planificata = base
     }
     return body
   }
@@ -422,10 +433,11 @@
                   <div class="rows">
                     {#each lane.impl as im (im.id)}
                       <div class="t-row">
-                        <div class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)}">
+                        <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                             onclick={() => editImpl(im, lane.id)}
+                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru editare">
                           <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
-                        </div>
+                        </button>
                       </div>
                     {/each}
                     {#each lane.packed as row, ri (ri)}
@@ -453,8 +465,9 @@
                             {#if t.rect.single}<span class="pin-dot"></span>{/if}
                             <span class="bar-txt">{t.titlu}</span>
                             {#if t.recurenta}<Repeat size={11} />{/if}
-                            {#if !isDone(t.status) && !t.rect.single}
-                              <span class="rz rz-r" onpointerdown={(e) => startDrag(e, t, 'resizeR', lane.nume)} aria-hidden="true"></span>
+                            {#if !isDone(t.status)}
+                              <!-- taskurile de o zi capătă doar mânerul din dreapta (alungire); mutarea rămâne pe pin -->
+                              <span class="rz rz-r" class:rz-single={t.rect.single} onpointerdown={(e) => startDrag(e, t, 'resizeR', lane.nume)} aria-hidden="true"></span>
                             {/if}
                           </div>
                         {/each}
@@ -591,6 +604,8 @@
   {/snippet}
 </Modal>
 
+<ImplPeriodModal bind:open={implOpen} projectId={implProjectId} period={implEditing} onsaved={loadPlan} />
+
 <style>
   .page { padding-bottom: 96px; }
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
@@ -663,6 +678,8 @@
      distinguished only by color (teal = site, gold = sediu). */
   .impl-band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 8px; border-radius: 7px; overflow: hidden; z-index: 2; color: #10130f; }
   .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
+  .impl-band { cursor: pointer; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .impl-band:hover { filter: brightness(1.1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 2px 8px rgba(0,0,0,0.3); }
   .ib-txt { font-size: var(--font-tiny); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
@@ -705,6 +722,10 @@
   .rz-l { left: 0; } .rz-r { right: 0; }
   .bar:hover .rz::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 2px; height: 12px; border-radius: 2px; background: color-mix(in srgb, currentColor 60%, transparent); }
   .rz-l::after { left: 2px; } .rz-r::after { right: 2px; }
+  /* single-day task: right handle a touch wider + grip tinted so it reads on the
+     transparent pin bar (extinde ziua într-un interval) */
+  .rz-single { width: 12px; }
+  .bar.single:hover .rz-single::after { background: color-mix(in srgb, var(--lane) 70%, var(--text)); }
 
   @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
 
