@@ -29,9 +29,21 @@ def _delete_task_attachments(cursor, column, task_id):
             pass
     cursor.execute(f'DELETE FROM atasamente WHERE {column} = ?', (task_id,))
 
+def _skip_weekend(d):
+    """Ion nu lucreaza in weekend: o scadenta care cade sambata sau duminica se
+    muta pe lunea urmatoare (inainte, nu inapoi). weekday(): luni=0 .. duminica=6."""
+    if d.weekday() == 5:        # sambata -> +2 zile = luni
+        return d + timedelta(days=2)
+    if d.weekday() == 6:        # duminica -> +1 zi = luni
+        return d + timedelta(days=1)
+    return d
+
+
 def _next_recurrence_date(base_str, recurenta):
     """base_str: 'YYYY-MM-DD' (flatpickr format) or empty. Returns the next
-    occurrence date as 'YYYY-MM-DD'. Falls back to today when base is unparsable."""
+    occurrence date as 'YYYY-MM-DD'. Falls back to today when base is unparsable.
+    Sare peste weekend: o aparitie care ar cadea sambata/duminica se muta luni
+    (ex. un task zilnic terminat vineri revine luni, nu sambata)."""
     try:
         base = datetime.strptime((base_str or '')[:10], '%Y-%m-%d').date()
     except (ValueError, TypeError):
@@ -49,7 +61,7 @@ def _next_recurrence_date(base_str, recurenta):
         nxt = datetime(y, m, d).date()
     else:
         return base_str or ''
-    return nxt.isoformat()
+    return _skip_weekend(nxt).isoformat()
 
 
 def _spawn_recurring_task(cursor, existing, recurenta):
