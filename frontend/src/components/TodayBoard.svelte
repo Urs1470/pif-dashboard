@@ -69,7 +69,7 @@
   }
 
   async function onTomorrow(it) {
-    try { await moveToTomorrow(it.tip, it.id, { data_scadenta: it.data_scadenta }); toast('Mutat pe mâine', 'success'); onchange() }
+    try { await moveToTomorrow(it.tip, it.id); toast('Mutat pe mâine', 'success'); onchange() }
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
@@ -82,7 +82,7 @@
   // tasks). Picking a day moves the task; clearing ("Sterge") removes it from today.
   async function onMoveDate(it, v) {
     try {
-      if (v) { await moveToDate(it.tip, it.id, v, { data_scadenta: it.data_scadenta }); toast(`Mutat pe ${formatDate(v)}`, 'success') }
+      if (v) { await moveToDate(it.tip, it.id, v); toast(`Mutat pe ${formatDate(v)}`, 'success') }
       else { await removeFromToday(it.tip, it.id) }
       onchange()
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }

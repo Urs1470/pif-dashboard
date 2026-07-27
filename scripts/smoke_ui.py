@@ -60,6 +60,10 @@ ECRANE = [('desktop', 1280, 800), ('mobil', 390, 844)]
 IGNORATE = (
     'net::ERR_INTERNET_DISCONNECTED',   # fara retea; fonturile/CDN-ul pica, nu e vina noastra
     'net::ERR_ABORTED',                 # cereri taiate cand inchidem pagina la final
+    # Windows ramane fara bufere de socket dupa sute de conexiuni scurte la rand
+    # (54 de pagini x ~40 de assets). E o limita a masinii, nu ceva ce poate cauza
+    # codul aplicatiei — o cerere nu pleaca deloc, nu primeste un raspuns gresit.
+    'net::ERR_NO_BUFFER_SPACE',
 )
 
 

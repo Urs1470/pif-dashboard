@@ -1,0 +1,1 @@
+import{u as e,v as t,y as n}from"./Modal-C3Z_9aRv.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`M20 6 9 17l-5-5`}]];e(i,n({name:`check`},()=>o,{get iconNode(){return s}}))}export{i as t};

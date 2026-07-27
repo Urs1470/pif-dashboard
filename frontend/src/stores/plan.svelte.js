@@ -61,20 +61,16 @@ function patch(tip, id, body) {
   return tip === 'global' ? updateGlobalTask(id, body) : updateTask(id, body)
 }
 
-// Rescheduling from the planner writes data_planificata AND (if the task already
-// has a deadline) moves data_scadenta to the same day — identical to the agenda,
-// so a task never keeps a stale termen behind its new plan.
-export async function moveTaskDate(tip, id, date, opts = {}) {
+// Aceeasi regula ca in agenda: data aleasa E termenul. Vezi comentariul lung din
+// stores/agenda.svelte.js.
+export async function moveTaskDate(tip, id, date) {
   if (!date) return
-  const body = { data_planificata: date }
-  const scad = (opts.data_scadenta || '').slice(0, 10)
-  if (scad) body.data_scadenta = date
-  await patch(tip, id, body)
+  await patch(tip, id, { data_planificata: date, data_scadenta: date })
   await loadPlan()
 }
 
-export function moveTaskTomorrow(tip, id, opts = {}) {
-  return moveTaskDate(tip, id, tomorrowISO(), opts)
+export function moveTaskTomorrow(tip, id) {
+  return moveTaskDate(tip, id, tomorrowISO())
 }
 
 // Explicit-date setter for drag/resize on the swimlane. `body` carries exactly the
@@ -86,11 +82,11 @@ export async function setTaskDates(tip, id, body) {
   await loadPlan()
 }
 
-// Schedule a backlog (undated) task onto a specific day. Only sets data_planificata
-// — the task had no deadline, so we don't invent one (a plan is not a termen).
+// Un task din sertarul „fara termen", pus pe o zi: tot o alegere explicita, deci
+// tot primeste termen. Altfel ramanea in sertar desi tocmai il programasesi.
 export async function scheduleBacklog(tip, id, date) {
   if (!date) return
-  await patch(tip, id, { data_planificata: date })
+  await patch(tip, id, { data_planificata: date, data_scadenta: date })
   await loadPlan()
 }
 

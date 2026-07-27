@@ -37,8 +37,7 @@ export async function loadAgendaToday() {
   }
 }
 
-// Planning a task only ever writes data_planificata (never data_scadenta), so a
-// task's deadline is never disturbed. Dispatch to the right task store fn by tip.
+// Dispatch to the right task store fn by tip.
 function patch(tip, id, body) {
   return tip === 'global' ? updateGlobalTask(id, body) : updateTask(id, body)
 }
@@ -56,21 +55,25 @@ export async function scheduleForToday(tip, id) {
   await loadAgendaToday()
 }
 
-export async function moveToDate(tip, id, date, opts = {}) {
+// Data pe care o alegi ESTE termenul.
+//
+// Pana acum, mutarea propaga termenul doar daca taskul avea deja unul: „nu
+// inventam un termen din simpla planificare". Ion, 2026-07-27: „daca am preluat
+// un task in taskuri azi, si de acolo am mutat taskul pe o anumita data, nu se
+// seteaza acea data aleasa ca deadline task, ceea ce ar fi logic."
+//
+// Are dreptate, si e consecvent cu tot restul: cand alegi explicit o zi, spui
+// cand se face. Nu tii separat „cand planific" si „pana cand" — e aceeasi data.
+// Regula se aplica doar la alegerea EXPLICITA a unei zile (mutare, maine), nu si
+// la tragerea in boardul de azi, care e o unealta de concentrare, nu un angajament.
+export async function moveToDate(tip, id, date) {
   if (!date) return
-  const body = { data_planificata: date }
-  // Reprogramarea din agenda muta INTOTDEAUNA deadline-ul existent pe noua zi
-  // (apropiata sau indepartata): odata ce ai incercat taskul, noua data reflecta
-  // cand crezi ca se poate face, deci devine noul termen. Taskurile FARA deadline
-  // raman fara (nu inventam un termen din simpla planificare).
-  const scad = (opts.data_scadenta || '').slice(0, 10)
-  if (scad) body.data_scadenta = date
-  await patch(tip, id, body)
+  await patch(tip, id, { data_planificata: date, data_scadenta: date })
   await loadAgendaToday()
 }
 
-export function moveToTomorrow(tip, id, opts = {}) {
-  return moveToDate(tip, id, tomorrowISO(), opts)
+export function moveToTomorrow(tip, id) {
+  return moveToDate(tip, id, tomorrowISO())
 }
 
 export async function removeFromToday(tip, id) {

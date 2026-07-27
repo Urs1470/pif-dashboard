@@ -142,13 +142,13 @@
   async function onMove(t, v) {
     if (!v) return
     try {
-      await moveTaskDate(t.tip, t.id, v, { data_scadenta: t.data_scadenta })
+      await moveTaskDate(t.tip, t.id, v)
       toast(`Mutat pe ${formatDate(v)}`, 'success')
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     closePop()
   }
   async function onTomorrow(t) {
-    try { await moveTaskTomorrow(t.tip, t.id, { data_scadenta: t.data_scadenta }); toast('Mutat pe mâine', 'success') }
+    try { await moveTaskTomorrow(t.tip, t.id); toast('Mutat pe mâine', 'success') }
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     closePop()
   }
