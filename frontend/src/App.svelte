@@ -3,6 +3,7 @@
   import Header from './components/layout/Header.svelte'
   import Dock from './components/layout/Dock.svelte'
   import Toast from './components/ui/Toast.svelte'
+  import Tooltip from './components/ui/Tooltip.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
   import { router, resolveRoute, viewTransitionsOn } from './lib/router.svelte.js'
   import { motionDuration, DUR_FAST } from './lib/motion.svelte.js'
@@ -92,6 +93,8 @@
   <Dock />
   <CommandPalette />
   <Toast />
+  <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
+  <Tooltip />
 </div>
 
 <style>

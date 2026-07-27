@@ -120,7 +120,14 @@
 </div>
 
 <style>
-  .page { padding: var(--space-lg); display: flex; flex-direction: column; height: calc(100vh - var(--header-height)); }
+  /* Pagina se incadreaza EXACT in fereastra, ca sa nu apara scroll pe toata
+     aplicatia: din inaltime scadem antetul, dock-ul plutitor (pentru care
+     .app-content rezerva deja spatiu jos) si propriile paddinguri. Ce ramane de
+     derulat e doar planul, in interiorul cadrului. `dvh` ca sa fie corect si pe
+     telefon, unde bara browserului se ascunde la scroll. */
+  .page { padding: var(--space-lg); display: flex; flex-direction: column;
+          height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
+          min-height: 380px; overflow: hidden; }
 
   .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 28px; }
   .spatiu { flex: 1; }
@@ -136,7 +143,7 @@
   /* Fundal alb sub cadru: aplicatia lor e pe tema deschisa, iar pe fundalul
      nostru cald-inchis marginile ar aparea ca o rama murdara in timpul incarcarii. */
   iframe { flex: 1; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg);
-           background: #fff; min-height: 420px; }
+           background: #fff; min-height: 0; }
 
   .config { max-width: 640px; background: var(--bg-surface); border: 1px solid var(--border);
             border-radius: var(--radius-lg); padding: var(--space-lg); }

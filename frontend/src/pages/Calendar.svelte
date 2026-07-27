@@ -245,6 +245,30 @@
     return (p.eticheta || '').trim() || (p.nume || '').trim() || '—'
   }
 
+  // Titlurile pe mai multe randuri se construiesc in JS, nu in atribut. Motivul:
+  // intr-un atribut Svelte, `\n` e text literal, iar `&#10;` nu e decodat
+  // consecvent — ajungea sa se vada „&#10;" chiar si in bula nativa. Aici, intr-un
+  // sir JS, `\n` chiar e rand nou, iar Tooltip.svelte il randeaza ca atare.
+  function etichetaDeplasare(d) {
+    const n = d.items.size
+    return `${d.sediu ? 'La sediu' : 'Deplasare'}${d.client ? ' · ' + d.client : ''}`
+      + ` · ${n} ${n === 1 ? 'lucrare' : 'lucrări'}`
+      + `\nTrage ca să muți toată ieșirea`
+  }
+
+  function etichetaLucrareLunga(p) {
+    const sfarsit = p.data_sfarsit && p.data_sfarsit !== p.data_start
+      ? ` – ${shortDate(p.data_sfarsit)}` : ''
+    return [
+      p.nume,
+      p.eticheta || '',
+      `${shortDate(p.data_start)}${sfarsit}`
+        + `${p.locatie === 'sediu' ? ' · la sediu' : ' · pe teren'}`
+        + ` · ${p.faza === 'pregatire' ? 'pregătire' : 'implementare'}`,
+      'Trage ca să muți lucrarea',
+    ].filter(Boolean).join('\n')
+  }
+
   /** Pentru bara din grila: fara detaliul din paranteze. Intr-o celula de ~145px
    *  „Upgrade PILZ + MM (Apex 4/5/7/10)" se taia fix dupa „(Ap...", adica pierdeai
    *  si detaliul, si finalul numelui. Textul intreg ramane in tooltip si in
@@ -516,7 +540,7 @@
                         draggable="true"
                         ondragstart={(e) => { e.stopPropagation(); dragDeplasare(e, d) }}
                         ondragend={endDrag}
-                        title="{d.sediu ? 'La sediu' : 'Deplasare'}{d.client ? ' · ' + d.client : ''} · {d.items.size} {d.items.size === 1 ? 'lucrare' : 'lucrări'}&#10;Trage ca să muți toată ieșirea">
+                        title={etichetaDeplasare(d)}>
                     {#if d.sediu}<Building2 size={9} />{:else}<MapPin size={9} />{/if}{d.sediu && d.client ? `Sediu · ${scurt(d.client)}` : d.sediu ? 'Sediu' : scurt(d.client)}
                   </span>
                 {/each}
@@ -535,7 +559,7 @@
                          draggable="true"
                          ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, p) }}
                          ondragend={endDrag}
-                         title="{p.nume}{p.eticheta ? '&#10;' + p.eticheta : ''}&#10;{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ' – ' + shortDate(p.data_sfarsit) : ''}{p.locatie === 'sediu' ? ' · la sediu' : ' · pe teren'} · {p.faza === 'pregatire' ? 'pregătire' : 'implementare'}&#10;Trage ca să muți lucrarea">
+                         title={etichetaLucrareLunga(p)}>
                       <span class="seg-t">{etichetaBara(p)}</span>
                     </div>
                   {:else}
