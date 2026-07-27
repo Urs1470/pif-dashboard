@@ -80,11 +80,9 @@
   function implRect(im) { return spanRect(im.data_start, im.data_sfarsit, win.start, win.days) }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
-  // Meta sub-line for a task row: phase (if any) + date range (or milestone date).
+  // Meta sub-line for a task row: date range (or milestone date).
   function metaText(t) {
     const parts = []
-    const f = (t.faza || '').trim()
-    if (f) parts.push(f)
     if (t.is_milestone) { if (t.data_start) parts.push(formatDateShort(t.data_start)) }
     else if (t.data_start && t.data_scadenta) parts.push(`${formatDateShort(t.data_start)} → ${formatDateShort(t.data_scadenta)}`)
     else if (t.data_scadenta) parts.push(formatDateShort(t.data_scadenta))
@@ -112,34 +110,14 @@
     return 'var(--border-strong)'
   }
 
-  // --- phases: group tasks under collapsible summary bars (view-only) ---
-  let collapsed = $state(new Set())
-  function togglePhase(p) { const s = new Set(collapsed); if (s.has(p)) s.delete(p); else s.add(p); collapsed = s }
-
+  // Gruparea pe faze (WBS) a plecat in v32: coloana `tasks.faza` nu putea fi
+  // completata din nicio interfata, deci antetele de faza nu s-au randat niciodata.
   const displayRows = $derived.by(() => {
-    const byPhase = new Map(), noPhase = []
-    for (const t of data.tasks) {
-      const f = (t.faza || '').trim()
-      if (f) { if (!byPhase.has(f)) byPhase.set(f, []); byPhase.get(f).push(t) }
-      else noPhase.push(t)
-    }
     const rows = []; let n = 0
     for (const im of (data.implementari || [])) rows.push({ kind: 'impl', im })
-    const pushTask = (t) => rows.push({ kind: 'task', t, no: ++n })
-    for (const [phase, ts] of byPhase) {
-      rows.push({ kind: 'phase', phase, tasks: ts })
-      if (!collapsed.has(phase)) ts.forEach(pushTask)
-    }
-    noPhase.forEach(pushTask)
+    for (const t of data.tasks) rows.push({ kind: 'task', t, no: ++n })
     return rows
   })
-
-  function phaseSpanRect(ts) {
-    const ds = ts.flatMap(t => [t.data_start, t.data_scadenta].filter(Boolean).map(x => x.slice(0, 10)))
-    if (!ds.length) return null
-    const lo = ds.reduce((a, b) => a < b ? a : b), hi = ds.reduce((a, b) => a > b ? a : b)
-    return spanRect(lo, hi, win.start, win.days)
-  }
 
   // implementation-period editor (the one editable thing here)
   let implOpen = $state(false)
@@ -181,18 +159,12 @@
     <!-- left: read-only task list -->
     <div class="g-table">
       <div class="gh-row lhead"><span>Activități</span></div>
-      {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
+      {#each displayRows as row (row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
         {#if row.kind === 'impl'}
           <button class="impl-lrow loc-{row.im.locatie}" onclick={() => editImpl(row.im)} title="Editează perioada">
             {#if row.im.locatie === 'sediu'}<Building2 size={14} />{:else}<MapPin size={14} />{/if}
             <span class="impl-lname">{locLabel(row.im.locatie)}{row.im.eticheta ? ' · ' + row.im.eticheta : ''}</span>
           </button>
-        {:else if row.kind === 'phase'}
-          <div class="ph-row" onclick={() => togglePhase(row.phase)} role="button" tabindex="0">
-            <ChevronRight size={14} class="ph-chev {collapsed.has(row.phase) ? '' : 'open'}" />
-            <span class="ph-name">{row.phase}</span>
-            <span class="ph-meta">{row.tasks.length} task{row.tasks.length === 1 ? '' : 'uri'}</span>
-          </div>
         {:else}
           {@const t = row.t}
           {@const due = dueInfo(t)}
@@ -231,7 +203,7 @@
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
           </div>
-          {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
+          {#each displayRows as row (row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
             {#if row.kind === 'impl'}
               {@const ir = implRect(row.im)}
               <div class="gb-row impl-track">
@@ -240,11 +212,6 @@
                     <span class="ib-txt">{locLabel(row.im.locatie)}{row.im.eticheta ? ' · ' + row.im.eticheta : ''}</span>
                   </button>
                 {/if}
-              </div>
-            {:else if row.kind === 'phase'}
-              {@const pr = phaseSpanRect(row.tasks)}
-              <div class="gb-row ph-track">
-                {#if pr}<div class="phase-bar" style="left:{pr.left}%; width:{pr.width}%" title={row.phase}></div>{/if}
               </div>
             {:else}
               {@const t = row.t}
@@ -311,14 +278,6 @@
   .due-chip.warm { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .tk-row :global(.tk-chev) { color: var(--text-faint); flex: none; }
 
-  /* phases */
-  .ph-row { height: var(--row-h); display: flex; align-items: center; gap: 6px; padding: 0 10px; background: var(--bg-overlay); border-bottom: 1px solid var(--border); cursor: pointer; }
-  .ph-row:hover { background: var(--bg-hover); }
-  .ph-row :global(.ph-chev) { color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); flex: none; }
-  .ph-row :global(.ph-chev.open) { transform: rotate(90deg); }
-  .ph-name { flex: 1; min-width: 0; color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ph-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); flex: none; }
-
   /* implementation periods (Site / Sediu EGB) — the editable rows */
   .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px; border: none; border-bottom: 1px solid var(--border); border-left: 3px solid var(--il); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
   .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
@@ -327,8 +286,6 @@
   .impl-band { position: absolute; top: 50%; transform: translateY(-50%); height: 18px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; border: none; cursor: pointer; overflow: hidden; background: var(--il); color: #10130f; }
   .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
   .ib-txt { font-size: 0.62rem; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ph-track { background: color-mix(in srgb, var(--accent) 4%, transparent); }
-  .phase-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 8px; border-radius: 3px; background: color-mix(in oklab, var(--text-dim) 34%, var(--bg-panel)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-dim) 40%, transparent); }
 
   /* ===== timeline ===== */
   .g-time { flex: 1; overflow-x: auto; min-width: 0; }

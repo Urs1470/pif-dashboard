@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 31 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 32 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v31. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v32. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -160,6 +160,19 @@ Atentie la o suprapunere de nume: statusul de proiect **„In pregatire"** si fa
 zile). De aceea in panoul zilei din Calendar statusul NU se mai afiseaza — pe o zi
 planificata e evident ca proiectul nu e finalizat, iar chipul s-ar citi ca fiind despre
 perioada. Locatia si faza stau lipite (amandoua despre perioada); statusul e despre proiect.
+
+### Cod scos pentru ca nu putea fi folosit (v32, 2026-07-27)
+
+- **`tasks.faza`** — nu era o coloana goala, era o FUNCTIE PE JUMATATE: gruparea taskurilor
+  pe faze (WBS) in Gantt-ul de proiect si in exportul PDF/Excel, cu antet si bara de rezumat
+  per grup. Codul era viu si corect, dar **niciun formular nu putea seta campul**, deci
+  ramura nu s-a executat niciodata. Toate cele 37 de randuri erau goale.
+  **Capcana:** un self-heal re-rula v24->v25 cand lipsea coloana; a fost scos in acelasi
+  commit, altfel migrarea ar fi fost anulata la prima pornire.
+  Daca gruparea pe faze devine utila, se reconstruieste cu un camp real in formularul de task.
+- **`GET /api/dashboard/home`** (172 de linii) — singurul consumator era pagina Acasa, care
+  nu mai are contoare. Calcula proiecte active, taskuri urgente, finalizate/7 zile + sparkline
+  si lista de risc; toate ori au fost respinse de Ion, ori traiesc in Calendar.
 
 ### Cum arata o zi in Calendar
 

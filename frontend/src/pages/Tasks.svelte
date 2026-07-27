@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, AlertTriangle } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
@@ -255,19 +255,9 @@
     return diff > 0 && diff <= 7
   }
 
-  // Banda hero V3: taskuri urgente si/sau scadente azi / intarziate (max 4), din itemele deja incarcate.
-  const urgentHero = $derived(
-    activeTasks
-      .filter(t => (t.prioritate || '').toLowerCase() === 'urgent' || isOverdue(t.data_scadenta) || isToday(t.data_scadenta))
-      .slice(0, 4)
-  )
-
-  function heroLabel(t) {
-    const urgent = (t.prioritate || '').toLowerCase() === 'urgent'
-    if (isOverdue(t.data_scadenta)) return urgent ? 'Urgent · întârziat' : 'Întârziat'
-    if (isToday(t.data_scadenta)) return urgent ? 'Urgent · azi' : 'Scadent azi'
-    return 'Urgent'
-  }
+  // Banda de carduri urgente a plecat (Ion, 2026-07-27: „cardurile astea ce apar
+  // nu am nevoie de ele"): repeta primele randuri din lista de imediat dedesubt,
+  // care oricum e sortata cu urgentele sus si are aceleasi actiuni.
 
   // Bordura stanga a randului, dupa prioritate (danger=urgent, accent=normal, discret=minor).
   function rowBorderColor(p) {
@@ -351,24 +341,6 @@
     </div>
   </div>
 
-  {#if !showArchive && !globalTasks.loading && urgentHero.length > 0}
-    <div class="urgent-band">
-      {#each urgentHero as t (t.id)}
-        <section class="ucard cell-in">
-          <div class="cell-label"><span class="ico ico-red"><AlertTriangle size={13} /></span>{heroLabel(t)}</div>
-          <button class="ucard-title" onclick={() => toggleTaskExpand(t.id)} title="Deschide detalii">{t.titlu}</button>
-          <div class="ucard-sub">
-            <span>{t.categorie || 'General'}</span>
-            {#if t.data_scadenta}<span class="ucard-dot">·</span><span>{formatDate(t.data_scadenta)}</span>{/if}
-            {#if t.subtask_total}<span class="ucard-dot">·</span><span>{t.subtask_done || 0}/{t.subtask_total} subtaskuri</span>{/if}
-          </div>
-          <div class="ucard-actions">
-            <button class="ucard-btn" onclick={() => toggleStatus(t)}>✓ Bifează</button>
-          </div>
-        </section>
-      {/each}
-    </div>
-  {/if}
 
   <div class="v3grid">
   <div class="list-cell cell-in">
@@ -648,31 +620,6 @@
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
 
-  /* ===== V3: banda hero urgente ===== */
-  .urgent-band { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 14px; }
-  .ucard {
-    display: flex; flex-direction: column; gap: 6px; min-width: 0;
-    padding: var(--space-md);
-    background: linear-gradient(150deg, color-mix(in srgb, var(--danger) 7%, var(--bg-surface)) 0%, var(--bg-surface) 60%);
-    border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--border));
-    border-radius: var(--radius-lg);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
-  }
-  .ucard:hover { border-color: color-mix(in srgb, var(--danger) 45%, var(--border-strong)); box-shadow: var(--shadow-lg); }
-  .ucard-title { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-bold); line-height: 1.25; color: var(--text); text-align: left; cursor: pointer; padding: 0; }
-  .ucard-title:hover { color: var(--accent); }
-  .ucard-sub { display: flex; align-items: center; gap: 6px; font-size: var(--font-tiny); color: var(--text-dim); flex-wrap: wrap; }
-  .ucard-dot { color: var(--text-faint); }
-  .ucard-actions { display: flex; gap: var(--space-sm); margin-top: auto; padding-top: var(--space-sm); }
-  .ucard-btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; min-height: 30px;
-    font-size: var(--font-tiny); font-weight: var(--fw-semibold);
-    background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full);
-    color: var(--text-secondary); cursor: pointer; white-space: nowrap;
-    transition: all var(--dur-fast) var(--ease);
-  }
-  .ucard-btn:hover { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
-  .ucard-btn:active { transform: scale(0.97); }
 
   /* ===== V3: grid lista + agenda 7 zile ===== */
   .v3grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
@@ -682,9 +629,6 @@
   @media (max-width: 940px) {
     /* Agenda coboara sub lista (o singura coloana) */
     .v3grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 640px) {
-    .urgent-band { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 768px) {

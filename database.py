@@ -75,7 +75,9 @@ def close_db(exc=None):
 #      la o decizie. Ce se stie cu adevarat sunt cele doua perioade.
 # v31: proiectele au doua statusuri — „pregatire" si „finalizat". „in_asteptare",
 #      „blocat" si „anulat" erau definite in cod si nefolosite de niciun rand.
-SCHEMA_VERSION = 31
+# v32: scos `tasks.faza` — gruparea pe faze din Gantt exista in cod, dar niciun
+#      formular nu putea completa campul, deci nu s-a executat niciodata.
+SCHEMA_VERSION = 32
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1051,6 +1053,35 @@ def migrate_v30_to_v31():
     logger.info('Migration v30->v31 completed')
 
 
+def migrate_v31_to_v32():
+    """v31 -> v32: scoate `tasks.faza`.
+
+    Nu era o coloana goala, era o FUNCTIE PE JUMATATE: gruparea taskurilor pe faze
+    (WBS) in Gantt-ul de proiect si in exportul PDF, cu antet si bara de rezumat
+    per grup. Codul era viu si corect — dar NICIUN formular din aplicatie nu putea
+    seta campul, deci ramura nu s-a executat niciodata si n-avea cum. Toate cele 37
+    de randuri erau goale sau NULL.
+
+    Confuzia in plus: din v30 exista `implementari.faza`, care se foloseste. Doua
+    coloane cu acelasi nume, una vie si una imposibil de completat, e o capcana.
+
+    ATENTIE: self-heal-ul care re-rula v24->v25 cand lipsea `tasks.faza` a fost
+    scos in acelasi commit. Fara asta, coloana ar fi fost adaugata la loc la prima
+    pornire de dupa migrare.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cols = {r[1] for r in cursor.execute('PRAGMA table_info(tasks)')}
+    if 'faza' in cols:
+        cursor.execute('ALTER TABLE tasks DROP COLUMN faza')
+        logger.info('Migration v31->v32: dropped tasks.faza')
+    conn.commit()
+    conn.close()
+    logger.info('Migration v31->v32 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1205,6 +1236,11 @@ def run_migrations():
         set_schema_version(31)
         current_version = 31
 
+    if current_version < 32:
+        migrate_v31_to_v32()
+        set_schema_version(32)
+        current_version = 32
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1242,9 +1278,8 @@ def run_migrations():
     if not has_gantt_cols or not has_deps_table:
         logger.warning("Self-heal: re-running v23->v24 (tasks.data_start/progres/is_milestone or task_dependencies missing)")
         migrate_v23_to_v24()
-    if 'faza' not in tasks_cols:
-        logger.warning("Self-heal: re-running v24->v25 (tasks.faza missing)")
-        migrate_v24_to_v25()
+    # Self-heal-ul pentru `tasks.faza` a plecat odata cu coloana (v32): ar fi
+    # readus la loc exact ce tocmai a sters migrarea.
     if 'implementari' not in existing_tables:
         logger.warning("Self-heal: re-running v25->v26 (implementari table missing)")
         migrate_v25_to_v26()
