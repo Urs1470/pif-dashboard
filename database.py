@@ -1,7 +1,6 @@
 import sqlite3
 import os
 import logging
-from datetime import datetime
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -60,8 +59,12 @@ def close_db(exc=None):
 #      (Home "Astazi" daily planner board)
 # v22: Dropped timer & jurnal features (jurnal, timer_sessions,
 #      global_task_sessions) — orele se ponteaza in e100, jurnalul in observatii
+# v28: Dropped parametri_master, fault_codes, echipamente, atasamente —
+#      restrangere de scop la organizare/monitorizare de proiecte. Parametrii si
+#      fault-urile se iau din manual (trasabilitate la sursa), backup-urile de
+#      drive stau brute in vault unde le citeste skill-ul drive-backup.
 
-SCHEMA_VERSION = 27
+SCHEMA_VERSION = 28
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -859,6 +862,39 @@ def migrate_v26_to_v27():
     logger.info("Migration v26->v27: added proiecte.vault_folder")
 
 
+def migrate_v27_to_v28():
+    """v27 -> v28: restrangere de scop — scoate biblioteca tehnica din aplicatie.
+
+    Sterge:
+      - parametri_master  (~14.800 randuri) si fault_codes (~3.850) — catalog de
+        referinta fara nicio legatura cu proiectele. Parametrii si codurile de
+        eroare se iau din manualul producatorului, unde ai sursa citabila.
+      - echipamente — reintroducere manuala a ceva ce skill-ul drive-backup
+        extrage determinist din .dcparamsbak / STARTER, in wiki.
+      - atasamente — backup-urile brute stau in vault (raw/projects/<slug>/),
+        nu in DB-ul aplicatiei.
+
+    Datele au fost arhivate inainte in vault:
+    raw/pif-dashboard/2026-07-27-inainte-de-v28/ (JSON + CSV per tabela +
+    snapshot integral). Fisierele urcate raman pe disc in UPLOAD_FOLDER —
+    migratia nu sterge nimic din filesystem.
+
+    Idempotenta. clienti ramane (alimenteaza autocomplete-ul de Client).
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    for idx in ('idx_atasamente_proiect', 'idx_atasamente_task',
+                'idx_atasamente_global_task', 'idx_echipamente_proiect',
+                'idx_fault_codes_fam', 'idx_fault_codes_cod'):
+        cursor.execute(f'DROP INDEX IF EXISTS {idx}')
+    for table in ('parametri_master', 'fault_codes', 'echipamente', 'atasamente'):
+        cursor.execute(f'DROP TABLE IF EXISTS {table}')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v27->v28: dropped parametri_master, fault_codes, "
+                "echipamente, atasamente")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -993,6 +1029,11 @@ def run_migrations():
         set_schema_version(27)
         current_version = 27
 
+    if current_version < 28:
+        migrate_v27_to_v28()
+        set_schema_version(28)
+        current_version = 28
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1010,19 +1051,11 @@ def run_migrations():
     gt_cols = {row[1] for row in cursor.fetchall()}
     has_gt_recurenta = 'recurenta' in gt_cols
     has_gt_planificata = 'data_planificata' in gt_cols and 'ordine_agenda' in gt_cols
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='fault_codes'")
-    has_fault_codes = cursor.fetchone() is not None
-    # parametri_master may not exist on fresh DBs — gate v7 self-heal on it.
+    # Nota: nu mai exista self-heal pentru fault_codes / parametri_master —
+    # v28 le sterge intentionat, iar un self-heal le-ar reinvia la fiecare pornire.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     existing_tables = {row[0] for row in cursor.fetchall()}
-    has_pdf_extra = True  # default true so we skip self-heal when table is absent
-    if 'parametri_master' in existing_tables:
-        cursor.execute("PRAGMA table_info(parametri_master)")
-        has_pdf_extra = any(row[1] == 'pdf_extra' for row in cursor.fetchall())
     conn.close()
-    if 'parametri_master' in existing_tables and not has_pdf_extra:
-        logger.warning("Self-heal: re-running v6->v7 (parametri_master.pdf_extra missing)")
-        migrate_v6_to_v7()
     if (not has_subtask_table or not has_descriere or not has_tasks_recurenta
             or not has_tasks_updated_at):
         logger.warning("Self-heal: re-running v7->v8 (task_subtasks / tasks.descriere|recurenta|updated_at missing)")
@@ -1030,9 +1063,6 @@ def run_migrations():
     if not has_gt_recurenta:
         logger.warning("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
         migrate_v8_to_v9()
-    if not has_fault_codes:
-        logger.warning("Self-heal: re-running v9->v10 (fault_codes missing)")
-        migrate_v9_to_v10()
     if not has_task_planificata or not has_gt_planificata:
         logger.warning("Self-heal: re-running v20->v21 (data_planificata / ordine_agenda missing)")
         migrate_v20_to_v21()
@@ -1059,103 +1089,6 @@ def run_migrations():
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
         logger.info(f"Database migrated to v{SCHEMA_VERSION}")
-
-
-# Bump when data/fault_codes/*.json changes — forces a one-time re-seed on the
-# next startup. The fault_codes table holds only generated data, never user
-# data, so a full rebuild from the JSON is always safe.
-FAULT_DATA_REV = 2
-
-
-def seed_fault_codes():
-    """Populate fault_codes from data/fault_codes/*.json.
-
-    Seeds on first run (empty table) and re-seeds automatically whenever
-    FAULT_DATA_REV is bumped. Makes the drive fault-code dataset self-deploying
-    via git (the DB itself is gitignored).
-
-    Crash-safe: accumulates ALL rows first, then runs DELETE + INSERT in a single
-    explicit transaction. A mid-loop failure leaves the existing table untouched
-    instead of wiping it."""
-    import json
-    import glob
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'data', 'fault_codes')
-    if not os.path.isdir(data_dir):
-        return
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-    try:
-        cursor.execute('SELECT COUNT(*) FROM fault_codes')
-        count = cursor.fetchone()[0]
-    except sqlite3.OperationalError:
-        conn.close()
-        return
-    cursor.execute("SELECT value FROM app_settings WHERE key = 'fault_data_rev'")
-    row = cursor.fetchone()
-    try:
-        stored_rev = int(row[0]) if row else 0
-    except (ValueError, TypeError):
-        stored_rev = 0
-    if count > 0 and stored_rev >= FAULT_DATA_REV:
-        conn.close()
-        return  # already up to date
-    cols = ['producator', 'familie', 'cod', 'cod_secundar', 'tip', 'nume',
-            'cauza', 'remediu', 'reactie', 'confirmare', 'extra_json',
-            'pagina', 'sursa']
-    placeholders = ','.join('?' * len(cols))
-
-    # Phase 1: read ALL JSON files first. If anything fails, abort BEFORE
-    # touching the table — a partial JSON parse must not wipe existing data.
-    rows = []
-    read_failed = False
-    for path in sorted(glob.glob(os.path.join(data_dir, '*.json'))):
-        try:
-            with open(path, encoding='utf-8') as fh:
-                data = json.load(fh)
-        except Exception as e:
-            logger.warning(f"seed_fault_codes: aborting — failed to read {os.path.basename(path)}: {e}")
-            read_failed = True
-            break
-        try:
-            for d in data:
-                extra = d.get('extra')
-                extra_json = json.dumps(extra, ensure_ascii=False) if extra else None
-                rows.append((
-                    d.get('producator'), d.get('familie'), d.get('cod'),
-                    d.get('cod_secundar'), d.get('tip'), d.get('nume'),
-                    d.get('cauza'), d.get('remediu'), d.get('reactie'),
-                    d.get('confirmare'), extra_json, d.get('pagina'), d.get('sursa'),
-                ))
-        except Exception as e:
-            logger.warning(f"seed_fault_codes: aborting — failed to parse {os.path.basename(path)}: {e}")
-            read_failed = True
-            break
-
-    if read_failed or not rows:
-        if not rows and not read_failed:
-            logger.warning("seed_fault_codes: no rows found in data/fault_codes/*.json, leaving table untouched")
-        conn.close()
-        return
-
-    # Phase 2: all reads succeeded — do DELETE + bulk INSERT in one transaction.
-    try:
-        conn.execute('BEGIN IMMEDIATE')
-        cursor.execute('DELETE FROM fault_codes')
-        cursor.executemany(
-            f"INSERT INTO fault_codes ({','.join(cols)}) VALUES ({placeholders})",
-            rows)
-        cursor.execute(
-            "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)",
-            ('fault_data_rev', str(FAULT_DATA_REV), datetime.now().isoformat()))
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        conn.close()
-        logger.warning(f"seed_fault_codes: transaction failed, rolled back: {e}")
-        return
-    conn.close()
-    logger.info(f"Seeded fault_codes with {len(rows)} rows (rev {FAULT_DATA_REV})")
 
 
 def init_db():
@@ -1216,7 +1149,7 @@ def init_db():
     ''')
 
     # Gantt de proiect: dependente intre taskuri (predecesor -> succesor).
-    # Coloanele Gantt (data_start/progres/is_milestone) se adauga prin migratia v24.
+    # Coloanele Gantt (data_start/progres/is_milestone) se adauga prin migratia v28.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS task_dependencies (
             id TEXT PRIMARY KEY,
@@ -1248,24 +1181,6 @@ def init_db():
     ''')
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS atasamente (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT,
-            task_id TEXT,
-            global_task_id TEXT,
-            nume_fisier TEXT NOT NULL,
-            tip_fisier TEXT,
-            dimensiune INTEGER,
-            data TEXT,
-            cale_locala TEXT NOT NULL,
-            tip_atasament TEXT DEFAULT 'fisier',
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
-            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-            FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
-        )
-    ''')
-
-    cursor.execute('''
         CREATE TABLE IF NOT EXISTS global_tasks (
             id TEXT PRIMARY KEY,
             titlu TEXT NOT NULL,
@@ -1293,21 +1208,6 @@ def init_db():
         )
     ''')
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS echipamente (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
-            nume TEXT NOT NULL,
-            producator TEXT,
-            model TEXT,
-            serial_number TEXT,
-            params_json TEXT,
-            created_at TEXT,
-            updated_at TEXT,
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-        )
-    ''')
-
     # Generic key/value app settings (Obsidian vault path, future config).
     # Created with IF NOT EXISTS so it always exists without a dedicated migration.
     cursor.execute('''
@@ -1331,26 +1231,6 @@ def init_db():
         )
     ''')
 
-    # Drive fault / alarm / warning codes extracted from the manufacturer manuals.
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS fault_codes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            producator TEXT NOT NULL,
-            familie TEXT NOT NULL,
-            cod TEXT NOT NULL,
-            cod_secundar TEXT,
-            tip TEXT,
-            nume TEXT,
-            cauza TEXT,
-            remediu TEXT,
-            reactie TEXT,
-            confirmare TEXT,
-            extra_json TEXT,
-            pagina INTEGER,
-            sursa TEXT
-        )
-    ''')
-
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_producator ON proiecte(producator)')
@@ -1358,15 +1238,7 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect_id ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
-    # pe DB nou, migratia v18 (care le crea) se sare — fara ele, listele de
-    # taskuri fac full-scan pe atasamente la batch-count
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_task ON atasamente(task_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_global_task ON atasamente(global_task_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_fam ON fault_codes(producator, familie)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_fault_codes_cod ON fault_codes(cod)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
 
     conn.commit()
@@ -1374,9 +1246,6 @@ def init_db():
 
     # Run migrations after init to ensure schema is up to date
     run_migrations()
-
-    # Self-deploying fault-code dataset: fill the table on first run.
-    seed_fault_codes()
 
 def row_to_dict(row):
     if row is None:

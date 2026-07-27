@@ -31,7 +31,7 @@
     client:      { label: 'Clienți', icon: Users },
   }
 
-  // Scoase din scopul aplicatiei (v24): parametri, fault codes, echipamente,
+  // Scoase din scopul aplicatiei (v28): parametri, fault codes, echipamente,
   // atasamente si browserul de vault. Backend-ul le mai poate returna pana la
   // migratie — le filtram aici ca sa nu mai apara in paleta.
   const DROPPED_TYPES = new Set(['parametru', 'fault_code', 'echipament', 'atasament', 'obsidian'])

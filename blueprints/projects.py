@@ -2,20 +2,18 @@
 # Provides all project-related CRUD routes extracted from app.py
 
 import os
-import json
 import shutil
 import logging
-import sqlite3
 from datetime import datetime
 
-from flask import Blueprint, request, jsonify, send_file
-from werkzeug.utils import secure_filename
+from flask import Blueprint, request, jsonify
 
 from database import get_db, row_to_dict
 from utils import (
-    safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES,
+    safe_table, generate_uuid, login_required, UPLOAD_FOLDER,
     get_app_setting, set_app_setting, get_json_or_400,
 )
+
 from scripts.parse_params.siemens_starter import parse_archive
 from scripts.parse_params.abb import parse as parse_abb, read_drive_info as abb_drive_info
 
@@ -221,7 +219,7 @@ def delete_proiect(project_id):
             'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
             (project_id,)
         )
-        tables = ['tasks', 'atasamente', 'echipamente']
+        tables = ['tasks']
         for table in tables:
             cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (project_id,))
         cursor.execute('DELETE FROM proiecte WHERE id = ?', (project_id,))
@@ -281,9 +279,7 @@ def batch_proiecte():
                     'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
                     (pid,)
                 )
-                tables = ['tasks', 'atasamente', 'echipamente']
-                for table in tables:
-                    cursor.execute(f'DELETE FROM {safe_table(table)} WHERE proiect_id = ?', (pid,))
+                cursor.execute('DELETE FROM tasks WHERE proiect_id = ?', (pid,))
                 cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
 
             conn.commit()
@@ -299,212 +295,6 @@ def batch_proiecte():
         conn.rollback()
         logger.error(f"Batch operation error: {e}")
         return jsonify({'error': 'Batch operation failed'}), 500
-
-
-# ============ ATTACHMENTS ============
-
-ATTACHMENT_TIP_MAP = {
-    '.pdf': 'PDF',
-    '.jpg': 'IMG', '.jpeg': 'IMG', '.png': 'IMG',
-    '.gif': 'IMG', '.bmp': 'IMG', '.webp': 'IMG',
-    '.msg': 'EMAIL', '.eml': 'EMAIL',
-    '.doc': 'DOC', '.docx': 'DOC',
-    '.xls': 'XLS', '.xlsx': 'XLS',
-    '.zip': 'ZIP', '.rar': 'ZIP'
-}
-
-
-def _store_uploaded_file(file, subfolder):
-    """Save an uploaded file under UPLOAD_FOLDER/<subfolder>/ and return
-    (attachment_id, original_name, tip, size, filepath). Sanitizes the
-    client-supplied name — never trust it for a filesystem path (blocks
-    ../ traversal and overwriting server files)."""
-    attachment_id = generate_uuid()
-    folder = os.path.join(UPLOAD_FOLDER, subfolder)
-    os.makedirs(folder, exist_ok=True)
-
-    original_name = file.filename
-    safe_name = secure_filename(original_name) or ('fisier_' + attachment_id[:8])
-    filepath = os.path.join(folder, safe_name)
-    if os.path.exists(filepath):
-        safe_name = attachment_id[:8] + '_' + safe_name
-        filepath = os.path.join(folder, safe_name)
-    file.save(filepath)
-
-    size = os.path.getsize(filepath)
-    # Type from the original name — keeps the real extension
-    ext = os.path.splitext(original_name)[1].lower()
-    tip = ATTACHMENT_TIP_MAP.get(ext, 'ALT')
-    return attachment_id, original_name, tip, size, filepath
-
-
-def _require_upload_file():
-    if 'file' not in request.files:
-        return None, (jsonify({'error': 'No file provided'}), 400)
-    file = request.files['file']
-    if file.filename == '':
-        return None, (jsonify({'error': 'No file selected'}), 400)
-    return file, None
-
-
-@projects_bp.route('/api/proiecte/<project_id>/atasamente', methods=['POST'])
-@login_required
-def upload_atasament(project_id):
-    file, err = _require_upload_file()
-    if err:
-        return err
-
-    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, project_id)
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO atasamente (id, proiect_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (attachment_id, project_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
-    conn.commit()
-    conn.close()
-
-    return jsonify({'id': attachment_id}), 201
-
-
-@projects_bp.route('/api/tasks/<task_id>/atasamente', methods=['GET'])
-@login_required
-def get_task_atasamente(task_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM atasamente WHERE task_id = ? ORDER BY data DESC', (task_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-
-@projects_bp.route('/api/tasks/<task_id>/atasamente', methods=['POST'])
-@login_required
-def upload_task_atasament(task_id):
-    file, err = _require_upload_file()
-    if err:
-        return err
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT proiect_id FROM tasks WHERE id = ?', (task_id,))
-    task = cursor.fetchone()
-    if not task:
-        conn.close()
-        return jsonify({'error': 'Task not found'}), 404
-
-    # Files live in the project folder so the project Atasamente tab sees them too.
-    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, task['proiect_id'])
-    cursor.execute('''
-        INSERT INTO atasamente (id, proiect_id, task_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (attachment_id, task['proiect_id'], task_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
-    conn.commit()
-    conn.close()
-
-    return jsonify({'id': attachment_id}), 201
-
-
-@projects_bp.route('/api/global-tasks/<task_id>/atasamente', methods=['GET'])
-@login_required
-def get_global_task_atasamente(task_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM atasamente WHERE global_task_id = ? ORDER BY data DESC', (task_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-
-@projects_bp.route('/api/global-tasks/<task_id>/atasamente', methods=['POST'])
-@login_required
-def upload_global_task_atasament(task_id):
-    file, err = _require_upload_file()
-    if err:
-        return err
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT id FROM global_tasks WHERE id = ?', (task_id,))
-    if not cursor.fetchone():
-        conn.close()
-        return jsonify({'error': 'Task not found'}), 404
-
-    attachment_id, original_name, tip, size, filepath = _store_uploaded_file(file, os.path.join('global-tasks', task_id))
-    cursor.execute('''
-        INSERT INTO atasamente (id, global_task_id, nume_fisier, tip_fisier, dimensiune, data, cale_locala)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (attachment_id, task_id, original_name, tip, size, datetime.now().isoformat()[:10], filepath))
-    conn.commit()
-    conn.close()
-
-    return jsonify({'id': attachment_id}), 201
-
-@projects_bp.route('/api/proiecte/<project_id>/atasamente', methods=['GET'])
-@login_required
-def get_atasamente(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM atasamente WHERE proiect_id = ? ORDER BY data DESC', (project_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-@projects_bp.route('/api/atasamente/<attachment_id>/download', methods=['GET'])
-@login_required
-def download_atasament(attachment_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM atasamente WHERE id = ?', (attachment_id,))
-    row = cursor.fetchone()
-    conn.close()
-
-    if row is None:
-        return jsonify({'error': 'Attachment not found'}), 404
-
-    filepath = row['cale_locala']
-    real_path = os.path.realpath(filepath)
-    safe_root = os.path.realpath(UPLOAD_FOLDER)
-    if not real_path.startswith(safe_root + os.sep):
-        return jsonify({'error': 'Invalid file path'}), 403
-    if not os.path.exists(filepath):
-        return jsonify({'error': 'File not found on disk'}), 404
-
-    ext = os.path.splitext(row['nume_fisier'])[1].lower()
-    inline_types = {'.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
-    as_attachment = ext not in inline_types
-    resp = send_file(filepath, as_attachment=as_attachment, download_name=row['nume_fisier'])
-    # Allow the SPA to embed this file in a same-origin iframe (PDF preview).
-    # The global after_request sets X-Frame-Options/CSP via setdefault, so the
-    # explicit values below win for this response only.
-    resp.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    resp.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
-    return resp
-
-@projects_bp.route('/api/atasamente/<attachment_id>', methods=['DELETE'])
-@login_required
-def delete_atasament(attachment_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-
-        cursor.execute('SELECT cale_locala FROM atasamente WHERE id = ?', (attachment_id,))
-        row = cursor.fetchone()
-
-        if not row:
-            return jsonify({'error': 'Attachment not found'}), 404
-
-        filepath = row['cale_locala']
-        if os.path.exists(filepath):
-            os.remove(filepath)
-
-        cursor.execute('DELETE FROM atasamente WHERE id = ?', (attachment_id,))
-
-        conn.commit()
-        return jsonify({'message': 'Attachment deleted'})
-    finally:
-        conn.close()
 
 
 # ============ CLIENTS ============
@@ -635,146 +425,6 @@ def delete_client(client_id):
         conn.close()
 
 
-# ============ EQUIPMENT ============
-
-@projects_bp.route('/api/proiecte/<project_id>/echipamente', methods=['GET'])
-@login_required
-def get_echipamente(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at DESC', (project_id,))
-    rows = cursor.fetchall()
-    conn.close()
-    return jsonify([row_to_dict(row) for row in rows])
-
-@projects_bp.route('/api/proiecte/<project_id>/echipamente', methods=['POST'])
-@login_required
-def create_echipament(project_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-
-    now = datetime.now().isoformat()
-    echipament_id = data.get('id') or generate_uuid()
-
-    # Parse params_text into key-value pairs
-    params_text = data.get('params_text', '')
-    params_dict = {}
-    if params_text:
-        for line in params_text.strip().split('\n'):
-            line = line.strip()
-            if '=' in line:
-                key, value = line.split('=', 1)
-                params_dict[key.strip()] = value.strip()
-
-    cursor.execute('''
-        INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        echipament_id,
-        project_id,
-        data.get('nume', ''),
-        data.get('producator', 'Altul'),
-        data.get('model', ''),
-        data.get('serial_number', ''),
-        json.dumps(params_dict),
-        now,
-        now
-    ))
-
-    conn.commit()
-    conn.close()
-
-    logger.info(f"Equipment created: {echipament_id} for project {project_id}")
-    return jsonify({'id': echipament_id, 'message': 'Equipment created'}), 201
-
-@projects_bp.route('/api/echipamente/<echipament_id>', methods=['GET'])
-@login_required
-def get_echipament(echipament_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM echipamente WHERE id = ?', (echipament_id,))
-    row = cursor.fetchone()
-    conn.close()
-
-    if row is None:
-        return jsonify({'error': 'Equipment not found'}), 404
-
-    return jsonify(row_to_dict(row))
-
-@projects_bp.route('/api/echipamente/<echipament_id>', methods=['PUT'])
-@login_required
-def update_echipament(echipament_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-
-    now = datetime.now().isoformat()
-
-    # Parse params_text if provided
-    params_json = data.get('params_json')
-    if data.get('params_text'):
-        params_text = data.get('params_text', '')
-        params_dict = {}
-        if params_text:
-            for line in params_text.strip().split('\n'):
-                line = line.strip()
-                if '=' in line:
-                    key, value = line.split('=', 1)
-                    params_dict[key.strip()] = value.strip()
-        params_json = json.dumps(params_dict)
-
-    # descrieri_json — merge incoming with existing
-    descrieri_json = None
-    if data.get('descrieri_json'):
-        descrieri_json = data['descrieri_json']
-        if isinstance(descrieri_json, dict):
-            descrieri_json = json.dumps(descrieri_json)
-
-    cursor.execute('''
-        UPDATE echipamente SET
-            nume = COALESCE(?, nume),
-            producator = COALESCE(?, producator),
-            model = COALESCE(?, model),
-            serial_number = COALESCE(?, serial_number),
-            params_json = COALESCE(?, params_json),
-            descrieri_json = COALESCE(?, descrieri_json),
-            updated_at = ?
-        WHERE id = ?
-    ''', (
-        data.get('nume'),
-        data.get('producator'),
-        data.get('model'),
-        data.get('serial_number'),
-        params_json,
-        descrieri_json,
-        now,
-        echipament_id
-    ))
-
-    conn.commit()
-    conn.close()
-
-    logger.info(f"Equipment updated: {echipament_id}")
-    return jsonify({'message': 'Equipment updated'})
-
-@projects_bp.route('/api/echipamente/<echipament_id>', methods=['DELETE'])
-@login_required
-def delete_echipament(echipament_id):
-    conn = get_db()
-    try:
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM echipamente WHERE id = ?', (echipament_id,))
-        deleted = cursor.rowcount
-        conn.commit()
-        if deleted == 0:
-            return jsonify({'error': 'Equipment not found'}), 404
-        logger.info(f"Equipment deleted: {echipament_id}")
-        return jsonify({'message': 'Equipment deleted'})
-    finally:
-        conn.close()
-
-
 # ============ PROJECT SNAPSHOT (Cowork sync) ============
 
 @projects_bp.route('/api/proiecte/<project_id>/snapshot', methods=['GET'])
@@ -804,18 +454,6 @@ def get_project_snapshot(project_id):
         crow = cursor.fetchone()
         if crow:
             client_data = row_to_dict(crow)
-
-    # Echipamente
-    cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ? ORDER BY created_at', (project_id,))
-    echipamente = []
-    for row in cursor.fetchall():
-        eq = row_to_dict(row)
-        # Parse params_json for clean output
-        try:
-            eq['params_json'] = json.loads(eq.get('params_json') or '{}')
-        except (json.JSONDecodeError, TypeError):
-            eq['params_json'] = {}
-        echipamente.append(eq)
 
     # Tasks + subtasks
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY created_at', (project_id,))
@@ -858,14 +496,6 @@ def get_project_snapshot(project_id):
             'service_before': p.get('service_before', ''),
             'service_after': p.get('service_after', ''),
         },
-        'echipamente': [{
-            'id': eq['id'],
-            'nume': eq.get('nume', ''),
-            'producator': eq.get('producator', ''),
-            'model': eq.get('model', ''),
-            'serial_number': eq.get('serial_number', ''),
-            'params_json': eq.get('params_json', {}),
-        } for eq in echipamente],
         'tasks': [{
             'titlu': t.get('titlu', ''),
             'descriere': t.get('descriere', ''),
@@ -882,7 +512,7 @@ def get_project_snapshot(project_id):
 # ============ IMPORT PARAMETRI DIN EXPORT PRODUCATOR ============
 
 def _familie_from_echipament(producator: str, model: str) -> str:
-    """Mapeaza producator+model la familie pentru join cu parametri_master.
+    """Mapeaza producator+model la familia de drive (eticheta din preview).
 
     Numele familiilor in DB (validat cu scripts/audit_pdf.py FAMILIES):
         ACS580, ACS880, Danfoss_VLT_FC302, Lenze_i550, Lenze_i950,
@@ -919,8 +549,9 @@ def preview_import_abb_multi():
       files: unul sau mai multe fișiere .dcparamsbak
       model: optional, hint pentru familia (ACS580 vs ACS880)
 
-    Returnează aceeași structură ca /import-archive/preview, compatibilă cu
-    POST .../echipamente/import-archive pentru persistare.
+    Returnează aceeași structură ca /import-archive/preview. Consumatorul e
+    Calculatorul (completează plăcuța motorului); din v28 nu mai există
+    persistare în DB — parametrii citiți se folosesc pe loc.
     """
     if (request.content_length or 0) > 30 * 1024 * 1024:
         return jsonify({'error': 'Fisier prea mare (max 30 MB)'}), 413
@@ -993,7 +624,8 @@ def preview_import_abb_multi():
             msg += ' Erori: ' + '; '.join(errors)
         return jsonify({'error': msg}), 400
 
-    # Enrich with parametri_master descriptions + filter factory defaults
+    # v28: fara catalog de parametri -> meta e {}; filtrul ramane pe defaults
+    # cunoscute de parser
     meta = _familie_param_meta(drives)
     _filter_drive_params(drives, meta)
 
@@ -1012,136 +644,17 @@ def preview_import_abb_multi():
 # ============ IMPORT ARHIVA PROIECT (Siemens STARTER) ============
 
 def _familie_param_meta(drives):
-    """Returnează {familie: {cod: {'desc': str, 'default': str}}} din parametri_master.
+    """Stub din v28: tabela `parametri_master` a fost stearsa.
 
-    Un singur SELECT per familie. Nemodificator pe DB. Folosit pentru a îmbogăți
-    descrierile ȘI pentru a filtra parametrii care sunt la valoarea de fabrică.
+    Inainte, aici se citeau descrierile si valorile de fabrica ale parametrilor
+    din catalogul intern, ca sa imbogateasca preview-ul de backup si sa filtreze
+    parametrii ramasi la default. Catalogul nu mai exista — preview-ul arata
+    exact ce scrie in fisierul de backup, fara imbogatire.
 
-    Pentru familii Siemens (SINAMICS), caută și versiunile r-prefix ale codurilor
-    p-prefix — STARTER exportă toți parametrii cu prefix p, dar parametrii
-    read-only sunt stocați în DB ca r (r0026 = DC link voltage smoothed).
+    Returneaza {} — exact comportamentul pe care il avea deja un deploy fara
+    seed de parametri, deci `_filter_drive_params` stie sa il trateze.
     """
-    by_familie = {}
-    for d in drives:
-        fam = d.get('familie') or ''
-        if fam:
-            by_familie.setdefault(fam, set()).update(d.get('params', {}).keys())
-    if not by_familie:
-        return {}
-
-    meta = {}
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('SELECT 1 FROM parametri_master LIMIT 1')
-    except sqlite3.OperationalError:
-        # tabela parametri_master lipseste pe aceasta instanta (fara seed de parametri)
-        # -> sarim imbogatirea (optionala); parametrii de placuta raman disponibili
-        return {}
-    for fam, codes in by_familie.items():
-        codes = list(codes)
-        meta[fam] = {}
-
-        # Lookup codurile exacte (p0304, 1.01, etc.)
-        for i in range(0, len(codes), 900):
-            chunk = codes[i:i + 900]
-            placeholders = ','.join('?' * len(chunk))
-            cursor.execute(
-                f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
-                f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
-                [fam] + chunk
-            )
-            for r in cursor.fetchall():
-                default = r['valoare_default']
-                if default is None or str(default).strip() == '':
-                    default = r['valoare_default_str']
-                meta[fam][r['parametru']] = {
-                    'desc': r['descriere_scurta'],
-                    'default': default,
-                }
-
-        # Indexed params — look up base codes (p0114[2] → p0114)
-        indexed_bases = set()
-        for c in codes:
-            if '[' in c:
-                indexed_bases.add(c.split('[')[0])
-        indexed_bases -= set(meta[fam].keys())
-        if indexed_bases:
-            indexed_list = list(indexed_bases)
-            for i in range(0, len(indexed_list), 900):
-                chunk = indexed_list[i:i + 900]
-                placeholders = ','.join('?' * len(chunk))
-                cursor.execute(
-                    f'SELECT parametru, descriere_scurta, valoare_default, valoare_default_str '
-                    f'FROM parametri_master WHERE familie = ? AND parametru IN ({placeholders})',
-                    [fam] + chunk
-                )
-                for r in cursor.fetchall():
-                    if r['parametru'] not in meta[fam]:
-                        default = r['valoare_default']
-                        if default is None or str(default).strip() == '':
-                            default = r['valoare_default_str']
-                        meta[fam][r['parametru']] = {
-                            'desc': r['descriere_scurta'],
-                            'default': default,
-                        }
-
-        # Siemens: caută r-prefix cross-family (read-only params)
-        # r0027 poate fi în G130 dar nu în G120 — e read-only în ambele.
-        # Caut fără filtru de familie, apoi stochez sub familia curentă.
-        if 'SINAMICS' in fam or 'MICROMASTER' in fam:
-            r_codes = set()
-            for c in codes:
-                base = c.split('[')[0] if '[' in c else c
-                if base.startswith('p'):
-                    r_codes.add('r' + base[1:])
-            r_codes = list(r_codes)
-            for i in range(0, len(r_codes), 900):
-                chunk = r_codes[i:i + 900]
-                placeholders = ','.join('?' * len(chunk))
-                # Cross-family: orice r-param din orice familie Siemens
-                cursor.execute(
-                    f'SELECT DISTINCT parametru, descriere_scurta, valoare_default, valoare_default_str '
-                    f'FROM parametri_master WHERE parametru IN ({placeholders})',
-                    chunk
-                )
-                for r in cursor.fetchall():
-                    if r['parametru'] not in meta[fam]:
-                        default = r['valoare_default']
-                        if default is None or str(default).strip() == '':
-                            default = r['valoare_default_str']
-                        meta[fam][r['parametru']] = {
-                            'desc': r['descriere_scurta'],
-                            'default': default,
-                        }
-
-            # Cross-family p-prefix: some params exist in other Siemens families
-            missing_p = set()
-            for c in codes:
-                base = c.split('[')[0] if '[' in c else c
-                if base not in meta[fam]:
-                    missing_p.add(base)
-            if missing_p:
-                missing_list = list(missing_p)
-                for i in range(0, len(missing_list), 900):
-                    chunk = missing_list[i:i + 900]
-                    placeholders = ','.join('?' * len(chunk))
-                    cursor.execute(
-                        f'SELECT DISTINCT parametru, descriere_scurta, valoare_default, valoare_default_str '
-                        f'FROM parametri_master WHERE parametru IN ({placeholders})',
-                        chunk
-                    )
-                    for r in cursor.fetchall():
-                        if r['parametru'] not in meta[fam]:
-                            default = r['valoare_default']
-                            if default is None or str(default).strip() == '':
-                                default = r['valoare_default_str']
-                            meta[fam][r['parametru']] = {
-                                'desc': r['descriere_scurta'],
-                                'default': default,
-                            }
-    conn.close()
-    return meta
+    return {}
 
 
 def _equals_default(value, default):
@@ -1173,7 +686,7 @@ def _filter_drive_params(drives, meta):
     """Elimină parametrii la valoarea de fabrică (zgomot) din fiecare drive.
 
     Reguli:
-      - dacă valoarea == default cunoscut din parametri_master => omis;
+      - dacă valoarea == default cunoscut (din parser) => omis;
       - dacă parametrul lipsește din DB ȘI valoarea e 0 => omis (aproape sigur
         un connector BICO / funcție dezactivată neatinsă, nu o setare reală);
       - Siemens: dacă codul p are echivalent r în DB => e parametru read-only
@@ -1226,7 +739,7 @@ def _filter_drive_params(drives, meta):
                 skipped += 1
                 continue
             else:
-                # param not in parametri_master — use parser description
+                # fara catalog intern — folosim descrierea de la parser
                 if parser_desc.get(code):
                     descrieri[code] = parser_desc[code]
             kept[code] = val
@@ -1244,7 +757,8 @@ def preview_import_archive():
     Form fields:
       file: arhiva .zip a proiectului STARTER (conține Project.mcp)
 
-    Nu modifică DB. Persistarea se face prin POST .../echipamente/import-archive.
+    Nu modifică DB — din v28 nu mai există persistare de echipamente;
+    rezultatul alimentează direct Calculatorul.
     """
     if (request.content_length or 0) > 30 * 1024 * 1024:
         return jsonify({'error': 'Fisier prea mare (max 30 MB)'}), 413
@@ -1282,79 +796,6 @@ def preview_import_archive():
     })
 
 
-@projects_bp.route('/api/proiecte/<project_id>/echipamente/import-archive', methods=['POST'])
-@login_required
-def import_archive_echipamente(project_id):
-    """Creează câte un echipament per drive dintr-un import de arhivă STARTER.
-
-    Body JSON: { "drives": [ {nume, producator, model, serial_number, firmware,
-                              params: {code: value}}, ... ] }
-
-    Fiecare drive devine un rând separat în `echipamente`, cu parametrii
-    modificați stocați în params_json.
-    """
-    data = get_json_or_400()
-    drives = data.get('drives') or []
-    if not drives:
-        return jsonify({'error': 'Niciun drive de importat'}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    # validează existența proiectului (FK ar prinde oricum, dar mesaj mai clar)
-    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
-    if cursor.fetchone() is None:
-        conn.close()
-        return jsonify({'error': 'Proiectul nu există'}), 404
-
-    created = []
-    now = datetime.now().isoformat()
-    for drive in drives:
-        params = drive.get('params') or {}
-        if not isinstance(params, dict):
-            params = {}
-        # serializează valorile ca string-uri (consistent cu create_echipament)
-        params_dict = {str(k): str(v) for k, v in params.items()}
-        # descrieri din parser + parametri_master (populated by _filter_drive_params)
-        descrieri = drive.get('descrieri') or {}
-        descrieri_json = json.dumps(descrieri) if descrieri else None
-        echipament_id = generate_uuid()
-        model = drive.get('model', '')
-        firmware = drive.get('firmware', '')
-        if firmware and firmware not in model:
-            model = f'{model} {firmware}'.strip()
-        cursor.execute('''
-            INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, descrieri_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            echipament_id,
-            project_id,
-            drive.get('nume', '') or 'Drive',
-            drive.get('producator', 'Siemens') or 'Siemens',
-            model,
-            drive.get('serial_number', '') or '',
-            json.dumps(params_dict),
-            descrieri_json,
-            now,
-            now,
-        ))
-        created.append({
-            'id': echipament_id,
-            'nume': drive.get('nume', ''),
-            'params': len(params_dict),
-        })
-
-    conn.commit()
-    conn.close()
-
-    logger.info(f"Import arhivă: {len(created)} echipamente create în proiect {project_id}")
-    return jsonify({
-        'message': f'{len(created)} echipamente importate',
-        'count': len(created),
-        'created': created,
-    }), 201
-
-
 # ============ STRUCTURED IMPORT (Cowork AI debrief) ============
 
 @projects_bp.route('/api/import/debrief', methods=['POST'])
@@ -1368,8 +809,11 @@ def import_debrief():
       2. Proiect (upsert by name+client) — jurnal[] narrative folds into
          observatii (PIF) / service_after (Service); ore[] is ignored since
          v22 (orele se ponteaza in e100, nu in dashboard)
-      3. Echipamente
-      4. Checklist categorii + items
+
+    `echipamente[]` este acceptat dar IGNORAT din v28 — tabela nu mai exista.
+    Parametrii de drive stau in wiki (skill-ul drive-backup), nu in dashboard.
+    Numarul de echipamente ignorate e raportat in `sumar.echipamente_ignorate`
+    ca sa fie vizibil, nu inghitit in tacere.
 
     Returns the project ID and a summary of what was created.
     """
@@ -1410,7 +854,7 @@ def import_debrief():
                     'proiect_id': prev_pid,
                     'proiect_url': f'/proiecte/{prev_pid}',
                     'creat': False,
-                    'sumar': {'echipamente': 0},
+                    'sumar': {'echipamente_ignorate': 0},
                 }), 200
             logger.info(f"Import debrief: prior project {prev_pid} for debrief_id={debrief_id} was deleted — allowing re-import")
 
@@ -1418,7 +862,9 @@ def import_debrief():
     cursor = conn.cursor()
     now = datetime.now().isoformat()
     sumar = {
-        'echipamente': 0,
+        # v28: tabela `echipamente` a fost stearsa. Raportam cate au venit in
+        # payload si au fost ignorate, ca sa nu para ca s-au importat.
+        'echipamente_ignorate': len(data.get('echipamente') or []),
     }
 
     try:
@@ -1531,25 +977,13 @@ def import_debrief():
             ))
             logger.info(f"Import debrief: created project '{proiect_nume}' ({project_id})")
 
-        # ── 3. Echipamente ─────────────────────────────────────────
-        for eq in (data.get('echipamente') or []):
-            eq_id = eq.get('id') or generate_uuid()
-            params = eq.get('params_json') or eq.get('params') or {}
-            if isinstance(params, dict):
-                params = json.dumps(params)
-            cursor.execute('''
-                INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number, params_json, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                eq_id, project_id,
-                eq.get('nume', ''),
-                eq.get('producator', 'Altul'),
-                eq.get('model', ''),
-                eq.get('serial_number', ''),
-                params if isinstance(params, str) else json.dumps(params),
-                now, now,
-            ))
-            sumar['echipamente'] += 1
+        # echipamente[] se ignora din v28 — tabela nu mai exista; parametrii de
+        # drive stau in wiki (skill-ul drive-backup, extractie determinista din
+        # .dcparamsbak / STARTER). Numarul lor e deja in sumar.
+        if sumar['echipamente_ignorate']:
+            logger.info(
+                f"Import debrief: {sumar['echipamente_ignorate']} echipamente ignorate "
+                f"(v28) pentru proiectul {project_id}")
 
         # jurnal[] s-a pliat deja in observatii/service_after (sectiunea 2);
         # ore[] se ignora — orele se ponteaza in e100, nu in dashboard (v22).

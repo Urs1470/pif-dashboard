@@ -4,19 +4,10 @@ function escMd(txt) {
   return (txt || '').replace(/\|/g, '\\|')
 }
 
-export function formatFileSize(bytes) {
-  if (!bytes) return '—'
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 export async function exportMarkdown(projectId) {
-  const [project, tasks, attachments, echipamente] = await Promise.all([
+  const [project, tasks] = await Promise.all([
     apiJson(`/api/proiecte/${projectId}`),
     apiJson(`/api/proiecte/${projectId}/tasks`).catch(() => []),
-    apiJson(`/api/proiecte/${projectId}/atasamente`).catch(() => []),
-    apiJson(`/api/proiecte/${projectId}/echipamente`).catch(() => []),
   ])
 
   const isPIF = project.tip === 'PIF'
@@ -107,38 +98,6 @@ export async function exportMarkdown(projectId) {
       })
       md += `\n`
     }
-  }
-
-  // 5. Echipamente
-  if (echipamente && echipamente.length > 0) {
-    md += `## ${section++}. Echipamente\n\n`
-    md += `| # | Nume | Producător | Model | Serie | Parametri |\n|---|---|---|---|---|---|\n`
-    const parseParams = (eq) => {
-      try { return typeof eq.params_json === 'string' ? JSON.parse(eq.params_json || '{}') : (eq.params_json || {}) } catch { return {} }
-    }
-    echipamente.forEach((eq, idx) => {
-      const params = parseParams(eq)
-      md += `| ${idx + 1} | ${escMd(eq.nume) || '—'} | ${escMd(eq.producator) || '—'} | ${escMd(eq.model) || '—'} | ${escMd(eq.serial_number) || '—'} | ${Object.keys(params).length} |\n`
-    })
-    md += `\n`
-    echipamente.forEach((eq, idx) => {
-      const entries = Object.entries(parseParams(eq))
-      if (entries.length === 0) return
-      md += `### Echipament #${idx + 1} — ${escMd(eq.nume)} · parametri modificați\n\n`
-      md += `| Cod | Valoare |\n|---|---|\n`
-      entries.forEach(([k, v]) => { md += `| \`${k}\` | ${escMd(String(v))} |\n` })
-      md += `\n`
-    })
-  }
-
-  // 6. Atasamente
-  if (attachments.length > 0) {
-    md += `## ${section++}. Atașamente\n\n`
-    md += `| Fișier | Tip | Mărime | Adăugat |\n|---|---|---|---|\n`
-    attachments.forEach(att => {
-      md += `| ${escMd(att.nume_fisier)} | ${escMd(att.tip_fisier)} | ${formatFileSize(att.dimensiune)} | ${escMd(att.data) || '—'} |\n`
-    })
-    md += `\n`
   }
 
   md += `\n---\n\n`

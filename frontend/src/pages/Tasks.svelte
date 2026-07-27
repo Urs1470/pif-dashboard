@@ -3,9 +3,9 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, Paperclip, AlertTriangle } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, AlertTriangle } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
-  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
+  import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
@@ -21,7 +21,6 @@
   import Select from '../components/ui/Select.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
-  import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
   import RichText from '../components/ui/RichText.svelte'
   import AgendaColumn from '../components/tasks/AgendaColumn.svelte'
 
@@ -54,16 +53,6 @@
   let noteDraft = $state('')
   let noteSaving = $state(false)
 
-  let attCache = $state({})
-  let attInput = $state(null)
-  let attUploadTaskId = null
-  let attUploading = $state(false)
-  let attDeleteId = $state(null)
-  let attDeleteTaskId = $state(null)
-  let showAttDelete = $state(false)
-  let attPreviewOpen = $state(false)
-  let attPreviewAtt = $state(null)
-  let attPreviewTaskId = null
 
   const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
 
@@ -149,58 +138,6 @@
     } finally { quickAdding = false }
   }
 
-  async function loadAtt(taskId, force = false) {
-    if (force || !attCache[taskId]) {
-      attCache = { ...attCache, [taskId]: await loadTaskAttachments(taskId, true).catch(() => attCache[taskId] || []) }
-    }
-  }
-
-  function triggerAttUpload(taskId) {
-    attUploadTaskId = taskId
-    attInput?.click()
-  }
-
-  function openAttPreview(att, taskId) {
-    attPreviewAtt = att
-    attPreviewTaskId = taskId
-    attPreviewOpen = true
-  }
-
-  function attPreviewDelete(att) {
-    attDeleteId = att.id
-    attDeleteTaskId = attPreviewTaskId
-    showAttDelete = true
-  }
-
-  async function onAttFiles(e) {
-    const files = Array.from(e.target.files || [])
-    e.target.value = ''
-    if (!files.length || !attUploadTaskId) return
-    const taskId = attUploadTaskId
-    attUploading = true
-    try {
-      for (const f of files) await uploadTaskAttachment(taskId, f, true)
-      toast(files.length === 1 ? 'Fișier atașat' : `${files.length} fișiere atașate`, 'success')
-      await Promise.all([loadAtt(taskId, true), loadGlobalTasks({ arhiva: showArchive })])
-    } catch (err) {
-      toast(`Eroare: ${err.message}`, 'error')
-    } finally { attUploading = false }
-  }
-
-  async function doDeleteAtt() {
-    if (!attDeleteId) return
-    try {
-      await deleteTaskAttachment(attDeleteId)
-      toast('Atașament șters', 'success')
-      const taskId = attDeleteTaskId
-      attDeleteId = null
-      attDeleteTaskId = null
-      if (taskId) await Promise.all([loadAtt(taskId, true), loadGlobalTasks({ arhiva: showArchive })])
-    } catch (err) {
-      toast(`Eroare: ${err.message}`, 'error')
-    }
-  }
-
   function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
@@ -244,7 +181,6 @@
       return
     }
     expandedTask = taskId
-    loadAtt(taskId)
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -347,7 +283,6 @@
 
 {#snippet taskDetail(t)}
   {@const subs = subtasksCache[t.id] || []}
-  {@const atts = attCache[t.id] || []}
   {@const doneCount = subs.filter(s => s.done).length}
 
   {#if t.descriere}
@@ -357,24 +292,10 @@
     </div>
   {/if}
 
-  {#if atts.length}
-    <div class="att-row">
-      {#each atts as a (a.id)}
-        <span class="att-chip">
-          <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
-            <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
-          </button>
-          <button class="att-del" title="Șterge atașament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
-        </span>
-      {/each}
-    </div>
-  {/if}
-
   <div class="detail-actions">
     {#if !t.descriere}
       <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
     {/if}
-    <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se încarcă…' : 'Fișier'}</button>
   </div>
 
   <div class="sub-section">
@@ -486,7 +407,6 @@
                   <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
                 {/if}
                 {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
-                {#if t.atasamente_count}<span class="att-ind"><Paperclip size={10} /> {t.atasamente_count}</span>{/if}
                 {#if t.data_scadenta}<span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>{/if}
               </div>
             </button>
@@ -602,9 +522,6 @@
 </Modal>
 
 <ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
-<ConfirmDialog bind:open={showAttDelete} title="Șterge atașament" message="Ștergi acest fișier atașat?" confirmLabel="Șterge" onconfirm={doDeleteAtt} />
-<AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
-<input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
 <Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
   <div class="note-modal">
@@ -700,14 +617,6 @@
   .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-sm); transition: all var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
-  .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-  .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
-  .att-open:hover { color: var(--accent); background: var(--bg-hover); }
-  .att-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .att-del { display: inline-flex; align-items: center; justify-content: center; width: 24px; align-self: stretch; color: var(--text-faint); cursor: pointer; border-left: 1px solid var(--border); }
-  .att-del:hover { color: var(--danger); background: var(--danger-subtle); }
-  .att-ind { display: inline-flex; align-items: center; gap: 3px; color: var(--text-dim); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }

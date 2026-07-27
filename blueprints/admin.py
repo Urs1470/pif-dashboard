@@ -3,18 +3,17 @@
 # global search, and dashboard home routes.
 
 import os
-import json
 import shutil
 import tempfile
 import re
 import logging
 import html
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import BytesIO
 
 from flask import (
-    Blueprint, request, jsonify, send_file, render_template, Response,
+    Blueprint, request, jsonify, send_file, Response,
 )
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -25,10 +24,9 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-from utils import safe_table, generate_uuid, login_required, UPLOAD_FOLDER, VALID_TABLES, get_json_or_400
-from database import get_db, row_to_dict, DATABASE_PATH, init_db
+from utils import safe_table, login_required, get_json_or_400
+from database import get_db, row_to_dict, DATABASE_PATH
 from labels import project_status_label, task_status_label
-from scripts.parse_params.abb import parse_full as abb_parse_full, read_drive_info as abb_drive_info
 
 logger = logging.getLogger(__name__)
 
@@ -365,32 +363,6 @@ def _pdf_section_tasks(elements, tasks, section_n, styles):
     elements.append(Spacer(1, 10))
 
 
-def _pdf_section_equipment(elements, echipamente, section_n, styles):
-    """N. Echipamente -- equipment table."""
-    elements.append(Paragraph(f"{section_n}. Echipamente", styles['heading']))
-    equip_data = [['Nume', 'Producător', 'Model', 'Serial']]
-    for eq in echipamente:
-        equip_data.append([
-            eq.get('nume') or '-',
-            eq.get('producator') or '-',
-            eq.get('model') or '-',
-            eq.get('serial_number') or '-',
-        ])
-    equip_table = Table(equip_data, colWidths=[5*cm, 3.5*cm, 4*cm, 3*cm])
-    equip_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), _PIF_ACCENT),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8.5),
-        ('LINEBELOW', (0, 0), (-1, -1), 0.25, _PIF_LINE),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    elements.append(equip_table)
-    elements.append(Spacer(1, 10))
-
-
 # ---------------------------------------------------------------------------
 # PDF export routes
 # ---------------------------------------------------------------------------
@@ -415,9 +387,6 @@ def export_pdf():
 
     cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC', (project_id,))
     tasks = [row_to_dict(row) for row in cursor.fetchall()]
-    cursor.execute('SELECT * FROM echipamente WHERE proiect_id = ?', (project_id,))
-    echipamente = [row_to_dict(row) for row in cursor.fetchall()]
-
     conn.close()
 
     is_pif = (project_dict.get('tip') == 'PIF')
@@ -438,12 +407,9 @@ def export_pdf():
     _pdf_section_tech(elements, project_dict, is_pif, styles)
 
     n_tasks = 3
-    n_equip = 4
 
     if tasks:
         _pdf_section_tasks(elements, tasks, n_tasks, styles)
-    if echipamente:
-        _pdf_section_equipment(elements, echipamente, n_equip, styles)
 
     # Footer
     elements.append(Spacer(1, 16))
@@ -593,8 +559,8 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'fault_codes', 'parametri_master', 'app_settings']
-    # parametri_master lipseste pe un deploy fara seed — sarim tabelele absente
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'global_tasks', 'clienti', 'app_settings']
+    # sarim tabelele absente
     # ca sa nu pice backup-ul cu 500.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     existing = {row[0] for row in cursor.fetchall()}
@@ -611,236 +577,6 @@ def backup_database():
     return jsonify(backup)
 
 
-# ---------------------------------------------------------------------------
-# Enrich parametri_master from ABB .dcparamsbak
-# ---------------------------------------------------------------------------
-
-@admin_bp.route('/api/admin/enrich-params', methods=['POST'])
-@login_required
-def enrich_params_from_backup():
-    """Upload a .dcparamsbak file and enrich parametri_master with its data.
-
-    Form fields:
-      file: .dcparamsbak backup file
-      family: optional target family (default: auto-detect from backup)
-      apply: "true" to actually write changes (default: dry-run report only)
-
-    Returns a JSON report of what was/would be changed.
-    """
-    if 'file' not in request.files:
-        return jsonify({'error': 'Fișier lipsă (field "file")'}), 400
-    upload = request.files['file']
-    if not upload.filename:
-        return jsonify({'error': 'Fișier gol'}), 400
-
-    family_hint = (request.form.get('family') or '').strip()
-    apply = (request.form.get('apply') or '').lower() in ('true', '1', 'yes')
-
-    try:
-        raw = upload.read()
-    except Exception as e:
-        return jsonify({'error': f'Eroare citire fișier: {e}'}), 400
-
-    # Read drive info for family detection
-    info = abb_drive_info(raw)
-    if not family_hint:
-        family_raw = info.get('Family', '')
-        model_raw = info.get('DriveModel', '')
-        if '880' in family_raw or '880' in model_raw:
-            family_hint = 'ACS880'
-        elif '580' in family_raw or '580' in model_raw:
-            family_hint = 'ACS580'
-        else:
-            family_hint = 'ACS880'
-
-    # Parse ALL params (including signals and at-default)
-    all_params = abb_parse_full(raw, upload.filename or '')
-    if not all_params:
-        return jsonify({'error': 'Nu s-au putut parsa parametrii din fișier'}), 400
-
-    signals = [p for p in all_params if p['is_signal']]
-    config = [p for p in all_params if not p['is_signal']]
-
-    # Load existing DB params
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT parametru, descriere_scurta, unitate, valoare_default,
-               valoare_default_str, min, max, enum_labels
-        FROM parametri_master WHERE familie = ?
-    ''', (family_hint,))
-    db_params = {}
-    for row in cursor.fetchall():
-        db_params[row['parametru']] = {
-            'descriere_scurta': row['descriere_scurta'] or '',
-            'unitate': row['unitate'] or '',
-            'valoare_default': row['valoare_default'],
-            'valoare_default_str': row['valoare_default_str'] or '',
-            'min': row['min'],
-            'max': row['max'],
-            'enum_labels': row['enum_labels'] or '',
-        }
-
-    # Compare
-    new_params = []
-    fill_unit = []
-    fill_default = []
-    fill_min_max = []
-    different_default = []
-    enum_available = []
-
-    for p in all_params:
-        code = p['db_id']
-        db = db_params.get(code)
-
-        if p.get('value_names'):
-            enum_available.append(p)
-
-        if db is None:
-            new_params.append(p)
-            continue
-
-        if not db['unitate'] and p['unit']:
-            fill_unit.append((code, p['unit']))
-
-        backup_default = p['default_value']
-        db_default = str(db['valoare_default']) if db['valoare_default'] is not None else db['valoare_default_str']
-        if backup_default and db_default:
-            try:
-                if abs(float(backup_default) - float(db_default)) > 1e-6:
-                    different_default.append({'code': code, 'db': db_default, 'backup': backup_default})
-            except (ValueError, TypeError):
-                if backup_default != db_default:
-                    different_default.append({'code': code, 'db': db_default, 'backup': backup_default})
-        elif backup_default and not db_default:
-            fill_default.append((code, backup_default))
-
-        if (db['min'] is None or str(db['min']).strip() == '') and p['min']:
-            fill_min_max.append((code, 'min', p['min']))
-        if (db['max'] is None or str(db['max']).strip() == '') and p['max']:
-            fill_min_max.append((code, 'max', p['max']))
-
-    enum_for_existing = [p for p in enum_available if p['db_id'] in db_params]
-    enum_missing = [p for p in enum_for_existing if not db_params[p['db_id']].get('enum_labels')]
-
-    report = {
-        'drive_info': info,
-        'family': family_hint,
-        'total_params': len(all_params),
-        'signals': len(signals),
-        'config': len(config),
-        'existing_in_db': len(db_params),
-        'new_params': len(new_params),
-        'fill_unit': len(fill_unit),
-        'fill_default': len(fill_default),
-        'fill_min_max': len(fill_min_max),
-        'different_default': len(different_default),
-        'enum_available': len(enum_available),
-        'enum_missing_in_db': len(enum_missing),
-        'applied': apply,
-        'new_params_sample': [{'code': p['db_id'], 'name': p['name'], 'unit': p['unit'],
-                               'signal': p['is_signal']} for p in new_params[:30]],
-        'different_default_sample': different_default[:20],
-    }
-
-    if apply:
-        inserted = 0
-        for p in new_params:
-            if p['is_signal']:
-                continue
-            try:
-                cursor.execute('''
-                    INSERT INTO parametri_master (id, familie, parametru, descriere_scurta,
-                        unitate, valoare_default, min, max, enum_labels, creat_la)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-                ''', (
-                    generate_uuid(), family_hint, p['db_id'], p['name'],
-                    p['unit'] or None, p['default_value'] or None,
-                    p['min'] or None, p['max'] or None,
-                    json.dumps(p['value_names']) if p.get('value_names') else None,
-                ))
-                inserted += 1
-            except sqlite3.IntegrityError:
-                pass
-
-        for code, unit in fill_unit:
-            cursor.execute(
-                'UPDATE parametri_master SET unitate = ? WHERE familie = ? AND parametru = ? AND (unitate IS NULL OR unitate = "")',
-                (unit, family_hint, code))
-
-        for code, default in fill_default:
-            cursor.execute(
-                'UPDATE parametri_master SET valoare_default = ? WHERE familie = ? AND parametru = ? AND valoare_default IS NULL',
-                (default, family_hint, code))
-
-        for code, field, val in fill_min_max:
-            cursor.execute(
-                f'UPDATE parametri_master SET [{field}] = ? WHERE familie = ? AND parametru = ? AND ([{field}] IS NULL OR [{field}] = "")',
-                (val, family_hint, code))
-
-        stored_enums = 0
-        for p in enum_missing:
-            if p.get('value_names'):
-                cursor.execute(
-                    'UPDATE parametri_master SET enum_labels = ? WHERE familie = ? AND parametru = ? AND (enum_labels IS NULL OR enum_labels = "")',
-                    (json.dumps(p['value_names']), family_hint, p['db_id']))
-                stored_enums += 1
-
-        conn.commit()
-        report['inserted'] = inserted
-        report['updated_units'] = len(fill_unit)
-        report['updated_defaults'] = len(fill_default)
-        report['updated_min_max'] = len(fill_min_max)
-        report['stored_enums'] = stored_enums
-        logger.info(f"Enrich params ({family_hint}): +{inserted} new, {len(fill_unit)} units, {stored_enums} enums")
-
-    conn.close()
-    return jsonify(report)
-
-
-@admin_bp.route('/api/admin/bulk-add-params', methods=['POST'])
-@login_required
-def bulk_add_params():
-    """Insert missing parameter descriptions into parametri_master.
-
-    JSON body: { "familie": "SINAMICS_G120", "params": [
-        {"parametru": "p0114", "descriere_scurta": "Fixed frequency setpoint"},
-        ...
-    ]}
-    Only inserts params that don't already exist (by familie+parametru).
-    """
-    data = get_json_or_400()
-    familie = data.get('familie', '')
-    params = data.get('params', [])
-    if not familie or not params:
-        return jsonify({'error': 'Provide familie + params[]'}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-    inserted = 0
-    skipped = 0
-    errors = []
-    for p in params:
-        code = p.get('parametru', '')
-        desc = p.get('descriere_scurta', '')
-        if not code or not desc:
-            continue
-        try:
-            cursor.execute(
-                'INSERT INTO parametri_master (familie, parametru, descriere_scurta)'
-                ' VALUES (?, ?, ?)',
-                (familie, code, desc)
-            )
-            inserted += 1
-        except sqlite3.Error as e:
-            skipped += 1
-            errors.append(f"{code}: {e}")
-    conn.commit()
-    conn.close()
-    logger.info(f"Bulk add params ({familie}): +{inserted} inserted, {skipped} skipped")
-    return jsonify({'inserted': inserted, 'skipped': skipped, 'errors': errors[:5]})
-
-
 @admin_bp.route('/api/restore', methods=['POST'])
 @login_required
 def restore_database():
@@ -853,9 +589,8 @@ def restore_database():
         # Run the whole clear + restore inside ONE transaction, so a bad payload
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
-        # Clear existing data (skip tables absent on this deploy, e.g.
-        # parametri_master fara seed — altfel DELETE pica cu 500)
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'atasamente', 'global_tasks', 'clienti', 'echipamente', 'fault_codes', 'parametri_master', 'app_settings']
+        # Clear existing data (skip tables absent on this deploy)
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'global_tasks', 'clienti', 'app_settings']
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         existing = {row[0] for row in cursor.fetchall()}
         for table in tables:
@@ -910,32 +645,6 @@ def restore_database():
                   gt.get('created_at'), gt.get('updated_at'),
                   gt.get('data_planificata'), gt.get('ordine_agenda', 0)))
 
-        # Restore atasamente (dupa tasks + global_tasks — FK) -- only paths that
-        # resolve INSIDE UPLOAD_FOLDER. A backup payload from an untrusted source
-        # could otherwise register /etc/passwd as an "attachment" and read it
-        # back through the download endpoint (path-traversal hardening).
-        upload_root_real = os.path.realpath(UPLOAD_FOLDER)
-        for a in data.get('atasamente', []):
-            cale = (a.get('cale_locala') or '').strip()
-            if not cale:
-                continue
-            try:
-                cale_real = os.path.realpath(cale)
-            except (OSError, ValueError):
-                continue
-            if not (cale_real == upload_root_real or cale_real.startswith(upload_root_real + os.sep)):
-                logger.warning(f"Restore skipped attachment with path outside UPLOAD_FOLDER: {cale}")
-                continue
-            if not os.path.exists(cale_real):
-                continue
-            cursor.execute('''
-                INSERT INTO atasamente (id, proiect_id, task_id, global_task_id, nume_fisier,
-                    tip_fisier, dimensiune, data, cale_locala, tip_atasament)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (a.get('id'), a.get('proiect_id'), a.get('task_id'), a.get('global_task_id'),
-                  a.get('nume_fisier'), a.get('tip_fisier'), a.get('dimensiune'), a.get('data'),
-                  a.get('cale_locala'), a.get('tip_atasament', 'fisier')))
-
         # Restore clienti
         for c in data.get('clienti', []):
             cursor.execute('''
@@ -944,16 +653,6 @@ def restore_database():
             ''', (c.get('id'), c.get('nume'), c.get('adresa'), c.get('telefon'),
                   c.get('email'), c.get('contact_principal'), c.get('note'), c.get('created_at')))
 
-        # Restore echipamente
-        for e in data.get('echipamente', []):
-            cursor.execute('''
-                INSERT INTO echipamente (id, proiect_id, nume, producator, model, serial_number,
-                    params_json, descrieri_json, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (e.get('id'), e.get('proiect_id'), e.get('nume'), e.get('producator'),
-                  e.get('model'), e.get('serial_number'), e.get('params_json'),
-                  e.get('descrieri_json'), e.get('created_at'), e.get('updated_at')))
-
         # Restore task_subtasks (schema: id, task_id, titlu, done, ordine, created_at)
         for s in data.get('task_subtasks', []):
             cursor.execute('''
@@ -961,17 +660,6 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
                   s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
-
-        # Restore fault_codes (actual schema from database.py)
-        for fc in data.get('fault_codes', []):
-            cursor.execute('''
-                INSERT INTO fault_codes (id, producator, familie, cod, cod_secundar, tip,
-                    nume, cauza, remediu, reactie, confirmare, extra_json, pagina, sursa)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (fc.get('id'), fc.get('producator'), fc.get('familie'), fc.get('cod'),
-                  fc.get('cod_secundar'), fc.get('tip'), fc.get('nume'), fc.get('cauza'),
-                  fc.get('remediu'), fc.get('reactie'), fc.get('confirmare'),
-                  fc.get('extra_json'), fc.get('pagina'), fc.get('sursa')))
 
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
         # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
@@ -1214,83 +902,13 @@ def global_search():
         results.append({'type': 'global_task', 'id': r['id'], 'title': r['titlu'],
                         'subtitle': r['categorie'] or 'Task zilnic', 'snippet': _search_snippet(r['descriere'], q)})
 
-    cur.execute('SELECT e.id, e.nume, e.model, e.proiect_id, p.nume AS pnume FROM echipamente e '
-                'JOIN proiecte p ON e.proiect_id = p.id '
-                'WHERE e.nume LIKE ? OR e.model LIKE ? OR e.serial_number LIKE ? LIMIT 8',
-                (like, like, like))
-    for r in cur.fetchall():
-        results.append({'type': 'echipament', 'id': r['id'], 'title': r['nume'],
-                        'subtitle': f"Echipament · {r['pnume']}", 'snippet': r['model'] or '',
-                        'proiect_id': r['proiect_id']})
-
     cur.execute('SELECT id, nume, telefon FROM clienti WHERE nume LIKE ? OR contact_principal LIKE ? LIMIT 6',
                 (like, like))
     for r in cur.fetchall():
         results.append({'type': 'client', 'id': r['id'], 'title': r['nume'],
                         'subtitle': 'Client', 'snippet': r['telefon'] or ''})
 
-    # Parametri — potrivirea pe COD bate potrivirea pe descriere:
-    # exact > prefix > contine-in-cod > doar-in-descriere.
-    prefix = f'{q}%'
-    try:
-        cur.execute('SELECT id, familie, parametru, descriere FROM parametri_master '
-                    'WHERE parametru LIKE ? OR descriere LIKE ? '
-                    'ORDER BY CASE '
-                    '  WHEN LOWER(parametru) = LOWER(?) THEN 0 '
-                    '  WHEN parametru LIKE ? THEN 1 '
-                    '  WHEN parametru LIKE ? THEN 2 '
-                    '  ELSE 3 END, familie, parametru LIMIT 12',
-                    (like, like, q, prefix, like))
-        for r in cur.fetchall():
-            results.append({'type': 'parametru', 'id': r['id'], 'title': f"{r['parametru']} — {r['familie']}",
-                            'subtitle': 'Parametru', 'snippet': _search_snippet(r['descriere'], q),
-                            'familie': r['familie'], 'cod': r['parametru']})
-    except sqlite3.OperationalError:
-        pass  # parametri_master e populat de scripturi externe — poate lipsi
-
-    try:
-        cur.execute('SELECT id, producator, familie, cod, tip, nume, cauza FROM fault_codes '
-                    'WHERE cod LIKE ? OR cod_secundar LIKE ? OR nume LIKE ? OR cauza LIKE ? '
-                    'ORDER BY CASE '
-                    '  WHEN LOWER(cod) = LOWER(?) OR LOWER(COALESCE(cod_secundar, \'\')) = LOWER(?) THEN 0 '
-                    '  WHEN cod LIKE ? OR cod_secundar LIKE ? THEN 1 '
-                    '  WHEN cod LIKE ? OR cod_secundar LIKE ? THEN 2 '
-                    '  ELSE 3 END, producator, cod LIMIT 12',
-                    (like, like, like, like, q, q, prefix, prefix, like, like))
-        for r in cur.fetchall():
-            tip = r['tip'] or 'eroare'
-            results.append({'type': 'fault_code', 'id': r['id'],
-                            'title': f"{r['cod']} — {r['nume'] or ''}".strip(' —'),
-                            'subtitle': f"Cod {tip} · {r['familie']}",
-                            'snippet': _search_snippet(r['cauza'], q),
-                            'familie': r['familie'], 'producator': r['producator'], 'cod': r['cod']})
-    except sqlite3.OperationalError:
-        pass
-
     conn.close()
-
-    # Query care arata ca un cod de parametru/fault (1.01, 99-10, p0304, F30001):
-    # grupurile Parametri + Coduri eroare urca primele in lista.
-    if re.match(r'^[A-Za-z]{0,2}\d+([.\-_]\d+)?$', q):
-        code_hits = [r for r in results if r['type'] in ('parametru', 'fault_code')]
-        rest = [r for r in results if r['type'] not in ('parametru', 'fault_code')]
-        results = code_hits + rest
-
-    from blueprints.obsidian import _obsidian_vault, _obsidian_index
-
-    vault = _obsidian_vault()
-    if vault:
-        q_low = q.lower()
-        n_added = 0
-        for n in _obsidian_index(vault):
-            if q_low not in n['title'].lower() and q_low not in n['content'].lower():
-                continue
-            results.append({'type': 'obsidian', 'id': n['path'], 'title': n['title'],
-                            'subtitle': n['folder'] or 'Notită',
-                            'snippet': _search_snippet(n['content'], q), 'path': n['path']})
-            n_added += 1
-            if n_added >= 12:
-                break
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
 

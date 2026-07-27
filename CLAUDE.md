@@ -44,7 +44,7 @@ Append important decisions/gotchas to the "Recent decisions" section of `docs/me
 
 ```
 app.py                    # Flask entry, auth, CSP headers, rate limiter
-database.py               # Schema (10 tables), migrations v1-v23, WAL config
+database.py               # Schema (9 tables), migrations v1-v28, WAL config
 utils.py                  # login_required decorator, UUID, app_settings KV
 csrf.py                   # Double-submit CSRF (cookie + X-CSRF-Token header)
 labels.py                 # Centralized status labels (project + task states)
@@ -52,7 +52,6 @@ labels.py                 # Centralized status labels (project + task states)
 blueprints/
   projects.py             # /api/proiecte/* — CRUD, filters, Excel/PDF export, snapshot
   tasks.py                # /api/proiecte/<id>/tasks/* — CRUD, subtasks, recurring
-  parametri.py            # /api/parametri/* — drive params (ABB, Siemens, Danfoss, Lenze)
   obsidian.py             # /api/obsidian/* — read-only vault integration
   admin.py                # /api/stats/*, /api/export/*, /api/search/* — analytics, backup
 
@@ -67,13 +66,32 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 10 tables, 23 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 28 migrations (idempotent).
 
-**Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), global_tasks, atasamente, echipamente, clienti
+**Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
-**Specialized:** fault_codes (8 drive families, auto-seeded from data/fault_codes/*.json), parametri_master, app_settings (KV store), schema_version
+**Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v23. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v28. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+
+### Restrangere de scop (v28, 2026-07-27)
+
+Dashboard-ul nu mai dubleaza wiki-ul si manualele. Ce a plecat si de ce:
+
+- **parametri_master** (14.813 randuri) si **fault_codes** (3.851) — catalog de referinta fara nicio
+  legatura cu proiectele. Parametrii si codurile de eroare se iau din manual sau prin Cowork, unde
+  ai sursa citabila.
+- **echipamente** (26 randuri, in 4 din 20 de proiecte) — reintroducere manuala a ceva ce skill-ul
+  `drive-backup` extrage determinist din `.dcparamsbak` / STARTER, direct in wiki.
+- **atasamente** (30 fisiere) — backup-urile brute stau in vault, la `raw/projects/<slug>/`.
+  Fisierele urcate NU au fost sterse de pe disc; doar tabela.
+
+Ce **nu** s-a atins: Calculatorul, inclusiv `/api/import-abb-multi/preview` si
+`/api/import-archive/preview` — ele parseaza un backup de drive fara sa atinga DB-ul si alimenteaza
+placuta motorului. Blueprint-ul `obsidian.py` ramane: el tine sincronizarea wiki <-> dashboard.
+
+Arhiva completa a datelor sterse: `raw/pif-dashboard/2026-07-27-inainte-de-v28/` in vault
+(JSON + CSV per tabela, snapshot integral, seed-uri, README cu procedura de recuperare).
 
 ## Key Patterns
 

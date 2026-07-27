@@ -1,6 +1,5 @@
 import calendar
 import logging
-import os
 import re
 from datetime import datetime, timedelta
 from io import BytesIO
@@ -16,18 +15,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-def _delete_task_attachments(cursor, column, task_id):
-    """Remove attachment files from disk and their rows for a task being
-    deleted. column: 'task_id' or 'global_task_id'."""
-    cursor.execute(f'SELECT cale_locala FROM atasamente WHERE {column} = ?', (task_id,))
-    for row in cursor.fetchall():
-        try:
-            if row['cale_locala'] and os.path.exists(row['cale_locala']):
-                os.remove(row['cale_locala'])
-        except OSError:
-            pass
-    cursor.execute(f'DELETE FROM atasamente WHERE {column} = ?', (task_id,))
 
 def _skip_weekend(d):
     """Ion nu lucreaza in weekend: o scadenta care cade sambata sau duminica se
@@ -150,15 +137,6 @@ def get_tasks(project_id):
         subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
                                       'subtask_done': r['subtask_done']}
 
-    # 3) Batch-fetch attachment counts (one query for all tasks).
-    cursor.execute(f'''
-        SELECT task_id, COUNT(*) AS atasamente_count
-        FROM atasamente
-        WHERE task_id IN ({placeholders})
-        GROUP BY task_id
-    ''', task_ids)
-    att_map = {r['task_id']: r['atasamente_count'] for r in cursor.fetchall()}
-
     conn.close()
 
     # 4) Merge results in Python.
@@ -168,7 +146,6 @@ def get_tasks(project_id):
         sc = subtask_map.get(d['id'], {})
         d['subtask_total'] = sc.get('subtask_total', 0)
         d['subtask_done'] = sc.get('subtask_done', 0)
-        d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
     return jsonify(result)
@@ -305,7 +282,6 @@ def delete_task(task_id):
         cursor = conn.cursor()
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
         cursor.execute('DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?', (task_id, task_id))
-        _delete_task_attachments(cursor, 'task_id', task_id)
         cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
         conn.commit()
@@ -1188,15 +1164,6 @@ def get_global_tasks():
         subtask_map[r['task_id']] = {'subtask_total': r['subtask_total'],
                                       'subtask_done': r['subtask_done']}
 
-    # 3) Batch-fetch attachment counts (one query for all tasks).
-    cursor.execute(f'''
-        SELECT global_task_id, COUNT(*) AS atasamente_count
-        FROM atasamente
-        WHERE global_task_id IN ({placeholders})
-        GROUP BY global_task_id
-    ''', task_ids)
-    att_map = {r['global_task_id']: r['atasamente_count'] for r in cursor.fetchall()}
-
     conn.close()
 
     # 4) Merge results in Python — response shape identical to the old
@@ -1207,7 +1174,6 @@ def get_global_tasks():
         sc = subtask_map.get(d['id'], {})
         d['subtask_total'] = sc.get('subtask_total', 0)
         d['subtask_done'] = sc.get('subtask_done', 0)
-        d['atasamente_count'] = att_map.get(d['id'], 0)
         result.append(d)
 
     return jsonify(result)
@@ -1342,7 +1308,6 @@ def delete_global_task(task_id):
         # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
         # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
-        _delete_task_attachments(cursor, 'global_task_id', task_id)
         cursor.execute('DELETE FROM global_tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
         conn.commit()

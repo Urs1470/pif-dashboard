@@ -2,17 +2,15 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
-  import { manualUrlForEquip, familieForEquip } from '../lib/manuals.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
-    loadProjectDetail, loadProjectTasks, loadProjectEquipment,
-    deleteProject, updateProject, deleteEquipment,
+    loadProjectDetail, loadProjectTasks, deleteProject, updateProject,
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
-  import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask, loadTaskAttachments, uploadTaskAttachment, deleteTaskAttachment } from '../stores/tasks.svelte.js'
+  import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
@@ -31,16 +29,12 @@
   import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
-  import EquipmentFormModal from '../components/projects/EquipmentFormModal.svelte'
-  import AttachmentsTab from '../components/projects/AttachmentsTab.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
-  import AttachmentPreview from '../components/ui/AttachmentPreview.svelte'
 
   let { params } = $props()
   let project = $state(null)
   let tasks = $state([])
-  let equipment = $state([])
   let taskDeleteId = $state(null)
   let showTaskDelete = $state(false)
   let loading = $state(true)
@@ -68,34 +62,14 @@
   let noteDraft = $state('')
   let noteSaving = $state(false)
 
-  let attCache = $state({})
-  let attInput = $state(null)
-  let attUploadTaskId = null
-  let attUploading = $state(false)
-  let attDeleteId = $state(null)
-  let attDeleteTaskId = $state(null)
-  let showAttDelete = $state(false)
-  let attPreviewOpen = $state(false)
-  let attPreviewAtt = $state(null)
-  let attPreviewTaskId = null
-
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
-
-  let showEquipModal = $state(false)
-  let editingEquipment = $state(null)
-  let equipDeleteId = $state(null)
-  let showEquipDelete = $state(false)
 
   // Subtask state
   let expandedTask = $state(null)
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
   let subtaskLoading = $state(false)
-
-  // Equipment collapse state
-  let expandedEquip = $state(new Set())
-  let equipParamSearch = $state({})
 
   // Done tasks collapse
   let showDoneTasks = $state(false)
@@ -107,7 +81,7 @@
   let editLabel = $state('')
   let editSaving = $state(false)
 
-  // Echipamente + Atasamente scoase din navigatie (2026-07-27, pregatire v24):
+  // Echipamente + Atasamente scoase din navigatie (2026-07-27, pregatire v28):
   // parametrii de drive stau in wiki (skill drive-backup), backup-urile brute in
   // raw/projects/<slug>/. Codul ramane pana la migratie.
   const tabs = [
@@ -186,20 +160,11 @@
     loading = true
     try {
       project = await loadProjectDetail(params.id)
-      const [t, e] = await Promise.all([
-        loadProjectTasks(params.id).catch(() => []),
-        loadProjectEquipment(params.id).catch(() => []),
-      ])
+      const t = await loadProjectTasks(params.id).catch(() => [])
       tasks = Array.isArray(t) ? t : t.tasks || []
-      equipment = Array.isArray(e) ? e : e.echipamente || []
     } catch (err) {
       error = err.message
     } finally { loading = false }
-  }
-
-  async function reloadEquipment() {
-    const e = await loadProjectEquipment(params.id).catch(() => [])
-    equipment = Array.isArray(e) ? e : e.echipamente || []
   }
 
   async function reloadTasks() {
@@ -268,58 +233,6 @@
     await reloadTasks()
   }
 
-  async function loadAtt(taskId, force = false) {
-    if (force || !attCache[taskId]) {
-      attCache = { ...attCache, [taskId]: await loadTaskAttachments(taskId).catch(() => attCache[taskId] || []) }
-    }
-  }
-
-  function triggerAttUpload(taskId) {
-    attUploadTaskId = taskId
-    attInput?.click()
-  }
-
-  function openAttPreview(att, taskId) {
-    attPreviewAtt = att
-    attPreviewTaskId = taskId
-    attPreviewOpen = true
-  }
-
-  function attPreviewDelete(att) {
-    attDeleteId = att.id
-    attDeleteTaskId = attPreviewTaskId
-    showAttDelete = true
-  }
-
-  async function onAttFiles(e) {
-    const files = Array.from(e.target.files || [])
-    e.target.value = ''
-    if (!files.length || !attUploadTaskId) return
-    const taskId = attUploadTaskId
-    attUploading = true
-    try {
-      for (const f of files) await uploadTaskAttachment(taskId, f)
-      toast(files.length === 1 ? 'Fișier atașat' : `${files.length} fișiere atașate`, 'success')
-      await Promise.all([loadAtt(taskId, true), reloadTasks()])
-    } catch (err) {
-      toast(`Eroare: ${err.message}`, 'error')
-    } finally { attUploading = false }
-  }
-
-  async function doDeleteAtt() {
-    if (!attDeleteId) return
-    try {
-      await deleteTaskAttachment(attDeleteId)
-      toast('Atașament șters', 'success')
-      const taskId = attDeleteTaskId
-      attDeleteId = null
-      attDeleteTaskId = null
-      if (taskId) await Promise.all([loadAtt(taskId, true), reloadTasks()])
-    } catch (err) {
-      toast(`Eroare: ${err.message}`, 'error')
-    }
-  }
-
   function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
@@ -359,186 +272,6 @@
     const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
     await updateTask(t.id, { prioritate: next })
     await reloadTasks()
-  }
-
-  function editEquip(e) {
-    editingEquipment = e
-    showEquipModal = true
-  }
-
-  function newEquip() {
-    editingEquipment = null
-    showEquipModal = true
-  }
-
-  async function doDeleteEquip() {
-    if (!equipDeleteId) return
-    await deleteEquipment(equipDeleteId)
-    equipDeleteId = null
-    await reloadEquipment()
-    toast('Echipament șters', 'success')
-  }
-
-  // Equipment import state
-  let importFileInput = $state(null)
-  let importAbbInput = $state(null)
-  let importType = $state('')
-  let importPreview = $state(null)
-  let showImportModal = $state(false)
-  let importBusy = $state(false)
-  let importSelected = $state(new Set())
-
-  // Equipment copy state
-  let showCopyModal = $state(false)
-  let copyProjects = $state([])
-  let copyProjectId = $state('')
-  let copyEquipment = $state([])
-  let copySelected = $state(new Set())
-  let copyBusy = $state(false)
-
-  function triggerImportStarter() {
-    importType = 'starter'
-    importFileInput?.click()
-  }
-
-  function triggerImportAbb() {
-    importType = 'abb'
-    importAbbInput?.click()
-  }
-
-  async function onImportFile(e) {
-    const files = e.target.files
-    if (!files?.length) return
-    importBusy = true
-    try {
-      const fd = new FormData()
-      if (importType === 'abb') {
-        for (const f of files) fd.append('files', f)
-        const res = await apiJson('/api/import-abb-multi/preview', { method: 'POST', body: fd })
-        importPreview = res
-      } else {
-        fd.append('file', files[0])
-        const res = await apiJson('/api/import-archive/preview', { method: 'POST', body: fd })
-        importPreview = res
-      }
-      importSelected = new Set((importPreview.drives || []).map((_, i) => i))
-      showImportModal = true
-    } catch (err) { toast(`Eroare import: ${err.message}`, 'error') }
-    finally { importBusy = false; e.target.value = '' }
-  }
-
-  async function commitImport() {
-    if (!importPreview?.drives || importSelected.size === 0) return
-    importBusy = true
-    try {
-      const drives = importPreview.drives.filter((_, i) => importSelected.has(i))
-      await apiJson(`/api/proiecte/${params.id}/echipamente/import-archive`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drives }),
-      })
-      toast(`${drives.length} echipamente importate`, 'success')
-      showImportModal = false
-      importPreview = null
-      await reloadEquipment()
-    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
-    finally { importBusy = false }
-  }
-
-  function toggleImportDrive(i) {
-    const next = new Set(importSelected)
-    if (next.has(i)) next.delete(i); else next.add(i)
-    importSelected = next
-  }
-
-  async function openCopyModal() {
-    showCopyModal = true
-    copyBusy = true
-    try {
-      const data = await apiJson('/api/proiecte')
-      const all = Array.isArray(data) ? data : data.projects || []
-      copyProjects = all.filter(p => p.id !== params.id)
-    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
-    finally { copyBusy = false }
-  }
-
-  async function loadCopyEquipment() {
-    if (!copyProjectId) { copyEquipment = []; return }
-    copyBusy = true
-    try {
-      const e = await apiJson(`/api/proiecte/${copyProjectId}/echipamente`)
-      copyEquipment = Array.isArray(e) ? e : e.echipamente || []
-      copySelected = new Set(copyEquipment.map((_, i) => i))
-    } catch (_) { copyEquipment = [] }
-    finally { copyBusy = false }
-  }
-
-  async function commitCopy() {
-    if (copySelected.size === 0) return
-    copyBusy = true
-    try {
-      const drives = copyEquipment.filter((_, i) => copySelected.has(i)).map(e => ({
-        nume: e.nume, producator: e.producator, model: e.model,
-        serial_number: e.serial_number, firmware: e.firmware,
-        params: typeof e.params_json === 'string' ? JSON.parse(e.params_json || '{}') : (e.params_json || {}),
-        descrieri: typeof e.descrieri_json === 'string' ? JSON.parse(e.descrieri_json || '{}') : (e.descrieri_json || {}),
-      }))
-      await apiJson(`/api/proiecte/${params.id}/echipamente/import-archive`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drives }),
-      })
-      toast(`${drives.length} echipamente copiate`, 'success')
-      showCopyModal = false
-      copyEquipment = []
-      copyProjectId = ''
-      await reloadEquipment()
-    } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
-    finally { copyBusy = false }
-  }
-
-  function parseEquipParams(e) {
-    try {
-      return Object.entries(typeof e.params_json === 'string' ? JSON.parse(e.params_json || '{}') : (e.params_json || {}))
-    } catch (_) { return [] }
-  }
-
-  function toggleEquipExpand(id) {
-    const next = new Set(expandedEquip)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    expandedEquip = next
-  }
-
-  // B1: cod de parametru din echipament -> deschide detaliul din baza de parametri.
-  // Rezolva codul -> id prin cautarea globala (ranking exact-pe-cod) si foloseste
-  // deep-link-ul /params?open=<id>.
-  let paramJumping = $state(false)
-  async function openParamDetail(code) {
-    const c = String(code || '').trim()
-    if (!c || paramJumping) return
-    paramJumping = true
-    try {
-      const r = await apiJson('/api/search?q=' + encodeURIComponent(c))
-      const hits = (r.results || []).filter((x) => x.type === 'parametru')
-      const hit = hits.find((x) => String(x.cod).toLowerCase() === c.toLowerCase()) || hits[0]
-      if (hit) navigate('/params?open=' + hit.id)
-      else toast(`Parametrul „${c}" nu e in baza de parametri`, 'error')
-    } catch (_) {
-      toast('Nu am putut deschide parametrul', 'error')
-    } finally {
-      paramJumping = false
-    }
-  }
-
-  // B7: copiaza rapid "cod = valoare"
-  function copyParam(k, v) {
-    const text = `${k} = ${v}`
-    if (!navigator.clipboard) { toast('Copierea nu e disponibila', 'error'); return }
-    navigator.clipboard.writeText(text).then(
-      () => toast(`Copiat: ${text}`, 'success'),
-      () => toast('Nu am putut copia', 'error'),
-    )
   }
 
   // Subtask functions
@@ -823,26 +556,12 @@
                 </div>
                 {#if expandedTask === t.id}
                   {@const subs = subtasksCache[t.id] || []}
-                  {@const atts = attCache[t.id] || []}
                   {@const doneCount = subs.filter(s => s.done).length}
                   <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
                         <button class="note-edit-btn" title="Editează notițe" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editează</button>
-                      </div>
-                    {/if}
-
-                    {#if atts.length}
-                      <div class="att-row">
-                        {#each atts as a (a.id)}
-                          <span class="att-chip">
-                            <button class="att-open" title="{a.nume_fisier} ({a.tip_fisier})" onclick={() => openAttPreview(a, t.id)}>
-                              <Paperclip size={11} /><span class="att-fname">{a.nume_fisier}</span>
-                            </button>
-                            <button class="att-del" title="Șterge atașament" onclick={() => { attDeleteId = a.id; attDeleteTaskId = t.id; showAttDelete = true }}><SolidIcon name="trash" size={11} /></button>
-                          </span>
-                        {/each}
                       </div>
                     {/if}
 
@@ -905,75 +624,6 @@
       {:else if activeTab === 'gantt'}
         <ProjectGantt projectId={params.id} onOpenTask={openTaskFromGantt} />
 
-      {:else if activeTab === 'equipment'}
-        <div class="tab-header">
-          <span class="tab-sub">{equipment.length} echipamente</span>
-          <div class="equip-btns">
-            <Button size="sm" variant="ghost" onclick={triggerImportStarter} disabled={importBusy}><Upload size={14} /> Import STARTER</Button>
-            <Button size="sm" variant="ghost" onclick={triggerImportAbb} disabled={importBusy}><Upload size={14} /> Import ABB</Button>
-            <Button size="sm" variant="ghost" onclick={openCopyModal}><Copy size={14} /> Copiază</Button>
-            <Button size="sm" variant="secondary" onclick={newEquip}><Plus size={14} /> Echipament</Button>
-          </div>
-        </div>
-        <input type="file" accept=".zip,.s7p" hidden bind:this={importFileInput} onchange={onImportFile} />
-        <input type="file" accept=".dcparamsbak" multiple hidden bind:this={importAbbInput} onchange={onImportFile} />
-        {#if equipment.length === 0}<p class="empty">Niciun echipament.</p>
-        {:else}
-          <div class="elist">{#each equipment as e (e.id)}
-            {@const eparams = parseEquipParams(e)}
-            {@const isExpanded = expandedEquip.has(e.id)}
-            <Card>
-              <div class="ecard-top">
-                <div class="ename">{e.nume || '—'}{#if e.producator} — {e.producator}{/if}</div>
-                <div class="ecard-actions">
-                  <button class="att-btn" title="Editează" onclick={() => editEquip(e)}><SolidIcon name="pencil" size={14} /></button>
-                  <button class="att-btn danger" title="Șterge" onclick={() => { equipDeleteId = e.id; showEquipDelete = true }}><SolidIcon name="trash" size={14} /></button>
-                </div>
-              </div>
-              <div class="edetails">
-                {#if e.model}<span>Model: {e.model}</span>{/if}
-                {#if e.serial_number}<span>Serie: {e.serial_number}</span>{/if}
-              </div>
-              {@const eManual = manualUrlForEquip(e.producator, e.model)}
-              {@const eFam = familieForEquip(e.producator, e.model)}
-              {#if eManual || eFam}
-                <div class="ecard-links">
-                  {#if eManual}<a class="ecard-link" href={eManual} target="_blank" rel="noopener"><BookOpen size={13} /> Manual</a>{/if}
-                  {#if eFam}<button class="ecard-link" onclick={() => navigate(`/params?tab=faults&familie=${encodeURIComponent(eFam)}`)}><AlertCircle size={13} /> Coduri erori</button>{/if}
-                </div>
-              {/if}
-              {#if eparams.length > 0}
-                {@const pq = (equipParamSearch[e.id] || '').toLowerCase()}
-                {@const filteredParams = pq ? eparams.filter(([k, v]) => k.toLowerCase().includes(pq) || v.toLowerCase().includes(pq)) : eparams}
-                <button class="eparam-toggle" onclick={() => toggleEquipExpand(e.id)}>
-                  {#if isExpanded}<ChevronDown size={12} /> Ascunde parametri{:else}<ChevronRight size={12} /> {eparams.length} parametri{/if}
-                </button>
-                {#if isExpanded}
-                  <div class="eparams-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-                    {#if eparams.length > 5}
-                      <input type="text" class="eparam-search" placeholder="Filtrează parametri..." value={equipParamSearch[e.id] || ''} oninput={(ev) => { equipParamSearch = { ...equipParamSearch, [e.id]: ev.target.value } }} />
-                    {/if}
-                    <div class="eparams">
-                      {#each filteredParams as [k, v]}
-                        <div class="eparam">
-                          <button class="eparam-key eparam-link" onclick={() => openParamDetail(k)} title="Deschide detaliul parametrului {k}">{k}</button>
-                          <span class="eparam-right">
-                            <span class="eparam-val">{v}</span>
-                            <button class="eparam-copy" onclick={() => copyParam(k, v)} title="Copiază „{k} = {v}”" aria-label="Copiază parametrul"><Copy size={12} /></button>
-                          </span>
-                        </div>
-                      {/each}
-                      {#if pq && filteredParams.length === 0}
-                        <div class="eparam-empty">Niciun parametru găsit</div>
-                      {/if}
-                    </div>
-                  </div>
-                {/if}
-              {/if}
-            </Card>
-          {/each}</div>
-        {/if}
-
       {:else if activeTab === 'wiki'}
         {#if wikiListLoading}
           <Skeleton height="120px" />
@@ -1020,9 +670,6 @@
           {/if}
         {/if}
 
-      {:else if activeTab === 'attachments'}
-        <AttachmentsTab projectId={params.id} />
-
       {:else if activeTab === 'info'}
         <div class="igrid">
           {#each [['Client', project.client], ['Locație', project.locatie], ['Echipament', project.echipament_principal], ['Producător', project.producator], ['Cod proiect', project.cod_proiect], ['PM', project.pm], ['Nr. comandă', project.nr_comanda], ['Nr. contract', project.nr_contract], ['Data începere', formatDate(project.data_incepere)], ['Deadline', formatDate(project.deadline)]] as [label, val]}
@@ -1063,77 +710,9 @@
 </div>
 
 <ProjectFormModal bind:open={showEditModal} {project} onsaved={() => load()} />
-<EquipmentFormModal bind:open={showEquipModal} projectId={params.id} equipment={editingEquipment} onsaved={() => reloadEquipment()} />
 
-<Modal bind:open={showImportModal} title="Import Echipamente" size="lg">
-  {#if importPreview}
-    <div class="import-info">
-      <span>{importPreview.drives?.length || 0} drive-uri detectate</span>
-      {#if importPreview.skipped_default}<span class="dim">({importPreview.skipped_default} parametri la valoare default omiși)</span>{/if}
-    </div>
-    <div class="import-drives">
-      {#each (importPreview.drives || []) as drv, i}
-        <div class="import-drive" class:import-selected={importSelected.has(i)}>
-          <label class="import-check">
-            <input type="checkbox" checked={importSelected.has(i)} onchange={() => toggleImportDrive(i)} />
-            <div class="import-drive-info">
-              <strong>{drv.nume || `Drive ${i + 1}`}</strong>
-              <span class="dim">{drv.producator} {drv.model}{drv.firmware ? ` (FW ${drv.firmware})` : ''}</span>
-              <span class="dim">{Object.keys(drv.params || {}).length} parametri modificați</span>
-            </div>
-          </label>
-        </div>
-      {/each}
-    </div>
-  {/if}
-  {#snippet footer()}
-    {#if importPreview}
-      <div class="modal-actions">
-        <Button variant="secondary" onclick={() => { showImportModal = false; importPreview = null }}>Anulează</Button>
-        <Button loading={importBusy} disabled={importSelected.size === 0} onclick={commitImport}>
-          <Upload size={14} /> Importă {importSelected.size} echipamente
-        </Button>
-      </div>
-    {/if}
-  {/snippet}
-</Modal>
-
-<Modal bind:open={showCopyModal} title="Copiază echipamente din alt proiect" size="lg">
-  <div class="copy-form">
-    <Select label="Proiect sursă" bind:value={copyProjectId} onchange={loadCopyEquipment} placeholder="Selectează proiect..." options={copyProjects.map((p) => ({ value: p.id, label: `${p.nume}${p.client ? ` — ${p.client}` : ''}` }))} />
-    {#if copyEquipment.length > 0}
-      <div class="import-drives">
-        {#each copyEquipment as eq, i}
-          <div class="import-drive" class:import-selected={copySelected.has(i)}>
-            <label class="import-check">
-              <input type="checkbox" checked={copySelected.has(i)} onchange={() => { const n = new Set(copySelected); if (n.has(i)) n.delete(i); else n.add(i); copySelected = n }} />
-              <div class="import-drive-info">
-                <strong>{eq.nume || '—'}</strong>
-                <span class="dim">{eq.producator} {eq.model || ''}</span>
-              </div>
-            </label>
-          </div>
-        {/each}
-      </div>
-    {:else if copyProjectId}
-      <p class="empty">Niciun echipament în proiectul selectat.</p>
-    {/if}
-  </div>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showCopyModal = false}>Anulează</Button>
-      <Button loading={copyBusy} disabled={copySelected.size === 0} onclick={commitCopy}>
-        <Copy size={14} /> Copiază {copySelected.size} echipamente
-      </Button>
-    </div>
-  {/snippet}
-</Modal>
-<ConfirmDialog bind:open={showDeleteConfirm} title="Șterge proiect" message={`Ștergi proiectul "${project?.nume}"? Toate datele (taskuri, atașamente, echipamente) vor fi șterse definitiv.`} confirmLabel="Șterge definitiv" onconfirm={handleDeleteProject} />
-<ConfirmDialog bind:open={showEquipDelete} title="Șterge echipament" message="Ștergi acest echipament?" confirmLabel="Șterge" onconfirm={doDeleteEquip} />
+<ConfirmDialog bind:open={showDeleteConfirm} title="Șterge proiect" message={`Ștergi proiectul "${project?.nume}"? Toate taskurile asociate vor fi șterse definitiv.`} confirmLabel="Șterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
-<ConfirmDialog bind:open={showAttDelete} title="Șterge atașament" message="Ștergi acest fișier atașat?" confirmLabel="Șterge" onconfirm={doDeleteAtt} />
-<AttachmentPreview bind:open={attPreviewOpen} attachment={attPreviewAtt} ondelete={attPreviewDelete} />
-<input type="file" multiple hidden bind:this={attInput} onchange={onAttFiles} />
 
 <Modal bind:open={showFieldEdit} title={editLabel} size="doc">
   <div class="field-edit-modal">

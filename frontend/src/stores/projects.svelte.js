@@ -67,37 +67,6 @@ export async function loadProjectTasks(id) {
   return apiJson(`/api/proiecte/${id}/tasks`)
 }
 
-export async function loadProjectEquipment(id) {
-  return apiJson(`/api/proiecte/${id}/echipamente`)
-}
-
-
-export async function createEquipment(projectId, data) {
-  return apiJson(`/api/proiecte/${projectId}/echipamente`, { method: 'POST', body: data })
-}
-
-export async function updateEquipment(eqId, data) {
-  return apiJson(`/api/echipamente/${eqId}`, { method: 'PUT', body: data })
-}
-
-export async function deleteEquipment(eqId) {
-  return apiJson(`/api/echipamente/${eqId}`, { method: 'DELETE' })
-}
-
-export async function loadAttachments(projectId) {
-  return apiJson(`/api/proiecte/${projectId}/atasamente`)
-}
-
-export async function uploadAttachment(projectId, file) {
-  const fd = new FormData()
-  fd.append('file', file)
-  return apiJson(`/api/proiecte/${projectId}/atasamente`, { method: 'POST', body: fd })
-}
-
-export async function deleteAttachment(attId) {
-  return apiJson(`/api/atasamente/${attId}`, { method: 'DELETE' })
-}
-
 export async function loadClients(search = '') {
   const qs = search ? `?search=${encodeURIComponent(search)}` : ''
   return apiJson(`/api/clienti${qs}`)

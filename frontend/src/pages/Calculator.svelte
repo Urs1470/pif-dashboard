@@ -458,12 +458,8 @@
   }
   let authed = $state(false)
   let importOpen = $state(false)
-  let importTab = $state('fisier')
   let importMsg = $state('')
   let importBusy = $state(false)
-  let projList = $state([])
-  let selProj = $state('')
-  let equipList = $state([])
   let importDrives = $state([])
   $effect(() => {
     fetch('/api/me', { credentials: 'same-origin' }).then((r) => (r.ok ? r.json() : null)).then((d) => { authed = !!(d && d.authenticated) }).catch(() => {})
@@ -536,20 +532,11 @@
       : 'Nu am găsit date de plăcuță în acest backup.'
     if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1500) }
   }
-  async function openImport() {
+  // v28: tabul „Din proiect" a disparut odata cu tabela `echipamente`. Importul
+  // se face direct din fisierul de backup — parserul citeste placuta din
+  // .dcparamsbak / STARTER .zip fara sa treaca prin DB.
+  function openImport() {
     importOpen = true; importMsg = ''; importDrives = []
-    if (standalone || !authed) importTab = 'fisier'
-    if (!standalone && authed && !projList.length) {
-      try { const r = await fetch('/api/proiecte', { credentials: 'same-origin' }); if (r.ok) { const d = await r.json(); projList = Array.isArray(d) ? d : (d.proiecte || d.items || []) } } catch {}
-    }
-  }
-  async function onSelProj() {
-    equipList = []; if (!selProj) return
-    try { const r = await fetch(`/api/proiecte/${selProj}/echipamente`, { credentials: 'same-origin' }); if (r.ok) equipList = await r.json() } catch {}
-  }
-  function pickEquip(eq) {
-    let p = eq.params_json; if (typeof p === 'string') { try { p = JSON.parse(p) } catch { p = {} } }
-    applyImport(eq.producator || 'ABB', p || {}, eq.model || eq.tip || '')
   }
   async function onBackupFile(e) {
     const files = e.target.files; if (!files || !files.length) return
@@ -614,7 +601,7 @@
       </div>
       <div class="equip-foot">
         <div class="equip-foot-grp">
-          <button class="ef-import" onclick={openImport} title={standalone ? 'Import din backup-uri drive (ABB/Siemens)' : 'Import din backup-uri drive (ABB/Siemens) sau din proiect'}>Import backup</button>
+          <button class="ef-import" onclick={openImport} title="Import din backup-uri drive (ABB/Siemens)">Import backup</button>
           <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
           <button onclick={saveEquip}>Salvează</button>
         </div>
@@ -880,46 +867,22 @@
 
   <Modal bind:open={importOpen} title="Import date echipament" size="md">
     <div class="imp">
-      {#if !standalone}
-        <div class="imp-tabs">
-          <button class:active={importTab === 'fisier'} onclick={() => (importTab = 'fisier')}>Încarcă backup</button>
-          <button class:active={importTab === 'proiect'} onclick={() => (importTab = 'proiect')}>Din proiect</button>
+      <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
+      <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
+      {#if importDrives.length}
+        <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+        <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
+        <div class="imp-equip">
+          {#each importDrives as dr, i (i)}
+            {@const tp = backupType(dr.producator, dr.params || {}, dr.model || '')}
+            {@const pv = drivePreview(dr.producator, dr.params)}
+            <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {}, dr.model || '')}>
+              <span class="imp-eq-name">{dr.nume || 'Drive'} <em class="imp-eq-tag" class:warn={tp !== 'asincron'}>{TYPE_LABEL[tp] || tp}</em></span>
+              <span>{dr.producator || ''} {dr.model || ''}{#if pv} · {pv}{/if}</span>
+            </button>
+          {/each}
         </div>
-      {/if}
-      {#if !standalone && importTab === 'proiect'}
-        {#if !authed}
-          <p class="imp-hint">„Din proiect" e disponibil doar logat în dashboard. Pentru colegi: folosește „Încarcă backup" și încarcă direct fișierul de backup al drive-ului.</p>
-        {:else}
-          <div class="imp-row">
-            <Select size="sm" bind:value={selProj} onchange={onSelProj} placeholder="— alege proiect —" aria-label="Proiect"
-              options={projList.map((p) => ({ value: p.id, label: p.nume || p.titlu || p.id }))} />
-          </div>
-          {#if equipList.length}
-            <div class="imp-equip">
-              {#each equipList as eq (eq.id)}
-                <button class="imp-eq" onclick={() => pickEquip(eq)}><span class="imp-eq-name">{eq.nume || eq.model || 'Echipament'}</span><span>{eq.producator || ''} {eq.model || ''}</span></button>
-              {/each}
-            </div>
-          {:else if selProj}<p class="imp-hint">Niciun echipament cu parametri in acest proiect.</p>{/if}
-        {/if}
-      {:else}
-        <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
-        <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
-        {#if importDrives.length}
-          <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-          <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
-          <div class="imp-equip">
-            {#each importDrives as dr, i (i)}
-              {@const tp = backupType(dr.producator, dr.params || {}, dr.model || '')}
-              {@const pv = drivePreview(dr.producator, dr.params)}
-              <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {}, dr.model || '')}>
-                <span class="imp-eq-name">{dr.nume || 'Drive'} <em class="imp-eq-tag" class:warn={tp !== 'asincron'}>{TYPE_LABEL[tp] || tp}</em></span>
-                <span>{dr.producator || ''} {dr.model || ''}{#if pv} · {pv}{/if}</span>
-              </button>
-            {/each}
-          </div>
-          </div>
-        {/if}
+        </div>
       {/if}
       {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST) }}>{importMsg}</p>{/if}
       <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Rețea</b>: plăcuța (P/U/I/n/cosφ/η/poli) + date drive când există (turație max, rampă decelerare, frecvență comutație, R stator, inerție). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importă pe tabul asincron.</p>
@@ -1018,11 +981,6 @@
 
   /* modal import */
   .imp { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .imp-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  .imp-tabs button { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
-  .imp-tabs button.active { background: var(--accent-subtle); color: var(--accent); }
-  .imp-row { display: flex; flex-direction: column; gap: 8px; }
-  .imp-row :global(.field) { flex: 1; }
   .imp-equip { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
   .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }

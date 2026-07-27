@@ -57,29 +57,14 @@ CREATE TABLE IF NOT EXISTS clienti (
 
 **Relația cu proiecte**: NICIUNA (NU e foreign key). `proiecte.client` e text liber. Un proiect poate exista fără client. Tabela `clienti` e un registru independent pentru autocompletare.
 
-### ECHIPAMENTE
-```sql
-CREATE TABLE IF NOT EXISTS echipamente (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    proiect_id TEXT NOT NULL,                   -- FK -> proiecte.id ON DELETE CASCADE
-    nume TEXT NOT NULL,                         -- ex: "ACS880-01-05A6-3"
-    producator TEXT,                            -- 'ABB' | 'Siemens' | 'Danfoss' | 'Lenze' | 'Altul'
-    model TEXT,                                 -- familie drive: 'ACS880', 'SINAMICS_G120', etc.
-    serial_number TEXT,                         -- nr. serie fizic al echipamentului
-    params_json TEXT,                           -- JSON dict {"param_name": "value"} din export producator
-    created_at TEXT,
-    updated_at TEXT,
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-);
-```
-
-**Un echipament NU poate exista fără proiect** (proiect_id NOT NULL + FK CASCADE).
-**Da, are `serial_number`** și **`model`** = familia de drive (ex: ACS880, SINAMICS_G120).
-
-> **Checklist PIF a fost șters (v23).** Tabelele `checklist_pif` +
-> `checklist_categorii`, `project_templates` și `assistant_memory` (Hermes AI)
-> erau cod mort — backend complet fără niciun UI în SPA. Migrația v22→v23 le
-> face `DROP TABLE IF EXISTS`.
+> **Tabele șterse.** v23: `checklist_pif`, `checklist_categorii`,
+> `project_templates`, `assistant_memory` (Hermes AI) — cod mort, zero UI.
+> **v28: `parametri_master`, `fault_codes`, `echipamente`, `atasamente`** —
+> restrângere de scop; parametrii și fault-urile se iau din manual, backup-urile
+> de drive stau în vault (`raw/projects/<slug>/`), citite de skill-ul
+> `drive-backup`. Datele au fost arhivate în vault la
+> `raw/pif-dashboard/2026-07-27-inainte-de-v28/`. Fișierele urcate NU au fost
+> șterse de pe disc — doar tabela. Toate sunt `DROP TABLE IF EXISTS`, idempotente.
 
 ### TASKS (per proiect)
 ```sql
@@ -132,21 +117,6 @@ CREATE TABLE IF NOT EXISTS global_task_sessions (
     stop_time TEXT,
     durata_secunde INTEGER,
     FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
-);
-```
-
-### ATASAMENTE
-```sql
-CREATE TABLE IF NOT EXISTS atasamente (
-    id TEXT PRIMARY KEY,
-    proiect_id TEXT NOT NULL,
-    nume_fisier TEXT NOT NULL,
-    tip_fisier TEXT,
-    dimensiune INTEGER,
-    data TEXT,
-    cale_locala TEXT NOT NULL,                   -- cale fizica pe server
-    tip_atasament TEXT DEFAULT 'fisier',
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
 );
 ```
 
@@ -254,16 +224,6 @@ def create_proiect():
 'ABB'  | 'Siemens'  | 'Danfoss'  | 'Lenze'  | 'Altul'
 ```
 
-### Familii de drive per producător (din `blueprints/parametri.py`)
-```python
-PRODUCATOR_FAMILII = {
-    'ABB':     ['ACS580', 'ACS880'],
-    'Danfoss': ['Danfoss_VLT_FC302'],
-    'Lenze':   ['Lenze_i550', 'Lenze_i950'],
-    'Siemens': ['SINAMICS_G120', 'SINAMICS_G130_G150', 'SINAMICS_S120_S150'],
-}
-```
-
 ### Recurență (tasks)
 ```
 'zilnic'      | 'saptamanal'  | 'lunar'  | null (fără recurență)
@@ -291,23 +251,13 @@ rutele `/api/proiecte/<id>/checklist*`, secțiunea din export PDF) a fost șters
 |---|---|---|
 | proiecte | UUID v4 text | `str(uuid.uuid4())` server-side, sau furnizat de client |
 | clienti | UUID v4 text | idem |
-| echipamente | UUID v4 text | idem |
 | tasks | UUID v4 text | idem |
 | task_subtasks | UUID v4 text | idem |
 | global_tasks | UUID v4 text | idem |
-| atasamente | UUID v4 text | idem |
 
 Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl folosesc; altfel generează UUID nou.
 
 ---
-
-## 7. Echipamente — nr. serie și familie drive
-
-**Da**, tabela `echipamente` are:
-- `serial_number TEXT` — numărul de serie fizic al echipamentului
-- `model TEXT` — familia de drive (ex: `"ACS880"`, `"SINAMICS_G120"`)
-- `producator TEXT` — producătorul (ex: `"ABB"`, `"Siemens"`)
-- `params_json TEXT` — JSON dict cu parametrii importați (ex: `{"99.04": "ACS880-01", "99.06": "S/N123"}`)
 
 ---
 
@@ -316,13 +266,11 @@ Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl fol
 ### Un proiect poate exista fără client?
 **Da.** `client` e `TEXT` nullable, nu FK. Un proiect cu `client = ""` e valid.
 
-### Un echipament poate exista fără proiect?
-**Nu.** `proiect_id TEXT NOT NULL` + `FOREIGN KEY ... ON DELETE CASCADE`. Dacă proiectul se șterge, echipamentele dispar.
-
 ### Cascade deletes
 Când un proiect se șterge (via batch delete):
-1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), `tasks`, `atasamente`, `echipamente`
+1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), apoi `tasks`
 2. FK CASCADE ar face o parte din treabă, dar codul face și explicit pentru siguranță
+3. Directorul proiectului din `UPLOAD_FOLDER` se șterge de pe disc
 3. Fișierele fizice ale atașamentelor se șterg de pe disk (`shutil.rmtree`)
 
 ### Unicitate
@@ -344,11 +292,7 @@ idx_proiecte_tip             ON proiecte(tip)
 idx_tasks_proiect_id         ON tasks(proiect_id)
 idx_tasks_status             ON tasks(status)
 idx_global_tasks_status      ON global_tasks(status)
-idx_atasamente_proiect       ON atasamente(proiect_id)
-idx_atasamente_task          ON atasamente(task_id)
-idx_atasamente_global_task   ON atasamente(global_task_id)
-idx_echipamente_proiect      ON echipamente(proiect_id)
 idx_clienti_nume             ON clienti(nume)
-idx_gts_task                 ON global_task_sessions(global_task_id)
 idx_task_subtasks_task_id    ON task_subtasks(task_id)
+idx_implementari_proiect     ON implementari(proiect_id)
 ```

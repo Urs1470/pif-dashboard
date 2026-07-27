@@ -224,12 +224,16 @@
     <h2 class="sec-title"><FileJson size={16} /> Import Debrief</h2>
     <Card>
       <textarea rows="5" bind:value={debriefText} placeholder={'{"proiect": {...}, "tasks": [...], ...}'}></textarea>
+      <p class="hint-sub">Se importă clientul, proiectul și taskurile. Un <code>echipamente[]</code> din JSON e acceptat dar ignorat (v28) — parametrii de drive se pun în wiki cu skill-ul <code>drive-backup</code>.</p>
       <div class="actions" style="margin-top: var(--space-sm)">
         <Button size="sm" loading={debriefBusy} disabled={!debriefText.trim()} onclick={importDebrief}><Upload size={14} /> Importa</Button>
         {#if debriefResult?.id || debriefResult?.proiect_id}
           <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}" transition:fade={{ duration: motionDuration(DUR_BASE) }}>Vezi proiectul creat →</a>
         {/if}
       </div>
+      {#if debriefResult?.sumar?.echipamente_ignorate}
+        <p class="hint-sub">{debriefResult.sumar.echipamente_ignorate} echipamente din JSON au fost ignorate.</p>
+      {/if}
     </Card>
   {/if}
 

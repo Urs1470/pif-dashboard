@@ -8,25 +8,34 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 Other authoritative docs (do not duplicate here):
 - `CLAUDE.md` — stack, env vars, deploy, key patterns
 - `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
-- `SCHEMA_REFERENCE.md` — full SQL schema (all 10 tables, columns, FKs, indexes)
+- `SCHEMA_REFERENCE.md` — full SQL schema (all 9 tables, columns, FKs, indexes)
 
 ## Database map by domain
 
 | Domain | Tables |
 |---|---|
-| Projects core | `proiecte`, `atasamente`, `echipamente`, `clienti` |
-| Tasks | `tasks`, `task_subtasks`, `global_tasks` |
-| Drive knowledge | `parametri_master` (~15.3k params, 7 families), `fault_codes` (8 families, seeded from `data/fault_codes/*.json`) |
+| Projects core | `proiecte`, `clienti`, `implementari` |
+| Tasks | `tasks`, `task_subtasks`, `task_dependencies`, `global_tasks` |
 | System | `app_settings` (KV), `schema_version` |
 
-Migrations: in-code in `database.py` (`run_migrations()`), currently **v23**, idempotent, auto-run via `before_request`.
+Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, idempotent, auto-run via `before_request`.
 
-## Feature status (last verified 2026-06-11)
+> **v28 (2026-07-27) a sters `parametri_master`, `fault_codes`, `echipamente`, `atasamente`.**
+> Nu le recrea si nu adauga self-heal pentru ele — un self-heal le-ar reinvia la fiecare pornire
+> (de aia au fost scoase si cele doua self-heal-uri existente). Functiile de migratie istorice
+> (v1->v2, v9->v10, v17->v18) inca le creeaza pe drumul spre v28; e intentionat si idempotent.
+> Datele: `raw/pif-dashboard/2026-07-27-inainte-de-v28/` in vault.
 
-- Parameter LLM enrichment (`explicatie`/`influenteaza`/`categorie`): ABB + Siemens 100%; Danfoss FC302 + Lenze pending. Rules in `LLM_ENRICH_BRIEF.md` (Romanian, no diacritics, LaTeX `$...$`).
-- Fault codes browser: all 8 families seeded and browsable (desktop + param/fault detail modals).
-- PDF manuals browser wired into param/fault detail.
+## Feature status (last verified 2026-07-27)
+
+- Module active: Proiecte, Taskuri, Taskuri zilnice, Planificator (Gantt), Calculator, tab Wiki, Admin.
 - Cowork API: Bearer `PIF_API_TOKEN`, endpoints `/api/proiecte`, `/api/proiecte/<id>/snapshot`, `/api/import/debrief`.
+- `/api/import/debrief` accepta `echipamente[]` dar le IGNORA din v28 — le numara in
+  `sumar.echipamente_ignorate`. Skill-ul `pif-debrief` inca le genereaza; nu e bug.
+- Parsarea backup-urilor de drive traieste in continuare: `/api/import-abb-multi/preview` si
+  `/api/import-archive/preview` (`scripts/parse_params/`) alimenteaza Calculatorul. Nu ating DB-ul.
+  `_familie_param_meta()` din `blueprints/projects.py` e un stub care returneaza `{}` (catalogul de
+  parametri nu mai exista) — preview-ul arata exact ce scrie in fisier, fara imbogatire.
 
 ## Gotchas
 
@@ -46,6 +55,31 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v23**, id
 3. Made a non-obvious decision, found a new gotcha, or changed feature status? Append one dated line to **Recent decisions** below (newest first, keep ≤ 30 entries, prune oldest).
 
 ## Recent decisions
+
+- **2026-07-27 — v28: restrangere de scop.** Dashboard-ul nu mai dubleaza wiki-ul si manualele.
+  Sterse: `parametri_master` (14.813 randuri), `fault_codes` (3.851), `echipamente` (26, in 4 din 20
+  de proiecte), `atasamente` (30 fisiere). Sterse si: `blueprints/parametri.py`, paginile
+  `Params.svelte` / `Notes.svelte`, `AttachmentsTab`, `EquipmentFormModal`, `AttachmentPreview`,
+  `data/fault_codes/` (3,84 MB seed), `scripts/enrich_params_from_backup.py`, endpoint-urile
+  `/api/admin/enrich-params` + `/api/admin/bulk-add-params`, sectiunea „Audit DB Parametri" din
+  Admin, sectiunea de echipamente din exportul PDF si Markdown.
+  **Motiv:** catalogul de 18k randuri nu avea nicio legatura cu proiectele — parametrii si codurile
+  de eroare se iau din manual (sursa citabila), backup-urile de drive stau brute in vault unde le
+  citeste `drive-backup`.
+  **NU s-a atins Calculatorul.** Atentie: el depinde de `/api/import-abb-multi/preview` si
+  `/api/import-archive/preview` — le-am sters din greseala si le-am repus; `scripts/parse_params/`
+  trebuie sa ramana. Tabul „Din proiect" din modalul de import a disparut (depindea de tabela
+  `echipamente`); tabul de incarcat fisier ramane si merge fara login.
+  **Verificat:** migratia ruleaza curat pe DB local (v27 -> v28, 4 tabele + 6 indexuri sterse),
+  `/api/import-abb-multi/preview` parseaza un `.dcparamsbak` real (70 parametri, placuta motor
+  80 A / 686 V / 75 kW / 2960 rpm), build trece, fara erori in consola.
+  **Arhiva:** `raw/pif-dashboard/2026-07-27-inainte-de-v28/` in vault (JSON + CSV per tabela,
+  snapshot integral, seed-uri fault codes, parsere, README cu procedura de recuperare). `raw/` e
+  gitignored — arhiva e propagata prin Google Drive, nu prin git.
+  **Migrare echipamente:** cele 13 de la Retrofit FML3 -> `wiki/job/projects/continental-fml3/`
+  (`backup-<drive>.md` + `backups-index.md`). Restul erau deja acoperite in wiki, cu mai multi
+  parametri decat in DB. Bonus: recuperat `FAA.dcparamsbak` (backup final) din atasamentul
+  `Backupuri Multidrive.zip` — nu exista in vault; nota `backup-FAA.md` ramane de generat.
 
 - **2026-07-15 — Taskuri = repere cu etichetă (Gantt + Planificator)** (SW v94): Taskurile lui
   Ion sunt aproape toate de o zi → pe un timeline de luni întregi barele deveneau dungi de ~3px

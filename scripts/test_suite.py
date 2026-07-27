@@ -140,9 +140,11 @@ def db_table_check():
     except Exception as e:
         log("fail", f"Cannot access DB: {e}"); return
     
-    with open(PROJECT_ROOT / "app.py", 'r') as f:
+    # VALID_TABLES traieste in utils.py (a fost mutat din app.py la extragerea
+    # blueprint-urilor) — citim de acolo, altfel testul da mereu warn.
+    with open(PROJECT_ROOT / "utils.py", 'r', encoding='utf-8') as f:
         content = f.read()
-    
+
     valid_match = re.search(r"VALID_TABLES\s*=\s*\{([^}]+)\}", content)
     if valid_match:
         valid_tables = set(re.findall(r"'([a-zA-Z_][a-zA-Z0-9_]*)'", valid_match.group(1)))

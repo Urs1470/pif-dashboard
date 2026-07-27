@@ -27,13 +27,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 from blueprints.projects import projects_bp
 from blueprints.tasks import tasks_bp
-from blueprints.parametri import parametri_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
-app.register_blueprint(parametri_bp)
 app.register_blueprint(obsidian_bp)
 app.register_blueprint(admin_bp)
 
@@ -395,8 +393,6 @@ def index():
     return _serve_frontend()
 
 
-@app.route('/parametri')
-@app.route('/notite')
 @app.route('/administrativ')
 @login_required
 def spa_catchall():
