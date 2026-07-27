@@ -112,6 +112,8 @@ Arhiva completa a datelor sterse: `raw/pif-dashboard/2026-07-27-inainte-de-v28/`
 | `SESSION_COOKIE_SECURE` | No | `true` | Set `false` for local HTTP dev |
 | `PIF_USE_DIST` | No | `false` | Use minified builds from static/dist/ |
 | `PIF_API_TOKEN` | No | none | Bearer token for machine-to-machine API access (Cowork). CSRF-exempt. |
+| `PIF_DB_PATH` | No | `pif_dashboard.db` next to the code | Alternate DB file. Used by `scripts/smoke_ui.py` to run on a throwaway copy. |
+| `PIF_RATE_LIMIT` | No | `60` | Requests/min per IP on `/api/*`. Raised only by the smoke test; keep 60 in prod. |
 
 ## Cowork Integration
 
@@ -156,9 +158,30 @@ Or via webhook: push triggers POST `/webhook/deploy` (validates X-Hub-Signature-
 ## Testing
 
 Ad-hoc test scripts in `scripts/`:
-- `test_suite.py` — main test harness
+- `test_suite.py` — API/backend harness. `python scripts/test_suite.py`
+- `smoke_ui.py` — **test de fum pentru SPA.** Porneste singur aplicatia pe un port
+  liber si pe o COPIE a bazei (`PIF_DB_PATH`), apoi deschide in Chromium headless
+  fiecare ruta, fiecare proiect si fiecare tab, pe desktop si pe mobil. Pica la
+  orice exceptie neprinsa, eroare de consola, pagina goala sau schelet care nu
+  dispare.
 
-No pytest/unittest framework. Run with `python scripts/test_suite.py`.
+```bash
+python scripts/smoke_ui.py
+```
+
+De ce exista: build-ul Svelte compileaza CURAT o pagina care crapa la rulare —
+componentele din template se rezolva la RULARE. Pe 2026-07-27 un import lipsa
+(`AlertCircle`) a lasat toate proiectele de tip Service pe schelet, cu build verde
+si `test_suite` 12/12, pentru ca greseala statea pe ramura `{#if tip === 'Service'}`.
+Ruleaza-l dupa orice curatenie de importuri sau modificare de pagina.
+
+Cerinte, o singura data si doar pe masina de dezvoltare (NU in `requirements.txt`):
+
+```bash
+pip install playwright && python -m playwright install chromium
+```
+
+No pytest/unittest framework.
 
 ## Multi-Agent Collision Rules
 

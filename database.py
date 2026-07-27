@@ -4,7 +4,11 @@ import logging
 
 logger = logging.getLogger('pif_dashboard')
 
-DATABASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pif_dashboard.db')
+# PIF_DB_PATH permite rularea pe o baza de unica folosinta (vezi scripts/smoke_ui.py,
+# care porneste aplicatia pe o copie ca sa nu atinga baza de lucru). Neselectat =
+# baza normala, langa cod.
+DATABASE_PATH = os.environ.get('PIF_DB_PATH') or os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'pif_dashboard.db')
 
 def get_db():
     conn = sqlite3.connect(DATABASE_PATH)

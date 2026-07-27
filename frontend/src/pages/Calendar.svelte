@@ -442,15 +442,21 @@
                        ondragstart={(e) => { e.stopPropagation(); dragGrup(e, b, g.iso) }}
                        ondragend={endDrag}
                        title="{b.sediu ? 'La sediu' : 'Deplasare'}{b.client ? ' · ' + b.client : ''}&#10;{b.items.map(p => '· ' + p.nume + (p.eticheta ? ' — ' + p.eticheta : '')).join('&#10;')}">
-                    {#if start}<span class="seg-t">{etichetaGrup(b, g.iso)}</span>{/if}
+                    <!-- Eticheta pe FIECARE zi a deplasarii, nu doar pe prima.
+                         Inainte, zilele de mijloc aveau bara goala si textul cazut
+                         dedesubt, gri: aceeasi iesire arata ca trei lucruri
+                         diferite. Continuitatea o dau colturile rotunjite
+                         (.start/.end), nu absenta etichetei. -->
+                    <span class="seg-t">{etichetaGrup(b, g.iso)}</span>
                   </div>
                 {/each}
               </div>
-              {#if grupuri.length && !grupuri.some(b => !areGrup(addDays(g.iso, -1), b.cheie))}
-                <!-- zi de continuare: blocurile n-au eticheta (ea sta pe prima zi
-                     a deplasarii), deci spunem aici unde esti — altfel a doua zi
-                     a unei iesiri arata ca niste dungi fara sens -->
-                <span class="grp">{grupuri.length === 1 ? etichetaGrup(grupuri[0], g.iso) : `${grupuri.length} locuri`}</span>
+              {#if grupuri.length}
+                <!-- Doar pe telefon: sub 620px bara are 12px si textul din ea e
+                     ascuns, deci punem numele scurt al locului sub zi. -->
+                <span class="grp">{grupuri.length === 1
+                  ? (grupuri[0].sediu ? 'Sediu' : scurt(grupuri[0].client))
+                  : `${grupuri.length} locuri`}</span>
               {/if}
             </button>
           {/each}
@@ -631,7 +637,9 @@
       color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
       transparent 4px 8px); }
   .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .grp { font-size: var(--font-micro); color: var(--text-faint); margin-top: auto; }
+  /* Eticheta de sub zi e ACUM exclusiv pentru telefon — pe desktop textul sta in
+     bara, pe fiecare zi a deplasarii. */
+  .grp { display: none; font-size: var(--font-micro); color: var(--text-faint); margin-top: auto; }
 
   .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
   .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-dim); }
@@ -681,6 +689,7 @@
     .zi { min-height: 58px; }
     .grid.sapt .zi { min-height: 76px; }
     .seg-t { display: none; }
+    .grp { display: block; }
     .seg { min-height: 12px; }
   }
 </style>

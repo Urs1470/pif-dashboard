@@ -90,20 +90,20 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/healthz` | `healthz` | 320 |
-| GET | `/api/health` | `health_redirect` | 326 |
-| GET | `/api/me` | `whoami` | 331 |
-| GET | `/login` | `login_page` | 338 |
-| POST | `/login` | `login` | 345 |
-| GET | `/logout` | `logout` | 357 |
-| POST | `/login-hash` | `login_hash` | 363 |
-| GET | `/` | `index` | 390 |
-| GET | `/assets/<path:filename>` | `dist_assets` | 396 |
-| GET | `/favicon.svg` | `favicon` | 402 |
-| GET | `/manifest.json` | `manifest` | 407 |
-| GET | `/calc` | `calc_public` | 412 |
-| GET | `/docs/<path:filename>` | `protected_docs` | 422 |
-| GET | `/service-worker.js` | `service_worker` | 434 |
-| POST | `/webhook/deploy` | `webhook_deploy` | 468 |
-| POST | `/api/deploy` | `api_deploy` | 553 |
+| GET | `/api/healthz` | `healthz` | 323 |
+| GET | `/api/health` | `health_redirect` | 329 |
+| GET | `/api/me` | `whoami` | 334 |
+| GET | `/login` | `login_page` | 341 |
+| POST | `/login` | `login` | 348 |
+| GET | `/logout` | `logout` | 360 |
+| POST | `/login-hash` | `login_hash` | 366 |
+| GET | `/` | `index` | 393 |
+| GET | `/assets/<path:filename>` | `dist_assets` | 399 |
+| GET | `/favicon.svg` | `favicon` | 405 |
+| GET | `/manifest.json` | `manifest` | 410 |
+| GET | `/calc` | `calc_public` | 415 |
+| GET | `/docs/<path:filename>` | `protected_docs` | 425 |
+| GET | `/service-worker.js` | `service_worker` | 437 |
+| POST | `/webhook/deploy` | `webhook_deploy` | 471 |
+| POST | `/api/deploy` | `api_deploy` | 556 |
 

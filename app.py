@@ -155,7 +155,10 @@ logger = setup_logging()
 # ============ RATE LIMITING ============
 
 rate_limit_store = {}
-RATE_LIMIT = 60
+# 60/minut e potrivit pentru un singur utilizator care navigheaza normal, dar
+# prea putin cand deschizi zeci de pagini la rand: testul de fum (scripts/smoke_ui.py)
+# ridica pragul prin PIF_RATE_LIMIT. In productie ramane 60.
+RATE_LIMIT = int(os.environ.get('PIF_RATE_LIMIT', '60'))
 RATE_WINDOW = 60
 _RATE_MAX_IPS = 10000
 _rate_last_evict = 0.0
