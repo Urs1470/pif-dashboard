@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 33 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 34 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v33. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v34. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -197,6 +197,24 @@ pe vechea regula), iar 16 aveau doar una din doua. La cele globale, 1 rand din 1
   de plan ar fi amanat in tacere un termen deja depasit.
 - **Capcana:** self-heal-ul care re-rula v20->v21 cand lipsea `data_planificata` a fost
   restrans la `ordine_agenda`. Fara asta, coloana revenea la prima pornire.
+
+### Taskul e facut sau nu (v34, 2026-07-27)
+
+Ion: *„in general as scapa si as sterge statusul taskurilor si prioritatea."*
+Ales explicit: doar facut / nefacut.
+
+**Statusul era deja mort.** In baza reala existau DOAR `to_do` si `done`, in ambele tabele.
+`in_lucru`, `in_asteptare` si `blocat` erau in selector si in `labels.py` — pe zero randuri.
+
+**Prioritatea era completata, dar saturata.** 20 din 37 de taskuri de proiect si 12 din 15
+globale erau „urgent" — 54% si 80%. Cand majoritatea e urgenta, cuvantul nu mai selecteaza
+nimic. (Aparea si `Normal` cu majuscula langa `normal`, semn ca era bifata mecanic.) De
+aceea a plecat, desi — spre deosebire de celelalte curatenii — chiar era folosita.
+Arhiva: `raw/pif-dashboard/2026-07-27-inainte-de-v34/`.
+
+Severitatea unui task se citeste acum din **termen**, nu din prioritate: `dueColor()` in
+`formatters.js` da rosu pentru depasit, amber pentru azi, warning pentru urmatoarele doua
+zile. Bordura din stanga randului o foloseste. Sortarea din exportul .md merge tot pe termen.
 
 ### Cum arata o zi in Calendar
 

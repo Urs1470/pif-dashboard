@@ -1,7 +1,6 @@
 <script>
   import { CalendarDays } from '@lucide/svelte'
-  import { priorityColor, priorityLabel } from '../../lib/formatters.js'
-
+  
   let { tasks = [], onopen = () => {} } = $props()
 
   const DAY_SHORT = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm']
@@ -43,7 +42,6 @@
         {#each day.tasks as t (t.id)}
           <button class="row it" onclick={() => onopen(t)} title="Deschide taskul">
             <span class="it-title" class:it-today={day.isToday}>{t.titlu}</span>
-            <span class="pr" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}">{priorityLabel(t.prioritate || 'normal')}</span>
           </button>
         {/each}
       </div>

@@ -188,7 +188,6 @@ def _pdf_section_tasks(elements, tasks, section_n, styles):
             str(i),
             t.get('titlu', '-'),
             task_status_label(t.get('status', '')) or '-',
-            (t.get('prioritate') or 'Normal').capitalize(),
             t.get('data_scadenta') or '-',
         ])
     task_table = Table(task_data, colWidths=[0.8*cm, 8.5*cm, 2.2*cm, 1.8*cm, 2.2*cm])
@@ -437,12 +436,12 @@ def restore_database():
         # planul in termen acolo unde termenul lipsea.
         for t in data.get('tasks', []):
             cursor.execute('''
-                INSERT INTO tasks (id, proiect_id, titlu, descriere, status, prioritate,
+                INSERT INTO tasks (id, proiect_id, titlu, descriere, status,
                     data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at,
                     ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('descriere'),
-                  t.get('status'), t.get('prioritate'),
+                  t.get('status'),
                   t.get('data_scadenta') or t.get('data_planificata'),
                   t.get('data_finalizare'), t.get('ordine', 0), t.get('recurenta'),
                   t.get('created_at'), t.get('updated_at'),
@@ -455,11 +454,11 @@ def restore_database():
         # Restore global_tasks — vezi nota de mai sus despre `data_planificata`.
         for gt in data.get('global_tasks', []):
             cursor.execute('''
-                INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+                INSERT INTO global_tasks (id, titlu, descriere, status, categorie,
                     data_scadenta, data_finalizare, recurenta, created_at, updated_at,
                     ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'),
                   gt.get('status'), gt.get('categorie'),
                   gt.get('data_scadenta') or gt.get('data_planificata'),
                   gt.get('data_finalizare'), gt.get('recurenta'),

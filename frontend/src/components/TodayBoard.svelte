@@ -9,7 +9,7 @@
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, priorityColor, priorityLabel, formatDate } from '../lib/formatters.js'
+  import { dueColor, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -161,7 +161,7 @@
           class:done={it.status === 'done'}
           class:dragover={overIndex === i}
           class:dragging={dragIndex === i}
-          style="--sev: {priorityColor(it.prioritate || 'normal')}"
+          style="--sev: {dueColor(it.data_scadenta)}"
           role="listitem"
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}

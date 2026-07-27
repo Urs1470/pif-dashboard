@@ -521,7 +521,6 @@ def get_project_snapshot(project_id):
             'titlu': t.get('titlu', ''),
             'descriere': t.get('descriere', ''),
             'status': t.get('status', ''),
-            'prioritate': t.get('prioritate', ''),
             'data_scadenta': t.get('data_scadenta', ''),
             'subtasks': [{'titlu': s.get('titlu', ''), 'done': bool(s.get('done'))} for s in t.get('subtasks', [])],
         } for t in tasks],

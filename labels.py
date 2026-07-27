@@ -17,14 +17,16 @@ PROJECT_STATUS_LABELS = {
     'blocat': 'În pregătire',
 }
 
+# Doua stari, atat (v34): facut sau nu. Celelalte erau in selector, dar pe zero
+# randuri. Cheile vechi raman mapate ca un rand nemigrat sa nu apara brut.
 TASK_STATUS_LABELS = {
-    'to_do': 'To Do',
-    'in_lucru': 'În Lucru',
-    'in_asteptare': 'În Așteptare',
-    'in_așteptare': 'În Așteptare',
-    'blocat': 'Blocat',
-    'done': 'Finalizat',
-    'finalizat': 'Finalizat',
+    'to_do': 'De făcut',
+    'done': 'Făcut',
+    'finalizat': 'Făcut',
+    'in_lucru': 'De făcut',
+    'in_asteptare': 'De făcut',
+    'in_așteptare': 'De făcut',
+    'blocat': 'De făcut',
 }
 
 

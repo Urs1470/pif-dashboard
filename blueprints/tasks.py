@@ -64,10 +64,10 @@ def _spawn_recurring_task(cursor, existing, recurenta):
     # occurrence is born unplanned and surfaces on the Astazi board later via its
     # future data_scadenta, not the moment the current one is completed.
     cursor.execute('''
-        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+        INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
-        VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?, ?, ?)
-    ''', (new_id, existing['proiect_id'], existing['titlu'], existing['prioritate'],
+        VALUES (?, ?, ?, 'to_do', ?, '', ?, ?, ?, ?, ?)
+    ''', (new_id, existing['proiect_id'], existing['titlu'],
           next_scad, max_ordine + 1, now, existing['descriere'] or '', recurenta, now))
     # Carry the subtasks over, all unchecked -- a recurring checklist repeats clean.
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
@@ -87,10 +87,10 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
     # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task).
     cursor.execute('''
-        INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+        INSERT INTO global_tasks (id, titlu, descriere, status, categorie,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta)
-        VALUES (?, ?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?)
-    ''', (new_id, existing['titlu'], existing['descriere'] or '', existing['prioritate'],
+        VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?)
+    ''', (new_id, existing['titlu'], existing['descriere'] or '',
           existing['categorie'], next_scad, now, now, recurenta))
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
     for srow in cursor.fetchall():
@@ -167,16 +167,15 @@ def create_task(project_id):
     max_ordine = result['max_ordine'] if result and result['max_ordine'] is not None else 0
 
     cursor.execute('''
-        INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
+        INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
                            ordine_agenda, data_start, progres, is_milestone)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
         data.get('titlu', ''),
         data.get('status', 'to_do'),
-        data.get('prioritate', 'normal'),
         data.get('data_scadenta', ''),
         data.get('data_finalizare', ''),
         max_ordine + 1,
@@ -221,7 +220,6 @@ def update_task(task_id):
         UPDATE tasks SET
             titlu = COALESCE(?, titlu),
             status = COALESCE(?, status),
-            prioritate = COALESCE(?, prioritate),
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
             ordine = COALESCE(?, ordine),
@@ -236,7 +234,6 @@ def update_task(task_id):
     ''', (
         data.get('titlu'),
         data.get('status'),
-        data.get('prioritate'),
         data.get('data_scadenta'),
         data.get('data_finalizare'),
         data.get('ordine'),
@@ -347,7 +344,6 @@ def _collect_gantt(project_id):
             end = start
         tasks.append({
             'id': r['id'], 'titlu': r.get('titlu') or '', 'status': r.get('status') or 'to_do',
-            'prioritate': r.get('prioritate') or 'normal',
             'data_start': start, 'data_scadenta': end,
             'is_milestone': bool(r.get('is_milestone')),
             'progres': _effective_progress(r, tot, done),
@@ -1068,7 +1064,7 @@ def get_global_tasks():
     cursor = conn.cursor()
 
     status = request.args.get('status')
-    prioritate = request.args.get('prioritate')
+
     categorie = request.args.get('categorie')
     arhiva = request.args.get('arhiva')
 
@@ -1084,9 +1080,6 @@ def get_global_tasks():
     if status and arhiva != 'true':
         query += ' AND status = ?'
         params.append(status)
-    if prioritate:
-        query += ' AND prioritate = ?'
-        params.append(prioritate)
     if categorie:
         query += ' AND categorie = ?'
         params.append(categorie)
@@ -1142,15 +1135,14 @@ def create_global_task():
     task_id = data.get('id') or generate_uuid()
 
     cursor.execute('''
-        INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
+        INSERT INTO global_tasks (id, titlu, descriere, status, categorie,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta,
                                   ordine_agenda)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
         data.get('descriere', ''),
-        data.get('prioritate', 'Normal'),
         data.get('status', 'to_do'),
         data.get('categorie', 'General'),
         data.get('data_scadenta', ''),
@@ -1207,7 +1199,6 @@ def update_global_task(task_id):
         UPDATE global_tasks SET
             titlu = COALESCE(?, titlu),
             descriere = COALESCE(?, descriere),
-            prioritate = COALESCE(?, prioritate),
             status = COALESCE(?, status),
             categorie = COALESCE(?, categorie),
             data_scadenta = COALESCE(?, data_scadenta),
@@ -1219,7 +1210,6 @@ def update_global_task(task_id):
     ''', (
         data.get('titlu'),
         data.get('descriere'),
-        data.get('prioritate'),
         data.get('status'),
         data.get('categorie'),
         data.get('data_scadenta'),
@@ -1297,7 +1287,6 @@ def _agenda_item(d, tip, today):
         'id': d['id'],
         'titlu': d.get('titlu') or '',
         'status': d.get('status') or 'to_do',
-        'prioritate': d.get('prioritate') or '',
         'data_scadenta': d.get('data_scadenta') or '',
         'data_finalizare': d.get('data_finalizare') or '',
         'ordine_agenda': d.get('ordine_agenda') or 0,
@@ -1573,8 +1562,7 @@ def get_plan():
     def _backlog_item(d, tip):
         return {
             'tip': tip, 'id': d['id'], 'titlu': d.get('titlu') or '',
-            'prioritate': d.get('prioritate') or '',
-            'categorie': (d.get('categorie') or '') if tip == 'global' else '',
+                'categorie': (d.get('categorie') or '') if tip == 'global' else '',
             'proiect_id': d.get('proiect_id') if tip == 'proiect' else None,
             'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
         }

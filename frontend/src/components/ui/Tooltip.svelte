@@ -3,14 +3,19 @@
   //
   // DE CE ASA: sursa ramane atributul `title` (127 in 18 fisiere). Un sistem cu
   // `use:tip={...}` ar fi cerut rescrierea tuturor si ar fi ratat orice `title`
-  // adaugat de-acum inainte. Aici, pe hover, mutam textul intr-o variabila si
-  // STERGEM atributul — altfel bula nativa a sistemului ar aparea peste a noastra
-  // — apoi il punem la loc cand pleaca cursorul.
+  // adaugat de-acum inainte.
   //
-  // Accesibilitate: cat timp e sters, elementul si-ar pierde numele accesibil,
-  // asa ca il repunem imediat la iesire, iar butoanele-doar-icoana au oricum
-  // `aria-label` propriu. Tooltipul in sine e aria-hidden: nu adauga nimic la
-  // arborele de accesibilitate.
+  // `title` SE MUTA DEFINITIV, nu se imprumuta. Prima versiune il stergea pe hover
+  // si il punea la loc la iesire — dar `ascunde()` se cheama si la click, si la
+  // scroll, si atunci atributul revenea CAT TIMP cursorul era inca pe element:
+  // browserul isi arata bula lui peste a noastra. Ion: „ba cel nou, ba cel vechi,
+  // dar mai mult cel vechi persista." Fara restaurare, cazul dispare complet.
+  //
+  // Accesibilitate: cand mutam un `title` de pe un control fara text vizibil, ii
+  // punem textul in `aria-label`, deci numele accesibil nu se pierde niciodata.
+  // Daca Svelte re-randeaza si pune `title` inapoi, il luam din nou la urmatorul
+  // hover — si preferam mereu valoarea din atribut, ca titlurile dinamice sa fie
+  // corecte. Tooltipul in sine e aria-hidden.
   import { motion } from '../../lib/motion.svelte.js'
 
   const INTARZIERE = 380     // ca la sistem: nu sare la fiecare trecere peste
@@ -22,26 +27,16 @@
   let dedesubt = $state(false)
   let vizibil = $state(false)
 
-  let tinta = null           // elementul al carui `title` l-am imprumutat (de restaurat)
-  let nodCurent = null       // elementul deasupra caruia suntem, oricare ar fi sursa
-  let textImprumutat = ''
+  let nodCurent = null       // elementul deasupra caruia suntem
+  const memorie = new WeakMap()   // element -> textul mutat din `title`
   let cronometru = 0
   let el = $state(null)      // nodul tooltipului, ca sa-i masuram dimensiunea
-
-  function restaurare() {
-    if (tinta && textImprumutat && tinta.isConnected && !tinta.getAttribute('title')) {
-      try { tinta.setAttribute('title', textImprumutat) } catch (_) {}
-    }
-    tinta = null
-    nodCurent = null
-    textImprumutat = ''
-  }
 
   function ascunde() {
     clearTimeout(cronometru)
     vizibil = false
     linii = []
-    restaurare()
+    nodCurent = null
   }
 
   async function aseaza() {
@@ -62,30 +57,33 @@
 
   const CONTROALE = 'button, a, [role="button"], summary'
 
-  /** Textul tooltipului si daca trebuie imprumutat (doar `title` produce bula
-   *  nativa, deci doar el se sterge; `aria-label` e numele accesibil si ramane). */
+  /** Textul tooltipului. `title` are prioritate (poate fi dinamic) si se MUTA
+   *  definitiv de pe element; `aria-label` se citeste, nu se atinge. */
   function sursa(nod) {
     const t = (nod.getAttribute('title') || '').trim()
-    if (t) return { text: t, imprumut: true }
+    if (t) {
+      memorie.set(nod, t)
+      // Mutarea definitiva: pastram numele accesibil daca butonul n-are text.
+      if (!nod.getAttribute('aria-label') && !nod.textContent.trim()) {
+        try { nod.setAttribute('aria-label', t) } catch (_) {}
+      }
+      nod.removeAttribute('title')
+      return t
+    }
+    if (memorie.has(nod)) return memorie.get(nod)
     // Cadere pe `aria-label`, dar NUMAI pe un control fara text vizibil: acolo
     // eticheta chiar E numele butonului. Altfel am pune tooltipuri pe containere
     // (`<nav aria-label="Navigație principală">`), ceea ce ar fi zgomot.
     const a = (nod.getAttribute('aria-label') || '').trim()
-    if (a && nod.matches(CONTROALE) && !nod.textContent.trim()) {
-      return { text: a, imprumut: false }
-    }
+    if (a && nod.matches(CONTROALE) && !nod.textContent.trim()) return a
     return null
   }
 
   function porneste(nod, imediat = false) {
-    const s = sursa(nod)
-    if (!s) return
+    const text = sursa(nod)
+    if (!text) return
     ascunde()
-    tinta = s.imprumut ? nod : null
-    textImprumutat = s.imprumut ? s.text : ''
-    if (s.imprumut) nod.removeAttribute('title')
     nodCurent = nod
-    const text = s.text
     // Svelte NU decodeaza entitatile HTML in atributele compilate cu expresie:
     // `title="a&#10;b"` ajunge in DOM cu `&#10;` LITERAL. (Se vedea si in bula
     // nativa, dinainte — doar ca nimeni nu se uita la ea.) Un `\n` scris in

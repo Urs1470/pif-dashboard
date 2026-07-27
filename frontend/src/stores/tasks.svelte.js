@@ -4,7 +4,7 @@ export const tasks = $state({
   items: [],
   loading: false,
   error: null,
-  filters: { status: '', prioritate: '', search: '' },
+  filters: { status: '', search: '' },
 })
 
 export const globalTasks = $state({
@@ -19,7 +19,6 @@ export async function loadGlobalTasks(opts = {}) {
   try {
     const params = new URLSearchParams()
     if (opts.status) params.set('status', opts.status)
-    if (opts.prioritate) params.set('prioritate', opts.prioritate)
     if (opts.categorie) params.set('categorie', opts.categorie)
     if (opts.arhiva) params.set('arhiva', 'true')
     const qs = params.toString()

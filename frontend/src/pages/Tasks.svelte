@@ -6,7 +6,7 @@
   import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
+  import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
@@ -32,7 +32,6 @@
 
   let formTitle = $state('')
   let formDesc = $state('')
-  let formPriority = $state('Normal')
   let formCategory = $state('General')
   let formDeadline = $state('')
   let formRecurenta = $state('')
@@ -54,7 +53,6 @@
   let noteSaving = $state(false)
 
 
-  const STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
 
   function matchesSearch(t) {
     if (!taskSearch) return true
@@ -91,7 +89,7 @@
   }
 
   function resetForm() {
-    formTitle = ''; formDesc = ''; formPriority = 'Normal'
+    formTitle = ''; formDesc = ''
     formCategory = 'General'; formDeadline = ''; formRecurenta = ''
   }
 
@@ -104,7 +102,6 @@
     editingTask = t
     formTitle = t.titlu || ''
     formDesc = t.descriere || ''
-    formPriority = t.prioritate || 'Normal'
     formCategory = t.categorie || 'General'
     formDeadline = t.data_scadenta || ''
     formRecurenta = t.recurenta || ''
@@ -118,7 +115,6 @@
       await createGlobalTask({
         titlu: formTitle.trim(),
         descriere: formDesc.trim() || undefined,
-        prioritate: formPriority,
         categorie: formCategory,
         data_scadenta: formDeadline || undefined,
         recurenta: formRecurenta || undefined,
@@ -164,7 +160,6 @@
       await updateGlobalTask(editingTask.id, {
         titlu: formTitle.trim(),
         descriere: formDesc.trim(),
-        prioritate: formPriority,
         categorie: formCategory,
         data_scadenta: formDeadline,
         recurenta: formRecurenta || null,
@@ -226,20 +221,7 @@
     toast('Task șters', 'success')
   }
 
-  const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
-  async function cycleTaskPriority(t) {
-    const cur = (t.prioritate || 'normal').toLowerCase()
-    const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
-    await updateGlobalTask(t.id, { prioritate: next })
-    await loadGlobalTasks({ arhiva: showArchive })
-  }
 
-  async function cycleTaskStatus(t) {
-    const cur = t.status || 'to_do'
-    const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length]
-    await updateGlobalTask(t.id, { status: next })
-    await loadGlobalTasks({ arhiva: showArchive })
-  }
 
   function isOverdue(d) {
     if (!d) return false
@@ -259,14 +241,6 @@
   // nu am nevoie de ele"): repeta primele randuri din lista de imediat dedesubt,
   // care oricum e sortata cu urgentele sus si are aceleasi actiuni.
 
-  // Bordura stanga a randului, dupa prioritate (danger=urgent, accent=normal, discret=minor).
-  function rowBorderColor(p) {
-    const key = (p || '').toLowerCase()
-    if (key === 'urgent') return 'var(--danger)'
-    if (key === 'normal') return 'var(--accent)'
-    if (key === 'minor') return 'var(--border-strong)'
-    return 'var(--border)'
-  }
 
   onMount(() => { loadGlobalTasks() })
 </script>
@@ -362,7 +336,7 @@
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t, i (t.id)}
         <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="--sev: {rowBorderColor(t.prioritate)}">
+          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
             <span class="tix">{String(i + 1).padStart(2, '0')}</span>
             <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
@@ -383,8 +357,6 @@
               </div>
             </button>
             <div class="task-actions">
-              <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
-              <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={12} /></button>
               <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
@@ -406,7 +378,7 @@
           <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
           {#each doneTasks as t, i (t.id)}
             <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="--sev: {rowBorderColor(t.prioritate)}">
+              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
                 <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                 <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
                   <CheckCircle2 size={18} />
@@ -421,8 +393,7 @@
                   </div>
                 </button>
                 <div class="task-actions">
-                  <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
-                  <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
+                      <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
                 </div>
               </div>
               {#if expandedTask === t.id}
@@ -448,7 +419,6 @@
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-3">
-      <Select label="Prioritate" size="sm" bind:value={formPriority} options={['Normal', 'Minor', 'Urgent']} />
       <label class="mf-field">
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
@@ -473,7 +443,6 @@
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-3">
-      <Select label="Prioritate" size="sm" bind:value={formPriority} options={['Normal', 'Minor', 'Urgent']} />
       <label class="mf-field">
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
@@ -533,9 +502,8 @@
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
-  .status-badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
-  .status-badge:hover { opacity: .7; }
-  .status-badge:active { transform: scale(0.92); }
+  /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
+     iar severitatea se citeste din bordura din stanga, dupa termen. */
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
@@ -560,9 +528,6 @@
   .task-cat { padding: 1px 8px; background: var(--purple-subtle); color: var(--purple); border-radius: var(--radius-full); font-weight: var(--fw-semibold); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
-  .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
-  .prio-badge:hover { opacity: .8; }
-  .prio-badge:active { transform: scale(0.92); }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 

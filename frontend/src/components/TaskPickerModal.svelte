@@ -2,7 +2,7 @@
   import { Search, Plus, FolderKanban, ListTodo } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import { loadCandidates, scheduleForToday } from '../stores/agenda.svelte.js'
-  import { priorityColor, priorityLabel, formatDate } from '../lib/formatters.js'
+  import { dueColor, formatDate } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
 
   let { open = $bindable(false) } = $props()
@@ -87,7 +87,7 @@
             </div>
             {#each grp.rows as it (it.tip + ':' + it.id)}
               <button class="pk-row" disabled={addingKey === (it.tip + ':' + it.id)} onclick={() => pick(it)}>
-                <span class="pk-prio" style="background: {priorityColor(it.prioritate || 'normal')}"></span>
+                <span class="pk-prio" style="background: {dueColor(it.data_scadenta)}"></span>
                 <span class="pk-title">{it.titlu}</span>
                 {#if it.data_scadenta}<span class="pk-scad">termen {formatDate(it.data_scadenta)}</span>{/if}
                 <span class="pk-add"><Plus size={15} /></span>

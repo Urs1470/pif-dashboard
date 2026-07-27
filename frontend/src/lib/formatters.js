@@ -30,30 +30,42 @@ export const STATUS_COLORS = {
   to_do: 'var(--text-dim)',
 }
 
-const PRIORITY_LABELS = {
-  urgent: 'Urgent',
-  normal: 'Normal',
-  minor: 'Minor',
-}
-
-const PRIORITY_COLORS = {
-  urgent: 'var(--danger)',
-  normal: 'var(--warning)',
-  minor: 'var(--text-faint)',
-}
+// Prioritatea a plecat in v34 (era saturata: 54% „urgent"). Severitatea unui
+// task se citeste acum din TERMEN — singurul lucru care chiar variaza.
 
 export function statusLabel(status) {
   return TASK_STATUS_LABELS[status] || PROJECT_STATUS_LABELS[status] || status || '—'
 }
 
-export function priorityLabel(p) {
-  const key = (p || '').toLowerCase()
-  return PRIORITY_LABELS[key] || p || '—'
+/** Cate zile pana la termen (negativ = depasit); null daca nu are termen. */
+export function zilePanaLa(d) {
+  if (!d) return null
+  const t = new Date(String(d).slice(0, 10))
+  if (isNaN(t)) return null
+  t.setHours(0, 0, 0, 0)
+  const azi = new Date(); azi.setHours(0, 0, 0, 0)
+  return Math.round((t - azi) / 86400000)
 }
 
-export function priorityColor(p) {
-  const key = (p || '').toLowerCase()
-  return PRIORITY_COLORS[key] || 'var(--text-secondary)'
+/** Culoarea de severitate a unui task, dupa termen. Inlocuieste priorityColor. */
+export function dueColor(d) {
+  const k = zilePanaLa(d)
+  if (k === null) return 'var(--border-strong)'
+  if (k < 0) return 'var(--danger)'
+  if (k === 0) return 'var(--accent)'
+  if (k <= 2) return 'var(--warning)'
+  return 'var(--border-strong)'
+}
+
+/** Eticheta scurta si relativa: „depășit", „azi", „mâine" — altfel nimic, ca sa
+ *  nu repete data deja afisata pe rand. */
+export function dueLabel(d) {
+  const k = zilePanaLa(d)
+  if (k === null) return ''
+  if (k < 0) return k === -1 ? 'depășit cu o zi' : `depășit cu ${-k} zile`
+  if (k === 0) return 'azi'
+  if (k === 1) return 'mâine'
+  return ''
 }
 
 // Live ticking timer display: seconds -> HH:MM:SS.

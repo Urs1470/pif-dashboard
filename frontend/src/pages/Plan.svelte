@@ -6,7 +6,7 @@
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
   } from '../stores/plan.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
-  import { formatDate, formatDateShort } from '../lib/formatters.js'
+  import { formatDate, formatDateShort, zilePanaLa } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -446,7 +446,7 @@
                             class:active={isActive(t.status)}
                             class:todo={!isActive(t.status) && !isDone(t.status)}
                             class:done={isDone(t.status)}
-                            class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}
+                            class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
                             class:single={t.rect.single}
                             class:flip={t.rect.single && t.rect.left > 62}
                             class:draggable={!isDone(t.status)}
@@ -492,7 +492,7 @@
         {#if backlogOpen}
           <div class="bl-items">
             {#each plan.backlog as t (t.tip + ':' + t.id)}
-              <div class="bl-chip" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'}
+              <div class="bl-chip" class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
                    draggable="true" ondragstart={(e) => backlogDragStart(e, t)} ondragend={backlogDragEnd}
                    title={t.titlu}>
                 <GripVertical size={13} class="bl-grip" />
@@ -523,7 +523,7 @@
             </div>
           {/each}
           {#each lane.tasks as t (t.tip + ':' + t.id)}
-            <div class="mrow" class:urgent={(t.prioritate || '').toLowerCase() === 'urgent'} class:done={isDone(t.status)}>
+            <div class="mrow" class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0} class:done={isDone(t.status)}>
               <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
                 <span class="mrow-title">{t.titlu}</span>
                 <span class="mrow-meta">

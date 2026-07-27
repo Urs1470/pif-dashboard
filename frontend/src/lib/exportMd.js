@@ -71,10 +71,9 @@ export async function exportMarkdown(projectId) {
   // 3. Lista taskuri
   if (tasks.length > 0) {
     md += `## ${section++}. Listă taskuri\n\n`
-    const prioOrder = { urgent: 0, normal: 1, minor: 2 }
-    const prioBadge = { urgent: '[Urgent]', normal: '[Normal]', minor: '[Minor]' }
-    const pkey = (t) => (t.prioritate || 'normal').toLowerCase()
-    const sorted = [...tasks].sort((a, b) => (prioOrder[pkey(a)] ?? 1) - (prioOrder[pkey(b)] ?? 1))
+    // Prioritatea a plecat in v34: sortam dupa termen, cele fara termen la coada.
+    const cheie = (t) => (t.data_scadenta || '9999-12-31').slice(0, 10)
+    const sorted = [...tasks].sort((a, b) => cheie(a).localeCompare(cheie(b)))
 
     const pending = sorted.filter(t => t.status !== 'done')
     const done = sorted.filter(t => t.status === 'done')
@@ -82,7 +81,6 @@ export async function exportMarkdown(projectId) {
     if (pending.length > 0) {
       md += `### To Do\n\n`
       pending.forEach(t => {
-        const badge = prioBadge[pkey(t)] || '[Normal]'
         const term = t.data_scadenta ? ` · termen ${t.data_scadenta}` : ''
         md += `- [ ] ${escMd(t.titlu)} ${badge}${term}\n`
       })
@@ -91,7 +89,6 @@ export async function exportMarkdown(projectId) {
     if (done.length > 0) {
       md += `### Finalizate\n\n`
       done.forEach(t => {
-        const badge = prioBadge[pkey(t)] || '[Normal]'
         const finalizat = t.data_finalizare ? ` · finalizat ${t.data_finalizare.split('T')[0]}` : ''
         md += `- [x] ${escMd(t.titlu)} ${badge}${finalizat}\n`
       })

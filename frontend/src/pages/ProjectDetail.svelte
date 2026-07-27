@@ -11,7 +11,7 @@
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { PROJECT_STATUS_LABELS, TASK_STATUS_LABELS, STATUS_COLORS, formatDate, priorityColor, priorityLabel, isFutureRecurrence } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
@@ -53,7 +53,6 @@
   let editingTask = $state(null)
   let taskFormTitle = $state('')
   let taskFormDesc = $state('')
-  let taskFormPriority = $state('Normal')
   let taskFormDeadline = $state('')
   let taskFormRecurenta = $state('')
   let taskFormSaving = $state(false)
@@ -199,7 +198,6 @@
     editingTask = t
     taskFormTitle = t.titlu || ''
     taskFormDesc = t.descriere || ''
-    taskFormPriority = t.prioritate || 'Normal'
     taskFormDeadline = (t.data_scadenta || '').slice(0, 10)
     taskFormRecurenta = t.recurenta || ''
     showTaskEditModal = true
@@ -212,7 +210,6 @@
       await updateTask(editingTask.id, {
         titlu: taskFormTitle.trim(),
         descriere: taskFormDesc.trim(),
-        prioritate: taskFormPriority,
         data_scadenta: taskFormDeadline,
         recurenta: taskFormRecurenta || null,
       })
@@ -225,16 +222,6 @@
   }
 
   const TASK_STATUS_CYCLE = ['to_do', 'in_lucru', 'done']
-  async function cycleTaskStatus(t) {
-    const cur = t.status || 'to_do'
-    const next = TASK_STATUS_CYCLE[(TASK_STATUS_CYCLE.indexOf(cur) + 1) % TASK_STATUS_CYCLE.length]
-    tasks = tasks.map(x => x.id === t.id ? { ...x, status: next } : x)
-    const res = await updateTask(t.id, { status: next })
-    if (res?.recurring_spawned) {
-      toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
-    }
-    await reloadTasks()
-  }
 
   function openNoteModal(t) {
     noteTask = t
@@ -269,13 +256,6 @@
     toast('Task șters', 'success')
   }
 
-  const PRIO_CYCLE = ['normal', 'urgent', 'minor'] // dupa Normal urmeaza Urgent (cerinta Ion)
-  async function cycleTaskPriority(t) {
-    const cur = (t.prioritate || 'normal').toLowerCase()
-    const next = PRIO_CYCLE[(PRIO_CYCLE.indexOf(cur) + 1) % PRIO_CYCLE.length]
-    await updateTask(t.id, { prioritate: next })
-    await reloadTasks()
-  }
 
   // Subtask functions
   async function toggleTaskExpand(taskId) {
@@ -542,7 +522,7 @@
           <div class="task-list">
             {#each activeTasks as t, i (t.id)}
               <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border-strong)'}">
+                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
                   <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
@@ -564,8 +544,6 @@
                     </div>
                   </button>
                   <div class="task-actions">
-                    <button class="status-badge" style="color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[t.status] || 'var(--text-dim)'}" onclick={() => cycleTaskStatus(t)} title="Click pentru a schimba statusul">{TASK_STATUS_LABELS[t.status] || t.status || 'To Do'}</button>
-                    <button class="prio-badge" style="color: {priorityColor(t.prioritate || 'normal')}; border-color: {priorityColor(t.prioritate || 'normal')}" onclick={() => cycleTaskPriority(t)} title="Click pentru a schimba prioritatea">{priorityLabel(t.prioritate || 'normal')}</button>
                     <button class="task-edit" onclick={() => openTaskEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={13} /></button>
                     <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
                   </div>
@@ -621,7 +599,7 @@
               {#if showDoneTasks}
                 <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                 {#each doneTasks as t, i (t.id)}
-                  <div class="trow done" animate:flip={{ duration: motionDuration(DUR_BASE) }} use:focusOnLand={focusKey('task', t.id)} style="--sev: {t.prioritate ? priorityColor(t.prioritate) : 'var(--border-strong)'}">
+                  <div class="trow done" animate:flip={{ duration: motionDuration(DUR_BASE) }} use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
                     <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                     <button class="check" onclick={() => toggleTaskStatus(t)}>
                       <CheckCircle2 size={16} />
@@ -767,7 +745,6 @@
     </label>
     <div class="mf-row">
       <div class="mf-field">
-        <Select label="Prioritate" bind:value={taskFormPriority} options={['Normal', 'Minor', 'Urgent']} />
       </div>
       <div class="mf-field">
         <span class="mf-label">Deadline</span>
@@ -886,9 +863,8 @@
   .trow.done .check { color: var(--success); }
   .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
-  .status-badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
-  .status-badge:hover { opacity: .7; }
-  .status-badge:active { transform: scale(0.92); }
+  /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
+     iar severitatea se citeste din bordura din stanga, dupa termen. */
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
@@ -900,9 +876,6 @@
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .prio-badge { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: all var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); display: inline-block; min-width: 62px; text-align: center; }
-  .prio-badge:hover { opacity: .8; }
-  .prio-badge:active { transform: scale(0.92); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .tdeadline { font-size: var(--font-micro); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }

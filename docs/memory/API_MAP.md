@@ -11,17 +11,17 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
 | GET | `/api/stats` | `get_stats` | 42 |
-| GET | `/api/export/pdf` | `export_pdf` | 215 |
-| GET | `/api/export/ics` | `export_ics` | 282 |
-| GET | `/api/backup` | `backup_database` | 369 |
-| POST | `/api/restore` | `restore_database` | 396 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 529 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 575 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 652 |
-| GET | `/api/search` | `global_search` | 711 |
-| GET | `/api/settings/plan-departament` | `plan_departament_get` | 759 |
-| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 770 |
-| GET | `/api/calendar` | `calendar_view` | 787 |
+| GET | `/api/export/pdf` | `export_pdf` | 214 |
+| GET | `/api/export/ics` | `export_ics` | 281 |
+| GET | `/api/backup` | `backup_database` | 368 |
+| POST | `/api/restore` | `restore_database` | 395 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 528 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 574 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 651 |
+| GET | `/api/search` | `global_search` | 710 |
+| GET | `/api/settings/plan-departament` | `plan_departament_get` | 758 |
+| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 769 |
+| GET | `/api/calendar` | `calendar_view` | 786 |
 
 ## blueprints\obsidian.py (7 rute)
 
@@ -51,13 +51,13 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | PUT | `/api/clienti/<client_id>` | `update_client` | 399 |
 | DELETE | `/api/clienti/<client_id>` | `delete_client` | 433 |
 | GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 452 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 563 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 773 |
-| POST | `/api/import/debrief` | `import_debrief` | 822 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1063 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1074 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1100 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1134 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 562 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 772 |
+| POST | `/api/import/debrief` | `import_debrief` | 821 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1062 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1073 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1099 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1133 |
 
 ## blueprints\tasks.py (23 rute)
 
@@ -65,27 +65,27 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 |---|---|---|---|
 | GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 107 |
 | POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 154 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 199 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 271 |
-| GET | `/api/proiecte/<project_id>/gantt` | `get_project_gantt` | 303 |
-| POST | `/api/proiecte/<project_id>/dependencies` | `create_dependency` | 398 |
-| DELETE | `/api/dependencies/<dep_id>` | `delete_dependency` | 442 |
-| POST | `/api/proiecte/<project_id>/reschedule` | `reschedule_project` | 521 |
-| GET | `/api/proiecte/<project_id>/gantt.pdf` | `export_gantt_pdf` | 612 |
-| GET | `/api/proiecte/<project_id>/gantt.xlsx` | `export_gantt_xlsx` | 826 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 996 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 1007 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 1030 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 1045 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 1064 |
-| POST | `/api/global-tasks` | `create_global_task` | 1134 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 1170 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1185 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1251 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 1328 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1358 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 1407 |
-| GET | `/api/plan` | `get_plan` | 1448 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 198 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 268 |
+| GET | `/api/proiecte/<project_id>/gantt` | `get_project_gantt` | 300 |
+| POST | `/api/proiecte/<project_id>/dependencies` | `create_dependency` | 394 |
+| DELETE | `/api/dependencies/<dep_id>` | `delete_dependency` | 438 |
+| POST | `/api/proiecte/<project_id>/reschedule` | `reschedule_project` | 517 |
+| GET | `/api/proiecte/<project_id>/gantt.pdf` | `export_gantt_pdf` | 608 |
+| GET | `/api/proiecte/<project_id>/gantt.xlsx` | `export_gantt_xlsx` | 822 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 992 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 1003 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 1026 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 1041 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 1060 |
+| POST | `/api/global-tasks` | `create_global_task` | 1127 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 1162 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1177 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1241 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 1317 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1347 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 1396 |
+| GET | `/api/plan` | `get_plan` | 1437 |
 
 ## app.py (16 rute)
 

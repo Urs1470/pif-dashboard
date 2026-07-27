@@ -79,7 +79,10 @@ def close_db(exc=None):
 #      formular nu putea completa campul, deci nu s-a executat niciodata.
 # v33: taskul are O SINGURA data (`data_scadenta`). `data_planificata` a plecat:
 #      din 37 de taskuri, 6 aveau ambele si egale, 3 diferite cu exact o zi.
-SCHEMA_VERSION = 33
+# v34: taskul are doar facut/nefacut. `prioritate` a plecat (era saturata: 54% si
+#      80% „urgent"), iar statusul se restrange la to_do/done — restul valorilor
+#      erau in selector, dar pe zero randuri.
+SCHEMA_VERSION = 34
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1139,6 +1142,42 @@ def migrate_v32_to_v33():
     logger.info('Migration v32->v33 completed')
 
 
+def migrate_v33_to_v34():
+    """v33 -> v34: taskul are doar FACUT / NEFACUT. Prioritatea pleaca.
+
+    Ion: „in general as scapa si as sterge statusul taskurilor si prioritatea."
+    Ales explicit: doar facut / nefacut.
+
+    Statusul era deja mort: in baza reala existau doar `to_do` si `done`, in ambele
+    tabele. `in_lucru`, `in_asteptare` si `blocat` erau in selector si in labels.py,
+    dar niciun task nu le folosea.
+
+    Prioritatea era completata — dar saturata: 20 din 37 de taskuri de proiect si
+    12 din 15 globale erau „urgent". Cand majoritatea e urgenta, cuvantul nu mai
+    selecteaza nimic. (Se vedea si inconsecventa `Normal` vs `normal`, semn ca era
+    bifata mecanic.) De aceea pleaca, desi nu era ignorata.
+
+    Arhiva: raw/pif-dashboard/2026-07-27-inainte-de-v34/ in vault.
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    for tabel in ('tasks', 'global_tasks'):
+        cursor.execute(f"UPDATE {tabel} SET status = 'to_do' "
+                       f"WHERE status IS NULL OR status NOT IN ('to_do', 'done')")
+        if cursor.rowcount:
+            logger.info('Migration v33->v34: %s — %d status(uri) normalizate la to_do'
+                        % (tabel, cursor.rowcount))
+        cols = {r[1] for r in cursor.execute(f'PRAGMA table_info({tabel})')}
+        if 'prioritate' in cols:
+            cursor.execute(f'DROP INDEX IF EXISTS idx_{tabel}_prioritate')
+            cursor.execute(f'ALTER TABLE {tabel} DROP COLUMN prioritate')
+            logger.info(f'Migration v33->v34: dropped {tabel}.prioritate')
+    conn.commit()
+    conn.close()
+    logger.info('Migration v33->v34 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1303,6 +1342,11 @@ def run_migrations():
         set_schema_version(33)
         current_version = 33
 
+    if current_version < 34:
+        migrate_v33_to_v34()
+        set_schema_version(34)
+        current_version = 34
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1407,7 +1451,6 @@ def init_db():
             proiect_id TEXT NOT NULL,
             titlu TEXT NOT NULL,
             status TEXT DEFAULT 'to_do',
-            prioritate TEXT DEFAULT 'normal',
             data_scadenta TEXT,
             data_finalizare TEXT,
             ordine INTEGER DEFAULT 0,
@@ -1454,7 +1497,6 @@ def init_db():
             id TEXT PRIMARY KEY,
             titlu TEXT NOT NULL,
             descriere TEXT,
-            prioritate TEXT DEFAULT 'Normal',
             status TEXT DEFAULT 'to_do',
             categorie TEXT DEFAULT 'General',
             data_scadenta TEXT,
