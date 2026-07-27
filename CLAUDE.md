@@ -120,6 +120,30 @@ Vocabular: **perioada** = interval (unde esti), **termen** = punct (pana cand). 
 mai foloseste ca eticheta — sertarele sunt „Proiecte fara perioada" (Calendar) si „Taskuri
 fara termen" (Planificator), lucruri diferite cu nume care o spun.
 
+### Cum arata o zi in Calendar
+
+Prima versiune desena UN bloc per client, etichetat „Continental · 4 lucrari". Datele reale
+au aratat de ce e gresit: din 12 perioade ale anului, **11 sunt la Continental**. Codam prin
+culoare si grupare exact dimensiunea care nu variaza, si ascundeam dupa un click singura care
+variaza — ce lucrare faci. Acum:
+
+- **O bara per lucrare**, cu numele lucrarii (`implementari.eticheta`), nu al clientului.
+- **Culoarea urmareste proiectul**, ca aceeasi lucrare sa fie acelasi lucru de la o zi la alta.
+- **Banda (randul) e stabila pe toata durata lucrarii** — impachetare clasica pe intervale,
+  cu randuri goale ca distantiere. Fara asta, o lucrare de doua zile apare pe randul 1 luni si
+  pe randul 2 marti, iar bara nu mai citeste ca un singur lucru.
+- **Antetul zilei are inaltime FIXA** (numar + captura deplasarii). Captura a stat initial pe
+  rand propriu si impingea barele in jos doar in zilele de plecare — un rand in plus intr-o
+  singura celula desincronizeaza toata saptamana.
+- Captura deplasarii apare **doar in ziua in care incepe** si e manerul cu care muti toata
+  iesirea; bara mutata singura muta doar lucrarea ei.
+- Inaltimea celulei urmeaza numarul real de benzi din fereastra, ca lunile rare sa nu aiba
+  jumatate de celula goala.
+- Pe telefon (sub 620px) nu incape text intr-o celula de ~48px: raman barele colorate si
+  numarul de lucrari, iar detaliul e in panoul de deasupra.
+- Cand ziua selectata e goala, panoul arata **„Urmeaza"** — altfel ai naviga luni intregi
+  goale ca sa afli cand iesi data viitoare.
+
 ### Planul de departament (`/departament`)
 
 Planul intregii echipe sta intr-o aplicatie externa (`app.projectplan-powerpoint.com`) si e

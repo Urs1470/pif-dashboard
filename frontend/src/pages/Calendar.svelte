@@ -134,7 +134,6 @@
   })
 
   function grupurile(iso) { return grupuriPeZi.get(iso) || [] }
-  function areGrup(iso, cheie) { return grupurile(iso).some(b => b.cheie === cheie) }
 
   /** Ziua e impartita intre locuri diferite? (doi clienti, sau sediu + teren) */
   function impartita(iso) { return grupurile(iso).length > 1 }
@@ -181,16 +180,6 @@
 
   function deplasareaLui(b, iso) { return deplasareaZilei.get(`${iso}|${b.cheie}`) }
 
-  /** Eticheta blocului: numele lucrarii DOAR cand iesirea e o zi cu o lucrare —
-   *  altfel identitatea deplasarii (client + cate lucrari are in total). */
-  function etichetaGrup(b, iso) {
-    const d = deplasareaLui(b, iso)
-    const n = d ? d.items.size : b.items.length
-    const oSinguraZi = d ? d.start === d.end : true
-    if (oSinguraZi && n === 1) return b.items[0].eticheta || (b.sediu ? 'Sediu' : scurt(b.client))
-    return `${b.sediu ? 'Sediu' : scurt(b.client)} · ${n} ${n === 1 ? 'lucrare' : 'lucrări'}`
-  }
-
   // O deplasare = zile CONSECUTIVE cu acelasi grup de teren. 28-29-30 la
   // Continental = o singura iesire; o pauza de o zi rupe deplasarea in doua.
   const rezumat = $derived.by(() => {
@@ -212,19 +201,91 @@
   const selectate = $derived(aleZilei(selectata))
   const grupuriSelectate = $derived(grupurile(selectata))
 
-  // Legenda arata DOAR clientii din fereastra curenta — o legenda fixa cu toti
-  // clientii ar fi zgomot cand luna are un singur client (cazul obisnuit).
-  const legenda = $derived.by(() => {
+  // ===== asezarea pe benzi =====
+  // Ce s-a schimbat si de ce: pana acum ziua arata UN bloc per client, etichetat
+  // „Continental · 4 lucrari". Dar din 12 perioade ale anului, 11 sunt la
+  // Continental — deci codam prin culoare si grupare exact dimensiunea care NU
+  // variaza, si ascundeam dupa un click singura care variaza: ce lucrare faci.
+  // Acum fiecare LUCRARE are bara ei, cu numele ei.
+  //
+  // Banda (randul) e stabila pe toata durata lucrarii. Fara asta, o lucrare de
+  // doua zile ar aparea pe randul 1 luni si pe randul 2 marti, iar bara n-ar mai
+  // citi ca un singur lucru — ar sari. Impachetarea e cea clasica pe intervale:
+  // primul rand liber, in ordinea inceputului.
+  const MAX_BENZI = 3
+
+  const benzi = $derived.by(() => {
     const m = new Map()
-    for (const g of grila) {
-      if (g.alta) continue
-      for (const p of aleZilei(g.iso)) {
-        const c = (p.client || '').trim()
-        const cheie = c || '—'
-        m.set(cheie, (m.get(cheie) || 0) + 1)
-      }
+    const items = [...(data?.perioade || [])].sort((a, b) =>
+      (a.data_start || '').localeCompare(b.data_start || '') ||
+      String(a.id).localeCompare(String(b.id)))
+    const ultima = []                       // ultima[banda] = ultima zi ocupata
+    for (const p of items) {
+      const a = p.data_start
+      const b = p.data_sfarsit || p.data_start
+      let l = 0
+      while (ultima[l] !== undefined && ultima[l] >= a) l++
+      ultima[l] = b
+      m.set(p.id, l)
     }
-    return [...m.keys()].sort().map(c => ({ nume: c, scurt: scurt(c), culoare: culoare(c === '—' ? '' : c) }))
+    return m
+  })
+
+  const nrBenzi = $derived.by(() => {
+    let max = 0
+    for (const g of grila) {
+      for (const p of aleZilei(g.iso)) max = Math.max(max, (benzi.get(p.id) ?? 0) + 1)
+    }
+    return Math.min(MAX_BENZI, max)
+  })
+
+  /** Randurile zilei: pozitia din array E banda, `null` = rand gol (distantier,
+   *  ca barele vecine sa ramana aliniate pe orizontala). */
+  function randurileZilei(iso) {
+    const randuri = new Array(nrBenzi).fill(null)
+    let ascunse = 0
+    for (const p of aleZilei(iso)) {
+      const l = benzi.get(p.id) ?? 0
+      if (l < nrBenzi) randuri[l] = p
+      else ascunse++
+    }
+    return { randuri, ascunse }
+  }
+
+  function esteInceput(p, iso) { return iso === p.data_start }
+  function esteSfarsit(p, iso) { return iso === (p.data_sfarsit || p.data_start) }
+
+  /** Numele lucrarii, nu al clientului: „Montaj", nu „Continental". */
+  function etichetaLucrare(p) {
+    return (p.eticheta || '').trim() || (p.nume || '').trim() || '—'
+  }
+
+  /** Pentru bara din grila: fara detaliul din paranteze. Intr-o celula de ~145px
+   *  „Upgrade PILZ + MM (Apex 4/5/7/10)" se taia fix dupa „(Ap...", adica pierdeai
+   *  si detaliul, si finalul numelui. Textul intreg ramane in tooltip si in
+   *  panoul zilei, unde exista loc. */
+  function etichetaBara(p) {
+    return etichetaLucrare(p).replace(/\s*\([^)]*\)\s*/g, ' ').trim() || etichetaLucrare(p)
+  }
+
+  /** Culoarea urmareste PROIECTUL, ca aceeasi lucrare sa fie acelasi lucru de la
+   *  o zi la alta. Pe client n-avea sens: aproape tot e Continental. */
+  function culoareLucrare(p) { return culoare(p.proiect_id || p.nume) }
+
+  /** Deplasarile care INCEP in ziua asta — captura mica de deasupra barelor.
+   *  Doar la inceput, nu in fiecare zi: altfel „Continental" s-ar repeta peste tot. */
+  function incepDeplasari(iso) {
+    return deplasari.filter(d => d.start === iso)
+  }
+
+  // Ce urmeaza, cand ziua selectata e goala: pagina trebuie sa raspunda la
+  // „cand ies data viitoare" fara sa navighezi luni intregi. Perioadele din
+  // fereastra sunt deja incarcate; luam prima care incepe dupa ziua selectata.
+  const ceUrmeaza = $derived.by(() => {
+    const dupa = deplasari
+      .filter(d => d.start >= selectata)
+      .sort((a, b) => a.start.localeCompare(b.start))
+    return dupa[0] || null
   })
 
   // ===== navigatie =====
@@ -308,12 +369,12 @@
   /** Muta o deplasare intreaga: toate lucrarile ei se decaleaza cu acelasi
    *  numar de zile, deci forma iesirii se pastreaza (2 zile raman 2 zile,
    *  iar lucrarea care incepea a doua zi tot a doua zi incepe). */
-  async function mutaGrup(b, ziSursa, ziTinta) {
+  async function mutaGrup(lucrari, ziSursa, ziTinta) {
     const delta = diffDays(ziSursa, ziTinta)
     if (!delta) return
-    busy = b.cheie
+    busy = ziSursa
     try {
-      for (const p of b.items) {
+      for (const p of lucrari) {
         await apiJson(`/api/implementari/${p.id}`, {
           method: 'PUT',
           body: {
@@ -322,8 +383,8 @@
           },
         })
       }
-      toast(b.items.length > 1
-        ? `Deplasare mutată — ${b.items.length} lucrări`
+      toast(lucrari.length > 1
+        ? `Deplasare mutată — ${lucrari.length} lucrări`
         : `Mutat pe ${shortDate(ziTinta)}`, 'success')
       selectata = ziTinta
       await load(true)
@@ -331,10 +392,18 @@
   }
 
   // ===== drag & drop =====
-  function dragGrup(e, b, iso) {
-    dragged = { tip: 'grup', b, iso }
+  // Doua manere, doua intelesuri, ca sa nu trebuiasca sa alegi dintr-un meniu:
+  //   bara      -> muti LUCRAREA aia
+  //   captura   -> muti toata DEPLASAREA, pastrandu-i forma
+  function dragLucrare(e, p) {
+    dragged = { tip: 'lucrare', p }
     e.dataTransfer.effectAllowed = 'move'
-    try { e.dataTransfer.setData('text/plain', b.cheie) } catch (_) {}
+    try { e.dataTransfer.setData('text/plain', String(p.id)) } catch (_) {}
+  }
+  function dragDeplasare(e, d) {
+    dragged = { tip: 'deplasare', d }
+    e.dataTransfer.effectAllowed = 'move'
+    try { e.dataTransfer.setData('text/plain', d.cheie) } catch (_) {}
   }
   function dragProiect(e, proj) {
     dragged = { tip: 'proiect', proj }
@@ -344,7 +413,7 @@
   function overZi(e, iso) {
     if (!dragged) return
     e.preventDefault()
-    e.dataTransfer.dropEffect = dragged.tip === 'grup' ? 'move' : 'copy'
+    e.dataTransfer.dropEffect = dragged.tip === 'proiect' ? 'copy' : 'move'
     dropZi = iso
   }
   function dropPeZi(e, iso) {
@@ -353,7 +422,8 @@
     const d = dragged
     dragged = null
     dropZi = ''
-    if (d.tip === 'grup') { if (d.iso !== iso) mutaGrup(d.b, d.iso, iso) }
+    if (d.tip === 'lucrare') { if (d.p.data_start !== iso) muta(d.p, iso) }
+    else if (d.tip === 'deplasare') { if (d.d.start !== iso) mutaGrup([...d.d.items.values()], d.d.start, iso) }
     else planifica(d.proj, iso)
   }
   function endDrag() { dragged = null; dropZi = '' }
@@ -426,11 +496,15 @@
         <div class="wd">
           {#each WEEKDAYS as w}<span>{w}</span>{/each}
         </div>
-        <div class="grid" class:sapt={mod === 'saptamani'}>
+        <!-- Inaltimea celulei urmeaza numarul real de benzi din fereastra: o luna
+             cu o singura lucrare pe zi nu mai are jumatate de celula goala, iar
+             una densa ca augustul incape fara sa strivim barele. -->
+        <div class="grid" class:sapt={mod === 'saptamani'} style="--benzi: {Math.max(1, nrBenzi)}">
           {#each grila as g (g.iso)}
             {@const items = aleZilei(g.iso)}
-            {@const grupuri = grupurile(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
+            {@const zi = randurileZilei(g.iso)}
+            {@const capturi = incepDeplasari(g.iso)}
             <button
               class="zi"
               class:alta={g.alta}
@@ -444,47 +518,68 @@
               ondragover={(e) => overZi(e, g.iso)}
               ondrop={(e) => dropPeZi(e, g.iso)}
             >
-              <span class="n">{parseISO(g.iso).getDate()}</span>
+              <!-- Antetul zilei e o linie de inaltime FIXA: numarul + captura
+                   deplasarii. Captura a stat initial pe rand propriu si impingea
+                   barele in jos doar in zilele de plecare — asa, bara de patru
+                   zile nu se mai lega intre 3 si 4 august, adica exact ce trebuia
+                   sa repare benzile. Un rand in plus intr-o singura celula strica
+                   alinierea intregii saptamani. -->
+              <div class="zi-h">
+                <span class="n">{parseISO(g.iso).getDate()}</span>
+                {#each capturi as d (d.cheie)}
+                  <span class="cap" class:sediu={d.sediu}
+                        draggable="true"
+                        ondragstart={(e) => { e.stopPropagation(); dragDeplasare(e, d) }}
+                        ondragend={endDrag}
+                        title="{d.sediu ? 'La sediu' : 'Deplasare'}{d.client ? ' · ' + d.client : ''} · {d.items.size} {d.items.size === 1 ? 'lucrare' : 'lucrări'}&#10;Trage ca să muți toată ieșirea">
+                    {#if d.sediu}<Building2 size={9} />{:else}<MapPin size={9} />{/if}{d.sediu && d.client ? `Sediu · ${scurt(d.client)}` : d.sediu ? 'Sediu' : scurt(d.client)}
+                  </span>
+                {/each}
+              </div>
               {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>
               {:else if termeneleZilei(g.iso).length}
                 <span class="term" title="Termen: {termeneleZilei(g.iso).map(t => t.nume).join(', ')}"><Flag size={11} /></span>
               {/if}
+
+              <!-- O bara per LUCRARE, pe banda ei. Randurile goale sunt
+                   distantiere: fara ele, o lucrare de doua zile s-ar muta de pe
+                   un rand pe altul si bara n-ar mai citi ca un singur lucru. -->
               <div class="segs">
-                {#each grupuri as b (b.cheie)}
-                  {@const start = !areGrup(addDays(g.iso, -1), b.cheie)}
-                  {@const end = !areGrup(addDays(g.iso, 1), b.cheie)}
-                  <div class="seg" class:start class:end class:sediu={b.sediu}
-                       style="--c: {culoare(b.client)}"
-                       draggable="true"
-                       ondragstart={(e) => { e.stopPropagation(); dragGrup(e, b, g.iso) }}
-                       ondragend={endDrag}
-                       title="{b.sediu ? 'La sediu' : 'Deplasare'}{b.client ? ' · ' + b.client : ''}&#10;{b.items.map(p => '· ' + p.nume + (p.eticheta ? ' — ' + p.eticheta : '')).join('&#10;')}">
-                    <!-- Eticheta pe FIECARE zi a deplasarii, nu doar pe prima.
-                         Inainte, zilele de mijloc aveau bara goala si textul cazut
-                         dedesubt, gri: aceeasi iesire arata ca trei lucruri
-                         diferite. Continuitatea o dau colturile rotunjite
-                         (.start/.end), nu absenta etichetei. -->
-                    <span class="seg-t">{etichetaGrup(b, g.iso)}</span>
-                  </div>
+                {#each zi.randuri as p, l (l)}
+                  {#if p}
+                    <div class="seg" class:start={esteInceput(p, g.iso)} class:end={esteSfarsit(p, g.iso)}
+                         class:sediu={p.locatie === 'sediu'}
+                         style="--c: {culoareLucrare(p)}"
+                         draggable="true"
+                         ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, p) }}
+                         ondragend={endDrag}
+                         title="{p.nume}{p.eticheta ? '&#10;' + p.eticheta : ''}&#10;{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ' – ' + shortDate(p.data_sfarsit) : ''}{p.locatie === 'sediu' ? ' · la sediu' : ''}&#10;Trage ca să muți lucrarea">
+                      <span class="seg-t">{etichetaBara(p)}</span>
+                    </div>
+                  {:else}
+                    <div class="seg-gol" aria-hidden="true"></div>
+                  {/if}
                 {/each}
               </div>
-              {#if grupuri.length}
-                <!-- Doar pe telefon: sub 620px bara are 12px si textul din ea e
-                     ascuns, deci punem numele scurt al locului sub zi. -->
-                <span class="grp">{grupuri.length === 1
-                  ? (grupuri[0].sediu ? 'Sediu' : scurt(grupuri[0].client))
-                  : `${grupuri.length} locuri`}</span>
+              {#if zi.ascunse}<span class="plus">+{zi.ascunse}</span>{/if}
+              {#if items.length > 1}
+                <!-- Doar pe telefon. La 390px o celula are ~48px: nu incape text,
+                     iar „Upg…" nu spune nimic. Numarul de lucrari se citeste, si
+                     detaliul e oricum in panoul de deasupra, la o atingere. -->
+                <span class="grp">{items.length}</span>
               {/if}
             </button>
           {/each}
         </div>
 
-        {#if legenda.length}
+        <!-- Legenda de culori a plecat: culoarea urmareste proiectul, iar numele
+             lucrarii scrie chiar in bara, deci o legenda ar repeta ce se vede.
+             Ramane doar textura, care nu se poate citi altfel. -->
+        {#if data.perioade?.length}
           <div class="leg">
-            {#each legenda as l (l.nume)}
-              <span class="leg-i" title={l.nume}><i style="background: {l.culoare}"></i>{l.scurt}</span>
-            {/each}
-            <span class="leg-i sep" title="Zilele la sediu apar hașurat, cele pe teren pline"><i class="hatch"></i>sediu</span>
+            <span class="leg-i" title="Zilele la sediu apar hașurat, cele pe teren pline"><i class="hatch"></i>la sediu</span>
+            <span class="leg-i"><i class="plin"></i>pe teren</span>
+            <span class="leg-i"><Flag size={11} /> termen</span>
           </div>
         {/if}
       </div>
@@ -505,7 +600,7 @@
               {/if}
             </div>
             {#each selectate as p (p.id)}
-              <div class="it" style="--c: {culoare(p.client)}" in:fade={{ duration: motionDuration(DUR_BASE) }}>
+              <div class="it" style="--c: {culoareLucrare(p)}" in:fade={{ duration: motionDuration(DUR_BASE) }}>
                 <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
                   {p.nume}<ExternalLink size={12} />
                 </button>
@@ -547,7 +642,23 @@
               </div>
             {/each}
           {:else if !termeneleZilei(selectata).length}
-            <div class="gol">Liber. Trage un proiect din „Proiecte fără perioadă" ca să-l planifici aici.</div>
+            <!-- O zi goala nu trebuie sa fie un ecran gol. Intrebarea reala nu e
+                 „ce e azi", ci „cand ies data viitoare" — mai ales ca lunile
+                 intregi sunt libere si altfel ai naviga in gol ca s-o afli. -->
+            <div class="gol">Liber.</div>
+            {#if ceUrmeaza}
+              <button class="urm" onclick={() => { selectata = ceUrmeaza.start; anchor = monthStart(ceUrmeaza.start) }}>
+                <span class="urm-h">Urmează</span>
+                <span class="urm-d">
+                  {#if ceUrmeaza.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}
+                  {ceUrmeaza.sediu ? 'Sediu' : scurt(ceUrmeaza.client)}
+                  · {shortDate(ceUrmeaza.start)}{#if ceUrmeaza.start !== ceUrmeaza.end}–{shortDate(ceUrmeaza.end)}{/if}
+                </span>
+                <span class="urm-l">{[...ceUrmeaza.items.values()].map(etichetaLucrare).join(' · ')}</span>
+              </button>
+            {:else}
+              <div class="gol">Trage un proiect din „Proiecte fără perioadă" ca să-l planifici aici.</div>
+            {/if}
           {/if}
 
           {#each termeneleZilei(selectata) as t (t.proiect_id)}
@@ -614,11 +725,12 @@
   .wd span { font-size: var(--font-micro); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
-  .zi { position: relative; min-height: 76px; padding: 5px 5px 4px; border-radius: var(--radius-md);
+  .zi { position: relative; min-height: calc(38px + var(--benzi, 1) * 20px); padding: 5px 5px 4px; border-radius: var(--radius-md);
         border: 1px solid var(--border); background: var(--bg-elevated); text-align: left; cursor: pointer;
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
         transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
-  .grid.sapt .zi { min-height: 104px; }
+  /* In „2 sapt." sunt doar doua randuri de afisat, deci celulele pot respira. */
+  .grid.sapt .zi { min-height: calc(62px + var(--benzi, 1) * 20px); }
   .zi:hover { border-color: var(--border-strong); }
   .zi.alta { opacity: 0.42; }
   .zi.we { background: color-mix(in srgb, var(--purple) 5%, var(--bg-elevated)); }
@@ -657,15 +769,36 @@
   .seg.sediu { background: repeating-linear-gradient(135deg,
       color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
       transparent 4px 8px); }
+  /* Rand gol = distantier. Trebuie sa aiba EXACT inaltimea unei bare, altfel
+     benzile vecine nu se mai aliniaza si continuitatea pe orizontala se pierde. */
+  .seg-gol { min-height: 17px; }
   .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Antet de inaltime fixa — vezi comentariul din template: orice variatie aici
+     desincronizeaza benzile pe orizontala. nowrap + overflow hidden garanteaza
+     ca ramane pe un rand oricat de lung ar fi numele clientului. */
+  .zi-h { display: flex; align-items: center; gap: 5px; min-height: 15px; max-width: 100%;
+          white-space: nowrap; overflow: hidden; padding-right: 14px; }
+  .cap { display: inline-flex; align-items: center; gap: 3px; min-width: 0;
+         padding: 0 5px 0 3px; border-radius: var(--radius-full);
+         font-size: var(--font-micro); line-height: 1.45; color: var(--text-secondary);
+         background: var(--bg-hover); border: 1px solid var(--border); cursor: grab;
+         overflow: hidden; text-overflow: ellipsis; }
+  .cap:active { cursor: grabbing; }
+  .cap.sediu { color: var(--text-dim); }
+
+  .plus { align-self: flex-start; font-size: var(--font-micro); color: var(--text-faint); }
   /* Eticheta de sub zi e ACUM exclusiv pentru telefon — pe desktop textul sta in
-     bara, pe fiecare zi a deplasarii. */
-  .grp { display: none; font-size: var(--font-micro); color: var(--text-faint); margin-top: auto; }
+     bara, pe fiecare zi a deplasarii. Un singur rand, obligatoriu: lasata sa se
+     impacheteze, umfla celula si trage dupa ea tot randul de saptamana. */
+  .grp { display: none; font-size: var(--font-micro); color: var(--text-faint); margin-top: auto;
+         max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
   .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-dim); }
   .leg-i i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .leg-i i.hatch { background: repeating-linear-gradient(135deg, var(--text-faint) 0 2px, transparent 2px 4px); border: 1px solid var(--border-strong); }
+  .leg-i i.plin { background: color-mix(in srgb, var(--text-faint) 45%, transparent); border: 1px solid var(--border-strong); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
@@ -675,6 +808,14 @@
   .cnt { padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); letter-spacing: 0; }
   .pan-hint { font-size: var(--font-micro); color: var(--text-faint); margin: 4px 0 8px; }
   .gol { font-size: var(--font-tiny); color: var(--text-dim); }
+
+  .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: 10px;
+         padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);
+         background: var(--bg-elevated); cursor: pointer; }
+  .urm:hover { border-color: var(--accent); }
+  .urm-h { font-size: var(--font-micro); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .urm-d { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); }
+  .urm-l { font-size: var(--font-micro); color: var(--text-dim); line-height: 1.45; }
 
   .it { border-left: 3px solid var(--c); padding: 2px 0 2px 9px; margin-bottom: 12px; }
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; }
@@ -707,10 +848,13 @@
   }
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
-    .zi { min-height: 58px; }
-    .grid.sapt .zi { min-height: 76px; }
+    .zi { min-height: calc(30px + var(--benzi, 1) * 14px); }
+    .grid.sapt .zi { min-height: calc(46px + var(--benzi, 1) * 14px); }
     .seg-t { display: none; }
-    .grp { display: block; }
+    /* Captura se taia oricum la o felie ilizibila intr-o celula de ~48px, iar
+       „unde ești" scrie in panoul de deasupra. */
+    .cap { display: none; }
+    .grp { display: block; text-align: right; }
     .seg { min-height: 12px; }
   }
 </style>
