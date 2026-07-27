@@ -123,9 +123,56 @@
   /** Ziua e impartita intre locuri diferite? (doi clienti, sau sediu + teren) */
   function impartita(iso) { return grupurile(iso).length > 1 }
 
-  function etichetaGrup(b) {
-    if (b.items.length > 1) return `${b.sediu ? 'Sediu' : scurt(b.client)} · ${b.items.length} lucrări`
-    return b.items[0].eticheta || (b.sediu ? 'Sediu' : scurt(b.client))
+  // O DEPLASARE = rulajul contiguu de zile cu aceeasi cheie de grup. O construim
+  // explicit ca sa putem eticheta blocul cu identitatea iesirii, nu cu numele
+  // unei lucrari: pe 28 era doar „Migrare CU240S", dar blocul tine pana pe 30,
+  // asa ca eticheta aia facea sa para ca migrarea dureaza trei zile.
+  const deplasari = $derived.by(() => {
+    const perCheie = new Map()
+    for (const iso of [...grupuriPeZi.keys()].sort()) {
+      for (const b of grupurile(iso)) {
+        if (!perCheie.has(b.cheie)) perCheie.set(b.cheie, [])
+        perCheie.get(b.cheie).push({ iso, b })
+      }
+    }
+    const out = []
+    for (const [cheie, lista] of perCheie) {
+      let cur = null
+      for (const { iso, b } of lista) {
+        if (cur && diffDays(cur.end, iso) === 1) cur.end = iso
+        else {
+          cur = { cheie, client: b.client, sediu: b.sediu, start: iso, end: iso, items: new Map() }
+          out.push(cur)
+        }
+        for (const p of b.items) cur.items.set(p.id, p)
+      }
+    }
+    return out
+  })
+
+  const deplasareaZilei = $derived.by(() => {
+    const m = new Map()
+    for (const d of deplasari) {
+      let iso = d.start
+      for (;;) {
+        m.set(`${iso}|${d.cheie}`, d)
+        if (iso === d.end) break
+        iso = addDays(iso, 1)
+      }
+    }
+    return m
+  })
+
+  function deplasareaLui(b, iso) { return deplasareaZilei.get(`${iso}|${b.cheie}`) }
+
+  /** Eticheta blocului: numele lucrarii DOAR cand iesirea e o zi cu o lucrare —
+   *  altfel identitatea deplasarii (client + cate lucrari are in total). */
+  function etichetaGrup(b, iso) {
+    const d = deplasareaLui(b, iso)
+    const n = d ? d.items.size : b.items.length
+    const oSinguraZi = d ? d.start === d.end : true
+    if (oSinguraZi && n === 1) return b.items[0].eticheta || (b.sediu ? 'Sediu' : scurt(b.client))
+    return `${b.sediu ? 'Sediu' : scurt(b.client)} · ${n} ${n === 1 ? 'lucrare' : 'lucrări'}`
   }
 
   // O deplasare = zile CONSECUTIVE cu acelasi grup de teren. 28-29-30 la
@@ -370,7 +417,7 @@
                        ondragstart={(e) => { e.stopPropagation(); dragGrup(e, b, g.iso) }}
                        ondragend={endDrag}
                        title="{b.sediu ? 'La sediu' : 'Deplasare'}{b.client ? ' · ' + b.client : ''}&#10;{b.items.map(p => '· ' + p.nume + (p.eticheta ? ' — ' + p.eticheta : '')).join('&#10;')}">
-                    {#if start}<span class="seg-t">{etichetaGrup(b)}</span>{/if}
+                    {#if start}<span class="seg-t">{etichetaGrup(b, g.iso)}</span>{/if}
                   </div>
                 {/each}
               </div>
@@ -378,7 +425,7 @@
                 <!-- zi de continuare: blocurile n-au eticheta (ea sta pe prima zi
                      a deplasarii), deci spunem aici unde esti — altfel a doua zi
                      a unei iesiri arata ca niste dungi fara sens -->
-                <span class="grp">{grupuri.length === 1 ? etichetaGrup(grupuri[0]) : `${grupuri.length} locuri`}</span>
+                <span class="grp">{grupuri.length === 1 ? etichetaGrup(grupuri[0], g.iso) : `${grupuri.length} locuri`}</span>
               {/if}
             </button>
           {/each}
@@ -405,7 +452,8 @@
                 <!-- la sediu NU esti in deplasare: nu urci in masina -->
                 <Building2 size={13} /> la sediu{grupuriSelectate[0].client ? ' · ' + scurt(grupuriSelectate[0].client) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
               {:else}
-                <MapPin size={13} /> o deplasare{grupuriSelectate[0]?.client ? ' · ' + scurt(grupuriSelectate[0].client) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
+                {@const d = grupuriSelectate[0] ? deplasareaLui(grupuriSelectate[0], selectata) : null}
+                <MapPin size={13} /> o deplasare{grupuriSelectate[0]?.client ? ' · ' + scurt(grupuriSelectate[0].client) : ''}{#if d && d.start !== d.end}{' · '}{shortDate(d.start)}–{shortDate(d.end)}, {d.items.size} {d.items.size === 1 ? 'lucrare' : 'lucrări'} în total{:else}{' · '}{selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}{/if}
               {/if}
             </div>
             {#each selectate as p (p.id)}
@@ -543,7 +591,6 @@
       color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
       transparent 4px 8px); }
   .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .plus { font-size: var(--font-micro); color: var(--text-faint); }
   .grp { font-size: var(--font-micro); color: var(--text-faint); margin-top: auto; }
 
   .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }

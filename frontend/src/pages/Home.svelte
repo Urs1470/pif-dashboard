@@ -229,7 +229,6 @@
   .card-head { display: flex; align-items: center; gap: 9px; padding: 12px var(--space-md); border-bottom: 1px solid var(--border); }
   .ch-ico { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ch-ico.ico-red { background: var(--danger-subtle); color: var(--danger); }
-  .ch-ico.ico-vio { background: var(--purple-subtle); color: var(--purple); }
   .ch-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 

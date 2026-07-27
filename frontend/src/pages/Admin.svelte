@@ -285,11 +285,6 @@
   textarea { width: 100%; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); font-family: var(--font-mono); resize: vertical; transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   textarea:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .result-link { font-size: var(--font-small); color: var(--accent); }
-  .issues { display: flex; flex-direction: column; gap: var(--space-xs); }
-  .issue { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-small); }
-  .issue-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .issue-label { flex: 1; color: var(--text-secondary); }
-  .issue-count { font-weight: var(--fw-semibold); color: var(--text); font-feature-settings: "tnum"; }
   .obs-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .obs-status { font-size: var(--font-tiny); color: var(--danger); }
   .obs-status.ok { color: var(--success); }

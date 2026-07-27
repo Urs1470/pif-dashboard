@@ -84,11 +84,14 @@
   // Echipamente + Atasamente scoase din navigatie (2026-07-27, pregatire v28):
   // parametrii de drive stau in wiki (skill drive-backup), backup-urile brute in
   // raw/projects/<slug>/. Codul ramane pana la migratie.
+  // Tabul „Info" a fost scos (2026-07-27): repeta antetul README-ului din wiki
+  // (Client, Locație, Cod proiect, Nr. comandă), iar 4 din 10 campuri erau
+  // aproape mereu goale. Datele au trecut in bara laterala, iar editorul de
+  // perioade — singurul lucru nedublat de acolo — a trecut la Gantt.
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'gantt', label: 'Gantt', icon: CalendarRange },
     { key: 'wiki', label: 'Wiki', icon: BookOpen },
-    { key: 'info', label: 'Info', icon: Settings2 },
   ]
 
   // Wiki tab — notele proiectului din vault-ul Obsidian (read-only, lazy load)
@@ -393,6 +396,19 @@
 
   onMount(() => { load() })
 
+  // Datele de identificare, mutate in bara laterala din fostul tab „Info"
+  // (2026-07-27): tabul repeta antetul README-ului din wiki, iar 4 din 10 campuri
+  // erau aproape mereu goale. Randurile fara valoare nu se deseneaza deloc.
+  const detalii = $derived(([
+    ['Locație', project?.locatie],
+    ['Producător', project?.producator],
+    ['Cod proiect', project?.cod_proiect],
+    ['Nr. comandă', project?.nr_comanda],
+    ['Nr. contract', project?.nr_contract],
+    ['PM', project?.pm],
+    ['Început', project?.data_incepere ? formatDate(project.data_incepere) : ''],
+  ]).filter(([, v]) => String(v ?? '').trim()))
+
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
   // Hide a recurring task's next occurrence until its scadenta arrives (see Tasks.svelte).
   const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat' && !isFutureRecurrence(t)))
@@ -623,6 +639,11 @@
 
       {:else if activeTab === 'gantt'}
         <ProjectGantt projectId={params.id} onOpenTask={openTaskFromGantt} />
+        <!-- Perioadele de implementare stateau in fostul tab „Info", langa datele
+             de identificare — n-aveau ce cauta acolo. Locul lor e aici: sunt
+             unitatea reala de planificare a proiectului, iar Ganttul e vederea
+             lui in timp. -->
+        <div style="margin-top: var(--space-md)"><ImplPeriods projectId={params.id} /></div>
 
       {:else if activeTab === 'wiki'}
         {#if wikiListLoading}
@@ -670,13 +691,6 @@
           {/if}
         {/if}
 
-      {:else if activeTab === 'info'}
-        <div class="igrid">
-          {#each [['Client', project.client], ['Locație', project.locatie], ['Echipament', project.echipament_principal], ['Producător', project.producator], ['Cod proiect', project.cod_proiect], ['PM', project.pm], ['Nr. comandă', project.nr_comanda], ['Nr. contract', project.nr_contract], ['Data începere', formatDate(project.data_incepere)], ['Deadline', formatDate(project.deadline)]] as [label, val]}
-            <div class="irow"><span class="ilabel">{label}</span><span>{val || '—'}</span></div>
-          {/each}
-        </div>
-        <div style="margin-top: var(--space-md)"><ImplPeriods projectId={params.id} /></div>
       {/if}
       </div>
       {/key}
@@ -703,6 +717,22 @@
           <div class="rsub rsub-empty">Fără termen</div>
         {/if}
       </section>
+
+      <!-- Datele de identificare, mutate aici din fostul tab „Info" (2026-07-27).
+           Tabul repeta antetul README-ului din wiki si avea 4 din 10 campuri
+           aproape mereu goale (PM 4/20, contract 1/20, incepere 5/20).
+           Randurile goale nu se mai deseneaza, deci celula ramane mica atunci
+           cand proiectul are putine date completate. -->
+      {#if detalii.length}
+        <section class="rcell cell-in">
+          <div class="cell-label"><span class="ico"><Settings2 size={12} /></span>Detalii</div>
+          <dl class="rdet">
+            {#each detalii as [eticheta, valoare]}
+              <dt>{eticheta}</dt><dd>{valoare}</dd>
+            {/each}
+          </dl>
+        </section>
+      {/if}
 
     </aside>
     </div>
@@ -795,9 +825,6 @@
   .rdate.urgent { color: var(--danger); }
   .rsub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 6px; }
   .rsub-empty { font-style: italic; margin-top: 10px; }
-  .req-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
-  .req-name { font-size: var(--font-small); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .req-more { font-size: var(--font-tiny); color: var(--text-faint); }
 
   /* Field sections in coloana stanga (observatii, service) */
   /* "Coala de document" (V1): gradient cald, umbra, antet cu chip + meta */
@@ -904,13 +931,6 @@
   .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
   .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .att-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
-  .att-chip { display: inline-flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-  .att-open { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; max-width: 220px; }
-  .att-open:hover { color: var(--accent); background: var(--bg-hover); }
-  .att-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .att-del { display: inline-flex; align-items: center; justify-content: center; width: 24px; align-self: stretch; color: var(--text-faint); cursor: pointer; border-left: 1px solid var(--border); }
-  .att-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .att-ind { display: inline-flex; align-items: center; gap: 3px; color: var(--text-dim); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
@@ -926,56 +946,18 @@
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
-  /* Equipment */
-  .elist { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .ecard-top { display: flex; align-items: center; justify-content: space-between; }
-  .ecard-actions { display: flex; gap: 2px; }
-  .ename { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
-  .edetails { display: flex; gap: var(--space-md); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 4px; }
-  .ecard-links { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-sm); }
-  .ecard-link { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--accent); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: var(--radius-full); padding: 4px 11px; cursor: pointer; text-decoration: none; transition: background var(--dur-fast) var(--ease); }
-  .ecard-link:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
-  .eparam-toggle { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-tiny); color: var(--accent); cursor: pointer; margin-top: var(--space-sm); padding: 4px 0; font-weight: var(--fw-medium); }
-  .eparam-toggle:hover { text-decoration: underline; }
-  .eparams-wrap { margin-top: var(--space-xs); }
-  .eparam-search { width: 100%; padding: 6px 10px; margin-bottom: var(--space-xs); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
-  .eparam-search:focus { border-color: var(--accent); outline: none; }
-  .eparam-empty { padding: var(--space-sm); text-align: center; color: var(--text-dim); font-size: var(--font-tiny); grid-column: 1 / -1; background: var(--bg); }
-  .eparams { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; border-top: 1px solid var(--border-subtle); padding-top: var(--space-sm); background: var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }
-  .eparam { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: 6px var(--space-sm); background: var(--bg); font-size: var(--font-small); }
-  .eparam-key { color: var(--accent); font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-medium); flex-shrink: 0; }
-  .eparam-link { background: none; border: none; padding: 0; cursor: pointer; text-align: left; border-bottom: 1px dashed transparent; transition: border-color var(--dur-fast) var(--ease); }
-  .eparam-link:hover { border-bottom-color: var(--accent); }
-  .eparam-right { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
-  .eparam-val { color: var(--text); font-weight: var(--fw-medium); text-align: right; }
-  .eparam-copy { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: var(--radius-xs); color: var(--text-dim); background: transparent; border: none; cursor: pointer; opacity: 0; transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); flex-shrink: 0; }
-  .eparam:hover .eparam-copy { opacity: 1; }
-  .eparam-copy:hover { color: var(--accent); background: var(--accent-subtle); }
-  @media (pointer: coarse) { .eparam-copy { opacity: 0.6; } }
-  .att-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
-  .att-btn:hover { background: var(--bg-hover); color: var(--text); }
-  .att-btn.danger:hover { background: var(--danger-subtle); color: var(--danger); }
-
-  /* Info tab */
-  .igrid { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .irow { display: flex; justify-content: space-between; font-size: var(--font-small); padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
-  .ilabel { color: var(--text-dim); font-weight: var(--fw-medium); }
+  /* Detalii proiect (bara laterala) */
+  /* Detalii in bara laterala (fostul tab Info) — grila de doua coloane, fara
+     randuri goale: campurile necompletate nici nu ajung in lista. */
+  .rdet { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; margin: 6px 0 0; }
+  .rdet dt { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
+  .rdet dd { margin: 0; font-size: var(--font-tiny); color: var(--text-secondary); overflow-wrap: anywhere; }
 
   .mf-row { display: flex; gap: var(--space-md); }
   .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
 
   /* Equipment import/copy */
-  .equip-btns { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
-  .import-info { font-size: var(--font-small); color: var(--text-secondary); margin-bottom: var(--space-md); display: flex; gap: var(--space-sm); align-items: center; }
-  .import-drives { display: flex; flex-direction: column; gap: var(--space-xs); max-height: 400px; overflow-y: auto; }
-  .import-drive { padding: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-md); transition: all var(--dur-fast); }
-  .import-drive.import-selected { border-color: var(--accent); background: var(--accent-subtle); }
-  .import-check { display: flex; align-items: flex-start; gap: var(--space-sm); cursor: pointer; }
-  .import-check input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); }
-  .import-drive-info { display: flex; flex-direction: column; gap: 2px; }
-  .import-drive-info strong { font-size: var(--font-small); color: var(--text); }
-  .copy-form { display: flex; flex-direction: column; gap: var(--space-md); }
 
   @media (max-width: 940px) {
     .rail-grid { grid-template-columns: 1fr; }
@@ -985,7 +967,6 @@
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
     .header-top { flex-direction: column; }
-    .edetails { flex-wrap: wrap; gap: var(--space-sm); }
     .trow { padding: var(--space-sm); flex-wrap: wrap; align-items: flex-start; row-gap: 6px; }
     .check { padding-top: 1px; }
     .task-actions { flex-basis: 100%; justify-content: flex-end; }
