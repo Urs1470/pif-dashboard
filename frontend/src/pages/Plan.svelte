@@ -393,7 +393,6 @@
             </div>
           </div>
 
-
           <div class="p-body" class:drop-active={!!dragTask} ondragover={onBodyDragOver} ondrop={onBodyDrop} role="presentation">
             <div class="overlay">
               {#each columns.cols as c (c.key)}
@@ -635,7 +634,15 @@
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
   .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
   .days { flex: 1; position: relative; min-width: 0; height: 42px; }
-
+  .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
+  .col-head.compact { padding: 5px 1px; }
+  .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
+  .col-head.today { background: var(--accent-subtle); }
+  .ch-sub { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  .col-head.today .ch-sub { color: var(--accent); }
+  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .col-head.compact .ch-main { font-size: var(--font-tiny); }
+  .col-head.today .ch-main { color: var(--accent); }
 
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: var(--lane-w); right: 0; pointer-events: none; z-index: 0; }
