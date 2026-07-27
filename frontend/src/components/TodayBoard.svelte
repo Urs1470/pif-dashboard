@@ -194,9 +194,9 @@
           <div class="arow-actions">
             <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
             <span class="row-date" title="Planifică pe altă zi">
-              <DatePicker value={it.data_planificata} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
+              <DatePicker value={it.data_scadenta} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
             </span>
-            <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate din azi"><X size={15} /></button>
+            <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={15} /></button>
             <button class="abtn" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
           </div>
         </div>

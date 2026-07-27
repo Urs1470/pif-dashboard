@@ -106,7 +106,7 @@
       .filter(Boolean)
     const tasks = lane.tasks.map(t => ({
       ...t,
-      rect: spanRect(t.data_planificata, effDue(t), plan.start, plan.days),
+      rect: spanRect(effDue(t), effDue(t), plan.start, plan.days),
     }))
     const impl = (lane.implementari || [])
       .map(im => ({ ...im, rect: spanRect(im.data_start, im.data_sfarsit, plan.start, plan.days) }))
@@ -190,20 +190,10 @@
     e.preventDefault(); e.stopPropagation()
   }
 
+  // Un task e o ZI, nu un interval (v33): la tragere se muta termenul.
   function previewText(d) {
-    const t = d.t, k = d.effDelta
-    if (d.mode === 'move') {
-      const s = t.data_planificata ? addDays(t.data_planificata.slice(0, 10), k) : ''
-      const e = t.data_scadenta ? addDays(t.data_scadenta.slice(0, 10), k) : ''
-      if (s && e) return `${formatDateShort(s)} → ${formatDateShort(e)}`
-      return formatDateShort(s || e)
-    }
-    if (d.mode === 'resizeL') {
-      const base = (t.data_planificata || t.data_scadenta || '').slice(0, 10)
-      return `start ${formatDateShort(addDays(base, k))}`
-    }
-    const base = (t.data_scadenta || t.data_planificata || '').slice(0, 10)
-    return `termen ${formatDateShort(addDays(base, k))}`
+    const base = (d.t.data_scadenta || '').slice(0, 10)
+    return base ? `termen ${formatDateShort(addDays(base, d.effDelta))}` : ''
   }
 
   function onDragMove(e) {
@@ -217,36 +207,14 @@
       const want = clampNum(drag.origLeft + dd * u, 0, 100 - drag.origWidth)
       el.style.left = want + '%'
       drag.effDelta = Math.round((want - drag.origLeft) / u)
-    } else if (drag.mode === 'resizeL') {
-      const maxLeft = drag.origLeft + drag.origWidth - u
-      const want = clampNum(drag.origLeft + dd * u, 0, maxLeft)
-      el.style.left = want + '%'
-      el.style.width = (drag.origLeft + drag.origWidth - want) + '%'
-      drag.effDelta = Math.round((want - drag.origLeft) / u)
-    } else {
-      const want = clampNum(drag.origWidth + dd * u, u, 100 - drag.origLeft)
-      el.style.width = want + '%'
-      drag.effDelta = Math.round((want - drag.origWidth) / u)
     }
     dragLabel = { x: e.clientX, y: e.clientY, text: previewText(drag) }
   }
 
   function commitBody(d) {
-    const t = d.t, k = d.effDelta, body = {}
-    if (d.mode === 'move') {
-      if (t.data_planificata) body.data_planificata = addDays(t.data_planificata.slice(0, 10), k)
-      if (t.data_scadenta) body.data_scadenta = addDays(t.data_scadenta.slice(0, 10), k)
-    } else if (d.mode === 'resizeL') {
-      const base = (t.data_planificata || t.data_scadenta || '').slice(0, 10)
-      body.data_planificata = addDays(base, k)
-      // Task de o singură zi: fixăm capătul opus la ziua curentă ca să devină
-      // interval, altfel spanRect l-ar reduce iar la un punct (doar mutat).
-      if (!t.data_scadenta) body.data_scadenta = base
-    } else {
-      const base = (t.data_scadenta || t.data_planificata || '').slice(0, 10)
-      body.data_scadenta = addDays(base, k)
-      if (!t.data_planificata) body.data_planificata = base
-    }
+    const base = (d.t.data_scadenta || '').slice(0, 10)
+    const body = {}
+    if (base) body.data_scadenta = addDays(base, d.effDelta)
     return body
   }
 
@@ -487,17 +455,15 @@
                             tabindex="0"
                             onpointerdown={(e) => startDrag(e, t, 'move', lane.nume)}
                             onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, t, lane.nume) } }}
-                            title="{t.titlu}{t.data_planificata ? ' · plan ' + formatDateShort(t.data_planificata) : ''}{t.data_scadenta ? ' → termen ' + formatDateShort(t.data_scadenta) : ''}"
+                            title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
                           >
                             {#if !isDone(t.status) && !t.rect.single}
-                              <span class="rz rz-l" onpointerdown={(e) => startDrag(e, t, 'resizeL', lane.nume)} aria-hidden="true"></span>
                             {/if}
                             {#if t.rect.single}<span class="pin-dot"></span>{/if}
                             <span class="bar-txt">{t.titlu}</span>
                             {#if t.recurenta}<Repeat size={11} />{/if}
                             {#if !isDone(t.status)}
                               <!-- taskurile de o zi capătă doar mânerul din dreapta (alungire); mutarea rămâne pe pin -->
-                              <span class="rz rz-r" class:rz-single={t.rect.single} onpointerdown={(e) => startDrag(e, t, 'resizeR', lane.nume)} aria-hidden="true"></span>
                             {/if}
                           </div>
                         {/each}
@@ -561,14 +527,13 @@
               <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
                 <span class="mrow-title">{t.titlu}</span>
                 <span class="mrow-meta">
-                  {#if t.data_planificata}<span class="chip">plan {formatDateShort(t.data_planificata)}</span>{/if}
                   {#if t.data_scadenta}<span class="chip due">termen {formatDateShort(t.data_scadenta)}</span>{/if}
                   {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
                 </span>
               </button>
               <div class="mrow-actions">
                 <button class="mbtn" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={15} /></button>
-                <span class="mrow-date"><DatePicker value={t.data_planificata} placeholder="Mută" onchange={(v) => onMove(t, v)} /></span>
+                <span class="mrow-date"><DatePicker value={t.data_scadenta} placeholder="Mută" onchange={(v) => onMove(t, v)} /></span>
                 <button class="mbtn" onclick={() => onDone(t)} title="Bifează"><CheckCircle2 size={16} /></button>
               </div>
             </div>
@@ -595,7 +560,7 @@
     <div class="pop-act datewrap">
       <span class="pa-ico"><CalendarRange size={15} /></span>
       <span class="pa-label">Mută pe…</span>
-      <DatePicker value={sel.data_planificata} placeholder="alege" onchange={(v) => onMove(sel, v)} />
+      <DatePicker value={sel.data_scadenta} placeholder="alege" onchange={(v) => onMove(sel, v)} />
     </div>
     <button class="pop-act" onclick={() => onTomorrow(sel)}><ArrowRight size={15} /> Mută pe mâine</button>
     <button class="pop-act" onclick={() => onDone(sel)}><CheckCircle2 size={15} /> {isDone(sel.status) ? 'Redeschide' : 'Bifează'}</button>
@@ -750,14 +715,8 @@
   .bar.single.urgent .pin-dot { box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 40%, transparent); }
   .bar-txt { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 
-  .rz { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 6; }
-  .rz-l { left: 0; } .rz-r { right: 0; }
-  .bar:hover .rz::after { content: ''; position: absolute; top: 50%; transform: translateY(-50%); width: 2px; height: 12px; border-radius: 2px; background: color-mix(in srgb, currentColor 60%, transparent); }
-  .rz-l::after { left: 2px; } .rz-r::after { right: 2px; }
   /* single-day task: right handle a touch wider + grip tinted so it reads on the
      transparent pin bar (extinde ziua într-un interval) */
-  .rz-single { width: 12px; }
-  .bar.single:hover .rz-single::after { background: color-mix(in srgb, var(--lane) 70%, var(--text)); }
 
   @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
 
@@ -874,7 +833,6 @@
     .inner { min-width: 0 !important; width: 100% !important; }
     .lane.print-hide { display: none !important; }
     .bar { animation: none !important; box-shadow: none !important; }
-    .rz { display: none !important; }
   }
   :global(body.plan-pagebreak) .lane { break-after: page; }
   :global(body.plan-pagebreak) .lane:last-of-type { break-after: auto; }

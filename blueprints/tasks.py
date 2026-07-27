@@ -60,7 +60,7 @@ def _spawn_recurring_task(cursor, existing, recurenta):
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
     cursor.execute('SELECT MAX(ordine) FROM tasks WHERE proiect_id = ?', (existing['proiect_id'],))
     max_ordine = cursor.fetchone()[0] or 0
-    # data_planificata / ordine_agenda are deliberately NOT copied: the next
+    # ordine_agenda e deliberat NECOPIAT: urmatoarea
     # occurrence is born unplanned and surfaces on the Astazi board later via its
     # future data_scadenta, not the moment the current one is completed.
     cursor.execute('''
@@ -85,7 +85,7 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     new_id = generate_uuid()
     now = datetime.now().isoformat()
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
-    # data_planificata / ordine_agenda deliberately not copied (see _spawn_recurring_task).
+    # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task).
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta)
@@ -169,8 +169,8 @@ def create_task(project_id):
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, prioritate, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
-                           data_planificata, ordine_agenda, data_start, progres, is_milestone)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           ordine_agenda, data_start, progres, is_milestone)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -184,7 +184,6 @@ def create_task(project_id):
         data.get('descriere', ''),
         data.get('recurenta', ''),
         now,
-        data.get('data_planificata', ''),
         data.get('ordine_agenda', 0),
         data.get('data_start', ''),
         data.get('progres', 0),
@@ -228,7 +227,6 @@ def update_task(task_id):
             ordine = COALESCE(?, ordine),
             descriere = COALESCE(?, descriere),
             recurenta = COALESCE(?, recurenta),
-            data_planificata = COALESCE(?, data_planificata),
             ordine_agenda = COALESCE(?, ordine_agenda),
             data_start = COALESCE(?, data_start),
             progres = COALESCE(?, progres),
@@ -244,7 +242,6 @@ def update_task(task_id):
         data.get('ordine'),
         data.get('descriere'),
         data.get('recurenta'),
-        data.get('data_planificata'),
         data.get('ordine_agenda'),
         data.get('data_start'),
         data.get('progres'),
@@ -342,7 +339,7 @@ def _collect_gantt(project_id):
     tasks = []
     for r in rows:
         tot, done = sub_map.get(r['id'], (0, 0))
-        start = (r.get('data_start') or r.get('data_planificata') or '').strip()[:10]
+        start = (r.get('data_start') or '').strip()[:10]
         end = (r.get('data_scadenta') or '').strip()[:10]
         if not start and end:
             start = end
@@ -352,7 +349,6 @@ def _collect_gantt(project_id):
             'id': r['id'], 'titlu': r.get('titlu') or '', 'status': r.get('status') or 'to_do',
             'prioritate': r.get('prioritate') or 'normal',
             'data_start': start, 'data_scadenta': end,
-            'data_planificata': r.get('data_planificata') or '',
             'is_milestone': bool(r.get('is_milestone')),
             'progres': _effective_progress(r, tot, done),
             'progres_manual': int(r.get('progres') or 0),
@@ -1148,8 +1144,8 @@ def create_global_task():
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta,
-                                  data_planificata, ordine_agenda)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  ordine_agenda)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -1162,7 +1158,6 @@ def create_global_task():
         now,
         now,
         data.get('recurenta', ''),
-        data.get('data_planificata', ''),
         data.get('ordine_agenda', 0)
     ))
 
@@ -1218,7 +1213,6 @@ def update_global_task(task_id):
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
             recurenta = COALESCE(?, recurenta),
-            data_planificata = COALESCE(?, data_planificata),
             ordine_agenda = COALESCE(?, ordine_agenda),
             updated_at = ?
         WHERE id = ?
@@ -1231,7 +1225,6 @@ def update_global_task(task_id):
         data.get('data_scadenta'),
         data.get('data_finalizare'),
         data.get('recurenta'),
-        data.get('data_planificata'),
         data.get('ordine_agenda'),
         now,
         task_id
@@ -1275,11 +1268,13 @@ def delete_global_task(task_id):
 
 
 # ---------------------------------------------------------------------------
-# Agenda — "Astazi" daily planner board (Home tab)
+# Agenda — "Astazi", boardul cu care Ion isi incepe ziua
 #
-# Planning is a SEPARATE dimension from the deadline: data_planificata ("plan it
-# for this day") never touches data_scadenta ("the deadline"). The board unifies
-# global tasks (tip='global') and project tasks (tip='proiect') for a single day.
+# UN TASK ARE O SINGURA DATA (v33). Ion: „mutarea este practic un deadline (…)
+# trebuie sa fie adaugat ca deadline pur, sa nu mai dublam atat notiunile."
+# Deci boardul de azi = ce e scadent azi SAU restant. A pune un task pe azi
+# inseamna a-i da termenul de azi; a-l muta pe alta zi ii muta termenul.
+# Boardul uneste taskurile globale (tip='global') si cele de proiect ('proiect').
 # ---------------------------------------------------------------------------
 
 _DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
@@ -1296,7 +1291,6 @@ def _resolve_today():
 
 def _agenda_item(d, tip, today):
     """Normalize a task row (dict) into the flat shape the board consumes."""
-    plan = (d.get('data_planificata') or '').strip()[:10]
     scad = (d.get('data_scadenta') or '').strip()[:10]
     return {
         'tip': tip,
@@ -1305,41 +1299,25 @@ def _agenda_item(d, tip, today):
         'status': d.get('status') or 'to_do',
         'prioritate': d.get('prioritate') or '',
         'data_scadenta': d.get('data_scadenta') or '',
-        'data_planificata': d.get('data_planificata') or '',
         'data_finalizare': d.get('data_finalizare') or '',
         'ordine_agenda': d.get('ordine_agenda') or 0,
         'recurenta': d.get('recurenta') or '',
         'categorie': (d.get('categorie') or '') if tip == 'global' else '',
         'proiect_id': d.get('proiect_id') if tip == 'proiect' else None,
         'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
-        'is_planificat_azi': bool(plan) and plan == today,
-        'is_restant': bool(plan) and plan < today,
         'is_scadent_azi': bool(scad) and scad == today,
+        'is_restant': bool(scad) and scad < today,
     }
 
 
-# Open tasks that belong on today's board: planned today, rolled over (planned in
-# the past, still open) or due today. The due-today clause is a SUGGESTION that only
-# applies when the task isn't explicitly planned for another day — so "move to
-# tomorrow" (which sets data_planificata ahead) actually removes a due-today task
-# from the board, instead of the deadline pinning it here. Future recurrences are
-# hidden (same idiom as the dashboard) so a just-spawned next occurrence doesn't show.
+# Ce intra pe boardul de azi: taskurile deschise scadente AZI sau RESTANTE. Cu o
+# singura data, regula are o singura linie — inainte avea trei ramuri si o exceptie,
+# fiindca planul si termenul se puteau contrazice. Recurentele viitoare raman
+# ascunse, ca o ocurenta abia generata sa nu apara inainte de vreme.
 _AGENDA_WHERE = '''
         {alias}.status != 'done'
-        AND (
-            date({alias}.data_planificata) = date(:today)
-            OR (
-                {alias}.data_planificata IS NOT NULL AND TRIM({alias}.data_planificata) <> ''
-                AND date({alias}.data_planificata) < date(:today)
-            )
-            OR (
-                date({alias}.data_scadenta) = date(:today)
-                AND (
-                    {alias}.data_planificata IS NULL OR TRIM({alias}.data_planificata) = ''
-                    OR date({alias}.data_planificata) = date(:today)
-                )
-            )
-        )
+        AND {alias}.data_scadenta IS NOT NULL AND TRIM({alias}.data_scadenta) <> ''
+        AND date({alias}.data_scadenta) <= date(:today)
         AND NOT (
             {alias}.recurenta IS NOT NULL AND TRIM({alias}.recurenta) <> ''
             AND {alias}.data_scadenta IS NOT NULL AND date({alias}.data_scadenta) > date(:today)
@@ -1387,10 +1365,12 @@ def get_agenda_candidates():
     conn = get_db()
     cursor = conn.cursor()
 
-    # COALESCE(date(col),'') so unplanned (NULL/'') rows are kept; only today's are excluded.
+    # Candidatii = ce NU e deja pe board. Cu o singura data asta inseamna: fara
+    # termen, sau cu termen in viitor. Restantele sunt deja pe board.
     gq = '''SELECT g.* FROM global_tasks g
             WHERE g.status != 'done'
-              AND COALESCE(date(g.data_planificata), '') <> date(:today)
+              AND (g.data_scadenta IS NULL OR TRIM(g.data_scadenta) = ''
+                   OR date(g.data_scadenta) > date(:today))
               AND NOT (
                 g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
                 AND g.data_scadenta IS NOT NULL AND date(g.data_scadenta) > date(:today)
@@ -1406,7 +1386,8 @@ def get_agenda_candidates():
     tq = '''SELECT t.*, p.nume AS proiect_nume
             FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
             WHERE t.status != 'done' AND p.status != 'anulat'
-              AND COALESCE(date(t.data_planificata), '') <> date(:today)
+              AND (t.data_scadenta IS NULL OR TRIM(t.data_scadenta) = ''
+                   OR date(t.data_scadenta) > date(:today))
               AND NOT (
                 t.recurenta IS NOT NULL AND TRIM(t.recurenta) <> ''
                 AND t.data_scadenta IS NOT NULL AND date(t.data_scadenta) > date(:today)
@@ -1470,8 +1451,9 @@ def get_plan():
     """Operational 14-day planner ("Planificator"): project lanes (each with its
     overall interval data_incepere -> ultima perioada planificata) containing their
     tasks, plus a "Globale" lane. A task appears where its span
-    data_planificata->data_scadenta intersects the window; tasks with only a due
-    date show as a single-day marker.
+    data_scadenta cade in fereastra. Din v33 taskul are o singura data, deci
+    fiecare task e un semn de o zi, nu un interval — intervalul plan->termen era
+    o distinctie pe care nimeni n-o folosea (3 randuri din 37, toate de o zi).
 
     Deadline-ul de proiect a plecat in v30 — nu se lua nimeni dupa el. Capatul
     din dreapta al benzii e acum ultima zi pe care chiar ai planificat-o."""
@@ -1492,7 +1474,7 @@ def get_plan():
     # A task belongs in the window if its plan->due span intersects it; a finished
     # task with no plan/due can still qualify via its completion date.
     def _in_window(item):
-        if _span_intersects(item['data_planificata'], item['data_scadenta'], start_s, end_s):
+        if _span_intersects(item['data_scadenta'], item['data_scadenta'], start_s, end_s):
             return True
         fin = (item.get('data_finalizare') or '')[:10]
         return bool(fin) and start_s <= fin < end_s
@@ -1524,7 +1506,7 @@ def get_plan():
             tasks_by_project.setdefault(item['proiect_id'], []).append(item)
 
     def _task_sort_key(t):
-        cand = [x for x in ((t['data_planificata'] or '')[:10], (t['data_scadenta'] or '')[:10]) if x]
+        cand = [x for x in ((t['data_scadenta'] or '')[:10],) if x]
         return (min(cand) if cand else '9999-99-99', (t['titlu'] or '').lower())
 
     # Implementation periods (Site / Sediu EGB) per project, for lane bands.
@@ -1597,8 +1579,7 @@ def get_plan():
             'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
         }
 
-    undated = '''(({a}.data_planificata IS NULL OR TRIM({a}.data_planificata) = '')
-                 AND ({a}.data_scadenta IS NULL OR TRIM({a}.data_scadenta) = ''))'''
+    undated = '''({a}.data_scadenta IS NULL OR TRIM({a}.data_scadenta) = '')'''
     cursor.execute(
         '''SELECT t.*, p.nume AS proiect_nume FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
            WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
@@ -1617,7 +1598,7 @@ def get_plan():
     def _lane_key(l):
         dates = []
         for t in l['tasks']:
-            for k in ('data_planificata', 'data_scadenta'):
+            for k in ('data_scadenta',):
                 v = (t.get(k) or '')[:10]
                 if v:
                     dates.append(v)

@@ -61,11 +61,10 @@ function patch(tip, id, body) {
   return tip === 'global' ? updateGlobalTask(id, body) : updateTask(id, body)
 }
 
-// Aceeasi regula ca in agenda: data aleasa E termenul. Vezi comentariul lung din
-// stores/agenda.svelte.js.
+// Un task are o singura data (v33) — vezi stores/agenda.svelte.js.
 export async function moveTaskDate(tip, id, date) {
   if (!date) return
-  await patch(tip, id, { data_planificata: date, data_scadenta: date })
+  await patch(tip, id, { data_scadenta: date })
   await loadPlan()
 }
 
@@ -73,20 +72,17 @@ export function moveTaskTomorrow(tip, id) {
   return moveTaskDate(tip, id, tomorrowISO())
 }
 
-// Explicit-date setter for drag/resize on the swimlane. `body` carries exactly the
-// fields to change (data_planificata and/or data_scadenta); unlike moveTaskDate it
-// does NOT auto-couple the two — a span drag preserves the span, a resize moves one
-// edge. Empty string clears, an omitted key keeps the stored value (PUT COALESCE).
+// Setter pentru tragerea barei pe swimlane. Cu o singura data nu mai exista
+// „intinderea" unui interval: bara se muta, atat.
 export async function setTaskDates(tip, id, body) {
   await patch(tip, id, body)
   await loadPlan()
 }
 
-// Un task din sertarul „fara termen", pus pe o zi: tot o alegere explicita, deci
-// tot primeste termen. Altfel ramanea in sertar desi tocmai il programasesi.
+// Un task din sertarul „fara termen", pus pe o zi: primeste termenul acelei zile.
 export async function scheduleBacklog(tip, id, date) {
   if (!date) return
-  await patch(tip, id, { data_planificata: date, data_scadenta: date })
+  await patch(tip, id, { data_scadenta: date })
   await loadPlan()
 }
 

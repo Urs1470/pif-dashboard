@@ -77,7 +77,9 @@ def close_db(exc=None):
 #      „blocat" si „anulat" erau definite in cod si nefolosite de niciun rand.
 # v32: scos `tasks.faza` — gruparea pe faze din Gantt exista in cod, dar niciun
 #      formular nu putea completa campul, deci nu s-a executat niciodata.
-SCHEMA_VERSION = 32
+# v33: taskul are O SINGURA data (`data_scadenta`). `data_planificata` a plecat:
+#      din 37 de taskuri, 6 aveau ambele si egale, 3 diferite cu exact o zi.
+SCHEMA_VERSION = 33
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1082,6 +1084,61 @@ def migrate_v31_to_v32():
     logger.info('Migration v31->v32 completed')
 
 
+def migrate_v32_to_v33():
+    """v32 -> v33: taskul are O SINGURA data. `data_planificata` pleaca.
+
+    Ion, 2026-07-27: „mi-am luat un task fara deadline in ziua de astazi (…) dupa
+    am vazut ca nu se poate si (…) deja stiu cand l-as putea face. Deci mutarea
+    este practic un deadline. Si trebuie sa fie adaugat ca deadline pur, sa nu mai
+    dublam atat notiunile."
+
+    Datele confirmau ca distinctia era fictiva. Din 37 de taskuri de proiect:
+    6 aveau ambele date si EGALE, 3 le aveau diferite — toate cu exact o zi,
+    semnatura butonului „mâine" de pe vechea regula — iar 16 aveau doar una din
+    doua. La cele globale, un singur rand din 15 diferea.
+
+    Ce ramane: `data_scadenta`, termenul. Boardul „Astazi" devine „scadent azi sau
+    restant", iar a pune un task pe azi inseamna a-i da termenul de azi.
+
+    Backfill: unde exista doar `data_planificata`, ea DEVINE termenul (altfel
+    taskul si-ar pierde data si ar disparea de pe board). Unde exista amandoua si
+    difera, pastram `data_scadenta` — a lua data de plan ar amana in tacere un
+    termen deja depasit.
+
+    ATENTIE: self-heal-ul care re-rula v20->v21 cand lipsea `data_planificata` a
+    fost restrans la `ordine_agenda` in acelasi commit. Fara asta, coloana ar fi
+    fost adaugata la loc la prima pornire.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    for tabel in ('tasks', 'global_tasks'):
+        cols = {r[1] for r in cursor.execute(f'PRAGMA table_info({tabel})')}
+        if 'data_planificata' not in cols:
+            continue
+        diferite = cursor.execute(
+            f"SELECT COUNT(*) FROM {tabel} "
+            f"WHERE TRIM(COALESCE(data_planificata,'')) <> '' "
+            f"  AND TRIM(COALESCE(data_scadenta,'')) <> '' "
+            f"  AND substr(data_planificata,1,10) <> substr(data_scadenta,1,10)").fetchone()[0]
+        cursor.execute(
+            f"UPDATE {tabel} SET data_scadenta = substr(data_planificata,1,10) "
+            f"WHERE TRIM(COALESCE(data_scadenta,'')) = '' "
+            f"  AND TRIM(COALESCE(data_planificata,'')) <> ''")
+        mutate = cursor.rowcount
+        cursor.execute('DROP INDEX IF EXISTS idx_tasks_planificata')
+        cursor.execute('DROP INDEX IF EXISTS idx_global_tasks_planificata')
+        cursor.execute(f'ALTER TABLE {tabel} DROP COLUMN data_planificata')
+        logger.info('Migration v32->v33: %s — %d data(e) de plan devenite termen, '
+                    '%d rand(uri) aveau ambele si difereau (am pastrat termenul)'
+                    % (tabel, mutate, diferite))
+    conn.commit()
+    conn.close()
+    logger.info('Migration v32->v33 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1241,6 +1298,11 @@ def run_migrations():
         set_schema_version(32)
         current_version = 32
 
+    if current_version < 33:
+        migrate_v32_to_v33()
+        set_schema_version(33)
+        current_version = 33
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1253,11 +1315,11 @@ def run_migrations():
     has_descriere = 'descriere' in tasks_cols
     has_tasks_recurenta = 'recurenta' in tasks_cols
     has_tasks_updated_at = 'updated_at' in tasks_cols
-    has_task_planificata = 'data_planificata' in tasks_cols and 'ordine_agenda' in tasks_cols
+    has_task_ordine = 'ordine_agenda' in tasks_cols
     cursor.execute("PRAGMA table_info(global_tasks)")
     gt_cols = {row[1] for row in cursor.fetchall()}
     has_gt_recurenta = 'recurenta' in gt_cols
-    has_gt_planificata = 'data_planificata' in gt_cols and 'ordine_agenda' in gt_cols
+    has_gt_ordine = 'ordine_agenda' in gt_cols
     # Nota: nu mai exista self-heal pentru fault_codes / parametri_master —
     # v28 le sterge intentionat, iar un self-heal le-ar reinvia la fiecare pornire.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -1270,8 +1332,10 @@ def run_migrations():
     if not has_gt_recurenta:
         logger.warning("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
         migrate_v8_to_v9()
-    if not has_task_planificata or not has_gt_planificata:
-        logger.warning("Self-heal: re-running v20->v21 (data_planificata / ordine_agenda missing)")
+    # Verificam DOAR `ordine_agenda`: `data_planificata` a plecat in v33, iar un
+    # self-heal pe ea ar readuce coloana imediat dupa ce migrarea o sterge.
+    if not has_task_ordine or not has_gt_ordine:
+        logger.warning("Self-heal: re-running v20->v21 (ordine_agenda missing)")
         migrate_v20_to_v21()
     has_gantt_cols = {'data_start', 'progres', 'is_milestone'}.issubset(tasks_cols)
     has_deps_table = 'task_dependencies' in existing_tables

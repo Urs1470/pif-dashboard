@@ -432,35 +432,39 @@ def restore_database():
                 p.get('created_at'), p.get('updated_at')
             ))
 
-        # Restore tasks (v8+ columns: descriere, recurenta, updated_at, ordine; v21: data_planificata, ordine_agenda)
+        # Restore tasks. `data_planificata` din backup-uri vechi (dinainte de v33)
+        # se ignora: taskul are o singura data acum, iar migrarea a mutat deja
+        # planul in termen acolo unde termenul lipsea.
         for t in data.get('tasks', []):
             cursor.execute('''
                 INSERT INTO tasks (id, proiect_id, titlu, descriere, status, prioritate,
                     data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at,
-                    data_planificata, ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ordine_agenda)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('descriere'),
-                  t.get('status'), t.get('prioritate'), t.get('data_scadenta'),
+                  t.get('status'), t.get('prioritate'),
+                  t.get('data_scadenta') or t.get('data_planificata'),
                   t.get('data_finalizare'), t.get('ordine', 0), t.get('recurenta'),
                   t.get('created_at'), t.get('updated_at'),
-                  t.get('data_planificata'), t.get('ordine_agenda', 0)))
+                  t.get('ordine_agenda', 0)))
 
         # jurnal / timer_sessions din backup-uri vechi se ignora (v22 a scos featureul)
         # checklist_pif / checklist_categorii / project_templates din backup-uri vechi
         # se ignora (v23 a sters featureurile Checklist + Template)
 
-        # Restore global_tasks (v9+ column: recurenta; v21: data_planificata, ordine_agenda)
+        # Restore global_tasks — vezi nota de mai sus despre `data_planificata`.
         for gt in data.get('global_tasks', []):
             cursor.execute('''
                 INSERT INTO global_tasks (id, titlu, descriere, prioritate, status, categorie,
                     data_scadenta, data_finalizare, recurenta, created_at, updated_at,
-                    data_planificata, ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ordine_agenda)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'), gt.get('prioritate'),
-                  gt.get('status'), gt.get('categorie'), gt.get('data_scadenta'),
+                  gt.get('status'), gt.get('categorie'),
+                  gt.get('data_scadenta') or gt.get('data_planificata'),
                   gt.get('data_finalizare'), gt.get('recurenta'),
                   gt.get('created_at'), gt.get('updated_at'),
-                  gt.get('data_planificata'), gt.get('ordine_agenda', 0)))
+                  gt.get('ordine_agenda', 0)))
 
         # Restore clienti
         for c in data.get('clienti', []):

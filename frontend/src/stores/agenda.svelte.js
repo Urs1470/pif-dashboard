@@ -46,29 +46,23 @@ export async function quickAddToday(titlu) {
   const t = (titlu || '').trim()
   if (!t) return
   // Brand-new ad-hoc tasks have no project -> global task, planned for today.
-  await createGlobalTask({ titlu: t, status: 'to_do', data_planificata: localToday() })
+  await createGlobalTask({ titlu: t, status: 'to_do', data_scadenta: localToday() })
   await loadAgendaToday()
 }
 
+// A pune un task pe boardul de azi INSEAMNA a-i da termenul de azi. Din v33 nu
+// mai exista o a doua data „doar de plan" — vezi comentariul de mai jos.
 export async function scheduleForToday(tip, id) {
-  await patch(tip, id, { data_planificata: localToday() })
+  await patch(tip, id, { data_scadenta: localToday() })
   await loadAgendaToday()
 }
 
-// Data pe care o alegi ESTE termenul.
-//
-// Pana acum, mutarea propaga termenul doar daca taskul avea deja unul: „nu
-// inventam un termen din simpla planificare". Ion, 2026-07-27: „daca am preluat
-// un task in taskuri azi, si de acolo am mutat taskul pe o anumita data, nu se
-// seteaza acea data aleasa ca deadline task, ceea ce ar fi logic."
-//
-// Are dreptate, si e consecvent cu tot restul: cand alegi explicit o zi, spui
-// cand se face. Nu tii separat „cand planific" si „pana cand" — e aceeasi data.
-// Regula se aplica doar la alegerea EXPLICITA a unei zile (mutare, maine), nu si
-// la tragerea in boardul de azi, care e o unealta de concentrare, nu un angajament.
+// UN TASK ARE O SINGURA DATA (v33). Ion: „mutarea este practic un deadline (…)
+// trebuie sa fie adaugat ca deadline pur, sa nu mai dublam atat notiunile."
+// Deci nu mai exista „cand planific" separat de „pana cand" — e aceeasi zi.
 export async function moveToDate(tip, id, date) {
   if (!date) return
-  await patch(tip, id, { data_planificata: date, data_scadenta: date })
+  await patch(tip, id, { data_scadenta: date })
   await loadAgendaToday()
 }
 
@@ -76,8 +70,10 @@ export function moveToTomorrow(tip, id) {
   return moveToDate(tip, id, tomorrowISO())
 }
 
+// Scoaterea de pe board sterge DATA taskului (nu mai exista una separata de
+// termen). Taskul se intoarce in sertarul „fara termen".
 export async function removeFromToday(tip, id) {
-  await patch(tip, id, { data_planificata: '' })
+  await patch(tip, id, { data_scadenta: '' })
   await loadAgendaToday()
 }
 

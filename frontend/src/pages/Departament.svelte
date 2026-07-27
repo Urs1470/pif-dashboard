@@ -120,13 +120,19 @@
 </div>
 
 <style>
-  /* Pagina se incadreaza EXACT in fereastra, ca sa nu apara scroll pe toata
-     aplicatia: din inaltime scadem antetul, dock-ul plutitor (pentru care
-     .app-content rezerva deja spatiu jos) si propriile paddinguri. Ce ramane de
-     derulat e doar planul, in interiorul cadrului. `dvh` ca sa fie corect si pe
-     telefon, unde bara browserului se ascunde la scroll. */
-  .page { padding: var(--space-lg); display: flex; flex-direction: column;
-          height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
+  /* Pagina se incadreaza EXACT in fereastra: nu vrem scroll pe toata aplicatia,
+     ci doar in interiorul planului.
+
+     `.app-content` rezerva jos loc pentru dock (--dock-h + spatiu), pentru toate
+     paginile. Aici il anulam cu o margine negativa si rezervam noi cat trebuie:
+     pe DESKTOP dock-ul e ascuns si apare doar cand impingi cursorul in marginea
+     de jos, deci 10px ajung; pe telefon e fix si vizibil, deci ii lasam tot locul.
+     Asa planul castiga vreo 80px de inaltime pe desktop. */
+  .page { --rezerva: 10px;
+          padding: var(--space-md) var(--space-lg);
+          display: flex; flex-direction: column;
+          height: calc(100dvh - var(--header-height) - var(--rezerva));
+          margin-bottom: calc(-1 * (var(--dock-h) + var(--space-lg) + var(--safe-bottom)));
           min-height: 380px; overflow: hidden; }
 
   .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 28px; }
@@ -158,7 +164,9 @@
                 border: 1px solid var(--border); border-radius: var(--radius-sm); }
   .rand input:focus { outline: none; border-color: var(--accent); }
 
-  @media (max-width: 620px) {
-    .page { padding: var(--space-md); }
+  @media (max-width: 768px) {
+    /* Pe telefon dock-ul e fix si mereu vizibil — ii lasam tot locul. */
+    .page { --rezerva: calc(var(--dock-h) + var(--space-sm) + var(--safe-bottom));
+            padding: var(--space-md); }
   }
 </style>
