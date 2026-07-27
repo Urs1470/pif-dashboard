@@ -58,18 +58,52 @@
     return rows
   }
 
+  // PREGATIREA NU SE INTRODUCE — E GOLUL.
+  // Ion: „perioada pana la implementare este perioada de pregatire (…) apoi de la
+  // o etapa de implementare la alta la fel este pregatire."
+  // Deci nu e un lucru pe care il tastezi, e complementul etapelor. Doua cazuri
+  // pe care le-a semnalat, si care se rezolva la fel — segment DESCHIS la dreapta:
+  //   1. inca nu stii perioada de implementare
+  //   2. ai terminat o etapa si urmatoarea nu e inca fixata
+  function segmentePregatire(lane) {
+    // Un proiect inchis nu mai pregateste nimic.
+    if (lane.tip !== 'proiect' || lane.status === 'finalizat') return []
+    // Golul e rupt DOAR de implementari. O zi de pregatire blocata explicit
+    // (ex. „Parametrizare atelier", la sediu) face parte din pregatire, nu o
+    // intrerupe — se deseneaza peste banda, ca bara plina.
+    const etape = (lane.implementari || [])
+      .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
+      .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
+      .sort((x, y) => x.a.localeCompare(y.a))
+    // `data_incepere` e completat la 5 proiecte din 18, deci nu ne putem baza pe
+    // el ca reper. Fara el pornim de la marginea ferestrei: pregatirea e in curs,
+    // chiar daca nu stim exact de cand — iar banda apare taiata la stanga, ceea
+    // ce spune exact asta.
+    const inceput = (lane.data_incepere || '').slice(0, 10) || plan.start
+    if (!inceput) return []
+    const out = []
+    let cursor = inceput
+    for (const e of etape) {
+      if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false })
+      if (e.b >= cursor) cursor = addDays(e.b, 1)
+    }
+    // Dupa ultima etapa: daca proiectul nu e inchis, urmeaza tot pregatire —
+    // pentru etapa care nu e inca fixata. Fara data de sfarsit, deci deschisa.
+    if (lane.status !== 'finalizat') out.push({ de: cursor, la: '', deschis: true })
+    return out
+  }
+
   const views = $derived(plan.lanes.map((lane) => {
     const color = laneColor(lane.id)
-    // Banda proiectului = data_incepere -> ultima zi planificata. Tinea pana la
-    // deadline, dar deadline-ul a plecat in v30 (nu se lua nimeni dupa el), iar
-    // sfarsitul real al unui proiect e ultima perioada pe care i-ai pus-o.
-    const ultimaZi = (lane.implementari || [])
-      .map(im => im.data_sfarsit || im.data_start)
+    // Segmentele de pregatire, decupate pe fereastra vizibila. Cele deschise se
+    // intind pana la marginea din dreapta si primesc muchie estompata.
+    const pregatire = segmentePregatire(lane)
+      .map(seg => {
+        const capat = seg.deschis ? addDays(plan.start, plan.days) : seg.la
+        const rect = spanRect(seg.de, capat, plan.start, plan.days)
+        return rect ? { ...seg, rect } : null
+      })
       .filter(Boolean)
-      .sort()
-      .pop()
-    const band = (lane.tip === 'proiect' && lane.data_incepere && ultimaZi)
-      ? spanRect(lane.data_incepere, ultimaZi, plan.start, plan.days) : null
     const tasks = lane.tasks.map(t => ({
       ...t,
       rect: spanRect(t.data_planificata, effDue(t), plan.start, plan.days),
@@ -77,7 +111,7 @@
     const impl = (lane.implementari || [])
       .map(im => ({ ...im, rect: spanRect(im.data_start, im.data_sfarsit, plan.start, plan.days) }))
       .filter(im => im.rect)
-    return { ...lane, color, band, tasks, packed: packRows(tasks), impl }
+    return { ...lane, color, pregatire, tasks, packed: packRows(tasks), impl }
   }))
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
@@ -417,10 +451,12 @@
                   {/if}
                 </div>
                 <div class="lane-track">
-                  {#if lane.band}
-                    <div class="band" class:clipL={lane.band.clippedLeft} class:clipR={lane.band.clippedRight}
-                         style="left:{lane.band.left}%; width:{lane.band.width}%"></div>
-                  {/if}
+                  {#each lane.pregatire as seg, i (i)}
+                    <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
+                         class:deschis={seg.deschis}
+                         style="left:{seg.rect.left}%; width:{seg.rect.width}%"
+                         title="Pregătire{seg.deschis ? ' — următoarea etapă nu e încă fixată' : ` · ${formatDateShort(seg.de)} – ${formatDateShort(seg.la)}`}"></div>
+                  {/each}
                   <div class="rows">
                     {#each lane.impl as im (im.id)}
                       <div class="t-row">
@@ -663,6 +699,11 @@
     border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0; }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
   .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
+  /* Pregatire deschisa = nu stii inca urmatoarea etapa. Marginea din dreapta se
+     stinge, ca sa nu para o data pe care ai stabilit-o. */
+  .band.deschis { border-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;
+    -webkit-mask-image: linear-gradient(to right, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 55%, transparent 100%); }
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; }
   .t-row { position: relative; height: var(--row-h); }
   /* implementation period bands (Site / Sediu EGB) — same shape as task bars,
