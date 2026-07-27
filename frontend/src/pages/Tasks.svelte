@@ -263,12 +263,15 @@
   </div>
 
   <div class="sub-section">
-    {#if subs.length}
-      <div class="sub-head">
-        <span class="sub-cap">Subtaskuri</span>
-        <span class="sub-prog">{doneCount}/{subs.length}</span>
-      </div>
-    {/if}
+    <!-- Antetul ramane MEREU. Il ascunsesem cand lista e goala, ca sa nu strige
+         o eticheta peste nimic — dar atunci sectiunea isi pierde identitatea si
+         pare ca subtaskurile au disparut (Ion: „ai stricat si taskurile cu
+         subtaskuri"). Solutia nu era sa-l scot, ci sa nu mai tipe: text normal,
+         fara majuscule, cu numaratoarea doar cand exista ceva de numarat. -->
+    <div class="sub-head">
+      <span class="sub-cap">Subtaskuri</span>
+      {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
+    </div>
     {#if subtaskLoading && !subtasksCache[t.id]}
       <div class="sub-loading">Se încarcă...</div>
     {:else}
@@ -563,7 +566,7 @@
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+  .sub-cap { font-size: var(--font-micro); color: var(--text-faint); }
   .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-sm); transition: all var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }

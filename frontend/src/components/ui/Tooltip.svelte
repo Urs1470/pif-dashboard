@@ -68,6 +68,10 @@
         try { nod.setAttribute('aria-label', t) } catch (_) {}
       }
       nod.removeAttribute('title')
+      // URMA: dupa ce am luat `title`-ul, elementul n-ar mai fi gasit de selector
+      // si tooltipul ar aparea O SINGURA DATA, la primul hover. Marcajul asta il
+      // tine vizibil pentru driver.
+      try { nod.setAttribute('data-tip', '') } catch (_) {}
       return t
     }
     if (memorie.has(nod)) return memorie.get(nod)
@@ -102,7 +106,7 @@
     // Doar cu mouse-ul. Pe atingere, un tooltip care apare la tap ar acoperi exact
     // lucrul pe care l-ai atins.
     if (e.pointerType && e.pointerType !== 'mouse') return
-    const nod = e.target?.closest?.('[title], [aria-label]')
+    const nod = e.target?.closest?.('[title], [data-tip], [aria-label]')
     if (!nod) { if (nodCurent) ascunde(); return }
     if (nod === nodCurent) return
     porneste(nod)
@@ -116,7 +120,7 @@
   }
 
   function focus(e) {
-    const nod = e.target?.closest?.('[title], [aria-label]')
+    const nod = e.target?.closest?.('[title], [data-tip], [aria-label]')
     if (nod) porneste(nod, true)
   }
 
