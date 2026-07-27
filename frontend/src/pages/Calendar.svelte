@@ -13,7 +13,7 @@
   import { fade } from 'svelte/transition'
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Flag, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
-  import { navigate } from '../lib/router.svelte.js'
+  import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
@@ -360,6 +360,13 @@
 
   onMount(() => {
     ui.pageHeader = { title: 'Calendar', subtitle: 'Unde ești în fiecare zi' }
+    // Planificatorul trimite aici cu #/calendar?zi=AAAA-LL-ZZ cand dai click pe o
+    // banda de perioada: perioadele se editeaza intr-un singur loc, aici.
+    const zi = router.query?.zi
+    if (zi && /^\d{4}-\d{2}-\d{2}$/.test(zi)) {
+      selectata = zi
+      anchor = monthStart(zi)
+    }
     load()
   })
   onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
@@ -400,6 +407,16 @@
       {#if rezumat.deDecis}
         <button class="kpi warn" onclick={() => { const d = data.de_decis[0]; selectata = d.data_sfarsit || d.data_start; anchor = mod === 'luna' ? monthStart(selectata) : weekStart(selectata); load() }}>
           <span class="k-n">{rezumat.deDecis}</span><span class="k-l">de clarificat</span>
+        </button>
+      {/if}
+      {#if data.probleme?.length}
+        <!-- Nimic nu dispare in tacere: o data pe care aplicatia nu o poate citi
+             nu se aseaza pe nicio zi, deci randul lipseste din calendar fara
+             niciun semn. Mai bine un semnal suparator decat o absenta tacuta. -->
+        <button class="kpi warn" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
+                title={data.probleme.map(p => `${p.nume} — ${p.unde}, ${p.camp}: „${p.valoare}”`).join('\n')}>
+          <span class="k-n">{data.probleme.length}</span>
+          <span class="k-l">{data.probleme.length === 1 ? 'dată necitibilă' : 'date necitibile'}</span>
         </button>
       {/if}
     </div>
@@ -516,7 +533,7 @@
                   <!-- calea de intoarcere: fara ea, un proiect tras din „Fara
                        data" ramanea blocat in calendar -->
                   <button class="b del" disabled={busy === p.id} onclick={() => scoate(p)}
-                          title="Scoate perioada din calendar — proiectul se întoarce în „Fără dată”">
+                          title="Scoate perioada din calendar — proiectul se întoarce în „Proiecte fără perioadă”">
                     <Undo2 size={12} /> Scoate
                   </button>
                   {#if mutaId === p.id}
@@ -530,7 +547,7 @@
               </div>
             {/each}
           {:else if !termeneleZilei(selectata).length}
-            <div class="gol">Liber. Trage un proiect din „Proiecte fără dată" ca să-l planifici aici.</div>
+            <div class="gol">Liber. Trage un proiect din „Proiecte fără perioadă" ca să-l planifici aici.</div>
           {/if}
 
           {#each termeneleZilei(selectata) as t (t.proiect_id)}
@@ -544,7 +561,11 @@
 
         {#if data.neplanificate?.length}
           <div class="pan">
-            <div class="pan-h">Proiecte fără dată <span class="cnt">{data.neplanificate.length}</span></div>
+            <!-- „fara perioada", nu „fara data": perioada e un interval (unde
+                 esti), termenul e un punct (pana cand). Sertarul din Planificator
+                 tine ALTCEVA — taskuri fara termen — si numele trebuie sa spuna
+                 asta, nu sa le faca sa para acelasi lucru. -->
+            <div class="pan-h">Proiecte fără perioadă <span class="cnt">{data.neplanificate.length}</span></div>
             <div class="pan-hint">Trage pe o zi ca să planifici.</div>
             <div class="rail">
               {#each data.neplanificate as pr (pr.proiect_id)}

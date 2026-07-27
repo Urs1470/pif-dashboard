@@ -101,6 +101,8 @@
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
     { path: '/plan', label: 'Planificator', icon: 'plan' },
     { path: '/calendar', label: 'Calendar', icon: 'calendar' },
+    // Langa Calendar, nu la coada: dupa „unde sunt eu" urmeaza imediat „cine e unde".
+    { path: '/departament', label: 'Departament', icon: 'departament' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
   ]
 

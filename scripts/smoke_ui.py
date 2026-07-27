@@ -49,6 +49,7 @@ RUTE = [
     ('/tasks', 'Taskuri'),
     ('/plan', 'Planificator'),
     ('/calendar', 'Calendar'),
+    ('/departament', 'Departament'),
     ('/calculator', 'Calculator'),
 ]
 

@@ -68,7 +68,9 @@ def close_db(exc=None):
 #      fault-urile se iau din manual (trasabilitate la sursa), backup-urile de
 #      drive stau brute in vault unde le citeste skill-ul drive-backup.
 
-SCHEMA_VERSION = 28
+# v29: datele calendaristice sunt normalizate la ISO, iar intrarea e pazita de
+#      utils.norm_date() — nu mai stocam o data pe care nu o putem citi.
+SCHEMA_VERSION = 29
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -899,6 +901,73 @@ def migrate_v27_to_v28():
                 "echipamente, atasamente")
 
 
+# Coloanele care tin o data calendaristica. `notify_on_deadline` NU e aici: e un
+# boolean al carui nume contine „deadline". `created_at`/`data_crearii` sunt
+# timestampuri scrise de cod, nu de utilizator.
+COLOANE_DATA = (
+    ('proiecte', ('data_incepere', 'deadline')),
+    ('tasks', ('data_scadenta', 'data_planificata', 'data_start', 'data_finalizare')),
+    ('global_tasks', ('data_scadenta', 'data_planificata', 'data_finalizare')),
+    ('implementari', ('data_start', 'data_sfarsit')),
+)
+
+
+def migrate_v28_to_v29():
+    """v28 -> v29: normalizeaza datele care nu sunt ISO.
+
+    API-ul stoca pana acum orice string primit, fara validare, asa ca in baza au
+    ajuns `23.02.2026` (deadline de proiect) si `02.07.2026` (scadenta de task).
+    Nu erau gresite pentru un om, dar erau invizibile pentru aplicatie: Calendarul
+    si Planificatorul nu le puteau aseza pe nicio zi si le sareau in tacere.
+
+    De acum intrarea e pazita de utils.norm_date(), chemata din get_json_or_400().
+    Migratia asta curata ce s-a scris inainte de paza.
+
+    Idempotenta: atinge doar valorile care NU incep cu AAAA-LL-ZZ. Ce nu poate
+    converti ramane neatins si e raportat in log — mai bine o valoare ciudata pe
+    care o vezi decat una pe care am ghicit-o gresit.
+    """
+    from utils import norm_date   # import tarziu: utils importa database
+
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    schimbate, nereusite = 0, []
+
+    tabele = {r['name'] for r in cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'")}
+
+    for tabel, coloane in COLOANE_DATA:
+        if tabel not in tabele:
+            continue
+        existente = {r[1] for r in cursor.execute(f'PRAGMA table_info({tabel})')}
+        for col in coloane:
+            if col not in existente:
+                continue
+            randuri = cursor.execute(
+                f'SELECT id, "{col}" AS v FROM "{tabel}" '
+                f'WHERE "{col}" IS NOT NULL AND "{col}" != "" '
+                f'AND "{col}" NOT GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]*"'
+            ).fetchall()
+            for r in randuri:
+                try:
+                    nou = norm_date(r['v'], col)
+                except ValueError:
+                    nereusite.append(f'{tabel}.{col}={r["v"]!r} (id {r["id"]})')
+                    continue
+                cursor.execute(f'UPDATE "{tabel}" SET "{col}" = ? WHERE id = ?',
+                               (nou, r['id']))
+                schimbate += 1
+                logger.info(f'Migration v28->v29: {tabel}.{col} {r["v"]!r} -> {nou!r}')
+
+    conn.commit()
+    conn.close()
+    logger.info(f'Migration v28->v29: normalized {schimbate} date value(s)')
+    if nereusite:
+        logger.warning('Migration v28->v29: could not parse, left untouched: '
+                       + '; '.join(nereusite))
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1037,6 +1106,11 @@ def run_migrations():
         migrate_v27_to_v28()
         set_schema_version(28)
         current_version = 28
+
+    if current_version < 29:
+        migrate_v28_to_v29()
+        set_schema_version(29)
+        current_version = 29
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

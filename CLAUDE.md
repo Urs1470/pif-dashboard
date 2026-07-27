@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 28 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 29 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v28. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v29. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -92,6 +92,43 @@ placuta motorului. Blueprint-ul `obsidian.py` ramane: el tine sincronizarea wiki
 
 Arhiva completa a datelor sterse: `raw/pif-dashboard/2026-07-27-inainte-de-v28/` in vault
 (JSON + CSV per tabela, snapshot integral, seed-uri, README cu procedura de recuperare).
+
+### Date calendaristice (v29, 2026-07-27)
+
+**Nu stocam niciodata o data pe care nu o putem citi.** `utils.norm_date()`, chemata din
+`get_json_or_400()` — palnia unica a tuturor scrierilor JSON — accepta ISO si formatele
+romanesti (`23.02.2026`, `5/3/2026`), respinge cu 400 orice altceva, si lasa neatinse
+valorile care incep deja cu ISO (ca sa nu ciunteasca timestampurile). Migrarea v29 a
+normalizat ce intrase inainte de paza: `23.02.2026` pe un proiect, `02.07.2026` pe un task.
+
+`/api/calendar` intoarce `probleme[]` cu orice data pe care SQLite nu o poate interpreta,
+iar Calendarul o arata ca un KPI rosu. Motivul: o data necitibila nu se aseaza pe nicio zi,
+deci randul disparea din calendar **fara niciun semn** — iar o absenta tacuta te invata sa
+nu te bazezi pe restul.
+
+### Proprietatea suprafetelor de planificare
+
+Fiecare vedere generala detine un singur obiect; pagina proiectului le detine pe ale ei:
+
+- **Calendar** = perioadele (deplasarile). Se creeaza, se muta si se scot doar de aici.
+  Termenele apar ca semnal, nu se editeaza.
+- **Planificator** = taskurile. Benzile de perioada sunt context — click pe ele duce la
+  `#/calendar?zi=AAAA-LL-ZZ`, nu deschide un editor.
+- **ProjectDetail** pastreaza CRUD complet pe ambele (`ImplPeriods`, `ProjectGantt`).
+
+Vocabular: **perioada** = interval (unde esti), **termen** = punct (pana cand). „Data" nu se
+mai foloseste ca eticheta — sertarele sunt „Proiecte fara perioada" (Calendar) si „Taskuri
+fara termen" (Planificator), lucruri diferite cu nume care o spun.
+
+### Planul de departament (`/departament`)
+
+Planul intregii echipe sta intr-o aplicatie externa (`app.projectplan-powerpoint.com`) si e
+**incorporat** in SPA, nu importat — e o plansa, nu o structura cu API. Linkul de partajare
+contine cheia de acces in fragment (dupa `#`), deci nu ajunge la serverul lor prin cererea
+HTTP. Se tine in `app_settings` prin `GET/PUT /api/settings/plan-departament`, **niciodata
+in cod sau in `wiki/`** (care e urmarit de git). Domeniul apare in doua locuri care trebuie
+sa ramana sincronizate: `utils.PLAN_DEPT_HOST` (validare pe server) si `frame-src` din CSP
+(`app.py`).
 
 ## Key Patterns
 

@@ -9,12 +9,12 @@
   import { formatDate, formatDateShort } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
+  import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import Modal from '../components/ui/Modal.svelte'
-  import ImplPeriodModal from '../components/projects/ImplPeriodModal.svelte'
 
   // Distinct, CVD-legible lane hues on the warm-dark ground. Amber is reserved for
   // the app accent/active state, so lanes deliberately avoid it.
@@ -80,12 +80,6 @@
     return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks), impl }
   }))
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
-
-  // --- implementation-period editor (opened by clicking an impl band) ---
-  let implOpen = $state(false)
-  let implEditing = $state(null)
-  let implProjectId = $state(null)
-  function editImpl(im, projectId) { implEditing = im; implProjectId = projectId; implOpen = true }
 
   // --- action popover (desktop) ---
   let sel = $state(null)
@@ -433,9 +427,12 @@
                   <div class="rows">
                     {#each lane.impl as im (im.id)}
                       <div class="t-row">
+                        <!-- Perioadele se EDITEAZA in Calendar, nu si aici. Aveam
+                             trei locuri care scriau acelasi obiect; acum banda e
+                             context si clickul te duce la ziua ei. -->
                         <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                             onclick={() => editImpl(im, lane.id)}
-                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru editare">
+                             onclick={() => navigate(`/calendar?zi=${im.data_start}`)}
+                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru a o vedea în Calendar">
                           <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
                         </button>
                       </div>
@@ -480,7 +477,7 @@
           </div>
         </div>
       </div>
-      <p class="hint">Trage o bară ca s-o muți · trage marginile ca să întinzi intervalul · click pentru acțiuni</p>
+      <p class="hint">Trage o bară de task ca s-o muți · trage marginile ca să întinzi intervalul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
     </div>
 
     <!-- ===== Backlog (taskuri fără termen) ===== -->
@@ -603,8 +600,6 @@
     </div>
   {/snippet}
 </Modal>
-
-<ImplPeriodModal bind:open={implOpen} projectId={implProjectId} period={implEditing} onsaved={loadPlan} />
 
 <style>
   .page { padding-bottom: 96px; }

@@ -22,7 +22,12 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_LEFT
 
-from utils import safe_table, login_required, get_json_or_400
+from urllib.parse import urlparse
+
+from utils import (
+    safe_table, login_required, get_json_or_400,
+    get_app_setting, set_app_setting, PLAN_DEPT_KEY, PLAN_DEPT_HOST,
+)
 from database import get_db, row_to_dict, DATABASE_PATH
 from labels import project_status_label, task_status_label
 
@@ -749,6 +754,34 @@ def global_search():
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
 
+@admin_bp.route('/api/settings/plan-departament', methods=['GET'])
+@login_required
+def plan_departament_get():
+    """Linkul catre planul intregului departament (aplicatie externa).
+
+    Contine cheia de acces, deci sta in app_settings (baza e gitignored) si se
+    intoarce doar unei sesiuni autentificate.
+    """
+    return jsonify({'url': get_app_setting(PLAN_DEPT_KEY, '') or '', 'host': PLAN_DEPT_HOST})
+
+
+@admin_bp.route('/api/settings/plan-departament', methods=['PUT'])
+@login_required
+def plan_departament_set():
+    data = get_json_or_400()
+    url = (data.get('url') or '').strip()
+    if url:
+        p = urlparse(url)
+        # Verificat pe server, nu doar in CSP: altfel un link gresit ar da un
+        # iframe alb, fara nicio explicatie de ce nu merge.
+        if p.scheme != 'https' or (p.hostname or '').lower() != PLAN_DEPT_HOST:
+            return jsonify({
+                'error': f'Se acceptă doar linkuri https către {PLAN_DEPT_HOST}'
+            }), 400
+    set_app_setting(PLAN_DEPT_KEY, url)
+    return jsonify({'url': url, 'host': PLAN_DEPT_HOST})
+
+
 @admin_bp.route('/api/calendar', methods=['GET'])
 @login_required
 def calendar_view():
@@ -837,6 +870,42 @@ def calendar_view():
     """)
     neplanificate = [dict(r) for r in cursor.fetchall()]
 
+    # Nimic nu dispare in tacere. O data pe care SQLite nu o poate interpreta
+    # (`date()` intoarce NULL) nu se aseaza pe nicio zi, deci randul lipseste din
+    # calendar FARA niciun semn — asa a stat `23.02.2026` nevazut pe un proiect.
+    # De la v29 intrarea e pazita de utils.norm_date(), dar o restaurare dintr-un
+    # backup vechi sau o scriere directa in baza pot reintroduce asa ceva.
+    probleme = []
+    cursor.execute("""
+        SELECT id AS proiect_id, nume, 'proiect' AS unde, 'termen' AS camp,
+               deadline AS valoare
+        FROM proiecte
+        WHERE status NOT IN ('finalizat', 'anulat')
+          AND deadline IS NOT NULL AND TRIM(deadline) <> '' AND date(deadline) IS NULL
+    """)
+    probleme += [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT p.id AS proiect_id, p.nume, 'perioada' AS unde,
+               CASE WHEN date(i.data_start) IS NULL THEN 'inceput' ELSE 'sfarsit' END AS camp,
+               CASE WHEN date(i.data_start) IS NULL THEN i.data_start ELSE i.data_sfarsit END AS valoare
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status != 'anulat'
+          AND (date(i.data_start) IS NULL
+               OR (TRIM(COALESCE(i.data_sfarsit, '')) <> '' AND date(i.data_sfarsit) IS NULL))
+    """)
+    probleme += [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT p.id AS proiect_id, p.nume, 'task' AS unde, 'termen' AS camp,
+               t.data_scadenta AS valoare
+        FROM tasks t JOIN proiecte p ON p.id = t.proiect_id
+        WHERE t.status != 'done'
+          AND t.data_scadenta IS NOT NULL AND TRIM(t.data_scadenta) <> ''
+          AND date(t.data_scadenta) IS NULL
+    """)
+    probleme += [dict(r) for r in cursor.fetchall()]
+
     conn.close()
     return jsonify({
         'start': start,
@@ -846,6 +915,7 @@ def calendar_view():
         'termene': termene,
         'de_decis': de_decis,
         'neplanificate': neplanificate,
+        'probleme': probleme,
     })
 
 

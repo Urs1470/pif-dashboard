@@ -17,7 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import get_db, init_db, close_db
-from utils import login_required, get_json_or_400
+from utils import login_required, get_json_or_400, PLAN_DEPT_HOST
 from csrf import init_csrf
 
 app = Flask(__name__)
@@ -290,6 +290,10 @@ def after_request_func(response):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
         "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
         "connect-src 'self' https://query1.finance.yahoo.com; "
+        # Planul de departament (aplicatie externa) se afiseaza incorporat in
+        # pagina /departament. Exact acest domeniu, nimic mai larg. Constanta e
+        # in utils.PLAN_DEPT_HOST — daca se schimba, se schimba in ambele locuri.
+        f"frame-src https://{PLAN_DEPT_HOST}; "
         "frame-ancestors 'none'; "
         "base-uri 'self'"
     )
