@@ -15,14 +15,12 @@ from io import BytesIO
 from flask import (
     Blueprint, request, jsonify, send_file, Response,
 )
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_LEFT
 
 from utils import safe_table, login_required, get_json_or_400
 from database import get_db, row_to_dict, DATABASE_PATH
@@ -31,12 +29,6 @@ from labels import project_status_label, task_status_label
 logger = logging.getLogger(__name__)
 
 admin_bp = Blueprint('admin', __name__)
-
-def _excel_safe(val):
-    """Prevent formula injection in Excel exports."""
-    if isinstance(val, str) and val and val[0] in ('=', '+', '-', '@', '\t', '\r'):
-        return "'" + val
-    return val
 
 # ---------------------------------------------------------------------------
 # Stats
@@ -105,113 +97,6 @@ def get_extended_stats():
         'by_manufacturer': by_manufacturer,
         'by_month': by_month,
     })
-
-# ---------------------------------------------------------------------------
-# Excel export
-# ---------------------------------------------------------------------------
-
-@admin_bp.route('/api/export/excel', methods=['GET'])
-@login_required
-def export_excel():
-    """Export data to Excel format"""
-    export_type = request.args.get('type', 'projects')
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    wb = Workbook()
-
-    # Define styles
-    header_font = Font(bold=True, color='FFFFFF')
-    header_fill = PatternFill(start_color='3B82F6', end_color='3B82F6', fill_type='solid')
-    header_alignment = Alignment(horizontal='center', vertical='center')
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-
-    def style_header(ws, row=1):
-        for cell in ws[row]:
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = header_alignment
-            cell.border = thin_border
-
-    def auto_width(ws):
-        for column in ws.columns:
-            max_length = 0
-            column_letter = column[0].column_letter
-            for cell in column:
-                try:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
-                except Exception as e:
-                    logger.warning(f"auto_width cell length compute failed: {e}")
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[column_letter].width = adjusted_width
-
-    if export_type == 'projects':
-        ws = wb.active
-        ws.title = 'Proiecte'
-
-        headers = ['Nume', 'Client', 'Tip', 'Producător', 'Status', 'Data Start', 'Deadline', 'Locație']
-        ws.append(headers)
-        style_header(ws)
-
-        cursor.execute('''
-            SELECT nume, client, tip, producator, status, data_incepere, deadline, locatie
-            FROM proiecte ORDER BY created_at DESC
-        ''')
-        for row in cursor.fetchall():
-            # Map status to Romanian
-            row_data = list(row)
-            row_data[4] = project_status_label(row_data[4])
-            ws.append([_excel_safe(v) for v in row_data])
-
-        auto_width(ws)
-
-    elif export_type == 'tasks':
-        ws = wb.active
-        ws.title = 'Task-uri'
-
-        headers = ['Proiect', 'Task', 'Status', 'Prioritate', 'Data Scadență', 'Data Finalizare']
-        ws.append(headers)
-        style_header(ws)
-
-        cursor.execute('''
-            SELECT p.nume, t.titlu, t.status, t.prioritate, t.data_scadenta, t.data_finalizare
-            FROM tasks t
-            JOIN proiecte p ON t.proiect_id = p.id
-            ORDER BY t.created_at DESC
-        ''')
-        for row in cursor.fetchall():
-            # Map status to Romanian
-            priority_map = {'urgent': 'Urgent', 'normal': 'Normal', 'minor': 'Minor'}
-            row_data = list(row)
-            row_data[2] = task_status_label(row_data[2])
-            row_data[3] = priority_map.get(row_data[3], row_data[3])
-            ws.append([_excel_safe(v) for v in row_data])
-
-        auto_width(ws)
-
-    conn.close()
-
-    # Save to BytesIO
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-
-    filename = f'pif_export_{export_type}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
-    logger.info(f"Excel export: {export_type} - {filename}")
-
-    return send_file(
-        output,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        as_attachment=True,
-        download_name=filename
-    )
 
 # ---------------------------------------------------------------------------
 # PDF export — palette & helpers
@@ -437,8 +322,16 @@ def export_pdf():
 @admin_bp.route('/api/export/ics', methods=['GET'])
 @login_required
 def export_ics():
-    """Export deadline-uri proiecte + scadente taskuri ca fisier .ics (calendar).
-    Abonabil din Google/Apple Calendar."""
+    """Calendarul de abonat din telefon (Google/Apple Calendar).
+
+    Contine, in ordinea utilitatii:
+      1. PERIOADELE de implementare — unde esti efectiv in fiecare zi. Astea
+         lipseau, desi sunt singurul lucru pe care il ai planificat cu adevarat:
+         doar 2 din 20 de proiecte au deadline, dar 12 au perioade. Fara ele,
+         fisierul era aproape gol.
+      2. deadline-uri de proiect
+      3. scadente de taskuri (proiect + globale)
+    """
     conn = get_db()
     cur = conn.cursor()
     now = datetime.now().strftime('%Y%m%dT%H%M%SZ')
@@ -452,17 +345,41 @@ def export_ics():
         m = re.match(r'(\d{4})-(\d{2})-(\d{2})', str(iso or ''))
         return (m.group(1) + m.group(2) + m.group(3)) if m else None
 
-    def add_event(uid, dt, summary, desc=''):
+    def add_event(uid, dt, summary, desc='', dt_end=None, loc=''):
         d = date_only(dt)
         if not d:
             return
         lines.extend(['BEGIN:VEVENT', f'UID:{uid}@pif.iupif.org', f'DTSTAMP:{now}',
-                      f'DTSTART;VALUE=DATE:{d}', f'SUMMARY:{esc(summary)}'])
+                      f'DTSTART;VALUE=DATE:{d}'])
+        # DTEND e EXCLUSIV in iCalendar: o iesire 29->30 se scrie ca 29 -> 31,
+        # altfel telefonul o arata pe o singura zi.
+        de = date_only(dt_end)
+        if de:
+            end_d = datetime.strptime(de, '%Y%m%d').date() + timedelta(days=1)
+            lines.append(f'DTEND;VALUE=DATE:{end_d.strftime("%Y%m%d")}')
+        lines.append(f'SUMMARY:{esc(summary)}')
+        if loc:
+            lines.append(f'LOCATION:{esc(loc)}')
         if desc:
             lines.append(f'DESCRIPTION:{esc(desc)}')
         lines.append('END:VEVENT')
 
     try:
+        cur.execute("""
+            SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+                   p.nume, p.client, p.locatie AS locatie_proiect
+            FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+            WHERE p.status != 'anulat' AND i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
+            ORDER BY i.data_start
+        """)
+        for r in cur.fetchall():
+            la_sediu = (r['locatie'] or 'site') == 'sediu'
+            titlu = r['eticheta'] or r['nume']
+            unde = 'Sediu EGB' if la_sediu else (r['locatie_proiect'] or r['client'] or '')
+            add_event(f"impl-{r['id']}", r['data_start'],
+                      f"{'Sediu' if la_sediu else (r['client'] or 'Teren')}: {titlu}",
+                      desc=r['nume'], dt_end=r['data_sfarsit'] or r['data_start'], loc=unde)
+
         cur.execute("SELECT id, nume, deadline FROM proiecte WHERE deadline IS NOT NULL "
                     "AND TRIM(deadline) <> '' AND status != 'finalizat'")
         for r in cur.fetchall():
@@ -486,66 +403,6 @@ def export_ics():
     return Response(ics, mimetype='text/calendar',
                     headers={'Content-Disposition': 'attachment; filename="pif-calendar.ics"'})
 
-
-@admin_bp.route('/api/export/pdf/all', methods=['GET'])
-@login_required
-def export_all_projects_pdf():
-    """Export summary of all projects to PDF"""
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM proiecte ORDER BY created_at DESC')
-    projects = [row_to_dict(row) for row in cursor.fetchall()]
-    conn.close()
-
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
-
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, spaceAfter=20, alignment=TA_CENTER)
-    heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'], fontSize=12, spaceBefore=15, spaceAfter=10)
-
-    elements = []
-    elements.append(Paragraph("Raport Sumar Proiecte PIF", title_style))
-    elements.append(Spacer(1, 10))
-
-    # Summary table
-    summary_data = [['#', 'Nume', 'Client', 'Tip', 'Status', 'Deadline']]
-    for i, proj in enumerate(projects, 1):
-        summary_data.append([
-            str(i),
-            proj.get('nume', '-')[:30],
-            proj.get('client', '-')[:20],
-            proj.get('tip', '-'),
-            project_status_label(proj.get('status', '')) or '-',
-            proj.get('deadline', '-')
-        ])
-
-    summary_table = Table(summary_data, colWidths=[1*cm, 5*cm, 3.5*cm, 2*cm, 3*cm, 2.5*cm])
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-    ]))
-    elements.append(summary_table)
-
-    doc.build(elements)
-    buffer.seek(0)
-
-    filename = f"pif_all_projects_{datetime.now().strftime('%Y%m%d')}.pdf"
-    logger.info(f"PDF export all projects: {filename}")
-
-    return send_file(
-        buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=filename
-    )
 
 # ---------------------------------------------------------------------------
 # Backup / Restore

@@ -11,7 +11,7 @@
   // diferiti = zi impartita, semnalata.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -91,34 +91,63 @@
 
   function aleZilei(iso) { return peZi.get(iso) || [] }
 
-  /** Clientii distincti dintr-o zi — mai mult de unul inseamna doua deplasari. */
-  function clientiZi(items) {
-    return [...new Set(items.map(p => (p.client || '').trim()).filter(Boolean))]
-  }
-  /** Ziua e impartita intre clienti diferiti? (un client necunoscut conteaza separat) */
-  function impartita(items) {
-    const chei = new Set(items.map((p, i) => (p.client || '').trim().toLowerCase() || `?${i}`))
-    return chei.size > 1
+  // ===== gruparea pe DEPLASARE =====
+  // Unitatea afisata nu e lucrarea, e deplasarea: trei lucrari intr-o zi la
+  // Continental inseamna ca te urci o data in masina. Deci grupam perioadele
+  // zilei pe (loc, client) si desenam UN bloc per grup, nu cate o dunga per
+  // lucrare. O zi la SEDIU nu e deplasare — e grup separat si nu se numara.
+  function cheieGrup(p) {
+    const loc = p.locatie === 'sediu' ? 'sediu' : 'site'
+    return `${loc}|${(p.client || '').trim().toLowerCase()}`
   }
 
-  // O deplasare = zile CONSECUTIVE la acelasi client. 28, 29 si 30 la Continental
-  // sunt o singura iesire, nu trei; o pauza de o zi rupe deplasarea in doua.
+  const grupuriPeZi = $derived.by(() => {
+    const m = new Map()
+    for (const [iso, items] of peZi) {
+      const g = new Map()
+      for (const p of items) {
+        const k = cheieGrup(p)
+        if (!g.has(k)) {
+          g.set(k, { cheie: k, client: (p.client || '').trim(), sediu: p.locatie === 'sediu', items: [] })
+        }
+        g.get(k).items.push(p)
+      }
+      m.set(iso, [...g.values()])
+    }
+    return m
+  })
+
+  function grupurile(iso) { return grupuriPeZi.get(iso) || [] }
+  function areGrup(iso, cheie) { return grupurile(iso).some(b => b.cheie === cheie) }
+
+  /** Ziua e impartita intre locuri diferite? (doi clienti, sau sediu + teren) */
+  function impartita(iso) { return grupurile(iso).length > 1 }
+
+  function etichetaGrup(b) {
+    if (b.items.length > 1) return `${b.sediu ? 'Sediu' : scurt(b.client)} · ${b.items.length} lucrări`
+    return b.items[0].eticheta || (b.sediu ? 'Sediu' : scurt(b.client))
+  }
+
+  // O deplasare = zile CONSECUTIVE cu acelasi grup de teren. 28-29-30 la
+  // Continental = o singura iesire; o pauza de o zi rupe deplasarea in doua.
   const rezumat = $derived.by(() => {
-    if (!data) return { zile: 0, deplasari: 0, deDecis: 0 }
+    if (!data) return { zile: 0, deplasari: 0, zileSediu: 0, deDecis: 0 }
     const zileGrila = grila.filter(g => !g.alta).map(g => g.iso).sort()
-    let zile = 0
-    let deplasari = 0
+    let zile = 0, deplasari = 0, zileSediu = 0
     let ieri = new Set()
     for (const iso of zileGrila) {
-      const clienti = new Set(clientiZi(aleZilei(iso).filter(p => p.locatie !== 'sediu')))
-      if (clienti.size) zile++
-      for (const c of clienti) if (!ieri.has(c)) deplasari++
-      ieri = clienti
+      const grupuri = grupurile(iso)
+      const teren = new Set(grupuri.filter(b => !b.sediu).map(b => b.cheie))
+      if (teren.size) zile++
+      if (grupuri.some(b => b.sediu)) zileSediu++
+      for (const k of teren) if (!ieri.has(k)) deplasari++
+      ieri = teren
     }
-    return { zile, deplasari, deDecis: (data.de_decis || []).length }
+    return { zile, deplasari, zileSediu, deDecis: (data.de_decis || []).length }
   })
 
   const selectate = $derived(aleZilei(selectata))
+  const grupuriSelectate = $derived(grupurile(selectata))
 
   // Legenda arata DOAR clientii din fereastra curenta — o legenda fixa cu toti
   // clientii ar fi zgomot cand luna are un singur client (cazul obisnuit).
@@ -189,6 +218,17 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
+  /** Scoate perioada din calendar. Daca era ultima, proiectul reapare in
+   *  „Fara data" — asta e calea de intoarcere pentru o planificare gresita. */
+  async function scoate(p) {
+    busy = p.id
+    try {
+      await apiJson(`/api/implementari/${p.id}`, { method: 'DELETE' })
+      toast(`„${p.nume}" — scos din calendar`, 'success')
+      await load(true)
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
+  }
+
   async function planifica(proj, zi) {
     busy = proj.proiect_id
     try {
@@ -202,11 +242,36 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
+  /** Muta o deplasare intreaga: toate lucrarile ei se decaleaza cu acelasi
+   *  numar de zile, deci forma iesirii se pastreaza (2 zile raman 2 zile,
+   *  iar lucrarea care incepea a doua zi tot a doua zi incepe). */
+  async function mutaGrup(b, ziSursa, ziTinta) {
+    const delta = diffDays(ziSursa, ziTinta)
+    if (!delta) return
+    busy = b.cheie
+    try {
+      for (const p of b.items) {
+        await apiJson(`/api/implementari/${p.id}`, {
+          method: 'PUT',
+          body: {
+            data_start: addDays(p.data_start, delta),
+            data_sfarsit: addDays(p.data_sfarsit || p.data_start, delta),
+          },
+        })
+      }
+      toast(b.items.length > 1
+        ? `Deplasare mutată — ${b.items.length} lucrări`
+        : `Mutat pe ${shortDate(ziTinta)}`, 'success')
+      selectata = ziTinta
+      await load(true)
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
+  }
+
   // ===== drag & drop =====
-  function dragPerioada(e, p) {
-    dragged = { tip: 'perioada', p }
+  function dragGrup(e, b, iso) {
+    dragged = { tip: 'grup', b, iso }
     e.dataTransfer.effectAllowed = 'move'
-    try { e.dataTransfer.setData('text/plain', p.id) } catch (_) {}
+    try { e.dataTransfer.setData('text/plain', b.cheie) } catch (_) {}
   }
   function dragProiect(e, proj) {
     dragged = { tip: 'proiect', proj }
@@ -216,7 +281,7 @@
   function overZi(e, iso) {
     if (!dragged) return
     e.preventDefault()
-    e.dataTransfer.dropEffect = dragged.tip === 'perioada' ? 'move' : 'copy'
+    e.dataTransfer.dropEffect = dragged.tip === 'grup' ? 'move' : 'copy'
     dropZi = iso
   }
   function dropPeZi(e, iso) {
@@ -225,7 +290,7 @@
     const d = dragged
     dragged = null
     dropZi = ''
-    if (d.tip === 'perioada') { if (d.p.data_start !== iso) muta(d.p, iso) }
+    if (d.tip === 'grup') { if (d.iso !== iso) mutaGrup(d.b, d.iso, iso) }
     else planifica(d.proj, iso)
   }
   function endDrag() { dragged = null; dropZi = '' }
@@ -260,6 +325,9 @@
     <div class="kpis">
       <div class="kpi"><span class="k-n">{rezumat.zile}</span><span class="k-l">zile pe teren</span></div>
       <div class="kpi"><span class="k-n">{rezumat.deplasari}</span><span class="k-l">{rezumat.deplasari === 1 ? 'deplasare' : 'deplasări'}</span></div>
+      {#if rezumat.zileSediu}
+        <div class="kpi"><span class="k-n">{rezumat.zileSediu}</span><span class="k-l">{rezumat.zileSediu === 1 ? 'zi la sediu' : 'zile la sediu'}</span></div>
+      {/if}
       {#if rezumat.deDecis}
         <button class="kpi warn" onclick={() => { const d = data.de_decis[0]; selectata = d.data_sfarsit || d.data_start; anchor = mod === 'luna' ? monthStart(selectata) : weekStart(selectata); load() }}>
           <span class="k-n">{rezumat.deDecis}</span><span class="k-l">de clarificat</span>
@@ -275,9 +343,8 @@
         <div class="grid" class:sapt={mod === 'saptamani'}>
           {#each grila as g (g.iso)}
             {@const items = aleZilei(g.iso)}
-            {@const site = items.filter(p => p.locatie !== 'sediu')}
+            {@const grupuri = grupurile(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
-            {@const primul = items[0]}
             <button
               class="zi"
               class:alta={g.alta}
@@ -286,8 +353,7 @@
               class:sel={g.iso === selectata}
               class:drop={dropZi === g.iso}
               class:decizie
-              class:split={impartita(items)}
-              style={primul ? `--cli: ${culoare(primul.client)}` : ''}
+              class:split={impartita(g.iso)}
               onclick={() => selectata = g.iso}
               ondragover={(e) => overZi(e, g.iso)}
               ondrop={(e) => dropPeZi(e, g.iso)}
@@ -295,25 +361,24 @@
               <span class="n">{parseISO(g.iso).getDate()}</span>
               {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>{/if}
               <div class="segs">
-                {#each items.slice(0, 3) as p (p.id + g.iso)}
-                  {@const start = p.data_start === g.iso}
-                  {@const end = (p.data_sfarsit || p.data_start) === g.iso}
-                  <div class="seg" class:start class:end class:sediu={p.locatie === 'sediu'}
-                       style="--c: {culoare(p.client)}"
+                {#each grupuri as b (b.cheie)}
+                  {@const start = !areGrup(addDays(g.iso, -1), b.cheie)}
+                  {@const end = !areGrup(addDays(g.iso, 1), b.cheie)}
+                  <div class="seg" class:start class:end class:sediu={b.sediu}
+                       style="--c: {culoare(b.client)}"
                        draggable="true"
-                       ondragstart={(e) => { e.stopPropagation(); dragPerioada(e, p) }}
+                       ondragstart={(e) => { e.stopPropagation(); dragGrup(e, b, g.iso) }}
                        ondragend={endDrag}
-                       title="{p.nume}{p.eticheta ? ' — ' + p.eticheta : ''}{p.client ? ' · ' + p.client : ''}">
-                    {#if start}<span class="seg-t">{p.eticheta || scurt(p.client)}</span>{/if}
+                       title="{b.sediu ? 'La sediu' : 'Deplasare'}{b.client ? ' · ' + b.client : ''}&#10;{b.items.map(p => '· ' + p.nume + (p.eticheta ? ' — ' + p.eticheta : '')).join('&#10;')}">
+                    {#if start}<span class="seg-t">{etichetaGrup(b)}</span>{/if}
                   </div>
                 {/each}
-                {#if items.length > 3}<span class="plus">+{items.length - 3}</span>{/if}
               </div>
-              {#if items.length && !items.some(p => p.data_start === g.iso)}
-                <!-- zi de continuare: barele n-au eticheta (ea sta pe ziua de
-                     start), deci spunem aici ce se intampla — altfel ziua a doua
-                     a unei perioade arata ca niste dungi fara sens -->
-                <span class="grp">{items.length > 1 ? `${items.length} lucrări` : scurt(items[0].client)}</span>
+              {#if grupuri.length && !grupuri.some(b => !areGrup(addDays(g.iso, -1), b.cheie))}
+                <!-- zi de continuare: blocurile n-au eticheta (ea sta pe prima zi
+                     a deplasarii), deci spunem aici unde esti — altfel a doua zi
+                     a unei iesiri arata ca niste dungi fara sens -->
+                <span class="grp">{grupuri.length === 1 ? etichetaGrup(grupuri[0]) : `${grupuri.length} locuri`}</span>
               {/if}
             </button>
           {/each}
@@ -333,12 +398,14 @@
         <div class="pan">
           <div class="pan-zi">{dayLabel(selectata)}</div>
           {#if selectate.length}
-            {@const cl = clientiZi(selectate)}
             <div class="pan-sub">
-              {#if cl.length > 1}
-                <AlertTriangle size={13} /> {cl.length} deplasări distincte — verifică
+              {#if grupuriSelectate.length > 1}
+                <AlertTriangle size={13} /> {grupuriSelectate.length} locuri diferite în aceeași zi — verifică
+              {:else if grupuriSelectate[0]?.sediu}
+                <!-- la sediu NU esti in deplasare: nu urci in masina -->
+                <Building2 size={13} /> la sediu{grupuriSelectate[0].client ? ' · ' + scurt(grupuriSelectate[0].client) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
               {:else}
-                <MapPin size={13} /> o deplasare{cl[0] ? ' · ' + scurt(cl[0]) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
+                <MapPin size={13} /> o deplasare{grupuriSelectate[0]?.client ? ' · ' + scurt(grupuriSelectate[0].client) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
               {/if}
             </div>
             {#each selectate as p (p.id)}
@@ -367,6 +434,12 @@
                           onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
                     <CalendarDays size={12} /> Mută
                   </button>
+                  <!-- calea de intoarcere: fara ea, un proiect tras din „Fara
+                       data" ramanea blocat in calendar -->
+                  <button class="b del" disabled={busy === p.id} onclick={() => scoate(p)}
+                          title="Scoate perioada din calendar — proiectul se întoarce în „Fără dată”">
+                    <Undo2 size={12} /> Scoate
+                  </button>
                   {#if mutaId === p.id}
                     <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE) }}>
                       <DatePicker bind:value={mutaVal} />
@@ -378,13 +451,13 @@
               </div>
             {/each}
           {:else}
-            <div class="gol">Liber. Trage un proiect din listă ca să-l planifici aici.</div>
+            <div class="gol">Liber. Trage un proiect din „Proiecte fără dată" ca să-l planifici aici.</div>
           {/if}
         </div>
 
         {#if data.neplanificate?.length}
           <div class="pan">
-            <div class="pan-h">Fără dată <span class="cnt">{data.neplanificate.length}</span></div>
+            <div class="pan-h">Proiecte fără dată <span class="cnt">{data.neplanificate.length}</span></div>
             <div class="pan-hint">Trage pe o zi ca să planifici.</div>
             <div class="rail">
               {#each data.neplanificate as pr (pr.proiect_id)}
@@ -502,6 +575,7 @@
   .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .b:disabled { opacity: 0.5; cursor: default; }
   .b.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+  .b.del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
 
   .rail { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
   .np { display: flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: var(--radius-sm);

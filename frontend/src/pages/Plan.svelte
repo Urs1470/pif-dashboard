@@ -488,7 +488,7 @@
       <section class="backlog" class:open={backlogOpen}>
         <button class="bl-head" onclick={() => backlogOpen = !backlogOpen} aria-expanded={backlogOpen}>
           <Inbox size={16} />
-          <h2>Fără termen</h2>
+          <h2>Taskuri fără termen</h2>
           <span class="bl-count">{plan.backlog.length}</span>
           <span class="bl-hint">trage pe o zi ca să planifici</span>
           <ChevronRight size={16} class="bl-chev" />

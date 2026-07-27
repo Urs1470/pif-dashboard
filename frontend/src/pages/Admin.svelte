@@ -199,11 +199,9 @@
     <h2 class="sec-title"><Download size={16} /> Export</h2>
     <Card>
       <div class="actions">
-        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=projects', '_blank')}><Download size={14} /> Excel Proiecte</Button>
-        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/excel?type=tasks', '_blank')}><Download size={14} /> Excel Taskuri</Button>
-        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/pdf/all', '_blank')}><Download size={14} /> PDF Sumar</Button>
-        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/ics', '_blank')} title="Deadline-uri proiecte + scadențe taskuri, abonabil din Google/Apple Calendar"><Download size={14} /> Calendar (.ics)</Button>
+        <Button variant="secondary" size="sm" onclick={() => window.open('/api/export/ics', '_blank')}><Download size={14} /> Calendar (.ics)</Button>
       </div>
+      <p class="hint-sub">Perioadele de implementare, deadline-urile și scadențele, ca fișier de calendar. Abonează-te la el din Google/Apple Calendar ca să-l ai pe telefon.</p>
     </Card>
 
     <h2 class="sec-title"><Database size={16} /> Backup &amp; Restore</h2>
