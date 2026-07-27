@@ -2,20 +2,13 @@
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
-  import { Settings, Download, Upload, Database, BarChart3, FileJson, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
+  import { Settings, Download, Upload, Database, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
   import { apiJson, apiFetch } from '../lib/api.js'
-  import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import Card from '../components/ui/Card.svelte'
   import Button from '../components/ui/Button.svelte'
   import Input from '../components/ui/Input.svelte'
-  import Skeleton from '../components/ui/Skeleton.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
-  import BreakdownBars from '../components/admin/BreakdownBars.svelte'
-
-  let stats = $state(null)
-  let extended = $state(null)
-  let loading = $state(true)
 
   let restoreInput = $state(null)
   let restoreData = $state(null)
@@ -24,25 +17,16 @@
   let dbFile = $state(null)
   let showDbConfirm = $state(false)
 
-  let debriefText = $state('')
-  let debriefBusy = $state(false)
-  let debriefResult = $state(null)
-
   let obsConfig = $state({ vault_path: '', valid: false, note_count: 0, configured: false })
   let obsSaving = $state(false)
 
-  let activeTab = $state('stats')
-
-  const STAT_LABELS = { total: 'Total proiecte', active: 'Active', finished: 'Finalizate' }
+  let activeTab = $state('export')
 
   onMount(async () => {
-    try { stats = await apiJson('/api/stats') } catch (_) {}
-    try { extended = await apiJson('/api/stats/extended') } catch (_) {}
     try {
       const c = await apiJson('/api/obsidian/config')
       obsConfig = { vault_path: c.vault_path || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
     } catch (_) {}
-    loading = false
   })
 
   async function downloadBackup() {
@@ -100,21 +84,6 @@
     toast('Baza de date inlocuita', 'success')
   }
 
-  async function importDebrief() {
-    if (!debriefText.trim()) return
-    debriefBusy = true
-    debriefResult = null
-    try {
-      const data = JSON.parse(debriefText)
-      const result = await apiJson('/api/import/debrief', { method: 'POST', body: data })
-      debriefResult = result
-      debriefText = ''
-      toast('Debrief importat', 'success')
-    } catch (e) {
-      toast(e instanceof SyntaxError ? 'JSON invalid' : `Eroare: ${e.message}`, 'error')
-    } finally { debriefBusy = false }
-  }
-
   async function saveObsidian() {
     obsSaving = true
     try {
@@ -153,48 +122,15 @@
 
 <div class="page">
   <div class="page-header"><Settings size={22} /><h1>Admin</h1></div>
+  <p class="hint-sub" style="margin-bottom: var(--space-md)">Sertar de întreținere. Importul de debrief se face direct prin API (<code>POST /api/import/debrief</code>), din Claude Code — nu mai are formular aici.</p>
 
   <div class="tabs">
-    <button class="tab" class:active={activeTab === 'stats'} onclick={() => activeTab = 'stats'}><BarChart3 size={14} /> Statistici</button>
     <button class="tab" class:active={activeTab === 'export'} onclick={() => activeTab = 'export'}><Database size={14} /> Export &amp; Backup</button>
-    <button class="tab" class:active={activeTab === 'import'} onclick={() => activeTab = 'import'}><FileJson size={14} /> Import Debrief</button>
     <button class="tab" class:active={activeTab === 'integrare'} onclick={() => activeTab = 'integrare'}><BookOpen size={14} /> Integrare</button>
   </div>
 
   {#key activeTab}
   <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
-  {#if activeTab === 'stats'}
-    {#if loading}
-      <div class="grid">{#each Array(3) as _}<Skeleton height="80px" />{/each}</div>
-    {:else}
-      <h2 class="sec-title"><BarChart3 size={16} /> Statistici</h2>
-      {#if stats}
-        <div class="grid cell-in" in:fade={{ duration: motionDuration(DUR_BASE) }}>
-          {#each Object.entries(stats) as [key, val]}
-            <Card>
-              <div class="stat-label">{STAT_LABELS[key] || key.replace(/_/g, ' ')}</div>
-              <div class="stat-value">{typeof val === 'number' ? val.toLocaleString('ro-RO') : val}</div>
-            </Card>
-          {/each}
-        </div>
-      {/if}
-
-      {#if extended}
-        <div class="two-col cell-in" in:fade={{ duration: motionDuration(DUR_BASE) }}>
-          <Card>
-            <h3 class="card-title">Dupa status</h3>
-            <BreakdownBars items={(extended.by_status || []).map(s => ({ label: s.status, count: s.count }))} labelMap={PROJECT_STATUS_LABELS} color="var(--accent)" />
-          </Card>
-          <Card>
-            <h3 class="card-title">Dupa producator</h3>
-            <BreakdownBars items={(extended.by_manufacturer || []).map(m => ({ label: m.producator, count: m.count }))} color="var(--info)" />
-          </Card>
-        </div>
-      {/if}
-    {/if}
-
-  {/if}
-
   {#if activeTab === 'export'}
     <h2 class="sec-title"><Download size={16} /> Export</h2>
     <Card>
@@ -215,23 +151,6 @@
       <p class="hint"><AlertTriangle size={12} /> Restaurarea suprascrie datele curente. Serverul face si backup-uri automate.</p>
       <input type="file" accept=".json,application/json" hidden bind:this={restoreInput} onchange={onRestoreFile} />
       <input type="file" accept=".db" hidden bind:this={dbInput} onchange={onDbFile} />
-    </Card>
-  {/if}
-
-  {#if activeTab === 'import'}
-    <h2 class="sec-title"><FileJson size={16} /> Import Debrief</h2>
-    <Card>
-      <textarea rows="5" bind:value={debriefText} placeholder={'{"proiect": {...}, "tasks": [...], ...}'}></textarea>
-      <p class="hint-sub">Se importă clientul, proiectul și taskurile. Un <code>echipamente[]</code> din JSON e acceptat dar ignorat (v28) — parametrii de drive se pun în wiki cu skill-ul <code>drive-backup</code>.</p>
-      <div class="actions" style="margin-top: var(--space-sm)">
-        <Button size="sm" loading={debriefBusy} disabled={!debriefText.trim()} onclick={importDebrief}><Upload size={14} /> Importa</Button>
-        {#if debriefResult?.id || debriefResult?.proiect_id}
-          <a class="result-link" href="#/projects/{debriefResult.id || debriefResult.proiect_id}" transition:fade={{ duration: motionDuration(DUR_BASE) }}>Vezi proiectul creat →</a>
-        {/if}
-      </div>
-      {#if debriefResult?.sumar?.echipamente_ignorate}
-        <p class="hint-sub">{debriefResult.sumar.echipamente_ignorate} echipamente din JSON au fost ignorate.</p>
-      {/if}
     </Card>
   {/if}
 
@@ -274,24 +193,14 @@
   .page-header h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .sec-title { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); margin-top: var(--space-xl); margin-bottom: var(--space-sm); }
   .tab-pane .sec-title:first-child { margin-top: 0; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-  .stat-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-secondary); margin-bottom: 4px; }
-  .stat-value { font-size: var(--font-display); font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: var(--fw-semibold); color: var(--text); font-feature-settings: "tnum"; }
-  .card-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); margin-bottom: var(--space-sm); }
   .actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
   .hint { display: flex; align-items: center; gap: 4px; font-size: var(--font-tiny); color: var(--text-dim); margin-top: var(--space-sm); }
   .hint-sub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
-  textarea { width: 100%; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); font-family: var(--font-mono); resize: vertical; transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  textarea:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
-  .result-link { font-size: var(--font-small); color: var(--accent); }
   .obs-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .obs-status { font-size: var(--font-tiny); color: var(--danger); }
   .obs-status.ok { color: var(--success); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .grid { grid-template-columns: repeat(2, 1fr); }
-    .two-col { grid-template-columns: 1fr; }
   }
 </style>

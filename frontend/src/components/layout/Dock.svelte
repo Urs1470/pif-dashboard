@@ -102,7 +102,6 @@
     { path: '/plan', label: 'Planificator', icon: 'plan' },
     { path: '/calendar', label: 'Calendar', icon: 'calendar' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
-    { path: '/admin', label: 'Admin', icon: 'admin' },
   ]
 
   function isActive(path) {

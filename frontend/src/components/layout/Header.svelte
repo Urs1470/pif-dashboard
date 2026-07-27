@@ -1,6 +1,7 @@
 <script>
-  import { Sun, Moon } from '@lucide/svelte'
+  import { Sun, Moon, Settings } from '@lucide/svelte'
   import { ui, toggleTheme } from '../../stores/ui.svelte.js'
+  import { link, router } from '../../lib/router.svelte.js'
 </script>
 
 <header class="header">
@@ -19,6 +20,12 @@
   <span class="h-spacer"></span>
 
   <div class="header-actions">
+    <!-- Adminul a iesit din Dock (2026-07-27): e un sertar de intretinere pe care
+         il deschizi rar, nu o destinatie de zi cu zi. -->
+    <a href="/admin" use:link class="header-btn" class:on={router.path.startsWith('/admin')}
+       title="Admin — export, backup, integrare" aria-label="Admin">
+      <Settings size={18} />
+    </a>
     <button class="header-btn" onclick={toggleTheme} title="Schimbă tema">
       {#if ui.theme === 'dark'}
         <Sun size={18} />
@@ -117,6 +124,12 @@
   .header-btn:hover {
     background: var(--bg-hover);
     color: var(--text);
+  }
+  /* Adminul nu mai are pastila din Dock, deci rotita trebuie sa arate singura
+     cand esti pe pagina lui. */
+  .header-btn.on {
+    background: var(--accent-subtle);
+    color: var(--accent);
   }
 
   @media (max-width: 768px) {

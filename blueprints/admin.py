@@ -54,50 +54,6 @@ def get_stats():
         'finished': row['finished'] or 0
     })
 
-@admin_bp.route('/api/stats/extended', methods=['GET'])
-@login_required
-def get_extended_stats():
-    """Extended statistics for Chart.js dashboard"""
-    conn = get_db()
-    cursor = conn.cursor()
-
-    # Projects by status
-    cursor.execute("""
-        SELECT status, COUNT(*) as count
-        FROM proiecte
-        GROUP BY status
-    """)
-    by_status = [{'status': row['status'], 'count': row['count']} for row in cursor.fetchall()]
-
-    # Projects by manufacturer
-    cursor.execute("""
-        SELECT producator, COUNT(*) as count
-        FROM proiecte
-        GROUP BY producator
-        ORDER BY count DESC
-    """)
-    by_manufacturer = [{'producator': row['producator'], 'count': row['count']} for row in cursor.fetchall()]
-
-    # Projects per month (last 12 months)
-    cursor.execute("""
-        SELECT
-            strftime('%Y-%m', created_at) as month,
-            COUNT(*) as count
-        FROM proiecte
-        WHERE created_at >= date('now', '-12 months')
-        GROUP BY month
-        ORDER BY month ASC
-    """)
-    by_month = [{'month': row['month'], 'count': row['count']} for row in cursor.fetchall()]
-
-    conn.close()
-
-    return jsonify({
-        'by_status': by_status,
-        'by_manufacturer': by_manufacturer,
-        'by_month': by_month,
-    })
-
 # ---------------------------------------------------------------------------
 # PDF export — palette & helpers
 # ---------------------------------------------------------------------------
@@ -854,6 +810,20 @@ def calendar_view():
     """)
     de_decis = [dict(r) for r in cursor.fetchall()]
 
+    # Deadline-urile de proiect: alt tip de data decat perioadele. Perioada =
+    # cand lucrezi, deadline = cand trebuie predat. Ion a editat un deadline si
+    # s-a mirat ca nu se schimba nimic in calendar — pe buna dreptate, pentru ca
+    # nu il aratam deloc. Acum apare ca semn pe ziua lui.
+    cursor.execute("""
+        SELECT id AS proiect_id, nume, client, deadline, status
+        FROM proiecte
+        WHERE status NOT IN ('finalizat', 'anulat')
+          AND deadline IS NOT NULL AND TRIM(deadline) <> ''
+          AND date(deadline) < date(?) AND date(deadline) >= date(?)
+        ORDER BY deadline
+    """, (end_s, start))
+    termene = [dict(r) for r in cursor.fetchall()]
+
     cursor.execute("""
         SELECT id AS proiect_id, nume, client, status, tip
         FROM proiecte p
@@ -873,6 +843,7 @@ def calendar_view():
         'zile': zile,
         'today': datetime.now().date().isoformat(),
         'perioade': perioade,
+        'termene': termene,
         'de_decis': de_decis,
         'neplanificate': neplanificate,
     })

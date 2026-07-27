@@ -11,7 +11,7 @@
   // diferiti = zi impartita, semnalata.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Flag } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -90,6 +90,22 @@
   })
 
   function aleZilei(iso) { return peZi.get(iso) || [] }
+
+  // Termenele (deadline de proiect) sunt ALTCEVA decat perioadele: perioada e
+  // cand lucrezi, termenul e cand trebuie predat. Le aratam ca semn pe ziua lor,
+  // ca sa se vada cand editezi un deadline si ca sa sara in ochi daca o iesire
+  // e planificata DUPA termen.
+  const termenePeZi = $derived.by(() => {
+    const m = new Map()
+    for (const t of (data?.termene || [])) {
+      const iso = (t.deadline || '').slice(0, 10)
+      if (!iso) continue
+      if (!m.has(iso)) m.set(iso, [])
+      m.get(iso).push(t)
+    }
+    return m
+  })
+  function termeneleZilei(iso) { return termenePeZi.get(iso) || [] }
 
   // ===== gruparea pe DEPLASARE =====
   // Unitatea afisata nu e lucrarea, e deplasarea: trei lucrari intr-o zi la
@@ -406,7 +422,10 @@
               ondrop={(e) => dropPeZi(e, g.iso)}
             >
               <span class="n">{parseISO(g.iso).getDate()}</span>
-              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>{/if}
+              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>
+              {:else if termeneleZilei(g.iso).length}
+                <span class="term" title="Termen: {termeneleZilei(g.iso).map(t => t.nume).join(', ')}"><Flag size={11} /></span>
+              {/if}
               <div class="segs">
                 {#each grupuri as b (b.cheie)}
                   {@const start = !areGrup(addDays(g.iso, -1), b.cheie)}
@@ -498,9 +517,17 @@
                 </div>
               </div>
             {/each}
-          {:else}
+          {:else if !termeneleZilei(selectata).length}
             <div class="gol">Liber. Trage un proiect din „Proiecte fără dată" ca să-l planifici aici.</div>
           {/if}
+
+          {#each termeneleZilei(selectata) as t (t.proiect_id)}
+            <div class="term-it">
+              <Flag size={12} />
+              <button class="term-t" onclick={() => navigate(`/projects/${t.proiect_id}`)}>{t.nume}</button>
+              <span class="term-l">termen</span>
+            </div>
+          {/each}
         </div>
 
         {#if data.neplanificate?.length}
@@ -577,6 +604,12 @@
   .n { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .zi.azi .n { color: var(--accent); font-weight: var(--fw-bold); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
+  /* Termen = alt tip de semnal decat „perioada a trecut", deci alta culoare */
+  .term { position: absolute; top: 4px; right: 4px; color: var(--purple); display: inline-flex; }
+  .term-it { display: flex; align-items: center; gap: 6px; padding: 6px 0 0; border-top: 1px solid var(--border); margin-top: 8px; color: var(--purple); }
+  .term-t { flex: 1; text-align: left; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; }
+  .term-t:hover { color: var(--accent); }
+  .term-l { font-size: var(--font-micro); color: var(--purple); }
 
   .segs { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .seg { position: relative; min-height: 17px; padding: 1px 5px; background: color-mix(in srgb, var(--c) 26%, transparent);
