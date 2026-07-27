@@ -17,6 +17,7 @@
   // de nicaieri.
   import { onMount, onDestroy } from 'svelte'
   import TodayBoard from '../components/TodayBoard.svelte'
+  import UrmatoareaIesire from '../components/UrmatoareaIesire.svelte'
   import { ui } from '../stores/ui.svelte.js'
 
   function greeting() {
@@ -40,6 +41,7 @@
 </script>
 
 <div class="page">
+  <UrmatoareaIesire />
   <TodayBoard />
 </div>
 

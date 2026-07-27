@@ -80,15 +80,18 @@
   function implRect(im) { return spanRect(im.data_start, im.data_sfarsit, win.start, win.days) }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
-  // Meta sub-line for a task row: date range (or milestone date).
+  // Sub-randul unui task: data, o SINGURA data. Inainte, un task de o zi scria
+  // „31 iul. → 31 iul.", iar chipul din dreapta repeta acelasi „31 iul." — plus
+  // pozitia pe timeline. Trei exprimari ale aceleiasi zile.
   function metaText(t) {
-    const parts = []
-    if (t.is_milestone) { if (t.data_start) parts.push(formatDateShort(t.data_start)) }
-    else if (t.data_start && t.data_scadenta) parts.push(`${formatDateShort(t.data_start)} → ${formatDateShort(t.data_scadenta)}`)
-    else if (t.data_scadenta) parts.push(formatDateShort(t.data_scadenta))
-    return parts.join(' · ') || '—'
+    const s = t.data_start ? t.data_start.slice(0, 10) : ''
+    const e = t.data_scadenta ? t.data_scadenta.slice(0, 10) : ''
+    if (t.is_milestone) return s ? formatDateShort(s) : '—'
+    if (s && e && s !== e) return `${formatDateShort(s)} → ${formatDateShort(e)}`
+    return formatDateShort(e || s) || '—'
   }
-  // Due chip (only for open tasks): azi / mâine / depășit / date.
+  // Chipul din dreapta spune doar ce NU se vede deja: relatia cu ziua de azi.
+  // Cand ar fi doar o data, tace — data e deja pe randul de sub titlu.
   function dueInfo(t) {
     if (isDone(t)) return null
     const d = t.data_scadenta ? t.data_scadenta.slice(0, 10) : ''
@@ -98,7 +101,7 @@
     if (k < 0) return { text: 'depășit', cls: 'hot' }
     if (k === 0) return { text: 'azi', cls: 'warm' }
     if (k === 1) return { text: 'mâine', cls: 'warm' }
-    return { text: formatDateShort(d), cls: '' }
+    return null
   }
   // Severity color for the index / accent.
   function sevColor(t) {
@@ -112,11 +115,51 @@
 
   // Gruparea pe faze (WBS) a plecat in v32: coloana `tasks.faza` nu putea fi
   // completata din nicio interfata, deci antetele de faza nu s-au randat niciodata.
+
+  // Intr-un Gantt, DIAGONALA e ce se citeste. Randurile veneau in ordinea `ordine`
+  // (manuala), deci sareau inainte si inapoi in timp — ochiul nu putea urmari nimic.
+  function ziTask(t) {
+    return (t.data_start || t.data_scadenta || '').slice(0, 10) || '9999-12-31'
+  }
+
+  // Peste jumatate din randuri erau istorie (5 din 8 finalizate), taiate cu linie
+  // dar ocupand rand intreg. Ascunse implicit, la un click distanta.
+  let araFinalizate = $state(false)
+  const nrFinalizate = $derived(data.tasks.filter(isDone).length)
+
   const displayRows = $derived.by(() => {
     const rows = []; let n = 0
     for (const im of (data.implementari || [])) rows.push({ kind: 'impl', im })
-    for (const t of data.tasks) rows.push({ kind: 'task', t, no: ++n })
+    const vizibile = (araFinalizate ? data.tasks : data.tasks.filter(t => !isDone(t)))
+      .slice()
+      .sort((a, b) => ziTask(a).localeCompare(ziTask(b)))
+    for (const t of vizibile) rows.push({ kind: 'task', t, no: ++n })
     return rows
+  })
+
+  // PREGATIREA = golul dintre etapele de implementare (vezi Planificator).
+  // Aici e locul ei cel mai firesc: cronologia proprie a proiectului.
+  const segmentePregatire = $derived.by(() => {
+    if (data.proiect?.status === 'finalizat') return []
+    const etape = (data.implementari || [])
+      .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
+      .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
+      .sort((x, y) => x.a.localeCompare(y.a))
+    const inceput = (data.proiect?.data_incepere || '').slice(0, 10) || win.start
+    const out = []
+    let cursor = inceput
+    for (const e of etape) {
+      if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false })
+      if (e.b >= cursor) cursor = addDays(e.b, 1)
+    }
+    out.push({ de: cursor, la: '', deschis: true })
+    return out
+      .map(seg => {
+        const capat = seg.deschis ? addDays(win.start, win.days) : seg.la
+        const rect = spanRect(seg.de, capat, win.start, win.days)
+        return rect ? { ...seg, rect } : null
+      })
+      .filter(Boolean)
   })
 
   // implementation-period editor (the one editable thing here)
@@ -146,6 +189,11 @@
       <a class="exp-btn" href={`/api/proiecte/${projectId}/gantt.xlsx`} title="Export Excel"><Sheet size={14} /> Excel</a>
     </div>
     <span class="g-legend">
+      {#if nrFinalizate}
+        <button class="lg-btn" onclick={() => araFinalizate = !araFinalizate}>
+          {araFinalizate ? 'ascunde' : 'arată'} finalizate · {nrFinalizate}
+        </button>
+      {/if}
       <span class="lg"><span class="dot done leg"></span>finalizat</span>
       <span class="lg"><span class="dot prog leg"></span>în lucru</span>
       <span class="lg"><span class="dot todo leg"></span>de făcut</span>
@@ -195,6 +243,11 @@
         </div>
         <div class="g-body">
           <div class="overlay">
+            {#each segmentePregatire as seg, i (i)}
+              <div class="prep" class:deschis={seg.deschis}
+                   style="left:{seg.rect.left}%; width:{seg.rect.width}%"
+                   title="Pregătire{seg.deschis ? ' — următoarea etapă nu e încă fixată' : ''}"></div>
+            {/each}
             {#each columns.cols as c (c.key)}
               <div class="col-line" style="left:{c.leftPct}%"></div>
               {#if unit === 'day' && c.isWeekend}<div class="col-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
@@ -225,7 +278,6 @@
                   {:else}
                     <div class="dot {statusClass(t)}" style="left:{mp}%" title="{t.titlu} · {formatDateShort(t.data_scadenta || t.data_start)}"></div>
                   {/if}
-                  <span class="mk-label {statusClass(t)}" class:flip={mp > 58} style="left:{mp}%">{t.titlu}</span>
                 {/if}
               </div>
             {/if}
@@ -247,7 +299,10 @@
   .g-tl { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
   .exp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer; text-decoration: none; }
   .exp-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-  .g-legend { display: flex; gap: 12px; flex-wrap: wrap; }
+  .g-legend { flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .lg-btn { font-size: var(--font-micro); padding: 2px 9px; border-radius: var(--radius-full);
+    border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
+  .lg-btn:hover { border-color: var(--accent); color: var(--accent); }
   .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); color: var(--text-dim); font-family: var(--font-mono); }
   .sw { width: 18px; height: 10px; border-radius: 3px; }
   .sw.done { background: var(--success); } .sw.prog { background: var(--accent); }
@@ -302,6 +357,14 @@
   .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
+  /* Pregatirea = golul dintre etape. Tenta cea mai discreta posibila: e un fundal
+     de stare, nu un obiect — barele si punctele trebuie sa ramana citibile peste ea. */
+  .prep { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text-faint) 7%, transparent);
+    border-left: 1px solid color-mix(in srgb, var(--text-faint) 18%, transparent); z-index: 0; }
+  .prep.deschis { border-right: 0;
+    -webkit-mask-image: linear-gradient(to right, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 55%, transparent 100%); }
+
   .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.7; z-index: 1; }
 
   .gb-row { position: relative; height: var(--row-h); border-bottom: 1px solid var(--border); }
@@ -318,9 +381,6 @@
   .tk-line.todo { background: var(--border-strong); }
   .ms { position: absolute; top: 50%; width: 15px; height: 15px; background: var(--accent); border: 2px solid var(--bg-panel); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 3px var(--accent-subtle); z-index: 2; }
   /* label next to the marker so a task is readable without hovering */
-  .mk-label { position: absolute; top: 50%; transform: translateY(-50%); margin-left: 13px; max-width: 260px; font-size: var(--font-tiny); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; z-index: 2; }
-  .mk-label.flip { margin-left: 0; margin-right: 13px; transform: translate(-100%, -50%); }
-  .mk-label.done { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--text-faint); }
 
   @media (max-width: 720px) {
     .g-table { width: 210px; }
