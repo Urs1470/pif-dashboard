@@ -1,10 +1,12 @@
+// Doua statusuri, atat (v31). Oglindeste labels.py — sursa de adevar e acolo.
+// Cheile vechi raman mapate ca un rand nemigrat sa nu se afiseze brut.
 export const PROJECT_STATUS_LABELS = {
-  pregatire: 'Pregătire',   // 10 din 20 de proiecte — lipsea, se afisa raw
-  in_lucru: 'În Lucru',
-  in_asteptare: 'În Așteptare',
-  'in_așteptare': 'În Așteptare',
-  blocat: 'Blocat',
+  pregatire: 'În pregătire',
   finalizat: 'Finalizat',
+  in_lucru: 'În pregătire',
+  in_asteptare: 'În pregătire',
+  'in_așteptare': 'În pregătire',
+  blocat: 'În pregătire',
 }
 
 export const TASK_STATUS_LABELS = {
@@ -18,11 +20,12 @@ export const TASK_STATUS_LABELS = {
 }
 
 export const STATUS_COLORS = {
+  pregatire: 'var(--accent-on-subtle)',
+  finalizat: 'var(--success)',
+  // statusuri de TASK (alt vocabular, aceeasi harta de culori)
   in_lucru: 'var(--accent-on-subtle)',
   in_asteptare: 'var(--purple)',
-  'in_așteptare': 'var(--warning)',
   blocat: 'var(--danger)',
-  finalizat: 'var(--success)',
   done: 'var(--success)',
   to_do: 'var(--text-dim)',
 }

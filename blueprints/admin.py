@@ -47,7 +47,7 @@ def get_stats():
     cursor.execute("""
         SELECT
             COUNT(*) as total,
-            SUM(CASE WHEN status = 'in_lucru' THEN 1 ELSE 0 END) as active,
+            SUM(CASE WHEN status = 'pregatire' THEN 1 ELSE 0 END) as active,
             SUM(CASE WHEN status = 'finalizat' THEN 1 ELSE 0 END) as finished
         FROM proiecte
     """)
@@ -1010,7 +1010,7 @@ def dashboard_home():
     cursor.execute("""
         SELECT id AS proiect_id, nume, client, status
         FROM proiecte p
-        WHERE p.status = 'in_lucru'
+        WHERE p.status = 'pregatire'
           AND NOT EXISTS (
             SELECT 1 FROM implementari i
             WHERE i.proiect_id = p.id

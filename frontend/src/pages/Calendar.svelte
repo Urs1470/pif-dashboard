@@ -599,16 +599,12 @@
                        diferite. -->
                   <span class="loc" title="Unde ești în ziua asta">{p.locatie === 'sediu' ? 'Sediu' : 'Site'}</span>
                   <span class="loc faza" class:pal={p.faza === 'pregatire'} title="Faza acestei perioade">{p.faza === 'pregatire' ? 'Pregătire' : 'Implementare'}</span>
-                  <span class="st" title="Statusul proiectului">{PROJECT_STATUS_LABELS[p.status] || p.status}</span>
                   <span class="tk" class:warn={!p.taskuri_deschise}>{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
                 </div>
                 {#if p.necesita_decizie}
                   <div class="dec">
                     <span class="dec-q">A trecut. S-a făcut?</span>
                     <button class="b ok" disabled={busy === p.id} onclick={() => setStatus(p, 'finalizat')}><Check size={12} /> Da</button>
-                    {#if p.status !== 'in_lucru'}
-                      <button class="b" disabled={busy === p.id} onclick={() => setStatus(p, 'in_lucru')}>În lucru</button>
-                    {/if}
                     <button class="b" disabled={busy === p.id} onclick={() => muta(p, azi)}><Undo2 size={12} /> Mută pe azi</button>
                   </div>
                 {/if}
@@ -668,7 +664,7 @@
                      ondragstart={(e) => dragProiect(e, pr)} ondragend={endDrag}>
                   <GripVertical size={12} />
                   <span class="np-t">{pr.nume}</span>
-                  <span class="np-s" class:lucru={pr.status === 'in_lucru'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
+                  <span class="np-s" class:lucru={pr.status === 'pregatire'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
                 </div>
               {/each}
             </div>

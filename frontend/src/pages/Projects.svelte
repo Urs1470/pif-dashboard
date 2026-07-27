@@ -20,9 +20,8 @@
 
   const statusOptions = [
     { value: '', label: 'Toate' },
-    { value: 'in_lucru', label: 'În Lucru' },
-    { value: 'in_asteptare', label: 'În Așteptare' },
-    { value: 'blocat', label: 'Blocat' },
+    { value: 'pregatire', label: 'În pregătire' },
+    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   const sortOptions = [
@@ -34,9 +33,8 @@
   ]
 
   const batchStatusOptions = [
-    { value: 'in_lucru', label: 'În Lucru' },
-    { value: 'in_asteptare', label: 'În Așteptare' },
-    { value: 'blocat', label: 'Blocat' },
+    { value: 'pregatire', label: 'În pregătire' },
+    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   function daysUntil(zi) {
@@ -64,7 +62,8 @@
     return faza ? `${faza} · ${cand}` : cand
   }
 
-  const STATUS_CYCLE = ['in_lucru', 'in_asteptare', 'blocat', 'finalizat']
+  // Cu doua statusuri, clickul pe status e un comutator, nu un ciclu.
+  const STATUS_CYCLE = ['pregatire', 'finalizat']
 
   async function cycleProjectStatus(e, p) {
     e.stopPropagation()

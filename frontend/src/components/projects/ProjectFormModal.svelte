@@ -11,9 +11,7 @@
 
   const PRODUCATORI = ['ABB', 'Siemens', 'Danfoss', 'Lenze', 'Altul']
   const STATUSES = [
-    { value: 'in_lucru', label: 'În Lucru' },
-    { value: 'in_asteptare', label: 'În Așteptare' },
-    { value: 'blocat', label: 'Blocat' },
+    { value: 'pregatire', label: 'În pregătire' },
     { value: 'finalizat', label: 'Finalizat' },
   ]
 
@@ -25,7 +23,7 @@
     return {
       tip: 'PIF', nume: '', client: '', locatie: '', echipament_principal: '',
       producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '',
-      status: 'in_lucru', nr_comanda: '', nr_contract: '', vault_folder: '',
+      status: 'pregatire', nr_comanda: '', nr_contract: '', vault_folder: '',
     }
   }
 
@@ -44,7 +42,7 @@
           cod_proiect: project.cod_proiect || '',
           pm: project.pm || '',
           data_incepere: project.data_incepere || '',
-          status: project.status || 'in_lucru',
+          status: project.status || 'pregatire',
           nr_comanda: project.nr_comanda || '',
           nr_contract: project.nr_contract || '',
           vault_folder: project.vault_folder || '',

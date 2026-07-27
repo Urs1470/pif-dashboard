@@ -8,9 +8,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `43:_client_ip`, `53:get_or_create_secret_key`, `74:file_hash`, `92:_asset_path`, `107:inject_version`, `125:make_session_permanent`, `135:setup_logging`, `167:check_rate_limit`, `206:check_login_rate_limit`, `228:before_request_func`, `261:after_request_func`, `305:get_hashed_pin`, `314:_git_commit`, `328:healthz`, `334:health_redirect`, `339:whoami`, `346:login_page`, `353:login`, `365:logout`, `371:login_hash`, `391:_serve_frontend`, `399:index`, `404:dist_assets`, `410:favicon`, `415:manifest`, `420:calc_public`, `430:protected_docs`, `442:service_worker`, `447:add_sw_header`, `468:get_deploy_secret`, `476:webhook_deploy`, `561:api_deploy`, `617:page_not_found`, `624:internal_error`
 
-## database.py (1387 linii)
+## database.py (1427 linii)
 
-`13:get_db`, `34:close_db`, `78:get_schema_version`, `91:set_schema_version`, `100:migrate_v1_to_v2`, `176:migrate_v2_to_v3`, `203:migrate_v3_to_v4`, `234:migrate_v4_to_v5`, `276:migrate_v5_to_v6`, `298:migrate_v6_to_v7`, `320:migrate_v7_to_v8`, `363:migrate_v8_to_v9`, `378:migrate_v9_to_v10`, `408:migrate_v10_to_v11`, `430:migrate_v11_to_v12`, `476:migrate_v12_to_v13`, `521:migrate_v13_to_v14`, `560:migrate_v14_to_v15`, `583:migrate_v15_to_v16`, `602:migrate_v16_to_v17`, `618:migrate_v17_to_v18`, `659:migrate_v18_to_v19`, `699:migrate_v19_to_v20`, `716:migrate_v20_to_v21`, `743:migrate_v21_to_v22`, `762:migrate_v22_to_v23`, `781:migrate_v23_to_v24`, `818:migrate_v24_to_v25`, `833:migrate_v25_to_v26`, `858:migrate_v26_to_v27`, `875:migrate_v27_to_v28`, `919:migrate_v28_to_v29`, `975:migrate_v29_to_v30`, `1019:run_migrations`, `1225:init_db`, `1380:row_to_dict`
+`13:get_db`, `34:close_db`, `80:get_schema_version`, `93:set_schema_version`, `102:migrate_v1_to_v2`, `178:migrate_v2_to_v3`, `205:migrate_v3_to_v4`, `236:migrate_v4_to_v5`, `278:migrate_v5_to_v6`, `300:migrate_v6_to_v7`, `322:migrate_v7_to_v8`, `365:migrate_v8_to_v9`, `380:migrate_v9_to_v10`, `410:migrate_v10_to_v11`, `432:migrate_v11_to_v12`, `478:migrate_v12_to_v13`, `523:migrate_v13_to_v14`, `562:migrate_v14_to_v15`, `585:migrate_v15_to_v16`, `604:migrate_v16_to_v17`, `620:migrate_v17_to_v18`, `661:migrate_v18_to_v19`, `701:migrate_v19_to_v20`, `718:migrate_v20_to_v21`, `745:migrate_v21_to_v22`, `764:migrate_v22_to_v23`, `783:migrate_v23_to_v24`, `820:migrate_v24_to_v25`, `835:migrate_v25_to_v26`, `860:migrate_v26_to_v27`, `877:migrate_v27_to_v28`, `921:migrate_v28_to_v29`, `977:migrate_v29_to_v30`, `1021:migrate_v30_to_v31`, `1054:run_migrations`, `1265:init_db`, `1420:row_to_dict`
 
 ## utils.py (171 linii)
 
@@ -20,7 +20,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `22:_generate_token`, `31:_get_or_refresh_token`, `39:init_csrf`
 
-## labels.py (31 linii)
+## labels.py (36 linii)
 
-`26:project_status_label`, `30:task_status_label`
+`31:project_status_label`, `35:task_status_label`
 

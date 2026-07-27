@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 30 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 31 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v30. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v31. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -142,6 +142,24 @@ Ce a luat locul deadline-ului in interfata: **`urmatoarea`** — prima perioada 
 calculata prin subinterogare in `/api/proiecte` si `/api/proiecte/<id>`. Apare pe cardul de
 proiect si in bara laterala a paginii de proiect. Banda proiectului din Planificator merge
 acum de la `data_incepere` pana la ultima zi planificata, nu pana la un termen impus.
+
+### Doua statusuri de proiect (v31, 2026-07-27)
+
+Ion: *„practic imi trebuiesc doua statusuri la proiecte: in pregatire si finalizat."*
+
+Datele sustineau restrangerea: din 18 proiecte, 8 erau `finalizat`, 7 `pregatire`, 3
+`in_lucru`. **`in_asteptare`, `blocat` si `anulat` erau definite in cod si nefolosite de
+niciun rand** — optiuni pe care nu le-a ales nimeni niciodata. Migrarea v31 muta orice nu e
+`finalizat` la `pregatire`.
+
+Nu se pierde informatie: distinctia „in lucru" vs „in pregatire" n-a fost folosita la nicio
+decizie, iar cand esti efectiv pe teren o spun PERIOADELE, nu statusul.
+
+Atentie la o suprapunere de nume: statusul de proiect **„In pregatire"** si faza de perioada
+**„pregatire"** suna la fel dar sunt lucruri diferite (proiectul intreg vs blocul asta de
+zile). De aceea in panoul zilei din Calendar statusul NU se mai afiseaza — pe o zi
+planificata e evident ca proiectul nu e finalizat, iar chipul s-ar citi ca fiind despre
+perioada. Locatia si faza stau lipite (amandoua despre perioada); statusul e despre proiect.
 
 ### Cum arata o zi in Calendar
 

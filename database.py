@@ -73,7 +73,9 @@ def close_db(exc=None):
 # v30: perioadele au faza (pregatire/implementare), independenta de locatie.
 #      Deadline-ul de proiect a plecat: 2 din 18 completate, niciodata folosit
 #      la o decizie. Ce se stie cu adevarat sunt cele doua perioade.
-SCHEMA_VERSION = 30
+# v31: proiectele au doua statusuri — „pregatire" si „finalizat". „in_asteptare",
+#      „blocat" si „anulat" erau definite in cod si nefolosite de niciun rand.
+SCHEMA_VERSION = 31
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1016,6 +1018,39 @@ def migrate_v29_to_v30():
     logger.info('Migration v29->v30 completed')
 
 
+def migrate_v30_to_v31():
+    """v30 -> v31: proiectele au DOUA statusuri, atat.
+
+    Ion: „practic imi trebuiesc doua statusuri la proiecte: in pregatire si
+    finalizat."
+
+    Datele sustineau deja restrangerea: din 18 proiecte, 8 erau `finalizat`,
+    7 `pregatire` si 3 `in_lucru`. `in_asteptare`, `blocat` si `anulat` erau
+    definite in cod dar NEFOLOSITE de niciun rand — optiuni pe care nu le-a ales
+    nimeni niciodata.
+
+    Orice nu e `finalizat` devine `pregatire`. Nu se pierde informatie: distinctia
+    dintre „in lucru" si „in pregatire" n-a fost niciodata folosita la o decizie,
+    iar cand esti efectiv pe teren o spun PERIOADELE, nu statusul.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT status, COUNT(*) FROM proiecte WHERE status != 'finalizat' "
+                   "AND status != 'pregatire' GROUP BY status")
+    de_mutat = cursor.fetchall()
+    cursor.execute("UPDATE proiecte SET status = 'pregatire' "
+                   "WHERE status IS NULL OR status NOT IN ('pregatire', 'finalizat')")
+    n = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if n:
+        logger.info('Migration v30->v31: %d proiect(e) mutate la „pregatire" (%s)'
+                    % (n, ', '.join('%s=%d' % (s or 'NULL', c) for s, c in de_mutat)))
+    logger.info('Migration v30->v31 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1165,6 +1200,11 @@ def run_migrations():
         set_schema_version(30)
         current_version = 30
 
+    if current_version < 31:
+        migrate_v30_to_v31()
+        set_schema_version(31)
+        current_version = 31
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1247,7 +1287,7 @@ def init_db():
             folder_server TEXT,
             data_incepere TEXT,
             data_crearii TEXT,
-            status TEXT DEFAULT 'in_lucru',
+            status TEXT DEFAULT 'pregatire',
             observatii TEXT,
             nr_comanda TEXT,
             nr_contract TEXT,
