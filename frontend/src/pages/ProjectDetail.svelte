@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, Wrench, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, ListTodo, Settings2, Paperclip, FileDown, ChevronDown, ChevronRight, AlertCircle, Upload, Copy, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import { manualUrlForEquip, familieForEquip } from '../lib/manuals.js'
@@ -107,12 +107,13 @@
   let editLabel = $state('')
   let editSaving = $state(false)
 
+  // Echipamente + Atasamente scoase din navigatie (2026-07-27, pregatire v24):
+  // parametrii de drive stau in wiki (skill drive-backup), backup-urile brute in
+  // raw/projects/<slug>/. Codul ramane pana la migratie.
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'gantt', label: 'Gantt', icon: CalendarRange },
-    { key: 'equipment', label: 'Echipamente', icon: Wrench },
     { key: 'wiki', label: 'Wiki', icon: BookOpen },
-    { key: 'attachments', label: 'Atașamente', icon: Paperclip },
     { key: 'info', label: 'Info', icon: Settings2 },
   ]
 
@@ -849,7 +850,6 @@
                       {#if !t.descriere}
                         <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
                       {/if}
-                      <button class="detail-chip" onclick={() => triggerAttUpload(t.id)} disabled={attUploading}><Paperclip size={13} /> {attUploading ? 'Se încarcă…' : 'Fișier'}</button>
                     </div>
 
                     <div class="sub-section">
@@ -1057,19 +1057,6 @@
         {/if}
       </section>
 
-      <section class="rcell cell-in">
-        <div class="cell-label"><span class="ico ico-amber"><Wrench size={12} /></span>Echipamente<span class="tail">{equipment.length}</span></div>
-        {#if equipment.length === 0}
-          <div class="rsub rsub-empty">Niciun echipament</div>
-        {:else}
-          <div class="req-list">
-            {#each equipment.slice(0, 3) as e (e.id)}
-              <div class="req-name" title={e.nume || e.model || ''}>{e.nume || e.model || '—'}</div>
-            {/each}
-            {#if equipment.length > 3}<div class="req-more">+{equipment.length - 3} altele</div>{/if}
-          </div>
-        {/if}
-      </section>
     </aside>
     </div>
   {/if}

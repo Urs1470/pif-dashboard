@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
-  import { Settings, Download, Upload, Database, BarChart3, FileJson, Stethoscope, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
+  import { Settings, Download, Upload, Database, BarChart3, FileJson, BookOpen, Save, AlertTriangle, HardDriveDownload, RefreshCw } from '@lucide/svelte'
   import { apiJson, apiFetch } from '../lib/api.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -28,9 +28,6 @@
   let debriefBusy = $state(false)
   let debriefResult = $state(null)
 
-  let audit = $state(null)
-  let auditLoading = $state(false)
-
   let obsConfig = $state({ vault_path: '', folders: '', valid: false, note_count: 0, configured: false })
   let obsSaving = $state(false)
 
@@ -46,13 +43,7 @@
       obsConfig = { vault_path: c.vault_path || '', folders: c.folders || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
     } catch (_) {}
     loading = false
-    loadAudit()
   })
-
-  async function loadAudit() {
-    auditLoading = true
-    try { audit = await apiJson('/api/parametri/audit') } catch (_) {} finally { auditLoading = false }
-  }
 
   async function downloadBackup() {
     try {
@@ -158,7 +149,6 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
-  const severityColor = (s) => s === 'high' ? 'var(--danger)' : s === 'medium' ? 'var(--warning)' : 'var(--text-dim)'
 </script>
 
 <div class="page">
@@ -203,36 +193,6 @@
       {/if}
     {/if}
 
-    <h2 class="sec-title"><Stethoscope size={16} /> Audit DB Parametri</h2>
-    {#if auditLoading}
-      <Skeleton height="100px" />
-    {:else if audit}
-      <div class="two-col cell-in" in:fade={{ duration: motionDuration(DUR_BASE) }}>
-        <Card>
-          <div class="stat-label">Health Score</div>
-          <div class="stat-value" style="color: {audit.health_pct >= 90 ? 'var(--success)' : audit.health_pct >= 70 ? 'var(--warning)' : 'var(--danger)'}">{audit.health_pct}%</div>
-          <div class="hint-sub">{audit.total?.toLocaleString('ro-RO')} parametri total</div>
-        </Card>
-        <Card>
-          <h3 class="card-title">Per familie</h3>
-          <BreakdownBars items={(audit.per_familie || []).map(f => ({ label: (f.familie || '').replace(/_/g, ' '), count: f.count ?? f.total ?? 0 }))} color="var(--purple)" />
-        </Card>
-      </div>
-      {#if audit.issues && Object.keys(audit.issues).length > 0}
-        <Card>
-          <h3 class="card-title">Probleme detectate</h3>
-          <div class="issues">
-            {#each Object.entries(audit.issues) as [key, issue]}
-              <div class="issue">
-                <span class="issue-dot" style="background: {severityColor(issue.severity)}"></span>
-                <span class="issue-label">{issue.label || key}</span>
-                <span class="issue-count">{issue.count}</span>
-              </div>
-            {/each}
-          </div>
-        </Card>
-      {/if}
-    {/if}
   {/if}
 
   {#if activeTab === 'export'}

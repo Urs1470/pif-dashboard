@@ -100,9 +100,7 @@
     { path: '/projects', label: 'Proiecte', icon: 'projects' },
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
     { path: '/plan', label: 'Planificator', icon: 'plan' },
-    { path: '/params', label: 'Parametri', icon: 'params' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
-    { path: '/notes', label: 'Notițe', icon: 'notes' },
     { path: '/admin', label: 'Admin', icon: 'admin' },
   ]
 

@@ -1,5 +1,5 @@
 <script>
-  import { Search, FolderKanban, Cpu, FileText, CalendarCheck, Users, AlertTriangle, BookOpen, CheckSquare } from '@lucide/svelte'
+  import { Search, FolderKanban, FileText, CalendarCheck, Users, CheckSquare } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
@@ -18,9 +18,8 @@
     { label: 'Acasă', path: '/', solid: 'home', keywords: 'home dashboard acasa' },
     { label: 'Proiecte', path: '/projects', solid: 'projects', keywords: 'projects lista' },
     { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
-    { label: 'Parametri', path: '/params', solid: 'params', keywords: 'params drive fault' },
+    { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
     { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
-    { label: 'Notițe', path: '/notes', solid: 'notes', keywords: 'notes obsidian notite' },
     { label: 'Admin', path: '/admin', solid: 'admin', keywords: 'admin stats export' },
   ]
 
@@ -29,12 +28,13 @@
     observatie:  { label: 'Observații', icon: FileText },
     task:        { label: 'Taskuri', icon: CheckSquare },
     global_task: { label: 'Taskuri zilnice', icon: CalendarCheck },
-    echipament:  { label: 'Echipamente', icon: Cpu },
     client:      { label: 'Clienți', icon: Users },
-    parametru:   { label: 'Parametri', icon: Cpu },
-    fault_code:  { label: 'Coduri eroare', icon: AlertTriangle },
-    obsidian:    { label: 'Notițe', icon: BookOpen },
   }
+
+  // Scoase din scopul aplicatiei (v24): parametri, fault codes, echipamente,
+  // atasamente si browserul de vault. Backend-ul le mai poate returna pana la
+  // migratie — le filtram aici ca sa nu mai apara in paleta.
+  const DROPPED_TYPES = new Set(['parametru', 'fault_code', 'echipament', 'atasament', 'obsidian'])
 
   const isSearchMode = $derived(query.trim().length >= 2)
 
@@ -84,7 +84,7 @@
       searchTimer = setTimeout(async () => {
         try {
           const data = await apiJson(`/api/search?q=${encodeURIComponent(q)}`)
-          searchResults = data.results || []
+          searchResults = (data.results || []).filter(r => !DROPPED_TYPES.has(r.type))
         } catch (_) {
           searchResults = []
         } finally { searching = false }
@@ -122,22 +122,8 @@
       case 'proiect':
       case 'task':
       case 'observatie':
-      case 'echipament':
-        if (r.proiect_id) navigate(`/projects/${r.proiect_id}`)
-        else if (r.id) navigate(`/projects/${r.id}`)
-        break
       case 'global_task':
         navigate(`/tasks${r.id ? `?focus=global:${r.id}` : ''}`)
-        break
-      case 'parametru':
-        // deschide direct modalul de detaliu pe pagina Parametri
-        navigate(`/params?open=${encodeURIComponent(r.id)}`)
-        break
-      case 'fault_code':
-        navigate(`/params?tab=faults&open=${encodeURIComponent(r.id)}`)
-        break
-      case 'obsidian':
-        navigate('/notes')
         break
       case 'client':
         navigate('/projects')
