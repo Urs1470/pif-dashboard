@@ -9,7 +9,7 @@ import re
 import logging
 import html
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 
 from flask import (
@@ -936,79 +936,88 @@ def global_search():
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
 
-@admin_bp.route('/api/review', methods=['GET'])
+@admin_bp.route('/api/calendar', methods=['GET'])
 @login_required
-def weekly_review():
-    """Review saptamanal: ce trebuie inchis, ce vine, ce s-a facut.
+def calendar_view():
+    """Calendarul personal: unde esti in fiecare zi.
 
-    Bucla care tine sistemul curat. Statusurile raman in urma cand esti singur pe
-    teren — asta le aduce la zi in cateva click-uri, fara sa intri in 5 proiecte.
+    Ion e o singura persoana, iar planificarea lui reala sunt PERIOADELE de
+    implementare (14 pe 12 proiecte), nu deadline-urile (2 din 20 de proiecte).
+    Deci intrebarea la care raspunde ecranul asta e „unde sunt marti", si tot
+    aici stau si deciziile — nu intr-o lista separata.
 
-    Trei sectiuni, toate pe perioade de implementare (planificarea reala):
-      - `de_inchis`  : perioade trecute pe proiecte neterminate -> inchide sau replanifica
-      - `urmeaza`    : perioade in fereastra urmatoare (implicit 7 zile)
-      - `finalizate` : ce s-a bifat in ultimele 7 zile (taskuri + proiecte inchise)
+    `necesita_decizie` = perioada s-a terminat, dar proiectul n-a fost mutat.
+    Ori s-a facut si trebuie inchis, ori a alunecat si trebuie replanificat.
+
+    `neplanificate` = proiecte active fara nicio perioada viitoare. Ele stau in
+    banda laterala, de unde se trag pe o zi ca sa devina perioade.
     """
+    start = (request.args.get('start') or '').strip()
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', start):
+        start = datetime.now().date().replace(day=1).isoformat()
     try:
-        zile = int(request.args.get('zile') or 7)
+        zile = int(request.args.get('zile') or 42)
     except (TypeError, ValueError):
-        zile = 7
-    zile = max(1, min(zile, 60))
+        zile = 42
+    zile = max(7, min(zile, 200))
+    start_d = datetime.strptime(start, '%Y-%m-%d').date()
+    end_s = (start_d + timedelta(days=zile)).isoformat()
 
     conn = get_db()
     cursor = conn.cursor()
 
+    # O perioada intra in fereastra daca se intersecteaza cu ea, nu doar daca
+    # incepe in ea — altfel un bloc de 4 zile care trece peste 1 ale lunii dispare.
     cursor.execute("""
         SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
-               p.id AS proiect_id, p.nume, p.client, p.status, p.tip,
+               p.id AS proiect_id, p.nume, p.client, p.locatie AS locatie_proiect,
+               p.status, p.tip,
                (SELECT COUNT(*) FROM tasks t
-                 WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise
+                 WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise,
+               (CASE WHEN p.status NOT IN ('finalizat', 'anulat')
+                      AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
+                     THEN 1 ELSE 0 END) AS necesita_decizie
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status != 'anulat'
+          AND date(i.data_start) < date(?)
+          AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date(?)
+        ORDER BY i.data_start, p.client, p.nume
+    """, (end_s, start))
+    perioade = [dict(r) for r in cursor.fetchall()]
+
+    # Tot ce cere o decizie, chiar daca a ramas in urma ferestrei afisate —
+    # altfel navighezi pe luna viitoare si semnalul dispare.
+    cursor.execute("""
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+               p.id AS proiect_id, p.nume, p.client, p.status
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
         WHERE p.status NOT IN ('finalizat', 'anulat')
           AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
-        ORDER BY i.data_start DESC
-    """)
-    de_inchis = [dict(r) for r in cursor.fetchall()]
-
-    cursor.execute("""
-        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
-               p.id AS proiect_id, p.nume, p.client, p.status, p.tip,
-               (SELECT COUNT(*) FROM tasks t
-                 WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise
-        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
-        WHERE p.status NOT IN ('finalizat', 'anulat')
-          AND date(i.data_start) >= date('now')
-          AND date(i.data_start) <= date('now', ?)
         ORDER BY i.data_start
-    """, (f'+{zile} days',))
-    urmeaza = [dict(r) for r in cursor.fetchall()]
+    """)
+    de_decis = [dict(r) for r in cursor.fetchall()]
 
     cursor.execute("""
-        SELECT t.titlu, t.data_finalizare, p.nume AS proiect_nume, p.id AS proiect_id
-        FROM tasks t JOIN proiecte p ON p.id = t.proiect_id
-        WHERE t.data_finalizare IS NOT NULL AND TRIM(t.data_finalizare) <> ''
-          AND date(t.data_finalizare) >= date('now', '-7 days')
-        ORDER BY t.data_finalizare DESC LIMIT 40
+        SELECT id AS proiect_id, nume, client, status, tip
+        FROM proiecte p
+        WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND NOT EXISTS (
+            SELECT 1 FROM implementari i
+            WHERE i.proiect_id = p.id
+              AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          )
+        ORDER BY p.status DESC, p.nume
     """)
-    taskuri_gata = [dict(r) for r in cursor.fetchall()]
-
-    cursor.execute("""
-        SELECT id AS proiect_id, nume, client, updated_at
-        FROM proiecte
-        WHERE status = 'finalizat'
-          AND updated_at IS NOT NULL
-          AND date(updated_at) >= date('now', '-7 days')
-        ORDER BY updated_at DESC LIMIT 20
-    """)
-    proiecte_inchise = [dict(r) for r in cursor.fetchall()]
+    neplanificate = [dict(r) for r in cursor.fetchall()]
 
     conn.close()
     return jsonify({
+        'start': start,
         'zile': zile,
-        'de_inchis': de_inchis,
-        'urmeaza': urmeaza,
-        'taskuri_gata': taskuri_gata,
-        'proiecte_inchise': proiecte_inchise,
+        'today': datetime.now().date().isoformat(),
+        'perioade': perioade,
+        'de_decis': de_decis,
+        'neplanificate': neplanificate,
     })
 
 

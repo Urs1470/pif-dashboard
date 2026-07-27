@@ -6,7 +6,7 @@
   } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
-  import { formatDate, PROJECT_STATUS_LABELS } from '../lib/formatters.js'
+  import { formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import Card from '../components/ui/Card.svelte'
@@ -107,41 +107,8 @@
     })
   }
 
-  // „Ce alunecă" — citit din PERIOADELE de implementare, nu din deadline-uri
-  // (aproape niciun proiect n-are deadline, dar majoritatea au perioade).
-  // Ordinea = urgența reală: ce trebuia închis, apoi ce vine nepregătit, apoi
-  // ce e în lucru fără nimic planificat.
-  const riscRows = $derived.by(() => {
-    const r = dashboard?.risc
-    if (!r) return []
-    const rows = []
-    for (const p of (r.perioade_trecute || [])) {
-      const zi = p.data_sfarsit || p.data_start
-      rows.push({
-        proiect_id: p.proiect_id,
-        nume: p.nume,
-        motiv: `perioada a trecut${p.eticheta ? ' · ' + p.eticheta : ''} — încă „${PROJECT_STATUS_LABELS[p.status] || p.status}”`,
-        chip: dueChip(zi), hot: true, sev: 'var(--danger)',
-      })
-    }
-    for (const p of (r.fara_taskuri || [])) {
-      rows.push({
-        proiect_id: p.proiect_id,
-        nume: p.nume,
-        motiv: 'intervenție apropiată, dar niciun task pregătit',
-        chip: dueChip(p.data_start), hot: false, sev: 'var(--warning)',
-      })
-    }
-    for (const p of (r.fara_perioada || [])) {
-      rows.push({
-        proiect_id: p.proiect_id,
-        nume: p.nume,
-        motiv: 'în lucru, dar fără nicio perioadă planificată',
-        chip: '', hot: false, sev: 'var(--border-strong)',
-      })
-    }
-    return rows
-  })
+  // Detaliul lui „ce alunecă" traieste in Calendar, pe ziua respectiva — Home
+  // pastreaza doar numarul, ca sa nu ai patru locuri in care sa te uiti.
 
   async function loadDashboard(silent = false) {
     // silent = reincarcare in fundal (dupa o actiune din TodayBoard) fara sa
@@ -194,7 +161,7 @@
           <div class="kpi-sub">taskuri bifate</div>
         {/if}
       </button>
-      <button class="kpi cell-in" onclick={() => navigate('/review')} title="Deschide review-ul săptămânal">
+      <button class="kpi cell-in" onclick={() => navigate('/calendar')} title="Deschide calendarul">
         <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Ce alunecă</span></div>
         <div class="kpi-val">{Math.round(animVals.risc)}</div>
         <div class="kpi-sub">de închis sau replanificat</div>
@@ -216,30 +183,6 @@
                   <div class="row-meta">{t.proiect_nume || 'Task global'}</div>
                 </div>
                 {#if t.data_scadenta}<span class="due-chip" class:hot={daysUntil(t.data_scadenta) < 0} class:warm={daysUntil(t.data_scadenta) >= 0 && daysUntil(t.data_scadenta) <= 1}>{dueChip(t.data_scadenta)}</span>{/if}
-                <ChevronRight size={14} />
-              </button>
-            {/each}
-          </div>
-        </Card>
-      {/if}
-
-      {#if riscRows.length}
-        <Card padding={false}>
-          <div class="card-head">
-            <span class="ch-ico ico-amb"><AlertTriangle size={13} /></span>
-            <span class="ch-label">Ce alunecă</span>
-            <span class="card-count">{riscRows.length}</span>
-            <button class="ch-act" onclick={() => navigate('/review')}>Review →</button>
-          </div>
-          <div class="card-list scroll">
-            {#each riscRows as r, i}
-              <button class="isl" style="--sev: {r.sev}" onclick={() => navigate(`/projects/${r.proiect_id}`)}>
-                <span class="tix">{String(i + 1).padStart(2, '0')}</span>
-                <div class="row-content">
-                  <div class="row-title">{r.nume}</div>
-                  <div class="row-meta">{r.motiv}</div>
-                </div>
-                {#if r.chip}<span class="due-chip" class:hot={r.hot}>{r.chip}</span>{/if}
                 <ChevronRight size={14} />
               </button>
             {/each}
@@ -287,9 +230,6 @@
   .ch-ico { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ch-ico.ico-red { background: var(--danger-subtle); color: var(--danger); }
   .ch-ico.ico-vio { background: var(--purple-subtle); color: var(--purple); }
-  .ch-ico.ico-amb { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
-  .ch-act { margin-left: 4px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--accent); padding: 2px 8px; border-radius: var(--radius-sm); cursor: pointer; }
-  .ch-act:hover { background: var(--accent-subtle); }
   .ch-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 

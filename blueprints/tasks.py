@@ -1545,8 +1545,8 @@ def get_plan():
 
     # Candidate project lanes (skip cancelled / finished).
     cursor.execute(
-        "SELECT id, nume, tip, status, data_incepere, deadline, client, locatie "
-        "FROM proiecte WHERE status NOT IN ('anulat', 'finalizat')")
+        "SELECT id, nume, tip, status, data_incepere, deadline FROM proiecte "
+        "WHERE status NOT IN ('anulat', 'finalizat')")
     projects = [row_to_dict(r) for r in cursor.fetchall()]
 
     # Project tasks (exclude future recurrences, same idiom as the agenda).
@@ -1597,11 +1597,6 @@ def get_plan():
             'nume': proj.get('nume') or '',
             'tip_proiect': proj.get('tip') or '',
             'status': proj.get('status') or '',
-            # client + locatie alimenteaza randul de incarcare din Planificator:
-            # doua interventii in aceeasi zi la acelasi client = o deplasare,
-            # la clienti diferiti = suprapunere reala.
-            'client': proj.get('client') or '',
-            'locatie': proj.get('locatie') or '',
             'data_incepere': inc,
             'deadline': ddl,
             'tasks': ptasks,
@@ -1624,8 +1619,7 @@ def get_plan():
     if gtasks:
         lanes.append({
             'tip': 'global', 'id': '__global__', 'nume': 'Globale',
-            'tip_proiect': '', 'status': '', 'client': '', 'locatie': '',
-            'data_incepere': '', 'deadline': '',
+            'tip_proiect': '', 'status': '', 'data_incepere': '', 'deadline': '',
             'tasks': sorted(gtasks, key=_task_sort_key), 'implementari': [],
         })
 

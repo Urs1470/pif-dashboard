@@ -81,79 +81,6 @@
   }))
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
-  // ===== Rand de incarcare =====
-  // Ion e o singura persoana: intrebarea reala nu e "ce am la proiectul X", ci
-  // "unde sunt eu marti". Numaram interventiile pe zi din perioadele de
-  // implementare si le grupam pe client:
-  //   - mai multe la ACELASI client = o deplasare, nu un conflict -> chip neutru
-  //   - la clienti DIFERITI          = suprapunere reala          -> chip de atentie
-  // Doar in modul pe zile (7z/14z/30z); pe saptamani/luni coloana nu are o zi.
-  const loadByDay = $derived.by(() => {
-    if (unit !== 'day') return new Map()
-    const map = new Map()
-    for (const lane of plan.lanes) {
-      if (lane.tip !== 'proiect') continue
-      for (const im of (lane.implementari || [])) {
-        const from = im.data_start || im.data_sfarsit
-        const to = im.data_sfarsit || im.data_start
-        if (!from) continue
-        const i0 = dayDiff(plan.start, from)
-        const i1 = dayDiff(plan.start, to)
-        if (i0 == null || i1 == null) continue
-        for (let i = Math.max(0, i0); i <= Math.min(plan.days - 1, i1); i++) {
-          const iso = addDays(plan.start, i)
-          if (!map.has(iso)) map.set(iso, [])
-          map.get(iso).push({
-            proiect: lane.nume,
-            proiect_id: lane.id,
-            client: (lane.client || '').trim(),
-            locatie: im.locatie || 'site',
-            eticheta: im.eticheta || '',
-          })
-        }
-      }
-    }
-    return map
-  })
-
-  // Un client "necunoscut" (camp gol) nu se grupeaza cu altul necunoscut — nu
-  // stim ca e aceeasi deplasare, deci il tratam ca distinct.
-  function loadCell(iso) {
-    const items = loadByDay.get(iso) || []
-    const site = items.filter(x => x.locatie !== 'sediu')
-    if (!site.length) return null
-    const keys = new Set(site.map((x, i) => x.client ? 'c:' + x.client.toLowerCase() : 'x:' + i))
-    const clienti = [...new Set(site.map(x => x.client).filter(Boolean))]
-    return {
-      n: site.length,
-      grupuri: keys.size,
-      conflict: keys.size > 1,
-      client: clienti.length === 1 ? clienti[0] : '',
-      items: site,
-    }
-  }
-
-  function loadTitle(cell, iso) {
-    const cap = formatDate(iso)
-    const linii = cell.items.map(x => `· ${x.proiect}${x.eticheta ? ' — ' + x.eticheta : ''}${x.client ? ' (' + x.client + ')' : ''}`)
-    const verdict = cell.conflict
-      ? `${cell.grupuri} deplasări distincte în aceeași zi — verifică`
-      : `o singură deplasare${cell.client ? ' la ' + cell.client : ''}, ${cell.n} lucrări`
-    return `${cap}: ${verdict}\n${linii.join('\n')}`
-  }
-
-  const zileIncarcate = $derived.by(() => {
-    if (unit !== 'day') return { total: 0, conflicte: 0 }
-    let total = 0, conflicte = 0
-    for (let i = 0; i < plan.days; i++) {
-      const cell = loadCell(addDays(plan.start, i))
-      if (!cell) continue
-      total++
-      if (cell.conflict) conflicte++
-    }
-    return { total, conflicte }
-  })
-
   // --- implementation-period editor (opened by clicking an impl band) ---
   let implOpen = $state(false)
   let implEditing = $state(null)
@@ -466,28 +393,6 @@
             </div>
           </div>
 
-          {#if unit === 'day' && zileIncarcate.total > 0}
-            <div class="p-load">
-              <div class="lane-label load-label" title="Câte lucrări pe teren ai în fiecare zi. Mai multe la același client = o deplasare; la clienți diferiți = suprapunere.">
-                Pe teren
-                {#if zileIncarcate.conflicte > 0}
-                  <span class="load-warn">{zileIncarcate.conflicte} {zileIncarcate.conflicte === 1 ? 'zi de verificat' : 'zile de verificat'}</span>
-                {/if}
-              </div>
-              <div class="days">
-                {#each columns.cols as c (c.key)}
-                  {@const cell = c.iso ? loadCell(c.iso) : null}
-                  {#if cell}
-                    <div class="load-cell" class:conflict={cell.conflict} class:compact={dayCompact}
-                         style="left:{c.leftPct}%; width:{c.widthPct}%" title={loadTitle(cell, c.iso)}>
-                      <span class="load-n">{cell.n}</span>
-                      {#if !dayCompact && cell.client}<span class="load-cli">{cell.client}</span>{/if}
-                    </div>
-                  {/if}
-                {/each}
-              </div>
-            </div>
-          {/if}
 
           <div class="p-body" class:drop-active={!!dragTask} ondragover={onBodyDragOver} ondrop={onBodyDrop} role="presentation">
             <div class="overlay">
@@ -731,27 +636,6 @@
   .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
   .days { flex: 1; position: relative; min-width: 0; height: 42px; }
 
-  /* Randul "Pe teren": densitatea zilelor cu lucrari pe site */
-  .p-load { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-surface); position: sticky; top: 42px; z-index: 2; }
-  .p-load .days { height: 24px; }
-  .load-label { padding: 0 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-faint); display: flex; align-items: center; gap: 6px; }
-  .load-warn { font-family: var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--warning); font-weight: var(--fw-semibold); }
-  .load-cell { position: absolute; top: 3px; bottom: 3px; display: flex; align-items: center; justify-content: center; gap: 4px; overflow: hidden;
-               border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); cursor: default; }
-  .load-cell.conflict { background: color-mix(in srgb, var(--warning) 16%, transparent); border-color: var(--warning); }
-  .load-n { font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-bold); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-  .load-cell.conflict .load-n { color: var(--warning); }
-  .load-cli { font-size: var(--font-micro); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .load-cell.compact { gap: 0; }
-  .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
-  .col-head.compact { padding: 5px 1px; }
-  .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
-  .col-head.today { background: var(--accent-subtle); }
-  .ch-sub { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
-  .col-head.today .ch-sub { color: var(--accent); }
-  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .col-head.compact .ch-main { font-size: var(--font-tiny); }
-  .col-head.today .ch-main { color: var(--accent); }
 
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: var(--lane-w); right: 0; pointer-events: none; z-index: 0; }

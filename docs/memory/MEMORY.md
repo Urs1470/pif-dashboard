@@ -56,6 +56,23 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-07-27 (3) — Calendar, in locul celor trei liste.** Feedback Ion: „nu prea inteleg sensul,
+  nu se poate mai elegant si mai interactiv?" — avea dreptate. Raspunsesem la o intrebare SPATIALA
+  („unde sunt marti") cu trei liste de text (rand de cifre in Planificator, card pe Acasa, pagina
+  /review). Aplicatia avea deja destule liste.
+  **Inlocuite toate trei cu `/calendar`** (`Calendar.svelte` + `lib/calendarDates.js`, `GET /api/calendar`):
+  grila lunara sau 2 saptamani, culoarea codeaza **clientul** (unitatea reala e DEPLASAREA, nu
+  lucrarea), blocuri continue pe zile multiple, azi si zilele care cer o decizie marcate pe zi.
+  Interactiune: click pe zi -> panou cu lucrarile si actiunile; **drag** unei perioade pe alta zi =
+  replanificare cu pastrarea duratei; **drag** dintr-un proiect din banda „Fara data" pe o zi = creeaza
+  perioada; buton „Muta" cu DatePicker pentru mobil (drag HTML5 nu merge la atingere).
+  „Deplasari" = zile CONSECUTIVE la acelasi client (28-29-30 la Continental = 1 iesire, nu 3).
+  Home pastreaza doar KPI-ul „Ce alunecă" (numar), care duce in calendar — detaliul sta pe ziua lui.
+  Sterse: `Review.svelte`, `/api/review`, randul „Pe teren" din Plan.svelte, `client`/`locatie` de pe
+  lane-urile `/api/plan` (calendarul are endpointul lui).
+  **Lectie:** cand intrebarea e „unde/cand", raspunsul trebuie sa fie o harta sau un calendar, nu o
+  lista. Verificat inainte de a construi cu un mockup pe date reale, aprobat de Ion.
+
 - **2026-07-27 (2) — monitorizare pe PERIOADE, nu pe deadline.** Datele reale: doar 2 din 20 de
   proiecte au deadline, dar 12 au perioade de implementare (14 in total). Taskurile cu date sunt
   nefolosite (1 cu `data_start`, 0 progres, 0 milestones, 0 dependente) — planificarea reala a lui

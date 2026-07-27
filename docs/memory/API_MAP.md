@@ -22,8 +22,8 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/admin/db-upload` | `admin_db_upload` | 755 |
 | GET | `/api/admin/db-dump` | `admin_db_dump` | 832 |
 | GET | `/api/search` | `global_search` | 891 |
-| GET | `/api/review` | `weekly_review` | 939 |
-| GET | `/api/dashboard/home` | `dashboard_home` | 1019 |
+| GET | `/api/calendar` | `calendar_view` | 939 |
+| GET | `/api/dashboard/home` | `dashboard_home` | 1028 |
 
 ## blueprints\obsidian.py (7 rute)
 
