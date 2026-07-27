@@ -36,7 +36,7 @@
   // Per-column min width by granularity, so a 6-month (monthly) view doesn't force
   // a 180-cell scroll. Daily view stays readable down to ~34px/day.
   const colMin = $derived(unit === 'day' ? (plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 34) : unit === 'week' ? 66 : 104)
-  const contentMin = $derived(200 + colMin * columns.cols.length) // lane-w(200) + cols
+  const contentMin = $derived(240 + colMin * columns.cols.length) // lane-w(240) + cols
   const dayCompact = $derived(unit === 'day' && plan.days > 24)
 
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
@@ -260,7 +260,7 @@
   function dayFromEvent(e) {
     const body = e.currentTarget
     const rect = body.getBoundingClientRect()
-    const laneW = parseFloat(getComputedStyle(body).getPropertyValue('--lane-w')) || 200
+    const laneW = parseFloat(getComputedStyle(body).getPropertyValue('--lane-w')) || 240
     const trackW = rect.width - laneW
     if (trackW <= 0) return null
     const x = e.clientX - rect.left - laneW
@@ -625,7 +625,7 @@
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* ===== chart shell ===== */
-  .chart { --lane-w: 200px; --day-min: 48px; --row-h: 28px;
+  .chart { --lane-w: 240px; --day-min: 48px; --row-h: 28px;
     background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .chart-scroll { overflow-x: auto; }
   .inner { position: relative; }
@@ -654,11 +654,14 @@
   .lane { display: flex; border-bottom: 1px solid var(--border); min-height: calc(var(--row-h) + 14px); }
   .lane:last-child { border-bottom: 0; }
   .lane-label { padding: 8px 10px; display: flex; align-items: center; gap: 6px; border-right: 1px solid var(--border); background: var(--bg-surface); z-index: 1; }
-  .lane-name { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-small); font-weight: var(--fw-medium); }
+  .lane-name { display: flex; align-items: flex-start; gap: 7px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-small); font-weight: var(--fw-medium); }
   .lane-name.static { cursor: default; }
   .lane-name:not(.static):hover .lane-txt { color: var(--accent); }
-  .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
-  .lane-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
+  /* Numele de proiect sunt lungi si se termina des cu acelasi client
+     („… — Continental"), deci trunchierea pe un rand le facea identice: toate
+     9 erau taiate. Doua randuri arata partea care le distinge. */
+  .lane-txt { min-width: 0; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .tip-chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-chip); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
   .tip-chip.svc { background: color-mix(in srgb, var(--purple) 18%, transparent); color: var(--purple); }
 

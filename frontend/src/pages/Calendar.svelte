@@ -120,6 +120,21 @@
 
   const selectate = $derived(aleZilei(selectata))
 
+  // Legenda arata DOAR clientii din fereastra curenta — o legenda fixa cu toti
+  // clientii ar fi zgomot cand luna are un singur client (cazul obisnuit).
+  const legenda = $derived.by(() => {
+    const m = new Map()
+    for (const g of grila) {
+      if (g.alta) continue
+      for (const p of aleZilei(g.iso)) {
+        const c = (p.client || '').trim()
+        const cheie = c || '—'
+        m.set(cheie, (m.get(cheie) || 0) + 1)
+      }
+    }
+    return [...m.keys()].sort().map(c => ({ nume: c, scurt: scurt(c), culoare: culoare(c === '—' ? '' : c) }))
+  })
+
   // ===== navigatie =====
   function pas(n) {
     anchor = mod === 'luna' ? addMonths(anchor, n) : addDays(anchor, n * 14)
@@ -283,7 +298,7 @@
                 {#each items.slice(0, 3) as p (p.id + g.iso)}
                   {@const start = p.data_start === g.iso}
                   {@const end = (p.data_sfarsit || p.data_start) === g.iso}
-                  <div class="seg" class:start class:end
+                  <div class="seg" class:start class:end class:sediu={p.locatie === 'sediu'}
                        style="--c: {culoare(p.client)}"
                        draggable="true"
                        ondragstart={(e) => { e.stopPropagation(); dragPerioada(e, p) }}
@@ -294,12 +309,24 @@
                 {/each}
                 {#if items.length > 3}<span class="plus">+{items.length - 3}</span>{/if}
               </div>
-              {#if site.length > 1 && !impartita(items)}
-                <span class="grp">{site.length} lucrări</span>
+              {#if items.length && !items.some(p => p.data_start === g.iso)}
+                <!-- zi de continuare: barele n-au eticheta (ea sta pe ziua de
+                     start), deci spunem aici ce se intampla — altfel ziua a doua
+                     a unei perioade arata ca niste dungi fara sens -->
+                <span class="grp">{items.length > 1 ? `${items.length} lucrări` : scurt(items[0].client)}</span>
               {/if}
             </button>
           {/each}
         </div>
+
+        {#if legenda.length}
+          <div class="leg">
+            {#each legenda as l (l.nume)}
+              <span class="leg-i" title={l.nume}><i style="background: {l.culoare}"></i>{l.scurt}</span>
+            {/each}
+            <span class="leg-i sep" title="Zilele la sediu apar hașurat, cele pe teren pline"><i class="hatch"></i>sediu</span>
+          </div>
+        {/if}
       </div>
 
       <aside class="side">
@@ -392,11 +419,11 @@
 
   .kpis { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .kpi { display: flex; align-items: baseline; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); }
-  .kpi.warn { background: color-mix(in srgb, var(--warning) 14%, transparent); border-color: var(--warning); cursor: pointer; }
+  .kpi.warn { background: color-mix(in srgb, var(--danger) 14%, transparent); border-color: var(--danger); cursor: pointer; }
   .k-n { font-family: var(--font-mono); font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text); font-variant-numeric: tabular-nums; }
-  .kpi.warn .k-n { color: var(--warning); }
+  .kpi.warn .k-n { color: var(--danger); }
   .k-l { font-size: var(--font-tiny); color: var(--text-dim); }
-  .kpi.warn .k-l { color: var(--warning); }
+  .kpi.warn .k-l { color: var(--danger); }
 
   .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-md); align-items: start; }
 
@@ -413,15 +440,22 @@
   .zi:hover { border-color: var(--border-strong); }
   .zi.alta { opacity: 0.42; }
   .zi.we { background: color-mix(in srgb, var(--purple) 5%, var(--bg-elevated)); }
+  /* Trei stari se pot suprapune pe aceeasi zi, deci fiecare pe alt canal SI pe
+     alta culoare. Atentie: in tema asta --warning === --accent (#ffb454), deci
+     avertizarile NU pot folosi warning — ar arata exact ca „azi".
+       azi     = chenar amber (accent)
+       decizie = chenar coral (danger), bate pe azi
+       zi impartita intre clienti = bara violet jos
+       selectia = contur interior (outline, ca sa nu se bata cu box-shadow) */
   .zi.azi { border-color: var(--accent); }
-  .zi.sel { background: var(--accent-subtle); border-color: var(--accent); }
-  .zi.drop { border-color: var(--accent); border-style: dashed; background: var(--accent-subtle); }
-  .zi.decizie { border-color: var(--warning); }
-  .zi.split { box-shadow: inset 0 -3px 0 var(--warning); }
+  .zi.decizie { border-color: var(--danger); }
+  .zi.sel { background: var(--accent-subtle); outline: 2px solid var(--accent); outline-offset: -2px; }
+  .zi.drop { border-style: dashed; border-color: var(--accent); background: var(--accent-subtle); }
+  .zi.split { box-shadow: inset 0 -3px 0 var(--purple); }
 
   .n { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .zi.azi .n { color: var(--accent); font-weight: var(--fw-bold); }
-  .flag { position: absolute; top: 4px; right: 4px; color: var(--warning); display: inline-flex; }
+  .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
 
   .segs { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .seg { position: relative; min-height: 17px; padding: 1px 5px; background: color-mix(in srgb, var(--c) 26%, transparent);
@@ -430,9 +464,19 @@
   .seg.end { margin-right: 0; border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
   .seg:not(.start) { border-left: none; padding-left: 5px; }
   .seg:active { cursor: grabbing; }
+  /* Zi la sediu = hasurat, zi pe teren = plin. Diferenta conteaza: una e zi de
+     drum, cealalta nu. Aceeasi culoare de client, alta textura. */
+  .seg.sediu { background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
+      transparent 4px 8px); }
   .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .plus { font-size: var(--font-micro); color: var(--text-faint); }
   .grp { font-size: var(--font-micro); color: var(--text-faint); margin-top: auto; }
+
+  .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
+  .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-dim); }
+  .leg-i i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .leg-i i.hatch { background: repeating-linear-gradient(135deg, var(--text-faint) 0 2px, transparent 2px 4px); border: 1px solid var(--border-strong); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
@@ -451,7 +495,7 @@
   .it-m .tk.warn { color: var(--warning); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
-  .dec-q { font-size: var(--font-micro); color: var(--warning); width: 100%; }
+  .dec-q { font-size: var(--font-micro); color: var(--danger); width: 100%; }
   .mut { display: flex; align-items: flex-end; gap: 6px; width: 100%; margin-top: 4px; }
   .b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-micro); padding: 3px 8px; border-radius: var(--radius-sm);
        border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
