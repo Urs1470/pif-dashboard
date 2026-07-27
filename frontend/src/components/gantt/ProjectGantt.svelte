@@ -338,9 +338,12 @@
   .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
   .impl-lname { font-size: var(--font-small); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .loc-site { --il: #3f9dc4; } .loc-sediu { --il: #b98a2e; }
-  .impl-band { position: absolute; top: 50%; transform: translateY(-50%); height: 18px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; border: none; cursor: pointer; overflow: hidden; background: var(--il); color: #10130f; }
+  /* Perioada de implementare umple randul, nu pluteste ca o pastila subtire in
+     mijlocul lui: e un BLOC de zile in care esti acolo, nu un marcaj. Randul
+     ramane cu aceeasi inaltime, doar continutul lui se vede acum. */
+  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; padding: 0 10px; border: none; cursor: pointer; overflow: hidden; background: var(--il); color: #10130f; }
   .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
-  .ib-txt { font-size: 0.62rem; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ib-txt { font-size: var(--font-micro); font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== timeline ===== */
   .g-time { flex: 1; overflow-x: auto; min-width: 0; }

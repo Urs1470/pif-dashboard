@@ -249,19 +249,8 @@
   {@const subs = subtasksCache[t.id] || []}
   {@const doneCount = subs.filter(s => s.done).length}
 
-  {#if t.descriere}
-    <div class="note-block">
-      <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
-      <button class="note-edit-btn" title="Editează notițe" onclick={() => openNoteModal(t)}><SolidIcon name="pencil" size={12} /> Editează</button>
-    </div>
-  {/if}
-
-  <div class="detail-actions">
-    {#if !t.descriere}
-      <button class="detail-chip" onclick={() => openNoteModal(t)}><SolidIcon name="notes" size={13} /> Descriere</button>
-    {/if}
-  </div>
-
+  <!-- Inauntru raman DOAR subtaskurile (cerinta Ion). Descrierea se deschide din
+       butonul de pe rand, langa editare — nu mai imparte extinderea in doua. -->
   <div class="sub-section">
     <!-- Antetul ramane MEREU. Il ascunsesem cand lista e goala, ca sa nu strige
          o eticheta peste nimic — dar atunci sectiunea isi pierde identitatea si
@@ -364,6 +353,9 @@
               </div>
             </button>
             <div class="task-actions">
+              <button class="task-edit" onclick={() => openNoteModal(t)}
+                      title={t.descriere ? 'Editează descrierea' : 'Adaugă descriere'}
+                      class:areNota={!!t.descriere}><SolidIcon name="notes" size={12} /></button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={12} /></button>
               <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
@@ -384,8 +376,10 @@
         {#if showDoneTasks}
           <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
           {#each doneTasks as t, i (t.id)}
-            <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-              <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
+            <div class="trow-wrap" class:deschis={expandedTask === t.id}
+                 style="--sev: var(--border-strong)"
+                 animate:flip={{ duration: motionDuration(DUR_BASE) }}>
+              <div class="trow done" use:focusOnLand={focusKey('global', t.id)}>
                 <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                 <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
                   <CheckCircle2 size={18} />
@@ -513,10 +507,16 @@
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 
   .task-list { display: flex; flex-direction: column; }
-  .trow-wrap { display: flex; flex-direction: column; }
+  .trow-wrap { display: flex; flex-direction: column; background: var(--bg-panel);
+    border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong));
+    border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden;
+    transition: border-color var(--dur-fast) var(--ease); }
+  .trow-wrap:hover { border-color: var(--border-strong); }
   /* Insula (V3+V2): fara bara pe stanga — underline de severitate jos + index mono ghost */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
-  .trow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
+     extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
+     cutii lipite („de parca sunt rupte in doua"). */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: opacity var(--dur-base) var(--ease); }
   .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
   .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .trow.done { opacity: 0.5; }
@@ -545,23 +545,14 @@
   /* Extinderea e CONTINUAREA randului, nu un card separat: se lipeste de el
      (randul isi pierde colturile de jos si marginea), preia bordura de severitate
      din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
-  .trow-wrap.deschis .trow { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
-  .subtask-body { margin: 0 0 6px; padding: 2px var(--space-sm) var(--space-sm) calc(var(--space-sm) + 4px);
-    background: var(--bg-panel); border: 1px solid var(--border); border-top: 0;
-    border-left: 3px solid var(--sev, var(--border-strong));
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    display: flex; flex-direction: column; gap: var(--space-sm); }
+  /* Extinderea: continut in acelasi card, separat doar de o linie subtire. */
+  .subtask-body { margin: 0; padding: var(--space-sm) var(--space-sm) var(--space-sm) 40px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; gap: 4px; }
 
   /* Actiuni discrete: chip-uri "+ Descriere / + Fisier" in loc de link-uri italic plutinde */
   /* Fara rand propriu pentru un singur buton: se aliniaza la stanga, discret. */
-  .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-  .detail-actions:empty { display: none; }
-  .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
-  .detail-chip:hover:not(:disabled) { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
-  .detail-chip:active:not(:disabled) { transform: scale(0.97); }
-  .detail-chip:disabled { opacity: 0.5; cursor: default; }
 
-  .note-block { display: flex; flex-direction: column; gap: var(--space-xs); }
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
@@ -589,6 +580,7 @@
   .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 40px; }
   .mf-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
+  .task-edit.areNota { color: var(--accent-on-subtle); }
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
