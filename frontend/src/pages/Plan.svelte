@@ -60,16 +60,16 @@
 
   const views = $derived(plan.lanes.map((lane) => {
     const color = laneColor(lane.id)
-    // Project timeframe band = data_incepere -> deadline, STRICT. Drawn only when
-    // the project actually has both dates, so it never extends past the deadline
-    // via a task-date fallback (that was confusing).
-    const band = (lane.tip === 'proiect' && lane.data_incepere && lane.deadline)
-      ? spanRect(lane.data_incepere, lane.deadline, plan.start, plan.days) : null
-    let deadlinePct = null
-    if (lane.deadline) {
-      const di = dayDiff(plan.start, lane.deadline)
-      if (di != null && di >= 0 && di < plan.days) deadlinePct = ((di + 0.5) / plan.days) * 100
-    }
+    // Banda proiectului = data_incepere -> ultima zi planificata. Tinea pana la
+    // deadline, dar deadline-ul a plecat in v30 (nu se lua nimeni dupa el), iar
+    // sfarsitul real al unui proiect e ultima perioada pe care i-ai pus-o.
+    const ultimaZi = (lane.implementari || [])
+      .map(im => im.data_sfarsit || im.data_start)
+      .filter(Boolean)
+      .sort()
+      .pop()
+    const band = (lane.tip === 'proiect' && lane.data_incepere && ultimaZi)
+      ? spanRect(lane.data_incepere, ultimaZi, plan.start, plan.days) : null
     const tasks = lane.tasks.map(t => ({
       ...t,
       rect: spanRect(t.data_planificata, effDue(t), plan.start, plan.days),
@@ -77,7 +77,7 @@
     const impl = (lane.implementari || [])
       .map(im => ({ ...im, rect: spanRect(im.data_start, im.data_sfarsit, plan.start, plan.days) }))
       .filter(im => im.rect)
-    return { ...lane, color, band, deadlinePct, tasks, packed: packRows(tasks), impl }
+    return { ...lane, color, band, tasks, packed: packRows(tasks), impl }
   }))
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
@@ -421,9 +421,6 @@
                     <div class="band" class:clipL={lane.band.clippedLeft} class:clipR={lane.band.clippedRight}
                          style="left:{lane.band.left}%; width:{lane.band.width}%"></div>
                   {/if}
-                  {#if lane.deadlinePct != null}
-                    <div class="band-ms" style="left:{lane.deadlinePct}%" title="Deadline proiect: {formatDate(lane.deadline)}"></div>
-                  {/if}
                   <div class="rows">
                     {#each lane.impl as im (im.id)}
                       <div class="t-row">
@@ -666,10 +663,6 @@
     border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0; }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
   .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
-  .band-ms { position: absolute; top: 3px; width: 11px; height: 11px; background: var(--lane);
-    border: 1.5px solid var(--bg-surface); transform: translateX(-50%) rotate(45deg);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lane) 20%, transparent); z-index: 2; }
-
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; }
   .t-row { position: relative; height: var(--row-h); }
   /* implementation period bands (Site / Sediu EGB) — same shape as task bars,

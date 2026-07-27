@@ -24,7 +24,7 @@
   function emptyForm() {
     return {
       tip: 'PIF', nume: '', client: '', locatie: '', echipament_principal: '',
-      producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '', deadline: '',
+      producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '',
       status: 'in_lucru', nr_comanda: '', nr_contract: '', vault_folder: '',
     }
   }
@@ -44,7 +44,6 @@
           cod_proiect: project.cod_proiect || '',
           pm: project.pm || '',
           data_incepere: project.data_incepere || '',
-          deadline: project.deadline || '',
           status: project.status || 'in_lucru',
           nr_comanda: project.nr_comanda || '',
           nr_contract: project.nr_contract || '',
@@ -94,7 +93,6 @@
       <Input label="Cod proiect" bind:value={form.cod_proiect} placeholder="Ex: P-042" />
       <Input label="PM" bind:value={form.pm} placeholder="Project manager" />
       <DatePicker label="Data începere" bind:value={form.data_incepere} />
-      <DatePicker label="Deadline" bind:value={form.deadline} />
       <Input label="Nr. comandă" bind:value={form.nr_comanda} />
       <Input label="Nr. contract" bind:value={form.nr_contract} />
       <div class="full"><Input label="Folder wiki (vault)" bind:value={form.vault_folder} placeholder="wiki/job/projects/<slug>" /></div>

@@ -408,7 +408,7 @@ VAULT_COMMIT_AUTHOR = ['-c', 'user.name=PIF Dashboard',
 
 
 def sync_project_frontmatter(vault_folder, fields):
-    """Dashboard -> wiki: mirror project fields (status, deadline) into the
+    """Dashboard -> wiki: mirror project fields (status) into the
     frontmatter of the project's README in the vault, then commit + push.
     Fire-and-forget (daemon thread) and best-effort: a failure never breaks the
     API call that triggered it — the next sync attempt self-corrects. This is

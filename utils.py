@@ -15,7 +15,7 @@ from database import get_db
 # fiindca nimic nu le putea plasa pe o zi.
 
 DATE_FIELDS = frozenset({
-    'deadline', 'data_incepere', 'data_start', 'data_sfarsit',
+    'data_incepere', 'data_start', 'data_sfarsit',
     'data_scadenta', 'data_planificata', 'data_finalizare',
 })
 

@@ -34,7 +34,6 @@
       if (t.data_scadenta) ds.push(t.data_scadenta.slice(0, 10))
     }
     if (data.proiect?.data_incepere) ds.push(data.proiect.data_incepere.slice(0, 10))
-    if (data.proiect?.deadline) ds.push(data.proiect.deadline.slice(0, 10))
     for (const im of (data.implementari || [])) {
       if (im.data_start) ds.push(im.data_start.slice(0, 10))
       if (im.data_sfarsit) ds.push(im.data_sfarsit.slice(0, 10))
@@ -78,7 +77,6 @@
     if (start && start < due) { const sp = pctFor(start); if (sp != null) s = sp }
     return { end, start: s }
   }
-  const deadlinePct = $derived(data.proiect?.deadline ? pctFor(data.proiect.deadline) : null)
   function implRect(im) { return spanRect(im.data_start, im.data_sfarsit, win.start, win.days) }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
@@ -232,9 +230,6 @@
             {#if todayIdx != null && todayIdx >= 0 && todayIdx < win.days}
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
-            {#if deadlinePct != null && deadlinePct >= 0 && deadlinePct <= 100}
-              <div class="deadline-line" style="left:{deadlinePct}%" title="Deadline · {formatDateShort(data.proiect.deadline)}"></div>
-            {/if}
           </div>
           {#each displayRows as row (row.kind === 'phase' ? 'p:' + row.phase : row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
             {#if row.kind === 'impl'}
@@ -351,7 +346,6 @@
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
   .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.7; z-index: 1; }
-  .deadline-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed color-mix(in srgb, var(--danger) 70%, var(--accent)); opacity: 0.8; z-index: 1; }
 
   .gb-row { position: relative; height: var(--row-h); border-bottom: 1px solid var(--border); }
   .gb-row:last-child { border-bottom: 0; }

@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 29 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 30 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v29. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v30. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -119,6 +119,29 @@ Fiecare vedere generala detine un singur obiect; pagina proiectului le detine pe
 Vocabular: **perioada** = interval (unde esti), **termen** = punct (pana cand). „Data" nu se
 mai foloseste ca eticheta — sertarele sunt „Proiecte fara perioada" (Calendar) si „Taskuri
 fara termen" (Planificator), lucruri diferite cu nume care o spun.
+
+### Doua perioade, zero deadline-uri (v30, 2026-07-27)
+
+Ion: *„eu practic niciodata nu ma iau dupa deadline. Noi nu intram in deadline-uri din
+partea clientului niciodata. Practic exista perioada de pregatire proiect si perioada de
+implementare in site, care pot sa le stiu."*
+
+Datele confirmau deja: **2 proiecte din 18** aveau deadline, iar unul era scris
+`23.02.2026`, invizibil in Calendar luni intregi. `notify_on_deadline` era `1` pe toate
+cele 18 — un comutator care nu comuta nimic. Coloanele au plecat (arhiva:
+`raw/pif-dashboard/2026-07-27-inainte-de-v30/`).
+
+In loc, `implementari.faza` cu valorile **`pregatire`** si **`implementare`**.
+
+**`faza` e INDEPENDENTA de `locatie`.** PIF-ul poate fi si la sediu, si in site, uneori in
+doua etape — deci „unde esti" si „in ce faza esti" sunt doua fapte separate, nu unul cu
+doua nume. In Calendar sunt doua axe vizuale care se combina: **textura** = locatie
+(hasurat la sediu), **intensitate** = faza (palid la pregatire, plin la implementare).
+
+Ce a luat locul deadline-ului in interfata: **`urmatoarea`** — prima perioada neincheiata,
+calculata prin subinterogare in `/api/proiecte` si `/api/proiecte/<id>`. Apare pe cardul de
+proiect si in bara laterala a paginii de proiect. Banda proiectului din Planificator merge
+acum de la `data_incepere` pana la ultima zi planificata, nu pana la un termen impus.
 
 ### Cum arata o zi in Calendar
 

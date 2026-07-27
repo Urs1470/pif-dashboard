@@ -30,7 +30,7 @@
     { value: 'client', label: 'Client' },
     { value: 'tip', label: 'Tip' },
     { value: 'status', label: 'Status' },
-    { value: 'deadline', label: 'Deadline' },
+    { value: 'urmatoarea', label: 'Următoarea ieșire' },
   ]
 
   const batchStatusOptions = [
@@ -39,9 +39,9 @@
     { value: 'blocat', label: 'Blocat' },
   ]
 
-  function daysUntil(deadline) {
-    if (!deadline) return null
-    const d = new Date(deadline)
+  function daysUntil(zi) {
+    if (!zi) return null
+    const d = new Date(zi)
     if (isNaN(d)) return null
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -49,12 +49,19 @@
     return Math.round((d - today) / 86400000)
   }
 
-  function deadlineText(deadline) {
-    const days = daysUntil(deadline)
-    if (days === null) return formatDate(deadline)
-    if (days < 0) return `${formatDate(deadline)} — depășit`
-    if (days === 0) return `${formatDate(deadline)} — azi`
-    return `${formatDate(deadline)} — ${days} ${days === 1 ? 'zi' : 'zile'}`
+  // Deadline-ul a plecat in v30 (nu se lua nimeni dupa el). Ce conteaza aici e
+  // urmatoarea perioada: cand iesi efectiv pe teren sau te pregatesti.
+  const FAZA_SCURT = { pregatire: 'pregătire', implementare: 'implementare' }
+  function urmatoareaText(p) {
+    const zi = p.urmatoarea
+    if (!zi) return 'fără perioadă'
+    const days = daysUntil(zi)
+    const faza = FAZA_SCURT[p.urmatoarea_faza] || ''
+    const cand = days === null ? formatDate(zi)
+      : days === 0 ? `${formatDate(zi)} — azi`
+      : days === 1 ? `${formatDate(zi)} — mâine`
+      : `${formatDate(zi)} — ${days} zile`
+    return faza ? `${faza} · ${cand}` : cand
   }
 
   const STATUS_CYCLE = ['in_lucru', 'in_asteptare', 'blocat', 'finalizat']
@@ -280,11 +287,7 @@
           <div class="card-name">{p.nume || '—'}</div>
           <div class="card-client">{p.client || '—'}</div>
           <div class="card-foot">
-            {#if p.deadline}
-              <span class="deadline" class:urgent={daysUntil(p.deadline) !== null && daysUntil(p.deadline) <= 2}>deadline {deadlineText(p.deadline)}</span>
-            {:else}
-              <span class="deadline">fără deadline</span>
-            {/if}
+            <span class="deadline" class:urgent={daysUntil(p.urmatoarea) !== null && daysUntil(p.urmatoarea) <= 2}>{urmatoareaText(p)}</span>
           </div>
         </div>
       {/each}
@@ -313,7 +316,7 @@
                 {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
                 <span class="arch-tail">
                   <Badge label="Finalizat" color="var(--success)" small />
-                  <span class="dim arch-deadline">{p.deadline ? formatDate(p.deadline) : '—'}</span>
+                  <span class="dim arch-deadline">{p.urmatoarea ? formatDate(p.urmatoarea) : '—'}</span>
                 </span>
               </button>
             {/each}

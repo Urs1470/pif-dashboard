@@ -379,7 +379,7 @@ def _collect_gantt(project_id):
     return {
         'proiect': {'id': proj['id'], 'nume': proj.get('nume'), 'client': proj.get('client'),
                     'tip': proj.get('tip'), 'cod_proiect': proj.get('cod_proiect'),
-                    'data_incepere': proj.get('data_incepere'), 'deadline': proj.get('deadline'),
+                    'data_incepere': proj.get('data_incepere'),
                     'status': proj.get('status'), 'locatie': proj.get('locatie'),
                     'pm': proj.get('pm')},
         'tasks': tasks, 'dependencies': deps, 'implementari': implementari,
@@ -569,7 +569,7 @@ def _gantt_window(data):
             d = _pdate(t.get(k))
             if d:
                 ds.append(d)
-    for k in ('data_incepere', 'deadline'):
+    for k in ('data_incepere',):
         d = _pdate(data['proiect'].get(k))
         if d:
             ds.append(d)
@@ -1512,10 +1512,13 @@ def _span_intersects(d1, d2, start_s, end_s):
 @login_required
 def get_plan():
     """Operational 14-day planner ("Planificator"): project lanes (each with its
-    overall interval data_incepere->deadline) containing their tasks, plus a
-    "Globale" lane. A task appears where its span data_planificata->data_scadenta
-    intersects the window; tasks with only a deadline show as a single-day marker.
-    No schema change — reuses the existing agenda planning semantics."""
+    overall interval data_incepere -> ultima perioada planificata) containing their
+    tasks, plus a "Globale" lane. A task appears where its span
+    data_planificata->data_scadenta intersects the window; tasks with only a due
+    date show as a single-day marker.
+
+    Deadline-ul de proiect a plecat in v30 — nu se lua nimeni dupa el. Capatul
+    din dreapta al benzii e acum ultima zi pe care chiar ai planificat-o."""
     today = _resolve_today()
     start = (request.args.get('start') or '').strip()
     if not _DATE_RE.match(start):
@@ -1545,7 +1548,7 @@ def get_plan():
 
     # Candidate project lanes (skip cancelled / finished).
     cursor.execute(
-        "SELECT id, nume, tip, status, data_incepere, deadline FROM proiecte "
+        "SELECT id, nume, tip, status, data_incepere FROM proiecte "
         "WHERE status NOT IN ('anulat', 'finalizat')")
     projects = [row_to_dict(r) for r in cursor.fetchall()]
 
@@ -1585,9 +1588,13 @@ def get_plan():
         pid = proj['id']
         ptasks = sorted(tasks_by_project.get(pid, []), key=_task_sort_key)
         inc = (proj.get('data_incepere') or '')[:10]
-        ddl = (proj.get('deadline') or '')[:10]
-        band = _span_intersects(inc, ddl, start_s, end_s)
-        pimpl = [im for im in impl_by_project.get(pid, [])
+        # Capatul benzii = ultima zi planificata a proiectului (perioada cea mai
+        # tarzie), nu un deadline impus. Vezi v30.
+        toate_impl = impl_by_project.get(pid, [])
+        ultima = max((im.get('data_sfarsit') or im.get('data_start') or ''
+                      for im in toate_impl), default='')
+        band = _span_intersects(inc, ultima, start_s, end_s)
+        pimpl = [im for im in toate_impl
                  if _span_intersects(im['data_start'], im['data_sfarsit'], start_s, end_s)]
         if not ptasks and not band and not pimpl:
             continue
@@ -1598,7 +1605,7 @@ def get_plan():
             'tip_proiect': proj.get('tip') or '',
             'status': proj.get('status') or '',
             'data_incepere': inc,
-            'deadline': ddl,
+            'ultima_zi': ultima,
             'tasks': ptasks,
             'implementari': pimpl,
         })
@@ -1619,7 +1626,7 @@ def get_plan():
     if gtasks:
         lanes.append({
             'tip': 'global', 'id': '__global__', 'nume': 'Globale',
-            'tip_proiect': '', 'status': '', 'data_incepere': '', 'deadline': '',
+            'tip_proiect': '', 'status': '', 'data_incepere': '', 'ultima_zi': '',
             'tasks': sorted(gtasks, key=_task_sort_key), 'implementari': [],
         })
 

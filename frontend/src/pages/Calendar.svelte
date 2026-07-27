@@ -1,17 +1,18 @@
 <script>
   // Calendar — „unde sunt".
   //
-  // Ion e o singura persoana, iar planificarea lui reala sunt PERIOADELE de
-  // implementare, nu deadline-urile (le au 2 din 20 de proiecte). Intrebarea la
-  // care raspunde ecranul asta e „unde sunt marti", iar deciziile stau TOT aici,
-  // pe ziua respectiva — nu intr-o lista separata de reprosuri.
+  // Ion e o singura persoana, iar planificarea lui reala sunt PERIOADELE, fiecare
+  // cu faza ei: pregatire sau implementare. Deadline-urile au plecat in v30 —
+  // „noi nu intram in deadline-uri din partea clientului niciodata". Intrebarea la
+  // care raspunde ecranul asta e „unde sunt marti si ce fac", iar deciziile stau
+  // TOT aici, pe ziua respectiva — nu intr-o lista separata de reprosuri.
   //
-  // Culoarea codeaza CLIENTUL, nu proiectul: unitatea reala e deplasarea. Trei
-  // lucrari intr-o zi la acelasi client = o deplasare (un bloc), la clienti
-  // diferiti = zi impartita, semnalata.
+  // O bara per LUCRARE, cu numele ei; culoarea urmareste proiectul. Deplasarea
+  // (zile consecutive la acelasi client) ramane, dar ca o captura in ziua de
+  // plecare, nu ca un bloc care inghite lucrarile.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Flag, Download } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -90,22 +91,6 @@
   })
 
   function aleZilei(iso) { return peZi.get(iso) || [] }
-
-  // Termenele (deadline de proiect) sunt ALTCEVA decat perioadele: perioada e
-  // cand lucrezi, termenul e cand trebuie predat. Le aratam ca semn pe ziua lor,
-  // ca sa se vada cand editezi un deadline si ca sa sara in ochi daca o iesire
-  // e planificata DUPA termen.
-  const termenePeZi = $derived.by(() => {
-    const m = new Map()
-    for (const t of (data?.termene || [])) {
-      const iso = (t.deadline || '').slice(0, 10)
-      if (!iso) continue
-      if (!m.has(iso)) m.set(iso, [])
-      m.get(iso).push(t)
-    }
-    return m
-  })
-  function termeneleZilei(iso) { return termenePeZi.get(iso) || [] }
 
   // ===== gruparea pe DEPLASARE =====
   // Unitatea afisata nu e lucrarea, e deplasarea: trei lucrari intr-o zi la
@@ -462,7 +447,7 @@
         <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
              telefon apartine paginii de calendar, nu unui sertar de intretinere. -->
         <button class="ics" onclick={() => window.open('/api/export/ics', '_blank')}
-                title="Descarcă .ics — perioadele, termenele și scadențele. Abonează-te din calendarul telefonului.">
+                title="Descarcă .ics — perioadele și scadențele de task. Abonează-te din calendarul telefonului.">
           <Download size={13} /> .ics
         </button>
       </div>
@@ -536,10 +521,7 @@
                   </span>
                 {/each}
               </div>
-              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>
-              {:else if termeneleZilei(g.iso).length}
-                <span class="term" title="Termen: {termeneleZilei(g.iso).map(t => t.nume).join(', ')}"><Flag size={11} /></span>
-              {/if}
+              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>{/if}
 
               <!-- O bara per LUCRARE, pe banda ei. Randurile goale sunt
                    distantiere: fara ele, o lucrare de doua zile s-ar muta de pe
@@ -548,12 +530,12 @@
                 {#each zi.randuri as p, l (l)}
                   {#if p}
                     <div class="seg" class:start={esteInceput(p, g.iso)} class:end={esteSfarsit(p, g.iso)}
-                         class:sediu={p.locatie === 'sediu'}
+                         class:sediu={p.locatie === 'sediu'} class:pregatire={p.faza === 'pregatire'}
                          style="--c: {culoareLucrare(p)}"
                          draggable="true"
                          ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, p) }}
                          ondragend={endDrag}
-                         title="{p.nume}{p.eticheta ? '&#10;' + p.eticheta : ''}&#10;{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ' – ' + shortDate(p.data_sfarsit) : ''}{p.locatie === 'sediu' ? ' · la sediu' : ''}&#10;Trage ca să muți lucrarea">
+                         title="{p.nume}{p.eticheta ? '&#10;' + p.eticheta : ''}&#10;{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ' – ' + shortDate(p.data_sfarsit) : ''}{p.locatie === 'sediu' ? ' · la sediu' : ' · pe teren'} · {p.faza === 'pregatire' ? 'pregătire' : 'implementare'}&#10;Trage ca să muți lucrarea">
                       <span class="seg-t">{etichetaBara(p)}</span>
                     </div>
                   {:else}
@@ -577,9 +559,13 @@
              Ramane doar textura, care nu se poate citi altfel. -->
         {#if data.perioade?.length}
           <div class="leg">
-            <span class="leg-i" title="Zilele la sediu apar hașurat, cele pe teren pline"><i class="hatch"></i>la sediu</span>
+            <!-- Doua axe independente: TEXTURA spune unde esti, INTENSITATEA
+                 spune in ce faza. Se combina — poti avea pregatire pe teren si
+                 implementare la sediu. -->
+            <span class="leg-i" title="Textura spune unde ești"><i class="hatch"></i>la sediu</span>
             <span class="leg-i"><i class="plin"></i>pe teren</span>
-            <span class="leg-i"><Flag size={11} /> termen</span>
+            <span class="leg-i sep" title="Intensitatea spune în ce fază ești"><i class="pal"></i>pregătire</span>
+            <span class="leg-i"><i class="plin2"></i>implementare</span>
           </div>
         {/if}
       </div>
@@ -606,8 +592,14 @@
                 </button>
                 <div class="it-m">
                   {#if p.eticheta}<span>{p.eticheta}</span>{/if}
-                  <span class="loc">{p.locatie === 'sediu' ? 'Sediu' : 'Site'}</span>
-                  <span class="st">{PROJECT_STATUS_LABELS[p.status] || p.status}</span>
+                  <!-- Locatia si faza sunt amandoua despre PERIOADA, deci stau
+                       lipite. Statusul e despre PROIECT si sta separat — altfel
+                       „Pregătire" (faza) si „Pregătire" (status de proiect, il au
+                       10 din 20) ar aparea ca doua chipuri identice cu intelesuri
+                       diferite. -->
+                  <span class="loc" title="Unde ești în ziua asta">{p.locatie === 'sediu' ? 'Sediu' : 'Site'}</span>
+                  <span class="loc faza" class:pal={p.faza === 'pregatire'} title="Faza acestei perioade">{p.faza === 'pregatire' ? 'Pregătire' : 'Implementare'}</span>
+                  <span class="st" title="Statusul proiectului">{PROJECT_STATUS_LABELS[p.status] || p.status}</span>
                   <span class="tk" class:warn={!p.taskuri_deschise}>{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
                 </div>
                 {#if p.necesita_decizie}
@@ -641,7 +633,7 @@
                 </div>
               </div>
             {/each}
-          {:else if !termeneleZilei(selectata).length}
+          {:else}
             <!-- O zi goala nu trebuie sa fie un ecran gol. Intrebarea reala nu e
                  „ce e azi", ci „cand ies data viitoare" — mai ales ca lunile
                  intregi sunt libere si altfel ai naviga in gol ca s-o afli. -->
@@ -660,14 +652,6 @@
               <div class="gol">Trage un proiect din „Proiecte fără perioadă" ca să-l planifici aici.</div>
             {/if}
           {/if}
-
-          {#each termeneleZilei(selectata) as t (t.proiect_id)}
-            <div class="term-it">
-              <Flag size={12} />
-              <button class="term-t" onclick={() => navigate(`/projects/${t.proiect_id}`)}>{t.nume}</button>
-              <span class="term-l">termen</span>
-            </div>
-          {/each}
         </div>
 
         {#if data.neplanificate?.length}
@@ -750,12 +734,6 @@
   .n { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .zi.azi .n { color: var(--accent); font-weight: var(--fw-bold); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
-  /* Termen = alt tip de semnal decat „perioada a trecut", deci alta culoare */
-  .term { position: absolute; top: 4px; right: 4px; color: var(--purple); display: inline-flex; }
-  .term-it { display: flex; align-items: center; gap: 6px; padding: 6px 0 0; border-top: 1px solid var(--border); margin-top: 8px; color: var(--purple); }
-  .term-t { flex: 1; text-align: left; font-size: var(--font-tiny); color: var(--text-secondary); cursor: pointer; }
-  .term-t:hover { color: var(--accent); }
-  .term-l { font-size: var(--font-micro); color: var(--purple); }
 
   .segs { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .seg { position: relative; min-height: 17px; padding: 1px 5px; background: color-mix(in srgb, var(--c) 26%, transparent);
@@ -772,6 +750,13 @@
   /* Rand gol = distantier. Trebuie sa aiba EXACT inaltimea unei bare, altfel
      benzile vecine nu se mai aliniaza si continuitatea pe orizontala se pierde. */
   .seg-gol { min-height: 17px; }
+  /* Faza e a DOUA axa, independenta de locatie: pregatirea e mai palida si
+     conturata, implementarea e plina. Se combina cu hasura de sediu. */
+  .seg.pregatire { background: color-mix(in srgb, var(--c) 9%, transparent);
+                   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
+  .seg.pregatire.sediu { background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
+  .seg.pregatire .seg-t { color: var(--text-secondary); }
   .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Antet de inaltime fixa — vezi comentariul din template: orice variatie aici
@@ -799,6 +784,9 @@
   .leg-i i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .leg-i i.hatch { background: repeating-linear-gradient(135deg, var(--text-faint) 0 2px, transparent 2px 4px); border: 1px solid var(--border-strong); }
   .leg-i i.plin { background: color-mix(in srgb, var(--text-faint) 45%, transparent); border: 1px solid var(--border-strong); }
+  .leg-i i.pal { background: color-mix(in srgb, var(--text-faint) 12%, transparent); box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .leg-i i.plin2 { background: color-mix(in srgb, var(--text-faint) 45%, transparent); }
+  .leg-i.sep { margin-left: 10px; padding-left: 14px; border-left: 1px solid var(--border); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
@@ -822,6 +810,9 @@
   .it-t:hover { color: var(--accent); }
   .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-micro); color: var(--text-dim); }
   .it-m .loc, .it-m .st { padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-hover); }
+  /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
+  .it-m .faza { background: color-mix(in srgb, var(--c) 26%, transparent); color: var(--text); }
+  .it-m .faza.pal { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); color: var(--text-secondary); }
   .it-m .tk.warn { color: var(--warning); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }

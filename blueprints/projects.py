@@ -38,20 +38,31 @@ def get_proiecte():
     limit = min(max(request.args.get('limit', 100, type=int), 1), 500)
     offset = max(request.args.get('offset', 0, type=int), 0)
 
-    query = 'SELECT * FROM proiecte WHERE 1=1'
+    # `urmatoarea` = prima perioada care nu s-a incheiat inca. A luat locul
+    # deadline-ului (scos in v30): e data pe care chiar te bazezi, nu una impusa.
+    query = '''SELECT p.*,
+        (SELECT i.data_start FROM implementari i
+          WHERE i.proiect_id = p.id
+            AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea,
+        (SELECT i.faza FROM implementari i
+          WHERE i.proiect_id = p.id
+            AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza
+        FROM proiecte p WHERE 1=1'''
     params = []
 
     if status:
-        query += ' AND status = ?'
+        query += ' AND p.status = ?'
         params.append(status)
     if tip:
-        query += ' AND tip = ?'
+        query += ' AND p.tip = ?'
         params.append(tip)
     if producator:
-        query += ' AND producator = ?'
+        query += ' AND p.producator = ?'
         params.append(producator)
 
-    query += ' ORDER BY created_at DESC'
+    query += ' ORDER BY p.created_at DESC'
 
     # Apply pagination
     query += ' LIMIT ? OFFSET ?'
@@ -76,10 +87,10 @@ def create_proiect():
     cursor.execute('''
         INSERT INTO proiecte (
             id, tip, nume, client, locatie, echipament_principal, producator,
-            cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
+            cod_proiect, pm, folder_server, data_incepere, data_crearii,
             status, observatii, nr_comanda, nr_contract, service_before, service_after,
             confirmat_client, client_nume_confirmare, created_at, updated_at, vault_folder
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         project_id,
         data.get('tip', 'PIF'),
@@ -92,7 +103,6 @@ def create_proiect():
         data.get('pm', ''),
         data.get('folder_server', ''),
         data.get('data_incepere', ''),
-        data.get('deadline', ''),
         data.get('data_crearii', now[:10]),
         data.get('status', 'in_lucru'),
         data.get('observatii', ''),
@@ -118,7 +128,21 @@ def create_proiect():
 def get_proiect(project_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
+    # Ca in lista: `urmatoarea` a luat locul deadline-ului (scos in v30).
+    cursor.execute('''SELECT p.*,
+        (SELECT i.data_start FROM implementari i
+          WHERE i.proiect_id = p.id
+            AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea,
+        (SELECT i.data_sfarsit FROM implementari i
+          WHERE i.proiect_id = p.id
+            AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea_sfarsit,
+        (SELECT i.faza FROM implementari i
+          WHERE i.proiect_id = p.id
+            AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza
+        FROM proiecte p WHERE p.id = ?''', (project_id,))
     row = cursor.fetchone()
     conn.close()
 
@@ -154,7 +178,6 @@ def update_proiect(project_id):
             pm = COALESCE(?, pm),
             folder_server = COALESCE(?, folder_server),
             data_incepere = COALESCE(?, data_incepere),
-            deadline = COALESCE(?, deadline),
             status = COALESCE(?, status),
             observatii = COALESCE(?, observatii),
             nr_comanda = COALESCE(?, nr_comanda),
@@ -177,7 +200,6 @@ def update_proiect(project_id):
         data.get('pm'),
         data.get('folder_server'),
         data.get('data_incepere'),
-        data.get('deadline'),
         data.get('status'),
         data.get('observatii'),
         data.get('nr_comanda'),
@@ -193,15 +215,15 @@ def update_proiect(project_id):
 
     conn.commit()
 
-    # Dashboard -> wiki: oglindește status/deadline în frontmatter-ul README-ului
-    # de proiect din vault (commit + push, în fundal, best-effort).
-    if data.get('status') or data.get('deadline'):
-        cursor.execute('SELECT vault_folder, status, deadline FROM proiecte WHERE id = ?', (project_id,))
+    # Dashboard -> wiki: oglindește statusul în frontmatter-ul README-ului de
+    # proiect din vault (commit + push, în fundal, best-effort). Deadline-ul a
+    # plecat in v30 — nu se lua nimeni dupa el.
+    if data.get('status'):
+        cursor.execute('SELECT vault_folder, status FROM proiecte WHERE id = ?', (project_id,))
         fresh = cursor.fetchone()
         if fresh and fresh['vault_folder']:
             from blueprints.obsidian import sync_project_frontmatter
-            sync_project_frontmatter(fresh['vault_folder'],
-                                     {'status': fresh['status'], 'deadline': fresh['deadline']})
+            sync_project_frontmatter(fresh['vault_folder'], {'status': fresh['status']})
 
     conn.close()
 
@@ -487,7 +509,6 @@ def get_project_snapshot(project_id):
             'pm': p.get('pm', ''),
             'folder_server': p.get('folder_server', ''),
             'data_incepere': p.get('data_incepere', ''),
-            'deadline': p.get('deadline', ''),
             'data_crearii': p.get('data_crearii', ''),
             'status': p.get('status', ''),
             'observatii': p.get('observatii', ''),
@@ -947,10 +968,10 @@ def import_debrief():
             cursor.execute('''
                 INSERT INTO proiecte (
                     id, tip, nume, client, locatie, echipament_principal, producator,
-                    cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
+                    cod_proiect, pm, folder_server, data_incepere, data_crearii,
                     status, observatii, nr_comanda, nr_contract, service_before, service_after,
                     confirmat_client, client_nume_confirmare, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 project_id,
                 proiect_data.get('tip', 'PIF'),
@@ -963,7 +984,6 @@ def import_debrief():
                 proiect_data.get('pm', ''),
                 proiect_data.get('folder_server', ''),
                 proiect_data.get('data_incepere', ''),
-                proiect_data.get('deadline', ''),
                 proiect_data.get('data_crearii', now[:10]),
                 proiect_data.get('status', 'in_lucru'),
                 observatii_val,
@@ -1021,6 +1041,9 @@ def import_debrief():
 # ---------------------------------------------------------------------------
 
 _IMPL_LOC = ('site', 'sediu')
+# Faza e INDEPENDENTA de locatie: PIF-ul poate fi si la sediu, si in site, uneori
+# in doua etape. „Unde esti" si „in ce faza esti" sunt doua fapte separate.
+_IMPL_FAZA = ('pregatire', 'implementare')
 
 
 def _impl_row(r):
@@ -1031,6 +1054,7 @@ def _impl_row(r):
         'data_start': d.get('data_start') or '',
         'data_sfarsit': d.get('data_sfarsit') or '',
         'locatie': d.get('locatie') or 'site',
+        'faza': d.get('faza') or 'implementare',
         'eticheta': d.get('eticheta') or '',
         'ordine': d.get('ordine') or 0,
     }
@@ -1054,6 +1078,9 @@ def create_implementare(project_id):
     loc = (data.get('locatie') or 'site').strip().lower()
     if loc not in _IMPL_LOC:
         loc = 'site'
+    faza = (data.get('faza') or 'implementare').strip().lower()
+    if faza not in _IMPL_FAZA:
+        faza = 'implementare'
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
@@ -1061,10 +1088,10 @@ def create_implementare(project_id):
         conn.close()
         return jsonify({'error': 'Proiect inexistent'}), 404
     impl_id = data.get('id') or generate_uuid()
-    cursor.execute('''INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, locatie, eticheta, ordine, created_at)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+    cursor.execute('''INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, locatie, faza, eticheta, ordine, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                    (impl_id, project_id, (data.get('data_start') or ''), (data.get('data_sfarsit') or ''),
-                    loc, (data.get('eticheta') or ''), data.get('ordine', 0), datetime.now().isoformat()))
+                    loc, faza, (data.get('eticheta') or ''), data.get('ordine', 0), datetime.now().isoformat()))
     conn.commit()
     conn.close()
     return jsonify({'id': impl_id}), 201
@@ -1079,16 +1106,22 @@ def update_implementare(impl_id):
         loc = loc.strip().lower()
         if loc not in _IMPL_LOC:
             loc = None  # keep existing on invalid
+    faza = data.get('faza')
+    if faza is not None:
+        faza = faza.strip().lower()
+        if faza not in _IMPL_FAZA:
+            faza = None
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''UPDATE implementari SET
                         data_start = COALESCE(?, data_start),
                         data_sfarsit = COALESCE(?, data_sfarsit),
                         locatie = COALESCE(?, locatie),
+                        faza = COALESCE(?, faza),
                         eticheta = COALESCE(?, eticheta),
                         ordine = COALESCE(?, ordine)
                       WHERE id = ?''',
-                   (data.get('data_start'), data.get('data_sfarsit'), loc,
+                   (data.get('data_start'), data.get('data_sfarsit'), loc, faza,
                     data.get('eticheta'), data.get('ordine'), impl_id))
     updated = cursor.rowcount
     conn.commit()

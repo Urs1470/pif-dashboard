@@ -201,6 +201,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--rapid', action='store_true', help='doar rutele, doar desktop')
     ap.add_argument('--vizibil', action='store_true', help='cu browser pe ecran')
+    ap.add_argument('--baza', help='alta baza sursa (implicit pif_dashboard.db din proiect)')
     arg = ap.parse_args()
 
     try:
@@ -211,7 +212,7 @@ def main():
             '  pip install playwright\n'
             '  python -m playwright install chromium')
 
-    db_sursa = os.path.join(RADACINA, 'pif_dashboard.db')
+    db_sursa = arg.baza or os.path.join(RADACINA, 'pif_dashboard.db')
     if not os.path.isfile(db_sursa):
         raise SystemExit('Nu exista pif_dashboard.db local. Adu una: scripts/sync_db_from_server.sh')
 

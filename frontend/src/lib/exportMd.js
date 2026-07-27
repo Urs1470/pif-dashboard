@@ -29,7 +29,6 @@ export async function exportMarkdown(projectId) {
   md += `data_export: ${today}\n`
   if (isPIF) {
     md += `data_incepere: ${project.data_incepere || ''}\n`
-    md += `deadline: ${project.deadline || ''}\n`
   }
   if (isService) md += `data_crearii: ${project.data_crearii || today}\n`
   md += `status: ${project.status || 'activ'}\n`

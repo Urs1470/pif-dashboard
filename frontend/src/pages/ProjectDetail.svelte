@@ -414,18 +414,19 @@
   const activeTasks = $derived(tasks.filter(t => t.status !== 'done' && t.status !== 'finalizat' && !isFutureRecurrence(t)))
   const doneTasks = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat'))
 
-  // Rail: progres taskuri + zile pana la deadline
+  // Rail: progres taskuri + urmatoarea perioada. Deadline-ul a plecat in v30 —
+  // Ion nu se lua dupa el niciodata; ce stie cu adevarat sunt perioadele.
   const taskPct = $derived(tasks.length ? Math.round((tasksDone / tasks.length) * 100) : 0)
-  const deadlineDays = $derived.by(() => {
-    if (!project?.deadline) return null
-    return Math.round((new Date(String(project.deadline).slice(0, 10)) - new Date(new Date().toDateString())) / 86400000)
+  const FAZA_LABEL = { pregatire: 'Pregătire', implementare: 'Implementare' }
+  const urmDays = $derived.by(() => {
+    if (!project?.urmatoarea) return null
+    return Math.round((new Date(String(project.urmatoarea).slice(0, 10)) - new Date(new Date().toDateString())) / 86400000)
   })
-  function deadlineLabel(d) {
+  function urmLabel(d) {
     if (d === null) return ''
-    if (d < 0) return `depășit cu ${-d} ${d === -1 ? 'zi' : 'zile'}`
-    if (d === 0) return 'scadent astăzi'
-    if (d === 1) return '1 zi rămasă'
-    return `${d} zile rămase`
+    if (d <= 0) return 'în desfășurare'
+    if (d === 1) return 'mâine'
+    return `peste ${d} zile`
   }
 </script>
 
@@ -708,12 +709,12 @@
       </section>
 
       <section class="rcell cell-in">
-        <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Deadline</div>
-        {#if project.deadline}
-          <div class="rdate" class:urgent={deadlineDays !== null && deadlineDays <= 2}>{formatDate(project.deadline)}</div>
-          <div class="rsub">{deadlineLabel(deadlineDays)}</div>
+        <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Următoarea perioadă</div>
+        {#if project.urmatoarea}
+          <div class="rdate" class:urgent={urmDays !== null && urmDays <= 2}>{formatDate(project.urmatoarea)}{#if project.urmatoarea_sfarsit && project.urmatoarea_sfarsit !== project.urmatoarea}<span class="rdate-pana"> – {formatDate(project.urmatoarea_sfarsit)}</span>{/if}</div>
+          <div class="rsub">{FAZA_LABEL[project.urmatoarea_faza] || ''}{project.urmatoarea_faza ? ' · ' : ''}{urmLabel(urmDays)}</div>
         {:else}
-          <div class="rsub rsub-empty">Fără termen</div>
+          <div class="rsub rsub-empty">Neplanificat</div>
         {/if}
       </section>
 

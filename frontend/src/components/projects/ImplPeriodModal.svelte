@@ -1,5 +1,5 @@
 <script>
-  import { MapPin, Building2, Trash2 } from '@lucide/svelte'
+  import { MapPin, Building2, Trash2, Wrench, Hammer } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { toast } from '../../stores/ui.svelte.js'
   import Modal from '../ui/Modal.svelte'
@@ -12,6 +12,9 @@
   let dStart = $state('')
   let dEnd = $state('')
   let loc = $state('site')
+  // Faza e independenta de locatie: PIF-ul poate fi si la sediu, si in site,
+  // uneori in doua etape. Deci doua comutatoare, nu unul.
+  let faza = $state('implementare')
   let eticheta = $state('')
   let busy = $state(false)
 
@@ -21,6 +24,7 @@
       dStart = period?.data_start || ''
       dEnd = period?.data_sfarsit || ''
       loc = period?.locatie || 'site'
+      faza = period?.faza || 'implementare'
       eticheta = period?.eticheta || ''
     }
   })
@@ -30,7 +34,7 @@
     if (!dStart || !dEnd) { toast('Alege început și sfârșit', 'error'); return }
     if (dEnd < dStart) { toast('Sfârșitul e înainte de început', 'error'); return }
     busy = true
-    const body = { data_start: dStart, data_sfarsit: dEnd, locatie: loc, eticheta: eticheta.trim() }
+    const body = { data_start: dStart, data_sfarsit: dEnd, locatie: loc, faza, eticheta: eticheta.trim() }
     try {
       if (period?.id) await apiJson(`/api/implementari/${period.id}`, { method: 'PUT', body })
       else await apiJson(`/api/proiecte/${projectId}/implementari`, { method: 'POST', body })
@@ -47,11 +51,21 @@
   }
 </script>
 
-<Modal bind:open title={period ? 'Editează perioada' : 'Perioadă de implementare'} size="sm">
+<Modal bind:open title={period ? 'Editează perioada' : 'Perioadă nouă'} size="sm">
   <div class="ip">
-    <div class="ip-loc">
-      <button class="loc-btn" class:on={loc === 'site'} onclick={() => loc = 'site'}><MapPin size={15} /> Site (șantier)</button>
-      <button class="loc-btn" class:on={loc === 'sediu'} onclick={() => loc = 'sediu'}><Building2 size={15} /> Sediu EGB</button>
+    <div class="ip-grup">
+      <span class="ip-h">Unde</span>
+      <div class="ip-loc">
+        <button class="loc-btn" class:on={loc === 'site'} onclick={() => loc = 'site'}><MapPin size={15} /> Site (șantier)</button>
+        <button class="loc-btn" class:on={loc === 'sediu'} onclick={() => loc = 'sediu'}><Building2 size={15} /> Sediu EGB</button>
+      </div>
+    </div>
+    <div class="ip-grup">
+      <span class="ip-h">Ce fază</span>
+      <div class="ip-loc">
+        <button class="loc-btn" class:on={faza === 'pregatire'} onclick={() => faza = 'pregatire'}><Wrench size={15} /> Pregătire</button>
+        <button class="loc-btn" class:on={faza === 'implementare'} onclick={() => faza = 'implementare'}><Hammer size={15} /> Implementare</button>
+      </div>
     </div>
     <div class="ip-dates">
       <label class="ip-field"><span>Început</span><DatePicker bind:value={dStart} placeholder="alege" /></label>
@@ -71,6 +85,8 @@
 
 <style>
   .ip { display: flex; flex-direction: column; gap: 14px; }
+  .ip-grup { display: flex; flex-direction: column; gap: 6px; }
+  .ip-h { font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); font-family: var(--font-mono); }
   .ip-loc { display: flex; gap: 8px; }
   .loc-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); }
   .loc-btn:hover { border-color: var(--border-strong); color: var(--text); }

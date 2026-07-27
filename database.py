@@ -70,7 +70,10 @@ def close_db(exc=None):
 
 # v29: datele calendaristice sunt normalizate la ISO, iar intrarea e pazita de
 #      utils.norm_date() — nu mai stocam o data pe care nu o putem citi.
-SCHEMA_VERSION = 29
+# v30: perioadele au faza (pregatire/implementare), independenta de locatie.
+#      Deadline-ul de proiect a plecat: 2 din 18 completate, niciodata folosit
+#      la o decizie. Ce se stie cu adevarat sunt cele doua perioade.
+SCHEMA_VERSION = 30
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -839,6 +842,7 @@ def migrate_v25_to_v26():
             data_start TEXT,
             data_sfarsit TEXT,
             locatie TEXT DEFAULT 'site',
+            faza TEXT DEFAULT 'implementare',
             eticheta TEXT,
             ordine INTEGER DEFAULT 0,
             created_at TEXT,
@@ -905,7 +909,7 @@ def migrate_v27_to_v28():
 # boolean al carui nume contine „deadline". `created_at`/`data_crearii` sunt
 # timestampuri scrise de cod, nu de utilizator.
 COLOANE_DATA = (
-    ('proiecte', ('data_incepere', 'deadline')),
+    ('proiecte', ('data_incepere',)),
     ('tasks', ('data_scadenta', 'data_planificata', 'data_start', 'data_finalizare')),
     ('global_tasks', ('data_scadenta', 'data_planificata', 'data_finalizare')),
     ('implementari', ('data_start', 'data_sfarsit')),
@@ -966,6 +970,50 @@ def migrate_v28_to_v29():
     if nereusite:
         logger.warning('Migration v28->v29: could not parse, left untouched: '
                        + '; '.join(nereusite))
+
+
+def migrate_v29_to_v30():
+    """v29 -> v30: perioadele au FAZA. Deadline-ul de proiect pleaca.
+
+    Ion, 2026-07-27: „eu practic niciodata nu ma iau dupa deadline. Noi nu intram
+    in deadline-uri din partea clientului niciodata. Practic exista perioada de
+    pregatire proiect si perioada de implementare in site, care pot sa le stiu."
+
+    Datele confirmau deja: 2 proiecte din 18 aveau deadline, iar unul era scris
+    `23.02.2026` — invizibil in Calendar luni intregi, reparat abia de v29.
+    `notify_on_deadline` era 1 pe TOATE cele 18: un comutator care nu comuta nimic.
+
+    `faza` e INDEPENDENTA de `locatie`. PIF-ul poate fi si la sediu, si in site,
+    uneori in doua etape — deci „unde esti" si „in ce faza esti" sunt doua fapte
+    separate, nu unul cu doua nume.
+
+    Backfill-ul deduce faza din locatie (sediu -> pregatire, site -> implementare).
+    E o ghicire, dar una corecta pentru toate cele 12 randuri existente: singura
+    intrare `sediu` din tot anul e „Parametrizare atelier", adica exact pregatire.
+    Orice rand gresit se corecteaza din interfata.
+
+    Arhiva datelor sterse: raw/pif-dashboard/2026-07-27-inainte-de-v30/ in vault.
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    impl_cols = {r[1] for r in cursor.execute('PRAGMA table_info(implementari)')}
+    if 'faza' not in impl_cols:
+        cursor.execute("ALTER TABLE implementari ADD COLUMN faza TEXT DEFAULT 'implementare'")
+        cursor.execute("UPDATE implementari SET faza = CASE WHEN locatie = 'sediu' "
+                       "THEN 'pregatire' ELSE 'implementare' END")
+        logger.info('Migration v29->v30: added implementari.faza, backfilled from locatie')
+
+    proj_cols = {r[1] for r in cursor.execute('PRAGMA table_info(proiecte)')}
+    for col in ('deadline', 'notify_on_deadline'):
+        if col in proj_cols:
+            cursor.execute(f'ALTER TABLE proiecte DROP COLUMN {col}')
+            logger.info(f'Migration v29->v30: dropped proiecte.{col}')
+
+    conn.commit()
+    conn.close()
+    logger.info('Migration v29->v30 completed')
 
 
 def run_migrations():
@@ -1112,6 +1160,11 @@ def run_migrations():
         set_schema_version(29)
         current_version = 29
 
+    if current_version < 30:
+        migrate_v29_to_v30()
+        set_schema_version(30)
+        current_version = 30
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1193,7 +1246,6 @@ def init_db():
             pm TEXT,
             folder_server TEXT,
             data_incepere TEXT,
-            deadline TEXT,
             data_crearii TEXT,
             status TEXT DEFAULT 'in_lucru',
             observatii TEXT,
@@ -1206,7 +1258,6 @@ def init_db():
             created_at TEXT,
             updated_at TEXT,
             notify_on_complete INTEGER DEFAULT 1,
-            notify_on_deadline INTEGER DEFAULT 1,
             vault_folder TEXT
         )
     ''')
@@ -1251,6 +1302,7 @@ def init_db():
             data_start TEXT,
             data_sfarsit TEXT,
             locatie TEXT DEFAULT 'site',
+            faza TEXT DEFAULT 'implementare',
             eticheta TEXT,
             ordine INTEGER DEFAULT 0,
             created_at TEXT,

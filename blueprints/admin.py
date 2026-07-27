@@ -140,7 +140,6 @@ def _pdf_section_admin(elements, project_dict, styles):
         ['Echipament principal', project_dict.get('echipament_principal') or '-'],
         ['Status', project_status_label(project_dict.get('status', '')) or '-'],
         ['Data începere', project_dict.get('data_incepere') or '-'],
-        ['Deadline', project_dict.get('deadline') or '-'],
         ['PM', project_dict.get('pm') or '-'],
         ['Nr. comandă', project_dict.get('nr_comanda') or '-'],
         ['Nr. contract', project_dict.get('nr_contract') or '-'],
@@ -286,12 +285,11 @@ def export_ics():
     """Calendarul de abonat din telefon (Google/Apple Calendar).
 
     Contine, in ordinea utilitatii:
-      1. PERIOADELE de implementare — unde esti efectiv in fiecare zi. Astea
-         lipseau, desi sunt singurul lucru pe care il ai planificat cu adevarat:
-         doar 2 din 20 de proiecte au deadline, dar 12 au perioade. Fara ele,
-         fisierul era aproape gol.
-      2. deadline-uri de proiect
-      3. scadente de taskuri (proiect + globale)
+      1. PERIOADELE de implementare — unde esti efectiv in fiecare zi, cu faza
+         (pregatire / implementare). Sunt singurul lucru planificat cu adevarat.
+      2. scadente de taskuri (proiect + globale)
+
+    Deadline-urile de proiect au plecat in v30: nu se lua nimeni dupa ele.
     """
     conn = get_db()
     cur = conn.cursor()
@@ -327,7 +325,7 @@ def export_ics():
 
     try:
         cur.execute("""
-            SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+            SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
                    p.nume, p.client, p.locatie AS locatie_proiect
             FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
             WHERE p.status != 'anulat' AND i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
@@ -337,14 +335,13 @@ def export_ics():
             la_sediu = (r['locatie'] or 'site') == 'sediu'
             titlu = r['eticheta'] or r['nume']
             unde = 'Sediu EGB' if la_sediu else (r['locatie_proiect'] or r['client'] or '')
+            # Faza intra in titlu doar cand e pregatire: implementarea e cazul
+            # obisnuit, iar un prefix pe fiecare eveniment ar fi zgomot in telefon.
+            if (r['faza'] or 'implementare') == 'pregatire':
+                titlu = f'Pregătire · {titlu}'
             add_event(f"impl-{r['id']}", r['data_start'],
                       f"{'Sediu' if la_sediu else (r['client'] or 'Teren')}: {titlu}",
                       desc=r['nume'], dt_end=r['data_sfarsit'] or r['data_start'], loc=unde)
-
-        cur.execute("SELECT id, nume, deadline FROM proiecte WHERE deadline IS NOT NULL "
-                    "AND TRIM(deadline) <> '' AND status != 'finalizat'")
-        for r in cur.fetchall():
-            add_event(f"proj-{r['id']}", r['deadline'], f"Deadline: {r['nume']}", 'Deadline proiect PIF')
 
         cur.execute("SELECT t.id, t.titlu, t.data_scadenta, p.nume AS pnume FROM tasks t "
                     "JOIN proiecte p ON t.proiect_id = p.id WHERE t.data_scadenta IS NOT NULL "
@@ -421,14 +418,14 @@ def restore_database():
         for p in data.get('proiecte', []):
             cursor.execute('''
                 INSERT INTO proiecte (id, tip, nume, client, locatie, echipament_principal, producator,
-                    cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
+                    cod_proiect, pm, folder_server, data_incepere, data_crearii,
                     status, observatii, nr_comanda, nr_contract, service_before, service_after,
                     confirmat_client, client_nume_confirmare, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 p.get('id'), p.get('tip'), p.get('nume'), p.get('client'), p.get('locatie'),
                 p.get('echipament_principal'), p.get('producator'), p.get('cod_proiect'),
-                p.get('pm'), p.get('folder_server'), p.get('data_incepere'), p.get('deadline'),
+                p.get('pm'), p.get('folder_server'), p.get('data_incepere'),
                 p.get('data_crearii'), p.get('status'), p.get('observatii'), p.get('nr_comanda'),
                 p.get('nr_contract'), p.get('service_before'), p.get('service_after'),
                 p.get('confirmat_client', 0), p.get('client_nume_confirmare'),
@@ -487,10 +484,11 @@ def restore_database():
         for im in data.get('implementari', []):
             cursor.execute('''
                 INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit,
-                    locatie, eticheta, ordine, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    locatie, faza, eticheta, ordine, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (im.get('id'), im.get('proiect_id'), im.get('data_start'),
                   im.get('data_sfarsit'), im.get('locatie') or 'site',
+                  im.get('faza') or 'implementare',
                   im.get('eticheta'), im.get('ordine', 0), im.get('created_at')))
 
         # Restore task_dependencies (dupa tasks — FK pe ambele capete)
@@ -788,7 +786,7 @@ def calendar_view():
     """Calendarul personal: unde esti in fiecare zi.
 
     Ion e o singura persoana, iar planificarea lui reala sunt PERIOADELE de
-    implementare (14 pe 12 proiecte), nu deadline-urile (2 din 20 de proiecte).
+    implementare, fiecare cu faza ei (pregatire / implementare in site).
     Deci intrebarea la care raspunde ecranul asta e „unde sunt marti", si tot
     aici stau si deciziile — nu intr-o lista separata.
 
@@ -815,7 +813,7 @@ def calendar_view():
     # O perioada intra in fereastra daca se intersecteaza cu ea, nu doar daca
     # incepe in ea — altfel un bloc de 4 zile care trece peste 1 ale lunii dispare.
     cursor.execute("""
-        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.locatie AS locatie_proiect,
                p.status, p.tip,
                (SELECT COUNT(*) FROM tasks t
@@ -834,7 +832,7 @@ def calendar_view():
     # Tot ce cere o decizie, chiar daca a ramas in urma ferestrei afisate —
     # altfel navighezi pe luna viitoare si semnalul dispare.
     cursor.execute("""
-        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.status
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
         WHERE p.status NOT IN ('finalizat', 'anulat')
@@ -842,20 +840,6 @@ def calendar_view():
         ORDER BY i.data_start
     """)
     de_decis = [dict(r) for r in cursor.fetchall()]
-
-    # Deadline-urile de proiect: alt tip de data decat perioadele. Perioada =
-    # cand lucrezi, deadline = cand trebuie predat. Ion a editat un deadline si
-    # s-a mirat ca nu se schimba nimic in calendar — pe buna dreptate, pentru ca
-    # nu il aratam deloc. Acum apare ca semn pe ziua lui.
-    cursor.execute("""
-        SELECT id AS proiect_id, nume, client, deadline, status
-        FROM proiecte
-        WHERE status NOT IN ('finalizat', 'anulat')
-          AND deadline IS NOT NULL AND TRIM(deadline) <> ''
-          AND date(deadline) < date(?) AND date(deadline) >= date(?)
-        ORDER BY deadline
-    """, (end_s, start))
-    termene = [dict(r) for r in cursor.fetchall()]
 
     cursor.execute("""
         SELECT id AS proiect_id, nume, client, status, tip
@@ -876,15 +860,6 @@ def calendar_view():
     # De la v29 intrarea e pazita de utils.norm_date(), dar o restaurare dintr-un
     # backup vechi sau o scriere directa in baza pot reintroduce asa ceva.
     probleme = []
-    cursor.execute("""
-        SELECT id AS proiect_id, nume, 'proiect' AS unde, 'termen' AS camp,
-               deadline AS valoare
-        FROM proiecte
-        WHERE status NOT IN ('finalizat', 'anulat')
-          AND deadline IS NOT NULL AND TRIM(deadline) <> '' AND date(deadline) IS NULL
-    """)
-    probleme += [dict(r) for r in cursor.fetchall()]
-
     cursor.execute("""
         SELECT p.id AS proiect_id, p.nume, 'perioada' AS unde,
                CASE WHEN date(i.data_start) IS NULL THEN 'inceput' ELSE 'sfarsit' END AS camp,
@@ -912,7 +887,6 @@ def calendar_view():
         'zile': zile,
         'today': datetime.now().date().isoformat(),
         'perioade': perioade,
-        'termene': termene,
         'de_decis': de_decis,
         'neplanificate': neplanificate,
         'probleme': probleme,
@@ -1002,29 +976,17 @@ def dashboard_home():
     urgent_tasks = [dict(r) for r in cursor.fetchall()]
     urgent_count = len(urgent_tasks)
 
-    # Upcoming project deadlines (next 7 days)
-    cursor.execute("""
-        SELECT id, nume, client, deadline
-        FROM proiecte
-        WHERE deadline IS NOT NULL
-          AND deadline >= date('now')
-          AND deadline <= date('now', '+7 days')
-          AND status NOT IN ('finalizat', 'anulat')
-        ORDER BY deadline LIMIT 5
-    """)
-    upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
-    deadline_count = len(upcoming_deadlines)
-
-    # ---- Risc, calculat pe PERIOADE DE IMPLEMENTARE, nu pe deadline ----------
-    # Doar 2 din 20 de proiecte au deadline, dar 12 au perioade planificate —
-    # perioadele sunt planificarea reala, deci semnalele se citesc de acolo.
+    # ---- Risc, calculat pe PERIOADE DE IMPLEMENTARE ------------------------
+    # Perioadele sunt planificarea reala, deci semnalele se citesc de acolo.
+    # (Deadline-urile de proiect au plecat in v30: 2 din 18 completate si
+    # niciodata folosite la o decizie.)
     #
     #  1. perioada trecuta, status nemiscat -> ori s-a facut si nu ai inchis-o,
     #     ori a alunecat si trebuie replanificata
     #  2. perioada in urmatoarele 7 zile pe un proiect fara niciun task
     #  3. proiect in lucru fara nicio perioada viitoare
     cursor.execute("""
-        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.status
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
         WHERE p.status NOT IN ('finalizat', 'anulat')
@@ -1093,11 +1055,9 @@ def dashboard_home():
             'weekly_done_delta': weekly_done_delta,
             'weekly_spark': weekly_spark,
             'urgent_count': urgent_count,
-            'deadline_count': deadline_count,
             'risc_count': risc_count
         },
         'urgent_tasks': urgent_tasks,
-        'upcoming_deadlines': upcoming_deadlines,
         'risc': risc,
         'todays_tasks': todays_tasks
     })
