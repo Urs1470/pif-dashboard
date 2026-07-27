@@ -21,7 +21,6 @@
     { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
     { label: 'Calendar', path: '/calendar', solid: 'calendar', keywords: 'calendar unde sunt deplasare perioade zile teren replanifica' },
     { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
-    { label: 'Admin', path: '/admin', solid: 'admin', keywords: 'admin stats export' },
   ]
 
   const TYPE_META = {

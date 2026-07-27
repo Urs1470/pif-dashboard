@@ -11,7 +11,7 @@
   // diferiti = zi impartita, semnalata.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Flag } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Flag, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -382,6 +382,12 @@
       <div class="mods">
         <button class:on={mod === 'saptamani'} onclick={() => setMod('saptamani')}>2 săpt.</button>
         <button class:on={mod === 'luna'} onclick={() => setMod('luna')}>Lună</button>
+        <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
+             telefon apartine paginii de calendar, nu unui sertar de intretinere. -->
+        <button class="ics" onclick={() => window.open('/api/export/ics', '_blank')}
+                title="Descarcă .ics — perioadele, termenele și scadențele. Abonează-te din calendarul telefonului.">
+          <Download size={13} /> .ics
+        </button>
       </div>
     </div>
 
@@ -564,6 +570,7 @@
   .ico:hover, .azi:hover, .mods button:hover { border-color: var(--accent); color: var(--accent); }
   .mods { display: flex; gap: 4px; }
   .mods button.on { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-ring); }
+  .mods button.ics { gap: 5px; margin-left: 6px; }
 
   .kpis { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .kpi { display: flex; align-items: baseline; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); }

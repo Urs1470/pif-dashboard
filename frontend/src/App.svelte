@@ -23,7 +23,6 @@
     '/plan': lazy(() => import('./pages/Plan.svelte')),
     '/calendar': lazy(() => import('./pages/Calendar.svelte')),
     '/calculator': lazy(() => import('./pages/Calculator.svelte')),
-    '/admin': lazy(() => import('./pages/Admin.svelte')),
   }
 
   const rawMatch = $derived(resolveRoute(routes))

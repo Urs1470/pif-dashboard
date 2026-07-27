@@ -393,12 +393,6 @@ def index():
     return _serve_frontend()
 
 
-@app.route('/administrativ')
-@login_required
-def spa_catchall():
-    return _serve_frontend()
-
-
 @app.route('/assets/<path:filename>')
 def dist_assets(filename):
     """Serve Vite-built assets (JS/CSS with content hashes)."""
