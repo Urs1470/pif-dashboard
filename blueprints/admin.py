@@ -559,7 +559,8 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'global_tasks', 'clienti', 'app_settings']
+    tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
+                  'implementari', 'global_tasks', 'clienti', 'app_settings']
     # sarim tabelele absente
     # ca sa nu pice backup-ul cu 500.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -590,7 +591,8 @@ def restore_database():
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data (skip tables absent on this deploy)
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'global_tasks', 'clienti', 'app_settings']
+        tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
+                  'implementari', 'global_tasks', 'clienti', 'app_settings']
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         existing = {row[0] for row in cursor.fetchall()}
         for table in tables:
@@ -660,6 +662,28 @@ def restore_database():
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
                   s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
+
+        # Restore implementari (perioadele de implementare — planificarea reala
+        # a lui Ion). Lipseau din backup pana in 2026-07-27: un restore le pierdea
+        # in tacere.
+        for im in data.get('implementari', []):
+            cursor.execute('''
+                INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit,
+                    locatie, eticheta, ordine, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (im.get('id'), im.get('proiect_id'), im.get('data_start'),
+                  im.get('data_sfarsit'), im.get('locatie') or 'site',
+                  im.get('eticheta'), im.get('ordine', 0), im.get('created_at')))
+
+        # Restore task_dependencies (dupa tasks — FK pe ambele capete)
+        for dep in data.get('task_dependencies', []):
+            cursor.execute('''
+                INSERT INTO task_dependencies (id, proiect_id, predecessor_id,
+                    successor_id, tip, lag, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (dep.get('id'), dep.get('proiect_id'), dep.get('predecessor_id'),
+                  dep.get('successor_id'), dep.get('tip') or 'FS',
+                  dep.get('lag', 0), dep.get('created_at')))
 
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
         # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
@@ -912,6 +936,82 @@ def global_search():
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
 
+@admin_bp.route('/api/review', methods=['GET'])
+@login_required
+def weekly_review():
+    """Review saptamanal: ce trebuie inchis, ce vine, ce s-a facut.
+
+    Bucla care tine sistemul curat. Statusurile raman in urma cand esti singur pe
+    teren — asta le aduce la zi in cateva click-uri, fara sa intri in 5 proiecte.
+
+    Trei sectiuni, toate pe perioade de implementare (planificarea reala):
+      - `de_inchis`  : perioade trecute pe proiecte neterminate -> inchide sau replanifica
+      - `urmeaza`    : perioade in fereastra urmatoare (implicit 7 zile)
+      - `finalizate` : ce s-a bifat in ultimele 7 zile (taskuri + proiecte inchise)
+    """
+    try:
+        zile = int(request.args.get('zile') or 7)
+    except (TypeError, ValueError):
+        zile = 7
+    zile = max(1, min(zile, 60))
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+               p.id AS proiect_id, p.nume, p.client, p.status, p.tip,
+               (SELECT COUNT(*) FROM tasks t
+                 WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
+        ORDER BY i.data_start DESC
+    """)
+    de_inchis = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+               p.id AS proiect_id, p.nume, p.client, p.status, p.tip,
+               (SELECT COUNT(*) FROM tasks t
+                 WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND date(i.data_start) >= date('now')
+          AND date(i.data_start) <= date('now', ?)
+        ORDER BY i.data_start
+    """, (f'+{zile} days',))
+    urmeaza = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT t.titlu, t.data_finalizare, p.nume AS proiect_nume, p.id AS proiect_id
+        FROM tasks t JOIN proiecte p ON p.id = t.proiect_id
+        WHERE t.data_finalizare IS NOT NULL AND TRIM(t.data_finalizare) <> ''
+          AND date(t.data_finalizare) >= date('now', '-7 days')
+        ORDER BY t.data_finalizare DESC LIMIT 40
+    """)
+    taskuri_gata = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT id AS proiect_id, nume, client, updated_at
+        FROM proiecte
+        WHERE status = 'finalizat'
+          AND updated_at IS NOT NULL
+          AND date(updated_at) >= date('now', '-7 days')
+        ORDER BY updated_at DESC LIMIT 20
+    """)
+    proiecte_inchise = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return jsonify({
+        'zile': zile,
+        'de_inchis': de_inchis,
+        'urmeaza': urmeaza,
+        'taskuri_gata': taskuri_gata,
+        'proiecte_inchise': proiecte_inchise,
+    })
+
+
 # ---------------------------------------------------------------------------
 # Dashboard home
 # ---------------------------------------------------------------------------
@@ -1008,6 +1108,56 @@ def dashboard_home():
     upcoming_deadlines = [dict(r) for r in cursor.fetchall()]
     deadline_count = len(upcoming_deadlines)
 
+    # ---- Risc, calculat pe PERIOADE DE IMPLEMENTARE, nu pe deadline ----------
+    # Doar 2 din 20 de proiecte au deadline, dar 12 au perioade planificate —
+    # perioadele sunt planificarea reala, deci semnalele se citesc de acolo.
+    #
+    #  1. perioada trecuta, status nemiscat -> ori s-a facut si nu ai inchis-o,
+    #     ori a alunecat si trebuie replanificata
+    #  2. perioada in urmatoarele 7 zile pe un proiect fara niciun task
+    #  3. proiect in lucru fara nicio perioada viitoare
+    cursor.execute("""
+        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie,
+               p.id AS proiect_id, p.nume, p.client, p.status
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
+        ORDER BY i.data_start DESC LIMIT 20
+    """)
+    risc_perioade_trecute = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT p.id AS proiect_id, p.nume, p.client, p.status,
+               MIN(i.data_start) AS data_start, COUNT(*) AS n_perioade
+        FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
+        WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND date(i.data_start) >= date('now')
+          AND date(i.data_start) <= date('now', '+7 days')
+          AND NOT EXISTS (SELECT 1 FROM tasks t WHERE t.proiect_id = p.id)
+        GROUP BY p.id ORDER BY data_start LIMIT 20
+    """)
+    risc_fara_taskuri = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT id AS proiect_id, nume, client, status
+        FROM proiecte p
+        WHERE p.status = 'in_lucru'
+          AND NOT EXISTS (
+            SELECT 1 FROM implementari i
+            WHERE i.proiect_id = p.id
+              AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
+          )
+        ORDER BY nume LIMIT 20
+    """)
+    risc_fara_perioada = [dict(r) for r in cursor.fetchall()]
+
+    risc = {
+        'perioade_trecute': risc_perioade_trecute,
+        'fara_taskuri': risc_fara_taskuri,
+        'fara_perioada': risc_fara_perioada,
+    }
+    risc_count = sum(len(v) for v in risc.values())
+
     # Today's tasks — open tasks (not done), with due-today/overdue surfaced first,
     # then by priority. Tasks without a scadenta still show (the user rarely sets one).
     cursor.execute("""
@@ -1036,10 +1186,12 @@ def dashboard_home():
             'weekly_done_delta': weekly_done_delta,
             'weekly_spark': weekly_spark,
             'urgent_count': urgent_count,
-            'deadline_count': deadline_count
+            'deadline_count': deadline_count,
+            'risc_count': risc_count
         },
         'urgent_tasks': urgent_tasks,
         'upcoming_deadlines': upcoming_deadlines,
+        'risc': risc,
         'todays_tasks': todays_tasks
     })
 

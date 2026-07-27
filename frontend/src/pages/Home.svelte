@@ -6,7 +6,7 @@
   } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { apiJson } from '../lib/api.js'
-  import { formatDate } from '../lib/formatters.js'
+  import { formatDate, PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import Card from '../components/ui/Card.svelte'
@@ -30,7 +30,7 @@
   let error = $state(null)
 
   // Count-up: numbers ease 0 -> value once the data lands (respects reduced-motion)
-  let animVals = $state({ active: 0, urgent: 0, done: 0, deadline: 0 })
+  let animVals = $state({ active: 0, urgent: 0, done: 0, risc: 0 })
   let _animStarted = false
 
   $effect(() => {
@@ -40,7 +40,7 @@
       active: s.active_projects || 0,
       urgent: s.urgent_count || 0,
       done: s.weekly_done || 0,
-      deadline: s.deadline_count || 0,
+      risc: s.risc_count || 0,
     }
     // Reincarcari ulterioare (silent, dupa o actiune din TodayBoard): actualizam
     // cifrele instant, fara sa reanimam de la 0.
@@ -62,7 +62,7 @@
         active: targets.active * e,
         urgent: targets.urgent * e,
         done: targets.done * e,
-        deadline: targets.deadline * e,
+        risc: targets.risc * e,
       }
       if (p < 1) raf = requestAnimationFrame(frame)
       else animVals = targets
@@ -106,6 +106,42 @@
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     })
   }
+
+  // „Ce alunecă" — citit din PERIOADELE de implementare, nu din deadline-uri
+  // (aproape niciun proiect n-are deadline, dar majoritatea au perioade).
+  // Ordinea = urgența reală: ce trebuia închis, apoi ce vine nepregătit, apoi
+  // ce e în lucru fără nimic planificat.
+  const riscRows = $derived.by(() => {
+    const r = dashboard?.risc
+    if (!r) return []
+    const rows = []
+    for (const p of (r.perioade_trecute || [])) {
+      const zi = p.data_sfarsit || p.data_start
+      rows.push({
+        proiect_id: p.proiect_id,
+        nume: p.nume,
+        motiv: `perioada a trecut${p.eticheta ? ' · ' + p.eticheta : ''} — încă „${PROJECT_STATUS_LABELS[p.status] || p.status}”`,
+        chip: dueChip(zi), hot: true, sev: 'var(--danger)',
+      })
+    }
+    for (const p of (r.fara_taskuri || [])) {
+      rows.push({
+        proiect_id: p.proiect_id,
+        nume: p.nume,
+        motiv: 'intervenție apropiată, dar niciun task pregătit',
+        chip: dueChip(p.data_start), hot: false, sev: 'var(--warning)',
+      })
+    }
+    for (const p of (r.fara_perioada || [])) {
+      rows.push({
+        proiect_id: p.proiect_id,
+        nume: p.nume,
+        motiv: 'în lucru, dar fără nicio perioadă planificată',
+        chip: '', hot: false, sev: 'var(--border-strong)',
+      })
+    }
+    return rows
+  })
 
   async function loadDashboard(silent = false) {
     // silent = reincarcare in fundal (dupa o actiune din TodayBoard) fara sa
@@ -158,10 +194,10 @@
           <div class="kpi-sub">taskuri bifate</div>
         {/if}
       </button>
-      <button class="kpi cell-in" onclick={() => navigate('/projects')} title="Vezi deadline-urile">
-        <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Deadline-uri</span></div>
-        <div class="kpi-val">{Math.round(animVals.deadline)}</div>
-        <div class="kpi-sub">în următoarele 7 zile</div>
+      <button class="kpi cell-in" onclick={() => navigate('/review')} title="Deschide review-ul săptămânal">
+        <div class="kpi-head"><span class="kpi-chip neutral"><CalendarClock size={16} /></span><span class="kpi-label">Ce alunecă</span></div>
+        <div class="kpi-val">{Math.round(animVals.risc)}</div>
+        <div class="kpi-sub">de închis sau replanificat</div>
       </button>
     </div>
 
@@ -187,18 +223,23 @@
         </Card>
       {/if}
 
-      {#if dashboard.upcoming_deadlines?.length}
+      {#if riscRows.length}
         <Card padding={false}>
-          <div class="card-head"><span class="ch-ico ico-vio"><CalendarClock size={13} /></span><span class="ch-label">Deadline-uri</span><span class="card-count">{dashboard.upcoming_deadlines.length}</span></div>
-          <div class="card-list">
-            {#each dashboard.upcoming_deadlines.slice(0, 5) as p, i}
-              <button class="isl" style="--sev: {sev(p.deadline)}" onclick={() => navigate(`/projects/${p.id}`)}>
+          <div class="card-head">
+            <span class="ch-ico ico-amb"><AlertTriangle size={13} /></span>
+            <span class="ch-label">Ce alunecă</span>
+            <span class="card-count">{riscRows.length}</span>
+            <button class="ch-act" onclick={() => navigate('/review')}>Review →</button>
+          </div>
+          <div class="card-list scroll">
+            {#each riscRows as r, i}
+              <button class="isl" style="--sev: {r.sev}" onclick={() => navigate(`/projects/${r.proiect_id}`)}>
                 <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                 <div class="row-content">
-                  <div class="row-title">{p.nume}</div>
-                  <div class="row-meta">{p.client || '—'}</div>
+                  <div class="row-title">{r.nume}</div>
+                  <div class="row-meta">{r.motiv}</div>
                 </div>
-                <span class="due-chip" class:hot={daysUntil(p.deadline) < 0} class:warm={daysUntil(p.deadline) >= 0 && daysUntil(p.deadline) <= 1}>{dueChip(p.deadline)}</span>
+                {#if r.chip}<span class="due-chip" class:hot={r.hot}>{r.chip}</span>{/if}
                 <ChevronRight size={14} />
               </button>
             {/each}
@@ -246,6 +287,9 @@
   .ch-ico { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ch-ico.ico-red { background: var(--danger-subtle); color: var(--danger); }
   .ch-ico.ico-vio { background: var(--purple-subtle); color: var(--purple); }
+  .ch-ico.ico-amb { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
+  .ch-act { margin-left: 4px; font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--accent); padding: 2px 8px; border-radius: var(--radius-sm); cursor: pointer; }
+  .ch-act:hover { background: var(--accent-subtle); }
   .ch-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
   .card-count { margin-left: auto; font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); }
 

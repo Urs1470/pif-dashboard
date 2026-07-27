@@ -4,6 +4,7 @@ Mirror lives at static/core.js: getStatusLabel().
 """
 
 PROJECT_STATUS_LABELS = {
+    'pregatire': 'Pregătire',   # 10 din 20 de proiecte — lipsea, se afisa raw
     'in_lucru': 'În Lucru',
     'in_asteptare': 'În Așteptare',
     'in_așteptare': 'În Așteptare',  # tolerate both diacritic forms

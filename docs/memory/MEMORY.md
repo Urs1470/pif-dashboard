@@ -56,6 +56,29 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-07-27 (2) — monitorizare pe PERIOADE, nu pe deadline.** Datele reale: doar 2 din 20 de
+  proiecte au deadline, dar 12 au perioade de implementare (14 in total). Taskurile cu date sunt
+  nefolosite (1 cu `data_start`, 0 progres, 0 milestones, 0 dependente) — planificarea reala a lui
+  Ion sunt PERIOADELE, iar Ganttul de taskuri e practic mort. Tot ce e monitorizare se citeste de
+  acolo. Trei lucruri livrate:
+  1. **Rand „Pe teren" in Planificator** — cate lucrari pe zi; grupate pe `client` (adaugat in
+     `/api/plan`, pe lane). Mai multe la acelasi client = o deplasare (chip neutru), la clienti
+     diferiti = suprapunere reala (chip amber + „N zile de verificat"). Doar in modul pe zile.
+  2. **Card „Ce alunecă" pe Home** (inlocuieste cardul + KPI-ul de Deadline-uri, care aratau max 2
+     randuri). Trei semnale in `/api/dashboard/home` -> `risc`: perioada trecuta cu status nemiscat;
+     perioada in <7 zile pe proiect fara taskuri; proiect `in_lucru` fara nicio perioada viitoare.
+  3. **Pagina `/review`** (`GET /api/review`) — De clarificat / Urmeaza / S-a facut, cu butoane care
+     schimba statusul din lista (S-a facut, In lucru, Replanifica — replanificarea pastreaza durata
+     perioadei) + rezumat text copiabil.
+  **Dependente NU s-au construit** — datele arata zero utilizare; ar fi fost aceeasi greseala ca la
+  parametri (structura corecta teoretic, deconectata de cum lucreaza).
+  **Bug reparat pe drum:** `/api/backup` NU includea `implementari` si `task_dependencies` — un
+  restore din JSON ar fi sters in tacere toate cele 14 perioade. Adaugate in backup + restore.
+  **Alt fix:** `pregatire` lipsea din `PROJECT_STATUS_LABELS` (backend + frontend) desi 10 din 20 de
+  proiecte il au — se afisa raw peste tot.
+  Curatat si Admin: scos campul „Foldere" (filtru care servea doar pagina Notite) + rutele
+  `/api/obsidian/notes` si `/api/obsidian/search`, ramase fara consumator dupa v28.
+
 - **2026-07-27 — v28: restrangere de scop.** Dashboard-ul nu mai dubleaza wiki-ul si manualele.
   Sterse: `parametri_master` (14.813 randuri), `fault_codes` (3.851), `echipamente` (26, in 4 din 20
   de proiecte), `atasamente` (30 fisiere). Sterse si: `blueprints/parametri.py`, paginile

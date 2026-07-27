@@ -20,7 +20,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `22:_generate_token`, `31:_get_or_refresh_token`, `39:init_csrf`
 
-## labels.py (30 linii)
+## labels.py (31 linii)
 
-`25:project_status_label`, `29:task_status_label`
+`26:project_status_label`, `30:task_status_label`
 

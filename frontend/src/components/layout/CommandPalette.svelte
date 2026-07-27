@@ -19,6 +19,7 @@
     { label: 'Proiecte', path: '/projects', solid: 'projects', keywords: 'projects lista' },
     { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
     { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
+    { label: 'Review săptămânal', path: '/review', solid: 'check', keywords: 'review saptamanal inchide replanifica bilant' },
     { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
     { label: 'Admin', path: '/admin', solid: 'admin', keywords: 'admin stats export' },
   ]

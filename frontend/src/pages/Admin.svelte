@@ -28,7 +28,7 @@
   let debriefBusy = $state(false)
   let debriefResult = $state(null)
 
-  let obsConfig = $state({ vault_path: '', folders: '', valid: false, note_count: 0, configured: false })
+  let obsConfig = $state({ vault_path: '', valid: false, note_count: 0, configured: false })
   let obsSaving = $state(false)
 
   let activeTab = $state('stats')
@@ -40,7 +40,7 @@
     try { extended = await apiJson('/api/stats/extended') } catch (_) {}
     try {
       const c = await apiJson('/api/obsidian/config')
-      obsConfig = { vault_path: c.vault_path || '', folders: c.folders || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
+      obsConfig = { vault_path: c.vault_path || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
     } catch (_) {}
     loading = false
   })
@@ -118,9 +118,9 @@
   async function saveObsidian() {
     obsSaving = true
     try {
-      await apiJson('/api/obsidian/config', { method: 'PUT', body: { vault_path: obsConfig.vault_path, folders: obsConfig.folders } })
+      await apiJson('/api/obsidian/config', { method: 'PUT', body: { vault_path: obsConfig.vault_path } })
       const c = await apiJson('/api/obsidian/config')
-      obsConfig = { vault_path: c.vault_path || '', folders: c.folders || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
+      obsConfig = { vault_path: c.vault_path || '', valid: !!c.valid, note_count: c.note_count || 0, configured: !!c.configured }
       toast(obsConfig.valid ? `Vault valid — ${obsConfig.note_count} notite` : 'Salvat, dar calea nu e valida', obsConfig.valid ? 'success' : 'error')
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
@@ -241,8 +241,8 @@
     <h2 class="sec-title"><BookOpen size={16} /> Integrare Obsidian</h2>
     <Card>
       <div class="obs-form">
-        <Input label="Cale vault" bind:value={obsConfig.vault_path} placeholder="/home/ion-ursu/Obsidian/Vault" />
-        <Input label="Foldere (separate prin virgula)" bind:value={obsConfig.folders} placeholder="10 Notes, 30 Projects" />
+        <Input label="Cale vault" bind:value={obsConfig.vault_path} placeholder="/home/ion-ursu/Projects/Knowledge" />
+        <p class="hint-sub">Calea vaultului clonat pe server. Alimentează tabul <b>Wiki</b> din pagina proiectului și write-back-ul de frontmatter (status/deadline → README-ul din wiki).</p>
         <div class="actions">
           <Button size="sm" loading={obsSaving} onclick={saveObsidian}><Save size={14} /> Salveaza</Button>
           {#if obsConfig.configured}

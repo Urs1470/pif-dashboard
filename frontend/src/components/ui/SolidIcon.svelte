@@ -17,7 +17,6 @@
     menu: { add: ['M4 7h16', 'M4 12h16', 'M4 17h16'] },
     // — feature / action —
     cpu: { d: 'M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z M10 10h4v4h-4z', add: ['M9 3v3', 'M15 3v3', 'M9 18v3', 'M15 18v3', 'M3 9h3', 'M3 15h3', 'M18 9h3', 'M18 15h3'] },
-    params: { d: 'M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z M10 10h4v4h-4z', add: ['M9 3v3', 'M15 3v3', 'M9 18v3', 'M15 18v3', 'M3 9h3', 'M3 15h3', 'M18 9h3', 'M18 15h3'] },
     // Planificator: calendar cu bare de timeline (gantt) inauntru.
     plan: { d: 'M5 3h1.5v2H5zM17.5 3H19v2h-1.5z M4 6h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z M6.5 10.2h6v1.8h-6z M9.5 13.6h7v1.8h-7z M6.5 17h4.5v1.8H6.5z' },
     file: { d: 'M6 2h7l5 5v12.5A1.5 1.5 0 0 1 16.5 21h-9A1.5 1.5 0 0 1 6 19.5V3.5A1.5 1.5 0 0 1 6 2z M13 2.4 18 7.4h-4a1 1 0 0 1-1-1z M8.4 11.3h7.2v1.4H8.4z M8.4 14.6h7.2v1.4H8.4z M8.4 17.9h4.6v1.4H8.4z' },

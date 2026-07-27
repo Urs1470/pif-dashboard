@@ -100,6 +100,7 @@
     { path: '/projects', label: 'Proiecte', icon: 'projects' },
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
     { path: '/plan', label: 'Planificator', icon: 'plan' },
+    { path: '/review', label: 'Review', icon: 'check' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
     { path: '/admin', label: 'Admin', icon: 'admin' },
   ]
