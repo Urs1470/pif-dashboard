@@ -263,10 +263,12 @@
   </div>
 
   <div class="sub-section">
-    <div class="sub-head">
-      <span class="sub-cap">Subtaskuri</span>
-      {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
-    </div>
+    {#if subs.length}
+      <div class="sub-head">
+        <span class="sub-cap">Subtaskuri</span>
+        <span class="sub-prog">{doneCount}/{subs.length}</span>
+      </div>
+    {/if}
     {#if subtaskLoading && !subtasksCache[t.id]}
       <div class="sub-loading">Se încarcă...</div>
     {:else}
@@ -335,8 +337,10 @@
   {:else}
     <div class="task-list">
       {#each (showArchive ? globalTasks.items : activeTasks) as t, i (t.id)}
-        <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
+        <div class="trow-wrap" class:deschis={expandedTask === t.id}
+             style="--sev: {dueColor(t.data_scadenta)}"
+             animate:flip={{ duration: motionDuration(DUR_BASE) }}>
+          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}>
             <span class="tix">{String(i + 1).padStart(2, '0')}</span>
             <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
@@ -535,10 +539,20 @@
   .done-sep:hover { color: var(--text-secondary); }
 
   /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
-  .subtask-body { margin-left: 26px; margin-bottom: var(--space-sm); padding: var(--space-12); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 2px solid var(--accent-subtle); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: var(--space-12); }
+  /* Extinderea e CONTINUAREA randului, nu un card separat: se lipeste de el
+     (randul isi pierde colturile de jos si marginea), preia bordura de severitate
+     din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
+  .trow-wrap.deschis .trow { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+  .subtask-body { margin: 0 0 6px; padding: 2px var(--space-sm) var(--space-sm) calc(var(--space-sm) + 4px);
+    background: var(--bg-panel); border: 1px solid var(--border); border-top: 0;
+    border-left: 3px solid var(--sev, var(--border-strong));
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* Actiuni discrete: chip-uri "+ Descriere / + Fisier" in loc de link-uri italic plutinde */
+  /* Fara rand propriu pentru un singur buton: se aliniaza la stanga, discret. */
   .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .detail-actions:empty { display: none; }
   .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .detail-chip:hover:not(:disabled) { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
   .detail-chip:active:not(:disabled) { transform: scale(0.97); }
@@ -560,7 +574,7 @@
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
-  .sub-add { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
+  .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }
   .sub-add input { flex: 1; padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
   .sub-add-btn { width: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
