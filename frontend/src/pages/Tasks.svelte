@@ -298,7 +298,7 @@
     {:else}
       {#each subs as sub (sub.id)}
         <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
-          <button class="check" onclick={() => toggleSubtaskDone(sub)}>
+          <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
             {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
           </button>
           <span class="sub-title">{sub.titlu}</span>
@@ -364,7 +364,7 @@
         <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)} style="--sev: {rowBorderColor(t.prioritate)}">
             <span class="tix">{String(i + 1).padStart(2, '0')}</span>
-            <button class="check" onclick={() => toggleStatus(t)}>
+            <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
             </button>
             <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
@@ -408,7 +408,7 @@
             <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
               <div class="trow done" use:focusOnLand={focusKey('global', t.id)} style="--sev: {rowBorderColor(t.prioritate)}">
                 <span class="tix">{String(i + 1).padStart(2, '0')}</span>
-                <button class="check" onclick={() => toggleStatus(t)}>
+                <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
                   <CheckCircle2 size={18} />
                 </button>
                 <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>

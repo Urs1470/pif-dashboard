@@ -22,7 +22,8 @@
   let dedesubt = $state(false)
   let vizibil = $state(false)
 
-  let tinta = null           // elementul al carui title l-am imprumutat
+  let tinta = null           // elementul al carui `title` l-am imprumutat (de restaurat)
+  let nodCurent = null       // elementul deasupra caruia suntem, oricare ar fi sursa
   let textImprumutat = ''
   let cronometru = 0
   let el = $state(null)      // nodul tooltipului, ca sa-i masuram dimensiunea
@@ -32,6 +33,7 @@
       try { tinta.setAttribute('title', textImprumutat) } catch (_) {}
     }
     tinta = null
+    nodCurent = null
     textImprumutat = ''
   }
 
@@ -45,8 +47,8 @@
   async function aseaza() {
     // Masuram dupa ce s-a randat continutul, altfel latimea e a tooltipului gol.
     await Promise.resolve()
-    if (!el || !tinta || !tinta.isConnected) return
-    const r = tinta.getBoundingClientRect()
+    if (!el || !nodCurent || !nodCurent.isConnected) return
+    const r = nodCurent.getBoundingClientRect()
     const t = el.getBoundingClientRect()
     const sus = r.top - t.height - MARGINE
     dedesubt = sus < MARGINE
@@ -58,13 +60,32 @@
     vizibil = true
   }
 
+  const CONTROALE = 'button, a, [role="button"], summary'
+
+  /** Textul tooltipului si daca trebuie imprumutat (doar `title` produce bula
+   *  nativa, deci doar el se sterge; `aria-label` e numele accesibil si ramane). */
+  function sursa(nod) {
+    const t = (nod.getAttribute('title') || '').trim()
+    if (t) return { text: t, imprumut: true }
+    // Cadere pe `aria-label`, dar NUMAI pe un control fara text vizibil: acolo
+    // eticheta chiar E numele butonului. Altfel am pune tooltipuri pe containere
+    // (`<nav aria-label="Navigație principală">`), ceea ce ar fi zgomot.
+    const a = (nod.getAttribute('aria-label') || '').trim()
+    if (a && nod.matches(CONTROALE) && !nod.textContent.trim()) {
+      return { text: a, imprumut: false }
+    }
+    return null
+  }
+
   function porneste(nod, imediat = false) {
-    const text = (nod.getAttribute('title') || '').trim()
-    if (!text) return
+    const s = sursa(nod)
+    if (!s) return
     ascunde()
-    tinta = nod
-    textImprumutat = text
-    nod.removeAttribute('title')
+    tinta = s.imprumut ? nod : null
+    textImprumutat = s.imprumut ? s.text : ''
+    if (s.imprumut) nod.removeAttribute('title')
+    nodCurent = nod
+    const text = s.text
     // Svelte NU decodeaza entitatile HTML in atributele compilate cu expresie:
     // `title="a&#10;b"` ajunge in DOM cu `&#10;` LITERAL. (Se vedea si in bula
     // nativa, dinainte — doar ca nimeni nu se uita la ea.) Un `\n` scris in
@@ -83,21 +104,21 @@
     // Doar cu mouse-ul. Pe atingere, un tooltip care apare la tap ar acoperi exact
     // lucrul pe care l-ai atins.
     if (e.pointerType && e.pointerType !== 'mouse') return
-    const nod = e.target?.closest?.('[title]')
-    if (!nod) { if (tinta) ascunde(); return }
-    if (nod === tinta) return
+    const nod = e.target?.closest?.('[title], [aria-label]')
+    if (!nod) { if (nodCurent) ascunde(); return }
+    if (nod === nodCurent) return
     porneste(nod)
   }
 
   function iese(e) {
-    if (!tinta) return
+    if (!nodCurent) return
     const spre = e.relatedTarget
-    if (spre && tinta.contains?.(spre)) return
+    if (spre && nodCurent.contains?.(spre)) return
     ascunde()
   }
 
   function focus(e) {
-    const nod = e.target?.closest?.('[title]')
+    const nod = e.target?.closest?.('[title], [aria-label]')
     if (nod) porneste(nod, true)
   }
 
