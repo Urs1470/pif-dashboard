@@ -13,15 +13,15 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/stats` | `get_stats` | 42 |
 | GET | `/api/export/pdf` | `export_pdf` | 214 |
 | GET | `/api/export/ics` | `export_ics` | 281 |
-| GET | `/api/backup` | `backup_database` | 368 |
-| POST | `/api/restore` | `restore_database` | 395 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 528 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 574 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 651 |
-| GET | `/api/search` | `global_search` | 710 |
-| GET | `/api/settings/plan-departament` | `plan_departament_get` | 758 |
-| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 769 |
-| GET | `/api/calendar` | `calendar_view` | 786 |
+| GET | `/api/backup` | `backup_database` | 375 |
+| POST | `/api/restore` | `restore_database` | 402 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 535 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 581 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 658 |
+| GET | `/api/search` | `global_search` | 717 |
+| GET | `/api/settings/plan-departament` | `plan_departament_get` | 765 |
+| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 776 |
+| GET | `/api/calendar` | `calendar_view` | 793 |
 
 ## blueprints\obsidian.py (7 rute)
 

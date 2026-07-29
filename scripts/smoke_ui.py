@@ -64,6 +64,9 @@ IGNORATE = (
     # (54 de pagini x ~40 de assets). E o limita a masinii, nu ceva ce poate cauza
     # codul aplicatiei — o cerere nu pleaca deloc, nu primeste un raspuns gresit.
     'net::ERR_NO_BUFFER_SPACE',
+    # Adaptorul de retea si-a schimbat configuratia in timpul rularii (Wi-Fi,
+    # VPN, IP nou). Cererea nu pleaca deloc — nu poate fi cauzata de codul nostru.
+    'net::ERR_NETWORK_CHANGED',
 )
 
 

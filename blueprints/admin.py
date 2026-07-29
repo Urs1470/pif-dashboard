@@ -324,10 +324,17 @@ def export_ics():
 
     try:
         cur.execute("""
-            SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
+            SELECT i.id, i.data_start,
+                   CASE WHEN p.status = 'finalizat'
+                         AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date('now')
+                        THEN date('now')
+                        ELSE i.data_sfarsit END AS data_sfarsit,
+                   i.eticheta, i.locatie, i.faza,
                    p.nume, p.client, p.locatie AS locatie_proiect
             FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
-            WHERE p.status != 'anulat' AND i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
+            WHERE i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
+              -- vezi /api/calendar: un proiect inchis nu mai ocupa zile viitoare
+              AND (p.status != 'finalizat' OR date(i.data_start) <= date('now'))
             ORDER BY i.data_start
         """)
         for r in cur.fetchall():
@@ -815,17 +822,27 @@ def calendar_view():
 
     # O perioada intra in fereastra daca se intersecteaza cu ea, nu doar daca
     # incepe in ea — altfel un bloc de 4 zile care trece peste 1 ale lunii dispare.
+    # Proiect FINALIZAT inainte de vreme: zilele ramase nu mai au ce cauta in
+    # calendar — nu vei fi acolo. Dar trecutul ramane: chiar ai fost. Deci pentru
+    # proiectele inchise taiem perioada la ZIUA DE AZI si excludem complet ce
+    # incepe dupa. (Ion: „daca am finalizat un proiect inainte de vreme nu se
+    # scoate din calendar".)
     cursor.execute("""
-        SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
+        SELECT i.id, i.data_start,
+               CASE WHEN p.status = 'finalizat'
+                     AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date('now')
+                    THEN date('now')
+                    ELSE i.data_sfarsit END AS data_sfarsit,
+               i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.locatie AS locatie_proiect,
                p.status, p.tip,
                (SELECT COUNT(*) FROM tasks t
                  WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise,
-               (CASE WHEN p.status NOT IN ('finalizat', 'anulat')
+               (CASE WHEN p.status != 'finalizat'
                       AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
                      THEN 1 ELSE 0 END) AS necesita_decizie
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
-        WHERE p.status != 'anulat'
+        WHERE (p.status != 'finalizat' OR date(i.data_start) <= date('now'))
           AND date(i.data_start) < date(?)
           AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date(?)
         ORDER BY i.data_start, p.client, p.nume

@@ -32,6 +32,10 @@
   // acelasi client sunt O iesire, nu trei. Aceeasi regula ca in Calendar.
   const iesiri = $derived.by(() => {
     const per = (data?.perioade || [])
+      // Un proiect finalizat nu mai e o ieșire care urmează. Backendul îi taie
+      // deja perioada la ziua de azi, deci fără filtrul ăsta o zi tăiată ar
+      // apărea aici ca „Acum".
+      .filter(p => p.status !== 'finalizat')
       .filter(p => (p.data_sfarsit || p.data_start) >= azi)
       .sort((a, b) => a.data_start.localeCompare(b.data_start))
     const out = []
