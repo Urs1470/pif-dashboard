@@ -68,8 +68,8 @@
   .ip-list { display: flex; flex-direction: column; gap: 6px; }
   .ip-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--il); color: var(--text); cursor: pointer; text-align: left; }
   .ip-item:hover { border-color: var(--border-strong); }
-  .loc-site { --il: #3f9dc4; } .loc-sediu { --il: #c99a3a; }
-  .ip-loc { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--fw-medium); font-size: var(--font-small); color: var(--il); min-width: 130px; }
+  .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
+  .ip-loc { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--fw-medium); font-size: var(--font-small); color: color-mix(in oklab, var(--il) 55%, var(--text)); min-width: 130px; }
   .ip-range { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }
   .ip-days { font-size: var(--font-micro); color: var(--text-dim); }
   .ip-tag { font-size: var(--font-micro); background: var(--bg-elevated); color: var(--text-dim); padding: 1px 7px; border-radius: var(--radius-xs); }

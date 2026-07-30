@@ -142,6 +142,36 @@ păstrează ambele.
   `--info #b9a5ff` (violet — DISTINCT de warning/accent). Statusul `in_asteptare` → `--purple`.
 - Serii de grafic: `--chart-1 #bd7420`, `--chart-2 #0f9257`, `--chart-3 #7a5fd8` (validate CVD/contrast)
 - Elevation → shadow: card `--shadow-sm`, popover `--shadow-md`, modal/toast `--shadow-lg`.
+- **Locație** (`implementari.locatie`): `--loc-site` / `--loc-sediu`. Chroma mică cu intenție —
+  locația e un fapt binar și nu are voie să concureze cromatic cu identitatea proiectului.
+  **NU le redefini pe tema deschisă**: rolul lor e FILL sub cerneală închisă (`--on-color`),
+  iar închiderea lor face banda închisă cu text închis pe ea. Unde valoarea e folosită ca TEXT,
+  amestecă spre `--text` la locul folosirii (`color-mix(in oklab, var(--il) 55%, var(--text))` —
+  55%, nu mai mult: la 70% eticheta pică sub AA pe tema deschisă).
+- **Cerneala peste un fill saturat**: `--on-color` (nu `#10130f`/`#14100a` scrise de mână).
+
+**Culoarea de identitate a unui proiect — `frontend/src/lib/culori.js`, SINGURA sursă.**
+`culoareProiect(id)` hash-uiește `proiecte.id` (nu clientul — se repetă; nu numele — se
+redenumește). Folosită de Calendar (bare + sertar) și Planificator (benzi). **Nu copia paleta
+într-o pagină** — exact așa au ajuns Calendar și Planificator să difere pe 43% din proiecte.
+Paleta e **rezolvată numeric** de `scripts/solve_paleta.py`, nu aleasă din ochi: distanțarea pe
+roata de nuanțe s-a măsurat ca fiind *mai proastă* decât ce era în producție, pentru că sub
+deficiența roșu-verde axa roșu-verde se prăbușește — separarea vine din LUMINOZITATE. Dacă
+schimbi accentul sau tokenurile semantice/de locație, **re-rulează scriptul**, nu ajusta o culoare.
+
+**Mișcare:** `--dur-fast/base/slow` + `--dur-press 0.05s` (apăsarea se întoarce sub pragul de
+100ms al legăturii cauză-efect). **Nu scrie `transition: all`** — urmărește și proprietățile care
+reașază pagina; folosește `--transition-colors` (doar vopsea) sau `--transition-pressable`
+(+ `transform`, singura proprietate geometrică sigură, se compune pe GPU).
+
+**Apăsare:** `global.css` dă o podea de feedback la apăsare pe pointer grosier, cu `:where()`
+(specificitate zero → orice `:active` propriu al componentei o bate). Pe telefon `:hover` nu
+există, deci apăsarea e SINGURA confirmare — dacă adaugi un control nou, dă-i `:active`.
+
+**Înainte de commit rulează `python scripts/audit_design.py`** (7 reguli, iese 1 pe abatere):
+`transition: all`, hex brut, durată/easing brute, paletă duplicată, token folosit dar nedefinit,
+paritate de temă. E singurul test care prinde *incoerența* — build-ul și `smoke_ui` trec vesel
+peste o a doua paletă copiată în altă pagină.
 
 **Scale noi (folosește token, nu valori hardcodate):**
 - Font-weight: `--fw-normal/medium/semibold/bold` (400/500/600/700).

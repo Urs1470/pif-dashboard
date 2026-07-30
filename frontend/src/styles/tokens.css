@@ -56,6 +56,23 @@
   --chart-2: #0f9257;
   --chart-3: #7a5fd8;
 
+  /* LOCATIE (implementari.locatie) — teren vs sediu.
+     Erau opt valori scrise de mana in patru fisiere, cu TREI ambere diferite
+     pentru acelasi „sediu" (#c99a3a, #b98a2e, #c9a13a) — adica un fapt binar
+     desenat in trei culori. Acum e un token, si atat.
+     Chroma e MICA cu intentie: locatia e un fapt binar, deci nu are voie sa
+     concureze cromatic cu identitatea proiectului (vezi lib/culori.js). Inainte
+     `site` era exact `#3f9dc4`, o valoare care se afla SI in paleta de proiecte:
+     in Planificator, unde benzile de locatie si barele de proiect stau pe acelasi
+     ecran, aceeasi culoare insemna cand „proiectul X", cand „esti pe teren". */
+  --loc-site: #8fa3b8;   /* rece — afara, pe teren */
+  --loc-sediu: #b09b7d;  /* cald — inauntru, la sediu */
+
+  /* Cerneala pe un fill saturat (banda de perioada, bara plina, chip umplut).
+     Inlocuieste #10130f / #14100a / #1a1206 scrise de mana — care nu se
+     schimbau la trecerea pe tema deschisa, pentru ca nu erau tokenuri. */
+  --on-color: #14110d;
+
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
@@ -136,6 +153,30 @@
   --dur-base: 0.24s;
   --dur-slow: 0.32s;
   --ease: cubic-bezier(0.32, 0.72, 0.28, 1);
+  /* Apasarea se intoarce mai repede decat orice altceva: sub ~100ms legatura
+     cauza-efect se citeste ca instantanee, iar peste ea butonul pare moale. */
+  --dur-press: 0.05s;
+
+  /* Tranzitia implicita a unei suprafete interactive (hover/selectat).
+     Exista ca sa NU se mai scrie `transition: all`: `all` urmareste ORICE
+     proprietate care se schimba, deci si pe cele care declanseaza reasezare
+     (width/height/padding) — animate pe firul principal, nu pe GPU. Cand ceva
+     de langa element ii schimba geometria, primeai o animatie pe care n-ai
+     cerut-o. Lista explicita de mai jos e formata doar din proprietati de
+     vopsea (compozitare), niciuna nu reasaza pagina. */
+  --transition-colors:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+
+  /* Pentru suprafetele care se si APASA (chip, tab, celula). Adauga `transform`
+     — singura proprietate geometrica sigura, pentru ca se compune pe GPU fara
+     sa reaseze nimic — pe durata scurta de apasare. */
+  --transition-pressable:
+    var(--transition-colors),
+    transform var(--dur-press) var(--ease);
 
   /* Layout */
   --header-height: 56px;
@@ -217,6 +258,18 @@
   --chart-1: #bd7420;
   --chart-2: #0f9257;
   --chart-3: #7a5fd8;
+
+  /* --loc-site / --loc-sediu NU se redefinesc pe tema deschisa, cu buna stiinta.
+     Prima incercare le-a inchis aici („ca sa se citeasca pe alb") si a iesit
+     invers: tokenul e FUNDALUL benzii de perioada, care poarta cerneala inchisa
+     (--on-color), deci banda a devenit inchisa cu text inchis pe ea. Rolul lui
+     e fill, nu text — iar un fill de mijloc merge sub cerneala inchisa in
+     ambele teme. Unde valoarea chiar e folosita ca TEXT (eticheta „Pe teren"),
+     se amesteca spre --text la locul folosirii, ca sa urmeze tema.
+
+     Pe hartie cerneala peste un fill saturat ramane tot inchisa — fillurile de
+     identitate sunt aceleasi in ambele teme (vezi lib/culori.js), deci si
+     contrastul lor fata de cerneala e acelasi. */
 
   /* In light, suprafetele flotante nu pot fi mai albe decat pagina (deja alba),
      deci elevatia se citeste prin umbra — mai puternica decat in dark. */

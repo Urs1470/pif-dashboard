@@ -351,7 +351,7 @@
   .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
 
   .filters { display: flex; gap: 4px; flex-wrap: wrap; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
+  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: var(--transition-pressable); min-height: 30px; }
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
@@ -359,7 +359,7 @@
   /* Sortare — control ghost discret + meniu custom; click pe optiunea
      activa inverseaza directia (sageata arata directia curenta). */
   .sort-box { position: relative; }
-  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition-colors); }
   .sort-trigger:hover { color: var(--text); background: var(--bg-hover); }
   .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); border-color: var(--accent); }
   .sort-dir-ind { font-family: var(--font-mono); font-size: var(--font-tiny); opacity: .8; }

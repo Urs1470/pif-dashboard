@@ -117,7 +117,7 @@
   .tip-row { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; }
   .tip-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
   .tip-toggle { display: flex; gap: var(--space-xs); }
-  .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: var(--fw-semibold); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: var(--fw-semibold); cursor: pointer; transition: var(--transition-colors); }
   .tip-btn.active-pif { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
   .tip-btn.active-service { background: var(--service-subtle); border-color: var(--service-accent); color: var(--service-accent); }
 

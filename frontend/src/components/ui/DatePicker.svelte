@@ -228,7 +228,7 @@
   .dp-nav {
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
     border-radius: var(--radius-full); color: var(--text-secondary); cursor: pointer;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
   }
   .dp-nav:hover { background: var(--bg-hover); color: var(--text); }
 
@@ -239,7 +239,7 @@
   .dp-day {
     aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
     border-radius: var(--radius-full); font-size: var(--font-small); color: var(--text-secondary);
-    cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    cursor: pointer; transition: var(--transition-colors);
   }
   .dp-day:hover { background: var(--bg-hover); color: var(--text); }
   .dp-day.today { color: var(--accent); font-weight: var(--fw-bold); }

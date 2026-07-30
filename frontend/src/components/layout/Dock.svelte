@@ -144,7 +144,7 @@
     left: 50%;
     bottom: calc(14px + var(--safe-bottom));
     transform: translateX(-50%) translateY(var(--dock-shift, 0px));
-    transition: transform 0.28s var(--ease);
+    transition: transform var(--dur-base) var(--ease);
     display: flex;
     gap: 4px;
     padding: 12px 8px 8px;

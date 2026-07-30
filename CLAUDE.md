@@ -485,6 +485,28 @@ sageti de 40×22px, un tooltip aparea PESTE lucrul atins, iar blocul mobil din
 Planificator era anulat in intregime de reguli scrise mai jos in acelasi fisier —
 build verde, `smoke_ui` verde, `test_suite` 12/12.
 
+- `audit_design.py` — **coerenta sistemului de design.** Ce nu prinde niciunul
+  dintre celelalte: `transition: all`, culori scrise de mana, durate/easing in
+  afara scarii, o a doua paleta copiata in alta pagina, tokenuri folosite dar
+  nedefinite, tokenuri de culoare care exista doar pe o tema. Nu porneste browser,
+  ruleaza in mai putin de o secunda.
+
+```bash
+python scripts/audit_design.py            # iese 1 daca sunt abateri
+python scripts/audit_design.py --lista    # fiecare aparitie, nu doar primele 5
+```
+
+De ce exista: incoerenta se randeaza PERFECT. Pe 2026-07-30 paleta de identitate
+traia in doua fisiere cu aceleasi culori rotite cu doua pozitii — build verde,
+`smoke_ui` verde, `test_suite` 12/12, `audit_mobil` curat, si totusi 43% dintre
+proiecte aveau o culoare in Calendar si alta in Planificator. Se vede doar cand
+pui doua ecrane alaturi, sau cand o masoara cineva.
+
+- `solve_paleta.py` — re-rezolva paleta de identitate a proiectelor
+  (`frontend/src/lib/culori.js`). Ruleaza-l daca schimbi accentul sau tokenurile
+  semantice/de locatie; paleta depinde de ele si se RE-rezolva, nu se ajusteaza
+  pe bucati.
+
 Cerinte, o singura data si doar pe masina de dezvoltare (NU in `requirements.txt`):
 
 ```bash

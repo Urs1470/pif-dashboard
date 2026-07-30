@@ -180,6 +180,33 @@ input:focus, select:focus, textarea:focus {
   outline: none;
 }
 
+/* ===== Raspuns la APASARE, pe tot dashboardul =====
+   Aplicatia avea 146 de reguli `:hover` si 37 de `:active`. Pe telefon — unde Ion
+   isi tine taskurile — `:hover` NU EXISTA: degetul nu pluteste. Deci pentru cele
+   ~109 suprafete fara `:active`, atingerea nu confirma nimic pana cand nu se
+   termina actiunea, iar pe o retea lenta asta inseamna ca nu stii daca ai nimerit.
+   Rezultatul obisnuit e a doua apasare, adica actiunea de doua ori.
+
+   `:where()` are specificitate ZERO, deci regula asta nu poate suprascrie nimic:
+   orice componenta care isi defineste propriul `:active` (Button.svelte, .chip,
+   .subfam-tab) castiga automat. E o podea, nu un stil.
+
+   `transform` e singura proprietate geometrica folosita aici pentru ca se compune
+   pe GPU — nu reaseaza pagina, deci nu poate misca ce e in jur.
+
+   Doar pe pointer grosier: cu mouse exista deja hover care confirma tinta, iar
+   scalarea la fiecare click ar fi zgomot. Elementele care se TRAG sunt excluse —
+   acolo apasarea inseamna „am apucat", si e deja spusa de cursor/pozitie. */
+@media (hover: none) and (pointer: coarse) {
+  :where(button, [role="button"], a.btn, .tab, .row, .zi):active:not(:disabled):not([draggable="true"]) {
+    transform: scale(0.97);
+    transition: transform var(--dur-press) var(--ease);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], a.btn, .tab, .row, .zi):active { transform: none; }
+}
+
 /* ===== Focus-flash: highlight tranzitoriu cand "aterizezi" pe un item (deep-link) =====
    Folosit de actiunea use:focusOnLand (lib/focus.js): click pe un task din Acasa te
    duce la el (scroll smooth la centru) si il pulseaza scurt. Tine accentul, apoi se

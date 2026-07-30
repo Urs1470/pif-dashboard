@@ -920,7 +920,7 @@
   /* Wiki tab */
   .wiki-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; color: var(--text-secondary); text-align: center; }
   .wiki-empty p { margin: 0; }
-  .wiki-hint { font-size: var(--font-small, 0.82rem); color: var(--text-tertiary, var(--text-secondary)); }
+  .wiki-hint { font-size: var(--font-small, 0.82rem); color: var(--text-dim); }
   .wiki-empty code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-elevated); padding: 1px 5px; border-radius: var(--radius-sm); }
   .wiki-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
   .wiki-chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }

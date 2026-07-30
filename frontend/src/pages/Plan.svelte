@@ -17,24 +17,21 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import Modal from '../components/ui/Modal.svelte'
+  import { culoareProiect, CULOARE_NEUTRA } from '../lib/culori.js'
 
-  // Distinct, CVD-legible lane hues on the warm-dark ground. Amber is reserved for
-  // the app accent/active state, so lanes deliberately avoid it.
-  const LANE_PALETTE = ['#3f9dc4', '#3fae74', '#8b6fe0', '#d1697f', '#b9a5ff', '#5f8fd0', '#c9a13a']
   // Praguri pentru continutul unei benzi de perioada, in PROCENTE din fereastra —
   // nu in zile: la 6 luni o zi are 6px, la 7 zile are 165. Sub primul prag ramane
   // doar icoana (o litera taiata nu spune nimic, icoana spune „teren" / „sediu");
   // sub al doilea, durata ar manca eticheta, deci o lasam doar in tooltip.
   const BANDA_TEXT_MIN = 6.5
   const BANDA_ZILE_MIN = 14
-  const GLOBAL_COLOR = '#948a7d'
   const HORIZONS = [{ d: 7, l: '7z' }, { d: 14, l: '14z' }, { d: 30, l: '30z' }, { d: 90, l: '3L' }, { d: 180, l: '6L' }]
 
+  // Culoarea benzii vine din lib/culori.js, aceeasi sursa ca in Calendar. Inainte
+  // fiecare pagina isi tinea paleta ei si ordinea difera pe ultimele trei pozitii,
+  // deci 43% dintre proiecte aveau o culoare aici si alta in Calendar.
   function laneColor(id) {
-    if (id === '__global__') return GLOBAL_COLOR
-    let h = 0
-    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-    return LANE_PALETTE[h % LANE_PALETTE.length]
+    return id === '__global__' ? CULOARE_NEUTRA : culoareProiect(id)
   }
 
   const columns = $derived(buildColumns(plan.start, plan.days))
@@ -858,27 +855,27 @@
      categorii diferite despartite — doua perioade de aceeasi categorie sunt deja
      UN element (vezi `contopeste`), deci n-au cusatura. */
   .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; gap: 5px;
-    padding: 0 9px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: #10130f;
+    padding: 0 9px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
     border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
     background: linear-gradient(180deg,
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
       color-mix(in oklab, var(--il) 90%, #000) 100%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent), 0 1px 3px rgba(0,0,0,0.28);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent), 0 1px 3px rgba(0,0,0,0.28);
     cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .impl-band.loc-site { --il: #3f9dc4; } .impl-band.loc-sediu { --il: #c99a3a; }
+  .impl-band.loc-site { --il: var(--loc-site); } .impl-band.loc-sediu { --il: var(--loc-sediu); }
   /* Faza e a doua axa, ca in Calendar: palid = pregatire, plin = implementare.
      O zi de pregatire blocata explicit (parametrizare in atelier) e tot pregatire,
      deci sta peste banda ei, cu conturul culorii, nu ca bloc plin. */
   .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
     border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
-    color: color-mix(in oklab, var(--il) 72%, var(--text)); }
+    color: color-mix(in oklab, var(--il) 55%, var(--text)); }
   /* Taiata de fereastra: muchie dreapta, fara bara de intrare — ziua de start nu e
      acolo, e mai devreme. */
   .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0; }
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   .impl-band:hover { filter: brightness(1.08);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent),
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent),
                 0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 3px 10px rgba(0,0,0,0.34); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
   /* O zi, la 30 de zile fereastra, are 38px: nu incape nici „Si…". Ramane icoana,
@@ -890,10 +887,10 @@
   .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
     font-size: var(--font-micro); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
-  .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
+  .mimpl.loc-site { --mil: var(--loc-site); } .mimpl.loc-sediu { --mil: var(--loc-sediu); }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
   .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
-  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--mil); }
+  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
   .mimpl-range { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
     padding: 0 8px; border-radius: 7px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
@@ -903,7 +900,7 @@
   @keyframes barIn { from { opacity: 0; transform: scaleX(0.4); transform-origin: left; } }
   .bar.draggable { cursor: grab; }
   .bar:hover { box-shadow: var(--shadow-md); z-index: 5; }
-  .bar.active { background: var(--lane); color: #14100a; }
+  .bar.active { background: var(--lane); color: var(--on-color); }
   .bar.todo { background: color-mix(in oklab, var(--lane) 20%, var(--bg-panel));
     border: 1px solid color-mix(in oklab, var(--lane) 45%, var(--bg-panel));
     color: color-mix(in oklab, var(--lane) 70%, var(--text)); }
@@ -998,7 +995,7 @@
      doar dimensiunile, fiindca aici randul are 26px, nu 42. */
   .m-track .band { top: 3px; bottom: 3px; border-radius: 6px; }
   .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: 6px;
-    border-left-width: 2px; box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 18%, transparent); }
+    border-left-width: 2px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 18%, transparent); }
   .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent); }
   .m-track .ib-txt { font-size: var(--font-micro); }
   /* In banda, perioada e DESEN, nu buton: un bloc de doua zile are ~23×20px.

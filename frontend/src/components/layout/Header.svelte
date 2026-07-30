@@ -112,7 +112,7 @@
     justify-content: center;
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
   }
   .header-btn:hover {
     background: var(--bg-hover);

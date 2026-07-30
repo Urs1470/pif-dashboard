@@ -913,7 +913,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    background: var(--bg-surface); cursor: pointer; transition: var(--transition-colors);
   }
   .surse-btn:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .surse { display: flex; flex-direction: column; gap: var(--space-md); }
@@ -939,7 +939,7 @@
     font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 6px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
   }
   .equip-foot button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .equip-foot .ef-import { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
@@ -1007,7 +1007,7 @@
     color: var(--text-secondary);
     background: var(--bg-input);
     border: 1px solid transparent;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
     cursor: pointer;
   }
   .fam-tab:hover { background: var(--bg-hover); color: var(--text); }
@@ -1019,7 +1019,7 @@
   .subfam-tab {
     padding: 3px 13px; min-height: 26px; border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
     color: var(--text-secondary); border: 1px solid transparent; background: var(--bg-input);
-    cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    cursor: pointer; transition: var(--transition-pressable);
   }
   .subfam-tab:hover { background: var(--bg-hover); color: var(--text); }
   .subfam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
@@ -1075,7 +1075,7 @@
   .nav-btn {
     font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    background: var(--bg-surface); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    background: var(--bg-surface); cursor: pointer; transition: var(--transition-colors);
   }
   .nav-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); border-color: var(--text-dim); }
   .nav-btn:disabled { opacity: 0.4; cursor: default; }
@@ -1094,7 +1094,7 @@
     display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%;
     padding: 8px 10px; margin-bottom: 6px; text-align: left;
     border: 1px dashed var(--border); border-radius: var(--radius-md);
-    background: var(--bg-elevated); cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    background: var(--bg-elevated); cursor: pointer; transition: var(--transition-colors);
   }
   .nav-equip:hover { border-color: var(--accent); background: var(--accent-subtle); }
   .nav-equip-h { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-bold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
@@ -1152,7 +1152,7 @@
   .chip {
     font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 3px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-surface);
-    cursor: pointer; transition: all var(--dur-fast) var(--ease);
+    cursor: pointer; transition: var(--transition-colors);
   }
   .chip:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .reset-btn {
@@ -1161,7 +1161,7 @@
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     flex-shrink: 0;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
     cursor: pointer;
   }
   .reset-btn:hover { background: var(--bg-hover); color: var(--text); }

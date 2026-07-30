@@ -507,7 +507,7 @@
     color: var(--text-secondary);
     cursor: pointer;
     flex-shrink: 0;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
   }
   .math-btn:hover { color: var(--text); border-color: var(--text-dim); }
   .math-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }

@@ -175,7 +175,7 @@
     border-radius: var(--radius-sm);
     color: var(--text-dim);
     font-size: 20px;
-    transition: all var(--dur-fast) var(--ease);
+    transition: var(--transition-colors);
   }
   .modal-close:hover {
     background: var(--bg-hover);

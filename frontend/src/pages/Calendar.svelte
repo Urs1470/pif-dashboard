@@ -19,6 +19,7 @@
   import { ui } from '../stores/ui.svelte.js'
   import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
+  import { culoareProiect } from '../lib/culori.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -41,17 +42,6 @@
 
   const azi = todayISO()
 
-  // Paleta pe client — stabila (acelasi client, aceeasi culoare la fiecare
-  // incarcare) si distincta pe fundalul cald-inchis. Amber e rezervat pentru
-  // accentul aplicatiei, deci lipseste din lista.
-  const PALETA = ['#3f9dc4', '#3fae74', '#8b6fe0', '#d1697f', '#5f8fd0', '#c9a13a', '#b9a5ff']
-  function culoare(client) {
-    const k = (client || '').trim().toLowerCase()
-    if (!k) return '#948a7d'
-    let h = 0
-    for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0
-    return PALETA[h % PALETA.length]
-  }
   function scurt(client) {
     const c = (client || '').trim()
     if (!c) return '—'
@@ -324,7 +314,7 @@
 
   /** Culoarea urmareste PROIECTUL, ca aceeasi lucrare sa fie acelasi lucru de la
    *  o zi la alta. Pe client n-avea sens: aproape tot e Continental. */
-  function culoareLucrare(p) { return culoare(p.proiect_id || p.nume) }
+  function culoareLucrare(p) { return culoareProiect(p.proiect_id || p.nume) }
 
   /** Deplasarile care INCEP in ziua asta — captura mica de deasupra barelor.
    *  Doar la inceput, nu in fiecare zi: altfel „Continental" s-ar repeta peste tot. */
@@ -806,7 +796,7 @@
             <div class="rail">
               {#each data.neplanificate as pr (pr.proiect_id)}
                 <button class="np" class:ales={asezare?.proiect_id === pr.proiect_id}
-                     style="--c: {culoare(pr.client)}" draggable="true"
+                     style="--c: {culoareProiect(pr.proiect_id)}" draggable="true"
                      onclick={() => comutaAsezare(pr)}
                      aria-pressed={asezare?.proiect_id === pr.proiect_id}
                      title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început'}

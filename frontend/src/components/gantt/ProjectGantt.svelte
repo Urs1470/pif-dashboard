@@ -203,8 +203,8 @@
       <span class="lg"><span class="dot prog leg"></span>în lucru</span>
       <span class="lg"><span class="dot todo leg"></span>de făcut</span>
       <span class="lg"><span class="sw-ms"></span>milestone</span>
-      <span class="lg"><span class="sw" style="background:#3f9dc4"></span>site</span>
-      <span class="lg"><span class="sw" style="background:#c99a3a"></span>sediu</span>
+      <span class="lg"><span class="sw" style="background:var(--loc-site)"></span>site</span>
+      <span class="lg"><span class="sw" style="background:var(--loc-sediu)"></span>sediu</span>
     </span>
   </div>
 
@@ -345,23 +345,23 @@
   .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px; border: none; border-bottom: 1px solid var(--border); border-left: 3px solid var(--il); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
   .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
   .impl-lname { font-size: var(--font-small); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .loc-site { --il: #3f9dc4; } .loc-sediu { --il: #b98a2e; }
+  .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
   /* Perioada de implementare umple randul, nu pluteste ca o pastila subtire in
      mijlocul lui: e un BLOC de zile in care esti acolo, nu un marcaj. Randul
      ramane cu aceeasi inaltime, doar continutul lui se vede acum. */
-  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px; cursor: pointer; overflow: hidden; color: #10130f;
+  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px; cursor: pointer; overflow: hidden; color: var(--on-color);
     border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
     background: linear-gradient(180deg,
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
       color-mix(in oklab, var(--il) 90%, #000) 100%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent), 0 1px 3px rgba(0,0,0,0.28); }
-  .impl-band.loc-sediu { --il: #c99a3a; }
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent), 0 1px 3px rgba(0,0,0,0.28); }
+  .impl-band.loc-sediu { --il: var(--loc-sediu); }
   /* A doua axa, ca in Calendar si in Planificator: palid = pregatire, plin =
      implementare. Aceeasi perioada, alta faza — nu acelasi bloc. */
   .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
     border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
-    color: color-mix(in oklab, var(--il) 72%, var(--text)); }
+    color: color-mix(in oklab, var(--il) 55%, var(--text)); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
   .ib-txt { font-size: var(--font-micro); font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
