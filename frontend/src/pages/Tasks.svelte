@@ -3,12 +3,12 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
-  import { grupeazaDupaTermen, etichetaTermen } from '../lib/grupare.js'
+  import { grupeazaDupaTermen, etichetaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
@@ -81,8 +81,10 @@
   // In arhiva gruparea n-ar spune nimic (toate sunt facute), deci ramane o grupa
   // fara cap — acelasi drum de randare, zero markup duplicat.
   const grupe = $derived(showArchive
-    ? [{ id: 'arhiva', titlu: null, ton: 'sters', items: globalTasks.items }]
+    ? { arhiva: { id: 'arhiva', titlu: null, ton: 'sters', items: globalTasks.items, start: 0 } }
     : grupeazaDupaTermen(activeTasks))
+  // Arhiva e o grupa fara cap, pusa la coada ordinii — acelasi drum de randare.
+  const ordine = [...ORDINE_GRUPE, 'arhiva']
 
   /** Ce scrie chipul de termen pe rand. In „Azi"/„Mâine"/„Fără termen" capul de
    *  grupa a spus-o deja — repetat pe fiecare rand ar fi zgomot. */
@@ -93,7 +95,21 @@
 
   async function toggleStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
-    const res = await updateGlobalTask(task.id, { status: next })
+    // OPTIMIST, ca randul sa plece IN CLIPA in care il atingi.
+    // Fara asta, intre atingere si disparitie sta un dus-intors cu serverul
+    // (~200ms de nimic), iar animatia de iesire nu se mai citeste ca raspuns la
+    // gestul tau, ci ca ceva ce se intampla singur, mai tarziu. La eroare,
+    // reincarcarea din `catch` pune lista la loc — deci minciuna dureaza cel
+    // mult cat cererea.
+    globalTasks.items = globalTasks.items.map(t => t.id === task.id ? { ...t, status: next } : t)
+    let res
+    try {
+      res = await updateGlobalTask(task.id, { status: next })
+    } catch (e) {
+      await loadGlobalTasks({ arhiva: showArchive })
+      toast(`Eroare: ${e.message}`, 'error')
+      return
+    }
     await loadGlobalTasks({ arhiva: showArchive })
     if (res?.recurring_spawned) {
       toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
@@ -442,7 +458,17 @@
     </form>
   {/if}
 
-  {#if globalTasks.loading}
+  <!-- SCHELETELE SUNT PENTRU PRIMA INCARCARE, NU PENTRU FIECARE ACTIUNE.
+       Conditia era doar `globalTasks.loading`, iar `loadGlobalTasks()` se cheama
+       dupa ORICE modificare (bifat, mutat termen, adaugat, sters). Deci de fiecare
+       data cand atingeai ceva, toata lista era distrusa si inlocuita cu cinci
+       dungi gri, apoi reconstruita — o clipire pe fiecare gest.
+       Efect secundar care m-a costat o ora: nicio animatie de iesire nu se putea
+       vedea, fiindca subarborele ei era demolat in aceeasi clipa. Un rand nu apuca
+       sa plece elegant dintr-o lista care tocmai a fost stearsa toata.
+       `&& items.length === 0`: schelete doar cand chiar n-ai ce arata. Aceeasi
+       regula o avea deja TodayBoard. -->
+  {#if globalTasks.loading && globalTasks.items.length === 0}
     <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
   {:else if globalTasks.error}
     <ErrorState message={globalTasks.error} onretry={() => loadGlobalTasks({ arhiva: showArchive })} />
@@ -454,20 +480,27 @@
     <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : 'Nimic de făcut'} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
   {:else}
     <div class="task-list">
-      {#each grupe as g, gi (g.id)}
-      <!-- Indexul mono din stanga randului numara peste TOATE grupele, nu de la
-           capat in fiecare: altfel iesea „01, 01, 01, 01, 02", adica un numar
-           care nu numara nimic. -->
-      {@const off = grupe.slice(0, gi).reduce((n, x) => n + x.items.length, 0)}
-      {#if g.titlu}
+      <!-- Se itereaza ORDINEA — siruri constante — nu lista de grupe.
+           Vezi `lib/grupare.js`: un each imbricat peste obiecte NOI la fiecare
+           recalcul face Svelte sa re-creeze blocul interior in loc sa-l
+           actualizeze, iar randurile dinauntru sunt distruse fara sa-si joace
+           iesirea. Masurat: 0 cadre de animatie asa, 13 cu acelasi rand intr-un
+           each de nivel superior. Cu chei constante, blocul exterior nu se mai
+           schimba niciodata. -->
+      {#each ordine as gid (gid)}
+      {#if grupe[gid]}
+      {#if grupe[gid].titlu && grupe[gid].items.length}
         <!-- Capul de grupa e reperul dupa care citesti lista fara sa citesti
              fiecare rand: vezi „Restante 2" si stii ca ai doua de recuperat. -->
-        <div class="grup-cap ton-{g.ton}"><span class="grup-t">{g.titlu}</span><span class="grup-n">{g.items.length}</span></div>
+        <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span><span class="grup-n">{grupe[gid].items.length}</span></div>
       {/if}
-      {#each g.items as t, i (t.id)}
-        <div class="trow-wrap" class:deschis={expandedTask === t.id}
+      {#each grupe[gid].items as t, i (t.id)}
+<!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
+               Vezi `plecare` in lib/motion.svelte.js. -->
+                    <div class="trow-wrap" class:deschis={expandedTask === t.id}
              style="--sev: {dueColor(t.data_scadenta)}"
-             animate:flip={{ duration: motionDuration(DUR_BASE) }}>
+             animate:flip={{ duration: motionDuration(DUR_BASE) }}
+             out:plecare>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
                use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
@@ -497,7 +530,7 @@
               </button>
             </div>
             <div class="gl-fata">
-            <span class="tix">{String(off + i + 1).padStart(2, '0')}</span>
+            <span class="tix">{String(grupe[gid].start + i + 1).padStart(2, '0')}</span>
             <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
             </button>
@@ -520,7 +553,7 @@
                      sa calculezi in cap cate zile mai ai, la fiecare rand. Si nu se
                      scrie deloc acolo unde capul de grupa a spus-o deja („Azi",
                      „Mâine", „Fără termen") — repetat pe fiecare rand ar fi zgomot. -->
-                {#if chipTermen(t, g.id)}<span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{chipTermen(t, g.id)}</span>{/if}
+                {#if chipTermen(t, gid)}<span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{chipTermen(t, gid)}</span>{/if}
               </div>
             </button>
             <div class="task-actions">
@@ -539,6 +572,7 @@
           {/if}
         </div>
       {/each}
+      {/if}
       {/each}
 
     </div>

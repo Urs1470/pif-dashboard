@@ -48,10 +48,36 @@ export function grupeazaDupaTermen(taskuri, cheieData = (t) => t.data_scadenta) 
       return 0
     })
   }
-  return GRUPE
-    .map(g => ({ id: g.id, titlu: g.titlu, ton: g.ton, items: cosuri.get(g.id) }))
-    .filter(g => g.items.length)
+  // INTOARCE UN OBIECT, NU O LISTA — si de ce conteaza.
+  // Sablonul itereaza `ORDINE_GRUPE`, un array CONSTANT de siruri, si citeste
+  // `grupe[id]`. Daca ar itera o lista de obiecte de grupa (noi la fiecare
+  // recalcul), Svelte re-CREEAZA blocul interior in loc sa-l actualizeze — chiar
+  // si cu cheie pe `g.id` — iar randurile dinauntru sunt distruse FARA sa-si mai
+  // joace tranzitia de iesire. Masurat: 0 cadre de animatie cu each imbricat pe
+  // obiecte, 13 cadre cu acelasi rand intr-un each de nivel superior.
+  // Cu chei constante, blocul exterior nu se mai schimba niciodata, iar cel
+  // interior se comporta ca oricare altul.
+  // TOATE grupele, inclusiv cele goale. Un `{#if}` care se stinge cand grupa
+  // ramane fara randuri ar distruge blocul in care tocmai pleaca ultimul rand —
+  // iar atunci Svelte nu-i mai joaca iesirea. Adica exact cazul cel mai vizibil
+  // (bifezi ultimul restant) ar fi ramas fara animatie. Sablonul ascunde capul
+  // gol; un cap nu are nevoie de tranzitie, un rand da.
+  const out = {}
+  let n = 0
+  for (const g of GRUPE) {
+    const items = cosuri.get(g.id)
+    // `start` = cate randuri sunt in grupele de dinainte, ca indexul mono din
+    // stanga sa numere peste TOATE grupele („01, 02, 03…"), nu de la capat in
+    // fiecare.
+    out[g.id] = { id: g.id, titlu: g.titlu, ton: g.ton, items, start: n }
+    n += items.length
+  }
+  return out
 }
+
+/** Ordinea de randare. Constanta la nivel de modul, deci aceleasi referinte de
+ *  fiecare data — vezi comentariul de mai sus. */
+export const ORDINE_GRUPE = GRUPE.map(g => g.id)
 
 /** Eticheta scurta a termenului, pentru randul din lista: „azi", „mâine",
  *  „acum 3 zile", „vineri", „12 aug". Data plina nu spune nimic pe telefon —

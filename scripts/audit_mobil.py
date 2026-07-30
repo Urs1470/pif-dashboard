@@ -15,6 +15,7 @@ CE MASOARA, pe trei latimi de telefon si pe toate rutele:
   - gesturi      reordonarea prin maner si cele doua glisari, cu deget adevarat
   - de facut     gruparea pe termen, adaugarea cu zi, mutarea din gest, „Anulează"
   - „azi"        boardul de pe Acasa si grupa „Azi" din /tasks sunt aceeasi multime
+  - iesire       randul bifat se stinge si pleaca imediat, nu dupa server
 
 TREI CAPCANE DE MASURARE, toate tratate aici — fara ele raportul minte:
   1. `pointer-events: none` inseamna ca elementul NU e o tinta (benzile din
@@ -412,6 +413,61 @@ BIFEAZA = """(marca) => {
 }"""
 
 
+def iesirea_randului(ctx, baza):
+    """Randul bifat trebuie sa PLECE — vizibil si imediat.
+    Doua lucruri se pot strica separat, si amandoua in tacere:
+      - raspunsul la atingere: daca randul asteapta dus-intorsul cu serverul,
+        animatia nu se mai citeste ca raspuns la gestul tau;
+      - animatia insasi: o structura de sablon gresita o suprima complet, fara
+        nicio eroare (vezi comentariile din lib/grupare.js)."""
+    out('--- iesirea randului bifat ---')
+    probleme = 0
+    page = ctx.new_page()
+    page.set_viewport_size({'width': 390, 'height': 844})
+
+    def zi(cond, mesaj, detaliu=''):
+        nonlocal probleme
+        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
+        if not cond:
+            probleme += 1
+
+    for ruta, sel, eticheta in [('/tasks', '.trow', 'Taskuri'), ('/', '.arow', 'Astăzi')]:
+        page.goto(baza + '/#' + ruta, wait_until='load')
+        try:
+            page.wait_for_selector(sel, timeout=15000)
+        except Exception:
+            out('  SARI  %s: lista e goala' % eticheta)
+            continue
+        page.wait_for_timeout(1100)
+        r = page.evaluate(PROBA_IESIRE, sel)
+        if r.get('eroare'):
+            zi(False, '%s: %s' % (eticheta, r['eroare'])); continue
+        interm = [o for o in r['op'] if 0.02 < o < 0.98]
+        zi(r['plecatLa'] is not None, '%s: randul chiar pleaca din DOM' % eticheta)
+        zi(len(interm) >= 3, '%s: se stinge (%d cadre), nu sare' % (eticheta, len(interm)), r['op'][:6])
+        zi(r['plecatLa'] is None or r['plecatLa'] < 900,
+           '%s: raspunde la atingere, nu dupa server' % eticheta, '%sms' % r['plecatLa'])
+    page.close()
+    out()
+    return probleme
+
+
+PROBA_IESIRE = """(sel) => new Promise((res) => {
+  const rand = document.querySelector(sel);
+  if (!rand) return res({ eroare: 'niciun rand' });
+  const w = rand.closest('.trow-wrap') || rand;
+  const t0 = performance.now(); const op = [];
+  const tic = () => {
+    if (!w.isConnected) return res({ op, plecatLa: Math.round(performance.now() - t0) });
+    op.push(+getComputedStyle(w).opacity);
+    if (performance.now() - t0 > 2500) return res({ op, plecatLa: null });
+    requestAnimationFrame(tic);
+  };
+  rand.querySelector('.check').click();
+  requestAnimationFrame(tic);
+})"""
+
+
 def azi_peste_tot(ctx, baza):
     """Boardul „Astăzi" de pe Acasa si grupa „Azi" din /tasks sunt ACEEASI multime:
     apartenenta e data de TERMEN, nu de vreun steag separat (v33). Daca cele doua
@@ -509,6 +565,7 @@ def main():
                 probleme += gesturi(ctx, baza)
                 probleme += lista_de_facut(ctx, baza)
                 probleme += azi_peste_tot(ctx, baza)
+                probleme += iesirea_randului(ctx, baza)
             browser.close()
     finally:
         proc.terminate()

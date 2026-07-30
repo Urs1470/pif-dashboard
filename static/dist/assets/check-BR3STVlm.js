@@ -1,1 +1,0 @@
-import{b as e,f as t,x as n}from"./Modal-4ihzmRNr.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`M20 6 9 17l-5-5`}]];t(i,n({name:`check`},()=>o,{get iconNode(){return s}}))}export{i as t};

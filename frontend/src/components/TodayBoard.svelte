@@ -21,7 +21,7 @@
   import EmptyState from './ui/EmptyState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -63,6 +63,12 @@
   async function onToggle(it) {
     const eraFacut = it.status === 'done'
     try {
+      // Scot randul din lista INAINTE de dus-intorsul cu serverul: boardul nu
+      // tine taskuri bifate (`/api/agenda/today` filtreaza `status != 'done'`),
+      // deci oricum pleaca — dar altfel ar pleca dupa ~200ms, cand nu mai e clar
+      // ca a plecat fiindca l-ai atins tu. `toggleDone` reincarca agenda la
+      // final, deci adevarul se aseaza singur (si la eroare, tot el).
+      if (!eraFacut) agenda.items = agenda.items.filter(x => !(x.tip === it.tip && x.id === it.id))
       const res = await toggleDone(it.tip, it.id, it.status)
       if (res?.recurring_spawned) {
         toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
@@ -78,6 +84,7 @@
       }
       onchange()
     } catch (e) {
+      await loadAgendaToday()
       toast(`Eroare: ${e.message}`, 'error')
     }
   }
@@ -193,6 +200,7 @@
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
           animate:flip={{ duration: flipDur }}
+          out:plecare
           use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
         >
           <!-- Panoul de actiuni sta SUB rand si se descopera glisand spre stanga
