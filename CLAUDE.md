@@ -300,6 +300,20 @@ Ce lipsea nu era aspectul, ci **ordinea** si **drumul pana la actiune**.
 Gruparea NU se aplica taskurilor de proiect: acolo randurile sunt o secventa de
 lucru cu `ordine`, iar o regrupare dupa zi ar rupe tocmai ce le tine impreuna.
 
+**Culoarea e rezervata severitatii.** Randul avea trei sisteme de culoare care se
+bateau — severitatea (bordura + termenul), mov (categoria), amber (subtaskuri,
+recurenta, numele proiectului) — iar ierarhia iesea pe dos: indexul decorativ „01"
+era 16px/700 colorat, deasupra titlului de 12.8px. Acum titlul e `--font-body`,
+indexul e o fantoma, si singurul lucru colorat pe rand e TERMENUL. Pe boardul
+„Astăzi" cele doua pastile („Restant", „Termen azi") au plecat: pe un board unde
+totul e scadent azi sau restant, ele partitionau lista si atat, iar „Restant"
+repeta in cuvinte ce spunea data rosie de langa. Ramane data, scrisa relativ.
+
+**Vederea activa nu contine taskuri bifate.** `/api/global-tasks` adauga
+`AND status != 'done'` cand nu ceri arhiva. Deci o sectiune „N finalizate" in
+lista activa e cod care nu se poate randa (a existat, gardata pe o conditie
+imposibila). Ce ai terminat se vede in „Arhivă", si starea goala o spune.
+
 ### Cum arata o zi in Calendar
 
 Prima versiune desena UN bloc per client, etichetat „Continental · 4 lucrari". Datele reale

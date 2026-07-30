@@ -46,7 +46,6 @@
   let newSubtaskTitle = $state('')
   let subtaskLoading = $state(false)
 
-  let showDoneTasks = $state(false)
   let taskSearch = $state('')
   let quickTitle = $state('')
   let quickAdding = $state(false)
@@ -71,7 +70,12 @@
   // Hide a recurring task's next occurrence until its scadenta arrives, so finalizing
   // today's instance doesn't look like an identical unchecked copy reappearing.
   const activeTasks = $derived(filteredTasks.filter(t => t.status !== 'done' && !isFutureRecurrence(t)))
-  const doneTasks = $derived(filteredTasks.filter(t => t.status === 'done'))
+  // NU exista `doneTasks` in vederea activa: `/api/global-tasks` adauga
+  // `AND status != 'done'` cand nu ceri arhiva, deci lista nu contine niciodata
+  // taskuri bifate. Aici traia o sectiune „N finalizate" pliabila, cu randuri
+  // proprii si stil propriu — gardata pe `!showArchive && doneTasks.length > 0`,
+  // adica pe o conditie care nu putea fi adevarata. Cod viu si corect, care nu
+  // s-a randat niciodata. Ce ai terminat se vede in „Arhivă".
 
   // Lista se citeste de sus in jos ca o zi de lucru: restante, azi, mâine, restul.
   // In arhiva gruparea n-ar spune nimic (toate sunt facute), deci ramane o grupa
@@ -86,15 +90,6 @@
     if (grupId === 'azi' || grupId === 'maine' || grupId === 'fara') return ''
     return etichetaTermen(t.data_scadenta)
   }
-
-  // Deep-link to a finalized task: auto-open the (collapsed-by-default) done section
-  // so its row mounts and focusOnLand can scroll/flash it instead of silently no-op'ing.
-  $effect(() => {
-    const f = router.query.focus
-    if (!f || !f.startsWith('global:')) return
-    const id = f.slice('global:'.length)
-    if (doneTasks.some(t => String(t.id) === id)) showDoneTasks = true
-  })
 
   async function toggleStatus(task) {
     const next = task.status === 'done' ? 'to_do' : 'done'
@@ -452,7 +447,11 @@
   {:else if globalTasks.error}
     <ErrorState message={globalTasks.error} onretry={() => loadGlobalTasks({ arhiva: showArchive })} />
   {:else if globalTasks.items.length === 0}
-    <EmptyState icon={ListTodo} title="Niciun task" description={showArchive ? 'Arhiva e goală.' : 'Adaugă un task nou.'} />
+    <!-- Aceeasi stare acopera „n-ai avut niciodata taskuri" si „tocmai le-ai
+         terminat pe toate" — pagina nu le poate deosebi, fiindca API-ul nu-i da
+         cele bifate. Deci textul trebuie sa fie adevarat in amandoua si sa spuna
+         unde au plecat cele facute, altfel „Niciun task" se citeste ca o pierdere. -->
+    <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : 'Nimic de făcut'} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
   {:else}
     <div class="task-list">
       {#each grupe as g, gi (g.id)}
@@ -542,45 +541,6 @@
       {/each}
       {/each}
 
-      {#if !showArchive && doneTasks.length > 0}
-        <button class="done-sep" onclick={() => showDoneTasks = !showDoneTasks}>
-          {#if showDoneTasks}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
-          {doneTasks.length} finalizate
-        </button>
-        {#if showDoneTasks}
-          <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-          {#each doneTasks as t, i (t.id)}
-            <div class="trow-wrap" class:deschis={expandedTask === t.id}
-                 style="--sev: var(--border-strong)"
-                 animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-              <div class="trow done" use:focusOnLand={focusKey('global', t.id)}>
-                <span class="tix">{String(i + 1).padStart(2, '0')}</span>
-                <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
-                  <CheckCircle2 size={18} />
-                </button>
-                <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
-                  <div class="ttitle-row">
-                    {#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
-                    <span class="ttitle">{t.titlu}</span>
-                  </div>
-                  <div class="tinfo">
-                    {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
-                  </div>
-                </button>
-                <div class="task-actions">
-                      <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
-                </div>
-              </div>
-              {#if expandedTask === t.id}
-                <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-                  {@render taskDetail(t)}
-                </div>
-              {/if}
-            </div>
-          {/each}
-          </div>
-        {/if}
-      {/if}
     </div>
   {/if}
   </div>
@@ -674,11 +634,11 @@
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-fast) var(--ease); min-height: 30px; }
+  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); min-height: 30px; }
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
@@ -717,7 +677,7 @@
     background: var(--bg-elevated); border: 1px solid var(--border);
     color: var(--text-secondary); font-size: var(--font-tiny);
     font-weight: var(--fw-medium); cursor: pointer;
-    transition: all var(--dur-fast) var(--ease); }
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
     border-radius: var(--radius-full); font-size: var(--font-tiny); }
@@ -729,7 +689,7 @@
     border-radius: var(--radius-full); background: var(--bg-elevated);
     border: 1px solid var(--border); color: var(--text-secondary);
     font-size: var(--font-tiny); cursor: pointer;
-    transition: all var(--dur-fast) var(--ease); }
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .td-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .td-btn.areNota { color: var(--accent); }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); }
@@ -750,7 +710,21 @@
   @media (hover: hover) {
     .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
   }
-  .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  /* ===== O SINGURA AXA DE CULOARE PE RAND =====
+     Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
+     stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
+     proiectului). Masurat pe desktop, ierarhia iesea exact pe dos fata de cat
+     conteaza lucrurile:
+        index „01"   16px / 700 / colorat   <- cel mai tare text din rand
+        categoria    11.2px / 600 / mov
+        TITLUL       12.8px / 500           <- continutul propriu-zis
+        termenul     10.4px / 600
+     Un numar de ordine decorativ nu are ce cauta deasupra titlului.
+     Regula, de-acum: CULOAREA E REZERVATA SEVERITATII (termen si bordura). Restul
+     metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
+     Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
+     o fantoma. */
+  .tix { font-family: var(--font-mono); font-size: 0.8rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 38%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
@@ -761,21 +735,19 @@
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
   .tchev { display: inline-flex; align-items: center; color: inherit; flex-shrink: 0; }
-  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .task-cat { padding: 1px 8px; background: var(--purple-subtle); color: var(--purple); border-radius: var(--radius-full); font-weight: var(--fw-semibold); }
-  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
+  .task-cat { padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
+  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
   .gl-fata { display: contents; }
   .gl-actiuni { display: none; }
-  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
+  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
-  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  .done-sep:hover { color: var(--text-secondary); }
 
   /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
   /* Extinderea e CONTINUAREA randului, nu un card separat: se lipeste de el
@@ -814,10 +786,10 @@
   .mf-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
   .task-edit.areNota { color: var(--accent-on-subtle); }
-  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
+  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
-  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
-  .tdeadline { font-size: var(--font-micro); }
+  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
+  .tdeadline { font-size: var(--font-tiny); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
@@ -918,6 +890,14 @@
        continut se citeste ca o greseala. Iar gruparea face acum ce facea el:
        spune unde incepe si unde se termina o bucata de lista.
        Randurile devin cat pagina; titlul castiga 32px pe fiecare rand. */
+    /* RITMUL DE DEASUPRA LISTEI.
+       Masurat pe 390×800: primul task incepea la y=296, adica 37% din ecran
+       consumat de antet, filtre si compozitor — trei randuri despartite de cate
+       16px, plus 16 de la marginea paginii. Nimic nu dispare, doar se strang
+       distantele: aceleasi elemente, ~30px mai sus. Pe desktop raman cele 16. */
+    .page { padding-top: var(--space-12); }
+    .page-header, .toolbar, .quick-add { margin-bottom: 10px; }
+    .grup-cap:first-child { padding-top: 4px; }
     .list-cell { background: none; border: none; border-radius: 0;
       padding: var(--space-sm) 0 0; }
     /* Capul lipit se estompeaza peste fundalul PAGINII acum, nu peste al cutiei. */

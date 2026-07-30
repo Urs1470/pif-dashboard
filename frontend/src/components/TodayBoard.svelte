@@ -9,7 +9,8 @@
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate, formatDateShort } from '../lib/formatters.js'
+  import { dueColor, formatDate } from '../lib/formatters.js'
+  import { etichetaTermen } from '../lib/grupare.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
   import { ecran } from '../lib/ecran.svelte.js'
@@ -220,14 +221,18 @@
               {#if it.tip === 'proiect' && it.proiect_nume}<span class="tag proj">{it.proiect_nume}</span>
               {:else if it.categorie}<span class="tag">{it.categorie}</span>{/if}
               {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
-              {#if it.is_restant}<span class="badge restant">Restant</span>{/if}
-              {#if it.is_scadent_azi}<span class="badge scadent">Termen azi</span>{/if}
-              <!-- Pe telefon: „28 iul", nu „termen 28.07.2026". Cuvantul nu adauga
-                   nimic langa o pastila rosie care scrie deja „Restant", iar forma
-                   lunga (~110px) nu incapea si se stingea in degradeul de la capat —
-                   adica data, singurul lucru pe care il aduce randul asta, nu se
-                   citea. Pe desktop e loc, deci ramane intreaga. -->
-              {#if it.data_scadenta && !it.is_scadent_azi}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}>{peTelefon ? formatDateShort(it.data_scadenta) : `termen ${formatDate(it.data_scadenta)}`}</span>{/if}
+              <!-- UN SINGUR SEMN PENTRU TERMEN, nu trei.
+                   Aici erau doua pastile („Restant" rosu, „Termen azi" amber) SI
+                   data, colorata tot dupa severitate. Pe un board unde totul e
+                   scadent azi sau restant, pastilele partitioneaza lista si atat:
+                   „Termen azi" e pur si simplu starea implicita a boardului, iar
+                   „Restant" spunea in cuvinte exact ce spunea deja data rosie de
+                   langa el. Doua lucruri rosii cu acelasi inteles, pe fiecare rand.
+                   Ramane data, scrisa relativ: „azi", „ieri", „acum 3 zile" — spune
+                   si CE stare, si CAT de departe, intr-un singur chip.
+                   Numarul din antet („28 restante") ramane: acolo e un rezumat,
+                   nu o repetitie. -->
+              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}>{etichetaTermen(it.data_scadenta)}</span>{/if}
             </span>
           </button>
 
@@ -272,14 +277,14 @@
   .bh-left h2 { font-family: var(--font-heading); letter-spacing: -0.02em; font-size: var(--font-h3); font-weight: var(--fw-bold); }
   .bh-count { font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
   .bh-restante { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: var(--danger-subtle); color: var(--danger); }
-  .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease); flex-shrink: 0; }
+  .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); flex-shrink: 0; }
   .bh-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
 
   .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -299,7 +304,21 @@
   }
   /* Raspunsul la atingere e apasarea, nu deplasarea. */
   .arow:active { border-color: var(--border-strong); }
-  .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  /* ===== O SINGURA AXA DE CULOARE PE RAND =====
+     Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
+     stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
+     proiectului). Masurat pe desktop, ierarhia iesea exact pe dos fata de cat
+     conteaza lucrurile:
+        index „01"   16px / 700 / colorat   <- cel mai tare text din rand
+        categoria    11.2px / 600 / mov
+        TITLUL       12.8px / 500           <- continutul propriu-zis
+        termenul     10.4px / 600
+     Un numar de ordine decorativ nu are ce cauta deasupra titlului.
+     Regula, de-acum: CULOAREA E REZERVATA SEVERITATII (termen si bordura). Restul
+     metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
+     Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
+     o fantoma. */
+  .tix { font-family: var(--font-mono); font-size: 0.8rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 38%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .arow.done { opacity: 0.5; }
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
@@ -329,16 +348,13 @@
   .check:hover .check-empty { border-color: var(--accent); }
 
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
-  .atitle { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-tiny); color: var(--text-dim); }
   .tag { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
-  .tag.proj { color: var(--accent); background: var(--accent-subtle); }
-  .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); }
-  .badge { font-size: var(--font-micro); font-weight: var(--fw-semibold); padding: 1px 7px; border-radius: var(--radius-full); white-space: nowrap; }
-  .badge.restant { background: var(--danger-subtle); color: var(--danger); }
-  .badge.scadent { background: var(--accent-subtle); color: var(--accent); }
-  .deadline { font-size: var(--font-micro); color: var(--text-dim); }
+  .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
+  .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
+  .deadline { font-size: var(--font-tiny); color: var(--text-dim); }
   .deadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .deadline.soon { color: var(--warning); }
 
@@ -347,7 +363,7 @@
   .arow-tools { display: contents; }
   .gl-maner { display: none; }
   .arow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-  .abtn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .abtn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .abtn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
   .abtn.danger:hover:not(:disabled) { color: var(--danger); background: var(--danger-subtle); }
   .abtn:disabled { opacity: 0.3; cursor: not-allowed; }

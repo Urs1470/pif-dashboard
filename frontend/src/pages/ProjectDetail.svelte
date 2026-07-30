@@ -936,7 +936,7 @@
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast) var(--ease); }
+  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
@@ -952,7 +952,21 @@
     .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
   }
   .trow:active { border-color: var(--border-strong); }
-  .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  /* ===== O SINGURA AXA DE CULOARE PE RAND =====
+     Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
+     stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
+     proiectului). Masurat pe desktop, ierarhia iesea exact pe dos fata de cat
+     conteaza lucrurile:
+        index „01"   16px / 700 / colorat   <- cel mai tare text din rand
+        categoria    11.2px / 600 / mov
+        TITLUL       12.8px / 500           <- continutul propriu-zis
+        termenul     10.4px / 600
+     Un numar de ordine decorativ nu are ce cauta deasupra titlului.
+     Regula, de-acum: CULOAREA E REZERVATA SEVERITATII (termen si bordura). Restul
+     metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
+     Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
+     o fantoma. */
+  .tix { font-family: var(--font-mono); font-size: 0.8rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 38%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .done-list { display: flex; flex-direction: column; }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
@@ -966,24 +980,29 @@
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
-  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-xs); font-weight: var(--fw-medium); }
+  .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
-  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
-  .trow:hover .task-edit { opacity: 1; }
+  /* LA VEDERE, PALIDE — nu ascunse pana la hover.
+     Aici erau `opacity: 0` pana la `.trow:hover`, in timp ce aceleasi butoane din
+     /tasks stau mereu la vedere (decizia din 2026-06-18). Doua liste de taskuri cu
+     acelasi rand si doua comportamente diferite — inveti unul si te inseala celalalt.
+     Si mai rau: `opacity: 0` + `:hover` inseamna INEXISTENT pe orice ecran care se
+     atinge, iar sub 768px scapau doar fiindca acolo intra alta regula. Un laptop cu
+     ecran tactil sau o tableta in peisaj cadeau exact intre ele. */
+  .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); }
-  .ttitle { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); }
+  .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
-  .tdeadline { font-size: var(--font-micro); }
+  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); font-size: var(--font-micro); }
+  .tdeadline { font-size: var(--font-tiny); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
-  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: all var(--dur-fast); }
-  .trow:hover .task-del { opacity: 1; }
+  .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   /* Done separator */
@@ -994,12 +1013,12 @@
   /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
   .subtask-body { margin-left: 26px; margin-bottom: var(--space-sm); padding: var(--space-12); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 2px solid var(--accent-subtle); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: var(--space-12); }
   .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-  .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+  .detail-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-secondary); font-size: var(--font-tiny); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .detail-chip:hover:not(:disabled) { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
   .detail-chip:active:not(:disabled) { transform: scale(0.97); }
   .detail-chip:disabled { opacity: 0.5; cursor: default; }
   .note-block { display: flex; flex-direction: column; gap: var(--space-xs); }
-  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: all var(--dur-fast) var(--ease); }
+  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -1088,7 +1107,6 @@
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
-    .sub-del, .task-del, .task-edit { opacity: 1; }
     .note-edit-btn { opacity: 1; }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
