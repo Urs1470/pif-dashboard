@@ -96,19 +96,15 @@
   .it:hover .it-title { color: var(--text); }
   .it-title.it-today { color: var(--text); font-weight: var(--fw-medium); }
 
-  .pr {
-    flex-shrink: 0;
-    font-size: var(--font-micro);
-    font-weight: var(--fw-semibold);
-    padding: 0 6px;
-    border: 1px solid;
-    border-radius: var(--radius-full);
-    white-space: nowrap;
-  }
-
   .agenda-empty { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-sm) 2px; }
 
   @media (max-width: 940px) {
     .agenda { position: static; }
+  }
+  @media (max-width: 768px) {
+    /* Randul avea 31px. E singura tinta din agenda si duce direct in task, deci
+       n-are rost sa fie cea mai mica din pagina — nu e o eticheta, e o usa. */
+    .it { min-height: var(--tap-min); padding: 7px 8px; }
+    .it-title { font-size: var(--font-small); }
   }
 </style>

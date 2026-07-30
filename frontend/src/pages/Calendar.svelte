@@ -990,7 +990,7 @@
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; }
   .it-t:hover { color: var(--accent); }
   .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-micro); color: var(--text-dim); }
-  .it-m .loc, .it-m .st { padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-hover); }
+  .it-m .loc { padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-hover); }
   /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
   .it-m .faza { background: color-mix(in srgb, var(--c) 26%, transparent); color: var(--text); }
   .it-m .faza.pal { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); color: var(--text-secondary); }

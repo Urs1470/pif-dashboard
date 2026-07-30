@@ -977,7 +977,12 @@
   .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.8; z-index: 3; }
   /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi
      des, deci primesc o caseta transparenta de 26px in jurul punctului de 9px.
-     Fara ea ai avea de nimerit un punct cat gamalia acului. */
+     Fara ea ai avea de nimerit un punct cat gamalia acului.
+     26, NU 44, si ramane asa cu buna stiinta: pe un orizont de 14 zile o zi are
+     ~22px, deci doua repere in zile alaturate ar ajunge sa se acopere unul pe
+     altul — ai schimba o tinta mica pe una GRESITA, care deschide alt task. Iar
+     pretul unei ratari e zero: reperul nu face decat sa te duca la randul
+     taskului din lista de dedesubt, iar acel rand e cat toata latimea. */
   .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
     display: flex; align-items: center; justify-content: center;
     background: none; border: none; padding: 0; cursor: pointer; z-index: 2; }
@@ -1045,76 +1050,12 @@
   .pop-close { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); background: none; border: none; cursor: pointer; }
   .pop-close:hover { background: var(--bg-hover); color: var(--text); }
 
-  @media (max-width: 820px) {
-    .chart { display: none; }
-    .mlist { display: flex; }
-  }
-
   /* ===== Telefon =====
      Bara de controale avea 502px intr-un ecran de 375: `.page-header` are
      `flex-wrap`, dar `.controls` era un singur bloc `flex` fara wrap, deci nu
      putea fi rupt si impingea TOATA pagina la 502px latime. Rezultatul: fiecare
      ecran din Planificator se derula si lateral, iar barele de zile nu se mai
      aliniau cu ce vedeai. */
-  @media (max-width: 768px) {
-    .page { padding-left: var(--space-md); padding-right: var(--space-md); }
-    .page-header { align-items: stretch; }
-    .controls { flex-wrap: wrap; width: 100%; }
-    /* Orizontul e alegerea principala — ia randul lui, cu cele cinci trepte
-       impartite egal. */
-    .seg { display: flex; width: 100%; }
-    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-body); }
-    /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
-       butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
-    .toggle { flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
-    .tg-lung { display: none; }
-
-    /* Randurile listei: butoanele erau de 34px, adica sub pragul la care nimeresti
-       din prima. Aici bifezi taskuri cu manusa de lucru pe mana. */
-    .mbtn { width: var(--tap-min); height: var(--tap-min); }
-    .mrow-date { width: var(--tap-min); }
-    .mrow-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
-    /* Ca pe „Astazi": o linie, bifa la vedere, restul in panoul de sub rand.
-       Randul era pe doua linii, cu trei butoane de 44px pe a doua — pe o lista de
-       noua proiecte asta inseamna sa derulezi mult ca sa vezi putin. */
-    .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
-    .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
-               padding: 5px 8px; background: var(--bg-panel); position: relative; z-index: 1;
-               border-radius: var(--radius-md); will-change: transform; }
-    .mrow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
-    .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--tap-min); justify-content: center; }
-    .mrow-title { white-space: nowrap; }
-    .mimpl { min-height: var(--tap-min); }
-    .mrow-meta { flex-wrap: nowrap; overflow: hidden; }
-    .mrow-meta > * { flex-shrink: 0; }
-    .mrow-actions { display: none; }
-    .mcheck { display: flex; width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
-              align-items: center; justify-content: center; background: none; border: none;
-              color: var(--text-dim); cursor: pointer; }
-    .mcheck-gol { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; }
-    .mrow.done .mcheck { color: var(--success); }
-    .mcheck { display: flex; }
-
-    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
-    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
-           font-size: var(--font-micro); cursor: pointer; }
-    .glb span { line-height: 1; }
-    .glb.datewrap { position: relative; }
-    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
-    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
-      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
-    .glb.datewrap :global(.dp-value) { display: none; }
-    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
-    .mrow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
-
-    .bl-head { min-height: var(--tap-min); }
-    .bl-hint { display: none; }
-    .bl-chip { max-width: none; width: 100%; padding: 4px 6px 4px 4px; }
-    .bl-txt { max-width: none; flex: 1; }
-    .bl-date { width: var(--tap-min); }
-    .bl-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
-  }
 
   :global(body.plan-dragging) { user-select: none; cursor: grabbing; }
   :global(body.plan-dragging) .bar { cursor: grabbing; }
@@ -1163,6 +1104,103 @@
   .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
   .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ===== telefon =====
+     ULTIMELE in fisier, cu buna stiinta. Un `@media` NU adauga specificitate: la
+     specificitate egala castiga regula scrisa mai jos. Blocurile astea stateau la
+     mijlocul fisierului, inaintea sectiunilor „backlog rail" si „controls" — deci
+     `.bl-chip { max-width: none }` de aici era anulat de `.bl-chip { max-width: 320px }`
+     de mai incolo, si la fel `.bl-txt`, `.bl-proj`, `.bl-date`, `.page`, `.page-header`,
+     `.controls`. Douasprezece reguli scrise pentru telefon care nu se aplicau nici
+     pe telefon: masurat in pagina, chipul din „Taskuri fără termen" avea tot
+     `max-width: 320px` si butonul de data tot 30px in loc de 44.
+     Daca adaugi sectiuni noi de baza, adauga-le DEASUPRA acestui punct. */
+
+  @media (max-width: 820px) {
+    .chart { display: none; }
+    .mlist { display: flex; }
+  }
+
+  @media (max-width: 768px) {
+    .page { padding-left: var(--space-md); padding-right: var(--space-md); }
+    .page-header { align-items: stretch; }
+    .controls { flex-wrap: wrap; width: 100%; }
+    /* Orizontul e alegerea principala — ia randul lui, cu cele cinci trepte
+       impartite egal. */
+    .seg { display: flex; width: 100%; }
+    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-body); }
+    /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
+       butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
+    .toggle { flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
+    .tg-lung { display: none; }
+
+    /* Randurile listei: butoanele erau de 34px, adica sub pragul la care nimeresti
+       din prima. Aici bifezi taskuri cu manusa de lucru pe mana. */
+    .mbtn { width: var(--tap-min); height: var(--tap-min); }
+    .mrow-date { width: var(--tap-min); }
+    .mrow-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
+    /* Ca pe „Astazi": o linie, bifa la vedere, restul in panoul de sub rand.
+       Randul era pe doua linii, cu trei butoane de 44px pe a doua — pe o lista de
+       noua proiecte asta inseamna sa derulezi mult ca sa vezi putin. */
+    .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
+               padding: 5px 8px; background: var(--bg-panel); position: relative; z-index: 1;
+               border-radius: var(--radius-md); will-change: transform; }
+    /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
+       Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
+       build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
+       nu apar in markup si compilatorul le crede moarte. Efectul, verificat in CSS-ul
+       livrat: din toate regulile de gest ale aplicatiei supravietuise UNA. Adica
+       glisai spre dreapta si nu vedeai verdele care spune „ai trecut pragul" —
+       exact semnalul fara de care gestul e o loterie.
+       Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
+       componente. */
+    .mrow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--tap-min); justify-content: center; }
+    .mrow-title { white-space: nowrap; }
+    .mimpl { min-height: var(--tap-min); }
+    .mrow-meta { flex-wrap: nowrap; overflow: hidden; }
+    .mrow-meta > * { flex-shrink: 0; }
+    .mrow-actions { display: none; }
+    .mcheck { display: flex; width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
+              align-items: center; justify-content: center; background: none; border: none;
+              color: var(--text-dim); cursor: pointer; }
+    .mcheck-gol { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; }
+    .mrow.done .mcheck { color: var(--success); }
+    .mcheck { display: flex; }
+
+    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
+    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
+           font-size: var(--font-micro); cursor: pointer; }
+    .glb span { line-height: 1; }
+    .glb.datewrap { position: relative; }
+    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
+    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
+      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
+    .glb.datewrap :global(.dp-value) { display: none; }
+    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
+    .mrow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
+
+    .bl-head { min-height: var(--tap-min); }
+    .bl-hint { display: none; }
+    /* DOUA RANDURI, NU DOUA JUMATATI.
+       Pe o linie, titlul si numele proiectului isi imparteau latimea si ieseau
+       doua fragmente egale — „Backup paramet…" langa „Interventie avar…" — din
+       care nu se intelege niciunul. Nu e o lista de taskuri de bifat (acolo un
+       rand = o linie, vezi TodayBoard), e un sertar din care alegi ce planifici:
+       aici numele intreg valoreaza mai mult decat inaltimea economisita.
+       Titlul ia tot randul, proiectul sta dedesubt, manerul si data prind
+       amandoua randurile. */
+    .bl-chip { max-width: none; width: 100%; padding: 4px 6px 4px 4px;
+               display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+               column-gap: 6px; row-gap: 1px; align-items: center; }
+    .bl-chip :global(.bl-grip) { grid-row: 1 / -1; }
+    .bl-txt { max-width: none; grid-column: 2; }
+    .bl-proj { grid-column: 2; justify-self: start; max-width: 100%; }
+    .bl-date { grid-column: 3; grid-row: 1 / -1; width: var(--tap-min); }
+    .bl-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
+  }
 
   /* ===== print (browser print-to-PDF) ===== */
   .print-title { display: none; }

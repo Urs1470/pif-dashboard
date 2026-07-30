@@ -1,5 +1,6 @@
 <script>
   import { Calendar, ChevronLeft, ChevronRight, X } from '@lucide/svelte'
+  import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
@@ -60,14 +61,7 @@
   // real: (1) popup-ul de 268px imparte 7 coloane, deci o zi are ~34px — sub pragul
   // la care nimeresti din prima; (2) declansatorul poate fi oriunde pe verticala,
   // deci calendarul aparea uneori sus, unde degetul mare nu ajunge.
-  let sheet = $state(false)
-  $effect(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    const apply = () => { sheet = mq.matches }
-    apply()
-    mq.addEventListener?.('change', apply)
-    return () => mq.removeEventListener?.('change', apply)
-  })
+  const sheet = $derived(ecran.telefon)
 
   function positionPopup() {
     if (sheet) { popupStyle = ''; return }

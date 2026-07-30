@@ -77,6 +77,10 @@ export function glisare(node, opt = {}) {
   function onDown(e) {
     if (!activ || e.pointerType === 'mouse') return   // mouse-ul are butoanele lui, pe desktop
     if (e.target.closest('.gl-actiuni')) return
+    // Manerul de reordonare tine degetul pe verticala (vezi lib/reordonare.js).
+    // Fara exceptia asta ambele geasturi ar porni din aceeasi apasare si randul
+    // ar aluneca si lateral cat timp il muti in sus.
+    if (e.target.closest('.gl-maner')) return
     pointerId = e.pointerId
     x0 = e.clientX; y0 = e.clientY
     dir = null; dx = 0; aGlisat = false

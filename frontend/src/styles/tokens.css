@@ -150,6 +150,28 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
+/* TITLURILE SE MICSOREAZA PE TELEFON.
+   Scala de mai sus e desenata pentru un ecran de 1280px, unde un titlu de 28px
+   ocupa un rand si atat. Pe 375px acelasi 28px inseamna ~18 caractere pe rand:
+   „Punere in functiune linie extrudare cauciuc — motoare principale si
+   periferice" cadea pe PATRU randuri, adica ~150px de titlu inainte sa vezi
+   ceva din proiect, si asta la fiecare deschidere. La fel „Calculator actionari
+   electrice", pe trei.
+   Efectul al doilea, mai putin evident: titlul si butoanele impart acelasi rand
+   in antetul paginii, iar cand titlul e nemicsorabil butoanele ies din ecran —
+   pe /projects „Proiect Nou" era taiat de marginea din dreapta.
+   Se schimba TOKENUL, nu fiecare pagina: `--font-h1` e folosit de sapte pagini,
+   iar o exceptie per pagina ar fi insemnat sapte locuri care se pot desincroniza.
+   Cifrele KPI scad mai putin (sunt scurte si sunt continut, nu eticheta). */
+@media (max-width: 768px) {
+  :root {
+    --font-display: 1.5rem;   /* 30 -> 24 */
+    --font-h1: 1.3rem;        /* 28 -> 21 */
+    --font-h2: 1.15rem;       /* 22 -> 18 */
+    --font-h3: 1.05rem;       /* 18 -> 17 */
+  }
+}
+
 [data-theme="light"] {
   color-scheme: light;
 

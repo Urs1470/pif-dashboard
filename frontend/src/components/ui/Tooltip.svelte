@@ -121,7 +121,17 @@
 
   function focus(e) {
     const nod = e.target?.closest?.('[title], [data-tip], [aria-label]')
-    if (nod) porneste(nod, true)
+    if (!nod) return
+    // ATINGEREA DA SI EA FOCUS. `pointerover` se apara de touch (mai sus), dar
+    // drumul prin focus nu se apara — deci pe telefon fiecare atingere pe un buton
+    // cu `title` scotea un tooltip PESTE exact lucrul atins, si cu `imediat=true`,
+    // fara nici intarzierea de 380ms. Se vedea cel mai urat in Planificator, unde
+    // bula acoperea un rand intreg din „Taskuri fără termen".
+    // `:focus-visible` e chiar raspunsul browserului la intrebarea „focusul asta
+    // merita aratat?" — adevarat la Tab, fals la atingere si la click. Deci el
+    // decide, nu o lista de pointerType tinuta de noi.
+    try { if (!nod.matches(':focus-visible')) return } catch (_) {}
+    porneste(nod, true)
   }
 
   function tasta(e) { if (e.key === 'Escape') ascunde() }

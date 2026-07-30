@@ -172,14 +172,20 @@ def migrate_v1_to_v2():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect ON tasks(proiect_id)')
-    # jurnal / timer_sessions nu mai exista pe DB-uri noi (v22) — indexam doar daca tabelele exista
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jurnal', 'timer_sessions')")
+    # Tabele care nu mai exista pe o baza NOUA: jurnal/timer_sessions (scoase in v22),
+    # atasamente (v28). Pe o baza veche ele inca sunt aici cand ruleaza v1->v2, deci
+    # indexul are sens; pe una noua, `CREATE INDEX` pe o tabela inexistenta arunca si
+    # OPRESTE tot lantul de migrari. Indexam doar ce exista.
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' "
+        "AND name IN ('jurnal', 'timer_sessions', 'atasamente')")
     legacy = {row[0] for row in cursor.fetchall()}
     if 'jurnal' in legacy:
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_proiect ON jurnal(proiect_id)')
     if 'timer_sessions' in legacy:
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_timer_proiect ON timer_sessions(proiect_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
+    if 'atasamente' in legacy:
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_atasamente_proiect ON atasamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_echipamente_proiect ON echipamente(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
     
@@ -635,6 +641,14 @@ def migrate_v17_to_v18():
     rebuild is required because SQLite cannot drop NOT NULL on proiect_id."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
+    # atasamente a plecat in v28: pe o baza noua tabela nu exista deloc, iar
+    # `PRAGMA table_info` pe ceva inexistent intoarce zero randuri — adica exact
+    # semnatura lui „lipseste task_id". Fara verificarea asta am reconstrui o
+    # tabela care nu e acolo si am opri lantul de migrari.
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='atasamente'")
+    if not cursor.fetchone():
+        conn.close()
+        return
     cursor.execute("PRAGMA table_info(atasamente)")
     cols = [row[1] for row in cursor.fetchall()]
     if 'task_id' not in cols:

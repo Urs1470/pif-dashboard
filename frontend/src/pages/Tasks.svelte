@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
@@ -310,7 +311,7 @@
   <div class="cell-label list-label"><span class="ico ico-amber"><ListTodo size={13} /></span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
   {#if !showArchive}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
-      <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={quickTitle} disabled={quickAdding} />
+      <input type="text" placeholder={ecran.telefon ? 'Task rapid…' : 'Task rapid... Enter pentru a adăuga'} bind:value={quickTitle} disabled={quickAdding} />
       <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
     </form>
   {/if}
@@ -493,8 +494,10 @@
 
 <style>
   .page { padding: var(--space-lg); }
-  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
-  .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
+  /* Vezi Projects.svelte: fara `flex-wrap`/`gap` antetul nu se poate rupe si
+     butonul iese din ecran, unde `overflow-x: clip` il taie fara sa spuna nimic. */
+  .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
+  .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); min-width: 0; }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
 
@@ -575,8 +578,6 @@
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
-  .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-sm); transition: all var(--dur-fast) var(--ease); }
-  .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
   .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
@@ -627,7 +628,7 @@
     .search-box { max-width: none; }
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
-    .task-del, .task-edit, .note-edit-btn { opacity: 1; }
+    .task-del, .task-edit { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
     /* O LINIE, ca in aplicatiile de to-do.
        Inainte: titlul sus, cele trei actiuni de intretinere pe o linie proprie
@@ -638,7 +639,16 @@
     .gl-fata { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
                padding: 6px var(--space-sm); background: var(--bg-panel); position: relative;
                z-index: 1; border-radius: var(--radius-md); will-change: transform; }
-    .trow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
+       Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
+       build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
+       nu apar in markup si compilatorul le crede moarte. Efectul, verificat in CSS-ul
+       livrat: din toate regulile de gest ale aplicatiei supravietuise UNA. Adica
+       glisai spre dreapta si nu vedeai verdele care spune „ai trecut pragul" —
+       exact semnalul fara de care gestul e o loterie.
+       Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
+       componente. */
+    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
     .task-actions { display: none; }
     .check { min-width: var(--tap-min); min-height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
     .tix { display: none; }
@@ -653,7 +663,7 @@
            font-size: var(--font-micro); cursor: pointer; }
     .glb span { line-height: 1; }
     .glb.danger { background: var(--danger-subtle); color: var(--danger); }
-    .trow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
+    .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     /* Cautarea si filtrele: caseta de cautare avea 25px inaltime utila, iar
        chipurile 30. */
     /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el

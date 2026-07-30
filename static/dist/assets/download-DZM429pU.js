@@ -1,1 +1,0 @@
-import{b as e,d as t,y as n}from"./Modal-BUfJSi2X.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`M12 15V3`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`}],[`path`,{d:`m7 10 5 5 5-5`}]];t(i,e({name:`download`},()=>o,{get iconNode(){return s}}))}export{i as t};

@@ -427,11 +427,31 @@ componentele din template se rezolva la RULARE. Pe 2026-07-27 un import lipsa
 si `test_suite` 12/12, pentru ca greseala statea pe ramura `{#if tip === 'Service'}`.
 Ruleaza-l dupa orice curatenie de importuri sau modificare de pagina.
 
+- `audit_mobil.py` — **audit mobil masurat.** Ce nu prinde `smoke_ui`: butoane
+  taiate de marginea din dreapta (`overflow-x: clip` le ascunde fara niciun semn),
+  tinte sub 44px, campuri sub 16px (Safari face zoom la focus), si cele trei
+  gesturi de pe randul de task, executate cu deget adevarat. Toate rutele × trei
+  latimi de telefon.
+
+```bash
+python scripts/audit_mobil.py                 # geometrie + gesturi
+python scripts/audit_mobil.py --fara-gesturi  # doar geometrie
+```
+
+De ce exista: nimic din ce masoara el nu arunca vreo eroare. Pe 2026-07-30
+„Proiect Nou" iesea din ecran pe /projects, taskurile din „Astăzi" aveau 76 de
+sageti de 40×22px, un tooltip aparea PESTE lucrul atins, iar blocul mobil din
+Planificator era anulat in intregime de reguli scrise mai jos in acelasi fisier —
+build verde, `smoke_ui` verde, `test_suite` 12/12.
+
 Cerinte, o singura data si doar pe masina de dezvoltare (NU in `requirements.txt`):
 
 ```bash
 pip install playwright && python -m playwright install chromium
 ```
+
+Daca Chromium e deja instalat in alta parte (container, sesiune la distanta),
+`PIF_CHROMIUM=/cale/catre/chromium` il foloseste pe acela, fara descarcare.
 
 No pytest/unittest framework.
 

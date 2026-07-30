@@ -3,14 +3,16 @@
   import { flip } from 'svelte/animate'
   import {
     CalendarCheck, Plus, GripVertical, ArrowRight, X,
-    ChevronRight, CheckCircle2, Repeat, ArrowUp, ArrowDown, ListPlus
+    ChevronRight, CheckCircle2, Repeat, ListPlus
   } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate } from '../lib/formatters.js'
+  import { dueColor, formatDate, formatDateShort } from '../lib/formatters.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
+  import { reordonare } from '../lib/reordonare.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -114,8 +116,6 @@
     await commitMove(from, i)
   }
   function onDragEnd() { dragIndex = null; overIndex = null }
-  async function moveUp(i) { if (i > 0) await commitMove(i, i - 1) }
-  async function moveDown(i) { if (i < agenda.items.length - 1) await commitMove(i, i + 1) }
 
   async function commitMove(from, to) {
     if (from == null || to == null || from === to) return
@@ -129,15 +129,15 @@
 
   // Glisarea inlocuieste butoanele DOAR unde nu exista cursor. Pe desktop randul
   // isi pastreaza actiunile la vedere.
-  let peTelefon = $state(false)
+  const peTelefon = $derived(ecran.telefon)
+  // Cand ecranul creste (rotire, tableta), randul deschis prin glisare trebuie
+  // inchis: pe desktop panoul e ascuns, deci ar ramane un rand impins la stanga
+  // fara nimic dedesubt.
+  $effect(() => { if (!peTelefon) inchideGlisarea() })
 
   onMount(() => {
     loadAgendaToday()
-    const mq = window.matchMedia('(max-width: 768px)')
-    const apply = () => { peTelefon = mq.matches; if (!peTelefon) inchideGlisarea() }
-    apply()
-    mq.addEventListener?.('change', apply)
-    return () => { mq.removeEventListener?.('change', apply); inchideGlisarea() }
+    return () => inchideGlisarea()
   })
 </script>
 
@@ -155,7 +155,10 @@
   </div>
 
   <form class="quick-add" onsubmit={(e) => { e.preventDefault(); doQuickAdd() }}>
-    <input type="text" placeholder="Task rapid pentru azi... Enter pentru a adăuga" bind:value={quickTitle} disabled={quickAdding} />
+    <!-- Pe telefon indicatia despre Enter se taia la jumatate („...Enter pe") si
+         oricum nu spune nimic acolo: tastatura are butonul ei si langa camp e
+         butonul „+". Ramane doar ce se citeste intreg. -->
+    <input type="text" placeholder={peTelefon ? 'Task rapid pentru azi…' : 'Task rapid pentru azi... Enter pentru a adăuga'} bind:value={quickTitle} disabled={quickAdding} />
     <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
   </form>
 
@@ -166,7 +169,8 @@
   {:else if agenda.items.length === 0}
     <EmptyState icon={CalendarCheck} title="Nimic planificat azi" description="Adaugă un task rapid sau alege din taskurile existente." />
   {:else}
-    <div class="a-list" role="list">
+    <div class="a-list" role="list"
+         use:reordonare={{ activ: peTelefon, selectorRand: '.arow', selectorManer: '.gl-maner', onMutare: commitMove }}>
       {#each agenda.items as it, i (it.tip + ':' + it.id)}
         <div
           class="arow"
@@ -208,7 +212,12 @@
               {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
               {#if it.is_restant}<span class="badge restant">Restant</span>{/if}
               {#if it.is_scadent_azi}<span class="badge scadent">Termen azi</span>{/if}
-              {#if it.data_scadenta && !it.is_scadent_azi}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}>termen {formatDate(it.data_scadenta)}</span>{/if}
+              <!-- Pe telefon: „28 iul", nu „termen 28.07.2026". Cuvantul nu adauga
+                   nimic langa o pastila rosie care scrie deja „Restant", iar forma
+                   lunga (~110px) nu incapea si se stingea in degradeul de la capat —
+                   adica data, singurul lucru pe care il aduce randul asta, nu se
+                   citea. Pe desktop e loc, deci ramane intreaga. -->
+              {#if it.data_scadenta && !it.is_scadent_azi}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}>{peTelefon ? formatDateShort(it.data_scadenta) : `termen ${formatDate(it.data_scadenta)}`}</span>{/if}
             </span>
           </button>
 
@@ -218,10 +227,11 @@
                rupe randul si iesea pe trei linii (bifa singura sus, titlu, actiuni)
                = 172px pe task, adica patru taskuri pe ecran. -->
           <div class="arow-tools">
-          <div class="arow-arrows">
-            <button class="abtn" disabled={i === 0} onclick={() => moveUp(i)} title="Mută mai sus"><ArrowUp size={14} /></button>
-            <button class="abtn" disabled={i === agenda.items.length - 1} onclick={() => moveDown(i)} title="Mută mai jos"><ArrowDown size={14} /></button>
-          </div>
+          <!-- Manerul de tragere, doar pe telefon (vezi lib/reordonare.js). Nu e
+               un <button>: nu face nimic la atingere scurta, e o suprafata de
+               apucat. `aria-hidden` fiindca reordonarea are si un drum accesibil
+               pe desktop (grip + drag), iar aici n-avem ce anunta. -->
+          <span class="gl-maner" aria-hidden="true"><GripVertical size={17} /></span>
 
           <div class="arow-actions">
             <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
@@ -292,6 +302,16 @@
   .grip { display: flex; align-items: center; color: var(--text-faint); cursor: grab; flex-shrink: 0; padding: 2px; }
   .grip:active { cursor: grabbing; }
 
+  /* Tragere de reordonare (lib/reordonare.js). Randul tras se ridica deasupra
+     celorlalte si NU are tranzitie pe transform — altfel `.arow`-ul de mai sus i-ar
+     interpola fiecare cadru si randul ar merge in urma degetului. Vecinii, dimpotriva,
+     se dau la o parte cu tranzitie: acolo miscarea trebuie sa se vada ca o mutare. */
+  .arow:global(.reord-tras) { z-index: 3; transition: none; box-shadow: var(--shadow-lg);
+                              border-color: var(--accent); }
+  /* Cat timp tragi, restul randurilor nu mai raspund la atingere: degetul e ocupat. */
+  .a-list:global(.reord-activ) .arow:not(:global(.reord-tras)) { pointer-events: none; }
+  .a-list:global(.reord-activ) { user-select: none; }
+
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; display: flex; }
   .check:hover { color: var(--accent); }
   .arow.done .check { color: var(--success); }
@@ -315,7 +335,7 @@
   /* `contents` = invelisul nu exista pentru layout; cele doua grupuri raman copii
      directi ai randului, exact ca inainte. Pe telefon devine cutie adevarata. */
   .arow-tools { display: contents; }
-  .arow-arrows { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
+  .gl-maner { display: none; }
   .arow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   .abtn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
   .abtn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
@@ -356,7 +376,16 @@
                padding: 7px var(--space-sm) 9px; background: var(--bg-panel);
                border-radius: var(--radius-md); position: relative; z-index: 1;
                will-change: transform; }
-    .arow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
+       Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
+       build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
+       nu apar in markup si compilatorul le crede moarte. Efectul, verificat in CSS-ul
+       livrat: din toate regulile de gest ale aplicatiei supravietuise UNA. Adica
+       glisai spre dreapta si nu vedeai verdele care spune „ai trecut pragul" —
+       exact semnalul fara de care gestul e o loterie.
+       Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
+       componente. */
+    .arow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
 
     .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0;
                   align-items: stretch; }
@@ -376,11 +405,10 @@
 
     /* Cursa de bifare: cat timp tragi spre dreapta destul, dedesubt se vede verde.
        Fara semnal, gestul e o loterie — nu stii cand ai trecut pragul. */
-    .arow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
+    .arow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
 
     .bh-add-txt { display: none; }
     .grip { display: none; }
-    .arow-arrows { display: flex; }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
@@ -392,24 +420,39 @@
     .tix { display: none; }
     .amain { flex: 1 1 0; min-width: 0; padding: 0; gap: 1px; min-height: var(--tap-min); justify-content: center; }
     .atitle { white-space: nowrap; }
-    /* Meta pe un singur rand, taiata la capat: pe o linie de 56px nu incap doua
-       randuri de chipuri, iar cel mai important lucru — termenul — e primul. */
-    .ainfo { flex-wrap: nowrap; overflow: hidden; }
+    /* Meta pe un singur rand. Taierea seaca lasa jumatate de litera la margine:
+       „termen 28 iul" se oprea dupa `te`, si doua caractere orfane se citesc ca o
+       pagina stricata, nu ca un text care continua. Doua schimbari:
+       - numele proiectului se strange la 96px, cat sa incapa si termenul (chipul
+         are deja `text-overflow: ellipsis`, deci se taie CU semn);
+       - ce tot nu incape se stinge intr-un degrade, nu se reteaza.
+       Ordinea ramane proiect -> stare -> termen: proiectul e cel dupa care alegi
+       randul, iar cand chiar e restant o spune deja pastila rosie. */
+    .ainfo { flex-wrap: nowrap; overflow: hidden;
+             mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+             -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
     .ainfo > * { flex-shrink: 0; }
-    .tag { max-width: 130px; }
+    .tag { max-width: 96px; }
 
     /* Din cele sase butoane raman doua la vedere: bifa (actiunea principala) si
        reordonarea. Restul stau in panoul de sub rand. */
     .arow-tools { display: contents; }
     .arow-actions { display: none; }
     .abtn { width: 34px; height: 34px; }
-    /* Sagetile de reordonare sunt singurele tinte sub 44px care raman, si stau
-       asa cu buna stiinta: sunt DOUA lipite pe verticala, iar perechea are
-       40×44 — degetul nu cade LANGA ele, cade pe una din doua. Amandoua fac
-       acelasi fel de lucru (muta randul cu o pozitie), in directii opuse, deci
-       cea mai rea greseala posibila se repara atingand cealalta sageata. */
-    .arow-arrows { display: flex; flex-direction: column; gap: 0; margin-left: 2px; }
-    .arow-arrows .abtn { width: 40px; height: 22px; }
+
+    /* MANER, NU SAGETI.
+       Aici erau doua sageti de 40×22 pe fiecare rand — 76 de tinte sub prag pe
+       un ecran, si doua iconite in plus pe o lista adusa tocmai la o singura
+       linie. Acum e o singura suprafata de 44px de care tragi randul, ca in
+       aplicatiile native.
+       `touch-action: none` DOAR aici: pe restul randului derularea verticala si
+       glisarea laterala raman ale browserului si ale lui `glisare.js`. Daca ar
+       sta pe rand, lista n-ar mai putea fi derulata cu degetul. */
+    .gl-maner { display: flex; align-items: center; justify-content: center;
+                width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
+                margin-right: -6px; color: var(--text-faint);
+                touch-action: none; cursor: grab; }
+    .gl-maner:active { cursor: grabbing; }
     /* Bifa e actiunea principala a randului — merita cea mai mare tinta, nu cea
        mai mica. Cercul vizibil ramane de 18px; caseta din jur ajunge la 44. */
     .check { width: var(--tap-min); height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }

@@ -101,7 +101,7 @@
       {#if apoi.length}
         <span class="apoi">
           apoi
-          {#each apoi as d, i (d.start + d.cheie)}{#if i}<span class="pt">·</span>{/if}<span class="ap">{interval(d)}</span>{#if undeApoi(d)}<span class="apc"> {undeApoi(d)}</span>{/if}{/each}
+          {#each apoi as d, i (d.start + d.cheie)}{#if i}<span class="pt">·</span>{/if}<span class="ap">{interval(d)}</span>{#if undeApoi(d)}<span class="apc">{undeApoi(d)}</span>{/if}{/each}
         </span>
       {/if}
     {:else}
@@ -151,7 +151,10 @@
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
   .apoi { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
   .ap { font-family: var(--font-mono); }
-  .apc { color: var(--text-dim); }
+  /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
+     markup: acolo era `<span class="apc"> {…}</span>`, iar spatiul de dinaintea
+     expresiei se pierdea la compilare — pe ecran scria „31 iulsediu". */
+  .apc { color: var(--text-dim); margin-left: 5px; }
   .pt { margin: 0 5px; }
 
   .gol { display: inline-flex; align-items: center; gap: 7px;

@@ -1,5 +1,6 @@
 <script>
   import { tick } from 'svelte'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { slide, fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download } from '@lucide/svelte'
@@ -108,16 +109,11 @@
 
   // ---- Acordeon (viewport ingust) + navigator V2 (desktop >=940px) ----
   let expanded = $state(new Set())
-  let isMobile = $state(false)
-  // eager, altfel primul paint pe desktop ar arata o clipa acordeonul
-  let isDesktop = $state(typeof window !== 'undefined' && window.matchMedia('(min-width: 940px)').matches)
-  $effect(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    const md = window.matchMedia('(min-width: 940px)')
-    const upd = () => { isMobile = mq.matches; isDesktop = md.matches }
-    upd(); mq.addEventListener('change', upd); md.addEventListener('change', upd)
-    return () => { mq.removeEventListener('change', upd); md.removeEventListener('change', upd) }
-  })
+  // Ambele praguri vin din lib/ecran.svelte.js, citite deja la incarcarea modulului
+  // — deci si aici raman „eager": primul paint pe desktop nu mai arata o clipa
+  // acordeonul de telefon.
+  const isMobile = $derived(ecran.telefon)
+  const isDesktop = $derived(ecran.larg)
   // Desktop: un singur modul ACTIV, ales din navigatorul din stanga; fallback = primul din categorie.
   let activeId = $state(null)
   const activeMod = $derived.by(() => shown.find((x) => x.id === activeId) ?? shown[0] ?? null)
@@ -1376,6 +1372,23 @@
     /* Subfamiliile raman vizual mai usoare (font mai mic), dar la fel de usor de
        atins — ierarhia se citeste din greutate, nu din cat de greu nimeresti. */
     .subfam-tab { min-height: var(--tap-min); padding: 3px 14px; }
+    /* Antetul paginii, pe telefon: titlul se rupe pe doua randuri, iar
+       `align-items: center` lasa iconita plutind la mijlocul lor, langa nimic.
+       Se aliniaza la PRIMUL rand, ca un semn de titlu, nu ca un vecin.
+       „Surse & standarde" coboara pe randul lui: langa un titlu de doua randuri
+       se ingusta pana isi rupea si el eticheta in doua. */
+    .head-row { flex-wrap: wrap; align-items: flex-start; }
+    .head-row :global(svg) { margin-top: 2px; flex-shrink: 0; }
+    /* `flex-basis: 0`, nu `auto`: cu `auto` titlul isi cerea latimea intreaga
+       (~320px), nu incapea langa iconita si se ducea el pe randul urmator —
+       ramanea iconita singura pe un rand, ca un cap de lista fara lista. Cu
+       basis 0 titlul ia CE RAMANE si isi rupe textul inauntru, unde e normal
+       sa se rupa. */
+    .head-row h1 { flex: 1 1 0; min-width: 0; }
+    /* `100%` = randul lui, mereu. Altfel butonul se strecoara langa un titlu
+       scurt si se ingusta pana isi rupe eticheta in doua. */
+    .surse-btn { flex: 0 0 100%; margin-left: 0; min-height: var(--tap-min);
+                 justify-content: center; white-space: nowrap; }
     .fam-tabs, .subfam-tabs { gap: 6px; }
     .acc-head { min-height: var(--tap-min); }
     /* Steaua sta lipita de titlul modulului, in acelasi rand. Umflata la 44px ar

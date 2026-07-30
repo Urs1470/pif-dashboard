@@ -830,7 +830,13 @@
   .tip { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .tip.pif { background: var(--accent-subtle); color: var(--accent); }
   .tip.service { background: var(--service-subtle); color: var(--service-accent); }
-  .meta { font-size: var(--font-small); color: var(--text-dim); margin-top: 4px; display: flex; gap: var(--space-xs); }
+  /* `flex-wrap` + `min-width: 0`: fara ele cele trei fapte (client, echipament, cod)
+     imparteau latimea in trei coloane egale si fiecare se rupea inauntru —
+     „ACS880-07-" pe un rand, „0640A-3" pe urmatorul, langa „P-2026-" / „001".
+     Un cod de echipament taiat in doua nu mai e un cod. Acum randul curge normal
+     si trece pe randul urmator INTRE fapte, nu prin mijlocul lor. */
+  .meta { font-size: var(--font-small); color: var(--text-dim); margin-top: 4px; display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .meta span { min-width: 0; }
   /* Layout V3: continut principal + rail persistent */
   .rail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
   .rail-main { min-width: 0; }
@@ -983,6 +989,12 @@
   @media (max-width: 940px) {
     .rail-grid { grid-template-columns: 1fr; }
     .rail { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; order: -1; margin-bottom: var(--space-sm); }
+    /* „Detalii" TREBUIE sa prinda ambele coloane. Celelalte celule au o cifra si
+       o eticheta (1/3, o data) si stau bine pe jumatate de rand; asta are perechi
+       eticheta-valoare, iar pe jumatate de rand valoarea primea 55px si se rupea
+       inauntru: „P-2026-" pe un rand, „001" pe urmatorul. Un cod de proiect taiat
+       in doua nu mai e un cod, e o greseala de tipar. */
+    .rail > :global(.rcell:has(.rdet)) { grid-column: 1 / -1; }
   }
 
   @media (max-width: 768px) {
@@ -995,7 +1007,16 @@
     .gl-fata { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
                padding: 6px var(--space-sm); background: var(--bg-panel); position: relative;
                z-index: 1; border-radius: var(--radius-md); will-change: transform; }
-    .trow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
+       Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
+       build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
+       nu apar in markup si compilatorul le crede moarte. Efectul, verificat in CSS-ul
+       livrat: din toate regulile de gest ale aplicatiei supravietuise UNA. Adica
+       glisai spre dreapta si nu vedeai verdele care spune „ai trecut pragul" —
+       exact semnalul fara de care gestul e o loterie.
+       Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
+       componente. */
+    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
     .task-actions { display: none; }
     .tix { display: none; }
     .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1008,7 +1029,7 @@
            font-size: var(--font-micro); cursor: pointer; }
     .glb span { line-height: 1; }
     .glb.danger { background: var(--danger-subtle); color: var(--danger); }
-    .trow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
+    .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
     .sub-del, .task-del, .task-edit { opacity: 1; }
@@ -1020,7 +1041,6 @@
     .sub-add input { min-height: var(--tap-min); }
     /* Filtrele de fisier din tabul Wiki — 29px. */
     .wiki-chip { min-height: var(--tap-min); padding: 4px 14px; }
-    .mf-input { min-height: var(--tap-min); }
     .wiki-chips { gap: var(--space-xs); }
     /* Bara de sus a paginii: „Edit", „PDF", „MD" si meniul. */
     .header-actions :global(.btn) { min-width: var(--tap-min); }

@@ -5,11 +5,12 @@
 </script>
 
 <script>
-  import { onMount, tick } from 'svelte'
+  import { tick } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
+  import { ecran } from '../../lib/ecran.svelte.js'
 
   let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
   let backdropEl = $state(null)
@@ -19,14 +20,7 @@
   // acolo ajunge degetul mare fara sa muti mana, si acolo se asteapta gestul de
   // inchidere. Deci si intrarea trebuie sa vina de jos — un `scale` din centru
   // spune „fereastra", nu „sertar".
-  let sheet = $state(false)
-  onMount(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    const apply = () => { sheet = mq.matches }
-    apply()
-    mq.addEventListener?.('change', apply)
-    return () => mq.removeEventListener?.('change', apply)
-  })
+  const sheet = $derived(ecran.telefon)
 
   // Cat timp sheet-ul e deschis, pagina de dedesubt nu se mai misca. Fara asta,
   // derularea continua in pagina din spate cand ajungi la capatul continutului din

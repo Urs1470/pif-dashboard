@@ -160,6 +160,11 @@
     position: fixed;
     top: -100px;
     left: var(--space-md);
+    /* Se vede doar la Tab, dar cand se vede e un buton ca oricare altul —
+       deci are caseta unui buton, nu 36px. */
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
     padding: var(--space-sm) var(--space-md);
     background: var(--accent);
     color: var(--accent-text);

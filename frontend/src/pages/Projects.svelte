@@ -331,7 +331,14 @@
 
 <style>
   .page { padding: var(--space-lg); }
-  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
+  /* `flex-wrap` + `gap`: fara ele randul nu se putea rupe, iar „Selectează" si
+     „Proiect Nou" nu se puteau micsora sub textul lor — deci ieseau din ecran si
+     `.app-main { overflow-x: clip }` le taia in tacere. Pe 375px „Proiect Nou"
+     era retezat de marginea din dreapta. Acum, cand nu incap langa titlu, coboara
+     pe randul lor si il umplu. */
+  .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
+  .page-title-row { min-width: 0; }
+  .page-title-row h1 { overflow-wrap: anywhere; }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
   .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }

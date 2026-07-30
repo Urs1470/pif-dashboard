@@ -235,7 +235,12 @@ def main():
     esecuri = 0
     try:
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=not arg.vizibil)
+            # PIF_CHROMIUM: pentru masinile unde Chromium e deja instalat in alta
+            # parte si `playwright install` n-are voie sa descarce (containere,
+            # sesiuni la distanta). Gol = comportamentul dintotdeauna.
+            cale_chromium = os.environ.get('PIF_CHROMIUM') or None
+            browser = pw.chromium.launch(headless=not arg.vizibil,
+                                         executable_path=cale_chromium)
             # service_workers='block' e blocarea nativa a lui Playwright. NU stubui
             # navigator.serviceWorker cu undefined: aplicatia il apeleaza direct si
             # ai obtine o „eroare" pe care ai fabricat-o tu, in fiecare pagina.
