@@ -17,6 +17,7 @@
   import { navigate, router } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
+  import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Card from '../components/ui/Card.svelte'
@@ -535,7 +536,20 @@
           <div class="task-list">
             {#each activeTasks as t, i (t.id)}
               <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}">
+                <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}"
+                     use:glisare={{ latime: 116, activ: true, onBifa: () => toggleTaskStatus(t) }}>
+                  <!-- Editarea si stergerea stau in panoul de sub rand (glisare
+                       spre stanga); glisarea spre dreapta bifeaza. La fel ca in
+                       Taskuri si pe „Astazi". -->
+                  <div class="gl-actiuni">
+                    <button class="glb" onclick={() => openTaskEditModal(t)} title="Editează task">
+                      <SolidIcon name="pencil" size={16} /><span>Editează</span>
+                    </button>
+                    <button class="glb danger" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task">
+                      <SolidIcon name="trash" size={16} /><span>Șterge</span>
+                    </button>
+                  </div>
+                  <div class="gl-fata">
                   <span class="tix">{String(i + 1).padStart(2, '0')}</span>
                   <button class="check" onclick={() => toggleTaskStatus(t)}>
                     <div class="check-empty"></div>
@@ -559,6 +573,7 @@
                   <div class="task-actions">
                     <button class="task-edit" onclick={() => openTaskEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={13} /></button>
                     <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
+                  </div>
                   </div>
                 </div>
                 {#if expandedTask === t.id}
@@ -888,6 +903,9 @@
   .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .done-list { display: flex; flex-direction: column; }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
+  /* Pe desktop invelisul de glisare nu exista pentru layout. */
+  .gl-fata { display: contents; }
+  .gl-actiuni { display: none; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
@@ -970,17 +988,34 @@
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
     .header-top { flex-direction: column; }
-    .trow { padding: var(--space-sm); flex-wrap: wrap; align-items: flex-start; row-gap: 6px; }
-    .check { padding-top: 1px; }
-    .task-actions { flex-basis: 100%; justify-content: flex-end; }
+    /* O LINIE, cu actiunile in panoul de sub rand (vezi Taskuri / „Astazi").
+       Randul avea titlul sus si actiunile pe o linie proprie dedesubt. */
+    .trow { padding: 0; flex-wrap: nowrap; align-items: center; overflow: hidden;
+            position: relative; touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+               padding: 6px var(--space-sm); background: var(--bg-panel); position: relative;
+               z-index: 1; border-radius: var(--radius-md); will-change: transform; }
+    .trow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .task-actions { display: none; }
+    .tix { display: none; }
+    .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tinfo { flex-wrap: nowrap; overflow: hidden; }
+    .tinfo > * { flex-shrink: 0; }
+
+    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
+    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
+           font-size: var(--font-micro); cursor: pointer; }
+    .glb span { line-height: 1; }
+    .glb.danger { background: var(--danger-subtle); color: var(--danger); }
+    .trow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }
     .sub-del, .task-del, .task-edit { opacity: 1; }
     .note-edit-btn { opacity: 1; }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
-    /* Actiunile de rand: bifa si butoanele de langa titlu. */
-    .task-actions button, .check, .task-edit, .task-del { min-width: var(--tap-min); min-height: var(--tap-min); }
+    .check { min-width: var(--tap-min); min-height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
     .sub-del, .sub-add-btn { min-width: var(--tap-min); min-height: var(--tap-min); }
     .sub-add input { min-height: var(--tap-min); }
     /* Filtrele de fisier din tabul Wiki — 29px. */

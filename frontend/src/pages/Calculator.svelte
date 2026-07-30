@@ -1385,5 +1385,7 @@
     /* Campurile de calcul: 43px, cu doua pe rand. Un pixel sub prag, dar tocmai
        aici tastezi cel mai des. */
     .inp-field, .search-inp { min-height: var(--tap-min); }
+    /* Scurtaturile catre modulele folosite des („Legile afinității" etc.) — 25px. */
+    .chip { min-height: var(--tap-min); }
   }
 </style>

@@ -10,6 +10,7 @@
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
   import { dueColor, formatDate } from '../lib/formatters.js'
+  import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -126,7 +127,18 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error'); await loadAgendaToday() }
   }
 
-  onMount(loadAgendaToday)
+  // Glisarea inlocuieste butoanele DOAR unde nu exista cursor. Pe desktop randul
+  // isi pastreaza actiunile la vedere.
+  let peTelefon = $state(false)
+
+  onMount(() => {
+    loadAgendaToday()
+    const mq = window.matchMedia('(max-width: 768px)')
+    const apply = () => { peTelefon = mq.matches; if (!peTelefon) inchideGlisarea() }
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => { mq.removeEventListener?.('change', apply); inchideGlisarea() }
+  })
 </script>
 
 <section class="board cell-in">
@@ -166,7 +178,21 @@
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
           animate:flip={{ duration: flipDur }}
+          use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
         >
+          <!-- Panoul de actiuni sta SUB rand si se descopera glisand spre stanga
+               (vezi lib/glisare.js). Pe desktop e ascuns: acolo actiunile stau la
+               vedere in rand, unde le ajunge cursorul. -->
+          <div class="gl-actiuni" aria-hidden={!peTelefon}>
+            <button class="glb" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
+            <span class="glb datewrap" title="Planifică pe altă zi">
+              <DatePicker value={it.data_scadenta} placeholder="Dată" onchange={(v) => onMoveDate(it, v)} />
+              <span>Dată</span>
+            </span>
+            <button class="glb danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={17} /><span>Scoate</span></button>
+          </div>
+
+          <div class="gl-fata">
           <span class="tix">{String(i + 1).padStart(2, '0')}</span>
           <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
 
@@ -206,6 +232,7 @@
             <!-- Pe telefon lipseste: titlul randului deschide deja taskul, iar un
                  al saselea buton de 44px ar imbatrani randul cu inca un rand. -->
             <button class="abtn deschide" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+          </div>
           </div>
           </div>
         </div>
@@ -309,7 +336,48 @@
   .row-date :global(.dp-trigger svg) { color: inherit; }
   .row-date :global(.dp-value) { display: none; }
 
+  /* ===== glisare (doar telefon) ===== */
+  .gl-fata { display: contents; }
+  .gl-actiuni { display: none; }
+
   @media (max-width: 768px) {
+    /* UN RAND = O LINIE, ca in orice aplicatie de to-do de pe telefon.
+       Inainte: titlu pe o linie + sase butoane de 44px pe a doua = 127px pe task,
+       adica sase taskuri pe ecran si un perete de iconite. Acum randul are ~56px
+       si NICIUN buton la vedere in afara de bifa: actiunile vin din gest.
+         glisare spre stanga  -> Mâine / Dată / Scoate
+         glisare spre dreapta -> bifeaza
+         atingere pe titlu    -> deschide taskul
+       Reordonarea (sagetile) ramane, dar numai cat timp ai ceva de reordonat —
+       vezi `.arow-arrows` mai jos. */
+    .arow { flex-wrap: nowrap; row-gap: 0; padding: 0; overflow: hidden; position: relative;
+            touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
+               padding: 7px var(--space-sm) 9px; background: var(--bg-panel);
+               border-radius: var(--radius-md); position: relative; z-index: 1;
+               will-change: transform; }
+    .arow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+
+    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0;
+                  align-items: stretch; }
+    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
+           font-size: var(--font-micro); cursor: pointer; }
+    .glb span { line-height: 1; }
+    .glb.danger { background: var(--danger-subtle); color: var(--danger); }
+    .glb.datewrap { position: relative; }
+    /* DatePicker-ul aduce cu el un declansator de camp; aici trebuie sa fie doar
+       iconita, ca vecinii lui. */
+    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
+    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
+      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
+    .glb.datewrap :global(.dp-value) { display: none; }
+    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
+
+    /* Cursa de bifare: cat timp tragi spre dreapta destul, dedesubt se vede verde.
+       Fara semnal, gestul e o loterie — nu stii cand ai trecut pragul. */
+    .arow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
+
     .bh-add-txt { display: none; }
     .grip { display: none; }
     .arow-arrows { display: flex; }
@@ -319,38 +387,29 @@
        sa aiba caseta unui buton, nu 40×28. */
     .bh-add { min-width: var(--tap-min); min-height: var(--tap-min); justify-content: center; padding: 0 10px; }
 
-    /* DOUA LINII, NU TREI.
-       Varianta veche impingea titlul pe rand propriu (`flex-basis: 100%`), deci
-       randul avea: bifa singura sus, titlul la mijloc, butoanele jos = 172px pe
-       task, adica patru taskuri pe un ecran. Bifa sta pe linia titlului — acolo ii
-       e locul, langa ce bifezi — si raman doua linii: [bifa][titlu] / [actiuni].
-       `min-width: 0` e obligatoriu, altfel textul lung refuza sa se micsoreze si
-       impinge actiunile afara. */
-    .arow { flex-wrap: wrap; row-gap: 2px; padding: 6px 6px 8px; }
-    .tix { min-width: 22px; }
-    /* `flex: 1 1 0` — nu `auto`. Cu baza `auto`, latimea DORITA a titlului intra in
-       calculul de wrap si rupe randul inaintea ei; cu baza 0 nu forteaza niciodata
-       o rupere si primeste tot ce ramane pe linie. */
-    .amain { flex: 1 1 0; min-width: 0; padding: 2px 0; }
-    .arow-tools { display: flex; align-items: center; gap: var(--space-xs); flex: 1 0 100%; }
-    .atitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .arow-arrows { margin-left: auto; }
+    /* Indexul pleaca: pe un rand de o linie, doua cifre in fata titlului nu spun
+       nimic ce nu spune deja ordinea de sus in jos, si mananca 28px din titlu. */
+    .tix { display: none; }
+    .amain { flex: 1 1 0; min-width: 0; padding: 0; gap: 1px; min-height: var(--tap-min); justify-content: center; }
+    .atitle { white-space: nowrap; }
+    /* Meta pe un singur rand, taiata la capat: pe o linie de 56px nu incap doua
+       randuri de chipuri, iar cel mai important lucru — termenul — e primul. */
+    .ainfo { flex-wrap: nowrap; overflow: hidden; }
+    .ainfo > * { flex-shrink: 0; }
+    .tag { max-width: 130px; }
 
-    /* TOATE ACTIUNILE RANDULUI LA 44px.
-       Erau 34px (si data 30px, si bifa 22px) — sub pragul la care nimeresti din
-       prima. Aici se bifeaza taskuri de pe santier, uneori cu manusa; o atingere
-       ratata pe „scoate termenul" nu da doar un click gresit, ci muta taskul.
-       Casetele cresc, semnele NU: iconitele raman la aceeasi dimensiune, doar
-       suprafata de atins din jurul lor se mareste. */
-    .abtn { width: var(--tap-min); height: var(--tap-min); }
-    .abtn.deschide { display: none; }
-    .arow-arrows { flex-basis: auto; }
-    /* Actiunile coboara pe linia a doua si se aliniaza la dreapta, sub degetul
-       mare; sagetile de reordonare raman la stanga lor, ca sa nu se amestece cu
-       cele care schimba data. */
-    .arow-actions { margin-left: auto; }
-    .row-date { width: var(--tap-min); }
-    .row-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
+    /* Din cele sase butoane raman doua la vedere: bifa (actiunea principala) si
+       reordonarea. Restul stau in panoul de sub rand. */
+    .arow-tools { display: contents; }
+    .arow-actions { display: none; }
+    .abtn { width: 34px; height: 34px; }
+    /* Sagetile de reordonare sunt singurele tinte sub 44px care raman, si stau
+       asa cu buna stiinta: sunt DOUA lipite pe verticala, iar perechea are
+       40×44 — degetul nu cade LANGA ele, cade pe una din doua. Amandoua fac
+       acelasi fel de lucru (muta randul cu o pozitie), in directii opuse, deci
+       cea mai rea greseala posibila se repara atingand cealalta sageata. */
+    .arow-arrows { display: flex; flex-direction: column; gap: 0; margin-left: 2px; }
+    .arow-arrows .abtn { width: 40px; height: 22px; }
     /* Bifa e actiunea principala a randului — merita cea mai mare tinta, nu cea
        mai mica. Cercul vizibil ramane de 18px; caseta din jur ajunge la 44. */
     .check { width: var(--tap-min); height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }

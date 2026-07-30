@@ -9,6 +9,8 @@
   import { formatDate, formatDateShort, zilePanaLa } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
+  import { glisare } from '../lib/glisare.js'
+  import { motion } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -212,6 +214,23 @@
   }
 
   function onKey(e) { if (e.key === 'Escape') closePop() }
+
+  /** Punct din banda -> randul lui din lista de dedesubt.
+   *  Pe desktop, clickul pe o bara deschide un popover cu actiuni. Pe telefon
+   *  actiunile sunt DEJA pe rand, iar un popover peste o banda de 22px ar fi al
+   *  treilea loc in care apare acelasi task. Deci punctul nu deschide nimic: te
+   *  duce la rand si il aprinde scurt, ca sa vezi care e (`focus-flash` e aceeasi
+   *  animatie folosita cand aterizezi pe un task venind din alta pagina). */
+  function arata(t) {
+    const el = document.querySelector(`.mrow[data-rand="${t.tip}:${t.id}"]`)
+    if (!el) return
+    el.style.scrollMarginTop = 'calc(var(--header-height) + 46px)'
+    el.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' })
+    el.classList.remove('focus-flash')
+    void el.offsetWidth   // reporneste animatia daca atingi acelasi punct de doua ori
+    el.classList.add('focus-flash')
+    setTimeout(() => el.classList.remove('focus-flash'), 1700)
+  }
 
   // --- drag / resize (desktop swimlane) ---
   let drag = null
@@ -564,6 +583,22 @@
 
     <!-- ===== Mobile grouped list ===== -->
     <div class="mlist">
+      <!-- ANTETUL DE ZILE, COMUN SI LIPICIOS.
+           Fara el, benzile de mai jos ar fi N grafice fara legatura: fiecare
+           frumoasa in sine, niciuna comparabila cu vecina. Fiind acelasi interval
+           si aceeasi scara pentru toate, o coloana inseamna aceeasi zi peste tot,
+           iar derularea pe verticala devine exact ce facea ochiul pe desktop cand
+           coborai de la un lane la altul. -->
+      <div class="m-scale">
+        <div class="ms-cols">
+          {#each columns.cols as c (c.key)}
+            <span class="ms-c" class:we={unit === 'day' && plan.showWeekends && c.isWeekend}
+                  class:today={c.iso && c.iso === plan.today}
+                  style="left:{c.leftPct}%; width:{c.widthPct}%">{c.main}</span>
+          {/each}
+        </div>
+      </div>
+
       {#each views as lane (lane.tip + ':' + lane.id)}
         <section class="mgroup" style="--lane:{lane.color}">
           <header class="mg-head">
@@ -572,25 +607,99 @@
             {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
             <span class="mg-count">{lane.tasks.length}</span>
           </header>
+
+          <!-- BANDA = LANE-UL DE PE DESKTOP, INTORS LA LATIME PLINA.
+               Pe desktop numele sta la STANGA si timpul se intinde in dreapta lui;
+               pe un ecran de 375px coloana de nume ar manca doua treimi, de aceea
+               swimlane-ul era pur si simplu ascuns si ramanea o lista fara timp.
+               Numele urca deasupra, banda ia toata latimea, iar grupurile se
+               stivuiesc pe verticala — directia in care telefonul chiar are loc.
+               Geometria e aceeasi: `spanRect` da procente, deci merge la orice
+               latime, fara niciun calcul nou. -->
+          <div class="m-track">
+            {#each columns.cols as c (c.key)}
+              {#if unit === 'day' && plan.showWeekends && c.isWeekend}
+                <div class="mt-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>
+              {/if}
+            {/each}
+            {#each lane.pregatire as seg, i (i)}
+              <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
+                   class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
+                   style="left:{seg.rect.left}%; width:{seg.rect.width}%"></div>
+            {/each}
+            {#each lane.impl as im (im.id)}
+              <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                      class:pregatire={im.faza === 'pregatire'}
+                      class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
+                      onclick={() => navigate(`/calendar?zi=${im.a}`)}
+                      title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.a)} → {formatDateShort(im.b)}">
+                {#if im.locatie === 'sediu'}<Building2 size={11} class="ib-ico" />{:else}<MapPin size={11} class="ib-ico" />{/if}
+                {#if im.rect.width >= BANDA_TEXT_MIN}
+                  <span class="ib-txt">{im.eticheta || locLabel(im.locatie)}</span>
+                {/if}
+              </button>
+            {/each}
+            <!-- Un task e un REPER de o zi (v33), deci un punct — nu o bara pe
+                 care s-o intinzi. Atingerea nu deschide un al treilea meniu: te
+                 duce la randul lui din lista de dedesubt, unde stau deja toate
+                 actiunile. Punctul spune CAND, randul spune CE si CU CE butoane. -->
+            {#each lane.tasks as t (t.tip + ':' + t.id)}
+              {#if t.rect}
+                <button class="mt-pin" class:done={isDone(t.status)}
+                        class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
+                        style="left:{t.rect.left}%"
+                        onclick={() => arata(t)}
+                        title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
+                        aria-label="{t.titlu} — vezi în listă"></button>
+              {/if}
+            {/each}
+            {#if todayPct != null && todayPct >= 0 && todayPct < 100}
+              <div class="mt-azi" style="left:{todayPct}%"></div>
+            {/if}
+          </div>
+
+          <!-- Randul perioadei e si tinta ei: in banda de 26px un bloc de doua
+               zile are 23×20px, adica prea putin ca sa-l nimeresti. Aici are
+               latimea intreaga si duce in Calendar, unde perioadele se editeaza. -->
           {#each lane.impl as im (im.id)}
-            <div class="mimpl loc-{im.locatie}" class:pregatire={im.faza === 'pregatire'}>
+            <button class="mimpl loc-{im.locatie}" class:pregatire={im.faza === 'pregatire'}
+                    onclick={() => navigate(`/calendar?zi=${im.a}`)}
+                    title="Vezi în Calendar">
               <span class="mimpl-loc">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
               <span class="mimpl-range">{formatDateShort(im.a)} – {formatDateShort(im.b)}</span>
-            </div>
+            </button>
           {/each}
           {#each lane.tasks as t (t.tip + ':' + t.id)}
-            <div class="mrow" class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0} class:done={isDone(t.status)}>
-              <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
-                <span class="mrow-title">{t.titlu}</span>
-                <span class="mrow-meta">
-                  {#if t.data_scadenta}<span class="chip due">termen {formatDateShort(t.data_scadenta)}</span>{/if}
-                  {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
+            <!-- Acelasi rand ca pe „Astazi": o linie, bifa in stanga, actiunile
+                 in panoul de sub el (glisare spre stanga). Doua liste care arata
+                 acelasi lucru trebuie sa se poarte la fel — altfel inveti gestul
+                 de doua ori. -->
+            <div class="mrow" data-rand="{t.tip}:{t.id}"
+                 class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0} class:done={isDone(t.status)}
+                 use:glisare={{ latime: 118, activ: true, onBifa: isDone(t.status) ? null : () => onDone(t) }}>
+              <div class="gl-actiuni">
+                <button class="glb" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
+                <span class="glb datewrap" title="Mută pe altă zi">
+                  <DatePicker value={t.data_scadenta} placeholder="Dată" onchange={(v) => onMove(t, v)} />
+                  <span>Dată</span>
                 </span>
-              </button>
-              <div class="mrow-actions">
-                <button class="mbtn" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={15} /></button>
-                <span class="mrow-date"><DatePicker value={t.data_scadenta} placeholder="Mută" onchange={(v) => onMove(t, v)} /></span>
-                <button class="mbtn" onclick={() => onDone(t)} title="Bifează"><CheckCircle2 size={16} /></button>
+              </div>
+              <div class="gl-fata">
+                <button class="mcheck" onclick={() => onDone(t)} title="Bifează">
+                  {#if isDone(t.status)}<CheckCircle2 size={18} />{:else}<span class="mcheck-gol"></span>{/if}
+                </button>
+                <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
+                  <span class="mrow-title">{t.titlu}</span>
+                  <span class="mrow-meta">
+                    {#if t.data_scadenta}<span class="chip due">termen {formatDateShort(t.data_scadenta)}</span>{/if}
+                    {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                  </span>
+                </button>
+                <div class="mrow-actions">
+                  <button class="mbtn" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={15} /></button>
+                  <span class="mrow-date"><DatePicker value={t.data_scadenta} placeholder="Mută" onchange={(v) => onMove(t, v)} /></span>
+                  <button class="mbtn" onclick={() => onDone(t)} title="Bifează"><CheckCircle2 size={16} /></button>
+                </div>
               </div>
             </div>
           {/each}
@@ -780,7 +889,7 @@
      benzile inguste n-ar incapea, deci nici nu se randeaza (vezi `rect.width`). */
   .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
     font-size: var(--font-micro); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
-  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
+  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
   .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
@@ -836,6 +945,62 @@
 
   /* ===== mobile grouped list ===== */
   .mlist { display: none; flex-direction: column; gap: var(--space-md); }
+
+  /* ANTETUL DE ZILE — lipit sub bara aplicatiei.
+     Trebuie sa rămână vizibil cat derulezi, altfel benzile de mai jos nu mai au
+     scara si redevin decor. `--m-pad` e insetul lateral al benzii dintr-un grup
+     (marginea grupului + paddingul lui), ca sa cada coloana peste coloana. */
+  /* `--m-pad` = rama grupului (1) + paddingul lui (8) + marginea benzii (3).
+     Cele trei numere trebuie sa rămână in acord cu `.mgroup` si `.m-track`:
+     daca antetul si banda nu incep exact in acelasi x, coloana „marti" cade
+     langa ziua de marti, si tot graficul minte cu o zi. */
+  .m-scale { --m-pad: 12px;
+    position: sticky; top: var(--header-height); z-index: 4;
+    padding: 6px var(--m-pad) 5px;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .ms-cols { position: relative; height: 14px; }
+  .ms-c { position: absolute; top: 0; display: flex; align-items: center; justify-content: center;
+    height: 14px; font-family: var(--font-mono); font-size: var(--font-micro);
+    color: var(--text-faint); font-variant-numeric: tabular-nums;
+    overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
+  .ms-c.we { color: var(--purple); }
+  .ms-c.today { color: var(--accent); font-weight: var(--fw-bold); }
+
+  /* BANDA PROIECTULUI — acelasi continut ca lane-ul de pe desktop.
+     Inaltimea e mica intentionat: e context, nu suprafata de lucru. Ce faci cu un
+     task faci pe randul lui, dedesubt. */
+  .m-track { position: relative; height: 26px; margin: 0 3px 8px; border-radius: var(--radius-sm);
+    background: var(--bg-panel); box-shadow: inset 0 0 0 1px var(--border-subtle); overflow: hidden; }
+  .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 7%, transparent); }
+  .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.8; z-index: 3; }
+  /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi
+     des, deci primesc o caseta transparenta de 26px in jurul punctului de 9px.
+     Fara ea ai avea de nimerit un punct cat gamalia acului. */
+  .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; padding: 0; cursor: pointer; z-index: 2; }
+  .mt-pin::before { content: ''; width: 9px; height: 9px; border-radius: 2px;
+    background: var(--accent); transform: rotate(45deg);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 85%, transparent); }
+  .mt-pin.urgent::before { background: var(--danger); }
+  .mt-pin.done::before { background: var(--success); opacity: 0.6; }
+  .mt-pin:active::before { transform: rotate(45deg) scale(1.25); }
+
+  /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
+     palid = pregatire, plin = pe teren, teal = site, gold = sediu). Se schimba
+     doar dimensiunile, fiindca aici randul are 26px, nu 42. */
+  .m-track .band { top: 3px; bottom: 3px; border-radius: 6px; }
+  .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: 6px;
+    border-left-width: 2px; box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 18%, transparent); }
+  .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent); }
+  .m-track .ib-txt { font-size: var(--font-micro); }
+  /* In banda, perioada e DESEN, nu buton: un bloc de doua zile are ~23×20px.
+     Cine vrea s-o deschida o atinge pe randul ei, de sub banda (`.mimpl`), unde
+     are latimea intreaga. */
+  .m-track .impl-band { pointer-events: none; cursor: default; }
+
   .mgroup { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   .mg-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -850,6 +1015,11 @@
   .chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
   .chip.due { color: var(--accent); background: var(--accent-subtle); }
   .mrow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
+     ascuns: acolo actiunile stau la vedere in rand. */
+  .gl-fata { display: contents; }
+  .gl-actiuni { display: none; }
+  .mcheck { display: none; }
   .mbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; background: none; border: none; }
   .mbtn:hover { background: var(--bg-hover); color: var(--text); }
   .mrow-date { width: 34px; flex-shrink: 0; }
@@ -904,13 +1074,39 @@
     .mbtn { width: var(--tap-min); height: var(--tap-min); }
     .mrow-date { width: var(--tap-min); }
     .mrow-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
-    .mrow { padding: 6px 6px 6px 8px; }
-    .mrow-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
-    /* Titlul si actiunile nu mai concureaza pe acelasi rand: la 375px titlul
-       ramanea cu ~120px si se citea „Verificare c…". */
-    .mrow { flex-wrap: wrap; }
-    .mrow-main { flex: 1 1 100%; padding: 4px 2px; }
-    .mrow-actions { margin-left: auto; gap: var(--space-xs); }
+    /* Ca pe „Astazi": o linie, bifa la vedere, restul in panoul de sub rand.
+       Randul era pe doua linii, cu trei butoane de 44px pe a doua — pe o lista de
+       noua proiecte asta inseamna sa derulezi mult ca sa vezi putin. */
+    .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
+               padding: 5px 8px; background: var(--bg-panel); position: relative; z-index: 1;
+               border-radius: var(--radius-md); will-change: transform; }
+    .mrow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--tap-min); justify-content: center; }
+    .mrow-title { white-space: nowrap; }
+    .mimpl { min-height: var(--tap-min); }
+    .mrow-meta { flex-wrap: nowrap; overflow: hidden; }
+    .mrow-meta > * { flex-shrink: 0; }
+    .mrow-actions { display: none; }
+    .mcheck { display: flex; width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
+              align-items: center; justify-content: center; background: none; border: none;
+              color: var(--text-dim); cursor: pointer; }
+    .mcheck-gol { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; }
+    .mrow.done .mcheck { color: var(--success); }
+    .mcheck { display: flex; }
+
+    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
+    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
+           font-size: var(--font-micro); cursor: pointer; }
+    .glb span { line-height: 1; }
+    .glb.datewrap { position: relative; }
+    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
+    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
+      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
+    .glb.datewrap :global(.dp-value) { display: none; }
+    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
+    .mrow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
 
     .bl-head { min-height: var(--tap-min); }
     .bl-hint { display: none; }

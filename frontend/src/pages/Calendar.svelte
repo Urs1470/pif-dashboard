@@ -17,7 +17,7 @@
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
-  import { motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
@@ -505,6 +505,23 @@
       return
     }
     selectata = iso
+    aratPanoul()
+  }
+
+  /** Pe o singura coloana, panoul zilei sta SUB grila. Daca a ramas complet in
+   *  afara ecranului, atingerea unei zile ar schimba ceva ce nu se vede — deci il
+   *  aducem in vizor. Numai atunci: cat timp se vede macar o parte din el, orice
+   *  derulare automata ar fi o smucitura peste ce faceai. */
+  function aratPanoul() {
+    if (window.innerWidth > 900) return
+    requestAnimationFrame(() => {
+      const el = document.querySelector('.side .pan')
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      if (r.top < window.innerHeight - 40) return
+      el.style.scrollMarginTop = 'calc(var(--header-height) + 8px)'
+      el.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'start' })
+    })
   }
 
   onMount(() => {
@@ -669,14 +686,29 @@
              lucrarii scrie chiar in bara, deci o legenda ar repeta ce se vede.
              Ramane doar textura, care nu se poate citi altfel. -->
         {#if data.perioade?.length}
+          <!-- DOUA AXE, SI SE VEDE CA SUNT DOUA.
+               Inainte erau patru mostre insirate, iar „pe teren" si „implementare"
+               aveau EXACT aceeasi umplere (45%) — doua patratele identice, la un
+               centimetru unul de altul, cu doua intelesuri diferite. Asta nu e o
+               scapare de culoare, e consecinta faptului ca ambele axe folosesc
+               „plin" pentru valoarea lor pozitiva: pe teren = fara hasura,
+               implementare = fara transparenta. Acelasi esantion, doua intrebari.
+               Se repara numind intrebarea, nu schimband mostra: cu „Unde" si
+               „Fază" scrise in fata, cele doua „plin" nu se mai bat cap in cap.
+               Mostrele folosesc ACELEASI retete ca benzile din grila (aceleasi
+               procente, aceeasi hasura), doar cu o culoare neutra in loc de cea a
+               proiectului — altfel legenda ar arata ca un client anume. -->
           <div class="leg">
-            <!-- Doua axe independente: TEXTURA spune unde esti, INTENSITATEA
-                 spune in ce faza. Se combina — poti avea pregatire pe teren si
-                 implementare la sediu. -->
-            <span class="leg-i" title="Textura spune unde ești"><i class="hatch"></i>la sediu</span>
-            <span class="leg-i"><i class="plin"></i>pe teren</span>
-            <span class="leg-i sep" title="Intensitatea spune în ce fază ești"><i class="pal"></i>pregătire</span>
-            <span class="leg-i"><i class="plin2"></i>implementare</span>
+            <span class="leg-g">
+              <span class="leg-ax">Unde</span>
+              <span class="leg-i"><i class="sw hatch"></i>sediu</span>
+              <span class="leg-i"><i class="sw neted"></i>teren</span>
+            </span>
+            <span class="leg-g">
+              <span class="leg-ax">Fază</span>
+              <span class="leg-i"><i class="sw palid"></i>pregătire</span>
+              <span class="leg-i"><i class="sw neted"></i>implementare</span>
+            </span>
           </div>
         {/if}
       </div>
@@ -921,14 +953,21 @@
   .grp { display: none; font-size: var(--font-micro); color: var(--text-faint);
          margin-left: auto; white-space: nowrap; }
 
-  .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
-  .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-dim); }
-  .leg-i i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .leg-i i.hatch { background: repeating-linear-gradient(135deg, var(--text-faint) 0 2px, transparent 2px 4px); border: 1px solid var(--border-strong); }
-  .leg-i i.plin { background: color-mix(in srgb, var(--text-faint) 45%, transparent); border: 1px solid var(--border-strong); }
-  .leg-i i.pal { background: color-mix(in srgb, var(--text-faint) 12%, transparent); box-shadow: inset 0 0 0 1px var(--border-strong); }
-  .leg-i i.plin2 { background: color-mix(in srgb, var(--text-faint) 45%, transparent); }
-  .leg-i.sep { margin-left: 10px; padding-left: 14px; border-left: 1px solid var(--border); }
+  .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
+  /* Grupul tine axa lipita de valorile ei: daca se rupe randul, se rupe INTRE
+     axe, nu intre „Fază" si „pregătire". */
+  .leg-g { display: inline-flex; align-items: center; gap: 12px; }
+  .leg-ax { font-size: var(--font-micro); font-family: var(--font-mono); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+  .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-secondary); }
+  /* Mostrele au forma benzilor (dreptunghi lat, nu patrat de 10px): la 10×10 o
+     hasura de 4px arata ca doua dungi, nu ca o textura. */
+  .sw { width: 22px; height: 12px; border-radius: 3px; flex-shrink: 0; --c: var(--text); }
+  .sw.neted { background: color-mix(in srgb, var(--c) 26%, transparent); }
+  .sw.hatch { background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--c) 30%, transparent) 0 4px, transparent 4px 8px); }
+  .sw.palid { background: color-mix(in srgb, var(--c) 9%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
@@ -982,9 +1021,23 @@
   .np-s { font-size: var(--font-micro); color: var(--text-faint); }
   .np-s.lucru { color: var(--accent); }
 
+  /* ===== O SINGURA COLOANA: ORDINEA SE SCHIMBA =====
+     Pe desktop grila si panoul stau unul langa altul, deci ordinea nu conteaza:
+     atingi o zi si vezi imediat, in dreapta, ce e in ea. Pe o coloana nu mai e
+     asa. Panoul statea DEASUPRA grilei — adica atingeai o zi si rezultatul
+     aparea in afara ecranului, deasupra degetului. Trebuia sa derulezi in sus ca
+     sa vezi ce tocmai ai cerut.
+     Acum: harta, apoi ziua atinsa imediat sub ea — ca in orice calendar de
+     telefon. Contoarele coboara la urma: sunt un rezumat al ferestrei pe care
+     tocmai ai citit-o, nu o intrebare cu care incepi. Semnalul care chiar cere
+     actiune („de clarificat") e oricum DESENAT pe zi, cu chenar rosu. */
   @media (max-width: 900px) {
     .wrap { grid-template-columns: minmax(0, 1fr); }
-    .side { order: -1; }
+    .side { order: 0; }
+    .page { display: flex; flex-direction: column; }
+    .bar { order: 0; }
+    .wrap { order: 1; }
+    .kpis { order: 2; margin: var(--space-md) 0 0; }
   }
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }

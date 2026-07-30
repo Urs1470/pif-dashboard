@@ -10,6 +10,7 @@
   import { toast } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
+  import { glisare } from '../lib/glisare.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
@@ -326,7 +327,23 @@
         <div class="trow-wrap" class:deschis={expandedTask === t.id}
              style="--sev: {dueColor(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}>
-          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}>
+          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
+               use:glisare={{ latime: 174, activ: true, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
+            <!-- Actiunile de intretinere (notita / editare / stergere) stau in
+                 panoul de sub rand: sunt rare fata de „bifat" si „deschis", si
+                 tocmai ele umflau randul cu o linie intreaga. -->
+            <div class="gl-actiuni">
+              <button class="glb" onclick={() => openNoteModal(t)} title={t.descriere ? 'Editează descrierea' : 'Adaugă descriere'}>
+                <SolidIcon name="notes" size={16} /><span>Notă</span>
+              </button>
+              <button class="glb" onclick={() => openEditModal(t)} title="Editează task">
+                <SolidIcon name="pencil" size={16} /><span>Editează</span>
+              </button>
+              <button class="glb danger" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task">
+                <SolidIcon name="trash" size={16} /><span>Șterge</span>
+              </button>
+            </div>
+            <div class="gl-fata">
             <span class="tix">{String(i + 1).padStart(2, '0')}</span>
             <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
@@ -352,6 +369,7 @@
                       class:areNota={!!t.descriere}><SolidIcon name="notes" size={12} /></button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={12} /></button>
               <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
+            </div>
             </div>
           </div>
           {#if expandedTask === t.id}
@@ -533,6 +551,9 @@
   .task-cat { padding: 1px 8px; background: var(--purple-subtle); color: var(--purple); border-radius: var(--radius-full); font-weight: var(--fw-semibold); }
   .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); font-weight: var(--fw-semibold); font-size: var(--font-micro); }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
+  /* Pe desktop invelisul de glisare nu exista pentru layout. */
+  .gl-fata { display: contents; }
+  .gl-actiuni { display: none; }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: all var(--dur-fast); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
@@ -608,13 +629,31 @@
     .quick-add-btn { width: 44px; }
     .task-del, .task-edit, .note-edit-btn { opacity: 1; }
     .form-row-3 { grid-template-columns: 1fr; }
-    /* Title gets the full width; the action bar wraps to its own line below
-       so a long title no longer squeezes into a tall narrow column. */
-    .trow { flex-wrap: wrap; align-items: flex-start; row-gap: 6px; padding: var(--space-sm); }
-    .check { padding-top: 1px; }
-    .task-actions { flex-basis: 100%; justify-content: flex-end; gap: var(--space-xs); }
-    /* Tinte de atingere >=44px pe actiunile de rand */
-    .task-actions button, .check { min-width: var(--tap-min); min-height: var(--tap-min); }
+    /* O LINIE, ca in aplicatiile de to-do.
+       Inainte: titlul sus, cele trei actiuni de intretinere pe o linie proprie
+       dedesubt = 110px pe task. Acum randul are ~56px si actiunile vin din gest
+       (glisare spre stanga); glisarea spre dreapta bifeaza. */
+    .trow { flex-wrap: nowrap; align-items: center; padding: 0; overflow: hidden;
+            position: relative; touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+               padding: 6px var(--space-sm); background: var(--bg-panel); position: relative;
+               z-index: 1; border-radius: var(--radius-md); will-change: transform; }
+    .trow.gl-tras .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .task-actions { display: none; }
+    .check { min-width: var(--tap-min); min-height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
+    .tix { display: none; }
+    .tmain { min-height: 0; }
+    .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tinfo { flex-wrap: nowrap; overflow: hidden; }
+    .tinfo > * { flex-shrink: 0; }
+
+    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
+    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
+           font-size: var(--font-micro); cursor: pointer; }
+    .glb span { line-height: 1; }
+    .glb.danger { background: var(--danger-subtle); color: var(--danger); }
+    .trow.gl-bifa { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     /* Cautarea si filtrele: caseta de cautare avea 25px inaltime utila, iar
        chipurile 30. */
     /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el

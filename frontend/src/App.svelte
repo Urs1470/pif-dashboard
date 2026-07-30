@@ -117,9 +117,19 @@
     overflow-x: clip;
   }
 
+  /* FARA `overflow-y: auto` AICI.
+     A doua oara aceeasi capcana ca la `.app-main` de mai sus. `overflow: auto`
+     face din `.app-content` un container de derulare, deci ORICE `position: sticky`
+     dintr-o pagina se raporteaza la scrollportul LUI. Iar el nu deruleaza
+     niciodata: `.app-main` are `min-height: 100dvh` si creste cu continutul, deci
+     fereastra e cea care deruleaza (verificat cu Playwright inca din 2026-07-03:
+     wheel -> `window.scrollY` se schimba, `#main-content.scrollTop` ramane 0).
+     Sticky-ul murea in tacere peste tot: antetul de zile din Planificator, bara
+     laterala din pagina de proiect, capul de tabel, navigarea din Calculator.
+     Taierea pe orizontala ramane la `.app-main` (`overflow-x: clip`), care nu
+     creeaza container de derulare. */
   .app-content {
     flex: 1;
-    overflow-y: auto;
     /* Dock-ul pluteste peste continut la toate latimile — lasa loc dedesubt. */
     padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
   }
