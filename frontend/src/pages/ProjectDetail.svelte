@@ -1092,7 +1092,11 @@
     .note-edit-btn { opacity: 1; }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
-    .check { min-width: var(--tap-min); min-height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
+    /* Aceeasi reteta ca in Taskuri si Astăzi: 44px de atins, 30px de latime.
+       Cercul de 18px intr-o caseta de 44 impingea titlul cu un sfert de ecran. */
+    .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
+      align-items: center; justify-content: center; padding: 0; }
+    .check::after { content: ''; position: absolute; inset: -7px; }
     .sub-del, .sub-add-btn { min-width: var(--tap-min); min-height: var(--tap-min); }
     .sub-add input { min-height: var(--tap-min); }
     /* Filtrele de fisier din tabul Wiki — 29px. */

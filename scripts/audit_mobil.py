@@ -14,6 +14,7 @@ CE MASOARA, pe trei latimi de telefon si pe toate rutele:
   - fonturi      camp sub 16px (Safari face zoom la focus si pagina sare)
   - gesturi      reordonarea prin maner si cele doua glisari, cu deget adevarat
   - de facut     gruparea pe termen, adaugarea cu zi, mutarea din gest, „Anulează"
+  - „azi"        boardul de pe Acasa si grupa „Azi" din /tasks sunt aceeasi multime
 
 TREI CAPCANE DE MASURARE, toate tratate aici — fara ele raportul minte:
   1. `pointer-events: none` inseamna ca elementul NU e o tinta (benzile din
@@ -411,6 +412,60 @@ BIFEAZA = """(marca) => {
 }"""
 
 
+def azi_peste_tot(ctx, baza):
+    """Boardul „Astăzi" de pe Acasa si grupa „Azi" din /tasks sunt ACEEASI multime:
+    apartenenta e data de TERMEN, nu de vreun steag separat (v33). Daca cele doua
+    se desincronizeaza, ai doua liste de azi care se contrazic — si nu stii care
+    minte."""
+    out('--- „azi" inseamna acelasi lucru peste tot ---')
+    probleme = 0
+    MARCA = 'Audit — proba azi'
+    page = ctx.new_page()
+    page.set_viewport_size({'width': 390, 'height': 844})
+
+    def zi(cond, mesaj, detaliu=''):
+        nonlocal probleme
+        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
+        if not cond:
+            probleme += 1
+
+    def pe_acasa():
+        return page.evaluate(
+            "(m) => [...document.querySelectorAll('.arow .atitle')].some(e => e.textContent.includes(m))", MARCA)
+
+    page.goto(baza + '/#/tasks', wait_until='load')
+    try:
+        page.wait_for_selector('.quick-add input', timeout=15000)
+    except Exception:
+        out('  SARI  compozitorul nu e disponibil')
+        page.close()
+        return 0
+    page.wait_for_timeout(800)
+    page.fill('.quick-add input', MARCA)
+    page.wait_for_timeout(400)
+    page.locator('.qa-chip', has_text='Azi').first.click()
+    page.wait_for_timeout(1400)
+
+    page.goto(baza + '/#/', wait_until='load')
+    page.wait_for_selector('.arow', timeout=15000)
+    page.wait_for_timeout(1400)
+    zi(pe_acasa(), 'taskul pus pe „Azi" apare si in boardul de pe Acasa')
+
+    page.goto(baza + '/#/tasks', wait_until='load')
+    page.wait_for_selector('.trow', timeout=15000)
+    page.wait_for_timeout(1100)
+    page.evaluate(APASA_IN_RAND, [MARCA, 'Mâine'])
+    page.wait_for_timeout(1500)
+    page.goto(baza + '/#/', wait_until='load')
+    page.wait_for_selector('.arow', timeout=15000)
+    page.wait_for_timeout(1400)
+    zi(not pe_acasa(), 'mutat pe mâine, pleaca din boardul de azi')
+
+    page.close()
+    out()
+    return probleme
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--fara-gesturi', action='store_true', help='doar geometrie')
@@ -453,6 +508,7 @@ def main():
             if not arg.fara_gesturi:
                 probleme += gesturi(ctx, baza)
                 probleme += lista_de_facut(ctx, baza)
+                probleme += azi_peste_tot(ctx, baza)
             browser.close()
     finally:
         proc.terminate()

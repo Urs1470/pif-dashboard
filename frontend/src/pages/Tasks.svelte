@@ -866,7 +866,17 @@
        componente. */
     .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
     .task-actions { display: none; }
-    .check { min-width: var(--tap-min); min-height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
+    /* BIFA: 44px de ATINS, dar nu 44px de LATIME.
+       Cercul are 18px si statea centrat intr-o caseta de 44 — adica 13px de aer
+       de fiecare parte, plus inca 8 de spatiu dupa. Masurat pe 375px, titlul
+       incepea la x=96: un sfert din latimea ecranului consumat inainte de prima
+       litera, pe fiecare rand. Caseta se ingusteaza la 30px, iar suprafata de
+       atingere revine dintr-un strat invizibil (`::after`), care se intinde in
+       padding-ul randului si in spatiul dintre bifa si titlu — NU peste titlu,
+       ca sa nu fure atingerile care trebuie sa deschida taskul. */
+    .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
+      align-items: center; justify-content: center; padding: 0; }
+    .check::after { content: ''; position: absolute; inset: -7px; }
     .tix { display: none; }
     .tmain { min-height: 0; }
     .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -901,7 +911,17 @@
        „Taskuri 5" la 40px deasupra. Doua titluri pentru aceeasi lista inseamna un
        task in minus pe ecran, si primul lucru pe care il vezi nu e un task. */
     .list-label { display: none; }
-    .list-cell { padding-top: var(--space-sm); }
+    /* Cartonasul listei isi pierde rama, fundalul si padding-ul lateral.
+       Motivul nu e doar spatiul: `.page` avea deja 16px si cartonasul inca 16, iar
+       cele doua se adunau inaintea fiecarui rand. Dar odata scos padding-ul,
+       randurile ajungeau lipite de propria lui rama — o cutie desenata la 1px de
+       continut se citeste ca o greseala. Iar gruparea face acum ce facea el:
+       spune unde incepe si unde se termina o bucata de lista.
+       Randurile devin cat pagina; titlul castiga 32px pe fiecare rand. */
+    .list-cell { background: none; border: none; border-radius: 0;
+      padding: var(--space-sm) 0 0; }
+    /* Capul lipit se estompeaza peste fundalul PAGINII acum, nu peste al cutiei. */
+    .grup-cap { background: linear-gradient(var(--bg) 72%, transparent); }
 
     /* Cautarea pliata: o iconita de 44px, nu o caseta cat randul. */
     .toolbar { flex-direction: row; align-items: center; gap: var(--space-sm); }

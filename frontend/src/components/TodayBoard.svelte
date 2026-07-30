@@ -463,8 +463,16 @@
                 margin-right: -6px; color: var(--text-faint);
                 touch-action: none; cursor: grab; }
     .gl-maner:active { cursor: grabbing; }
-    /* Bifa e actiunea principala a randului — merita cea mai mare tinta, nu cea
-       mai mica. Cercul vizibil ramane de 18px; caseta din jur ajunge la 44. */
-    .check { width: var(--tap-min); height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
+    /* BIFA: 44px de ATINS, dar nu 44px de LATIME.
+       Cercul are 18px si statea centrat intr-o caseta de 44 — adica 13px de aer
+       de fiecare parte, plus inca 8 de spatiu dupa. Masurat pe 375px, titlul
+       incepea la x=96: un sfert din latimea ecranului consumat inainte de prima
+       litera, pe fiecare rand. Caseta se ingusteaza la 30px, iar suprafata de
+       atingere revine dintr-un strat invizibil (`::after`), care se intinde in
+       padding-ul randului si in spatiul dintre bifa si titlu — NU peste titlu,
+       ca sa nu fure atingerile care trebuie sa deschida taskul. */
+    .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
+      align-items: center; justify-content: center; padding: 0; }
+    .check::after { content: ''; position: absolute; inset: -7px; }
   }
 </style>
