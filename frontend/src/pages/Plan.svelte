@@ -409,7 +409,7 @@
         <span class="tk-box">{#if plan.showDone}<Check size={12} />{/if}</span> Finalizate
       </button>
       <button class="toggle export" onclick={openExport} disabled={plan.lanes.length === 0} title="Exportă ca PDF (print)">
-        <FileDown size={14} /> Export PDF
+        <FileDown size={14} /> <span class="tg-lung">Export </span>PDF
       </button>
     </div>
   </div>
@@ -878,6 +878,46 @@
   @media (max-width: 820px) {
     .chart { display: none; }
     .mlist { display: flex; }
+  }
+
+  /* ===== Telefon =====
+     Bara de controale avea 502px intr-un ecran de 375: `.page-header` are
+     `flex-wrap`, dar `.controls` era un singur bloc `flex` fara wrap, deci nu
+     putea fi rupt si impingea TOATA pagina la 502px latime. Rezultatul: fiecare
+     ecran din Planificator se derula si lateral, iar barele de zile nu se mai
+     aliniau cu ce vedeai. */
+  @media (max-width: 768px) {
+    .page { padding-left: var(--space-md); padding-right: var(--space-md); }
+    .page-header { align-items: stretch; }
+    .controls { flex-wrap: wrap; width: 100%; }
+    /* Orizontul e alegerea principala — ia randul lui, cu cele cinci trepte
+       impartite egal. */
+    .seg { display: flex; width: 100%; }
+    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-body); }
+    /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
+       butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
+    .toggle { flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
+    .tg-lung { display: none; }
+
+    /* Randurile listei: butoanele erau de 34px, adica sub pragul la care nimeresti
+       din prima. Aici bifezi taskuri cu manusa de lucru pe mana. */
+    .mbtn { width: var(--tap-min); height: var(--tap-min); }
+    .mrow-date { width: var(--tap-min); }
+    .mrow-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
+    .mrow { padding: 6px 6px 6px 8px; }
+    .mrow-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+    /* Titlul si actiunile nu mai concureaza pe acelasi rand: la 375px titlul
+       ramanea cu ~120px si se citea „Verificare c…". */
+    .mrow { flex-wrap: wrap; }
+    .mrow-main { flex: 1 1 100%; padding: 4px 2px; }
+    .mrow-actions { margin-left: auto; gap: var(--space-xs); }
+
+    .bl-head { min-height: var(--tap-min); }
+    .bl-hint { display: none; }
+    .bl-chip { max-width: none; width: 100%; padding: 4px 6px 4px 4px; }
+    .bl-txt { max-width: none; flex: 1; }
+    .bl-date { width: var(--tap-min); }
+    .bl-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
   }
 
   :global(body.plan-dragging) { user-select: none; cursor: grabbing; }

@@ -365,7 +365,12 @@
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
   .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; text-align: left; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
-  .pcard:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
+     umbra pana atingeai altceva — parea selectat, desi nu era. */
+  @media (hover: hover) {
+    .pcard:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+  }
+  .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
   .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-faint); background: transparent; }
@@ -410,15 +415,46 @@
   .batch-check { display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; background: transparent; border: none; padding: 0; }
   .batch-check:hover { color: var(--accent); }
   .status-pill { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease); }
-  .status-pill:hover { opacity: .7; transform: scale(1.05); }
+  @media (hover: hover) {
+    .status-pill:hover { opacity: .7; transform: scale(1.05); }
+  }
   .status-pill:active { transform: scale(0.92); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
     .toolbar { flex-direction: column; align-items: stretch; }
-    .search-box { max-width: none; }
+    /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
+       primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
+       25px. `align-self: stretch` il face sa umple caseta. */
+    .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
+    .search-box input { align-self: stretch; min-height: var(--tap-min); }
+    .search-box :global(svg) { align-self: center; }
     .sort-box { justify-content: flex-start; }
     .batch-bar { flex-direction: column; align-items: stretch; }
+
+    /* Filtrele si sortarea erau pastile de 30px, iar statusul de pe card 23px —
+       si tocmai pastila de status COMUTA statusul proiectului la atingere. O tinta
+       de 23px pentru o actiune care schimba date e cel mai prost raport din
+       aplicatie. */
+    .chip, .sort-trigger { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
+    .filters { gap: var(--space-xs); }
+    /* Pastila de status ramane MICA la vedere si devine MARE la atingere.
+       E o eticheta in coltul cardului: daca o umflam la 44px arata ca butonul
+       principal al cardului, ceea ce nu e — cardul intreg deschide proiectul.
+       Deci creste doar suprafata sensibila, printr-un strat invizibil in jurul ei.
+       Conteaza fiindca atingerea CHIAR schimba statusul proiectului, iar 23px e
+       exact marimea la care nimeresti cardul in loc de pastila. */
+    .status-pill { position: relative; }
+    .status-pill::after {
+      content: ''; position: absolute; inset: -11px -10px;
+    }
+    /* Colegul ei de rand nu e interactiv, deci stratul nu fura nimic. */
+    .card-top { position: relative; }
+    /* Cardul e tinta principala si e mare; „Selectează"/„Proiect Nou" trec de la
+       38 la 44. */
+    .header-btns :global(.btn) { min-height: var(--tap-min); }
+    .header-btns { flex: 1; }
+    .header-btns :global(.btn) { flex: 1; }
   }
 
   @media (max-width: 560px) {

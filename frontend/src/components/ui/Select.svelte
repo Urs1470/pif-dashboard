@@ -182,4 +182,14 @@
   .opt.sel { color: var(--accent-on-subtle); background: var(--accent-subtle); }
   .opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .opt-label.ph { color: var(--text-dim); font-style: italic; }
+
+  @media (max-width: 768px) {
+    /* Optiunile aveau ~33px si stau LIPITE una de alta intr-o lista — cel mai usor
+       loc din aplicatie in care alegi randul de deasupra celui pe care il voiai.
+       Meniul se intinde si pe toata latimea declansatorului: la 260px ramanea
+       ingust langa un camp de 343px si taia etichetele lungi. */
+    .field-select.sm { min-height: var(--tap-min); }
+    .opt { min-height: var(--tap-min); font-size: var(--font-body); padding: 8px 12px; }
+    .menu { max-width: none; max-height: 50dvh; overscroll-behavior: contain; }
+  }
 </style>

@@ -102,4 +102,15 @@
   .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
   .btn-primary { padding: 8px 16px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .btn-primary:disabled, .btn-del:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  @media (max-width: 768px) {
+    .loc-btn { min-height: var(--tap-min); }
+    /* „Șterge" nu se aliniaza cu „Anulează/Salvează": e alta clasa de actiune si,
+       pe un sheet unde butoanele se intind, ar ajunge lipit de Salvează. Randul
+       lui, la stanga. */
+    .ip-actions { flex-wrap: wrap; }
+    .ip-actions .sp { display: none; }
+    .btn-del { order: 3; flex: 1 0 100%; justify-content: center; min-height: var(--tap-min); }
+    .btn-ghost, .btn-primary { flex: 1; min-height: var(--tap-min); }
+  }
 </style>

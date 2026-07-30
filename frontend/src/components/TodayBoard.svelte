@@ -186,6 +186,12 @@
             </span>
           </button>
 
+          <!-- Un singur invelis pentru cele doua grupuri de actiuni. Pe desktop e
+               `display: contents`, deci nu schimba nimic; pe telefon e ce cade pe
+               linia a doua, INTREG. Fara el, wrap-ul de flex decidea singur unde se
+               rupe randul si iesea pe trei linii (bifa singura sus, titlu, actiuni)
+               = 172px pe task, adica patru taskuri pe ecran. -->
+          <div class="arow-tools">
           <div class="arow-arrows">
             <button class="abtn" disabled={i === 0} onclick={() => moveUp(i)} title="Mută mai sus"><ArrowUp size={14} /></button>
             <button class="abtn" disabled={i === agenda.items.length - 1} onclick={() => moveDown(i)} title="Mută mai jos"><ArrowDown size={14} /></button>
@@ -197,7 +203,10 @@
               <DatePicker value={it.data_scadenta} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
             </span>
             <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={15} /></button>
-            <button class="abtn" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+            <!-- Pe telefon lipseste: titlul randului deschide deja taskul, iar un
+                 al saselea buton de 44px ar imbatrani randul cu inca un rand. -->
+            <button class="abtn deschide" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+          </div>
           </div>
         </div>
       {/each}
@@ -235,7 +244,14 @@
      + index mono ghost; delimitare prin spatiu, nu linii. */
   .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .arow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
-  .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
+     aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
+     ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
+  @media (hover: hover) {
+    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  }
+  /* Raspunsul la atingere e apasarea, nu deplasarea. */
+  .arow:active { border-color: var(--border-strong); }
   .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .arow.done { opacity: 0.5; }
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
@@ -269,6 +285,9 @@
   .deadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .deadline.soon { color: var(--warning); }
 
+  /* `contents` = invelisul nu exista pentru layout; cele doua grupuri raman copii
+     directi ai randului, exact ca inainte. Pe telefon devine cutie adevarata. */
+  .arow-tools { display: contents; }
   .arow-arrows { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
   .arow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   .abtn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: all var(--dur-fast) var(--ease); }
@@ -294,16 +313,46 @@
     .bh-add-txt { display: none; }
     .grip { display: none; }
     .arow-arrows { display: flex; }
-    .quick-add input, .quick-add-btn { min-height: 44px; }
-    .quick-add-btn { width: 44px; }
-    .abtn { width: 34px; height: 34px; }
+    .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
+    .quick-add-btn { width: var(--tap-min); }
+    /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
+       sa aiba caseta unui buton, nu 40×28. */
+    .bh-add { min-width: var(--tap-min); min-height: var(--tap-min); justify-content: center; padding: 0 10px; }
 
-    /* Randul se sparge pe doua linii: titlul ia toata latimea (cu wrap pe
-       max 2 randuri), iar cele 6 butoane coboara dedesubt, la dreapta —
-       altfel titlul era strivit la ~100px ("De s..."). */
-    .arow { flex-wrap: wrap; row-gap: 0; }
-    .amain { flex: 1 1 calc(100% - 40px); }
-    .atitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    /* DOUA LINII, NU TREI.
+       Varianta veche impingea titlul pe rand propriu (`flex-basis: 100%`), deci
+       randul avea: bifa singura sus, titlul la mijloc, butoanele jos = 172px pe
+       task, adica patru taskuri pe un ecran. Bifa sta pe linia titlului — acolo ii
+       e locul, langa ce bifezi — si raman doua linii: [bifa][titlu] / [actiuni].
+       `min-width: 0` e obligatoriu, altfel textul lung refuza sa se micsoreze si
+       impinge actiunile afara. */
+    .arow { flex-wrap: wrap; row-gap: 2px; padding: 6px 6px 8px; }
+    .tix { min-width: 22px; }
+    /* `flex: 1 1 0` — nu `auto`. Cu baza `auto`, latimea DORITA a titlului intra in
+       calculul de wrap si rupe randul inaintea ei; cu baza 0 nu forteaza niciodata
+       o rupere si primeste tot ce ramane pe linie. */
+    .amain { flex: 1 1 0; min-width: 0; padding: 2px 0; }
+    .arow-tools { display: flex; align-items: center; gap: var(--space-xs); flex: 1 0 100%; }
+    .atitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .arow-arrows { margin-left: auto; }
+
+    /* TOATE ACTIUNILE RANDULUI LA 44px.
+       Erau 34px (si data 30px, si bifa 22px) — sub pragul la care nimeresti din
+       prima. Aici se bifeaza taskuri de pe santier, uneori cu manusa; o atingere
+       ratata pe „scoate termenul" nu da doar un click gresit, ci muta taskul.
+       Casetele cresc, semnele NU: iconitele raman la aceeasi dimensiune, doar
+       suprafata de atins din jurul lor se mareste. */
+    .abtn { width: var(--tap-min); height: var(--tap-min); }
+    .abtn.deschide { display: none; }
+    .arow-arrows { flex-basis: auto; }
+    /* Actiunile coboara pe linia a doua si se aliniaza la dreapta, sub degetul
+       mare; sagetile de reordonare raman la stanga lor, ca sa nu se amestece cu
+       cele care schimba data. */
+    .arow-actions { margin-left: auto; }
+    .row-date { width: var(--tap-min); }
+    .row-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
+    /* Bifa e actiunea principala a randului — merita cea mai mare tinta, nu cea
+       mai mica. Cercul vizibil ramane de 18px; caseta din jur ajunge la 44. */
+    .check { width: var(--tap-min); height: var(--tap-min); align-items: center; justify-content: center; padding: 0; }
   }
 </style>

@@ -99,4 +99,22 @@
   .md-rendered :global(.md-callout-example .md-callout-title) { color: var(--purple); }
   .md-rendered :global(.md-callout-quote) { border-left-color: var(--text-dim); background: var(--bg-elevated); }
   .md-rendered :global(.md-callout-quote .md-callout-title) { color: var(--text-secondary); }
+
+  @media (max-width: 768px) {
+    /* Un tabel din wiki are des mai multe coloane decat incap in 360px si nu poate
+       cobori sub latimea lui minima. Cu `width: 100%` iesea pur si simplu din
+       pagina, iar `.app-main` (overflow-x: clip) il TAIA: ultima coloana —
+       „Sursă", „Ce s-a extras" — nu se mai vedea si nu exista nicio cale spre ea.
+       `display: block` + `overflow-x: auto` ii da tabelului propriul derulaj, iar
+       `max-content` cu plafon 100% il lasa sa se stranga cand chiar incape.
+       Doar pe telefon: pe desktop coloana e destul de lata, iar acolo tabelele
+       sunt latime-plina prin `width: 100%` si asa trebuie sa rămână. */
+    .md-rendered :global(table) {
+      display: block;
+      width: max-content;
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+  }
 </style>

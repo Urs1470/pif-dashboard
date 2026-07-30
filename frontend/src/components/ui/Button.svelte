@@ -63,8 +63,12 @@
   }
   .btn-primary:hover:not(:disabled) {
     background: var(--accent-hover);
-    transform: translateY(-1px);
     box-shadow: var(--shadow-glow-accent);
+  }
+  /* Ridicarea de 1px doar unde exista cursor: pe touch ramane lipita dupa apasare
+     si butonul pare desprins de rand. */
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
   }
   .btn-primary:active:not(:disabled) {
     transform: translateY(0) scale(0.98);
@@ -111,5 +115,12 @@
   .btn-danger:active:not(:disabled) {
     transform: scale(0.98);
     transition-duration: 0.05s;
+  }
+
+  /* `sm` inseamna „compact intr-o bara de unelte", nu „mai greu de atins". Pe
+     telefon 38px e sub prag, iar `btn-sm` e exact varianta folosita in barele de
+     actiuni ale paginilor (Proiect Nou, Edit, PDF, MD). */
+  @media (max-width: 768px) {
+    .btn-sm { min-height: var(--tap-min); }
   }
 </style>

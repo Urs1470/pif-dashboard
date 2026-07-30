@@ -170,10 +170,17 @@
     transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
       transform var(--dur-fast) var(--ease);
   }
-  .dock-item:hover {
-    color: var(--text);
-    transform: translateY(-4px);
+  /* Ridicarea e un raspuns la cursor. Pe touch ramanea ridicata tableta atinsa
+     ultima data, deci dock-ul arata mereu ca si cum ai fi peste un alt tab decat
+     cel activ. */
+  @media (hover: hover) {
+    .dock-item:hover {
+      color: var(--text);
+      transform: translateY(-4px);
+    }
   }
+  .dock-item:active { color: var(--text); background: var(--bg-hover); }
+  .dock-item.active:active { background: var(--accent); }
   .dock-item.active {
     color: var(--accent-text);
     background: var(--accent);
@@ -225,23 +232,32 @@
     width: 38px;
   }
 
-  /* Pe touch dock-ul e fix (mereu vizibil) -> manerul de "peek" nu mai are rost. */
-  @media (pointer: coarse) {
+  /* Pe touch dock-ul e fix (mereu vizibil) -> manerul de "peek" nu mai are rost.
+     Conditia de latime o dubleaza pe cea de pointer fiindca JS-ul de mai sus
+     considera „mobil" si o fereastra ingusta cu mouse (`innerWidth <= 768`): fara
+     ea, acolo dock-ul era fix dar manerul continua sa se ofere sa-l arate. */
+  @media (pointer: coarse), (max-width: 768px) {
     .dock-grip { display: none; }
     .dock { padding-top: 8px; }
   }
 
+  /* Opt tinte (7 tab-uri + cautare) intr-un ecran de 375px: 8 × 44 = 352px, iar cu
+     `gap: 2px` + padding + separator nu incapeau si tabletele scadeau la 40×42.
+     Spatiul dintre ele NU e ce face tinta mai sigura — marimea ei e. Deci scot
+     spatiile si separatorul si dau fiecarui tab caseta intreaga de 44: lipite, dar
+     fara zona moarta intre ele. Pastila ambar a tabului activ ramane inseta, deci
+     vizual randul arata la fel de aerisit. */
   @media (max-width: 560px) {
     .dock {
-      gap: 2px;
-      padding: 11px 6px 6px;
-      max-width: calc(100vw - 16px);
+      gap: 0;
+      padding: 8px 2px;
+      max-width: calc(100vw - 12px);
     }
     .dock-item {
-      width: 42px;
-      height: 42px;
-      border-radius: 13px;
+      width: var(--tap-min);
+      height: var(--tap-min);
+      border-radius: 14px;
     }
-    .sep { margin: 8px 3px; }
+    .sep { display: none; }
   }
 </style>

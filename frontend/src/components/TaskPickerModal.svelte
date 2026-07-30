@@ -121,4 +121,16 @@
   .pk-scad { font-size: var(--font-micro); color: var(--text-dim); white-space: nowrap; }
   .pk-add { display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint); flex-shrink: 0; }
   .pk-row:hover .pk-add { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    /* O lista de randuri de 36px, lipite unul de altul: atingi randul de deasupra
+       celui pe care il voiai si adaugi ALT task pe ziua de azi. */
+    .pk-row { min-height: var(--tap-min); }
+    /* Caseta de cautare are 41px, dar inputul dinauntru avea 25 — si doar el
+       primeste focus. */
+    .search-box { padding: 0 12px; align-items: stretch; }
+    .search-box input { align-self: stretch; min-height: var(--tap-min); }
+    .search-box :global(svg) { align-self: center; }
+    .pk-list { max-height: 46dvh; overscroll-behavior: contain; }
+  }
 </style>

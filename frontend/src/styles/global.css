@@ -133,6 +133,34 @@ code, pre {
   width: 100%;
 }
 
+/* ===== Telefon: fundamentul de atingere =====
+   Trei reguli care nu tin de o pagina anume, ci de faptul ca degetul nu e cursor. */
+
+/* 1. ORICE CAMP DE TEXT ARE CEL PUTIN 16px PE TELEFON.
+   Safari pe iOS mareste automat pagina cand focalizezi un camp sub 16px — si NU o
+   micsoreaza inapoi la iesire. Ramai cu aplicatia zoomata si o derulezi lateral ca
+   sa vezi restul. Campurile aplicatiei erau la 12,8-14,4px (--font-small /
+   --font-body), deci fiecare cautare si fiecare formular declansa asta.
+   `!important` din acelasi motiv ca la `input[type=date]` mai jos: stilurile scoped
+   Svelte (.mf-input.svelte-xxx) au doua clase, deci bat un selector de element.
+   Nu atinge bifele si comutatoarele — acolo font-size nu inseamna nimic. */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 2. Derularea unei liste interne nu trage pagina de dedesubt.
+   Fara asta, cand ajungi la capatul unei liste din modal/panou, gestul continua in
+   pagina din spate si o muta sub deget. */
+.modal-body,
+.data-table-wrap,
+.tabs {
+  overscroll-behavior: contain;
+}
+
 /* ===== Focus ring global pe inputs ===== */
 input:focus, select:focus, textarea:focus {
   outline: none;
@@ -374,8 +402,12 @@ input[type="checkbox"].cbx:focus {
 .rich-content img { max-width: 100%; border-radius: var(--radius-xs); }
 .rich-content hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 .rich-content blockquote { border-left: 3px solid var(--accent); padding: 4px 14px; margin: 8px 0; color: var(--text-secondary); background: var(--bg-surface); }
-/* Tabele lipite din Word/Excel/web */
-.rich-content table { border-collapse: collapse; margin: 10px 0; max-width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+/* Tabele lipite din Word/Excel/web.
+   Acelasi motiv ca la wiki (MarkdownView): un tabel nu poate cobori sub latimea
+   lui minima, deci `max-width: 100%` nu il incadreaza — doar il lasa sa iasa si
+   sa fie taiat de pagina. `display: block` + `overflow-x: auto` ii da propriul
+   derulaj, iar `max-content` il lasa sa se stranga cand incape. */
+.rich-content table { display: block; width: max-content; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border-collapse: collapse; margin: 10px 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .rich-content th, .rich-content td { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
 .rich-content th { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }
 .rich-content tbody tr:hover td { background: var(--bg-elevated); }

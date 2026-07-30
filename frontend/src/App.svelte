@@ -102,11 +102,19 @@
     min-height: 100dvh;
   }
 
+  /* `overflow-x: clip`, NU `overflow: hidden`.
+     `hidden` face din .app-main un container de derulare, iar un `position: sticky`
+     dinauntru se lipeste de scrollportul LUI (care nu deruleaza niciodata) — adica
+     de nimic. Headerul se declara sticky de la inceput si nu s-a lipit nici o data:
+     scrolleaza 400px si pleaca cu 400px. `clip` taie la fel pe orizontala, dar nu
+     creeaza container de derulare, deci sticky-ul se raporteaza iar la viewport.
+     Conteaza cel mai mult pe telefon, unde listele sunt lungi si drumul inapoi sus
+     e lung. */
   .app-main {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-    overflow: hidden;
+    overflow-x: clip;
   }
 
   .app-content {

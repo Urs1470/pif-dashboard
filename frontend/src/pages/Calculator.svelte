@@ -1366,5 +1366,24 @@
   @media (max-width: 768px) {
     .acc-sub { display: none; }
     .acc-head { padding: 10px 12px; gap: 8px; }
+    /* Calculatorul se foloseste EXACT acolo unde e greu: langa un dulap, cu
+       telefonul intr-o mana. Taburile de familie (30px) si cele de subfamilie
+       (26px) erau cele mai mici tinte de aici — si sunt primul lucru pe care il
+       atingi la fiecare intrare in pagina.
+       Randurile de acordeon si campurile de calcul cresc si ele: `.acc-head` e ce
+       deschizi ca sa ajungi la formula. */
+    .fam-tab { min-height: var(--tap-min); padding: 4px 16px; }
+    /* Subfamiliile raman vizual mai usoare (font mai mic), dar la fel de usor de
+       atins — ierarhia se citeste din greutate, nu din cat de greu nimeresti. */
+    .subfam-tab { min-height: var(--tap-min); padding: 3px 14px; }
+    .fam-tabs, .subfam-tabs { gap: 6px; }
+    .acc-head { min-height: var(--tap-min); }
+    /* Steaua sta lipita de titlul modulului, in acelasi rand. Umflata la 44px ar
+       impinge titlul; asa ramane de 23px la vedere si de 44 la atingere. */
+    .star-btn { position: relative; }
+    .star-btn::after { content: ''; position: absolute; inset: -11px; }
+    /* Campurile de calcul: 43px, cu doua pe rand. Un pixel sub prag, dar tocmai
+       aici tastezi cel mai des. */
+    .inp-field, .search-inp { min-height: var(--tap-min); }
   }
 </style>

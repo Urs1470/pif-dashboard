@@ -168,5 +168,12 @@
     /* Pe telefon dock-ul e fix si mereu vizibil — ii lasam tot locul. */
     .page { --rezerva: calc(var(--dock-h) + var(--space-sm) + var(--safe-bottom));
             padding: var(--space-md); }
+    .b { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
+    .bara { min-height: var(--tap-min); }
+    /* Campul primeste linkul de partajare — se lipeste, deci trebuie sa fie usor
+       de atins si de golit; 32px inaltime cu font de 16px taia si textul. */
+    .rand input { height: var(--tap-min); min-width: 0; font-size: var(--font-small); }
+    .rand { gap: var(--space-xs); }
+    .rand :global(.b) { flex: 1; justify-content: center; }
   }
 </style>

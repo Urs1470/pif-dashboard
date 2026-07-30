@@ -582,8 +582,18 @@
   .rte-hint code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
 
   @media (max-width: 768px) {
-    .tbtn { width: 34px; height: 34px; }
-    .rte-editor { min-height: 220px; max-height: 52vh; }
+    /* Butoanele de formatare erau de 34px si stau lipite unul de altul intr-o
+       bara — cea mai densa insiruire de tinte din aplicatie. La 40px bara tot
+       incape pe latime (se si deruleaza), dar nu mai apesi „italic" cand vrei
+       „bold". */
+    .tbtn { width: 40px; height: 40px; }
+    /* Bara ramane pe `flex-wrap: wrap` (vezi comentariul de la `.rte-toolbar`):
+       un scroller ar taia meniul de stil, care e pozitionat absolut. Cu butoane
+       mai mari trece pe mai multe randuri — atat. */
+    .rte-toolbar { gap: 3px; }
+    /* `dvh`, nu `vh`: cu bara de adresa vizibila, 52vh depaseste ecranul real si
+       impinge randul de jos al editorului sub el. */
+    .rte-editor { min-height: 220px; max-height: 52dvh; }
     .rte-hint { display: none; }
   }
 

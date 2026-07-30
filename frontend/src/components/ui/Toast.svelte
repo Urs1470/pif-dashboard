@@ -87,6 +87,10 @@
       left: var(--space-md);
       right: var(--space-md);
     }
+    /* „Anulează" dintr-un toast are cateva secunde de trait — daca o ratezi, ai
+       ratat-o de tot. Deci e printre butoanele care merita cel mai mult 44px. */
+    .toast-action { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 14px; }
+    .toast-close { width: var(--tap-min); height: var(--tap-min); }
     .toast { max-width: 100%; }
   }
 </style>

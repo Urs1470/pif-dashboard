@@ -1,6 +1,7 @@
 <script>
   import { Calendar, ChevronLeft, ChevronRight, X } from '@lucide/svelte'
-  import { scale, fly } from 'svelte/transition'
+  import { scale, fly, fade } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
   let {
@@ -54,7 +55,22 @@
 
   const days = $derived(gridDays(viewY, viewM))
 
+  // Pe telefon calendarul nu se mai agata de declansator: devine sheet pe toata
+  // latimea, lipit de marginea de jos. Doua motive, amandoua verificate pe ecranul
+  // real: (1) popup-ul de 268px imparte 7 coloane, deci o zi are ~34px — sub pragul
+  // la care nimeresti din prima; (2) declansatorul poate fi oriunde pe verticala,
+  // deci calendarul aparea uneori sus, unde degetul mare nu ajunge.
+  let sheet = $state(false)
+  $effect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const apply = () => { sheet = mq.matches }
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  })
+
   function positionPopup() {
+    if (sheet) { popupStyle = ''; return }
     if (!triggerEl || !popupEl) return
     const r = triggerEl.getBoundingClientRect()
     const popupH = popupEl.offsetHeight || 320
@@ -91,6 +107,13 @@
   })
 
   function close() { open = false }
+
+  // Sheet-ul urca de sub margine; popup-ul de desktop creste din punctul lui.
+  function deschide(node) {
+    const duration = motionDuration(DUR_FAST)
+    if (sheet) return { duration, easing: cubicOut, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    return scale(node, { start: 0.96, duration })
+  }
 
   function prevMonth() { direction = -1; if (viewM === 0) { viewM = 11; viewY-- } else viewM-- }
   function nextMonth() { direction = 1; if (viewM === 11) { viewM = 0; viewY++ } else viewM++ }
@@ -145,8 +168,16 @@
     <Calendar size={15} />
   </button>
 
+  {#if open && sheet}
+    <!-- Voalul e al sheet-ului, nu al paginii: pe telefon calendarul acopera
+         continutul, deci trebuie sa se vada ca restul e inactiv, iar atingerea
+         alaturi trebuie sa inchida. -->
+    <div class="dp-voal" use:portal onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST) }}></div>
+  {/if}
+
   {#if open}
-    <div class="dp-pop" use:portal bind:this={popupEl} style={popupStyle} transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
+    <div class="dp-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide>
+      {#if sheet}<span class="dp-grip" aria-hidden="true"></span>{/if}
       <div class="dp-head">
         <button type="button" class="dp-nav" onclick={prevMonth} aria-label="Luna anterioară"><ChevronLeft size={16} /></button>
         <span class="dp-title">{MONTHS[viewM]} {viewY}</span>
@@ -230,4 +261,47 @@
   }
   .dp-foot-btn:hover { opacity: 0.8; }
   .dp-foot-btn.clear { color: var(--danger); background: transparent; }
+
+  /* ===== Telefon: calendarul e sheet, cu zile pe care se poate nimeri =====
+     Latimea intreaga imparte 7 coloane la ~50px in loc de ~34px, iar `aspect-ratio: 1`
+     le face si inalte. Sub 44px greseala nu e „ai atins alaturi" — e „ai mutat taskul
+     pe alta zi si nu ai vazut". */
+  @media (max-width: 768px) {
+    /* Declansatorul in forma lui normala (camp de formular) avea 40px. Variantele
+       comprimate — iconita din randul de task — isi impun singure 44 in
+       componentele lor. */
+    .dp-trigger { min-height: var(--tap-min); }
+  }
+
+  .dp-voal {
+    position: fixed; inset: 0; z-index: calc(var(--z-tooltip) - 1);
+    background: rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  }
+  .dp-pop.sheet {
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: auto; max-width: 100%;
+    padding: 0 var(--space-md) calc(var(--space-md) + var(--safe-bottom));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border-bottom: none;
+    box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+  .dp-grip {
+    display: block; width: 36px; height: 4px; margin: 8px auto 2px;
+    border-radius: var(--radius-full); background: var(--border-strong);
+  }
+  .dp-pop.sheet .dp-head { margin-bottom: var(--space-12); }
+  .dp-pop.sheet .dp-title { font-size: var(--font-body); }
+  .dp-pop.sheet .dp-nav { width: var(--tap-min); height: var(--tap-min); }
+  .dp-pop.sheet .dp-grid { gap: 4px; }
+  .dp-pop.sheet .dp-day { font-size: var(--font-body); min-height: var(--tap-min); border-radius: var(--radius-md); }
+  .dp-pop.sheet .dp-wdname { font-size: var(--font-tiny); padding-bottom: 4px; }
+  .dp-pop.sheet .dp-foot { margin-top: var(--space-12); padding-top: var(--space-12); gap: var(--space-sm); }
+  .dp-pop.sheet .dp-foot-btn {
+    flex: 1; justify-content: center; min-height: var(--tap-min);
+    font-size: var(--font-small); border-radius: var(--radius-md);
+  }
+  /* Fara „Șterge" in sheet, „Azi" ar rămâne singur si intins pe toata latimea, ca un
+     buton principal — nu e. */
+  .dp-pop.sheet .dp-foot-btn:only-child { flex: 0 1 160px; }
 </style>

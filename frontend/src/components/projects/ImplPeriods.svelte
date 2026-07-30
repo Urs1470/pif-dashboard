@@ -75,4 +75,13 @@
   .ip-tag { font-size: var(--font-micro); background: var(--bg-elevated); color: var(--text-dim); padding: 1px 7px; border-radius: var(--radius-xs); }
   .ip-item :global(.ip-edit) { margin-left: auto; color: var(--text-faint); flex-shrink: 0; }
   .ip-item:hover :global(.ip-edit) { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .ip-add { min-height: var(--tap-min); padding: 6px 16px; }
+    /* Randul perioadei se rupea urat la 375px: locatia are 130px rezervati, iar
+       intervalul + eticheta nu mai incapeau langa. Doua randuri, fara min-width. */
+    .ip-item { flex-wrap: wrap; row-gap: 4px; min-height: var(--tap-min); }
+    .ip-loc { min-width: 0; }
+    .ip-item :global(.ip-edit) { align-self: center; }
+  }
 </style>

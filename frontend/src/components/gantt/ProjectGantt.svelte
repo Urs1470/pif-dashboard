@@ -407,5 +407,11 @@
 
   @media (max-width: 720px) {
     .g-table { width: 210px; }
+    /* Bara de unelte a Ganttului: „Perioadă", „PDF", „Excel" erau de 36px.
+       Ele deschid modalul de perioada si descarca exporturile — actiuni pe care
+       le faci exact o data si trebuie sa nimeresti din prima. */
+    .exp-btn { min-height: var(--tap-min); padding: 7px 14px; }
+    /* Banda de perioada din timeline: e si buton (deschide editorul perioadei). */
+    .impl-band { min-height: var(--tap-min); }
   }
 </style>

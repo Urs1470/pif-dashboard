@@ -482,6 +482,31 @@
   }
   function endDrag() { dragged = null; dropZi = '' }
 
+  // ===== asezare prin atingere =====
+  // Drag-and-drop-ul HTML5 nu exista pe touch: nu se declanseaza niciun
+  // `dragstart` la deget. Consecinta era ca „Proiecte fara perioada" NU se putea
+  // planifica deloc de pe telefon — singura cale era sa deschizi proiectul si sa-i
+  // adaugi o perioada din alta pagina.
+  //
+  // Aici nu punem un al doilea calendar peste calendar (un DatePicker ar fi asta).
+  // Alegi proiectul, apoi atingi ziua — acelasi gest ca la drag, doar rupt in doua
+  // atingeri, pe aceeasi harta. Ramane si dragul, neatins, pentru mouse.
+  let asezare = $state(null)   // proiectul ales, in asteptarea unei zile
+
+  function comutaAsezare(proj) {
+    asezare = asezare?.proiect_id === proj.proiect_id ? null : proj
+  }
+  /** Ziua atinsa: daca ceva asteapta sa fie asezat, o consuma; altfel o selecteaza. */
+  function atingeZi(iso) {
+    if (asezare) {
+      const proj = asezare
+      asezare = null
+      planifica(proj, iso)
+      return
+    }
+    selectata = iso
+  }
+
   onMount(() => {
     ui.pageHeader = { title: 'Calendar', subtitle: 'Unde ești în fiecare zi' }
     // Planificatorul trimite aici cu #/calendar?zi=AAAA-LL-ZZ cand dai click pe o
@@ -495,6 +520,8 @@
   })
   onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
 </script>
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape' && asezare) asezare = null }} />
 
 <div class="page">
   {#if loading}
@@ -575,7 +602,8 @@
               class:drop={dropZi === g.iso}
               class:decizie
               class:split={impartita(g.iso)}
-              onclick={() => selectata = g.iso}
+              class:tinta={!!asezare}
+              onclick={() => atingeZi(g.iso)}
               ondragover={(e) => overZi(e, g.iso)}
               ondrop={(e) => dropPeZi(e, g.iso)}
             >
@@ -740,15 +768,21 @@
                  tine ALTCEVA — taskuri fara termen — si numele trebuie sa spuna
                  asta, nu sa le faca sa para acelasi lucru. -->
             <div class="pan-h">Proiecte fără perioadă <span class="cnt">{data.neplanificate.length}</span></div>
-            <div class="pan-hint">Trage pe o zi ca să planifici.</div>
+            <div class="pan-hint">
+              {#if asezare}Atinge ziua în care începe.{:else}Alege un proiect, apoi ziua. (Sau trage-l pe o zi.){/if}
+            </div>
             <div class="rail">
               {#each data.neplanificate as pr (pr.proiect_id)}
-                <div class="np" style="--c: {culoare(pr.client)}" draggable="true"
+                <button class="np" class:ales={asezare?.proiect_id === pr.proiect_id}
+                     style="--c: {culoare(pr.client)}" draggable="true"
+                     onclick={() => comutaAsezare(pr)}
+                     aria-pressed={asezare?.proiect_id === pr.proiect_id}
+                     title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început'}
                      ondragstart={(e) => dragProiect(e, pr)} ondragend={endDrag}>
                   <GripVertical size={12} />
                   <span class="np-t">{pr.nume}</span>
                   <span class="np-s" class:lucru={pr.status === 'pregatire'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
-                </div>
+                </button>
               {/each}
             </div>
           </div>
@@ -816,6 +850,11 @@
   .zi.decizie { border-color: var(--danger); }
   .zi.sel { background: var(--accent-subtle); outline: 2px solid var(--accent); outline-offset: -2px; }
   .zi.drop { border-style: dashed; border-color: var(--accent); background: var(--accent-subtle); }
+  /* Cat timp un proiect asteapta sa fie asezat, TOATE zilele arata ca destinatii
+     posibile — altfel „alege un proiect, apoi ziua" cere sa stii ca a doua
+     atingere face altceva decat de obicei. */
+  .zi.tinta { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .zi.tinta:hover, .zi.tinta:active { border-color: var(--accent); background: var(--accent-subtle); }
   .zi.split { box-shadow: inset 0 -3px 0 var(--purple); }
 
   .n { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
@@ -930,8 +969,15 @@
 
   .rail { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
   .np { display: flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: var(--radius-sm);
+        width: 100%; text-align: left; border: none;
         background: var(--bg-elevated); border-left: 3px solid var(--c); cursor: grab; }
   .np:active { cursor: grabbing; }
+  /* Ales, in asteptarea unei zile. Nu e „selectat" in sensul unei liste — e un
+     obiect ridicat, care asteapta sa fie pus jos. De aceea si calendarul se
+     schimba in acelasi timp (vezi `.zi.tinta`): daca doar chipul s-ar aprinde,
+     n-ai sti ca urmatoarea atingere pe o zi INSEAMNA ceva. */
+  .np.ales { background: var(--accent-subtle); box-shadow: inset 0 0 0 1px var(--accent); }
+  .np.ales .np-t { color: var(--text); font-weight: var(--fw-semibold); }
   .np-t { flex: 1; font-size: var(--font-micro); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .np-s { font-size: var(--font-micro); color: var(--text-faint); }
   .np-s.lucru { color: var(--accent); }
@@ -956,5 +1002,41 @@
     /* „+N" e de prisos pe telefon: numarul din antet numara TOATE lucrarile zilei,
        inclusiv cele care nu au incaput in benzi. */
     .plus { display: none; }
+
+    /* BENZILE DEVIN DECOR, CELULA DEVINE TINTA.
+       Pe telefon banda are 12px inaltime si nici text — deci nu e un obiect pe
+       care sa-l atingi, e o dunga de culoare care spune „aici e ceva". Dar sta
+       PESTE celula si ii fura atingerile: nimereai o dunga de 12px in loc de o
+       zi de ~50×60. Scoasa din calea degetului, toata celula raspunde, iar
+       lucrarile cu numele lor intreg si cu actiuni sunt in panoul de deasupra —
+       exact unde le trimite si numarul din coltul zilei. */
+    .banda { pointer-events: none; }
+
+    /* Navigarea si comutatoarele de mod: erau de 28px inaltime. */
+    .ico { width: var(--tap-min); height: var(--tap-min); }
+    .b-azi, .mods button { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
+    .nav { gap: var(--space-xs); flex: 1; }
+    .titlu { flex: 1; min-width: 0; font-size: var(--font-small); }
+    .bar { gap: var(--space-xs); }
+    .mods { width: 100%; }
+    .mods button { flex: 1; }
+    .mods button.ics { flex: 0 0 auto; margin-left: 0; }
+
+    /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
+       pastile de 22px, adica exact tipul de buton pe care il ratezi si apesi
+       „Scoate" in loc de „Mută". */
+    .b { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-tiny); }
+    .dec { gap: var(--space-xs); }
+    .mut { flex-wrap: wrap; }
+    .mut :global(.dp) { flex: 1 1 160px; }
+
+    /* Randurile din „Proiecte fără perioadă" sunt acum butoane (alegi, apoi
+       atingi ziua), deci trebuie sa aiba caseta unui buton. */
+    .np { min-height: var(--tap-min); padding: 6px 8px; }
+    .np-t { font-size: var(--font-tiny); }
+    .rail { max-height: none; gap: 6px; }
+
+    .kpi { min-height: var(--tap-min); }
+    .it-t { min-height: var(--tap-min); }
   }
 </style>

@@ -1,12 +1,73 @@
+<script module>
+  // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
+  let blocari = 0
+  let yBlocat = 0
+</script>
+
 <script>
-  import { tick } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
 
   let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
+
+  // Pe telefon modalul e un SHEET lipit de marginea de jos, nu o caseta centrata:
+  // acolo ajunge degetul mare fara sa muti mana, si acolo se asteapta gestul de
+  // inchidere. Deci si intrarea trebuie sa vina de jos — un `scale` din centru
+  // spune „fereastra", nu „sertar".
+  let sheet = $state(false)
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const apply = () => { sheet = mq.matches }
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  })
+
+  // Cat timp sheet-ul e deschis, pagina de dedesubt nu se mai misca. Fara asta,
+  // derularea continua in pagina din spate cand ajungi la capatul continutului din
+  // sheet — iesi din modal si ai pierdut si locul din lista.
+  //
+  // Doar pe telefon: pe desktop pagina din spate se derula dintotdeauna si nimic
+  // nu se pierde, iar `position: fixed` pe body langa `scrollbar-gutter: stable`
+  // introduce un salt lateral pe care n-are rost sa-l platim.
+  //
+  // Contorul e pentru cazul in care doua sheet-uri sunt deschise in acelasi timp:
+  // al doilea ar citi `scrollY` deja blocat (0) si, la inchidere, ar „restaura"
+  // pagina la inceput. Blocheaza primul, deblocheaza ultimul.
+  $effect(() => {
+    if (!open || !sheet) return
+    const b = document.body
+    if (blocari === 0) {
+      yBlocat = window.scrollY
+      b.style.position = 'fixed'
+      b.style.top = `-${yBlocat}px`
+      b.style.width = '100%'
+    }
+    blocari++
+    return () => {
+      blocari--
+      if (blocari > 0) return
+      b.style.position = ''
+      b.style.top = ''
+      b.style.width = ''
+      window.scrollTo(0, yBlocat)
+    }
+  })
+
+  // Sheet-ul urca de sub marginea ecranului, indiferent cat de inalt e — `fly` ar
+  // avea nevoie de o distanta in px, iar aceeasi distanta arata „sarit de jos" pe
+  // un sheet scund si „abia miscat" pe unul inalt. Procentul e din propria inaltime,
+  // deci pornirea e mereu exact sub margine.
+  function intra(node) {
+    const duration = motionDuration(DUR_BASE)
+    if (sheet) return { duration, easing: cubicOut, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    return scale(node, { start: 0.96, duration })
+  }
 
   function onBackdrop(e) {
     if (e.target === e.currentTarget) open = false
@@ -41,7 +102,8 @@
 
 {#if open}
   <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
-    <div class="modal modal-{size}" transition:scale={{ start: 0.96, duration: motionDuration(DUR_BASE) }}>
+    <div class="modal modal-{size}" class:sheet transition:intra>
+      {#if sheet}<span class="sheet-grip" aria-hidden="true"></span>{/if}
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
@@ -149,14 +211,76 @@
     flex-wrap: wrap;
   }
 
+  /* ===== Telefon: SHEET, nu caseta centrata =====
+     O caseta centrata pe un ecran de 812px iti pune butoanele la mijloc, unde
+     degetul mare nu ajunge fara sa muti mana, iar cand se deschide tastatura
+     casetei ii ramane jumatate de ecran si sare in sus. Sheet-ul e lipit de
+     marginea de jos: acolo ajunge degetul, acolo se opreste tastatura si de acolo
+     vine gestul de inchidere.
+     Manerul de sus nu e decor — spune „asta se trage/inchide de aici" si da o zona
+     de apucat care nu e nici titlu, nici buton. */
   @media (max-width: 768px) {
+    .backdrop {
+      align-items: flex-end;
+      padding: 0;
+    }
     .modal {
       max-width: 100%;
-      max-height: 90dvh;
+      /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul
+         nici cat timp bara se retrage. */
+      max-height: min(92dvh, 100dvh - var(--safe-top) - 24px);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      border-bottom: none;
+      /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
+      box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
     }
+    .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom { max-width: 100%; }
+
+    .sheet-grip {
+      flex-shrink: 0;
+      width: 36px;
+      height: 4px;
+      margin: 8px auto 0;
+      border-radius: var(--radius-full);
+      background: var(--border-strong);
+    }
+    .modal.sheet .modal-header { padding-top: var(--space-12); }
+    /* 32px e o tinta de cursor. Degetul are nevoie de 44, iar `X`-ul e singura
+       iesire cand tastatura acopera restul sheet-ului. Marginea negativa il tine
+       aliniat optic cu titlul, desi caseta lui a crescut. */
+    .modal-close { width: var(--tap-min); height: var(--tap-min); margin-right: -10px; }
+
+    .modal-header { padding-left: var(--space-md); padding-right: var(--space-md); }
+    .modal-body {
+      padding: var(--space-md);
+      /* Ultimul rand din corp nu trebuie sa cada sub bara de gesturi. Cand exista
+         footer, el poarta insetul si aici nu se mai adauga. */
+      padding-bottom: calc(var(--space-md) + var(--safe-bottom));
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal:has(.modal-footer) .modal-body { padding-bottom: var(--space-md); }
+    .modal-footer {
+      padding: var(--space-12) var(--space-md) calc(var(--space-12) + var(--safe-bottom));
+    }
+    /* Actiunile ocupa latimea si stau la indemana: pe telefon un buton de 100px
+       intr-un colt e o tinta mai mica decat trebuie, iar ordinea inversata pune
+       actiunea principala sub degetul mare, la dreapta. */
+    :global(.modal-footer .modal-actions) {
+      gap: var(--space-sm);
+    }
+    :global(.modal-footer .modal-actions > *) {
+      flex: 1 1 0;
+      min-height: var(--tap-min);
+      justify-content: center;
+    }
+
     /* doc = sheet pe tot ecranul pe mobil */
     .backdrop:has(.modal-doc) { padding: 0; }
-    .modal-doc { height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; }
+    .modal-doc {
+      height: 100dvh; max-height: 100dvh;
+      border-radius: 0; border: none;
+      box-shadow: none;
+    }
     .modal-doc .modal-header { padding-top: calc(var(--space-md) + var(--safe-top)); }
     .modal-doc .modal-footer { padding-bottom: calc(var(--space-md) + var(--safe-bottom)); }
   }

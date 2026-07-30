@@ -403,5 +403,14 @@
 
   @media (max-width: 768px) {
     .palette-backdrop { padding-top: calc(var(--space-lg) + var(--safe-top)); padding-left: calc(var(--space-md) + var(--safe-left)); padding-right: calc(var(--space-md) + var(--safe-right)); }
+    /* Paleta ramane SUS, nu devine sheet: aici se deschide tastatura imediat, iar
+       tastatura ocupa jumatatea de jos. Un sheet ar fi impins direct sub ea.
+       Ce se schimba e cat loc are lista si cat de mari sunt randurile. */
+    .palette-search { padding: var(--space-12) var(--space-md); }
+    .palette-search input { min-height: var(--tap-min); }
+    /* Sugestia de scurtatura nu are ce cauta pe un ecran fara tastatura fizica. */
+    .palette-search kbd { display: none; }
+    .palette-list { max-height: min(400px, 52dvh); overscroll-behavior: contain; }
+    .palette-item { min-height: var(--tap-min); }
   }
 </style>

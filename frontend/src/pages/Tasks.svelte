@@ -511,7 +511,11 @@
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
      cutii lipite („de parca sunt rupte in doua"). */
   .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: opacity var(--dur-base) var(--ease); }
-  .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere si randul
+     ar rămâne impins la dreapta. */
+  @media (hover: hover) {
+    .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+  }
   .tix { font-family: var(--font-mono); font-size: 1rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 70%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
@@ -611,5 +615,17 @@
     .task-actions { flex-basis: 100%; justify-content: flex-end; gap: var(--space-xs); }
     /* Tinte de atingere >=44px pe actiunile de rand */
     .task-actions button, .check { min-width: var(--tap-min); min-height: var(--tap-min); }
+    /* Cautarea si filtrele: caseta de cautare avea 25px inaltime utila, iar
+       chipurile 30. */
+    /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el
+       primeste focus. */
+    .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
+    .search-box input { align-self: stretch; min-height: var(--tap-min); }
+    .search-box :global(svg) { align-self: center; }
+    .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
+    .filters { gap: var(--space-xs); }
+    .tmain { min-height: var(--tap-min); }
+    .mf-input { min-height: var(--tap-min); }
+    .page-header :global(.btn) { min-height: var(--tap-min); }
   }
 </style>

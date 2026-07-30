@@ -169,6 +169,37 @@
     .ctx { gap: var(--space-sm); }
     /* Pe telefon rămâne doar ieșirea următoare — restul e context de desktop. */
     .apoi { display: none; }
-    .ce { max-width: 20ch; }
+
+    /* Prima linie a ecranului „Acasă" e si prima tinta. Era o pastila de 34px
+       inalta si intinsa pe toata latimea — destul de lata cat s-o vezi, prea joasa
+       cat s-o atingi. Trece pe doua randuri (cand+unde sus, lucrarea si intervalul
+       dedesubt): incape numele intreg al lucrarii, care la 20ch se taia mereu. */
+    .pr {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      align-items: center;
+      row-gap: 2px; column-gap: 7px;
+      width: 100%; min-height: var(--tap-min);
+      padding: 8px 12px 8px 10px;
+      border-radius: var(--radius-md);
+    }
+    .sep { display: none; }
+    /* Pozitiile sunt EXPLICITE, nu lasate pe seama ordinii din DOM: `.ce` vine
+       inaintea lui `.zile` in markup, deci auto-plasarea umplea randul 2 cu
+       eticheta si impingea intervalul pe un al treilea rand.
+       Sus: cand · unde ... interval. Jos: ce lucrare, pe toata latimea — la 20ch
+       eticheta se taia mereu, iar exact ea spune ce faci acolo. */
+    .ico  { grid-area: 1 / 1; }
+    .cand { grid-area: 1 / 2; }
+    .unde { grid-area: 1 / 3; justify-self: start; overflow: hidden; text-overflow: ellipsis; }
+    .zile { grid-area: 1 / 4; justify-self: end; }
+    .ce {
+      grid-area: 2 / 1 / 3 / -1;
+      max-width: none; white-space: normal;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+    }
+
+    .dec { min-height: var(--tap-min); padding: 4px 12px; font-size: var(--font-tiny); }
+    .gol { min-height: var(--tap-min); }
   }
 </style>

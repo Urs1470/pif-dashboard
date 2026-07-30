@@ -135,5 +135,10 @@
       padding-right: calc(var(--space-md) + var(--safe-right));
     }
 
+    /* Cele doua tinte din bara — sigla (duce Acasa) si comutatorul de tema — erau
+       de 25px si 36px. Casetele cresc la 44 fara ca semnele sa creasca: sigla isi
+       pastreaza inaltimea textului, butonul isi pastreaza iconita de 18px. */
+    .brand { min-height: var(--tap-min); }
+    .header-btn { width: var(--tap-min); height: var(--tap-min); margin-right: -8px; }
   }
 </style>
