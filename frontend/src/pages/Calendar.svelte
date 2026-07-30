@@ -224,21 +224,66 @@
     return Math.min(MAX_BENZI, max)
   })
 
-  /** Randurile zilei: pozitia din array E banda, `null` = rand gol (distantier,
-   *  ca barele vecine sa ramana aliniate pe orizontala). */
-  function randurileZilei(iso) {
-    const randuri = new Array(nrBenzi).fill(null)
-    let ascunse = 0
-    for (const p of aleZilei(iso)) {
-      const l = benzi.get(p.id) ?? 0
-      if (l < nrBenzi) randuri[l] = p
-      else ascunse++
-    }
-    return { randuri, ascunse }
+  /** Lucrarile care nu incap in benzile disponibile — se numara in „+N". */
+  function ascunseZi(iso) {
+    return aleZilei(iso).filter(p => (benzi.get(p.id) ?? 0) >= nrBenzi).length
   }
 
-  function esteInceput(p, iso) { return iso === p.data_start }
-  function esteSfarsit(p, iso) { return iso === (p.data_sfarsit || p.data_start) }
+  /** Ce se deseneaza: UN element per lucrare per SAPTAMANA, nu per zi.
+   *
+   *  De ce s-a schimbat: o perioada de patru zile era desenata ca patru obiecte,
+   *  fiecare cu numele scris din nou si trunchiat la latimea UNEI celule. Pentru o
+   *  singura lucrare de sase zile, „Pregatire documentatie …" aparea de noua ori —
+   *  si fiecare copie era ciuntita, desi lucrarea avea sase celule de spatiu. Doua
+   *  trunchieri diferite ale aceluiasi text, una langa alta, se citesc ca doua
+   *  lucruri diferite, nu ca unul care continua.
+   *
+   *  Acum felia se intinde peste coloane (`grid-column: <col> / span <n>`), deci
+   *  numele se scrie o data si are la dispozitie toata latimea lucrarii. Singura
+   *  taietura e la granita de saptamana, unde randul se termina fizic — acolo
+   *  capatul rămâne drept si eticheta primeste „…", ca sa se vada ca vine de mai
+   *  sus.
+   */
+  const bare = $derived.by(() => {
+    const out = []
+    if (!grila.length) return out
+    const prima = grila[0].iso
+    const ultimaZi = grila[grila.length - 1].iso
+    const idx = new Map(grila.map((g, i) => [g.iso, i]))
+    for (const p of (data?.perioade || [])) {
+      const banda = benzi.get(p.id) ?? 0
+      if (banda >= nrBenzi) continue          // peste plafon: se numara in „+N"
+      const a = p.data_start
+      const b = p.data_sfarsit || p.data_start
+      if (!a || b < prima || a > ultimaZi) continue
+      let i = idx.get(a < prima ? prima : a)
+      const fin = idx.get(b > ultimaZi ? ultimaZi : b)
+      if (i === undefined || fin === undefined) continue
+      while (i <= fin) {
+        const capat = Math.min(fin, Math.floor(i / 7) * 7 + 6)
+        out.push({
+          p, banda,
+          rand: Math.floor(i / 7) + 1,
+          col: (i % 7) + 1,
+          span: capat - i + 1,
+          zile: grila.slice(i, capat + 1).map(g => g.iso),
+          inceput: grila[i].iso === a,        // capatul ADEVARAT, nu al feliei
+          sfarsit: grila[capat].iso === b,
+          cheie: `${p.id}|${grila[i].iso}`,
+        })
+        i = capat + 1
+      }
+    }
+    return out
+  })
+
+  /** Click pe banda selecteaza ziua de sub cursor, nu inceputul lucrarii: pe o
+   *  banda de patru zile, un click pe joi trebuie sa deschida joi. */
+  function clickBanda(e, b) {
+    const r = e.currentTarget.getBoundingClientRect()
+    const k = Math.floor(((e.clientX - r.left) / r.width) * b.span)
+    selectata = b.zile[Math.min(b.span - 1, Math.max(0, k))]
+  }
 
   /** Numele lucrarii, nu al clientului: „Montaj", nu „Continental". */
   function etichetaLucrare(p) {
@@ -463,7 +508,7 @@
         <button class="ico" onclick={() => pas(-1)} aria-label="Înapoi"><ChevronLeft size={16} /></button>
         <span class="titlu">{mod === 'luna' ? monthLabel(anchor) : `${shortDate(weekStart(anchor))} – ${shortDate(addDays(weekStart(anchor), 13))}`}</span>
         <button class="ico" onclick={() => pas(1)} aria-label="Înainte"><ChevronRight size={16} /></button>
-        <button class="azi" onclick={laAzi}>Azi</button>
+        <button class="b-azi" onclick={laAzi}>Azi</button>
       </div>
       <div class="mods">
         <button class:on={mod === 'saptamani'} onclick={() => setMod('saptamani')}>2 săpt.</button>
@@ -508,14 +553,21 @@
         <!-- Inaltimea celulei urmeaza numarul real de benzi din fereastra: o luna
              cu o singura lucrare pe zi nu mai are jumatate de celula goala, iar
              una densa ca augustul incape fara sa strivim barele. -->
-        <div class="grid" class:sapt={mod === 'saptamani'} style="--benzi: {Math.max(1, nrBenzi)}">
-          {#each grila as g (g.iso)}
+        <!-- `trag` scoate benzile din calea cursorului cat timp tragi: ele stau
+             PESTE celule, deci altfel un drop peste o banda de patru zile n-ar
+             sti pe care zi a cazut. -->
+        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!dragged}
+             style="--benzi: {Math.max(1, nrBenzi)}">
+          {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
-            {@const zi = randurileZilei(g.iso)}
+            {@const ascunse = ascunseZi(g.iso)}
             {@const capturi = incepDeplasari(g.iso)}
+            <!-- Celulele se asaza EXPLICIT in grila. Fara asta, benzile (care au
+                 poziție explicită) ar impinge celulele auto-plasate din loc. -->
             <button
               class="zi"
+              style="grid-row: {Math.floor(i / 7) + 1}; grid-column: {i % 7 + 1}"
               class:alta={g.alta}
               class:we={isWeekend(g.iso)}
               class:azi={g.iso === azi}
@@ -544,36 +596,43 @@
                     {#if d.sediu}<Building2 size={9} />{:else}<MapPin size={9} />{/if}{d.sediu && d.client ? `Sediu · ${scurt(d.client)}` : d.sediu ? 'Sediu' : scurt(d.client)}
                   </span>
                 {/each}
+                {#if items.length > 1}
+                  <!-- Doar pe telefon. La 390px o celula are ~48px: nu incape text,
+                       iar „Upg…" nu spune nimic. Numarul sta in ANTET, nu la
+                       subsol: la subsol cadea sub ultima banda. -->
+                  <span class="grp">{items.length}</span>
+                {/if}
               </div>
               {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>{/if}
 
-              <!-- O bara per LUCRARE, pe banda ei. Randurile goale sunt
-                   distantiere: fara ele, o lucrare de doua zile s-ar muta de pe
-                   un rand pe altul si bara n-ar mai citi ca un singur lucru. -->
-              <div class="segs">
-                {#each zi.randuri as p, l (l)}
-                  {#if p}
-                    <div class="seg" class:start={esteInceput(p, g.iso)} class:end={esteSfarsit(p, g.iso)}
-                         class:sediu={p.locatie === 'sediu'} class:pregatire={p.faza === 'pregatire'}
-                         style="--c: {culoareLucrare(p)}"
-                         draggable="true"
-                         ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, p) }}
-                         ondragend={endDrag}
-                         title={etichetaLucrareLunga(p)}>
-                      <span class="seg-t">{etichetaBara(p)}</span>
-                    </div>
-                  {:else}
-                    <div class="seg-gol" aria-hidden="true"></div>
-                  {/if}
-                {/each}
-              </div>
-              {#if zi.ascunse}<span class="plus">+{zi.ascunse}</span>{/if}
-              {#if items.length > 1}
-                <!-- Doar pe telefon. La 390px o celula are ~48px: nu incape text,
-                     iar „Upg…" nu spune nimic. Numarul de lucrari se citeste, si
-                     detaliul e oricum in panoul de deasupra, la o atingere. -->
-                <span class="grp">{items.length}</span>
-              {/if}
+              <!-- Barele NU mai stau in celula: o lucrare de mai multe zile e un
+                   singur element, desenat peste coloane mai jos. Celula pastreaza
+                   doar antetul, semnalele si inaltimea rezervata benzilor. -->
+              {#if ascunse}<span class="plus">+{ascunse}</span>{/if}
+            </button>
+          {/each}
+
+          <!-- Benzile, peste celule: UN element per lucrare per saptamana. Vezi
+               comentariul de la `bare` pentru ce anume repara. -->
+          {#each bare as b (b.cheie)}
+            <button
+              class="banda"
+              class:inceput={b.inceput}
+              class:sfarsit={b.sfarsit}
+              class:sediu={b.p.locatie === 'sediu'}
+              class:pregatire={b.p.faza === 'pregatire'}
+              style="grid-row: {b.rand}; grid-column: {b.col} / span {b.span}; --c: {culoareLucrare(b.p)}; --i: {b.banda}"
+              draggable="true"
+              onclick={(e) => clickBanda(e, b)}
+              ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, b.p) }}
+              ondragend={endDrag}
+              title={etichetaLucrareLunga(b.p)}
+            >
+              <!-- Pe o banda de mai multe zile incape si detaliul din paranteze —
+                   `etichetaBara` il taia doar pentru ca inainte fiecare bara avea
+                   latimea unei singure celule. Acum se taie doar cand chiar nu
+                   incape. -->
+              <span class="banda-t">{b.inceput ? '' : '… '}{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
             </button>
           {/each}
         </div>
@@ -705,11 +764,15 @@
   .bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
   .nav { display: flex; align-items: center; gap: 6px; }
   .titlu { font-size: var(--font-body); font-weight: var(--fw-semibold); min-width: 148px; text-align: center; }
-  .ico, .azi, .mods button { border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-secondary);
+  /* `b-azi`, nu `azi`: clasa `azi` e si pe celula zilei de azi (`.zi.azi`), iar un
+     selector neprefixat o prindea si pe ea — celula primea `display: inline-flex`
+     cu centrare si `padding: 0 10px`, deci numarul zilei de azi sta centrat in
+     mijlocul celulei in loc de colt. Doua lucruri diferite, doua nume. */
+  .ico, .b-azi, .mods button { border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-secondary);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .ico { width: 28px; height: 28px; }
-  .azi, .mods button { height: 28px; padding: 0 10px; font-size: var(--font-tiny); }
-  .ico:hover, .azi:hover, .mods button:hover { border-color: var(--accent); color: var(--accent); }
+  .b-azi, .mods button { height: 28px; padding: 0 10px; font-size: var(--font-tiny); }
+  .ico:hover, .b-azi:hover, .mods button:hover { border-color: var(--accent); color: var(--accent); }
   .mods { display: flex; gap: 4px; }
   .mods button.on { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-ring); }
   .mods button.ics { gap: 5px; margin-left: 6px; }
@@ -725,9 +788,13 @@
   .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-md); align-items: start; }
 
   .cal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm); }
-  .wd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+  .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 4px; }
   .wd span { font-size: var(--font-micro); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  /* `minmax(0, 1fr)`, nu `1fr`: `1fr` inseamna `minmax(auto, 1fr)`, deci o banda
+     care se intinde peste coloane si are `nowrap` isi impune latimea minima si
+     largeste coloanele pe care le acopera. Zilele nu mai erau egale si nu se mai
+     aliniau cu antetul de zile al saptamanii. */
+  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 
   .zi { position: relative; min-height: calc(38px + var(--benzi, 1) * 20px); padding: 5px 5px 4px; border-radius: var(--radius-md);
         border: 1px solid var(--border); background: var(--bg-elevated); text-align: left; cursor: pointer;
@@ -755,29 +822,43 @@
   .zi.azi .n { color: var(--accent); font-weight: var(--fw-bold); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
 
-  .segs { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .seg { position: relative; min-height: 17px; padding: 1px 5px; background: color-mix(in srgb, var(--c) 26%, transparent);
-         border-left: 3px solid var(--c); cursor: grab; margin-right: -5px; margin-left: -5px; padding-left: 5px; }
-  .seg.start { margin-left: 0; border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
-  .seg.end { margin-right: 0; border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
-  .seg:not(.start) { border-left: none; padding-left: 5px; }
-  .seg:active { cursor: grabbing; }
+  /* O LUCRARE = O BANDA, oricat de multe zile ar tine. Se intinde peste coloane,
+     acopera si spatiile dintre ele, deci numele se scrie o data si are toata
+     latimea lucrarii la dispozitie.
+     `--i` e banda (randul) lucrarii. Decalajul de sus trebuie sa fie EXACT cel al
+     zonei de bare din celula, altfel benzile plutesc pe langa celule:
+       bordura 1 + padding 5 + antet 15 + gap 3 = 24px
+     iar pasul unei benzi = inaltimea barei 17 + gap 3 = 20px. Cele doua numere
+     sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna. */
+  .grid { --h-antet: 24px; --h-banda: 20px; }
+  .banda { position: relative; z-index: 1; align-self: start;
+           margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda));
+           min-height: 17px; padding: 1px 6px; border: none; text-align: left;
+           cursor: grab; background: color-mix(in srgb, var(--c) 26%, transparent); }
+  .banda:active { cursor: grabbing; }
+  /* Capetele rotunjite spun unde INCEPE si unde se TERMINA lucrarea. La granita de
+     saptamana capatul rămâne drept si iese peste marginea celulei: asa se citeste
+     „continua", nu „s-a incheiat". */
+  .banda.inceput { margin-left: 6px; padding-left: 5px; border-left: 3px solid var(--c);
+                   border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+  .banda.sfarsit { margin-right: 6px;
+                   border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+  .banda:not(.inceput) { margin-left: -3px; }
+  .banda:not(.sfarsit) { margin-right: -3px; }
+  .grid.trag .banda { pointer-events: none; }
   /* Zi la sediu = hasurat, zi pe teren = plin. Diferenta conteaza: una e zi de
      drum, cealalta nu. Aceeasi culoare de client, alta textura. */
-  .seg.sediu { background: repeating-linear-gradient(135deg,
+  .banda.sediu { background: repeating-linear-gradient(135deg,
       color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
       transparent 4px 8px); }
-  /* Rand gol = distantier. Trebuie sa aiba EXACT inaltimea unei bare, altfel
-     benzile vecine nu se mai aliniaza si continuitatea pe orizontala se pierde. */
-  .seg-gol { min-height: 17px; }
   /* Faza e a DOUA axa, independenta de locatie: pregatirea e mai palida si
      conturata, implementarea e plina. Se combina cu hasura de sediu. */
-  .seg.pregatire { background: color-mix(in srgb, var(--c) 9%, transparent);
-                   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
-  .seg.pregatire.sediu { background: repeating-linear-gradient(135deg,
+  .banda.pregatire { background: color-mix(in srgb, var(--c) 9%, transparent);
+                     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
+  .banda.pregatire.sediu { background: repeating-linear-gradient(135deg,
       color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
-  .seg.pregatire .seg-t { color: var(--text-secondary); }
-  .seg-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .banda.pregatire .banda-t { color: var(--text-secondary); }
+  .banda-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Antet de inaltime fixa — vezi comentariul din template: orice variatie aici
      desincronizeaza benzile pe orizontala. nowrap + overflow hidden garanteaza
@@ -792,12 +873,14 @@
   .cap:active { cursor: grabbing; }
   .cap.sediu { color: var(--text-dim); }
 
-  .plus { align-self: flex-start; font-size: var(--font-micro); color: var(--text-faint); }
+  /* Jos, nu sus: barele nu mai stau in celula, deci „+N" ar ajunge chiar sub
+     antet, peste zona benzilor. */
+  .plus { margin-top: auto; align-self: flex-start; font-size: var(--font-micro); color: var(--text-faint); }
   /* Eticheta de sub zi e ACUM exclusiv pentru telefon — pe desktop textul sta in
      bara, pe fiecare zi a deplasarii. Un singur rand, obligatoriu: lasata sa se
      impacheteze, umfla celula si trage dupa ea tot randul de saptamana. */
-  .grp { display: none; font-size: var(--font-micro); color: var(--text-faint); margin-top: auto;
-         max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .grp { display: none; font-size: var(--font-micro); color: var(--text-faint);
+         margin-left: auto; white-space: nowrap; }
 
   .leg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 9px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
   .leg-i { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-micro); color: var(--text-dim); }
@@ -859,13 +942,19 @@
   }
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
-    .zi { min-height: calc(30px + var(--benzi, 1) * 14px); }
-    .grid.sapt .zi { min-height: calc(46px + var(--benzi, 1) * 14px); }
-    .seg-t { display: none; }
+    /* Benzile sunt mai subtiri pe telefon, deci si pasul lor — cele doua numere
+       trebuie sa rămână in acord cu `--h-banda`, altfel benzile ies din celule. */
+    .grid { --h-banda: 15px; }
+    .zi { min-height: calc(30px + var(--benzi, 1) * 15px); }
+    .grid.sapt .zi { min-height: calc(46px + var(--benzi, 1) * 15px); }
+    .banda { min-height: 12px; }
+    .banda-t { display: none; }
     /* Captura se taia oricum la o felie ilizibila intr-o celula de ~48px, iar
        „unde ești" scrie in panoul de deasupra. */
     .cap { display: none; }
-    .grp { display: block; text-align: right; }
-    .seg { min-height: 12px; }
+    .grp { display: block; }
+    /* „+N" e de prisos pe telefon: numarul din antet numara TOATE lucrarile zilei,
+       inclusiv cele care nu au incaput in benzi. */
+    .plus { display: none; }
   }
 </style>

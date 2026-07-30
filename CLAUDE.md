@@ -253,9 +253,10 @@ variaza — ce lucrare faci. Acum:
 
 - **O bara per lucrare**, cu numele lucrarii (`implementari.eticheta`), nu al clientului.
 - **Culoarea urmareste proiectul**, ca aceeasi lucrare sa fie acelasi lucru de la o zi la alta.
-- **Banda (randul) e stabila pe toata durata lucrarii** — impachetare clasica pe intervale,
-  cu randuri goale ca distantiere. Fara asta, o lucrare de doua zile apare pe randul 1 luni si
-  pe randul 2 marti, iar bara nu mai citeste ca un singur lucru.
+- **O lucrare de N zile e UN element de N zile latime**, nu N bucati. Vezi mai jos.
+- **Banda (randul) e stabila pe toata durata lucrarii** — impachetare clasica pe intervale.
+  Fara asta, o lucrare de doua zile apare pe randul 1 luni si pe randul 2 marti, iar bara nu
+  mai citeste ca un singur lucru.
 - **Antetul zilei are inaltime FIXA** (numar + captura deplasarii). Captura a stat initial pe
   rand propriu si impingea barele in jos doar in zilele de plecare — un rand in plus intr-o
   singura celula desincronizeaza toata saptamana.
@@ -267,6 +268,42 @@ variaza — ce lucrare faci. Acum:
   numarul de lucrari, iar detaliul e in panoul de deasupra.
 - Cand ziua selectata e goala, panoul arata **„Urmeaza"** — altfel ai naviga luni intregi
   goale ca sa afli cand iesi data viitoare.
+
+### O perioada de mai multe zile e UN element (2026-07-30)
+
+Ion: *„regandeste cum arata in calendar perioadele de implementare pe mai multe zile."*
+
+Prima versiune desena o bara **in fiecare celula** a perioadei, fiecare cu numele scris din
+nou si trunchiat la latimea UNEI zile. Pentru o lucrare de opt zile, „Pregatire documentatie
+…" aparea de **noua** ori — si fiecare copie era ciuntita, desi lucrarea avea sase celule de
+spatiu. Doua trunchieri diferite ale aceluiasi text, una langa alta, se citesc ca doua lucruri
+diferite, nu ca unul care continua.
+
+Acum benzile sunt **elemente ale grilei, peste celule**, cu `grid-column: <col> / span <n>` —
+`bare` in `Calendar.svelte` taie fiecare perioada in felii de saptamana. Numele se scrie o
+data per felie si foloseste toata latimea. Capetele rotunjite arata inceputul si sfarsitul
+REAL; la granita de saptamana capatul rămâne drept si felia urmatoare poarta „…".
+
+Trei capcane, toate lovite:
+
+- **`minmax(0, 1fr)`, nu `1fr`** pentru coloane. `1fr` inseamna `minmax(auto, 1fr)`, deci o
+  banda care se intinde peste coloane si are `nowrap` isi impune latimea minima si largeste
+  coloanele pe care le acopera. Zilele nu mai erau egale si se desincronizau de antetul
+  zilelor saptamanii.
+- **Celulele trebuie asezate EXPLICIT** (`grid-row`/`grid-column` calculate din index). Altfel
+  auto-plasarea sare peste pozitiile ocupate de benzi si celulele se muta din loc.
+- **Benzile devin transparente la cursor cat timp tragi** (`.grid.trag .banda`). Ele stau
+  PESTE celule, deci altfel un drop peste o banda de patru zile n-ar sti pe care zi a cazut.
+
+Decalajul de sus al benzii trebuie sa fie exact zona de bare din celula
+(`--h-antet: 24px` = bordura 1 + padding 5 + antet 15 + gap 3) cu pasul `--h-banda: 20px`
+(bara 17 + gap 3). Numerele sunt aceleasi cu cele din `min-height` al celulei — **se schimba
+impreuna**, altfel benzile plutesc pe langa celule.
+
+Bonus prins in aceeasi trecere: clasa `azi` era pe **doua** lucruri diferite — butonul „Azi"
+din bara de sus si celula zilei de azi (`.zi.azi`). Selectorul neprefixat `.azi` prindea si
+celula, care primea `display: inline-flex` cu centrare si `padding: 0 10px` — de aceea
+numarul zilei de azi stătea centrat in mijlocul celulei. Butonul e acum `.b-azi`.
 
 ### Planul de departament (`/departament`)
 
