@@ -82,7 +82,9 @@ def close_db(exc=None):
 # v34: taskul are doar facut/nefacut. `prioritate` a plecat (era saturata: 54% si
 #      80% „urgent"), iar statusul se restrange la to_do/done — restul valorilor
 #      erau in selector, dar pe zero randuri.
-SCHEMA_VERSION = 34
+# v35: `proiecte.data_finalizare` — perioadele unui proiect inchis se taie la ziua
+#      INCHIDERII, nu la ziua de azi.
+SCHEMA_VERSION = 35
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1178,6 +1180,38 @@ def migrate_v33_to_v34():
     logger.info('Migration v33->v34 completed')
 
 
+def migrate_v34_to_v35():
+    """v34 -> v35: `proiecte.data_finalizare` — ziua in care proiectul s-a inchis.
+
+    Fara ea, v33 tăia perioadele proiectelor finalizate la ZIUA DE AZI, nu la ziua
+    inchiderii. Ion a finalizat un proiect pe 29, perioada era 29-30, iar 30 tot
+    aparea in calendar: „am finalizat un proiect de ieri dar a mai aparut si pe azi".
+    Reperul corect e cand ai inchis, nu cand te uiti.
+
+    Backfill din `updated_at` pentru proiectele deja finalizate — e cea mai buna
+    dovada disponibila si se potriveste: proiectul cu motoare extruder avea
+    `updated_at = 2026-07-29T16:19`, exact ziua inchiderii.
+
+    Se pune la trecerea pe `finalizat` si se STERGE la redeschidere (vezi
+    blueprints/projects.py), ca redeschiderea sa readuca perioadele intacte.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cols = {r[1] for r in cursor.execute('PRAGMA table_info(proiecte)')}
+    if 'data_finalizare' not in cols:
+        cursor.execute('ALTER TABLE proiecte ADD COLUMN data_finalizare TEXT')
+        cursor.execute("UPDATE proiecte SET data_finalizare = substr(updated_at, 1, 10) "
+                       "WHERE status = 'finalizat' "
+                       "  AND updated_at IS NOT NULL AND TRIM(updated_at) <> ''")
+        logger.info('Migration v34->v35: added proiecte.data_finalizare, '
+                    'backfilled %d rand(uri) din updated_at' % cursor.rowcount)
+    conn.commit()
+    conn.close()
+    logger.info('Migration v34->v35 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1347,6 +1381,11 @@ def run_migrations():
         set_schema_version(34)
         current_version = 34
 
+    if current_version < 35:
+        migrate_v34_to_v35()
+        set_schema_version(35)
+        current_version = 35
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1431,6 +1470,7 @@ def init_db():
             data_incepere TEXT,
             data_crearii TEXT,
             status TEXT DEFAULT 'pregatire',
+            data_finalizare TEXT,
             observatii TEXT,
             nr_comanda TEXT,
             nr_contract TEXT,

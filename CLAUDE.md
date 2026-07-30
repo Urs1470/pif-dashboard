@@ -216,6 +216,34 @@ Severitatea unui task se citeste acum din **termen**, nu din prioritate: `dueCol
 `formatters.js` da rosu pentru depasit, amber pentru azi, warning pentru urmatoarele doua
 zile. Bordura din stanga randului o foloseste. Sortarea din exportul .md merge tot pe termen.
 
+### Un proiect inchis se opreste in ziua inchiderii (v35, 2026-07-30)
+
+Ion: *„eu am finalizat un proiect de ieri dar a mai aparut si pe azi proiectul cu motoare
+extruder."*
+
+Prima incercare taia perioadele unui proiect `finalizat` la **ziua de azi**. Reperul e insa
+ziua in care ai INCHIS, nu ziua in care te uiti: proiectul avea perioada 29->30, inchisa pe
+29, iar 30 rămânea afisat. Diferenta se vede doar cand inchizi inainte de vreme — exact
+cazul care conteaza.
+
+`proiecte.data_finalizare` (v35) e acel reper. Backfill din `updated_at` pentru cele deja
+inchise — cea mai buna dovada disponibila si s-a potrivit (proiectul cu motoare avea
+`updated_at = 2026-07-29T16:19`).
+
+**Invariantul:** data exista daca si numai daca statusul e `finalizat`. Se pune automat la
+inchidere (azi), se STERGE la redeschidere. Fara invariant, formularul tine data agatata
+cand redeschizi — `DatePicker`-ul se ascunde, dar valoarea rămâne in `form` — si la o
+re-inchidere ai reveni in tacere la ziua veche.
+
+Se poate corecta: cand inchizi acum o lucrare terminata saptamana trecuta, campul
+**„Finalizat pe"** apare in formularul de proiect (doar la status `finalizat`). In bara
+laterala a paginii de proiect, celula „Urmatoarea perioada" — care pentru un proiect inchis
+n-avea decat „Neplanificat" de spus — arata **„Finalizat · <data> · ieri"**. Un camp care
+decide ce vezi in Calendar nu are voie sa fie invizibil.
+
+Taierea e doar la CITIRE (`/api/calendar`, `/api/export/ics`); baza rămâne neatinsa, iar
+Ganttul propriu al proiectului arata toate perioadele.
+
 ### Cum arata o zi in Calendar
 
 Prima versiune desena UN bloc per client, etichetat „Continental · 4 lucrari". Datele reale

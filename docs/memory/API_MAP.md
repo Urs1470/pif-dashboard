@@ -13,15 +13,15 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/stats` | `get_stats` | 42 |
 | GET | `/api/export/pdf` | `export_pdf` | 214 |
 | GET | `/api/export/ics` | `export_ics` | 281 |
-| GET | `/api/backup` | `backup_database` | 375 |
-| POST | `/api/restore` | `restore_database` | 402 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 535 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 581 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 658 |
-| GET | `/api/search` | `global_search` | 717 |
-| GET | `/api/settings/plan-departament` | `plan_departament_get` | 765 |
-| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 776 |
-| GET | `/api/calendar` | `calendar_view` | 793 |
+| GET | `/api/backup` | `backup_database` | 376 |
+| POST | `/api/restore` | `restore_database` | 403 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 536 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 582 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 659 |
+| GET | `/api/search` | `global_search` | 718 |
+| GET | `/api/settings/plan-departament` | `plan_departament_get` | 766 |
+| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 777 |
+| GET | `/api/calendar` | `calendar_view` | 794 |
 
 ## blueprints\obsidian.py (7 rute)
 
@@ -43,21 +43,21 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/proiecte` | `create_proiect` | 77 |
 | GET | `/api/proiecte/<project_id>` | `get_proiect` | 126 |
 | PUT | `/api/proiecte/<project_id>` | `update_proiect` | 154 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 233 |
-| POST | `/api/proiecte/batch` | `batch_proiecte` | 266 |
-| GET | `/api/clienti` | `get_clienti` | 324 |
-| POST | `/api/clienti` | `create_client` | 355 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 385 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 399 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 433 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 452 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 562 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 772 |
-| POST | `/api/import/debrief` | `import_debrief` | 821 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1062 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1073 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1099 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1133 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 251 |
+| POST | `/api/proiecte/batch` | `batch_proiecte` | 284 |
+| GET | `/api/clienti` | `get_clienti` | 342 |
+| POST | `/api/clienti` | `create_client` | 373 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 403 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 417 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 451 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 470 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 580 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 790 |
+| POST | `/api/import/debrief` | `import_debrief` | 839 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1080 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1091 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1117 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1151 |
 
 ## blueprints\tasks.py (23 rute)
 

@@ -56,6 +56,21 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-07-30 — Un proiect inchis se opreste in ziua INCHIDERII, nu azi (v35).** Prima
+  incercare taia perioadele proiectelor `finalizat` la `date('now')`. Ion: „am finalizat un
+  proiect de ieri dar a mai aparut si pe azi". Perioada era 29->30, inchisa pe 29 — deci
+  ziua 30 rămânea. Reperul corect e `proiecte.data_finalizare` (v35), backfill din
+  `updated_at` (a nimerit: proiectul cu motoare avea `updated_at = 2026-07-29T16:19`).
+  **Invariant:** data exista daca si numai daca statusul e `finalizat` — se pune la
+  inchidere, se sterge la redeschidere. Fara el, formularul trimite data veche la
+  redeschidere (DatePicker-ul se ascunde, valoarea rămâne in `form`) si o re-inchidere ar
+  reveni in tacere la ziua veche. Corectabila din „Finalizat pe" in formularul de proiect;
+  vizibila in bara laterala, in locul celulei „Urmatoarea perioada" (care pentru un proiect
+  inchis n-avea decat „Neplanificat" de spus). Taierea e doar la citire — `/api/calendar` si
+  `/api/export/ics`; DB neatins, Ganttul proiectului arata tot.
+  **Lectia:** „scoate-l din calendar cand il inchid" nu e acelasi lucru cu „taie la azi";
+  diferenta apare doar cand inchizi inainte de vreme, adica in cazul care l-a deranjat.
+
 - **2026-07-27 (3) — Calendar, in locul celor trei liste.** Feedback Ion: „nu prea inteleg sensul,
   nu se poate mai elegant si mai interactiv?" — avea dreptate. Raspunsesem la o intrebare SPATIALA
   („unde sunt marti") cu trei liste de text (rand de cifre in Planificator, card pe Acasa, pagina

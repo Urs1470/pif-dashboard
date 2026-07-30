@@ -408,6 +408,20 @@
     if (d === 1) return 'mâine'
     return `peste ${d} zile`
   }
+
+  // Ziua închiderii se numără în urmă, nu înainte — „în desfășurare" ar fi absurd
+  // pentru un proiect închis, iar ea decide până unde ține Calendarul perioadele.
+  const zileDeLaFinal = $derived.by(() => {
+    if (!project?.data_finalizare) return null
+    return Math.round((new Date(new Date().toDateString()) - new Date(String(project.data_finalizare).slice(0, 10))) / 86400000)
+  })
+  function finalLabel(d) {
+    if (d === null) return ''
+    if (d <= 0) return 'astăzi'
+    if (d === 1) return 'ieri'
+    if (d < 30) return `acum ${d} zile`
+    return ''
+  }
 </script>
 
 <div class="page">
@@ -686,13 +700,27 @@
         <div class="rsub">{taskPct}% finalizate</div>
       </section>
 
+      <!-- Un proiect închis nu mai are „următoarea perioadă" — celula ar rămâne
+           „Neplanificat". În locul ei arătăm ziua închiderii, care e reperul la
+           care Calendarul îi taie perioadele (v35): dacă e greșită, se vede aici
+           și se corectează din Edit. -->
       <section class="rcell cell-in">
-        <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Următoarea perioadă</div>
-        {#if project.urmatoarea}
+        {#if project.status === 'finalizat'}
+          <div class="cell-label"><span class="ico ico-green"><SolidIcon name="check" size={12} /></span>Finalizat</div>
+          {#if project.data_finalizare}
+            <div class="rdate">{formatDate(project.data_finalizare)}</div>
+            <div class="rsub">{finalLabel(zileDeLaFinal)}</div>
+          {:else}
+            <div class="rsub rsub-empty">Fără dată de închidere</div>
+          {/if}
+        {:else}
+          <div class="cell-label"><span class="ico ico-red"><SolidIcon name="clock" size={12} /></span>Următoarea perioadă</div>
+          {#if project.urmatoarea}
           <div class="rdate" class:urgent={urmDays !== null && urmDays <= 2}>{formatDate(project.urmatoarea)}{#if project.urmatoarea_sfarsit && project.urmatoarea_sfarsit !== project.urmatoarea}<span class="rdate-pana"> – {formatDate(project.urmatoarea_sfarsit)}</span>{/if}</div>
           <div class="rsub">{FAZA_LABEL[project.urmatoarea_faza] || ''}{project.urmatoarea_faza ? ' · ' : ''}{urmLabel(urmDays)}</div>
-        {:else}
-          <div class="rsub rsub-empty">Neplanificat</div>
+          {:else}
+            <div class="rsub rsub-empty">Neplanificat</div>
+          {/if}
         {/if}
       </section>
 

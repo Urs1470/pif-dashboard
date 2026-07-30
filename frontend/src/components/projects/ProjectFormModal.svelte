@@ -23,7 +23,7 @@
     return {
       tip: 'PIF', nume: '', client: '', locatie: '', echipament_principal: '',
       producator: 'ABB', cod_proiect: '', pm: '', data_incepere: '',
-      status: 'pregatire', nr_comanda: '', nr_contract: '', vault_folder: '',
+      status: 'pregatire', data_finalizare: '', nr_comanda: '', nr_contract: '', vault_folder: '',
     }
   }
 
@@ -43,6 +43,7 @@
           pm: project.pm || '',
           data_incepere: project.data_incepere || '',
           status: project.status || 'pregatire',
+          data_finalizare: project.data_finalizare || '',
           nr_comanda: project.nr_comanda || '',
           nr_contract: project.nr_contract || '',
           vault_folder: project.vault_folder || '',
@@ -96,6 +97,12 @@
       <div class="full"><Input label="Folder wiki (vault)" bind:value={form.vault_folder} placeholder="wiki/job/projects/<slug>" /></div>
       {#if isEdit}
         <Select label="Status" bind:value={form.status} options={STATUSES} />
+        <!-- Ziua închiderii, nu ziua în care ai apăsat butonul: Calendarul taie
+             perioadele proiectului aici (v35). Dacă închizi acum o lucrare
+             terminată săptămâna trecută, o corectezi de aici. -->
+        {#if form.status === 'finalizat'}
+          <DatePicker label="Finalizat pe" bind:value={form.data_finalizare} />
+        {/if}
       {/if}
     </div>
     <datalist id="clients-list">

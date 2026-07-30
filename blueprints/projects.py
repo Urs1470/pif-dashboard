@@ -179,6 +179,7 @@ def update_proiect(project_id):
             folder_server = COALESCE(?, folder_server),
             data_incepere = COALESCE(?, data_incepere),
             status = COALESCE(?, status),
+            data_finalizare = COALESCE(?, data_finalizare),
             observatii = COALESCE(?, observatii),
             nr_comanda = COALESCE(?, nr_comanda),
             nr_contract = COALESCE(?, nr_contract),
@@ -201,6 +202,7 @@ def update_proiect(project_id):
         data.get('folder_server'),
         data.get('data_incepere'),
         data.get('status'),
+        data.get('data_finalizare'),
         data.get('observatii'),
         data.get('nr_comanda'),
         data.get('nr_contract'),
@@ -212,6 +214,22 @@ def update_proiect(project_id):
         now,
         project_id
     ))
+
+    # Ziua inchiderii, nu ziua in care te uiti: perioadele unui proiect finalizat
+    # se taie la `data_finalizare` (vezi /api/calendar).
+    #
+    # Regula e un INVARIANT, nu o curatenie: data exista daca si numai daca
+    # proiectul e finalizat. Altfel formularul o tine agatata cand redeschizi
+    # (DatePicker-ul se ascunde, dar valoarea rămâne in form) si la o eventuala
+    # re-inchidere ai reveni in tacere la ziua veche.
+    status_efectiv = data.get('status') or old_status
+    if status_efectiv != 'finalizat':
+        cursor.execute("UPDATE proiecte SET data_finalizare = '' WHERE id = ?",
+                       (project_id,))
+    elif not data.get('data_finalizare') and old_status != 'finalizat':
+        # Se inchide acum si nu s-a trimis o data anume: azi.
+        cursor.execute('UPDATE proiecte SET data_finalizare = ? WHERE id = ?',
+                       (now[:10], project_id))
 
     conn.commit()
 

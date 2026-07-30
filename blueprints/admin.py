@@ -326,15 +326,16 @@ def export_ics():
         cur.execute("""
             SELECT i.id, i.data_start,
                    CASE WHEN p.status = 'finalizat'
-                         AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date('now')
-                        THEN date('now')
+                         AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
+                        THEN date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
                         ELSE i.data_sfarsit END AS data_sfarsit,
                    i.eticheta, i.locatie, i.faza,
                    p.nume, p.client, p.locatie AS locatie_proiect
             FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
             WHERE i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
-              -- vezi /api/calendar: un proiect inchis nu mai ocupa zile viitoare
-              AND (p.status != 'finalizat' OR date(i.data_start) <= date('now'))
+              -- vezi /api/calendar: un proiect inchis nu mai ocupa zile de dupa
+              -- ziua inchiderii
+              AND (p.status != 'finalizat' OR date(i.data_start) <= date(COALESCE(NULLIF(p.data_finalizare, ''), date('now'))))
             ORDER BY i.data_start
         """)
         for r in cur.fetchall():
@@ -830,8 +831,8 @@ def calendar_view():
     cursor.execute("""
         SELECT i.id, i.data_start,
                CASE WHEN p.status = 'finalizat'
-                     AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date('now')
-                    THEN date('now')
+                     AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
+                    THEN date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
                     ELSE i.data_sfarsit END AS data_sfarsit,
                i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.locatie AS locatie_proiect,
@@ -842,7 +843,7 @@ def calendar_view():
                       AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
                      THEN 1 ELSE 0 END) AS necesita_decizie
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
-        WHERE (p.status != 'finalizat' OR date(i.data_start) <= date('now'))
+        WHERE (p.status != 'finalizat' OR date(i.data_start) <= date(COALESCE(NULLIF(p.data_finalizare, ''), date('now'))))
           AND date(i.data_start) < date(?)
           AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date(?)
         ORDER BY i.data_start, p.client, p.nume
