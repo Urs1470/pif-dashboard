@@ -144,14 +144,11 @@
       .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
       .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
       .sort((x, y) => x.a.localeCompare(y.a))
-    // Inceputul proiectului = prima zi planificata. `data_incepere` a plecat in v36:
-    // era completat la 5 proiecte din 18 si dubla exact informatia asta.
-    const inceput = etape.length
-      ? (data.implementari || []).reduce((a, im) => {
-          const d = (im.data_start || '').slice(0, 10)
-          return d && (!a || d < a) ? d : a
-        }, '') || win.start
-      : win.start
+    // `data_incepere` a plecat in v36, deci nu mai exista o zi „de cand se
+    // pregateste". Pornim de la marginea ferestrei — prima zi planificata a
+    // proiectului, task sau perioada — ca in Planificator. Daca ar porni de la
+    // prima etapa, pregatirea de dinaintea ei ar avea latime zero.
+    const inceput = win.start
     const out = []
     let cursor = inceput
     for (const e of etape) {
@@ -269,7 +266,10 @@
               {@const ir = implRect(row.im)}
               <div class="gb-row impl-track">
                 {#if ir}
-                  <button class="impl-band loc-{row.im.locatie}" style="left:{ir.left}%; width:{ir.width}%" onclick={() => editImpl(row.im)} title="{locLabel(row.im.locatie)} · {formatDateShort(row.im.data_start)} → {formatDateShort(row.im.data_sfarsit)}">
+                  <button class="impl-band loc-{row.im.locatie}" class:pregatire={(row.im.faza || 'implementare') === 'pregatire'}
+                          style="left:{ir.left}%; width:{ir.width}%" onclick={() => editImpl(row.im)}
+                          title="{locLabel(row.im.locatie)} · {(row.im.faza || 'implementare') === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(row.im.data_start)} → {formatDateShort(row.im.data_sfarsit)}">
+                    {#if row.im.locatie === 'sediu'}<Building2 size={11} class="ib-ico" />{:else}<MapPin size={11} class="ib-ico" />{/if}
                     <span class="ib-txt">{locLabel(row.im.locatie)}{row.im.eticheta ? ' · ' + row.im.eticheta : ''}</span>
                   </button>
                 {/if}
@@ -349,8 +349,20 @@
   /* Perioada de implementare umple randul, nu pluteste ca o pastila subtire in
      mijlocul lui: e un BLOC de zile in care esti acolo, nu un marcaj. Randul
      ramane cu aceeasi inaltime, doar continutul lui se vede acum. */
-  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; padding: 0 10px; border: none; cursor: pointer; overflow: hidden; background: var(--il); color: #10130f; }
-  .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
+  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px; cursor: pointer; overflow: hidden; color: #10130f;
+    border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
+      color-mix(in oklab, var(--il) 90%, #000) 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent), 0 1px 3px rgba(0,0,0,0.28); }
+  .impl-band.loc-sediu { --il: #c99a3a; }
+  /* A doua axa, ca in Calendar si in Planificator: palid = pregatire, plin =
+     implementare. Aceeasi perioada, alta faza — nu acelasi bloc. */
+  .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
+    border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
+    color: color-mix(in oklab, var(--il) 72%, var(--text)); }
+  .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
   .ib-txt { font-size: var(--font-micro); font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== timeline ===== */

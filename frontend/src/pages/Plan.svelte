@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical } from '@lucide/svelte'
+  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2 } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
@@ -19,6 +19,12 @@
   // Distinct, CVD-legible lane hues on the warm-dark ground. Amber is reserved for
   // the app accent/active state, so lanes deliberately avoid it.
   const LANE_PALETTE = ['#3f9dc4', '#3fae74', '#8b6fe0', '#d1697f', '#b9a5ff', '#5f8fd0', '#c9a13a']
+  // Praguri pentru continutul unei benzi de perioada, in PROCENTE din fereastra —
+  // nu in zile: la 6 luni o zi are 6px, la 7 zile are 165. Sub primul prag ramane
+  // doar icoana (o litera taiata nu spune nimic, icoana spune „teren" / „sediu");
+  // sub al doilea, durata ar manca eticheta, deci o lasam doar in tooltip.
+  const BANDA_TEXT_MIN = 6.5
+  const BANDA_ZILE_MIN = 14
   const GLOBAL_COLOR = '#948a7d'
   const HORIZONS = [{ d: 7, l: '7z' }, { d: 14, l: '14z' }, { d: 30, l: '30z' }, { d: 90, l: '3L' }, { d: 180, l: '6L' }]
 
@@ -77,23 +83,64 @@
       .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
       .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
       .sort((x, y) => x.a.localeCompare(y.a))
-    // `prima_zi` = prima zi planificata, calculata de server din perioade (v36).
-    // Cand proiectul n-are nicio perioada in fereastra, nu ne putem baza pe
-    // el ca reper. Fara el pornim de la marginea ferestrei: pregatirea e in curs,
-    // chiar daca nu stim exact de cand — iar banda apare taiata la stanga, ceea
-    // ce spune exact asta.
-    const inceput = (lane.prima_zi || '').slice(0, 10) || plan.start
+    // De cand se pregateste, nu se mai sti: `data_incepere` a plecat in v36, iar
+    // `prima_zi` (min al perioadelor) e chiar prima etapa — pornind de acolo,
+    // pregatirea dinaintea primei implementari ar avea latime zero. Deci pornim de
+    // la marginea ferestrei: pregatirea e in curs, chiar daca nu stim de cand —
+    // iar banda taiata la stanga spune exact asta.
+    const inceput = plan.start
     if (!inceput) return []
     const out = []
     let cursor = inceput
     for (const e of etape) {
-      if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false })
+      // Capatul nesigur e cel din STANGA, nu cel din dreapta: ziua in care s-a
+      // apucat de pregatire nu se sti, in timp ce ziua din dreapta e o data reala
+      // — prima zi de implementare. Un gol DINTRE doua etape are amandoua capetele
+      // sigure (a doua zi dupa etapa precedenta), deci nu se estompeaza.
+      if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false, nesigurStart: cursor === plan.start })
       if (e.b >= cursor) cursor = addDays(e.b, 1)
     }
-    // Nicio etapa fixata: toata fereastra e pregatire, deschisa la dreapta. Cand
-    // exista etape, ultima INCHEIE pregatirea — nu mai desenam nimic dupa ea.
-    if (etape.length === 0) out.push({ de: cursor, la: '', deschis: true })
+    // Nicio etapa fixata: toata fereastra e pregatire — nesigura la ambele capete.
+    // Cand exista etape, ultima INCHEIE pregatirea: nu mai desenam nimic dupa ea.
+    if (etape.length === 0) out.push({ de: cursor, la: '', deschis: true, nesigurStart: true })
     return out
+  }
+
+  // DOUA PERIOADE LIPITE, DE ACEEASI CATEGORIE, SUNT UNA.
+  // Ion, 2026-07-30: „daca sunt doua perioade de implementare de aceeasi categorie
+  // pe acelasi proiect, adica doua de site sau doua de birou, sa se contopeasca.
+  // Daca sunt diferite atunci trebuie sa se deosebeasca."
+  // Contopim doar ce se ATINGE (sau se suprapune): un gol intre doua perioade e
+  // pregatire, deci nu poate fi inghitit de banda. „Categorie" = locatie SI faza:
+  // o zi de pregatire la sediu si o etapa de implementare la sediu arata diferit
+  // (palid vs plin), deci nu pot fi acelasi bloc.
+  function contopeste(impls) {
+    const ord = (impls || [])
+      .filter(im => im.data_start)
+      .map(im => ({
+        ...im,
+        faza: im.faza || 'implementare',
+        a: im.data_start.slice(0, 10),
+        b: (im.data_sfarsit || im.data_start).slice(0, 10),
+      }))
+      .sort((x, y) => x.a.localeCompare(y.a) || x.b.localeCompare(y.b))
+    const out = []
+    for (const im of ord) {
+      const last = out[out.length - 1]
+      if (last && last.locatie === im.locatie && last.faza === im.faza && im.a <= addDays(last.b, 1)) {
+        if (im.b > last.b) last.b = im.b
+        last.parti.push(im)
+      } else {
+        out.push({ ...im, parti: [im] })
+      }
+    }
+    // O singura eticheta per banda, chiar cand s-au contopit mai multe perioade:
+    // etichetele distincte, in ordine, separate ca in restul aplicatiei.
+    return out.map(im => ({
+      ...im,
+      eticheta: [...new Set(im.parti.map(p => p.eticheta).filter(Boolean))].join(' · '),
+      zile: (dayDiff(im.a, im.b) || 0) + 1,
+    }))
   }
 
   const views = $derived(plan.lanes.map((lane) => {
@@ -111,8 +158,8 @@
       ...t,
       rect: spanRect(effDue(t), effDue(t), plan.start, plan.days),
     }))
-    const impl = (lane.implementari || [])
-      .map(im => ({ ...im, rect: spanRect(im.data_start, im.data_sfarsit, plan.start, plan.days) }))
+    const impl = contopeste(lane.implementari)
+      .map(im => ({ ...im, rect: spanRect(im.a, im.b, plan.start, plan.days) }))
       .filter(im => im.rect)
     return { ...lane, color, pregatire, tasks, packed: packRows(tasks), impl }
   }))
@@ -424,7 +471,7 @@
                 <div class="lane-track">
                   {#each lane.pregatire as seg, i (i)}
                     <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
-                         class:deschis={seg.deschis}
+                         class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
                          style="left:{seg.rect.left}%; width:{seg.rect.width}%"
                          title="Pregătire{seg.deschis ? ' — următoarea etapă nu e încă fixată' : ` · ${formatDateShort(seg.de)} – ${formatDateShort(seg.la)}`}"></div>
                   {/each}
@@ -435,9 +482,15 @@
                        Calendar, nu aici — clickul te duce la ziua ei. -->
                   {#each lane.impl as im (im.id)}
                     <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                         onclick={() => navigate(`/calendar?zi=${im.data_start}`)}
-                         title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru a o vedea în Calendar">
-                      <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                         class:pregatire={im.faza === 'pregatire'} class:doar-ico={im.rect.width < BANDA_TEXT_MIN}
+                         class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
+                         onclick={() => navigate(`/calendar?zi=${im.a}`)}
+                         title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {im.faza === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(im.a)} → {formatDateShort(im.b)} · {im.zile} {im.zile === 1 ? 'zi' : 'zile'}{im.parti.length > 1 ? ` · ${im.parti.length} perioade lipite` : ''} · click pentru a o vedea în Calendar">
+                      {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
+                      {#if im.rect.width >= BANDA_TEXT_MIN}
+                        <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                      {/if}
+                      {#if im.rect.width >= BANDA_ZILE_MIN}<span class="ib-zile">{im.zile} {im.zile === 1 ? 'zi' : 'zile'}</span>{/if}
                     </button>
                   {/each}
                   <div class="rows">
@@ -520,9 +573,9 @@
             <span class="mg-count">{lane.tasks.length}</span>
           </header>
           {#each lane.impl as im (im.id)}
-            <div class="mimpl loc-{im.locatie}">
+            <div class="mimpl loc-{im.locatie}" class:pregatire={im.faza === 'pregatire'}>
               <span class="mimpl-loc">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
-              <span class="mimpl-range">{formatDateShort(im.data_start)} – {formatDateShort(im.data_sfarsit)}</span>
+              <span class="mimpl-range">{formatDateShort(im.a)} – {formatDateShort(im.b)}</span>
             </div>
           {/each}
           {#each lane.tasks as t (t.tip + ':' + t.id)}
@@ -667,11 +720,21 @@
     border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0; }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
   .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
-  /* Pregatire deschisa = nu stii inca urmatoarea etapa. Marginea din dreapta se
-     stinge, ca sa nu para o data pe care ai stabilit-o. */
+  /* CAPATUL NESIGUR SE STINGE, CEL SIGUR RAMANE NET.
+     Nesigur e START-ul: nu exista o zi „de cand se pregateste" (v36). Capatul din
+     dreapta e prima zi de implementare — data reala, deci muchie clara. Cand nu e
+     fixata nicio etapa, si dreapta e nesigura, deci se sting amandoua. Estomparea
+     e pe o distanta FIXA, ca sa arate la fel si pe o banda de trei zile si pe una
+     de trei luni. */
+  .band.deschisL { border-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px);
+    mask-image: linear-gradient(to right, transparent 0, #000 56px); }
   .band.deschis { border-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;
-    -webkit-mask-image: linear-gradient(to right, #000 55%, transparent 100%);
-    mask-image: linear-gradient(to right, #000 55%, transparent 100%); }
+    -webkit-mask-image: linear-gradient(to left, transparent 0, #000 56px);
+    mask-image: linear-gradient(to left, transparent 0, #000 56px); }
+  .band.deschis.deschisL {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%); }
   /* Taskurile stau peste benzi, deci randurile lasa clickul sa treaca prin golul
      dintre bare pana la banda de dedesubt. */
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
@@ -680,14 +743,47 @@
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
      Palid = pregatire, plin = pe teren; culoarea spune unde (teal = site, gold =
      sediu), aceeasi gramatica vizuala ca in Calendar. */
-  .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; padding: 0 9px;
-    border-radius: 8px; overflow: hidden; z-index: 0; border: none; text-align: left; color: #10130f;
+  /* BLOC, nu pastila. Un bloc are volum (degrade fin sus→jos), o muchie de intrare
+     (bara verticala din stanga = ziua in care ajungi acolo) si o umbra care il
+     ridica peste banda de pregatire. Inelul interior tine doua blocuri lipite de
+     categorii diferite despartite — doua perioade de aceeasi categorie sunt deja
+     UN element (vezi `contopeste`), deci n-au cusatura. */
+  .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; gap: 5px;
+    padding: 0 9px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: #10130f;
+    border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
+      color-mix(in oklab, var(--il) 90%, #000) 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent), 0 1px 3px rgba(0,0,0,0.28);
     cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
-  .impl-band:hover { filter: brightness(1.1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 2px 8px rgba(0,0,0,0.3); }
+  .impl-band.loc-site { --il: #3f9dc4; } .impl-band.loc-sediu { --il: #c99a3a; }
+  /* Faza e a doua axa, ca in Calendar: palid = pregatire, plin = implementare.
+     O zi de pregatire blocata explicit (parametrizare in atelier) e tot pregatire,
+     deci sta peste banda ei, cu conturul culorii, nu ca bloc plin. */
+  .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
+    border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
+    color: color-mix(in oklab, var(--il) 72%, var(--text)); }
+  /* Taiata de fereastra: muchie dreapta, fara bara de intrare — ziua de start nu e
+     acolo, e mai devreme. */
+  .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0; }
+  .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .impl-band:hover { filter: brightness(1.08);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #10130f 20%, transparent),
+                0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 3px 10px rgba(0,0,0,0.34); }
+  .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
+  /* O zi, la 30 de zile fereastra, are 38px: nu incape nici „Si…". Ramane icoana,
+     centrata, si tot tooltipul. */
+  .impl-band.doar-ico { padding: 0 2px; justify-content: center; }
   .ib-txt { font-size: var(--font-tiny); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Durata umple capatul liber al blocurilor late si spune cat stai acolo — pe
+     benzile inguste n-ar incapea, deci nici nu se randeaza (vezi `rect.width`). */
+  .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
+    font-size: var(--font-micro); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: #3f9dc4; } .mimpl.loc-sediu { --mil: #c99a3a; }
+  /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
+  .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
   .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--mil); }
   .mimpl-range { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
@@ -716,7 +812,11 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--lane) 22%, transparent); }
   .bar.single.todo .pin-dot { background: color-mix(in oklab, var(--lane) 55%, var(--bg-panel)); }
   .bar.single.done .pin-dot { background: color-mix(in oklab, var(--lane) 30%, var(--bg-panel)); box-shadow: none; }
-  .bar.single .bar-txt { display: inline; max-width: 220px; color: var(--text-secondary); }
+  /* Eticheta unui task de o zi pluteste peste fundal, fara cutie proprie — iar
+     fundalul poate fi acum blocul plin al unei perioade. Haloul in culoarea
+     suprafetei o desprinde de orice ar fi dedesubt, in ambele teme. */
+  .bar.single .bar-txt { display: inline; max-width: 220px; color: var(--text);
+    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface), 0 0 9px var(--bg-surface); }
   .bar.single.done .bar-txt { color: var(--text-dim); text-decoration: line-through; }
   .bar.urgent { box-shadow: inset 3px 0 0 0 var(--danger); }
   .bar.single.urgent { box-shadow: none; }

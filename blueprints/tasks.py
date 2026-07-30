@@ -358,9 +358,13 @@ def _collect_gantt(project_id):
              'tip': d['tip'] or 'FS', 'lag': d['lag'] or 0} for d in [row_to_dict(x) for x in cursor.fetchall()]]
 
     cursor.execute('SELECT * FROM implementari WHERE proiect_id = ? ORDER BY data_start ASC, ordine ASC', (project_id,))
+    # `faza` merge la client aici din acelasi motiv ca in `/api/plan`: Gantt-ul
+    # taie golul de pregatire DOAR pe etapele de implementare, iar o zi de
+    # pregatire blocata explicit nu e etapa.
     implementari = [{'id': d['id'], 'data_start': (d.get('data_start') or '')[:10],
                      'data_sfarsit': (d.get('data_sfarsit') or '')[:10],
-                     'locatie': d.get('locatie') or 'site', 'eticheta': d.get('eticheta') or ''}
+                     'locatie': d.get('locatie') or 'site', 'eticheta': d.get('eticheta') or '',
+                     'faza': d.get('faza') or 'implementare'}
                     for d in [row_to_dict(x) for x in cursor.fetchall()]]
 
     conn.close()
@@ -1502,10 +1506,14 @@ def get_plan():
         ph = ','.join('?' * len(proj_ids))
         cursor.execute(f'SELECT * FROM implementari WHERE proiect_id IN ({ph})', proj_ids)
         for r in [row_to_dict(x) for x in cursor.fetchall()]:
+            # `faza` merge la client, nu doar `locatie`: Planificatorul are nevoie
+            # de ea ca sa nu numere o zi de PREGATIRE ca etapa de implementare —
+            # o astfel de zi nu rupe golul de pregatire, se deseneaza peste el.
             impl_by_project.setdefault(r['proiect_id'], []).append({
                 'id': r['id'], 'data_start': (r.get('data_start') or '')[:10],
                 'data_sfarsit': (r.get('data_sfarsit') or '')[:10],
-                'locatie': r.get('locatie') or 'site', 'eticheta': r.get('eticheta') or ''})
+                'locatie': r.get('locatie') or 'site', 'eticheta': r.get('eticheta') or '',
+                'faza': r.get('faza') or 'implementare'})
 
     lanes = []
     for proj in projects:
