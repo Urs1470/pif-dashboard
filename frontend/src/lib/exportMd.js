@@ -28,7 +28,6 @@ export async function exportMarkdown(projectId) {
   md += `echipament_principal: ${project.echipament_principal || ''}\n`
   md += `data_export: ${today}\n`
   if (isPIF) {
-    md += `data_incepere: ${project.data_incepere || ''}\n`
   }
   if (isService) md += `data_crearii: ${project.data_crearii || today}\n`
   md += `status: ${project.status || 'activ'}\n`
@@ -46,9 +45,7 @@ export async function exportMarkdown(projectId) {
   md += `| Locație | ${escMd(project.locatie) || '—'} |\n`
   md += `| Producător | ${escMd(project.producator) || '—'} |\n`
   md += `| Echipament principal | ${escMd(project.echipament_principal) || '—'} |\n`
-  if (project.pm) md += `| Project Manager | ${escMd(project.pm)} |\n`
   if (project.nr_comanda) md += `| Nr. Comandă | ${escMd(project.nr_comanda)} |\n`
-  if (project.nr_contract) md += `| Nr. Contract | ${escMd(project.nr_contract)} |\n`
   if (project.cod_proiect) md += `| Cod proiect | ${escMd(project.cod_proiect)} |\n`
   if (project.folder_server) md += `| Folder server | ${escMd(project.folder_server)} |\n`
   md += `| Status | ${escMd(project.status) || 'activ'} |\n`

@@ -367,9 +367,7 @@ def _collect_gantt(project_id):
     return {
         'proiect': {'id': proj['id'], 'nume': proj.get('nume'), 'client': proj.get('client'),
                     'tip': proj.get('tip'), 'cod_proiect': proj.get('cod_proiect'),
-                    'data_incepere': proj.get('data_incepere'),
-                    'status': proj.get('status'), 'locatie': proj.get('locatie'),
-                    'pm': proj.get('pm')},
+                    'status': proj.get('status'), 'locatie': proj.get('locatie')},
         'tasks': tasks, 'dependencies': deps, 'implementari': implementari,
     }
 
@@ -557,10 +555,6 @@ def _gantt_window(data):
             d = _pdate(t.get(k))
             if d:
                 ds.append(d)
-    for k in ('data_incepere',):
-        d = _pdate(data['proiect'].get(k))
-        if d:
-            ds.append(d)
     if not ds:
         today = datetime.now().date()
         return today, today + timedelta(days=14)
@@ -765,7 +759,10 @@ def export_gantt_pdf(project_id):
             c.drawString(bx + bw + 3, cy - 2, f"{t['progres']}%")
 
     # dependency lines (thin)
-    by_id = {t['id']: t for t in stasks}
+    # `stasks` era lista de taskuri sortata pe faze; a plecat cu `tasks.faza` in v32,
+    # dar referinta a rămas si exportul PDF al Ganttului dadea 500 de atunci. Randurile
+    # desenate sunt in `render_rows`, iar cele de tip perioada nu au dependinte.
+    by_id = {val['id']: val for kind, val in render_rows if kind != 'impl'}
     c.setStrokeColor(colors.HexColor('#9A9488'))
     c.setLineWidth(0.6)
     for dep in data['dependencies']:
@@ -1475,7 +1472,7 @@ def get_plan():
 
     # Candidate project lanes (skip cancelled / finished).
     cursor.execute(
-        "SELECT id, nume, tip, status, data_incepere FROM proiecte "
+        "SELECT id, nume, tip, status FROM proiecte "
         "WHERE status NOT IN ('anulat', 'finalizat')")
     projects = [row_to_dict(r) for r in cursor.fetchall()]
 
@@ -1514,10 +1511,13 @@ def get_plan():
     for proj in projects:
         pid = proj['id']
         ptasks = sorted(tasks_by_project.get(pid, []), key=_task_sort_key)
-        inc = (proj.get('data_incepere') or '')[:10]
-        # Capatul benzii = ultima zi planificata a proiectului (perioada cea mai
-        # tarzie), nu un deadline impus. Vezi v30.
+        # Banda proiectului se intinde intre PERIOADE, nu de la un camp scris cu
+        # mana: `data_incepere` a plecat in v36 (5 randuri din 18, si dubla prima
+        # perioada). Capatul de sus e prima zi planificata, cel de jos ultima —
+        # niciunul nu e un deadline impus (vezi v30).
         toate_impl = impl_by_project.get(pid, [])
+        inc = min((im.get('data_start') or '' for im in toate_impl if im.get('data_start')),
+                  default='')
         ultima = max((im.get('data_sfarsit') or im.get('data_start') or ''
                       for im in toate_impl), default='')
         band = _span_intersects(inc, ultima, start_s, end_s)
@@ -1531,7 +1531,7 @@ def get_plan():
             'nume': proj.get('nume') or '',
             'tip_proiect': proj.get('tip') or '',
             'status': proj.get('status') or '',
-            'data_incepere': inc,
+            'prima_zi': inc,
             'ultima_zi': ultima,
             'tasks': ptasks,
             'implementari': pimpl,
@@ -1553,7 +1553,7 @@ def get_plan():
     if gtasks:
         lanes.append({
             'tip': 'global', 'id': '__global__', 'nume': 'Globale',
-            'tip_proiect': '', 'status': '', 'data_incepere': '', 'ultima_zi': '',
+            'tip_proiect': '', 'status': '', 'prima_zi': '', 'ultima_zi': '',
             'tasks': sorted(gtasks, key=_task_sort_key), 'implementari': [],
         })
 
@@ -1590,8 +1590,8 @@ def get_plan():
                 v = (t.get(k) or '')[:10]
                 if v:
                     dates.append(v)
-        if l['data_incepere']:
-            dates.append(l['data_incepere'])
+        if l['prima_zi']:
+            dates.append(l['prima_zi'])
         return (1 if l['tip'] == 'global' else 0, min(dates) if dates else '9999-99-99')
 
     lanes.sort(key=_lane_key)

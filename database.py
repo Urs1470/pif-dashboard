@@ -84,7 +84,10 @@ def close_db(exc=None):
 #      erau in selector, dar pe zero randuri.
 # v35: `proiecte.data_finalizare` — perioadele unui proiect inchis se taie la ziua
 #      INCHIDERII, nu la ziua de azi.
-SCHEMA_VERSION = 35
+# v36: scoase `pm` (4/18, folosit ca notita), `nr_contract` (1/18) si
+#      `data_incepere` (5/18, dubla prima perioada). Inceputul proiectului se
+#      calculeaza din perioade.
+SCHEMA_VERSION = 36
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -919,8 +922,10 @@ def migrate_v27_to_v28():
 # Coloanele care tin o data calendaristica. `notify_on_deadline` NU e aici: e un
 # boolean al carui nume contine „deadline". `created_at`/`data_crearii` sunt
 # timestampuri scrise de cod, nu de utilizator.
+# `proiecte` nu mai are nicio coloana de data scrisa de utilizator: `data_incepere`
+# a plecat in v36, iar `data_finalizare` o pune serverul. Fara scoaterea de aici,
+# self-heal-ul o re-adauga la prima pornire si anuleaza migrarea.
 COLOANE_DATA = (
-    ('proiecte', ('data_incepere',)),
     ('tasks', ('data_scadenta', 'data_planificata', 'data_start', 'data_finalizare')),
     ('global_tasks', ('data_scadenta', 'data_planificata', 'data_finalizare')),
     ('implementari', ('data_start', 'data_sfarsit')),
@@ -1212,6 +1217,42 @@ def migrate_v34_to_v35():
     logger.info('Migration v34->v35 completed')
 
 
+def migrate_v35_to_v36():
+    """v35 -> v36: scoate `pm`, `nr_contract` si `data_incepere` din `proiecte`.
+
+    Ion, intrebat ce se poate sterge din formularul de proiect: „sterge cele 3 puncte".
+
+    Datele au sustinut fiecare:
+      - `nr_contract` — 1 rand din 18. O valoare, pe un proiect.
+      - `pm` — 4 din 18, si TOATE cele patru aveau paranteze explicative
+        („Paul Mandras (inlocuieste…", „Paul-Antim Sima (Service M…"). Semn ca era
+        folosit ca notita, nu ca date.
+      - `data_incepere` — 5 din 18, si DUBLA prima perioada. Inceputul real al
+        proiectului e data primei perioade; Planificatorul cadea deja pe fereastra
+        vizibila cand campul era gol, deci pentru 13 proiecte din 18 nu facea nimic.
+
+    In loc de `data_incepere`, banda proiectului se calculeaza din perioade:
+    prima zi = MIN(implementari.data_start), ultima = cea mai tarzie zi planificata.
+
+    Arhiva: raw/pif-dashboard/2026-07-30-inainte-de-v36/ in vault.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cols = {r[1] for r in cursor.execute('PRAGMA table_info(proiecte)')}
+    scoase = []
+    for col in ('pm', 'nr_contract', 'data_incepere'):
+        if col in cols:
+            cursor.execute(f'ALTER TABLE proiecte DROP COLUMN {col}')
+            scoase.append(col)
+    conn.commit()
+    conn.close()
+    if scoase:
+        logger.info('Migration v35->v36: dropped proiecte.%s' % ', proiecte.'.join(scoase))
+    logger.info('Migration v35->v36 completed')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1386,6 +1427,11 @@ def run_migrations():
         set_schema_version(35)
         current_version = 35
 
+    if current_version < 36:
+        migrate_v35_to_v36()
+        set_schema_version(36)
+        current_version = 36
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1465,15 +1511,12 @@ def init_db():
             echipament_principal TEXT,
             producator TEXT,
             cod_proiect TEXT,
-            pm TEXT,
             folder_server TEXT,
-            data_incepere TEXT,
             data_crearii TEXT,
             status TEXT DEFAULT 'pregatire',
             data_finalizare TEXT,
             observatii TEXT,
             nr_comanda TEXT,
-            nr_contract TEXT,
             service_before TEXT,
             service_after TEXT,
             confirmat_client INTEGER DEFAULT 0,

@@ -61,10 +61,12 @@
   // PREGATIREA NU SE INTRODUCE — E GOLUL.
   // Ion: „perioada pana la implementare este perioada de pregatire (…) apoi de la
   // o etapa de implementare la alta la fel este pregatire."
-  // Deci nu e un lucru pe care il tastezi, e complementul etapelor. Doua cazuri
-  // pe care le-a semnalat, si care se rezolva la fel — segment DESCHIS la dreapta:
-  //   1. inca nu stii perioada de implementare
-  //   2. ai terminat o etapa si urmatoarea nu e inca fixata
+  // Deci nu e un lucru pe care il tastezi, e complementul etapelor: golul de
+  // dinaintea primei etape si golurile DINTRE etape. Ion, 2026-07-30: „dupa ultima
+  // perioada de implementare nu mai exista perioada de pregatire" — banda nu mai
+  // curge pana la marginea ferestrei. Segment DESCHIS la dreapta rămâne un singur
+  // caz: nicio etapa fixata, deci tot ce se vede e pregatire pentru o implementare
+  // pe care inca n-o sti.
   function segmentePregatire(lane) {
     // Un proiect inchis nu mai pregateste nimic.
     if (lane.tip !== 'proiect' || lane.status === 'finalizat') return []
@@ -75,11 +77,12 @@
       .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
       .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
       .sort((x, y) => x.a.localeCompare(y.a))
-    // `data_incepere` e completat la 5 proiecte din 18, deci nu ne putem baza pe
+    // `prima_zi` = prima zi planificata, calculata de server din perioade (v36).
+    // Cand proiectul n-are nicio perioada in fereastra, nu ne putem baza pe
     // el ca reper. Fara el pornim de la marginea ferestrei: pregatirea e in curs,
     // chiar daca nu stim exact de cand — iar banda apare taiata la stanga, ceea
     // ce spune exact asta.
-    const inceput = (lane.data_incepere || '').slice(0, 10) || plan.start
+    const inceput = (lane.prima_zi || '').slice(0, 10) || plan.start
     if (!inceput) return []
     const out = []
     let cursor = inceput
@@ -87,9 +90,9 @@
       if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false })
       if (e.b >= cursor) cursor = addDays(e.b, 1)
     }
-    // Dupa ultima etapa: daca proiectul nu e inchis, urmeaza tot pregatire —
-    // pentru etapa care nu e inca fixata. Fara data de sfarsit, deci deschisa.
-    if (lane.status !== 'finalizat') out.push({ de: cursor, la: '', deschis: true })
+    // Nicio etapa fixata: toata fereastra e pregatire, deschisa la dreapta. Cand
+    // exista etape, ultima INCHEIE pregatirea — nu mai desenam nimic dupa ea.
+    if (etape.length === 0) out.push({ de: cursor, la: '', deschis: true })
     return out
   }
 
@@ -425,19 +428,19 @@
                          style="left:{seg.rect.left}%; width:{seg.rect.width}%"
                          title="Pregătire{seg.deschis ? ' — următoarea etapă nu e încă fixată' : ` · ${formatDateShort(seg.de)} – ${formatDateShort(seg.la)}`}"></div>
                   {/each}
+                  <!-- Perioada nu e un rand pe langa taskuri — e banda randului, pe
+                       toata inaltimea, ca pregatirea (Ion, 2026-07-30). Cele doua
+                       benzi paveaza acelasi rand: gol = pregatire, plin = pe teren.
+                       Taskurile se deseneaza PESTE. Perioadele se EDITEAZA in
+                       Calendar, nu aici — clickul te duce la ziua ei. -->
+                  {#each lane.impl as im (im.id)}
+                    <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                         onclick={() => navigate(`/calendar?zi=${im.data_start}`)}
+                         title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru a o vedea în Calendar">
+                      <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                    </button>
+                  {/each}
                   <div class="rows">
-                    {#each lane.impl as im (im.id)}
-                      <div class="t-row">
-                        <!-- Perioadele se EDITEAZA in Calendar, nu si aici. Aveam
-                             trei locuri care scriau acelasi obiect; acum banda e
-                             context si clickul te duce la ziua ei. -->
-                        <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                             onclick={() => navigate(`/calendar?zi=${im.data_start}`)}
-                             title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.data_start)} → {formatDateShort(im.data_sfarsit)} · click pentru a o vedea în Calendar">
-                          <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
-                        </button>
-                      </div>
-                    {/each}
                     {#each lane.packed as row, ri (ri)}
                       <div class="t-row">
                         {#each row as t (t.tip + ':' + t.id)}
@@ -669,13 +672,18 @@
   .band.deschis { border-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;
     -webkit-mask-image: linear-gradient(to right, #000 55%, transparent 100%);
     mask-image: linear-gradient(to right, #000 55%, transparent 100%); }
-  .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; }
+  /* Taskurile stau peste benzi, deci randurile lasa clickul sa treaca prin golul
+     dintre bare pana la banda de dedesubt. */
+  .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
   .t-row { position: relative; height: var(--row-h); }
-  /* implementation period bands (Site / Sediu EGB) — same shape as task bars,
-     distinguished only by color (teal = site, gold = sediu). */
-  .impl-band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 8px; border-radius: 7px; overflow: hidden; z-index: 2; color: #10130f; }
+  /* Perioada de implementare (Site / Sediu EGB) — banda pe toata inaltimea randului,
+     exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
+     Palid = pregatire, plin = pe teren; culoarea spune unde (teal = site, gold =
+     sediu), aceeasi gramatica vizuala ca in Calendar. */
+  .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; padding: 0 9px;
+    border-radius: 8px; overflow: hidden; z-index: 0; border: none; text-align: left; color: #10130f;
+    cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .impl-band.loc-site { background: #3f9dc4; } .impl-band.loc-sediu { background: #c99a3a; }
-  .impl-band { cursor: pointer; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .impl-band:hover { filter: brightness(1.1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 2px 8px rgba(0,0,0,0.3); }
   .ib-txt { font-size: var(--font-tiny); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
@@ -686,7 +694,7 @@
     padding: 0 8px; border-radius: 7px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
     white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left; touch-action: none;
     transition: box-shadow var(--dur-fast) var(--ease);
-    animation: barIn 0.4s var(--ease) both; }
+    animation: barIn 0.4s var(--ease) both; pointer-events: auto; }
   @keyframes barIn { from { opacity: 0; transform: scaleX(0.4); transform-origin: left; } }
   .bar.draggable { cursor: grab; }
   .bar:hover { box-shadow: var(--shadow-md); z-index: 5; }

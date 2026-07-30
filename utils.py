@@ -14,9 +14,10 @@ from database import get_db
 # `23.02.2026` pe un proiect si `02.07.2026` pe un task, invizibile in Calendar
 # fiindca nimic nu le putea plasa pe o zi.
 
+# `data_incepere` a plecat in v36, `data_planificata` in v33 — nu mai exista coloane
+# cu numele lor, deci n-au ce cauta aici.
 DATE_FIELDS = frozenset({
-    'data_incepere', 'data_start', 'data_sfarsit',
-    'data_scadenta', 'data_planificata', 'data_finalizare',
+    'data_start', 'data_sfarsit', 'data_scadenta', 'data_finalizare',
 })
 
 _ISO_PREFIX = re.compile(r'^\d{4}-\d{2}-\d{2}')

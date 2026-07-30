@@ -56,6 +56,30 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-07-30 (3) — Trei campuri scoase din formularul de proiect (v36).** Ion: „sterge cele 3
+  puncte". `nr_contract` (1/18), `pm` (4/18 — si toate cu paranteze explicative, deci notita nu
+  date), `data_incepere` (5/18 si **dubla prima perioada**). Banda proiectului se calculeaza acum
+  din perioade: `prima_zi = MIN(implementari.data_start)`, `ultima_zi` = cea mai tarzie zi
+  planificata; cheia din `/api/plan` s-a redenumit ca sa nu rămână un consumator care citeste
+  tacit altceva. Arhiva: `raw/pif-dashboard/2026-07-30-inainte-de-v36/`.
+  **Capcana a cincea:** `COLOANE_DATA` enumera `('proiecte', ('data_incepere',))` — self-heal-ul
+  ar fi re-adaugat coloana la prima pornire.
+  **Bug vechi prins:** `gantt.pdf` dadea 500 din v32 (`stasks` orfan dupa scoaterea gruparii pe
+  faze). Nicio verificare nu atingea ruta — de aceea testul nou chema efectiv fiecare scriere si
+  fiecare export, nu doar numara semnele de intrebare din INSERT.
+
+- **2026-07-30 (2) — O perioada de mai multe zile e UN element, nu N bucati.** Ion: „regandeste
+  cum arata in calendar perioadele de implementare pe mai multe zile". Desenam o bara in fiecare
+  celula, fiecare cu numele scris din nou si tăiat la latimea unei zile — o lucrare de 8 zile
+  aparea ca 9 obiecte ciuntite, desi avea 6 celule de spatiu. Acum benzile sunt elemente ale
+  grilei, cu `grid-column: <col> / span <n>`, taiate doar la granita de saptamana.
+  **Trei capcane:** `1fr` e `minmax(auto, 1fr)`, deci o banda cu `nowrap` largea coloanele si
+  strica alinierea — trebuie `minmax(0, 1fr)`; celulele trebuie asezate explicit in grila,
+  altfel auto-plasarea sare peste pozitiile benzilor; benzile trebuie sa devina transparente la
+  cursor cat timp tragi, altfel dropul nu ajunge la celula.
+  **Bug vechi prins:** clasa `azi` era pe butonul „Azi" SI pe celula zilei de azi, iar `.azi`
+  neprefixat centra numarul in mijlocul celulei. Butonul e acum `.b-azi`.
+
 - **2026-07-30 — Un proiect inchis se opreste in ziua INCHIDERII, nu azi (v35).** Prima
   incercare taia perioadele proiectelor `finalizat` la `date('now')`. Ion: „am finalizat un
   proiect de ieri dar a mai aparut si pe azi". Perioada era 29->30, inchisa pe 29 — deci

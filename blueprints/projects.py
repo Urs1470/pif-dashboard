@@ -87,10 +87,10 @@ def create_proiect():
     cursor.execute('''
         INSERT INTO proiecte (
             id, tip, nume, client, locatie, echipament_principal, producator,
-            cod_proiect, pm, folder_server, data_incepere, data_crearii,
-            status, observatii, nr_comanda, nr_contract, service_before, service_after,
+            cod_proiect, folder_server, data_crearii,
+            status, observatii, nr_comanda, service_before, service_after,
             confirmat_client, client_nume_confirmare, created_at, updated_at, vault_folder
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         project_id,
         data.get('tip', 'PIF'),
@@ -100,14 +100,11 @@ def create_proiect():
         data.get('echipament_principal', ''),
         data.get('producator', 'Altul'),
         data.get('cod_proiect', ''),
-        data.get('pm', ''),
         data.get('folder_server', ''),
-        data.get('data_incepere', ''),
         data.get('data_crearii', now[:10]),
         data.get('status', 'pregatire'),
         data.get('observatii', ''),
         data.get('nr_comanda', ''),
-        data.get('nr_contract', ''),
         data.get('service_before', ''),
         data.get('service_after', ''),
         data.get('confirmat_client', 0),
@@ -175,14 +172,11 @@ def update_proiect(project_id):
             echipament_principal = COALESCE(?, echipament_principal),
             producator = COALESCE(?, producator),
             cod_proiect = COALESCE(?, cod_proiect),
-            pm = COALESCE(?, pm),
             folder_server = COALESCE(?, folder_server),
-            data_incepere = COALESCE(?, data_incepere),
             status = COALESCE(?, status),
             data_finalizare = COALESCE(?, data_finalizare),
             observatii = COALESCE(?, observatii),
             nr_comanda = COALESCE(?, nr_comanda),
-            nr_contract = COALESCE(?, nr_contract),
             service_before = COALESCE(?, service_before),
             service_after = COALESCE(?, service_after),
             confirmat_client = COALESCE(?, confirmat_client),
@@ -198,14 +192,11 @@ def update_proiect(project_id):
         data.get('echipament_principal'),
         data.get('producator'),
         data.get('cod_proiect'),
-        data.get('pm'),
         data.get('folder_server'),
-        data.get('data_incepere'),
         data.get('status'),
         data.get('data_finalizare'),
         data.get('observatii'),
         data.get('nr_comanda'),
-        data.get('nr_contract'),
         data.get('service_before'),
         data.get('service_after'),
         data.get('confirmat_client'),
@@ -523,10 +514,7 @@ def get_project_snapshot(project_id):
             'echipament_principal': p.get('echipament_principal', ''),
             'cod_proiect': p.get('cod_proiect', ''),
             'nr_comanda': p.get('nr_comanda', ''),
-            'nr_contract': p.get('nr_contract', ''),
-            'pm': p.get('pm', ''),
             'folder_server': p.get('folder_server', ''),
-            'data_incepere': p.get('data_incepere', ''),
             'data_crearii': p.get('data_crearii', ''),
             'status': p.get('status', ''),
             'observatii': p.get('observatii', ''),
@@ -985,10 +973,10 @@ def import_debrief():
             cursor.execute('''
                 INSERT INTO proiecte (
                     id, tip, nume, client, locatie, echipament_principal, producator,
-                    cod_proiect, pm, folder_server, data_incepere, data_crearii,
-                    status, observatii, nr_comanda, nr_contract, service_before, service_after,
+                    cod_proiect, folder_server, data_crearii,
+                    status, observatii, nr_comanda, service_before, service_after,
                     confirmat_client, client_nume_confirmare, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 project_id,
                 proiect_data.get('tip', 'PIF'),
@@ -998,14 +986,11 @@ def import_debrief():
                 proiect_data.get('echipament_principal', ''),
                 proiect_data.get('producator', 'Altul'),
                 proiect_data.get('cod_proiect', ''),
-                proiect_data.get('pm', ''),
                 proiect_data.get('folder_server', ''),
-                proiect_data.get('data_incepere', ''),
                 proiect_data.get('data_crearii', now[:10]),
                 proiect_data.get('status', 'pregatire'),
                 observatii_val,
                 proiect_data.get('nr_comanda', ''),
-                proiect_data.get('nr_contract', ''),
                 proiect_data.get('service_before', ''),
                 service_after_val,
                 proiect_data.get('confirmat_client', 0),

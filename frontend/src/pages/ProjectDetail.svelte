@@ -384,9 +384,8 @@
     ['Producător', project?.producator],
     ['Cod proiect', project?.cod_proiect],
     ['Nr. comandă', project?.nr_comanda],
-    ['Nr. contract', project?.nr_contract],
-    ['PM', project?.pm],
-    ['Început', project?.data_incepere ? formatDate(project.data_incepere) : ''],
+    // „Nr. contract" (1/18), „PM" (4/18) si „Început" (5/18) au plecat in v36.
+    // Începutul se citeste din perioade — Ganttul de mai jos il arata.
   ]).filter(([, v]) => String(v ?? '').trim()))
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)

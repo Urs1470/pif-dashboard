@@ -8,13 +8,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `43:_client_ip`, `53:get_or_create_secret_key`, `74:file_hash`, `92:_asset_path`, `107:inject_version`, `125:make_session_permanent`, `135:setup_logging`, `167:check_rate_limit`, `206:check_login_rate_limit`, `228:before_request_func`, `261:after_request_func`, `305:get_hashed_pin`, `314:_git_commit`, `328:healthz`, `334:health_redirect`, `339:whoami`, `346:login_page`, `353:login`, `365:logout`, `371:login_hash`, `391:_serve_frontend`, `399:index`, `404:dist_assets`, `410:favicon`, `415:manifest`, `420:calc_public`, `430:protected_docs`, `442:service_worker`, `447:add_sw_header`, `468:get_deploy_secret`, `476:webhook_deploy`, `561:api_deploy`, `617:page_not_found`, `624:internal_error`
 
-## database.py (1608 linii)
+## database.py (1651 linii)
 
-`13:get_db`, `34:close_db`, `89:get_schema_version`, `102:set_schema_version`, `111:migrate_v1_to_v2`, `187:migrate_v2_to_v3`, `214:migrate_v3_to_v4`, `245:migrate_v4_to_v5`, `287:migrate_v5_to_v6`, `309:migrate_v6_to_v7`, `331:migrate_v7_to_v8`, `374:migrate_v8_to_v9`, `389:migrate_v9_to_v10`, `419:migrate_v10_to_v11`, `441:migrate_v11_to_v12`, `487:migrate_v12_to_v13`, `532:migrate_v13_to_v14`, `571:migrate_v14_to_v15`, `594:migrate_v15_to_v16`, `613:migrate_v16_to_v17`, `629:migrate_v17_to_v18`, `670:migrate_v18_to_v19`, `710:migrate_v19_to_v20`, `727:migrate_v20_to_v21`, `754:migrate_v21_to_v22`, `773:migrate_v22_to_v23`, `792:migrate_v23_to_v24`, `829:migrate_v24_to_v25`, `844:migrate_v25_to_v26`, `869:migrate_v26_to_v27`, `886:migrate_v27_to_v28`, `930:migrate_v28_to_v29`, `986:migrate_v29_to_v30`, `1030:migrate_v30_to_v31`, `1063:migrate_v31_to_v32`, `1092:migrate_v32_to_v33`, `1147:migrate_v33_to_v34`, `1183:migrate_v34_to_v35`, `1215:run_migrations`, `1447:init_db`, `1601:row_to_dict`
+`13:get_db`, `34:close_db`, `92:get_schema_version`, `105:set_schema_version`, `114:migrate_v1_to_v2`, `190:migrate_v2_to_v3`, `217:migrate_v3_to_v4`, `248:migrate_v4_to_v5`, `290:migrate_v5_to_v6`, `312:migrate_v6_to_v7`, `334:migrate_v7_to_v8`, `377:migrate_v8_to_v9`, `392:migrate_v9_to_v10`, `422:migrate_v10_to_v11`, `444:migrate_v11_to_v12`, `490:migrate_v12_to_v13`, `535:migrate_v13_to_v14`, `574:migrate_v14_to_v15`, `597:migrate_v15_to_v16`, `616:migrate_v16_to_v17`, `632:migrate_v17_to_v18`, `673:migrate_v18_to_v19`, `713:migrate_v19_to_v20`, `730:migrate_v20_to_v21`, `757:migrate_v21_to_v22`, `776:migrate_v22_to_v23`, `795:migrate_v23_to_v24`, `832:migrate_v24_to_v25`, `847:migrate_v25_to_v26`, `872:migrate_v26_to_v27`, `889:migrate_v27_to_v28`, `935:migrate_v28_to_v29`, `991:migrate_v29_to_v30`, `1035:migrate_v30_to_v31`, `1068:migrate_v31_to_v32`, `1097:migrate_v32_to_v33`, `1152:migrate_v33_to_v34`, `1188:migrate_v34_to_v35`, `1220:migrate_v35_to_v36`, `1256:run_migrations`, `1493:init_db`, `1644:row_to_dict`
 
-## utils.py (171 linii)
+## utils.py (172 linii)
 
-`26:norm_date`, `60:_norm_dates`, `77:get_json_or_400`, `111:safe_table`, `117:generate_uuid`, `121:_check_api_token`, `139:login_required`, `153:get_app_setting`, `162:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `112:safe_table`, `118:generate_uuid`, `122:_check_api_token`, `140:login_required`, `154:get_app_setting`, `163:set_app_setting`
 
 ## csrf.py (78 linii)
 

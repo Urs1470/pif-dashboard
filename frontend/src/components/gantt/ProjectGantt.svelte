@@ -33,7 +33,6 @@
       if (t.data_start) ds.push(t.data_start.slice(0, 10))
       if (t.data_scadenta) ds.push(t.data_scadenta.slice(0, 10))
     }
-    if (data.proiect?.data_incepere) ds.push(data.proiect.data_incepere.slice(0, 10))
     for (const im of (data.implementari || [])) {
       if (im.data_start) ds.push(im.data_start.slice(0, 10))
       if (im.data_sfarsit) ds.push(im.data_sfarsit.slice(0, 10))
@@ -145,14 +144,23 @@
       .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
       .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
       .sort((x, y) => x.a.localeCompare(y.a))
-    const inceput = (data.proiect?.data_incepere || '').slice(0, 10) || win.start
+    // Inceputul proiectului = prima zi planificata. `data_incepere` a plecat in v36:
+    // era completat la 5 proiecte din 18 si dubla exact informatia asta.
+    const inceput = etape.length
+      ? (data.implementari || []).reduce((a, im) => {
+          const d = (im.data_start || '').slice(0, 10)
+          return d && (!a || d < a) ? d : a
+        }, '') || win.start
+      : win.start
     const out = []
     let cursor = inceput
     for (const e of etape) {
       if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false })
       if (e.b >= cursor) cursor = addDays(e.b, 1)
     }
-    out.push({ de: cursor, la: '', deschis: true })
+    // Ca in Planificator: dupa ultima etapa nu mai e pregatire. Segmentul deschis
+    // rămâne doar cand nu exista nicio etapa fixata.
+    if (etape.length === 0) out.push({ de: cursor, la: '', deschis: true })
     return out
       .map(seg => {
         const capat = seg.deschis ? addDays(win.start, win.days) : seg.la

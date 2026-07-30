@@ -139,10 +139,7 @@ def _pdf_section_admin(elements, project_dict, styles):
         ['Producător', project_dict.get('producator') or '-'],
         ['Echipament principal', project_dict.get('echipament_principal') or '-'],
         ['Status', project_status_label(project_dict.get('status', '')) or '-'],
-        ['Data începere', project_dict.get('data_incepere') or '-'],
-        ['PM', project_dict.get('pm') or '-'],
         ['Nr. comandă', project_dict.get('nr_comanda') or '-'],
-        ['Nr. contract', project_dict.get('nr_contract') or '-'],
         ['Cod proiect', project_dict.get('cod_proiect') or '-'],
     ]
     info_table = Table(project_info, colWidths=[4.5*cm, 11*cm])
@@ -425,16 +422,16 @@ def restore_database():
         for p in data.get('proiecte', []):
             cursor.execute('''
                 INSERT INTO proiecte (id, tip, nume, client, locatie, echipament_principal, producator,
-                    cod_proiect, pm, folder_server, data_incepere, data_crearii,
-                    status, observatii, nr_comanda, nr_contract, service_before, service_after,
+                    cod_proiect, folder_server, data_crearii,
+                    status, observatii, nr_comanda, service_before, service_after,
                     confirmat_client, client_nume_confirmare, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 p.get('id'), p.get('tip'), p.get('nume'), p.get('client'), p.get('locatie'),
                 p.get('echipament_principal'), p.get('producator'), p.get('cod_proiect'),
-                p.get('pm'), p.get('folder_server'), p.get('data_incepere'),
+                p.get('folder_server'),
                 p.get('data_crearii'), p.get('status'), p.get('observatii'), p.get('nr_comanda'),
-                p.get('nr_contract'), p.get('service_before'), p.get('service_after'),
+                p.get('service_before'), p.get('service_after'),
                 p.get('confirmat_client', 0), p.get('client_nume_confirmare'),
                 p.get('created_at'), p.get('updated_at')
             ))
