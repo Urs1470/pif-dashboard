@@ -15,7 +15,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
-  import { toast } from '../stores/ui.svelte.js'
+  import { toast, toastUndo } from '../stores/ui.svelte.js'
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
@@ -60,10 +60,20 @@
   }
 
   async function onToggle(it) {
+    const eraFacut = it.status === 'done'
     try {
       const res = await toggleDone(it.tip, it.id, it.status)
       if (res?.recurring_spawned) {
         toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
+      } else if (!eraFacut) {
+        // Acelasi „Anulează" ca in Taskuri si in pagina de proiect. Aici conteaza
+        // cel mai mult: pe boardul de azi bifezi si prin glisare, cu degetul mare,
+        // in timp ce derulezi — deci si din greseala.
+        toastUndo(`Făcut: ${it.titlu.slice(0, 34)}${it.titlu.length > 34 ? '…' : ''}`, {
+          // `toggleDone` reincarca singur agenda; al treilea argument e starea
+          // CURENTA, iar acum e „done" — deci apelul asta o intoarce la „to_do".
+          onUndo: async () => { await toggleDone(it.tip, it.id, 'done'); onchange() },
+        })
       }
       onchange()
     } catch (e) {

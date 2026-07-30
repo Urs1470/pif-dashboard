@@ -274,6 +274,32 @@ scrisa de utilizator.
 (`GET /api/proiecte/<id>/gantt.pdf`) dadea **500 din v32** — referinta la `stasks`, lista
 sortata pe faze, a rămas dupa ce gruparea pe faze a plecat. Nicio verificare nu atingea ruta.
 
+### Lista de taskuri e o lista DE FACUT (2026-07-30)
+
+Ion: *„taskurile sunt cele mai importante pentru mine pe mobil. Poti sa faci ca o
+aplicatie de to do?"*
+
+Ce lipsea nu era aspectul, ci **ordinea** si **drumul pana la actiune**.
+
+- **Ordinea e informatie.** `/api/global-tasks` intoarce `ORDER BY created_at DESC`,
+  adica ordinea in care le-ai scris. `lib/grupare.js` grupeaza la CITIRE dupa termen:
+  **Restante → Azi → Mâine → Zilele astea → Mai târziu → Fără termen**, cu cap de
+  grupa lipit si numar. „Fără termen" e ULTIMA cu buna stiinta — e sertarul, nu
+  agenda; un task fara data nu e urgent prin faptul ca n-are data.
+- **Termenul se scrie relativ** (`etichetaTermen`): „azi", „acum 3 zile", „vineri".
+  Si nu se scrie deloc in grupele care l-au spus deja in cap.
+- **Panoul de glisare e Azi · Mâine · Dată · Șterge**, la fel pe `/tasks` si in
+  pagina de proiect. Planificarea e ce faci des cu un task; editarea titlului o faci
+  o data. Nota si editarea stau in randul desfasurat.
+- **Adaugarea si planificarea sunt un singur gest:** cat timp scrii, sub compozitor
+  apar „Azi / Mâine / Alege data". Enter ramane „fara termen".
+- **Bifarea se poate anula** (`toastUndo`) pe toate cele trei liste — pe telefon se
+  bifeaza si prin glisare, deci si din greseala, iar randul pleaca intr-o sectiune
+  inchisa.
+
+Gruparea NU se aplica taskurilor de proiect: acolo randurile sunt o secventa de
+lucru cu `ordine`, iar o regrupare dupa zi ar rupe tocmai ce le tine impreuna.
+
 ### Cum arata o zi in Calendar
 
 Prima versiune desena UN bloc per client, etichetat „Continental · 4 lucrari". Datele reale
@@ -429,9 +455,10 @@ Ruleaza-l dupa orice curatenie de importuri sau modificare de pagina.
 
 - `audit_mobil.py` — **audit mobil masurat.** Ce nu prinde `smoke_ui`: butoane
   taiate de marginea din dreapta (`overflow-x: clip` le ascunde fara niciun semn),
-  tinte sub 44px, campuri sub 16px (Safari face zoom la focus), si cele trei
-  gesturi de pe randul de task, executate cu deget adevarat. Toate rutele × trei
-  latimi de telefon.
+  tinte sub 44px, campuri sub 16px (Safari face zoom la focus), gesturile de pe
+  randul de task executate cu deget adevarat, si comportamentul de **lista de
+  facut** (gruparea pe termen, adaugarea cu zi, mutarea din glisare, „Anulează").
+  Toate rutele × trei latimi de telefon.
 
 ```bash
 python scripts/audit_mobil.py                 # geometrie + gesturi

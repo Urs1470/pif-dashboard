@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
@@ -12,6 +12,8 @@
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
+  import { etichetaTermen } from '../lib/grupare.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
@@ -182,7 +184,37 @@
     if (res?.recurring_spawned) {
       toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
       await reloadTasks()
+      return
     }
+    // „Anulează", ca la taskurile globale: pe telefon bifatul vine si din glisare,
+    // deci vine si din greseala, iar randul pleaca din lista activa.
+    if (next === 'done') {
+      toastUndo(`Făcut: ${task.titlu.slice(0, 34)}${task.titlu.length > 34 ? '…' : ''}`, {
+        onUndo: async () => {
+          tasks = tasks.map(t => t.id === task.id ? { ...t, status: 'to_do' } : t)
+          await updateTask(task.id, { status: 'to_do' })
+          await reloadTasks()
+        },
+      })
+    }
+  }
+
+  /** Muta termenul unui task de proiect. Ca la /tasks: se poate intoarce. */
+  async function setTermenTask(t, zile) {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + zile)
+    await aplicaTermen(t, d.toISOString().slice(0, 10))
+  }
+  async function setTermenTaskData(t, v) { await aplicaTermen(t, v || '') }
+
+  async function aplicaTermen(t, v) {
+    const vechi = t.data_scadenta || ''
+    try {
+      await updateTask(t.id, { data_scadenta: v })
+      await reloadTasks()
+      toastUndo(v ? `Mutat pe ${etichetaTermen(v)}` : 'Termen scos', {
+        onUndo: async () => { await updateTask(t.id, { data_scadenta: vechi }); await reloadTasks() },
+      })
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
   async function handleCreateTask() {
@@ -537,14 +569,25 @@
             {#each activeTasks as t, i (t.id)}
               <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}>
                 <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}"
-                     use:glisare={{ latime: 116, activ: true, onBifa: () => toggleTaskStatus(t) }}>
+                     use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: () => toggleTaskStatus(t) }}>
                   <!-- Editarea si stergerea stau in panoul de sub rand (glisare
                        spre stanga); glisarea spre dreapta bifeaza. La fel ca in
                        Taskuri si pe „Astazi". -->
+                  <!-- Aceeasi gramatica de gest ca la /tasks: planificarea intai
+                       (e ce faci des cu un task), apoi intretinerea. Doua liste de
+                       taskuri cu acelasi rand nu au voie sa raspunda diferit la
+                       acelasi gest — altfel gestul nu se invata niciodata. -->
                   <div class="gl-actiuni">
-                    <button class="glb" onclick={() => openTaskEditModal(t)} title="Editează task">
-                      <SolidIcon name="pencil" size={16} /><span>Editează</span>
+                    <button class="glb" onclick={() => setTermenTask(t, 0)} title="Termen azi">
+                      <CalendarPlus size={16} /><span>Azi</span>
                     </button>
+                    <button class="glb" onclick={() => setTermenTask(t, 1)} title="Termen mâine">
+                      <ArrowRight size={16} /><span>Mâine</span>
+                    </button>
+                    <span class="glb datewrap" title="Alege ziua">
+                      <DatePicker value={t.data_scadenta} placeholder="Dată" onchange={(v) => setTermenTaskData(t, v)} />
+                      <span>Dată</span>
+                    </span>
                     <button class="glb danger" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task">
                       <SolidIcon name="trash" size={16} /><span>Șterge</span>
                     </button>
@@ -566,7 +609,10 @@
                       {/if}
                       {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
                       {#if t.data_scadenta}
-                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{formatDate(t.data_scadenta)}</span>
+                        <!-- „azi" / „acum 2 zile" / „vineri", ca in Taskuri. O data plina te pune
+                             sa numeri in cap la fiecare rand, iar aici randurile sunt
+                             tocmai lucrurile pe care le iei in ordine. -->
+                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{etichetaTermen(t.data_scadenta)}</span>
                       {/if}
                     </div>
                   </button>
@@ -789,7 +835,7 @@
       <div class="mf-field">
       </div>
       <div class="mf-field">
-        <span class="mf-label">Deadline</span>
+        <span class="mf-label">Termen</span>
         <DatePicker bind:value={taskFormDeadline} />
       </div>
     </div>
@@ -1029,6 +1075,16 @@
            font-size: var(--font-micro); cursor: pointer; }
     .glb span { line-height: 1; }
     .glb.danger { background: var(--danger-subtle); color: var(--danger); }
+    /* Calendarul din panou trebuie sa arate ca vecinii lui: o iconita cu eticheta,
+       nu un camp. Aceeasi reteta ca in TodayBoard si Tasks. */
+    .glb.datewrap { position: relative; }
+    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
+    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0;
+      padding: 0 0 14px; justify-content: center; background: none; border: none;
+      box-shadow: none; color: inherit; }
+    .glb.datewrap :global(.dp-value) { display: none; }
+    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px;
+      text-align: center; pointer-events: none; }
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: 44px; }
     .subtask-body { margin-left: var(--space-sm); }

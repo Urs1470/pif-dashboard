@@ -13,6 +13,7 @@ CE MASOARA, pe trei latimi de telefon si pe toate rutele:
   - tinte mici   control sub 40px care nu are nici strat invizibil in jur
   - fonturi      camp sub 16px (Safari face zoom la focus si pagina sare)
   - gesturi      reordonarea prin maner si cele doua glisari, cu deget adevarat
+  - de facut     gruparea pe termen, adaugarea cu zi, mutarea din gest, „Anulează"
 
 TREI CAPCANE DE MASURARE, toate tratate aici — fara ele raportul minte:
   1. `pointer-events: none` inseamna ca elementul NU e o tinta (benzile din
@@ -163,6 +164,11 @@ TRAGE = """([x0, y0, pasi, id]) => {
   for (const [x, y] of pasi) ev('pointermove', x, y);
   const u = pasi[pasi.length - 1];
   ev('pointerup', u[0], u[1]);
+  // Browserul trimite un `click` dupa ridicarea degetului, iar `glisare.js` il
+  // inghite O DATA (ca gestul sa nu ajunga click pe ce era dedesubt). Fara el
+  // aici, steagul „tocmai am glisat" ramane ridicat si prima atingere de dupa —
+  // pe un buton din panou — ar fi inghitita in loc sa lucreze.
+  el.dispatchEvent(new MouseEvent('click', { clientX: u[0], clientY: u[1], bubbles: true, cancelable: true }));
   return true;
 }"""
 
@@ -292,6 +298,119 @@ def gesturi(ctx, baza):
     return probleme
 
 
+def lista_de_facut(ctx, baza):
+    """Ce face ca /tasks sa fie o lista DE FACUT, nu un depozit: gruparea dupa
+    termen, adaugarea cu zi dintr-un singur gest, mutarea din glisare si
+    „Anulează" la bifat."""
+    out('--- lista de facut (390x844) ---')
+    probleme = 0
+    page = ctx.new_page()
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(baza + '/#/tasks', wait_until='load')
+    try:
+        page.wait_for_selector('.trow', timeout=15000)
+    except Exception:
+        out('  SARI  lista de taskuri e goala')
+        page.close()
+        return 0
+    page.wait_for_timeout(1000)
+
+    def zi(cond, mesaj, detaliu=''):
+        nonlocal probleme
+        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
+        if not cond:
+            probleme += 1
+
+    capete = page.eval_on_selector_all('.grup-cap .grup-t', 'e => e.map(x => x.textContent.trim())')
+    ORDINE = ['Restante', 'Azi', 'Mâine', 'Zilele astea', 'Mai târziu', 'Fără termen']
+    idx = [ORDINE.index(x) for x in capete if x in ORDINE]
+    zi(len(capete) >= 1, 'lista e grupata pe termen', capete)
+    zi(idx == sorted(idx), 'grupele sunt in ordinea zilei', capete)
+    zi('Fără termen' not in capete or capete[-1] == 'Fără termen',
+       '„Fără termen" e ultima, nu prima', capete)
+
+    # adaugare cu zi
+    MARCA = 'Audit — task de proba'
+    n0 = page.eval_on_selector_all('.trow', 'e => e.length')
+    page.fill('.quick-add input', MARCA)
+    page.wait_for_timeout(400)
+    chip = page.locator('.qa-chip', has_text='Azi').first
+    zi(chip.is_visible(), 'chipurile de zi apar cat timp scrii')
+    if chip.is_visible():
+        chip.click()
+        page.wait_for_timeout(1400)
+        grup = page.evaluate(GRUPUL_LUI, MARCA)
+        zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
+        zi(grup == 'Azi', 'taskul nou aterizeaza direct in ziua aleasa', grup)
+        zi(page.input_value('.quick-add input') == '', 'campul ramane gol si focusat pentru urmatorul')
+
+    # mutare din gest
+    r = page.evaluate(CAUTA_RAND, MARCA)
+    if r:
+        cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
+        page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
+        page.wait_for_timeout(600)
+        page.evaluate(APASA_IN_RAND, [MARCA, 'Mâine'])
+        page.wait_for_timeout(1400)
+        grup = page.evaluate(GRUPUL_LUI, MARCA)
+        zi(grup == 'Mâine', 'glisarea muta taskul in alta zi', grup)
+        zi(page.locator('.toast-action', has_text='Anulează').count() > 0,
+           'mutarea se poate anula')
+
+    # bifare + anulare
+    page.reload(wait_until='load')
+    page.wait_for_selector('.trow', timeout=15000)
+    page.wait_for_timeout(1200)
+    n1 = page.eval_on_selector_all('.trow', 'e => e.length')
+    page.evaluate(BIFEAZA, MARCA)
+    page.wait_for_timeout(1400)
+    zi(page.eval_on_selector_all('.trow', 'e => e.length') == n1 - 1, 'taskul bifat pleaca din lista')
+    anuleaza = page.locator('.toast-action', has_text='Anulează')
+    zi(anuleaza.count() > 0, 'bifarea ofera „Anulează"')
+    if anuleaza.count():
+        anuleaza.first.click()
+        page.wait_for_timeout(1600)
+        zi(page.eval_on_selector_all('.trow', 'e => e.length') == n1, '„Anulează" aduce taskul inapoi')
+
+    page.close()
+    out()
+    return probleme
+
+
+GRUPUL_LUI = """(marca) => {
+  const r = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
+  if (!r) return null;
+  let n = r.closest('.trow-wrap');
+  while (n && !n.classList.contains('grup-cap')) n = n.previousElementSibling;
+  return n ? n.querySelector('.grup-t').textContent.trim() : null;
+}"""
+
+CAUTA_RAND = """(marca) => {
+  const x = [...document.querySelectorAll('.trow')].find(e => e.textContent.includes(marca));
+  if (!x) return null;
+  x.scrollIntoView({ block: 'center' });
+  const b = x.getBoundingClientRect();
+  return [b.left, b.top, b.width, b.height];
+}"""
+
+APASA_IN_RAND = """([marca, eticheta]) => {
+  const row = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
+  if (!row) return false;
+  const b = [...row.querySelectorAll('.gl-actiuni .glb')].find(x => x.textContent.includes(eticheta));
+  if (!b) return false;
+  b.click();
+  return true;
+}"""
+
+BIFEAZA = """(marca) => {
+  const r = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
+  if (!r) return false;
+  r.scrollIntoView({ block: 'center' });
+  r.querySelector('.check').click();
+  return true;
+}"""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--fara-gesturi', action='store_true', help='doar geometrie')
@@ -333,6 +452,7 @@ def main():
             probleme += geometrie(ctx, baza)
             if not arg.fara_gesturi:
                 probleme += gesturi(ctx, baza)
+                probleme += lista_de_facut(ctx, baza)
             browser.close()
     finally:
         proc.terminate()
