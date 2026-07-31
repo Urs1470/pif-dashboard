@@ -26,6 +26,7 @@
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import RichText from '../components/ui/RichText.svelte'
   import AgendaColumn from '../components/tasks/AgendaColumn.svelte'
+  import { todayISO, addDays } from '../lib/calendarDates.js'
 
   let showArchive = $state(false)
   let taskDeleteId = $state(null)
@@ -132,10 +133,13 @@
 
   /** Muta termenul unui task. `null` il sterge (taskul se intoarce in „Fără termen"). */
   async function setTermen(t, zile) {
-    const v = zile === null ? '' : (() => {
-      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + zile)
-      return d.toISOString().slice(0, 10)
-    })()
+    // `addDays(todayISO(), n)`, NU `new Date().toISOString()`: a doua varianta
+    // converteste la UTC, iar miezul noptii LOCAL intr-un fus de la est de
+    // Greenwich (Romania e +2/+3) cade in ziua PRECEDENTA. Nu era un caz de
+    // margine la ore mici — `setHours(0,0,0,0)` il facea sigur, deci „Azi"
+    // scria ieri la orice ora. Vezi lib/calendarDates.js, care lucreaza pe
+    // campurile locale ale datei.
+    const v = zile === null ? '' : addDays(todayISO(), zile)
     const vechi = t.data_scadenta || ''
     try {
       await updateGlobalTask(t.id, { data_scadenta: v })
@@ -222,8 +226,7 @@
     quickAdding = true
     let termen = quickData
     if (zile !== undefined && zile !== null) {
-      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + zile)
-      termen = d.toISOString().slice(0, 10)
+      termen = addDays(todayISO(), zile)
     }
     try {
       await createGlobalTask({

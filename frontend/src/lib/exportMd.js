@@ -1,4 +1,5 @@
 import { apiJson } from './api.js'
+import { todayISO } from './calendarDates.js'
 
 function escMd(txt) {
   return (txt || '').replace(/\|/g, '\\|')
@@ -12,7 +13,7 @@ export async function exportMarkdown(projectId) {
 
   const isPIF = project.tip === 'PIF'
   const isService = project.tip === 'Service'
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayISO()   // local, nu UTC (vezi lib/calendarDates.js)
 
   let md = ''
 

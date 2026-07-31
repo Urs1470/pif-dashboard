@@ -34,6 +34,7 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
+  import { todayISO, addDays } from '../lib/calendarDates.js'
 
   let { params } = $props()
   let project = $state(null)
@@ -201,8 +202,8 @@
 
   /** Muta termenul unui task de proiect. Ca la /tasks: se poate intoarce. */
   async function setTermenTask(t, zile) {
-    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + zile)
-    await aplicaTermen(t, d.toISOString().slice(0, 10))
+    // Local, nu UTC — vezi nota din pages/Tasks.svelte: „Azi" scria ieri.
+    await aplicaTermen(t, addDays(todayISO(), zile))
   }
   async function setTermenTaskData(t, v) { await aplicaTermen(t, v || '') }
 

@@ -57,6 +57,15 @@ RUTE = [
 
 ECRANE = [('iphone-se', 375, 667), ('android-mic', 360, 740), ('iphone-14', 390, 844)]
 
+# FUSUL ORAR AL TESTELOR NU E UTC, CU BUNA STIINTA.
+# Ion lucreaza in Romania (UTC+2/+3), iar containerele de test ruleaza pe UTC —
+# unde ora locala si UTC coincid, deci orice greseala de conversie e INVIZIBILA.
+# Asa a trecut neobservat un bug pe care il vedea la fiecare atingere: butoanele
+# „Azi"/„Mâine" construiau data cu `new Date().toISOString()`, adica in UTC, iar
+# miezul noptii local intr-un fus de la est de Greenwich cade in ziua precedenta.
+# „Azi" scria IERI, la orice ora. Testele erau verzi.
+FUS_TEST = 'Europe/Bucharest'
+
 PRAG_TINTA = 40      # sub atat raportam; tinta dorita e --tap-min (44)
 
 # Ce stim ca e sub prag CU BUNA STIINTA. Tine lista scurta si scrie MOTIVUL —
@@ -666,7 +675,8 @@ def main():
         with sync_playwright() as pw:
             browser = pw.chromium.launch(executable_path=os.environ.get('PIF_CHROMIUM') or None)
             ctx = browser.new_context(viewport={'width': 390, 'height': 844},
-                                      is_mobile=True, has_touch=True, service_workers='block')
+                                      is_mobile=True, has_touch=True, service_workers='block',
+                                      timezone_id=FUS_TEST)
             page = ctx.new_page()
             page.goto(baza + '/login', wait_until='load')
             page.fill('#pin', S.PIN_TEST)
