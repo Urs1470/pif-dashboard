@@ -1,22 +1,46 @@
 <!doctype html>
-<html lang="ro" data-theme="light">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
+    <!-- TEMA, INAINTE DE PRIMUL PAINT.
+         Trebuie sa fie inline si sincron: bundle-ul se incarca dupa ce pagina s-a
+         desenat deja, deci un `data-theme` fix in <html> ar da o clipa de tema
+         gresita la fiecare deschidere. Logica e OGLINDITA din
+         `frontend/src/stores/ui.svelte.js` (`modInitial`) — daca o schimbi acolo,
+         schimb-o si aici, si in calc.html, si in templates/login.html. -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('theme-mod');
+          if (m !== 'auto' && m !== 'light' && m !== 'dark') {
+            localStorage.removeItem('theme');   // cheia veche, tema fixata
+            m = 'auto';
+            localStorage.setItem('theme-mod', m);
+          }
+          var t = m === 'auto'
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : m;
+          document.documentElement.setAttribute('data-theme', t);
+          var mc = document.querySelector('meta[name="theme-color"]');
+          if (mc) mc.setAttribute('content', t === 'dark' ? '#12100d' : '#f6f1e7');
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preload" href="/static/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/SpaceGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/JetBrainsMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <title>Calculator actionari electrice — PIF</title>
-    <script type="module" crossorigin src="/assets/calc-DJYz9hl3.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/Modal-B1DKDtnh.js">
-    <link rel="modulepreload" crossorigin href="/assets/book-open-DzkCBDf3.js">
-    <link rel="modulepreload" crossorigin href="/assets/Select-CBzh1QCF.js">
-    <link rel="modulepreload" crossorigin href="/assets/download-Dt4k-wlF.js">
-    <link rel="modulepreload" crossorigin href="/assets/link-2-BocOY1_y.js">
+    <script type="module" crossorigin src="/assets/calc-C4OuL7_s.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/Modal-ACKcnYoD.js">
+    <link rel="modulepreload" crossorigin href="/assets/book-open-CxMEsBNb.js">
+    <link rel="modulepreload" crossorigin href="/assets/Select-BdE11Mpm.js">
+    <link rel="modulepreload" crossorigin href="/assets/download-ByBsOZTA.js">
+    <link rel="modulepreload" crossorigin href="/assets/link-2-74s5YhQt.js">
     <link rel="modulepreload" crossorigin href="/assets/katex.min-DAPIdPK9.js">
-    <link rel="modulepreload" crossorigin href="/assets/Calculator-CmwnOVIK.js">
+    <link rel="modulepreload" crossorigin href="/assets/Calculator-bJbVWoLg.js">
     <link rel="stylesheet" crossorigin href="/assets/Modal-BSWyYdUN.css">
     <link rel="stylesheet" crossorigin href="/assets/Select-uy2q-85-.css">
     <link rel="stylesheet" crossorigin href="/assets/katex-CYlHEDRF.css">

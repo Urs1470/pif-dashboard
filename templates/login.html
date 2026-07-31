@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ro" data-theme="dark">
+<!-- data-theme de mai sus e doar valoarea de pornire; scriptul din <head> o corecteaza inainte de primul paint -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,11 +9,21 @@
     <link rel="preload" href="/static/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
     <script nonce="{{ csp_nonce }}">
+        // TEMA URMEAZA SISTEMUL. Oglindit din frontend/src/stores/ui.svelte.js
+        // (`modInitial`) si din frontend/index.html — patru locuri, aceeasi logica:
+        // fiecare document care se deseneaza inainte de bundle isi pune tema singur,
+        // altfel apare o clipa de tema gresita la fiecare deschidere.
         (function() {
-            const saved = localStorage.getItem('theme');
-            if (saved === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
+            var m = localStorage.getItem('theme-mod');
+            if (m !== 'auto' && m !== 'light' && m !== 'dark') {
+                localStorage.removeItem('theme');   // cheia veche, tema fixata
+                m = 'auto';
+                localStorage.setItem('theme-mod', m);
             }
+            var t = m === 'auto'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : m;
+            document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
 
@@ -24,6 +35,7 @@
 <body>
     <button class="theme-toggle" id="theme-toggle" aria-label="Schimbă tema">
         <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        <svg id="theme-icon-auto" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:none"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>
         <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
     </button>
 
@@ -65,26 +77,50 @@
 
     <script nonce="{{ csp_nonce }}">
         // Theme management (no external CDN dependency on login)
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            const moon = document.getElementById('theme-icon-moon');
-            const sun = document.getElementById('theme-icon-sun');
-            if (moon && sun) {
-                moon.style.display = theme === 'dark' ? '' : 'none';
-                sun.style.display  = theme === 'dark' ? 'none' : '';
+        // Trei moduri, ca in aplicatie: auto (sistemul) / deschisa / inchisa.
+        // Doua n-ar ajunge — prima atingere te-ar scoate din „auto" definitiv.
+        const MODURI = ['auto', 'light', 'dark'];
+
+        function temaSistemului() {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function modCurent() {
+            const m = localStorage.getItem('theme-mod');
+            return MODURI.indexOf(m) === -1 ? 'auto' : m;
+        }
+
+        function aplicaTema() {
+            const mod = modCurent();
+            const efectiv = mod === 'auto' ? temaSistemului() : mod;
+            document.documentElement.setAttribute('data-theme', efectiv);
+            const mc = document.querySelector('meta[name="theme-color"]');
+            if (mc) mc.setAttribute('content', efectiv === 'dark' ? '#12100d' : '#f6f1e7');
+            const icoane = { auto: 'theme-icon-auto', light: 'theme-icon-sun', dark: 'theme-icon-moon' };
+            for (const [k, id] of Object.entries(icoane)) {
+                const el = document.getElementById(id);
+                if (el) el.style.display = (k === mod) ? '' : 'none';
+            }
+            const btn = document.getElementById('theme-toggle');
+            if (btn) {
+                btn.title = mod === 'auto'
+                    ? 'Temă: automată (după sistem)'
+                    : mod === 'light' ? 'Temă: deschisă' : 'Temă: închisă';
             }
         }
 
         function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            setTheme(next);
-            localStorage.setItem('theme', next);
+            const mod = modCurent();
+            const urm = mod === 'auto' ? 'light' : mod === 'light' ? 'dark' : 'auto';
+            localStorage.setItem('theme-mod', urm);
+            aplicaTema();
         }
 
         function initTheme() {
-            const saved = localStorage.getItem('theme') || 'dark';
-            setTheme(saved);
+            aplicaTema();
+            // Sistemul se poate schimba cat stai pe pagina (program de noapte).
+            window.matchMedia('(prefers-color-scheme: dark)')
+                .addEventListener('change', function () { if (modCurent() === 'auto') aplicaTema(); });
         }
 
         document.getElementById('theme-toggle').addEventListener('click', toggleTheme);

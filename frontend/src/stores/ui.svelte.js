@@ -1,5 +1,13 @@
+// Tema traieste in `lib/tema.svelte.js` (o foloseste si bundle-ul separat /calc).
+// Aici raman doar re-exporturile, ca importurile existente sa nu se rupa.
+import { tema, setMod, cicleazaTema } from '../lib/tema.svelte.js'
+
+export { tema, setMod }
+export const toggleTheme = cicleazaTema
+/** Compatibilitate: fixeaza explicit o tema (deci iese din „auto"). */
+export function setTheme(theme) { setMod(theme === 'light' ? 'light' : 'dark') }
+
 export const ui = $state({
-  theme: localStorage.getItem('theme') || 'dark',
   toasts: [],
   // Context de pagina afisat in bara de sus (ex. salutul de pe Home). Paginile
   // il seteaza pe mount si il curata pe destroy; gol => header doar cu brand.
@@ -11,16 +19,6 @@ let toastId = 0
 // deferred-commit: apelantul scoate din UI imediat, iar stergerea reala (onCommit)
 // ruleaza la expirare / inchidere; „Anulează" (onUndo) o repune.
 const toastMeta = {}
-
-export function setTheme(theme) {
-  ui.theme = theme
-  localStorage.setItem('theme', theme)
-  document.documentElement.setAttribute('data-theme', theme)
-}
-
-export function toggleTheme() {
-  setTheme(ui.theme === 'dark' ? 'light' : 'dark')
-}
 
 export function toast(message, type = 'info', duration = 3000) {
   const id = ++toastId
@@ -73,6 +71,3 @@ export function dismissToast(id) {
   if (idx !== -1) ui.toasts.splice(idx, 1)
 }
 
-if (typeof document !== 'undefined') {
-  document.documentElement.setAttribute('data-theme', ui.theme)
-}

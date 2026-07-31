@@ -1,17 +1,20 @@
 <script>
   import Calculator from './pages/Calculator.svelte'
-  import { Sun, Moon } from '@lucide/svelte'
+  import { Sun, Moon, Monitor } from '@lucide/svelte'
+  import { tema, cicleazaTema } from './lib/tema.svelte.js'
 
-  let theme = $state(document.documentElement.getAttribute('data-theme') || 'dark')
-  function toggleTheme() {
-    theme = theme === 'dark' ? 'light' : 'dark'
-    document.documentElement.setAttribute('data-theme', theme)
-  }
+  // Aceeasi sursa ca in dashboard: /calc e alt bundle, dar acelasi browser si
+  // aceeasi preferinta. Inainte avea comutatorul lui, care nu retinea nimic si
+  // nu stia de sistem.
 </script>
 
 <div class="sa">
-  <button class="sa-theme" onclick={toggleTheme} aria-label="Schimba tema" title="Schimba tema (light/dark)">
-    {#if theme === 'dark'}<Sun size={18} />{:else}<Moon size={18} />{/if}
+  <button class="sa-theme" onclick={cicleazaTema} aria-label="Schimbă tema"
+          title={tema.mod === 'auto' ? 'Temă: automată (după sistem)'
+                 : tema.mod === 'light' ? 'Temă: deschisă' : 'Temă: închisă'}>
+    {#if tema.mod === 'auto'}<Monitor size={18} />
+    {:else if tema.mod === 'light'}<Sun size={18} />
+    {:else}<Moon size={18} />{/if}
   </button>
   <div class="sa-main">
     <Calculator standalone={true} />

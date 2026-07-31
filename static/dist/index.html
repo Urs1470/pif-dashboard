@@ -1,9 +1,33 @@
 <!doctype html>
-<html lang="ro" data-theme="dark">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#12100d" />
+    <!-- TEMA, INAINTE DE PRIMUL PAINT.
+         Trebuie sa fie inline si sincron: bundle-ul se incarca dupa ce pagina s-a
+         desenat deja, deci un `data-theme` fix in <html> ar da o clipa de tema
+         gresita la fiecare deschidere. Logica e OGLINDITA din
+         `frontend/src/stores/ui.svelte.js` (`modInitial`) — daca o schimbi acolo,
+         schimb-o si aici, si in calc.html, si in templates/login.html. -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('theme-mod');
+          if (m !== 'auto' && m !== 'light' && m !== 'dark') {
+            localStorage.removeItem('theme');   // cheia veche, tema fixata
+            m = 'auto';
+            localStorage.setItem('theme-mod', m);
+          }
+          var t = m === 'auto'
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : m;
+          document.documentElement.setAttribute('data-theme', t);
+          var mc = document.querySelector('meta[name="theme-color"]');
+          if (mc) mc.setAttribute('content', t === 'dark' ? '#12100d' : '#f6f1e7');
+        } catch (e) {}
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PIF" />
@@ -14,8 +38,8 @@
     <link rel="preload" href="/static/fonts/SpaceGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/JetBrainsMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <title>PIF Dashboard</title>
-    <script type="module" crossorigin src="/assets/main-BcOylV9J.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/Modal-B1DKDtnh.js">
+    <script type="module" crossorigin src="/assets/main-DntnPHYA.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/Modal-ACKcnYoD.js">
     <link rel="stylesheet" crossorigin href="/assets/Modal-BSWyYdUN.css">
     <link rel="stylesheet" crossorigin href="/assets/main-f1CBAA2N.css">
   </head>

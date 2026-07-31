@@ -1,6 +1,17 @@
 <script>
-  import { Sun, Moon } from '@lucide/svelte'
-  import { ui, toggleTheme } from '../../stores/ui.svelte.js'
+  import { Sun, Moon, Monitor } from '@lucide/svelte'
+  import { ui } from '../../stores/ui.svelte.js'
+  import { tema, cicleazaTema } from '../../lib/tema.svelte.js'
+
+  // Spune si ce e acum, si ce urmeaza — cu trei stari, „ce urmeaza" singur nu se
+  // deduce dintr-o iconita.
+  const titluTema = $derived(
+    tema.mod === 'auto'
+      ? `Temă: automată (sistemul e ${tema.sistem === 'dark' ? 'închis' : 'deschis'}) — atinge pentru deschisă`
+      : tema.mod === 'light'
+        ? 'Temă: deschisă — atinge pentru închisă'
+        : 'Temă: închisă — atinge pentru automată'
+  )
 </script>
 
 <header class="header">
@@ -19,8 +30,14 @@
   <span class="h-spacer"></span>
 
   <div class="header-actions">
-    <button class="header-btn" onclick={toggleTheme} title="Schimbă tema">
-      {#if ui.theme === 'dark'}
+    <!-- Iconita arata MODUL CURENT, nu pe cel urmator. Cu doua stari „arata unde
+         ajungi" mergea; cu trei, un monitor care inseamna „urmatorul e auto" nu
+         se poate ghici. Titlul spune si unde te duce atingerea. -->
+    <button class="header-btn" onclick={cicleazaTema} title={titluTema}
+            aria-label={titluTema}>
+      {#if tema.mod === 'auto'}
+        <Monitor size={18} />
+      {:else if tema.mod === 'light'}
         <Sun size={18} />
       {:else}
         <Moon size={18} />
