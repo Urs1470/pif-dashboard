@@ -649,6 +649,18 @@
                       {#if subtaskLoading && !subtasksCache[t.id]}
                         <div class="sub-loading">Se încarcă...</div>
                       {:else}
+                        {#if subs.length}
+                          {@const gataSub = subs.filter(s => s.done).length}
+                          <!-- Aceeasi bara ca in /tasks: „1/4" spune cifra, nu si
+                               cat de departe esti. -->
+                          <div class="sub-progres">
+                            <div class="sub-bara" role="img"
+                                 aria-label="{gataSub} din {subs.length} subtaskuri făcute">
+                              <span style="width: {(gataSub / subs.length) * 100}%"></span>
+                            </div>
+                            <span class="sub-num">{gataSub}/{subs.length}</span>
+                          </div>
+                        {/if}
                         {#each subs as sub (sub.id)}
                           <div class="sub-row" class:sub-done={sub.done}>
                             <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
@@ -1026,9 +1038,15 @@
   .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
   .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
+  .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
-  .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
+  .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+  .sub-progres { display: flex; align-items: center; gap: var(--space-sm); padding: 2px 0 6px; }
+  .sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
+  .sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
+    background: var(--success); transition: width var(--dur-base) var(--ease); }
+  .sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
+    font-variant-numeric: tabular-nums; flex: none; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }

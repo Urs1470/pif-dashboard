@@ -4,7 +4,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
@@ -311,6 +311,35 @@
     await loadGlobalTasks({ arhiva: showArchive })
   }
 
+  // REDENUMIREA UNUI SUBTASK.
+  // API-ul o accepta de la inceput (`titlu` prin COALESCE in PUT /api/subtasks),
+  // dar interfata n-a expus-o niciodata: ca sa corectezi o litera trebuia sa
+  // stergi randul si sa-l scrii din nou. Atingi textul si il editezi pe loc, ca
+  // in orice lista de bifat.
+  let editSubId = $state('')
+  let editSubTitlu = $state('')
+
+  function incepeRedenumirea(sub) {
+    editSubId = sub.id
+    editSubTitlu = sub.titlu
+  }
+
+  async function salveazaRedenumirea(sub) {
+    if (editSubId !== sub.id) return
+    const nou = editSubTitlu.trim()
+    editSubId = ''
+    if (!nou || nou === sub.titlu) return
+    await updateSubtask(sub.id, { titlu: nou })
+    subtasksCache = {
+      ...subtasksCache,
+      [sub.task_id]: (subtasksCache[sub.task_id] || []).map(s => s.id === sub.id ? { ...s, titlu: nou } : s),
+    }
+  }
+
+  // Deschide direct in scriere, cu textul selectat: de cele mai multe ori
+  // rescrii randul, nu adaugi la el.
+  function focalizeaza(node) { node.focus(); node.select() }
+
   async function removeSubtask(sub) {
     await deleteSubtask(sub.id)
     subtasksCache = {
@@ -382,13 +411,37 @@
     {#if subtaskLoading && !subtasksCache[t.id]}
       <div class="sub-loading">Se încarcă...</div>
     {:else}
+      {#if subs.length}
+        {@const gata = subs.filter(s => s.done).length}
+        <!-- „1/4" spune cifra, dar nu si CAT de departe esti: doua treimi si o
+             treime arata la fel intr-un chip. Bara o arata dintr-o privire, iar
+             cifra ramane pentru cine vrea exact. -->
+        <div class="sub-progres">
+          <div class="sub-bara" role="img"
+               aria-label="{gata} din {subs.length} subtaskuri făcute">
+            <span style="width: {(gata / subs.length) * 100}%"></span>
+          </div>
+          <span class="sub-num">{gata}/{subs.length}</span>
+        </div>
+      {/if}
       {#each subs as sub (sub.id)}
         <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
           <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
             {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
           </button>
-          <span class="sub-title">{sub.titlu}</span>
-          <button class="sub-del" onclick={() => removeSubtask(sub)}><SolidIcon name="trash" size={12} /></button>
+          {#if editSubId === sub.id}
+            <input class="sub-edit" bind:value={editSubTitlu} use:focalizeaza
+                   onblur={() => salveazaRedenumirea(sub)}
+                   onkeydown={(e) => {
+                     if (e.key === 'Enter') e.currentTarget.blur()
+                     else if (e.key === 'Escape') { editSubId = '' }
+                   }} />
+          {:else}
+            <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
+                    title="Atinge ca să redenumești">{sub.titlu}</button>
+          {/if}
+          <button class="sub-del" onclick={() => removeSubtask(sub)}
+                  aria-label="Șterge subtaskul"><SolidIcon name="trash" size={13} /></button>
         </div>
       {/each}
       <div class="sub-add">
@@ -546,18 +599,34 @@
                 <span class="tchev">{#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}</span>
                 <span class="ttitle">{t.titlu}</span>
               </div>
+              <!-- ORDINEA E CEA DIN TODOIST, adaptata (cerinta Ion).
+                   Intai CAND (termenul, cu iconita de calendar si culoarea
+                   severitatii), apoi CAT (subtaskurile, cu iconita lor), apoi
+                   semnele mici; iar categoria pleaca la capatul din dreapta, unde
+                   Todoist tine proiectul. Motivul ordinii: pe un rand citit din
+                   mers, prima informatie trebuie sa fie cea care decide daca te
+                   ocupi acum de el — termenul. Categoria nu decide nimic, deci sta
+                   ultima si aliniata la dreapta, unde ochiul o gaseste cand o
+                   cauta si o sare cand nu.
+                   „acum 3 zile" / „vineri", nu „27.07.2026": o data plina te pune
+                   sa calculezi in cap cate zile mai ai, la fiecare rand. Si nu se
+                   scrie deloc acolo unde capul de grupa a spus-o deja („Azi",
+                   „Mâine", „Fără termen") — repetat pe fiecare rand ar fi zgomot. -->
               <div class="tinfo">
-                {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
-                {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                {#if chipTermen(t, gid)}
+                  <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>
+                    <CalendarDays size={11} />{chipTermen(t, gid)}
+                  </span>
+                {/if}
                 {#if t.subtask_total}
-                  <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
+                  <span class="tsub-chip" class:gata={t.subtask_done === t.subtask_total}
+                        title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">
+                    <ListChecks size={11} />{t.subtask_done || 0}/{t.subtask_total}
+                  </span>
                 {/if}
                 {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
-                <!-- „acum 3 zile" / „vineri", nu „27.07.2026": o data plina te pune
-                     sa calculezi in cap cate zile mai ai, la fiecare rand. Si nu se
-                     scrie deloc acolo unde capul de grupa a spus-o deja („Azi",
-                     „Mâine", „Fără termen") — repetat pe fiecare rand ar fi zgomot. -->
-                {#if chipTermen(t, gid)}<span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{chipTermen(t, gid)}</span>{/if}
+                {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
               </div>
             </button>
             <div class="task-actions">
@@ -777,8 +846,17 @@
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .task-cat { padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
-  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); font-size: var(--font-micro); }
+  /* Categoria pleaca la capatul din dreapta (ca „Inbox" la Todoist): e ultima ca
+     importanta, deci nu are voie sa stea intre ochi si termen. */
+  .task-cat { margin-left: auto; padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); flex: none; }
+  .tsub-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px;
+    border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim);
+    font-weight: var(--fw-medium); font-size: var(--font-micro);
+    font-variant-numeric: tabular-nums; }
+  /* Toate bifate: verde, ca sa se vada din lista ca taskul e gata pe dinauntru
+     si mai ramane doar sa-l inchizi. */
+  .tsub-chip.gata { background: var(--success-subtle); color: var(--success); }
+  .tdeadline { display: inline-flex; align-items: center; gap: 3px; }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
   .gl-fata { display: contents; }
@@ -803,9 +881,23 @@
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .sub-row { display: flex; align-items: center; gap: var(--space-sm); padding: 3px 0; }
+  .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
-  .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; }
+  /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
+     fundal, aliniat la stanga, pe toata latimea ramasa. */
+  .sub-title { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
+    background: none; border: none; padding: 0; text-align: left; cursor: text;
+    overflow-wrap: anywhere; }
+  .sub-edit { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
+    background: var(--bg-input); border: 1px solid var(--accent); border-radius: var(--radius-xs);
+    padding: 2px 6px; }
+  /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
+  .sub-progres { display: flex; align-items: center; gap: var(--space-sm); padding: 2px 0 6px; }
+  .sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
+  .sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
+    background: var(--success); transition: width var(--dur-base) var(--ease); }
+  .sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
+    font-variant-numeric: tabular-nums; flex: none; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
@@ -976,11 +1068,27 @@
     .sub-add input, .sub-add-btn { min-height: var(--tap-min); }
     .sub-add-btn { width: var(--tap-min); }
     .sub-row { padding: 2px 0; }
-    .sub-row .check { min-width: var(--tap-min); min-height: var(--tap-min);
+    /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
+       pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
+       din latimea ecranului consumata inainte de primul cuvant, pe fiecare rand.
+       Doua lucruri o produceau — indentarea de 40px a sectiunii si o bifa cu
+       caseta de 44px in jurul unui cerc de 14. Indentarea scade la 12 si devine
+       o LINIE (spina), care spune „astea tin de taskul de deasupra" mai bine
+       decat spatiul gol; caseta bifei se ingusteaza la 26px, iar suprafata de
+       atins revine dintr-un strat invizibil (`::after`), exact ca la randul
+       parinte. Titlul incepe acum pe la 67px. */
+    .subtask-body { padding-left: var(--space-12) !important; }
+    .sub-section { border-left: 2px solid var(--border); padding-left: var(--space-12); }
+    .sub-row .check { min-width: 26px; width: 26px; min-height: 40px;
       align-items: center; justify-content: center; padding: 0; }
     /* Pe touch nu exista hover, deci un buton care apare la hover nu apare
        niciodata: „sterge subtask" era invizibil si de neatins pe telefon. */
-    .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min); }
+    /* Stergerea ramane atingibila (44px), dar nu mai striga: pe telefon `:hover`
+       nu exista, deci era o pubela plina, la fel de tare ca bifa, pe FIECARE
+       rand. Ramane un semn stins intr-o tinta mare. */
+    .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min);
+               color: var(--text-faint); background: none; }
+    .sub-title, .sub-edit { font-size: var(--font-body); }
     .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
