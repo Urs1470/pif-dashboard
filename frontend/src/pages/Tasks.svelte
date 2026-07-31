@@ -315,12 +315,24 @@
     } finally { subtaskLoading = false }
   }
 
-  // Foaia e ACUM SI PE DESKTOP (cerinta Ion). Un task arata la fel oriunde il
-  // deschizi, iar extinderea in lista disparea oricum de indata ce continutul
-  // crestea. Pe desktop `Modal` e o caseta centrata, pe telefon un sertar de jos
-  // — acelasi continut, doar asezat unde ajunge mana.
+  // FOAIA DOAR PE TELEFON; pe desktop taskul se desface in lista (cerinta Ion).
+  // Am incercat foaia si pe desktop si a fost respinsa — iar motivul se sustine:
+  // pe desktop nu exista niciunul dintre cele trei argumente care o justifica pe
+  // telefon. Tastatura fizica nu acopera ecranul, e loc pe verticala fara sa
+  // pierzi lista din ochi, iar un modal peste o lista larga inseamna un clic in
+  // plus si contextul acoperit.
+  // DESIGNUL ramane insa acelasi in ambele: `taskDetail` e UN SINGUR snippet,
+  // randat ori in foaie, ori in rand. Cardurile de subtask, antetul de sectiune,
+  // bara de progres si butonul de adaugare arata identic — se schimba doar unde
+  // sunt asezate.
   async function toggleTaskExpand(taskId) {
-    await deschideFoaia(taskId)
+    if (ecran.telefon) { await deschideFoaia(taskId); return }
+    if (expandedTask === taskId) {
+      expandedTask = null
+      return
+    }
+    expandedTask = taskId
+    await incarcaSubtaskuri(taskId)
   }
 
 
@@ -685,7 +697,14 @@
             </div>
             </div>
           </div>
-
+          <!-- Pe desktop taskul se desface AICI, in lista. Acelasi `taskDetail` ca
+               in foaia de pe telefon, deci designul e identic — se schimba doar
+               unde e asezat. -->
+          {#if expandedTask === t.id}
+            <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+              {@render taskDetail(t)}
+            </div>
+          {/if}
         </div>
       {/each}
       {/if}
