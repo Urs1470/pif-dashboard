@@ -668,8 +668,13 @@
     <div class="head-row">
       <SolidIcon name="calculator" size={26} />
       <h1>Calculator acționări electrice</h1>
-      <button class="surse-btn" onclick={() => (ghidOpen = true)}><Info size={15} /> Ghid</button>
-      <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
+      <!-- Butoanele stau intr-un container cu `margin-left: auto`, nu fiecare cu al
+           lui: doua elemente cu auto margin isi impart spatiul liber intre ele si
+           raman despartite in mijlocul randului, nu lipite la dreapta. -->
+      <div class="head-actions">
+        <button class="surse-btn" onclick={() => (ghidOpen = true)}><Info size={15} /> Ghid</button>
+        <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
+      </div>
     </div>
     <p class="sub">Mărimi inginerești pentru motoare și convertizoare — valori orientative, verifică întotdeauna catalogul/manualul.</p>
   </div>
@@ -1090,8 +1095,8 @@
     margin-top: 2px;
     max-width: 70ch;
   }
+  .head-actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .surse-btn {
-    margin-left: auto;
     display: inline-flex; align-items: center; gap: 6px;
     font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -1673,9 +1678,12 @@
        basis 0 titlul ia CE RAMANE si isi rupe textul inauntru, unde e normal
        sa se rupa. */
     .head-row h1 { flex: 1 1 0; min-width: 0; }
-    /* `100%` = randul lui, mereu. Altfel butonul se strecoara langa un titlu
-       scurt si se ingusta pana isi rupe eticheta in doua. */
-    .surse-btn { flex: 0 0 100%; margin-left: 0; min-height: var(--tap-min);
+    /* `100%` = randul lor, mereu. Altfel butoanele se strecoara langa un titlu
+       scurt si se ingusta pana isi rup eticheta in doua. Randul e al
+       containerului; cele doua butoane il impart, fiecare peste pragul de
+       atingere. */
+    .head-actions { flex: 0 0 100%; margin-left: 0; }
+    .surse-btn { flex: 1 1 auto; min-height: var(--tap-min);
                  justify-content: center; white-space: nowrap; }
     .fam-tabs, .subfam-tabs { gap: 6px; }
     .acc-head { min-height: var(--tap-min); }
