@@ -767,7 +767,7 @@
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
-    <div class="form-row-3">
+    <div class="form-row-2">
       <label class="mf-field">
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
@@ -791,7 +791,7 @@
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
-    <div class="form-row-3">
+    <div class="form-row-2">
       <label class="mf-field">
         <span class="mf-label">Categorie</span>
         <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
@@ -1092,7 +1092,10 @@
   .tdeadline.soon { color: var(--warning); }
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
+  /* DOUA coloane pentru DOUA campuri. Grila era `1fr 1fr 1fr` cu numele
+     `form-row-3` — al treilea camp (prioritatea) a plecat in v34, dar coloana
+     lui a ramas: o treime din latimea modalului, goala, pe ambele formulare. */
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
 
@@ -1114,7 +1117,7 @@
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
     .task-del, .task-edit { opacity: 1; }
-    .form-row-3 { grid-template-columns: 1fr; }
+    .form-row-2 { grid-template-columns: 1fr; }
     /* O LINIE, ca in aplicatiile de to-do.
        Inainte: titlul sus, cele trei actiuni de intretinere pe o linie proprie
        dedesubt = 110px pe task. Acum randul are ~56px si actiunile vin din gest

@@ -429,7 +429,13 @@
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .toolbar { flex-direction: column; align-items: stretch; }
+    /* ACELASI RITM CA /tasks (decizia din 2026-07-30: „aceleasi elemente, ~30px
+       mai sus"). Masurat aici inainte: primul card incepea la y=314 pe 390×844 —
+       37% din ecran, exact procentul pentru care /tasks a fost strans; pagina
+       asta ramasese in urma. Nimic nu dispare, doar distantele. */
+    .page { padding-top: var(--space-12); }
+    .page-header, .toolbar, .batch-bar { margin-bottom: 10px; }
+    .toolbar { flex-direction: column; align-items: stretch; gap: var(--space-sm); }
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
