@@ -277,7 +277,45 @@
     } finally { creating = false }
   }
 
+  // PE TELEFON TASKUL SE DESCHIDE INTR-O FOAIE, NU IN LISTA (cerinta Ion, dupa
+  // capturile din Todoist).
+  //
+  // Motivul nu e „asa face Todoist", ci ca la noi continutul unui task era
+  // imprastiat pe TREI suprafete: subtaskurile in lista, nota intr-un modal,
+  // titlul in alt modal. Foaia le pune la un loc.
+  // Al doilea motiv e tastatura: acopera ~40% din ecran, iar un camp editat
+  // intr-un rand de lista poate ajunge sub ea. Foaia e ancorata jos, deci campul
+  // ramane deasupra tastaturii.
+  // Al treilea: extinderea in lista impinge tot ce e sub ea, deci iti pierzi
+  // locul in lista exact cand te intorci la ea.
+  //
+  // Pe DESKTOP ramane extinderea in lista: acolo e loc pe verticala, exista hover
+  // si tastatura fizica nu acopera nimic — o foaie ar fi un clic in plus degeaba.
+  let sheetTaskId = $state('')
+  let showSheet = $state(false)
+  // Derivat din lista, NU o copie: altfel bifarea unui subtask sau schimbarea
+  // termenului din foaie ar lasa antetul foii pe valorile vechi.
+  const sheetTask = $derived(globalTasks.items.find(x => x.id === sheetTaskId) || null)
+
+  async function deschideFoaia(taskId) {
+    sheetTaskId = taskId
+    showSheet = true
+    await incarcaSubtaskuri(taskId)
+  }
+
+  async function incarcaSubtaskuri(taskId) {
+    if (subtasksCache[taskId]) return
+    subtaskLoading = true
+    try {
+      const subs = await loadSubtasks(taskId)
+      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+    } catch (_) {
+      subtasksCache = { ...subtasksCache, [taskId]: [] }
+    } finally { subtaskLoading = false }
+  }
+
   async function toggleTaskExpand(taskId) {
+    if (ecran.telefon) { await deschideFoaia(taskId); return }
     if (expandedTask === taskId) {
       expandedTask = null
       return
@@ -656,6 +694,45 @@
   </div>
 </div>
 
+<!-- FOAIA TASKULUI (doar pe telefon — vezi `toggleTaskExpand`).
+     `Modal` e deja sertar lipit de marginea de jos pe telefon, deci foaia nu e o
+     componenta noua, e acelasi modal cu alt continut. -->
+{#if sheetTask}
+  <Modal bind:open={showSheet} size="md">
+    <div class="ts-cap">
+      <button class="ts-check" onclick={() => { toggleStatus(sheetTask); showSheet = false }}
+              aria-label={sheetTask.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
+        {#if sheetTask.status === 'done'}<CheckCircle2 size={24} />{:else}<div class="check-empty big"></div>{/if}
+      </button>
+      <h2 class="ts-titlu" class:gata={sheetTask.status === 'done'}>{sheetTask.titlu}</h2>
+    </div>
+
+    <!-- Randul de termen, ca la Todoist: nu doar arata data, o si SCHIMBA. Sunt
+         aceleasi patru actiuni ca in panoul de glisare — cine deschide taskul nu
+         trebuie sa-l inchida ca sa-l replanifice. -->
+    <div class="ts-termen">
+      <span class="ts-et"><CalendarDays size={14} />
+        {#if sheetTask.data_scadenta}
+          <span class:overdue={isOverdue(sheetTask.data_scadenta)}
+                class:today={isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
+        {:else}<span class="ts-fara">Fără termen</span>{/if}
+      </span>
+      <div class="ts-zile">
+        <button class="ts-zi" onclick={() => setTermen(sheetTask, 0)}>Azi</button>
+        <button class="ts-zi" onclick={() => setTermen(sheetTask, 1)}>Mâine</button>
+        <span class="ts-zi ts-data"><DatePicker value={sheetTask.data_scadenta} placeholder="Dată"
+              onchange={(v) => setTermenData(sheetTask, v)} /></span>
+        {#if sheetTask.data_scadenta}
+          <button class="ts-zi ts-scoate" onclick={() => setTermen(sheetTask, null)}
+                  aria-label="Scoate termenul"><X size={14} /></button>
+        {/if}
+      </div>
+    </div>
+
+    {@render taskDetail(sheetTask)}
+  </Modal>
+{/if}
+
 <Modal bind:open={showNewModal} title="Task Nou" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
@@ -849,13 +926,6 @@
   /* Categoria pleaca la capatul din dreapta (ca „Inbox" la Todoist): e ultima ca
      importanta, deci nu are voie sa stea intre ochi si termen. */
   .task-cat { margin-left: auto; padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); flex: none; }
-  .tsub-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px;
-    border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim);
-    font-weight: var(--fw-medium); font-size: var(--font-micro);
-    font-variant-numeric: tabular-nums; }
-  /* Toate bifate: verde, ca sa se vada din lista ca taskul e gata pe dinauntru
-     si mai ramane doar sa-l inchizi. */
-  .tsub-chip.gata { background: var(--success-subtle); color: var(--success); }
   .tdeadline { display: inline-flex; align-items: center; gap: 3px; }
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
@@ -878,6 +948,32 @@
   /* Fara rand propriu pentru un singur buton: se aliniaza la stanga, discret. */
 
 
+  /* ===== Foaia taskului (telefon) ===== */
+  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-md); }
+  .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
+    display: flex; align-items: center; justify-content: flex-start; color: var(--success);
+    background: none; border: none; cursor: pointer; padding: 0; }
+  .check-empty.big { width: 22px; height: 22px; border: 2px solid var(--border-strong); border-radius: 50%; }
+  .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
+    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
+  .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
+  .ts-termen { display: flex; flex-direction: column; gap: var(--space-sm);
+    padding: var(--space-12); margin-bottom: var(--space-md);
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .ts-et { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); color: var(--text); }
+  .ts-et .overdue { color: var(--danger); font-weight: var(--fw-semibold); }
+  .ts-et .today { color: var(--accent); font-weight: var(--fw-semibold); }
+  .ts-fara { color: var(--text-dim); }
+  .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ts-zi { display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    min-height: var(--tap-min); padding: 0 var(--space-12); border-radius: var(--radius-md);
+    background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
+    font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer;
+    transition: var(--transition-pressable); }
+  .ts-zi:active { transform: scale(0.97); }
+  .ts-scoate { color: var(--danger); }
+  .ts-data :global(.dp-trigger), .ts-data :global(input) { min-height: var(--tap-min); }
+
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -892,12 +988,6 @@
     background: var(--bg-input); border: 1px solid var(--accent); border-radius: var(--radius-xs);
     padding: 2px 6px; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
-  .sub-progres { display: flex; align-items: center; gap: var(--space-sm); padding: 2px 0 6px; }
-  .sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
-  .sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
-    background: var(--success); transition: width var(--dur-base) var(--ease); }
-  .sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
-    font-variant-numeric: tabular-nums; flex: none; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }

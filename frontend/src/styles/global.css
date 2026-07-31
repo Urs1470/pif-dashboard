@@ -304,6 +304,39 @@ input:focus, select:focus, textarea:focus {
   .gl-pista { display: flex; }
 }
 
+
+/* ===== CHIPUL DE SUBTASKURI, PE ORICE PAGINA =====
+   Acelasi task apare in /tasks, pe boardul „Astăzi", in Planificator si in pagina
+   proiectului. Reteta sta AICI, o singura data: cand traia scopata in fiecare
+   componenta, aceeasi informatie avea patru definitii care se puteau desincroniza
+   fara ca nimic sa semnaleze — exact felul de incoerenta care se randeaza perfect
+   (vezi scripts/audit_design.py). */
+.tsub-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-weight: var(--fw-medium);
+  font-size: var(--font-micro);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+/* Toate bifate: se vede din lista ca taskul e gata pe dinauntru si mai ramane
+   doar sa-l inchizi. */
+.tsub-chip.gata { background: var(--success-subtle); color: var(--success); }
+
+/* Bara de progres a subtaskurilor. „1/4" spune cifra, dar nu si CAT de departe
+   esti — doua treimi si o treime arata la fel intr-un chip. */
+.sub-progres { display: flex; align-items: center; gap: var(--space-sm); padding: 2px 0 6px; }
+.sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
+.sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
+  background: var(--success); transition: width var(--dur-base) var(--ease); }
+.sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
+  font-variant-numeric: tabular-nums; flex: none; }
+
 /* ===== Focus-flash: highlight tranzitoriu cand "aterizezi" pe un item (deep-link) =====
    Folosit de actiunea use:focusOnLand (lib/focus.js): click pe un task din Acasa te
    duce la el (scroll smooth la centru) si il pulseaza scurt. Tine accentul, apoi se

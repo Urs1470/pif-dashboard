@@ -1334,6 +1334,26 @@ def get_agenda_today():
         {'today': today})
     items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
 
+    # Subtask counts, one query for every item on the board (same batch pattern as
+    # /api/global-tasks). Without them the board could not show the "1/4" chip that
+    # the task lists show, so the same task looked different depending on the page.
+    ids = [d['id'] for d in items if d.get('id')]
+    if ids:
+        placeholders = ','.join('?' * len(ids))
+        cursor.execute(f'''
+            SELECT task_id,
+                   COUNT(*) AS subtask_total,
+                   SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS subtask_done
+            FROM task_subtasks
+            WHERE task_id IN ({placeholders})
+            GROUP BY task_id
+        ''', ids)
+        counts = {r['task_id']: (r['subtask_total'], r['subtask_done']) for r in cursor.fetchall()}
+        for d in items:
+            total, done = counts.get(d['id'], (0, 0))
+            d['subtask_total'] = total
+            d['subtask_done'] = done or 0
+
     conn.close()
 
     # Restante first, then by board order (unordered = 0 sinks to the bottom), then title.

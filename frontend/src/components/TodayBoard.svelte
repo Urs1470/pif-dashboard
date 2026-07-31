@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check } from '@lucide/svelte'
+  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check, CalendarDays, ListChecks } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
@@ -224,9 +224,10 @@
           <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitle">{it.titlu}</span>
             <span class="ainfo">
-              {#if it.tip === 'proiect' && it.proiect_nume}<span class="tag proj">{it.proiect_nume}</span>
-              {:else if it.categorie}<span class="tag">{it.categorie}</span>{/if}
-              {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
+              <!-- ACEEASI ORDINE CA IN /tasks (si ca la Todoist): intai CAND,
+                   apoi CAT, iar proiectul/categoria la capatul din dreapta. Un
+                   task trebuie sa arate la fel oriunde apare — altfel inveti
+                   pagina, nu taskul. -->
               <!-- UN SINGUR SEMN PENTRU TERMEN, nu trei.
                    Aici erau doua pastile („Restant" rosu, „Termen azi" amber) SI
                    data, colorata tot dupa severitate. Pe un board unde totul e
@@ -238,7 +239,16 @@
                    si CE stare, si CAT de departe, intr-un singur chip.
                    Numarul din antet („28 restante") ramane: acolo e un rezumat,
                    nu o repetitie. -->
-              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}>{etichetaTermen(it.data_scadenta)}</span>{/if}
+              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
+              {#if it.subtask_total}
+                <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
+                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
+                  <ListChecks size={11} />{it.subtask_done || 0}/{it.subtask_total}
+                </span>
+              {/if}
+              {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
+              {#if it.tip === 'proiect' && it.proiect_nume}<span class="tag proj">{it.proiect_nume}</span>
+              {:else if it.categorie}<span class="tag">{it.categorie}</span>{/if}
             </span>
           </button>
 
@@ -357,6 +367,9 @@
   .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-tiny); color: var(--text-dim); }
+  /* Ca in /tasks: eticheta de context pleaca la capatul din dreapta. */
+  .ainfo .tag { margin-left: auto; flex: none; }
+  .deadline { display: inline-flex; align-items: center; gap: 3px; }
   .tag { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }

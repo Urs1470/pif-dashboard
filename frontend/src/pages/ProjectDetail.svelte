@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight, Check } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight, Check } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
@@ -604,18 +604,24 @@
                       {#if expandedTask === t.id}<ChevronDown size={14} />{:else}<ChevronRight size={14} />{/if}
                       <span class="ttitle">{t.titlu}</span>
                     </div>
+                    <!-- ACEEASI ORDINE CA IN /tasks si pe boardul „Astăzi": intai
+                         CAND, apoi CAT. „azi" / „acum 2 zile" / „vineri", nu o data
+                         plina — te-ar pune sa numeri in cap la fiecare rand, iar
+                         aici randurile sunt tocmai lucrurile pe care le iei in ordine. -->
                     <div class="tinfo">
-                      {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                      {#if t.data_scadenta}
+                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>
+                          <CalendarDays size={11} />{etichetaTermen(t.data_scadenta)}
+                        </span>
+                      {/if}
                       {#if t.subtask_total}
-                        <span class="tsub-chip">{t.subtask_done || 0}/{t.subtask_total}</span>
+                        <span class="tsub-chip" class:gata={t.subtask_done === t.subtask_total}
+                              title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">
+                          <ListChecks size={11} />{t.subtask_done || 0}/{t.subtask_total}
+                        </span>
                       {/if}
                       {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
-                      {#if t.data_scadenta}
-                        <!-- „azi" / „acum 2 zile" / „vineri", ca in Taskuri. O data plina te pune
-                             sa numeri in cap la fiecare rand, iar aici randurile sunt
-                             tocmai lucrurile pe care le iei in ordine. -->
-                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>{etichetaTermen(t.data_scadenta)}</span>
-                      {/if}
+                      {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
                     </div>
                   </button>
                   <div class="task-actions">
@@ -1011,8 +1017,7 @@
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .tsub-chip { padding: 1px 6px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); font-size: var(--font-micro); }
-  .tdeadline { font-size: var(--font-tiny); }
+  .tdeadline { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-tiny); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
@@ -1041,12 +1046,6 @@
   .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; overflow-wrap: anywhere; }
-  .sub-progres { display: flex; align-items: center; gap: var(--space-sm); padding: 2px 0 6px; }
-  .sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
-  .sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
-    background: var(--success); transition: width var(--dur-base) var(--ease); }
-  .sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
-    font-variant-numeric: tabular-nums; flex: none; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
