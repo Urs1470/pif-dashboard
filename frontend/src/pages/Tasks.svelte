@@ -929,11 +929,16 @@
   /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
      cutii lipite („de parca sunt rupte in doua"). */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: opacity var(--dur-base) var(--ease); }
+  /* Tranzitia acopera si `transform`: acelasi rand exista pe Acasa (.arow) si in
+     pagina de proiect, unde deplasarea de hover se face lin — aici lipsea din
+     lista si randul SAREA 4px la intrarea cursorului. Doua liste cu acelasi rand
+     n-au voie sa raspunda diferit la acelasi gest. */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere si randul
-     ar rămâne impins la dreapta. */
+     ar rămâne impins la dreapta. (Fara `border-color`: randul are `border: 0`,
+     rama e a wrapperului — declaratia de aici nu facea nimic.) */
   @media (hover: hover) {
-    .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .trow:hover { transform: translateX(4px); }
   }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
@@ -1039,8 +1044,10 @@
   .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
 
   .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; margin: -2px 0 var(--space-sm); }
+  /* `--tap-min`, nu 40: foaia exista DOAR pe telefon (vezi toggleTaskExpand),
+     deci butoanele astea sunt intotdeauna tinte de deget. */
   .ts-zi { display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    min-height: 40px; padding: 0 var(--space-12); border-radius: var(--radius-md);
+    min-height: var(--tap-min); padding: 0 var(--space-12); border-radius: var(--radius-md);
     background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
     font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-pressable); }
@@ -1057,9 +1064,16 @@
   .sub-title { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
     background: none; border: none; padding: 0; text-align: left; cursor: text;
     overflow-wrap: anywhere; }
+  /* ACELEASI METRICI ca `.sub-title`, plus doar o linie de accent dedesubt.
+     Inainte inputul aducea caseta lui (padding 2px 6px + rama 1px), deci textul
+     SAREA 7px la dreapta exact in clipa in care il atingeai ca sa-l corectezi.
+     Redenumirea inline trebuie sa arate ca textul care era acolo, nu ca un camp
+     nou; `:focus` e redeclarat fiindca regula globala pe `input:focus` i-ar pune
+     inel si rama de camp. */
   .sub-edit { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
-    background: var(--bg-input); border: 1px solid var(--accent); border-radius: var(--radius-xs);
-    padding: 2px 6px; }
+    background: none; border: none; border-radius: 0; padding: 0;
+    box-shadow: 0 1px 0 var(--accent); }
+  .sub-edit:focus { border: none; box-shadow: 0 1px 0 var(--accent); outline: none; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
@@ -1253,7 +1267,11 @@
        rand. Ramane un semn stins intr-o tinta mare. */
     .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min);
                color: var(--text-faint); background: none; }
-    .sub-title, .sub-edit { font-size: var(--font-body); }
+    /* 1rem = 16px, aceeasi valoare pe CITIRE si pe SCRIERE. Regula globala urca
+       oricum orice input la 16px pe telefon (zoom-ul Safari la focus), deci cu
+       titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
+       sa-l editezi. Egalarea se face in sus, nu in jos — sub 16 nu se poate. */
+    .sub-title, .sub-edit { font-size: 1rem; }
     .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
