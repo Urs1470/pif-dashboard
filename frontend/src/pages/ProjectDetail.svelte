@@ -961,7 +961,11 @@
      (MEMORY (8): „severitatea se citeste din bordura din stanga, dupa termen").
      Aici supravietuia varianta veche — underline scurt jos (`::after`) — deci
      ACELASI task vorbea doua limbaje de severitate pe doua ecrane. */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  /* Ion: „poti face putin mai inguste pe desktop taskurile, pe inaltime?"
+     8px sus / 10px jos -> 5/7: randul scade de la ~62 la ~56px, fara sa se
+     atinga fontul sau meta-randul. Doar desktop — pe telefon padding-ul
+     vertical e al lui `.gl-fata` si ramane cum e. */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 5px var(--space-sm) 7px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere. */
   /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
      deci hover-ul ar sterge tocmai bordura de severitate — culoarea rezervata. */

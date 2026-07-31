@@ -316,7 +316,11 @@
      termen"). Aici supravietuia varianta veche — un underline scurt jos
      (`::after`) — deci ACELASI task avea doua limbaje de severitate pe doua
      ecrane. Un task trebuie sa arate la fel oriunde apare. */
-  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  /* Ion: „poti face putin mai inguste pe desktop taskurile, pe inaltime?"
+     8px sus / 10px jos -> 5/7: randul scade de la ~62 la ~56px, fara sa se
+     atinga fontul sau meta-randul. Doar desktop — pe telefon padding-ul
+     vertical e al lui `.gl-fata` si ramane cum e. */
+  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-sm) 7px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
      aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
      ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
