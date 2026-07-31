@@ -207,6 +207,103 @@ input:focus, select:focus, textarea:focus {
   :where(button, [role="button"], a.btn, .tab, .row, .zi):active { transform: none; }
 }
 
+/* ===== PISTA DE BIFARE — ce vezi cand tragi randul spre dreapta =====
+   Ion: „glisarea la dreapta (…) acum doar se coloreaza si nu e intuitiv ce face".
+   Avea dreptate, si problema nu era culoarea, era MOMENTUL: singurul semnal
+   (`.gl-bifa`, un fundal verde) aparea abia dupa 42% din latimea randului. Pana
+   acolo trageai un rand peste nimic. Iar cand semnalul aparea, era o culoare —
+   verdele spune „bine", nu spune „FACUT".
+
+   Acum in spatele randului, pe stanga, sta o pista cu bifa. Se vede din primul
+   milimetru si creste odata cu degetul, deci gestul isi spune singur intentia
+   inainte sa-l duci la capat — si poti sa te razgandesti stiind ce renunti.
+
+   Sta in global.css, NU in cele patru componente, din doua motive. Intai pentru ca
+   e acelasi gest in toate patru si a fost deja copiat de patru ori. Al doilea e o
+   capcana documentata in cod: Svelte nu avertizeaza „Unused CSS selector", ci TAIE
+   regula din build, iar `.gl-bifa` e pusa la RULARE din `lib/glisare.js`, deci
+   compilatorul o crede moarta — o data din asta a supravietuit o singura regula de
+   gest din toata aplicatia. Aici, in foaia nescopata, nu exista scaparea asta. */
+.gl-pista {
+  display: none;
+  position: absolute;
+  /* `right: 0` (nu latime dupa continut): pista se intinde pe TOT randul, deci
+     tot ce descoperi tragand e verde. Fara ea, verdele se termina dupa eticheta
+     si urma o bucata de fundal inchis inainte de randul propriu-zis — adica
+     confirmarea parea o pastila lipita, nu suprafata de sub rand. */
+  inset: 0;
+  z-index: 0;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-left: 18px;
+  border-radius: var(--radius-md);
+  /* --gl-p (0..1) vine din lib/glisare.js: cat la suta din drumul pana la prag
+     ai facut. Fondul se adanceste continuu, nu sare. */
+  background: color-mix(in oklab, var(--success) calc(var(--gl-p, 0) * 55%), transparent);
+}
+.gl-pista .gl-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  color: var(--success);
+  box-shadow: inset 0 0 0 1.5px currentColor;
+  opacity: var(--gl-p, 0);
+  /* Creste odata cu gestul: la inceput e mica si palida, la prag e intreaga. */
+  transform: scale(calc(0.55 + var(--gl-p, 0) * 0.45));
+}
+/* Eticheta apare abia la prag — pana atunci bifa singura e de ajuns, iar un
+   cuvant care se stinge si se aprinde in timp ce tragi ar fi zgomot. */
+.gl-pista .gl-et {
+  font-size: var(--font-small);
+  font-weight: var(--fw-semibold);
+  color: var(--success);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+/* PRAGUL TRECUT: pista devine plina, bifa se umple si pocneste scurt, eticheta
+   intra. Din momentul asta ridicarea degetului bifeaza — si se vede. */
+.gl-bifa .gl-pista { background: var(--success); }
+.gl-bifa .gl-pista .gl-ico {
+  color: var(--on-color);
+  background: var(--on-color);
+  box-shadow: none;
+  opacity: 1;
+  animation: glPoc var(--dur-base) var(--ease);
+}
+.gl-bifa .gl-pista .gl-ico :global(svg),
+.gl-bifa .gl-pista .gl-ico svg { color: var(--success); }
+.gl-bifa .gl-pista .gl-et {
+  color: var(--on-color);
+  opacity: 1;
+  transform: none;
+}
+@keyframes glPoc {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gl-pista .gl-ico { transform: none; }
+  .gl-bifa .gl-pista .gl-ico { animation: none; }
+}
+
+/* Un singur raspuns la „ce se intampla daca dau drumul": cat timp tragi spre
+   dreapta, panoul de actiuni al gestului OPUS (ancorat la dreapta) se ascunde.
+   Altfel iesea de sub rand langa pista verde si se citea „Azi" in mijlocul
+   confirmarii de bifare. */
+.gl-dreapta .gl-actiuni { visibility: hidden; }
+
+/* Doar pe telefon — pe desktop randul are butoanele lui la vedere si `.gl-fata`
+   e `display: contents`, deci un copil in plus ar intra in flexul randului. */
+@media (max-width: 768px) {
+  .gl-pista { display: flex; }
+}
+
 /* ===== Focus-flash: highlight tranzitoriu cand "aterizezi" pe un item (deep-link) =====
    Folosit de actiunea use:focusOnLand (lib/focus.js): click pe un task din Acasa te
    duce la el (scroll smooth la centru) si il pulseaza scurt. Tine accentul, apoi se

@@ -52,11 +52,37 @@ export function glisare(node, opt = {}) {
   let deschis = false
   let pointerId = null
   let aGlisat = false
+  // Latimea randului, citita O DATA la apasare. Inainte se citea `offsetWidth` la
+  // fiecare pointermove — o masuratoare de layout in mijlocul gestului, adica exact
+  // unde nu vrei sa ceri browserului sa recalculeze.
+  let latimeRand = 0
+  let trecutDePrag = false
+
+  const pragBifa = () => latimeRand * PRAG_BIFA
+
+  // Cat din drumul pana la prag s-a facut, 0..1. Il publicam ca variabila CSS ca
+  // sa poata pista din global.css sa creasca odata cu degetul, fara ca JS-ul sa
+  // scrie stiluri pe fiecare cadru.
+  const puneProgres = (v) => {
+    const prag = pragBifa()
+    const p = onBifa && prag > 0 ? Math.min(1, Math.max(0, v / prag)) : 0
+    node.style.setProperty('--gl-p', p.toFixed(3))
+  }
 
   const pune = (v, animat) => {
     fata.style.transition = animat ? 'transform var(--dur-base) var(--ease)' : 'none'
     fata.style.transform = `translateX(${v}px)`
     node.classList.toggle('gl-tras', v !== 0)
+    // Cat timp tragi spre DREAPTA, panoul de actiuni (care sta ancorat la dreapta,
+    // pentru gestul opus) iese de sub rand si se vede pe langa pista de bifare —
+    // „Azi" aparea in mijlocul confirmarii verzi. Doua panouri deodata inseamna
+    // doua raspunsuri la intrebarea „ce se intampla daca dau drumul".
+    node.classList.toggle('gl-dreapta', v > 0)
+    if (v === 0) {
+      node.style.setProperty('--gl-p', '0')
+      node.classList.remove('gl-bifa')
+      trecutDePrag = false
+    }
   }
 
   function inchide(animat = true) {
@@ -84,6 +110,8 @@ export function glisare(node, opt = {}) {
     pointerId = e.pointerId
     x0 = e.clientX; y0 = e.clientY
     dir = null; dx = 0; aGlisat = false
+    latimeRand = node.offsetWidth
+    trecutDePrag = false
   }
 
   function onMove(e) {
@@ -110,7 +138,17 @@ export function glisare(node, opt = {}) {
     if (v > 0 && !onBifa) v = v * 0.18
     dx = v
     pune(v, false)
-    node.classList.toggle('gl-bifa', !!onBifa && v > node.offsetWidth * PRAG_BIFA)
+    puneProgres(v)
+    const trecut = !!onBifa && v > pragBifa()
+    if (trecut !== trecutDePrag) {
+      trecutDePrag = trecut
+      node.classList.toggle('gl-bifa', trecut)
+      // Un scurt puls la trecerea pragului: pe telefon degetul acopera exact zona
+      // in care se schimba lucrurile, deci confirmarea care nu se vede se simte.
+      // Safari pe iOS nu implementeaza `vibrate` — de aceea e optionala, nu o
+      // conditie a gestului.
+      if (trecut) { try { navigator.vibrate?.(12) } catch (_) {} }
+    }
   }
 
   function onUp(e) {
@@ -119,15 +157,19 @@ export function glisare(node, opt = {}) {
     try { node.releasePointerCapture?.(e.pointerId) } catch (_) {}
     if (dir !== 'orizontal') { dir = null; return }
     dir = null
-    node.classList.remove('gl-bifa')
 
-    if (onBifa && dx > node.offsetWidth * PRAG_BIFA) {
+    if (onBifa && dx > pragBifa()) {
       // Randul pleaca spre dreapta si abia apoi se bifeaza — miscarea e
-      // confirmarea, nu un efect decorativ dupa fapt.
-      pune(node.offsetWidth, true)
+      // confirmarea, nu un efect decorativ dupa fapt. `gl-bifa` NU se scoate aici:
+      // pista trebuie sa ramana plina si bifata cat timp randul iese de sub ea,
+      // altfel ultimul lucru pe care il vezi e cum se stinge confirmarea.
+      node.style.setProperty('--gl-p', '1')
+      pune(latimeRand, true)
       setTimeout(() => { onBifa(); pune(0, false) }, 160)
       return
     }
+    node.classList.remove('gl-bifa')
+    trecutDePrag = false
     if (latime && dx < -latime * PRAG_DESCHIDE) deschide()
     else inchide()
   }

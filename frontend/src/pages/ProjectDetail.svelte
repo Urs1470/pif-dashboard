@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight, Check } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
@@ -577,6 +577,7 @@
                        (e ce faci des cu un task), apoi intretinerea. Doua liste de
                        taskuri cu acelasi rand nu au voie sa raspunda diferit la
                        acelasi gest — altfel gestul nu se invata niciodata. -->
+                  <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
                   <div class="gl-actiuni">
                     <button class="glb" onclick={() => setTermenTask(t, 0)} title="Termen azi">
                       <CalendarPlus size={16} /><span>Azi</span>

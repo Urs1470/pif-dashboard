@@ -4,7 +4,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
@@ -514,6 +514,7 @@
                  la o atingere pe titlu.
                  „Scoate termenul" nu are buton propriu: e in calendarul de sub
                  „Dată", care are deja „Șterge". -->
+            <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
             <div class="gl-actiuni">
               <button class="glb" onclick={() => setTermen(t, 0)} title="Termen azi">
                 <CalendarPlus size={16} /><span>Azi</span>

@@ -273,25 +273,54 @@ def gesturi(ctx, baza):
     page.wait_for_timeout(1200)
     r = page.eval_on_selector('.arow', 'e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height] }')
     cx, cy = r[0] + r[2] * 0.35, r[1] + r[3] / 2
-    page.evaluate("""([x0, y0, pasi]) => {
+    # Esantionam pe TOT parcursul degetului, nu doar la capat. Ion, despre versiunea
+    # de dinainte: „acum doar se coloreaza si nu e intuitiv ce face" — semnalul
+    # exista, dar aparea abia dupa 42% din latimea randului, deci pe cea mai mare
+    # parte a gestului trageai un rand peste nimic. De asta se verifica si mijlocul.
+    masuri = page.evaluate("""([x0, y0, pasi]) => {
       const el = document.elementFromPoint(x0, y0);
+      const row = el.closest('.arow');
       const ev = (t, x, y) => el.dispatchEvent(new PointerEvent(t, {
         pointerId: 3, pointerType: 'touch', isPrimary: true,
         clientX: x, clientY: y, bubbles: true, cancelable: true }));
+      const cite = () => {
+        const pi = row.querySelector('.gl-pista');
+        const ic = row.querySelector('.gl-ico');
+        return { p: parseFloat(row.style.getPropertyValue('--gl-p') || '0'),
+                 bifa: row.classList.contains('gl-bifa'),
+                 pista: !!pi,
+                 icoOp: ic ? parseFloat(getComputedStyle(ic).opacity) : 0,
+                 actiuniVizibile: (() => { const a = row.querySelector('.gl-actiuni');
+                     return a ? getComputedStyle(a).visibility === 'visible' : false })() }; };
       ev('pointerdown', x0, y0);
-      for (const p of pasi) ev('pointermove', p[0], p[1]);
-      window.__prag = document.querySelector('.arow').classList.contains('gl-bifa');
+      const out = [];
+      for (const p of pasi) { ev('pointermove', p[0], p[1]); out.push(cite()) }
       const u = pasi[pasi.length - 1];
       ev('pointerup', u[0], u[1]);
+      return out;
     }""", [cx, cy, [[cx + d, cy] for d in (40, 110, 200, 260)]])
-    prag = page.evaluate('window.__prag')
     page.wait_for_timeout(1400)
-    if not prag:
+
+    mijloc = masuri[1] if len(masuri) > 1 else masuri[0]
+    prag = masuri[-1]['bifa']
+    if not masuri[0]['pista']:
+        out('  PICA  glisare dreapta: nu exista pista de bifare in rand'); probleme += 1
+    elif mijloc['icoOp'] <= 0.05:
+        # Fara asta, „intuitiv ce face" se pierde in tacere: gestul ar merge, dar
+        # ai afla ce face abia dupa ce l-ai dus la capat.
+        out('  PICA  glisare dreapta: bifa nu se vede pe parcurs (opacitate %.2f la mijloc)'
+            % mijloc['icoOp']); probleme += 1
+    elif not (0 < mijloc['p'] < 1) and mijloc['p'] != 1:
+        out('  PICA  glisare dreapta: progresul --gl-p nu creste gradual'); probleme += 1
+    elif not prag:
         # Regula asta a fost STEARSA din build o data (Svelte taie selectorii cu
         # clase puse din JS, nu doar avertizeaza) — deci se verifica, nu se crede.
         out('  PICA  glisare dreapta: pragul de bifare nu se marcheaza vizual'); probleme += 1
+    elif masuri[-1]['actiuniVizibile']:
+        # Doua panouri deodata = doua raspunsuri la „ce se intampla daca dau drumul".
+        out('  PICA  glisare dreapta: panoul de actiuni ramane vizibil peste pista'); probleme += 1
     else:
-        out('  OK    glisare dreapta marcheaza pragul si bifeaza')
+        out('  OK    glisare dreapta: bifa creste pe parcurs, apoi pragul')
 
     if erori:
         out('  PICA  exceptii in timpul gesturilor: %s' % erori[:3]); probleme += 1

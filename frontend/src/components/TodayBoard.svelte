@@ -1,10 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import {
-    CalendarCheck, Plus, GripVertical, ArrowRight, X,
-    ChevronRight, CheckCircle2, Repeat, ListPlus
-  } from '@lucide/svelte'
+  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
@@ -206,6 +203,7 @@
           <!-- Panoul de actiuni sta SUB rand si se descopera glisand spre stanga
                (vezi lib/glisare.js). Pe desktop e ascuns: acolo actiunile stau la
                vedere in rand, unde le ajunge cursorul. -->
+          <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
           <div class="gl-actiuni" aria-hidden={!peTelefon}>
             <button class="glb" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
             <span class="glb datewrap" title="Planifică pe altă zi">
