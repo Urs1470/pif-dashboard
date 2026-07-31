@@ -53,7 +53,11 @@ def fisiere():
 
 
 def rel(p):
-    return str(p.relative_to(SRC))
+    # `.as_posix()`, nu `str()`: pe Windows str() da `pages\Departament.svelte`,
+    # iar SCUTITE_HEX (si orice comparatie de cale de aici) e scris cu `/` — deci
+    # scutirile nu se potriveau niciodata si `#fff`-ul legitim din pagina embed
+    # era raportat ca abatere la fiecare rulare.
+    return p.relative_to(SRC).as_posix()
 
 
 def fara_comentarii(text):

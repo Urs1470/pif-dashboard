@@ -82,34 +82,48 @@ def porti_pentru(atinse):
     """(eticheta, argv, cwd, cum-o-rulezi-manual) in ordine ieftin -> scump."""
     porti = []
     frontend = [p for p in atinse if p.startswith('frontend/src/')]
+    backend = [p for p in atinse
+               if (p.startswith('blueprints/') and p.endswith('.py'))
+               or p in FISIERE_API]
+
+    # Sursele care ajung in bundle. NU si .css singur: criteriul aprobat de Ion e
+    # "doar CSS => doar audit_design, fara Chromium". Consecinta, scrisa ca s-o
+    # vada cineva: o modificare doar in tokens.css/global.css nu trece pe sub
+    # audit_mobil, adica exact clasa lui de defect (bloc mobil anulat de reguli
+    # scrise mai jos in acelasi fisier, 30.07). Ca sa se acopere si aia, adauga
+    # '.css' in `surse_spa`.
+    surse_spa = any(p.endswith(('.svelte', '.js')) for p in frontend)
 
     if any(p.endswith(('.svelte', '.css')) for p in frontend):
         porti.append(('audit_design',
                       [sys.executable, str(SCRIPTURI / 'audit_design.py')],
                       RADACINA, 'python scripts/audit_design.py --lista'))
 
-    if any(p.startswith('blueprints/') and p.endswith('.py') for p in atinse) \
-            or any(p in FISIERE_API for p in atinse):
+    if backend:
+        # `--static`: proba pe API cere server pe :5000 + PIN-ul real din mediu,
+        # iar PIN-ul n-are unde sa stea fara sa intre intr-un fisier versionat.
+        # Rularea reala o face smoke_ui mai jos, cu serverul lui.
         porti.append(('test_suite',
-                      [sys.executable, str(SCRIPTURI / 'test_suite.py')],
-                      RADACINA, 'python scripts/test_suite.py'))
+                      [sys.executable, str(SCRIPTURI / 'test_suite.py'), '--static'],
+                      RADACINA, 'python scripts/test_suite.py --static'))
 
-    # Lantul scump porneste pe .svelte/.js, NU pe .css singur — criteriul aprobat
-    # de Ion e "doar CSS => doar audit_design, fara Chromium". Consecinta, scrisa
-    # ca s-o vada cineva: o modificare doar in tokens.css/global.css nu trece pe
-    # sub audit_mobil, adica exact clasa de defect a acelui script (bloc mobil
-    # anulat de reguli scrise mai jos in fisier, 30.07). Ca sa se acopere si aia,
-    # adauga '.css' in conditia de mai jos.
-    if any(p.endswith(('.svelte', '.js')) for p in frontend):
+    if surse_spa:
         cmd = npm()
         if not cmd:
             porti.append(('build', None, None, 'npm run build (in frontend/)'))
         else:
             porti.append(('build', [cmd, 'run', 'build'],
                           RADACINA / 'frontend', 'npm run build (in frontend/)'))
+
+    # smoke_ui si pe backend: el prinde ruta care da 500 dupa o curatenie in
+    # blueprints (gantt.pdf a stat rupt din v32 fara ca nimic sa-l atinga).
+    # Build-ul nu e nevoie cand s-a atins doar Python — dist-ul e neschimbat.
+    if surse_spa or backend:
         porti.append(('smoke_ui',
                       [sys.executable, str(SCRIPTURI / 'smoke_ui.py')],
                       RADACINA, 'python scripts/smoke_ui.py'))
+
+    if surse_spa:
         porti.append(('audit_mobil',
                       [sys.executable, str(SCRIPTURI / 'audit_mobil.py')],
                       RADACINA, 'python scripts/audit_mobil.py'))

@@ -249,8 +249,14 @@ if __name__ == "__main__":
     print("  PIF DASHBOARD - TEST SUITE")
     print("=" * 50)
     
+    # `--static` sare peste proba pe API, singura care cere un server pornit pe
+    # :5000 SI PIN-ul real din mediu. Poarta de verificare (.claude/hooks/gate.py)
+    # o foloseste: PIN-ul n-are unde sa stea fara sa ajunga intr-un fisier
+    # versionat, iar partea de rulare o acopera oricum smoke_ui.py, care isi
+    # porneste singur aplicatia, pe portul lui si pe o copie a bazei.
     static_analysis()
-    api_smoke_test()
+    if '--static' not in sys.argv:
+        api_smoke_test()
     data_integrity()
     
     print("\n" + "=" * 50)
