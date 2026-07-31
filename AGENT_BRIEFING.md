@@ -6,7 +6,7 @@ PIF Dashboard. Ion alege scope-ul, copiază blocul de mai jos, înlocuiește `<S
 
 > Context: aplicația e un **SPA Svelte 5** (build Vite în `static/dist/`) + backend Flask.
 > Vechiul app vanilla-JS multi-fișier (desktop `app.js` + mobile `/m`) a fost eliminat
-> 2026-06-17. Detaliile complete sunt în `CLAUDE.md` + `HERMES.md`.
+> 2026-06-17. Detaliile complete sunt în `CLAUDE.md`.
 
 ---
 
@@ -18,7 +18,7 @@ Tu esti sesiunea "<SCOPE>". Alte sesiuni Claude pot lucra in paralel pe ACELASI 
 (deci acelasi .git si acelasi index git).
 
 INAINTE de orice modificare:
-1. Citeste CLAUDE.md (instructiuni de proiect) + HERMES.md (arhitectura SPA, design system,
+1. Citeste CLAUDE.md (instructiuni de proiect, arhitectura SPA, design system,
    protocol anti-coliziune). Pentru locatii de cod foloseste docs/memory/CODE_MAP.md si
    docs/memory/API_MAP.md (nu cauta orbeste in fisiere mari).
 2. Ruleaza:
@@ -100,7 +100,7 @@ tokens.css. NU atinge blueprints/ sau database.py.
 
 ## De ce funcționează
 
-- **CLAUDE.md + HERMES.md** țin contextul stabil (arhitectură, design system, convenții) —
+- **CLAUDE.md** ține contextul stabil (arhitectură, design system, convenții) —
   agenții le citesc o dată per sesiune; `docs/memory/` dă locațiile exacte.
 - **Domain map** previne două sesiuni să atingă același fișier concomitent.
 - **Index git partajat**: pe același worktree, `git add -A` al unei sesiuni poate înghiți
@@ -108,4 +108,4 @@ tokens.css. NU atinge blueprints/ sau database.py.
 - **`pull --rebase` înainte de push** prinde modificările aterizate între read și write —
   fără el apar coliziunile „lost work”.
 
-*Documentul ăsta și HERMES.md sunt în repo. Update-le când stadiul se schimbă semnificativ.*
+*Documentul ăsta e în repo. Update-l când stadiul se schimbă semnificativ.*

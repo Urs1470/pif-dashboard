@@ -6,8 +6,7 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 - `API_MAP.md` — all Flask routes (method, path, handler, line)
 
 Other authoritative docs (do not duplicate here):
-- `CLAUDE.md` — stack, env vars, deploy, key patterns
-- `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
+- `CLAUDE.md` — stack, env vars, deploy, key patterns, design system (sectiune proprie)
 - `SCHEMA_REFERENCE.md` — full SQL schema (all 9 tables, columns, FKs, indexes)
 
 ## Database map by domain
@@ -46,7 +45,7 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 - Status values are magic strings (`'in_lucru'`, `'finalizat'`...) — labels centralized in `labels.py` (backend) and `static/core.js` (frontend); keep both in sync.
 - Recurring tasks (zilnic/saptamanal/lunar) auto-spawn the next instance on completion — completion logic must preserve this.
 - Tests: no pytest; run `python scripts/test_suite.py` (plus feature scripts in `scripts/`).
-- Multi-agent: always `git fetch && git pull --rebase` before push; never force-push; respect domain split in `HERMES.md`.
+- Multi-agent: always `git fetch && git pull --rebase` before push; never force-push; respect domain split in `CLAUDE.md` (Multi-Agent Collision Rules).
 
 ## Maintenance protocol (for every AI session)
 
@@ -81,7 +80,7 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
   ramane; am masurat ritmul intre pagini; am cautat nume care promit altceva
   decat fac.
   **(1) Acasa avea singurele stari de eroare mute.** Boardul „Astăzi" arata un
-  paragraf rosu fara drum inainte (HERMES §5 cere `<ErrorState>` cu retry — toate
+  paragraf rosu fara drum inainte (regula de design cere `<ErrorState>` cu retry — toate
   celelalte pagini il aveau); linia „urmatoarea iesire" era mai rea: la esec punea
   `data = null` si DISPAREA — eroarea arata identic cu „nicio iesire planificata",
   exact absenta tacuta despre care scrie lectia v29. Acum: ErrorState pe board,
