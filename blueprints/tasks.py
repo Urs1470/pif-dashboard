@@ -1608,6 +1608,28 @@ def get_plan():
            ORDER BY g.titlu COLLATE NOCASE LIMIT 300''')
     backlog += [_backlog_item(row_to_dict(r), 'global') for r in cursor.fetchall()]
 
+    # Numarul de subtaskuri, o singura interogare pentru toate randurile din plan
+    # (acelasi tipar ca la /api/global-tasks si /api/agenda). Fara el, chipul „1/4"
+    # ar lipsi tocmai in Planificator, deci acelasi task ar arata altfel decat in
+    # celelalte trei liste.
+    toate = [x for l in lanes for x in l.get('tasks', [])] + backlog
+    ids = [x['id'] for x in toate if x.get('id')]
+    if ids:
+        ph = ','.join('?' * len(ids))
+        cursor.execute(f'''
+            SELECT task_id,
+                   COUNT(*) AS subtask_total,
+                   SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS subtask_done
+            FROM task_subtasks
+            WHERE task_id IN ({ph})
+            GROUP BY task_id
+        ''', ids)
+        counts = {r['task_id']: (r['subtask_total'], r['subtask_done']) for r in cursor.fetchall()}
+        for x in toate:
+            total, done = counts.get(x['id'], (0, 0))
+            x['subtask_total'] = total
+            x['subtask_done'] = done or 0
+
     conn.close()
 
     # Lane order: projects by earliest in-window activity, Globale last.

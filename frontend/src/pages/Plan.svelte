@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2 } from '@lucide/svelte'
+  import { CalendarRange, ChevronRight, CalendarDays, ListChecks, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2 } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
@@ -33,6 +33,12 @@
   function laneColor(id) {
     return id === '__global__' ? CULOARE_NEUTRA : culoareProiect(id)
   }
+
+  // Severitatea termenului, ca in celelalte liste. `plan.today` vine de la server,
+  // deci comparatia se face pe ACEEASI zi ca restul planului — nu pe ceasul
+  // browserului, care poate fi in alt fus.
+  const esteRestant = (d) => !!d && !!plan.today && String(d).slice(0, 10) < plan.today
+  const esteAzi = (d) => !!d && !!plan.today && String(d).slice(0, 10) === plan.today
 
   const columns = $derived(buildColumns(plan.start, plan.days))
   const unit = $derived(columns.unit)
@@ -688,8 +694,26 @@
                 </button>
                 <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
                   <span class="mrow-title">{t.titlu}</span>
+                  <!-- ADAPTAT, nu copiat. Ordinea si semnele sunt cele din /tasks
+                       si de pe „Astăzi" — intai CAND, apoi CAT — dar data ramane
+                       ABSOLUTA („27.07"), nu relativa („acum 4 zile"): randul sta
+                       lipit de o grila de zile, iar o data relativa langa o coloana
+                       care arata ziua exacta te pune sa faci conversia in cap.
+                       Ce se aliniaza cu restul e CULOAREA: termenul se coloreaza
+                       dupa severitate, nu mereu amber, ca peste tot. -->
                   <span class="mrow-meta">
-                    {#if t.data_scadenta}<span class="chip due">termen {formatDateShort(t.data_scadenta)}</span>{/if}
+                    {#if t.data_scadenta}
+                      <span class="chip due" class:restant={esteRestant(t.data_scadenta)}
+                            class:azi={esteAzi(t.data_scadenta)}>
+                        <CalendarDays size={10} />{formatDateShort(t.data_scadenta)}
+                      </span>
+                    {/if}
+                    {#if t.subtask_total}
+                      <span class="tsub-chip" class:gata={t.subtask_done === t.subtask_total}
+                            title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">
+                        <ListChecks size={10} />{t.subtask_done || 0}/{t.subtask_total}
+                      </span>
+                    {/if}
                     {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
                   </span>
                 </button>
@@ -1016,7 +1040,9 @@
   .mrow-title { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
   .chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
-  .chip.due { color: var(--accent); background: var(--accent-subtle); }
+  .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
+  .chip.due.azi { color: var(--accent); background: var(--accent-subtle); }
+  .chip.due.restant { color: var(--danger); background: var(--danger-subtle); }
   .mrow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
      ascuns: acolo actiunile stau la vedere in rand. */
