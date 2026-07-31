@@ -377,7 +377,10 @@
   /* Ca in /tasks: eticheta de context pleaca la capatul din dreapta. */
   .ainfo .tag { margin-left: auto; flex: none; }
   .deadline { display: inline-flex; align-items: center; gap: 3px; }
-  .tag { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  /* ACEEASI PASTILA CA `.task-cat` DIN /tasks: acelasi obiect (contextul
+     taskului — categorie sau proiect) avea aici colturi de radius-xs si acolo
+     radius-full. Un obiect, un desen, pe orice ecran apare. */
+  .tag { padding: 1px 8px; background: var(--bg-elevated); border-radius: var(--radius-full); font-weight: var(--fw-medium); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .deadline { font-size: var(--font-tiny); color: var(--text-dim); }
@@ -484,7 +487,10 @@
              mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
              -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
     .ainfo > * { flex-shrink: 0; }
-    .tag { max-width: 96px; }
+    /* Ca in /tasks pe telefon: contextul devine TEXT, nu pastila — pe un rand
+       ingust pastila era cel mai tare lucru dupa titlu, adica invers decat
+       conteaza. (Acolo regula exista deja; aici ramasese pastila.) */
+    .tag { max-width: 96px; background: none; padding: 0; font-weight: var(--fw-normal); color: var(--text-faint); }
 
     /* Din cele sase butoane raman doua la vedere: bifa (actiunea principala) si
        reordonarea. Restul stau in panoul de sub rand. */
