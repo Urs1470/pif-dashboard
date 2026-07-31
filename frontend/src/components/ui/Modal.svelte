@@ -323,7 +323,22 @@
       height: calc(100dvh - var(--safe-top));
       border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     }
-    .modal.sheet .modal-header { padding-top: var(--space-12); }
+    /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
+       „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur
+       cuvant („birou"), fix acolo unde continutul ar trebui sa inceapa. */
+    .modal.sheet .modal-header {
+      padding: 2px var(--space-md) 0;
+      border-bottom: none;
+      min-height: 0;
+    }
+    .modal.sheet .modal-title {
+      font-size: var(--font-micro);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      font-weight: var(--fw-semibold);
+      color: var(--text-faint);
+    }
+    .modal.sheet .modal-close { width: 40px; height: 40px; margin-right: -6px; }
     /* 32px e o tinta de cursor. Degetul are nevoie de 44, iar `X`-ul e singura
        iesire cand tastatura acopera restul sheet-ului. Marginea negativa il tine
        aliniat optic cu titlul, desi caseta lui a crescut. */

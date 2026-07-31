@@ -3,7 +3,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, DUR_FAST } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -294,12 +294,14 @@
   // si tastatura fizica nu acopera nimic — o foaie ar fi un clic in plus degeaba.
   let sheetTaskId = $state('')
   let showSheet = $state(false)
+  let termenDeschis = $state(false)   // panoul de replanificare din foaie
   // Derivat din lista, NU o copie: altfel bifarea unui subtask sau schimbarea
   // termenului din foaie ar lasa antetul foii pe valorile vechi.
   const sheetTask = $derived(globalTasks.items.find(x => x.id === sheetTaskId) || null)
 
   async function deschideFoaia(taskId) {
     sheetTaskId = taskId
+    termenDeschis = false
     showSheet = true
     await incarcaSubtaskuri(taskId)
   }
@@ -735,27 +737,34 @@
       <h2 class="ts-titlu" class:gata={sheetTask.status === 'done'}>{sheetTask.titlu}</h2>
     </div>
 
-    <!-- Randul de termen, ca la Todoist: nu doar arata data, o si SCHIMBA. Sunt
-         aceleasi patru actiuni ca in panoul de glisare — cine deschide taskul nu
-         trebuie sa-l inchida ca sa-l replanifice. -->
-    <div class="ts-termen">
-      <span class="ts-et"><CalendarDays size={14} />
+    <!-- TERMENUL, UN SINGUR RAND — ca la Todoist („📅 28 Feb 11:00"), nu un bloc.
+         Prima varianta lasa cele patru actiuni desfacute permanent: pe 390px se
+         rupeau pe doua randuri, calendarul lua jumatate de latime si `×`-ul
+         ramanea singur pe randul al doilea. Un panou de replanificare deschis tot
+         timpul plateste spatiu pentru ceva ce faci O DATA per deschidere.
+         Acum randul ARATA data; atingerea lui desface actiunile dedesubt. -->
+    <button class="ts-rand" class:activ={termenDeschis}
+            onclick={() => termenDeschis = !termenDeschis}>
+      <CalendarDays size={16} />
+      {#if sheetTask.data_scadenta}
+        <span class="ts-val" class:overdue={isOverdue(sheetTask.data_scadenta)}
+              class:today={isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
+      {:else}<span class="ts-val ts-fara">Fără termen</span>{/if}
+      <ChevronDown size={15} class="ts-chev" />
+    </button>
+    {#if termenDeschis}
+      <div class="ts-zile" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
+        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 0); termenDeschis = false }}>Azi</button>
+        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 1); termenDeschis = false }}>Mâine</button>
+        <span class="ts-zi ts-data"><DatePicker value={sheetTask.data_scadenta} placeholder="Alege"
+              onchange={(v) => { setTermenData(sheetTask, v); termenDeschis = false }} /></span>
         {#if sheetTask.data_scadenta}
-          <span class:overdue={isOverdue(sheetTask.data_scadenta)}
-                class:today={isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
-        {:else}<span class="ts-fara">Fără termen</span>{/if}
-      </span>
-      <div class="ts-zile">
-        <button class="ts-zi" onclick={() => setTermen(sheetTask, 0)}>Azi</button>
-        <button class="ts-zi" onclick={() => setTermen(sheetTask, 1)}>Mâine</button>
-        <span class="ts-zi ts-data"><DatePicker value={sheetTask.data_scadenta} placeholder="Dată"
-              onchange={(v) => setTermenData(sheetTask, v)} /></span>
-        {#if sheetTask.data_scadenta}
-          <button class="ts-zi ts-scoate" onclick={() => setTermen(sheetTask, null)}
-                  aria-label="Scoate termenul"><X size={14} /></button>
+          <button class="ts-zi ts-scoate" onclick={() => { setTermen(sheetTask, null); termenDeschis = false }}>
+            <X size={14} /> Scoate
+          </button>
         {/if}
       </div>
-    </div>
+    {/if}
 
     {@render taskDetail(sheetTask)}
   </Modal>
@@ -995,7 +1004,7 @@
   .sub-nou:active { transform: scale(0.99); }
 
   /* ===== Antetul foii ===== */
-  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-md); }
+  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm); }
   .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
     display: flex; align-items: center; justify-content: flex-start; color: var(--success);
     background: none; border: none; cursor: pointer; padding: 0; }
@@ -1003,22 +1012,31 @@
   .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
     color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
-  .ts-termen { display: flex; flex-direction: column; gap: var(--space-sm);
-    padding: var(--space-12); margin-bottom: var(--space-md);
-    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); }
-  .ts-et { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); color: var(--text); }
-  .ts-et .overdue { color: var(--danger); font-weight: var(--fw-semibold); }
-  .ts-et .today { color: var(--accent); font-weight: var(--fw-semibold); }
-  .ts-fara { color: var(--text-dim); }
-  .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; }
+  /* Randul de termen: UN card de o linie, ca „📅 28 Feb 11:00" la Todoist. */
+  .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+    min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
+    color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
+    transition: var(--transition-pressable); }
+  .ts-rand:hover { border-color: var(--border-strong); }
+  .ts-rand:active { transform: scale(0.995); }
+  .ts-rand.activ { border-color: var(--accent); }
+  .ts-val { flex: 1; color: var(--text); font-weight: var(--fw-medium); }
+  .ts-val.overdue { color: var(--danger); }
+  .ts-val.today { color: var(--accent); }
+  .ts-fara { color: var(--text-dim); font-weight: var(--fw-normal); }
+  .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-fast) var(--ease); }
+  .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
+
+  .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; margin: -2px 0 var(--space-sm); }
   .ts-zi { display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    min-height: var(--tap-min); padding: 0 var(--space-12); border-radius: var(--radius-md);
+    min-height: 40px; padding: 0 var(--space-12); border-radius: var(--radius-md);
     background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
     font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-pressable); }
+  .ts-zi:hover { border-color: var(--accent); color: var(--text); }
   .ts-zi:active { transform: scale(0.97); }
   .ts-scoate { color: var(--danger); }
-  .ts-data :global(.dp-trigger), .ts-data :global(input) { min-height: var(--tap-min); }
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
@@ -1214,7 +1232,6 @@
        atins revine dintr-un strat invizibil (`::after`), exact ca la randul
        parinte. Titlul incepe acum pe la 67px. */
     .subtask-body { padding-left: var(--space-12) !important; }
-    .sub-section { border-left: 2px solid var(--border); padding-left: var(--space-12); }
     .sub-row .check { min-width: 26px; width: 26px; min-height: 40px;
       align-items: center; justify-content: center; padding: 0; }
     /* Pe touch nu exista hover, deci un buton care apare la hover nu apare
