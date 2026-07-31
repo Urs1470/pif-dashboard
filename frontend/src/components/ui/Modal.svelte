@@ -149,17 +149,19 @@
     <div class="modal modal-{size}" class:sheet class:intins class:trage
          bind:this={sheetEl} style:--trasY="{trasY}px" transition:intra>
       {#if sheet}
-        <!-- Zona de apucat, nu doar linia: 36px de bara intr-o banda de 28px
-             inaltime, ca degetul sa nu trebuiasca sa nimereasca 4 pixeli. -->
-        <div class="sheet-apuca" onpointerdown={trageJos} onpointermove={trageMisca}
-             onpointerup={trageSus} onpointercancel={trageSus}
-             role="button" tabindex="-1" aria-label="Trage ca să închizi sau să mărești">
-          <span class="sheet-grip" aria-hidden="true"></span>
-        </div>
+        <span class="sheet-grip" aria-hidden="true"></span>
       {/if}
-      <div class="modal-header">
+      <!-- Se trage de TOT ANTETUL, nu de bara de 4px. Ion: „pot sa ridic doar daca
+           tin apasat bara aia de sus, nu este prea comod". Bara ramane semnul
+           vizual; suprafata care raspunde e antetul intreg — titlu, spatiu gol si
+           bara — adica vreo 80px inaltime in loc de 4. Butonul de inchidere isi
+           opreste singur gestul (`onpointerdown|stopPropagation`), altfel apasarea
+           pe `X` ar porni o tragere. -->
+      <div class="modal-header"
+           onpointerdown={trageJos} onpointermove={trageMisca}
+           onpointerup={trageSus} onpointercancel={trageSus}>
         <h2 class="modal-title">{title}</h2>
-        <button class="modal-close" onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
+        <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
       </div>
       <div class="modal-body">
         {@render children()}
@@ -289,39 +291,41 @@
     }
     .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom { max-width: 100%; }
 
-    /* Banda de apucat: bara are 4px, dar degetul are nevoie de o zona. */
-    .sheet-apuca {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 28px;
+    /* Antetul e suprafata de tragere. `touch-action: none` doar aici: gestul e
+       al nostru, dar restul sheet-ului trebuie sa se poata DERULA normal. */
+    .modal.sheet .modal-header {
+      touch-action: none;
       cursor: grab;
-      touch-action: none;   /* gestul e al nostru, nu al derularii paginii */
+      -webkit-user-select: none;
+      user-select: none;
     }
-    .sheet-apuca:active { cursor: grabbing; }
+    .modal.sheet.trage .modal-header { cursor: grabbing; }
     .sheet-grip {
       width: 36px;
       height: 4px;
+      margin: 8px auto 2px;
       border-radius: var(--radius-full);
       background: var(--border-strong);
       transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
     }
-    .modal.trage .sheet-grip { background: var(--accent); width: 48px; }
+    .modal.trage .sheet-grip { background: var(--accent); width: 52px; }
 
-    /* Deplasarea din deget. Cat timp tragi NU e tranzitie — altfel sheet-ul ar
-       ramane in urma degetului; la ridicare revine animat spre 0. */
+    /* Deplasarea din deget, pe `translate` (vezi nota din <script>). Cat timp
+       tragi NU exista tranzitie — altfel sheet-ul ramane in urma degetului si se
+       simte ca lag. La ridicare revine animat spre 0. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
       transition: translate var(--dur-base) var(--ease), max-height var(--dur-base) var(--ease);
+      will-change: translate;
     }
-    .modal.sheet.trage { transition: max-height var(--dur-base) var(--ease); }
+    .modal.sheet.trage { transition: none; }
 
-    /* Tras in sus = ecran plin. Ramane sub notch. */
+    /* Tras in sus = ecran plin. DOAR `max-height`, niciodata si `height`:
+       prima varianta le seta pe amandoua, iar `height` fix face saltul pe care Ion
+       l-a numit „se rupe modalul si dupa abia se extinde" — continutul se reaseza
+       instantaneu, apoi tranzitia pornea de la o geometrie deja schimbata. */
     .modal.sheet.intins {
       max-height: calc(100dvh - var(--safe-top));
-      height: calc(100dvh - var(--safe-top));
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     }
     /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur
